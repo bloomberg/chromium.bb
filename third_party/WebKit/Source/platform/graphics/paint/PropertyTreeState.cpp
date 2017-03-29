@@ -8,6 +8,15 @@
 
 namespace blink {
 
+const PropertyTreeState& PropertyTreeState::root() {
+  DEFINE_STATIC_LOCAL(
+      std::unique_ptr<PropertyTreeState>, root,
+      (WTF::wrapUnique(new PropertyTreeState(
+          TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+          EffectPaintPropertyNode::root()))));
+  return *root;
+}
+
 bool PropertyTreeState::hasDirectCompositingReasons() const {
   switch (innermostNode()) {
     case Transform:

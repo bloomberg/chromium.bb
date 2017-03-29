@@ -107,70 +107,57 @@ using namespace HTMLNames;
 
 namespace {
 
-// Convenience class for initializing a GraphicsContext to build a DragImage
-// from a specific region specified by |bounds|. After painting the using
-// context(), the DragImage returned from createImage() will only contain the
-// content in |bounds| with the appropriate device scale factor included.
-class DragImageBuilder {
-  STACK_ALLOCATED();
+// Converts from bounds in CSS space to device space based on the given
+// frame.
+static FloatRect deviceSpaceBounds(const FloatRect cssBounds,
+                                   const LocalFrame& frame) {
+  float deviceScaleFactor = frame.page()->deviceScaleFactorDeprecated();
+  float pageScaleFactor = frame.page()->visualViewport().scale();
+  FloatRect deviceBounds(cssBounds);
+  deviceBounds.setWidth(cssBounds.width() * deviceScaleFactor *
+                        pageScaleFactor);
+  deviceBounds.setHeight(cssBounds.height() * deviceScaleFactor *
+                         pageScaleFactor);
+  return deviceBounds;
+}
 
- public:
-  DragImageBuilder(const LocalFrame& localFrame, const FloatRect& bounds)
-      : m_localFrame(&localFrame), m_bounds(bounds) {
-    // TODO(oshima): Remove this when all platforms are migrated to
-    // use-zoom-for-dsf.
-    float deviceScaleFactor =
-        m_localFrame->page()->deviceScaleFactorDeprecated();
-    float pageScaleFactor = m_localFrame->page()->visualViewport().scale();
-    m_bounds.setWidth(m_bounds.width() * deviceScaleFactor * pageScaleFactor);
-    m_bounds.setHeight(m_bounds.height() * deviceScaleFactor * pageScaleFactor);
-    m_builder = WTF::wrapUnique(new PaintRecordBuilder(
-        SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
+// Returns a DragImage whose bitmap contains |contents|, positioned and scaled
+// in device space.
+static std::unique_ptr<DragImage> createDragImage(
+    const LocalFrame& frame,
+    float opacity,
+    RespectImageOrientationEnum imageOrientation,
+    const FloatRect& cssBounds,
+    sk_sp<PaintRecord> contents) {
+  float deviceScaleFactor = frame.page()->deviceScaleFactorDeprecated();
+  float pageScaleFactor = frame.page()->visualViewport().scale();
 
-    AffineTransform transform;
-    transform.scale(deviceScaleFactor * pageScaleFactor,
-                    deviceScaleFactor * pageScaleFactor);
-    transform.translate(-m_bounds.x(), -m_bounds.y());
-    context().getPaintController().createAndAppend<BeginTransformDisplayItem>(
-        *m_builder, transform);
-  }
+  FloatRect deviceBounds = deviceSpaceBounds(cssBounds, frame);
 
-  GraphicsContext& context() { return m_builder->context(); }
+  AffineTransform transform;
+  transform.scale(deviceScaleFactor * pageScaleFactor);
+  transform.translate(-deviceBounds.x(), -deviceBounds.y());
 
-  std::unique_ptr<DragImage> createImage(
-      float opacity,
-      RespectImageOrientationEnum imageOrientation =
-          DoNotRespectImageOrientation) {
-    context().getPaintController().endItem<EndTransformDisplayItem>(*m_builder);
-    // TODO(fmalita): endRecording() should return a non-const SKP.
-    sk_sp<PaintRecord> record(
-        const_cast<PaintRecord*>(m_builder->endRecording().release()));
+  PaintRecorder recorder;
+  PaintCanvas* canvas = recorder.beginRecording(deviceBounds);
+  canvas->concat(affineTransformToSkMatrix(transform));
+  canvas->drawPicture(contents);
 
-    // Rasterize upfront, since DragImage::create() is going to do it anyway
-    // (SkImage::asLegacyBitmap).
-    SkSurfaceProps surfaceProps(0, kUnknown_SkPixelGeometry);
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
-        m_bounds.width(), m_bounds.height(), &surfaceProps);
-    if (!surface)
-      return nullptr;
+  // Rasterize upfront, since DragImage::create() is going to do it anyway
+  // (SkImage::asLegacyBitmap).
+  SkSurfaceProps surfaceProps(0, kUnknown_SkPixelGeometry);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
+      deviceBounds.width(), deviceBounds.height(), &surfaceProps);
+  if (!surface)
+    return nullptr;
+  recorder.finishRecordingAsPicture()->playback(surface->getCanvas());
+  RefPtr<Image> image = StaticBitmapImage::create(surface->makeImageSnapshot());
+  float screenDeviceScaleFactor =
+      frame.page()->chromeClient().screenInfo().deviceScaleFactor;
 
-    record->playback(surface->getCanvas());
-    RefPtr<Image> image =
-        StaticBitmapImage::create(surface->makeImageSnapshot());
-
-    float screenDeviceScaleFactor =
-        m_localFrame->page()->chromeClient().screenInfo().deviceScaleFactor;
-
-    return DragImage::create(image.get(), imageOrientation,
-                             screenDeviceScaleFactor, InterpolationHigh,
-                             opacity);
-  }
-
- private:
-  const Member<const LocalFrame> m_localFrame;
-  FloatRect m_bounds;
-  std::unique_ptr<PaintRecordBuilder> m_builder;
-};
+  return DragImage::create(image.get(), imageOrientation,
+                           screenDeviceScaleFactor, InterpolationHigh, opacity);
+}
 
 class DraggedNodeImageBuilder {
   STACK_ALLOCATED();
@@ -218,19 +205,18 @@ class DraggedNodeImageBuilder {
         layer->layoutObject()
             .absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms)
             .boundingBox();
-    DragImageBuilder dragImageBuilder(*m_localFrame, boundingBox);
-    {
-      PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox),
-                                          GlobalPaintFlattenCompositingLayers,
-                                          LayoutSize());
-      PaintLayerFlags flags = PaintLayerHaveTransparency |
-                              PaintLayerAppliedTransform |
-                              PaintLayerUncachedClipRects;
-      PaintLayerPainter(*layer).paint(dragImageBuilder.context(), paintingInfo,
-                                      flags);
-    }
-    return dragImageBuilder.createImage(
-        1.0f, LayoutObject::shouldRespectImageOrientation(draggedLayoutObject));
+    PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox),
+                                        GlobalPaintFlattenCompositingLayers,
+                                        LayoutSize());
+    PaintLayerFlags flags = PaintLayerHaveTransparency |
+                            PaintLayerAppliedTransform |
+                            PaintLayerUncachedClipRects;
+    PaintRecordBuilder builder(deviceSpaceBounds(boundingBox, *m_localFrame));
+    PaintLayerPainter(*layer).paint(builder.context(), paintingInfo, flags);
+    return createDragImage(
+        *m_localFrame, 1.0f,
+        LayoutObject::shouldRespectImageOrientation(draggedLayoutObject),
+        boundingBox, builder.endRecording());
   }
 
  private:
@@ -728,12 +714,14 @@ std::unique_ptr<DragImage> LocalFrame::dragImageForSelection(float opacity) {
   ASSERT(document()->isActive());
 
   FloatRect paintingRect = FloatRect(selection().bounds());
-  DragImageBuilder dragImageBuilder(*this, paintingRect);
   GlobalPaintFlags paintFlags =
       GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers;
-  m_view->paintContents(dragImageBuilder.context(), paintFlags,
+
+  PaintRecordBuilder builder(deviceSpaceBounds(paintingRect, *this));
+  m_view->paintContents(builder.context(), paintFlags,
                         enclosingIntRect(paintingRect));
-  return dragImageBuilder.createImage(opacity);
+  return createDragImage(*this, opacity, DoNotRespectImageOrientation,
+                         paintingRect, builder.endRecording());
 }
 
 String LocalFrame::selectedText() const {

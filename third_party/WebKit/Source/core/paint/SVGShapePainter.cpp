@@ -219,16 +219,7 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo,
   for (const MarkerPosition& markerPosition : *markerPositions) {
     if (const LayoutSVGResourceMarker* marker = SVGMarkerData::markerForType(
             markerPosition.type, markerStart, markerMid, markerEnd)) {
-      PaintRecordBuilder builder(boundingBox, nullptr, &paintInfo.context);
-      PaintInfo markerPaintInfo(builder.context(), paintInfo);
-
-      // It's expensive to track the transformed paint cull rect for each
-      // marker so just disable culling. The shape paint call will already
-      // be culled if it is outside the paint info cull rect.
-      markerPaintInfo.m_cullRect.m_rect = LayoutRect::infiniteIntRect();
-
-      paintMarker(markerPaintInfo, *marker, markerPosition, strokeWidth);
-      paintInfo.context.canvas()->PlaybackPaintRecord(builder.endRecording());
+      paintMarker(paintInfo, *marker, markerPosition, strokeWidth);
     }
   }
 }
@@ -240,15 +231,28 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo,
   if (!marker.shouldPaint())
     return;
 
-  TransformRecorder transformRecorder(
-      paintInfo.context, marker,
-      marker.markerTransformation(position.origin, position.angle,
-                                  strokeWidth));
-  Optional<FloatClipRecorder> clipRecorder;
+  AffineTransform transform =
+      marker.markerTransformation(position.origin, position.angle, strokeWidth);
+
+  PaintCanvas* canvas = paintInfo.context.canvas();
+
+  canvas->save();
+  canvas->concat(affineTransformToSkMatrix(transform));
   if (SVGLayoutSupport::isOverflowHidden(&marker))
-    clipRecorder.emplace(paintInfo.context, marker, paintInfo.phase,
-                         marker.viewport());
-  SVGContainerPainter(marker).paint(paintInfo);
+    canvas->clipRect(marker.viewport());
+
+  // It's expensive to track the transformed paint cull rect for each
+  // marker so just disable culling. The shape paint call will already
+  // be culled if it is outside the paint info cull rect.
+  IntRect bounds(LayoutRect::infiniteIntRect());
+  PaintRecordBuilder builder(FloatRect(bounds), nullptr, &paintInfo.context);
+  PaintInfo markerPaintInfo(builder.context(), paintInfo);
+  markerPaintInfo.m_cullRect.m_rect = bounds;
+
+  SVGContainerPainter(marker).paint(markerPaintInfo);
+  canvas->PlaybackPaintRecord(builder.endRecording());
+
+  canvas->restore();
 }
 
 }  // namespace blink

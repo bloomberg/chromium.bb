@@ -1179,11 +1179,11 @@ sk_sp<PaintRecord> GraphicsLayer::captureRecord() {
   if (!drawsContent())
     return nullptr;
 
-  IntSize intSize = expandedIntSize(size());
+  FloatRect bounds(IntRect(IntPoint(0, 0), expandedIntSize(size())));
   GraphicsContext graphicsContext(getPaintController(),
                                   GraphicsContext::NothingDisabled, nullptr);
-  graphicsContext.beginRecording(IntRect(IntPoint(0, 0), intSize));
-  getPaintController().paintArtifact().replay(graphicsContext);
+  graphicsContext.beginRecording(bounds);
+  getPaintController().paintArtifact().replay(bounds, graphicsContext);
   return graphicsContext.endRecording();
 }
 

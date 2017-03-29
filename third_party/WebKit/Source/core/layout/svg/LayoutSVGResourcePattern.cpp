@@ -203,8 +203,6 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
     contentTransform = tileTransform;
 
   FloatRect bounds(FloatPoint(), tileBounds.size());
-  PaintRecordBuilder builder(bounds);
-
   const LayoutSVGResourceContainer* patternLayoutObject =
       resolveContentElement();
   DCHECK(patternLayoutObject);
@@ -212,15 +210,17 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
 
   SubtreeContentTransformScope contentTransformScope(contentTransform);
 
-  {
-    TransformRecorder transformRecorder(builder.context(), *patternLayoutObject,
-                                        tileTransform);
-    for (LayoutObject* child = patternLayoutObject->firstChild(); child;
-         child = child->nextSibling())
-      SVGPaintContext::paintResourceSubtree(builder.context(), child);
-  }
-
-  return builder.endRecording();
+  PaintRecordBuilder builder(bounds);
+  for (LayoutObject* child = patternLayoutObject->firstChild(); child;
+       child = child->nextSibling())
+    SVGPaintContext::paintResourceSubtree(builder.context(), child);
+  PaintRecorder paintRecorder;
+  PaintCanvas* canvas = paintRecorder.beginRecording(bounds);
+  canvas->save();
+  canvas->concat(affineTransformToSkMatrix(tileTransform));
+  canvas->drawPicture(builder.endRecording());
+  canvas->restore();
+  return paintRecorder.finishRecordingAsPicture();
 }
 
 }  // namespace blink

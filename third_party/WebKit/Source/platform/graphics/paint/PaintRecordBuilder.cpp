@@ -25,17 +25,13 @@ PaintRecordBuilder::PaintRecordBuilder(const FloatRect& bounds,
   } else {
     m_paintControllerPtr = PaintController::create();
     m_paintController = m_paintControllerPtr.get();
-
-    // Content painted with a new paint controller in SPv2 will have an
-    // independent property tree set.
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      PaintChunk::Id id(*this, DisplayItem::kSVGImage);
-      PropertyTreeState state(TransformPaintPropertyNode::root(),
-                              ClipPaintPropertyNode::root(),
-                              EffectPaintPropertyNode::root());
-      m_paintController->updateCurrentPaintChunkProperties(&id, state);
-    }
   }
+
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    m_paintController->updateCurrentPaintChunkProperties(
+        nullptr, PropertyTreeState::root());
+  }
+
 #if DCHECK_IS_ON()
   m_paintController->setUsage(PaintController::ForPaintRecordBuilder);
 #endif
@@ -58,7 +54,7 @@ PaintRecordBuilder::~PaintRecordBuilder() {
 sk_sp<PaintRecord> PaintRecordBuilder::endRecording() {
   m_context->beginRecording(m_bounds);
   m_paintController->commitNewDisplayItems();
-  m_paintController->paintArtifact().replay(*m_context);
+  m_paintController->paintArtifact().replay(m_bounds, *m_context);
   return m_context->endRecording();
 }
 

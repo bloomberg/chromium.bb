@@ -295,15 +295,6 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
   spacedTile.expand(FloatSize(repeatSpacing));
 
   PaintRecordBuilder builder(spacedTile, nullptr, &context);
-  // SVG images paint into their own property tree set that is distinct
-  // from the embedding frame tree.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    PaintChunk::Id id(builder, DisplayItem::kSVGImage);
-    PropertyTreeState state(TransformPaintPropertyNode::root(),
-                            ClipPaintPropertyNode::root(),
-                            EffectPaintPropertyNode::root());
-    m_paintController->updateCurrentPaintChunkProperties(&id, state);
-  }
 
   {
     DrawingRecorder recorder(builder.context(), builder,
@@ -369,11 +360,12 @@ bool SVGImage::applyShaderInternal(PaintFlags& flags,
   if (size.isEmpty())
     return false;
 
-  const FloatRect bounds(FloatPoint(), size);
+  FloatRect floatBounds(FloatPoint(), size);
+  const SkRect bounds(floatBounds);
+
   flags.setShader(SkShader::MakePictureShader(
-      paintRecordForCurrentFrame(bounds, bounds, url),
-      SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix,
-      nullptr));
+      paintRecordForCurrentFrame(floatBounds, url), SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, &localMatrix, &bounds));
 
   // Animation is normally refreshed in draw() impls, which we don't reach when
   // painting via shaders.
@@ -417,10 +409,8 @@ void SVGImage::draw(PaintCanvas* canvas,
                clampMode, KURL());
 }
 
-sk_sp<PaintRecord> SVGImage::paintRecordForCurrentFrame(
-    const FloatRect& srcRect,
-    const FloatRect& dstRect,
-    const KURL& url) {
+sk_sp<PaintRecord> SVGImage::paintRecordForCurrentFrame(const FloatRect& bounds,
+                                                        const KURL& url) {
   DCHECK(m_page);
   FrameView* view = toLocalFrame(m_page->mainFrame())->view();
   view->resize(containerSize());
@@ -435,40 +425,14 @@ sk_sp<PaintRecord> SVGImage::paintRecordForCurrentFrame(
   // time=0.) The reason we do this here and not in resetAnimation() is to
   // avoid setting timers from the latter.
   flushPendingTimelineRewind();
-  PaintRecordBuilder builder(dstRect, nullptr, nullptr,
+
+  IntRect intBounds(enclosingIntRect(bounds));
+  PaintRecordBuilder builder(intBounds, nullptr, nullptr,
                              m_paintController.get());
-  // SVG images paint into their own property tree set that is distinct
-  // from the embedding frame tree.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    PaintChunk::Id id(builder, DisplayItem::kSVGImage);
-    PropertyTreeState state(TransformPaintPropertyNode::root(),
-                            ClipPaintPropertyNode::root(),
-                            EffectPaintPropertyNode::root());
-    m_paintController->updateCurrentPaintChunkProperties(&id, state);
-  }
 
-  {
-    ClipRecorder clipRecorder(builder.context(), builder,
-                              DisplayItem::kClipNodeImage,
-                              enclosingIntRect(dstRect));
-
-    // We can only draw the entire frame, clipped to the rect we want. So
-    // compute where the top left of the image would be if we were drawing
-    // without clipping, and translate accordingly.
-    FloatSize scale(dstRect.width() / srcRect.width(),
-                    dstRect.height() / srcRect.height());
-    FloatSize topLeftOffset(srcRect.location().x() * scale.width(),
-                            srcRect.location().y() * scale.height());
-    FloatPoint destOffset = dstRect.location() - topLeftOffset;
-    AffineTransform transform =
-        AffineTransform::translation(destOffset.x(), destOffset.y());
-    transform.scale(scale.width(), scale.height());
-    TransformRecorder transformRecorder(builder.context(), builder, transform);
-
-    view->updateAllLifecyclePhasesExceptPaint();
-    view->paint(builder.context(), CullRect(enclosingIntRect(srcRect)));
-    DCHECK(!view->needsLayout());
-  }
+  view->updateAllLifecyclePhasesExceptPaint();
+  view->paint(builder.context(), CullRect(intBounds));
+  DCHECK(!view->needsLayout());
 
   return builder.endRecording();
 }
@@ -486,7 +450,23 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
       SkRect layerRect = dstRect;
       canvas->saveLayer(&layerRect, &flags);
     }
-    canvas->drawPicture(paintRecordForCurrentFrame(srcRect, dstRect, url));
+    // We can only draw the entire frame, clipped to the rect we want. So
+    // compute where the top left of the image would be if we were drawing
+    // without clipping, and translate accordingly.
+    FloatSize scale(dstRect.width() / srcRect.width(),
+                    dstRect.height() / srcRect.height());
+    FloatSize topLeftOffset(srcRect.location().x() * scale.width(),
+                            srcRect.location().y() * scale.height());
+    FloatPoint destOffset = dstRect.location() - topLeftOffset;
+    AffineTransform transform =
+        AffineTransform::translation(destOffset.x(), destOffset.y());
+    transform.scale(scale.width(), scale.height());
+
+    canvas->save();
+    canvas->clipRect(enclosingIntRect(dstRect));
+    canvas->concat(affineTransformToSkMatrix(transform));
+    canvas->PlaybackPaintRecord(paintRecordForCurrentFrame(srcRect, url));
+    canvas->restore();
   }
 
   // Start any (SMIL) animations if needed. This will restart or continue

@@ -178,15 +178,17 @@ sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(
     transform.translate(dstRect.x(), dstRect.y());
   }
 
-  PaintRecordBuilder builder(dstRect);
-  {
-    TransformRecorder transformRecorder(builder.context(), layoutObject,
-                                        transform);
-    SVGPaintContext::paintResourceSubtree(builder.context(), &layoutObject);
-  }
+  // TODO(chrishtr): use tighter bounds for this.
+  FloatRect bounds(LayoutRect::infiniteIntRect());
+  PaintRecordBuilder builder(bounds);
+  SVGPaintContext::paintResourceSubtree(builder.context(), &layoutObject);
 
-  return SkPictureImageFilter::Make(ToSkPicture(builder.endRecording()),
-                                    dstRect);
+  PaintRecorder paintRecorder;
+  PaintCanvas* canvas = paintRecorder.beginRecording(dstRect);
+  canvas->concat(affineTransformToSkMatrix(transform));
+  canvas->drawPicture(builder.endRecording());
+  return SkPictureImageFilter::Make(
+      ToSkPicture(paintRecorder.finishRecordingAsPicture()), dstRect);
 }
 
 sk_sp<SkImageFilter> FEImage::createImageFilter() {

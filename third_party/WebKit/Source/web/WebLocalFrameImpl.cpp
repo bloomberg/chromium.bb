@@ -304,12 +304,12 @@ class ChromePrintContext : public PrintContext {
 
     // The page rect gets scaled and translated, so specify the entire
     // print content area here as the recording rect.
-    IntRect printedPageRect(0, 0, m_printedPageHeight, m_printedPageWidth);
-    PaintRecordBuilder builder(printedPageRect, &canvas->getMetaData());
+    IntRect bounds(0, 0, m_printedPageHeight, m_printedPageWidth);
+    PaintRecordBuilder builder(bounds, &canvas->getMetaData());
     builder.context().setPrinting(true);
-
-    float scale = spoolPage(builder, pageNumber);
-    canvas->PlaybackPaintRecord(builder.endRecording());
+    builder.context().beginRecording(bounds);
+    float scale = spoolPage(builder.context(), pageNumber, bounds);
+    canvas->PlaybackPaintRecord(builder.context().endRecording());
     return scale;
   }
 
@@ -333,27 +333,18 @@ class ChromePrintContext : public PrintContext {
     IntRect allPagesRect(0, 0, pageWidth, totalHeight);
 
     PaintRecordBuilder builder(allPagesRect, &canvas->getMetaData());
-    builder.context().setPrinting(true);
-
     {
       GraphicsContext& context = builder.context();
-      DisplayItemCacheSkipper skipper(context);
+      context.setPrinting(true);
+      context.beginRecording(allPagesRect);
 
       // Fill the whole background by white.
-      {
-        DrawingRecorder backgroundRecorder(
-            context, builder, DisplayItem::kPrintedContentBackground,
-            allPagesRect);
-        context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
-      }
+      context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
 
       int currentHeight = 0;
       for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
         // Draw a line for a page boundary if this isn't the first page.
         if (pageIndex > 0) {
-          DrawingRecorder lineBoundaryRecorder(
-              context, builder, DisplayItem::kPrintedContentLineBoundary,
-              allPagesRect);
           context.save();
           context.setStrokeColor(Color(0, 0, 255));
           context.setFillColor(Color(0, 0, 255));
@@ -370,13 +361,17 @@ class ChromePrintContext : public PrintContext {
         float scale = getPageShrink(pageIndex);
         transform.scale(scale, scale);
 #endif
-        TransformRecorder transformRecorder(context, builder, transform);
-        spoolPage(builder, pageIndex);
+        context.save();
+        context.concatCTM(transform);
+
+        spoolPage(context, pageIndex, allPagesRect);
+
+        context.restore();
 
         currentHeight += pageSizeInPixels.height() + 1;
       }
+      canvas->PlaybackPaintRecord(context.endRecording());
     }
-    canvas->PlaybackPaintRecord(builder.endRecording());
   }
 
  protected:
@@ -385,10 +380,11 @@ class ChromePrintContext : public PrintContext {
   // instead. Returns the scale to be applied.
   // On Linux, we don't have the problem with NativeTheme, hence we let WebKit
   // do the scaling and ignore the return value.
-  virtual float spoolPage(PaintRecordBuilder& builder, int pageNumber) {
+  virtual float spoolPage(GraphicsContext& context,
+                          int pageNumber,
+                          const IntRect& bounds) {
     IntRect pageRect = m_pageRects[pageNumber];
     float scale = m_printedPageWidth / pageRect.width();
-    GraphicsContext& context = builder.context();
 
     AffineTransform transform;
 #if OS(POSIX) && !OS(MACOSX)
@@ -396,19 +392,27 @@ class ChromePrintContext : public PrintContext {
 #endif
     transform.translate(static_cast<float>(-pageRect.x()),
                         static_cast<float>(-pageRect.y()));
-    TransformRecorder transformRecorder(context, builder, transform);
+    context.save();
+    context.concatCTM(transform);
+    context.clipRect(pageRect);
 
-    ClipRecorder clipRecorder(context, builder, DisplayItem::kClipPrintedPage,
-                              pageRect);
+    PaintRecordBuilder builder(bounds, &context.canvas()->getMetaData());
 
-    frame()->view()->paintContents(context, GlobalPaintNormalPhase, pageRect);
-
+    // The local scope is so that the cache skipper is destroyed before
+    // we call endRecording().
     {
+      DisplayItemCacheSkipper skipper(builder.context());
+      frame()->view()->paintContents(builder.context(), GlobalPaintNormalPhase,
+                                     pageRect);
+
       DrawingRecorder lineBoundaryRecorder(
-          context, builder, DisplayItem::kPrintedContentDestinationLocations,
-          pageRect);
-      outputLinkedDestinations(context, pageRect);
+          builder.context(), builder,
+          DisplayItem::kPrintedContentDestinationLocations, pageRect);
+      outputLinkedDestinations(builder.context(), pageRect);
     }
+    context.drawRecord(builder.endRecording());
+
+    context.restore();
 
     return scale;
   }
@@ -477,9 +481,18 @@ class ChromePluginPrintContext final : public ChromePrintContext {
   // Spools the printed page, a subrect of frame(). Skip the scale step.
   // NativeTheme doesn't play well with scaling. Scaling is done browser side
   // instead. Returns the scale to be applied.
-  float spoolPage(PaintRecordBuilder& builder, int pageNumber) override {
+  float spoolPage(GraphicsContext& context,
+                  int pageNumber,
+                  const IntRect& bounds) override {
     IntRect pageRect = m_pageRects[pageNumber];
-    m_plugin->printPage(pageNumber, builder.context(), pageRect);
+    PaintRecordBuilder builder(bounds, &context.canvas()->getMetaData());
+    // The local scope is so that the cache skipper is destroyed before
+    // we call endRecording().
+    {
+      DisplayItemCacheSkipper skipper(builder.context());
+      m_plugin->printPage(pageNumber, builder.context(), pageRect);
+    }
+    context.drawRecord(builder.endRecording());
 
     return 1.0;
   }

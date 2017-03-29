@@ -79,6 +79,8 @@ class CORE_EXPORT SVGImage final : public Image {
   SVGImageChromeClient& chromeClientForTesting();
 
   sk_sp<SkImage> imageForCurrentFrame() override;
+  static FloatPoint offsetForCurrentFrame(const FloatRect& dstRect,
+                                          const FloatRect& srcRect);
 
   // Does the SVG image/document contain any animations?
   bool hasAnimations() const;
@@ -145,8 +147,7 @@ class CORE_EXPORT SVGImage final : public Image {
                                const KURL&);
   sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
                                                   const IntSize& containerSize);
-  sk_sp<PaintRecord> paintRecordForCurrentFrame(const FloatRect& srcRect,
-                                                const FloatRect& dstRect,
+  sk_sp<PaintRecord> paintRecordForCurrentFrame(const FloatRect& bounds,
                                                 const KURL&);
 
   void drawInternal(PaintCanvas*,

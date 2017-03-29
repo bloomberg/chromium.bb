@@ -70,7 +70,8 @@ class PLATFORM_EXPORT PaintArtifact final {
   size_t approximateUnsharedMemoryUsage() const;
 
   // Draws the paint artifact to a GraphicsContext.
-  void replay(GraphicsContext&) const;
+  // |bounds| is the bounding box of the paint artifact's display list.
+  void replay(const FloatRect& bounds, GraphicsContext&) const;
 
   // Writes the paint artifact into a WebDisplayItemList.
   void appendToWebDisplayItemList(WebDisplayItemList*) const;

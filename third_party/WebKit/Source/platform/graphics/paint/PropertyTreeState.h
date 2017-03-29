@@ -55,6 +55,8 @@ class PLATFORM_EXPORT PropertyTreeState {
     m_effect = std::move(node);
   }
 
+  static const PropertyTreeState& root();
+
   // Returns the compositor element id, if any, for this property state. If
   // neither the effect nor transform nodes have a compositor element id then a
   // default instance is returned.

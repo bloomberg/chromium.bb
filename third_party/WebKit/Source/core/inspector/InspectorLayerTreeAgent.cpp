@@ -372,7 +372,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layerId,
 
   GraphicsContext context(layer->getPaintController());
   context.beginRecording(interestRect);
-  layer->getPaintController().paintArtifact().replay(context);
+  layer->getPaintController().paintArtifact().replay(interestRect, context);
   RefPtr<PictureSnapshot> snapshot =
       adoptRef(new PictureSnapshot(ToSkPicture(context.endRecording())));
 

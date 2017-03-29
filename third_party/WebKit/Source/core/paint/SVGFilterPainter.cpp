@@ -24,6 +24,13 @@ GraphicsContext* SVGFilterRecordingContext::beginContent(
   m_paintController = PaintController::create();
   m_context = WTF::wrapUnique(new GraphicsContext(*m_paintController));
 
+  // Content painted into a new PaintRecord in SPv2 will have an
+  // independent property tree set.
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    m_paintController->updateCurrentPaintChunkProperties(
+        nullptr, PropertyTreeState::root());
+  }
+
   filterData->m_state = FilterData::RecordingContent;
   return m_context.get();
 }
@@ -40,7 +47,8 @@ void SVGFilterRecordingContext::endContent(FilterData* filterData) {
   DCHECK(m_context);
   m_context->beginRecording(filter->filterRegion());
   m_paintController->commitNewDisplayItems();
-  m_paintController->paintArtifact().replay(*m_context);
+
+  m_paintController->paintArtifact().replay(filter->filterRegion(), *m_context);
 
   SkiaImageFilterBuilder::buildSourceGraphic(sourceGraphic,
                                              m_context->endRecording());

@@ -1378,3 +1378,11 @@ Bug(700530) fast/multicol/tall-content-in-inner-with-fixed-height.html [ Failure
 Bug(700530) compositing/geometry/abs-position-inside-opacity.html [ Failure ]
 Bug(700530) fast/forms/select-popup/popup-menu-appearance-zoom110.html [ Failure ]
 Bug(700530) fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Failure ]
+
+# These are failing due to compositing isolation failures in SVG
+# (likely missing code to account for CompositingRecorder).
+crbug.com/665259 svg/as-background-image/svg-as-background-5.html [ Failure ]
+crbug.com/665259 svg/as-background-image/svg-as-background-6.html [ Failure ]
+crbug.com/665259 svg/stroke/non-scaling-stroke-paintserver-same-as-fill.html [ Failure ]
+crbug.com/665259 css3/blending/svg-isolation-svg-img-isolate.html [ Failure ]
+crbug.com/665259 css3/blending/svg-isolation-img-isolate.html [ Failure ]

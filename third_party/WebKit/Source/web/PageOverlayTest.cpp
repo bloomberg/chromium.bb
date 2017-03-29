@@ -145,7 +145,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   PaintController& paintController = graphicsLayer->getPaintController();
   GraphicsContext graphicsContext(paintController);
   graphicsContext.beginRecording(intRect);
-  paintController.paintArtifact().replay(graphicsContext);
+  paintController.paintArtifact().replay(intRect, graphicsContext);
   graphicsContext.endRecording()->playback(&canvas);
 }
 

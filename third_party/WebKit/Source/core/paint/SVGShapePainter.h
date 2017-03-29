@@ -35,7 +35,7 @@ class SVGShapePainter {
   void paintMarker(const PaintInfo&,
                    const LayoutSVGResourceMarker&,
                    const MarkerPosition&,
-                   float);
+                   float strokeWidth);
 
   const LayoutSVGShape& m_layoutSVGShape;
 };

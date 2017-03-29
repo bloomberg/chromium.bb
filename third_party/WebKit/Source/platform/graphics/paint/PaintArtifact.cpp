@@ -4,9 +4,12 @@
 
 #include "platform/graphics/paint/PaintArtifact.h"
 
+#include "cc/paint/display_item_list.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -81,10 +84,27 @@ size_t PaintArtifact::approximateUnsharedMemoryUsage() const {
          m_paintChunks.capacity() * sizeof(m_paintChunks[0]);
 }
 
-void PaintArtifact::replay(GraphicsContext& graphicsContext) const {
+void PaintArtifact::replay(const FloatRect& bounds,
+                           GraphicsContext& graphicsContext) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
-  for (const DisplayItem& displayItem : m_displayItemList)
-    displayItem.replay(graphicsContext);
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    for (const DisplayItem& displayItem : m_displayItemList)
+      displayItem.replay(graphicsContext);
+  } else {
+    std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+    Vector<const PaintChunk*> pointerPaintChunks;
+    pointerPaintChunks.reserveInitialCapacity(paintChunks().size());
+
+    // TODO(chrishtr): it's sad to have to copy this vector just to turn
+    // references into pointers.
+    for (const auto& chunk : paintChunks())
+      pointerPaintChunks.push_back(&chunk);
+    scoped_refptr<cc::DisplayItemList> displayItemList =
+        PaintChunksToCcLayer::convert(
+            pointerPaintChunks, PropertyTreeState::root(), gfx::Vector2dF(),
+            getDisplayItemList(), *geometryMapper);
+    graphicsContext.canvas()->drawDisplayItemList(displayItemList);
+  }
 }
 
 DISABLE_CFI_PERF

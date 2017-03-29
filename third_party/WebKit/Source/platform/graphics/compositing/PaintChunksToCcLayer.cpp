@@ -212,7 +212,7 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::convert(
   ccList->CreateAndAppendPairedBeginItem<cc::TransformDisplayItem>(
       counterOffset);
 
-  for (const auto& paintChunk : paintChunks) {
+  for (const auto* paintChunk : paintChunks) {
     const PropertyTreeState* state = &paintChunk->properties.propertyTreeState;
     PropertyTreeStateIterator iterator(*state);
     Vector<PropertyTreeState> pairedStates;

@@ -37,6 +37,8 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   // painting the picture (and hence we can use its cache). Otherwise, a new
   // PaintController is used for the duration of the picture building, which
   // therefore has no caching.
+  // If SPv2 is on, resets paint chunks to PropertyTreeState::root()
+  // before beginning to record.
   PaintRecordBuilder(const FloatRect& bounds,
                      SkMetaData* = nullptr,
                      GraphicsContext* containingContext = nullptr,
@@ -45,8 +47,9 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
 
   GraphicsContext& context() { return *m_context; }
 
-  // Returns a picture capturing all drawing performed on the builder's context
-  // since construction.
+  // Returns a PaintRecord capturing all drawing performed on the builder's
+  // context since construction. If SPv2 is on, flattens all paint chunks
+  // into PropertyTreeState::root() space.
   sk_sp<PaintRecord> endRecording();
 
   // DisplayItemClient methods
