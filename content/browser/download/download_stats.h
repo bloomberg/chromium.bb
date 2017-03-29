@@ -91,7 +91,7 @@ enum DownloadCountTypes {
   // candidates for partial resumption.
   STRONG_VALIDATOR_AND_ACCEPTS_RANGES,
 
-  // Count of downloads that uses parallel download requests.
+  // (Deprecated) Count of downloads that uses parallel download requests.
   USES_PARALLEL_REQUESTS,
 
   // Count of new downloads.
@@ -158,7 +158,8 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t received,
-                               int64_t total);
+                               int64_t total,
+                               bool uses_parallel_requests);
 
 // Record that a download has been classified as malicious.
 void RecordMaliciousDownloadClassified(DownloadDangerType danger_type);
@@ -216,6 +217,9 @@ void RecordNetworkBlockage(base::TimeDelta resource_handler_lifetime,
 void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time);
+
+// Increment one of the count for parallel download.
+void RecordParallelDownloadCount(DownloadCountTypes type);
 
 // Records the bandwidth for parallel download and estimates the saved time at
 // the file end. Does not count in any hash computation or file open/close time.

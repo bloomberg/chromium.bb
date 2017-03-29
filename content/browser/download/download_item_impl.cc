@@ -1280,7 +1280,7 @@ void DownloadItemImpl::Start(
     UpdateValidatorsOnResumption(new_create_info);
 
   if (state_ == INITIAL_INTERNAL && job_->UsesParallelRequests())
-    RecordDownloadCount(USES_PARALLEL_REQUESTS);
+    RecordParallelDownloadCount(START_COUNT);
 
   TransitionTo(TARGET_PENDING_INTERNAL);
 
@@ -1573,6 +1573,8 @@ void DownloadItemImpl::Completed() {
   if (!GetBrowserContext()->IsOffTheRecord()) {
     RecordDownloadCount(COMPLETED_COUNT_NORMAL_PROFILE);
   }
+  if (job_ && job_->UsesParallelRequests())
+    RecordParallelDownloadCount(COMPLETED_COUNT);
 
   if (auto_opened_) {
     // If it was already handled by the delegate, do nothing.
@@ -1703,11 +1705,14 @@ void DownloadItemImpl::InterruptWithPartialState(
     }
 
     RecordDownloadCount(CANCELLED_COUNT);
+    if (job_ && job_->UsesParallelRequests())
+      RecordParallelDownloadCount(CANCELLED_COUNT);
     TransitionTo(CANCELLED_INTERNAL);
     return;
   }
 
-  RecordDownloadInterrupted(reason, received_bytes_, total_bytes_);
+  RecordDownloadInterrupted(reason, received_bytes_, total_bytes_,
+                            job_ && job_->UsesParallelRequests());
   if (!GetWebContents())
     RecordDownloadCount(INTERRUPTED_WITHOUT_WEBCONTENTS);
 

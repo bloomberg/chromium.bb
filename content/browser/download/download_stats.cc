@@ -389,13 +389,21 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
 
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
                                int64_t received,
-                               int64_t total) {
+                               int64_t total,
+                               bool uses_parallel_requests) {
   RecordDownloadCount(INTERRUPTED_COUNT);
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      "Download.InterruptedReason",
-      reason,
+  if (uses_parallel_requests)
+    RecordParallelDownloadCount(INTERRUPTED_COUNT);
+
+  std::vector<base::HistogramBase::Sample> samples =
       base::CustomHistogram::ArrayToCustomRanges(
-          kAllInterruptReasonCodes, arraysize(kAllInterruptReasonCodes)));
+          kAllInterruptReasonCodes, arraysize(kAllInterruptReasonCodes));
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedReason", reason,
+                                   samples);
+  if (uses_parallel_requests) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+        "Download.InterruptedReason.ParallelDownload", reason, samples);
+  }
 
   // The maximum should be 2^kBuckets, to have the logarithmic bucket
   // boundaries fall on powers of 2.
@@ -410,32 +418,56 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
                               1,
                               kMaxKb,
                               kBuckets);
+  if (uses_parallel_requests) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Download.InterruptedReceivedSizeK.ParallelDownload", received_kb, 1,
+        kMaxKb, kBuckets);
+  }
+
   if (!unknown_size) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedTotalSizeK",
                                 total_kb,
                                 1,
                                 kMaxKb,
                                 kBuckets);
+    if (uses_parallel_requests) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Download.InterruptedTotalSizeK.ParallelDownload", total_kb, 1,
+          kMaxKb, kBuckets);
+    }
     if (delta_bytes == 0) {
       RecordDownloadCount(INTERRUPTED_AT_END_COUNT);
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-          "Download.InterruptedAtEndReason",
-          reason,
-          base::CustomHistogram::ArrayToCustomRanges(
-              kAllInterruptReasonCodes,
-              arraysize(kAllInterruptReasonCodes)));
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedAtEndReason",
+                                       reason, samples);
+
+      if (uses_parallel_requests) {
+        RecordParallelDownloadCount(INTERRUPTED_AT_END_COUNT);
+        UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+            "Download.InterruptedAtEndReason.ParallelDownload", reason,
+            samples);
+      }
     } else if (delta_bytes > 0) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
                                   delta_bytes,
                                   1,
                                   kMaxKb,
                                   kBuckets);
+      if (uses_parallel_requests) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Download.InterruptedOverrunBytes.ParallelDownload", delta_bytes, 1,
+            kMaxKb, kBuckets);
+      }
     } else {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedUnderrunBytes",
                                   -delta_bytes,
                                   1,
                                   kMaxKb,
                                   kBuckets);
+      if (uses_parallel_requests) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Download.InterruptedUnderrunBytes.ParallelDownload", -delta_bytes,
+            1, kMaxKb, kBuckets);
+      }
     }
   }
 
@@ -734,6 +766,11 @@ void RecordFileBandwidth(size_t length,
   RecordBandwidthMetric(
       "Download.BandwidthDiskBytesPerSecond",
       CalculateBandwidthBytesPerSecond(length, disk_write_time));
+}
+
+void RecordParallelDownloadCount(DownloadCountTypes type) {
+  UMA_HISTOGRAM_ENUMERATION("Download.Counts.ParallelDownload", type,
+                            DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
 void RecordParallelDownloadStats(
