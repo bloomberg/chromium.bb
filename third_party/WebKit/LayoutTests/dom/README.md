@@ -6,6 +6,10 @@ Please do not add tests unrelated to DOM standard.
 
 ## Sub-directories
 
+*   attr/
+
+    For Attr interface.
+
 *   domparsing/
 
     See [domparsing/README.md](domparsing/README.md)
