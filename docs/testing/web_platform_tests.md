@@ -11,7 +11,7 @@ test suite where all browser engines are collaborating. There's also a
 that will [soon be merged into
 web-platform-tests](https://github.com/w3c/csswg-test/issues/1102).
 
-Chromium has 2-way import/export process with the upstream web-platform-tests
+Chromium has a 2-way import/export process with the upstream web-platform-tests
 repository, where tests are imported into
 [LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
 and any changes to the imported tests are also exported to web-platform-tests.
@@ -48,6 +48,23 @@ The easiest way to check the status of recent imports is to look at:
     [blink-w3c-test-autoroller@chromium.org](https://codereview.chromium.org/search?owner=blink-w3c-test-autoroller%40chromium.org).
 
 Automatic imports are intended to run at least once every 24 hours.
+
+### Automatic export process
+
+If a commit to Chromium master changes any files in the
+[third_party/WebKit/LayoutTests/external/wpt](../../third_party/WebKit/LayoutTests/external/wpt)
+directory, the WPT Exporter will create a Pull Request on GitHub for it.
+All PRs use the `chromium-export` label: see
+[all of them here](https://github.com/w3c/web-platform-tests/pulls?utf8=%E2%9C%93&q=is%3Apr%20label%3Achromium-export).
+The exporter runs continuously under the chromium.infra.cron master:
+see [all recent builds](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-exporter).
+The source for the exporter lives in
+[third_party/WebKit/Tools/Scripts/wpt-exporter](../../third_party/WebKit/Tools/Scripts/wpt-exporter).
+
+In the unlikely event that the exporter starts misbehaving -- for example,
+creating the same PR over and over again -- **all you need to do to disable the
+exporter is [land this CL](https://chromium-review.googlesource.com/c/462381/)**,
+which will put it in "dry run" mode.
 
 ### Skipped tests
 
