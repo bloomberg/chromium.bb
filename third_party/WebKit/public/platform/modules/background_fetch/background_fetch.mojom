@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "url/mojo/origin.mojom";
 
 enum BackgroundFetchError {
@@ -47,6 +48,7 @@ interface BackgroundFetchService {
   Fetch(int64 service_worker_registration_id,
         url.mojom.Origin origin,
         string tag,
+        array<FetchAPIRequest> requests,
         BackgroundFetchOptions options)
       => (BackgroundFetchError error,
           BackgroundFetchRegistration? registration);

@@ -13,6 +13,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "url/origin.h"
@@ -51,11 +52,13 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
 
 BackgroundFetchServiceImpl::~BackgroundFetchServiceImpl() = default;
 
-void BackgroundFetchServiceImpl::Fetch(int64_t service_worker_registration_id,
-                                       const url::Origin& origin,
-                                       const std::string& tag,
-                                       const BackgroundFetchOptions& options,
-                                       const FetchCallback& callback) {
+void BackgroundFetchServiceImpl::Fetch(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    const std::string& tag,
+    const std::vector<ServiceWorkerFetchRequest>& requests,
+    const BackgroundFetchOptions& options,
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateTag(tag)) {
     callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
@@ -63,20 +66,14 @@ void BackgroundFetchServiceImpl::Fetch(int64_t service_worker_registration_id,
     return;
   }
 
-  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
-                                                origin, tag);
-
-  // TODO(peter): Remove once https://codereview.chromium.org/2762303002/ lands.
-  std::vector<ServiceWorkerFetchRequest> requests;
-  requests.emplace_back(GURL("https://example.com/image.png"), "POST",
-                        ServiceWorkerHeaderMap(), Referrer(),
-                        false /* is_reload */);
-
   if (!ValidateRequests(requests)) {
     callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
                  base::nullopt /* registration */);
     return;
   }
+
+  BackgroundFetchRegistrationId registration_id(service_worker_registration_id,
+                                                origin, tag);
 
   background_fetch_context_->StartFetch(registration_id, requests, options,
                                         callback);

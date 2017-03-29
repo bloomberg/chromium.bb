@@ -22,6 +22,7 @@ namespace content {
 
 class BackgroundFetchContext;
 struct BackgroundFetchOptions;
+struct ServiceWorkerFetchRequest;
 
 class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
  public:
@@ -39,6 +40,7 @@ class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
   void Fetch(int64_t service_worker_registration_id,
              const url::Origin& origin,
              const std::string& tag,
+             const std::vector<ServiceWorkerFetchRequest>& requests,
              const BackgroundFetchOptions& options,
              const FetchCallback& callback) override;
   void UpdateUI(int64_t service_worker_registration_id,

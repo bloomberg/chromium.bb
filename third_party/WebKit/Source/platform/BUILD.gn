@@ -1144,6 +1144,7 @@ component("platform") {
     "mojo/BluetoothStructTraits.h",
     "mojo/CommonCustomTypesStructTraits.cpp",
     "mojo/CommonCustomTypesStructTraits.h",
+    "mojo/FetchAPIRequestStructTraits.cpp",
     "mojo/MojoHelper.h",
     "network/ContentSecurityPolicyParsers.cpp",
     "network/ContentSecurityPolicyParsers.h",

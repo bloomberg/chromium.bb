@@ -9,6 +9,7 @@ import "content/common/url_loader.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
 import "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom";
+import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
 import "url/mojo/origin.mojom";
 
@@ -19,18 +20,15 @@ struct PlatformNotificationData;
 struct PushEventPayload;
 
 [Native]
-struct ServiceWorkerFetchRequest;
-
-[Native]
 struct ServiceWorkerResponse;
 
 [Native]
 struct ExtendableMessageEventSource;
 
-// TODO(peter): Move this to Blink when both ServiceWorkerFetchRequest and
-// ServiceWorkerResponse have Mojo counterparts.
+// TODO(peter): Move this to Blink when ServiceWorkerResponse has a Mojo
+// counterpart.
 struct BackgroundFetchSettledFetch {
-  ServiceWorkerFetchRequest request;
+  blink.mojom.FetchAPIRequest request;
   ServiceWorkerResponse response;
 };
 
@@ -74,7 +72,7 @@ interface ServiceWorkerEventDispatcher {
           mojo.common.mojom.Time dispatch_event_time);
   // |fetch_event_id| is used internally when sending the response back to the
   // browser process.
-  DispatchFetchEvent(int32 fetch_event_id, ServiceWorkerFetchRequest request,
+  DispatchFetchEvent(int32 fetch_event_id, blink.mojom.FetchAPIRequest request,
                      FetchEventPreloadHandle? preload_handle)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);

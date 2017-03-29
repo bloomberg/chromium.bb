@@ -50,10 +50,9 @@ void BackgroundFetchBridge::fetch(
     Vector<WebServiceWorkerRequest> requests,
     const BackgroundFetchOptions& options,
     std::unique_ptr<RegistrationCallback> callback) {
-  // TODO(peter): Include |requests| in the Mojo call.
   getService()->Fetch(
       supplementable()->webRegistration()->registrationId(),
-      getSecurityOrigin(), tag,
+      getSecurityOrigin(), tag, std::move(requests),
       mojom::blink::BackgroundFetchOptions::From(options),
       convertToBaseCallback(
           WTF::bind(&BackgroundFetchBridge::didGetRegistration,
