@@ -184,7 +184,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   bool in_host_process_ = false;
   base::Time start_time_;
 
-  mojo::BindingSet<mojom::GpuService> bindings_;
+  std::unique_ptr<mojo::BindingSet<mojom::GpuService>> bindings_;
 
   base::WeakPtr<GpuService> weak_ptr_;
   base::WeakPtrFactory<GpuService> weak_ptr_factory_;

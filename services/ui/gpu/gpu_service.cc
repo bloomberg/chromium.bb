@@ -74,6 +74,11 @@ const base::Callback<void(const Param&)> WrapCallback(
       runner, callback);
 }
 
+void DestroyBinding(
+    std::unique_ptr<mojo::BindingSet<mojom::GpuService>> binding) {
+  binding->CloseAllBindings();
+}
+
 }  // namespace
 
 GpuService::GpuService(const gpu::GPUInfo& gpu_info,
@@ -99,7 +104,10 @@ GpuService::~GpuService() {
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get() =
       base::Callback<void(int, size_t, const std::string&)>();
-  bindings_.CloseAllBindings();
+  if (bindings_) {
+    io_runner_->PostTask(FROM_HERE,
+                         base::Bind(&DestroyBinding, base::Passed(&bindings_)));
+  }
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -174,7 +182,9 @@ void GpuService::Bind(mojom::GpuServiceRequest request) {
                                     base::Passed(std::move(request))));
     return;
   }
-  bindings_.AddBinding(this, std::move(request));
+  if (!bindings_)
+    bindings_ = base::MakeUnique<mojo::BindingSet<mojom::GpuService>>();
+  bindings_->AddBinding(this, std::move(request));
 }
 
 void GpuService::RecordLogMessage(int severity,
@@ -348,10 +358,10 @@ void GpuService::EstablishGpuChannel(
   if (io_runner_->BelongsToCurrentThread()) {
     EstablishGpuChannelCallback wrap_callback = base::Bind(
         [](scoped_refptr<base::SingleThreadTaskRunner> runner,
-           const EstablishGpuChannelCallback& callback,
+           const EstablishGpuChannelCallback& cb,
            mojo::ScopedMessagePipeHandle handle) {
-          runner->PostTask(
-              FROM_HERE, base::Bind(callback, base::Passed(std::move(handle))));
+          runner->PostTask(FROM_HERE,
+                           base::Bind(cb, base::Passed(std::move(handle))));
         },
         io_runner_, callback);
     main_runner_->PostTask(
