@@ -7,6 +7,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/focus_client.h"
@@ -22,7 +23,7 @@ namespace exo {
 WMHelperAsh::WMHelperAsh() {
   ash::Shell::GetInstance()->AddShellObserver(this);
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
-  ash::Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  ash::WmShell::Get()->AddDisplayObserver(this);
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->AddObserver(this);
@@ -36,7 +37,7 @@ WMHelperAsh::~WMHelperAsh() {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
   focus_client->RemoveObserver(this);
-  ash::Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  ash::WmShell::Get()->RemoveDisplayObserver(this);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   ash::Shell::GetInstance()->RemoveShellObserver(this);
   ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
