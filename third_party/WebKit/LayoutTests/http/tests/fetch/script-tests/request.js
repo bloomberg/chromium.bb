@@ -198,7 +198,7 @@ test(function() {
               });
           });
       });
-  }, 'Request header test');
+  }, 'Request method test');
 
 test(function() {
     var request1 = {};
@@ -371,7 +371,7 @@ test(function() {
       {name: 'TypeError'},
       function() { new Request(req); },
       'Request construction should throw if used.');
-  }, 'Request construction without body behavior regardning "bodyUsed"');
+  }, 'POST Request construction without body behavior regardning "bodyUsed"');
 
 test(function() {
     var req = new Request(URL, {method: 'POST', body: 'hello'});
