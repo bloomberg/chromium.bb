@@ -305,8 +305,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac() const override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
-  void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                             const cc::LocalSurfaceId& local_surface_id,
+  void DidCreateNewRendererCompositorFrameSink() override;
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
   void ClearCompositorFrame() override;
@@ -447,7 +447,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   NSView* BrowserCompositorMacGetNSView() const override;
   SkColor BrowserCompositorMacGetGutterColor(SkColor color) const override;
   void BrowserCompositorMacSendReclaimCompositorResources(
-      int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
   void BrowserCompositorMacSendBeginFrame(

@@ -87,12 +87,10 @@ void DelegatedFrameHostClientAura::DelegatedFrameHostResizeLockWasReleased() {
 
 void DelegatedFrameHostClientAura::
     DelegatedFrameHostSendReclaimCompositorResources(
-        int compositor_frame_sink_id,
         bool is_swap_ack,
         const cc::ReturnedResourceArray& resources) {
-  render_widget_host_view_->host_->Send(new ViewMsg_ReclaimCompositorResources(
-      render_widget_host_view_->host_->GetRoutingID(), compositor_frame_sink_id,
-      is_swap_ack, resources));
+  render_widget_host_view_->host_->SendReclaimCompositorResources(is_swap_ack,
+                                                                  resources);
 }
 
 void DelegatedFrameHostClientAura::OnBeginFrame(

@@ -86,8 +86,8 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool IsSpeaking() const override;
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
-  void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                             const cc::LocalSurfaceId& local_surface_id,
+  void DidCreateNewRendererCompositorFrameSink() override;
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override {}
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}
@@ -113,6 +113,12 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool is_occluded() const { return is_occluded_; }
   bool did_swap_compositor_frame() const { return did_swap_compositor_frame_; }
   void reset_did_swap_compositor_frame() { did_swap_compositor_frame_ = false; }
+  bool did_change_compositor_frame_sink() {
+    return did_change_compositor_frame_sink_;
+  }
+  void reset_did_change_compositor_frame_sink() {
+    did_change_compositor_frame_sink_ = false;
+  }
 
  protected:
   RenderWidgetHostImpl* rwh_;
@@ -122,6 +128,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   bool is_showing_;
   bool is_occluded_;
   bool did_swap_compositor_frame_;
+  bool did_change_compositor_frame_sink_ = false;
   ui::DummyTextInputClient text_input_client_;
 };
 

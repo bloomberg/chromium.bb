@@ -495,6 +495,7 @@ class RenderWidgetHostTest : public testing::Test {
     browser_context_.reset(new TestBrowserContext());
     delegate_.reset(new MockRenderWidgetHostDelegate());
     process_ = new RenderWidgetHostProcess(browser_context_.get());
+    sink_ = &process_->sink();
 #if defined(USE_AURA) || defined(OS_MACOSX)
     ImageTransportFactory::InitializeForUnitTests(
         std::unique_ptr<ImageTransportFactory>(
@@ -682,6 +683,7 @@ class RenderWidgetHostTest : public testing::Test {
   bool handle_mouse_event_;
   double last_simulated_event_time_seconds_;
   double simulated_event_time_delta_seconds_;
+  IPC::TestSink* sink_;
 
  private:
   SyntheticWebTouchEvent touch_event_;
@@ -1272,8 +1274,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   host_->StartNewContentRenderingTimeout(5);
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.content_source_id = 5;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
@@ -1287,8 +1288,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   host_->StartNewContentRenderingTimeout(10);
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.content_source_id = 9;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
       TimeDelta::FromMicroseconds(20));
@@ -1301,8 +1301,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
   // attempt to start the timer. The timer shouldn't fire.
   frame = MakeCompositorFrame(1.f, frame_size);
   frame.metadata.content_source_id = 7;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   host_->StartNewContentRenderingTimeout(7);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
@@ -1338,8 +1337,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
     frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, true);
     frame.metadata.content_source_id = 99;
-    host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-        0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_FALSE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
     static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
@@ -1349,8 +1347,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // Test with a valid content ID as a control.
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
     frame.metadata.content_source_id = 100;
-    host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-        0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
     static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
@@ -1362,8 +1359,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
     // the corresponding DidCommitProvisionalLoad (it's a race).
     cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
     frame.metadata.content_source_id = 101;
-    host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-        0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+    host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     EXPECT_TRUE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
   }
@@ -1865,6 +1861,56 @@ TEST_F(RenderWidgetHostTest, EventDispatchPostDetach) {
   SimulateWheelEventWithLatencyInfo(-5, 0, 0, true, ui::LatencyInfo());
 
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
+}
+
+// Checks whether RWHI properly keeps track of the last compositor_frame_sink_id
+// and notifies the view_ when it changes.
+TEST_F(RenderWidgetHostTest, CompositorFrameSinkIdChanges) {
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+
+  // Ignore any IPC message sent so far.
+  sink_->ClearMessages();
+
+  // Submit a frame with compositor_frame_sink_id=1
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+      0, 1, local_surface_id, frame, std::vector<IPC::Message>()));
+
+  // Send an ack. The right compositor_frame_sink_id must be sent.
+  host_->SendReclaimCompositorResources(true /* is_swap_ack */,
+                                        cc::ReturnedResourceArray());
+  ASSERT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
+    ViewMsg_ReclaimCompositorResources::Param params;
+    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
+    EXPECT_EQ(1u, std::get<0>(params));  // compositor_frame_sink_id
+  }
+  sink_->ClearMessages();
+
+  // Submit a frame with compositor_frame_sink_id=2. Verify that view_ is
+  // notified of the change in id.
+  view_->reset_did_change_compositor_frame_sink();
+  frame = MakeCompositorFrame(1.f, frame_size);
+  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+      2, 2, local_surface_id, frame, std::vector<IPC::Message>()));
+  EXPECT_TRUE(view_->did_change_compositor_frame_sink());
+
+  // Send an ack. The right compositor_frame_sink_id must be sent.
+  host_->SendReclaimCompositorResources(true /* is_swap_ack */,
+                                        cc::ReturnedResourceArray());
+  ASSERT_EQ(1u, sink_->message_count());
+  {
+    const IPC::Message* msg = sink_->GetMessageAt(0);
+    EXPECT_EQ(ViewMsg_ReclaimCompositorResources::ID, msg->type());
+    ViewMsg_ReclaimCompositorResources::Param params;
+    ViewMsg_ReclaimCompositorResources::Read(msg, &params);
+    EXPECT_EQ(2u, std::get<0>(params));  // compositor_frame_sink_id
+  }
+  sink_->ClearMessages();
 }
 
 }  // namespace content

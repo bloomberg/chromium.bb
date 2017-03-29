@@ -54,7 +54,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
       next_surface_sequence_(1u),
-      last_compositor_frame_sink_id_(0),
       current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
       weak_factory_(this) {
@@ -343,23 +342,19 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
 void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck() {
   if (!host_)
     return;
-  host_->Send(new ViewMsg_ReclaimCompositorResources(
-      host_->GetRoutingID(), last_compositor_frame_sink_id_,
-      true /* is_swap_ack */, cc::ReturnedResourceArray()));
+  host_->SendReclaimCompositorResources(true /* is_swap_ack */,
+                                        cc::ReturnedResourceArray());
+}
+
+void RenderWidgetHostViewChildFrame::DidCreateNewRendererCompositorFrameSink() {
+  ResetCompositorFrameSinkSupport();
+  CreateCompositorFrameSinkSupport();
+  has_frame_ = false;
 }
 
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
-    uint32_t compositor_frame_sink_id,
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  // If the renderer changed its frame sink, reset the
-  // CompositorFrameSinkSupport to avoid returning stale resources.
-  if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
-    ResetCompositorFrameSinkSupport();
-    CreateCompositorFrameSinkSupport();
-    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
-  }
-
   current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
   current_surface_scale_factor_ = frame.metadata.device_scale_factor;
 
@@ -393,8 +388,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
   frame_connector_->SetChildFrameSurface(surface_info, sequence);
 }
 
-void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
-    uint32_t compositor_frame_sink_id,
+void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content",
@@ -402,8 +396,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   if (!frame_connector_)
     return;
-  ProcessCompositorFrame(compositor_frame_sink_id, local_surface_id,
-                         std::move(frame));
+  ProcessCompositorFrame(local_surface_id, std::move(frame));
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFrameDidNotSwap(
@@ -619,9 +612,7 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   if (!host_)
     return;
-  host_->Send(new ViewMsg_ReclaimCompositorResources(
-      host_->GetRoutingID(), last_compositor_frame_sink_id_,
-      false /* is_swap_ack */, resources));
+  host_->SendReclaimCompositorResources(false /* is_swap_ack */, resources);
 }
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(

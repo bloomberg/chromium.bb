@@ -71,7 +71,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
   virtual void DelegatedFrameHostSendReclaimCompositorResources(
-      int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
 
@@ -121,9 +120,9 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Public interface exposed to RenderWidgetHostView.
 
-  void SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
-                          const cc::LocalSurfaceId& local_surface_id,
-                          cc::CompositorFrame frame);
+  void DidCreateNewRendererCompositorFrameSink();
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                             cc::CompositorFrame frame);
   void ClearDelegatedFrame();
   void WasHidden();
   void WasShown(const ui::LatencyInfo& latency_info);
@@ -269,11 +268,6 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Overridable tick clock used for testing functions using current time.
   std::unique_ptr<base::TickClock> tick_clock_;
-
-  // With delegated renderer, this is the last output surface, used to
-  // disambiguate resources with the same id coming from different output
-  // surfaces.
-  uint32_t last_compositor_frame_sink_id_;
 
   // True after a delegated frame has been skipped, until a frame is not
   // skipped.

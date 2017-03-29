@@ -100,8 +100,6 @@ namespace content {
 
 namespace {
 
-const int kUndefinedCompositorFrameSinkId = -1;
-
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
 class PendingReadbackLock;
@@ -452,7 +450,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       view_(this),
-      last_compositor_frame_sink_id_(kUndefinedCompositorFrameSinkId),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
@@ -1102,12 +1099,10 @@ RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
 }
 
 void RenderWidgetHostViewAndroid::SendReclaimCompositorResources(
-    uint32_t compositor_frame_sink_id,
     bool is_swap_ack) {
   DCHECK(host_);
-  host_->Send(new ViewMsg_ReclaimCompositorResources(
-      host_->GetRoutingID(), compositor_frame_sink_id, is_swap_ack,
-      surface_returned_resources_));
+  host_->SendReclaimCompositorResources(is_swap_ack,
+                                        surface_returned_resources_);
   surface_returned_resources_.clear();
 }
 
@@ -1122,26 +1117,17 @@ void RenderWidgetHostViewAndroid::ReclaimResources(
   std::copy(resources.begin(), resources.end(),
             std::back_inserter(surface_returned_resources_));
   if (ack_callbacks_.empty())
-    SendReclaimCompositorResources(last_compositor_frame_sink_id_,
-                                   false /* is_swap_ack */);
+    SendReclaimCompositorResources(false /* is_swap_ack */);
 }
 
-void RenderWidgetHostViewAndroid::CheckCompositorFrameSinkChanged(
-    uint32_t compositor_frame_sink_id) {
-  if (compositor_frame_sink_id == last_compositor_frame_sink_id_)
-    return;
-
+void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink() {
   delegated_frame_host_->CompositorFrameSinkChanged();
-
-  if (!surface_returned_resources_.empty())
-    SendReclaimCompositorResources(last_compositor_frame_sink_id_,
-                                   false /* is_swap_ack */);
-
-  last_compositor_frame_sink_id_ = compositor_frame_sink_id;
+  // Accumulated resources belong to the old RendererCompositorFrameSink and
+  // should not be returned.
+  surface_returned_resources_.clear();
 }
 
-void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
-    uint32_t compositor_frame_sink_id,
+void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
@@ -1154,13 +1140,11 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
 
   cc::CompositorFrameMetadata metadata = frame.metadata.Clone();
 
-  CheckCompositorFrameSinkChanged(compositor_frame_sink_id);
   bool has_content = !current_surface_size_.IsEmpty();
 
   base::Closure ack_callback =
       base::Bind(&RenderWidgetHostViewAndroid::SendReclaimCompositorResources,
-                 weak_ptr_factory_.GetWeakPtr(), compositor_frame_sink_id,
-                 true /* is_swap_ack */);
+                 weak_ptr_factory_.GetWeakPtr(), true /* is_swap_ack */);
 
   ack_callbacks_.push(ack_callback);
 
@@ -1193,14 +1177,6 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
 
   frame_evictor_->DiscardedFrame();
   delegated_frame_host_->DestroyDelegatedContent();
-}
-
-void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
-    uint32_t compositor_frame_sink_id,
-    const cc::LocalSurfaceId& local_surface_id,
-    cc::CompositorFrame frame) {
-  InternalSwapCompositorFrame(compositor_frame_sink_id, local_surface_id,
-                              std::move(frame));
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {

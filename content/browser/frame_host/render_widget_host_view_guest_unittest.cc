@@ -238,8 +238,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   view_->Show();
 
   browser_plugin_guest_->set_attached(true);
-  view_->OnSwapCompositorFrame(
-      0, local_surface_id,
+  view_->SubmitCompositorFrame(
+      local_surface_id,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   cc::SurfaceId id = GetSurfaceId();
@@ -263,8 +263,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   browser_plugin_guest_->ResetTestData();
   browser_plugin_guest_->set_has_attached_since_surface_set(true);
 
-  view_->OnSwapCompositorFrame(
-      0, local_surface_id,
+  view_->SubmitCompositorFrame(
+      local_surface_id,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   // Since we have not changed the frame size and scale factor, the same surface
@@ -286,8 +286,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   browser_plugin_guest_->set_attached(false);
   browser_plugin_guest_->ResetTestData();
 
-  view_->OnSwapCompositorFrame(
-      0, local_surface_id,
+  view_->SubmitCompositorFrame(
+      local_surface_id,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
   // Since guest is not attached, the CompositorFrame must be processed but the
   // frame must be evicted to return the resources immediately.

@@ -454,10 +454,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   bool GotResponseToLockMouseRequest(bool allowed);
 
   // Called by the view in response to OnSwapCompositorFrame.
-  static void SendReclaimCompositorResources(
-      int32_t route_id,
-      uint32_t compositor_frame_sink_id,
-      int renderer_host_id,
+  void SendReclaimCompositorResources(
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources);
 
@@ -575,6 +572,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // |monitoring_composition_info_| == |monitor_updates| no IPC is sent to the
   // renderer unless it is for an immediate request.
   void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
+
+  // Submits the frame received from RenderWidget.
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                             cc::CompositorFrame frame);
 
  protected:
   // ---------------------------------------------------------------------------
@@ -928,9 +929,17 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 #endif
 
+  // These information are used to verify that the renderer does not misbehave
+  // when it comes to allocating LocalSurfaceIds. If frame size or device scale
+  // factor change, a new LocalSurfaceId must be created.
   cc::LocalSurfaceId last_local_surface_id_;
   gfx::Size last_frame_size_;
   float last_device_scale_factor_;
+
+  // Each instance of RendererCompositorFrameSink has an ID that we keep track
+  // of so we can tell when a new instance has been created for the purpose of
+  // not returning stale resources.
+  uint32_t last_compositor_frame_sink_id_ = 0;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

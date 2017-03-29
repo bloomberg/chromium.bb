@@ -874,8 +874,12 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 }
 #endif
 
-void RenderWidgetHostViewAura::OnSwapCompositorFrame(
-    uint32_t compositor_frame_sink_id,
+void RenderWidgetHostViewAura::DidCreateNewRendererCompositorFrameSink() {
+  if (delegated_frame_host_)
+    delegated_frame_host_->DidCreateNewRendererCompositorFrameSink();
+}
+
+void RenderWidgetHostViewAura::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
@@ -906,8 +910,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   }
 
   if (delegated_frame_host_) {
-    delegated_frame_host_->SwapDelegatedFrame(
-        compositor_frame_sink_id, local_surface_id, std::move(frame));
+    delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
+                                                 std::move(frame));
   }
   selection_controller_->OnSelectionBoundsChanged(selection.start,
                                                   selection.end);

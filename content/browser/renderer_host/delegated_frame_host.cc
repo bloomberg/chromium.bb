@@ -48,7 +48,6 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
       client_(client),
       compositor_(nullptr),
       tick_clock_(new base::DefaultTickClock()),
-      last_compositor_frame_sink_id_(0),
       skipped_frames_(false),
       background_color_(SK_ColorRED),
       current_scale_factor_(1.f),
@@ -390,8 +389,13 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   }
 }
 
-void DelegatedFrameHost::SwapDelegatedFrame(
-    uint32_t compositor_frame_sink_id,
+void DelegatedFrameHost::DidCreateNewRendererCompositorFrameSink() {
+  ResetCompositorFrameSinkSupport();
+  CreateCompositorFrameSinkSupport();
+  has_frame_ = false;
+}
+
+void DelegatedFrameHost::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
 #if defined(OS_CHROMEOS)
@@ -422,7 +426,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
                                       frame.metadata.latency_info.end());
 
     client_->DelegatedFrameHostSendReclaimCompositorResources(
-        compositor_frame_sink_id, true /* is_swap_ack*/, resources);
+        true /* is_swap_ack*/, resources);
     skipped_frames_ = true;
     BeginFrameDidNotSwap(ack);
     return;
@@ -436,20 +440,6 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     // Give the same damage rect to the compositor.
     cc::RenderPass* root_pass = frame.render_pass_list.back().get();
     root_pass->damage_rect = damage_rect;
-  }
-
-  if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
-    // Resource ids are scoped by the output surface.
-    // If the originating output surface doesn't match the last one, it
-    // indicates the renderer's output surface may have been recreated, in which
-    // case we should recreate the DelegatedRendererLayer, to avoid matching
-    // resources from the old one with resources from the new one which would
-    // have the same id. Changing the layer to showing painted content destroys
-    // the DelegatedRendererLayer.
-    local_surface_id_ = cc::LocalSurfaceId();
-    ResetCompositorFrameSinkSupport();
-    CreateCompositorFrameSinkSupport();
-    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
   }
 
   background_color_ = frame.metadata.root_background_color;
@@ -513,14 +503,13 @@ void DelegatedFrameHost::ClearDelegatedFrame() {
 
 void DelegatedFrameHost::DidReceiveCompositorFrameAck() {
   client_->DelegatedFrameHostSendReclaimCompositorResources(
-      last_compositor_frame_sink_id_, true /* is_swap_ack */,
-      cc::ReturnedResourceArray());
+      true /* is_swap_ack */, cc::ReturnedResourceArray());
 }
 
 void DelegatedFrameHost::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   client_->DelegatedFrameHostSendReclaimCompositorResources(
-      last_compositor_frame_sink_id_, false /* is_swap_ack */, resources);
+      false /* is_swap_ack */, resources);
 }
 
 void DelegatedFrameHost::WillDrawSurface(const cc::LocalSurfaceId& id,

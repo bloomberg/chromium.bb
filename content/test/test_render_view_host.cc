@@ -171,8 +171,11 @@ gfx::Rect TestRenderWidgetHostView::GetBoundsInRootWindow() {
   return gfx::Rect();
 }
 
-void TestRenderWidgetHostView::OnSwapCompositorFrame(
-    uint32_t compositor_frame_sink_id,
+void TestRenderWidgetHostView::DidCreateNewRendererCompositorFrameSink() {
+  did_change_compositor_frame_sink_ = true;
+}
+
+void TestRenderWidgetHostView::SubmitCompositorFrame(
     const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   did_swap_compositor_frame_ = true;

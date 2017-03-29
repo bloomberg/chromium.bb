@@ -61,7 +61,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // This functions registers single-use callbacks that want to be notified when
   // the next frame is swapped. The callback is triggered by
-  // OnSwapCompositorFrame, which is the appropriate time to request pixel
+  // ProcessCompositorFrame, which is the appropriate time to request pixel
   // readback for the frame that is about to be drawn. Once called, the callback
   // pointer is released.
   // TODO(wjmaclean): We should consider making this available in other view
@@ -106,8 +106,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
-  void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                             const cc::LocalSurfaceId& local_surface_id,
+  void DidCreateNewRendererCompositorFrameSink() override;
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) override;
   // Since the URL of content rendered by this class is not displayed in
@@ -194,8 +194,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
   void Init();
 
-  void ProcessCompositorFrame(uint32_t compositor_frame_sink_id,
-                              const cc::LocalSurfaceId& local_surface_id,
+  void ProcessCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                               cc::CompositorFrame frame);
 
   void SendSurfaceInfoToEmbedder();
@@ -219,7 +218,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   cc::LocalSurfaceId local_surface_id_;
   uint32_t next_surface_sequence_;
-  uint32_t last_compositor_frame_sink_id_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;
   gfx::Rect last_screen_rect_;

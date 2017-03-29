@@ -130,8 +130,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                             const cc::LocalSurfaceId& local_surface_id,
+  void DidCreateNewRendererCompositorFrameSink() override;
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
   void SetIsInVR(bool is_in_vr) override;
@@ -276,10 +276,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
  private:
   void RunAckCallbacks();
 
-  void CheckCompositorFrameSinkChanged(uint32_t compositor_frame_sink_id);
-  void SubmitCompositorFrame(cc::CompositorFrame frame_data);
-  void SendReclaimCompositorResources(uint32_t compositor_frame_sink_id,
-                                      bool is_swap_ack);
+  void SendReclaimCompositorResources(bool is_swap_ack);
 
   void OnFrameMetadataUpdated(const cc::CompositorFrameMetadata& frame_metadata,
                               bool is_transparent);
@@ -297,14 +294,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                const ReadbackRequestCallback& callback,
                                const SkColorType color_type);
 
-  // Drop any incoming frames from the renderer when there are locks on the
-  // current frame.
-  void RetainFrame(uint32_t compositor_frame_sink_id,
-                   cc::CompositorFrame frame);
-
-  void InternalSwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                                   const cc::LocalSurfaceId& local_surface_id,
-                                   cc::CompositorFrame frame);
   void DestroyDelegatedContent();
   void OnLostResources();
 
@@ -365,9 +354,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // The most recent surface size that was pushed to the surface layer.
   gfx::Size current_surface_size_;
-
-  // The output surface id of the last received frame.
-  uint32_t last_compositor_frame_sink_id_;
 
   std::queue<base::Closure> ack_callbacks_;
 

@@ -1837,80 +1837,13 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   std::vector<IPC::Message> messages_to_deliver_with_frame;
   messages_to_deliver_with_frame.swap(std::get<3>(param));
 
-  // The renderer should not send empty frames.
-  if (frame.render_pass_list.empty()) {
-    DLOG(ERROR) << "Renderer sent an empty frame.";
-    return false;
+  if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
+    if (view_)
+      view_->DidCreateNewRendererCompositorFrameSink();
+    last_compositor_frame_sink_id_ = compositor_frame_sink_id;
   }
 
-  // The renderer must allocate a new LocalSurfaceId if frame size or device
-  // scale factor changes.
-  float device_scale_factor = frame.metadata.device_scale_factor;
-  const gfx::Size& frame_size =
-      frame.render_pass_list.back()->output_rect.size();
-  if (local_surface_id == last_local_surface_id_ &&
-      (frame_size != last_frame_size_ ||
-       device_scale_factor != last_device_scale_factor_)) {
-    DLOG(ERROR) << "Renderer submitted frame of wrong size to its surface."
-                << " Expected: size=" << last_frame_size_.ToString()
-                << ",scale=" << last_device_scale_factor_
-                << " Received: size=" << frame_size.ToString()
-                << ",scale=" << device_scale_factor;
-    return false;
-  }
-  last_local_surface_id_ = local_surface_id;
-  last_frame_size_ = frame_size;
-  last_device_scale_factor_ = device_scale_factor;
-
-  last_received_content_source_id_ = frame.metadata.content_source_id;
-
-  if (frame.metadata.begin_frame_ack.sequence_number <
-      cc::BeginFrameArgs::kStartingFrameNumber) {
-    // Received an invalid ack, renderer misbehaved.
-    bad_message::ReceivedBadMessage(
-        GetProcess(),
-        bad_message::RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME);
-    return false;
-  }
-  // |has_damage| is not transmitted.
-  frame.metadata.begin_frame_ack.has_damage = true;
-
-  if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
-                               "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
-    std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
-  }
-
-  latency_tracker_.OnSwapCompositorFrame(&frame.metadata.latency_info);
-
-  bool is_mobile_optimized = IsMobileOptimizedFrame(frame.metadata);
-  input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
-  if (touch_emulator_)
-    touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
-
-  // Ignore this frame if its content has already been unloaded. Source ID
-  // is always zero for an OOPIF because we are only concerned with displaying
-  // stale graphics on top-level frames. We accept frames that have a source ID
-  // greater than |current_content_source_id_| because in some cases the first
-  // compositor frame can arrive before the navigation commit message that
-  // updates that value.
-  if (view_ && frame.metadata.content_source_id >= current_content_source_id_) {
-    view_->OnSwapCompositorFrame(compositor_frame_sink_id, local_surface_id,
-                                 std::move(frame));
-    view_->DidReceiveRendererFrame();
-  } else {
-    cc::ReturnedResourceArray resources;
-    cc::TransferableResource::ReturnResources(frame.resource_list, &resources);
-    SendReclaimCompositorResources(routing_id_, compositor_frame_sink_id,
-                                   process_->GetID(), true /* is_swap_ack */,
-                                   resources);
-  }
-
-  // After navigation, if a frame belonging to the new page is received, stop
-  // the timer that triggers clearing the graphics of the last page.
-  if (last_received_content_source_id_ >= current_content_source_id_ &&
-      new_content_rendering_timeout_->IsRunning()) {
-    new_content_rendering_timeout_->Stop();
-  }
+  SubmitCompositorFrame(local_surface_id, std::move(frame));
 
   RenderProcessHost* rph = GetProcess();
   for (std::vector<IPC::Message>::const_iterator i =
@@ -2369,18 +2302,11 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
   return true;
 }
 
-// static
 void RenderWidgetHostImpl::SendReclaimCompositorResources(
-    int32_t route_id,
-    uint32_t compositor_frame_sink_id,
-    int renderer_host_id,
     bool is_swap_ack,
     const cc::ReturnedResourceArray& resources) {
-  RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
-  if (!host)
-    return;
-  host->Send(new ViewMsg_ReclaimCompositorResources(
-      route_id, compositor_frame_sink_id, is_swap_ack, resources));
+  Send(new ViewMsg_ReclaimCompositorResources(
+      routing_id_, last_compositor_frame_sink_id_, is_swap_ack, resources));
 }
 
 void RenderWidgetHostImpl::DelayedAutoResized() {
@@ -2641,6 +2567,83 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
   monitoring_composition_info_ = monitor_updates;
   Send(new InputMsg_RequestCompositionUpdates(routing_id_, immediate_request,
                                               monitor_updates));
+}
+
+void RenderWidgetHostImpl::SubmitCompositorFrame(
+    const cc::LocalSurfaceId& local_surface_id,
+    cc::CompositorFrame frame) {
+  // The renderer should not send empty frames.
+  if (frame.render_pass_list.empty()) {
+    DLOG(ERROR) << "Renderer sent an empty frame.";
+    return;
+  }
+
+  // The renderer must allocate a new LocalSurfaceId if frame size or device
+  // scale factor changes.
+  float device_scale_factor = frame.metadata.device_scale_factor;
+  const gfx::Size& frame_size =
+      frame.render_pass_list.back()->output_rect.size();
+  if (local_surface_id == last_local_surface_id_ &&
+      (frame_size != last_frame_size_ ||
+       device_scale_factor != last_device_scale_factor_)) {
+    DLOG(ERROR) << "Renderer submitted frame of wrong size to its surface."
+                << " Expected: size=" << last_frame_size_.ToString()
+                << ",scale=" << last_device_scale_factor_
+                << " Received: size=" << frame_size.ToString()
+                << ",scale=" << device_scale_factor;
+    return;
+  }
+
+  last_local_surface_id_ = local_surface_id;
+  last_frame_size_ = frame_size;
+  last_device_scale_factor_ = device_scale_factor;
+
+  last_received_content_source_id_ = frame.metadata.content_source_id;
+
+  if (frame.metadata.begin_frame_ack.sequence_number <
+      cc::BeginFrameArgs::kStartingFrameNumber) {
+    // Received an invalid ack, renderer misbehaved.
+    bad_message::ReceivedBadMessage(
+        GetProcess(),
+        bad_message::RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME);
+    return;
+  }
+  // |has_damage| is not transmitted.
+  frame.metadata.begin_frame_ack.has_damage = true;
+
+  if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
+                               "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
+    std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
+  }
+
+  latency_tracker_.OnSwapCompositorFrame(&frame.metadata.latency_info);
+
+  bool is_mobile_optimized = IsMobileOptimizedFrame(frame.metadata);
+  input_router_->NotifySiteIsMobileOptimized(is_mobile_optimized);
+  if (touch_emulator_)
+    touch_emulator_->SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
+
+  // Ignore this frame if its content has already been unloaded. Source ID
+  // is always zero for an OOPIF because we are only concerned with displaying
+  // stale graphics on top-level frames. We accept frames that have a source ID
+  // greater than |current_content_source_id_| because in some cases the first
+  // compositor frame can arrive before the navigation commit message that
+  // updates that value.
+  if (view_ && frame.metadata.content_source_id >= current_content_source_id_) {
+    view_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    view_->DidReceiveRendererFrame();
+  } else {
+    cc::ReturnedResourceArray resources;
+    cc::TransferableResource::ReturnResources(frame.resource_list, &resources);
+    SendReclaimCompositorResources(true /* is_swap_ack */, resources);
+  }
+
+  // After navigation, if a frame belonging to the new page is received, stop
+  // the timer that triggers clearing the graphics of the last page.
+  if (last_received_content_source_id_ >= current_content_source_id_ &&
+      new_content_rendering_timeout_->IsRunning()) {
+    new_content_rendering_timeout_->Stop();
+  }
 }
 
 }  // namespace content

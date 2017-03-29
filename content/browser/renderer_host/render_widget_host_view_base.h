@@ -220,9 +220,14 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void FocusedNodeChanged(bool is_editable_node,
                                   const gfx::Rect& node_bounds_in_screen) {}
 
-  virtual void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                                     const cc::LocalSurfaceId& local_surface_id,
-                                     cc::CompositorFrame frame) {}
+  // This method is called by RenderWidgetHostImpl when a new
+  // RendererCompositorFrameSink is created in the renderer. The view is
+  // expected not to return resources belonging to the old
+  // RendererCompositorFrameSink after this method finishes.
+  virtual void DidCreateNewRendererCompositorFrameSink() = 0;
+
+  virtual void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                                     cc::CompositorFrame frame) = 0;
 
   virtual void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {}
 

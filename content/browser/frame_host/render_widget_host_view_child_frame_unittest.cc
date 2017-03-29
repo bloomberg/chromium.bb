@@ -171,7 +171,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_VisibilityTest) {
   ASSERT_FALSE(view_->IsShowing());
 }
 
-// Verify that OnSwapCompositorFrame behavior is correct when a delegated
+// Verify that SubmitCompositorFrame behavior is correct when a delegated
 // frame is received from a renderer process.
 TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_SwapCompositorFrame) {
   gfx::Size view_size(100, 100);
@@ -182,8 +182,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_SwapCompositorFrame) {
   view_->SetSize(view_size);
   view_->Show();
 
-  view_->OnSwapCompositorFrame(
-      0, local_surface_id,
+  view_->SubmitCompositorFrame(
+      local_surface_id,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   cc::SurfaceId id = GetSurfaceId();
@@ -215,8 +215,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
   view_->Show();
 
   // Submit a frame.
-  view_->OnSwapCompositorFrame(
-      0, kArbitraryLocalSurfaceId,
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   EXPECT_EQ(kArbitraryLocalSurfaceId, GetLocalSurfaceId());
@@ -229,8 +229,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, FrameEviction) {
 
   // Submit another frame with the same local surface id. The same id should be
   // usable.
-  view_->OnSwapCompositorFrame(
-      0, kArbitraryLocalSurfaceId,
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
       CreateDelegatedFrame(scale_factor, view_size, view_rect));
   EXPECT_EQ(kArbitraryLocalSurfaceId, GetLocalSurfaceId());
   EXPECT_TRUE(view_->has_frame());
@@ -264,7 +264,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, ForwardsBeginFrameAcks) {
     cc::CompositorFrame frame =
         CreateDelegatedFrame(scale_factor, view_size, view_rect);
     frame.metadata.begin_frame_ack = ack;
-    view_->OnSwapCompositorFrame(0, kArbitraryLocalSurfaceId, std::move(frame));
+    view_->SubmitCompositorFrame(kArbitraryLocalSurfaceId, std::move(frame));
     EXPECT_EQ(ack, source.LastAckForObserver(view_->support_.get()));
   }
 

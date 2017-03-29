@@ -27,7 +27,6 @@ class BrowserCompositorMacClient {
   virtual NSView* BrowserCompositorMacGetNSView() const = 0;
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
   virtual void BrowserCompositorMacSendReclaimCompositorResources(
-      int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) = 0;
   virtual void BrowserCompositorMacSendBeginFrame(
@@ -60,9 +59,9 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
   // ui::Compositor.
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac();
 
-  void SwapCompositorFrame(uint32_t compositor_frame_sink_id,
-                           const cc::LocalSurfaceId& local_surface_id,
-                           cc::CompositorFrame frame);
+  void DidCreateNewRendererCompositorFrameSink();
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                             cc::CompositorFrame frame);
   void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack);
   void SetHasTransparentBackground(bool transparent);
   void SetDisplayColorProfile(const gfx::ICCProfile& icc_profile);
@@ -108,7 +107,6 @@ class BrowserCompositorMac : public DelegatedFrameHostClient {
       bool defer_compositor_lock) override;
   void DelegatedFrameHostResizeLockWasReleased() override;
   void DelegatedFrameHostSendReclaimCompositorResources(
-      int compositor_frame_sink_id,
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;
   void OnBeginFrame(const cc::BeginFrameArgs& args) override;
