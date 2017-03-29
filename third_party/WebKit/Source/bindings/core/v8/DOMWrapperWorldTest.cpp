@@ -83,16 +83,11 @@ void workerThreadFunc(WorkerBackingThread* thread,
 }
 
 TEST(DOMWrapperWorldTest, Basic) {
-  // Initially, there should be no worlds.
-  EXPECT_FALSE(DOMWrapperWorld::nonMainWorldsExistInMainThread());
-  Vector<RefPtr<DOMWrapperWorld>> retrievedWorlds;
-  DOMWrapperWorld::allWorldsInCurrentThread(retrievedWorlds);
-  EXPECT_TRUE(retrievedWorlds.isEmpty());
-
   // Create the main world and verify it.
   DOMWrapperWorld& mainWorld = DOMWrapperWorld::mainWorld();
   EXPECT_TRUE(mainWorld.isMainWorld());
   EXPECT_FALSE(DOMWrapperWorld::nonMainWorldsExistInMainThread());
+  Vector<RefPtr<DOMWrapperWorld>> retrievedWorlds;
   DOMWrapperWorld::allWorldsInCurrentThread(retrievedWorlds);
   EXPECT_EQ(1u, retrievedWorlds.size());
   EXPECT_TRUE(retrievedWorlds[0]->isMainWorld());

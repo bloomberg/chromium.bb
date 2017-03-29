@@ -83,10 +83,11 @@ class DOMObjectHolder : public DOMObjectHolderBase {
 
 unsigned DOMWrapperWorld::s_numberOfNonMainWorldsInMainThread = 0;
 
-using WorldMap = HashMap<int,
-                         DOMWrapperWorld*,
-                         WTF::IntHash<int>,
-                         WTF::UnsignedWithZeroKeyHashTraits<int>>;
+// This does not contain the main world because the WorldMap needs
+// non-default hashmap traits (WTF::UnsignedWithZeroKeyHashTraits) to contain
+// it for the main world's id (0), and it may change the performance trends.
+// (see https://crbug.com/704778#c6).
+using WorldMap = HashMap<int, DOMWrapperWorld*>;
 static WorldMap& worldMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WorldMap>, map,
                                   new ThreadSpecific<WorldMap>);
@@ -114,11 +115,23 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
       m_worldId(worldId),
       m_domDataStore(
           WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {
-  WorldMap& map = worldMap();
-  DCHECK(!map.contains(m_worldId));
-  map.insert(m_worldId, this);
-  if (isMainThread() && m_worldType != WorldType::Main)
-    s_numberOfNonMainWorldsInMainThread++;
+  switch (m_worldType) {
+    case WorldType::Main:
+      // The main world is managed separately from worldMap(). See worldMap().
+      break;
+    case WorldType::Isolated:
+    case WorldType::GarbageCollector:
+    case WorldType::RegExp:
+    case WorldType::Testing:
+    case WorldType::Worker: {
+      WorldMap& map = worldMap();
+      DCHECK(!map.contains(m_worldId));
+      map.insert(m_worldId, this);
+      if (isMainThread())
+        s_numberOfNonMainWorldsInMainThread++;
+      break;
+    }
+  }
 }
 
 DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
@@ -131,6 +144,8 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
 
 void DOMWrapperWorld::allWorldsInCurrentThread(
     Vector<RefPtr<DOMWrapperWorld>>& worlds) {
+  if (isMainThread())
+    worlds.push_back(&mainWorld());
   for (DOMWrapperWorld* world : worldMap().values())
     worlds.push_back(world);
 }
@@ -141,8 +156,6 @@ void DOMWrapperWorld::markWrappersInAllWorlds(
   // Marking for worlds other than the main world.
   DCHECK(ThreadState::current()->isolate());
   for (DOMWrapperWorld* world : worldMap().values()) {
-    if (world->isMainWorld())
-      continue;
     DOMDataStore& dataStore = world->domDataStore();
     if (dataStore.containsWrapper(scriptWrappable))
       dataStore.markWrapper(scriptWrappable);
