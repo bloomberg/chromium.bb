@@ -407,8 +407,14 @@ IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
 
 // Tests that a fullscreen flash plugin can lock the mouse, and that it'll be
 // unlocked when the plugin exits fullscreen.
+// Flaky on Linux. See https://crbug.com/706148.
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_Fullscreen_LockMouse DISABLED_Fullscreen_LockMouse
+#else
+#define MAYBE_Fullscreen_LockMouse Fullscreen_LockMouse
+#endif
 IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
-                       Fullscreen_LockMouse) {
+                       MAYBE_Fullscreen_LockMouse) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   StartFakingTabCapture();
   ASSERT_TRUE(LaunchFlashFullscreen());
