@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "ipc/message_filter.h"
 #include "ui/accessibility/ax_enums.h"
@@ -418,13 +419,15 @@ private:
 };
 
 AutomationInternalCustomBindings::AutomationInternalCustomBindings(
-    ScriptContext* context)
+    ScriptContext* context,
+    ExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
       is_active_profile_(true),
-      tree_change_observer_overall_filter_(0) {
-  // It's safe to use base::Unretained(this) here because these bindings
-  // will only be called on a valid AutomationInternalCustomBindings instance
-  // and none of the functions have any side effects.
+      tree_change_observer_overall_filter_(0),
+      bindings_system_(bindings_system) {
+// It's safe to use base::Unretained(this) here because these bindings
+// will only be called on a valid AutomationInternalCustomBindings instance
+// and none of the functions have any side effects.
 #define ROUTE_FUNCTION(FN)                                        \
   RouteFunction(#FN, "automation",                                \
                 base::Bind(&AutomationInternalCustomBindings::FN, \
@@ -1135,15 +1138,13 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   // Update the internal state whether it's the active profile or not.
   cache->location_offset = params.location_offset;
   deleted_node_ids_.clear();
-  v8::Isolate* isolate = GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 1U));
   if (!cache->tree.Unserialize(params.update)) {
     LOG(ERROR) << cache->tree.error();
-    args->Set(0U, v8::Number::New(isolate, tree_id));
-    context()->DispatchEvent(
-        "automationInternal.onAccessibilityTreeSerializationError", args);
+    base::ListValue args;
+    args.AppendInteger(tree_id);
+    bindings_system_->DispatchEventInContext(
+        "automationInternal.onAccessibilityTreeSerializationError", &args,
+        nullptr, context());
     return;
   }
 
@@ -1154,21 +1155,19 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   SendNodesRemovedEvent(&cache->tree, deleted_node_ids_);
   deleted_node_ids_.clear();
 
-  v8::Local<v8::Object> event_params(v8::Object::New(GetIsolate()));
-  event_params->Set(CreateV8String(isolate, "treeID"),
-                    v8::Integer::New(GetIsolate(), params.tree_id));
-  event_params->Set(CreateV8String(isolate, "targetID"),
-                    v8::Integer::New(GetIsolate(), params.id));
-  event_params->Set(CreateV8String(isolate, "eventType"),
-                    CreateV8String(isolate, ToString(params.event_type)));
-  event_params->Set(CreateV8String(isolate, "eventFrom"),
-                    CreateV8String(isolate, ToString(params.event_from)));
-  event_params->Set(CreateV8String(isolate, "mouseX"),
-                    v8::Integer::New(GetIsolate(), params.mouse_location.x()));
-  event_params->Set(CreateV8String(isolate, "mouseY"),
-                    v8::Integer::New(GetIsolate(), params.mouse_location.y()));
-  args->Set(0U, event_params);
-  context()->DispatchEvent("automationInternal.onAccessibilityEvent", args);
+  {
+    auto event_params = base::MakeUnique<base::DictionaryValue>();
+    event_params->SetInteger("treeID", params.tree_id);
+    event_params->SetInteger("targetID", params.id);
+    event_params->SetString("eventType", ToString(params.event_type));
+    event_params->SetString("eventFrom", ToString(params.event_from));
+    event_params->SetInteger("mouseX", params.mouse_location.x());
+    event_params->SetInteger("mouseY", params.mouse_location.y());
+    base::ListValue args;
+    args.Append(std::move(event_params));
+    bindings_system_->DispatchEventInContext(
+        "automationInternal.onAccessibilityEvent", &args, nullptr, context());
+  }
 }
 
 void AutomationInternalCustomBindings::OnAccessibilityLocationChange(
@@ -1328,10 +1327,6 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
 
   int tree_id = iter->second->tree_id;
 
-  v8::Isolate* isolate = GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-
   for (const auto& observer : tree_change_observers_) {
     switch (observer.filter) {
       case api::automation::TREE_CHANGE_OBSERVER_FILTER_NOTREECHANGES:
@@ -1352,12 +1347,13 @@ void AutomationInternalCustomBindings::SendTreeChangeEvent(
         break;
     }
 
-    v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 4U));
-    args->Set(0U, v8::Integer::New(GetIsolate(), observer.id));
-    args->Set(1U, v8::Integer::New(GetIsolate(), tree_id));
-    args->Set(2U, v8::Integer::New(GetIsolate(), node->id()));
-    args->Set(3U, CreateV8String(isolate, ToString(change_type)));
-    context()->DispatchEvent("automationInternal.onTreeChange", args);
+    base::ListValue args;
+    args.AppendInteger(observer.id);
+    args.AppendInteger(tree_id);
+    args.AppendInteger(node->id());
+    args.AppendString(ToString(change_type));
+    bindings_system_->DispatchEventInContext("automationInternal.onTreeChange",
+                                             &args, nullptr, context());
   }
 }
 
@@ -1369,13 +1365,11 @@ void AutomationInternalCustomBindings::SendChildTreeIDEvent(ui::AXTree* tree,
 
   int tree_id = iter->second->tree_id;
 
-  v8::Isolate* isolate = GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 2U));
-  args->Set(0U, v8::Integer::New(GetIsolate(), tree_id));
-  args->Set(1U, v8::Integer::New(GetIsolate(), node->id()));
-  context()->DispatchEvent("automationInternal.onChildTreeID", args);
+  base::ListValue args;
+  args.AppendInteger(tree_id);
+  args.AppendInteger(node->id());
+  bindings_system_->DispatchEventInContext("automationInternal.onChildTreeID",
+                                           &args, nullptr, context());
 }
 
 void AutomationInternalCustomBindings::SendNodesRemovedEvent(
@@ -1387,16 +1381,17 @@ void AutomationInternalCustomBindings::SendNodesRemovedEvent(
 
   int tree_id = iter->second->tree_id;
 
-  v8::Isolate* isolate = GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-  v8::Local<v8::Array> args(v8::Array::New(GetIsolate(), 2U));
-  args->Set(0U, v8::Integer::New(GetIsolate(), tree_id));
-  v8::Local<v8::Array> nodes(v8::Array::New(GetIsolate(), ids.size()));
-  args->Set(1U, nodes);
-  for (size_t i = 0; i < ids.size(); ++i)
-    nodes->Set(i, v8::Integer::New(GetIsolate(), ids[i]));
-  context()->DispatchEvent("automationInternal.onNodesRemoved", args);
+  base::ListValue args;
+  args.AppendInteger(tree_id);
+  {
+    auto nodes = base::MakeUnique<base::ListValue>();
+    for (auto id : ids)
+      nodes->AppendInteger(id);
+    args.Append(std::move(nodes));
+  }
+
+  bindings_system_->DispatchEventInContext("automationInternal.onNodesRemoved",
+                                           &args, nullptr, context());
 }
 
 }  // namespace extensions

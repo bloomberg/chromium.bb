@@ -96,6 +96,7 @@ void ChromeExtensionsDispatcherDelegate::InitOriginPermissions(
 void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::Dispatcher* dispatcher,
     extensions::ModuleSystem* module_system,
+    extensions::ExtensionBindingsSystem* bindings_system,
     extensions::ScriptContext* context) {
   module_system->RegisterNativeHandler(
       "app", std::unique_ptr<NativeHandler>(
@@ -135,13 +136,13 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
 #if BUILDFLAG(ENABLE_WEBRTC)
   module_system->RegisterNativeHandler(
       "cast_streaming_natives",
-      std::unique_ptr<NativeHandler>(
-          new extensions::CastStreamingNativeHandler(context)));
+      base::MakeUnique<extensions::CastStreamingNativeHandler>(
+          context, bindings_system));
 #endif
   module_system->RegisterNativeHandler(
       "automationInternal",
-      std::unique_ptr<NativeHandler>(
-          new extensions::AutomationInternalCustomBindings(context)));
+      base::MakeUnique<extensions::AutomationInternalCustomBindings>(
+          context, bindings_system));
 
   // The following are native handlers that are defined in //extensions, but
   // are only used for APIs defined in Chrome.

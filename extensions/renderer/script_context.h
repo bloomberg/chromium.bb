@@ -129,8 +129,6 @@ class ScriptContext : public RequestSender::Source {
       v8::Local<v8::Value> argv[],
       const ScriptInjectionCallback::CompleteCallback& callback);
 
-  void DispatchEvent(const char* event_name, v8::Local<v8::Array> args) const;
-
   // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
   // Returns the availability of the API |api_name|.

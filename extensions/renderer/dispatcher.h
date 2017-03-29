@@ -55,7 +55,6 @@ namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
 class ExtensionBindingsSystem;
-class RequestSender;
 class ScriptContext;
 class ScriptInjectionManager;
 struct Message;
@@ -139,7 +138,7 @@ class Dispatcher : public content::RenderThreadObserver,
   static void RegisterNativeHandlers(ModuleSystem* module_system,
                                      ScriptContext* context,
                                      Dispatcher* dispatcher,
-                                     RequestSender* request_sender,
+                                     ExtensionBindingsSystem* bindings_system,
                                      V8SchemaRegistry* v8_schema_registry);
 
  private:
@@ -221,7 +220,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ScriptContext* context,
-                              RequestSender* request_sender,
+                              ExtensionBindingsSystem* bindings_system,
                               V8SchemaRegistry* v8_schema_registry);
 
   // Updates a web page context with any content capabilities granted by active

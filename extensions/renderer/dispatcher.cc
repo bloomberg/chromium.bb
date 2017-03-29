@@ -358,8 +358,7 @@ void Dispatcher::DidCreateScriptContext(
   // Enable natives in startup.
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
 
-  RegisterNativeHandlers(module_system, context,
-                         bindings_system_->GetRequestSender(),
+  RegisterNativeHandlers(module_system, context, bindings_system_.get(),
                          v8_schema_registry_.get());
 
   bindings_system_->DidCreateScriptContext(context);
@@ -469,8 +468,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
     ExtensionBindingsSystem* worker_bindings_system =
         WorkerThreadDispatcher::GetBindingsSystem();
-    RegisterNativeHandlers(module_system, context,
-                           worker_bindings_system->GetRequestSender(),
+    RegisterNativeHandlers(module_system, context, worker_bindings_system,
                            WorkerThreadDispatcher::GetV8SchemaRegistry());
 
     worker_bindings_system->DidCreateScriptContext(context);
@@ -794,11 +792,12 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
 
 // NOTE: please use the naming convention "foo_natives" for these.
 // static
-void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
-                                        ScriptContext* context,
-                                        Dispatcher* dispatcher,
-                                        RequestSender* request_sender,
-                                        V8SchemaRegistry* v8_schema_registry) {
+void Dispatcher::RegisterNativeHandlers(
+    ModuleSystem* module_system,
+    ScriptContext* context,
+    Dispatcher* dispatcher,
+    ExtensionBindingsSystem* bindings_system,
+    V8SchemaRegistry* v8_schema_registry) {
   module_system->RegisterNativeHandler(
       "chrome",
       std::unique_ptr<NativeHandler>(new ChromeNativeHandler(context)));
@@ -830,8 +829,11 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "apiDefinitions", std::unique_ptr<NativeHandler>(
                             new ApiDefinitionsNatives(dispatcher, context)));
   module_system->RegisterNativeHandler(
-      "sendRequest", std::unique_ptr<NativeHandler>(
-                         new SendRequestNatives(request_sender, context)));
+      "sendRequest",
+      base::MakeUnique<SendRequestNatives>(
+          // Note: |bindings_system| can be null in unit tests.
+          bindings_system ? bindings_system->GetRequestSender() : nullptr,
+          context));
   module_system->RegisterNativeHandler(
       "setIcon", std::unique_ptr<NativeHandler>(new SetIconNatives(context)));
   module_system->RegisterNativeHandler(
@@ -870,7 +872,7 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       std::unique_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "display_source",
-      std::unique_ptr<NativeHandler>(new DisplaySourceCustomBindings(context)));
+      base::MakeUnique<DisplaySourceCustomBindings>(context, bindings_system));
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
@@ -1333,11 +1335,12 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
 }
 
 // NOTE: please use the naming convention "foo_natives" for these.
-void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
-                                        ScriptContext* context,
-                                        RequestSender* request_sender,
-                                        V8SchemaRegistry* v8_schema_registry) {
-  RegisterNativeHandlers(module_system, context, this, request_sender,
+void Dispatcher::RegisterNativeHandlers(
+    ModuleSystem* module_system,
+    ScriptContext* context,
+    ExtensionBindingsSystem* bindings_system,
+    V8SchemaRegistry* v8_schema_registry) {
+  RegisterNativeHandlers(module_system, context, this, bindings_system,
                          v8_schema_registry);
   const Extension* extension = context->extension();
   int manifest_version = extension ? extension->manifest_version() : 1;
@@ -1354,7 +1357,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           ExtensionsRendererClient::Get()->IsIncognitoProcess(),
           is_component_extension, manifest_version, send_request_disabled)));
 
-  delegate_->RegisterNativeHandlers(this, module_system, context);
+  delegate_->RegisterNativeHandlers(this, module_system, bindings_system,
+                                    context);
 }
 
 void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {

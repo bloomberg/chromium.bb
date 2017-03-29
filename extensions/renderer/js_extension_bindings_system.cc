@@ -261,7 +261,7 @@ void JsExtensionBindingsSystem::DispatchEventInContext(
         content::V8ValueConverter::create());
     arguments.push_back(
         converter->ToV8Value(event_args, context->v8_context()));
-    if (!filtering_info->empty()) {
+    if (filtering_info && !filtering_info->empty()) {
       arguments.push_back(
           converter->ToV8Value(filtering_info, context->v8_context()));
     }

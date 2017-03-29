@@ -20,6 +20,7 @@ namespace extensions {
 
 class AutomationInternalCustomBindings;
 class AutomationMessageFilter;
+class ExtensionBindingsSystem;
 
 struct TreeCache {
   TreeCache();
@@ -44,7 +45,8 @@ struct TreeChangeObserver {
 class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
                                          public ui::AXTreeDelegate {
  public:
-  explicit AutomationInternalCustomBindings(ScriptContext* context);
+  AutomationInternalCustomBindings(ScriptContext* context,
+                                   ExtensionBindingsSystem* bindings_system);
 
   ~AutomationInternalCustomBindings() override;
 
@@ -182,6 +184,8 @@ class AutomationInternalCustomBindings : public ObjectBackedNativeHandler,
   int tree_change_observer_overall_filter_;
   std::vector<int> deleted_node_ids_;
   std::vector<int> text_changed_node_ids_;
+
+  ExtensionBindingsSystem* bindings_system_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationInternalCustomBindings);
 };

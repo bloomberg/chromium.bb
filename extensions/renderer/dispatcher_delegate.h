@@ -11,6 +11,7 @@
 namespace extensions {
 class Dispatcher;
 class Extension;
+class ExtensionBindingsSystem;
 class ModuleSystem;
 class ResourceBundleSourceMap;
 class ScriptContext;
@@ -29,6 +30,7 @@ class DispatcherDelegate {
   // Includes additional native handlers in a ScriptContext's ModuleSystem.
   virtual void RegisterNativeHandlers(Dispatcher* dispatcher,
                                       ModuleSystem* module_system,
+                                      ExtensionBindingsSystem* bindings_system,
                                       ScriptContext* context) {}
 
   // Includes additional source resources into the resource map.

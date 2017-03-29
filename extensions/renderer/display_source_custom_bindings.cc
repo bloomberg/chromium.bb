@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -26,8 +27,11 @@ const char kSessionAlreadyTerminating[] = "The session is already terminating";
 const char kSessionNotFound[] = "Session not found";
 }  // namespace
 
-DisplaySourceCustomBindings::DisplaySourceCustomBindings(ScriptContext* context)
+DisplaySourceCustomBindings::DisplaySourceCustomBindings(
+    ScriptContext* context,
+    ExtensionBindingsSystem* bindings_system)
     : ObjectBackedNativeHandler(context),
+      bindings_system_(bindings_system),
       weak_factory_(this) {
   RouteFunction("StartSession", "displaySource",
                 base::Bind(&DisplaySourceCustomBindings::StartSession,
@@ -250,36 +254,26 @@ void DisplaySourceCustomBindings::OnSessionStarted(
 }
 
 void DisplaySourceCustomBindings::DispatchSessionTerminated(int sink_id) const {
-  v8::Isolate* isolate = context()->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-  v8::Local<v8::Array> event_args = v8::Array::New(isolate, 1);
-  event_args->Set(0, v8::Integer::New(isolate, sink_id));
-  context()->DispatchEvent("displaySource.onSessionTerminated", event_args);
+  base::ListValue event_args;
+  event_args.AppendInteger(sink_id);
+  bindings_system_->DispatchEventInContext("displaySource.onSessionTerminated",
+                                           &event_args, nullptr, context());
 }
 
 void DisplaySourceCustomBindings::DispatchSessionError(
     int sink_id,
     DisplaySourceErrorType type,
     const std::string& message) const {
-  v8::Isolate* isolate = context()->isolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Context::Scope context_scope(context()->v8_context());
-
   api::display_source::ErrorInfo error_info;
   error_info.type = type;
   if (!message.empty())
     error_info.description.reset(new std::string(message));
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Local<v8::Value> info_arg =
-      converter->ToV8Value(error_info.ToValue().get(),
-                           context()->v8_context());
-
-  v8::Local<v8::Array> event_args = v8::Array::New(isolate, 2);
-  event_args->Set(0, v8::Integer::New(isolate, sink_id));
-  event_args->Set(1, info_arg);
-  context()->DispatchEvent("displaySource.onSessionErrorOccured", event_args);
+  base::ListValue event_args;
+  event_args.AppendInteger(sink_id);
+  event_args.Append(error_info.ToValue());
+  bindings_system_->DispatchEventInContext(
+      "displaySource.onSessionErrorOccured", &event_args, nullptr, context());
 }
 
 DisplaySourceSession* DisplaySourceCustomBindings::GetDisplaySession(

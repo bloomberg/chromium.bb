@@ -36,11 +36,13 @@ struct FrameReceiverConfig;
 }
 
 namespace extensions {
+class ExtensionBindingsSystem;
 
 // Native code that handle chrome.webrtc custom bindings.
 class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit CastStreamingNativeHandler(ScriptContext* context);
+  CastStreamingNativeHandler(ScriptContext* context,
+                             ExtensionBindingsSystem* bindings_system);
   ~CastStreamingNativeHandler() override;
 
  protected:
@@ -139,6 +141,8 @@ class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
   using RtpStreamCallbackMap = std::map<int, v8::Global<v8::Function>>;
   RtpStreamCallbackMap get_raw_events_callbacks_;
   RtpStreamCallbackMap get_stats_callbacks_;
+
+  ExtensionBindingsSystem* bindings_system_;
 
   base::WeakPtrFactory<CastStreamingNativeHandler> weak_factory_;
 

@@ -268,18 +268,6 @@ Feature::Availability ScriptContext::GetAvailability(
       api_name, extension, context_type_, url(), check_alias);
 }
 
-void ScriptContext::DispatchEvent(const char* event_name,
-                                  v8::Local<v8::Array> args) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  v8::HandleScope handle_scope(isolate());
-  v8::Context::Scope context_scope(v8_context());
-
-  v8::Local<v8::Value> argv[] = {v8::String::NewFromUtf8(isolate(), event_name),
-                                 args};
-  module_system_->CallModuleMethodSafe(kEventBindings, "dispatchEvent",
-                                       arraysize(argv), argv);
-}
-
 std::string ScriptContext::GetContextTypeDescription() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetContextTypeDescriptionString(context_type_);
