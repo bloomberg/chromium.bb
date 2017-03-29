@@ -51,13 +51,6 @@ Settings* settings(ExecutionContext* executionContext) {
   return document->settings();
 }
 
-ScriptPromise rejectWithSandBoxException(ScriptState* scriptState) {
-  return ScriptPromise::rejectWithDOMException(
-      scriptState, DOMException::create(SecurityError,
-                                        "The document is sandboxed and lacks "
-                                        "the 'allow-presentation' flag."));
-}
-
 }  // anonymous namespace
 
 // static
@@ -74,6 +67,12 @@ PresentationRequest* PresentationRequest::create(
     ExecutionContext* executionContext,
     const Vector<String>& urls,
     ExceptionState& exceptionState) {
+  if (toDocument(executionContext)->isSandboxed(SandboxPresentation)) {
+    exceptionState.throwSecurityError(
+        "The document is sandboxed and lacks the 'allow-presentation' flag.");
+    return nullptr;
+  }
+
   if (urls.isEmpty()) {
     exceptionState.throwDOMException(NotSupportedError,
                                      "Do not support empty sequence of URLs.");
@@ -140,8 +139,6 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
             InvalidAccessError,
             "PresentationRequest::start() requires user gesture."));
 
-  if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
-    return rejectWithSandBoxException(scriptState);
 
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (!client)
@@ -159,9 +156,6 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
 
 ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
                                              const String& id) {
-  if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
-    return rejectWithSandBoxException(scriptState);
-
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (!client)
     return ScriptPromise::rejectWithDOMException(
@@ -192,9 +186,6 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
 }
 
 ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
-  if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation))
-    return rejectWithSandBoxException(scriptState);
-
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (!client)
     return ScriptPromise::rejectWithDOMException(
