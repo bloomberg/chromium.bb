@@ -121,6 +121,7 @@ void OffscreenCanvasFrameDispatcherImpl::
   gl->TexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format,
                  GL_UNSIGNED_BYTE, 0);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, format,
@@ -233,6 +234,9 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   resource.id = m_nextResourceId;
   resource.format = cc::ResourceFormat::RGBA_8888;
   resource.size = gfx::Size(m_width, m_height);
+  // This indicates the filtering on the resource inherently, not the desired
+  // filtering effect on the quad.
+  resource.filter = GL_NEAREST;
   // TODO(crbug.com/646022): making this overlay-able.
   resource.is_overlay_candidate = false;
 
@@ -418,7 +422,6 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {
   for (const auto& resource : resources) {
     RefPtr<StaticBitmapImage> image = m_cachedImages.at(resource.id);
-
     if (image) {
       if (image->hasMailbox()) {
         image->updateSyncToken(resource.sync_token);
