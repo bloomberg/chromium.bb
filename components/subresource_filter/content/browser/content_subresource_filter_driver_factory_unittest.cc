@@ -610,7 +610,7 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
         test_data.blacklisted_urls, test_data.navigation_chain,
         safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
         safe_browsing::ThreatPatternType::NONE, content::Referrer(),
-        ui::PAGE_TRANSITION_LINK, EMPTY, test_data.hit_expected_pattern,
+        ui::PAGE_TRANSITION_LINK, test_data.hit_expected_pattern,
         ActivationDecision::ACTIVATION_LIST_NOT_MATCHED);
 #endif
   }
