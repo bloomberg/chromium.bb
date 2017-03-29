@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
@@ -54,10 +53,8 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService();
         manager.openDownloadedContent(download.downloadInfo, download.systemDownloadId);
         if (download.notificationId != INVALID_NOTIFICATION_ID) {
-            NotificationManager notificationManager =
-                    (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.cancel(
-                    DownloadNotificationService.NOTIFICATION_NAMESPACE, download.notificationId);
+            manager.getDownloadNotifier().removeDownloadNotification(
+                    download.notificationId, download.downloadInfo);
         }
     }
 

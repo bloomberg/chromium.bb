@@ -55,6 +55,13 @@ public interface DownloadNotifier {
     void notifyDownloadCanceled(String downloadGuid);
 
     /**
+     * Remove the download notification for an already finished download.
+     * @param notificationId The id of the download notification.
+     * @param downloadInfo   Info about the removed download.
+     */
+    void removeDownloadNotification(int notificationId, DownloadInfo downloadInfo);
+
+    /**
      * Called to resume all the pending download entries in SharedPreferences.
      */
     void resumePendingDownloads();

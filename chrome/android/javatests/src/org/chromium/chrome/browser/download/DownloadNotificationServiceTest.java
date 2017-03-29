@@ -308,6 +308,14 @@ public class DownloadNotificationServiceTest extends
         service.notifyDownloadCanceled(id3);
         assertEquals(2, getService().getNotificationIds().size());
         assertFalse(getService().getNotificationIds().contains(lastNotificationId));
+
+        ContentId id4 = LegacyHelpers.buildLegacyContentId(false, UUID.randomUUID().toString());
+        service.notifyDownloadSuccessful(id4, "/path/to/success", "success", 100L, false, false);
+        assertEquals(3, getService().getNotificationIds().size());
+        int nextNotificationId = getService().getLastAddedNotificationId();
+        service.cancelNotification(nextNotificationId, id4);
+        assertEquals(2, getService().getNotificationIds().size());
+        assertFalse(getService().getNotificationIds().contains(nextNotificationId));
     }
 
     /**

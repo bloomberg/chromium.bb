@@ -36,6 +36,7 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     private static final int DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL = 4;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_PAUSE = 5;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT = 6;
+    private static final int DOWNLOAD_NOTIFICATION_TYPE_REMOVE_NOTIFICATION = 7;
 
     private final Context mApplicationContext;
     @Nullable private DownloadNotificationService mBoundService;
@@ -58,6 +59,7 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
         public boolean canResolve;
         public long systemDownloadId;
         public boolean isSupportedMimeType;
+        public int notificationId;
 
         public PendingNotificationInfo(int type, DownloadInfo downloadInfo) {
             this.type = type;
@@ -220,6 +222,14 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     }
 
     @Override
+    public void removeDownloadNotification(int notificationId, DownloadInfo downloadInfo) {
+        PendingNotificationInfo info = new PendingNotificationInfo(
+                DOWNLOAD_NOTIFICATION_TYPE_REMOVE_NOTIFICATION, downloadInfo);
+        info.notificationId = notificationId;
+        updateDownloadNotification(info, true);
+    }
+
+    @Override
     public void resumePendingDownloads() {
         if (!DownloadNotificationService.isTrackingResumableDownloads(mApplicationContext)) return;
 
@@ -292,6 +302,10 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL:
                 mBoundService.resumeAllPendingDownloads();
+                break;
+            case DOWNLOAD_NOTIFICATION_TYPE_REMOVE_NOTIFICATION:
+                mBoundService.cancelNotification(
+                        notificationInfo.notificationId, info.getContentId());
                 break;
             default:
                 assert false;
