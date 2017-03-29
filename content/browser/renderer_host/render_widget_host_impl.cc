@@ -52,7 +52,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/cursors/webcursor.h"
@@ -2429,12 +2428,7 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
 #endif
   }
 
-  const bool is_running_navigation_hint_task =
-      static_cast<ServiceWorkerContextWrapper*>(
-          GetProcess()->GetStoragePartition()->GetServiceWorkerContext())
-          ->IsRunningNavigationHintTask(GetProcess()->GetID());
-  latency_tracker_.OnFrameSwapped(latency_info,
-                                  is_running_navigation_hint_task);
+  latency_tracker_.OnFrameSwapped(latency_info);
 }
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {

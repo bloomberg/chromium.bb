@@ -156,8 +156,7 @@ void ComputeScrollLatencyHistograms(
     const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
     const LatencyInfo::LatencyComponent& gpu_swap_end_component,
     int64_t latency_component_id,
-    const LatencyInfo& latency,
-    bool is_running_navigation_hint_task) {
+    const LatencyInfo& latency) {
   DCHECK(!latency.coalesced());
   if (latency.coalesced())
     return;
@@ -176,17 +175,6 @@ void ComputeScrollLatencyHistograms(
           "Event.Latency.TouchToFirstScrollUpdateSwapBegin",
           original_component, gpu_swap_begin_component);
     }
-    // TODO(horo): IsRunningNavigationHintTask UMAs are only for
-    // SpeculativeLaunchServiceWorker experimentation. So remove this UMA when
-    // the experimentation finished (crbug.com/638827).
-    if (is_running_navigation_hint_task) {
-      for (size_t i = 0; i < original_component.event_count; i++) {
-        UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-            "Event.Latency.TouchToFirstScrollUpdateSwapBegin_"
-            "IsRunningNavigationHintTask",
-            original_component, gpu_swap_begin_component);
-      }
-    }
   } else if (!latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  latency_component_id, &original_component)) {
@@ -199,17 +187,6 @@ void ComputeScrollLatencyHistograms(
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
         "Event.Latency.TouchToScrollUpdateSwapBegin", original_component,
         gpu_swap_begin_component);
-  }
-  // TODO(horo): IsRunningNavigationHintTask UMAs are only for
-  // SpeculativeLaunchServiceWorker experimentation. So remove this UMA when
-  // the experimentation finished (crbug.com/638827).
-  if (is_running_navigation_hint_task) {
-    for (size_t i = 0; i < original_component.event_count; i++) {
-      UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-          "Event.Latency.TouchToScrollUpdateSwapBegin_"
-          "IsRunningNavigationHintTask",
-          original_component, gpu_swap_begin_component);
-    }
   }
 }
 
@@ -559,8 +536,7 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
 }
 
 void RenderWidgetHostLatencyTracker::OnFrameSwapped(
-    const LatencyInfo& latency,
-    bool is_running_navigation_hint_task) {
+    const LatencyInfo& latency) {
   LatencyInfo::LatencyComponent gpu_swap_end_component;
   if (!latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0,
@@ -604,9 +580,9 @@ void RenderWidgetHostLatencyTracker::OnFrameSwapped(
   if (!latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
           &mouse_wheel_scroll_update_component)) {
-    ComputeScrollLatencyHistograms(
-        gpu_swap_begin_component, gpu_swap_end_component, latency_component_id_,
-        latency, is_running_navigation_hint_task);
+    ComputeScrollLatencyHistograms(gpu_swap_begin_component,
+                                   gpu_swap_end_component,
+                                   latency_component_id_, latency);
   }
 }
 

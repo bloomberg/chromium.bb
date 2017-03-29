@@ -57,8 +57,7 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   // Terminates latency tracking for events that triggered rendering, also
   // performing relevant UMA latency reporting.
   // Called when the RenderWidgetHost receives a swap update from the GPU.
-  void OnFrameSwapped(const ui::LatencyInfo& latency,
-                      bool is_running_navigation_hint_task);
+  void OnFrameSwapped(const ui::LatencyInfo& latency);
 
   // WebInputEvent coordinates are in DPIs, while LatencyInfo expects
   // coordinates in device pixels.
