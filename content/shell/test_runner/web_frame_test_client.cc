@@ -438,6 +438,7 @@ void WebFrameTestClient::didStartProvisionalLoad(
 
 void WebFrameTestClient::didReceiveServerRedirectForProvisionalLoad(
     blink::WebLocalFrame* frame) {
+  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(
@@ -488,6 +489,7 @@ void WebFrameTestClient::didChangeIcon(blink::WebLocalFrame* frame,
 }
 
 void WebFrameTestClient::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
+  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFinishDocumentLoadForFrame\n");
@@ -495,6 +497,7 @@ void WebFrameTestClient::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
 }
 
 void WebFrameTestClient::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
+  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didHandleOnloadEventsForFrame\n");
@@ -511,6 +514,7 @@ void WebFrameTestClient::didFailLoad(blink::WebLocalFrame* frame,
 }
 
 void WebFrameTestClient::didFinishLoad(blink::WebLocalFrame* frame) {
+  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFinishLoadForFrame\n");
@@ -728,6 +732,7 @@ void WebFrameTestClient::checkIfAudioSinkExistsAndIsAuthorized(
 }
 
 void WebFrameTestClient::didClearWindowObject(blink::WebLocalFrame* frame) {
+  DCHECK_EQ(frame, web_frame_test_proxy_base_->web_frame());
   web_view_test_proxy_base_->test_interfaces()->BindTo(frame);
   web_view_test_proxy_base_->BindTo(frame);
   delegate_->GetWebWidgetTestProxyBase(frame)->BindTo(frame);
