@@ -330,6 +330,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
 
   if (_navigationManager && _navigationManager->GetFacadeDelegate())
     _navigationManager->GetFacadeDelegate()->OnNavigationItemPending();
+  DCHECK_EQ(-1, self.pendingItemIndex);
 }
 
 - (void)updatePendingItem:(const GURL&)url {

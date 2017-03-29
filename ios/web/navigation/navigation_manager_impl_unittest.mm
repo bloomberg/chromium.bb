@@ -179,27 +179,6 @@ TEST_F(NavigationManagerTest, CanGoBackWithMultipleCommitedItems) {
   EXPECT_TRUE(navigation_manager()->CanGoToOffset(-1));
 }
 
-// Tests that going forward or positive offset is not possible if there is a
-// pending entry.
-TEST_F(NavigationManagerTest, CanGoForwardWithPendingItem) {
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED);
-  [session_controller() commitPendingItem];
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED);
-  [session_controller() commitPendingItem];
-  [session_controller() goToItemAtIndex:0];
-  navigation_manager()->AddPendingItem(
-      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED);
-
-  // Pending entry should not allow going forward.
-  EXPECT_FALSE(navigation_manager()->CanGoForward());
-  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1));
-}
-
 // Tests that going forward or positive offset is not possible without a
 // committed item.
 TEST_F(NavigationManagerTest, CanGoForwardWithoutCommitedItem) {

@@ -417,16 +417,6 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
     if (result > GetItemCount() /* overflow */)
       result = INT_MIN;
   } else if (offset > 0) {
-    if (GetPendingItem() && [session_controller_ pendingItemIndex] == -1) {
-      // Chrome for iOS does not allow forward navigation if there is another
-      // pending navigation in progress. Returning invalid index indicates that
-      // forward navigation will not be allowed (and |INT_MAX| works for that).
-      // This is different from other platforms which allow forward navigation
-      // if pending item exist.
-      // TODO(crbug.com/661858): Remove this once back-forward navigation uses
-      // pending index.
-      return INT_MAX;
-    }
     while (offset > 0 && result < GetItemCount()) {
       ++result;
       --offset;
