@@ -1810,6 +1810,7 @@ crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsMa
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/connect-src [ Pass ]
+crbug.com/694525 external/wpt/content-security-policy/font-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/img-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/inside-worker [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/media-src [ Pass ]
