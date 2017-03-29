@@ -75,6 +75,11 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // This method is called when the stream is started successfully.
   void OnStreamStarted(const std::string& label);
 
+  // Get all the media devices of video capture, e.g. webcam. This is the set
+  // of devices that should be suspended when the content frame is no longer
+  // being shown to the user.
+  StreamDeviceInfoArray GetNonScreenCaptureDevices();
+
   // Check if the label is a valid stream.
   virtual bool IsStream(const std::string& label);
   // Get the video session_id given a label. The label identifies a stream.
@@ -90,6 +95,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, BasicVideoDevice);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest,
+                           GetNonScreenCaptureDevices);
 
   struct Request;
 

@@ -26,11 +26,13 @@ namespace {
 const int kRouteId = 0;
 const int kAudioSessionId = 3;
 const int kVideoSessionId = 5;
+const int kScreenSessionId = 7;
 const int kRequestId1 = 10;
 const int kRequestId2 = 20;
 
 const MediaStreamType kAudioType = MEDIA_DEVICE_AUDIO_CAPTURE;
 const MediaStreamType kVideoType = MEDIA_DEVICE_VIDEO_CAPTURE;
+const MediaStreamType kScreenType = MEDIA_DESKTOP_VIDEO_CAPTURE;
 
 class MockMediaStreamDispatcherEventHandler
     : public MediaStreamDispatcherEventHandler,
@@ -376,6 +378,74 @@ TEST_F(MediaStreamDispatcherTest, DeviceClosed) {
   EXPECT_EQ(label, handler_->device_stopped_label_);
   EXPECT_EQ(dispatcher_->video_session_id(label, 0),
             StreamDeviceInfo::kNoId);
+}
+
+TEST_F(MediaStreamDispatcherTest, GetNonScreenCaptureDevices) {
+  std::unique_ptr<MediaStreamDispatcher> dispatcher(
+      new MediaStreamDispatcher(nullptr));
+  std::unique_ptr<MockMediaStreamDispatcherEventHandler> handler(
+      new MockMediaStreamDispatcherEventHandler);
+  url::Origin security_origin;
+
+  StreamDeviceInfo video_device_info;
+  video_device_info.device.name = "Camera";
+  video_device_info.device.id = "device_path";
+  video_device_info.device.type = kVideoType;
+  video_device_info.session_id = kVideoSessionId;
+
+  StreamDeviceInfo screen_device_info;
+  screen_device_info.device.name = "Screen";
+  screen_device_info.device.id = "screen_capture";
+  screen_device_info.device.type = kScreenType;
+  screen_device_info.session_id = kScreenSessionId;
+
+  EXPECT_EQ(dispatcher->requests_.size(), 0u);
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), 0u);
+
+  int ipc_request_id1 = dispatcher->next_ipc_id_;
+  dispatcher->OpenDevice(kRequestId1, handler.get()->AsWeakPtr(),
+                         video_device_info.device.id, kVideoType,
+                         security_origin);
+  int ipc_request_id2 = dispatcher->next_ipc_id_;
+  EXPECT_NE(ipc_request_id1, ipc_request_id2);
+  dispatcher->OpenDevice(kRequestId2, handler.get()->AsWeakPtr(),
+                         screen_device_info.device.id, kScreenType,
+                         security_origin);
+  EXPECT_EQ(dispatcher->requests_.size(), 2u);
+
+  // Complete the OpenDevice of request 1.
+  std::string stream_label1 = std::string("stream1");
+  dispatcher->OnMessageReceived(MediaStreamMsg_DeviceOpened(
+      kRouteId, ipc_request_id1, stream_label1, video_device_info));
+  EXPECT_EQ(handler->request_id_, kRequestId1);
+
+  // Complete the OpenDevice of request 2.
+  std::string stream_label2 = std::string("stream2");
+  dispatcher->OnMessageReceived(MediaStreamMsg_DeviceOpened(
+      kRouteId, ipc_request_id2, stream_label2, screen_device_info));
+  EXPECT_EQ(handler->request_id_, kRequestId2);
+
+  EXPECT_EQ(dispatcher->requests_.size(), 0u);
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), 2u);
+
+  // Only the device with |kVideoType| will be returned.
+  StreamDeviceInfoArray video_device_array =
+      dispatcher->GetNonScreenCaptureDevices();
+  EXPECT_EQ(video_device_array.size(), 1u);
+
+  // Close the device from request 2.
+  dispatcher->CloseDevice(stream_label2);
+  EXPECT_EQ(dispatcher->video_session_id(stream_label2, 0),
+            StreamDeviceInfo::kNoId);
+
+  // Close the device from request 1.
+  dispatcher->CloseDevice(stream_label1);
+  EXPECT_EQ(dispatcher->video_session_id(stream_label1, 0),
+            StreamDeviceInfo::kNoId);
+
+  // Verify that the request have been completed.
+  EXPECT_EQ(dispatcher->label_stream_map_.size(), 0u);
+  EXPECT_EQ(dispatcher->requests_.size(), 0u);
 }
 
 }  // namespace content

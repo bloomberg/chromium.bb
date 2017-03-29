@@ -175,6 +175,17 @@ void MediaStreamDispatcher::OnStreamStarted(const std::string& label) {
   Send(new MediaStreamHostMsg_StreamStarted(label));
 }
 
+StreamDeviceInfoArray MediaStreamDispatcher::GetNonScreenCaptureDevices() {
+  StreamDeviceInfoArray video_array;
+  for (const auto& stream_it : label_stream_map_) {
+    for (const auto& video_device : stream_it.second.video_array) {
+      if (!IsScreenCaptureMediaType(video_device.device.type))
+        video_array.push_back(video_device);
+    }
+  }
+  return video_array;
+}
+
 void MediaStreamDispatcher::OnDestruct() {
   // Do not self-destruct. UserMediaClientImpl owns |this|.
 }

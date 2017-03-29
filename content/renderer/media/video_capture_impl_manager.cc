@@ -234,17 +234,24 @@ void VideoCaptureImplManager::UnrefDevice(
   devices_.erase(it);
 }
 
-void VideoCaptureImplManager::SuspendDevices(bool suspend) {
+void VideoCaptureImplManager::SuspendDevices(
+    const StreamDeviceInfoArray& video_device_array,
+    bool suspend) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   if (is_suspending_all_ == suspend)
     return;
   is_suspending_all_ = suspend;
-  for (auto& entry : devices_) {
-    if (entry.is_individually_suspended)
+  for (const StreamDeviceInfo& device_info : video_device_array) {
+    const media::VideoCaptureSessionId id = device_info.session_id;
+    const auto it = std::find_if(
+        devices_.begin(), devices_.end(),
+        [id](const DeviceEntry& entry) { return entry.session_id == id; });
+    DCHECK(it != devices_.end());
+    if (it->is_individually_suspended)
       continue;  // Either: 1) Already suspended; or 2) Should not be resumed.
     ChildProcess::current()->io_task_runner()->PostTask(
         FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
-                              base::Unretained(entry.impl.get()), suspend));
+                              base::Unretained(it->impl.get()), suspend));
   }
 }
 

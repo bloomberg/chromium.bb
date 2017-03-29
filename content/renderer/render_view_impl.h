@@ -585,6 +585,10 @@ class CONTENT_EXPORT RenderViewImpl
   void LaunchAndroidContentIntent(const GURL& intent_url,
                                   size_t request_id,
                                   bool is_main_frame);
+  // Make the video capture devices (e.g. webcam) stop/resume delivering video
+  // frames to their clients, depending on flag |suspend|. This is called in
+  // response to a RenderView PageHidden/Shown().
+  void SuspendVideoCaptureDevices(bool suspend);
 #endif
 
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))

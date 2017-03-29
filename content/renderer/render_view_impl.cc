@@ -84,6 +84,7 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_frame_impl.h"
@@ -2285,11 +2286,12 @@ void RenderViewImpl::Close() {
 }
 
 void RenderViewImpl::OnPageWasHidden() {
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
-  RenderThreadImpl::current()->video_capture_impl_manager()->
-      SuspendDevices(true);
+#if defined(OS_ANDROID)
+  SuspendVideoCaptureDevices(true);
+#if BUILDFLAG(ENABLE_WEBRTC)
   if (speech_recognition_dispatcher_)
     speech_recognition_dispatcher_->AbortAllRecognitions();
+#endif
 #endif
 
   if (webview()) {
@@ -2305,9 +2307,8 @@ void RenderViewImpl::OnPageWasHidden() {
 }
 
 void RenderViewImpl::OnPageWasShown() {
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
-  RenderThreadImpl::current()->video_capture_impl_manager()->
-      SuspendDevices(false);
+#if defined(OS_ANDROID)
+  SuspendVideoCaptureDevices(false);
 #endif
 
   if (webview()) {
@@ -2575,6 +2576,21 @@ bool RenderViewImpl::didTapMultipleTargets(
   }
 
   return handled;
+}
+
+void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
+  if (!main_render_frame_)
+    return;
+
+  MediaStreamDispatcher* media_stream_dispatcher =
+      main_render_frame_->GetMediaStreamDispatcher();
+  if (!media_stream_dispatcher)
+    return;
+
+  StreamDeviceInfoArray video_array =
+      media_stream_dispatcher->GetNonScreenCaptureDevices();
+  RenderThreadImpl::current()->video_capture_impl_manager()->SuspendDevices(
+      video_array, suspend);
 }
 #endif  // defined(OS_ANDROID)
 
