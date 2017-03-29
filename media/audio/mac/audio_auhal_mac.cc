@@ -114,30 +114,6 @@ bool AUHALStream::Open() {
   DCHECK(!audio_unit_);
   DVLOG(1) << "Open";
 
-  // Get the total number of output channels that the
-  // hardware supports.
-  int device_output_channels;
-  bool got_output_channels = AudioManagerMac::GetDeviceChannels(
-      device_,
-      kAudioDevicePropertyScopeOutput,
-      &device_output_channels);
-
-  // Sanity check the requested output channels.
-  if (!got_output_channels ||
-      output_channels_ <= 0 || output_channels_ > device_output_channels) {
-    LOG(ERROR) << "AudioDevice does not support requested output channels.";
-    return false;
-  }
-
-  // The requested sample-rate must match the hardware sample-rate.
-  int sample_rate = AudioManagerMac::HardwareSampleRateForDevice(device_);
-
-  if (sample_rate != params_.sample_rate()) {
-    LOG(ERROR) << "Requested sample-rate: " << params_.sample_rate()
-               << " must match the hardware sample-rate: " << sample_rate;
-    return false;
-  }
-
   // The output bus will wrap the AudioBufferList given to us in
   // the Render() callback.
   DCHECK_GT(output_channels_, 0);

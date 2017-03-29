@@ -74,10 +74,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   void ReleaseOutputStreamUsingRealDevice(AudioOutputStream* stream,
                                           AudioDeviceID device_id);
 
-  static bool GetDeviceChannels(AudioDeviceID device,
-                                AudioObjectPropertyScope scope,
-                                int* channels);
-
   static int HardwareSampleRateForDevice(AudioDeviceID device_id);
   static int HardwareSampleRate();
 
