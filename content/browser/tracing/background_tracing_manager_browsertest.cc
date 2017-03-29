@@ -20,6 +20,49 @@
 #include "third_party/zlib/zlib.h"
 
 namespace content {
+namespace {
+
+class TestBackgroundTracingObserver
+    : public BackgroundTracingManagerImpl::EnabledStateObserver {
+ public:
+  explicit TestBackgroundTracingObserver(
+      base::Closure tracing_enabled_callback);
+  ~TestBackgroundTracingObserver() override;
+
+  void OnScenarioActivated(const BackgroundTracingConfigImpl* config) override;
+  void OnTracingEnabled(
+      BackgroundTracingConfigImpl::CategoryPreset preset) override;
+
+ private:
+  bool was_scenario_activated_;
+  base::Closure tracing_enabled_callback_;
+};
+
+TestBackgroundTracingObserver::TestBackgroundTracingObserver(
+    base::Closure tracing_enabled_callback)
+    : was_scenario_activated_(false),
+      tracing_enabled_callback_(tracing_enabled_callback) {
+  BackgroundTracingManagerImpl::GetInstance()->AddEnabledStateObserver(this);
+}
+
+TestBackgroundTracingObserver::~TestBackgroundTracingObserver() {
+  static_cast<BackgroundTracingManagerImpl*>(
+      BackgroundTracingManager::GetInstance())
+      ->RemoveEnabledStateObserver(this);
+  EXPECT_TRUE(was_scenario_activated_);
+}
+
+void TestBackgroundTracingObserver::OnScenarioActivated(
+    const BackgroundTracingConfigImpl* config) {
+  was_scenario_activated_ = true;
+}
+
+void TestBackgroundTracingObserver::OnTracingEnabled(
+    BackgroundTracingConfigImpl::CategoryPreset preset) {
+  tracing_enabled_callback_.Run();
+}
+
+}  // namespace
 
 class BackgroundTracingManagerBrowserTest : public ContentBrowserTest {
  public:
@@ -279,8 +322,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
           "preemptive_test");
 
   base::RunLoop wait_for_activated;
-  BackgroundTracingManager::GetInstance()->SetTracingEnabledCallbackForTesting(
-      wait_for_activated.QuitClosure());
+  TestBackgroundTracingObserver observer(wait_for_activated.QuitClosure());
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), upload_config_wrapper.get_receive_callback(),
       BackgroundTracingManager::ANONYMIZE_DATA));
@@ -330,8 +372,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
           "preemptive_test");
 
   base::RunLoop wait_for_activated;
-  BackgroundTracingManager::GetInstance()->SetTracingEnabledCallbackForTesting(
-      wait_for_activated.QuitClosure());
+  TestBackgroundTracingObserver observer(wait_for_activated.QuitClosure());
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), upload_config_wrapper.get_receive_callback(),
       BackgroundTracingManager::ANONYMIZE_DATA));
@@ -376,8 +417,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
           "preemptive_test");
 
   base::RunLoop wait_for_activated;
-  BackgroundTracingManager::GetInstance()->SetTracingEnabledCallbackForTesting(
-      wait_for_activated.QuitClosure());
+  TestBackgroundTracingObserver observer(wait_for_activated.QuitClosure());
   EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
       std::move(config), upload_config_wrapper.get_receive_callback(),
       BackgroundTracingManager::ANONYMIZE_DATA));
@@ -1410,18 +1450,15 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
         BackgroundTracingManager::GetInstance()->RegisterTriggerType(
             "reactive_test");
 
+    base::RunLoop wait_for_tracing_enabled;
+    TestBackgroundTracingObserver observer(
+        wait_for_tracing_enabled.QuitClosure());
     EXPECT_TRUE(BackgroundTracingManager::GetInstance()->SetActiveScenario(
         std::move(config), upload_config_wrapper.get_receive_callback(),
         BackgroundTracingManager::NO_DATA_FILTERING));
 
     BackgroundTracingManager::GetInstance()->WhenIdle(
         base::Bind(&DisableScenarioWhenIdle));
-
-    base::RunLoop wait_for_tracing_enabled;
-    static_cast<BackgroundTracingManagerImpl*>(
-        BackgroundTracingManager::GetInstance())
-        ->SetTracingEnabledCallbackForTesting(
-            wait_for_tracing_enabled.QuitClosure());
 
     BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
         trigger_handle,

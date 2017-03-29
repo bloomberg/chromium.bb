@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/tracing/background_memory_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -48,14 +49,6 @@ enum BackgroundTracingMetrics {
 void RecordBackgroundTracingMetric(BackgroundTracingMetrics metric) {
   UMA_HISTOGRAM_ENUMERATION("Tracing.Background.ScenarioState", metric,
                             NUMBER_OF_BACKGROUND_TRACING_METRICS);
-}
-
-// Tracing enabled callback for BENCHMARK_MEMORY_LIGHT category preset.
-void BenchmarkMemoryLight_TracingEnabledCallback() {
-  auto* dump_manager = base::trace_event::MemoryDumpManager::GetInstance();
-  dump_manager->RequestGlobalDump(
-      base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
 }
 
 }  // namespace
@@ -100,7 +93,9 @@ BackgroundTracingManagerImpl::BackgroundTracingManagerImpl()
       is_tracing_(false),
       requires_anonymized_data_(true),
       trigger_handle_ids_(0),
-      triggered_named_event_handle_(-1) {}
+      triggered_named_event_handle_(-1) {
+  AddEnabledStateObserver(BackgroundMemoryTracingObserver::GetInstance());
+}
 
 BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() {
   NOTREACHED();
@@ -193,14 +188,40 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     }
   }
 
-  StartTracingIfConfigNeedsIt();
+  // Notify observers before starting tracing.
+  for (auto* observer : background_tracing_observer_list_)
+    observer->OnScenarioActivated(config_.get());
 
+  StartTracingIfConfigNeedsIt();
   RecordBackgroundTracingMetric(SCENARIO_ACTIVATED_SUCCESSFULLY);
   return true;
 }
 
 bool BackgroundTracingManagerImpl::HasActiveScenario() {
   return !!config_;
+}
+
+void BackgroundTracingManagerImpl::OnStartTracingDone(
+    BackgroundTracingConfigImpl::CategoryPreset preset) {
+  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  for (auto* observer : background_tracing_observer_list_)
+    observer->OnTracingEnabled(preset);
+}
+
+void BackgroundTracingManagerImpl::AddEnabledStateObserver(
+    EnabledStateObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  background_tracing_observer_list_.push_back(observer);
+}
+
+void BackgroundTracingManagerImpl::RemoveEnabledStateObserver(
+    EnabledStateObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  std::vector<EnabledStateObserver*>::iterator it =
+      std::find(background_tracing_observer_list_.begin(),
+                background_tracing_observer_list_.end(), observer);
+  if (it != background_tracing_observer_list_.end())
+    background_tracing_observer_list_.erase(it);
 }
 
 bool BackgroundTracingManagerImpl::IsTracingForTesting() {
@@ -390,11 +411,6 @@ void BackgroundTracingManagerImpl::InvalidateTriggerHandlesForTesting() {
   trigger_handles_.clear();
 }
 
-void BackgroundTracingManagerImpl::SetTracingEnabledCallbackForTesting(
-    const base::Closure& callback) {
-  tracing_enabled_callback_for_testing_ = callback;
-};
-
 void BackgroundTracingManagerImpl::SetRuleTriggeredCallbackForTesting(
     const base::Closure& callback) {
   rule_triggered_callback_for_testing_ = callback;
@@ -413,26 +429,22 @@ void BackgroundTracingManagerImpl::StartTracing(
   if (requires_anonymized_data_)
     trace_config.EnableArgumentFilter();
 
-  base::Closure tracing_enabled_callback;
-  if (!tracing_enabled_callback_for_testing_.is_null()) {
-    tracing_enabled_callback = tracing_enabled_callback_for_testing_;
-  } else if (preset == BackgroundTracingConfigImpl::CategoryPreset::
-                           BENCHMARK_MEMORY_LIGHT) {
-    // On memory light mode, the periodic memory dumps are disabled and a single
-    // memory dump is requested after tracing is enabled in all the processes.
-    // TODO(ssid): Remove this when background tracing supports trace config
-    // strings and memory-infra supports peak detection crbug.com/609935.
+  if (preset ==
+      BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_MEMORY_LIGHT) {
+    // On memory light mode, the periodic memory dumps are disabled.
+    // TODO(ssid): Remove this when memory-infra supports peak detection
+    // crbug.com/609935.
     base::trace_event::TraceConfig::MemoryDumpConfig memory_config;
     memory_config.allowed_dump_modes =
         std::set<base::trace_event::MemoryDumpLevelOfDetail>(
             {base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND});
     trace_config.ResetMemoryDumpConfig(memory_config);
-    tracing_enabled_callback =
-        base::Bind(&BenchmarkMemoryLight_TracingEnabledCallback);
   }
 
   is_tracing_ = TracingController::GetInstance()->StartTracing(
-      trace_config, tracing_enabled_callback);
+      trace_config,
+      base::Bind(&BackgroundTracingManagerImpl::OnStartTracingDone,
+                 base::Unretained(this), preset));
   RecordBackgroundTracingMetric(RECORDING_ENABLED);
 }
 
