@@ -250,8 +250,6 @@ TEST_F(LevelDBTransactionTest, IterationWithEvictedCursors) {
   EXPECT_FALSE(evicted_normal_location->IsDetached());
   EXPECT_FALSE(evicted_before_start->IsDetached());
   EXPECT_FALSE(evicted_after_end->IsDetached());
-  EXPECT_FALSE(evicted_before_start->IsValid());
-  EXPECT_FALSE(evicted_after_end->IsValid());
 
   // Should purge all of our earlier iterators.
   it1->Seek("key1");
@@ -261,6 +259,10 @@ TEST_F(LevelDBTransactionTest, IterationWithEvictedCursors) {
   EXPECT_TRUE(evicted_normal_location->IsDetached());
   EXPECT_TRUE(evicted_before_start->IsDetached());
   EXPECT_TRUE(evicted_after_end->IsDetached());
+
+  EXPECT_FALSE(evicted_before_start->IsValid());
+  EXPECT_TRUE(evicted_normal_location->IsValid());
+  EXPECT_FALSE(evicted_after_end->IsValid());
 
   // Check we don't need to reload for just the key.
   EXPECT_EQ("key1", evicted_normal_location->Key());

@@ -38,8 +38,16 @@ leveldb::Status LevelDBIteratorImpl::CheckStatus() {
 }
 
 bool LevelDBIteratorImpl::IsValid() const {
-  return iterator_state_ == IteratorState::EVICTED_AND_VALID ||
-         iterator_->Valid();
+  switch (iterator_state_) {
+    case IteratorState::EVICTED_AND_VALID:
+      return true;
+    case IteratorState::EVICTED_AND_INVALID:
+      return false;
+    case IteratorState::ACTIVE:
+      return iterator_->Valid();
+  }
+  NOTREACHED();
+  return false;
 }
 
 leveldb::Status LevelDBIteratorImpl::SeekToLast() {
