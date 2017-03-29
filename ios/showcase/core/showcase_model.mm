@@ -42,11 +42,6 @@
       showcase::kUseCaseKey : @"Tab grid",
     },
     @{
-      showcase::kClassForDisplayKey : @"TabStripContainerViewController",
-      showcase::kClassForInstantiationKey : @"SCTabStripCoordinator",
-      showcase::kUseCaseKey : @"Tab strip container",
-    },
-    @{
       showcase::kClassForDisplayKey : @"TopToolbarTabViewController",
       showcase::kClassForInstantiationKey : @"SCTopToolbarTabCoordinator",
       showcase::kUseCaseKey : @"Top toolbar tab",
