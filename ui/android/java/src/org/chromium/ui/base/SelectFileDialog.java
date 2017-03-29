@@ -292,7 +292,7 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
         public Uri doInBackground(Void...voids) {
             try {
                 Context context = mWindowAndroid.getApplicationContext();
-                return ApiCompatibilityUtils.getUriForImageCaptureFile(context,
+                return ApiCompatibilityUtils.getUriForImageCaptureFile(
                         getFileForImageCapture(context));
             } catch (IOException e) {
                 Log.e(TAG, "Cannot retrieve content uri from file", e);

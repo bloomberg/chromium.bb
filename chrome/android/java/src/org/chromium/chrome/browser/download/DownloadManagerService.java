@@ -225,12 +225,12 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Creates DownloadManagerService.
      */
     @SuppressFBWarnings("LI_LAZY_INIT") // Findbugs doesn't see this is only UI thread.
-    public static DownloadManagerService getDownloadManagerService(Context context) {
+    public static DownloadManagerService getDownloadManagerService() {
         ThreadUtils.assertOnUiThread();
-        context = context.getApplicationContext();
+        Context appContext = ContextUtils.getApplicationContext();
         if (sDownloadManagerService == null) {
-            sDownloadManagerService = new DownloadManagerService(context,
-                    new SystemDownloadNotifier(context),  new Handler(), UPDATE_DELAY_MILLIS);
+            sDownloadManagerService = new DownloadManagerService(appContext,
+                    new SystemDownloadNotifier(appContext), new Handler(), UPDATE_DELAY_MILLIS);
         }
         return sDownloadManagerService;
     }
@@ -1121,7 +1121,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     openDownloadsPage(context);
                 } else {
                     DownloadManagerService service =
-                            DownloadManagerService.getDownloadManagerService(context);
+                            DownloadManagerService.getDownloadManagerService();
                     service.updateLastAccessTime(downloadGuid, isOffTheRecord);
                 }
             }
@@ -1720,8 +1720,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     @CalledByNative
     private static void onDownloadItemCanceled(String fileName, boolean isExternalStorageMissing) {
-        DownloadManagerService service = getDownloadManagerService(
-                ContextUtils.getApplicationContext());
+        DownloadManagerService service = getDownloadManagerService();
         int reason = isExternalStorageMissing ? DownloadManager.ERROR_DEVICE_NOT_FOUND
                 : DownloadManager.ERROR_FILE_ALREADY_EXISTS;
         service.onDownloadFailed(fileName, reason);

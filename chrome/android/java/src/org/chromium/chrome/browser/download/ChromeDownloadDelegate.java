@@ -264,9 +264,8 @@ public class ChromeDownloadDelegate {
      * @param info Download information about the download.
      */
     private void enqueueDownloadManagerRequest(final DownloadInfo info) {
-        DownloadManagerService.getDownloadManagerService(
-                mContext.getApplicationContext()).enqueueDownloadManagerRequest(
-                        new DownloadItem(true, info), true);
+        DownloadManagerService.getDownloadManagerService().enqueueDownloadManagerRequest(
+                new DownloadItem(true, info), true);
         closeBlankTab();
     }
 
@@ -307,8 +306,7 @@ public class ChromeDownloadDelegate {
      * @param reason Reason of failure defined in {@link DownloadManager}
      */
     private void alertDownloadFailure(String fileName, int reason) {
-        DownloadManagerService.getDownloadManagerService(
-                mContext.getApplicationContext()).onDownloadFailed(fileName, reason);
+        DownloadManagerService.getDownloadManagerService().onDownloadFailed(fileName, reason);
     }
 
     /**

@@ -1204,12 +1204,12 @@ public class DownloadNotificationService extends Service {
             return OfflinePageDownloadBridge.getDownloadServiceDelegate();
         }
         if (LegacyHelpers.isLegacyDownload(id)) {
-            return DownloadManagerService.getDownloadManagerService(getApplicationContext());
+            return DownloadManagerService.getDownloadManagerService();
         }
 
         Log.e(TAG, "Unrecognized download type.", id);
         // Return the DownloadManagerService if we can't detect the type.
-        return DownloadManagerService.getDownloadManagerService(getApplicationContext());
+        return DownloadManagerService.getDownloadManagerService();
     }
 
     @VisibleForTesting

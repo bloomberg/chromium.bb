@@ -235,10 +235,9 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     @VisibleForTesting
     void onSuccessNotificationShown(
             final PendingNotificationInfo notificationInfo, final int notificationId) {
-        DownloadManagerService.getDownloadManagerService(
-                mApplicationContext).onSuccessNotificationShown(
-                        notificationInfo.downloadInfo, notificationInfo.canResolve,
-                        notificationId, notificationInfo.systemDownloadId);
+        DownloadManagerService.getDownloadManagerService().onSuccessNotificationShown(
+                notificationInfo.downloadInfo, notificationInfo.canResolve, notificationId,
+                notificationInfo.systemDownloadId);
     }
 
     /**

@@ -205,7 +205,7 @@ public class WebApkInstaller {
             intent.setDataAndType(fileUri, "application/vnd.android.package-archive");
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         } else {
-            Uri source = ContentUriUtils.getContentUriFromFile(context, pathToInstall);
+            Uri source = ContentUriUtils.getContentUriFromFile(pathToInstall);
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.setData(source);

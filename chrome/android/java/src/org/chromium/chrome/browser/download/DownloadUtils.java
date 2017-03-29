@@ -453,7 +453,7 @@ public class DownloadUtils {
         try {
             // Try to obtain a content:// URI, which is preferred to a file:// URI so that
             // receiving apps don't attempt to determine the file's mime type (which often fails).
-            uri = ContentUriUtils.getContentUriFromFile(ContextUtils.getApplicationContext(), file);
+            uri = ContentUriUtils.getContentUriFromFile(file);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Could not create content uri: " + e);
         }
@@ -475,7 +475,7 @@ public class DownloadUtils {
     public static boolean openFile(
             File file, String mimeType, String downloadGuid, boolean isOffTheRecord) {
         Context context = ContextUtils.getApplicationContext();
-        DownloadManagerService service = DownloadManagerService.getDownloadManagerService(context);
+        DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
 
         // Check if Chrome should open the file itself.
         if (service.isDownloadOpenableInBrowser(isOffTheRecord, mimeType)) {

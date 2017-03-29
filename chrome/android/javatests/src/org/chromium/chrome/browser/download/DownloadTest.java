@@ -402,8 +402,7 @@ public class DownloadTest extends DownloadTestBase {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    DownloadManagerService
-                            .getDownloadManagerService(getInstrumentation().getContext())
+                    DownloadManagerService.getDownloadManagerService()
                             .setDownloadManagerRequestInterceptor(interceptor);
                 }
             });

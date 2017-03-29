@@ -218,7 +218,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
                         new TestDownloadManagerService(context, new SystemDownloadNotifier(context),
                                 new Handler(), UPDATE_DELAY_MILLIS));
                 DownloadController.setDownloadNotificationService(
-                        DownloadManagerService.getDownloadManagerService(context));
+                        DownloadManagerService.getDownloadManagerService());
             }
         });
     }

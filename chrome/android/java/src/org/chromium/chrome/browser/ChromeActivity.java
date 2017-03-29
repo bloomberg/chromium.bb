@@ -1181,8 +1181,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void finishNativeInitialization() {
         mNativeInitialized = true;
         maybeRemoveWindowBackground();
-        DownloadManagerService.getDownloadManagerService(
-                getApplicationContext()).onActivityLaunched();
+        DownloadManagerService.getDownloadManagerService().onActivityLaunched();
 
         VrShellDelegate.onNativeLibraryAvailable();
         super.finishNativeInitialization();

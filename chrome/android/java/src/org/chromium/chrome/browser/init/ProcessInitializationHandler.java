@@ -234,7 +234,7 @@ public class ProcessInitializationHandler {
                 assert !CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE);
                 if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
                     DownloadController.setDownloadNotificationService(
-                            DownloadManagerService.getDownloadManagerService(application));
+                            DownloadManagerService.getDownloadManagerService());
                 }
 
                 if (ApiCompatibilityUtils.isPrintingSupported()) {

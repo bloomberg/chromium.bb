@@ -42,7 +42,7 @@ public class ProcessIsolationTest extends ChromeActivityTestCaseBase<ChromeActiv
         // in the RunningAppProcessInfo for isolated processes is the same as the parent process
         // (see b/7724486, closed as "Working as intended").
         // So we have to resort to parsing the ps output.
-        String packageName = BuildInfo.getPackageName(getInstrumentation().getTargetContext());
+        String packageName = BuildInfo.getPackageName();
         assertFalse("Failed to retrieve package name for current version of Chrome.",
                     TextUtils.isEmpty(packageName));
 

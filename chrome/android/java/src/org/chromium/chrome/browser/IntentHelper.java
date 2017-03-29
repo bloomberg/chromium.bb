@@ -61,7 +61,7 @@ public abstract class IntentHelper {
             // up to be shared that way with a <paths> meta-data element, just use a file Uri
             // instead.
             try {
-                fileUri = ContentUriUtils.getContentUriFromFile(context, fileIn);
+                fileUri = ContentUriUtils.getContentUriFromFile(fileIn);
             } catch (IllegalArgumentException ex) {
                 fileUri = Uri.fromFile(fileIn);
             }

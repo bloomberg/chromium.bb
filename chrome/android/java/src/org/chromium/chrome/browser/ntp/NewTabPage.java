@@ -18,7 +18,6 @@ import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -382,8 +381,8 @@ public class NewTabPage
             mSnippetsBridge.onNtpInitialized();
         }
 
-        DownloadManagerService.getDownloadManagerService(ContextUtils.getApplicationContext())
-                .checkForExternallyRemovedDownloads(/*isOffRecord=*/false);
+        DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
+                /*isOffRecord=*/false);
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());

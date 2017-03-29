@@ -90,8 +90,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
 
         @Override
         public DownloadDelegate getDownloadDelegate() {
-            return DownloadManagerService.getDownloadManagerService(
-                    ContextUtils.getApplicationContext());
+            return DownloadManagerService.getDownloadManagerService();
         }
 
         @Override

@@ -185,7 +185,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     }
 
     private void saveUrlForOffline(String url) {
-        OfflinePageNotificationBridge.showDownloadingToast(mActivity);
+        OfflinePageNotificationBridge.showDownloadingToast();
         OfflinePageBridge.getForProfile(mProfile).savePageLater(
                 url, "ntp_suggestions", true /* userRequested */);
     }

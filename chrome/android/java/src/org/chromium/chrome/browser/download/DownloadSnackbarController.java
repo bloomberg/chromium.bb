@@ -51,7 +51,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
             OfflinePageDownloadBridge.openDownloadedPage(download.downloadInfo.getContentId());
             return;
         }
-        DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
+        DownloadManagerService manager = DownloadManagerService.getDownloadManagerService();
         manager.openDownloadedContent(download.downloadInfo, download.systemDownloadId);
         if (download.notificationId != INVALID_NOTIFICATION_ID) {
             NotificationManager notificationManager =
@@ -78,7 +78,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         if (getSnackbarManager() == null) return;
         Snackbar snackbar;
         if (getActivity() instanceof CustomTabActivity) {
-            String packageLabel = BuildInfo.getPackageLabel(getActivity());
+            String packageLabel = BuildInfo.getPackageLabel();
             snackbar = Snackbar.make(mContext.getString(R.string.download_succeeded_message,
                     downloadInfo.getFileName(), packageLabel),
                     this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);
