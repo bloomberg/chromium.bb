@@ -162,7 +162,9 @@ class StaleHostResolverTest : public testing::Test {
   }
 
   void OnNetworkChange() {
+    // Real network changes on Android will send both notifications.
     net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+    net::NetworkChangeNotifier::NotifyObserversOfDNSChangeForTests();
     base::RunLoop().RunUntilIdle();  // Wait for notification.
   }
 

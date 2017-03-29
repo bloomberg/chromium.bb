@@ -2591,11 +2591,11 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
 
   if (config_changed) {
     // If the DNS server has changed, existing cached info could be wrong so we
-    // have to drop our internal cache :( Note that OS level DNS caches, such
+    // have to expire our internal cache :( Note that OS level DNS caches, such
     // as NSCD's cache should be dropped automatically by the OS when
     // resolv.conf changes so we don't need to do anything to clear that cache.
     if (cache_.get()) {
-      cache_->clear();
+      cache_->OnNetworkChange();
       cache_hit_callbacks_.clear();
     }
 
