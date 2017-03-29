@@ -53,10 +53,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeUnreadHeader = kItemTypeEnumZero,
-  ItemTypeUnread,
-  ItemTypeReadHeader,
-  ItemTypeRead,
+  ItemTypeHeader = kItemTypeEnumZero,
+  ItemTypeItem,
 };
 
 // Typedef for a block taking a GURL as parameter and returning nothing.
@@ -319,7 +317,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  if (type == ItemTypeUnread || type == ItemTypeRead)
+  if (type == ItemTypeItem)
     return MDCCellDefaultTwoLineHeight;
   else
     return MDCCellDefaultOneLineHeight;
@@ -593,9 +591,11 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     ReadingListCollectionViewItem* newItem = iterator->second;
     if (oldItem.url == newItem.url) {
       if (![oldItem isEqual:newItem]) {
-        oldItem.text = newItem.text;
-        oldItem.detailText = newItem.detailText;
+        oldItem.title = newItem.title;
+        oldItem.subtitle = newItem.subtitle;
         oldItem.distillationState = newItem.distillationState;
+        oldItem.distillationDate = newItem.distillationDate;
+        oldItem.distillationSize = newItem.distillationSize;
         [itemsToReconfigure addObject:oldItem];
       }
       if (oldItem.faviconPageURL != newItem.faviconPageURL) {
@@ -616,20 +616,27 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
     (const ReadingListEntry&)entry {
   GURL url = entry.URL();
   ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
-            initWithType:entry.IsRead() ? ItemTypeRead : ItemTypeUnread
-                     url:url
-       distillationState:entry.DistilledState()];
+           initWithType:ItemTypeItem
+                    url:url
+      distillationState:entry.DistilledState()];
 
   [self setItem:item
       faviconURL:entry.DistilledURL().is_valid() ? entry.DistilledURL() : url];
 
+  BOOL has_distillation_details =
+      entry.DistilledState() == ReadingListEntry::PROCESSED &&
+      entry.DistillationSize() != 0 && entry.DistillationTime() != 0;
   NSString* fullUrlString =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(url));
   NSString* urlString =
       base::SysUTF16ToNSString(url_formatter::FormatUrl(url.GetOrigin()));
   NSString* title = base::SysUTF8ToNSString(entry.Title());
-  item.text = [title length] ? title : fullUrlString;
-  item.detailText = urlString;
+  item.title = [title length] ? title : fullUrlString;
+  item.subtitle = urlString;
+  item.distillationDate =
+      has_distillation_details ? entry.DistillationTime() : 0;
+  item.distillationSize =
+      has_distillation_details ? entry.DistillationSize() : 0;
   return item;
 }
 
@@ -1165,17 +1172,14 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 
 - (CollectionViewTextItem*)headerForSection:
     (SectionIdentifier)sectionIdentifier {
-  CollectionViewTextItem* header = nil;
+  CollectionViewTextItem* header =
+      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
 
   switch (sectionIdentifier) {
     case SectionIdentifierRead:
-      header = [[CollectionViewTextItem alloc] initWithType:ItemTypeReadHeader];
       header.text = l10n_util::GetNSString(IDS_IOS_READING_LIST_READ_HEADER);
       break;
-
     case SectionIdentifierUnread:
-      header =
-          [[CollectionViewTextItem alloc] initWithType:ItemTypeUnreadHeader];
       header.text = l10n_util::GetNSString(IDS_IOS_READING_LIST_UNREAD_HEADER);
       break;
   }

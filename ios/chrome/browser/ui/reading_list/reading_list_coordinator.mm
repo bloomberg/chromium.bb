@@ -153,8 +153,8 @@ enum UMAContextMenuAction {
 
   _alertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.containerViewController
-                           title:readingListItem.text
-                         message:readingListItem.detailText
+                           title:readingListItem.title
+                         message:readingListItem.subtitle
                             rect:CGRectMake(menuLocation.x, menuLocation.y, 0,
                                             0)
                             view:readingListCollectionViewController

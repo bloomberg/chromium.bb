@@ -16,10 +16,10 @@ class GURL;
 // Collection view item for representing a ReadingListEntry.
 @interface ReadingListCollectionViewItem : CollectionViewItem
 
-// The main text to display.
-@property(nonatomic, copy) NSString* text;
-// The secondary text to display.
-@property(nonatomic, copy) NSString* detailText;
+// The title to display.
+@property(nonatomic, copy) NSString* title;
+// The subtitle to display. This is often the |url|'s origin.
+@property(nonatomic, copy) NSString* subtitle;
 // The URL of the Reading List entry.
 @property(nonatomic, readonly) const GURL& url;
 // The URL of the page presenting the favicon to display.
@@ -27,6 +27,10 @@ class GURL;
 // Status of the offline version.
 @property(nonatomic, assign)
     ReadingListEntry::DistillationState distillationState;
+// Size of the distilled files.
+@property(nonatomic, assign) int64_t distillationSize;
+// Timestamp of the distillation in microseconds since Jan 1st 1970.
+@property(nonatomic, assign) int64_t distillationDate;
 // Delegate for the accessibility actions.
 @property(nonatomic, weak)
     id<ReadingListCollectionViewItemAccessibilityDelegate>
@@ -51,9 +55,13 @@ class GURL;
 @interface ReadingListCell : MDCCollectionViewCell
 
 // Title label.
-@property(nonatomic, readonly, strong) UILabel* textLabel;
-// Detail label.
-@property(nonatomic, readonly, strong) UILabel* detailTextLabel;
+@property(nonatomic, readonly, strong) UILabel* titleLabel;
+// Subtitle label.
+@property(nonatomic, readonly, strong) UILabel* subtitleLabel;
+// Timestamp of the distillation in microseconds since Jan 1st 1970.
+@property(nonatomic, assign) int64_t distillationDate;
+// Size of the distilled files.
+@property(nonatomic, assign) int64_t distillationSize;
 // View for displaying the favicon for the reading list entry.
 @property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
 // Status of the offline version. Updates the visual indicator when updated.

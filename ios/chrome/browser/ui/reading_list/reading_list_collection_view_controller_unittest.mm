@@ -171,9 +171,9 @@ TEST_F(ReadingListCollectionViewControllerTest,
       base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
           [[reading_list_view_controller_ collectionViewModel]
               itemAtIndexPath:indexPath]);
-  EXPECT_EQ(base::SysNSStringToUTF8([readingListItem text]), title);
+  EXPECT_EQ(base::SysNSStringToUTF8([readingListItem title]), title);
   EXPECT_EQ([readingListItem url], url);
-  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem detailText]),
+  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem subtitle]),
             url_formatter::FormatUrl(url));
   EXPECT_EQ([readingListItem faviconPageURL], url);
   EXPECT_EQ([readingListItem distillationState], ReadingListEntry::WAITING);
@@ -203,9 +203,9 @@ TEST_F(ReadingListCollectionViewControllerTest,
       base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
           [[reading_list_view_controller_ collectionViewModel]
               itemAtIndexPath:indexPath]);
-  EXPECT_EQ(base::SysNSStringToUTF8([readingListItem text]), title);
+  EXPECT_EQ(base::SysNSStringToUTF8([readingListItem title]), title);
   EXPECT_EQ([readingListItem url], url);
-  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem detailText]),
+  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem subtitle]),
             url_formatter::FormatUrl(url));
   EXPECT_EQ([readingListItem faviconPageURL], distilled_url);
   EXPECT_EQ([readingListItem distillationState], ReadingListEntry::PROCESSED);

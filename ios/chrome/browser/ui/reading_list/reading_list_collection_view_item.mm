@@ -13,6 +13,7 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,6 +29,9 @@ const CGFloat kDistillationIndicatorSize = 18;
 
 // Margin for the elements displayed in the cell.
 const CGFloat kMargin = 16;
+
+// Transparency of the distillation size and date.
+const CGFloat kInfoTextTransparency = 0.38;
 }  // namespace
 
 #pragma mark - ReadingListCollectionViewItem
@@ -43,11 +47,13 @@ const CGFloat kMargin = 16;
 
 @implementation ReadingListCollectionViewItem
 @synthesize attributes = _attributes;
-@synthesize text = _text;
-@synthesize detailText = _detailText;
+@synthesize title = _title;
+@synthesize subtitle = _subtitle;
 @synthesize url = _url;
 @synthesize faviconPageURL = _faviconPageURL;
 @synthesize distillationState = _distillationState;
+@synthesize distillationDate = _distillationDate;
+@synthesize distillationSize = _distillationSize;
 @synthesize accessibilityDelegate = _accessibilityDelegate;
 
 - (instancetype)initWithType:(NSInteger)type
@@ -69,9 +75,11 @@ const CGFloat kMargin = 16;
   if (self.attributes) {
     [cell.faviconView configureWithAttributes:self.attributes];
   }
-  cell.textLabel.text = self.text;
-  cell.detailTextLabel.text = self.detailText;
+  cell.titleLabel.text = self.title;
+  cell.subtitleLabel.text = self.subtitle;
   cell.distillationState = _distillationState;
+  cell.distillationSize = _distillationSize;
+  cell.distillationDate = _distillationDate;
   cell.isAccessibilityElement = YES;
   cell.accessibilityLabel = [self accessibilityLabel];
   cell.accessibilityCustomActions = [self customActions];
@@ -90,9 +98,9 @@ const CGFloat kMargin = 16;
   }
 
   return l10n_util::GetNSStringF(IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL,
-                                 base::SysNSStringToUTF16(self.text),
+                                 base::SysNSStringToUTF16(self.title),
                                  base::SysNSStringToUTF16(accessibilityState),
-                                 base::SysNSStringToUTF16(self.detailText));
+                                 base::SysNSStringToUTF16(self.subtitle));
 }
 
 #pragma mark - AccessibilityCustomAction
@@ -195,7 +203,7 @@ const CGFloat kMargin = 16;
 
 - (NSString*)description {
   return [NSString stringWithFormat:@"Reading List item \"%@\" for url %@",
-                                    self.text, self.detailText];
+                                    self.title, self.subtitle];
 }
 
 - (BOOL)isEqual:(id)other {
@@ -205,9 +213,11 @@ const CGFloat kMargin = 16;
     return NO;
   ReadingListCollectionViewItem* otherItem =
       static_cast<ReadingListCollectionViewItem*>(other);
-  return [self.text isEqualToString:otherItem.text] &&
-         [self.detailText isEqualToString:otherItem.detailText] &&
-         self.distillationState == otherItem.distillationState;
+  return [self.title isEqualToString:otherItem.title] &&
+         [self.subtitle isEqualToString:otherItem.subtitle] &&
+         self.distillationState == otherItem.distillationState &&
+         self.distillationSize == otherItem.distillationSize &&
+         self.distillationDate == otherItem.distillationDate;
 }
 
 @end
@@ -216,10 +226,22 @@ const CGFloat kMargin = 16;
 
 @implementation ReadingListCell {
   UIImageView* _downloadIndicator;
+  UILayoutGuide* _textGuide;
+
+  UILabel* _distillationSizeLabel;
+  UILabel* _distillationDateLabel;
+
+  // View containing |_distillationSizeLabel| and |_distillationDateLabel|.
+  UIView* _infoView;
+
+  // Whether |_infoView| is visible.
+  BOOL _showInfo;
 }
 @synthesize faviconView = _faviconView;
-@synthesize textLabel = _textLabel;
-@synthesize detailTextLabel = _detailTextLabel;
+@synthesize titleLabel = _titleLabel;
+@synthesize subtitleLabel = _subtitleLabel;
+@synthesize distillationDate = _distillationDate;
+@synthesize distillationSize = _distillationSize;
 @synthesize distillationState = _distillationState;
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -227,15 +249,33 @@ const CGFloat kMargin = 16;
   if (self) {
     MDFRobotoFontLoader* fontLoader = [MDFRobotoFontLoader sharedInstance];
     CGFloat faviconSize = kFaviconPreferredSize;
-    _textLabel = [[UILabel alloc] init];
-    _textLabel.font = [fontLoader mediumFontOfSize:16];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
-    _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _titleLabel = [[UILabel alloc] init];
+    _titleLabel.font = [fontLoader mediumFontOfSize:16];
+    _titleLabel.textColor = [[MDCPalette greyPalette] tint900];
+    _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
-    _detailTextLabel = [[UILabel alloc] init];
-    _detailTextLabel.font = [fontLoader mediumFontOfSize:14];
-    _detailTextLabel.textColor = [[MDCPalette greyPalette] tint500];
-    _detailTextLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _subtitleLabel = [[UILabel alloc] init];
+    _subtitleLabel.font = [fontLoader mediumFontOfSize:14];
+    _subtitleLabel.textColor = [[MDCPalette greyPalette] tint500];
+    _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _distillationDateLabel = [[UILabel alloc] init];
+    _distillationDateLabel.font = [fontLoader mediumFontOfSize:12];
+    [_distillationDateLabel
+        setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                          forAxis:UILayoutConstraintAxisHorizontal];
+    _distillationDateLabel.textColor =
+        [UIColor colorWithWhite:0 alpha:kInfoTextTransparency];
+    _distillationDateLabel.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _distillationSizeLabel = [[UILabel alloc] init];
+    _distillationSizeLabel.font = [fontLoader mediumFontOfSize:12];
+    [_distillationSizeLabel
+        setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                          forAxis:UILayoutConstraintAxisHorizontal];
+    _distillationSizeLabel.textColor =
+        [UIColor colorWithWhite:0 alpha:kInfoTextTransparency];
+    _distillationSizeLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     _faviconView = [[FaviconViewNew alloc] init];
     CGFloat fontSize = floorf(faviconSize / 2);
@@ -246,29 +286,58 @@ const CGFloat kMargin = 16;
     [_downloadIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
     [_faviconView addSubview:_downloadIndicator];
 
-    [self.contentView addSubview:_textLabel];
-    [self.contentView addSubview:_detailTextLabel];
     [self.contentView addSubview:_faviconView];
+    [self.contentView addSubview:_titleLabel];
+    [self.contentView addSubview:_subtitleLabel];
+
+    _infoView = [[UIView alloc] initWithFrame:CGRectZero];
+    [_infoView addSubview:_distillationDateLabel];
+    [_infoView addSubview:_distillationSizeLabel];
+    _infoView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    _textGuide = [[UILayoutGuide alloc] init];
+    [self.contentView addLayoutGuide:_textGuide];
 
     ApplyVisualConstraintsWithMetrics(
         @[
-          @"V:|-(margin)-[title][text]-(margin)-|",
+          @"H:|[date]-(>=margin)-[size]|",
+          @"V:[title][subtitle]",
           @"H:|-(margin)-[favicon]-(margin)-[title]-(>=margin)-|",
-          @"H:[favicon]-(margin)-[text]-(>=margin)-|"
+          @"H:[favicon]-(margin)-[subtitle]-(>=margin)-|",
+          @"V:|[date]|",
+          @"V:|[size]|",
         ],
         @{
-          @"title" : _textLabel,
-          @"text" : _detailTextLabel,
-          @"favicon" : _faviconView
+          @"favicon" : _faviconView,
+          @"title" : _titleLabel,
+          @"subtitle" : _subtitleLabel,
+          @"date" : _distillationDateLabel,
+          @"size" : _distillationSizeLabel,
         },
-        @{ @"margin" : @(kMargin) });
+        @{
+          @"margin" : @(kMargin),
+        });
+
+    // Sets the bottom of the text. Lower the priority so we can add the details
+    // later.
+    NSLayoutConstraint* bottomTextConstraint = [_textGuide.bottomAnchor
+        constraintEqualToAnchor:_subtitleLabel.bottomAnchor];
+    bottomTextConstraint.priority = UILayoutPriorityDefaultHigh;
+    NSLayoutConstraint* topTextConstraint =
+        [_textGuide.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor];
 
     [NSLayoutConstraint activateConstraints:@[
+      topTextConstraint,
+      bottomTextConstraint,
       // Favicons are always the same size.
       [_faviconView.widthAnchor constraintEqualToConstant:faviconSize],
       [_faviconView.heightAnchor constraintEqualToConstant:faviconSize],
+      // Center the content (favicon and text) vertically.
       [_faviconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
+      [_textGuide.centerYAnchor
+          constraintEqualToAnchor:self.contentView.centerYAnchor],
+
       // Place the download indicator in the bottom right corner of the favicon.
       [[_downloadIndicator centerXAnchor]
           constraintEqualToAnchor:_faviconView.trailingAnchor],
@@ -309,12 +378,72 @@ const CGFloat kMargin = 16;
   }
 }
 
+- (void)setShowInfo:(BOOL)show {
+  if (_showInfo == show) {
+    return;
+  }
+  _showInfo = show;
+  if (!show) {
+    [_infoView removeFromSuperview];
+    return;
+  }
+  [self.contentView addSubview:_infoView];
+  ApplyVisualConstraintsWithMetrics(
+      @[
+        @"H:|-(margin)-[favicon]-(margin)-[detail]-(margin)-|",
+      ],
+      @{
+        @"favicon" : _faviconView,
+        @"detail" : _infoView,
+      },
+      @{
+        @"margin" : @(kMargin),
+      });
+  [NSLayoutConstraint activateConstraints:@[
+    [_infoView.topAnchor constraintEqualToAnchor:_subtitleLabel.bottomAnchor],
+    [_infoView.bottomAnchor constraintEqualToAnchor:_textGuide.bottomAnchor],
+  ]];
+}
+
+- (void)setDistillationSize:(int64_t)distillationSize {
+  [_distillationSizeLabel
+      setText:[NSByteCountFormatter
+                  stringFromByteCount:distillationSize
+                           countStyle:NSByteCountFormatterCountStyleFile]];
+  _distillationSize = distillationSize;
+  BOOL showInfo = _distillationSize != 0 && _distillationDate != 0;
+  [self setShowInfo:showInfo];
+}
+
+- (void)setDistillationDate:(int64_t)distillationDate {
+  int64_t now = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+  int64_t elapsed = now - distillationDate;
+  NSString* text;
+  if (elapsed < base::Time::kMicrosecondsPerMinute) {
+    // This will also catch items added in the future. In that case, show the
+    // "just now" string.
+    text = l10n_util::GetNSString(IDS_IOS_READING_LIST_JUST_NOW);
+  } else {
+    text = base::SysUTF16ToNSString(ui::TimeFormat::Simple(
+        ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
+        base::TimeDelta::FromMicroseconds(elapsed)));
+  }
+
+  [_distillationDateLabel setText:text];
+  _distillationDate = distillationDate;
+  BOOL showInfo = _distillationSize != 0 && _distillationDate != 0;
+  [self setShowInfo:showInfo];
+}
+
 #pragma mark - UICollectionViewCell
 
 - (void)prepareForReuse {
-  self.textLabel.text = nil;
-  self.detailTextLabel.text = nil;
+  self.titleLabel.text = nil;
+  self.subtitleLabel.text = nil;
   self.distillationState = ReadingListEntry::WAITING;
+  self.distillationDate = 0;
+  self.distillationSize = 0;
+  [self setShowInfo:NO];
   self.accessibilityCustomActions = nil;
   [super prepareForReuse];
 }
