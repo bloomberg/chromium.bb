@@ -17,6 +17,11 @@
 #include "ui/base/webui/web_ui_util.h"
 
 SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
+    : SyncConfirmationUI(web_ui, base::MakeUnique<SyncConfirmationHandler>()) {}
+
+SyncConfirmationUI::SyncConfirmationUI(
+    content::WebUI* web_ui,
+    std::unique_ptr<SyncConfirmationHandler> handler)
     : WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   bool is_sync_allowed = profile->IsSyncAllowed();
@@ -62,9 +67,5 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   source->AddLocalizedStrings(strings);
 
   content::WebUIDataSource::Add(profile, source);
-}
-
-void SyncConfirmationUI::InitializeMessageHandlerWithBrowser(Browser* browser) {
-  web_ui()->AddMessageHandler(
-      base::MakeUnique<SyncConfirmationHandler>(browser));
+  web_ui->AddMessageHandler(std::move(handler));
 }

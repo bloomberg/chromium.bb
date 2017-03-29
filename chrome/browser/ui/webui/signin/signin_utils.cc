@@ -65,17 +65,17 @@ Browser* GetDesktopBrowser(content::WebUI* web_ui) {
   return browser;
 }
 
-void SetInitializedModalHeight(Browser* browser,
-                               content::WebUI* web_ui,
+void SetInitializedModalHeight(content::WebUI* web_ui,
                                const base::ListValue* args) {
-  if (!browser)
-    return;
-
   double height;
   const bool success = args->GetDouble(0, &height);
   DCHECK(success);
-  browser->signin_view_controller()->SetModalSigninHeight(
-      static_cast<int>(height));
+
+  Browser* browser = GetDesktopBrowser(web_ui);
+  if (browser) {
+    browser->signin_view_controller()->SetModalSigninHeight(
+        static_cast<int>(height));
+  }
 }
 
 bool IsForceSigninEnabled() {
