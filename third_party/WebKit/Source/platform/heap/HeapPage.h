@@ -229,7 +229,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // TODO(633030): Make |checkHeader| and |zapMagic| private. This class should
   // manage its integrity on its own, without requiring outside callers to
   // explicitly check.
-  bool checkHeader() const;
+  void checkHeader() const;
 
 #if DCHECK_IS_ON() && CPU(64BIT)
   // Zap |m_magic| with a new magic number that means there was once an object
@@ -838,11 +838,10 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   return result;
 }
 
-NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::checkHeader() const {
+NO_SANITIZE_ADDRESS inline void HeapObjectHeader::checkHeader() const {
 #if CPU(64BIT)
-  return m_magic == getMagic();
-#else
-  return true;
+  const bool good = getMagic() == m_magic;
+  DCHECK(good);
 #endif
 }
 
@@ -868,7 +867,7 @@ inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload) {
   Address addr = reinterpret_cast<Address>(const_cast<void*>(payload));
   HeapObjectHeader* header =
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
-  ASSERT(header->checkHeader());
+  header->checkHeader();
   return header;
 }
 
@@ -928,35 +927,35 @@ inline uint32_t HeapObjectHeader::getMagic() const {
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isWrapperHeaderMarked()
     const {
-  ASSERT(checkHeader());
+  checkHeader();
   return m_encoded & headerWrapperMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::markWrapperHeader() {
-  ASSERT(checkHeader());
+  checkHeader();
   ASSERT(!isWrapperHeaderMarked());
   m_encoded |= headerWrapperMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::unmarkWrapperHeader() {
-  ASSERT(checkHeader());
+  checkHeader();
   ASSERT(isWrapperHeaderMarked());
   m_encoded &= ~headerWrapperMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::isMarked() const {
-  ASSERT(checkHeader());
+  checkHeader();
   return m_encoded & headerMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::mark() {
-  ASSERT(checkHeader());
+  checkHeader();
   ASSERT(!isMarked());
   m_encoded = m_encoded | headerMarkBitMask;
 }
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::unmark() {
-  ASSERT(checkHeader());
+  checkHeader();
   ASSERT(isMarked());
   m_encoded &= ~headerMarkBitMask;
 }

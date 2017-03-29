@@ -313,7 +313,7 @@ void HeapVectorBacking<T, Traits>::finalize(void* pointer) {
 
   ASSERT(!WTF::IsTriviallyDestructible<T>::value);
   HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
-  ASSERT(header->checkHeader());
+  header->checkHeader();
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
   size_t length = header->payloadSize() / sizeof(T);
@@ -342,7 +342,7 @@ void HeapHashTableBacking<Table>::finalize(void* pointer) {
   using Value = typename Table::ValueType;
   ASSERT(!WTF::IsTriviallyDestructible<Value>::value);
   HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
-  ASSERT(header->checkHeader());
+  header->checkHeader();
   // Use the payload size as recorded by the heap to determine how many
   // elements to finalize.
   size_t length = header->payloadSize() / sizeof(Value);

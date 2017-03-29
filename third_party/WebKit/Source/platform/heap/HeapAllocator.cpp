@@ -22,7 +22,7 @@ void HeapAllocator::backingFree(void* address) {
     return;
 
   HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
-  ASSERT(header->checkHeader());
+  header->checkHeader();
   NormalPageArena* arena = static_cast<NormalPage*>(page)->arenaForNormalPage();
   state->promptlyFreed(header->gcInfoIndex());
   arena->promptlyFreeObject(header);
@@ -58,7 +58,7 @@ bool HeapAllocator::backingExpand(void* address, size_t newSize) {
     return false;
 
   HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
-  ASSERT(header->checkHeader());
+  header->checkHeader();
   NormalPageArena* arena = static_cast<NormalPage*>(page)->arenaForNormalPage();
   bool succeed = arena->expandObject(header, newSize);
   if (succeed)
@@ -100,7 +100,7 @@ bool HeapAllocator::backingShrink(void* address,
     return false;
 
   HeapObjectHeader* header = HeapObjectHeader::fromPayload(address);
-  ASSERT(header->checkHeader());
+  header->checkHeader();
   NormalPageArena* arena = static_cast<NormalPage*>(page)->arenaForNormalPage();
   // We shrink the object only if the shrinking will make a non-small
   // prompt-free block.
