@@ -105,7 +105,7 @@
       'CFI Linux CF': 'cfi_full_cfi_diag_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
       'CFI Linux': 'cfi_release_static',
-      'CFI Linux Full': 'cfi_full_release_static',
+      'CFI Linux Full': 'cfi_thin_lto_full_release_static_use_lld',
       'CFI ThinLTO Linux ToT': 'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary': 'release_bot',
@@ -182,8 +182,8 @@
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot',
       'MD Top Chrome Linux material': 'debug_bot',
-      'LTO Linux': 'official_goma_lto',
-      'LTO Linux Perf': 'official_goma_lto',
+      'LTO Linux': 'official_goma_thin_lto_use_lld',
+      'LTO Linux Perf': 'official_goma_thin_lto_use_lld',
       'Libfuzzer Upload Linux ASan': 'release_libfuzzer_asan',
       'Libfuzzer Upload Linux ASan Debug': 'debug_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'release_libfuzzer_msan',
@@ -998,10 +998,6 @@
       'cfi_full', 'clang_tot', 'release', 'static',
     ],
 
-    'cfi_full_release_static': [
-      'cfi_full', 'release', 'static',
-    ],
-
     'cfi_full_release_static_dcheck_always_on': [
       'cfi_full', 'release', 'static', 'dcheck_always_on',
     ],
@@ -1012,6 +1008,10 @@
 
     'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld': [
       'cfi', 'thin_lto', 'clang_tot', 'full_symbols', 'release', 'static', 'use_lld',
+    ],
+
+    'cfi_thin_lto_full_release_static_use_lld': [
+      'cfi', 'thin_lto', 'release', 'static', 'use_lld',
     ],
 
     'chrome_with_codecs_blink_logging_release_trybot': [
@@ -1353,8 +1353,8 @@
       'official', 'goma', 'chromeos',
     ],
 
-    'official_goma_lto': [
-      'official', 'goma', 'lto',
+    'official_goma_thin_lto_use_lld': [
+      'official', 'goma', 'thin_lto', 'use_lld',
     ],
 
     'official_goma_minimal_symbols_android': [
