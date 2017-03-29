@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -1305,7 +1306,7 @@ public class TabPersistentStore extends TabPersister {
 
     private boolean isTabUrlContentScheme(Tab tab) {
         String url = tab.getUrl();
-        return url != null && url.startsWith("content");
+        return url != null && url.startsWith(UrlConstants.CONTENT_SCHEME);
     }
 
     /**

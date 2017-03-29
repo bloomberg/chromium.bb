@@ -437,7 +437,7 @@ public class ChromeLauncherActivity extends Activity
         }
         Uri uri = newIntent.getData();
         boolean isContentScheme = false;
-        if (uri != null && "content".equals(uri.getScheme())) {
+        if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {
             isContentScheme = true;
             newIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
