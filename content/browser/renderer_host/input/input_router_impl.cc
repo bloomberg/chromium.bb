@@ -184,8 +184,8 @@ void InputRouterImpl::SendGestureEvent(
       // GestureScrollUpdate event.  Eg. if the page consumes all touchmoves
       // then no scrolling really ever occurs (even though we still send
       // GestureScrollBegin).
-      touch_event_queue_->PrependTouchScrollNotification();
       touch_scroll_started_sent_ = true;
+      touch_event_queue_->PrependTouchScrollNotification();
     }
     touch_event_queue_->OnGestureScrollEvent(gesture_event);
   }
