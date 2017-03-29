@@ -8,19 +8,7 @@ chromevox_out_dir = "$root_out_dir/resources/chromeos/chromevox"
 
 group("chromevox_third_party_resources") {
   deps = [
-    ":chromevox_third_party_background_resources",
     ":chromevox_third_party_injected_resources",
-  ]
-}
-
-copy("chromevox_third_party_background_resources") {
-  sources = [
-    "chromevox/background/chrome_shared2.css",
-    "chromevox/background/options.css",
-    "chromevox/background/options_widgets.css",
-  ]
-  outputs = [
-    "$chromevox_out_dir/chromevox/background/{{source_file_part}}",
   ]
 }
 

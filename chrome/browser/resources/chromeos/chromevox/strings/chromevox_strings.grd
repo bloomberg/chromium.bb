@@ -441,11 +441,15 @@
       <message desc="An options page section header for options about the ChromeVox virtual display. This section lets users change the rows, columns, and display style of the virtual braille display." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY">
         Virtual Braille Display
       </message>
-      <message desc="The label for a numberic input field where the user can choose the number of rows in a grid." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY_ROWS">
-        Rows:
+      <message desc="An explanatory paragraph as part of the ChromeVox options page. Explains that the section on virtual braille display allows the user to control a simulation of a refreshable braille display (a physical hardware device) in the panel at the top of the screen." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY_DETAILS">
+        Simulates the output of a refreshable braille display
+        in the ChromeVox panel at the top of the screen.
       </message>
-      <message desc="The label for a numberic input field where the user can choose the number of columns in a grid." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY_COLUMNS">
-        Columns:
+      <message desc="The label for a numberic input field where the user can choose the number of lines of text in a grid." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY_ROWS">
+        Lines:
+      </message>
+      <message desc="The label for a numberic input field where the user can choose the number of cells in each line of a grid." name="IDS_CHROMEVOX_OPTIONS_VIRTUAL_BRAILLE_DISPLAY_COLUMNS">
+        Cells in each line:
       </message>
       <message desc="A description that tells the user that the current display style of the virtual display interleaves braille and regular text, one on top of the other." name="IDS_CHROMEVOX_OPTIONS_CURRENT_DISPLAY_STYLE_INTERLEAVE">
         Current display style is interleave.
@@ -496,7 +500,7 @@
         Voices
       </message>
       <message desc="Labels the voice selection list box." name="IDS_CHROMEVOX_OPTIONS_VOICES_DESCRIPTION">
-        Change the current voice by selecting an option from the list below.
+        Select current voice:
       </message>
       <message desc="An options page section header for options about the ChromeVox braille support. This section allows the user to customize varous aspects of the braille output and input support." name="IDS_CHROMEVOX_OPTIONS_BRAILLE">
         Braille
@@ -508,7 +512,7 @@
         Switch to 6 dot braille
       </message>
       <message desc="Labels the braille table selection list box.  A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_DESCRIPTION_6">
-        Change the current 6 dot braille table by selecting an option from the list below.
+        Select a 6-dot braille table:
       </message>
       <message desc="How to present the name of a braille table to the user. For example, a locale could be 'English (United States)' and a grade could be '2'. Together they would be 'English (UnitedStates), Grade 2'. A braille table describes how text gets converted from Unicode text into a pattern of braille dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_BRAILLE_TABLE_NAME_WITH_GRADE">
         <ph name="locale">$1</ph>, Grade <ph name="grade">$2</ph>
@@ -520,7 +524,7 @@
         <ph name="locale">$1</ph> (<ph name="variant">$2</ph>), Grade <ph name="grade">$3</ph>
       </message>
       <message desc="Labels the braille table selection list box.  A braille table describes how text gets converted from a unicode encoding into a pattern of dots. This varies based on locale and contraction. See http://en.wikipedia.org/wiki/Braille for a more in-depth discussion." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_DESCRIPTION_8">
-        Change the current 8 dot braille table by selecting an option from the list below.
+        Select an 8-dot braille table:
       </message>
       <message desc="Labels the checkbox that enables wrapping of words if a whole line doesn't fit on a braille display. When this option is enabled, an effort is made to keep the characters of words together on the display. Otherwise, as many characters as possible are put on each braille display line, possible splitting words between lines." name="IDS_CHROMEVOX_OPTIONS_BRAILLE_WORD_WRAP">
         Enable word wrap

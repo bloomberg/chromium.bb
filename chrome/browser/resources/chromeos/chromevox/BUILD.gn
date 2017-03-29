@@ -265,6 +265,7 @@ run_jsbundler("chromevox_copied_files") {
   dest_dir = chromevox_out_dir
   sources = [
     "chromevox/background/background.html",
+    "chromevox/background/checked.png",
     "chromevox/background/earcons/alert_modal.ogg",
     "chromevox/background/earcons/alert_nonmodal.ogg",
     "chromevox/background/earcons/button.ogg",
@@ -325,7 +326,9 @@ run_jsbundler("chromevox_copied_files") {
     "chromevox/background/mathmaps/symbols/math_symbols.json",
     "chromevox/background/mathmaps/symbols/math_whitespace.json",
     "chromevox/background/mathmaps/symbols/other_stars.json",
+    "chromevox/background/options.css",
     "chromevox/background/options.html",
+    "chromevox/background/unchecked.png",
     "chromevox/injected/api.js",
     "cvox2/background/background.html",
     "cvox2/background/earcons/control.wav",

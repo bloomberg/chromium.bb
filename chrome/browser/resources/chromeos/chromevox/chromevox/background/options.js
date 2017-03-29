@@ -277,26 +277,18 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
   var updateTableType = function(setFocus) {
     var currentTableType = localStorage['brailleTableType'] || 'brailleTable6';
     if (currentTableType == 'brailleTable6') {
-      select6.removeAttribute('aria-hidden');
-      select6.setAttribute('tabIndex', 0);
-      select6.style.display = 'block';
+      select6.parentElement.style.display = 'block';
+      select8.parentElement.style.display = 'none';
       if (setFocus) {
         select6.focus();
       }
-      select8.setAttribute('aria-hidden', 'true');
-      select8.setAttribute('tabIndex', -1);
-      select8.style.display = 'none';
       localStorage['brailleTable'] = localStorage['brailleTable6'];
       localStorage['brailleTableType'] = 'brailleTable6';
       tableTypeButton.textContent =
           Msgs.getMsg('options_braille_table_type_6');
     } else {
-      select6.setAttribute('aria-hidden', 'true');
-      select6.setAttribute('tabIndex', -1);
-      select6.style.display = 'none';
-      select8.removeAttribute('aria-hidden');
-      select8.setAttribute('tabIndex', 0);
-      select8.style.display = 'block';
+      select6.parentElement.style.display = 'none';
+      select8.parentElement.style.display = 'block';
       if (setFocus) {
         select8.focus();
       }
