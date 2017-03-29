@@ -494,8 +494,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     private ImeAdapter createImeAdapter() {
-        return new ImeAdapter(mWebContents, new InputMethodManagerWrapper(mContext),
-                new ImeAdapter.ImeAdapterDelegate() {
+        return new ImeAdapter(
+                new InputMethodManagerWrapper(mContext), new ImeAdapter.ImeAdapterDelegate() {
                     @Override
                     public void onImeEvent() {
                         mPopupZoomer.hide(true);
@@ -583,9 +583,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         initPopupZoomer(mContext);
         mImeAdapter = createImeAdapter();
+        attachImeAdapter();
 
         mSelectionPopupController = new SelectionPopupController(mContext, windowAndroid,
-                webContents, viewDelegate.getContainerView(), mRenderCoordinates);
+                webContents, viewDelegate.getContainerView(), mRenderCoordinates, mImeAdapter);
         mSelectionPopupController.setCallback(ActionModeCallbackHelper.EMPTY_CALLBACK);
         mSelectionPopupController.setContainerView(getContainerView());
 
@@ -1775,14 +1776,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     }
 
     @CalledByNative
-    private void updateImeAdapter(int textInputType, int textInputFlags, int textInputMode,
-            String text, int selectionStart, int selectionEnd, int compositionStart,
-            int compositionEnd, boolean showImeIfNeeded, boolean replyToRequest) {
+    private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
+            int textInputFlags, int textInputMode, String text, int selectionStart,
+            int selectionEnd, int compositionStart, int compositionEnd, boolean showImeIfNeeded,
+            boolean replyToRequest) {
         try {
             TraceEvent.begin("ContentViewCore.updateImeAdapter");
             boolean focusedNodeEditable = (textInputType != TextInputType.NONE);
             boolean focusedNodeIsPassword = (textInputType == TextInputType.PASSWORD);
 
+            mImeAdapter.attach(nativeImeAdapterAndroid);
             mImeAdapter.updateState(textInputType, textInputFlags, textInputMode, showImeIfNeeded,
                     text, selectionStart, selectionEnd, compositionStart, compositionEnd,
                     replyToRequest);
@@ -1797,6 +1800,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         } finally {
             TraceEvent.end("ContentViewCore.updateImeAdapter");
         }
+    }
+
+    @CalledByNative
+    private void forceUpdateImeAdapter(long nativeImeAdapterAndroid) {
+        mImeAdapter.attach(nativeImeAdapterAndroid);
     }
 
     /**
@@ -1909,8 +1917,18 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @SuppressWarnings("unused")
     @CalledByNative
     private void onRenderProcessChange() {
+        attachImeAdapter();
         // Immediately sync closed caption settings to the new render process.
         mSystemCaptioningBridge.syncToListener(this);
+    }
+
+    /**
+     * Attaches the native ImeAdapter object to the java ImeAdapter to allow communication via JNI.
+     */
+    public void attachImeAdapter() {
+        if (mImeAdapter != null && mNativeContentViewCore != 0) {
+            mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
+        }
     }
 
     /**
@@ -2656,6 +2674,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     private native void nativeSelectPopupMenuItems(long nativeContentViewCoreImpl,
             long nativeSelectPopupSourceFrame, int[] indices);
+
+
+    private native long nativeGetNativeImeAdapter(long nativeContentViewCoreImpl);
 
     private native int nativeGetCurrentRenderProcessId(long nativeContentViewCoreImpl);
 

@@ -17,11 +17,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.TestImeAdapterDelegate;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellTestBase;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 
 /**
  * Tests for PopupZoomer.
@@ -84,30 +80,13 @@ public class PopupZoomerTest extends ContentShellTestBase {
         super.setUp();
         mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
         mContentViewCore = new ContentViewCore(getActivity(), "");
-
-        // Use CVC from shell base for necessary but uninitialized parts, such as container view
-        // or web contents. This still works since they are checked only the init step,
-        // not actually used in the tests themselves.
-        ImeAdapter imeAdapter = createImeAdapterOnUiThread(getContentViewCore().getWebContents());
-        mContentViewCore.setSelectionPopupControllerForTesting(new SelectionPopupController(
-                getActivity(), null, null, null, mContentViewCore.getRenderCoordinates()));
+        ImeAdapter imeAdapter = new ImeAdapter(new TestInputMethodManagerWrapper(mContentViewCore),
+                new TestImeAdapterDelegate(getContentViewCore().getContainerView()));
+        mContentViewCore.setSelectionPopupControllerForTesting(
+                new SelectionPopupController(getActivity(), null, null, null,
+                        mContentViewCore.getRenderCoordinates(), imeAdapter));
         mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
         mContentViewCore.setImeAdapterForTest(imeAdapter);
-    }
-
-    private ImeAdapter createImeAdapterOnUiThread(final WebContents webContents) throws Exception {
-        // WebContents should be handled on UI thread.
-        FutureTask<ImeAdapter> task = new FutureTask<>(new Callable<ImeAdapter>() {
-            @Override
-            public ImeAdapter call() {
-                return new ImeAdapter(webContents,
-                        new TestInputMethodManagerWrapper(mContentViewCore),
-                        new TestImeAdapterDelegate(getContentViewCore().getContainerView()));
-            }
-
-        });
-        getInstrumentation().runOnMainSync(task);
-        return task.get();
     }
 
     @SmallTest

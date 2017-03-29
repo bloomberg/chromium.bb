@@ -24,6 +24,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
+#include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -50,7 +51,6 @@ struct DidOverscrollParams;
 
 namespace content {
 class ContentViewCoreImpl;
-class ImeAdapterAndroid;
 class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -222,9 +222,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
-  void set_ime_adapter(ImeAdapterAndroid* ime_adapter) {
-    ime_adapter_android_ = ime_adapter;
-  }
 
   void OnStartContentIntent(const GURL& content_url, bool is_main_frame);
 
@@ -233,6 +230,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void ResetGestureDetection();
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);
+
+  long GetNativeImeAdapter();
 
   void WasResized();
 
@@ -268,7 +267,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnTextSelectionChanged(TextInputManager* text_input_manager,
                               RenderWidgetHostViewBase* updated_view) override;
 
-  ImeAdapterAndroid* ime_adapter_for_testing() { return ime_adapter_android_; }
+  ImeAdapterAndroid* ime_adapter_for_testing() { return &ime_adapter_android_; }
 
   // Exposed for tests.
   cc::SurfaceId SurfaceIdForTesting() const override;
@@ -351,7 +350,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;
 
-  ImeAdapterAndroid* ime_adapter_android_;
+  ImeAdapterAndroid ime_adapter_android_;
 
   // Body background color of the underlying document.
   SkColor cached_background_color_;
