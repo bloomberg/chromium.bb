@@ -739,8 +739,6 @@ void DelegatedFrameHost::OnCompositingStarted(ui::Compositor* compositor,
   last_draw_ended_ = start_time;
 }
 
-void DelegatedFrameHost::OnCompositingEnded(ui::Compositor* compositor) {}
-
 void DelegatedFrameHost::OnCompositingLockStateChanged(
     ui::Compositor* compositor) {
   // A compositor lock that is part of a resize lock timed out. We

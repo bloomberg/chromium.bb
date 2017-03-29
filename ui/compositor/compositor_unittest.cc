@@ -114,14 +114,14 @@ TEST_F(CompositorTest, MAYBE_CreateAndReleaseOutputSurface) {
   compositor()->SetScaleAndSize(1.0f, gfx::Size(10, 10));
   DCHECK(compositor()->IsVisible());
   compositor()->ScheduleDraw();
-  DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  DrawWaiterForTest::WaitForCompositingStarted(compositor());
   compositor()->SetVisible(false);
   EXPECT_EQ(gfx::kNullAcceleratedWidget,
             compositor()->ReleaseAcceleratedWidget());
   compositor()->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   compositor()->SetVisible(true);
   compositor()->ScheduleDraw();
-  DrawWaiterForTest::WaitForCompositingEnded(compositor());
+  DrawWaiterForTest::WaitForCompositingStarted(compositor());
   compositor()->SetRootLayer(nullptr);
 }
 

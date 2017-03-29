@@ -82,7 +82,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
       context_factory_private_(context_factory_private),
       root_layer_(NULL),
       widget_(gfx::kNullAcceleratedWidget),
-      committed_frame_number_(0),
+      activated_frame_count_(0),
       widget_valid_(false),
       compositor_frame_sink_requested_(false),
       frame_sink_id_(frame_sink_id),
@@ -530,9 +530,7 @@ void Compositor::DidCommit() {
 }
 
 void Compositor::DidReceiveCompositorFrameAck() {
-  ++committed_frame_number_;
-  for (auto& observer : observer_list_)
-    observer.OnCompositingEnded(this);
+  ++activated_frame_count_;
 }
 
 void Compositor::DidSubmitCompositorFrame() {

@@ -1084,7 +1084,7 @@ LayerAnimatorCollection* Layer::GetLayerAnimatorCollection() {
 
 int Layer::GetFrameNumber() const {
   const Compositor* compositor = GetCompositor();
-  return compositor ? compositor->committed_frame_number() : 0;
+  return compositor ? compositor->activated_frame_count() : 0;
 }
 
 float Layer::GetRefreshRate() const {

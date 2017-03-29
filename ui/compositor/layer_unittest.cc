@@ -188,7 +188,7 @@ class LayerWithRealCompositorTest : public testing::Test {
   void DrawTree(Layer* root) {
     GetCompositor()->SetRootLayer(root);
     GetCompositor()->ScheduleDraw();
-    WaitForSwap();
+    WaitForDraw();
   }
 
   void ReadPixels(SkBitmap* bitmap) {
@@ -220,10 +220,6 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   void WaitForDraw() {
     ui::DrawWaiterForTest::WaitForCompositingStarted(GetCompositor());
-  }
-
-  void WaitForSwap() {
-    DrawWaiterForTest::WaitForCompositingEnded(GetCompositor());
   }
 
   void WaitForCommit() {
@@ -368,12 +364,11 @@ class TestCompositorObserver : public CompositorObserver {
   TestCompositorObserver() = default;
 
   bool committed() const { return committed_; }
-  bool notified() const { return started_ && ended_; }
+  bool started() const { return started_; }
 
   void Reset() {
     committed_ = false;
     started_ = false;
-    ended_ = false;
   }
 
  private:
@@ -386,15 +381,12 @@ class TestCompositorObserver : public CompositorObserver {
     started_ = true;
   }
 
-  void OnCompositingEnded(Compositor* compositor) override { ended_ = true; }
-
   void OnCompositingLockStateChanged(Compositor* compositor) override {}
 
   void OnCompositingShuttingDown(Compositor* compositor) override {}
 
   bool committed_ = false;
   bool started_ = false;
-  bool ended_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorObserver);
 };
@@ -1317,7 +1309,7 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   // Explicitly called DrawTree should cause the observers to be notified.
   // NOTE: this call to DrawTree sets l1 to be the compositor's root layer.
   DrawTree(l1.get());
-  EXPECT_TRUE(observer.notified());
+  EXPECT_TRUE(observer.started());
 
   // ScheduleDraw without any visible change should cause a commit.
   observer.Reset();
@@ -1328,26 +1320,26 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   // Moving, but not resizing, a layer should alert the observers.
   observer.Reset();
   l2->SetBounds(gfx::Rect(0, 0, 350, 350));
-  WaitForSwap();
-  EXPECT_TRUE(observer.notified());
+  WaitForDraw();
+  EXPECT_TRUE(observer.started());
 
   // So should resizing a layer.
   observer.Reset();
   l2->SetBounds(gfx::Rect(0, 0, 400, 400));
-  WaitForSwap();
-  EXPECT_TRUE(observer.notified());
+  WaitForDraw();
+  EXPECT_TRUE(observer.started());
 
   // Opacity changes should alert the observers.
   observer.Reset();
   l2->SetOpacity(0.5f);
-  WaitForSwap();
-  EXPECT_TRUE(observer.notified());
+  WaitForDraw();
+  EXPECT_TRUE(observer.started());
 
   // So should setting the opacity back.
   observer.Reset();
   l2->SetOpacity(1.0f);
-  WaitForSwap();
-  EXPECT_TRUE(observer.notified());
+  WaitForDraw();
+  EXPECT_TRUE(observer.started());
 
   // Setting the transform of a layer should alert the observers.
   observer.Reset();
@@ -1356,17 +1348,17 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   transform.Rotate(90.0);
   transform.Translate(-200.0, -200.0);
   l2->SetTransform(transform);
-  WaitForSwap();
-  EXPECT_TRUE(observer.notified());
+  WaitForDraw();
+  EXPECT_TRUE(observer.started());
 
   GetCompositor()->RemoveObserver(&observer);
 
   // Opacity changes should no longer alert the removed observer.
   observer.Reset();
   l2->SetOpacity(0.5f);
-  WaitForSwap();
+  WaitForDraw();
 
-  EXPECT_FALSE(observer.notified());
+  EXPECT_FALSE(observer.started());
 }
 
 // Checks that modifying the hierarchy correctly affects final composite.
@@ -2179,7 +2171,7 @@ TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   EXPECT_EQ(0u, animation_observer.animation_step_count());
 
   root->SetOpacity(0.5f);
-  WaitForSwap();
+  WaitForDraw();
   EXPECT_EQ(1u, animation_observer.animation_step_count());
 
   EXPECT_FALSE(animation_observer.shutdown());
@@ -2225,7 +2217,7 @@ TEST_F(LayerWithRealCompositorTest, ReportMetrics) {
   animation_sequence->SetAnimationMetricsReporter(&reporter);
   animator->StartAnimation(animation_sequence);
   while (!reporter.report_called())
-    WaitForSwap();
+    WaitForDraw();
   ResetCompositor();
   // Even though most of the time 100% smooth animations are expected, on the
   // test bots this cannot be guaranteed. Therefore simply check that some

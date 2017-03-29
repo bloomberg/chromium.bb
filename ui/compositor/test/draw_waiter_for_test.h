@@ -25,9 +25,6 @@ class DrawWaiterForTest : public CompositorObserver {
   // not to draw.
   static void WaitForCompositingStarted(Compositor* compositor);
 
-  // Waits for a swap to be completed from the compositor.
-  static void WaitForCompositingEnded(Compositor* compositor);
-
   // Waits for a commit instead of a draw.
   static void WaitForCommit(Compositor* compositor);
 
@@ -35,7 +32,6 @@ class DrawWaiterForTest : public CompositorObserver {
   enum WaitEvent {
     WAIT_FOR_COMMIT,
     WAIT_FOR_COMPOSITING_STARTED,
-    WAIT_FOR_COMPOSITING_ENDED,
   };
   DrawWaiterForTest(WaitEvent wait_event);
   ~DrawWaiterForTest();
@@ -46,7 +42,6 @@ class DrawWaiterForTest : public CompositorObserver {
   void OnCompositingDidCommit(Compositor* compositor) override;
   void OnCompositingStarted(Compositor* compositor,
                             base::TimeTicks start_time) override;
-  void OnCompositingEnded(Compositor* compositor) override;
   void OnCompositingLockStateChanged(Compositor* compositor) override;
   void OnCompositingShuttingDown(Compositor* compositor) override;
 

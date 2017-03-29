@@ -387,7 +387,7 @@ class COMPOSITOR_EXPORT Compositor
   }
 
   const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
-  int committed_frame_number() const { return committed_frame_number_; }
+  int activated_frame_count() const { return activated_frame_count_; }
   float refresh_rate() const { return refresh_rate_; }
 
  private:
@@ -413,7 +413,7 @@ class COMPOSITOR_EXPORT Compositor
 
   gfx::AcceleratedWidget widget_;
   // A sequence number of a current compositor frame for use with metrics.
-  int committed_frame_number_;
+  int activated_frame_count_;
 
   // current VSYNC refresh rate per second.
   float refresh_rate_;
