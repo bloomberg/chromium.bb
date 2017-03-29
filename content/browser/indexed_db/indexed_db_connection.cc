@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"

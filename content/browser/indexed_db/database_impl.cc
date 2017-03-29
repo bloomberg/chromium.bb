@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/database_impl.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -20,9 +21,10 @@
 using std::swap;
 
 namespace content {
+class IndexedDBDatabaseError;
 
 namespace {
-const char kInvalidBlobUuid[] = "Blob UUID is invalid";
+const char kInvalidBlobUuid[] = "Blob does not exist";
 const char kInvalidBlobFilePath[] = "Blob file path is invalid";
 }  // namespace
 
@@ -118,6 +120,8 @@ class DatabaseImpl::IDBThreadHelper {
                    int64_t index_id,
                    const base::string16& new_name);
   void Abort(int64_t transaction_id);
+  void AbortWithError(int64_t transaction_id,
+                      const IndexedDBDatabaseError& error);
   void Commit(int64_t transaction_id);
   void OnGotUsageAndQuotaForCommit(int64_t transaction_id,
                                    storage::QuotaStatusCode status,
@@ -258,6 +262,9 @@ void DatabaseImpl::Put(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
+  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
+      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
+
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles(
       value->blob_or_file_info.size());
   std::vector<IndexedDBBlobInfo> blob_info(value->blob_or_file_info.size());
@@ -267,10 +274,26 @@ void DatabaseImpl::Put(
     std::unique_ptr<storage::BlobDataHandle> handle =
         dispatcher_host_->blob_storage_context()->GetBlobDataFromUUID(
             info->uuid);
+
+    // Due to known issue crbug.com/351753, blobs can die while being passed to
+    // a different process. So this case must be handled gracefully.
+    // TODO(dmurph): Revert back to using mojo::ReportBadMessage once fixed.
+    UMA_HISTOGRAM_BOOLEAN("Storage.IndexedDB.PutValidBlob",
+                          handle.get() != nullptr);
     if (!handle) {
-      mojo::ReportBadMessage(kInvalidBlobUuid);
+      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                   kInvalidBlobUuid);
+      idb_runner_->PostTask(FROM_HERE, base::Bind(&IndexedDBCallbacks::OnError,
+                                                  callbacks, error));
+      idb_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&IDBThreadHelper::AbortWithError,
+                     base::Unretained(helper_), transaction_id, error));
       return;
     }
+    UMA_HISTOGRAM_MEMORY_KB("Storage.IndexedDB.PutBlobSizeKB",
+                            handle->size() / 1024ull);
+
     handles[i] = std::move(handle);
 
     if (info->file) {
@@ -290,9 +313,6 @@ void DatabaseImpl::Put(
       blob_info[i] = IndexedDBBlobInfo(info->uuid, info->mime_type, info->size);
     }
   }
-
-  scoped_refptr<IndexedDBCallbacks> callbacks(new IndexedDBCallbacks(
-      dispatcher_host_.get(), origin_, std::move(callbacks_info)));
 
   idb_runner_->PostTask(
       FROM_HERE,
@@ -790,6 +810,20 @@ void DatabaseImpl::IDBThreadHelper::Abort(int64_t transaction_id) {
     return;
 
   connection_->AbortTransaction(transaction);
+}
+
+void DatabaseImpl::IDBThreadHelper::AbortWithError(
+    int64_t transaction_id,
+    const IndexedDBDatabaseError& error) {
+  if (!connection_->IsConnected())
+    return;
+
+  IndexedDBTransaction* transaction =
+      connection_->GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+
+  connection_->AbortTransaction(transaction, error);
 }
 
 void DatabaseImpl::IDBThreadHelper::Commit(int64_t transaction_id) {
