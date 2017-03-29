@@ -758,10 +758,6 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
 
 // Similary, pinned window causes always_on_top_ windows to stack below.
 TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
-  // TODO: mash doesn't support pinning yet http://crbug.com/622486.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   gfx::Rect bounds(100, 100, 200, 200);
   std::unique_ptr<aura::Window> pinned_window_owner(
       CreateTestWindowInShellWithBounds(bounds));
