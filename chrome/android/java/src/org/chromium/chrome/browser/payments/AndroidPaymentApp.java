@@ -298,6 +298,11 @@ public class AndroidPaymentApp
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentDetailsCallback != null;
 
+        if (mWebContents.isDestroyed()) {
+            notifyErrorInvokingPaymentApp();
+            return;
+        }
+
         WindowAndroid window = mWebContents.getTopLevelNativeWindow();
         if (window == null) {
             notifyErrorInvokingPaymentApp();
