@@ -656,7 +656,7 @@ class TestRunner : public WebTestRunner {
   // is ok, because this is taken care of in WebTestDelegate::SetFocus).
   blink::WebView* previously_focused_view_;
 
-  // True if we run a test in LayoutTests/imported/{csswg-test,wpt}/.
+  // True when running a test in LayoutTests/external/wpt/.
   bool is_web_platform_tests_mode_;
 
   // An effective connection type settable by layout tests.
