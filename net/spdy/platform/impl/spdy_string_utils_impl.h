@@ -30,6 +30,11 @@ inline std::string SpdyStringPrintfImpl(const Args&... args) {
   return base::StringPrintf(std::forward<const Args&>(args)...);
 }
 
+template <typename... Args>
+inline void SpdyStringAppendFImpl(const Args&... args) {
+  base::StringAppendF(std::forward<const Args&>(args)...);
+}
+
 }  // namespace net
 
 #endif  // NET_SPDY_PLATFORM_IMPL_SPDY_STRING_UTILS_IMPL_H_

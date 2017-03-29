@@ -27,6 +27,11 @@ inline std::string SpdyStringPrintf(const Args&... args) {
   return SpdyStringPrintfImpl(std::forward<const Args&>(args)...);
 }
 
+template <typename... Args>
+inline void SpdyStringAppendF(const Args&... args) {
+  SpdyStringAppendFImpl(std::forward<const Args&>(args)...);
+}
+
 }  // namespace net
 
 #endif  // NET_SPDY_PLATFORM_API_SPDY_STRING_UTILS_H_

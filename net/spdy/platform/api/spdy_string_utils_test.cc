@@ -13,7 +13,7 @@ namespace net {
 namespace test {
 namespace {
 
-TEST(SpdyStrUtilsTest, StrCat) {
+TEST(SpdyStrUtilsTest, SpdyStrCat) {
   // No arguments.
   EXPECT_EQ("", SpdyStrCat());
 
@@ -70,7 +70,7 @@ TEST(SpdyStrUtilsTest, StrCat) {
             SpdyStrCat(d, t, t, string_bar, i, u, kBar, t, d, f));
 }
 
-TEST(SpdyStrUtilsTest, StrAppend) {
+TEST(SpdyStrUtilsTest, SpdyStrAppend) {
   // No arguments on empty string.
   std::string output;
   SpdyStrAppend(&output);
@@ -165,11 +165,27 @@ TEST(SpdyStrUtilsTest, StrAppend) {
   EXPECT_EQ("foo1foo081bar3.141513.141511bar18bar13.14150", output);
 }
 
-TEST(SpdyStrUtilsTest, StringPrintf) {
+TEST(SpdyStrUtilsTest, SpdyStringPrintf) {
   EXPECT_EQ("", SpdyStringPrintf("%s", ""));
   EXPECT_EQ("foobar", SpdyStringPrintf("%sbar", "foo"));
   EXPECT_EQ("foobar", SpdyStringPrintf("%s%s", "foo", "bar"));
   EXPECT_EQ("foo: 1, bar: 2.0", SpdyStringPrintf("foo: %d, bar: %.1f", 1, 2.0));
+}
+
+TEST(SpdyStrUtilsTest, SpdyStringAppendF) {
+  std::string output;
+
+  SpdyStringAppendF(&output, "%s", "");
+  EXPECT_TRUE(output.empty());
+
+  SpdyStringAppendF(&output, "%sbar", "foo");
+  EXPECT_EQ("foobar", output);
+
+  SpdyStringAppendF(&output, "%s%s", "foo", "bar");
+  EXPECT_EQ("foobarfoobar", output);
+
+  SpdyStringAppendF(&output, "foo: %d, bar: %.1f", 1, 2.0);
+  EXPECT_EQ("foobarfoobarfoo: 1, bar: 2.0", output);
 }
 
 }  // namespace
