@@ -164,7 +164,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
   const base::Optional<StoreContentsPair> external_validation_hash_store_pair_;
 
   // Invoked if a reset occurs in a call to FilterOnLoad.
-  const base::Closure on_reset_on_load_;
+  base::Closure on_reset_on_load_;
 
   TrackedPreferencesMap tracked_paths_;
 

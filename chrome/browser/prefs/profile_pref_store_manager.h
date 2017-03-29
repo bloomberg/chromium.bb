@@ -19,6 +19,7 @@
 class HashStoreContents;
 class PersistentPrefStore;
 class PrefHashStore;
+class PrefRegistry;
 class PrefService;
 
 namespace base {
@@ -30,6 +31,10 @@ namespace prefs {
 namespace mojom {
 class TrackedPreferenceValidationDelegate;
 }
+}
+
+namespace service_manager {
+class Connector;
 }
 
 namespace user_prefs {
@@ -91,7 +96,9 @@ class ProfilePrefStoreManager {
   PersistentPrefStore* CreateProfilePrefStore(
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
       const base::Closure& on_reset_on_load,
-      prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate);
+      prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
+      service_manager::Connector* connector,
+      scoped_refptr<PrefRegistry> pref_registry);
 
   // Initializes the preferences for the managed profile with the preference
   // values in |master_prefs|. Acts synchronously, including blocking IO.
@@ -117,6 +124,10 @@ class ProfilePrefStoreManager {
   // platform.
   std::pair<std::unique_ptr<PrefHashStore>, std::unique_ptr<HashStoreContents>>
   GetExternalVerificationPrefHashStorePair();
+
+  // Connects to the pref service over mojo and configures it.
+  void ConfigurePrefService(const base::Closure& on_reset_on_load,
+                            service_manager::Connector* connector);
 
   const base::FilePath profile_path_;
   const std::vector<PrefHashFilter::TrackedPreferenceMetadata>

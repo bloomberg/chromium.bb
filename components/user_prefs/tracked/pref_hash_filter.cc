@@ -256,6 +256,7 @@ void PrefHashFilter::FinalizeFilterOnLoad(
     if (!on_reset_on_load_.is_null())
       on_reset_on_load_.Run();
   }
+  on_reset_on_load_.Reset();
 
   UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
                       base::TimeTicks::Now() - checkpoint);

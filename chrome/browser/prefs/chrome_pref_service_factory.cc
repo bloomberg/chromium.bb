@@ -447,9 +447,9 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
   sync_preferences::PrefServiceSyncableFactory factory;
   scoped_refptr<PersistentPrefStore> user_pref_store(
       CreateProfilePrefStoreManager(profile_path)
-          ->CreateProfilePrefStore(pref_io_task_runner,
-                                   start_sync_flare_for_prefs,
-                                   validation_delegate));
+          ->CreateProfilePrefStore(
+              pref_io_task_runner, start_sync_flare_for_prefs,
+              validation_delegate, connector, pref_registry));
   PrepareFactory(&factory, profile_path, policy_service,
                  supervised_user_settings, user_pref_store, extension_prefs,
                  async);

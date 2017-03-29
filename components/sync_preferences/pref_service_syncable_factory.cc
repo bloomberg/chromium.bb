@@ -64,7 +64,7 @@ scoped_refptr<::PrefStore> CreateRegisteredPrefStore(
     PrefValueStore::PrefStoreType type) {
   // If we're testing or if the prefs service feature flag is off we don't
   // register.
-  if (!connector)
+  if (!connector || !backing_pref_store)
     return backing_pref_store;
 
   prefs::mojom::PrefStoreRegistryPtr registry_ptr;

@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "components/prefs/pref_registry.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/preferences/public/cpp/pref_registry_serializer.h"
 
 namespace prefs {
@@ -82,6 +83,7 @@ PersistentPrefStore::PrefReadError PersistentPrefStoreClient::ReadPrefs() {
   std::unordered_map<PrefValueStore::PrefStoreType,
                      prefs::mojom::PrefStoreConnectionPtr>
       other_pref_stores;
+  mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_calls;
   if (!connector_->Connect(SerializePrefRegistry(*pref_registry_), &connection,
                            &other_pref_stores)) {
     NOTREACHED();

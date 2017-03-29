@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -690,6 +691,11 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
     // Flush the profile data to disk for all loaded profiles.
     profile->SetExitType(Profile::EXIT_CRASHED);
     profile->GetPrefs()->CommitPendingWrite();
+    if (base::FeatureList::IsEnabled(features::kPrefService)) {
+      FlushTaskRunner(content::BrowserThread::GetTaskRunnerForThread(
+                          content::BrowserThread::IO)
+                          .get());
+    }
     FlushTaskRunner(profile->GetIOTaskRunner().get());
 
     // Make sure that the prefs file was written with the expected key/value.

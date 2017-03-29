@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -23,6 +24,9 @@
 #include "components/user_prefs/tracked/pref_hash_store_impl.h"
 #include "components/user_prefs/tracked/segregated_pref_store.h"
 #include "components/user_prefs/tracked/tracked_preferences_migration.h"
+#include "services/preferences/public/cpp/persistent_pref_store_client.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "chrome/install_static/install_util.h"
@@ -102,8 +106,17 @@ void ProfilePrefStoreManager::SetPreferenceValidationRegistryPathForTesting(
 PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const base::Closure& on_reset_on_load,
-    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate) {
-  std::unique_ptr<PrefFilter> pref_filter;
+    prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
+    service_manager::Connector* connector,
+    scoped_refptr<PrefRegistry> pref_registry) {
+  if (base::FeatureList::IsEnabled(features::kPrefService)) {
+    ConfigurePrefService(on_reset_on_load, connector);
+    prefs::mojom::PrefStoreConnectorPtr pref_connector;
+    connector->BindInterface(prefs::mojom::kPrefStoreServiceName,
+                             &pref_connector);
+    return new prefs::PersistentPrefStoreClient(std::move(pref_connector),
+                                                std::move(pref_registry));
+  }
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
                              io_task_runner.get(),
@@ -224,4 +237,16 @@ ProfilePrefStoreManager::GetExternalVerificationPrefHashStorePair() {
 #else
   return std::make_pair(nullptr, nullptr);
 #endif
+}
+
+void ProfilePrefStoreManager::ConfigurePrefService(
+    const base::Closure& on_reset_on_load,
+    service_manager::Connector* connector) {
+  auto config = prefs::mojom::PersistentPrefStoreConfiguration::New();
+  config->set_simple_configuration(
+      prefs::mojom::SimplePersistentPrefStoreConfiguration::New(
+          profile_path_.Append(chrome::kPreferencesFilename)));
+  prefs::mojom::PrefServiceControlPtr control;
+  connector->BindInterface(prefs::mojom::kPrefStoreServiceName, &control);
+  control->Init(std::move(config));
 }

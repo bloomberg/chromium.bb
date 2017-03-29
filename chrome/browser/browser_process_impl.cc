@@ -76,6 +76,7 @@
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
@@ -193,7 +194,8 @@ static const int kUpdateCheckIntervalHours = 6;
 // and Windows. We have a timeout here because we're unable to run the UI
 // messageloop and there's some deadlock risk. Our only option is to exit
 // anyway.
-static const int kEndSessionTimeoutSeconds = 10;
+static constexpr base::TimeDelta kEndSessionTimeout =
+    base::TimeDelta::FromSeconds(10);
 #endif
 
 using content::BrowserThread;
@@ -409,9 +411,11 @@ class RundownTaskCounter :
   // of times before calling TimedWait.
   void Post(base::SequencedTaskRunner* task_runner);
 
-  // Waits until the count is zero or |max_time| has passed.
-  // This can only be called once per instance.
-  bool TimedWait(const base::TimeDelta& max_time);
+  // Waits until the count is zero or |end_time| is reached.
+  // This can only be called once per instance. Returns true if a count of zero
+  // is reached or false if the |end_time| is reached. It is valid to pass an
+  // |end_time| in the past.
+  bool TimedWaitUntil(const base::TimeTicks& end_time);
 
  private:
   friend class base::RefCountedThreadSafe<RundownTaskCounter>;
@@ -452,11 +456,11 @@ void RundownTaskCounter::Decrement() {
     waitable_event_.Signal();
 }
 
-bool RundownTaskCounter::TimedWait(const base::TimeDelta& max_time) {
+bool RundownTaskCounter::TimedWaitUntil(const base::TimeTicks& end_time) {
   // Decrement the excess count from the constructor.
   Decrement();
 
-  return waitable_event_.TimedWait(max_time);
+  return waitable_event_.TimedWaitUntil(end_time);
 }
 
 }  // namespace
@@ -466,12 +470,22 @@ void BrowserProcessImpl::EndSession() {
   ProfileManager* pm = profile_manager();
   std::vector<Profile*> profiles(pm->GetLoadedProfiles());
   scoped_refptr<RundownTaskCounter> rundown_counter(new RundownTaskCounter());
+  const bool pref_service_enabled =
+      base::FeatureList::IsEnabled(features::kPrefService);
+  std::vector<scoped_refptr<base::SequencedTaskRunner>> profile_writer_runners;
   for (size_t i = 0; i < profiles.size(); ++i) {
     Profile* profile = profiles[i];
     profile->SetExitType(Profile::EXIT_SESSION_ENDED);
     if (profile->GetPrefs()) {
       profile->GetPrefs()->CommitPendingWrite();
-      rundown_counter->Post(profile->GetIOTaskRunner().get());
+      if (pref_service_enabled) {
+        rundown_counter->Post(content::BrowserThread::GetTaskRunnerForThread(
+                                  content::BrowserThread::IO)
+                                  .get());
+        profile_writer_runners.push_back(profile->GetIOTaskRunner());
+      } else {
+        rundown_counter->Post(profile->GetIOTaskRunner().get());
+      }
     }
   }
 
@@ -512,8 +526,16 @@ void BrowserProcessImpl::EndSession() {
   // GPU process synchronously. Because the system may not be allowing
   // processes to launch, this can result in a hang. See
   // http://crbug.com/318527.
-  rundown_counter->TimedWait(
-      base::TimeDelta::FromSeconds(kEndSessionTimeoutSeconds));
+  const base::TimeTicks end_time = base::TimeTicks::Now() + kEndSessionTimeout;
+  const bool timed_out = !rundown_counter->TimedWaitUntil(end_time);
+  if (timed_out || !pref_service_enabled)
+    return;
+
+  scoped_refptr<RundownTaskCounter> profile_write_rundown_counter(
+      new RundownTaskCounter());
+  for (auto& profile_writer_runner : profile_writer_runners)
+    profile_write_rundown_counter->Post(profile_writer_runner.get());
+  profile_write_rundown_counter->TimedWaitUntil(end_time);
 #else
   NOTIMPLEMENTED();
 #endif
