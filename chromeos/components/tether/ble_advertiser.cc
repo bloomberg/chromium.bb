@@ -20,13 +20,25 @@ namespace {
 uint8_t kInvertedConnectionFlag = 0x01;
 }  // namespace
 
+void BleAdvertiser::BleAdvertisementUnregisterHandlerImpl::
+    OnAdvertisementUnregisterSuccess() {}
+
+void BleAdvertiser::BleAdvertisementUnregisterHandlerImpl::
+    OnAdvertisementUnregisterFailure(
+        device::BluetoothAdvertisement::ErrorCode error_code) {
+  PA_LOG(ERROR) << "Error while unregistering advertisement. Error code: "
+                << error_code;
+}
+
 BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
     scoped_refptr<device::BluetoothAdapter> adapter,
     std::unique_ptr<cryptauth::EidGenerator::DataWithTimestamp>
-        advertisement_data)
+        advertisement_data,
+    std::shared_ptr<BleAdvertisementUnregisterHandler> unregister_handler)
     : adapter_(adapter),
       is_initializing_advertising_(false),
       advertisement_data_(std::move(advertisement_data)),
+      unregister_handler_(unregister_handler),
       advertisement_(nullptr),
       weak_ptr_factory_(this) {
   adapter_->AddObserver(this);
@@ -34,6 +46,16 @@ BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
 }
 
 BleAdvertiser::IndividualAdvertisement::~IndividualAdvertisement() {
+  if (advertisement_) {
+    advertisement_->Unregister(
+        base::Bind(&BleAdvertisementUnregisterHandler::
+                       OnAdvertisementUnregisterSuccess,
+                   base::Unretained(unregister_handler_.get())),
+        base::Bind(&BleAdvertisementUnregisterHandler::
+                       OnAdvertisementUnregisterFailure,
+                   base::Unretained(unregister_handler_.get())));
+  }
+
   adapter_->RemoveObserver(this);
 }
 
@@ -135,19 +157,23 @@ BleAdvertiser::BleAdvertiser(
     scoped_refptr<device::BluetoothAdapter> adapter,
     const LocalDeviceDataProvider* local_device_data_provider,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher)
-    : BleAdvertiser(adapter,
-                    cryptauth::EidGenerator::GetInstance(),
-                    remote_beacon_seed_fetcher,
-                    local_device_data_provider) {}
+    : BleAdvertiser(
+          adapter,
+          base::WrapUnique(new BleAdvertisementUnregisterHandlerImpl()),
+          cryptauth::EidGenerator::GetInstance(),
+          remote_beacon_seed_fetcher,
+          local_device_data_provider) {}
 
 BleAdvertiser::~BleAdvertiser() {}
 
 BleAdvertiser::BleAdvertiser(
     scoped_refptr<device::BluetoothAdapter> adapter,
+    std::unique_ptr<BleAdvertisementUnregisterHandler> unregister_handler,
     const cryptauth::EidGenerator* eid_generator,
     const cryptauth::RemoteBeaconSeedFetcher* remote_beacon_seed_fetcher,
     const LocalDeviceDataProvider* local_device_data_provider)
     : adapter_(adapter),
+      unregister_handler_(std::move(unregister_handler)),
       eid_generator_(eid_generator),
       remote_beacon_seed_fetcher_(remote_beacon_seed_fetcher),
       local_device_data_provider_(local_device_data_provider) {}
@@ -197,8 +223,8 @@ bool BleAdvertiser::StartAdvertisingToDevice(
   }
 
   device_id_to_advertisement_map_[remote_device.GetDeviceId()] =
-      make_scoped_refptr(
-          new IndividualAdvertisement(adapter_, std::move(advertisement)));
+      make_scoped_refptr(new IndividualAdvertisement(
+          adapter_, std::move(advertisement), unregister_handler_));
   return true;
 }
 
