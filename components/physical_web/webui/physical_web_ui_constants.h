@@ -14,7 +14,7 @@ extern const char kPhysicalWebCSS[];
 
 // Message handlers.
 // Must match the constants used in the resource files.
-extern const char kRequestNearbyUrls[];
+extern const char kPhysicalWebPageLoaded[];
 extern const char kPhysicalWebItemClicked[];
 
 // Strings.
@@ -26,7 +26,7 @@ extern const char kPageInfoIcon[];
 extern const char kPageInfoTitle[];
 extern const char kResolvedUrl[];
 extern const char kIndex[];
-extern const char kReturnNearbyUrls[];
+extern const char kPushNearbyUrls[];
 extern const char kMetadata[];
 
 }  // namespace physical_web_ui

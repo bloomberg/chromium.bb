@@ -20,26 +20,24 @@
 <script src="chrome://physical-web/strings.js"></script>
 </head>
 <body>
+
 <div id="body-container" hidden>
-
   <h1 i18n-content="title"></h1>
-
-  <a class="physicalWebTemplate" id="physicalWebTemplate" jsselect="metadata"
-      jsvalues="href:resolvedUrl;onclick:'physicalWebItemClicked(' + index + ')'">
-    <div class="physicalWebIcon">
-      <img jsvalues="src:pageInfoIcon" />
-    </div>
-    <div class="physicalWebText">
-      <div class="title" jscontent="pageInfoTitle"></div>
-      <div class="resolvedUrl" jscontent="resolvedUrl"></div>
-      <div class="description" jscontent="pageInfoDescription"></div>
-    </div>
-  </a>
-
+  <div id="render-container"></div>
+  <div id="empty-list-container" i18n-content="emptyMessage"></div>
 </div>
 
-<div id="empty-list-container" i18n-content="emptyMessage" hidden>
-</div>
+<a hidden id="render-template" class="physicalWebTemplate" jsselect="metadata"
+    jsvalues="href:resolvedUrl;onclick:'physicalWebItemClicked(' + index + ')'">
+  <div class="physicalWebIcon">
+    <img jsvalues="src:pageInfoIcon" />
+  </div>
+  <div class="physicalWebText">
+    <div class="title" jscontent="pageInfoTitle"></div>
+    <div class="resolvedUrl" jscontent="resolvedUrl"></div>
+    <div class="description" jscontent="pageInfoDescription"></div>
+  </div>
+</a>
 
 <script src="chrome://resources/js/i18n_template.js"></script>
 <script src="chrome://resources/js/jstemplate_compiled.js"></script>
