@@ -81,9 +81,6 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setDefaultVideoPosterURL(const WebString&) override;
   void setDeviceScaleAdjustment(float) override;
 
-  // FIXME: Replace this with pointer/hover queries? crbug.com/441813
-  void setDeviceSupportsTouch(bool) override;
-
   void setDisableReadingFromCanvas(bool) override;
   void setDoubleTapToZoomEnabled(bool) override;
   void setDownloadableBinaryFontsEnabled(bool) override;

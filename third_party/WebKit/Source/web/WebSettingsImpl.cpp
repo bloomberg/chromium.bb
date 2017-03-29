@@ -139,10 +139,6 @@ void WebSettingsImpl::setMinimumLogicalFontSize(int size) {
   m_settings->setMinimumLogicalFontSize(size);
 }
 
-void WebSettingsImpl::setDeviceSupportsTouch(bool deviceSupportsTouch) {
-  m_settings->setDeviceSupportsTouch(deviceSupportsTouch);
-}
-
 void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(
     bool autoZoomFocusedNodeToLegibleScale) {
   m_autoZoomFocusedNodeToLegibleScale = autoZoomFocusedNodeToLegibleScale;

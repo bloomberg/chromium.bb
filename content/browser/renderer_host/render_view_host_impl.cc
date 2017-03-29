@@ -450,8 +450,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
           features::kCrossOriginMediaPlaybackRequiresUserGesture);
 #endif  // defined(OS_ANDROID)
 
-  prefs.device_supports_touch = ui::GetTouchScreensAvailability() ==
-                                ui::TouchScreensAvailability::ENABLED;
   const std::string touch_enabled_switch =
       command_line.HasSwitch(switches::kTouchEventFeatureDetection)
           ? command_line.GetSwitchValueASCII(
@@ -459,7 +457,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
           : switches::kTouchEventFeatureDetectionAuto;
   prefs.touch_event_feature_detection_enabled =
       (touch_enabled_switch == switches::kTouchEventFeatureDetectionAuto)
-          ? prefs.device_supports_touch
+          ? (ui::GetTouchScreensAvailability() ==
+             ui::TouchScreensAvailability::ENABLED)
           : (touch_enabled_switch.empty() ||
              touch_enabled_switch ==
                  switches::kTouchEventFeatureDetectionEnabled);
