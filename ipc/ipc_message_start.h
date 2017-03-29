@@ -92,7 +92,6 @@ enum IPCMessageStart {
   PlatformNotificationMsgStart,
   PDFMsgStart,
   ManifestManagerMsgStart,
-  ExtensionUtilityMsgStart,
   LayoutTestMsgStart,
   NetworkHintsMsgStart,
   BluetoothMsgStart,
