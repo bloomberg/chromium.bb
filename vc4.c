@@ -31,9 +31,16 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 {
 	int ret;
 	size_t plane;
+	uint32_t stride;
 	struct drm_vc4_create_bo bo_create;
 
-	drv_bo_from_format(bo, width, height, format);
+	/*
+	 * Since the ARM L1 cache line size is 64 bytes, align to that as a
+	 * performance optimization.
+	 */
+	stride = drv_stride_from_format(format, width, 0);
+	stride = ALIGN(stride, 64);
+	drv_bo_from_format(bo, stride, height, format);
 
 	memset(&bo_create, 0, sizeof(bo_create));
 	bo_create.size = bo->total_size;

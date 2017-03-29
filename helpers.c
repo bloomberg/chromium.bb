@@ -18,7 +18,22 @@
 #include "helpers.h"
 #include "util.h"
 
-int drv_bpp_from_format(uint32_t format, size_t plane)
+static uint32_t subsample_stride(uint32_t stride, uint32_t format,
+				 size_t plane) {
+
+	if (plane != 0) {
+		switch (format) {
+		case DRM_FORMAT_YVU420:
+		case DRM_FORMAT_YVU420_ANDROID:
+			stride = DIV_ROUND_UP(stride, 2);
+			break;
+		}
+	}
+
+	return stride;
+}
+
+static uint32_t bpp_from_format(uint32_t format, size_t plane)
 {
 	assert(plane < drv_num_planes_from_format(format));
 
@@ -31,25 +46,8 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 	case DRM_FORMAT_YVU420_ANDROID:
 		return 8;
 
-	/*
-	 * NV12 is laid out as follows. Each letter represents a byte.
-	 * Y plane:
-	 * Y0_0, Y0_1, Y0_2, Y0_3, ..., Y0_N
-	 * Y1_0, Y1_1, Y1_2, Y1_3, ..., Y1_N
-	 * ...
-	 * YM_0, YM_1, YM_2, YM_3, ..., YM_N
-	 * CbCr plane:
-	 * Cb01_01, Cr01_01, Cb01_23, Cr01_23, ..., Cb01_(N-1)N, Cr01_(N-1)N
-	 * Cb23_01, Cr23_01, Cb23_23, Cr23_23, ..., Cb23_(N-1)N, Cr23_(N-1)N
-	 * ...
-	 * Cb(M-1)M_01, Cr(M-1)M_01, ..., Cb(M-1)M_(N-1)N, Cr(M-1)M_(N-1)N
-	 *
-	 * Pixel (0, 0) requires Y0_0, Cb01_01 and Cr01_01. Pixel (0, 1) requires
-	 * Y0_1, Cb01_01 and Cr01_01.  So for a single pixel, 2 bytes of luma data
-	 * are required.
-	 */
 	case DRM_FORMAT_NV12:
-		return (plane == 0) ? 8 : 16;
+		return (plane == 0) ? 8 : 4;
 
 	case DRM_FORMAT_ABGR1555:
 	case DRM_FORMAT_ABGR4444:
@@ -105,45 +103,37 @@ int drv_bpp_from_format(uint32_t format, size_t plane)
 	return 0;
 }
 
+uint32_t drv_bo_get_stride_in_pixels(struct bo *bo)
+{
+	uint32_t bytes_per_pixel = DIV_ROUND_UP(bpp_from_format(bo->format, 0),
+						8);
+	return DIV_ROUND_UP(bo->strides[0], bytes_per_pixel);
+}
+
 /*
  * This function returns the stride for a given format, width and plane.
  */
 uint32_t drv_stride_from_format(uint32_t format, uint32_t width, size_t plane)
 {
-	uint32_t stride = DIV_ROUND_UP(width * drv_bpp_from_format(format, plane),
+	uint32_t stride = DIV_ROUND_UP(width * bpp_from_format(format, plane),
 				       8);
-
-	/*
-	 * Only downsample for certain multiplanar formats which have horizontal
-	 * subsampling for chroma planes.  Only formats supported by our drivers
-	 * are listed here -- add more as needed.
-	 */
-	if (plane != 0) {
-		switch (format) {
-		case DRM_FORMAT_NV12:
-		case DRM_FORMAT_YVU420:
-		case DRM_FORMAT_YVU420_ANDROID:
-			stride = DIV_ROUND_UP(stride, 2);
-			break;
-		}
-	}
 
 	/*
 	 * The stride of Android YV12 buffers is required to be aligned to 16 bytes
 	 * (see <system/graphics.h>).
 	 */
 	if (format == DRM_FORMAT_YVU420_ANDROID)
-		stride = ALIGN(stride, 16);
+		stride = (plane == 0) ? ALIGN(stride, 32): ALIGN(stride, 16);
 
 	return stride;
 }
 
 /*
- * This function fills in the buffer object given driver aligned dimensions
- * (in pixels) and a format. This function assumes there is just one kernel
- * buffer per buffer object.
+ * This function fills in the buffer object given the driver aligned stride of
+ * the first plane, height and a format. This function assumes there is just
+ * one kernel buffer per buffer object.
  */
-int drv_bo_from_format(struct bo *bo, uint32_t aligned_width,
+int drv_bo_from_format(struct bo *bo, uint32_t stride,
 		       uint32_t aligned_height, uint32_t format)
 {
 
@@ -155,8 +145,7 @@ int drv_bo_from_format(struct bo *bo, uint32_t aligned_width,
 	bo->total_size = 0;
 
 	for (p = 0; p < num_planes; p++) {
-		bo->strides[p] = drv_stride_from_format(format, aligned_width,
-							p);
+		bo->strides[p] = subsample_stride(stride, format, p);
 		bo->sizes[p] = drv_size_from_format(format, bo->strides[p],
 						    bo->height, p);
 		bo->offsets[p] = offset;
@@ -173,15 +162,14 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 {
 	int ret;
 	size_t plane;
-	uint32_t aligned_width, aligned_height, bytes_per_pixel;
+	uint32_t aligned_width, aligned_height;
 	struct drm_mode_create_dumb create_dumb;
 
 	aligned_width = width;
 	aligned_height = height;
-	bytes_per_pixel = drv_bytes_per_pixel(format, 0);
 	if (format == DRM_FORMAT_YVU420_ANDROID) {
 		/*
-		 * Align width to 16 pixels, so chroma strides are 16 bytes as
+		 * Align width to 32 pixels, so chroma strides are 16 bytes as
 		 * Android requires.
 		 */
 		aligned_width = ALIGN(width, 32);
@@ -191,7 +179,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	memset(&create_dumb, 0, sizeof(create_dumb));
 	create_dumb.height = aligned_height;
 	create_dumb.width = aligned_width;
-	create_dumb.bpp = drv_bpp_from_format(format, 0);
+	create_dumb.bpp = bpp_from_format(format, 0);
 	create_dumb.flags = 0;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
@@ -200,8 +188,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		return ret;
 	}
 
-	drv_bo_from_format(bo, DIV_ROUND_UP(create_dumb.pitch, bytes_per_pixel),
-			   height, format);
+	drv_bo_from_format(bo, create_dumb.pitch, height, format);
 
 	for (plane = 0; plane < bo->num_planes; plane++)
 		bo->handles[plane].u32 = create_dumb.handle;

@@ -148,6 +148,7 @@ static int amdgpu_addrlib_compute(void *addrlib, uint32_t width,
 	ADDR_COMPUTE_SURFACE_INFO_INPUT addr_surf_info_in = {0};
 	ADDR_TILEINFO addr_tile_info = {0};
 	ADDR_TILEINFO addr_tile_info_out = {0};
+	uint32_t bits_per_pixel;
 
 	addr_surf_info_in.size = sizeof(ADDR_COMPUTE_SURFACE_INFO_INPUT);
 
@@ -159,8 +160,9 @@ static int amdgpu_addrlib_compute(void *addrlib, uint32_t width,
 	else if (width <= 16 || height <= 16)
 		addr_surf_info_in.tileMode = ADDR_TM_1D_TILED_THIN1;
 
+	bits_per_pixel = drv_stride_from_format(format, 1, 0) * 8;
 	/* Bits per pixel should be calculated from format*/
-	addr_surf_info_in.bpp = drv_bpp_from_format(format, 0);
+	addr_surf_info_in.bpp = bits_per_pixel;
 	addr_surf_info_in.numSamples = 1;
 	addr_surf_info_in.width = width;
 	addr_surf_info_in.height = height;

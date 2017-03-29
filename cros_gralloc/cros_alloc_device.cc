@@ -91,11 +91,9 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 	hnd->width = drv_bo_get_width(bo);
 	hnd->height = drv_bo_get_height(bo);
 	hnd->format = drv_bo_get_format(bo);
+	hnd->pixel_stride = drv_bo_get_stride_in_pixels(bo);
 
 	hnd->magic = cros_gralloc_magic();
-
-	hnd->pixel_stride = hnd->strides[0];
-	hnd->pixel_stride /= drv_bytes_per_pixel(hnd->format, 0);
 
 	return hnd;
 }

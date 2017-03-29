@@ -146,54 +146,49 @@ static int i915_add_combinations(struct driver *drv)
 	return 0;
 }
 
-static void i915_align_dimensions(struct driver *drv, uint32_t tiling_mode,
-				  uint32_t *width, uint32_t *height, int bpp)
+static int i915_align_dimensions(struct bo *bo, uint32_t tiling,
+				 uint32_t *stride, uint32_t *aligned_height)
 {
-	struct i915_device *i915_dev = (struct i915_device *)drv->priv;
-	uint32_t width_alignment = 4, height_alignment = 4;
+	struct i915_device *i915 = bo->drv->priv;
+	uint32_t horizontal_alignment = 4;
+	uint32_t vertical_alignment = 4;
 
-	switch (tiling_mode) {
+	switch (tiling) {
 	default:
 	case I915_TILING_NONE:
-		width_alignment = 64 / bpp;
+		horizontal_alignment = 64;
 		break;
 
 	case I915_TILING_X:
-		width_alignment = 512 / bpp;
-		height_alignment = 8;
+		horizontal_alignment = 512;
+		vertical_alignment = 8;
 		break;
 
 	case I915_TILING_Y:
-		if (i915_dev->gen == 3) {
-			width_alignment = 512 / bpp;
-			height_alignment = 8;
+		if (i915->gen == 3) {
+			horizontal_alignment = 512;
+			vertical_alignment = 8;
 		} else  {
-			width_alignment = 128 / bpp;
-			height_alignment = 32;
+			horizontal_alignment = 128;
+			vertical_alignment = 32;
 		}
 		break;
 	}
 
-	if (i915_dev->gen > 3) {
-		*width = ALIGN(*width, width_alignment);
-		*height = ALIGN(*height, height_alignment);
+	*aligned_height = ALIGN(bo->height, vertical_alignment);
+	if (i915->gen > 3) {
+		*stride = ALIGN(*stride, horizontal_alignment);
 	} else {
-		uint32_t w;
-		for (w = width_alignment; w < *width;  w <<= 1)
-			;
-		*width = w;
-		*height = ALIGN(*height, height_alignment);
+		while (*stride > horizontal_alignment)
+			horizontal_alignment <<= 1;
+
+		*stride = horizontal_alignment;
 	}
-}
 
-static int i915_verify_dimensions(struct driver *drv, uint32_t stride,
-				  uint32_t height)
-{
-	struct i915_device *i915_dev = (struct i915_device *)drv->priv;
-	if (i915_dev->gen <= 3 && stride > 8192)
-		return 0;
+	if (i915->gen <= 3 && *stride > 8192)
+		return -EINVAL;
 
-	return 1;
+	return 0;
 }
 
 static int i915_init(struct driver *drv)
@@ -246,10 +241,11 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	int ret;
 	size_t plane;
 	char name[20];
+	uint32_t stride;
 	uint32_t tiling_mode;
 	struct i915_bo *i915_bo;
 
-	int bpp = drv_stride_from_format(format, 1, 0);
+	stride = drv_stride_from_format(format, width, 0);
 	struct i915_device *i915_dev = (struct i915_device *)bo->drv->priv;
 
 	if (flags & (BO_USE_CURSOR | BO_USE_LINEAR |
@@ -266,15 +262,15 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	 */
 	if (format == DRM_FORMAT_YVU420 ||
 	    format == DRM_FORMAT_YVU420_ANDROID) {
-		width = ALIGN(width, 128);
+		stride = ALIGN(stride, 128);
 		tiling_mode = I915_TILING_NONE;
 	}
 
-	i915_align_dimensions(bo->drv, tiling_mode, &width, &height, bpp);
-	drv_bo_from_format(bo, width, height, format);
+	ret = i915_align_dimensions(bo, tiling_mode, &stride, &height);
+	if (ret)
+		return ret;
 
-	if (!i915_verify_dimensions(bo->drv, bo->strides[0], height))
-		return -EINVAL;
+	drv_bo_from_format(bo, stride, height, format);
 
 	snprintf(name, sizeof(name), "i915-buffer-%u", i915_dev->count);
 	i915_dev->count++;
