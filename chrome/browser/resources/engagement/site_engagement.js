@@ -5,7 +5,7 @@
 'use strict';
 
 define('main', [
-    'chrome/browser/ui/webui/engagement/site_engagement.mojom',
+    'chrome/browser/engagement/site_engagement.mojom',
     'content/public/renderer/frame_interfaces',
 ], function(siteEngagementMojom, frameInterfaces) {
   return function() {

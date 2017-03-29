@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_ENGAGEMENT_SITE_ENGAGEMENT_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/webui/engagement/site_engagement.mojom.h"
+#include "chrome/browser/engagement/site_engagement.mojom.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_controller.h"
 
 // The UI for chrome://site-engagement/.
