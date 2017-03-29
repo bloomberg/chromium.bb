@@ -6,10 +6,7 @@ mission of improving the web. We believe that leveraging and contributing to a
 shared test suite is one of the most important tools in achieving
 interoperability between browsers. The [web-platform-tests
 repository](https://github.com/w3c/web-platform-tests) is the primary shared
-test suite where all browser engines are collaborating. There's also a
-[csswg-test repository](https://github.com/w3c/csswg-test) for CSS tests, but
-that will [soon be merged into
-web-platform-tests](https://github.com/w3c/csswg-test/issues/1102).
+test suite where all browser engines are collaborating.
 
 Chromium has a 2-way import/export process with the upstream web-platform-tests
 repository, where tests are imported into
@@ -23,9 +20,9 @@ web-platform-tests, including tips for writing and reviewing tests.
 
 ## Importing tests
 
-Chromium has mirrors
-([web-platform-tests](https://chromium.googlesource.com/external/w3c/web-platform-tests/),
-[csswg-test](https://chromium.googlesource.com/external/w3c/csswg-test/)) of the
+Chromium has a mirror
+([web-platform-tests](https://chromium.googlesource.com/external/w3c/web-platform-tests/)
+of the
 GitHub repos, and periodically imports a subset of the tests so that they are
 run as part of the regular Blink layout test testing process.
 
@@ -37,13 +34,13 @@ possible, and running as many of the tests as possible.
 ### Automatic import process
 
 There is an automatic process for updating the Chromium copy of
-web-platform-tests. The import is done by the builder [w3c-test-autoroller
-builder](https://build.chromium.org/p/chromium.infra.cron/builders/w3c-test-autoroller).
+web-platform-tests. The import is done by the builder [wpt-importer
+builder](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-importer).
 
 The easiest way to check the status of recent imports is to look at:
 
--   Recent logs on Buildbot for [w3c-test-autoroller
-    builder](https://build.chromium.org/p/chromium.infra.cron/builders/w3c-test-autoroller)
+-   Recent logs on Buildbot for [wpt-importer
+    builder](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-importer)
 -   Recent CLs created by
     [blink-w3c-test-autoroller@chromium.org](https://codereview.chromium.org/search?owner=blink-w3c-test-autoroller%40chromium.org).
 
@@ -75,8 +72,8 @@ which has a list of directories to skip while importing.
 In addition to the directories and tests explicitly skipped there, tests may
 also be skipped for a couple other reasons, e.g. if the file path is too long
 for Windows. To check what files are skipped in import, check the recent logs
-for [w3c-test-autoroller
-builder](https://build.chromium.org/p/chromium.infra.cron/builders/w3c-test-autoroller).
+for [wpt-importer
+builder](https://build.chromium.org/p/chromium.infra.cron/builders/wpt-importer).
 
 ### Manual import
 

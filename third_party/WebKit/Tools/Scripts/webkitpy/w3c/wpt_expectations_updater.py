@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Updates layout test expectations and baselines when updating w3c tests.
+"""Updates expectations and baselines when updating web-platform-tests.
 
 Specifically, this class fetches results from try bots for the current CL, then
 (1) downloads new baseline files for any tests that can be rebaselined, and
@@ -21,7 +21,7 @@ from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
 
-MARKER_COMMENT = '# ====== New tests from w3c-test-autoroller added here ======'
+MARKER_COMMENT = '# ====== New tests from wpt-importer added here ======'
 
 
 class WPTExpectationsUpdater(object):
