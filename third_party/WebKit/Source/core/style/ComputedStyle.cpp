@@ -1490,7 +1490,9 @@ FloatRoundedRect ComputedStyle::getRoundedInnerBorderFor(
     bool includeLogicalRightEdge) const {
   LayoutRect innerRect(borderRect);
   innerRect.expand(insets);
-  innerRect.size().clampNegativeToZero();
+  LayoutSize innerRectSize = innerRect.size();
+  innerRectSize.clampNegativeToZero();
+  innerRect.setSize(innerRectSize);
 
   FloatRoundedRect roundedRect(pixelSnappedIntRect(innerRect));
 
