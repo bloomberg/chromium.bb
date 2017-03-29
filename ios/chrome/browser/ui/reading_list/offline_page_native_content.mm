@@ -100,7 +100,7 @@
       _webState->GetNavigationManager()->GetLastCommittedItem();
   DCHECK(item && item->GetVirtualURL() == [self virtualURL]);
   item->SetURL(_entryURL);
-  item->SetVirtualURL(_entryURL);
+  item->SetVirtualURL(GURL::EmptyGURL());
 }
 
 @end

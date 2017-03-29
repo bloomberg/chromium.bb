@@ -30,10 +30,18 @@ class TestNavigationManager : public web::TestNavigationManager {
   void Reload(web::ReloadType reload_type, bool check_for_repost) override {
     reload_called_ = true;
   }
+
   bool ReloadCalled() { return reload_called_; }
+
+  int GetLastCommittedItemIndex() const override { return 1; }
+
+  void GoToIndex(int index) override { go_to_index_called_index_ = index; }
+
+  int GoToIndexCalled() { return go_to_index_called_index_; }
 
  private:
   bool reload_called_ = false;
+  int go_to_index_called_index_ = -1;
 };
 
 // A Test navigation manager that remembers the last opened parameters.
@@ -85,6 +93,7 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListFailure) {
   test_web_state_.SetLoading(false);
 
   EXPECT_FALSE(test_navigation_manager_->ReloadCalled());
+  EXPECT_EQ(test_navigation_manager_->GoToIndexCalled(), -1);
   // Check that |GetLastCommittedItem()| has not been altered.
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetVirtualURL(),
             GURL());
@@ -108,6 +117,7 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListOnline) {
   test_web_state_.SetLoading(false);
 
   EXPECT_FALSE(test_navigation_manager_->ReloadCalled());
+  EXPECT_EQ(test_navigation_manager_->GoToIndexCalled(), -1);
   // Check that |GetLastCommittedItem()| has not been altered.
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetVirtualURL(),
             GURL());
@@ -134,7 +144,9 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::FAILURE);
   test_web_state_.SetLoading(false);
 
-  EXPECT_TRUE(test_navigation_manager_->ReloadCalled());
+  EXPECT_FALSE(test_navigation_manager_->ReloadCalled());
+  EXPECT_EQ(test_navigation_manager_->GoToIndexCalled(),
+            test_navigation_manager_->GetLastCommittedItemIndex());
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetVirtualURL(),
             url);
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetURL(),
@@ -160,7 +172,9 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledPending) {
   test_web_state_.OnPageLoaded(web::PageLoadCompletionStatus::FAILURE);
   test_web_state_.SetLoading(false);
 
-  EXPECT_TRUE(test_navigation_manager_->ReloadCalled());
+  EXPECT_FALSE(test_navigation_manager_->ReloadCalled());
+  EXPECT_EQ(test_navigation_manager_->GoToIndexCalled(),
+            test_navigation_manager_->GetLastCommittedItemIndex());
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetVirtualURL(),
             url);
   EXPECT_EQ(test_navigation_manager_->GetLastCommittedItem()->GetURL(),

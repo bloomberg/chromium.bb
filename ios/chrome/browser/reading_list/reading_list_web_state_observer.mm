@@ -295,8 +295,14 @@ void ReadingListWebStateObserver::LoadOfflineReadingListEntry() {
     item = navigationManager->GetLastCommittedItem();
     item->SetURL(url);
     item->SetVirtualURL(pending_url_);
-    navigationManager->Reload(web::ReloadType::NORMAL,
-                              false /*check_for_repost*/);
+    // It is not possible to call |navigationManager->Reload| at that point as
+    // an error page is currently displayed.
+    // Calling Reload will eventually call |ErrorPageContent reload| which
+    // simply loads |pending_url_| and will erase the distilled_url.
+    // Instead, go to the index that will branch further in the reload stack
+    // and avoid this situation.
+    navigationManager->GoToIndex(
+        navigationManager->GetLastCommittedItemIndex());
   } else if (navigationManager->GetPendingItemIndex() != -1 &&
              navigationManager->GetItemAtIndex(
                  navigationManager->GetPendingItemIndex()) == item) {

@@ -132,6 +132,7 @@ source_set("eg_tests") {
   deps = [
     ":reading_list",
     "//base",
+    "//base/test:test_support",
     "//components/reading_list/core",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme:theme_grit",
@@ -144,6 +145,8 @@ source_set("eg_tests") {
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
     "//ios/third_party/material_components_ios",
+    "//ios/web",
+    "//ios/web:reload_type",
     "//ios/web:test_support",
   ]
   libs = [
