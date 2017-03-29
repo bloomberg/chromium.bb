@@ -3,7 +3,6 @@ function test() {
     TestRunner.addResult("Check to see that FilteredItemSelectionDialog uses proper regex to filter results.");
 
     var overridenInput = [];
-    var overrideShowMatchingItems = true;
     var history = [];
 
     var StubProvider = class extends QuickOpen.FilteredListWidget.Provider {
@@ -14,15 +13,13 @@ function test() {
         {
             TestRunner.addResult("Selected item index: " + itemIndex);
         }
-        shouldShowMatchingItems () { return overrideShowMatchingItems; }
     };
 
     var provider = new StubProvider();
 
-    function checkQuery(query, input, hideMatchingItems)
+    function checkQuery(query, input)
     {
         overridenInput = input;
-        overrideShowMatchingItems = !hideMatchingItems;
 
         TestRunner.addResult("Input:" + JSON.stringify(input));
 
@@ -67,22 +64,22 @@ function test() {
             return checkQuery("ab", ["abc", "bac", "a_B"]);
         },
 
-        function dumplicateSymbolsInQuery(next)
+        function dumplicateSymbolsInQuery()
         {
             return checkQuery("aab", ["abab", "abaa", "caab", "baac", "fooaab"]);
         },
 
-        function dangerousInputEscaping(next)
+        function dangerousInputEscaping()
         {
             return checkQuery("^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"]);
         },
 
-        function itemIndexIsNotReportedInGoToLine(next)
+        function itemIndexIsNotReportedInGoToLine()
         {
-            return checkQuery(":1", [":1:2:3.js"], true, next);
+            return checkQuery(":1", []);
         },
 
-        function autoCompleteIsLast(next)
+        function autoCompleteIsLast()
         {
             return checkQuery("", ["abc", "abcd"]);
         }

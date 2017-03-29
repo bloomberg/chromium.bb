@@ -36,9 +36,9 @@ Selected item index: 0
 History:["","aB","ab","aab","^[]{}()\\.$*+?|"]
 
 test: itemIndexIsNotReportedInGoToLine
-Input:[":1:2:3.js"]
+Input:[]
 Query:":1"
-Output:[":1:2:3.js"]
+Output:[]
 Selected item index: null
 History:["","aB","ab","aab","^[]{}()\\.$*+?|",":1"]
 
