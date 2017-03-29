@@ -206,6 +206,11 @@ test("gl_tests") {
     deps += [ "//ui/android:ui_java" ]
   } else if (is_mac) {
     libs += [ "IOSurface.framework" ]
+  } else if (is_win) {
+    deps += [
+      "//ui/platform_window",
+      "//ui/platform_window:platform_impls",
+    ]
   }
 }
 

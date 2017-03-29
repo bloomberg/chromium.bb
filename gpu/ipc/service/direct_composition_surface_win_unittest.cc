@@ -6,14 +6,34 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/win/hidden_window.h"
+#include "ui/gfx/gdi_util.h"
+#include "ui/gfx/transform.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/init/gl_factory.h"
+#include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/win/win_window.h"
 
 namespace gpu {
 namespace {
+
+bool CheckIfDCSupported() {
+  if (!gl::QueryDirectCompositionDevice(
+          gl::QueryD3D11DeviceObjectFromANGLE())) {
+    LOG(WARNING)
+        << "GL implementation not using DirectComposition, skipping test.";
+    return false;
+  }
+  return true;
+}
 
 class TestImageTransportSurfaceDelegate
     : public ImageTransportSurfaceDelegate,
@@ -24,7 +44,10 @@ class TestImageTransportSurfaceDelegate
   // ImageTransportSurfaceDelegate implementation.
   void DidCreateAcceleratedSurfaceChildWindow(
       SurfaceHandle parent_window,
-      SurfaceHandle child_window) override {}
+      SurfaceHandle child_window) override {
+    if (parent_window)
+      ::SetParent(child_window, parent_window);
+  }
   void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override {}
   const gles2::FeatureInfo* GetFeatureInfo() const override { return nullptr; }
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback) override {}
@@ -32,6 +55,22 @@ class TestImageTransportSurfaceDelegate
                              base::TimeDelta interval) override {}
   void AddFilter(IPC::MessageFilter* message_filter) override {}
   int32_t GetRouteID() const override { return 0; }
+};
+
+class TestPlatformDelegate : public ui::PlatformWindowDelegate {
+ public:
+  // ui::PlatformWindowDelegate implementation.
+  void OnBoundsChanged(const gfx::Rect& new_bounds) override {}
+  void OnDamageRect(const gfx::Rect& damaged_region) override {}
+  void DispatchEvent(ui::Event* event) override {}
+  void OnCloseRequest() override {}
+  void OnClosed() override {}
+  void OnWindowStateChanged(ui::PlatformWindowState new_state) override {}
+  void OnLostCapture() override {}
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override {}
+  void OnAcceleratedWidgetDestroyed() override {}
+  void OnActivationChanged(bool active) override {}
 };
 
 void RunPendingTasks(scoped_refptr<base::TaskRunner> task_runner) {
@@ -58,12 +97,8 @@ void DestroySurface(scoped_refptr<DirectCompositionSurfaceWin> surface) {
 }
 
 TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
-  if (!gl::QueryDirectCompositionDevice(
-          gl::QueryD3D11DeviceObjectFromANGLE())) {
-    LOG(WARNING)
-        << "GL implementation not using DirectComposition, skipping test.";
+  if (!CheckIfDCSupported())
     return;
-  }
 
   TestImageTransportSurfaceDelegate delegate;
 
@@ -126,12 +161,8 @@ TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
 
 // Tests that switching using EnableDCLayers works.
 TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
-  if (!gl::QueryDirectCompositionDevice(
-          gl::QueryD3D11DeviceObjectFromANGLE())) {
-    LOG(WARNING)
-        << "GL implementation not using DirectComposition, skipping test.";
+  if (!CheckIfDCSupported())
     return;
-  }
 
   TestImageTransportSurfaceDelegate delegate;
 
@@ -181,5 +212,177 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   context = nullptr;
   DestroySurface(std::move(surface));
 }
+
+COLORREF ReadBackWindowPixel(HWND window, const gfx::Point& point) {
+  base::win::ScopedCreateDC mem_hdc(::CreateCompatibleDC(nullptr));
+  void* bits = nullptr;
+  BITMAPV4HEADER hdr;
+  gfx::CreateBitmapV4Header(point.x() + 1, point.y() + 1, &hdr);
+  DCHECK(mem_hdc.IsValid());
+  base::win::ScopedBitmap bitmap(
+      ::CreateDIBSection(mem_hdc.Get(), reinterpret_cast<BITMAPINFO*>(&hdr),
+                         DIB_RGB_COLORS, &bits, nullptr, 0));
+  DCHECK(bitmap.is_valid());
+
+  base::win::ScopedSelectObject select_object(mem_hdc.Get(), bitmap.get());
+
+  // Grab a copy of the window. Use PrintWindow because it works even when the
+  // window's partially occluded. The PW_RENDERFULLCONTENT flag is undocumented,
+  // but works starting in Windows 8.1. It allows for capturing the contents of
+  // the window that are drawn using DirectComposition.
+  UINT flags = PW_CLIENTONLY | PW_RENDERFULLCONTENT;
+
+  BOOL result = PrintWindow(window, mem_hdc.Get(), flags);
+  if (!result)
+    PLOG(ERROR) << "Failed to print window";
+
+  GdiFlush();
+
+  uint32_t pixel_value =
+      static_cast<uint32_t*>(bits)[hdr.bV4Width * point.y() + point.x()];
+
+  return pixel_value;
+}
+
+class DirectCompositionPixelTest : public testing::Test {
+ public:
+  DirectCompositionPixelTest()
+      : window_(&platform_delegate_, gfx::Rect(0, 0, 100, 100)) {}
+
+ protected:
+  void InitializeSurface() {
+    static_cast<ui::PlatformWindow*>(&window_)->Show();
+
+    surface_ =
+        new DirectCompositionSurfaceWin(delegate_.AsWeakPtr(), window_.hwnd());
+    EXPECT_TRUE(surface_->Initialize());
+  }
+
+  void PixelTestSwapChain(bool layers_enabled) {
+    if (!CheckIfDCSupported())
+      return;
+
+    InitializeSurface();
+
+    surface_->SetEnableDCLayers(layers_enabled);
+    gfx::Size window_size(100, 100);
+
+    scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
+        nullptr, surface_.get(), gl::GLContextAttribs());
+    EXPECT_TRUE(surface_->Resize(window_size, 1.0, true));
+    EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
+    EXPECT_TRUE(context->MakeCurrent(surface_.get()));
+
+    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface_->SwapBuffers());
+
+    // Ensure DWM swap completed.
+    Sleep(1000);
+
+    SkColor actual_color =
+        ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+    EXPECT_EQ(SK_ColorRED, actual_color);
+
+    EXPECT_TRUE(context->IsCurrent(surface_.get()));
+
+    context = nullptr;
+    DestroySurface(std::move(surface_));
+  }
+
+  TestPlatformDelegate platform_delegate_;
+  TestImageTransportSurfaceDelegate delegate_;
+  ui::WinWindow window_;
+  scoped_refptr<DirectCompositionSurfaceWin> surface_;
+};
+
+TEST_F(DirectCompositionPixelTest, DCLayersEnabled) {
+  PixelTestSwapChain(true);
+}
+
+TEST_F(DirectCompositionPixelTest, DCLayersDisabled) {
+  PixelTestSwapChain(false);
+}
+
+base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
+    const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+    const gfx::Size& size) {
+  D3D11_TEXTURE2D_DESC desc = {};
+  desc.Width = size.width();
+  desc.Height = size.height();
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.Format = DXGI_FORMAT_NV12;
+  desc.Usage = D3D11_USAGE_DEFAULT;
+  desc.SampleDesc.Count = 1;
+  desc.BindFlags = 0;
+
+  std::vector<char> image_data(size.width() * size.height() * 3 / 2);
+  // Y, U, and V should all be Oxff. Output color should be pink.
+  memset(&image_data[0], 0xff, size.width() * size.height() * 3 / 2);
+
+  D3D11_SUBRESOURCE_DATA data = {};
+  data.pSysMem = (const void*)&image_data[0];
+  data.SysMemPitch = size.width();
+
+  base::win::ScopedComPtr<ID3D11Texture2D> texture;
+  HRESULT hr = d3d11_device->CreateTexture2D(&desc, &data, texture.Receive());
+  CHECK(SUCCEEDED(hr));
+  return texture;
+}
+
+bool AreColorsSimilar(int a, int b) {
+  // The precise colors may differ depending on the video processor, so allow
+  // a margin for error.
+  const int kMargin = 10;
+  return abs(SkColorGetA(a) - SkColorGetA(b)) < kMargin &&
+         abs(SkColorGetR(a) - SkColorGetR(b)) < kMargin &&
+         abs(SkColorGetG(a) - SkColorGetG(b)) < kMargin &&
+         abs(SkColorGetB(a) - SkColorGetB(b)) < kMargin;
+}
+
+TEST_F(DirectCompositionPixelTest, VideoSwapchain) {
+  if (!CheckIfDCSupported())
+    return;
+  InitializeSurface();
+  surface_->SetEnableDCLayers(true);
+  gfx::Size window_size(100, 100);
+
+  scoped_refptr<gl::GLContext> context = gl::init::CreateGLContext(
+      nullptr, surface_.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0, true));
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(50, 50);
+  base::win::ScopedComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size);
+
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  image_dxgi->SetTexture(texture, 0);
+
+  ui::DCRendererLayerParams params(false, gfx::Rect(), 1, gfx::Transform(),
+                                   image_dxgi.get(),
+                                   gfx::RectF(gfx::Rect(texture_size)),
+                                   gfx::Rect(window_size), 0, 0, 1.0, 0);
+  surface_->ScheduleDCLayer(params);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface_->SwapBuffers());
+  Sleep(1000);
+
+  SkColor expected_color = SkColorSetRGB(0xff, 0xb7, 0xff);
+  SkColor actual_color =
+      ReadBackWindowPixel(window_.hwnd(), gfx::Point(75, 75));
+  EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+      << std::hex << "Expected " << expected_color << " Actual "
+      << actual_color;
+
+  context = nullptr;
+  DestroySurface(std::move(surface_));
+}
+
 }  // namespace
 }  // namespace gpu

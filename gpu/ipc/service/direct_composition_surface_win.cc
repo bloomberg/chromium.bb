@@ -4,16 +4,26 @@
 
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 
+#include <d3d11_1.h>
+#include <dcomptypes.h>
+
+#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/trace_event/trace_event.h"
+#include "base/win/scoped_handle.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/switches.h"
 #include "ui/display/display_switches.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/transform.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_image_dxgi.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_make_current.h"
 
@@ -48,12 +58,558 @@ class ScopedReleaseCurrent {
   base::Optional<ui::ScopedMakeCurrent> make_current_;
 };
 
+bool SizeContains(const gfx::Size& a, const gfx::Size& b) {
+  return gfx::Rect(a).Contains(gfx::Rect(b));
+}
+
 // Only one DirectComposition surface can be rendered into at a time. Track
 // here which IDCompositionSurface is being rendered into. If another context
 // is made current, then this surface will be suspended.
 IDCompositionSurface* g_current_surface;
 
 }  // namespace
+
+class DCLayerTree {
+ public:
+  DCLayerTree(DirectCompositionSurfaceWin* surface,
+              const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+              const base::win::ScopedComPtr<IDCompositionDevice2>& dcomp_device)
+      : surface_(surface),
+        d3d11_device_(d3d11_device),
+        dcomp_device_(dcomp_device) {}
+
+  bool Initialize(HWND window);
+  bool CommitAndClearPendingOverlays();
+  bool ScheduleDCLayer(const ui::DCRendererLayerParams& params);
+  void InitializeVideoProcessor(const gfx::Size& input_size,
+                                const gfx::Size& output_size);
+
+  const base::win::ScopedComPtr<ID3D11VideoProcessor>& video_processor() const {
+    return video_processor_;
+  }
+  const base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>&
+  video_processor_enumerator() const {
+    return video_processor_enumerator_;
+  }
+
+ private:
+  class SwapChainPresenter;
+
+  // This struct is used to cache information about what visuals are currently
+  // being presented so that properties that aren't changed aren't sent to
+  // DirectComposition.
+  struct VisualInfo {
+    base::win::ScopedComPtr<IDCompositionVisual2> content_visual;
+    base::win::ScopedComPtr<IDCompositionVisual2> clip_visual;
+
+    std::unique_ptr<SwapChainPresenter> swap_chain_presenter;
+    base::win::ScopedComPtr<IDXGISwapChain1> swap_chain;
+    base::win::ScopedComPtr<IDCompositionSurface> surface;
+
+    gfx::Rect bounds;
+    float swap_chain_scale_x = 0.0f;
+    float swap_chain_scale_y = 0.0f;
+    bool is_clipped = false;
+    gfx::Rect clip_rect;
+    gfx::Transform transform;
+  };
+
+  void InitVisual(size_t i);
+  void UpdateVisualForVideo(VisualInfo* visual_info,
+                            const ui::DCRendererLayerParams& params);
+  void UpdateVisualForBackbuffer(VisualInfo* visual_info,
+                                 const ui::DCRendererLayerParams& params);
+  void UpdateVisualClip(VisualInfo* visual_info,
+                        const ui::DCRendererLayerParams& params);
+
+  DirectCompositionSurfaceWin* surface_;
+  std::vector<std::unique_ptr<ui::DCRendererLayerParams>> pending_overlays_;
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
+  base::win::ScopedComPtr<IDCompositionDevice2> dcomp_device_;
+  base::win::ScopedComPtr<IDCompositionTarget> dcomp_target_;
+  base::win::ScopedComPtr<IDCompositionVisual2> root_visual_;
+
+  // The video processor is cached so SwapChains don't have to recreate it
+  // whenever they're created.
+  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
+  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
+  base::win::ScopedComPtr<ID3D11VideoProcessor> video_processor_;
+  base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>
+      video_processor_enumerator_;
+  gfx::Size video_input_size_;
+  gfx::Size video_output_size_;
+
+  std::vector<VisualInfo> visual_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(DCLayerTree);
+};
+
+class DCLayerTree::SwapChainPresenter {
+ public:
+  SwapChainPresenter(DCLayerTree* surface,
+                     base::win::ScopedComPtr<ID3D11Device> d3d11_device);
+
+  ~SwapChainPresenter();
+
+  void PresentToSwapChain(const ui::DCRendererLayerParams& overlay);
+
+  float swap_chain_scale_x() const { return swap_chain_scale_x_; }
+  float swap_chain_scale_y() const { return swap_chain_scale_y_; }
+  const base::win::ScopedComPtr<IDXGISwapChain1>& swap_chain() const {
+    return swap_chain_;
+  }
+
+ private:
+  using PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE =
+      HRESULT(WINAPI*)(DWORD, SECURITY_ATTRIBUTES*, HANDLE*);
+
+  // Returns true if the video processor changed.
+  bool InitializeVideoProcessor(const gfx::Size& in_size,
+                                const gfx::Size& out_size);
+  void ReallocateSwapChain();
+
+  DCLayerTree* surface_;
+  PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE create_surface_handle_function_;
+
+  gfx::Size swap_chain_size_;
+  gfx::Size processor_input_size_;
+  gfx::Size processor_output_size_;
+
+  // This is the scale from the swapchain size to the size of the contents
+  // onscreen.
+  float swap_chain_scale_x_ = 0.0f;
+  float swap_chain_scale_y_ = 0.0f;
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain_;
+  base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> out_view_;
+  base::win::ScopedComPtr<ID3D11VideoProcessor> video_processor_;
+  base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator>
+      video_processor_enumerator_;
+  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
+  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
+
+  base::win::ScopedHandle swap_chain_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
+};
+
+bool DCLayerTree::Initialize(HWND window) {
+  d3d11_device_.QueryInterface(video_device_.Receive());
+  base::win::ScopedComPtr<ID3D11DeviceContext> context;
+  d3d11_device_->GetImmediateContext(context.Receive());
+  context.QueryInterface(video_context_.Receive());
+
+  base::win::ScopedComPtr<IDCompositionDesktopDevice> desktop_device;
+  dcomp_device_.QueryInterface(desktop_device.Receive());
+
+  HRESULT hr = desktop_device->CreateTargetForHwnd(window, TRUE,
+                                                   dcomp_target_.Receive());
+  if (FAILED(hr))
+    return false;
+
+  hr = dcomp_device_->CreateVisual(root_visual_.Receive());
+  if (FAILED(hr))
+    return false;
+
+  dcomp_target_->SetRoot(root_visual_.get());
+  return true;
+}
+
+void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
+                                           const gfx::Size& output_size) {
+  if (SizeContains(video_input_size_, input_size) &&
+      SizeContains(video_output_size_, output_size))
+    return;
+  video_input_size_ = input_size;
+  video_output_size_ = output_size;
+
+  video_processor_.Release();
+  video_processor_enumerator_.Receive();
+  D3D11_VIDEO_PROCESSOR_CONTENT_DESC desc = {};
+  desc.InputFrameFormat = D3D11_VIDEO_FRAME_FORMAT_PROGRESSIVE;
+  desc.InputFrameRate.Numerator = 60;
+  desc.InputFrameRate.Denominator = 1;
+  desc.InputWidth = input_size.width();
+  desc.InputHeight = input_size.height();
+  desc.OutputFrameRate.Numerator = 60;
+  desc.OutputFrameRate.Denominator = 1;
+  desc.OutputWidth = output_size.width();
+  desc.OutputHeight = output_size.height();
+  desc.Usage = D3D11_VIDEO_USAGE_PLAYBACK_NORMAL;
+  HRESULT hr = video_device_->CreateVideoProcessorEnumerator(
+      &desc, video_processor_enumerator_.Receive());
+  CHECK(SUCCEEDED(hr));
+
+  hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.get(), 0,
+                                           video_processor_.Receive());
+  CHECK(SUCCEEDED(hr));
+}
+
+DCLayerTree::SwapChainPresenter::SwapChainPresenter(
+    DCLayerTree* surface,
+    base::win::ScopedComPtr<ID3D11Device> d3d11_device)
+    : surface_(surface), d3d11_device_(d3d11_device) {
+  d3d11_device_.QueryInterface(video_device_.Receive());
+  base::win::ScopedComPtr<ID3D11DeviceContext> context;
+  d3d11_device_->GetImmediateContext(context.Receive());
+  context.QueryInterface(video_context_.Receive());
+  HMODULE dcomp = ::GetModuleHandleA("dcomp.dll");
+  CHECK(dcomp);
+  create_surface_handle_function_ =
+      reinterpret_cast<PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE>(
+          GetProcAddress(dcomp, "DCompositionCreateSurfaceHandle"));
+  CHECK(create_surface_handle_function_);
+}
+
+DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
+
+void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
+    const ui::DCRendererLayerParams& params) {
+  gl::GLImageDXGI* image_dxgi =
+      gl::GLImageDXGI::FromGLImage(params.image.get());
+  DCHECK(image_dxgi);
+
+  // Swap chain size is the minimum of the on-screen size and the source
+  // size so the video processor can do the minimal amount of work and
+  // the overlay has to read the minimal amount of data.
+  // DWM is also less likely to promote a surface to an overlay if it's
+  // much larger than its area on-screen.
+  gfx::Rect bounds_rect = params.rect;
+  gfx::Size ceiled_input_size = gfx::ToCeiledSize(params.contents_rect.size());
+  gfx::Size swap_chain_size = bounds_rect.size();
+  swap_chain_size.SetToMin(ceiled_input_size);
+
+  // YUY2 surfaces must have an even width.
+  if (swap_chain_size.width() % 2 == 1)
+    swap_chain_size.set_width(swap_chain_size.width() + 1);
+
+  InitializeVideoProcessor(ceiled_input_size, swap_chain_size);
+
+  bool first_present = false;
+  if (!swap_chain_ || swap_chain_size_ != swap_chain_size) {
+    first_present = true;
+    swap_chain_size_ = swap_chain_size;
+    swap_chain_.Release();
+    ReallocateSwapChain();
+  }
+
+  if (!out_view_) {
+    base::win::ScopedComPtr<ID3D11Texture2D> texture;
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(texture.Receive()));
+    D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC out_desc = {};
+    out_desc.ViewDimension = D3D11_VPOV_DIMENSION_TEXTURE2D;
+    out_desc.Texture2D.MipSlice = 0;
+    HRESULT hr = video_device_->CreateVideoProcessorOutputView(
+        texture.get(), video_processor_enumerator_.get(), &out_desc,
+        out_view_.Receive());
+    CHECK(SUCCEEDED(hr));
+  }
+  {
+    D3D11_VIDEO_PROCESSOR_INPUT_VIEW_DESC in_desc = {};
+    in_desc.ViewDimension = D3D11_VPIV_DIMENSION_TEXTURE2D;
+    in_desc.Texture2D.ArraySlice = (UINT)image_dxgi->level();
+    base::win::ScopedComPtr<ID3D11VideoProcessorInputView> in_view;
+    HRESULT hr = video_device_->CreateVideoProcessorInputView(
+        image_dxgi->texture().get(), video_processor_enumerator_.get(),
+        &in_desc, in_view.Receive());
+    CHECK(SUCCEEDED(hr));
+
+    D3D11_VIDEO_PROCESSOR_STREAM stream = {};
+    stream.Enable = true;
+    stream.OutputIndex = 0;
+    stream.InputFrameOrField = 0;
+    stream.PastFrames = 0;
+    stream.FutureFrames = 0;
+    stream.pInputSurface = in_view.get();
+    RECT dest_rect = gfx::Rect(swap_chain_size).ToRECT();
+    video_context_->VideoProcessorSetOutputTargetRect(video_processor_.get(),
+                                                      TRUE, &dest_rect);
+    video_context_->VideoProcessorSetStreamDestRect(video_processor_.get(), 0,
+                                                    TRUE, &dest_rect);
+    RECT source_rect = gfx::Rect(ceiled_input_size).ToRECT();
+    video_context_->VideoProcessorSetStreamSourceRect(video_processor_.get(), 0,
+                                                      TRUE, &source_rect);
+
+    video_context_->VideoProcessorSetStreamAutoProcessingMode(
+        video_processor_.get(), 0, FALSE);
+
+    hr = video_context_->VideoProcessorBlt(video_processor_.get(),
+                                           out_view_.get(), 0, 1, &stream);
+    CHECK(SUCCEEDED(hr));
+  }
+
+  swap_chain_scale_x_ = bounds_rect.width() * 1.0f / swap_chain_size.width();
+  swap_chain_scale_y_ = bounds_rect.height() * 1.0f / swap_chain_size.height();
+
+  swap_chain_->Present(first_present ? 0 : 1, 0);
+}
+
+bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
+    const gfx::Size& in_size,
+    const gfx::Size& out_size) {
+  if (video_processor_ && SizeContains(processor_input_size_, in_size) &&
+      SizeContains(processor_output_size_, out_size))
+    return false;
+  processor_input_size_ = in_size;
+  processor_output_size_ = out_size;
+  surface_->InitializeVideoProcessor(in_size, out_size);
+
+  video_processor_enumerator_ = surface_->video_processor_enumerator();
+  video_processor_ = surface_->video_processor();
+  // out_view_ depends on video_processor_enumerator_, so ensure it's
+  // recreated if the enumerator is.
+  out_view_.Release();
+  return true;
+}
+
+void DCLayerTree::SwapChainPresenter::ReallocateSwapChain() {
+  TRACE_EVENT0("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain");
+  DCHECK(!swap_chain_);
+
+  base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device_.QueryInterface(dxgi_device.Receive());
+  base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
+  dxgi_device->GetAdapter(dxgi_adapter.Receive());
+  base::win::ScopedComPtr<IDXGIFactory2> dxgi_factory;
+  dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.Receive()));
+
+  base::win::ScopedComPtr<IDXGIFactoryMedia> media_factory;
+  dxgi_factory.QueryInterface(media_factory.Receive());
+  DXGI_SWAP_CHAIN_DESC1 desc = {};
+  desc.Width = swap_chain_size_.width();
+  desc.Height = swap_chain_size_.height();
+  desc.Format = DXGI_FORMAT_YUY2;
+  desc.Stereo = FALSE;
+  desc.SampleDesc.Count = 1;
+  desc.BufferCount = 2;
+  desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  desc.Scaling = DXGI_SCALING_STRETCH;
+  desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+  desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+  desc.Flags =
+      DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
+
+  HANDLE handle;
+  create_surface_handle_function_(COMPOSITIONOBJECT_ALL_ACCESS, nullptr,
+                                  &handle);
+  swap_chain_handle_.Set(handle);
+
+  // The composition surface handle isn't actually used, but
+  // CreateSwapChainForComposition can't create YUY2 swapchains.
+  HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+      d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
+      swap_chain_.Receive());
+
+  if (FAILED(hr)) {
+    // This should not be hit in production but is a simple fallback for
+    // testing on systems without YUY2 swapchain support.
+    DLOG(ERROR) << "YUY2 creation failed with " << std::hex << hr
+                << ". Falling back to BGRA";
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.Flags = 0;
+    hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+        d3d11_device_.get(), swap_chain_handle_.Get(), &desc, nullptr,
+        swap_chain_.Receive());
+    CHECK(SUCCEEDED(hr));
+  } else {
+    // This is a sensible default colorspace for most videos.
+    // TODO(jbauman): Use correct colorspace.
+    base::win::ScopedComPtr<IDXGISwapChain3> swap_chain3;
+    swap_chain_.QueryInterface(swap_chain3.Receive());
+    hr = swap_chain3->SetColorSpace1(
+        DXGI_COLOR_SPACE_YCBCR_STUDIO_G22_LEFT_P709);
+    CHECK(SUCCEEDED(hr));
+  }
+  out_view_.Release();
+}
+
+void DCLayerTree::InitVisual(size_t i) {
+  DCHECK_GT(visual_info_.size(), i);
+  VisualInfo* visual_info = &visual_info_[i];
+  if (visual_info->content_visual)
+    return;
+  DCHECK(!visual_info->clip_visual);
+  base::win::ScopedComPtr<IDCompositionVisual2> visual;
+  dcomp_device_->CreateVisual(visual_info->clip_visual.Receive());
+  dcomp_device_->CreateVisual(visual.Receive());
+  visual_info->content_visual = visual;
+  visual_info->clip_visual->AddVisual(visual.get(), FALSE, nullptr);
+
+  IDCompositionVisual2* last_visual =
+      (i > 0) ? visual_info_[i - 1].clip_visual.get() : nullptr;
+  root_visual_->AddVisual(visual_info->clip_visual.get(), TRUE, last_visual);
+}
+
+void DCLayerTree::UpdateVisualForVideo(
+    VisualInfo* visual_info,
+    const ui::DCRendererLayerParams& params) {
+  base::win::ScopedComPtr<IDCompositionVisual2> dc_visual =
+      visual_info->content_visual;
+
+  gfx::Rect bounds_rect = params.rect;
+  visual_info->surface.Release();
+  if (!visual_info->swap_chain_presenter) {
+    visual_info->swap_chain_presenter =
+        base::MakeUnique<SwapChainPresenter>(this, d3d11_device_);
+  }
+  visual_info->swap_chain_presenter->PresentToSwapChain(params);
+  if (visual_info->swap_chain !=
+      visual_info->swap_chain_presenter->swap_chain()) {
+    visual_info->swap_chain = visual_info->swap_chain_presenter->swap_chain();
+    dc_visual->SetContent(visual_info->swap_chain.get());
+  }
+
+  if (visual_info->swap_chain_presenter->swap_chain_scale_x() !=
+          visual_info->swap_chain_scale_x ||
+      visual_info->swap_chain_presenter->swap_chain_scale_y() !=
+          visual_info->swap_chain_scale_y ||
+      params.transform != visual_info->transform ||
+      visual_info->bounds != bounds_rect) {
+    visual_info->swap_chain_scale_x =
+        visual_info->swap_chain_presenter->swap_chain_scale_x();
+    visual_info->swap_chain_scale_y =
+        visual_info->swap_chain_presenter->swap_chain_scale_y();
+    visual_info->transform = params.transform;
+    visual_info->bounds = bounds_rect;
+
+    gfx::Transform final_transform = params.transform;
+    gfx::Transform scale_transform;
+    scale_transform.Scale(
+        visual_info->swap_chain_presenter->swap_chain_scale_x(),
+        visual_info->swap_chain_presenter->swap_chain_scale_y());
+    final_transform.PreconcatTransform(scale_transform);
+    final_transform.Transpose();
+
+    dc_visual->SetOffsetX(bounds_rect.x());
+    dc_visual->SetOffsetY(bounds_rect.y());
+    base::win::ScopedComPtr<IDCompositionMatrixTransform> dcomp_transform;
+    dcomp_device_->CreateMatrixTransform(dcomp_transform.Receive());
+    D2D_MATRIX_3X2_F d2d_matrix = {{{final_transform.matrix().get(0, 0),
+                                     final_transform.matrix().get(0, 1),
+                                     final_transform.matrix().get(1, 0),
+                                     final_transform.matrix().get(1, 1),
+                                     final_transform.matrix().get(3, 0),
+                                     final_transform.matrix().get(3, 1)}}};
+    dcomp_transform->SetMatrix(d2d_matrix);
+    dc_visual->SetTransform(dcomp_transform.get());
+  }
+}
+
+void DCLayerTree::UpdateVisualForBackbuffer(
+    VisualInfo* visual_info,
+    const ui::DCRendererLayerParams& params) {
+  base::win::ScopedComPtr<IDCompositionVisual2> dc_visual =
+      visual_info->content_visual;
+
+  visual_info->swap_chain_presenter = nullptr;
+  if ((visual_info->surface != surface_->dcomp_surface()) ||
+      (visual_info->swap_chain != surface_->swap_chain())) {
+    visual_info->surface = surface_->dcomp_surface();
+    visual_info->swap_chain = surface_->swap_chain();
+    if (visual_info->surface) {
+      dc_visual->SetContent(visual_info->surface.get());
+    } else if (visual_info->swap_chain) {
+      dc_visual->SetContent(visual_info->swap_chain.get());
+    } else {
+      dc_visual->SetContent(nullptr);
+    }
+  }
+
+  gfx::Rect bounds_rect = params.rect;
+  if (visual_info->bounds != bounds_rect ||
+      !visual_info->transform.IsIdentity()) {
+    dc_visual->SetOffsetX(bounds_rect.x());
+    dc_visual->SetOffsetY(bounds_rect.y());
+    visual_info->bounds = bounds_rect;
+    dc_visual->SetTransform(nullptr);
+    visual_info->transform = gfx::Transform();
+  }
+}
+
+void DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
+                                   const ui::DCRendererLayerParams& params) {
+  if (params.is_clipped != visual_info->is_clipped ||
+      params.clip_rect != visual_info->clip_rect) {
+    // DirectComposition clips happen in the pre-transform visual
+    // space, while cc/ clips happen post-transform. So the clip needs
+    // to go on a separate parent visual that's untransformed.
+    visual_info->is_clipped = params.is_clipped;
+    visual_info->clip_rect = params.clip_rect;
+    if (params.is_clipped) {
+      base::win::ScopedComPtr<IDCompositionRectangleClip> clip;
+      dcomp_device_->CreateRectangleClip(clip.Receive());
+      gfx::Rect offset_clip = params.clip_rect;
+      clip->SetLeft(offset_clip.x());
+      clip->SetRight(offset_clip.right());
+      clip->SetBottom(offset_clip.bottom());
+      clip->SetTop(offset_clip.y());
+      visual_info->clip_visual->SetClip(clip.get());
+    } else {
+      visual_info->clip_visual->SetClip(nullptr);
+    }
+  }
+}
+
+bool DCLayerTree::CommitAndClearPendingOverlays() {
+  TRACE_EVENT1("gpu", "DCLayerTree::CommitAndClearPendingOverlays", "size",
+               pending_overlays_.size());
+  // Add an overlay with z-order 0 representing the main plane.
+  gfx::Size surface_size = surface_->GetSize();
+  pending_overlays_.push_back(base::MakeUnique<ui::DCRendererLayerParams>(
+      false, gfx::Rect(), 0, gfx::Transform(), nullptr,
+      gfx::RectF(gfx::SizeF(surface_size)), gfx::Rect(surface_size), 0, 0, 1.0,
+      0));
+
+  // TODO(jbauman): Reuse swapchains that are switched between overlays and
+  // underlays.
+  std::sort(pending_overlays_.begin(), pending_overlays_.end(),
+            [](const auto& a, const auto& b) -> bool {
+              return a->z_order < b->z_order;
+            });
+
+  while (visual_info_.size() > pending_overlays_.size()) {
+    visual_info_.back().clip_visual->RemoveAllVisuals();
+    root_visual_->RemoveVisual(visual_info_.back().clip_visual.get());
+    visual_info_.pop_back();
+  }
+
+  visual_info_.resize(pending_overlays_.size());
+
+  // The overall visual tree has one clip visual for every overlay (including
+  // the main plane). The clip visuals are in z_order and are all children of
+  // a root visual. Each clip visual has a child visual that has the actual
+  // plane content.
+
+  for (size_t i = 0; i < pending_overlays_.size(); i++) {
+    ui::DCRendererLayerParams& params = *pending_overlays_[i];
+    VisualInfo* visual_info = &visual_info_[i];
+
+    InitVisual(i);
+    if (params.image &&
+        params.image->GetType() == gl::GLImage::Type::DXGI_IMAGE) {
+      UpdateVisualForVideo(visual_info, params);
+    } else if (!params.image) {
+      UpdateVisualForBackbuffer(visual_info, params);
+    } else {
+      CHECK(false);
+    }
+    UpdateVisualClip(visual_info, params);
+  }
+
+  HRESULT hr = dcomp_device_->Commit();
+  CHECK(SUCCEEDED(hr));
+
+  pending_overlays_.clear();
+  return true;
+}
+
+bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
+  pending_overlays_.push_back(
+      base::MakeUnique<ui::DCRendererLayerParams>(params));
+  return true;
+}
 
 DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
@@ -131,19 +687,10 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
     }
   }
 
-  base::win::ScopedComPtr<IDCompositionDesktopDevice> desktop_device;
-  dcomp_device_.QueryInterface(desktop_device.Receive());
-
-  HRESULT hr = desktop_device->CreateTargetForHwnd(window_, TRUE,
-                                                   dcomp_target_.Receive());
-  if (FAILED(hr))
+  layer_tree_ =
+      base::MakeUnique<DCLayerTree>(this, d3d11_device_, dcomp_device_);
+  if (!layer_tree_->Initialize(window_))
     return false;
-
-  hr = dcomp_device_->CreateVisual(visual_.Receive());
-  if (FAILED(hr))
-    return false;
-
-  dcomp_target_->SetRoot(visual_.get());
 
   std::vector<EGLint> pbuffer_attribs;
   pbuffer_attribs.push_back(EGL_WIDTH);
@@ -166,6 +713,8 @@ void DirectCompositionSurfaceWin::ReleaseCurrentSurface() {
 }
 
 void DirectCompositionSurfaceWin::InitializeSurface() {
+  TRACE_EVENT1("gpu", "DirectCompositionSurfaceWin::InitializeSurface()",
+               "enable_dc_layers_", enable_dc_layers_);
   DCHECK(!dcomp_surface_);
   DCHECK(!swap_chain_);
   DXGI_FORMAT output_format =
@@ -302,14 +851,8 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers() {
   {
     ScopedReleaseCurrent release_current(this);
     ReleaseDrawTexture(false);
-    DCHECK(dcomp_surface_ || swap_chain_);
-    if (dcomp_surface_)
-      visual_->SetContent(dcomp_surface_.get());
-    else
-      visual_->SetContent(swap_chain_.get());
 
-    CommitAndClearPendingOverlays();
-    dcomp_device_->Commit();
+    layer_tree_->CommitAndClearPendingOverlays();
   }
   child_window_.ClearInvalidContents();
   return gfx::SwapResult::SWAP_ACK;
@@ -328,15 +871,9 @@ gfx::VSyncProvider* DirectCompositionSurfaceWin::GetVSyncProvider() {
   return vsync_provider_.get();
 }
 
-bool DirectCompositionSurfaceWin::ScheduleOverlayPlane(
-    int z_order,
-    gfx::OverlayTransform transform,
-    gl::GLImage* image,
-    const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect) {
-  pending_overlays_.push_back(
-      Overlay(z_order, transform, image, bounds_rect, crop_rect));
-  return true;
+bool DirectCompositionSurfaceWin::ScheduleDCLayer(
+    const ui::DCRendererLayerParams& params) {
+  return layer_tree_->ScheduleDCLayer(params);
 }
 
 bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {
@@ -344,10 +881,6 @@ bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {
   return true;
 }
 
-bool DirectCompositionSurfaceWin::CommitAndClearPendingOverlays() {
-  pending_overlays_.clear();
-  return true;
-}
 
 bool DirectCompositionSurfaceWin::FlipsVertically() const {
   return true;
@@ -380,7 +913,6 @@ bool DirectCompositionSurfaceWin::SupportsDCLayers() const {
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
   if (draw_texture_)
     return false;
-
   DCHECK(!real_surface_);
   ScopedReleaseCurrent release_current(this);
 
@@ -445,20 +977,5 @@ scoped_refptr<base::TaskRunner>
 DirectCompositionSurfaceWin::GetWindowTaskRunnerForTesting() {
   return child_window_.GetTaskRunnerForTesting();
 }
-
-DirectCompositionSurfaceWin::Overlay::Overlay(int z_order,
-                                              gfx::OverlayTransform transform,
-                                              scoped_refptr<gl::GLImage> image,
-                                              gfx::Rect bounds_rect,
-                                              gfx::RectF crop_rect)
-    : z_order(z_order),
-      transform(transform),
-      image(image),
-      bounds_rect(bounds_rect),
-      crop_rect(crop_rect) {}
-
-DirectCompositionSurfaceWin::Overlay::Overlay(const Overlay& overlay) = default;
-
-DirectCompositionSurfaceWin::Overlay::~Overlay() {}
 
 }  // namespace gpu

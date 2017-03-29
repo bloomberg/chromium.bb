@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -23,7 +24,7 @@ namespace ui {
 struct GL_EXPORT DCRendererLayerParams {
   DCRendererLayerParams(bool is_clipped,
                         const gfx::Rect clip_rect,
-                        unsigned sorting_context_id,
+                        int z_order,
                         const gfx::Transform& transform,
                         gl::GLImage* image,
                         const gfx::RectF& contents_rect,
@@ -37,9 +38,9 @@ struct GL_EXPORT DCRendererLayerParams {
 
   bool is_clipped;
   const gfx::Rect clip_rect;
-  unsigned sorting_context_id;
+  int z_order;
   const gfx::Transform transform;
-  gl::GLImage* image;
+  scoped_refptr<gl::GLImage> image;
   const gfx::RectF contents_rect;
   const gfx::Rect rect;
   unsigned background_color;

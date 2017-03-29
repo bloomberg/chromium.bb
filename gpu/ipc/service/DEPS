@@ -5,4 +5,5 @@ include_rules = [
   "+ui/display",
   "+ui/events",
   "+ui/ozone",
+  "+ui/platform_window",
 ]
