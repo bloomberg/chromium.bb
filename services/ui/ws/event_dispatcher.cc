@@ -86,18 +86,18 @@ void EventDispatcher::SetMousePointerScreenLocation(
   delegate_->OnMouseCursorLocationChanged(screen_location);
 }
 
-ui::mojom::Cursor EventDispatcher::GetCurrentMouseCursor() const {
+ui::mojom::CursorType EventDispatcher::GetCurrentMouseCursor() const {
   if (drag_controller_)
     return drag_controller_->current_cursor();
 
   if (!mouse_cursor_source_window_)
-    return ui::mojom::Cursor::POINTER;
+    return ui::mojom::CursorType::POINTER;
 
   if (mouse_cursor_in_non_client_area_)
     return mouse_cursor_source_window_->non_client_cursor();
 
   const ServerWindow* window = GetWindowForMouseCursor();
-  return window ? window->cursor() : ui::mojom::Cursor::POINTER;
+  return window ? window->cursor() : ui::mojom::CursorType::POINTER;
 }
 
 bool EventDispatcher::SetCaptureWindow(ServerWindow* window,

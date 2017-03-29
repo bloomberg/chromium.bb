@@ -237,7 +237,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
     return WaitForChangeCompleted(change_id);
   }
 
-  bool SetPredefinedCursor(Id window_id, mojom::Cursor cursor) {
+  bool SetPredefinedCursor(Id window_id, mojom::CursorType cursor) {
     const uint32_t change_id = GetAndAdvanceChangeId();
     tree()->SetPredefinedCursor(change_id, window_id, cursor);
     return WaitForChangeCompleted(change_id);
@@ -383,7 +383,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // TODO(sky): add testing coverage.
   void OnWindowFocused(uint32_t focused_window_id) override {}
   void OnWindowPredefinedCursorChanged(uint32_t window_id,
-                                       mojom::Cursor cursor_id) override {
+                                       mojom::CursorType cursor_id) override {
     tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
   }
 
@@ -1631,7 +1631,7 @@ TEST_F(WindowTreeClientTest, SetCursor) {
   changes2()->clear();
 
   ASSERT_TRUE(
-      wt_client1()->SetPredefinedCursor(window_1_1, mojom::Cursor::IBEAM));
+      wt_client1()->SetPredefinedCursor(window_1_1, mojom::CursorType::IBEAM));
   wt_client2_->WaitForChangeCount(1u);
 
   EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_id=4",

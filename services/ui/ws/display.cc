@@ -33,7 +33,8 @@ namespace ui {
 namespace ws {
 
 Display::Display(WindowServer* window_server)
-    : window_server_(window_server), last_cursor_(mojom::Cursor::CURSOR_NULL) {
+    : window_server_(window_server),
+      last_cursor_(mojom::CursorType::CURSOR_NULL) {
   window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
   window_server_->user_id_tracker()->AddObserver(this);
 }
@@ -181,7 +182,7 @@ void Display::OnWillDestroyTree(WindowTree* tree) {
   }
 }
 
-void Display::UpdateNativeCursor(mojom::Cursor cursor_id) {
+void Display::UpdateNativeCursor(mojom::CursorType cursor_id) {
   if (cursor_id != last_cursor_) {
     platform_display_->SetCursorById(cursor_id);
     last_cursor_ = cursor_id;

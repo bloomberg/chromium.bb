@@ -278,8 +278,8 @@ void WindowTreeClient::SetCanFocus(Window* window, bool can_focus) {
 }
 
 void WindowTreeClient::SetPredefinedCursor(WindowMus* window,
-                                           ui::mojom::Cursor old_cursor,
-                                           ui::mojom::Cursor new_cursor) {
+                                           ui::mojom::CursorType old_cursor,
+                                           ui::mojom::CursorType new_cursor) {
   DCHECK(tree_);
 
   const uint32_t change_id = ScheduleInFlightChange(
@@ -1255,7 +1255,7 @@ void WindowTreeClient::OnWindowFocused(Id focused_window_id) {
 
 void WindowTreeClient::OnWindowPredefinedCursorChanged(
     Id window_id,
-    ui::mojom::Cursor cursor) {
+    ui::mojom::CursorType cursor) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
@@ -1659,7 +1659,7 @@ void WindowTreeClient::SetFrameDecorationValues(
 }
 
 void WindowTreeClient::SetNonClientCursor(Window* window,
-                                          ui::mojom::Cursor cursor_id) {
+                                          ui::mojom::CursorType cursor_id) {
   if (window_manager_internal_client_) {
     window_manager_internal_client_->WmSetNonClientCursor(
         WindowMus::Get(window)->server_id(), cursor_id);

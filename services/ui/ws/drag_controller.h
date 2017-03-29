@@ -53,7 +53,7 @@ class DragController : public ServerWindowObserver {
       DropEffectBitmask drag_operations);
   ~DragController() override;
 
-  ui::mojom::Cursor current_cursor() const { return current_cursor_; }
+  ui::mojom::CursorType current_cursor() const { return current_cursor_; }
 
   // Cancels the current drag, ie, due to the user pressing Escape.
   void Cancel();
@@ -91,7 +91,7 @@ class DragController : public ServerWindowObserver {
 
   // Returns the ui::mojom::Cursor for the window |bitmask|, adjusted for types
   // that the drag source allows.
-  ui::mojom::Cursor CursorForEffectBitmask(DropEffectBitmask bitmask);
+  ui::mojom::CursorType CursorForEffectBitmask(DropEffectBitmask bitmask);
 
   // Ensure that |window| has an entry in |window_state_| and that we're an
   // observer.
@@ -126,7 +126,7 @@ class DragController : public ServerWindowObserver {
   const int32_t drag_pointer_id_;
 
   // The current mouse cursor during the drag.
-  ui::mojom::Cursor current_cursor_;
+  ui::mojom::CursorType current_cursor_;
 
   // Sending OnDragOver() to our |source_| destroys us; there is a period where
   // we have to continue to exist, but not process any more pointer events.

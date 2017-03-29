@@ -130,7 +130,7 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
   void SetCursor(gfx::NativeCursor cursor,
                  wm::NativeCursorManagerDelegate* delegate) override {
     aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
-        ui::mojom::Cursor(cursor.native_type()));
+        ui::mojom::CursorType(cursor.native_type()));
     delegate->CommitCursor(cursor);
   }
 
@@ -142,7 +142,7 @@ class NativeCursorManagerMus : public wm::NativeCursorManager {
       SetCursor(delegate->GetCursor(), delegate);
     } else {
       aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
-          ui::mojom::Cursor::NONE);
+          ui::mojom::CursorType::NONE);
     }
   }
 

@@ -98,7 +98,7 @@ void PlatformDisplayDefault::ReleaseCapture() {
   platform_window_->ReleaseCapture();
 }
 
-void PlatformDisplayDefault::SetCursorById(mojom::Cursor cursor_id) {
+void PlatformDisplayDefault::SetCursorById(mojom::CursorType cursor_id) {
 #if !defined(OS_ANDROID)
   // TODO(erg): This still isn't sufficient, and will only use native cursors
   // that chrome would use, not custom image cursors. For that, we should

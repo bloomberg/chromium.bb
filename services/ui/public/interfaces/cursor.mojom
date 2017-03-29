@@ -6,7 +6,7 @@ module ui.mojom;
 
 // Standard Cursor numbers. These are the same as Chrome's ui::Cursor and
 // blink's WebCursorInfo.
-enum Cursor {
+enum CursorType {
   // NULL is kept for compatibility with chrome declarations. In chrome code, it
   // is treated exactly like POINTER, the default pointer.
   CURSOR_NULL = 0,

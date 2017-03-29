@@ -564,7 +564,8 @@ void WindowManagerState::ReleaseNativeCapture() {
 }
 
 void WindowManagerState::UpdateNativeCursorFromDispatcher() {
-  const ui::mojom::Cursor cursor_id = event_dispatcher_.GetCurrentMouseCursor();
+  const ui::mojom::CursorType cursor_id =
+      event_dispatcher_.GetCurrentMouseCursor();
   for (Display* display : display_manager()->displays())
     display->UpdateNativeCursor(cursor_id);
 }

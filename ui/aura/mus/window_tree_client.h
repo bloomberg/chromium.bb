@@ -128,8 +128,8 @@ class AURA_EXPORT WindowTreeClient
   void SetEventTargetingPolicy(WindowMus* window,
                                ui::mojom::EventTargetingPolicy policy);
   void SetPredefinedCursor(WindowMus* window,
-                           ui::mojom::Cursor old_cursor,
-                           ui::mojom::Cursor new_cursor);
+                           ui::mojom::CursorType old_cursor,
+                           ui::mojom::CursorType new_cursor);
   void SetWindowTextInputState(WindowMus* window,
                                mojo::TextInputStatePtr state);
   void SetImeVisibility(WindowMus* window,
@@ -369,7 +369,7 @@ class AURA_EXPORT WindowTreeClient
                               int64_t display_id) override;
   void OnWindowFocused(Id focused_window_id) override;
   void OnWindowPredefinedCursorChanged(Id window_id,
-                                       ui::mojom::Cursor cursor) override;
+                                       ui::mojom::CursorType cursor) override;
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceInfo& surface_info) override;
   void OnDragDropStart(
@@ -447,7 +447,8 @@ class AURA_EXPORT WindowTreeClient
   // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(
       ui::mojom::FrameDecorationValuesPtr values) override;
-  void SetNonClientCursor(Window* window, ui::mojom::Cursor cursor_id) override;
+  void SetNonClientCursor(Window* window,
+                          ui::mojom::CursorType cursor_id) override;
   void AddAccelerators(std::vector<ui::mojom::WmAcceleratorPtr> accelerators,
                        const base::Callback<void(bool)>& callback) override;
   void RemoveAccelerator(uint32_t id) override;

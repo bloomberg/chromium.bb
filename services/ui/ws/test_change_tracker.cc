@@ -422,7 +422,7 @@ void TestChangeTracker::OnWindowFocused(Id window_id) {
 
 void TestChangeTracker::OnWindowPredefinedCursorChanged(
     Id window_id,
-    mojom::Cursor cursor_id) {
+    mojom::CursorType cursor_id) {
   Change change;
   change.type = CHANGE_TYPE_CURSOR_CHANGED;
   change.window_id = window_id;

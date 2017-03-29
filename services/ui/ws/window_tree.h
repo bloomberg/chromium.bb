@@ -247,7 +247,7 @@ class WindowTree : public mojom::WindowTree,
                                    float new_opacity,
                                    bool originated_change);
   void ProcessCursorChanged(const ServerWindow* window,
-                            mojom::Cursor cursor_id,
+                            mojom::CursorType cursor_id,
                             bool originated_change);
   void ProcessFocusChanged(const ServerWindow* old_focused_window,
                            const ServerWindow* new_focused_window);
@@ -440,7 +440,7 @@ class WindowTree : public mojom::WindowTree,
                                mojom::EventTargetingPolicy policy) override;
   void SetPredefinedCursor(uint32_t change_id,
                            Id transport_window_id,
-                           ui::mojom::Cursor cursor_id) override;
+                           ui::mojom::CursorType cursor_id) override;
   void SetWindowTextInputState(Id transport_window_id,
                                mojo::TextInputStatePtr state) override;
   void SetImeVisibility(Id transport_window_id,
@@ -493,7 +493,7 @@ class WindowTree : public mojom::WindowTree,
   void WmSetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
   void WmSetNonClientCursor(uint32_t window_id,
-                            mojom::Cursor cursor_id) override;
+                            mojom::CursorType cursor_id) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
   void OnAcceleratorAck(

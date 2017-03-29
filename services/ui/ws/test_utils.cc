@@ -28,7 +28,7 @@ namespace {
 class TestPlatformDisplay : public PlatformDisplay {
  public:
   explicit TestPlatformDisplay(const display::ViewportMetrics& metrics,
-                               mojom::Cursor* cursor_storage)
+                               mojom::CursorType* cursor_storage)
       : metrics_(metrics), cursor_storage_(cursor_storage) {}
   ~TestPlatformDisplay() override {}
 
@@ -40,7 +40,7 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetTitle(const base::string16& title) override {}
   void SetCapture() override {}
   void ReleaseCapture() override {}
-  void SetCursorById(mojom::Cursor cursor) override {
+  void SetCursorById(mojom::CursorType cursor) override {
     *cursor_storage_ = cursor;
   }
   void UpdateTextInputState(const ui::TextInputState& state) override {}
@@ -56,7 +56,7 @@ class TestPlatformDisplay : public PlatformDisplay {
 
  private:
   display::ViewportMetrics metrics_;
-  mojom::Cursor* cursor_storage_;
+  mojom::CursorType* cursor_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };
@@ -145,7 +145,7 @@ void TestScreenManager::Init(display::ScreenManagerDelegate* delegate) {
 // TestPlatformDisplayFactory  -------------------------------------------------
 
 TestPlatformDisplayFactory::TestPlatformDisplayFactory(
-    mojom::Cursor* cursor_storage)
+    mojom::CursorType* cursor_storage)
     : cursor_storage_(cursor_storage) {}
 
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
@@ -401,7 +401,7 @@ void TestWindowTreeClient::OnWindowFocused(uint32_t focused_window_id) {
 
 void TestWindowTreeClient::OnWindowPredefinedCursorChanged(
     uint32_t window_id,
-    mojom::Cursor cursor_id) {
+    mojom::CursorType cursor_id) {
   tracker_.OnWindowPredefinedCursorChanged(window_id, cursor_id);
 }
 
@@ -506,7 +506,7 @@ bool TestWindowServerDelegate::IsTestConfig() const {
 // WindowServerTestHelper  ---------------------------------------------------
 
 WindowServerTestHelper::WindowServerTestHelper()
-    : cursor_id_(mojom::Cursor::CURSOR_NULL),
+    : cursor_id_(mojom::CursorType::CURSOR_NULL),
       platform_display_factory_(&cursor_id_) {
   // Some tests create their own message loop, for example to add a task runner.
   if (!base::MessageLoop::current())

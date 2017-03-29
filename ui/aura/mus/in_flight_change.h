@@ -22,7 +22,7 @@
 namespace ui {
 
 namespace mojom {
-enum class Cursor : int32_t;
+enum class CursorType : int32_t;
 }
 
 }  // namespace ui
@@ -274,7 +274,7 @@ class InFlightPropertyChange : public InFlightChange {
 class InFlightPredefinedCursorChange : public InFlightChange {
  public:
   InFlightPredefinedCursorChange(WindowMus* window,
-                                 ui::mojom::Cursor revert_value);
+                                 ui::mojom::CursorType revert_value);
   ~InFlightPredefinedCursorChange() override;
 
   // InFlightChange:
@@ -282,7 +282,7 @@ class InFlightPredefinedCursorChange : public InFlightChange {
   void Revert() override;
 
  private:
-  ui::mojom::Cursor revert_cursor_;
+  ui::mojom::CursorType revert_cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightPredefinedCursorChange);
 };

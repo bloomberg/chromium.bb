@@ -179,7 +179,8 @@ class TestChangeTracker {
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& data);
   void OnWindowFocused(Id window_id);
-  void OnWindowPredefinedCursorChanged(Id window_id, mojom::Cursor cursor_id);
+  void OnWindowPredefinedCursorChanged(Id window_id,
+                                       mojom::CursorType cursor_id);
   void OnChangeCompleted(uint32_t change_id, bool success);
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr window_data,

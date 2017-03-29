@@ -788,7 +788,7 @@ void WindowTree::ProcessWindowOpacityChanged(const ServerWindow* window,
 }
 
 void WindowTree::ProcessCursorChanged(const ServerWindow* window,
-                                      mojom::Cursor cursor_id,
+                                      mojom::CursorType cursor_id,
                                       bool originated_change) {
   if (originated_change)
     return;
@@ -1653,7 +1653,7 @@ void WindowTree::SetEventTargetingPolicy(Id transport_window_id,
 
 void WindowTree::SetPredefinedCursor(uint32_t change_id,
                                      Id transport_window_id,
-                                     ui::mojom::Cursor cursor_id) {
+                                     ui::mojom::CursorType cursor_id) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
 
@@ -2094,7 +2094,7 @@ void WindowTree::WmSetFrameDecorationValues(
 }
 
 void WindowTree::WmSetNonClientCursor(uint32_t window_id,
-                                      mojom::Cursor cursor_id) {
+                                      mojom::CursorType cursor_id) {
   DCHECK(window_manager_state_);
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   if (window) {

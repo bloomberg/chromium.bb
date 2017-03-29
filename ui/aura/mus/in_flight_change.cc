@@ -185,7 +185,7 @@ void InFlightPropertyChange::Revert() {
 
 InFlightPredefinedCursorChange::InFlightPredefinedCursorChange(
     WindowMus* window,
-    ui::mojom::Cursor revert_value)
+    ui::mojom::CursorType revert_value)
     : InFlightChange(window, ChangeType::PREDEFINED_CURSOR),
       revert_cursor_(revert_value) {}
 

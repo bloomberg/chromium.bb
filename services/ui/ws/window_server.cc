@@ -420,7 +420,8 @@ void WindowServer::ProcessWindowDeleted(ServerWindow* window) {
 }
 
 void WindowServer::ProcessWillChangeWindowPredefinedCursor(
-    ServerWindow* window, mojom::Cursor cursor_id) {
+    ServerWindow* window,
+    mojom::CursorType cursor_id) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessCursorChanged(window, cursor_id,
                                       IsOperationSource(pair.first));
@@ -751,8 +752,9 @@ void WindowServer::OnWindowVisibilityChanged(ServerWindow* window) {
         window);
 }
 
-void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
-                                                   mojom::Cursor cursor_id) {
+void WindowServer::OnWindowPredefinedCursorChanged(
+    ServerWindow* window,
+    mojom::CursorType cursor_id) {
   if (in_destructor_)
     return;
 
@@ -762,7 +764,7 @@ void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
 }
 
 void WindowServer::OnWindowNonClientCursorChanged(ServerWindow* window,
-                                                  mojom::Cursor cursor_id) {
+                                                  mojom::CursorType cursor_id) {
   if (in_destructor_)
     return;
 

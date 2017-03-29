@@ -46,7 +46,7 @@ class AURA_EXPORT WindowManagerClient {
   virtual void SetFrameDecorationValues(
       ui::mojom::FrameDecorationValuesPtr values) = 0;
   virtual void SetNonClientCursor(Window* window,
-                                  ui::mojom::Cursor non_client_cursor) = 0;
+                                  ui::mojom::CursorType non_client_cursor) = 0;
 
   virtual void AddAccelerators(
       std::vector<ui::mojom::WmAcceleratorPtr> accelerators,

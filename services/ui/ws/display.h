@@ -146,7 +146,7 @@ class Display : public PlatformDisplayDelegate,
   // Called just before |tree| is destroyed.
   void OnWillDestroyTree(WindowTree* tree);
 
-  void UpdateNativeCursor(mojom::Cursor cursor_id);
+  void UpdateNativeCursor(mojom::CursorType cursor_id);
 
   // mojom::WindowTreeHost:
   void SetSize(const gfx::Size& size) override;
@@ -215,7 +215,7 @@ class Display : public PlatformDisplayDelegate,
   display::Display display_;
 
   // The last cursor set. Used to track whether we need to change the cursor.
-  mojom::Cursor last_cursor_;
+  mojom::CursorType last_cursor_;
 
   ServerWindowTracker activation_parents_;
 

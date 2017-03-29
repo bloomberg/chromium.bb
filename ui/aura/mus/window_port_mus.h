@@ -53,8 +53,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
 
-  ui::mojom::Cursor predefined_cursor() const { return predefined_cursor_; }
-  void SetPredefinedCursor(ui::mojom::Cursor cursor_id);
+  ui::mojom::CursorType predefined_cursor() const { return predefined_cursor_; }
+  void SetPredefinedCursor(ui::mojom::CursorType cursor_id);
 
   // Sets the EventTargetingPolicy, default is TARGET_AND_DESCENDANTS.
   void SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy);
@@ -214,7 +214,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetBoundsFromServer(const gfx::Rect& bounds) override;
   void SetVisibleFromServer(bool visible) override;
   void SetOpacityFromServer(float opacity) override;
-  void SetPredefinedCursorFromServer(ui::mojom::Cursor cursor) override;
+  void SetPredefinedCursorFromServer(ui::mojom::CursorType cursor) override;
   void SetPropertyFromServer(
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
@@ -264,7 +264,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   cc::SurfaceInfo surface_info_;
 
-  ui::mojom::Cursor predefined_cursor_ = ui::mojom::Cursor::CURSOR_NULL;
+  ui::mojom::CursorType predefined_cursor_ = ui::mojom::CursorType::CURSOR_NULL;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPortMus);
 };

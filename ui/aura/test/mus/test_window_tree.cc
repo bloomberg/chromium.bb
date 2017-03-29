@@ -254,7 +254,7 @@ void TestWindowTree::SetEventTargetingPolicy(
 
 void TestWindowTree::SetPredefinedCursor(uint32_t change_id,
                                          uint32_t window_id,
-                                         ui::mojom::Cursor cursor_id) {
+                                         ui::mojom::CursorType cursor_id) {
   OnChangeReceived(change_id);
 }
 

@@ -34,8 +34,8 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       visible_(false),
       // Default to POINTER as CURSOR_NULL doesn't change the cursor, it leaves
       // the last non-null cursor.
-      cursor_id_(mojom::Cursor::POINTER),
-      non_client_cursor_id_(mojom::Cursor::POINTER),
+      cursor_id_(mojom::CursorType::POINTER),
+      non_client_cursor_id_(mojom::CursorType::POINTER),
       opacity_(1),
       can_focus_(true),
       properties_(properties),
@@ -299,7 +299,7 @@ void ServerWindow::SetOpacity(float value) {
     observer.OnWindowOpacityChanged(this, old_opacity, opacity_);
 }
 
-void ServerWindow::SetPredefinedCursor(ui::mojom::Cursor value) {
+void ServerWindow::SetPredefinedCursor(ui::mojom::CursorType value) {
   if (value == cursor_id_)
     return;
   cursor_id_ = value;
@@ -307,7 +307,7 @@ void ServerWindow::SetPredefinedCursor(ui::mojom::Cursor value) {
     observer.OnWindowPredefinedCursorChanged(this, value);
 }
 
-void ServerWindow::SetNonClientCursor(ui::mojom::Cursor value) {
+void ServerWindow::SetNonClientCursor(ui::mojom::CursorType value) {
   if (value == non_client_cursor_id_)
     return;
   non_client_cursor_id_ = value;
