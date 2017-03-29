@@ -1,8 +1,8 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "media/audio/mac/audio_low_latency_input_mac.h"
+
 #include <CoreServices/CoreServices.h>
 #include <mach/mach.h>
 #include <string>
@@ -276,14 +276,14 @@ AUAudioInputStream::AUAudioInputStream(
   // Set up the desired (output) format specified by the client.
   format_.mSampleRate = input_params.sample_rate();
   format_.mFormatID = kAudioFormatLinearPCM;
-  format_.mFormatFlags = kLinearPCMFormatFlagIsPacked |
-                         kLinearPCMFormatFlagIsSignedInteger;
+  format_.mFormatFlags =
+      kLinearPCMFormatFlagIsPacked | kLinearPCMFormatFlagIsSignedInteger;
   DCHECK(FormatIsInterleaved(format_.mFormatFlags));
   format_.mBitsPerChannel = input_params.bits_per_sample();
   format_.mChannelsPerFrame = input_params.channels();
   format_.mFramesPerPacket = 1;  // uncompressed audio
-  format_.mBytesPerPacket = (format_.mBitsPerChannel *
-                             input_params.channels()) / 8;
+  format_.mBytesPerPacket =
+      (format_.mBitsPerChannel * input_params.channels()) / 8;
   format_.mBytesPerFrame = format_.mBytesPerPacket;
   format_.mReserved = 0;
 
@@ -345,13 +345,9 @@ bool AUAudioInputStream::Open() {
   // The user specifies which audio device to track. The audio unit can do
   // input from the device as well as output to the device. Bus 0 is used for
   // the output side, bus 1 is used to get audio input from the device.
-  AudioComponentDescription desc = {
-      kAudioUnitType_Output,
-      kAudioUnitSubType_HALOutput,
-      kAudioUnitManufacturer_Apple,
-      0,
-      0
-  };
+  AudioComponentDescription desc = {kAudioUnitType_Output,
+                                    kAudioUnitSubType_HALOutput,
+                                    kAudioUnitManufacturer_Apple, 0, 0};
 
   // Find a component that meets the description in |desc|.
   AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
@@ -394,8 +390,7 @@ bool AUAudioInputStream::Open() {
   UInt32 enableIO = 1;
 
   // Enable input on the AUHAL.
-  result = AudioUnitSetProperty(audio_unit_,
-                                kAudioOutputUnitProperty_EnableIO,
+  result = AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_EnableIO,
                                 kAudioUnitScope_Input,
                                 1,          // input element 1
                                 &enableIO,  // enable
@@ -407,8 +402,7 @@ bool AUAudioInputStream::Open() {
 
   // Disable output on the AUHAL.
   enableIO = 0;
-  result = AudioUnitSetProperty(audio_unit_,
-                                kAudioOutputUnitProperty_EnableIO,
+  result = AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_EnableIO,
                                 kAudioUnitScope_Output,
                                 0,          // output element 0
                                 &enableIO,  // disable
@@ -420,12 +414,9 @@ bool AUAudioInputStream::Open() {
 
   // Next, set the audio device to be the Audio Unit's current device.
   // Note that, devices can only be set to the AUHAL after enabling IO.
-  result = AudioUnitSetProperty(audio_unit_,
-                                kAudioOutputUnitProperty_CurrentDevice,
-                                kAudioUnitScope_Global,
-                                0,
-                                &input_device_id_,
-                                sizeof(input_device_id_));
+  result = AudioUnitSetProperty(
+      audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
+      kAudioUnitScope_Global, 0, &input_device_id_, sizeof(input_device_id_));
   if (result != noErr) {
     HandleError(result);
     return false;
@@ -541,8 +532,8 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
     start_was_deferred_ = true;
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
-    deferred_start_cb_.Reset(base::Bind(
-        &AUAudioInputStream::Start, base::Unretained(this), callback));
+    deferred_start_cb_.Reset(base::Bind(&AUAudioInputStream::Start,
+                                        base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
         FROM_HERE, deferred_start_cb_.callback(),
         base::TimeDelta::FromSeconds(
@@ -691,10 +682,8 @@ void AUAudioInputStream::SetVolume(double volume) {
 
   Float32 volume_float32 = static_cast<Float32>(volume);
   AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyVolumeScalar,
-    kAudioDevicePropertyScopeInput,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyScopeInput,
+      kAudioObjectPropertyElementMaster};
 
   // Try to set the volume for master volume channel.
   if (IsVolumeSettableOnChannel(kAudioObjectPropertyElementMaster)) {
@@ -739,10 +728,8 @@ double AUAudioInputStream::GetVolume() {
   }
 
   AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyVolumeScalar,
-    kAudioDevicePropertyScopeInput,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioDevicePropertyVolumeScalar, kAudioDevicePropertyScopeInput,
+      kAudioObjectPropertyElementMaster};
 
   if (AudioObjectHasProperty(input_device_id_, &property_address)) {
     // The device supports master volume control, get the volume from the
@@ -788,10 +775,8 @@ bool AUAudioInputStream::IsMuted() {
   DCHECK_NE(input_device_id_, kAudioObjectUnknown) << "Device ID is unknown";
 
   AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyMute,
-    kAudioDevicePropertyScopeInput,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioDevicePropertyMute, kAudioDevicePropertyScopeInput,
+      kAudioObjectPropertyElementMaster};
 
   if (!AudioObjectHasProperty(input_device_id_, &property_address)) {
     DLOG(ERROR) << "Device does not support checking master mute state";
@@ -986,7 +971,8 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
     // typically one block.
     const int blocks =
         static_cast<int>((number_of_frames - fifo_.GetUnfilledFrames()) /
-                         number_of_frames_) + 1;
+                         number_of_frames_) +
+        1;
     DLOG(WARNING) << "Increasing FIFO capacity by " << blocks << " blocks";
     TRACE_EVENT_INSTANT1("audio", "Increasing FIFO capacity",
                          TRACE_EVENT_SCOPE_THREAD, "increased by", blocks);

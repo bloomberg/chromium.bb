@@ -111,7 +111,8 @@ class MEDIA_EXPORT AUAudioInputStream
                              UInt32 number_of_frames);
 
   // Pushes recorded data to consumer of the input audio stream.
-  OSStatus Provide(UInt32 number_of_frames, AudioBufferList* io_data,
+  OSStatus Provide(UInt32 number_of_frames,
+                   AudioBufferList* io_data,
                    const AudioTimeStamp* time_stamp);
 
   // Callback functions called on different system threads from the Core Audio

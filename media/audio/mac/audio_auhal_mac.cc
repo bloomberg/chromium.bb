@@ -60,8 +60,7 @@ static void WrapBufferList(AudioBufferList* buffer_list,
 
   // Copy pointers from AudioBufferList.
   for (int i = 0; i < channels; ++i) {
-    bus->SetChannelData(
-        i, static_cast<float*>(buffer_list->mBuffers[i].mData));
+    bus->SetChannelData(i, static_cast<float*>(buffer_list->mBuffers[i].mData));
   }
 
   // Finally set the actual length.
@@ -158,7 +157,8 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     deferred_start_cb_.Reset(
         base::Bind(&AUHALStream::Start, base::Unretained(this), callback));
     manager_->GetTaskRunner()->PostDelayedTask(
-        FROM_HERE, deferred_start_cb_.callback(), base::TimeDelta::FromSeconds(
+        FROM_HERE, deferred_start_cb_.callback(),
+        base::TimeDelta::FromSeconds(
             AudioManagerMac::kStartDelayInSecsForPowerEvents));
     return;
   }
@@ -209,12 +209,11 @@ void AUHALStream::GetVolume(double* volume) {
 // Note to future hackers of this function: Do not add locks which can
 // be contended in the middle of stream processing here (starting and stopping
 // the stream are ok) because this is running on a real-time thread.
-OSStatus AUHALStream::Render(
-    AudioUnitRenderActionFlags* flags,
-    const AudioTimeStamp* output_time_stamp,
-    UInt32 bus_number,
-    UInt32 number_of_frames,
-    AudioBufferList* data) {
+OSStatus AUHALStream::Render(AudioUnitRenderActionFlags* flags,
+                             const AudioTimeStamp* output_time_stamp,
+                             UInt32 bus_number,
+                             UInt32 number_of_frames,
+                             AudioBufferList* data) {
   TRACE_EVENT2("audio", "AUHALStream::Render", "input buffer size",
                number_of_frames_, "output buffer size", number_of_frames);
 
@@ -232,8 +231,7 @@ OSStatus AUHALStream::Render(
       DVLOG(1) << "Audio frame size changed from " << number_of_frames_
                << " to " << number_of_frames << " adding FIFO to compensate.";
       audio_fifo_.reset(new AudioPullFifo(
-          output_channels_,
-          number_of_frames_,
+          output_channels_, number_of_frames_,
           base::Bind(&AUHALStream::ProvideInput, base::Unretained(this))));
     }
   }
@@ -273,25 +271,19 @@ void AUHALStream::ProvideInput(int frame_delay, AudioBus* dest) {
 }
 
 // AUHAL callback.
-OSStatus AUHALStream::InputProc(
-    void* user_data,
-    AudioUnitRenderActionFlags* flags,
-    const AudioTimeStamp* output_time_stamp,
-    UInt32 bus_number,
-    UInt32 number_of_frames,
-    AudioBufferList* io_data) {
+OSStatus AUHALStream::InputProc(void* user_data,
+                                AudioUnitRenderActionFlags* flags,
+                                const AudioTimeStamp* output_time_stamp,
+                                UInt32 bus_number,
+                                UInt32 number_of_frames,
+                                AudioBufferList* io_data) {
   // Dispatch to our class method.
-  AUHALStream* audio_output =
-      static_cast<AUHALStream*>(user_data);
+  AUHALStream* audio_output = static_cast<AUHALStream*>(user_data);
   if (!audio_output)
     return -1;
 
-  return audio_output->Render(
-      flags,
-      output_time_stamp,
-      bus_number,
-      number_of_frames,
-      io_data);
+  return audio_output->Render(flags, output_time_stamp, bus_number,
+                              number_of_frames, io_data);
 }
 
 base::TimeDelta AUHALStream::GetHardwareLatency() {
@@ -304,12 +296,8 @@ base::TimeDelta AUHALStream::GetHardwareLatency() {
   Float64 audio_unit_latency_sec = 0.0;
   UInt32 size = sizeof(audio_unit_latency_sec);
   OSStatus result = AudioUnitGetProperty(
-      audio_unit_,
-      kAudioUnitProperty_Latency,
-      kAudioUnitScope_Global,
-      0,
-      &audio_unit_latency_sec,
-      &size);
+      audio_unit_, kAudioUnitProperty_Latency, kAudioUnitScope_Global, 0,
+      &audio_unit_latency_sec, &size);
   if (result != noErr) {
     OSSTATUS_DLOG(WARNING, result) << "Could not get AudioUnit latency";
     return base::TimeDelta();
@@ -317,20 +305,13 @@ base::TimeDelta AUHALStream::GetHardwareLatency() {
 
   // Get output audio device latency.
   static const AudioObjectPropertyAddress property_address = {
-    kAudioDevicePropertyLatency,
-    kAudioDevicePropertyScopeOutput,
-    kAudioObjectPropertyElementMaster
-  };
+      kAudioDevicePropertyLatency, kAudioDevicePropertyScopeOutput,
+      kAudioObjectPropertyElementMaster};
 
   UInt32 device_latency_frames = 0;
   size = sizeof(device_latency_frames);
-  result = AudioObjectGetPropertyData(
-      device_,
-      &property_address,
-      0,
-      NULL,
-      &size,
-      &device_latency_frames);
+  result = AudioObjectGetPropertyData(device_, &property_address, 0, NULL,
+                                      &size, &device_latency_frames);
   if (result != noErr) {
     OSSTATUS_DLOG(WARNING, result) << "Could not get audio device latency";
     return base::TimeDelta();
@@ -418,18 +399,17 @@ void AUHALStream::ReportAndResetStats() {
   largest_glitch_frames_ = 0;
 }
 
-bool AUHALStream::SetStreamFormat(
-    AudioStreamBasicDescription* desc,
-    int channels,
-    UInt32 scope,
-    UInt32 element) {
+bool AUHALStream::SetStreamFormat(AudioStreamBasicDescription* desc,
+                                  int channels,
+                                  UInt32 scope,
+                                  UInt32 element) {
   DCHECK(desc);
   AudioStreamBasicDescription& format = *desc;
 
   format.mSampleRate = params_.sample_rate();
   format.mFormatID = kAudioFormatLinearPCM;
-  format.mFormatFlags = kAudioFormatFlagsNativeFloatPacked |
-      kLinearPCMFormatFlagIsNonInterleaved;
+  format.mFormatFlags =
+      kAudioFormatFlagsNativeFloatPacked | kLinearPCMFormatFlagIsNonInterleaved;
   format.mBytesPerPacket = sizeof(Float32);
   format.mFramesPerPacket = 1;
   format.mBytesPerFrame = sizeof(Float32);
@@ -437,13 +417,9 @@ bool AUHALStream::SetStreamFormat(
   format.mBitsPerChannel = 32;
   format.mReserved = 0;
 
-  OSStatus result = AudioUnitSetProperty(
-      audio_unit_,
-      kAudioUnitProperty_StreamFormat,
-      scope,
-      element,
-      &format,
-      sizeof(format));
+  OSStatus result =
+      AudioUnitSetProperty(audio_unit_, kAudioUnitProperty_StreamFormat, scope,
+                           element, &format, sizeof(format));
   return (result == noErr);
 }
 
@@ -452,13 +428,9 @@ bool AUHALStream::ConfigureAUHAL() {
   if (device_ == kAudioObjectUnknown || output_channels_ == 0)
     return false;
 
-  AudioComponentDescription desc = {
-      kAudioUnitType_Output,
-      kAudioUnitSubType_HALOutput,
-      kAudioUnitManufacturer_Apple,
-      0,
-      0
-  };
+  AudioComponentDescription desc = {kAudioUnitType_Output,
+                                    kAudioUnitSubType_HALOutput,
+                                    kAudioUnitManufacturer_Apple, 0, 0};
   AudioComponent comp = AudioComponentFindNext(0, &desc);
   if (!comp)
     return false;
@@ -474,13 +446,9 @@ bool AUHALStream::ConfigureAUHAL() {
   // Note that we use bus 1 for input and bus 0 for output:
   // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
   UInt32 enable_IO = 1;
-  result = AudioUnitSetProperty(
-      audio_unit_,
-      kAudioOutputUnitProperty_EnableIO,
-      kAudioUnitScope_Output,
-      0,
-      &enable_IO,
-      sizeof(enable_IO));
+  result = AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_EnableIO,
+                                kAudioUnitScope_Output, 0, &enable_IO,
+                                sizeof(enable_IO));
   if (result != noErr) {
     CloseAudioUnit();
     return false;
@@ -488,12 +456,8 @@ bool AUHALStream::ConfigureAUHAL() {
 
   // Set the device to be used with the AUHAL AudioUnit.
   result = AudioUnitSetProperty(
-      audio_unit_,
-      kAudioOutputUnitProperty_CurrentDevice,
-      kAudioUnitScope_Global,
-      0,
-      &device_,
-      sizeof(AudioDeviceID));
+      audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
+      kAudioUnitScope_Global, 0, &device_, sizeof(AudioDeviceID));
   if (result != noErr) {
     CloseAudioUnit();
     return false;
@@ -505,9 +469,7 @@ bool AUHALStream::ConfigureAUHAL() {
   // (element) numbers:
   // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
 
-  if (!SetStreamFormat(&output_format_,
-                       output_channels_,
-                       kAudioUnitScope_Input,
+  if (!SetStreamFormat(&output_format_, output_channels_, kAudioUnitScope_Input,
                        0)) {
     CloseAudioUnit();
     return false;
@@ -527,12 +489,8 @@ bool AUHALStream::ConfigureAUHAL() {
   callback.inputProc = InputProc;
   callback.inputProcRefCon = this;
   result = AudioUnitSetProperty(
-      audio_unit_,
-      kAudioUnitProperty_SetRenderCallback,
-      kAudioUnitScope_Input,
-      0,
-      &callback,
-      sizeof(callback));
+      audio_unit_, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input,
+      0, &callback, sizeof(callback));
   if (result != noErr) {
     CloseAudioUnit();
     return false;
