@@ -1661,7 +1661,7 @@ config("symbols") {
     # "third_party/binutils/Linux_x64/Release/bin/ld.gold: warning:
     # /tmp/lto-llvm-0b5201.o: corrupt debug info in .debug_info"
     if (!is_mac && !is_ios && !is_nacl && target_cpu != "x86" &&
-        !is_official_build) {
+        !allow_posix_link_time_opt && !is_official_build) {
       ldflags += [ "-Wl,--gdb-index" ]
     }
   }
