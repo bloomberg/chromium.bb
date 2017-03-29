@@ -4544,22 +4544,23 @@ weston_output_enable_undo(struct weston_output *output)
 static void
 weston_compositor_remove_output(struct weston_output *output)
 {
+	struct weston_compositor *compositor = output->compositor;
 	struct wl_resource *resource;
 	struct weston_view *view;
 
 	assert(output->destroying);
 
-	wl_list_for_each(view, &output->compositor->view_list, link) {
+	wl_list_for_each(view, &compositor->view_list, link) {
 		if (view->output_mask & (1u << output->id))
 			weston_view_assign_output(view);
 	}
 
 	weston_presentation_feedback_discard_list(&output->feedback_list);
 
-	weston_compositor_reflow_outputs(output->compositor, output, output->width);
+	weston_compositor_reflow_outputs(compositor, output, output->width);
 	wl_list_remove(&output->link);
 
-	wl_signal_emit(&output->compositor->output_destroyed_signal, output);
+	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
 
 	wl_resource_for_each(resource, &output->resource_list) {
