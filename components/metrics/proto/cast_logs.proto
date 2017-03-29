@@ -25,6 +25,7 @@ message CastLogsProto {
       CAST_PRODUCT_TYPE_TV = 2;
       CAST_PRODUCT_TYPE_AUDIO = 3;
       CAST_PRODUCT_TYPE_ANDROID_TV = 4;
+      CAST_PRODUCT_TYPE_ASSISTANT = 5;
     }
     optional CastProductType type = 1;
 
