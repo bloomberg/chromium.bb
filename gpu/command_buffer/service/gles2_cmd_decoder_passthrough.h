@@ -249,7 +249,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   Logger* GetLogger() override;
 
   const ContextState* GetContextState() override;
-  scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
+  scoped_refptr<ShaderTranslatorInterface> GetTranslator(
+      GLenum type) const override;
 
  private:
   void* GetScratchMemory(size_t size);

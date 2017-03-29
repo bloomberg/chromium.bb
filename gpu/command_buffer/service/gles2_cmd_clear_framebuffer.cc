@@ -4,9 +4,13 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 
+#include <string>
+
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace {
 
@@ -57,8 +61,13 @@ namespace gpu {
 namespace gles2 {
 
 ClearFramebufferResourceManager::ClearFramebufferResourceManager(
-    const gles2::GLES2Decoder* decoder)
-    : initialized_(false), program_(0u), buffer_id_(0u) {
+    const gles2::GLES2Decoder* decoder,
+    const gl::GLVersionInfo& gl_version_info)
+    : initialized_(false),
+      is_desktop_core_profile_(gl_version_info.is_desktop_core_profile),
+      program_(0u),
+      vao_(0u),
+      buffer_id_(0u) {
   Initialize(decoder);
 }
 
@@ -69,6 +78,10 @@ ClearFramebufferResourceManager::~ClearFramebufferResourceManager() {
 
 void ClearFramebufferResourceManager::Initialize(
     const gles2::GLES2Decoder* decoder) {
+  name_map_["a_position"] = "a_position";
+  name_map_["u_clear_depth"] = "u_clear_depth";
+  name_map_["u_clear_color"] = "u_clear_color";
+
   static_assert(
       kVertexPositionAttrib == 0u,
       "kVertexPositionAttrib must be 0");
@@ -82,8 +95,39 @@ void ClearFramebufferResourceManager::Initialize(
                                    -1.0f,  1.0f};
   glBufferData(
       GL_ARRAY_BUFFER, sizeof(kQuadVertices), kQuadVertices, GL_STATIC_DRAW);
+
+  if (is_desktop_core_profile_) {
+    glGenVertexArraysOES(1, &vao_);
+    glBindVertexArrayOES(vao_);
+    glEnableVertexAttribArray(kVertexPositionAttrib);
+    glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    decoder->RestoreAllAttributes();
+  }
   decoder->RestoreBufferBindings();
   initialized_ = true;
+}
+
+void ClearFramebufferResourceManager::InitShader(const GLES2Decoder* decoder,
+                                                 GLenum type) {
+  std::string source_string(type == GL_VERTEX_SHADER
+                                ? g_vertex_shader_source
+                                : g_fragment_shader_source);
+  std::string& translated_string(type == GL_VERTEX_SHADER
+                                     ? vertex_shader_source_
+                                     : fragment_shader_source_);
+  if (is_desktop_core_profile_) {
+    scoped_refptr<ShaderTranslatorInterface> translator =
+        decoder->GetTranslator(type);
+    int shader_version = 0;
+    NameMap map;
+    translator->Translate(source_string, NULL, &translated_string,
+                          &shader_version, 0, 0, 0, 0, 0, &map);
+    for (const auto& pair : map) {
+      name_map_[pair.second] = pair.first;
+    }
+  } else {
+    translated_string = std::string(source_string);
+  }
 }
 
 void ClearFramebufferResourceManager::Destroy() {
@@ -91,6 +135,10 @@ void ClearFramebufferResourceManager::Destroy() {
     return;
 
   glDeleteProgram(program_);
+  if (vao_ != 0) {
+    glDeleteVertexArraysOES(1, &vao_);
+    vao_ = 0;
+  }
   glDeleteBuffersARB(1, &buffer_id_);
   buffer_id_ = 0;
 }
@@ -112,13 +160,16 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
 
   if (!program_) {
     program_ = glCreateProgram();
+    InitShader(decoder, GL_VERTEX_SHADER);
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    CompileShader(vertex_shader, g_vertex_shader_source);
+    CompileShader(vertex_shader, vertex_shader_source_.c_str());
     glAttachShader(program_, vertex_shader);
+    InitShader(decoder, GL_FRAGMENT_SHADER);
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    CompileShader(fragment_shader, g_fragment_shader_source);
+    CompileShader(fragment_shader, fragment_shader_source_.c_str());
     glAttachShader(program_, fragment_shader);
-    glBindAttribLocation(program_, kVertexPositionAttrib, "a_position");
+    glBindAttribLocation(program_, kVertexPositionAttrib,
+                         name_map_["a_position"].c_str());
     glLinkProgram(program_);
 #if DCHECK_IS_ON()
     GLint linked = GL_FALSE;
@@ -126,8 +177,12 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
     if (GL_TRUE != linked)
       DLOG(ERROR) << "Program link failure.";
 #endif
-    depth_handle_ = glGetUniformLocation(program_, "u_clear_depth");
-    color_handle_ = glGetUniformLocation(program_, "u_clear_color");
+    depth_handle_ =
+        glGetUniformLocation(program_, name_map_["u_clear_depth"].c_str());
+    color_handle_ =
+        glGetUniformLocation(program_, name_map_["u_clear_color"].c_str());
+    DCHECK(depth_handle_ != -1);
+    DCHECK(color_handle_ != -1);
     glDeleteShader(fragment_shader);
     glDeleteShader(vertex_shader);
   }
@@ -141,11 +196,15 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
     DLOG(ERROR) << "Invalid shader.";
 #endif
 
-  decoder->ClearAllAttributes();
-  glEnableVertexAttribArray(kVertexPositionAttrib);
+  if (vao_) {
+    glBindVertexArrayOES(vao_);
+  } else {
+    decoder->ClearAllAttributes();
+    glEnableVertexAttribArray(kVertexPositionAttrib);
 
-  glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
-  glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer_id_);
+    glVertexAttribPointer(kVertexPositionAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  }
 
   glUniform1f(depth_handle_, clear_depth_value);
   glUniform4f(color_handle_, clear_color_red, clear_color_green,
@@ -180,9 +239,11 @@ void ClearFramebufferResourceManager::ClearFramebuffer(
   glViewport(0, 0, framebuffer_size.width(), framebuffer_size.height());
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
+  if (vao_ == 0) {
+    decoder->RestoreBufferBindings();
+  }
   decoder->RestoreAllAttributes();
   decoder->RestoreProgramBindings();
-  decoder->RestoreBufferBindings();
   decoder->RestoreGlobalState();
 }
 

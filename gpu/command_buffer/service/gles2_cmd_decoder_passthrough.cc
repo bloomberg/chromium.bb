@@ -577,7 +577,7 @@ const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
 }
 
 scoped_refptr<ShaderTranslatorInterface>
-GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
+GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) const {
   return nullptr;
 }
 

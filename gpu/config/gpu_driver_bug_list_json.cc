@@ -2398,6 +2398,19 @@ LONG_STRING_CONST(
       "features": [
         "disallow_large_instanced_draw"
       ]
+    },
+    {
+      "id": 222,
+      "description": "Linux AMD Catalyst drivers ignore clear if it's the only thing rendered to the target before the target is read",
+      "cr_bugs": [690122],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x1002",
+      "driver_vendor": "AMD \\(Catalyst\\)",
+      "features": [
+        "gl_clear_broken"
+      ]
     }
   ]
   // Please update the version number at beginning of this file whenever you

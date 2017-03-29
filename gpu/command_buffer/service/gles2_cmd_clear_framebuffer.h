@@ -5,6 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_CLEAR_FRAMEBUFFER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_CLEAR_FRAMEBUFFER_H_
 
+#include <string>
+
+#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
@@ -19,7 +22,8 @@ class GLES2Decoder;
 
 class GPU_EXPORT ClearFramebufferResourceManager {
  public:
-  ClearFramebufferResourceManager(const gles2::GLES2Decoder* decoder);
+  ClearFramebufferResourceManager(const gles2::GLES2Decoder* decoder,
+                                  const gl::GLVersionInfo& gl_version_info);
   ~ClearFramebufferResourceManager();
 
 
@@ -35,16 +39,22 @@ class GPU_EXPORT ClearFramebufferResourceManager {
 
  private:
   void Initialize(const gles2::GLES2Decoder* decoder);
+  void InitShader(const gles2::GLES2Decoder* decoder, GLenum type);
   void Destroy();
 
   // The attributes used during invocation of the extension.
   static const GLuint kVertexPositionAttrib = 0;
 
   bool initialized_;
+  bool is_desktop_core_profile_;
   GLuint program_;
-  GLuint depth_handle_;
-  GLuint color_handle_;
+  GLuint vao_;
+  GLint depth_handle_;
+  GLint color_handle_;
   GLuint buffer_id_;
+  base::hash_map<std::string, std::string> name_map_;
+  std::string vertex_shader_source_;
+  std::string fragment_shader_source_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearFramebufferResourceManager);
 };
