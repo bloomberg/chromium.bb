@@ -112,15 +112,10 @@ Polymer({
    */
   onKeydown_: function(event) {
     // If pressed enter when input is invalid, do not trigger on-change.
-    if (event.key == 'Enter' && this.invalid) {
+    if (event.key == 'Enter' && this.invalid)
       event.preventDefault();
-      return;
-    }
-
-    if (event.key != 'Escape')
-      return;
-
-    this.resetValue_();
+    else if (event.key == 'Escape')
+      this.resetValue_();
   },
 
   /**
