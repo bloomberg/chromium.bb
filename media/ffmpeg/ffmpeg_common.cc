@@ -545,7 +545,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   config->set_color_space_info(VideoColorSpace(
       codec_parameters->color_primaries, codec_parameters->color_trc,
       codec_parameters->color_space,
-      codec_parameters->color_range != AVCOL_RANGE_MPEG
+      codec_parameters->color_range == AVCOL_RANGE_JPEG
           ? gfx::ColorSpace::RangeID::FULL
           : gfx::ColorSpace::RangeID::LIMITED));
 
