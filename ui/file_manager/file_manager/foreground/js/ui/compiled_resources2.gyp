@@ -191,14 +191,6 @@
 #      'target_name': 'providers_menu',
 #      'includes': ['../../../../compile_js2.gypi'],
 #    },
-    {
-      'target_name': 'scrollbar',
-      'dependencies': [
-        '../../../common/js/compiled_resources2.gyp:util',
-        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
-      ],
-      'includes': ['../../../../compile_js2.gypi'],
-    },
 #    {
 #      'target_name': 'search_box',
 #      'includes': ['../../../../compile_js2.gypi'],
