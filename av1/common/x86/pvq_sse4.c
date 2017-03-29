@@ -181,6 +181,8 @@ double pvq_search_rdo_double_sse4_1(const od_val16 *xcoeff, int n, int k,
       count = _mm_add_ps(count, _mm_set_ps(4, 4, 4, 4));
     }
   }
+  lambda_delta_rate[n] = lambda_delta_rate[n + 1] = lambda_delta_rate[n + 2] =
+      1e30f;
 
   for (i = 0; i < pulses_left; i++) {
     int best_id = 0;
