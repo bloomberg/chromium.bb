@@ -33,6 +33,10 @@ constexpr int kPaymentRequestRowVerticalInsets = 8;
 constexpr int kPaymentRequestRowExtraRightInset = 8;
 constexpr int kPaymentRequestButtonSpacing = 10;
 
+// Dimensions of the dialog itself.
+constexpr int kDialogWidth = 450;
+constexpr int kDialogHeight = 450;
+
 enum class PaymentRequestCommonTags {
   BACK_BUTTON_TAG = 0,
   CLOSE_BUTTON_TAG,

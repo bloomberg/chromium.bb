@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/payments/error_message_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
+#include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/browser/ui/views/payments/payment_sheet_view_controller.h"
 #include "chrome/browser/ui/views/payments/profile_list_view_controller.h"
 #include "chrome/browser/ui/views/payments/shipping_address_editor_view_controller.h"
@@ -213,7 +214,7 @@ void PaymentRequestDialogView::ShowInitialPaymentSheet() {
 }
 
 gfx::Size PaymentRequestDialogView::GetPreferredSize() const {
-  return gfx::Size(450, 450);
+  return gfx::Size(kDialogWidth, kDialogHeight);
 }
 
 void PaymentRequestDialogView::ViewHierarchyChanged(

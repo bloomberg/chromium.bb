@@ -105,13 +105,22 @@ PaymentRequestSheetController::CreatePaymentView() {
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
-  content_view_->SizeToPreferredSize();
+  views::View* pane = new views::View;
+  views::GridLayout* pane_layout = new views::GridLayout(pane);
+  views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
+  pane_columns->AddColumn(
+      views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
+      0, views::GridLayout::SizeType::FIXED, kDialogWidth, kDialogWidth);
+  pane->SetLayoutManager(pane_layout);
+  pane_layout->StartRow(0, 0);
+  pane_layout->AddView(content_view_);
+  pane->SizeToPreferredSize();
 
   std::unique_ptr<views::ScrollView> scroll =
       base::MakeUnique<views::ScrollView>();
   scroll->EnableViewPortLayer();
   scroll->set_hide_horizontal_scrollbar(true);
-  scroll->SetContents(content_view_);
+  scroll->SetContents(pane);
   layout->AddView(scroll.release());
 
   layout->StartRow(0, 0);
