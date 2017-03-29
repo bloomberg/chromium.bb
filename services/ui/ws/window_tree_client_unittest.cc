@@ -274,13 +274,15 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
 
   // WindowTreeClient:
-  void OnEmbed(ClientSpecificId client_id,
-               WindowDataPtr root,
-               mojom::WindowTreePtr tree,
-               int64_t display_id,
-               Id focused_window_id,
-               bool drawn,
-               const cc::FrameSinkId& frame_sink_id) override {
+  void OnEmbed(
+      ClientSpecificId client_id,
+      WindowDataPtr root,
+      mojom::WindowTreePtr tree,
+      int64_t display_id,
+      Id focused_window_id,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
     // TODO(sky): add coverage of |focused_window_id|.
     ASSERT_TRUE(root);
     root_window_id_ = root->window_id;
@@ -300,11 +302,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   }
   void OnFrameSinkIdAllocated(Id window_id,
                               const cc::FrameSinkId& frame_sink_id) override {}
-  void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr data,
-                         int64_t display_id,
-                         bool drawn,
-                         const cc::FrameSinkId& frame_sink_id) override {
+  void OnTopLevelCreated(
+      uint32_t change_id,
+      mojom::WindowDataPtr data,
+      int64_t display_id,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
     tracker()->OnTopLevelCreated(change_id, std::move(data), drawn,
                                  frame_sink_id);
   }
@@ -446,10 +450,12 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   // mojom::WindowManager:
   void OnConnect(uint16_t client_id) override {}
-  void WmNewDisplayAdded(const display::Display& display,
-                         mojom::WindowDataPtr root_data,
-                         bool drawn,
-                         const cc::FrameSinkId& frame_sink_id) override {
+  void WmNewDisplayAdded(
+      const display::Display& display,
+      mojom::WindowDataPtr root_data,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {
     NOTIMPLEMENTED();
   }
   void WmDisplayRemoved(int64_t display_id) override { NOTIMPLEMENTED(); }

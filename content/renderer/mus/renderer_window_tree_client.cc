@@ -107,13 +107,15 @@ void RendererWindowTreeClient::DestroySelf() {
   delete this;
 }
 
-void RendererWindowTreeClient::OnEmbed(ui::ClientSpecificId client_id,
-                                       ui::mojom::WindowDataPtr root,
-                                       ui::mojom::WindowTreePtr tree,
-                                       int64_t display_id,
-                                       ui::Id focused_window_id,
-                                       bool drawn,
-                                       const cc::FrameSinkId& frame_sink_id) {
+void RendererWindowTreeClient::OnEmbed(
+    ui::ClientSpecificId client_id,
+    ui::mojom::WindowDataPtr root,
+    ui::mojom::WindowTreePtr tree,
+    int64_t display_id,
+    ui::Id focused_window_id,
+    bool drawn,
+    const cc::FrameSinkId& frame_sink_id,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   frame_sink_id_ = frame_sink_id;
   root_window_id_ = root->window_id;
   tree_ = std::move(tree);
@@ -124,6 +126,10 @@ void RendererWindowTreeClient::OnEmbed(ui::ClientSpecificId client_id,
     pending_context_provider_ = nullptr;
     pending_gpu_memory_buffer_manager_ = nullptr;
     pending_compositor_frame_sink_callback_.Reset();
+  }
+  if (local_surface_id) {
+    // TODO(fsamuel): Update the RenderWidgetCompositor's LocalSurfaceId.
+    current_local_surface_id_ = *local_surface_id;
   }
 }
 
@@ -151,7 +157,8 @@ void RendererWindowTreeClient::OnTopLevelCreated(
     ui::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
-    const cc::FrameSinkId& frame_sink_id) {
+    const cc::FrameSinkId& frame_sink_id,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   NOTREACHED();
 }
 
@@ -160,7 +167,7 @@ void RendererWindowTreeClient::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
-  if (!enable_surface_synchronization_)
+  if (!enable_surface_synchronization_ || !local_surface_id)
     return;
   current_local_surface_id_ = *local_surface_id;
   RenderWidget* widget = GetRenderWidgetFromRoutingId(routing_id_);

@@ -324,10 +324,12 @@ class TestWindowManager : public mojom::WindowManager {
  private:
   // WindowManager:
   void OnConnect(uint16_t client_id) override {}
-  void WmNewDisplayAdded(const display::Display& display,
-                         ui::mojom::WindowDataPtr root,
-                         bool drawn,
-                         const cc::FrameSinkId& frame_sink_id) override {}
+  void WmNewDisplayAdded(
+      const display::Display& display,
+      ui::mojom::WindowDataPtr root,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override {}
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override {}
   void WmSetBounds(uint32_t change_id,
@@ -400,24 +402,28 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
 
  private:
   // WindowTreeClient:
-  void OnEmbed(uint16_t client_id,
-               mojom::WindowDataPtr root,
-               ui::mojom::WindowTreePtr tree,
-               int64_t display_id,
-               Id focused_window_id,
-               bool drawn,
-               const cc::FrameSinkId& frame_sink_id) override;
+  void OnEmbed(
+      uint16_t client_id,
+      mojom::WindowDataPtr root,
+      ui::mojom::WindowTreePtr tree,
+      int64_t display_id,
+      Id focused_window_id,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(uint32_t window) override;
   void OnUnembed(Id window_id) override;
   void OnCaptureChanged(Id new_capture_window_id,
                         Id old_capture_window_id) override;
   void OnFrameSinkIdAllocated(Id window_id,
                               const cc::FrameSinkId& frame_sink_id) override;
-  void OnTopLevelCreated(uint32_t change_id,
-                         mojom::WindowDataPtr data,
-                         int64_t display_id,
-                         bool drawn,
-                         const cc::FrameSinkId& frame_sink_id) override;
+  void OnTopLevelCreated(
+      uint32_t change_id,
+      mojom::WindowDataPtr data,
+      int64_t display_id,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
       uint32_t window,
       const gfx::Rect& old_bounds,

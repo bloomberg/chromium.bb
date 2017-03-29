@@ -5,6 +5,7 @@
 module ui.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
+import "cc/ipc/local_surface_id.mojom";
 import "services/ui/public/interfaces/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
@@ -152,11 +153,14 @@ interface WindowManager {
   OnConnect(uint16 client_id);
 
   // Called when a new display is added. |root| gives the root window specific
-  // to this WindowManager for |display|.
+  // to this WindowManager for |display|. |frame_sink_id| uniquely identifies
+  // the window manager in the display compositor. |local_surface_id| identifies
+  // the ID to use to submit CompositorFrames.
   WmNewDisplayAdded(display.mojom.Display display,
                     WindowData root,
                     bool parent_drawn,
-                    cc.mojom.FrameSinkId frame_sink_id);
+                    cc.mojom.FrameSinkId frame_sink_id,
+                    cc.mojom.LocalSurfaceId? local_surface_id);
 
   // Called when a display is removed. The root of the specified display is
   // still valid. It is expected the client calls DeleteWindow() shortly after

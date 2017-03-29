@@ -72,24 +72,28 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   // these will remain unimplemented in the long-term. Some of the
   // implementations would require some amount of refactoring out of
   // RenderWidget and related classes (e.g. resize, input, ime etc.).
-  void OnEmbed(ui::ClientSpecificId client_id,
-               ui::mojom::WindowDataPtr root,
-               ui::mojom::WindowTreePtr tree,
-               int64_t display_id,
-               ui::Id focused_window_id,
-               bool drawn,
-               const cc::FrameSinkId& frame_sink_id) override;
+  void OnEmbed(
+      ui::ClientSpecificId client_id,
+      ui::mojom::WindowDataPtr root,
+      ui::mojom::WindowTreePtr tree,
+      int64_t display_id,
+      ui::Id focused_window_id,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
   void OnUnembed(ui::Id window_id) override;
   void OnCaptureChanged(ui::Id new_capture_window_id,
                         ui::Id old_capture_window_id) override;
   void OnFrameSinkIdAllocated(ui::Id window_id,
                               const cc::FrameSinkId& frame_sink_id) override;
-  void OnTopLevelCreated(uint32_t change_id,
-                         ui::mojom::WindowDataPtr data,
-                         int64_t display_id,
-                         bool drawn,
-                         const cc::FrameSinkId& frame_sink_id) override;
+  void OnTopLevelCreated(
+      uint32_t change_id,
+      ui::mojom::WindowDataPtr data,
+      int64_t display_id,
+      bool drawn,
+      const cc::FrameSinkId& frame_sink_id,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void OnWindowBoundsChanged(
       ui::Id window_id,
       const gfx::Rect& old_bounds,
