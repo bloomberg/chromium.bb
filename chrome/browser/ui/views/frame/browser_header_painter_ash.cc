@@ -81,7 +81,8 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
     canvas->DrawRect(bounds, flags);
   } else if (frame_overlay_image.isNull()) {
     flags.setAlpha(alpha);
-    canvas->DrawImageInt(frame_image, -image_inset_x, 0, flags);
+    canvas->TileImageInt(frame_image, image_inset_x, 0, 0, 0, bounds.width(),
+                         bounds.height(), &flags);
   } else {
     flags.setAlpha(alpha);
     canvas->SaveLayerWithFlags(flags);

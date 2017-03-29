@@ -424,7 +424,8 @@ class GFX_EXPORT Canvas {
                     int dest_x,
                     int dest_y,
                     int w,
-                    int h);
+                    int h,
+                    cc::PaintFlags* flags = nullptr);
   void TileImageInt(const ImageSkia& image,
                     int src_x,
                     int src_y,
@@ -433,7 +434,8 @@ class GFX_EXPORT Canvas {
                     int dest_x,
                     int dest_y,
                     int w,
-                    int h);
+                    int h,
+                    cc::PaintFlags* flags = nullptr);
 
   // Helper for TileImageInt().  Initializes |flags| for tiling |image| with the
   // given parameters.  Returns false if the provided image does not have a

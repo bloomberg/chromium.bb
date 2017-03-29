@@ -490,8 +490,9 @@ void Canvas::TileImageInt(const ImageSkia& image,
                           int dest_x,
                           int dest_y,
                           int w,
-                          int h) {
-  TileImageInt(image, src_x, src_y, 1.0f, 1.0f, dest_x, dest_y, w, h);
+                          int h,
+                          cc::PaintFlags* flags) {
+  TileImageInt(image, src_x, src_y, 1.0f, 1.0f, dest_x, dest_y, w, h, flags);
 }
 
 void Canvas::TileImageInt(const ImageSkia& image,
@@ -502,7 +503,8 @@ void Canvas::TileImageInt(const ImageSkia& image,
                           int dest_x,
                           int dest_y,
                           int w,
-                          int h) {
+                          int h,
+                          cc::PaintFlags* flags) {
   SkRect dest_rect = { SkIntToScalar(dest_x),
                        SkIntToScalar(dest_y),
                        SkIntToScalar(dest_x + w),
@@ -510,10 +512,13 @@ void Canvas::TileImageInt(const ImageSkia& image,
   if (!IntersectsClipRect(dest_rect))
     return;
 
-  cc::PaintFlags flags;
+  cc::PaintFlags paint_flags;
+  if (!flags)
+    flags = &paint_flags;
+
   if (InitPaintFlagsForTiling(image, src_x, src_y, tile_scale_x, tile_scale_y,
-                              dest_x, dest_y, &flags))
-    canvas_->drawRect(dest_rect, flags);
+                              dest_x, dest_y, flags))
+    canvas_->drawRect(dest_rect, *flags);
 }
 
 bool Canvas::InitPaintFlagsForTiling(const ImageSkia& image,
@@ -536,7 +541,6 @@ bool Canvas::InitPaintFlagsForTiling(const ImageSkia& image,
 
   flags->setShader(CreateImageRepShader(image_rep, SkShader::kRepeat_TileMode,
                                         shader_scale));
-  flags->setBlendMode(SkBlendMode::kSrcOver);
   return true;
 }
 
