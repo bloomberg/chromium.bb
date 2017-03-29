@@ -10,6 +10,9 @@ namespace switches {
 // expiration of credentials during testing.
 const char kClearTokenService[] = "clear-token-service";
 
+// Disables sign-in promo.
+const char kDisableSigninPromo[] = "disable-signin-promo";
+
 // Disables sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
@@ -19,6 +22,9 @@ const char kEnableAccountConsistency[] = "enable-account-consistency";
 // Enables sending EnableRefreshTokenAnnotationRequest.
 extern const char kEnableRefreshTokenAnnotationRequest[] =
     "enable-refresh-token-annotation-request";
+
+// Enables sign-in promo.
+const char kEnableSigninPromo[] = "enable-signin-promo";
 
 // Enables multiple account versions of chrome.identity APIs.
 const char kExtensionsMultiAccount[] = "extensions-multi-account";

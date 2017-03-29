@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/web/public/web_view_creation_util.h"
@@ -261,6 +262,18 @@ bool IsSuggestionsUIEnabled() {
 
   // By default, disable it.
   return false;
+}
+
+bool IsSigninPromoEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSigninPromo))
+    return true;
+  if (command_line->HasSwitch(switches::kDisableSigninPromo))
+    return false;
+  std::string group_name = base::FieldTrialList::FindFullName("IOSSigninPromo");
+  return base::StartsWith(group_name, "Enabled",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace experimental_flags

@@ -26,6 +26,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/signin/core/common/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
@@ -229,6 +230,14 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 
     base::CommandLine temp_command_line(flags);
     command_line->AppendArguments(temp_command_line, false);
+  }
+
+  // Populate command line flag for Sign-in promo.
+  NSString* enableSigninPromo = [defaults stringForKey:@"EnableSigninPromo"];
+  if ([enableSigninPromo isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableSigninPromo);
+  } else if ([enableSigninPromo isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableSigninPromo);
   }
 
   ios::GetChromeBrowserProvider()->AppendSwitchesFromExperimentalSettings(
