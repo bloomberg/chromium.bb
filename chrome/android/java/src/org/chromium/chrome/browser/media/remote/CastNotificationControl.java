@@ -132,10 +132,10 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
             mNotificationBuilder.setPaused(mState != PlayerState.PLAYING);
             mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP
                     | MediaNotificationInfo.ACTION_PLAY_PAUSE);
-            MediaNotificationManager.show(mContext, mNotificationBuilder.build());
+            MediaNotificationManager.show(mNotificationBuilder.build());
         } else if (mState == PlayerState.LOADING) {
             mNotificationBuilder.setActions(MediaNotificationInfo.ACTION_STOP);
-            MediaNotificationManager.show(mContext, mNotificationBuilder.build());
+            MediaNotificationManager.show(mNotificationBuilder.build());
         } else {
             hide();
         }

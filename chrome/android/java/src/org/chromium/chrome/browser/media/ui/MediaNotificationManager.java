@@ -32,6 +32,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.blink.mojom.MediaSessionAction;
@@ -79,8 +80,6 @@ public class MediaNotificationManager {
 
     // Maps the notification ids to their corresponding notification managers.
     private static SparseArray<MediaNotificationManager> sManagers;
-
-    private final Context mContext;
 
     // ListenerService running for the notification. Only non-null when showing.
     private ListenerService mService;
@@ -304,9 +303,9 @@ public class MediaNotificationManager {
                         return;
                     }
 
-                    Intent i = new Intent(context, PlaybackListenerService.class);
+                    Intent i = new Intent(getContext(), PlaybackListenerService.class);
                     i.setAction(intent.getAction());
-                    context.startService(i);
+                    getContext().startService(i);
                 }
             };
     }
@@ -369,21 +368,22 @@ public class MediaNotificationManager {
         }
     }
 
-    private Intent createIntent(Context context) {
+    @VisibleForTesting
+    Intent createIntent() {
         Intent intent = null;
         if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
-            intent = new Intent(context, PlaybackListenerService.class);
+            intent = new Intent(getContext(), PlaybackListenerService.class);
         } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
-            intent = new Intent(context, PresentationListenerService.class);
+            intent = new Intent(getContext(), PresentationListenerService.class);
         }  else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
-            intent = new Intent(context, CastListenerService.class);
+            intent = new Intent(getContext(), CastListenerService.class);
         }
         return intent;
     }
 
     private PendingIntent createPendingIntent(String action) {
-        Intent intent = createIntent(mContext).setAction(action);
-        return PendingIntent.getService(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Intent intent = createIntent().setAction(action);
+        return PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
     private String getButtonReceiverClassName() {
@@ -419,11 +419,9 @@ public class MediaNotificationManager {
      * changed from the last one. If |mediaNotificationInfo.isPaused| is true and the tabId
      * mismatches |mMediaNotificationInfo.isPaused|, it is also no-op.
      *
-     * @param applicationContext context to create the notification with
      * @param notificationInfo information to show in the notification
      */
-    public static void show(Context applicationContext,
-                            MediaNotificationInfo notificationInfo) {
+    public static void show(MediaNotificationInfo notificationInfo) {
         synchronized (LOCK) {
             if (sManagers == null) {
                 sManagers = new SparseArray<MediaNotificationManager>();
@@ -432,7 +430,7 @@ public class MediaNotificationManager {
 
         MediaNotificationManager manager = sManagers.get(notificationInfo.id);
         if (manager == null) {
-            manager = new MediaNotificationManager(applicationContext, notificationInfo.id);
+            manager = new MediaNotificationManager(notificationInfo.id);
             sManagers.put(notificationInfo.id, manager);
         }
 
@@ -546,6 +544,21 @@ public class MediaNotificationManager {
     }
 
     @VisibleForTesting
+    static void ensureManagerForTesting(int notificationId) {
+        synchronized (LOCK) {
+            if (sManagers == null) {
+                sManagers = new SparseArray<MediaNotificationManager>();
+            }
+        }
+
+        MediaNotificationManager manager = sManagers.get(notificationId);
+        if (manager == null) {
+            manager = new MediaNotificationManager(notificationId);
+            sManagers.put(notificationId, manager);
+        }
+    }
+
+    @VisibleForTesting
     @Nullable
     static ChromeNotificationBuilder getNotificationBuilderForTesting(int notificationId) {
         MediaNotificationManager manager = getManager(notificationId);
@@ -587,9 +600,8 @@ public class MediaNotificationManager {
             this.intentString = intentString;
         }
     }
-    private MediaNotificationManager(Context context, int notificationId) {
-        mContext = context;
 
+    private MediaNotificationManager(int notificationId) {
         mActionToButtonInfo = new SparseArray<>();
 
         mActionToButtonInfo.put(MediaSessionAction.PLAY,
@@ -673,10 +685,10 @@ public class MediaNotificationManager {
         if (mService == null) {
             updateMediaSession();
             updateNotificationBuilder();
-            AppHooks.get().startServiceWithNotification(createIntent(mContext),
-                    mMediaNotificationInfo.id, mNotificationBuilder.build());
+            AppHooks.get().startServiceWithNotification(
+                    createIntent(), mMediaNotificationInfo.id, mNotificationBuilder.build());
         } else {
-            mService.startService(createIntent(mContext));
+            mService.startService(createIntent());
         }
         updateNotification();
     }
@@ -684,7 +696,7 @@ public class MediaNotificationManager {
     private void clearNotification() {
         if (mMediaNotificationInfo == null) return;
 
-        NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
+        NotificationManagerCompat manager = NotificationManagerCompat.from(getContext());
         manager.cancel(mMediaNotificationInfo.id);
 
         if (mMediaSession != null) {
@@ -694,7 +706,7 @@ public class MediaNotificationManager {
             mMediaSession = null;
         }
         if (mService != null) {
-            mContext.stopService(createIntent(mContext));
+            getContext().stopService(createIntent());
         }
         mMediaNotificationInfo = null;
         mNotificationBuilder = null;
@@ -749,7 +761,7 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo.supportsSwipeAway() && mMediaNotificationInfo.isPaused) {
             mService.stopForeground(false /* removeNotification */);
 
-            NotificationManagerCompat manager = NotificationManagerCompat.from(mContext);
+            NotificationManagerCompat manager = NotificationManagerCompat.from(getContext());
             manager.notify(mMediaNotificationInfo.id, notification);
         } else {
             mService.startForeground(mMediaNotificationInfo.id, notification);
@@ -759,9 +771,9 @@ public class MediaNotificationManager {
     private void updateNotificationBuilder() {
         mNotificationBuilder = NotificationBuilderFactory.createChromeNotificationBuilder(
                 true /* preferCompat */, NotificationConstants.CHANNEL_ID_BROWSER,
-                mContext.getString(org.chromium.chrome.R.string.notification_category_browser),
+                getContext().getString(org.chromium.chrome.R.string.notification_category_browser),
                 NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
-                mContext.getString(
+                getContext().getString(
                         org.chromium.chrome.R.string.notification_category_group_general));
         setMediaStyleLayoutForNotificationBuilder(mNotificationBuilder);
 
@@ -779,7 +791,7 @@ public class MediaNotificationManager {
         // The intent will currently only be null when using a custom tab.
         // TODO(avayvod) work out what we should do in this case. See https://crbug.com/585395.
         if (mMediaNotificationInfo.contentIntent != null) {
-            mNotificationBuilder.setContentIntent(PendingIntent.getActivity(mContext,
+            mNotificationBuilder.setContentIntent(PendingIntent.getActivity(getContext(),
                     mMediaNotificationInfo.tabId, mMediaNotificationInfo.contentIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT));
             // Set FLAG_UPDATE_CURRENT so that the intent extras is updated, otherwise the
@@ -803,7 +815,7 @@ public class MediaNotificationManager {
             // on the remote cast device (if any).
             // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
             // so getting the MediaRouter instance will throw an exception.
-            MediaRouter.getInstance(mContext).setMediaSessionCompat(mMediaSession);
+            MediaRouter.getInstance(getContext()).setMediaSessionCompat(mMediaSession);
         } catch (NoSuchMethodError e) {
             // Do nothing. Chrome can't be casting without a MediaRouter, so there is nothing
             // to do here.
@@ -845,12 +857,10 @@ public class MediaNotificationManager {
     }
 
     private MediaSessionCompat createMediaSession() {
-        MediaSessionCompat mediaSession = new MediaSessionCompat(
-                mContext,
-                mContext.getString(R.string.app_name),
-                new ComponentName(mContext.getPackageName(),
-                        getButtonReceiverClassName()),
-                null);
+        Context context = getContext();
+        MediaSessionCompat mediaSession = new MediaSessionCompat(context,
+                context.getString(R.string.app_name),
+                new ComponentName(context.getPackageName(), getButtonReceiverClassName()), null);
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                 | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         mediaSession.setCallback(mMediaSessionCallback);
@@ -891,7 +901,7 @@ public class MediaNotificationManager {
                         ? mMediaNotificationInfo.defaultNotificationLargeIcon
                         : R.drawable.audio_playing_square;
                 mDefaultNotificationLargeIcon = downscaleIconToIdealSize(
-                    BitmapFactory.decodeResource(mContext.getResources(), resourceId));
+                        BitmapFactory.decodeResource(getContext().getResources(), resourceId));
             }
             builder.setLargeIcon(mDefaultNotificationLargeIcon);
         }
@@ -927,7 +937,7 @@ public class MediaNotificationManager {
         for (int action : bigViewActions) {
             MediaButtonInfo buttonInfo = mActionToButtonInfo.get(action);
             builder.addAction(buttonInfo.iconResId,
-                    mContext.getResources().getString(buttonInfo.descriptionResId),
+                    getContext().getResources().getString(buttonInfo.descriptionResId),
                     createPendingIntent(buttonInfo.intentString));
         }
 
@@ -1097,5 +1107,9 @@ public class MediaNotificationManager {
         int[] intArray = new int[intList.size()];
         for (int i = 0; i < intList.size(); ++i) intArray[i] = i;
         return intArray;
+    }
+
+    private static Context getContext() {
+        return ContextUtils.getApplicationContext();
     }
 }
