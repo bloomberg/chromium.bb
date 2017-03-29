@@ -16,7 +16,7 @@
   height: 100px;
   margin-top: 10px;
   min-width: 300px;
-  transition: height 200ms ease-out;
+  transition: height 66ms ease-out;
 }
 
 .share-dialog-webview-wrapper:not(.loaded) {

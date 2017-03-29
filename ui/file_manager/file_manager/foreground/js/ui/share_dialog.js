@@ -33,7 +33,7 @@ ShareDialog.FAILURE_TIMEOUT = 20000;
  * @type {number}
  * @const
  */
-ShareDialog.WEBVIEW_CHECKSIZE_INTERVAL = 200;
+ShareDialog.WEBVIEW_CHECKSIZE_INTERVAL = 66;
 
 /**
  * The result of opening the dialog.
