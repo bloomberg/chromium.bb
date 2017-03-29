@@ -22,16 +22,23 @@ class TestMenuDelegate : public MenuDelegate {
   TestMenuDelegate();
   ~TestMenuDelegate() override;
 
+  int show_context_menu_count() { return show_context_menu_count_; }
+  MenuItemView* show_context_menu_source() { return show_context_menu_source_; }
   int execute_command_id() const { return execute_command_id_; }
-
   int on_menu_closed_called() const { return on_menu_closed_called_count_; }
   MenuItemView* on_menu_closed_menu() const { return on_menu_closed_menu_; }
   MenuRunner::RunResult on_menu_closed_run_result() const {
     return on_menu_closed_run_result_;
   }
   bool on_perform_drop_called() { return on_perform_drop_called_; }
+  int will_hide_menu_count() { return will_hide_menu_count_; }
+  MenuItemView* will_hide_menu() { return will_hide_menu_; }
 
   // MenuDelegate:
+  bool ShowContextMenu(MenuItemView* source,
+                       int id,
+                       const gfx::Point& p,
+                       ui::MenuSourceType source_type) override;
   void ExecuteCommand(int id) override;
   void OnMenuClosed(MenuItemView* menu, MenuRunner::RunResult result) override;
   int OnPerformDrop(MenuItemView* menu,
@@ -39,8 +46,15 @@ class TestMenuDelegate : public MenuDelegate {
                     const ui::DropTargetEvent& event) override;
   int GetDragOperations(MenuItemView* sender) override;
   void WriteDragData(MenuItemView* sender, OSExchangeData* data) override;
+  void WillHideMenu(MenuItemView* menu) override;
 
  private:
+  // The number of times ShowContextMenu was called.
+  int show_context_menu_count_ = 0;
+
+  // The value of the last call to ShowContextMenu.
+  MenuItemView* show_context_menu_source_ = nullptr;
+
   // ID of last executed command.
   int execute_command_id_;
 
@@ -50,6 +64,12 @@ class TestMenuDelegate : public MenuDelegate {
   // The values of the last call to OnMenuClosed.
   MenuItemView* on_menu_closed_menu_;
   MenuRunner::RunResult on_menu_closed_run_result_;
+
+  // The number of times WillHideMenu was called.
+  int will_hide_menu_count_ = 0;
+
+  // The value of the last call to WillHideMenu.
+  MenuItemView* will_hide_menu_ = nullptr;
 
   bool on_perform_drop_called_;
 

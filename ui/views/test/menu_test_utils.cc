@@ -20,6 +20,15 @@ TestMenuDelegate::TestMenuDelegate()
 
 TestMenuDelegate::~TestMenuDelegate() {}
 
+bool TestMenuDelegate::ShowContextMenu(MenuItemView* source,
+                                       int id,
+                                       const gfx::Point& p,
+                                       ui::MenuSourceType source_type) {
+  show_context_menu_count_++;
+  show_context_menu_source_ = source;
+  return true;
+}
+
 void TestMenuDelegate::ExecuteCommand(int id) {
   execute_command_id_ = id;
 }
@@ -44,6 +53,11 @@ int TestMenuDelegate::GetDragOperations(MenuItemView* sender) {
 
 void TestMenuDelegate::WriteDragData(MenuItemView* sender,
                                      OSExchangeData* data) {}
+
+void TestMenuDelegate::WillHideMenu(MenuItemView* menu) {
+  will_hide_menu_count_++;
+  will_hide_menu_ = menu;
+}
 
 // MenuControllerTestApi ------------------------------------------------------
 

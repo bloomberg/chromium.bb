@@ -278,6 +278,8 @@ class TestMenuItemViewShown : public MenuItemView {
     set_controller(controller);
   }
 
+  void AddEmptyMenusForTest() { AddEmptyMenus(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewShown);
 };
@@ -331,17 +333,15 @@ class MenuControllerTest : public ViewsTestBase {
     event_generator_->PressKey(ui::VKEY_ESCAPE, 0);
     EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
   }
+#endif  // defined(OS_LINUX) && defined(USE_X11
 
+#if defined(USE_AURA)
   // Verifies that a non-nested menu fully closes when receiving an escape key.
   void TestAsyncEscapeKey() {
     ui::KeyEvent event(ui::EventType::ET_KEY_PRESSED, ui::VKEY_ESCAPE, 0);
     menu_controller_->OnWillDispatchKeyEvent(&event);
-    EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
   }
 
-#endif  // defined(OS_LINUX) && defined(USE_X11)
-
-#if defined(USE_AURA)
   // Verifies that an open menu receives a cancel event, and closes.
   void TestCancelEvent() {
     EXPECT_EQ(MenuController::EXIT_NONE, menu_controller_->exit_type());
@@ -459,6 +459,11 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->pending_state_.submenu_open = true;
   }
 
+  void SetState(MenuItemView* item) {
+    menu_controller_->state_.item = item;
+    menu_controller_->state_.submenu_open = true;
+  }
+
   void ResetSelection() {
     menu_controller_->SetSelection(
         nullptr,
@@ -544,8 +549,20 @@ class MenuControllerTest : public ViewsTestBase {
 
   // Note that coordinates of events passed to MenuController must be in that of
   // the MenuScrollViewContainer.
+  void ProcessMousePressed(SubmenuView* source, const ui::MouseEvent& event) {
+    menu_controller_->OnMousePressed(source, event);
+  }
+
+  void ProcessMouseDragged(SubmenuView* source, const ui::MouseEvent& event) {
+    menu_controller_->OnMouseDragged(source, event);
+  }
+
   void ProcessMouseMoved(SubmenuView* source, const ui::MouseEvent& event) {
     menu_controller_->OnMouseMoved(source, event);
+  }
+
+  void ProcessMouseReleased(SubmenuView* source, const ui::MouseEvent& event) {
+    menu_controller_->OnMouseReleased(source, event);
   }
 
   void RunMenu() {
@@ -581,6 +598,7 @@ class MenuControllerTest : public ViewsTestBase {
   Widget* owner() { return owner_.get(); }
   ui::test::EventGenerator* event_generator() { return event_generator_.get(); }
   TestMenuItemViewShown* menu_item() { return menu_item_.get(); }
+  TestMenuDelegate* menu_delegate() { return menu_delegate_.get(); }
   TestMenuControllerDelegate* menu_controller_delegate() {
     return menu_controller_delegate_.get();
   }
@@ -675,7 +693,7 @@ class MenuControllerTest : public ViewsTestBase {
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
   std::unique_ptr<TestMenuItemViewShown> menu_item_;
   std::unique_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
-  std::unique_ptr<MenuDelegate> menu_delegate_;
+  std::unique_ptr<TestMenuDelegate> menu_delegate_;
   MenuController* menu_controller_;
   TestMenuMessageLoop* test_message_loop_;
 
@@ -697,6 +715,7 @@ TEST_F(MenuControllerTest, EventTargeter) {
 TEST_F(MenuControllerTest, AsyncEscapeKey) {
   menu_controller()->SetAsyncRun(true);
   TestAsyncEscapeKey();
+  EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
 }
 
 #endif  // defined(OS_LINUX) && defined(USE_X11)
@@ -1568,6 +1587,119 @@ TEST_F(MenuControllerTest, DestroyedDuringViewsRelease) {
                       MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
   EXPECT_EQ(run_result, nullptr);
   TestDestroyedDuringViewsRelease();
+}
+
+// Tests that when a context menu is opened above an empty menu item, and a
+// right-click occurs over the empty item, that the bottom menu is not hidden,
+// that a request to relaunch the context menu is received, and that
+// subsequently pressing ESC does not crash the browser.
+TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
+  // Setup a submenu. Additionally hook up appropriate Widget and View
+  // containers, with bounds, so that hit testing works.
+  MenuController* controller = menu_controller();
+  controller->SetAsyncRun(true);
+  MenuItemView* base_menu = menu_item();
+  base_menu->SetBounds(0, 0, 200, 200);
+  SubmenuView* base_submenu = base_menu->GetSubmenu();
+  base_submenu->SetBounds(0, 0, 200, 200);
+  base_submenu->ShowAt(owner(), gfx::Rect(0, 0, 200, 200), false);
+  GetMenuHost(base_submenu)
+      ->SetContentsView(base_submenu->GetScrollViewContainer());
+
+  // Build the submenu to have an empty menu item. Additionally hook up
+  // appropriate Widget and View containersm with counds, so that hit testing
+  // works.
+  std::unique_ptr<TestMenuDelegate> sub_menu_item_delegate =
+      base::MakeUnique<TestMenuDelegate>();
+  std::unique_ptr<TestMenuItemViewShown> sub_menu_item =
+      base::MakeUnique<TestMenuItemViewShown>(sub_menu_item_delegate.get());
+  sub_menu_item->AddEmptyMenusForTest();
+  sub_menu_item->SetController(controller);
+  sub_menu_item->SetBounds(0, 50, 50, 50);
+  base_submenu->AddChildView(sub_menu_item.get());
+  SubmenuView* sub_menu_view = sub_menu_item->GetSubmenu();
+  sub_menu_view->SetBounds(0, 50, 50, 50);
+  sub_menu_view->ShowAt(owner(), gfx::Rect(0, 50, 50, 50), false);
+  GetMenuHost(sub_menu_view)
+      ->SetContentsView(sub_menu_view->GetScrollViewContainer());
+
+  // Set that the last selection target was the item which launches the submenu,
+  // as the empty item can never become a target.
+  SetPendingStateItem(sub_menu_item.get());
+
+  // Nest a context menu.
+  std::unique_ptr<TestMenuDelegate> nested_menu_delegate_1 =
+      base::MakeUnique<TestMenuDelegate>();
+  std::unique_ptr<TestMenuItemViewShown> nested_menu_item_1 =
+      base::MakeUnique<TestMenuItemViewShown>(nested_menu_delegate_1.get());
+  nested_menu_item_1->SetBounds(0, 0, 100, 100);
+  nested_menu_item_1->SetController(controller);
+  std::unique_ptr<TestMenuControllerDelegate> nested_controller_delegate_1 =
+      base::MakeUnique<TestMenuControllerDelegate>();
+  controller->AddNestedDelegate(nested_controller_delegate_1.get());
+  int mouse_event_flags = 0;
+  MenuItemView* run_result = controller->Run(
+      owner(), nullptr, nested_menu_item_1.get(), gfx::Rect(150, 50, 100, 100),
+      MENU_ANCHOR_TOPLEFT, true, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  SubmenuView* nested_menu_submenu = nested_menu_item_1->GetSubmenu();
+  nested_menu_submenu->SetBounds(0, 0, 100, 100);
+  nested_menu_submenu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), false);
+  GetMenuHost(nested_menu_submenu)
+      ->SetContentsView(nested_menu_submenu->GetScrollViewContainer());
+
+  // Press down outside of the context menu, and within the empty menu item.
+  // This should close the first context menu.
+  gfx::Point press_location(sub_menu_view->bounds().CenterPoint());
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, press_location,
+                             press_location, ui::EventTimeForNow(),
+                             ui::EF_RIGHT_MOUSE_BUTTON, 0);
+  ProcessMousePressed(nested_menu_submenu, press_event);
+  EXPECT_EQ(nested_controller_delegate_1->on_menu_closed_called(), 1);
+  EXPECT_EQ(menu_controller_delegate(), GetCurrentDelegate());
+
+  // While the current state is the menu item which launched the sub menu, cause
+  // a drag in the empty menu item. This should not hide the menu.
+  SetState(sub_menu_item.get());
+  press_location.Offset(-5, 0);
+  ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, press_location,
+                            press_location, ui::EventTimeForNow(),
+                            ui::EF_RIGHT_MOUSE_BUTTON, 0);
+  ProcessMouseDragged(sub_menu_view, drag_event);
+  EXPECT_EQ(menu_delegate()->will_hide_menu_count(), 0);
+
+  // Release the mouse in the empty menu item, triggering a context menu
+  // request.
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, press_location,
+                               press_location, ui::EventTimeForNow(),
+                               ui::EF_RIGHT_MOUSE_BUTTON, 0);
+  ProcessMouseReleased(sub_menu_view, release_event);
+  EXPECT_EQ(sub_menu_item_delegate->show_context_menu_count(), 1);
+  EXPECT_EQ(sub_menu_item_delegate->show_context_menu_source(),
+            sub_menu_item.get());
+
+  // Nest a context menu.
+  std::unique_ptr<TestMenuDelegate> nested_menu_delegate_2 =
+      base::MakeUnique<TestMenuDelegate>();
+  std::unique_ptr<TestMenuItemViewShown> nested_menu_item_2 =
+      base::MakeUnique<TestMenuItemViewShown>(nested_menu_delegate_2.get());
+  nested_menu_item_2->SetBounds(0, 0, 100, 100);
+  nested_menu_item_2->SetController(controller);
+
+  std::unique_ptr<TestMenuControllerDelegate> nested_controller_delegate_2 =
+      base::MakeUnique<TestMenuControllerDelegate>();
+  controller->AddNestedDelegate(nested_controller_delegate_2.get());
+  run_result = controller->Run(
+      owner(), nullptr, nested_menu_item_2.get(), gfx::Rect(150, 50, 100, 100),
+      MENU_ANCHOR_TOPLEFT, true, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  // The escapce key should only close the nested menu. SelectByChar should not
+  // crash.
+  TestAsyncEscapeKey();
+  EXPECT_EQ(nested_controller_delegate_2->on_menu_closed_called(), 1);
+  EXPECT_EQ(menu_controller_delegate(), GetCurrentDelegate());
 }
 
 #endif  // defined(USE_AURA)

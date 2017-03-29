@@ -624,11 +624,16 @@ bool MenuController::OnMouseDragged(SubmenuView* source,
   }
   MenuItemView* mouse_menu = NULL;
   if (part.type == MenuPart::MENU_ITEM) {
-    if (!part.menu)
-      part.menu = source->GetMenuItem();
-    else
-      mouse_menu = part.menu;
-    SetSelection(part.menu ? part.menu : state_.item, SELECTION_OPEN_SUBMENU);
+    // If there is no menu target, but a submenu target, then we are interacting
+    // with an empty menu item within a submenu. These cannot become selection
+    // targets for mouse interaction, so do not attempt to update selection.
+    if (part.menu || !part.submenu) {
+      if (!part.menu)
+        part.menu = source->GetMenuItem();
+      else
+        mouse_menu = part.menu;
+      SetSelection(part.menu ? part.menu : state_.item, SELECTION_OPEN_SUBMENU);
+    }
   } else if (part.type == MenuPart::NONE) {
     ShowSiblingMenu(source, event.location());
   }
