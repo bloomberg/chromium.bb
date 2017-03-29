@@ -101,9 +101,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_AccessibilityEventParams)
   // ID of the accessibility tree that this event applies to.
   IPC_STRUCT_MEMBER(int, tree_id)
 
-  // The global offset of all coordinates in this accessibility tree.
-  IPC_STRUCT_MEMBER(gfx::Vector2d, location_offset)
-
   // The tree update.
   IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
 

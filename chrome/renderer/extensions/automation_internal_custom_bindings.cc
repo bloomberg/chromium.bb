@@ -541,7 +541,6 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
         gfx::RectF local_bounds = ComputeLocalNodeBounds(cache, node);
         gfx::Rect global_bounds =
             ComputeGlobalNodeBounds(cache, node, local_bounds);
-        global_bounds.Offset(cache->location_offset);
         result.Set(RectToV8Object(isolate, global_bounds));
       });
   RouteNodeIDFunction(
@@ -581,7 +580,6 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
         if (node->data().role != ui::AX_ROLE_INLINE_TEXT_BOX) {
           gfx::Rect global_bounds =
               ComputeGlobalNodeBounds(cache, node, local_bounds);
-          global_bounds.Offset(cache->location_offset);
           result.Set(RectToV8Object(isolate, global_bounds));
         }
 
@@ -623,7 +621,6 @@ AutomationInternalCustomBindings::AutomationInternalCustomBindings(
         // transformations.
         gfx::Rect global_bounds =
             ComputeGlobalNodeBounds(cache, node, local_bounds);
-        global_bounds.Offset(cache->location_offset);
         result.Set(RectToV8Object(isolate, global_bounds));
       });
 
@@ -1017,8 +1014,12 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
     return node->parent();
 
   int parent_tree_id = (*in_out_cache)->tree.data().parent_tree_id;
+
+  // Try the desktop tree if the parent is unknown. If this tree really is
+  // a child of the desktop tree, we'll find its parent, and if not, the
+  // search, below, will fail until the real parent tree loads.
   if (parent_tree_id < 0)
-    return nullptr;
+    parent_tree_id = api::automation::kDesktopTreeID;
 
   TreeCache* parent_cache = GetTreeCacheFromTreeID(parent_tree_id);
   if (!parent_cache)
@@ -1026,9 +1027,9 @@ ui::AXNode* AutomationInternalCustomBindings::GetParent(
 
   // Try to use the cached parent node from the most recent time this
   // was called.
-  if (parent_cache->parent_node_id_from_parent_tree > 0) {
+  if ((*in_out_cache)->parent_node_id_from_parent_tree > 0) {
     ui::AXNode* parent = parent_cache->tree.GetFromId(
-        parent_cache->parent_node_id_from_parent_tree);
+        (*in_out_cache)->parent_node_id_from_parent_tree);
     if (parent) {
       int parent_child_tree_id =
           parent->data().GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID);
@@ -1136,7 +1137,6 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
   }
 
   // Update the internal state whether it's the active profile or not.
-  cache->location_offset = params.location_offset;
   deleted_node_ids_.clear();
   if (!cache->tree.Unserialize(params.update)) {
     LOG(ERROR) << cache->tree.error();

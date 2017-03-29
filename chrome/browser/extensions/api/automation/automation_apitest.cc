@@ -210,6 +210,11 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopFocusViews) {
       RunExtensionSubtest("automation/tests/desktop", "focus_views.html"))
       << message_;
 }
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, LocationInWebView) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunPlatformAppTest("automation/tests/webview")) << message_;
+}
 #endif
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
