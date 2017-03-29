@@ -5,7 +5,7 @@
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -89,6 +89,10 @@ void AXViewObjWrapper::SetSelection(int32_t start, int32_t end) {
 void AXViewObjWrapper::ShowContextMenu() {
   view_->ShowContextMenu(view_->bounds().CenterPoint(),
                          ui::MENU_SOURCE_KEYBOARD);
+}
+
+bool AXViewObjWrapper::HandleAccessibleAction(const ui::AXActionData& action) {
+  return view_->HandleAccessibleAction(action);
 }
 
 }  // namespace views

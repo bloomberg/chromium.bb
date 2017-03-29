@@ -31,6 +31,7 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   void MakeVisible() override;
   void SetSelection(int32_t start, int32_t end) override;
   void ShowContextMenu() override;
+  bool HandleAccessibleAction(const ui::AXActionData& action) override;
 
  private:
   View* view_;

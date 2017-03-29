@@ -15,6 +15,7 @@
 #include "ui/views/views_export.h"
 
 namespace ui {
+struct AXActionData;
 struct AXNodeData;
 }  // namespace ui
 
@@ -39,6 +40,7 @@ class VIEWS_EXPORT AXAuraObjWrapper {
   virtual void MakeVisible() {}
   virtual void SetSelection(int32_t start, int32_t end) {}
   virtual void ShowContextMenu() {}
+  virtual bool HandleAccessibleAction(const ui::AXActionData& action);
 };
 
 }  // namespace views

@@ -85,6 +85,12 @@ void AutomationManagerAura::PerformAction(
     const ui::AXActionData& data) {
   CHECK(enabled_);
 
+  if (current_tree_->HandleAccessibleAction(data)) {
+    // This accessible action is handled by custom action implemented by the
+    // target view.
+    return;
+  }
+
   switch (data.action) {
     case ui::AX_ACTION_DO_DEFAULT:
       current_tree_->DoDefault(data.target_node_id);

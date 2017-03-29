@@ -61,6 +61,14 @@ void AXTreeSourceAura::ShowContextMenu(int32_t id) {
     obj->ShowContextMenu();
 }
 
+bool AXTreeSourceAura::HandleAccessibleAction(const ui::AXActionData& action) {
+  AXAuraObjWrapper* obj =
+      AXAuraObjCache::GetInstance()->Get(action.target_node_id);
+  if (obj)
+    return obj->HandleAccessibleAction(action);
+  return false;
+}
+
 bool AXTreeSourceAura::GetTreeData(ui::AXTreeData* tree_data) const {
   tree_data->tree_id = 0;
   tree_data->loaded = true;

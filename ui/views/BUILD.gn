@@ -525,6 +525,8 @@ component("views") {
     sources += [
       "accessibility/ax_aura_obj_cache.cc",
       "accessibility/ax_aura_obj_cache.h",
+      "accessibility/ax_aura_obj_wrapper.cc",
+      "accessibility/ax_aura_obj_wrapper.h",
       "accessibility/ax_view_obj_wrapper.cc",
       "accessibility/ax_view_obj_wrapper.h",
       "accessibility/ax_widget_obj_wrapper.cc",

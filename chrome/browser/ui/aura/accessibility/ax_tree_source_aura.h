@@ -15,6 +15,10 @@
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/ax_tree_source.h"
 
+namespace ui {
+struct AXActionData;
+}  // namespace ui
+
 namespace views {
 class AXAuraObjWrapper;
 }  // namespace views
@@ -35,6 +39,7 @@ class AXTreeSourceAura
   void MakeVisible(int32_t id);
   void SetSelection(int32_t id, int32_t start, int32_t end);
   void ShowContextMenu(int32_t id);
+  bool HandleAccessibleAction(const ui::AXActionData& action);
 
   // AXTreeSource implementation.
   bool GetTreeData(ui::AXTreeData* data) const override;
