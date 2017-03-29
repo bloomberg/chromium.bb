@@ -74,12 +74,32 @@ public class MediaNotificationManager {
     // The maximum number of actions in BigView media notification.
     private static final int BIG_VIEW_ACTIONS_COUNT = isRunningN() ? 5 : 3;
 
-    // We're always used on the UI thread but the LOCK is required by lint when creating the
-    // singleton.
-    private static final Object LOCK = new Object();
-
     // Maps the notification ids to their corresponding notification managers.
     private static SparseArray<MediaNotificationManager> sManagers;
+
+    // Maps the notification ids to their corresponding choices of the service, button receiver and
+    // group name.
+    private static SparseArray<NotificationOptions> sMapNotificationIdToOptions;
+
+    static {
+        sManagers = new SparseArray<MediaNotificationManager>();
+
+        sMapNotificationIdToOptions = new SparseArray<NotificationOptions>();
+
+        sMapNotificationIdToOptions.put(PlaybackListenerService.NOTIFICATION_ID,
+                new NotificationOptions(PlaybackListenerService.class,
+                        PlaybackMediaButtonReceiver.class,
+                        NotificationConstants.GROUP_MEDIA_PLAYBACK));
+        sMapNotificationIdToOptions.put(PresentationListenerService.NOTIFICATION_ID,
+                new NotificationOptions(PresentationListenerService.class,
+                        PresentationMediaButtonReceiver.class,
+                        NotificationConstants.GROUP_MEDIA_PRESENTATION));
+        sMapNotificationIdToOptions.put(CastListenerService.NOTIFICATION_ID,
+                new NotificationOptions(CastListenerService.class, CastMediaButtonReceiver.class,
+                        NotificationConstants.GROUP_MEDIA_REMOTE));
+    }
+
+    private int mNotificationId;
 
     // ListenerService running for the notification. Only non-null when showing.
     private ListenerService mService;
@@ -133,6 +153,19 @@ public class MediaNotificationManager {
                             MediaSessionAction.SEEK_BACKWARD);
                 }
             };
+
+    private static class NotificationOptions {
+        public Class<?> serviceClass;
+        public Class<?> receiverClass;
+        public String groupName;
+
+        public NotificationOptions(
+                Class<?> serviceClass, Class<?> receiverClass, String groupName) {
+            this.serviceClass = serviceClass;
+            this.receiverClass = receiverClass;
+            this.groupName = groupName;
+        }
+    }
 
     /**
      * Service used to transform intent requests triggered from the notification into
@@ -343,8 +376,8 @@ public class MediaNotificationManager {
      */
     public static final class PlaybackMediaButtonReceiver extends MediaButtonReceiver {
         @Override
-        public String getServiceClassName() {
-            return PlaybackListenerService.class.getName();
+        public Class<?> getServiceClass() {
+            return PlaybackListenerService.class;
         }
     }
 
@@ -353,8 +386,8 @@ public class MediaNotificationManager {
      */
     public static final class PresentationMediaButtonReceiver extends MediaButtonReceiver {
         @Override
-        public String getServiceClassName() {
-            return PresentationListenerService.class.getName();
+        public Class<?> getServiceClass() {
+            return PresentationListenerService.class;
         }
     }
 
@@ -363,22 +396,16 @@ public class MediaNotificationManager {
      */
     public static final class CastMediaButtonReceiver extends MediaButtonReceiver {
         @Override
-        public String getServiceClassName() {
-            return CastListenerService.class.getName();
+        public Class<?> getServiceClass() {
+            return CastListenerService.class;
         }
     }
 
     @VisibleForTesting
     Intent createIntent() {
-        Intent intent = null;
-        if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
-            intent = new Intent(getContext(), PlaybackListenerService.class);
-        } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
-            intent = new Intent(getContext(), PresentationListenerService.class);
-        }  else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
-            intent = new Intent(getContext(), CastListenerService.class);
-        }
-        return intent;
+        Class<?> serviceClass = sMapNotificationIdToOptions.get(mNotificationId).serviceClass;
+
+        return (serviceClass != null) ? new Intent(getContext(), serviceClass) : null;
     }
 
     private PendingIntent createPendingIntent(String action) {
@@ -386,31 +413,19 @@ public class MediaNotificationManager {
         return PendingIntent.getService(getContext(), 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
-    private String getButtonReceiverClassName() {
-        if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
-            return PlaybackMediaButtonReceiver.class.getName();
-        } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
-            return PresentationMediaButtonReceiver.class.getName();
-        } else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
-            return CastMediaButtonReceiver.class.getName();
-        }
+    private Class<?> getButtonReceiverClass() {
+        Class<?> receiverClass = sMapNotificationIdToOptions.get(mNotificationId).receiverClass;
 
-        assert false;
-        return null;
+        assert receiverClass != null;
+        return receiverClass;
     }
 
     // Returns the notification group name used to prevent automatic grouping.
     private String getNotificationGroupName() {
-        if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
-            return NotificationConstants.GROUP_MEDIA_PLAYBACK;
-        } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
-            return NotificationConstants.GROUP_MEDIA_PRESENTATION;
-        } else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
-            return NotificationConstants.GROUP_MEDIA_REMOTE;
-        }
+        String groupName = sMapNotificationIdToOptions.get(mNotificationId).groupName;
 
-        assert false;
-        return null;
+        assert groupName != null;
+        return groupName;
     }
 
     /**
@@ -422,12 +437,6 @@ public class MediaNotificationManager {
      * @param notificationInfo information to show in the notification
      */
     public static void show(MediaNotificationInfo notificationInfo) {
-        synchronized (LOCK) {
-            if (sManagers == null) {
-                sManagers = new SparseArray<MediaNotificationManager>();
-            }
-        }
-
         MediaNotificationManager manager = sManagers.get(notificationInfo.id);
         if (manager == null) {
             manager = new MediaNotificationManager(notificationInfo.id);
@@ -467,8 +476,6 @@ public class MediaNotificationManager {
      * Hides notifications with all known ids for all tabs if shown.
      */
     public static void clearAll() {
-        if (sManagers == null) return;
-
         for (int i = 0; i < sManagers.size(); ++i) {
             MediaNotificationManager manager = sManagers.valueAt(i);
             manager.clearNotification();
@@ -533,8 +540,6 @@ public class MediaNotificationManager {
     }
 
     private static MediaNotificationManager getManager(int notificationId) {
-        if (sManagers == null) return null;
-
         return sManagers.get(notificationId);
     }
 
@@ -545,12 +550,6 @@ public class MediaNotificationManager {
 
     @VisibleForTesting
     static void ensureManagerForTesting(int notificationId) {
-        synchronized (LOCK) {
-            if (sManagers == null) {
-                sManagers = new SparseArray<MediaNotificationManager>();
-            }
-        }
-
         MediaNotificationManager manager = sManagers.get(notificationId);
         if (manager == null) {
             manager = new MediaNotificationManager(notificationId);
@@ -602,6 +601,8 @@ public class MediaNotificationManager {
     }
 
     private MediaNotificationManager(int notificationId) {
+        mNotificationId = notificationId;
+
         mActionToButtonInfo = new SparseArray<>();
 
         mActionToButtonInfo.put(MediaSessionAction.PLAY,
@@ -858,9 +859,9 @@ public class MediaNotificationManager {
 
     private MediaSessionCompat createMediaSession() {
         Context context = getContext();
-        MediaSessionCompat mediaSession = new MediaSessionCompat(context,
-                context.getString(R.string.app_name),
-                new ComponentName(context.getPackageName(), getButtonReceiverClassName()), null);
+        MediaSessionCompat mediaSession =
+                new MediaSessionCompat(context, context.getString(R.string.app_name),
+                        new ComponentName(context, getButtonReceiverClass()), null);
         mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS
                 | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         mediaSession.setCallback(mMediaSessionCallback);
