@@ -5363,21 +5363,23 @@ void av1_model_to_full_probs(const aom_prob *model, aom_prob *full) {
 
 #if CONFIG_NEW_TOKENSET
 
-static void build_tail_cdfs(aom_cdf_prob cdf_tail[ENTROPY_TOKENS + 1],
-                            aom_cdf_prob cdf_head[ENTROPY_TOKENS + 1]) {
+static void build_tail_cdfs(aom_cdf_prob cdf_tail[CDF_SIZE(ENTROPY_TOKENS)],
+                            aom_cdf_prob cdf_head[CDF_SIZE(ENTROPY_TOKENS)],
+                            int band_zero) {
   int probNZ, prob1, prob_idx, i;
-  int phead[6], sum, p;
-  for (i = 0; i < 6; ++i) {
+  int phead[HEAD_TOKENS + 1], sum, p;
+  const int is_dc = !!band_zero;
+  for (i = 0; i < HEAD_TOKENS + is_dc; ++i) {
     phead[i] = cdf_head[i] - (i == 0 ? 0 : cdf_head[i - 1]);
   }
   // Do the tail
-  probNZ = 32768 - phead[1 + ZERO_TOKEN] - phead[0];
-  prob1 = phead[1 + ONE_TOKEN_EOB] + phead[1 + ONE_TOKEN_NEOB];
+  probNZ = CDF_PROB_TOP - phead[ZERO_TOKEN + is_dc] - (is_dc ? phead[0] : 0);
+  prob1 = phead[is_dc + ONE_TOKEN_EOB] + phead[is_dc + ONE_TOKEN_NEOB];
   prob_idx =
       AOMMIN(COEFF_PROB_MODELS - 1, AOMMAX(0, ((256 * prob1) / probNZ) - 1));
 
   sum = 0;
-  for (i = 0; i < ENTROPY_TOKENS - 3; ++i) {
+  for (i = 0; i < TAIL_TOKENS; ++i) {
     p = av1_pareto8_tail_probs[prob_idx][i];
     cdf_tail[i] = sum += p;
   }
@@ -5521,7 +5523,7 @@ void av1_coef_pareto_cdfs(FRAME_CONTEXT *fc) {
           for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l)
 #if CONFIG_NEW_TOKENSET
             build_tail_cdfs(fc->coef_tail_cdfs[t][i][j][k][l],
-                            fc->coef_head_cdfs[t][i][j][k][l]);
+                            fc->coef_head_cdfs[t][i][j][k][l], k == 0);
 #else
             build_token_cdfs(fc->coef_probs[t][i][j][k][l],
                              fc->coef_cdfs[t][i][j][k][l]);
