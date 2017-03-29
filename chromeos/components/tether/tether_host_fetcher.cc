@@ -85,7 +85,7 @@ void TetherHostFetcher::OnRemoteDevicesLoaded(
     if (request.device_id.empty()) {
       DCHECK(!request.list_callback.is_null());
 
-      request.list_callback.Run(remote_devices);
+      request.list_callback.Run(remote_devices_copy);
       continue;
     }
 
