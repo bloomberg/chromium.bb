@@ -43,7 +43,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   TileManagerSettings()),
       image_decode_cache_(
           ResourceFormat::RGBA_8888,
-          LayerTreeSettings().software_decoded_image_budget_bytes) {
+          LayerTreeSettings().decoded_image_working_set_budget_bytes) {
   SetDecodedImageTracker(&decoded_image_tracker_);
   SetResources(resource_pool, &image_decode_cache_, GetGlobalTaskGraphRunner(),
                GetGlobalRasterBufferProvider(),

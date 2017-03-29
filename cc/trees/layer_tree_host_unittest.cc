@@ -6976,8 +6976,9 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->gpu_rasterization_forced = true;
 
-    /// Set to 0 to force at-raster GPU image decode.
-    settings->gpu_decoded_image_budget_bytes = 0;
+    // Set to 0 to force at-raster GPU image decode.
+    settings->decoded_image_working_set_budget_bytes = 0;
+    settings->decoded_image_cache_budget_bytes = 0;
   }
 
   void SetupTree() override {

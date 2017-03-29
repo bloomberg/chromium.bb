@@ -427,6 +427,13 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.renderer_settings.should_clear_root_render_pass =
       !using_synchronous_compositor;
 
+  if (base::SysInfo::IsLowEndDevice()) {
+    // When running on a low end device, we limit cached bytes to 2MB.
+    // This allows a typical page to fit its images in cache, but prevents
+    // most long-term caching.
+    settings.decoded_image_cache_budget_bytes = 2 * 1024 * 1024;
+  }
+
   // TODO(danakj): Only do this on low end devices.
   settings.create_low_res_tiling = true;
 #else  // defined(OS_ANDROID)
@@ -458,12 +465,12 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   const int kImageDecodeMemoryThresholdMB = 4 * 1024;
   if (base::SysInfo::AmountOfPhysicalMemoryMB() >=
       kImageDecodeMemoryThresholdMB) {
-    settings.gpu_decoded_image_budget_bytes = 256 * 1024 * 1024;
-    settings.software_decoded_image_budget_bytes = 256 * 1024 * 1024;
+    settings.decoded_image_cache_budget_bytes = 256 * 1024 * 1024;
+    settings.decoded_image_working_set_budget_bytes = 256 * 1024 * 1024;
   } else {
     // These are the defaults, but recorded here as well.
-    settings.gpu_decoded_image_budget_bytes = 96 * 1024 * 1024;
-    settings.software_decoded_image_budget_bytes = 128 * 1024 * 1024;
+    settings.decoded_image_cache_budget_bytes = 128 * 1024 * 1024;
+    settings.decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   }
 
 #endif  // defined(OS_ANDROID)

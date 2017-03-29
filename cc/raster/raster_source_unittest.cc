@@ -583,7 +583,7 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
       recording_source->CreateRasterSource(can_use_lcd);
   SoftwareImageDecodeCache controller(
       ResourceFormat::RGBA_8888,
-      LayerTreeSettings().software_decoded_image_budget_bytes);
+      LayerTreeSettings().decoded_image_working_set_budget_bytes);
   raster_source->set_image_decode_cache(&controller);
 
   SkBitmap bitmap;

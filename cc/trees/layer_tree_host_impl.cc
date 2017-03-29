@@ -2184,11 +2184,12 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
     image_decode_cache_ = base::MakeUnique<GpuImageDecodeCache>(
         compositor_frame_sink_->worker_context_provider(),
         settings_.renderer_settings.preferred_tile_format,
-        settings_.gpu_decoded_image_budget_bytes);
+        settings_.decoded_image_working_set_budget_bytes,
+        settings_.decoded_image_cache_budget_bytes);
   } else {
     image_decode_cache_ = base::MakeUnique<SoftwareImageDecodeCache>(
         settings_.renderer_settings.preferred_tile_format,
-        settings_.software_decoded_image_budget_bytes);
+        settings_.decoded_image_working_set_budget_bytes);
   }
 
   // Pass the single-threaded synchronous task graph runner to the worker pool

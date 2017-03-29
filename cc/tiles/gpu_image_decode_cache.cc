@@ -342,11 +342,15 @@ GpuImageDecodeCache::ImageData::~ImageData() {
 
 GpuImageDecodeCache::GpuImageDecodeCache(ContextProvider* context,
                                          ResourceFormat decode_format,
-                                         size_t max_gpu_image_bytes)
+                                         size_t max_working_set_bytes,
+                                         size_t max_cache_bytes)
     : format_(decode_format),
       context_(context),
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
-      normal_max_gpu_image_bytes_(max_gpu_image_bytes) {
+      max_working_set_bytes_(max_working_set_bytes),
+      normal_max_cache_bytes_(max_cache_bytes) {
+  DCHECK_GE(max_working_set_bytes_, normal_max_cache_bytes_);
+
   // Acquire the context_lock so that we can safely retrieve the
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
   {
@@ -576,7 +580,7 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
     DeletePendingImages();
   } else {
     base::AutoLock lock(lock_);
-    cached_bytes_limit_ = normal_max_gpu_image_bytes_;
+    cached_bytes_limit_ = normal_max_cache_bytes_;
   }
 }
 
@@ -862,7 +866,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   if (image_data->is_at_raster && !has_any_refs) {
     // We have an at-raster image which has reached zero refs. If it won't fit
     // in our cache, delete the image to allow it to fit.
-    if (image_data->upload.image() && !CanFitSize(image_data->size)) {
+    if (image_data->upload.image() && !CanFitInCache(image_data->size)) {
       images_pending_deletion_.push_back(image_data->upload.image());
       image_data->upload.SetImage(nullptr);
     }
@@ -881,7 +885,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   if (image_data->upload.ref_count > 0 && !image_data->upload.budgeted &&
       !image_data->is_at_raster) {
     // We should only be taking non-at-raster refs on images that fit in cache.
-    DCHECK(CanFitSize(image_data->size));
+    DCHECK(CanFitInWorkingSet(image_data->size));
 
     bytes_used_ += image_data->size;
     image_data->upload.budgeted = true;
@@ -911,6 +915,9 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
     image_data->decode.Unlock();
   }
 
+  // EnsureCapacity to make sure we are under our cache limits.
+  EnsureCapacity(0);
+
 #if DCHECK_IS_ON()
   // Sanity check the above logic.
   if (image_data->upload.image()) {
@@ -923,15 +930,19 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 #endif
 }
 
-// Ensures that we can fit a new image of size |required_size| in our cache. In
-// doing so, this function will free unreferenced image data as necessary to
-// create rooom.
+// Ensures that we can fit a new image of size |required_size| in our working
+// set. In doing so, this function will free unreferenced image data as
+// necessary to create rooom.
 bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::EnsureCapacity");
   lock_.AssertAcquired();
 
-  if (CanFitSize(required_size) && !ExceedsPreferredCount())
+  // While we only care whether |required_size| fits in our working set, we
+  // also want to keep our cache under-budget if possible. Working set size
+  // will always match or exceed cache size, so keeping the cache under budget
+  // may be impossible.
+  if (CanFitInCache(required_size) && !ExceedsPreferredCount())
     return true;
 
   // While we are over memory or preferred item capacity, we iterate through
@@ -970,16 +981,14 @@ bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
       ++it;
     }
 
-    if (CanFitSize(required_size) && !ExceedsPreferredCount())
+    if (CanFitInCache(required_size) && !ExceedsPreferredCount())
       return true;
   }
 
-  // Preferred count is only used as a guideline when triming the cache. Allow
-  // new elements to be added as long as we are below our size limit.
-  return CanFitSize(required_size);
+  return CanFitInWorkingSet(required_size);
 }
 
-bool GpuImageDecodeCache::CanFitSize(size_t size) const {
+bool GpuImageDecodeCache::CanFitInCache(size_t size) const {
   lock_.AssertAcquired();
 
   size_t bytes_limit;
@@ -995,6 +1004,14 @@ bool GpuImageDecodeCache::CanFitSize(size_t size) const {
   base::CheckedNumeric<uint32_t> new_size(bytes_used_);
   new_size += size;
   return new_size.IsValid() && new_size.ValueOrDie() <= bytes_limit;
+}
+
+bool GpuImageDecodeCache::CanFitInWorkingSet(size_t size) const {
+  lock_.AssertAcquired();
+
+  base::CheckedNumeric<uint32_t> new_size(bytes_used_);
+  new_size += size;
+  return new_size.IsValid() && new_size.ValueOrDie() <= max_working_set_bytes_;
 }
 
 bool GpuImageDecodeCache::ExceedsPreferredCount() const {

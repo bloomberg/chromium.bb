@@ -89,8 +89,8 @@ class CC_EXPORT LayerTreeSettings {
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
   ManagedMemoryPolicy gpu_memory_policy;
   ManagedMemoryPolicy software_memory_policy;
-  size_t gpu_decoded_image_budget_bytes = 96 * 1024 * 1024;
-  size_t software_decoded_image_budget_bytes = 128 * 1024 * 1024;
+  size_t decoded_image_cache_budget_bytes = 128 * 1024 * 1024;
+  size_t decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
 
   bool enable_color_correct_rasterization = false;

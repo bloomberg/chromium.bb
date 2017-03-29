@@ -19,6 +19,7 @@ class TestGpuImageDecodeCache : public GpuImageDecodeCache {
   explicit TestGpuImageDecodeCache(ContextProvider* context)
       : GpuImageDecodeCache(context,
                             ResourceFormat::RGBA_8888,
+                            kGpuMemoryLimitBytes,
                             kGpuMemoryLimitBytes) {}
 };
 
@@ -640,7 +641,7 @@ TEST(GpuImageDecodeCacheTest, GetDecodedImageForDrawAtRasterDecode) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache.SetCachedBytesLimitForTesting(0);
+  cache.SetAllByteLimitsForTesting(0);
 
   sk_sp<SkImage> image = CreateImage(100, 100);
   DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
@@ -861,7 +862,7 @@ TEST(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache.SetCachedBytesLimitForTesting(0);
+  cache.SetAllByteLimitsForTesting(0);
 
   sk_sp<SkImage> image = CreateImage(100, 100);
   DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
@@ -884,7 +885,7 @@ TEST(GpuImageDecodeCacheTest, AtRasterUsedDirectlyIfSpaceAllows) {
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(cache.DiscardableIsLockedForTesting(draw_image));
 
-  cache.SetCachedBytesLimitForTesting(96 * 1024 * 1024);
+  cache.SetAllByteLimitsForTesting(96 * 1024 * 1024);
 
   // Finish our draw after increasing the memory limit, image should be added to
   // cache.
@@ -906,7 +907,7 @@ TEST(GpuImageDecodeCacheTest,
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  cache.SetCachedBytesLimitForTesting(0);
+  cache.SetAllByteLimitsForTesting(0);
 
   sk_sp<SkImage> image = CreateImage(100, 100);
   DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
@@ -1078,36 +1079,42 @@ TEST(GpuImageDecodeCacheTest, ShouldAggressivelyFreeResources) {
   cache.UnrefImage(draw_image);
 
   // We should now have data image in our cache.
-  DCHECK_GT(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_GT(cache.GetBytesUsedForTesting(), 0u);
 
   // Tell our cache to aggressively free resources.
   cache.SetShouldAggressivelyFreeResources(true);
-  DCHECK_EQ(0u, cache.GetBytesUsedForTesting());
+  EXPECT_EQ(0u, cache.GetBytesUsedForTesting());
 
-  // Attempting to upload a new image should result in at-raster decode.
+  // Attempting to upload a new image should succeed, but the image should not
+  // be cached past its use.
   {
     bool need_unref = cache.GetTaskForImageAndRef(
         draw_image, ImageDecodeCache::TracingInfo(), &task);
-    EXPECT_FALSE(need_unref);
-    EXPECT_FALSE(task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+
+    TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image);
+
+    EXPECT_EQ(cache.GetBytesUsedForTesting(), 0u);
   }
 
-  // We now tell the cache to not aggressively free resources. Uploads
-  // should work again.
+  // We now tell the cache to not aggressively free resources. The image may
+  // now be cached past its use.
   cache.SetShouldAggressivelyFreeResources(false);
   {
     bool need_unref = cache.GetTaskForImageAndRef(
         draw_image, ImageDecodeCache::TracingInfo(), &task);
     EXPECT_TRUE(need_unref);
     EXPECT_TRUE(task);
+
+    TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image);
+
+    EXPECT_GT(cache.GetBytesUsedForTesting(), 0u);
   }
-
-  TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
-  TestTileTaskRunner::ProcessTask(task.get());
-
-  // The image should be in our cache after un-ref.
-  cache.UnrefImage(draw_image);
-  DCHECK_GT(cache.GetBytesUsedForTesting(), 0u);
 }
 
 TEST(GpuImageDecodeCacheTest, OrphanedImagesFreeOnReachingZeroRefs) {
@@ -1326,30 +1333,38 @@ TEST(GpuImageDecodeCacheTest, MemoryStateSuspended) {
   cache.UnrefImage(draw_image);
 
   // The image should be cached.
-  DCHECK_GT(cache.GetBytesUsedForTesting(), 0u);
-  DCHECK_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
+  EXPECT_GT(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
 
   // Set us to the not visible state (prerequisite for SUSPENDED).
   cache.SetShouldAggressivelyFreeResources(true);
 
   // Image should be cached, but not using memory budget.
-  DCHECK_EQ(cache.GetBytesUsedForTesting(), 0u);
-  DCHECK_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
+  EXPECT_EQ(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
 
   // Set us to the SUSPENDED state with purging.
   cache.OnPurgeMemory();
   cache.OnMemoryStateChange(base::MemoryState::SUSPENDED);
 
   // Nothing should be cached.
-  DCHECK_EQ(cache.GetBytesUsedForTesting(), 0u);
-  DCHECK_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
+  EXPECT_EQ(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
 
-  // Attempts to get a task for the image should fail, as we have no space (at
-  // raster only).
+  // Attempts to get a task for the image will still succeed, as SUSPENDED
+  // doesn't impact working set size.
   need_unref = cache.GetTaskForImageAndRef(
       draw_image, ImageDecodeCache::TracingInfo(), &task);
-  EXPECT_FALSE(need_unref);
-  EXPECT_FALSE(task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+
+  TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(task.get());
+  cache.UnrefImage(draw_image);
+
+  // Nothing should be cached.
+  EXPECT_EQ(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
 
   // Restore us to visible and NORMAL memory state.
   cache.OnMemoryStateChange(base::MemoryState::NORMAL);
@@ -1390,6 +1405,151 @@ TEST(GpuImageDecodeCacheTest, OutOfRasterDecodeTask) {
   // The image should remain in the cache till we unref it.
   EXPECT_TRUE(cache.IsInInUseCacheForTesting(draw_image));
   cache.UnrefImage(draw_image);
+}
+
+TEST(GpuImageDecodeCacheTest, ZeroCacheNormalWorkingSet) {
+  // Setup - Image cache has a normal working set, but zero cache size.
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  GpuImageDecodeCache cache(context_provider.get(), ResourceFormat::RGBA_8888,
+                            kGpuMemoryLimitBytes, 0);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  // Add an image to the cache. Due to normal working set, this should produce
+  // a task and a ref.
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable));
+  scoped_refptr<TileTask> task;
+  bool need_unref = cache.GetTaskForImageAndRef(
+      draw_image, ImageDecodeCache::TracingInfo(), &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+  EXPECT_EQ(task->dependencies().size(), 1u);
+  EXPECT_TRUE(task->dependencies()[0]);
+
+  // Run the task.
+  TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(task.get());
+
+  // Request the same image - it should be cached.
+  scoped_refptr<TileTask> task2;
+  need_unref = cache.GetTaskForImageAndRef(
+      draw_image, ImageDecodeCache::TracingInfo(), &task2);
+  EXPECT_TRUE(need_unref);
+  EXPECT_FALSE(task2);
+
+  // Unref both images.
+  cache.UnrefImage(draw_image);
+  cache.UnrefImage(draw_image);
+
+  // Get the image again. As it was fully unreffed, it is no longer in the
+  // working set and will be evicted due to 0 cache size.
+  scoped_refptr<TileTask> task3;
+  need_unref = cache.GetTaskForImageAndRef(
+      draw_image, ImageDecodeCache::TracingInfo(), &task3);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task3);
+  EXPECT_EQ(task3->dependencies().size(), 1u);
+  EXPECT_TRUE(task->dependencies()[0]);
+
+  TestTileTaskRunner::ProcessTask(task3->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(task3.get());
+
+  cache.UnrefImage(draw_image);
+}
+
+TEST(GpuImageDecodeCacheTest, SmallCacheNormalWorkingSet) {
+  // Cache will fit one (but not two) 100x100 images.
+  size_t cache_size = 190 * 100 * 4;
+
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  GpuImageDecodeCache cache(context_provider.get(), ResourceFormat::RGBA_8888,
+                            kGpuMemoryLimitBytes, cache_size);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable));
+
+  sk_sp<SkImage> image2 = CreateImage(100, 100);
+  DrawImage draw_image2(
+      image2, SkIRect::MakeWH(image2->width(), image2->height()), quality,
+      CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable));
+
+  // Add an image to the cache and un-ref it.
+  {
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+    EXPECT_EQ(task->dependencies().size(), 1u);
+    EXPECT_TRUE(task->dependencies()[0]);
+
+    // Run the task and unref the image.
+    TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image);
+  }
+
+  // Request the same image - it should be cached.
+  {
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_FALSE(task);
+    cache.UnrefImage(draw_image);
+  }
+
+  // Add a new image to the cache. It should push out the old one.
+  {
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image2, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+    EXPECT_EQ(task->dependencies().size(), 1u);
+    EXPECT_TRUE(task->dependencies()[0]);
+
+    // Run the task and unref the image.
+    TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image2);
+  }
+
+  // Request the second image - it should be cached.
+  {
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image2, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_FALSE(task);
+    cache.UnrefImage(draw_image2);
+  }
+
+  // Request the first image - it should have been evicted and return a new
+  // task.
+  {
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+    EXPECT_EQ(task->dependencies().size(), 1u);
+    EXPECT_TRUE(task->dependencies()[0]);
+
+    // Run the task and unref the image.
+    TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image);
+  }
 }
 
 }  // namespace
