@@ -29,12 +29,12 @@
 </div>
 <script>
   var svgs = document.querySelectorAll('svg');
-  [].forEach.call(svgs, function (svg) {
+  [].forEach.call(svgs, function (svg, index) {
       test(function() {
           var bounds = svg.getBoundingClientRect();
           assert_equals(bounds.height, 200, "Height");
           assert_equals(bounds.width, 100, "Width");
 
-      }, "Test size calculation in vertical writing mode");
+      }, "Test size calculation in vertical writing mode (" + (index + 1) + ")");
   });
 </script>

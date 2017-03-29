@@ -65,6 +65,6 @@ for (var i = 0, length = rects.length; i < length; ++i) {
          assert_equals(rectBBox.y, expectedBoxes[i].y);
          assert_equals(rectBBox.width, expectedBoxes[i].width);
          assert_equals(rectBBox.height, expectedBoxes[i].height);
-     }, 'Bounding box size ' + expectedBoxes[i]);
+     }, 'Bounding box size, rect ' + (i + 1) + ', ' + expectedBoxes[i]);
 }
 </script>

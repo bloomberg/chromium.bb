@@ -180,7 +180,7 @@ angles.forEach(function(angle) {
 					assert_equals(result, "");
 				else
 					assert_equals(result, ref.valueAsString);
-			}, "newValueSpecifiedUnits(" + units[unit] + ", " + angle + ")" );
+			}, "SVGAngle(47" + otherunit + ").newValueSpecifiedUnits(" + units[unit] + ", " + angle + ")");
 		};
 	}
 });

@@ -185,7 +185,7 @@ while(element) {
 		finally {
 			document.body.focus();
 		}
-	}, element.firstElementChild.nodeName + ".focus() without tabindex set.");
+	}, element.firstElementChild.nodeName + ".focus() without tabindex set (as text child.)");
 	test(function() {
 		try {
 			element.firstElementChild.setAttribute("tabindex", "1");
@@ -196,7 +196,7 @@ while(element) {
 		finally {
 			document.body.focus();
 		}
-	}, element.firstElementChild.nodeName + ".focus() with tabindex set.");
+	}, element.firstElementChild.nodeName + ".focus() with tabindex set (as text child.)");
 
 	element.parentNode.removeChild(element);
 	element = svg.firstElementChild;

@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = 2 duplicate test names: "Bounding box size 250,250,100,100", "Bounding box size 300,300,0,0"
-PASS Bounding box size 250,250,100,100 
-PASS Bounding box size 300,300,0,0 
-PASS Bounding box size 250,250,100,100 
-PASS Bounding box size 300,300,0,0 
-Harness: the test ran to completion.
-

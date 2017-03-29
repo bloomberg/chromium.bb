@@ -22,6 +22,6 @@ setup(function() {
   test(function() {
     svg.style.setProperty('baseline-shift', item.value);
     assert_equals(getComputedStyle(textElement).baselineShift, item.expected || item.value);
-  }, 'Inheritance of the baseline-shift property - ' + item + '.');
+  }, 'Inheritance of the baseline-shift property, ' + item.value + '.');
 });
 </script>
