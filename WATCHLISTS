@@ -194,6 +194,10 @@
                   'content/test/data/battery_status/|'\
                   'device/battery/',
     },
+    'binary_size': {
+      'filepath': 'build/android/binary_size/|'\
+                  'tools/binary_size/',
+    },
     'bookmarks': {
       'filepath': 'chrome/browser/bookmarks/' \
                   '|chrome/browser/extensions/api/bookmark_manager_private/' \
@@ -1621,6 +1625,9 @@
                  'wfh+watch@chromium.org'],
     'base': ['vmpstr+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
+    'binary_size': ['agrieve+watch@chromium.org',
+                    'estevenson+watch@chromium.org',
+                    'wnwen+watch@chromium.org'],
     'blink': ['blink-reviews@chromium.org'],
     'blink_accessibility': ['aboxhall@chromium.org',
                             'dmazzoni@chromium.org',
