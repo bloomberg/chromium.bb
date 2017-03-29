@@ -12,6 +12,8 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.base.Log;
@@ -26,6 +28,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -252,7 +255,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * Tests that screen touches are not registered when the viewer is a
      * Daydream View.
      */
-    @SmallTest
+    @LargeTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testScreenTapsNotRegisteredOnDaydream() throws InterruptedException {
         String testName = "test_screen_taps_not_registered_on_daydream";
@@ -260,7 +263,22 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
         enterVrTapAndWait(mWebContents);
+        // Wait on VrShellImpl to say that its parent consumed the touch event
+        // Set to 2 because there's an ACTION_DOWN followed by ACTION_UP
+        final CountDownLatch touchRegisteredLatch = new CountDownLatch(2);
+        ((VrShellImpl) VrShellDelegate.getVrShellForTesting())
+                .setOnDispatchTouchEventForTesting(new OnDispatchTouchEventCallback() {
+                    @Override
+                    public void onDispatchTouchEvent(
+                            boolean parentConsumed, boolean cardboardTriggered) {
+                        if (!parentConsumed) fail("Parent did not consume event");
+                        if (cardboardTriggered) fail("Cardboard event triggered");
+                        touchRegisteredLatch.countDown();
+                    }
+                });
         enterVrTap();
+        assertTrue("VrShellImpl dispatched touches",
+                touchRegisteredLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS));
         executeStepAndWait("stepVerifyNoAdditionalTaps()", mWebContents);
         endTest(mWebContents);
     }
@@ -269,16 +287,17 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * Tests that screen touches are still registered when the viewer is
      * Cardboard.
      */
-    @SmallTest
+    @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
     public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
         String testName = "test_screen_taps_registered_on_cardboard";
         loadUrl(getHtmlTestFile(testName), PAGE_LOAD_TIMEOUT_S);
         assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
         executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
+        // Tap and wait to enter VR
         enterVrTapAndWait(mWebContents);
-        enterVrTap();
-        executeStepAndWait("stepVerifyAdditionalTap()", mWebContents);
+        // Tap and wait for Javascript to receive it
+        enterVrTapAndWait(mWebContents);
         endTest(mWebContents);
     }
 

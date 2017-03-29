@@ -23,6 +23,7 @@ import com.google.vr.ndk.base.GvrLayout;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -117,6 +118,8 @@ public class VrShellImpl
     private float mLastContentDpr;
 
     private MotionEventSynthesizer mMotionEventSynthesizer;
+
+    private OnDispatchTouchEventCallback mOnDispatchTouchEventForTesting;
 
     public VrShellImpl(
             ChromeActivity activity, VrShellDelegate delegate, TabModelSelector tabModelSelector) {
@@ -443,11 +446,18 @@ public class VrShellImpl
         // Normally, touch event is dispatched to presentation view only if the phone is paired with
         // a Cardboard viewer. This is annoying when we just want to quickly verify a Cardboard
         // behavior. This allows us to trigger cardboard trigger event without pair to a Cardboard.
+        boolean cardboardTriggered = false;
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV)
                 && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
             nativeOnTriggerEvent(mNativeVrShell);
+            cardboardTriggered = true;
         }
-        return super.dispatchTouchEvent(event);
+        boolean parentConsumed = super.dispatchTouchEvent(event);
+        if (mOnDispatchTouchEventForTesting != null) {
+            mOnDispatchTouchEventForTesting.onDispatchTouchEvent(
+                    parentConsumed, cardboardTriggered);
+        }
+        return parentConsumed;
     }
 
     @Override
@@ -627,6 +637,16 @@ public class VrShellImpl
 
     @Override
     public void removeWindowAndroidChangedObserver(WindowAndroidChangedObserver observer) {}
+
+    /**
+     * Sets the runnable that will be run when VrShellImpl's dispatchTouchEvent
+     * is run and the parent consumed the event.
+     * @param runnable The Runnable that will be run
+     */
+    @VisibleForTesting
+    public void setOnDispatchTouchEventForTesting(OnDispatchTouchEventCallback callback) {
+        mOnDispatchTouchEventForTesting = callback;
+    }
 
     private native long nativeInit(WebContents uiWebContents, long nativeContentWindowAndroid,
             long nativeUiWindowAndroid, boolean forWebVR, VrShellDelegate delegate, long gvrApi,

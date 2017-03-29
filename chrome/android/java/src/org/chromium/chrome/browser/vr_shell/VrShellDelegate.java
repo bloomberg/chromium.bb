@@ -791,6 +791,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
     }
 
     /**
+     * @return The VrShell for the VrShellDelegate instance
+     */
+    @VisibleForTesting
+    public static VrShell getVrShellForTesting() {
+        return sInstance == null ? null : sInstance.mVrShell;
+    }
+
+    /**
      * @return Pointer to the native VrShellDelegate object.
      */
     @CalledByNative
