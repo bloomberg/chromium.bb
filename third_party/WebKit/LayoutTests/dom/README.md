@@ -8,7 +8,11 @@ Please do not add tests unrelated to DOM standard.
 
 *   attr/
 
-    For Attr interface.
+    For [Attr interface](https://dom.spec.whatwg.org/#interface-attr)
+
+*   child_node/
+
+    For [ChildNode mixin](https://dom.spec.whatwg.org/#interface-childnode)
 
 *   domparsing/
 
@@ -17,3 +21,7 @@ Please do not add tests unrelated to DOM standard.
 *   legacy_dom_conformance/
 
     See [legacy_dom_conformance/README.md](legacy_dom_conformance/README.md)
+
+*   parent_node/
+
+    For [ParentNode mixin](https://dom.spec.whatwg.org/#interface-parentnode)
