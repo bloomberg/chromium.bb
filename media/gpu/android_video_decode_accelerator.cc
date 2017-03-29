@@ -43,7 +43,7 @@
 #include "ui/gl/gl_bindings.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-#include "media/mojo/services/mojo_cdm_service.h"
+#include "media/mojo/services/mojo_cdm_service.h"  // nogncheck
 #endif
 
 #define NOTIFY_ERROR(error_code, error_message)      \
