@@ -106,16 +106,9 @@ Performance::Performance(LocalFrame* frame)
     : PerformanceBase(
           toTimeOrigin(frame),
           TaskRunnerHelper::get(TaskType::PerformanceTimeline, frame)),
-      ContextLifecycleObserver(frame ? frame->document() : nullptr) {}
+      DOMWindowClient(frame) {}
 
 Performance::~Performance() {
-}
-
-void Performance::contextDestroyed(ExecutionContext* destroyedContext) {
-  toDocument(destroyedContext)
-      ->frame()
-      ->performanceMonitor()
-      ->unsubscribeAll(this);
 }
 
 ExecutionContext* Performance::getExecutionContext() const {
@@ -179,9 +172,9 @@ ScriptValue Performance::toJSONForBinding(ScriptState* scriptState) const {
 DEFINE_TRACE(Performance) {
   visitor->trace(m_navigation);
   visitor->trace(m_timing);
-  ContextLifecycleObserver::trace(visitor);
   PerformanceBase::trace(visitor);
   PerformanceMonitor::Client::trace(visitor);
+  DOMWindowClient::trace(visitor);
 }
 
 static bool canAccessOrigin(Frame* frame1, Frame* frame2) {

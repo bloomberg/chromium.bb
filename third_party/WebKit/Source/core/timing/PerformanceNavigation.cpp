@@ -40,7 +40,7 @@
 namespace blink {
 
 PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
-    : ContextClient(frame) {}
+    : DOMWindowClient(frame) {}
 
 unsigned short PerformanceNavigation::type() const {
   if (!frame())
@@ -84,7 +84,7 @@ ScriptValue PerformanceNavigation::toJSONForBinding(
 }
 
 DEFINE_TRACE(PerformanceNavigation) {
-  ContextClient::trace(visitor);
+  DOMWindowClient::trace(visitor);
 }
 
 }  // namespace blink

@@ -46,8 +46,8 @@ class ScriptState;
 class ScriptValue;
 
 class CORE_EXPORT Performance final : public PerformanceBase,
-                                      public ContextLifecycleObserver,
-                                      public PerformanceMonitor::Client {
+                                      public PerformanceMonitor::Client,
+                                      public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Performance);
   friend class PerformanceTest;
@@ -72,9 +72,6 @@ class CORE_EXPORT Performance final : public PerformanceBase,
 
  private:
   explicit Performance(LocalFrame*);
-
-  // ContextLifecycleObserver overrides.
-  void contextDestroyed(ExecutionContext*) override;
 
   PerformanceNavigationTiming* createNavigationTimingInstance() override;
 

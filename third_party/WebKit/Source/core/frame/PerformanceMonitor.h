@@ -139,7 +139,7 @@ class CORE_EXPORT PerformanceMonitor final
   Member<LocalFrame> m_localRoot;
   Member<ExecutionContext> m_taskExecutionContext;
   bool m_taskHasMultipleContexts = false;
-  using ClientThresholds = HeapHashMap<Member<Client>, double>;
+  using ClientThresholds = HeapHashMap<WeakMember<Client>, double>;
   HeapHashMap<Violation,
               Member<ClientThresholds>,
               typename DefaultHash<size_t>::Hash,

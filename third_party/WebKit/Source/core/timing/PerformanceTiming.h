@@ -53,7 +53,7 @@ class ScriptValue;
 class CORE_EXPORT PerformanceTiming final
     : public GarbageCollected<PerformanceTiming>,
       public ScriptWrappable,
-      public ContextClient {
+      public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 

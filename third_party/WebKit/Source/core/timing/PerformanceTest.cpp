@@ -5,7 +5,10 @@
 #include "core/timing/Performance.h"
 
 #include "core/frame/PerformanceMonitor.h"
+#include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/testing/DummyPageHolder.h"
+#include "core/timing/DOMWindowPerformance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -95,5 +98,35 @@ TEST_F(PerformanceTest, SanitizedLongTaskName_CrossOrigin) {
   // Attribute for same context (and same origin).
   EXPECT_EQ("cross-origin-unreachable",
             sanitizedAttribution(anotherDocument(), false, frame()));
+}
+
+TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
+  std::unique_ptr<DummyPageHolder> pageHolder =
+      DummyPageHolder::create(IntSize(800, 600));
+
+  Performance* perf =
+      DOMWindowPerformance::performance(*pageHolder->frame().domWindow());
+  PerformanceTiming* timing = perf->timing();
+
+  auto* documentLoader = pageHolder->frame().loader().documentLoader();
+  ASSERT_TRUE(documentLoader);
+  documentLoader->timing().setNavigationStart(monotonicallyIncreasingTime());
+
+  EXPECT_EQ(&pageHolder->frame(), perf->frame());
+  EXPECT_EQ(&pageHolder->frame(), timing->frame());
+  auto navigationStart = timing->navigationStart();
+  EXPECT_NE(0U, navigationStart);
+
+  // Simulate changing the document while keeping the window.
+  pageHolder->document().shutdown();
+  pageHolder->frame().domWindow()->installNewDocument(
+      AtomicString(), DocumentInit(KURL(), &pageHolder->frame()));
+
+  EXPECT_EQ(perf, DOMWindowPerformance::performance(
+                      *pageHolder->frame().domWindow()));
+  EXPECT_EQ(timing, perf->timing());
+  EXPECT_EQ(&pageHolder->frame(), perf->frame());
+  EXPECT_EQ(&pageHolder->frame(), timing->frame());
+  EXPECT_EQ(navigationStart, timing->navigationStart());
 }
 }

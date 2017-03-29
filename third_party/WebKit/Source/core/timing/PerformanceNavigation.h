@@ -46,7 +46,7 @@ class ScriptValue;
 class CORE_EXPORT PerformanceNavigation final
     : public GarbageCollected<PerformanceNavigation>,
       public ScriptWrappable,
-      public ContextClient {
+      public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigation);
 

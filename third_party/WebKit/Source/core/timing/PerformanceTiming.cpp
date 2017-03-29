@@ -59,7 +59,7 @@ static double toDoubleSeconds(unsigned long long integerMilliseconds) {
 }
 
 PerformanceTiming::PerformanceTiming(LocalFrame* frame)
-    : ContextClient(frame) {}
+    : DOMWindowClient(frame) {}
 
 unsigned long long PerformanceTiming::navigationStart() const {
   DocumentLoadTiming* timing = documentLoadTiming();
@@ -538,7 +538,7 @@ double PerformanceTiming::integerMillisecondsToMonotonicTime(
 }
 
 DEFINE_TRACE(PerformanceTiming) {
-  ContextClient::trace(visitor);
+  DOMWindowClient::trace(visitor);
 }
 
 }  // namespace blink
