@@ -35,7 +35,8 @@ namespace {
 const ResourceFormat kRGBResourceFormat = RGBA_8888;
 
 VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
-    media::VideoFrame* video_frame) {
+    media::VideoFrame* video_frame,
+    bool use_stream_video_draw_quad) {
   switch (video_frame->format()) {
     case media::PIXEL_FORMAT_ARGB:
     case media::PIXEL_FORMAT_XRGB:
@@ -46,10 +47,11 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
                      ? VideoFrameExternalResources::RGB_RESOURCE
                      : VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE;
         case GL_TEXTURE_EXTERNAL_OES:
-          return video_frame->metadata()->IsTrue(
-                     media::VideoFrameMetadata::COPY_REQUIRED)
-                     ? VideoFrameExternalResources::RGBA_RESOURCE
-                     : VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
+          if (use_stream_video_draw_quad &&
+              !video_frame->metadata()->IsTrue(
+                  media::VideoFrameMetadata::COPY_REQUIRED))
+            return VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
+          return VideoFrameExternalResources::RGBA_RESOURCE;
         case GL_TEXTURE_RECTANGLE_ARB:
           return VideoFrameExternalResources::RGB_RESOURCE;
         default:
@@ -172,10 +174,11 @@ VideoFrameExternalResources::VideoFrameExternalResources(
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
 VideoResourceUpdater::VideoResourceUpdater(ContextProvider* context_provider,
-                                           ResourceProvider* resource_provider)
+                                           ResourceProvider* resource_provider,
+                                           bool use_stream_video_draw_quad)
     : context_provider_(context_provider),
-      resource_provider_(resource_provider) {
-}
+      resource_provider_(resource_provider),
+      use_stream_video_draw_quad_(use_stream_video_draw_quad) {}
 
 VideoResourceUpdater::~VideoResourceUpdater() {
   for (const PlaneResource& plane_resource : all_resources_)
@@ -626,7 +629,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   }
   gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
 
-  external_resources.type = ResourceTypeForVideoFrame(video_frame.get());
+  external_resources.type =
+      ResourceTypeForVideoFrame(video_frame.get(), use_stream_video_draw_quad_);
   if (external_resources.type == VideoFrameExternalResources::NONE) {
     DLOG(ERROR) << "Unsupported Texture format"
                 << media::VideoPixelFormatToString(video_frame->format());
