@@ -73,21 +73,10 @@ class CORE_EXPORT SelectorQuery {
   void findTraverseRootsAndExecute(
       ContainerNode& rootNode,
       typename SelectorQueryTrait::OutputType&) const;
-
-  enum MatchTraverseRootState {
-    DoesNotMatchTraverseRoots,
-    MatchesTraverseRoots
-  };
   template <typename SelectorQueryTrait>
   void executeForTraverseRoot(ContainerNode* traverseRoot,
                               ContainerNode& rootNode,
                               typename SelectorQueryTrait::OutputType&) const;
-  template <typename SelectorQueryTrait, typename SimpleElementListType>
-  void executeForTraverseRoots(SimpleElementListType& traverseRoots,
-                               MatchTraverseRootState,
-                               ContainerNode& rootNode,
-                               typename SelectorQueryTrait::OutputType&) const;
-
   template <typename SelectorQueryTrait>
   bool selectorListMatches(ContainerNode& rootNode,
                            Element&,

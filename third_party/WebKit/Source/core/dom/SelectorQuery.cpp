@@ -278,20 +278,26 @@ void SelectorQuery::findTraverseRootsAndExecute(
       if (isRightmostSelector) {
         ClassElementList<AllElements> traverseRoots(rootNode,
                                                     selector->value());
-        executeForTraverseRoots<SelectorQueryTrait>(
-            traverseRoots, MatchesTraverseRoots, rootNode, output);
+        while (!traverseRoots.isEmpty()) {
+          Element& element = *traverseRoots.next();
+          if (selectorMatches(*m_selectors[0], element, rootNode))
+            SelectorQueryTrait::appendElement(output, element);
+        }
         return;
       }
       // Since there exists some ancestor element which has the class name, we
       // need to see all children of rootNode.
-      if (ancestorHasClassName(rootNode, selector->value())) {
-        executeForTraverseRoot<SelectorQueryTrait>(&rootNode, rootNode, output);
-        return;
-      }
+      if (ancestorHasClassName(rootNode, selector->value()))
+        break;
 
       ClassElementList<OnlyRoots> traverseRoots(rootNode, selector->value());
-      executeForTraverseRoots<SelectorQueryTrait>(
-          traverseRoots, DoesNotMatchTraverseRoots, rootNode, output);
+      while (!traverseRoots.isEmpty()) {
+        for (Element& element :
+             ElementTraversal::descendantsOf(*traverseRoots.next())) {
+          if (selectorMatches(*m_selectors[0], element, rootNode))
+            SelectorQueryTrait::appendElement(output, element);
+        }
+      }
       return;
     }
 
@@ -324,43 +330,6 @@ void SelectorQuery::executeForTraverseRoot(
       SelectorQueryTrait::appendElement(output, element);
       if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
         return;
-    }
-  }
-}
-
-template <typename SelectorQueryTrait, typename SimpleElementListType>
-void SelectorQuery::executeForTraverseRoots(
-    SimpleElementListType& traverseRoots,
-    MatchTraverseRootState matchTraverseRoots,
-    ContainerNode& rootNode,
-    typename SelectorQueryTrait::OutputType& output) const {
-  DCHECK_EQ(m_selectors.size(), 1u);
-
-  if (traverseRoots.isEmpty())
-    return;
-
-  const CSSSelector& selector = *m_selectors[0];
-
-  if (matchTraverseRoots) {
-    while (!traverseRoots.isEmpty()) {
-      Element& element = *traverseRoots.next();
-      if (selectorMatches(selector, element, rootNode)) {
-        SelectorQueryTrait::appendElement(output, element);
-        if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
-          return;
-      }
-    }
-    return;
-  }
-
-  while (!traverseRoots.isEmpty()) {
-    for (Element& element :
-         ElementTraversal::descendantsOf(*traverseRoots.next())) {
-      if (selectorMatches(selector, element, rootNode)) {
-        SelectorQueryTrait::appendElement(output, element);
-        if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
-          return;
-      }
     }
   }
 }
