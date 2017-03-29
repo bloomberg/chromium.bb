@@ -2121,7 +2121,11 @@ void FrameView::scrollbarExistenceDidChange() {
   if (!frame().view())
     return;
 
-  bool usesOverlayScrollbars = ScrollbarTheme::theme().usesOverlayScrollbars();
+  Element* customScrollbarElement = nullptr;
+
+  bool usesOverlayScrollbars =
+      ScrollbarTheme::theme().usesOverlayScrollbars() &&
+      !shouldUseCustomScrollbars(customScrollbarElement);
 
   // FIXME: this call to layout() could be called within FrameView::layout(),
   // but before performLayout(), causing double-layout. See also

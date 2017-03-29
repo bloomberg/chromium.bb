@@ -45,6 +45,65 @@ TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
   ASSERT_TRUE(plsa->verticalScrollbar() && plsa->horizontalScrollbar());
 }
 
+// Ensure that causing a change in scrollbar existence causes a nested layout
+// to recalculate the existence of the opposite scrollbar. The bug here was
+// caused by trying to avoid the layout when overlays are enabled but not
+// checking whether the scrollbars should be custom - which do take up layout
+// space. https://crbug.com/668387.
+TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
+  // The bug reproduces only with RLS off. When RLS ships we can keep the test
+  // but remove this setting.
+  ScopedRootLayerScrollingForTest turnOffRootLayerScrolling(false);
+
+  // This test is specifically checking the behavior when overlay scrollbars
+  // are enabled.
+  DCHECK(ScrollbarTheme::theme().usesOverlayScrollbars());
+
+  webView().resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  loadURL("https://example.com/test.html");
+  request.complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  ::-webkit-scrollbar {"
+      "      height: 16px;"
+      "      width: 16px"
+      "  }"
+      "  ::-webkit-scrollbar-thumb {"
+      "      background-color: rgba(0,0,0,.2);"
+      "  }"
+      "  html, body{"
+      "    margin: 0;"
+      "    height: 100%;"
+      "  }"
+      "  .box {"
+      "    width: 100%;"
+      "    height: 100%;"
+      "  }"
+      "  .transformed {"
+      "    transform: translateY(100px);"
+      "  }"
+      "</style>"
+      "<div id='box' class='box'></div>");
+
+  ScrollableArea* layoutViewport =
+      document().view()->layoutViewportScrollableArea();
+
+  compositor().beginFrame();
+  ASSERT_FALSE(layoutViewport->verticalScrollbar());
+  ASSERT_FALSE(layoutViewport->horizontalScrollbar());
+
+  // Adding translation will cause a vertical scrollbar to appear but not dirty
+  // layout otherwise. Ensure the change of scrollbar causes a layout to
+  // recalculate the page width with the vertical scrollbar added.
+  mainFrame().executeScript(WebScriptSource(
+      "document.getElementById('box').className = 'box transformed';"));
+  compositor().beginFrame();
+
+  ASSERT_TRUE(layoutViewport->verticalScrollbar());
+  ASSERT_FALSE(layoutViewport->horizontalScrollbar());
+}
+
 typedef bool TestParamOverlayScrollbar;
 class ScrollbarAppearanceTest
     : public SimTest,
