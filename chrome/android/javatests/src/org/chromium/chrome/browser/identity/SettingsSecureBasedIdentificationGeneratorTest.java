@@ -5,16 +5,21 @@
 package org.chromium.chrome.browser.identity;
 
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.util.HashUtil;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
-public class SettingsSecureBasedIdentificationGeneratorTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class SettingsSecureBasedIdentificationGeneratorTest {
     private static final String FLAG_ANDROID_ID = "android_id";
 
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha"})
     public void testAndroidIdSuccessWithSalt() {
@@ -24,6 +29,7 @@ public class SettingsSecureBasedIdentificationGeneratorTest extends Instrumentat
         runTest(androidId, salt, expected);
     }
 
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha"})
     public void testAndroidIdSuccessWithoutSalt() {
@@ -32,6 +38,7 @@ public class SettingsSecureBasedIdentificationGeneratorTest extends Instrumentat
         runTest(androidId, null, expected);
     }
 
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha"})
     public void testAndroidIdFailureWithSalt() {
@@ -41,6 +48,7 @@ public class SettingsSecureBasedIdentificationGeneratorTest extends Instrumentat
         runTest(androidId, salt, expected);
     }
 
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha"})
     public void testAndroidIdFailureWithoutSalt() {
@@ -56,7 +64,7 @@ public class SettingsSecureBasedIdentificationGeneratorTest extends Instrumentat
 
         // Get a unique ID and ensure it is as expected.
         String result = generator.getUniqueId(salt);
-        assertEquals(expectedUniqueId, result);
+        Assert.assertEquals(expectedUniqueId, result);
     }
 
     private static class TestGenerator extends SettingsSecureBasedIdentificationGenerator {

@@ -4,15 +4,23 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,16 +30,19 @@ import java.util.Map;
 /**
  * Tests for the ActivityAssigner class.
  */
-public class ActivityAssignerTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class ActivityAssignerTest {
     private static final String BASE_WEBAPP_ID = "BASE_WEBAPP_ID_";
 
     private AdvancedMockContext mContext;
     private HashMap<String, Object>[] mPreferences;
 
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
+
+    @Before
     @SuppressWarnings("unchecked")
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
         mContext = new AdvancedMockContext(ContextUtils.getApplicationContext());
         mPreferences = new HashMap[ActivityAssigner.NAMESPACE_COUNT];
@@ -42,12 +53,12 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
         ContextUtils.initApplicationContextForTests(mContext);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
         RecordHistogram.setDisabledForTests(false);
     }
 
+    @Test
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
@@ -58,9 +69,9 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
         // Make sure that no webapps have been assigned to any Activities for a fresh install.
         checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
         List<ActivityAssigner.ActivityEntry> entries = assigner.getEntries();
-        assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
+        Assert.assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
         for (ActivityAssigner.ActivityEntry entry : entries) {
-            assertEquals(null, entry.mWebappId);
+            Assert.assertEquals(null, entry.mWebappId);
         }
     }
 
@@ -68,6 +79,7 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
      * Make sure invalid entries get culled & that we still have the correct number of unique
      * Activity indices available.
      */
+    @Test
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
@@ -83,6 +95,7 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
     /**
      * Make sure we recover from corrupted stored preferences.
      */
+    @Test
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
@@ -97,6 +110,7 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
         checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
     }
 
+    @Test
     @UiThreadTest
     @SmallTest
     @Feature({"Webapps"})
@@ -113,14 +127,14 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
             int activityIndex = assigner.assign(currentWebappId);
             testMap.put(currentWebappId, activityIndex);
         }
-        assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, testMap.size());
+        Assert.assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, testMap.size());
 
         // Make sure that passing in the same webapp ID gives back the same Activity.
         for (int i = 0; i < ActivityAssigner.NUM_WEBAPP_ACTIVITIES; ++i) {
             String currentWebappId = BASE_WEBAPP_ID + i;
             int actualIndex = assigner.assign(currentWebappId);
             int expectedIndex = testMap.get(currentWebappId);
-            assertEquals(expectedIndex, actualIndex);
+            Assert.assertEquals(expectedIndex, actualIndex);
         }
 
         // Access all but the last one to ensure that the last Activity is recycled.
@@ -138,20 +152,20 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
         int lastAssignedCurrentActivityIndex = assigner.assign(lastAssignedWebappId);
         int lastAssignedPreviousActivityIndex = testMap.get(lastAssignedWebappId);
 
-        assertEquals("Overflow webapp did not steal the Activity from the other webapp",
+        Assert.assertEquals("Overflow webapp did not steal the Activity from the other webapp",
                 lastAssignedPreviousActivityIndex, overflowActivityIndex);
-        assertNotSame("Webapp did not get reassigned to a new Activity.",
+        Assert.assertNotSame("Webapp did not get reassigned to a new Activity.",
                 lastAssignedPreviousActivityIndex, lastAssignedCurrentActivityIndex);
 
         checkState(assigner, ActivityAssigner.WEBAPP_NAMESPACE);
     }
 
+    @Test
     @UiThreadTest
     @SmallTest
     @Feature({"WebApk"})
     public void testInstance() {
-        assertNotSame(
-                ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE),
+        Assert.assertNotSame(ActivityAssigner.instance(ActivityAssigner.WEBAPP_NAMESPACE),
                 ActivityAssigner.instance(ActivityAssigner.WEBAPK_NAMESPACE));
     }
 
@@ -176,8 +190,8 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
         List<ActivityAssigner.ActivityEntry> entries = assigner.getEntries();
 
         // Confirm that the right number of entries in memory and in the preferences.
-        assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
-        assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES,
+        Assert.assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES, entries.size());
+        Assert.assertEquals(ActivityAssigner.NUM_WEBAPP_ACTIVITIES,
                 (int) (Integer) mPreferences[namespace].get(
                         assigner.getPreferenceNumberOfSavedEntries()));
 
@@ -187,7 +201,7 @@ public class ActivityAssignerTest extends InstrumentationTestCase {
             assignedActivities.add(entry.mActivityIndex);
         }
         for (int i = 0; i < ActivityAssigner.NUM_WEBAPP_ACTIVITIES; ++i) {
-            assertTrue(assignedActivities.contains(i));
+            Assert.assertTrue(assignedActivities.contains(i));
         }
     }
 }

@@ -5,13 +5,19 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -20,7 +26,8 @@ import java.util.UUID;
 /**
  * Tests of {@link SystemDownloadNotifier}.
  */
-public class SystemDownloadNotifierTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class SystemDownloadNotifierTest {
     private MockSystemDownloadNotifier mDownloadNotifier;
     private MockDownloadNotificationService mService;
 
@@ -60,10 +67,10 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         }
     }
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mDownloadNotifier = new MockSystemDownloadNotifier(getInstrumentation().getTargetContext());
+        mDownloadNotifier = new MockSystemDownloadNotifier(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     /**
@@ -74,8 +81,10 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
             @Override
             public void run() {
                 mService = new MockDownloadNotificationService();
-                mService.setContext(new AdvancedMockContext(
-                        getInstrumentation().getTargetContext().getApplicationContext()));
+                mService.setContext(
+                        new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
+                                                        .getTargetContext()
+                                                        .getApplicationContext()));
                 mService.onCreate();
             }
         });
@@ -86,6 +95,7 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
     /**
      * Tests that pending notifications will be handled after service is connected.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     @RetryOnFailure
@@ -101,12 +111,13 @@ public class SystemDownloadNotifierTest extends InstrumentationTestCase {
         });
 
         onServiceConnected();
-        assertEquals(1, mService.getNotificationIds().size());
+        Assert.assertEquals(1, mService.getNotificationIds().size());
     }
 
     /**
      * Tests that service will be stopped once all notifications are inactive.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testServiceStoppedWhenAllDownloadsFinish() {

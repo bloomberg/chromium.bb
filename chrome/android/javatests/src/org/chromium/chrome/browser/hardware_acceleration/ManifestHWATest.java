@@ -8,19 +8,25 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Hardware acceleration-related manifest tests.
  */
-public class ManifestHWATest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class ManifestHWATest {
+    @Test
     @SmallTest
     public void testAccelerationDisabled() throws Exception {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         PackageInfo info = context.getPackageManager().getPackageInfo(
                 context.getApplicationInfo().packageName,
                 PackageManager.GET_ACTIVITIES);
@@ -32,7 +38,8 @@ public class ManifestHWATest extends InstrumentationTestCase {
             if (ChromeActivity.class.isAssignableFrom(activityClass)) {
                 // Every activity derived from ChromeActivity must disable hardware
                 // acceleration in the manifest.
-                assertTrue(0 == (activityInfo.flags & ActivityInfo.FLAG_HARDWARE_ACCELERATED));
+                Assert.assertTrue(
+                        0 == (activityInfo.flags & ActivityInfo.FLAG_HARDWARE_ACCELERATED));
             }
         }
     }

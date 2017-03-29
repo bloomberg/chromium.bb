@@ -5,19 +5,25 @@
 package org.chromium.chrome.browser.omaha;
 
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /** Tests the Omaha StringSanitizer. */
-public class StringSanitizerTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class StringSanitizerTest {
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testSanitizeStrings() {
-        assertEquals("normal string", StringSanitizer.sanitize("Normal string"));
-        assertEquals("extra spaces string",
-                StringSanitizer.sanitize("\nExtra,  spaces;  string "));
-        assertEquals("a quick brown fox jumped over the lazy dog",
+        Assert.assertEquals("normal string", StringSanitizer.sanitize("Normal string"));
+        Assert.assertEquals(
+                "extra spaces string", StringSanitizer.sanitize("\nExtra,  spaces;  string "));
+        Assert.assertEquals("a quick brown fox jumped over the lazy dog",
                 StringSanitizer.sanitize("  a\"quick;  brown,fox'jumped;over \nthe\rlazy\tdog\n"));
     }
 }

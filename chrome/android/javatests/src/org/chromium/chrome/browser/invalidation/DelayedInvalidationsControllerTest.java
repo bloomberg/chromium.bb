@@ -9,12 +9,21 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.invalidation.PendingInvalidation;
 
 import java.util.List;
@@ -22,7 +31,8 @@ import java.util.List;
 /**
  * Tests for DelayedInvalidationsController.
  */
-public class DelayedInvalidationsControllerTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class DelayedInvalidationsControllerTest {
     private static final String TEST_ACCOUNT = "something@gmail.com";
 
     private static final String OBJECT_ID = "object_id";
@@ -38,6 +48,9 @@ public class DelayedInvalidationsControllerTest extends InstrumentationTestCase 
     private MockDelayedInvalidationsController mController;
     private Context mContext;
     private Activity mPlaceholderActivity;
+
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     /**
      * Mocks {@link DelayedInvalidationsController} for testing.
@@ -57,11 +70,10 @@ public class DelayedInvalidationsControllerTest extends InstrumentationTestCase 
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mController = new MockDelayedInvalidationsController();
-        mContext = getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         mPlaceholderActivity = new Activity();
         setApplicationState(ActivityState.CREATED);
@@ -72,41 +84,49 @@ public class DelayedInvalidationsControllerTest extends InstrumentationTestCase 
         ApplicationStatus.onStateChangeForTesting(mPlaceholderActivity, newState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync"})
+    @UiThreadTest
     public void testManualSyncRequestsShouldAlwaysTriggerSync() throws InterruptedException {
         // Sync should trigger for manual requests when Chrome is in the foreground.
         Bundle extras = new Bundle();
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        assertTrue(mController.shouldNotifyInvalidation(extras));
+        Assert.assertTrue(mController.shouldNotifyInvalidation(extras));
 
         // Sync should trigger for manual requests when Chrome is in the background.
         setApplicationState(ActivityState.STOPPED);
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        assertTrue(mController.shouldNotifyInvalidation(extras));
+        Assert.assertTrue(mController.shouldNotifyInvalidation(extras));
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync", "Invalidation"})
+    @UiThreadTest
     public void testInvalidationsTriggeredWhenChromeIsInForeground() {
-        assertTrue(mController.shouldNotifyInvalidation(new Bundle()));
+        Assert.assertTrue(mController.shouldNotifyInvalidation(new Bundle()));
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync", "Invalidation"})
+    @UiThreadTest
     public void testInvalidationsReceivedWhenChromeIsInBackgroundIsDelayed()
             throws InterruptedException {
         setApplicationState(ActivityState.STOPPED);
-        assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
+        Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync", "Invalidation"})
+    @UiThreadTest
     public void testOnlySpecificInvalidationsTriggeredOnResume() throws InterruptedException {
         // First make sure there are no pending invalidations.
         mController.clearPendingInvalidations(mContext);
-        assertFalse(mController.notifyPendingInvalidations(mContext));
-        assertFalse(mController.mInvalidated);
+        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        Assert.assertFalse(mController.mInvalidated);
 
         // Create some invalidations.
         PendingInvalidation firstInv =
@@ -116,31 +136,33 @@ public class DelayedInvalidationsControllerTest extends InstrumentationTestCase 
 
         // Can't invalidate while Chrome is in the background.
         setApplicationState(ActivityState.STOPPED);
-        assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
+        Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
         mController.addPendingInvalidation(mContext, TEST_ACCOUNT, firstInv);
         mController.addPendingInvalidation(mContext, TEST_ACCOUNT, secondInv);
 
         // Make sure there are pending invalidations.
-        assertTrue(mController.notifyPendingInvalidations(mContext));
-        assertTrue(mController.mInvalidated);
+        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.mInvalidated);
 
         // Ensure only specific invalidations are being notified.
-        assertEquals(2, mController.mBundles.size());
+        Assert.assertEquals(2, mController.mBundles.size());
         PendingInvalidation parsedInv1 = new PendingInvalidation(mController.mBundles.get(0));
         PendingInvalidation parsedInv2 = new PendingInvalidation(mController.mBundles.get(1));
-        assertTrue(firstInv.equals(parsedInv1) ^ firstInv.equals(parsedInv2));
-        assertTrue(secondInv.equals(parsedInv1) ^ secondInv.equals(parsedInv2));
+        Assert.assertTrue(firstInv.equals(parsedInv1) ^ firstInv.equals(parsedInv2));
+        Assert.assertTrue(secondInv.equals(parsedInv1) ^ secondInv.equals(parsedInv2));
     }
 
+    @Test
     @SmallTest
     @Feature({"Sync", "Invalidation"})
+    @UiThreadTest
     public void testAllInvalidationsTriggeredOnResume() throws InterruptedException {
         // First make sure there are no pending invalidations.
         mController.clearPendingInvalidations(mContext);
-        assertFalse(mController.notifyPendingInvalidations(mContext));
-        assertFalse(mController.mInvalidated);
+        Assert.assertFalse(mController.notifyPendingInvalidations(mContext));
+        Assert.assertFalse(mController.mInvalidated);
 
         // Create some invalidations.
         PendingInvalidation firstInv =
@@ -148,11 +170,11 @@ public class DelayedInvalidationsControllerTest extends InstrumentationTestCase 
         PendingInvalidation secondInv =
                 new PendingInvalidation(OBJECT_ID_2, OBJECT_SRC_2, VERSION_2, PAYLOAD_2);
         PendingInvalidation allInvalidations = new PendingInvalidation(new Bundle());
-        assertEquals(allInvalidations.mObjectSource, 0);
+        Assert.assertEquals(allInvalidations.mObjectSource, 0);
 
         // Can't invalidate while Chrome is in the background.
         setApplicationState(ActivityState.STOPPED);
-        assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
+        Assert.assertFalse(mController.shouldNotifyInvalidation(new Bundle()));
 
         // Add multiple pending invalidations.
         mController.addPendingInvalidation(mContext, TEST_ACCOUNT, firstInv);
@@ -160,11 +182,11 @@ public class DelayedInvalidationsControllerTest extends InstrumentationTestCase 
         mController.addPendingInvalidation(mContext, TEST_ACCOUNT, secondInv);
 
         // Make sure there are pending invalidations.
-        assertTrue(mController.notifyPendingInvalidations(mContext));
-        assertTrue(mController.mInvalidated);
+        Assert.assertTrue(mController.notifyPendingInvalidations(mContext));
+        Assert.assertTrue(mController.mInvalidated);
 
         // As Invalidation for all ids has been received, it will supersede all other invalidations.
-        assertEquals(1, mController.mBundles.size());
-        assertEquals(allInvalidations, new PendingInvalidation(mController.mBundles.get(0)));
+        Assert.assertEquals(1, mController.mBundles.size());
+        Assert.assertEquals(allInvalidations, new PendingInvalidation(mController.mBundles.get(0)));
     }
 }

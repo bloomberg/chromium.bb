@@ -7,27 +7,41 @@ package org.chromium.chrome.browser.precache;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+import android.support.test.rule.UiThreadTestRule;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.Task;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.precache.MockDeviceState;
 
 /**
  * Tests of {@link PrecacheController}.
  */
-public class PrecacheControllerTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class PrecacheControllerTest {
     private Context mContext;
     private MockPrecacheLauncher mPrecacheLauncher;
     private MockPrecacheController mPrecacheController;
     private MockPrecacheTaskScheduler mPrecacheTaskScheduler;
+
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     /**
      * Mock of the {@link PrecacheLauncher}.
@@ -98,10 +112,10 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
+    @Before
+    public void setUp() throws Exception {
+        mContext = new AdvancedMockContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
         mPrecacheLauncher = new MockPrecacheLauncher();
         mPrecacheController = new MockPrecacheController(mContext);
         mPrecacheTaskScheduler = new MockPrecacheTaskScheduler();
@@ -114,9 +128,8 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         editor.apply();
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
         RecordHistogram.setDisabledForTests(false);
     }
 
@@ -127,149 +140,169 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
             expectedPeriodicScheduled = 0;
             expectedContinuationScheduled = 0;
         }
-        assertEquals(expectedPeriodicScheduled, mPrecacheTaskScheduler.schedulePeriodicCnt);
-        assertEquals(expectedContinuationScheduled, mPrecacheTaskScheduler.scheduleContinuationCnt);
-        assertEquals(expectedPeriodicCanceled, mPrecacheTaskScheduler.cancelPeriodicCnt);
-        assertEquals(expectedContinuationCanceled, mPrecacheTaskScheduler.cancelContinuationCnt);
+        Assert.assertEquals(expectedPeriodicScheduled, mPrecacheTaskScheduler.schedulePeriodicCnt);
+        Assert.assertEquals(
+                expectedContinuationScheduled, mPrecacheTaskScheduler.scheduleContinuationCnt);
+        Assert.assertEquals(expectedPeriodicCanceled, mPrecacheTaskScheduler.cancelPeriodicCnt);
+        Assert.assertEquals(
+                expectedContinuationCanceled, mPrecacheTaskScheduler.cancelContinuationCnt);
     }
 
     protected void verifyLockCounts(int expectedAcquired, int expectedReleased) {
-        assertEquals(expectedAcquired, mPrecacheController.acquiredLockCnt);
-        assertEquals(expectedReleased, mPrecacheController.releasedLockCnt);
+        Assert.assertEquals(expectedAcquired, mPrecacheController.acquiredLockCnt);
+        Assert.assertEquals(expectedReleased, mPrecacheController.releasedLockCnt);
     }
 
     protected void verifyBeginPrecaching() {
         PrecacheController.setIsPrecachingEnabled(mContext, true);
-        assertEquals(GcmNetworkManager.RESULT_SUCCESS,
+        Assert.assertEquals(GcmNetworkManager.RESULT_SUCCESS,
                 mPrecacheController.precache(PrecacheController.PERIODIC_TASK_TAG));
-        assertTrue(mPrecacheController.isPrecaching());
+        Assert.assertTrue(mPrecacheController.isPrecaching());
         verifyLockCounts(1, 0);
         // Any existing completion tasks are canceled.
         verifyScheduledAndCanceledCounts(1, 0, 0, 1);
-        assertEquals(1, mPrecacheLauncher.startCnt);
+        Assert.assertEquals(1, mPrecacheLauncher.startCnt);
     }
 
     protected void verifyContinuationGetsPreemptedByPeriodicTask() {
         PrecacheController.setIsPrecachingEnabled(mContext, true);
-        assertEquals(GcmNetworkManager.RESULT_SUCCESS,
+        Assert.assertEquals(GcmNetworkManager.RESULT_SUCCESS,
                 mPrecacheController.precache(PrecacheController.CONTINUATION_TASK_TAG));
-        assertTrue(mPrecacheController.isPrecaching());
+        Assert.assertTrue(mPrecacheController.isPrecaching());
         verifyLockCounts(1, 0);
         // Any existing completion tasks are canceled.
         verifyScheduledAndCanceledCounts(1, 0, 0, 1);
-        assertEquals(1, mPrecacheLauncher.startCnt);
+        Assert.assertEquals(1, mPrecacheLauncher.startCnt);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     public void testStartPrecachingNotEnabled() {
         PrecacheController.setIsPrecachingEnabled(mContext, false);
         verifyScheduledAndCanceledCounts(0, 0, 0, 0);
-        assertEquals(0, mPrecacheLauncher.startCnt);
-        assertTrue(mPrecacheController.precache(PrecacheController.PERIODIC_TASK_TAG)
-                        == GcmNetworkManager.RESULT_SUCCESS);
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertEquals(0, mPrecacheLauncher.startCnt);
+        Assert.assertTrue(mPrecacheController.precache(PrecacheController.PERIODIC_TASK_TAG)
+                == GcmNetworkManager.RESULT_SUCCESS);
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         verifyLockCounts(0, 0);
         // All tasks are canceled.
         verifyScheduledAndCanceledCounts(0, 0, 1, 1);
-        assertEquals(0, mPrecacheLauncher.startCnt);
+        Assert.assertEquals(0, mPrecacheLauncher.startCnt);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     public void testStartPrecachingEnabled() {
         verifyBeginPrecaching();
 
         mPrecacheLauncher.onPrecacheCompleted(true);
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         // A continuation task is scheduled.
         verifyScheduledAndCanceledCounts(1, 1, 0, 1);
         verifyLockCounts(1, 1);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     @RetryOnFailure
     public void testStartWhenAlreadyStarted() {
         verifyBeginPrecaching();
 
-        assertEquals(GcmNetworkManager.RESULT_FAILURE,
+        Assert.assertEquals(GcmNetworkManager.RESULT_FAILURE,
                 mPrecacheController.precache(PrecacheController.PERIODIC_TASK_TAG));
-        assertTrue(mPrecacheController.isPrecaching());
+        Assert.assertTrue(mPrecacheController.isPrecaching());
         // No additional tasks are scheduled or canceled.
         verifyScheduledAndCanceledCounts(1, 0, 0, 1);
         verifyLockCounts(1, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     @RetryOnFailure
     public void testDeviceStateChangeCancels() {
         verifyBeginPrecaching();
 
         mPrecacheController.setDeviceState(new MockDeviceState(0, true, false));
         mPrecacheController.getDeviceStateReceiver().onReceive(mContext, new Intent());
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         // A continuation task is scheduled.
         verifyScheduledAndCanceledCounts(1, 1, 0, 1);
         verifyLockCounts(1, 1);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     public void testDeviceStateChangeDoesNotCancel() {
         verifyBeginPrecaching();
 
         mPrecacheController.setDeviceState(new MockDeviceState(0, true, true));
         mPrecacheController.getDeviceStateReceiver().onReceive(mContext, new Intent());
-        assertTrue(mPrecacheController.isPrecaching());
+        Assert.assertTrue(mPrecacheController.isPrecaching());
         // No additional tasks are scheduled or canceled.
         verifyScheduledAndCanceledCounts(1, 0, 0, 1);
         verifyLockCounts(1, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     @RetryOnFailure
     public void testDeviceStateChangeWhenNotPrecaching() {
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         mPrecacheController.setDeviceState(new MockDeviceState(0, false, true));
         mPrecacheController.getDeviceStateReceiver().onReceive(mContext, new Intent());
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         // No tasks are scheduled or canceled.
         verifyScheduledAndCanceledCounts(0, 0, 0, 0);
         verifyLockCounts(0, 0);
         // device state change when not running has no effect (maybe unregisters)
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     @RetryOnFailure
     public void testTimeoutCancelsPrecaching() {
         verifyBeginPrecaching();
 
         mPrecacheController.getTimeoutRunnable().run();
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         // A continuation task is scheduled.
         verifyScheduledAndCanceledCounts(1, 1, 0, 1);
         verifyLockCounts(1, 1);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     @RetryOnFailure
     public void testTimeoutDoesNotCancelIfNotPrecaching() {
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
 
         mPrecacheController.getTimeoutRunnable().run();
-        assertFalse(mPrecacheController.isPrecaching());
+        Assert.assertFalse(mPrecacheController.isPrecaching());
         // No tasks are scheduled or canceled.
         verifyScheduledAndCanceledCounts(0, 0, 0, 0);
         verifyLockCounts(0, 0);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
+    @UiThreadTest
     @RetryOnFailure
     public void testPrecachingEnabledPreferences() {
         // Initial enable will schedule a periodic task.

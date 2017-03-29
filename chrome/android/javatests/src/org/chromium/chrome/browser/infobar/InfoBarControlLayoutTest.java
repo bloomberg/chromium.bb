@@ -5,21 +5,30 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup.LayoutParams;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarControlLayout.ControlLayoutParams;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests for InfoBarControlLayout.  This suite doesn't check for specific details, like margins
  * paddings, and instead focuses on whether controls are placed correctly.
  */
-public class InfoBarControlLayoutTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class InfoBarControlLayoutTest {
     private static final int SWITCH_ID_1 = 1;
     private static final int SWITCH_ID_2 = 2;
     private static final int SWITCH_ID_3 = 3;
@@ -29,16 +38,19 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
 
     private Context mContext;
 
-    @Override
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
+
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mContext = getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mContext.setTheme(R.style.MainTheme);
     }
 
     /**
      * A small control on the last line takes up the full width.
      */
+    @Test
     @SmallTest
     @UiThreadTest
     public void testOneSmallControlTakesFullWidth() {
@@ -55,10 +67,10 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
 
         // Small control takes the full width of the layout because it's put on its own line.
         ControlLayoutParams params = InfoBarControlLayout.getControlLayoutParams(smallSwitch);
-        assertEquals(0, params.top);
-        assertEquals(0, params.start);
-        assertEquals(2, params.columnsRequired);
-        assertEquals(INFOBAR_WIDTH, smallSwitch.getMeasuredWidth());
+        Assert.assertEquals(0, params.top);
+        Assert.assertEquals(0, params.start);
+        Assert.assertEquals(2, params.columnsRequired);
+        Assert.assertEquals(INFOBAR_WIDTH, smallSwitch.getMeasuredWidth());
     }
 
     /**
@@ -76,6 +88,7 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
      * | E (small)             |
      * -------------------------
      */
+    @Test
     @SmallTest
     @UiThreadTest
     public void testComplexSwitchLayout() {
@@ -106,41 +119,42 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
         ControlLayoutParams params5 = InfoBarControlLayout.getControlLayoutParams(switch5);
 
         // Small control takes the full width of the layout because the next one doesn't fit.
-        assertEquals(0, params1.top);
-        assertEquals(0, params1.start);
-        assertEquals(2, params1.columnsRequired);
-        assertEquals(INFOBAR_WIDTH, switch1.getMeasuredWidth());
+        Assert.assertEquals(0, params1.top);
+        Assert.assertEquals(0, params1.start);
+        Assert.assertEquals(2, params1.columnsRequired);
+        Assert.assertEquals(INFOBAR_WIDTH, switch1.getMeasuredWidth());
 
         // Big control gets shunted onto the next row and takes up the whole space.
-        assertTrue(params2.top > switch1.getMeasuredHeight());
-        assertEquals(0, params2.start);
-        assertEquals(2, params2.columnsRequired);
-        assertEquals(INFOBAR_WIDTH, switch2.getMeasuredWidth());
+        Assert.assertTrue(params2.top > switch1.getMeasuredHeight());
+        Assert.assertEquals(0, params2.start);
+        Assert.assertEquals(2, params2.columnsRequired);
+        Assert.assertEquals(INFOBAR_WIDTH, switch2.getMeasuredWidth());
 
         // Small control gets placed onto the next line and takes only half the width.
         int bottomOfSwitch2 = params2.top + switch2.getMeasuredHeight();
-        assertTrue(params3.top > bottomOfSwitch2);
-        assertEquals(0, params3.start);
-        assertEquals(1, params3.columnsRequired);
-        assertTrue(switch3.getMeasuredWidth() < INFOBAR_WIDTH);
+        Assert.assertTrue(params3.top > bottomOfSwitch2);
+        Assert.assertEquals(0, params3.start);
+        Assert.assertEquals(1, params3.columnsRequired);
+        Assert.assertTrue(switch3.getMeasuredWidth() < INFOBAR_WIDTH);
 
         // Small control gets placed next to the previous small control.
-        assertEquals(params3.top, params4.top);
-        assertTrue(params4.start > switch3.getMeasuredWidth());
-        assertEquals(1, params4.columnsRequired);
-        assertTrue(switch4.getMeasuredWidth() < INFOBAR_WIDTH);
+        Assert.assertEquals(params3.top, params4.top);
+        Assert.assertTrue(params4.start > switch3.getMeasuredWidth());
+        Assert.assertEquals(1, params4.columnsRequired);
+        Assert.assertTrue(switch4.getMeasuredWidth() < INFOBAR_WIDTH);
 
         // Last small control has no room left and gets put on its own line, taking the full width.
         int bottomOfSwitch4 = params4.top + switch4.getMeasuredHeight();
-        assertTrue(params5.top > bottomOfSwitch4);
-        assertEquals(0, params5.start);
-        assertEquals(2, params5.columnsRequired);
-        assertEquals(INFOBAR_WIDTH, switch5.getMeasuredWidth());
+        Assert.assertTrue(params5.top > bottomOfSwitch4);
+        Assert.assertEquals(0, params5.start);
+        Assert.assertEquals(2, params5.columnsRequired);
+        Assert.assertEquals(INFOBAR_WIDTH, switch5.getMeasuredWidth());
     }
 
     /**
      * Tests that the message is always the full width of the layout.
      */
+    @Test
     @SmallTest
     @UiThreadTest
     public void testFullWidthMessageControl() {
@@ -162,15 +176,15 @@ public class InfoBarControlLayoutTest extends InstrumentationTestCase {
         ControlLayoutParams params2 = InfoBarControlLayout.getControlLayoutParams(view2);
 
         // Main message takes up the full space.
-        assertEquals(0, params1.top);
-        assertEquals(0, params1.start);
-        assertEquals(2, params1.columnsRequired);
-        assertEquals(INFOBAR_WIDTH, view1.getMeasuredWidth());
+        Assert.assertEquals(0, params1.top);
+        Assert.assertEquals(0, params1.start);
+        Assert.assertEquals(2, params1.columnsRequired);
+        Assert.assertEquals(INFOBAR_WIDTH, view1.getMeasuredWidth());
 
         // Small control gets shunted onto the next row.
-        assertTrue(params2.top > view1.getMeasuredHeight());
-        assertEquals(0, params2.start);
-        assertEquals(2, params2.columnsRequired);
-        assertEquals(INFOBAR_WIDTH, view2.getMeasuredWidth());
+        Assert.assertTrue(params2.top > view1.getMeasuredHeight());
+        Assert.assertEquals(0, params2.start);
+        Assert.assertEquals(2, params2.columnsRequired);
+        Assert.assertEquals(INFOBAR_WIDTH, view2.getMeasuredWidth());
     }
 }

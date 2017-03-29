@@ -11,10 +11,10 @@ import static org.chromium.chrome.browser.widget.DualControlLayout.ALIGN_START;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
-import android.test.MoreAsserts;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -23,13 +23,21 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.Space;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests for DualControlLayout.
  */
-public class DualControlLayoutTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class DualControlLayoutTest {
     private static final int PRIMARY_HEIGHT = 16;
     private static final int SECONDARY_HEIGHT = 8;
     private static final int STACKED_MARGIN = 4;
@@ -43,14 +51,17 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
     private int mTinyControlWidth;
     private Context mContext;
 
-    @Override
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
+
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-        mContext = getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mContext.setTheme(R.style.MainTheme);
         mTinyControlWidth = INFOBAR_WIDTH / 4;
     }
 
+    @Test
     @SmallTest
     @UiThreadTest
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -122,70 +133,73 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
         if ((isRtl && alignment == ALIGN_START)
                 || (!isRtl && (alignment == ALIGN_APART || alignment == ALIGN_END))) {
             int expectedRight = INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0);
-            assertEquals("Primary should be on the right.", expectedRight, primary.getRight());
+            Assert.assertEquals(
+                    "Primary should be on the right.", expectedRight, primary.getRight());
         } else {
             int expectedLeft = addPadding ? PADDING_LEFT : 0;
-            assertEquals("Primary should be on the left.", expectedLeft, primary.getLeft());
+            Assert.assertEquals("Primary should be on the left.", expectedLeft, primary.getLeft());
         }
         int expectedTop = addPadding ? PADDING_TOP : 0;
         int expectedBottom = expectedTop + PRIMARY_HEIGHT;
-        assertEquals("Primary top in wrong location", expectedTop, primary.getTop());
-        assertEquals("Primary bottom in wrong location", expectedBottom, primary.getBottom());
-        assertEquals(mTinyControlWidth, primary.getMeasuredWidth());
-        assertEquals(PRIMARY_HEIGHT, primary.getMeasuredHeight());
-        MoreAsserts.assertNotEqual(primary.getLeft(), primary.getRight());
+        Assert.assertEquals("Primary top in wrong location", expectedTop, primary.getTop());
+        Assert.assertEquals(
+                "Primary bottom in wrong location", expectedBottom, primary.getBottom());
+        Assert.assertEquals(mTinyControlWidth, primary.getMeasuredWidth());
+        Assert.assertEquals(PRIMARY_HEIGHT, primary.getMeasuredHeight());
+        Assert.assertNotEquals(primary.getLeft(), primary.getRight());
 
         // Confirm that the secondary View is in the correct place.
         if (secondary != null) {
-            assertEquals(mTinyControlWidth, secondary.getMeasuredWidth());
-            assertEquals(SECONDARY_HEIGHT, secondary.getMeasuredHeight());
-            MoreAsserts.assertNotEqual(secondary.getLeft(), secondary.getRight());
+            Assert.assertEquals(mTinyControlWidth, secondary.getMeasuredWidth());
+            Assert.assertEquals(SECONDARY_HEIGHT, secondary.getMeasuredHeight());
+            Assert.assertNotEquals(secondary.getLeft(), secondary.getRight());
             if (alignment == ALIGN_START) {
                 if (isRtl) {
                     // Secondary View is immediately to the left of the parent.
-                    assertTrue(secondary.getRight() < primary.getLeft());
-                    MoreAsserts.assertNotEqual(0, secondary.getLeft());
+                    Assert.assertTrue(secondary.getRight() < primary.getLeft());
+                    Assert.assertNotEquals(0, secondary.getLeft());
                 } else {
                     // Secondary View is immediately to the right of the parent.
-                    assertTrue(primary.getRight() < secondary.getLeft());
-                    MoreAsserts.assertNotEqual(INFOBAR_WIDTH, secondary.getRight());
+                    Assert.assertTrue(primary.getRight() < secondary.getLeft());
+                    Assert.assertNotEquals(INFOBAR_WIDTH, secondary.getRight());
                 }
             } else if (alignment == ALIGN_APART) {
                 if (isRtl) {
                     // Secondary View is on the far right.
-                    assertTrue(primary.getRight() < secondary.getLeft());
+                    Assert.assertTrue(primary.getRight() < secondary.getLeft());
                     int expectedRight = INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0);
-                    assertEquals(expectedRight, secondary.getRight());
+                    Assert.assertEquals(expectedRight, secondary.getRight());
                 } else {
                     // Secondary View is on the far left.
-                    assertTrue(secondary.getRight() < primary.getLeft());
+                    Assert.assertTrue(secondary.getRight() < primary.getLeft());
                     int expectedLeft = addPadding ? PADDING_LEFT : 0;
-                    assertEquals(expectedLeft, secondary.getLeft());
+                    Assert.assertEquals(expectedLeft, secondary.getLeft());
                 }
             } else {
-                assertEquals(ALIGN_END, alignment);
+                Assert.assertEquals(ALIGN_END, alignment);
                 if (isRtl) {
                     // Secondary View is immediately to the right of the parent.
-                    assertTrue(primary.getRight() < secondary.getLeft());
-                    MoreAsserts.assertNotEqual(INFOBAR_WIDTH, secondary.getRight());
+                    Assert.assertTrue(primary.getRight() < secondary.getLeft());
+                    Assert.assertNotEquals(INFOBAR_WIDTH, secondary.getRight());
                 } else {
                     // Secondary View is immediately to the left of the parent.
-                    assertTrue(secondary.getRight() < primary.getLeft());
-                    MoreAsserts.assertNotEqual(0, secondary.getLeft());
+                    Assert.assertTrue(secondary.getRight() < primary.getLeft());
+                    Assert.assertNotEquals(0, secondary.getLeft());
                 }
             }
 
             // Confirm that the secondary View is centered with respect to the first.
             int primaryCenter = (primary.getTop() + primary.getBottom()) / 2;
             int secondaryCenter = (secondary.getTop() + secondary.getBottom()) / 2;
-            assertEquals(primaryCenter, secondaryCenter);
+            Assert.assertEquals(primaryCenter, secondaryCenter);
         }
 
         int expectedLayoutHeight =
                 primary.getMeasuredHeight() + (addPadding ? PADDING_TOP + PADDING_BOTTOM : 0);
-        assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
+        Assert.assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
     }
 
+    @Test
     @SmallTest
     @UiThreadTest
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -234,28 +248,28 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
         layout.measure(parentWidthSpec, parentHeightSpec);
         layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
 
-        assertEquals(addPadding ? PADDING_LEFT : 0, primary.getLeft());
-        assertEquals(addPadding ? PADDING_LEFT : 0, secondary.getLeft());
+        Assert.assertEquals(addPadding ? PADDING_LEFT : 0, primary.getLeft());
+        Assert.assertEquals(addPadding ? PADDING_LEFT : 0, secondary.getLeft());
 
-        assertEquals(INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0), primary.getRight());
-        assertEquals(INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0), secondary.getRight());
+        Assert.assertEquals(INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0), primary.getRight());
+        Assert.assertEquals(INFOBAR_WIDTH - (addPadding ? PADDING_RIGHT : 0), secondary.getRight());
 
         int expectedControlWidth = INFOBAR_WIDTH - (addPadding ? PADDING_LEFT + PADDING_RIGHT : 0);
-        assertEquals(expectedControlWidth, primary.getMeasuredWidth());
-        assertEquals(expectedControlWidth, secondary.getMeasuredWidth());
-        assertEquals(INFOBAR_WIDTH, layout.getMeasuredWidth());
+        Assert.assertEquals(expectedControlWidth, primary.getMeasuredWidth());
+        Assert.assertEquals(expectedControlWidth, secondary.getMeasuredWidth());
+        Assert.assertEquals(INFOBAR_WIDTH, layout.getMeasuredWidth());
 
         int expectedPrimaryTop = addPadding ? PADDING_TOP : 0;
         int expectedPrimaryBottom = expectedPrimaryTop + primary.getHeight();
         int expectedSecondaryTop = expectedPrimaryBottom + STACKED_MARGIN;
         int expectedSecondaryBottom = expectedSecondaryTop + secondary.getHeight();
         int expectedLayoutHeight = expectedSecondaryBottom + (addPadding ? PADDING_BOTTOM : 0);
-        assertEquals(expectedPrimaryTop, primary.getTop());
-        assertEquals(expectedPrimaryBottom, primary.getBottom());
-        assertEquals(expectedSecondaryTop, secondary.getTop());
-        assertEquals(expectedSecondaryBottom, secondary.getBottom());
-        assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
-        MoreAsserts.assertNotEqual(layout.getMeasuredHeight(), primary.getMeasuredHeight());
+        Assert.assertEquals(expectedPrimaryTop, primary.getTop());
+        Assert.assertEquals(expectedPrimaryBottom, primary.getBottom());
+        Assert.assertEquals(expectedSecondaryTop, secondary.getTop());
+        Assert.assertEquals(expectedSecondaryBottom, secondary.getBottom());
+        Assert.assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
+        Assert.assertNotEquals(layout.getMeasuredHeight(), primary.getMeasuredHeight());
     }
 
     /**
@@ -263,6 +277,7 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
      * Re-uses the AutofillEditor's buttons XML layout because we have no support for test-only
      * layout files.
      */
+    @Test
     @SmallTest
     @UiThreadTest
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
@@ -270,10 +285,10 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
     public void testInflation() {
         // Check that the basic DualControlLayout has nothing going on.
         DualControlLayout layout = new DualControlLayout(mContext, null);
-        assertEquals(DualControlLayout.ALIGN_START, layout.getAlignment());
-        assertEquals(0, layout.getStackedMargin());
-        assertNull(layout.findViewById(R.id.button_primary));
-        assertNull(layout.findViewById(R.id.button_secondary));
+        Assert.assertEquals(DualControlLayout.ALIGN_START, layout.getAlignment());
+        Assert.assertEquals(0, layout.getStackedMargin());
+        Assert.assertNull(layout.findViewById(R.id.button_primary));
+        Assert.assertNull(layout.findViewById(R.id.button_secondary));
 
         // Inflate a DualControlLayout that has all of the attributes set and confirm they're used
         // correctly.
@@ -282,17 +297,17 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
                 R.layout.autofill_editor_base_buttons, containerView, true);
         DualControlLayout inflatedLayout =
                 (DualControlLayout) containerView.findViewById(R.id.button_bar);
-        assertEquals(DualControlLayout.ALIGN_END, inflatedLayout.getAlignment());
-        assertEquals(mContext.getResources().getDimensionPixelSize(
-                             R.dimen.infobar_margin_between_stacked_buttons),
+        Assert.assertEquals(DualControlLayout.ALIGN_END, inflatedLayout.getAlignment());
+        Assert.assertEquals(mContext.getResources().getDimensionPixelSize(
+                                    R.dimen.infobar_margin_between_stacked_buttons),
                 inflatedLayout.getStackedMargin());
 
         Button primaryButton = (Button) inflatedLayout.findViewById(R.id.button_primary);
-        assertNotNull(primaryButton);
-        assertEquals(mContext.getString(R.string.done), primaryButton.getText());
+        Assert.assertNotNull(primaryButton);
+        Assert.assertEquals(mContext.getString(R.string.done), primaryButton.getText());
 
         Button secondaryButton = (Button) inflatedLayout.findViewById(R.id.button_secondary);
-        assertNotNull(secondaryButton);
-        assertEquals(mContext.getString(R.string.cancel), secondaryButton.getText());
+        Assert.assertNotNull(secondaryButton);
+        Assert.assertEquals(mContext.getString(R.string.cancel), secondaryButton.getText());
     }
 }

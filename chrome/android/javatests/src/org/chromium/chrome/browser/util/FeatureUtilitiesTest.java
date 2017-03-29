@@ -10,14 +10,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.speech.RecognizerIntent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.signin.test.util.MockAccountManager;
 
@@ -28,8 +34,8 @@ import java.util.concurrent.Callable;
 /**
  * Unit Test for FeatureUtilities.
  */
-public class FeatureUtilitiesTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class FeatureUtilitiesTest {
     private IntentTestMockContext mContextWithSpeech;
     private IntentTestMockContext mContextWithoutSpeech;
     private MockAuthenticationAccountManager mAccountManager;
@@ -46,12 +52,12 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
         mTestAccount = AccountManagerHelper.createAccountFromName("Dummy");
     }
 
-    @Override
+    @Before
     public void setUp() {
         // GetInstrumentation().getTargetContext() cannot be called in
         // constructor due to external dependencies.
         mAccountTestingContext = new AdvancedMockContext(
-                getInstrumentation().getTargetContext());
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     private static class IntentTestPackageManager extends MockPackageManager {
@@ -139,10 +145,8 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
     }
 
     private void setUpAccount(final String accountType) {
-        mAccountManager = new MockAuthenticationAccountManager(
-                mAccountTestingContext,
-                getInstrumentation().getContext(),
-                accountType,
+        mAccountManager = new MockAuthenticationAccountManager(mAccountTestingContext,
+                InstrumentationRegistry.getInstrumentation().getContext(), accountType,
                 mTestAccount);
 
         AccountManagerHelper.overrideAccountManagerHelperForTests(
@@ -150,34 +154,34 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
                 mAccountManager);
     }
 
+    @Test
     @SmallTest
     @Feature({"FeatureUtilities", "Speech"})
     public void testSpeechFeatureAvailable() {
-
         final boolean doNotUseCachedResult = false;
         final boolean recognizesSpeech = isRecognitionIntentPresent(
                 mContextWithSpeech,
                 doNotUseCachedResult);
 
-        assertTrue(recognizesSpeech);
+        Assert.assertTrue(recognizesSpeech);
     }
 
+    @Test
     @SmallTest
     @Feature({"FeatureUtilities", "Speech"})
     public void testSpeechFeatureUnavailable() {
-
         final boolean doNotUseCachedResult = false;
         final boolean recognizesSpeech = isRecognitionIntentPresent(
                 mContextWithoutSpeech,
                 doNotUseCachedResult);
 
-        assertFalse(recognizesSpeech);
+        Assert.assertFalse(recognizesSpeech);
     }
 
+    @Test
     @SmallTest
     @Feature({"FeatureUtilities", "Speech"})
     public void testCachedSpeechFeatureAvailability() {
-
         // Initial call will cache the fact that speech is recognized.
         final boolean doNotUseCachedResult = false;
         isRecognitionIntentPresent(
@@ -192,14 +196,14 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
                 useCachedResult);
 
         // Check that we still recognize speech as we're using cached result.
-        assertTrue(recognizesSpeech);
+        Assert.assertTrue(recognizesSpeech);
 
         // Check if we can turn cached result off again.
         final boolean RecognizesSpeechUncached = isRecognitionIntentPresent(
                 mContextWithoutSpeech,
                 doNotUseCachedResult);
 
-        assertFalse(RecognizesSpeechUncached);
+        Assert.assertFalse(RecognizesSpeechUncached);
     }
 
     // This test previously flaked on the try bot: http://crbug.com/543160.
@@ -207,10 +211,10 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
     // during the time the test was disabled. If the test starts flaking again,
     // re-open the bug.
     // TODO(nyquist): Remove this if the test is not flaky anymore.
+    @Test
     @SmallTest
     @Feature({"FeatureUtilities", "GoogleAccounts"})
     public void testHasGoogleAccountCorrectlyDetected() {
-
         // Set up an account manager mock that returns Google account types
         // when queried.
         setUpAccount(AccountManagerHelper.GOOGLE_ACCOUNT_TYPE);
@@ -218,12 +222,12 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
         boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
                 mAccountTestingContext);
 
-        assertTrue(hasAccounts);
+        Assert.assertTrue(hasAccounts);
 
         boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator(
                 mAccountTestingContext);
 
-        assertTrue(hasAuthenticator);
+        Assert.assertTrue(hasAuthenticator);
     }
 
     // This test previously flaked on the try bot: http://crbug.com/543160.
@@ -231,10 +235,10 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
     // during the time the test was disabled. If the test starts flaking again,
     // re-open the bug.
     // TODO(nyquist): Remove this if the test is not flaky anymore.
+    @Test
     @SmallTest
     @Feature({"FeatureUtilities", "GoogleAccounts"})
     public void testHasNoGoogleAccountCorrectlyDetected() {
-
         // Set up an account manager mock that doesn't return Google account
         // types when queried.
         setUpAccount("Not A Google Account");
@@ -242,11 +246,11 @@ public class FeatureUtilitiesTest extends InstrumentationTestCase {
         boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
                 mAccountTestingContext);
 
-        assertFalse(hasAccounts);
+        Assert.assertFalse(hasAccounts);
 
         boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator(
                 mAccountTestingContext);
 
-        assertFalse(hasAuthenticator);
+        Assert.assertFalse(hasAuthenticator);
     }
 }

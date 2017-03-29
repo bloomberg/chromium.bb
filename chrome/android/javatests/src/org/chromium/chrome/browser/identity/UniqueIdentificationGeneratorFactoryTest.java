@@ -5,23 +5,29 @@
 package org.chromium.chrome.browser.identity;
 
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import javax.annotation.Nullable;
 
-public class UniqueIdentificationGeneratorFactoryTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class UniqueIdentificationGeneratorFactoryTest {
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha", "Sync"})
     public void testSetAndGetGenerator() {
         UniqueIdentificationGeneratorFactory.clearGeneratorMapForTest();
         UniqueIdentificationGenerator gen = new TestGenerator();
         UniqueIdentificationGeneratorFactory.registerGenerator("generator", gen, false);
-        assertEquals(gen, UniqueIdentificationGeneratorFactory.getInstance("generator"));
+        Assert.assertEquals(gen, UniqueIdentificationGeneratorFactory.getInstance("generator"));
     }
 
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha", "Sync"})
     public void testForceCanOverrideGenerator() {
@@ -30,13 +36,14 @@ public class UniqueIdentificationGeneratorFactoryTest extends InstrumentationTes
         UniqueIdentificationGenerator gen2 = new TestGenerator();
         UniqueIdentificationGenerator gen3 = new TestGenerator();
         UniqueIdentificationGeneratorFactory.registerGenerator("generator", gen1, false);
-        assertEquals(gen1, UniqueIdentificationGeneratorFactory.getInstance("generator"));
+        Assert.assertEquals(gen1, UniqueIdentificationGeneratorFactory.getInstance("generator"));
         UniqueIdentificationGeneratorFactory.registerGenerator("generator", gen2, false);
-        assertEquals(gen1, UniqueIdentificationGeneratorFactory.getInstance("generator"));
+        Assert.assertEquals(gen1, UniqueIdentificationGeneratorFactory.getInstance("generator"));
         UniqueIdentificationGeneratorFactory.registerGenerator("generator", gen3, true);
-        assertEquals(gen3, UniqueIdentificationGeneratorFactory.getInstance("generator"));
+        Assert.assertEquals(gen3, UniqueIdentificationGeneratorFactory.getInstance("generator"));
     }
 
+    @Test
     @SmallTest
     @Feature({"ChromeToMobile", "Omaha", "Sync"})
     public void testGeneratorNotFoundThrows() {
@@ -44,9 +51,9 @@ public class UniqueIdentificationGeneratorFactoryTest extends InstrumentationTes
         UniqueIdentificationGenerator generator = null;
         try {
             generator = UniqueIdentificationGeneratorFactory.getInstance("generator");
-            fail("The generator does not exist, so factory should throw an error.");
+            Assert.fail("The generator does not exist, so factory should throw an error.");
         } catch (RuntimeException e) {
-            assertEquals(null, generator);
+            Assert.assertEquals(null, generator);
         }
     }
 

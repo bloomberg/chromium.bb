@@ -4,15 +4,20 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static android.test.MoreAsserts.assertContentsInAnyOrder;
-import static android.test.MoreAsserts.assertEmpty;
-
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
-import android.test.UiThreadTest;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -32,6 +37,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
 
 import java.io.File;
@@ -50,17 +56,19 @@ import javax.annotation.Nullable;
 /**
  * Tests for the Custom Tab persistence logic.
  */
-public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class CustomTabTabPersistencePolicyTest {
     private TestTabModelDirectory mMockDirectory;
     private AdvancedMockContext mAppContext;
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
 
-        mAppContext = new AdvancedMockContext(
-                getInstrumentation().getTargetContext().getApplicationContext());
+    @Before
+    public void setUp() throws Exception {
+        mAppContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
+                                                      .getTargetContext()
+                                                      .getApplicationContext());
         ContextUtils.initApplicationContextForTests(mAppContext);
 
         mMockDirectory = new TestTabModelDirectory(
@@ -69,7 +77,7 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
         TabPersistentStore.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         mMockDirectory.tearDown();
 
@@ -79,17 +87,18 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
             if (activity == null) continue;
             ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
         }
-        super.tearDown();
     }
 
+    @Test
     @Feature("TabPersistentStore")
     @SmallTest
     public void testDeletableMetadataSelection_NoFiles() {
         List<File> deletableFiles = CustomTabTabPersistencePolicy.getMetadataFilesForDeletion(
                 System.currentTimeMillis(), new ArrayList<File>());
-        assertEmpty(deletableFiles);
+        Assert.assertThat(deletableFiles, Matchers.emptyIterableOf(File.class));
     }
 
+    @Test
     @Feature("TabPersistentStore")
     @SmallTest
     public void testDeletableMetadataSelection_MaximumValidFiles() {
@@ -100,9 +109,10 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
         filesToTest.addAll(generateMaximumStateFiles(currentTime));
         List<File> deletableFiles = CustomTabTabPersistencePolicy.getMetadataFilesForDeletion(
                 currentTime, filesToTest);
-        assertEmpty(deletableFiles);
+        Assert.assertThat(deletableFiles, Matchers.emptyIterableOf(File.class));
     }
 
+    @Test
     @Feature("TabPersistentStore")
     @SmallTest
     public void testDeletableMetadataSelection_ExceedsMaximumValidFiles() {
@@ -117,9 +127,10 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
         filesToTest.add(filesToTest.size() / 2, slightlyOlderFile);
         List<File> deletableFiles = CustomTabTabPersistencePolicy.getMetadataFilesForDeletion(
                 currentTime, filesToTest);
-        assertContentsInAnyOrder(deletableFiles, slightlyOlderFile);
+        Assert.assertThat(deletableFiles, Matchers.containsInAnyOrder(slightlyOlderFile));
     }
 
+    @Test
     @Feature("TabPersistentStore")
     @SmallTest
     public void testDeletableMetadataSelection_ExceedExpiryThreshold() {
@@ -133,88 +144,96 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
         filesToTest.add(expiredFile);
         List<File> deletableFiles = CustomTabTabPersistencePolicy.getMetadataFilesForDeletion(
                 currentTime, filesToTest);
-        assertContentsInAnyOrder(deletableFiles, expiredFile);
+        Assert.assertThat(deletableFiles, Matchers.containsInAnyOrder(expiredFile));
     }
 
     /**
      * Test to ensure that an existing metadata files are deleted if no restore is requested.
      */
+    @Test
     @Feature("TabPersistentStore")
     @MediumTest
     public void testExistingMetadataFileDeletedIfNoRestore() throws Exception {
         File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
-        assertNotNull(baseStateDirectory);
+        Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(7, false);
         File stateDirectory = policy.getOrCreateStateDirectory();
-        assertNotNull(stateDirectory);
+        Assert.assertNotNull(stateDirectory);
 
         String stateFileName = policy.getStateFileName();
         File existingStateFile = new File(stateDirectory, stateFileName);
-        assertTrue(existingStateFile.createNewFile());
+        Assert.assertTrue(existingStateFile.createNewFile());
 
-        assertTrue(existingStateFile.exists());
+        Assert.assertTrue(existingStateFile.exists());
         policy.performInitialization(AsyncTask.SERIAL_EXECUTOR);
         policy.waitForInitializationToFinish();
-        assertFalse(existingStateFile.exists());
+        Assert.assertFalse(existingStateFile.exists());
     }
 
     /**
      * Test the logic that gets all the live tab and task IDs.
      */
+    @Test
     @Feature("TabPersistentStore")
     @SmallTest
-    @UiThreadTest
-    public void testGettingTabAndTaskIds() {
-        Set<Integer> tabIds = new HashSet<>();
-        Set<Integer> taskIds = new HashSet<>();
-        CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
-        assertEmpty(tabIds);
-        assertEmpty(taskIds);
-
-        tabIds.clear();
-        taskIds.clear();
-
-        CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {4, 8, 9}, null);
-        ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
-
-        CustomTabActivity cct2 = buildTestCustomTabActivity(5, new int[] {458}, new int[] {9878});
-        ApplicationStatus.onStateChangeForTesting(cct2, ActivityState.CREATED);
-
-        // Add a tabbed mode activity to ensure that its IDs are not included in the returned CCT
-        // ID sets.
-        final TabModelSelectorImpl tabbedSelector =
-                buildTestTabModelSelector(new int[] {12121212}, new int[] {1515151515});
-        ChromeTabbedActivity tabbedActivity = new ChromeTabbedActivity() {
+    public void testGettingTabAndTaskIds() throws Throwable {
+        mRule.runOnUiThread(new Runnable() {
             @Override
-            public int getTaskId() {
-                return 888;
-            }
+            public void run() {
+                Set<Integer> tabIds = new HashSet<>();
+                Set<Integer> taskIds = new HashSet<>();
+                CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
+                Assert.assertThat(tabIds, Matchers.emptyIterable());
+                Assert.assertThat(taskIds, Matchers.emptyIterable());
 
-            @Override
-            public TabModelSelector getTabModelSelector() {
-                return tabbedSelector;
-            }
-        };
-        ApplicationStatus.onStateChangeForTesting(tabbedActivity, ActivityState.CREATED);
+                tabIds.clear();
+                taskIds.clear();
 
-        CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
-        assertContentsInAnyOrder(tabIds, 4, 8, 9, 458, 9878);
-        assertContentsInAnyOrder(taskIds, 1, 5);
+                CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {4, 8, 9}, null);
+                ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
+
+                CustomTabActivity cct2 =
+                        buildTestCustomTabActivity(5, new int[] {458}, new int[] {9878});
+                ApplicationStatus.onStateChangeForTesting(cct2, ActivityState.CREATED);
+
+                // Add a tabbed mode activity to ensure that its IDs are not included in the
+                // returned CCT ID sets.
+                final TabModelSelectorImpl tabbedSelector =
+                        buildTestTabModelSelector(new int[] {12121212}, new int[] {1515151515});
+                ChromeTabbedActivity tabbedActivity = new ChromeTabbedActivity() {
+                    @Override
+                    public int getTaskId() {
+                        return 888;
+                    }
+
+                    @Override
+                    public TabModelSelector getTabModelSelector() {
+                        return tabbedSelector;
+                    }
+                };
+                ApplicationStatus.onStateChangeForTesting(tabbedActivity, ActivityState.CREATED);
+
+                CustomTabTabPersistencePolicy.getAllLiveTabAndTaskIds(tabIds, taskIds);
+                Assert.assertThat(tabIds, Matchers.containsInAnyOrder(4, 8, 9, 458, 9878));
+                Assert.assertThat(taskIds, Matchers.containsInAnyOrder(1, 5));
+            }
+        });
     }
 
     /**
      * Test the full cleanup task path that determines what files are eligible for deletion.
      */
+    @Test
     @Feature("TabPersistentStore")
     @MediumTest
-    public void testCleanupTask() throws Exception {
+    public void testCleanupTask() throws Throwable {
         File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
-        assertNotNull(baseStateDirectory);
+        Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(2, false);
         File stateDirectory = policy.getOrCreateStateDirectory();
-        assertNotNull(stateDirectory);
+        Assert.assertNotNull(stateDirectory);
 
         final AtomicReference<List<String>> filesToDelete = new AtomicReference<>();
         final CallbackHelper callbackSignal = new CallbackHelper();
@@ -229,29 +248,34 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
         // Test when no files have been created.
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(0);
-        assertEmpty(filesToDelete.get());
+        Assert.assertThat(filesToDelete.get(), Matchers.emptyIterable());
 
         // Create an unreferenced tab state file and ensure it is marked for deletion.
         File tab999File = TabState.getTabStateFile(stateDirectory, 999, false);
-        assertTrue(tab999File.createNewFile());
+        Assert.assertTrue(tab999File.createNewFile());
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(1);
-        assertContentsInAnyOrder(filesToDelete.get(), tab999File.getName());
+        Assert.assertThat(filesToDelete.get(), Matchers.containsInAnyOrder(tab999File.getName()));
 
         // Reference the tab state file and ensure it is no longer marked for deletion.
-        CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {999}, null);
-        ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
+        mRule.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                CustomTabActivity cct1 = buildTestCustomTabActivity(1, new int[] {999}, null);
+                ApplicationStatus.onStateChangeForTesting(cct1, ActivityState.CREATED);
+            }
+        });
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(2);
-        assertEmpty(filesToDelete.get());
+        Assert.assertThat(filesToDelete.get(), Matchers.emptyIterable());
 
         // Create a tab model and associated tabs. Ensure it is not marked for deletion as it is
         // new enough.
-        final TabModelSelectorImpl selectorImpl = buildTestTabModelSelector(
-                new int[] {111, 222, 333 }, null);
         byte[] data = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<byte[]>() {
             @Override
             public byte[] call() throws Exception {
+                TabModelSelectorImpl selectorImpl =
+                        buildTestTabModelSelector(new int[] {111, 222, 333}, null);
                 return TabPersistentStore.serializeTabModelSelector(selectorImpl, null);
             }
         });
@@ -265,48 +289,50 @@ public class CustomTabTabPersistencePolicyTest extends InstrumentationTestCase {
             StreamUtil.closeQuietly(fos);
         }
         File tab111File = TabState.getTabStateFile(stateDirectory, 111, false);
-        assertTrue(tab111File.createNewFile());
+        Assert.assertTrue(tab111File.createNewFile());
         File tab222File = TabState.getTabStateFile(stateDirectory, 222, false);
-        assertTrue(tab222File.createNewFile());
+        Assert.assertTrue(tab222File.createNewFile());
         File tab333File = TabState.getTabStateFile(stateDirectory, 333, false);
-        assertTrue(tab333File.createNewFile());
+        Assert.assertTrue(tab333File.createNewFile());
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(3);
-        assertEmpty(filesToDelete.get());
+        Assert.assertThat(filesToDelete.get(), Matchers.emptyIterable());
 
         // Set the age of the metadata file to be past the expiration threshold and ensure it along
         // with the associated tab files are marked for deletion.
-        assertTrue(metadataFile.setLastModified(1234));
+        Assert.assertTrue(metadataFile.setLastModified(1234));
         policy.cleanupUnusedFiles(filesToDeleteCallback);
         callbackSignal.waitForCallback(4);
-        assertContentsInAnyOrder(filesToDelete.get(), tab111File.getName(), tab222File.getName(),
-                tab333File.getName(), metadataFile.getName());
+        Assert.assertThat(filesToDelete.get(),
+                Matchers.containsInAnyOrder(tab111File.getName(), tab222File.getName(),
+                        tab333File.getName(), metadataFile.getName()));
     }
 
     /**
      * Ensure that the metadata file's last modified timestamp is updated on initialization.
      */
+    @Test
     @Feature("TabPersistentStore")
     @MediumTest
     public void testMetadataTimestampRefreshed() throws Exception {
         File baseStateDirectory = TabPersistentStore.getOrCreateBaseStateDirectory();
-        assertNotNull(baseStateDirectory);
+        Assert.assertNotNull(baseStateDirectory);
 
         CustomTabTabPersistencePolicy policy = new CustomTabTabPersistencePolicy(2, true);
         File stateDirectory = policy.getOrCreateStateDirectory();
-        assertNotNull(stateDirectory);
+        Assert.assertNotNull(stateDirectory);
 
         File metadataFile = new File(stateDirectory, policy.getStateFileName());
-        assertTrue(metadataFile.createNewFile());
+        Assert.assertTrue(metadataFile.createNewFile());
 
         long previousTimestamp =
                 System.currentTimeMillis() - CustomTabTabPersistencePolicy.STATE_EXPIRY_THRESHOLD;
-        assertTrue(metadataFile.setLastModified(previousTimestamp));
+        Assert.assertTrue(metadataFile.setLastModified(previousTimestamp));
 
         policy.performInitialization(AsyncTask.SERIAL_EXECUTOR);
         policy.waitForInitializationToFinish();
 
-        assertTrue(metadataFile.lastModified() > previousTimestamp);
+        Assert.assertTrue(metadataFile.lastModified() > previousTimestamp);
     }
 
     private static List<File> generateMaximumStateFiles(long currentTime) {

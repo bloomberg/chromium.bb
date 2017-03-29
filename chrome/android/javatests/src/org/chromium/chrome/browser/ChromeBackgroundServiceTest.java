@@ -5,10 +5,16 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 
 import com.google.android.gms.gcm.TaskParams;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -18,12 +24,14 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.browser.precache.PrecacheController;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Tests {@link ChromeBackgroundService}.
  */
+@RunWith(ChromeJUnit4ClassRunner.class)
 @RetryOnFailure
-public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
+public class ChromeBackgroundServiceTest {
     private Context mContext;
     private BackgroundSyncLauncher mSyncLauncher;
     private SnippetsLauncher mSnippetsLauncher;
@@ -78,10 +86,12 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
-                    assertEquals("StartedPrecache", expectedPrecacheStarted, mPrecachingStarted);
-                    assertEquals("FetchedSnippets", expectedFetchSnippets, mDidFetchSnippets);
-                    assertEquals("RescheduledFetching", expectedRescheduleFetching,
+                    Assert.assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
+                    Assert.assertEquals(
+                            "StartedPrecache", expectedPrecacheStarted, mPrecachingStarted);
+                    Assert.assertEquals(
+                            "FetchedSnippets", expectedFetchSnippets, mDidFetchSnippets);
+                    Assert.assertEquals("RescheduledFetching", expectedRescheduleFetching,
                             mDidRescheduleFetching);
                 }
             });
@@ -92,9 +102,10 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
+    @Before
+    public void setUp() throws Exception {
+        mContext = new AdvancedMockContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
         RecordHistogram.setDisabledForTests(true);
         mSyncLauncher = BackgroundSyncLauncher.create(mContext);
@@ -102,9 +113,8 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         mTaskService = new MockTaskService();
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
         RecordHistogram.setDisabledForTests(false);
     }
 
@@ -124,12 +134,14 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         mTaskService.checkExpectations(shouldStart, shouldPrecache, shouldFetchSnippets, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testBackgroundSyncNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(BackgroundSyncLauncher.TASK_TAG, false, false, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"BackgroundSync"})
     public void testBackgroundSyncLaunchBrowserWhenInstanceDoesNotExist() {
@@ -137,18 +149,21 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         startOnRunTaskAndVerify(BackgroundSyncLauncher.TASK_TAG, true, false, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsFetchWifiNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, false, false, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsFetchFallbackNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, false, false, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsFetchWifiLaunchBrowserWhenInstanceDoesNotExist() {
@@ -156,6 +171,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_WIFI, true, false, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsFetchFallbackLaunchBrowserWhenInstanceDoesNotExist() {
@@ -163,12 +179,14 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         startOnRunTaskAndVerify(SnippetsLauncher.TASK_TAG_FALLBACK, true, false, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
     public void testPrecacheNoLaunchBrowserWhenInstanceExists() {
         startOnRunTaskAndVerify(PrecacheController.PERIODIC_TASK_TAG, false, false, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Precache"})
     public void testPrecacheLaunchBrowserWhenInstanceDoesNotExist() {
@@ -181,12 +199,14 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         mTaskService.checkExpectations(shouldStart, false, false, shouldReschedule);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsNoRescheduleWithoutPrefWhenInstanceExists() {
         startOnInitializeTasksAndVerify(/*shouldStart=*/false, /*shouldReschedule=*/false);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsNoRescheduleWithoutPrefWhenInstanceDoesNotExist() {
@@ -194,6 +214,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         startOnInitializeTasksAndVerify(/*shouldStart=*/false, /*shouldReschedule=*/false);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsRescheduleWithPrefWhenInstanceExists() {
@@ -206,6 +227,7 @@ public class ChromeBackgroundServiceTest extends InstrumentationTestCase {
         startOnInitializeTasksAndVerify(/*shouldStart=*/false, /*shouldReschedule=*/true);
     }
 
+    @Test
     @SmallTest
     @Feature({"NTPSnippets"})
     public void testNTPSnippetsRescheduleAndLaunchBrowserWithPrefWhenInstanceDoesNotExist() {

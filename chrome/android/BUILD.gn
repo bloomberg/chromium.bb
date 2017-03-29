@@ -464,6 +464,7 @@ android_library("chrome_test_java") {
     "//third_party/android_tools:legacy_http_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/custom_tabs_client:custom_tabs_support_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//third_party/junit",
     "//ui/android:ui_java",

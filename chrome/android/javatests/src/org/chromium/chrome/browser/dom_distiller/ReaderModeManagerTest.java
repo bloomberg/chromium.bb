@@ -5,8 +5,16 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+import android.support.test.rule.UiThreadTestRule;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -18,6 +26,7 @@ import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModeBar
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
 import org.chromium.chrome.browser.compositor.scene_layer.ReaderModeSceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.WebContents;
@@ -26,12 +35,15 @@ import org.chromium.content_public.browser.WebContentsObserver;
 /**
  * Tests logic in the ReaderModeManager.
  */
-public class ReaderModeManagerTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class ReaderModeManagerTest {
     OverlayPanelManagerWrapper mPanelManager;
     ReaderModeManagerWrapper mReaderManager;
     MockReaderModePanel mPanel;
     ReaderModeMockTabModelSelector mTabModelSelector;
+
+    @Rule
+    public UiThreadTestRule mRule = new UiThreadTestRule();
 
     /**
      * A mock TabModelSelector for creating tabs.
@@ -166,13 +178,13 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
         }
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         mPanelManager = new OverlayPanelManagerWrapper();
         mTabModelSelector = new ReaderModeMockTabModelSelector();
         mReaderManager = new ReaderModeManagerWrapper(mTabModelSelector);
-        mPanel = new MockReaderModePanel(getInstrumentation().getTargetContext(), mPanelManager);
+        mPanel = new MockReaderModePanel(
+                InstrumentationRegistry.getInstrumentation().getTargetContext(), mPanelManager);
         mReaderManager.setReaderModePanel(mPanel);
         mPanel.setManagerDelegate(mReaderManager);
     }
@@ -182,72 +194,80 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
     /**
      * Tests that the panel behaves appropriately with infobar events.
      */
+    @Test
     @SmallTest
     @Feature({"ReaderModeManager"})
+    @UiThreadTest
     @RetryOnFailure
     public void testInfoBarEvents() {
         mPanel.requestPanelShow(StateChangeReason.UNKNOWN);
 
         mReaderManager.onAddInfoBar(null, null, true);
-        assertEquals(1, mPanelManager.getRequestPanelShowCount());
-        assertEquals(1, mPanelManager.getPanelHideCount());
+        Assert.assertEquals(1, mPanelManager.getRequestPanelShowCount());
+        Assert.assertEquals(1, mPanelManager.getPanelHideCount());
 
         mReaderManager.onRemoveInfoBar(null, null, true);
-        assertEquals(2, mPanelManager.getRequestPanelShowCount());
-        assertEquals(1, mPanelManager.getPanelHideCount());
+        Assert.assertEquals(2, mPanelManager.getRequestPanelShowCount());
+        Assert.assertEquals(1, mPanelManager.getPanelHideCount());
     }
 
     /**
      * Tests that the panel behaves appropriately with fullscreen events.
      */
+    @Test
     @SmallTest
     @Feature({"ReaderModeManager"})
+    @UiThreadTest
     @RetryOnFailure
     public void testFullscreenEvents() {
         mPanel.requestPanelShow(StateChangeReason.UNKNOWN);
 
         mReaderManager.onToggleFullscreenMode(null, true);
-        assertEquals(1, mPanelManager.getRequestPanelShowCount());
-        assertEquals(1, mPanelManager.getPanelHideCount());
+        Assert.assertEquals(1, mPanelManager.getRequestPanelShowCount());
+        Assert.assertEquals(1, mPanelManager.getPanelHideCount());
 
         mReaderManager.onToggleFullscreenMode(null, false);
-        assertEquals(2, mPanelManager.getRequestPanelShowCount());
-        assertEquals(1, mPanelManager.getPanelHideCount());
+        Assert.assertEquals(2, mPanelManager.getRequestPanelShowCount());
+        Assert.assertEquals(1, mPanelManager.getPanelHideCount());
     }
 
     /**
      * Tests that the metric that tracks when the panel is visible is correctly recorded.
      */
+    @Test
     @SmallTest
     @Feature({"ReaderModeManager"})
+    @UiThreadTest
     @RetryOnFailure
     public void testPanelOpenRecorded() {
         Tab tab = new Tab(0, false, null);
         mReaderManager.onShown(tab);
 
-        assertEquals(1, mReaderManager.getRecordedCount());
-        assertEquals(1, mReaderManager.getVisibleCount());
-        assertTrue(null != mReaderManager.getTabInfo(0));
+        Assert.assertEquals(1, mReaderManager.getRecordedCount());
+        Assert.assertEquals(1, mReaderManager.getVisibleCount());
+        Assert.assertTrue(null != mReaderManager.getTabInfo(0));
 
         // Make sure recording the panel showing only occurs once per navigation.
         mReaderManager.onShown(tab);
 
-        assertEquals(1, mReaderManager.getRecordedCount());
-        assertEquals(1, mReaderManager.getVisibleCount());
+        Assert.assertEquals(1, mReaderManager.getRecordedCount());
+        Assert.assertEquals(1, mReaderManager.getVisibleCount());
 
         // Destroy shouldn't record either if the panel showed.
         mReaderManager.onDestroyed(tab);
 
-        assertEquals(1, mReaderManager.getRecordedCount());
-        assertEquals(1, mReaderManager.getVisibleCount());
-        assertTrue(null == mReaderManager.getTabInfo(0));
+        Assert.assertEquals(1, mReaderManager.getRecordedCount());
+        Assert.assertEquals(1, mReaderManager.getVisibleCount());
+        Assert.assertTrue(null == mReaderManager.getTabInfo(0));
     }
 
     /**
      * Tests that a tab closing records the panel was not visible.
      */
+    @Test
     @SmallTest
     @Feature({"ReaderModeManager"})
+    @UiThreadTest
     @RetryOnFailure
     public void testPanelCloseRecorded() {
         Tab tab = new Tab(0, false, null);
@@ -255,9 +275,9 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
         mReaderManager.onShown(tab);
         mReaderManager.onDestroyed(tab);
 
-        assertEquals(1, mReaderManager.getRecordedCount());
-        assertEquals(0, mReaderManager.getVisibleCount());
-        assertTrue(null == mReaderManager.getTabInfo(0));
+        Assert.assertEquals(1, mReaderManager.getRecordedCount());
+        Assert.assertEquals(0, mReaderManager.getVisibleCount());
+        Assert.assertTrue(null == mReaderManager.getTabInfo(0));
     }
 
     // TODO(mdjones): Test add/remove infobar while fullscreen is enabled.

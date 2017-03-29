@@ -7,42 +7,50 @@ package org.chromium.chrome.browser.externalnav;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 /**
  * Instrumentation tests for {@link IntentWithGesturesHandler}.
  */
-public class IntentWithGesturesHandlerTest extends InstrumentationTestCase {
-
-    @Override
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class IntentWithGesturesHandlerTest {
+    @After
     public void tearDown() throws Exception {
         IntentWithGesturesHandler.getInstance().clear();
-        super.tearDown();
     }
 
+    @Test
     @SmallTest
     public void testCanUseGestureTokenOnlyOnce() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("content://abc"));
         IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
-        assertTrue(intent.hasExtra(IntentWithGesturesHandler.EXTRA_USER_GESTURE_TOKEN));
-        assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
-        assertFalse(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
+        Assert.assertTrue(intent.hasExtra(IntentWithGesturesHandler.EXTRA_USER_GESTURE_TOKEN));
+        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
+        Assert.assertFalse(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
     }
 
+    @Test
     @SmallTest
     public void testModifiedGestureToken() {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("content://abc"));
         IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
         intent.setData(Uri.parse("content://xyz"));
-        assertFalse(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
+        Assert.assertFalse(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
     }
 
+    @Test
     @SmallTest
     public void testPreviousGestureToken() {
         Intent intent1 = new Intent(Intent.ACTION_VIEW, Uri.parse("content://abc"));
         IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent1);
         Intent intent2 = new Intent(Intent.ACTION_VIEW, Uri.parse("content://xyz"));
         IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent2);
-        assertFalse(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent1));
+        Assert.assertFalse(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent1));
     }
 }

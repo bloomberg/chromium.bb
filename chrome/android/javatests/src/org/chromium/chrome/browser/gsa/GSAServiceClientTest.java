@@ -9,22 +9,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Tests for GSAServiceClient. */
-public class GSAServiceClientTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class GSAServiceClientTest {
     private static final String TAG = "GSAServiceClientTest";
 
+    @Test
     @SmallTest
     public void testGetPssForService() throws Exception {
-        Context context = getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
         if (!GSAState.getInstance(context).isGsaAvailable()) {
             Log.w(TAG, "GSA is not available");
@@ -48,20 +55,21 @@ public class GSAServiceClientTest extends InstrumentationTestCase {
         };
         context.bindService(intent, connection, Context.BIND_AUTO_CREATE);
         try {
-            assertTrue("Timeout", semaphore.tryAcquire(10, TimeUnit.SECONDS));
+            Assert.assertTrue("Timeout", semaphore.tryAcquire(10, TimeUnit.SECONDS));
 
             int pss = GSAServiceClient.getPssForService(componentNameRef.get());
-            assertTrue(pss != GSAServiceClient.INVALID_PSS);
-            assertTrue(pss > 0);
+            Assert.assertTrue(pss != GSAServiceClient.INVALID_PSS);
+            Assert.assertTrue(pss > 0);
         } finally {
             context.unbindService(connection);
         }
     }
 
+    @Test
     @SmallTest
     public void testGetPssForServiceServiceNotFound() throws Exception {
         ComponentName componentName = new ComponentName("unknown.package.name", "UnknownClass");
         int pss = GSAServiceClient.getPssForService(componentName);
-        assertTrue(pss == GSAServiceClient.INVALID_PSS);
+        Assert.assertTrue(pss == GSAServiceClient.INVALID_PSS);
     }
 }

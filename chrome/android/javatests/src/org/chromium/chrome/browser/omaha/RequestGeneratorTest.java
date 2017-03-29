@@ -5,11 +5,16 @@
 package org.chromium.chrome.browser.omaha;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.omaha.AttributeFinder;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
@@ -17,9 +22,11 @@ import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
 /**
  * Unit tests for the RequestGenerator class.
  */
-public class RequestGeneratorTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class RequestGeneratorTest {
     private static final String INSTALL_SOURCE = "install_source";
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testInstallAgeNewInstallation() {
@@ -30,6 +37,7 @@ public class RequestGeneratorTest extends InstrumentationTestCase {
         checkInstallAge(currentTimestamp, installTimestamp, installing, expectedAge);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testInstallAge() {
@@ -47,27 +55,31 @@ public class RequestGeneratorTest extends InstrumentationTestCase {
             long expectedAge) {
         long actualAge = RequestGenerator.installAge(currentTimestamp, installTimestamp,
                 installing);
-        assertEquals("Install ages differed.", expectedAge, actualAge);
+        Assert.assertEquals("Install ages differed.", expectedAge, actualAge);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testHandsetXMLCreationWithInstall() {
         createAndCheckXML(DeviceType.HANDSET, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testHandsetXMLCreationWithoutInstall() {
         createAndCheckXML(DeviceType.HANDSET, false);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testTabletXMLCreationWithInstall() {
         createAndCheckXML(DeviceType.TABLET, true);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testTabletXMLCreationWithoutInstall() {
@@ -78,7 +90,7 @@ public class RequestGeneratorTest extends InstrumentationTestCase {
      * Checks that the XML is being created properly.
      */
     private RequestGenerator createAndCheckXML(DeviceType deviceType, boolean sendInstallEvent) {
-        Context targetContext = getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         AdvancedMockContext context = new AdvancedMockContext(targetContext);
 
         String sessionId = "random_session_id";
@@ -93,7 +105,7 @@ public class RequestGeneratorTest extends InstrumentationTestCase {
             RequestData data = new RequestData(sendInstallEvent, 0, requestId, INSTALL_SOURCE);
             xml = generator.generateXML(sessionId, version, installAge, data);
         } catch (RequestFailureException e) {
-            fail("XML generation failed.");
+            Assert.fail("XML generation failed.");
         }
 
         checkForAttributeAndValue(xml, "request", "sessionid", "{" + sessionId + "}");
@@ -119,15 +131,15 @@ public class RequestGeneratorTest extends InstrumentationTestCase {
         if (sendInstallEvent) {
             checkForAttributeAndValue(xml, "event", "eventtype", "2");
             checkForAttributeAndValue(xml, "event", "eventresult", "1");
-            assertFalse("Ping and install event are mutually exclusive",
-                    checkForTag(xml, "ping"));
-            assertFalse("Update check and install event are mutually exclusive",
+            Assert.assertFalse(
+                    "Ping and install event are mutually exclusive", checkForTag(xml, "ping"));
+            Assert.assertFalse("Update check and install event are mutually exclusive",
                     checkForTag(xml, "updatecheck"));
         } else {
-            assertFalse("Update check and install event are mutually exclusive",
+            Assert.assertFalse("Update check and install event are mutually exclusive",
                     checkForTag(xml, "event"));
             checkForAttributeAndValue(xml, "ping", "active", "1");
-            assertTrue("Update check and install event are mutually exclusive",
+            Assert.assertTrue("Update check and install event are mutually exclusive",
                     checkForTag(xml, "updatecheck"));
         }
 
@@ -142,8 +154,9 @@ public class RequestGeneratorTest extends InstrumentationTestCase {
             String xml, String tag, String attribute, String expectedValue) {
         // Check that the attribute exists for the tag and that the value matches.
         AttributeFinder finder = new AttributeFinder(xml, tag, attribute);
-        assertTrue("Couldn't find tag '" + tag + "'", finder.isTagFound());
-        assertEquals("Bad value found for tag '" + tag + "' and attribute '" + attribute + "'",
+        Assert.assertTrue("Couldn't find tag '" + tag + "'", finder.isTagFound());
+        Assert.assertEquals(
+                "Bad value found for tag '" + tag + "' and attribute '" + attribute + "'",
                 expectedValue, finder.getValue());
     }
 }

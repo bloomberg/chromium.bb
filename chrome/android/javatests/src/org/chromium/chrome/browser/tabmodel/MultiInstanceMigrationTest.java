@@ -5,14 +5,21 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.TabState;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 
@@ -24,15 +31,15 @@ import java.io.IOException;
  * Previously each instance had its own subdirectory for storing files. Now there is one
  * shared directory.
  */
-public class MultiInstanceMigrationTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class MultiInstanceMigrationTest {
     private Context mAppContext;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mAppContext = new AdvancedMockContext(
-                getInstrumentation().getTargetContext().getApplicationContext());
+    @Before
+    public void setUp() throws Exception {
+        mAppContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
+                                                      .getTargetContext()
+                                                      .getApplicationContext());
         ContextUtils.initApplicationContextForTests(mAppContext);
         ApplicationData.clearAppData(mAppContext);
 
@@ -42,9 +49,8 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
                 TabbedModeTabPersistencePolicy.PREF_HAS_RUN_FILE_MIGRATION, true).apply();
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    @After
+    public void tearDown() throws Exception {
         ApplicationData.clearAppData(mAppContext);
     }
 
@@ -65,6 +71,7 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
     /**
      * Tests that normal migration of multi-instance state files works.
      */
+    @Test
     @MediumTest
     @Feature({"TabPersistentStore"})
     public void testMigrateData() throws IOException {
@@ -79,10 +86,11 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
         File customTabsStateFile = new File(
                 stateDirs[3], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
 
-        assertTrue("Could not create state file 0", stateFile0.createNewFile());
-        assertTrue("Could not create state file 1", stateFile1.createNewFile());
-        assertTrue("Could not create state file 2", stateFile2.createNewFile());
-        assertTrue("Could not create custom tabs state file", customTabsStateFile.createNewFile());
+        Assert.assertTrue("Could not create state file 0", stateFile0.createNewFile());
+        Assert.assertTrue("Could not create state file 1", stateFile1.createNewFile());
+        Assert.assertTrue("Could not create state file 2", stateFile2.createNewFile());
+        Assert.assertTrue(
+                "Could not create custom tabs state file", customTabsStateFile.createNewFile());
 
         // Create a couple of tabs for each tab state subdirectory.
         File tab0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
@@ -93,19 +101,19 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
         File tab5 = new File(stateDirs[2], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "5");
         File tab6 = new File(stateDirs[3], TabState.SAVED_TAB_STATE_FILE_PREFIX + "6");
 
-        assertTrue("Could not create tab 0 file", tab0.createNewFile());
-        assertTrue("Could not create tab 1 file", tab1.createNewFile());
-        assertTrue("Could not create tab 2 file", tab2.createNewFile());
-        assertTrue("Could not create tab 3 file", tab3.createNewFile());
-        assertTrue("Could not create tab 4 file", tab4.createNewFile());
-        assertTrue("Could not create tab 5 file", tab5.createNewFile());
-        assertTrue("Could not create tab 6 file", tab6.createNewFile());
+        Assert.assertTrue("Could not create tab 0 file", tab0.createNewFile());
+        Assert.assertTrue("Could not create tab 1 file", tab1.createNewFile());
+        Assert.assertTrue("Could not create tab 2 file", tab2.createNewFile());
+        Assert.assertTrue("Could not create tab 3 file", tab3.createNewFile());
+        Assert.assertTrue("Could not create tab 4 file", tab4.createNewFile());
+        Assert.assertTrue("Could not create tab 5 file", tab5.createNewFile());
+        Assert.assertTrue("Could not create tab 6 file", tab6.createNewFile());
 
         // Build the TabPersistentStore which will try to move the files.
         buildPersistentStoreAndWaitForMigration();
 
         // Make sure we don't hit the migration path again.
-        assertTrue(ContextUtils.getAppSharedPreferences().getBoolean(
+        Assert.assertTrue(ContextUtils.getAppSharedPreferences().getBoolean(
                 TabbedModeTabPersistencePolicy.PREF_HAS_RUN_MULTI_INSTANCE_FILE_MIGRATION, false));
 
         // Check that all metadata files moved.
@@ -118,42 +126,44 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
         File newCustomTabsStateFile = new File(
                 stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(
                         TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX));
-        assertTrue("Could not find new state file 0", newStateFile0.exists());
-        assertTrue("Could not find new state file 1", newStateFile1.exists());
-        assertTrue("Could not find new state file 2", newStateFile2.exists());
-        assertTrue("Could not find new custom tabs state file", newCustomTabsStateFile.exists());
-        assertFalse("Could still find old state file 0", stateFile0.exists());
-        assertFalse("Could still find old state file 1", stateFile1.exists());
-        assertFalse("Could still find old state file 2", stateFile2.exists());
-        assertFalse("Could still find old custom tabs state file", customTabsStateFile.exists());
+        Assert.assertTrue("Could not find new state file 0", newStateFile0.exists());
+        Assert.assertTrue("Could not find new state file 1", newStateFile1.exists());
+        Assert.assertTrue("Could not find new state file 2", newStateFile2.exists());
+        Assert.assertTrue(
+                "Could not find new custom tabs state file", newCustomTabsStateFile.exists());
+        Assert.assertFalse("Could still find old state file 0", stateFile0.exists());
+        Assert.assertFalse("Could still find old state file 1", stateFile1.exists());
+        Assert.assertFalse("Could still find old state file 2", stateFile2.exists());
+        Assert.assertFalse(
+                "Could still find old custom tabs state file", customTabsStateFile.exists());
 
         // Check that tab 0 and 1 did not move.
-        assertTrue("Could not find tab 0 file", tab0.exists());
-        assertTrue("Could not find tab 1 file", tab1.exists());
+        Assert.assertTrue("Could not find tab 0 file", tab0.exists());
+        Assert.assertTrue("Could not find tab 1 file", tab1.exists());
 
         // Check that tabs 2-5 did move.
         File newTab2 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "2");
         File newTab3 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "3");
         File newTab4 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "4");
         File newTab5 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "5");
-        assertTrue("Could not find new tab 2 file", newTab2.exists());
-        assertTrue("Could not find new tab 3 file", newTab3.exists());
-        assertTrue("Could not find new tab 4 file", newTab4.exists());
-        assertTrue("Could not find new tab 5 file", newTab5.exists());
-        assertFalse("Could still find old tab 2 file", tab2.exists());
-        assertFalse("Could still find old tab 3 file", tab3.exists());
-        assertFalse("Could still find old tab 4 file", tab4.exists());
-        assertFalse("Could still find old tab 5 file", tab5.exists());
+        Assert.assertTrue("Could not find new tab 2 file", newTab2.exists());
+        Assert.assertTrue("Could not find new tab 3 file", newTab3.exists());
+        Assert.assertTrue("Could not find new tab 4 file", newTab4.exists());
+        Assert.assertTrue("Could not find new tab 5 file", newTab5.exists());
+        Assert.assertFalse("Could still find old tab 2 file", tab2.exists());
+        Assert.assertFalse("Could still find old tab 3 file", tab3.exists());
+        Assert.assertFalse("Could still find old tab 4 file", tab4.exists());
+        Assert.assertFalse("Could still find old tab 5 file", tab5.exists());
 
         // Check that the custom tab (tab 6) was deleted.
         File newTab6 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "6");
-        assertFalse("Could still find old tab 6 file", tab6.exists());
-        assertFalse("Found new tab 6 file. It should have been deleted.", newTab6.exists());
+        Assert.assertFalse("Could still find old tab 6 file", tab6.exists());
+        Assert.assertFalse("Found new tab 6 file. It should have been deleted.", newTab6.exists());
 
         // Check that old directories were deleted.
-        assertFalse("Could still find old state dir 1", stateDirs[1].exists());
-        assertFalse("Could still find old state dir 2", stateDirs[2].exists());
-        assertFalse("Could still find old custom tabs state dir", stateDirs[3].exists());
+        Assert.assertFalse("Could still find old state dir 1", stateDirs[1].exists());
+        Assert.assertFalse("Could still find old state dir 2", stateDirs[2].exists());
+        Assert.assertFalse("Could still find old custom tabs state dir", stateDirs[3].exists());
     }
 
     /**
@@ -161,6 +171,7 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
      * if the number of tab state subdirectories to migrate is less than
      * {@code TabWindowManager.MAX_SIMULTANEOUS_SELECTORS}
      */
+    @Test
     @MediumTest
     @Feature({"TabPersistentStore"})
     public void testMigrationLeavesOtherFilesAlone() throws IOException {
@@ -174,43 +185,44 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
         File tab1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
         File otherFile = new File(stateDirs[1], "other.file");
 
-        assertTrue("Could not create state file 0", stateFile0.createNewFile());
-        assertTrue("Could not create state file 1", stateFile1.createNewFile());
-        assertTrue("Could not create tab 0 file", tab0.createNewFile());
-        assertTrue("Could not create tab 1 file", tab1.createNewFile());
-        assertTrue("Could not create other file", otherFile.createNewFile());
+        Assert.assertTrue("Could not create state file 0", stateFile0.createNewFile());
+        Assert.assertTrue("Could not create state file 1", stateFile1.createNewFile());
+        Assert.assertTrue("Could not create tab 0 file", tab0.createNewFile());
+        Assert.assertTrue("Could not create tab 1 file", tab1.createNewFile());
+        Assert.assertTrue("Could not create other file", otherFile.createNewFile());
 
         // Build the TabPersistentStore which will try to move the files.
         buildPersistentStoreAndWaitForMigration();
 
         // Check that the other file wasn't moved.
         File newOtherFile = new File(stateDirs[0], "other.file");
-        assertFalse("Could find new other file", newOtherFile.exists());
-        assertTrue("Could not find original other file", otherFile.exists());
+        Assert.assertFalse("Could find new other file", newOtherFile.exists());
+        Assert.assertTrue("Could not find original other file", otherFile.exists());
 
         // Check that the metadata files were renamed and/or moved.
         File newStateFile0 = new File(
                 stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(0));
         File newStateFile1 = new File(
                 stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(1));
-        assertTrue("Could not find new state file 0", newStateFile0.exists());
-        assertTrue("Could not find new state file 1", newStateFile1.exists());
-        assertFalse("Could still find old state file 0", stateFile0.exists());
-        assertFalse("Could still find old state file 1", stateFile1.exists());
+        Assert.assertTrue("Could not find new state file 0", newStateFile0.exists());
+        Assert.assertTrue("Could not find new state file 1", newStateFile1.exists());
+        Assert.assertFalse("Could still find old state file 0", stateFile0.exists());
+        Assert.assertFalse("Could still find old state file 1", stateFile1.exists());
 
         // Check that tab 0 did not move.
-        assertTrue("Could not find tab 0 file", tab0.exists());
+        Assert.assertTrue("Could not find tab 0 file", tab0.exists());
 
         // Check that tab 1 did move.
         File newTab1 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
-        assertTrue("Could not find tab 1 file", newTab1.exists());
-        assertFalse("Could still find old tab 1 file", tab1.exists());
+        Assert.assertTrue("Could not find tab 1 file", newTab1.exists());
+        Assert.assertFalse("Could still find old tab 1 file", tab1.exists());
     }
 
     /**
      * Tests that migration of multi-instance state files works when tab files with the same name
      * exists in both directories.
      */
+    @Test
     @MediumTest
     @Feature({"TabPersistentStore"})
     public void testMigrateDataDuplicateTabFiles() throws IOException {
@@ -221,55 +233,54 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
         File stateFile1 = new File(
                 stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
 
-        assertTrue("Could not create state file 0", stateFile0.createNewFile());
-        assertTrue("Could not create state file 1", stateFile1.createNewFile());
+        Assert.assertTrue("Could not create state file 0", stateFile0.createNewFile());
+        Assert.assertTrue("Could not create state file 1", stateFile1.createNewFile());
 
         // Create duplicate "tab0" files and ensure tab0Dir1 has been modified more recently so that
         // it overwrites tab0Dir0.
         File tab0Dir0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
         File tab0Dir1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
-        assertTrue("Could not create tab 0-0 file", tab0Dir0.createNewFile());
-        assertTrue("Could not create tab 0-1 file", tab0Dir1.createNewFile());
+        Assert.assertTrue("Could not create tab 0-0 file", tab0Dir0.createNewFile());
+        Assert.assertTrue("Could not create tab 0-1 file", tab0Dir1.createNewFile());
         long expectedTab0LastModifiedTime = tab0Dir0.lastModified() + 1000;
         if (!tab0Dir1.setLastModified(expectedTab0LastModifiedTime)) {
-            fail("Failed to set last modified time.");
+            Assert.fail("Failed to set last modified time.");
         }
 
         // Create duplicate "tab1" files and ensure tab1Dir0 has been modified more recently so that
         // it does not get overwritten.
         File tab1Dir0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
         File tab1Dir1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
-        assertTrue("Could not create tab 1-0 file", tab1Dir0.createNewFile());
-        assertTrue("Could not create tab 1-1 file", tab1Dir1.createNewFile());
+        Assert.assertTrue("Could not create tab 1-0 file", tab1Dir0.createNewFile());
+        Assert.assertTrue("Could not create tab 1-1 file", tab1Dir1.createNewFile());
         long expectedTab1LastModifiedTime = tab1Dir1.lastModified() + 1000;
         if (!tab1Dir0.setLastModified(expectedTab1LastModifiedTime)) {
-            fail("Failed to set last modified time.");
+            Assert.fail("Failed to set last modified time.");
         }
 
         // Build the TabPersistentStore which will try to move the files.
         buildPersistentStoreAndWaitForMigration();
 
         // Check that "tab0" still exists and has the expected last modified time.
-        assertTrue("Could not find tab 0 file", tab0Dir0.exists());
-        assertFalse("Could still find old tab 0 file", tab0Dir1.exists());
-        assertEquals("tab 0 file not overwritten properly",
-                expectedTab0LastModifiedTime,
+        Assert.assertTrue("Could not find tab 0 file", tab0Dir0.exists());
+        Assert.assertFalse("Could still find old tab 0 file", tab0Dir1.exists());
+        Assert.assertEquals("tab 0 file not overwritten properly", expectedTab0LastModifiedTime,
                 tab0Dir0.lastModified());
 
         // Check that "tab1" still exists and has the expected last modified time.
-        assertTrue("Could not find tab 1 file", tab1Dir0.exists());
-        assertFalse("Could still find old tab 1 file", tab1Dir1.exists());
-        assertEquals("tab 1 file unexpectedly overwritten",
-                expectedTab1LastModifiedTime,
+        Assert.assertTrue("Could not find tab 1 file", tab1Dir0.exists());
+        Assert.assertFalse("Could still find old tab 1 file", tab1Dir1.exists());
+        Assert.assertEquals("tab 1 file unexpectedly overwritten", expectedTab1LastModifiedTime,
                 tab1Dir0.lastModified());
 
         // Check that old directory was deleted.
-        assertFalse("Could still find old state dir 1", stateDirs[1].exists());
+        Assert.assertFalse("Could still find old state dir 1", stateDirs[1].exists());
     }
 
     /**
      * Tests that tab_state0 is not overwritten if it already exists when migration is attempted.
      */
+    @Test
     @MediumTest
     @Feature({"TabPersistentStore"})
     public void testNewMetataFileExists() throws IOException {
@@ -280,29 +291,29 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
         File stateFile1 = new File(
                 stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
 
-        assertTrue("Could not create state file 0", stateFile0.createNewFile());
-        assertTrue("Could not create state file 1", stateFile1.createNewFile());
+        Assert.assertTrue("Could not create state file 0", stateFile0.createNewFile());
+        Assert.assertTrue("Could not create state file 1", stateFile1.createNewFile());
 
         // Create a new metadata file.
         File newStateFile0 = new File(
                 stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(0));
-        assertTrue("Could not create new state file 0", newStateFile0.createNewFile());
+        Assert.assertTrue("Could not create new state file 0", newStateFile0.createNewFile());
         long expectedLastModifiedTime = newStateFile0.lastModified() - 1000000;
         if (!newStateFile0.setLastModified(expectedLastModifiedTime)) {
-            fail("Failed to set last modified time.");
+            Assert.fail("Failed to set last modified time.");
         }
 
         // Build the TabPersistentStore which will try to move the files.
         buildPersistentStoreAndWaitForMigration();
 
         // Check that new metadata file was not overwritten during migration.
-        assertEquals("State file 0 unexpectedly overwritten", expectedLastModifiedTime,
+        Assert.assertEquals("State file 0 unexpectedly overwritten", expectedLastModifiedTime,
                 newStateFile0.lastModified());
 
         // Check that migration of other files still occurred.
         File newStateFile1 = new File(
                 stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(1));
-        assertTrue("Could not find new state file 1", newStateFile1.exists());
+        Assert.assertTrue("Could not find new state file 1", newStateFile1.exists());
     }
 
     /**
@@ -322,7 +333,7 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
             stateDirs[i] = new File(TabPersistentStore.getOrCreateBaseStateDirectory(),
                     Integer.toString(i));
             if (!stateDirs[i].exists()) {
-                assertTrue("Could not create state dir " + i, stateDirs[i].mkdir());
+                Assert.assertTrue("Could not create state dir " + i, stateDirs[i].mkdir());
             }
         }
 
@@ -331,7 +342,7 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
                     TabPersistentStore.getOrCreateBaseStateDirectory(),
                     Integer.toString(TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX));
             if (!stateDirs[numDirsToCreate - 1].exists()) {
-                assertTrue("Could not create custom tab state dir",
+                Assert.assertTrue("Could not create custom tab state dir",
                         stateDirs[numDirsToCreate - 1].mkdir());
             }
         }

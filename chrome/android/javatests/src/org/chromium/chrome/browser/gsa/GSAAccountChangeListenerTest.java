@@ -8,30 +8,37 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 
 import junit.framework.AssertionFailedError;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /** Tests for GSAAccountChangeListener. */
-public class GSAAccountChangeListenerTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class GSAAccountChangeListenerTest {
     private static final String ACCOUNT_NAME = "me@gmail.com";
     private static final String ACCOUNT_NAME2 = "you@gmail.com";
     private static final String PERMISSION = "permission.you.dont.have";
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         RecordHistogram.setDisabledForTests(true);
     }
 
+    @Test
     @SmallTest
     public void testReceivesBroadcastIntents() throws Exception {
-        final Context context = getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         BroadcastReceiver receiver = new GSAAccountChangeListener.AccountChangeBroadcastReceiver();
         context.registerReceiver(receiver,
                 new IntentFilter(GSAAccountChangeListener.ACCOUNT_UPDATE_BROADCAST_INTENT));
@@ -73,6 +80,6 @@ public class GSAAccountChangeListenerTest extends InstrumentationTestCase {
         } catch (AssertionFailedError e) {
             return;
         }
-        fail("The broadcast was received.");
+        Assert.fail("The broadcast was received.");
     }
 }

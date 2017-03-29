@@ -5,11 +5,16 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.pm.PackageManager;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
 import android.test.MoreAsserts;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -17,78 +22,83 @@ import java.util.List;
 /**
  * Tests for OMADownloadHandler class.
  */
-public class OMADownloadHandlerTest extends InstrumentationTestCase {
-
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class OMADownloadHandlerTest {
     /**
      * Test to make sure {@link OMADownloadHandler#getSize} returns the
      * right size for OMAInfo.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testGetSize() {
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
-        assertEquals(OMADownloadHandler.getSize(info), 0);
+        Assert.assertEquals(OMADownloadHandler.getSize(info), 0);
 
         info.addAttributeValue("size", "100");
-        assertEquals(OMADownloadHandler.getSize(info), 100);
+        Assert.assertEquals(OMADownloadHandler.getSize(info), 100);
 
         info.addAttributeValue("size", "100,000");
-        assertEquals(OMADownloadHandler.getSize(info), 100000);
+        Assert.assertEquals(OMADownloadHandler.getSize(info), 100000);
 
         info.addAttributeValue("size", "100000");
-        assertEquals(OMADownloadHandler.getSize(info), 100000);
+        Assert.assertEquals(OMADownloadHandler.getSize(info), 100000);
     }
 
     /**
      * Test to make sure {@link OMADownloadHandler.OMAInfo#getDrmType} returns the
      * right DRM type.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testGetDrmType() {
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
-        assertEquals(info.getDrmType(), null);
+        Assert.assertEquals(info.getDrmType(), null);
 
         info.addAttributeValue("type", "text/html");
-        assertEquals(info.getDrmType(), null);
+        Assert.assertEquals(info.getDrmType(), null);
 
         info.addAttributeValue("type", OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
-        assertEquals(info.getDrmType(), OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        Assert.assertEquals(info.getDrmType(), OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
 
         // Test that only the first DRM MIME type is returned.
         info.addAttributeValue("type", OMADownloadHandler.OMA_DRM_CONTENT_MIME);
-        assertEquals(info.getDrmType(), OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+        Assert.assertEquals(info.getDrmType(), OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
     }
 
     /**
      * Test to make sure {@link OMADownloadHandler#getOpennableType} returns the
      * right MIME type.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testGetOpennableType() {
-        PackageManager pm = getInstrumentation().getContext().getPackageManager();
+        PackageManager pm =
+                InstrumentationRegistry.getInstrumentation().getContext().getPackageManager();
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
-        assertEquals(OMADownloadHandler.getOpennableType(pm, info), null);
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), null);
 
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "application/octet-stream");
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE,
                 OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "text/html");
-        assertEquals(OMADownloadHandler.getOpennableType(pm, info), null);
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), null);
 
         info.addAttributeValue(OMADownloadHandler.OMA_OBJECT_URI, "http://www.test.com/test.html");
-        assertEquals(OMADownloadHandler.getOpennableType(pm, info), "text/html");
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), "text/html");
 
         // Test that only the first opennable type is returned.
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "image/png");
-        assertEquals(OMADownloadHandler.getOpennableType(pm, info), "text/html");
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), "text/html");
     }
 
     /**
      * Test to make sure {@link OMADownloadHandler#parseDownloadDescriptor} returns the
      * correct OMAInfo if the input is valid.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testParseValidDownloadDescriptor() {
@@ -107,14 +117,15 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
                 + "</media>";
         OMADownloadHandler.OMAInfo info = OMADownloadHandler.parseDownloadDescriptor(
                 new ByteArrayInputStream(downloadDescriptor.getBytes()));
-        assertFalse(info.isEmpty());
-        assertEquals(info.getValue(OMADownloadHandler.OMA_OBJECT_URI), "http://test/test.dm");
-        assertEquals(info.getValue(OMADownloadHandler.OMA_DD_VERSION), "1.0");
-        assertEquals(info.getValue(OMADownloadHandler.OMA_NAME), "test.dm");
-        assertEquals(info.getValue(OMADownloadHandler.OMA_SIZE), "1,000");
-        assertEquals(info.getValue(OMADownloadHandler.OMA_VENDOR), "testvendor");
-        assertEquals(info.getValue(OMADownloadHandler.OMA_DESCRIPTION), "testjpg");
-        assertEquals(info.getValue(OMADownloadHandler.OMA_NEXT_URL), "http://nexturl.html");
+        Assert.assertFalse(info.isEmpty());
+        Assert.assertEquals(
+                info.getValue(OMADownloadHandler.OMA_OBJECT_URI), "http://test/test.dm");
+        Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_DD_VERSION), "1.0");
+        Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_NAME), "test.dm");
+        Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_SIZE), "1,000");
+        Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_VENDOR), "testvendor");
+        Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_DESCRIPTION), "testjpg");
+        Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_NEXT_URL), "http://nexturl.html");
         List<String> types = info.getTypes();
         MoreAsserts.assertContentsInAnyOrder(
                 types, "image/jpeg", OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
@@ -124,6 +135,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
      * Test that {@link OMADownloadHandler#parseDownloadDescriptor} returns empty
      * result on invalid input.
      */
+    @Test
     @SmallTest
     @Feature({"Download"})
     public void testParseInvalidDownloadDescriptor() {
@@ -132,7 +144,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
                 + "</media>";
         OMADownloadHandler.OMAInfo info = OMADownloadHandler.parseDownloadDescriptor(
                 new ByteArrayInputStream(downloadDescriptor.getBytes()));
-        assertTrue(info.isEmpty());
+        Assert.assertTrue(info.isEmpty());
 
         downloadDescriptor =
                 "<media xmlns=\"http://www.openmobilealliance.org/xmlns/dd\">\r\n"
@@ -144,7 +156,7 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
                 + "</media>";
         info = OMADownloadHandler.parseDownloadDescriptor(
                 new ByteArrayInputStream(downloadDescriptor.getBytes()));
-        assertNull(info);
+        Assert.assertNull(info);
 
         downloadDescriptor =
                 "garbage"
@@ -153,6 +165,6 @@ public class OMADownloadHandlerTest extends InstrumentationTestCase {
                 + "</media>";
         info = OMADownloadHandler.parseDownloadDescriptor(
                 new ByteArrayInputStream(downloadDescriptor.getBytes()));
-        assertNull(info);
+        Assert.assertNull(info);
     }
 }

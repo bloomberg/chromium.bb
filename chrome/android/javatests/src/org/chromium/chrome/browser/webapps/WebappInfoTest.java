@@ -6,18 +6,24 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
  * Tests the WebappInfo class's ability to parse various URLs.
  */
-public class WebappInfoTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class WebappInfoTest {
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testAbout() {
@@ -30,9 +36,10 @@ public class WebappInfoTest extends InstrumentationTestCase {
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
-        assertNotNull(info);
+        Assert.assertNotNull(info);
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testRandomUrl() {
@@ -45,9 +52,10 @@ public class WebappInfoTest extends InstrumentationTestCase {
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
-        assertNotNull(info);
+        Assert.assertNotNull(info);
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testSpacesInUrl() {
@@ -63,9 +71,10 @@ public class WebappInfoTest extends InstrumentationTestCase {
         intent.putExtra(ShortcutHelper.EXTRA_URL, bustedUrl);
 
         WebappInfo info = WebappInfo.create(intent);
-        assertNotNull(info);
+        Assert.assertNotNull(info);
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentTitleFallBack() {
@@ -75,10 +84,11 @@ public class WebappInfoTest extends InstrumentationTestCase {
         intent.putExtra(ShortcutHelper.EXTRA_TITLE, title);
 
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(title, info.name());
-        assertEquals(title, info.shortName());
+        Assert.assertEquals(title, info.name());
+        Assert.assertEquals(title, info.shortName());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentNameBlankNoTitle() {
@@ -88,10 +98,11 @@ public class WebappInfoTest extends InstrumentationTestCase {
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
 
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals("", info.name());
-        assertEquals(shortName, info.shortName());
+        Assert.assertEquals("", info.name());
+        Assert.assertEquals(shortName, info.shortName());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentShortNameFallBack() {
@@ -103,10 +114,11 @@ public class WebappInfoTest extends InstrumentationTestCase {
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
 
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(title, info.name());
-        assertEquals(shortName, info.shortName());
+        Assert.assertEquals(title, info.name());
+        Assert.assertEquals(shortName, info.shortName());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentNameShortname() {
@@ -118,10 +130,11 @@ public class WebappInfoTest extends InstrumentationTestCase {
         intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
 
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(name, info.name());
-        assertEquals(shortName, info.shortName());
+        Assert.assertEquals(name, info.name());
+        Assert.assertEquals(shortName, info.shortName());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testDisplayModeAndOrientationAndSource() {
@@ -134,11 +147,12 @@ public class WebappInfoTest extends InstrumentationTestCase {
                 WebDisplayMode.Fullscreen, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
-        assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
-        assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
-        assertEquals(ShortcutSource.UNKNOWN, info.source());
+        Assert.assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
+        Assert.assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
+        Assert.assertEquals(ShortcutSource.UNKNOWN, info.source());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testNormalColors() {
@@ -152,10 +166,11 @@ public class WebappInfoTest extends InstrumentationTestCase {
         WebappInfo info = WebappInfo.create(id, url, null, null, name, shortName,
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT,
                 ShortcutSource.UNKNOWN, themeColor, backgroundColor, false);
-        assertEquals(themeColor, info.themeColor());
-        assertEquals(backgroundColor, info.backgroundColor());
+        Assert.assertEquals(themeColor, info.themeColor());
+        Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testInvalidOrMissingColors() {
@@ -168,10 +183,12 @@ public class WebappInfoTest extends InstrumentationTestCase {
                 WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
-        assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
-        assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
+        Assert.assertEquals(ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.themeColor());
+        Assert.assertEquals(
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, info.backgroundColor());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testColorsIntentCreation() {
@@ -183,10 +200,11 @@ public class WebappInfoTest extends InstrumentationTestCase {
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
 
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(themeColor, info.themeColor());
-        assertEquals(backgroundColor, info.backgroundColor());
+        Assert.assertEquals(themeColor, info.themeColor());
+        Assert.assertEquals(backgroundColor, info.backgroundColor());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testScopeIntentCreation() {
@@ -194,9 +212,10 @@ public class WebappInfoTest extends InstrumentationTestCase {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_SCOPE, scope);
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(scope, info.scopeUri().toString());
+        Assert.assertEquals(scope, info.scopeUri().toString());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentScopeFallback() {
@@ -204,27 +223,30 @@ public class WebappInfoTest extends InstrumentationTestCase {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_URL, url);
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(ShortcutHelper.getScopeFromUrl(url), info.scopeUri().toString());
+        Assert.assertEquals(ShortcutHelper.getScopeFromUrl(url), info.scopeUri().toString());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentDisplayMode() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MinimalUi);
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(WebDisplayMode.MinimalUi, info.displayMode());
+        Assert.assertEquals(WebDisplayMode.MinimalUi, info.displayMode());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentOrientation() {
         Intent intent = createIntentWithUrlAndId();
         intent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, ScreenOrientationValues.LANDSCAPE);
         WebappInfo info = WebappInfo.create(intent);
-        assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
+        Assert.assertEquals(ScreenOrientationValues.LANDSCAPE, info.orientation());
     }
 
+    @Test
     @SmallTest
     @Feature({"Webapps"})
     public void testIntentGeneratedIcon() {
@@ -241,7 +263,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
             intent.putExtra(ShortcutHelper.EXTRA_SHORT_NAME, shortName);
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
 
-            assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
         }
 
         // Set to true.
@@ -253,7 +275,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, true);
 
-            assertTrue(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertTrue(name, WebappInfo.create(intent).isIconGenerated());
         }
 
         // Set to false.
@@ -265,7 +287,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, false);
 
-            assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
         }
 
         // Set to something else than a boolean.
@@ -277,7 +299,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
             intent.putExtra(ShortcutHelper.EXTRA_URL, url);
             intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, "true");
 
-            assertFalse(name, WebappInfo.create(intent).isIconGenerated());
+            Assert.assertFalse(name, WebappInfo.create(intent).isIconGenerated());
         }
     }
 

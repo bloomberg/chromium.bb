@@ -6,11 +6,18 @@ package org.chromium.chrome.browser.omaha;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.test.InstrumentationTestCase;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
 
@@ -33,7 +40,8 @@ import java.util.List;
  * provides a way to hook into functions to return values that would normally be provided by the
  * system, such as whether Chrome was installed through the system image.
  */
-public class OmahaBaseTest extends InstrumentationTestCase {
+@RunWith(ChromeJUnit4ClassRunner.class)
+public class OmahaBaseTest {
     private static class TimestampPair {
         public long timestampNextRequest;
         public long timestampNextPost;
@@ -154,18 +162,16 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         return omahaClient;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        Context targetContext = getInstrumentation().getTargetContext();
+    @Before
+    public void setUp() throws Exception {
+        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         OmahaBase.setIsDisabledForTesting(false);
         mContext = new AdvancedMockContext(targetContext);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
         OmahaBase.setIsDisabledForTesting(true);
-        super.tearDown();
     }
 
     private class MockOmahaBase extends OmahaBase {
@@ -221,12 +227,13 @@ public class OmahaBaseTest extends InstrumentationTestCase {
                         mSendInstallEvent, mConnectionTimesOut);
                 mMockConnections.addLast(connection);
             } catch (MalformedURLException e) {
-                fail("Caught a malformed URL exception: " + e);
+                Assert.fail("Caught a malformed URL exception: " + e);
             }
             return connection;
         }
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testPipelineFreshInstall() {
@@ -241,20 +248,21 @@ public class OmahaBaseTest extends InstrumentationTestCase {
 
         // A fresh install results in two requests to the Omaha server: one for the install request
         // and one for the ping request.
-        assertTrue(mDelegate.mInstallEventWasSent);
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(2, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(1));
+        Assert.assertTrue(mDelegate.mInstallEventWasSent);
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(2, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(1));
 
         // Successful requests mean that the next scheduled event should be checking for when the
         // user is active.
-        assertEquals(now + OmahaBase.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
+        Assert.assertEquals(now + OmahaBase.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
         checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testPipelineRegularPing() {
@@ -275,19 +283,20 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         mOmahaBase.run();
 
         // Only the regular ping should have been sent.
-        assertFalse(mDelegate.mInstallEventWasSent);
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertFalse(mDelegate.mInstallEventWasSent);
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // Successful requests mean that the next scheduled event should be checking for when the
         // user is active.
-        assertEquals(now + OmahaBase.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
+        Assert.assertEquals(now + OmahaBase.MS_BETWEEN_REQUESTS, mDelegate.mNextScheduledTimestamp);
         checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testTooEarlyToPing() {
@@ -306,16 +315,17 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         mOmahaBase.run();
 
         // Nothing should have been POSTed.
-        assertEquals(0, mDelegate.mPostResults.size());
-        assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertEquals(0, mDelegate.mPostResults.size());
+        Assert.assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
 
         // The next scheduled event is the request generation.  Because there was nothing to POST,
         // its timestamp should have remained unchanged and shouldn't have been considered when the
         // new alarm was scheduled.
-        assertEquals(later, mDelegate.mNextScheduledTimestamp);
+        Assert.assertEquals(later, mDelegate.mNextScheduledTimestamp);
         checkTimestamps(later, now, mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testTooEarlyToPostExistingRequest() {
@@ -344,19 +354,21 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         mOmahaBase.run();
 
         // Request generation code should be skipped.
-        assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
+        Assert.assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Should be too early to post, causing it to be rescheduled.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_SCHEDULED, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(
+                OmahaBase.POST_RESULT_SCHEDULED, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(0, mDelegate.mGenerateAndPostRequestResults.size());
 
         // The next scheduled event is the POST.  Because request generation code wasn't run, the
         // timestamp for it shouldn't have changed.
-        assertEquals(timeSendNewPost, mDelegate.mNextScheduledTimestamp);
+        Assert.assertEquals(timeSendNewPost, mDelegate.mNextScheduledTimestamp);
         checkTimestamps(timeSendNewRequest, timeSendNewPost, mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testPostExistingRequestSuccessfully() {
@@ -386,21 +398,22 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         mOmahaBase.run();
 
         // Registering code shouldn't have fired.
-        assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
+        Assert.assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event is the request generation because there is nothing to POST.
         // A successful POST adjusts all timestamps for the current time.
-        assertEquals(timeRegisterNewRequest, mDelegate.mNextScheduledTimestamp);
+        Assert.assertEquals(timeRegisterNewRequest, mDelegate.mNextScheduledTimestamp);
         checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testPostExistingButFails() {
@@ -431,22 +444,23 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         mOmahaBase.run();
 
         // Registering code shouldn't have fired.
-        assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
+        Assert.assertNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_FAILED, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertFalse(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(OmahaBase.POST_RESULT_FAILED, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertFalse(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event should be the POST event, which is delayed by the base delay
         // because no failures have happened yet.
-        assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextPost,
+        Assert.assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextPost,
                 mDelegate.mNextScheduledTimestamp);
         checkTimestamps(timeRegisterNewRequest, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testTimestampWithinBounds() {
@@ -469,21 +483,22 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         mOmahaBase.run();
 
         // Request generation code should fire.
-        assertNotNull(mDelegate.mTimestampsOnRegisterNewRequest);
+        Assert.assertNotNull(mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event should be the timestamp for a new request generation.
-        assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
+        Assert.assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
                 mDelegate.mNextScheduledTimestamp);
         checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
     @SmallTest
     @Feature({"Omaha"})
     public void testOverdueRequestCausesNewRegistration() {
@@ -516,13 +531,13 @@ public class OmahaBaseTest extends InstrumentationTestCase {
                 mDelegate.mTimestampsOnRegisterNewRequest);
 
         // Because we didn't send an install event, only one POST should have occurred.
-        assertEquals(1, mDelegate.mPostResults.size());
-        assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
-        assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
-        assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
+        Assert.assertEquals(1, mDelegate.mPostResults.size());
+        Assert.assertEquals(OmahaBase.POST_RESULT_SENT, mDelegate.mPostResults.get(0).intValue());
+        Assert.assertEquals(1, mDelegate.mGenerateAndPostRequestResults.size());
+        Assert.assertTrue(mDelegate.mGenerateAndPostRequestResults.get(0));
 
         // The next scheduled event should be the registration event.
-        assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
+        Assert.assertEquals(mDelegate.mTimestampsOnSaveState.timestampNextRequest,
                 mDelegate.mNextScheduledTimestamp);
         checkTimestamps(now + OmahaBase.MS_BETWEEN_REQUESTS, now + OmahaBase.MS_POST_BASE_DELAY,
                 mDelegate.mTimestampsOnSaveState);
@@ -530,8 +545,8 @@ public class OmahaBaseTest extends InstrumentationTestCase {
 
     private void checkTimestamps(
             long expectedRequestTimestamp, long expectedPostTimestamp, TimestampPair timestamps) {
-        assertEquals(expectedRequestTimestamp, timestamps.timestampNextRequest);
-        assertEquals(expectedPostTimestamp, timestamps.timestampNextPost);
+        Assert.assertEquals(expectedRequestTimestamp, timestamps.timestampNextRequest);
+        Assert.assertEquals(expectedPostTimestamp, timestamps.timestampNextPost);
     }
 
     /**
@@ -562,7 +577,7 @@ public class OmahaBaseTest extends InstrumentationTestCase {
         MockConnection(URL url, boolean usingTablet, boolean sendValidResponse,
                 boolean sendInstallEvent, boolean connectionTimesOut) {
             super(url);
-            assertEquals(MockRequestGenerator.SERVER_URL, url.toString());
+            Assert.assertEquals(MockRequestGenerator.SERVER_URL, url.toString());
 
             String mockResponse = buildServerResponseString(usingTablet, sendInstallEvent);
             mOutputStream = new ByteArrayOutputStream();
@@ -628,7 +643,7 @@ public class OmahaBaseTest extends InstrumentationTestCase {
 
         @Override
         public void setDoOutput(boolean value) throws IllegalAccessError {
-            assertTrue("Told the HTTPUrlConnection to send no request.", value);
+            Assert.assertTrue("Told the HTTPUrlConnection to send no request.", value);
         }
 
         @Override
@@ -641,10 +656,10 @@ public class OmahaBaseTest extends InstrumentationTestCase {
             if (mNumTimesResponseCodeRetrieved == 0) {
                 // The output stream should now have the generated XML for the request.
                 // Check if its length is correct.
-                assertEquals("Expected OmahaBase to write out certain number of bytes",
+                Assert.assertEquals("Expected OmahaBase to write out certain number of bytes",
                         mContentLength, mOutputStream.toByteArray().length);
             }
-            assertTrue("Tried to retrieve response code more than twice",
+            Assert.assertTrue("Tried to retrieve response code more than twice",
                     mNumTimesResponseCodeRetrieved < 2);
             mNumTimesResponseCodeRetrieved++;
             return mHTTPResponseCode;
@@ -663,7 +678,8 @@ public class OmahaBaseTest extends InstrumentationTestCase {
 
         @Override
         public InputStream getInputStream() {
-            assertTrue("Tried to read server response without sending request.", mSentRequest);
+            Assert.assertTrue(
+                    "Tried to read server response without sending request.", mSentRequest);
             mGotInputStream = true;
             return mServerResponse;
         }
