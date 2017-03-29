@@ -18,6 +18,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/statistics_recorder.h"
@@ -210,9 +211,15 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
 
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    // Register the file holding browser metrics.
+    // Reporting of persistent histograms from last session is controlled by
+    // a feature param. TODO(bcwhite): The current default is not to upload
+    // until some issues are resolved. See crbug.com/706422 for details.
+    std::string send_unreported = base::GetFieldTrialParamValueByFeature(
+        base::kPersistentHistogramsFeature, "send_unreported_metrics");
+    bool report_previous_persistent_histograms =
+        metrics_reporting_enabled && (send_unreported == "yes");
     RegisterOrRemovePreviousRunMetricsFile(
-        metrics_reporting_enabled, user_data_dir,
+        report_previous_persistent_histograms, user_data_dir,
         ChromeMetricsServiceClient::kBrowserMetricsName, task_runner,
         file_metrics_provider.get());
 
