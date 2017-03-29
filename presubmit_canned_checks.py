@@ -525,7 +525,8 @@ def GetUnitTestsInDirectory(
       continue
     unit_tests.append(input_api.os_path.join(directory, filename))
     to_run += 1
-  input_api.logging.debug('Found %d files, running %d' % (found, to_run))
+  input_api.logging.debug('Found %d files, running %d unit tests'
+                          % (found, to_run))
   if not to_run:
     return [
         output_api.PresubmitPromptWarning(
@@ -675,6 +676,9 @@ def _FetchAllFiles(input_api, white_list, black_list):
   # can break another unmodified file.
   # Use code similar to InputApi.FilterSourceFile()
   def Find(filepath, filters):
+    if input_api.platform == 'win32':
+      filepath = filepath.replace('\\', '/')
+
     for item in filters:
       if input_api.re.match(item, filepath):
         return True

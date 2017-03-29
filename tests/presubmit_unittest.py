@@ -2627,7 +2627,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api,
         [presubmit.os.path.join('random_directory', 'b'), '--verbose'],
         cwd=self.fake_root_dir)
-    input_api.logging.debug('Found 5 files, running 1')
+    input_api.logging.debug('Found 5 files, running 1 unit tests')
 
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunUnitTestsInDirectory(
