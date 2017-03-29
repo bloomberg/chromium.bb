@@ -85,6 +85,22 @@ bool IsEnabled() {
       switches::kAshEnableTouchView);
 }
 
+// Checks the command line to see which force maximize mode is turned on, if
+// any.
+MaximizeModeController::ForceTabletMode GetMaximizeMode() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshForceTabletMode)) {
+    std::string switch_value =
+        command_line->GetSwitchValueASCII(switches::kAshForceTabletMode);
+    if (switch_value == switches::kAshForceTabletModeClamshell)
+      return MaximizeModeController::ForceTabletMode::CLAMSHELL;
+
+    if (switch_value == switches::kAshForceTabletModeTouchView)
+      return MaximizeModeController::ForceTabletMode::TOUCHVIEW;
+  }
+  return MaximizeModeController::ForceTabletMode::NONE;
+}
+
 }  // namespace
 
 MaximizeModeController::MaximizeModeController()
@@ -180,6 +196,9 @@ void MaximizeModeController::BindRequest(
 
 void MaximizeModeController::OnAccelerometerUpdated(
     scoped_refptr<const chromeos::AccelerometerUpdate> update) {
+  if (!AllowEnterExitMaximizeMode())
+    return;
+
   have_seen_accelerometer_data_ = true;
   can_detect_lid_angle_ =
       update->has(chromeos::ACCELEROMETER_SOURCE_SCREEN) &&
@@ -214,6 +233,9 @@ void MaximizeModeController::OnAccelerometerUpdated(
 void MaximizeModeController::LidEventReceived(
     chromeos::PowerManagerClient::LidState state,
     const base::TimeTicks& time) {
+  if (!AllowEnterExitMaximizeMode())
+    return;
+
   const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   if (open)
     last_lid_open_time_ = time;
@@ -224,6 +246,9 @@ void MaximizeModeController::LidEventReceived(
 void MaximizeModeController::TabletModeEventReceived(
     chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& time) {
+  if (!AllowEnterExitMaximizeMode())
+    return;
+
   const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
   tablet_mode_switch_is_on_ = on;
   // Do not change if docked.
@@ -353,6 +378,12 @@ void MaximizeModeController::OnMaximizeModeEnded() {
   RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
 }
 
+void MaximizeModeController::OnShellInitialized() {
+  force_tablet_mode_ = GetMaximizeMode();
+  if (force_tablet_mode_ == ForceTabletMode::TOUCHVIEW)
+    EnterMaximizeMode();
+}
+
 void MaximizeModeController::OnDisplayConfigurationChanged() {
   if (!display::Display::HasInternalDisplay() ||
       !WmShell::Get()->IsActiveDisplayId(
@@ -400,6 +431,10 @@ MaximizeModeController::CurrentTouchViewIntervalType() {
 void MaximizeModeController::AddObserver(mojom::TouchViewObserverPtr observer) {
   observer->OnTouchViewToggled(IsMaximizeModeWindowManagerEnabled());
   observers_.AddPtr(std::move(observer));
+}
+
+bool MaximizeModeController::AllowEnterExitMaximizeMode() const {
+  return force_tablet_mode_ == ForceTabletMode::NONE;
 }
 
 void MaximizeModeController::OnAppTerminating() {

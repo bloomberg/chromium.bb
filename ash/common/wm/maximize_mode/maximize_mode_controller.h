@@ -52,6 +52,14 @@ class ASH_EXPORT MaximizeModeController :
     public ShellObserver,
     public WmDisplayObserver {
  public:
+  // Used for keeping track if the user wants the machine to behave as a
+  // clamshell/touchview regardless of hardware orientation.
+  enum class ForceTabletMode {
+    NONE = 0,
+    CLAMSHELL,
+    TOUCHVIEW,
+  };
+
   MaximizeModeController();
   ~MaximizeModeController() override;
 
@@ -83,6 +91,7 @@ class ASH_EXPORT MaximizeModeController :
   void OnAppTerminating() override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
+  void OnShellInitialized() override;
 
   // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
@@ -149,6 +158,11 @@ class ASH_EXPORT MaximizeModeController :
   // mojom::TouchViewManager:
   void AddObserver(mojom::TouchViewObserverPtr observer) override;
 
+  // Checks whether we want to allow entering and exiting maximize mode. This
+  // returns false if the user set a flag for the software to behave in a
+  // certain way regardless of configuration.
+  bool AllowEnterExitMaximizeMode() const;
+
   // The maximized window manager (if enabled).
   std::unique_ptr<MaximizeModeWindowManager> maximize_mode_window_manager_;
 
@@ -192,6 +206,9 @@ class ASH_EXPORT MaximizeModeController :
 
   // The set of touchview observers to be notified about mode changes.
   mojo::InterfacePtrSet<mojom::TouchViewObserver> observers_;
+
+  // Tracks whether a flag is used to force maximize mode.
+  ForceTabletMode force_tablet_mode_ = ForceTabletMode::NONE;
 
   base::WeakPtrFactory<MaximizeModeController> weak_factory_;
 

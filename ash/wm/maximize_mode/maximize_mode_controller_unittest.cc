@@ -179,6 +179,10 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     return !!maximize_mode_controller()->event_blocker_.get();
   }
 
+  MaximizeModeController::ForceTabletMode forced_tablet_mode() {
+    return maximize_mode_controller()->force_tablet_mode_;
+  }
+
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
  private:
@@ -600,6 +604,46 @@ TEST_F(MaximizeModeControllerTest, InitializedWhileTabletModeSwitchOn) {
   // PowerManagerClient callback is a posted task.
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(controller.IsMaximizeModeWindowManagerEnabled());
+}
+
+// Verify when the force clamshell mode flag is turned on, opening the lid past
+// 180 degrees or setting tablet mode to true will no turn on maximize mode.
+TEST_F(MaximizeModeControllerTest, ForceClamshellModeTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAshForceTabletMode, switches::kAshForceTabletModeClamshell);
+  maximize_mode_controller()->OnShellInitialized();
+  EXPECT_EQ(MaximizeModeController::ForceTabletMode::CLAMSHELL,
+            forced_tablet_mode());
+  EXPECT_FALSE(IsMaximizeModeStarted());
+
+  OpenLidToAngle(300.0f);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+
+  SetTabletMode(true);
+  EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
+}
+
+// Verify when the force touch view mode flag is turned on, maximize mode is on
+// intially, and opening the lid to less than 180 degress or setting tablet mode
+// to off will not turn off maximize mode.
+TEST_F(MaximizeModeControllerTest, ForceTouchViewModeTest) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAshForceTabletMode, switches::kAshForceTabletModeTouchView);
+  maximize_mode_controller()->OnShellInitialized();
+  EXPECT_EQ(MaximizeModeController::ForceTabletMode::TOUCHVIEW,
+            forced_tablet_mode());
+  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  OpenLidToAngle(30.0f);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
+
+  SetTabletMode(false);
+  EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
 }
 
 }  // namespace ash
