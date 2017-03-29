@@ -1,7 +1,7 @@
 # depot_tools
 
-This package contains tools for working with Chromium development. It requires
-python 2.7.
+Tools for working with Chromium development. It requires python 2.7.
+
 
 
 ## Tools
@@ -32,7 +32,7 @@ disable auto update, set the environment variable `DEPOT_TOOLS_UPDATE=0`.
 To update package manually, run `update_depot_tools.bat` on Windows,
 or `./update_depot_tools` on Linux or Mac.
 
-On Windows only, running `gclient` will install `git` and `python`.  
+On Windows only, running `gclient` will install `git` and `python`.
 
 
 ## Contributing
@@ -61,6 +61,10 @@ To contribute change for review:
     ...
     git cl upload -t "Fixes goat teleporter destination to be Australia"
 
+See also [open bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=component%3AInfra%3ESDK),
+[open reviews](https://chromium-review.googlesource.com/q/status:open+project:chromium%252Ftools%252Fdepot_tools),
+[forum](https://groups.google.com/a/chromium.org/forum/#!forum/infra-dev) or
+[report problems](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ESDK).
 
 ### cpplint.py
 
