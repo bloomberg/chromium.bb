@@ -1290,6 +1290,12 @@ blink::WebLayerTreeView* RenderWidget::initializeLayerTreeView() {
   OnDeviceScaleFactorChanged();
   compositor_->SetRasterColorSpace(screen_info_.icc_profile.GetColorSpace());
   compositor_->SetContentSourceId(current_content_source_id_);
+#if defined(USE_AURA)
+  RendererWindowTreeClient* window_tree_client =
+      RendererWindowTreeClient::Get(routing_id_);
+  if (window_tree_client)
+    compositor_->SetLocalSurfaceId(window_tree_client->local_surface_id());
+#endif
   // For background pages and certain tests, we don't want to trigger
   // CompositorFrameSink creation.
   if (compositor_never_visible_ || !RenderThreadImpl::current())
