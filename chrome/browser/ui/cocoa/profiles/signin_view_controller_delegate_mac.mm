@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -114,18 +115,21 @@ SigninViewControllerDelegateMac::CreateGaiaWebContents(
 // static
 std::unique_ptr<content::WebContents>
 SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
-    Profile* profile) {
+    Browser* browser) {
   std::unique_ptr<content::WebContents> web_contents(
       content::WebContents::Create(
-          content::WebContents::CreateParams(profile)));
+          content::WebContents::CreateParams(browser->profile())));
   web_contents->GetController().LoadURL(
       GURL(chrome::kChromeUISyncConfirmationURL), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  SyncConfirmationUI* sync_confirmation_ui = static_cast<SyncConfirmationUI*>(
+      web_contents->GetWebUI()->GetController());
+  sync_confirmation_ui->InitializeMessageHandlerWithBrowser(browser);
 
   NSView* webview = web_contents->GetNativeView();
-  [webview setFrameSize:NSMakeSize(
-                            kModalDialogWidth,
-                            GetSyncConfirmationDialogPreferredHeight(profile))];
+  [webview setFrameSize:NSMakeSize(kModalDialogWidth,
+                                   GetSyncConfirmationDialogPreferredHeight(
+                                       browser->profile()))];
 
   return web_contents;
 }
@@ -246,7 +250,7 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
   return new SigninViewControllerDelegateMac(
       signin_view_controller,
       SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
-          browser->profile()),
+          browser),
       browser,
       NSMakeRect(0, 0, kModalDialogWidth,
                  GetSyncConfirmationDialogPreferredHeight(browser->profile())),

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -17,9 +18,10 @@ class ListValue;
 }
 
 class SyncConfirmationHandler : public content::WebUIMessageHandler,
-                                public AccountTrackerService::Observer {
+                                public AccountTrackerService::Observer,
+                                public chrome::BrowserListObserver {
  public:
-  SyncConfirmationHandler();
+  explicit SyncConfirmationHandler(Browser* browser);
   ~SyncConfirmationHandler() override;
 
   // content::WebUIMessageHandler:
@@ -27,6 +29,9 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
 
   // AccountTrackerService::Observer:
   void OnAccountUpdated(const AccountInfo& info) override;
+
+  // chrome::BrowserListObserver:
+  void OnBrowserRemoved(Browser* browser) override;
 
  protected:
   // Handles "confirm" message from the page. No arguments.
@@ -60,6 +65,11 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
       LoginUIService::SyncConfirmationUIClosedResult result);
 
  private:
+  Profile* profile_;
+
+  // Weak reference to the browser that showed the sync confirmation dialog.
+  Browser* browser_;
+
   // Records whether the user clicked on Undo, Ok, or Settings.
   bool did_user_explicitly_interact;
 

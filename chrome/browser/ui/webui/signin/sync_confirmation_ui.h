@@ -16,13 +16,20 @@ namespace ui {
 class WebUI;
 }
 
+class Browser;
+
+// WebUI controller for the sync confirmation dialog.
+//
+// Note: This controller does not set the WebUI message handler. It is
+// the responsability of the caller to pass the correct message handler.
 class SyncConfirmationUI : public ui::WebDialogUI {
  public:
   explicit SyncConfirmationUI(content::WebUI* web_ui);
-   // Used to inject a SyncConfirmationHandler in tests.
-  SyncConfirmationUI(content::WebUI* web_ui,
-                     std::unique_ptr<SyncConfirmationHandler> handler);
   ~SyncConfirmationUI() override {}
+
+  // Initializes a SyncConfirmationHandler for |browser| and adds it to
+  // |web_ui()|.
+  void InitializeMessageHandlerWithBrowser(Browser* browser);
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationUI);
 };

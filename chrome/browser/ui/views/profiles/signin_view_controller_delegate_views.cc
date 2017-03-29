@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -184,7 +185,9 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
     Browser* browser) {
   views::WebView* web_view = new views::WebView(browser->profile());
   web_view->LoadInitialURL(GURL(chrome::kChromeUISyncConfirmationURL));
-
+  SyncConfirmationUI* sync_confirmation_ui = static_cast<SyncConfirmationUI*>(
+      web_view->GetWebContents()->GetWebUI()->GetController());
+  sync_confirmation_ui->InitializeMessageHandlerWithBrowser(browser);
   int dialog_preferred_height =
       GetSyncConfirmationDialogPreferredHeight(browser->profile());
   int max_height = browser
