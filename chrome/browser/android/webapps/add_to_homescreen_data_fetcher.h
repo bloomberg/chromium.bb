@@ -133,7 +133,7 @@ class AddToHomescreenDataFetcher
   ShortcutInfo shortcut_info_;
 
   base::CancelableTaskTracker favicon_task_tracker_;
-  base::Timer data_timeout_timer_;
+  base::OneShotTimer data_timeout_timer_;
 
   const int ideal_icon_size_in_px_;
   const int minimum_icon_size_in_px_;

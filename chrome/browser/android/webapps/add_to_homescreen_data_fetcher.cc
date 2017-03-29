@@ -36,6 +36,9 @@
 
 namespace {
 
+// The default number of milliseconds to wait for the data download to complete.
+const int kDataTimeoutInMilliseconds = 4000;
+
 // Looks up the original, online URL of the site requested.  The URL from the
 // WebContents may be a distilled article which is not appropriate for a home
 // screen shortcut.
@@ -81,7 +84,6 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       weak_observer_(observer),
       shortcut_info_(GetShortcutUrl(web_contents->GetBrowserContext(),
                                     web_contents->GetLastCommittedURL())),
-      data_timeout_timer_(false, false),
       ideal_icon_size_in_px_(ideal_icon_size_in_px),
       minimum_icon_size_in_px_(minimum_icon_size_in_px),
       ideal_splash_image_size_in_px_(ideal_splash_image_size_in_px),
@@ -148,7 +150,7 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   // Kick off a timeout for downloading data. If we haven't finished within the
   // timeout, fall back to using a dynamically-generated launcher icon.
   data_timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(4000),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kDataTimeoutInMilliseconds),
       base::Bind(&AddToHomescreenDataFetcher::OnDataTimedout, this));
 
   manager->GetData(
@@ -191,14 +193,13 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
     weak_observer_->OnUserTitleAvailable(base::string16());
   }
 
-  if (!is_icon_saved_) {
-    badge_icon_.reset();
-    CreateLauncherIcon(SkBitmap());
-  }
+  badge_icon_.reset();
+  CreateLauncherIcon(SkBitmap());
 }
 
 void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
     const InstallableData& data) {
+  data_timeout_timer_.Stop();
   badge_icon_.reset();
 
   if (!web_contents() || !weak_observer_ || is_installable_check_complete_)
