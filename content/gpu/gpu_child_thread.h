@@ -87,7 +87,6 @@ class GpuChildThread : public ChildThreadImpl,
 
   // ChildThreadImpl:.
   bool Send(IPC::Message* msg) override;
-  bool OnControlMessageReceived(const IPC::Message& msg) override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(
@@ -106,9 +105,6 @@ class GpuChildThread : public ChildThreadImpl,
   // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
                                   const std::string& group_name) override;
-
-  // Message handlers.
-  void OnGpuSwitched();
 
   void BindServiceFactoryRequest(
       service_manager::mojom::ServiceFactoryRequest request);

@@ -92,15 +92,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   static void GetProcessHandles(
       const GpuDataManager::GetGpuProcessHandlesCallback& callback);
 
-  // Helper function to send the given message to the GPU process on the IO
-  // thread. Calls Get and if a host is returned, sends it. |force_create| can
-  // be set to force the creation of GpuProcessHost if one doesn't already
-  // exist. This function can be called from any thread. Deletes the message if
-  // it cannot be sent.
-  CONTENT_EXPORT static void SendOnIO(GpuProcessKind kind,
-                                      bool force_create,
-                                      IPC::Message* message);
-
   // Helper function to run a callback on the IO thread. The callback receives
   // the appropriate GpuProcessHost instance. Note that the callback can be
   // called with a null host (e.g. when |force_create| is false, and no

@@ -191,17 +191,6 @@ enum GPUProcessLifetimeEvent {
 // only be accessed from the IO thread.
 GpuProcessHost* g_gpu_process_hosts[GpuProcessHost::GPU_PROCESS_KIND_COUNT];
 
-void SendGpuProcessMessage(GpuProcessHost::GpuProcessKind kind,
-                           bool force_create,
-                           IPC::Message* message) {
-  GpuProcessHost* host = GpuProcessHost::Get(kind, force_create);
-  if (host) {
-    host->Send(message);
-  } else {
-    delete message;
-  }
-}
-
 void RunCallbackOnIO(GpuProcessHost::GpuProcessKind kind,
                      bool force_create,
                      const base::Callback<void(GpuProcessHost*)>& callback) {
@@ -440,20 +429,6 @@ void GpuProcessHost::GetProcessHandles(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(callback, handles));
-}
-
-// static
-void GpuProcessHost::SendOnIO(GpuProcessKind kind,
-                              bool force_create,
-                              IPC::Message* message) {
-#if !defined(OS_WIN)
-  DCHECK_NE(kind, GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED);
-#endif
-  if (!BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&SendGpuProcessMessage, kind, force_create, message))) {
-    delete message;
-  }
 }
 
 // static

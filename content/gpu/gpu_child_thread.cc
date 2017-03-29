@@ -40,7 +40,6 @@
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/init/gl_factory.h"
 #include "url/gurl.h"
 
@@ -173,16 +172,6 @@ bool GpuChildThread::Send(IPC::Message* msg) {
   return ChildThreadImpl::Send(msg);
 }
 
-bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
-    IPC_MESSAGE_HANDLER(GpuMsg_GpuSwitched, OnGpuSwitched)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
 void GpuChildThread::OnAssociatedInterfaceRequest(
     const std::string& name,
     mojo::ScopedInterfaceEndpointHandle handle) {
@@ -241,13 +230,6 @@ void GpuChildThread::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
   NOTREACHED();
-}
-
-void GpuChildThread::OnGpuSwitched() {
-  DVLOG(1) << "GPU: GPU has switched";
-  // Notify observers in the GPU process.
-  if (!in_browser_process_)
-    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
 
 void GpuChildThread::BindServiceFactoryRequest(

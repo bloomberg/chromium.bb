@@ -434,6 +434,12 @@ void GpuService::WakeUpGpu() {
 #endif
 }
 
+void GpuService::GpuSwitched() {
+  DVLOG(1) << "GPU: GPU has switched";
+  if (!in_host_process_)
+    ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
+}
+
 void GpuService::DestroyAllChannels() {
   if (io_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(

@@ -23,13 +23,6 @@
 #define IPC_MESSAGE_START GpuMsgStart
 
 //------------------------------------------------------------------------------
-// GPU Messages
-// These are messages from the browser to the GPU process.
-
-// Tells the GPU process that the browser has seen a GPU switch.
-IPC_MESSAGE_CONTROL0(GpuMsg_GpuSwitched)
-
-//------------------------------------------------------------------------------
 // GPU Host Messages
 // These are messages to the browser.
 

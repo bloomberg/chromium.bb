@@ -146,6 +146,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
       int32_t surface_id,
       const DestroyingVideoSurfaceCallback& callback) override;
   void WakeUpGpu() override;
+  void GpuSwitched() override;
   void DestroyAllChannels() override;
   void Crash() override;
   void Hang() override;
