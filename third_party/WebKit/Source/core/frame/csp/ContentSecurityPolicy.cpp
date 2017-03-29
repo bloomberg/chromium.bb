@@ -382,16 +382,6 @@ std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers()
   return headers;
 }
 
-template <bool (CSPDirectiveList::*allowed)(SecurityViolationReportingPolicy)
-              const>
-bool isAllowedByAll(const CSPDirectiveListVector& policies,
-                    SecurityViolationReportingPolicy reportingPolicy) {
-  bool isAllowed = true;
-  for (const auto& policy : policies)
-    isAllowed &= (policy.get()->*allowed)(reportingPolicy);
-  return isAllowed;
-}
-
 template <bool (CSPDirectiveList::*allowed)(
     ScriptState* scriptState,
     SecurityViolationReportingPolicy,
@@ -445,28 +435,6 @@ bool isAllowedByAll(const CSPDirectiveListVector& policies,
   for (const auto& policy : policies) {
     isAllowed &= (policy.get()->*allowed)(
         element, contextURL, nonce, contextLine, reportingPolicy, content);
-  }
-  return isAllowed;
-}
-
-template <bool (CSPDirectiveList::*allowed)(const String&,
-                                            const String&,
-                                            ParserDisposition,
-                                            const WTF::OrdinalNumber&,
-                                            SecurityViolationReportingPolicy,
-                                            const String& content) const>
-bool isAllowedByAll(const CSPDirectiveListVector& policies,
-                    const String& contextURL,
-                    const String& nonce,
-                    ParserDisposition parserDisposition,
-                    const WTF::OrdinalNumber& contextLine,
-                    SecurityViolationReportingPolicy reportingPolicy,
-                    const String& content) {
-  bool isAllowed = true;
-  for (const auto& policy : policies) {
-    isAllowed &=
-        (policy.get()->*allowed)(contextURL, nonce, parserDisposition,
-                                 contextLine, reportingPolicy, content);
   }
   return isAllowed;
 }
@@ -810,8 +778,6 @@ bool ContentSecurityPolicy::allowRequest(
       return allowFrameFromSource(url, redirectStatus, reportingPolicy);
     case WebURLRequest::RequestContextImport:
     case WebURLRequest::RequestContextScript:
-      return allowScriptFromSource(url, nonce, parserDisposition,
-                                   redirectStatus, reportingPolicy);
     case WebURLRequest::RequestContextXSLT:
       return allowScriptFromSource(url, nonce, parserDisposition,
                                    redirectStatus, reportingPolicy);
