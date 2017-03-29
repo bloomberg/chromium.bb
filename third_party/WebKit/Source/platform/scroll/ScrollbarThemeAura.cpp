@@ -213,14 +213,16 @@ IntRect ScrollbarThemeAura::trackRect(const ScrollbarThemeClient& scrollbar,
 int ScrollbarThemeAura::minimumThumbLength(
     const ScrollbarThemeClient& scrollbar) {
   if (scrollbar.orientation() == VerticalScrollbar) {
-    IntSize size = Platform::current()->themeEngine()->getSize(
-        WebThemeEngine::PartScrollbarVerticalThumb);
-    return size.height();
+    return Platform::current()
+        ->themeEngine()
+        ->getSize(WebThemeEngine::PartScrollbarVerticalThumb)
+        .height;
   }
 
-  IntSize size = Platform::current()->themeEngine()->getSize(
-      WebThemeEngine::PartScrollbarHorizontalThumb);
-  return size.width();
+  return Platform::current()
+      ->themeEngine()
+      ->getSize(WebThemeEngine::PartScrollbarHorizontalThumb)
+      .width;
 }
 
 void ScrollbarThemeAura::paintTrackBackground(GraphicsContext& context,

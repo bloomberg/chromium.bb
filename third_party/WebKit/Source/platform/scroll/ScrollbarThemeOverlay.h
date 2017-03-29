@@ -85,6 +85,8 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   IntSize ninePatchThumbCanvasSize(const ScrollbarThemeClient&) const override;
   IntRect ninePatchThumbAperture(const ScrollbarThemeClient&) const override;
 
+  int minimumThumbLength(const ScrollbarThemeClient&) override;
+
   static ScrollbarThemeOverlay& mobileTheme();
 
  private:

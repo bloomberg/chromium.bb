@@ -126,6 +126,14 @@ class UseMockScrollbarSettings {
     EXPECT_TRUE(ScrollbarTheme::theme().usesOverlayScrollbars());
   }
 
+  UseMockScrollbarSettings(bool useMock, bool useOverlay)
+      : m_originalMockScrollbarEnabled(Settings::mockScrollbarsEnabled()),
+        m_originalOverlayScrollbarsEnabled(
+            RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
+    Settings::setMockScrollbarsEnabled(useMock);
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(useOverlay);
+  }
+
   ~UseMockScrollbarSettings() {
     Settings::setMockScrollbarsEnabled(m_originalMockScrollbarEnabled);
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(
