@@ -32,7 +32,8 @@ const int kNumIterations = 10000;
 
 static const int16_t kInt13Max = (1 << 12) - 1;
 
-typedef uint64_t (*SSI16Func)(const int16_t *src, int stride, int size);
+typedef uint64_t (*SSI16Func)(const int16_t *src, int stride, int width,
+                              int height);
 typedef libaom_test::FuncParam<SSI16Func> TestFuncs;
 
 class SumSquaresTest : public ::testing::TestWithParam<TestFuncs> {
@@ -56,21 +57,23 @@ TEST_P(SumSquaresTest, OperationCheck) {
   const int limit = 1 << (msb + 1);
 
   for (int k = 0; k < kNumIterations; k++) {
-    int size = 4 << rnd(6);    // Up to 128x128
+    int width = 4 * rnd(32);   // Up to 128x128
+    int height = 4 * rnd(32);  // Up to 128x128
     int stride = 4 << rnd(7);  // Up to 256 stride
-    while (stride < size) {    // Make sure it's valid
+    while (stride < width) {   // Make sure it's valid
       stride = 4 << rnd(7);
     }
 
-    for (int ii = 0; ii < size; ii++) {
-      for (int jj = 0; jj < size; jj++) {
+    for (int ii = 0; ii < height; ii++) {
+      for (int jj = 0; jj < width; jj++) {
         src[ii * stride + jj] = rnd(2) ? rnd(limit) : -rnd(limit);
       }
     }
 
-    const uint64_t res_ref = params_.ref_func(src, stride, size);
+    const uint64_t res_ref = params_.ref_func(src, stride, width, height);
     uint64_t res_tst;
-    ASM_REGISTER_STATE_CHECK(res_tst = params_.tst_func(src, stride, size));
+    ASM_REGISTER_STATE_CHECK(res_tst =
+                                 params_.tst_func(src, stride, width, height));
 
     if (!failed) {
       failed = res_ref != res_tst;
@@ -91,22 +94,24 @@ TEST_P(SumSquaresTest, ExtremeValues) {
   const int limit = 1 << (msb + 1);
 
   for (int k = 0; k < kNumIterations; k++) {
-    int size = 4 << rnd(6);    // Up to 128x128
+    int width = 4 * rnd(32);   // Up to 128x128
+    int height = 4 * rnd(32);  // Up to 128x128
     int stride = 4 << rnd(7);  // Up to 256 stride
-    while (stride < size) {    // Make sure it's valid
+    while (stride < width) {   // Make sure it's valid
       stride = 4 << rnd(7);
     }
 
     int val = rnd(2) ? limit - 1 : -(limit - 1);
-    for (int ii = 0; ii < size; ii++) {
-      for (int jj = 0; jj < size; jj++) {
+    for (int ii = 0; ii < height; ii++) {
+      for (int jj = 0; jj < width; jj++) {
         src[ii * stride + jj] = val;
       }
     }
 
-    const uint64_t res_ref = params_.ref_func(src, stride, size);
+    const uint64_t res_ref = params_.ref_func(src, stride, width, height);
     uint64_t res_tst;
-    ASM_REGISTER_STATE_CHECK(res_tst = params_.tst_func(src, stride, size));
+    ASM_REGISTER_STATE_CHECK(res_tst =
+                                 params_.tst_func(src, stride, width, height));
 
     if (!failed) {
       failed = res_ref != res_tst;

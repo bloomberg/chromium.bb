@@ -13,13 +13,13 @@
 
 #include "./aom_dsp_rtcd.h"
 
-uint64_t aom_sum_squares_2d_i16_c(const int16_t *src, int src_stride,
-                                  int size) {
+uint64_t aom_sum_squares_2d_i16_c(const int16_t *src, int src_stride, int width,
+                                  int height) {
   int r, c;
   uint64_t ss = 0;
 
-  for (r = 0; r < size; r++) {
-    for (c = 0; c < size; c++) {
+  for (r = 0; r < height; r++) {
+    for (c = 0; c < width; c++) {
       const int16_t v = src[c];
       ss += v * v;
     }

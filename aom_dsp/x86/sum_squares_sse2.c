@@ -50,16 +50,17 @@ static uint64_t aom_sum_squares_2d_i16_4x4_sse2(const int16_t *src,
 __attribute__((noinline))
 #endif
 static uint64_t
-aom_sum_squares_2d_i16_nxn_sse2(const int16_t *src, int stride, int size) {
+aom_sum_squares_2d_i16_nxn_sse2(const int16_t *src, int stride, int width,
+                                int height) {
   int r, c;
 
   const __m128i v_zext_mask_q = _mm_set_epi32(0, 0xffffffff, 0, 0xffffffff);
   __m128i v_acc_q = _mm_setzero_si128();
 
-  for (r = 0; r < size; r += 8) {
+  for (r = 0; r < height; r += 8) {
     __m128i v_acc_d = _mm_setzero_si128();
 
-    for (c = 0; c < size; c += 8) {
+    for (c = 0; c < width; c += 8) {
       const int16_t *b = src + c;
 
       const __m128i v_val_0_w =
@@ -119,15 +120,18 @@ aom_sum_squares_2d_i16_nxn_sse2(const int16_t *src, int stride, int size) {
 #endif
 }
 
-uint64_t aom_sum_squares_2d_i16_sse2(const int16_t *src, int stride, int size) {
+uint64_t aom_sum_squares_2d_i16_sse2(const int16_t *src, int stride, int width,
+                                     int height) {
   // 4 elements per row only requires half an XMM register, so this
   // must be a special case, but also note that over 75% of all calls
   // are with size == 4, so it is also the common case.
-  if (LIKELY(size == 4)) {
+  if (LIKELY(width == 4 && height == 4)) {
     return aom_sum_squares_2d_i16_4x4_sse2(src, stride);
-  } else {
+  } else if (LIKELY(width % 8 == 0 && height % 8 == 0)) {
     // Generic case
-    return aom_sum_squares_2d_i16_nxn_sse2(src, stride, size);
+    return aom_sum_squares_2d_i16_nxn_sse2(src, stride, width, height);
+  } else {
+    return aom_sum_squares_2d_i16_c(src, stride, width, height);
   }
 }
 
