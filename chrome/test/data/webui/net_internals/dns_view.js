@@ -101,7 +101,7 @@ AddCacheEntryTask.prototype = {
    * Callback from the BrowserBridge.  Checks if |hostResolverInfo| has the
    * DNS entry specified on creation.  If so, validates it and completes the
    * task.  If not, continues running.
-   * @param {object} hostResolverInfo Results a host resolver info query.
+   * @param {object} hostResolverInfo Results of a host resolver info query.
    */
   onHostResolverInfoChanged: function(hostResolverInfo) {
     if (!this.isDone()) {
@@ -129,7 +129,7 @@ AddCacheEntryTask.prototype = {
         // only if |expired_| is true.  Only checked for entries we add
         // ourselves to avoid any expiration time race.
         var expirationText =
-            NetInternalsTest.getTbodyText(DnsView.CACHE_TBODY_ID, index, 3);
+            NetInternalsTest.getTbodyText(DnsView.CACHE_TBODY_ID, index, 4);
         expectEquals(this.expired_, /expired/i.test(expirationText));
 
         this.onTaskDone();
@@ -149,7 +149,57 @@ AddCacheEntryTask.prototype = {
 };
 
 /**
- * A Task clears the cache by simulating a button click.
+ * A Task that simulates a network change and checks that cache entries are
+ * expired.
+ * @extends {NetInternalsTest.Task}
+ */
+function NetworkChangeTask() {
+  NetInternalsTest.Task.call(this);
+}
+
+NetworkChangeTask.prototype = {
+  __proto__: NetInternalsTest.Task.prototype,
+
+  start: function() {
+    chrome.send('changeNetwork');
+    g_browser.addHostResolverInfoObserver(this, false);
+  },
+
+  /**
+   * Callback from the BrowserBridge.  Checks if the entry has been expired.
+   * If so, the task completes.
+   * @param {object} hostResolverInfo Results of a host resolver info query.
+   */
+  onHostResolverInfoChanged: function(hostResolverInfo) {
+    if (!this.isDone()) {
+      checkDisplay(hostResolverInfo);
+
+      var entries = hostResolverInfo.cache.entries;
+      var tableId = DnsView.CACHE_TBODY_ID;
+      var foundExpired = false;
+
+      // Look for an entry that's expired due to a network change.
+      for (var row = 0; row < entries.length; ++row) {
+          var text = NetInternalsTest.getTbodyText(tableId, row, 5);
+        if (/expired/i.test(text)) {
+            foundExpired = true;
+        };
+      }
+
+      if (foundExpired) {
+        // Expect at least one expired entry and at least one network change.
+        // To avoid any chance of a race, exact values are not tested.
+        expectLE(0, parseInt($(DnsView.ACTIVE_SPAN_ID).innerText));
+        expectLE(1, parseInt($(DnsView.EXPIRED_SPAN_ID).innerText));
+        expectLE(1, parseInt($(DnsView.NETWORK_SPAN_ID).innerText));
+        this.onTaskDone();
+      }
+    }
+  }
+};
+
+/**
+ * A Task that clears the cache by simulating a button click.
  * @extends {NetInternalsTest.Task}
  */
 function ClearCacheTask() {
@@ -271,6 +321,21 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewIncognitoClears', function() {
   taskQueue.addTask(new AddCacheEntryTask(
       'somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(NetInternalsTest.getCloseIncognitoBrowserTask());
+  taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
+  taskQueue.run(true);
+});
+
+/**
+ * Adds a successful lookup to the DNS cache, then simulates a network change
+ * and checks that the entry expires.
+ */
+TEST_F('NetInternalsTest', 'netInternalsDnsViewNetworkChanged', function() {
+  NetInternalsTest.switchToView('dns');
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
+  taskQueue.addTask(new AddCacheEntryTask(
+      'somewhere.com', '1.2.3.4', 0, false));
+  taskQueue.addTask(new NetworkChangeTask());
+  taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
 });
