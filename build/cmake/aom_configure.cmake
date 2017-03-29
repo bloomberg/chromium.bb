@@ -98,9 +98,8 @@ elseif ("${AOM_TARGET_CPU}" MATCHES "arm")
     set(AS_EXECUTABLE as)
     set(AOM_AS_FLAGS -arch ${AOM_TARGET_CPU} -isysroot ${CMAKE_OSX_SYSROOT})
   elseif ("${AOM_TARGET_SYSTEM}" STREQUAL "Linux")
-    if (NOT AS_EXECUTABLE)
-      message(FATAL_ERROR "Assembler missing for ${AOM_TARGET_CPU}-Linux.")
-    endif ()
+    # arm linux assembler settings controlled by
+    # build/cmake/toolchains/arm*-linux*.cmake
   endif ()
   if (NOT AS_EXECUTABLE)
     message(FATAL_ERROR
