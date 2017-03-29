@@ -257,7 +257,8 @@ def get_waterfall_config():
        'os': 'Windows-10-10240',
        'device_ids': [
            'build117-b1', 'build118-b1',
-           'build119-b1', 'build120-b1', 'build121-b1'
+           'build119-b1', 'build120-b1',
+           'build180-b4' # Added in https://crbug.com/695613
           ]
       }
     ])
