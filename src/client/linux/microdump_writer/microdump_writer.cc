@@ -483,6 +483,12 @@ class MicrodumpWriter {
 
 #if !defined(__LP64__)
   void DumpFreeSpace() {
+    const MappingInfo* stack_mapping = nullptr;
+    ThreadInfo info;
+    if (dumper_->GetThreadInfoByIndex(dumper_->GetMainThreadIndex(), &info)) {
+      stack_mapping = dumper_->FindMappingNoBias(info.stack_pointer);
+    }
+
     const google_breakpad::wasteful_vector<MappingInfo*>& mappings =
         dumper_->mappings();
     if (mappings.size() == 0) return;
@@ -513,6 +519,14 @@ class MicrodumpWriter {
       while (curr != mappings.size() - 1 &&
              MappingsAreAdjacent(*mappings[curr], *mappings[curr + 1])) {
         ++curr;
+      }
+
+      if (mappings[curr] == stack_mapping) {
+        // Because we can't determine the top of userspace mappable
+        // memory we treat the start of the process stack as the top
+        // of the allocatable address space. Once we reach
+        // |stack_mapping| we are done scanning for free space regions.
+        break;
       }
 
       size_t next = NextOrderedMapping(mappings, curr);
@@ -602,7 +616,7 @@ class MicrodumpWriter {
   // crashed process. |stack_lower_bound_| <= |stack_pointer_|
   uintptr_t stack_lower_bound_;
 
-  // The stack pointer in the crashed process.
+  // The stack pointer of the crashed thread.
   uintptr_t stack_pointer_;
 };
 }  // namespace

@@ -99,6 +99,13 @@ class LinuxDumper {
   // Returns true on success. One must have called |ThreadsSuspend| first.
   virtual bool GetThreadInfoByIndex(size_t index, ThreadInfo* info) = 0;
 
+  size_t GetMainThreadIndex() const {
+    for (size_t i = 0; i < threads_.size(); ++i) {
+      if (threads_[i] == pid_) return i;
+    }
+    return -1u;
+  }
+
   // These are only valid after a call to |Init|.
   const wasteful_vector<pid_t> &threads() { return threads_; }
   const wasteful_vector<MappingInfo*> &mappings() { return mappings_; }
