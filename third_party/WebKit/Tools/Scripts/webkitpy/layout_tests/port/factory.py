@@ -143,8 +143,10 @@ def _check_configuration_and_target(host, options):
 
     gn_configuration = _read_configuration_from_gn(host, options)
     if gn_configuration:
-        if getattr(options, 'configuration') not in (None, gn_configuration):
-            raise ValueError('Configuration does not match the GN build args.')
+        expected_configuration = getattr(options, 'configuration')
+        if expected_configuration not in (None, gn_configuration):
+            raise ValueError('Configuration does not match the GN build args. '
+                             'Expected "%s" but got "%s".' % (gn_configuration, expected_configuration))
         options.configuration = gn_configuration
         return
 
