@@ -272,6 +272,11 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(
     return CSSParserSelector::create(
         QualifiedName(namespacePrefix, elementName, namespaceURI));
   }
+  // TODO(rune@opera.com): Prepending a type selector to the compound is
+  // unnecessary if this compound is an argument to a pseudo selector like
+  // :not(), since a type selector will be prepended at the top level of the
+  // selector if necessary. We need to propagate that context information here
+  // to tell if we are at the top level.
   prependTypeSelectorIfNeeded(namespacePrefix, elementName,
                               compoundSelector.get());
   return splitCompoundAtImplicitShadowCrossingCombinator(

@@ -109,7 +109,7 @@ inline unsigned CSSSelector::specificityForOneSelector() const {
           return 0;
         case PseudoNot:
           ASSERT(selectorList());
-          return selectorList()->first()->specificityForOneSelector();
+          return selectorList()->first()->specificity();
         // FIXME: PseudoAny should base the specificity on the sub-selectors.
         // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
         case PseudoAny:
