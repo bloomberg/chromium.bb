@@ -55,7 +55,9 @@ CastRenderer::CastRenderer(
     MediaResourceTracker* media_resource_tracker)
     : backend_factory_(backend_factory),
       task_runner_(task_runner),
-      audio_device_id_(audio_device_id),
+      audio_device_id_(audio_device_id.empty()
+                           ? ::media::AudioDeviceDescription::kDefaultDeviceId
+                           : audio_device_id),
       video_mode_switcher_(video_mode_switcher),
       video_resolution_policy_(video_resolution_policy),
       media_resource_tracker_(media_resource_tracker),
@@ -95,12 +97,9 @@ void CastRenderer::Initialize(::media::MediaResource* media_resource,
       (load_type == kLoadTypeMediaStream)
           ? MediaPipelineDeviceParams::kModeIgnorePts
           : MediaPipelineDeviceParams::kModeSyncPts;
-  std::string device_id = audio_device_id_;
-  if (device_id == "")
-    device_id = ::media::AudioDeviceDescription::kDefaultDeviceId;
 
   AudioContentType content_type;
-  if (device_id == kAlarmAudioDeviceId) {
+  if (audio_device_id_ == kAlarmAudioDeviceId) {
     content_type = AudioContentType::kAlarm;
   } else if (audio_device_id_ == kTtsAudioDeviceId) {
     content_type = AudioContentType::kCommunication;
