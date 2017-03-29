@@ -431,12 +431,11 @@ WebInputEventResult MouseEventManager::handleMouseFocus(
       m_frame->selection()
           .computeVisibleSelectionInDOMTreeDeprecated()
           .isRange()) {
-    // TODO(yosin) We should not create |Range| object for calling
-    // |isNodeFullyContained()|.
-    if (createRange(m_frame->selection()
-                        .computeVisibleSelectionInDOMTreeDeprecated()
-                        .toNormalizedEphemeralRange())
-            ->isNodeFullyContained(*element) &&
+    const EphemeralRange& range =
+        m_frame->selection()
+            .computeVisibleSelectionInDOMTreeDeprecated()
+            .toNormalizedEphemeralRange();
+    if (isNodeFullyContained(range, *element) &&
         element->isDescendantOf(m_frame->document()->focusedElement()))
       return WebInputEventResult::NotHandled;
   }

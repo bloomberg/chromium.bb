@@ -272,6 +272,7 @@ int comparePositionsInFlatTree(Node* containerA,
 // utilize |DCHECK_XX()|.
 int comparePositions(const Position&, const Position&);
 int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
+bool isNodeFullyContained(const EphemeralRange&, Node&);
 
 // boolean functions on Position
 

@@ -284,20 +284,6 @@ void Range::collapse(bool toStart) {
     m_start = m_end;
 }
 
-bool Range::isNodeFullyContained(Node& node) const {
-  ContainerNode* parentNode = node.parentNode();
-  unsigned nodeIndex = node.nodeIndex();
-  return isPointInRange(
-             parentNode, nodeIndex,
-             IGNORE_EXCEPTION_FOR_TESTING)  // starts in the middle of this
-                                            // range, or on the boundary points.
-         && isPointInRange(
-                parentNode, nodeIndex + 1,
-                IGNORE_EXCEPTION_FOR_TESTING);  // ends in the middle of this
-                                                // range, or on the boundary
-                                                // points.
-}
-
 bool Range::hasSameRoot(const Node& node) const {
   if (node.document() != m_ownerDocument)
     return false;

@@ -293,6 +293,17 @@ int comparePositions(const VisiblePosition& a, const VisiblePosition& b) {
   return comparePositions(a.deepEquivalent(), b.deepEquivalent());
 }
 
+bool isNodeFullyContained(const EphemeralRange& range, Node& node) {
+  if (range.isNull())
+    return false;
+
+  if (!NodeTraversal::commonAncestor(*range.startPosition().anchorNode(), node))
+    return false;
+
+  return range.startPosition() <= Position::beforeNode(&node) &&
+         Position::afterNode(&node) <= range.endPosition();
+}
+
 // TODO(editing-dev): We should implement real version which refers
 // "user-select" CSS property.
 // TODO(editing-dev): We should make |SelectionAdjuster| to use this funciton

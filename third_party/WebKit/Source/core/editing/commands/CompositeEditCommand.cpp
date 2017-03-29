@@ -1973,7 +1973,7 @@ bool CompositeEditCommand::isNodeVisiblyContainedWithin(
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       node.document().lifecycle());
 
-  if (selectedRange.isNodeFullyContained(node))
+  if (isNodeFullyContained(EphemeralRange(&selectedRange), node))
     return true;
 
   bool startIsVisuallySame =

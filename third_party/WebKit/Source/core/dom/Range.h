@@ -86,7 +86,6 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
               unsigned offset,
               ExceptionState& = ASSERT_NO_EXCEPTION);
   void collapse(bool toStart);
-  bool isNodeFullyContained(Node&) const;
   bool isPointInRange(Node* refNode, unsigned offset, ExceptionState&) const;
   short comparePoint(Node* refNode, unsigned offset, ExceptionState&) const;
   enum CompareResults {
