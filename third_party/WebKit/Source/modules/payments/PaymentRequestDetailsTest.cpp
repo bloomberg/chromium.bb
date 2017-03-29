@@ -10,7 +10,7 @@
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/payments/PaymentDetails.h"
+#include "modules/payments/PaymentDetailsInit.h"
 #include "modules/payments/PaymentOptions.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,9 +35,9 @@ class DetailsTestCase {
 
   ~DetailsTestCase() {}
 
-  PaymentDetails buildDetails() const {
-    return buildPaymentDetailsForTest(m_detail, m_data, m_modType,
-                                      m_valueToUse);
+  PaymentDetailsInit buildDetails() const {
+    return buildPaymentDetailsInitForTest(m_detail, m_data, m_modType,
+                                          m_valueToUse);
   }
 
   bool expectException() const { return m_expectException; }

@@ -48,6 +48,11 @@ void PaymentRequest::Init(
     OnConnectionTerminated();
     return;
   }
+  if (!details->total) {
+    LOG(ERROR) << "Missing total";
+    OnConnectionTerminated();
+    return;
+  }
   client_ = std::move(client);
   spec_ = base::MakeUnique<PaymentRequestSpec>(
       std::move(options), std::move(details), std::move(method_data), this,

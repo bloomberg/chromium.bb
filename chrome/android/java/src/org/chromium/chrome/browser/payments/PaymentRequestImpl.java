@@ -421,6 +421,13 @@ public class PaymentRequestImpl
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
+        if (mRawTotal == null) {
+            disconnectFromClientWithDebugMessage("Missing total");
+            recordAbortReasonHistogram(
+                    PaymentRequestMetrics.ABORT_REASON_INVALID_DATA_FROM_RENDERER);
+            return;
+        }
+
         PaymentAppFactory.getInstance().create(mWebContents,
                 Collections.unmodifiableSet(mMethodData.keySet()), this /* callback */);
 
@@ -736,15 +743,20 @@ public class PaymentRequestImpl
                     details.total.amount.currencySystem, Locale.getDefault());
         }
 
-        // Total is never pending.
-        LineItem uiTotal = new LineItem(details.total.label,
-                mCurrencyFormatter.getFormattedCurrencyCode(),
-                mCurrencyFormatter.format(details.total.amount.value), /* isPending */ false);
+        if (details.total != null) {
+            mRawTotal = details.total;
+        }
 
-        List<LineItem> uiLineItems = getLineItems(details.displayItems, mCurrencyFormatter);
+        if (mRawTotal != null) {
+            // Total is never pending.
+            LineItem uiTotal = new LineItem(mRawTotal.label,
+                    mCurrencyFormatter.getFormattedCurrencyCode(),
+                    mCurrencyFormatter.format(mRawTotal.amount.value), /* isPending */ false);
 
-        mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
-        mRawTotal = details.total;
+            List<LineItem> uiLineItems = getLineItems(details.displayItems, mCurrencyFormatter);
+
+            mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
+        }
         mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
         mUiShippingOptions = getShippingOptions(details.shippingOptions, mCurrencyFormatter);

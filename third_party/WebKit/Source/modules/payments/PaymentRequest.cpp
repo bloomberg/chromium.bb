@@ -12,7 +12,7 @@
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/modules/v8/V8AndroidPayMethodData.h"
 #include "bindings/modules/v8/V8BasicCardRequest.h"
-#include "bindings/modules/v8/V8PaymentDetails.h"
+#include "bindings/modules/v8/V8PaymentDetailsUpdate.h"
 #include "core/EventTypeNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
@@ -30,6 +30,8 @@
 #include "modules/payments/BasicCardRequest.h"
 #include "modules/payments/HTMLIFrameElementPayments.h"
 #include "modules/payments/PaymentAddress.h"
+#include "modules/payments/PaymentDetailsInit.h"
+#include "modules/payments/PaymentDetailsUpdate.h"
 #include "modules/payments/PaymentItem.h"
 #include "modules/payments/PaymentRequestUpdateEvent.h"
 #include "modules/payments/PaymentResponse.h"
@@ -472,21 +474,12 @@ String getSelectedShippingOption(
   return result;
 }
 
-void validateAndConvertPaymentDetails(const PaymentDetails& input,
-                                      bool requestShipping,
-                                      PaymentDetailsPtr& output,
-                                      String& shippingOptionOutput,
-                                      ExecutionContext& executionContext,
-                                      ExceptionState& exceptionState) {
-  if (!input.hasTotal()) {
-    exceptionState.throwTypeError("Must specify total");
-    return;
-  }
-
-  validateAndConvertTotal(input.total(), output->total, exceptionState);
-  if (exceptionState.hadException())
-    return;
-
+void validateAndConvertPaymentDetailsBase(const PaymentDetailsBase& input,
+                                          bool requestShipping,
+                                          PaymentDetailsPtr& output,
+                                          String& shippingOptionOutput,
+                                          ExecutionContext& executionContext,
+                                          ExceptionState& exceptionState) {
   if (input.hasDisplayItems()) {
     validateAndConvertDisplayItems(input.displayItems(), output->display_items,
                                    exceptionState);
@@ -506,6 +499,45 @@ void validateAndConvertPaymentDetails(const PaymentDetails& input,
   if (input.hasModifiers()) {
     validateAndConvertPaymentDetailsModifiers(
         input.modifiers(), output->modifiers, executionContext, exceptionState);
+    if (exceptionState.hadException())
+      return;
+  }
+}
+
+void validateAndConvertPaymentDetailsInit(const PaymentDetailsInit& input,
+                                          bool requestShipping,
+                                          PaymentDetailsPtr& output,
+                                          String& shippingOptionOutput,
+                                          ExecutionContext& executionContext,
+                                          ExceptionState& exceptionState) {
+  validateAndConvertPaymentDetailsBase(input, requestShipping, output,
+                                       shippingOptionOutput, executionContext,
+                                       exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  if (!input.hasTotal()) {
+    exceptionState.throwTypeError("Must specify total");
+    return;
+  }
+
+  validateAndConvertTotal(input.total(), output->total, exceptionState);
+}
+
+void validateAndConvertPaymentDetailsUpdate(const PaymentDetailsUpdate& input,
+                                            bool requestShipping,
+                                            PaymentDetailsPtr& output,
+                                            String& shippingOptionOutput,
+                                            ExecutionContext& executionContext,
+                                            ExceptionState& exceptionState) {
+  validateAndConvertPaymentDetailsBase(input, requestShipping, output,
+                                       shippingOptionOutput, executionContext,
+                                       exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  if (input.hasTotal()) {
+    validateAndConvertTotal(input.total(), output->total, exceptionState);
     if (exceptionState.hadException())
       return;
   }
@@ -628,7 +660,7 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
 PaymentRequest* PaymentRequest::create(
     ExecutionContext* executionContext,
     const HeapVector<PaymentMethodData>& methodData,
-    const PaymentDetails& details,
+    const PaymentDetailsInit& details,
     ExceptionState& exceptionState) {
   return new PaymentRequest(executionContext, methodData, details,
                             PaymentOptions(), exceptionState);
@@ -637,7 +669,7 @@ PaymentRequest* PaymentRequest::create(
 PaymentRequest* PaymentRequest::create(
     ExecutionContext* executionContext,
     const HeapVector<PaymentMethodData>& methodData,
-    const PaymentDetails& details,
+    const PaymentDetailsInit& details,
     const PaymentOptions& options,
     ExceptionState& exceptionState) {
   return new PaymentRequest(executionContext, methodData, details, options,
@@ -761,13 +793,13 @@ void PaymentRequest::onUpdatePaymentDetails(
   if (!m_showResolver || !m_paymentProvider)
     return;
 
-  PaymentDetails details;
+  PaymentDetailsUpdate details;
   ExceptionState exceptionState(v8::Isolate::GetCurrent(),
                                 ExceptionState::ConstructionContext,
-                                "PaymentDetails");
-  V8PaymentDetails::toImpl(detailsScriptValue.isolate(),
-                           detailsScriptValue.v8Value(), details,
-                           exceptionState);
+                                "PaymentDetailsUpdate");
+  V8PaymentDetailsUpdate::toImpl(detailsScriptValue.isolate(),
+                                 detailsScriptValue.v8Value(), details,
+                                 exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -777,9 +809,9 @@ void PaymentRequest::onUpdatePaymentDetails(
 
   PaymentDetailsPtr validatedDetails =
       payments::mojom::blink::PaymentDetails::New();
-  validateAndConvertPaymentDetails(details, m_options.requestShipping(),
-                                   validatedDetails, m_shippingOption,
-                                   *getExecutionContext(), exceptionState);
+  validateAndConvertPaymentDetailsUpdate(
+      details, m_options.requestShipping(), validatedDetails, m_shippingOption,
+      *getExecutionContext(), exceptionState);
   if (exceptionState.hadException()) {
     m_showResolver->reject(
         DOMException::create(SyntaxError, exceptionState.message()));
@@ -816,7 +848,7 @@ void PaymentRequest::onCompleteTimeoutForTesting() {
 
 PaymentRequest::PaymentRequest(ExecutionContext* executionContext,
                                const HeapVector<PaymentMethodData>& methodData,
-                               const PaymentDetails& details,
+                               const PaymentDetailsInit& details,
                                const PaymentOptions& options,
                                ExceptionState& exceptionState)
     : ContextLifecycleObserver(executionContext),
@@ -845,16 +877,11 @@ PaymentRequest::PaymentRequest(ExecutionContext* executionContext,
 
   PaymentDetailsPtr validatedDetails =
       payments::mojom::blink::PaymentDetails::New();
-  validateAndConvertPaymentDetails(details, m_options.requestShipping(),
-                                   validatedDetails, m_shippingOption,
-                                   *getExecutionContext(), exceptionState);
+  validateAndConvertPaymentDetailsInit(details, m_options.requestShipping(),
+                                       validatedDetails, m_shippingOption,
+                                       *getExecutionContext(), exceptionState);
   if (exceptionState.hadException())
     return;
-
-  if (details.hasError()) {
-    exceptionState.throwTypeError("Error message not allowed in constructor");
-    return;
-  }
 
   if (m_options.requestShipping())
     m_shippingType = getValidShippingType(m_options.shippingType());

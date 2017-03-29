@@ -75,9 +75,6 @@ PASS Numeric value for payment method specific data parameter should throw
 PASS Infinite JSON value for one of the payment method specific data pieces should throw 
 PASS Null for payment method specific data parameter should throw 
 PASS Empty string for payment method specific data parameter should throw 
-PASS If details contains a null value for error, then throw a TypeError 
-PASS If details contains an empty string value for error, then throw a TypeError 
-PASS If details contains a non-empty string value for error, then throw a TypeError 
 PASS Undefined currency code should throw 
 PASS Invalid amount "-" should throw 
 PASS Invalid amount "notdigits" should throw 

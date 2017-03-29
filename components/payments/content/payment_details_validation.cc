@@ -40,7 +40,7 @@ bool validateShippingOptionOrPaymentItem(
     return false;
   }
 
-  if (item->amount->currency != total->amount->currency) {
+  if (total && item->amount->currency != total->amount->currency) {
     *error_message = "Currencies must all be equal";
     return false;
   }
@@ -142,18 +142,15 @@ bool validatePaymentDetailsModifiers(
 
 bool validatePaymentDetails(const mojom::PaymentDetailsPtr& details,
                             std::string* error_message) {
-  if (details->total.is_null()) {
-    *error_message = "Must specify total";
-    return false;
-  }
+  if (details->total) {
+    if (!validateShippingOptionOrPaymentItem(details->total, details->total,
+                                             error_message))
+      return false;
 
-  if (!validateShippingOptionOrPaymentItem(details->total, details->total,
-                                           error_message))
-    return false;
-
-  if (details->total->amount->value[0] == '-') {
-    *error_message = "Total amount value should be non-negative";
-    return false;
+    if (details->total->amount->value[0] == '-') {
+      *error_message = "Total amount value should be non-negative";
+      return false;
+    }
   }
 
   if (details->display_items.size()) {

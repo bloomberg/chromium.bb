@@ -183,11 +183,11 @@ struct PaymentDetailsModifier {
 };
 
 struct PaymentDetails {
-  PaymentItem total;
+  PaymentItem? total;
   array<PaymentItem> display_items;
   array<PaymentShippingOption> shipping_options;
   array<PaymentDetailsModifier> modifiers;
-  string error;
+  string error = "";
 };
 
 enum PaymentShippingType {
