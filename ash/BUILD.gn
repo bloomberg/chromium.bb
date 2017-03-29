@@ -368,8 +368,6 @@ component("ash") {
     "common/system/tray/label_tray_view.h",
     "common/system/tray/size_range_layout.cc",
     "common/system/tray/size_range_layout.h",
-    "common/system/tray/special_popup_row.cc",
-    "common/system/tray/special_popup_row.h",
     "common/system/tray/system_menu_button.cc",
     "common/system/tray/system_menu_button.h",
     "common/system/tray/system_tray.cc",

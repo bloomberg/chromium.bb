@@ -5,7 +5,6 @@
 #include "ash/common/system/tray/tray_details_view.h"
 
 #include "ash/common/ash_view_ids.h"
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -35,10 +34,6 @@
 namespace ash {
 namespace {
 
-bool UseMd() {
-  return MaterialDesignController::IsSystemTrayMenuMaterial();
-}
-
 // The index of the horizontal rule below the title row.
 const int kTitleRowSeparatorIndex = 1;
 
@@ -50,11 +45,8 @@ const int kTitleRowSeparatorIndex = 1;
 class ScrollContentsView : public views::View {
  public:
   ScrollContentsView()
-      : box_layout_(new views::BoxLayout(
-            views::BoxLayout::kVertical,
-            0,
-            0,
-            UseMd() ? 0 : kContentsBetweenChildSpacingNonMd)) {
+      : box_layout_(
+            new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)) {
     SetLayoutManager(box_layout_);
   }
   ~ScrollContentsView() override {}
@@ -133,9 +125,6 @@ class ScrollContentsView : public views::View {
  private:
   const int kShadowOffsetY = 2;
   const int kShadowBlur = 2;
-  // TODO(fukino): Remove this constant once we stop maintaining pre-MD design.
-  // crbug.com/614453.
-  const int kContentsBetweenChildSpacingNonMd = 1;
 
   // A structure that keeps the original offset of each header between the
   // calls to Layout() to allow keeping track of which view should be sticky.
@@ -231,7 +220,7 @@ class ScrollContentsView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScrollContentsView);
 };
 
-// Constants for the title row in material design.
+// Constants for the title row.
 const int kTitleRowVerticalPadding = 4;
 const int kTitleRowProgressBarHeight = 2;
 const int kTitleRowPaddingTop = kTitleRowVerticalPadding;
@@ -258,39 +247,12 @@ class ScrollSeparator : public views::View {
 
 }  // namespace
 
-class ScrollBorder : public views::Border {
- public:
-  ScrollBorder() {}
-  ~ScrollBorder() override {}
-
-  void set_visible(bool visible) { visible_ = visible; }
-
- private:
-  // views::Border:
-  void Paint(const views::View& view, gfx::Canvas* canvas) override {
-    if (!visible_)
-      return;
-    canvas->FillRect(gfx::Rect(0, view.height() - 1, view.width(), 1),
-                     kBorderLightColor);
-  }
-
-  gfx::Insets GetInsets() const override { return gfx::Insets(0, 0, 1, 0); }
-
-  gfx::Size GetMinimumSize() const override { return gfx::Size(0, 1); }
-
-  bool visible_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollBorder);
-};
-
 TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
     : owner_(owner),
       box_layout_(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0)),
-      title_row_(nullptr),
       scroller_(nullptr),
       scroll_content_(nullptr),
       progress_bar_(nullptr),
-      scroll_border_(nullptr),
       tri_view_(nullptr),
       back_button_(nullptr) {
   SetLayoutManager(box_layout_);
@@ -300,17 +262,12 @@ TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
 TrayDetailsView::~TrayDetailsView() {}
 
 void TrayDetailsView::OnViewClicked(views::View* sender) {
-  if (!UseMd() && title_row_ && sender == title_row_->content()) {
-    TransitionToDefaultView();
-    return;
-  }
-
   HandleViewClicked(sender);
 }
 
 void TrayDetailsView::ButtonPressed(views::Button* sender,
                                     const ui::Event& event) {
-  if (UseMd() && sender == back_button_) {
+  if (sender == back_button_) {
     TransitionToDefaultView();
     return;
   }
@@ -320,36 +277,29 @@ void TrayDetailsView::ButtonPressed(views::Button* sender,
 
 void TrayDetailsView::CreateTitleRow(int string_id) {
   DCHECK(!tri_view_);
-  DCHECK(!title_row_);
 
-  if (UseMd()) {
-    tri_view_ = TrayPopupUtils::CreateDefaultRowView();
+  tri_view_ = TrayPopupUtils::CreateDefaultRowView();
 
-    back_button_ = CreateBackButton();
-    tri_view_->AddView(TriView::Container::START, back_button_);
+  back_button_ = CreateBackButton();
+  tri_view_->AddView(TriView::Container::START, back_button_);
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    auto* label = TrayPopupUtils::CreateDefaultLabel();
-    label->SetText(rb.GetLocalizedString(string_id));
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
-    style.SetupLabel(label);
-    tri_view_->AddView(TriView::Container::CENTER, label);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  auto* label = TrayPopupUtils::CreateDefaultLabel();
+  label->SetText(rb.GetLocalizedString(string_id));
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::TITLE);
+  style.SetupLabel(label);
+  tri_view_->AddView(TriView::Container::CENTER, label);
 
-    tri_view_->SetContainerVisible(TriView::Container::END, false);
+  tri_view_->SetContainerVisible(TriView::Container::END, false);
 
-    tri_view_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
-                                                  kTitleRowPaddingBottom, 0));
-    AddChildViewAt(tri_view_, 0);
-    views::Separator* separator = new views::Separator();
-    separator->SetColor(kMenuSeparatorColor);
-    separator->SetBorder(views::CreateEmptyBorder(
-        kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
-    AddChildViewAt(separator, kTitleRowSeparatorIndex);
-  } else {
-    title_row_ = new SpecialPopupRow();
-    title_row_->SetTextLabel(string_id, this);
-    AddChildViewAt(title_row_, child_count());
-  }
+  tri_view_->SetBorder(views::CreateEmptyBorder(kTitleRowPaddingTop, 0,
+                                                kTitleRowPaddingBottom, 0));
+  AddChildViewAt(tri_view_, 0);
+  views::Separator* separator = new views::Separator();
+  separator->SetColor(kMenuSeparatorColor);
+  separator->SetBorder(views::CreateEmptyBorder(
+      kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
+  AddChildViewAt(separator, kTitleRowSeparatorIndex);
 
   CreateExtraTitleRowButtons();
   Layout();
@@ -367,14 +317,6 @@ void TrayDetailsView::CreateScrollableList() {
       views::Background::CreateSolidBackground(kBackgroundColor));
   scroller_->layer()->SetMasksToBounds(true);
 
-  // Note: |scroller_| takes ownership of |scroll_border_|.
-  if (!UseMd()) {
-    // In MD, the scroller is always the last thing, so this border is
-    // unnecessary and reserves extra space we don't want.
-    scroll_border_ = new ScrollBorder;
-    scroller_->SetBorder(std::unique_ptr<views::Border>(scroll_border_));
-  }
-
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);
 }
@@ -389,7 +331,6 @@ void TrayDetailsView::AddScrollSeparator() {
 
 void TrayDetailsView::Reset() {
   RemoveAllChildViews(true);
-  title_row_ = nullptr;
   scroller_ = nullptr;
   scroll_content_ = nullptr;
   progress_bar_ = nullptr;
@@ -398,7 +339,6 @@ void TrayDetailsView::Reset() {
 }
 
 void TrayDetailsView::ShowProgress(double value, bool visible) {
-  DCHECK(UseMd());
   DCHECK(tri_view_);
   if (!progress_bar_) {
     progress_bar_ = new views::ProgressBar(kTitleRowProgressBarHeight);
@@ -414,7 +354,6 @@ void TrayDetailsView::ShowProgress(double value, bool visible) {
 views::CustomButton* TrayDetailsView::CreateSettingsButton(
     LoginStatus status,
     int setting_accessible_name_id) {
-  DCHECK(UseMd());
   SystemMenuButton* button =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuSettingsIcon, setting_accessible_name_id);
@@ -424,7 +363,6 @@ views::CustomButton* TrayDetailsView::CreateSettingsButton(
 }
 
 views::CustomButton* TrayDetailsView::CreateHelpButton(LoginStatus status) {
-  DCHECK(UseMd());
   SystemMenuButton* button =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
@@ -445,17 +383,8 @@ void TrayDetailsView::HandleButtonPressed(views::Button* sender,
 void TrayDetailsView::CreateExtraTitleRowButtons() {}
 
 void TrayDetailsView::TransitionToDefaultView() {
-  if (UseMd()) {
-    if (back_button_ && back_button_->HasFocus())
-      owner_->set_restore_focus(true);
-  } else {
-    if (title_row_ && title_row_->content() &&
-        title_row_->content()->HasFocus()) {
-      owner_->set_restore_focus(true);
-    }
-    DoTransitionToDefaultView();
-    return;
-  }
+  if (back_button_ && back_button_->HasFocus())
+    owner_->set_restore_focus(true);
 
   transition_delay_timer_.Start(
       FROM_HERE,
@@ -472,7 +401,6 @@ void TrayDetailsView::DoTransitionToDefaultView() {
 }
 
 views::Button* TrayDetailsView::CreateBackButton() {
-  DCHECK(UseMd());
   SystemMenuButton* button = new SystemMenuButton(
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuArrowBackIcon,
       IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
@@ -486,25 +414,13 @@ void TrayDetailsView::Layout() {
 }
 
 int TrayDetailsView::GetHeightForWidth(int width) const {
-  if (!UseMd() || bounds().IsEmpty())
+  if (bounds().IsEmpty())
     return views::View::GetHeightForWidth(width);
 
   // The height of the bubble that contains this detailed view is set to
   // the preferred height of the default view, and that determines the
   // initial height of |this|. Always request to stay the same height.
   return height();
-}
-
-void TrayDetailsView::OnPaintBorder(gfx::Canvas* canvas) {
-  if (scroll_border_) {
-    int index = GetIndexOf(scroller_);
-    if (index < child_count() - 1 && child_at(index + 1) != title_row_)
-      scroll_border_->set_visible(true);
-    else
-      scroll_border_->set_visible(false);
-  }
-
-  views::View::OnPaintBorder(canvas);
 }
 
 }  // namespace ash

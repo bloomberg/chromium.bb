@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/system/tray/special_popup_row.h"
+#include "ash/common/login_status.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/macros.h"
@@ -48,7 +48,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   void ButtonPressed(views::Button* sender, const ui::Event& event) final;
 
   SystemTrayItem* owner() { return owner_; }
-  SpecialPopupRow* title_row() { return title_row_; }
   views::ScrollView* scroller() { return scroller_; }
   views::View* scroll_content() { return scroll_content_; }
 
@@ -56,7 +55,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // views::View:
   void Layout() override;
   int GetHeightForWidth(int width) const override;
-  void OnPaintBorder(gfx::Canvas* canvas) override;
 
   // Exposes the layout manager of this view to give control to subclasses.
   views::BoxLayout* box_layout() { return box_layout_; }
@@ -121,7 +119,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
 
   SystemTrayItem* owner_;
   views::BoxLayout* box_layout_;
-  SpecialPopupRow* title_row_;  // Not used in material design.
   views::ScrollView* scroller_;
   views::View* scroll_content_;
   views::ProgressBar* progress_bar_;

@@ -5,8 +5,6 @@
 #include "ash/common/system/tray/tray_details_view.h"
 
 #include "ash/common/ash_view_ids.h"
-#include "ash/common/system/tray/hover_highlight_view.h"
-#include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -42,8 +40,6 @@ class TestDetailsView : public TrayDetailsView {
   TrayPopupHeaderButton* tray_popup_header_button() {
     return tray_popup_header_button_;
   }
-
-  void FocusTitleRow() { title_row()->content()->RequestFocus(); }
 
   void CreateScrollerViews() { CreateScrollableList(); }
 
@@ -98,19 +94,6 @@ class TrayDetailsViewTest : public AshTestBase {
  public:
   TrayDetailsViewTest() {}
   ~TrayDetailsViewTest() override {}
-
-  HoverHighlightView* CreateAndShowHoverHighlightView() {
-    SystemTray* tray = GetPrimarySystemTray();
-    TestItem* test_item = new TestItem;
-    tray->AddTrayItem(base::WrapUnique(test_item));
-    tray->ShowDefaultView(BUBBLE_CREATE_NEW);
-    RunAllPendingInMessageLoop();
-    tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
-    RunAllPendingInMessageLoop();
-
-    return static_cast<HoverHighlightView*>(
-        test_item->detailed_view()->title_row()->content());
-  }
 
   TrayPopupHeaderButton* CreateAndShowTrayPopupHeaderButton() {
     SystemTray* tray = GetPrimarySystemTray();

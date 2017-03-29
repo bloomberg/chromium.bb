@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/display.h"
