@@ -70,17 +70,21 @@ class SyncSessionsMetricsTest : public ::testing::Test {
     if (sessions_[tabIndex]->windows.find(windowIndex) ==
         sessions_[tabIndex]->windows.end()) {
       sessions_[tabIndex]->windows[windowIndex] =
-          base::MakeUnique<SessionWindow>();
+          base::MakeUnique<SyncedSessionWindow>();
     }
 
     sessions_[tabIndex]->modified_time =
         std::max(sessions_[tabIndex]->modified_time, timestamp);
-    sessions_[tabIndex]->windows[windowIndex]->timestamp = std::max(
-        sessions_[tabIndex]->windows[windowIndex]->timestamp, timestamp);
-    sessions_[tabIndex]->windows[windowIndex]->tabs.push_back(
+    sessions_[tabIndex]->windows[windowIndex]->wrapped_window.timestamp =
+        std::max(
+            sessions_[tabIndex]->windows[windowIndex]->wrapped_window.timestamp,
+            timestamp);
+    sessions_[tabIndex]->windows[windowIndex]->wrapped_window.tabs.push_back(
         base::MakeUnique<SessionTab>());
-    sessions_[tabIndex]->windows[windowIndex]->tabs.back()->timestamp =
-        timestamp;
+    sessions_[tabIndex]
+        ->windows[windowIndex]
+        ->wrapped_window.tabs.back()
+        ->timestamp = timestamp;
   }
 
   // Removes the last tab at the given indexes. The idexes provided should be
@@ -89,9 +93,11 @@ class SyncSessionsMetricsTest : public ::testing::Test {
   void PopTab(size_t tabIndex, int windowIndex, Time timestamp) {
     sessions_[tabIndex]->modified_time =
         std::max(sessions_[tabIndex]->modified_time, timestamp);
-    sessions_[tabIndex]->windows[windowIndex]->timestamp = std::max(
-        sessions_[tabIndex]->windows[windowIndex]->timestamp, timestamp);
-    sessions_[tabIndex]->windows[windowIndex]->tabs.pop_back();
+    sessions_[tabIndex]->windows[windowIndex]->wrapped_window.timestamp =
+        std::max(
+            sessions_[tabIndex]->windows[windowIndex]->wrapped_window.timestamp,
+            timestamp);
+    sessions_[tabIndex]->windows[windowIndex]->wrapped_window.tabs.pop_back();
   }
 
   // Runs MaxTabTimestamp on the current sessions data.

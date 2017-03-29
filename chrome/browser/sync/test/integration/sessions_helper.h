@@ -23,9 +23,11 @@ class GURL;
 namespace sessions_helper {
 
 using SyncedSessionVector = std::vector<const sync_sessions::SyncedSession*>;
-using SessionWindowMap = std::map<SessionID::id_type, sessions::SessionWindow*>;
+using SessionWindowMap =
+    std::map<SessionID::id_type, sync_sessions::SyncedSessionWindow*>;
 using ScopedWindowMap =
-    std::map<SessionID::id_type, std::unique_ptr<sessions::SessionWindow>>;
+    std::map<SessionID::id_type,
+             std::unique_ptr<sync_sessions::SyncedSessionWindow>>;
 
 // Copies the local session windows of profile at |index| to |local_windows|.
 // Returns true if successful.

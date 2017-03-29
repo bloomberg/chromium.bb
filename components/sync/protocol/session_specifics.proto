@@ -70,17 +70,16 @@ message SessionTab {
   // Tabs are navigated, and the navigation data is here.
   repeated TabNavigation navigation = 7;
 
-  // Fields 8 through 11 are deprecated.
   // The favicon for the current url the tab is displaying. Either empty
   // or a valid PNG encoded favicon.
-  optional bytes favicon = 8;
+  optional bytes favicon = 8 [deprecated = true];
   // The type of favicon. For now only normal web favicons are supported.
   enum FaviconType { TYPE_WEB_FAVICON = 1; }
-  optional FaviconType favicon_type = 9;
+  optional FaviconType favicon_type = 9 [deprecated = true];
   // The url of the actual favicon (as opposed to the page using the favicon).
-  optional string favicon_source = 11;
+  optional string favicon_source = 11 [deprecated = true];
   // Ids of the currently assigned variations which should be sent to sync.
-  repeated uint64 variation_id = 12;
+  repeated uint64 variation_id = 12 [deprecated = true];
 }
 
 message TabNavigation {

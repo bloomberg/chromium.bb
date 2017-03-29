@@ -6,16 +6,32 @@
 
 namespace sync_sessions {
 
+SyncedSessionWindow::SyncedSessionWindow() {}
+
+SyncedSessionWindow::~SyncedSessionWindow() {}
+
+sync_pb::SessionWindow SyncedSessionWindow::ToSessionWindowProto() const {
+  sync_pb::SessionWindow sync_data;
+  sync_data.set_browser_type(window_type);
+  sync_data.set_window_id(wrapped_window.window_id.id());
+  sync_data.set_selected_tab_index(wrapped_window.selected_tab_index);
+
+  for (const auto& tab : wrapped_window.tabs)
+    sync_data.add_tab(tab->tab_id.id());
+
+  return sync_data;
+}
+
 SyncedSession::SyncedSession()
     : session_tag("invalid"), device_type(TYPE_UNSET) {}
 
 SyncedSession::~SyncedSession() {}
 
-sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
+sync_pb::SessionHeader SyncedSession::ToSessionHeaderProto() const {
   sync_pb::SessionHeader header;
   for (const auto& window_pair : windows) {
     sync_pb::SessionWindow* w = header.add_window();
-    w->CopyFrom(window_pair.second->ToSyncData());
+    w->CopyFrom(window_pair.second->ToSessionWindowProto());
   }
   header.set_client_name(session_name);
   switch (device_type) {

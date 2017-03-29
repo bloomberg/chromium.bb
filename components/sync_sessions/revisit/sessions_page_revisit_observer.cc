@@ -57,7 +57,7 @@ void SessionsPageRevisitObserver::CheckForRevisit(
   if (provider_->GetAllForeignSessions(&foreign_sessions)) {
     for (const SyncedSession* session : foreign_sessions) {
       for (const auto& key_value : session->windows) {
-        for (const auto& tab : key_value.second->tabs) {
+        for (const auto& tab : key_value.second->wrapped_window.tabs) {
           // These matchers look identical and could easily implement an
           // interface and we could iterate through a vector of matchers here.
           // However this would cause quite a bit of overhead at the inner most

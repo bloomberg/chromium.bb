@@ -219,7 +219,7 @@ class SyncedSessionTracker {
   // Map: session tag -> (tab/window -> SessionTab*/SessionWindow*)
   std::map<std::string, std::map<SessionID::id_type, sessions::SessionTab*>>
       synced_tab_map_;
-  std::map<std::string, std::map<SessionID::id_type, sessions::SessionWindow*>>
+  std::map<std::string, std::map<SessionID::id_type, SyncedSessionWindow*>>
       synced_window_map_;
 
   // The collection that owns the SyncedSessions, and transitively, all of the
@@ -237,9 +237,8 @@ class SyncedSessionTracker {
   std::map<std::string,
            std::map<SessionID::id_type, std::unique_ptr<sessions::SessionTab>>>
       unmapped_tabs_;
-  std::map<
-      std::string,
-      std::map<SessionID::id_type, std::unique_ptr<sessions::SessionWindow>>>
+  std::map<std::string,
+           std::map<SessionID::id_type, std::unique_ptr<SyncedSessionWindow>>>
       unmapped_windows_;
 
   // The tag for this machine's local session, so we can distinguish the foreign

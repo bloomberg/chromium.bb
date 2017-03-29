@@ -35,7 +35,8 @@ bool IsPresentable(SyncSessionsClient* sessions_client,
                    SyncedSession* foreign_session) {
   for (auto iter = foreign_session->windows.begin();
        iter != foreign_session->windows.end(); ++iter) {
-    if (ShouldSyncSessionWindow(sessions_client, *(iter->second))) {
+    if (ShouldSyncSessionWindow(sessions_client,
+                                iter->second->wrapped_window)) {
       return true;
     }
   }
@@ -83,7 +84,7 @@ bool SyncedSessionTracker::LookupSessionWindows(
   if (iter == synced_session_map_.end())
     return false;
   for (const auto& window_pair : iter->second->windows)
-    windows->push_back(window_pair.second.get());
+    windows->push_back(&window_pair.second->wrapped_window);
 
   return true;
 }
@@ -181,11 +182,11 @@ void SyncedSessionTracker::ResetSessionTracking(
 
   for (auto& window_pair : session->windows) {
     // First unmap the tabs in the window.
-    for (auto& tab : window_pair.second->tabs) {
+    for (auto& tab : window_pair.second->wrapped_window.tabs) {
       SessionID::id_type tab_id = tab->tab_id.id();
       unmapped_tabs_[session_tag][tab_id] = std::move(tab);
     }
-    window_pair.second->tabs.clear();
+    window_pair.second->wrapped_window.tabs.clear();
 
     // Then unmap the window itself.
     unmapped_windows_[session_tag][window_pair.first] =
@@ -220,7 +221,7 @@ bool SyncedSessionTracker::IsTabUnmappedForTesting(SessionID::id_type tab_id) {
 
 void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
                                               SessionID::id_type window_id) {
-  std::unique_ptr<sessions::SessionWindow> window;
+  std::unique_ptr<SyncedSessionWindow> window;
 
   auto iter = unmapped_windows_[session_tag].find(window_id);
   if (iter != unmapped_windows_[session_tag].end()) {
@@ -232,14 +233,14 @@ void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
                                                             : session_tag);
   } else {
     // Create the window.
-    window = base::MakeUnique<sessions::SessionWindow>();
-    window->window_id.set_id(window_id);
+    window = base::MakeUnique<SyncedSessionWindow>();
+    window->wrapped_window.window_id.set_id(window_id);
     synced_window_map_[session_tag][window_id] = window.get();
     DVLOG(1) << "Putting new window " << window_id << " at " << window.get()
              << "in " << (session_tag == local_session_tag_ ? "local session"
                                                             : session_tag);
   }
-  DCHECK_EQ(window->window_id.id(), window_id);
+  DCHECK_EQ(window->wrapped_window.window_id.id(), window_id);
   DCHECK(GetSession(session_tag)->windows.end() ==
          GetSession(session_tag)->windows.find(window_id));
   GetSession(session_tag)->windows[window_id] = std::move(window);
@@ -273,14 +274,14 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
     // window.
     for (auto& window_iter_pair : GetSession(session_tag)->windows) {
       auto tab_iter = std::find_if(
-          window_iter_pair.second->tabs.begin(),
-          window_iter_pair.second->tabs.end(),
+          window_iter_pair.second->wrapped_window.tabs.begin(),
+          window_iter_pair.second->wrapped_window.tabs.end(),
           [&tab_ptr](const std::unique_ptr<sessions::SessionTab>& tab) {
             return tab.get() == tab_ptr;
           });
-      if (tab_iter != window_iter_pair.second->tabs.end()) {
+      if (tab_iter != window_iter_pair.second->wrapped_window.tabs.end()) {
         tab = std::move(*tab_iter);
-        window_iter_pair.second->tabs.erase(tab_iter);
+        window_iter_pair.second->wrapped_window.tabs.erase(tab_iter);
 
         DVLOG(1) << "Moving tab " << tab_id << " from window "
                  << window_iter_pair.first << " to " << window_id;
@@ -297,8 +298,9 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
   DVLOG(1) << "  - tab " << tab_id << " added to window " << window_id;
   DCHECK(GetSession(session_tag)->windows.find(window_id) !=
          GetSession(session_tag)->windows.end());
-  auto& window_tabs = GetSession(session_tag)->windows[window_id]->tabs;
-  window_tabs.push_back(std::move(tab));
+  GetSession(session_tag)
+      ->windows[window_id]
+      ->wrapped_window.tabs.push_back(std::move(tab));
 }
 
 void SyncedSessionTracker::OnTabNodeSeen(const std::string& session_tag,

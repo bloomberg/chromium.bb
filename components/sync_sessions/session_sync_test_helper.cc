@@ -62,7 +62,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
     sessions::SessionWindow* win_ptr;
     auto map_iter = session.windows.find(i);
     if (map_iter != session.windows.end())
-      win_ptr = map_iter->second.get();
+      win_ptr = &map_iter->second->wrapped_window;
     else
       FAIL();
     ASSERT_EQ(win_iter->size(), win_ptr->tabs.size());

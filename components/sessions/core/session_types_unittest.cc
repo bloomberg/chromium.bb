@@ -37,8 +37,6 @@ TEST(SessionTab, FromSyncData) {
     navigation->set_title("title");
     navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
   }
-  sync_data.add_variation_id(3312238);
-  sync_data.add_variation_id(3312242);
 
   sessions::SessionTab tab;
   tab.window_id.set_id(100);
@@ -71,9 +69,6 @@ TEST(SessionTab, FromSyncData) {
     EXPECT_EQ(GURL("http://foo/" + base::IntToString(i)),
               tab.navigations[i].virtual_url());
   }
-  ASSERT_EQ(2u, tab.variation_ids.size());
-  EXPECT_EQ(3312238, tab.variation_ids[0]);
-  EXPECT_EQ(3312242, tab.variation_ids[1]);
   EXPECT_TRUE(tab.session_storage_persistent_id.empty());
 }
 
@@ -93,8 +88,6 @@ TEST(SessionTab, ToSyncData) {
             "http://foo/" + base::IntToString(i), "title"));
   }
   tab.session_storage_persistent_id = "fake";
-  tab.variation_ids.push_back(3312238);
-  tab.variation_ids.push_back(3312242);
 
   const sync_pb::SessionTab& sync_data = tab.ToSyncData();
   EXPECT_EQ(5, sync_data.tab_id());
@@ -113,10 +106,6 @@ TEST(SessionTab, ToSyncData) {
   EXPECT_FALSE(sync_data.has_favicon());
   EXPECT_FALSE(sync_data.has_favicon_type());
   EXPECT_FALSE(sync_data.has_favicon_source());
-
-  ASSERT_EQ(2, sync_data.variation_id_size());
-  EXPECT_EQ(3312238u, sync_data.variation_id(0));
-  EXPECT_EQ(3312242u, sync_data.variation_id(1));
 }
 
 }  // namespace

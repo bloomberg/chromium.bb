@@ -336,7 +336,7 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
        static_cast<int>(device_struct.sessions.size()) < max_results;
        ++it) {
     std::unique_ptr<api::sessions::Session> session_model(
-        CreateSessionModel(*it->second, session->session_tag));
+        CreateSessionModel(it->second->wrapped_window, session->session_tag));
     if (session_model)
       device_struct.sessions.push_back(std::move(*session_model));
   }

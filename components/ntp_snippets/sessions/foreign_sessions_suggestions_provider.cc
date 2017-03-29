@@ -34,6 +34,7 @@ using base::TimeDelta;
 using sessions::SerializedNavigationEntry;
 using sessions::SessionTab;
 using sessions::SessionWindow;
+using sync_sessions::SyncedSessionWindow;
 using sync_sessions::SyncedSession;
 
 using DismissedFilter = base::Callback<bool(const std::string& id)>;
@@ -365,10 +366,9 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates(
   const TimeDelta max_foreign_tab_age = GetMaxForeignTabAge();
   std::vector<SessionData> suggestion_candidates;
   for (const SyncedSession* session : foreign_sessions) {
-    for (const std::pair<const SessionID::id_type,
-                         std::unique_ptr<sessions::SessionWindow>>& key_value :
-         session->windows) {
-      for (const std::unique_ptr<SessionTab>& tab : key_value.second->tabs) {
+    for (const auto& key_value : session->windows) {
+      for (const std::unique_ptr<SessionTab>& tab :
+           key_value.second->wrapped_window.tabs) {
         if (tab->navigations.empty()) {
           continue;
         }

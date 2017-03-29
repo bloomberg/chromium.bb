@@ -763,9 +763,10 @@ TEST_F(SessionsSyncManagerTest, PopulateSessionWindow) {
   manager()->session_tracker_.PutWindowInSession(kTag1, 0);
   manager()->BuildSyncedSessionFromSpecifics(kTag1, window_s, base::Time(),
                                              session->windows[0].get());
-  ASSERT_EQ(1U, session->windows[0]->tabs.size());
-  ASSERT_EQ(1, session->windows[0]->selected_tab_index);
-  ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, session->windows[0]->type);
+  ASSERT_EQ(1U, session->windows[0]->wrapped_window.tabs.size());
+  ASSERT_EQ(1, session->windows[0]->wrapped_window.selected_tab_index);
+  ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED,
+            session->windows[0]->wrapped_window.type);
   ASSERT_EQ(1U, manager()->session_tracker_.num_synced_sessions());
   ASSERT_EQ(1U, manager()->session_tracker_.num_synced_tabs(kTag1));
 }
@@ -1120,8 +1121,12 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
-  ASSERT_EQ(4U, foreign_sessions[0]->windows.find(0)->second->tabs.size());
-  ASSERT_EQ(4U, foreign_sessions[0]->windows.find(1)->second->tabs.size());
+  ASSERT_EQ(
+      4U,
+      foreign_sessions[0]->windows.find(0)->second->wrapped_window.tabs.size());
+  ASSERT_EQ(
+      4U,
+      foreign_sessions[0]->windows.find(1)->second->wrapped_window.tabs.size());
   helper()->VerifySyncedSession(kTag1, meta1_reference, *(foreign_sessions[0]));
 
   // Add a new foreign session.
@@ -1139,7 +1144,9 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   std::vector<std::vector<SessionID::id_type>> meta2_reference;
   meta2_reference.push_back(tag2_tab_list);
   ASSERT_EQ(2U, foreign_sessions.size());
-  ASSERT_EQ(2U, foreign_sessions[1]->windows.find(0)->second->tabs.size());
+  ASSERT_EQ(
+      2U,
+      foreign_sessions[1]->windows.find(0)->second->wrapped_window.tabs.size());
   helper()->VerifySyncedSession(kTag2, meta2_reference, *(foreign_sessions[1]));
   foreign_sessions.clear();
 
@@ -1159,7 +1166,9 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
 
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
   ASSERT_EQ(2U, foreign_sessions.size());
-  ASSERT_EQ(3U, foreign_sessions[0]->windows.find(0)->second->tabs.size());
+  ASSERT_EQ(
+      3U,
+      foreign_sessions[0]->windows.find(0)->second->wrapped_window.tabs.size());
   helper()->VerifySyncedSession(kTag1, meta1_reference, *(foreign_sessions[0]));
 }
 
@@ -1272,8 +1281,12 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
   ASSERT_EQ(1U, foreign_sessions.size());
   ASSERT_EQ(2U, foreign_sessions[0]->windows.size());
-  ASSERT_EQ(4U, foreign_sessions[0]->windows.find(0)->second->tabs.size());
-  ASSERT_EQ(4U, foreign_sessions[0]->windows.find(1)->second->tabs.size());
+  ASSERT_EQ(
+      4U,
+      foreign_sessions[0]->windows.find(0)->second->wrapped_window.tabs.size());
+  ASSERT_EQ(
+      4U,
+      foreign_sessions[0]->windows.find(1)->second->wrapped_window.tabs.size());
 
   // Close the second window.
   meta.mutable_header()->clear_window();
@@ -2141,7 +2154,7 @@ TEST_F(SessionsSyncManagerTest, ReceiveDuplicateUnassociatedTabs) {
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
 
   const std::vector<std::unique_ptr<sessions::SessionTab>>& window_tabs =
-      foreign_sessions[0]->windows.find(0)->second->tabs;
+      foreign_sessions[0]->windows.find(0)->second->wrapped_window.tabs;
   ASSERT_EQ(4U, window_tabs.size());
   // The first one is from the original set of tabs.
   ASSERT_EQ(1, window_tabs[0]->tab_visual_index);

@@ -103,9 +103,6 @@ struct SESSIONS_EXPORT SessionTab {
   // For reassociating sessionStorage.
   std::string session_storage_persistent_id;
 
-  // Ids of the currently assigned variations which should be sent to sync.
-  std::vector<variations::VariationID> variation_ids;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };
@@ -123,11 +120,6 @@ struct SESSIONS_EXPORT SessionWindow {
     TYPE_TABBED = 0,
     TYPE_POPUP = 1
   };
-
-  // Convert this object into its sync protocol buffer equivalent. Note that
-  // not all fields are synced here, because they don't all make sense or
-  // translate when restoring a SessionWindow on another device.
-  sync_pb::SessionWindow ToSyncData() const;
 
   // Identifier of the window.
   SessionID window_id;

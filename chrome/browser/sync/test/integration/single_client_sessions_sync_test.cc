@@ -77,8 +77,9 @@ class SingleClientSessionsSyncTest : public SyncTest {
   void ExpectNavigationChain(const std::vector<GURL>& urls) {
     ScopedWindowMap windows;
     ASSERT_TRUE(GetLocalWindows(0, &windows));
-    ASSERT_EQ(windows.begin()->second->tabs.size(), 1u);
-    sessions::SessionTab* tab = windows.begin()->second->tabs[0].get();
+    ASSERT_EQ(windows.begin()->second->wrapped_window.tabs.size(), 1u);
+    sessions::SessionTab* tab =
+        windows.begin()->second->wrapped_window.tabs[0].get();
 
     int index = 0;
     EXPECT_EQ(urls.size(), tab->navigations.size());
@@ -161,8 +162,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
 
   int found_navigations = 0;
   for (auto it = windows.begin(); it != windows.end(); ++it) {
-    for (auto it2 = it->second->tabs.begin(); it2 != it->second->tabs.end();
-         ++it2) {
+    for (auto it2 = it->second->wrapped_window.tabs.begin();
+         it2 != it->second->wrapped_window.tabs.end(); ++it2) {
       for (auto it3 = (*it2)->navigations.begin();
            it3 != (*it2)->navigations.end(); ++it3) {
         const base::Time timestamp = it3->timestamp();
@@ -191,8 +192,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, ResponseCodeIsPreserved) {
 
   int found_navigations = 0;
   for (auto it = windows.begin(); it != windows.end(); ++it) {
-    for (auto it2 = it->second->tabs.begin(); it2 != it->second->tabs.end();
-         ++it2) {
+    for (auto it2 = it->second->wrapped_window.tabs.begin();
+         it2 != it->second->wrapped_window.tabs.end(); ++it2) {
       for (auto it3 = (*it2)->navigations.begin();
            it3 != (*it2)->navigations.end(); ++it3) {
         EXPECT_EQ(200, it3->http_status_code());

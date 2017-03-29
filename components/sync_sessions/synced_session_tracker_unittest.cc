@@ -69,9 +69,9 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   GetTracker()->PutTabInWindow(kTag, 10, 15);  // win id 10, tab id 15
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[10]->tabs.size());
+  ASSERT_EQ(1U, session->windows[10]->wrapped_window.tabs.size());
   ASSERT_EQ(GetTracker()->GetTab(kTag, 15),
-            session->windows[10]->tabs[0].get());
+            session->windows[10]->wrapped_window.tabs[0].get());
   // Should clean up memory on its own.
 }
 
@@ -295,8 +295,8 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   GetTracker()->PutTabInWindow(kTag, 1, 4);
   GetTracker()->PutTabInWindow(kTag, 1, 5);
   ASSERT_EQ(2U, session1->windows.size());
-  ASSERT_EQ(2U, session1->windows[0]->tabs.size());
-  ASSERT_EQ(2U, session1->windows[1]->tabs.size());
+  ASSERT_EQ(2U, session1->windows[0]->wrapped_window.tabs.size());
+  ASSERT_EQ(2U, session1->windows[1]->wrapped_window.tabs.size());
   ASSERT_EQ(6U, GetTracker()->num_synced_tabs(kTag));
 
   // Create a session that should not be affected.
@@ -304,7 +304,7 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   GetTracker()->PutWindowInSession(kTag2, 2);
   GetTracker()->PutTabInWindow(kTag2, 2, 1);
   ASSERT_EQ(1U, session2->windows.size());
-  ASSERT_EQ(1U, session2->windows[2]->tabs.size());
+  ASSERT_EQ(1U, session2->windows[2]->wrapped_window.tabs.size());
   ASSERT_EQ(1U, GetTracker()->num_synced_tabs(kTag2));
 
   // Reset tracking and get the current windows/tabs.
@@ -328,9 +328,9 @@ TEST_F(SyncedSessionTrackerTest, SessionTracking) {
 
   // Verify that only those parts of the session not owned have been removed.
   ASSERT_EQ(1U, session1->windows.size());
-  ASSERT_EQ(4U, session1->windows[0]->tabs.size());
+  ASSERT_EQ(4U, session1->windows[0]->wrapped_window.tabs.size());
   ASSERT_EQ(1U, session2->windows.size());
-  ASSERT_EQ(1U, session2->windows[2]->tabs.size());
+  ASSERT_EQ(1U, session2->windows[2]->wrapped_window.tabs.size());
   ASSERT_EQ(2U, GetTracker()->num_synced_sessions());
   ASSERT_EQ(4U, GetTracker()->num_synced_tabs(kTag));
   ASSERT_EQ(1U, GetTracker()->num_synced_tabs(kTag2));
@@ -440,9 +440,9 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMapped) {
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->tabs.size());
+  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->tabs[0].get());
+            session->windows[kWindow1]->wrapped_window.tabs[0].get());
 
   // Then reassociate with a new tab id.
   GetTracker()->ReassociateLocalTab(kTabNode, kTab2);
@@ -462,7 +462,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMapped) {
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as the GetTab.
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->tabs[0].get());
+            session->windows[kWindow1]->wrapped_window.tabs[0].get());
   ASSERT_EQ(session->tab_node_ids.size(),
             session->tab_node_ids.count(kTabNode));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
@@ -487,9 +487,9 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->tabs.size());
+  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
   EXPECT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->tabs[0].get());
+            session->windows[kWindow1]->wrapped_window.tabs[0].get());
 
   // Then reassociate with a new tab id.
   GetTracker()->ReassociateLocalTab(kTabNode, kTab2);
@@ -516,7 +516,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as the GetTab.
   EXPECT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->tabs[1].get());
+            session->windows[kWindow1]->wrapped_window.tabs[1].get());
   EXPECT_EQ(session->tab_node_ids.size(),
             session->tab_node_ids.count(kTabNode));
   EXPECT_EQ(1U, GetTabNodePool()->Capacity());
@@ -554,7 +554,7 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabUnmapped) {
   // GetSession as well as GetTab.
   SyncedSession* session = GetTracker()->GetSession(kTag);
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->tabs[0].get());
+            session->windows[kWindow1]->wrapped_window.tabs[0].get());
   ASSERT_EQ(session->tab_node_ids.size(),
             session->tab_node_ids.count(kTabNode));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());

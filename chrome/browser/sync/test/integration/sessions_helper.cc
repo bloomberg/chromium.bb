@@ -68,12 +68,12 @@ bool SessionsSyncManagerHasTabWithURL(int index, const GURL& url) {
   sessions::SerializedNavigationEntry nav;
   for (auto it = local_session->windows.begin();
        it != local_session->windows.end(); ++it) {
-    if (it->second->tabs.size() == 0) {
+    if (it->second->wrapped_window.tabs.size() == 0) {
       DVLOG(1) << "Empty tabs vector";
       continue;
     }
-    for (auto tab_it = it->second->tabs.begin();
-         tab_it != it->second->tabs.end(); ++tab_it) {
+    for (auto tab_it = it->second->wrapped_window.tabs.begin();
+         tab_it != it->second->wrapped_window.tabs.end(); ++tab_it) {
       if ((*tab_it)->navigations.size() == 0) {
         DVLOG(1) << "Empty navigations vector";
         continue;
@@ -230,10 +230,10 @@ bool GetLocalWindows(int index, ScopedWindowMap* local_windows) {
   }
   for (auto w = local_session->windows.begin();
        w != local_session->windows.end(); ++w) {
-    const sessions::SessionWindow& window = *(w->second);
-    std::unique_ptr<sessions::SessionWindow> new_window =
-        base::MakeUnique<sessions::SessionWindow>();
-    new_window->window_id.set_id(window.window_id.id());
+    const sessions::SessionWindow& window = w->second->wrapped_window;
+    std::unique_ptr<sync_sessions::SyncedSessionWindow> new_window =
+        base::MakeUnique<sync_sessions::SyncedSessionWindow>();
+    new_window->wrapped_window.window_id.set_id(window.window_id.id());
     for (size_t t = 0; t < window.tabs.size(); ++t) {
       const sessions::SessionTab& tab = *window.tabs.at(t);
       std::unique_ptr<sessions::SessionTab> new_tab =
@@ -241,9 +241,9 @@ bool GetLocalWindows(int index, ScopedWindowMap* local_windows) {
       new_tab->navigations.resize(tab.navigations.size());
       std::copy(tab.navigations.begin(), tab.navigations.end(),
                 new_tab->navigations.begin());
-      new_window->tabs.push_back(std::move(new_tab));
+      new_window->wrapped_window.tabs.push_back(std::move(new_tab));
     }
-    auto id = new_window->window_id.id();
+    auto id = new_window->wrapped_window.window_id.id();
     (*local_windows)[id] = std::move(new_window);
   }
 
@@ -355,16 +355,16 @@ bool WindowsMatchImpl(const T1& win1, const T2& win2) {
       LOG(ERROR) << "Session doesn't match";
       return false;
     }
-    if (i->second->tabs.size() != j->second->tabs.size()) {
+    if (i->second->wrapped_window.tabs.size() !=
+        j->second->wrapped_window.tabs.size()) {
       LOG(ERROR) << "Tab size doesn't match, tab1 size: "
-          << i->second->tabs.size()
-          << ", tab2 size: "
-          << j->second->tabs.size();
+                 << i->second->wrapped_window.tabs.size()
+                 << ", tab2 size: " << j->second->wrapped_window.tabs.size();
       return false;
     }
-    for (size_t t = 0; t < i->second->tabs.size(); ++t) {
-      client0_tab = i->second->tabs[t].get();
-      client1_tab = j->second->tabs[t].get();
+    for (size_t t = 0; t < i->second->wrapped_window.tabs.size(); ++t) {
+      client0_tab = i->second->wrapped_window.tabs[t].get();
+      client1_tab = j->second->wrapped_window.tabs[t].get();
       for (size_t n = 0; n < client0_tab->navigations.size(); ++n) {
         if (!NavigationEquals(client0_tab->navigations[n],
                               client1_tab->navigations[n])) {

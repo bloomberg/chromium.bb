@@ -27,6 +27,7 @@ using sessions::SerializedNavigationEntry;
 using sessions::SessionTab;
 using sessions::SessionWindow;
 using sync_sessions::SyncedSession;
+using sync_sessions::SyncedSessionWindow;
 using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::Property;
@@ -51,10 +52,10 @@ const char kTitle[] = "title is ignored";
 
 SessionWindow* GetOrCreateWindow(SyncedSession* session, int window_id) {
   if (session->windows.find(window_id) == session->windows.end()) {
-    session->windows[window_id] = base::MakeUnique<SessionWindow>();
+    session->windows[window_id] = base::MakeUnique<SyncedSessionWindow>();
   }
 
-  return session->windows[window_id].get();
+  return &session->windows[window_id]->wrapped_window;
 }
 
 void AddTabToSession(SyncedSession* session,

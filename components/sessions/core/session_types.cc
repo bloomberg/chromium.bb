@@ -39,9 +39,6 @@ void SessionTab::SetFromSyncData(const sync_pb::SessionTab& sync_data,
         SerializedNavigationEntry::FromSyncData(i, sync_data.navigation(i)));
   }
   session_storage_persistent_id.clear();
-  variation_ids.clear();
-  for (int i = 0; i < sync_data.variation_id_size(); ++i)
-    variation_ids.push_back(sync_data.variation_id(i));
 }
 
 sync_pb::SessionTab SessionTab::ToSyncData() const {
@@ -55,9 +52,6 @@ sync_pb::SessionTab SessionTab::ToSyncData() const {
   for (const SerializedNavigationEntry& navigation : navigations) {
     *sync_data.add_navigation() = navigation.ToSyncData();
   }
-  for (const variations::VariationID variation_id : variation_ids) {
-    sync_data.add_variation_id(variation_id);
-  }
   return sync_data;
 }
 
@@ -70,28 +64,5 @@ SessionWindow::SessionWindow()
       show_state(ui::SHOW_STATE_DEFAULT) {}
 
 SessionWindow::~SessionWindow() {}
-
-sync_pb::SessionWindow SessionWindow::ToSyncData() const {
-  sync_pb::SessionWindow sync_data;
-  sync_data.set_window_id(window_id.id());
-  sync_data.set_selected_tab_index(selected_tab_index);
-  switch (type) {
-    case SessionWindow::TYPE_TABBED:
-      sync_data.set_browser_type(
-          sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
-      break;
-    case SessionWindow::TYPE_POPUP:
-      sync_data.set_browser_type(
-        sync_pb::SessionWindow_BrowserType_TYPE_POPUP);
-      break;
-    default:
-      NOTREACHED() << "Unhandled browser type.";
-  }
-
-  for (const auto& tab : tabs)
-    sync_data.add_tab(tab->tab_id.id());
-
-  return sync_data;
-}
 
 }  // namespace sessions

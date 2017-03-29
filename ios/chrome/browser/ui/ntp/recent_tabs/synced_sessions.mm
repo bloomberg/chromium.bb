@@ -106,7 +106,7 @@ void DistantSession::InitWithSyncedSession(
   } else {
     // Order tabs by their visual position within window.
     for (const auto& kv : synced_session->windows) {
-      for (const auto& session_tab : kv.second->tabs) {
+      for (const auto& session_tab : kv.second->wrapped_window.tabs) {
         AddTabToDistantSession(*session_tab, synced_session->session_tag, this);
       }
     }
