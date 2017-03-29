@@ -17,10 +17,6 @@
         padding: 0 var(--settings-box-row-padding);
       }
 
-      .padded {
-        @apply(--settings-list-frame-padding);
-      }
-
       #details {
         align-items: center;
         display: flex;
@@ -30,16 +26,9 @@
       #details[no-flex] {
         flex: none;
       }
-
-      #networkList {
-        margin: 5px 0 10px;
-        max-height: 200px;
-        min-height: 50px;
-      }
     </style>
     <div actionable class="settings-box two-line" on-tap="onShowDetailsTap_">
-      <div id="details"
-          no-flex$="[[showSimInfo_(deviceState)]]">
+      <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
         <cr-network-list-item item="[[activeNetworkState]]" class="flex">
         </cr-network-list-item>
       </div>

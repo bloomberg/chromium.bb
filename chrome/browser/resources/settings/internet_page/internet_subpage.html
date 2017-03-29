@@ -25,6 +25,7 @@
 
       #onoff[on] {
         color: var(--settings-toggle-color);
+        font-weight: 500;
       }
 
       .vpn-header {
@@ -61,8 +62,7 @@
     </template>
 
     <template is="dom-if" if="[[knownNetworksIsVisible_(deviceState)]]">
-      <div actionable class="settings-box continuation"
-          on-tap="onKnownNetworksTap_">
+      <div actionable class="settings-box" on-tap="onKnownNetworksTap_">
         <div class="start">$i18n{knownNetworksButton}</div>
         <button class="subpage-arrow" is="paper-icon-button-light"
             aria-label="$i18n{knownNetworksButton}">
@@ -93,7 +93,7 @@
         </div>
 
         <!-- Third party VPNs. -->
-        <template is="dom-if" if="isEqual_('VPN', deviceState.Type)]]">
+        <template is="dom-if" if="[[isEqual_('VPN', deviceState.Type)]]">
           <template is="dom-repeat" items="[[thirdPartyVpnProviders]]">
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">

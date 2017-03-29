@@ -113,6 +113,12 @@ Polymer({
     /** @private */
     advancedExpanded_: Boolean,
 
+    /** @private */
+    networkExpanded_: Boolean,
+
+    /** @private */
+    proxyExpanded_: Boolean,
+
     /**
      * Object providing network type values for data binding.
      * @const
@@ -531,14 +537,36 @@ Polymer({
     this.networkingPrivate.startActivate(this.guid);
   },
 
+  /** @const {string} */ CR_EXPAND_BUTTON_TAG: 'CR-EXPAND-BUTTON',
+
   /**
    * @param {Event} event
    * @private
    */
   toggleAdvancedExpanded_: function(event) {
-    if (event.target.id == 'expandButton')
+    if (event.target.tagName == this.CR_EXPAND_BUTTON_TAG)
       return;  // Already handled.
     this.advancedExpanded_ = !this.advancedExpanded_;
+  },
+
+  /**
+   * @param {Event} event
+   * @private
+   */
+  toggleNetworkExpanded_: function(event) {
+    if (event.target.tagName == this.CR_EXPAND_BUTTON_TAG)
+      return;  // Already handled.
+    this.networkExpanded_ = !this.networkExpanded_;
+  },
+
+  /**
+   * @param {Event} event
+   * @private
+   */
+  toggleProxyExpanded_: function(event) {
+    if (event.target.tagName == this.CR_EXPAND_BUTTON_TAG)
+      return;  // Already handled.
+    this.proxyExpanded_ = !this.proxyExpanded_;
   },
 
   /**
@@ -840,13 +868,13 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkProperties} networkProperties
-   * @return {boolean} True if the network section should be shown.
+   * @return {boolean}
    * @private
    */
   hasNetworkSection_: function(networkProperties) {
-    if (this.networkProperties.Type == CrOnc.Type.VPN)
+    if (networkProperties.Type == CrOnc.Type.VPN)
       return false;
-    if (this.networkProperties.Type == CrOnc.Type.CELLULAR)
+    if (networkProperties.Type == CrOnc.Type.CELLULAR)
       return true;
     return this.isRememberedOrConnected_(networkProperties);
   },

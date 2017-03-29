@@ -8,16 +8,7 @@
 
 <dom-module id="settings-internet-known-networks-page">
   <template>
-    <style include="settings-shared">
-      #subpageDiv {
-        -webkit-border-start: var(--cr-separator-line);
-        -webkit-padding-start: 4px;
-      }
-
-      #subpageDiv > button {
-        margin: -8px 0;
-      }
-    </style>
+    <style include="settings-shared"></style>
 
     <div class="settings-box first">
       <div>$i18n{knownNetworksMessage}</div>
@@ -26,7 +17,7 @@
     <div class="settings-box">
       <div class="secondary">$i18n{knownNetworksPreferred}</div>
     </div>
-    <div class="list-frame">
+    <div class="list-frame vertical-list">
       <div class="list-item"
           hidden$="[[havePreferred_(networkStateList_)]]">
         $i18n{internetNoNetworks}
@@ -35,14 +26,14 @@
           filter="networkIsPreferred_">
         <div class="list-item">
           <div class="start">[[item.Name]]</div>
-          <paper-icon-button preferred icon="cr:more-vert"
-              tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
-              title="$i18n{moreActions}">
-          </paper-icon-button>
-          <div id="subpageDiv" class="layout horizontal">
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
-            </button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+          </button>
+          <div class="secondary-action">
+            <paper-icon-button preferred icon="cr:more-vert"
+                tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
+                title="$i18n{moreActions}">
+            </paper-icon-button>
           </div>
         </div>
       </template>
@@ -51,19 +42,19 @@
     <div class="settings-box">
       <div class="secondary">$i18n{knownNetworksAll}</div>
     </div>
-    <div class="list-frame"
+    <div class="list-frame vertical-list"
         hidden$="[[!haveNotPreferred_(networkStateList_)]]">
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsNotPreferred_">
         <div class="list-item">
           <div class="start">[[item.Name]]</div>
-          <paper-icon-button icon="cr:more-vert"  tabindex$="[[tabindex]]"
-              on-tap="onMenuButtonTap_" title="$i18n{moreActions}">
-          </paper-icon-button>
-          <div id="subpageDiv" class="layout horizontal">
-            <button class="subpage-arrow" is="paper-icon-button-light"
-                actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
-            </button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+          </button>
+          <div class="secondary-action">
+            <paper-icon-button icon="cr:more-vert"  tabindex$="[[tabindex]]"
+                on-tap="onMenuButtonTap_" title="$i18n{moreActions}">
+            </paper-icon-button>
           </div>
         </div>
       </template>

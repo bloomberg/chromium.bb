@@ -35,16 +35,11 @@
         margin-bottom: 10px;
       }
 
-      /* Use .middle spacing but no flex. */
-      .settings-box .middle {
-        flex: none;
-      }
-
       #exceptionsDiv {
         padding: 10px 0;
       }
 
-      #exceptionsDiv network-proxy-exclusions {
+      network-proxy-exclusions {
         margin: 10px 0;
       }
     </style>
@@ -52,7 +47,7 @@
     <!-- Policy indicator. Only one dom-if below will be shown. -->
     <template is="dom-if"
         if="[[shouldShowNetworkPolicyIndicator_(networkProperties)]]">
-      <div class="settings-box continuation single-column">
+      <div class="list-frame">
         <div class="layout horizontal center">
           <cr-policy-network-indicator
               property="[[networkProperties.ProxySettings.Type]]"
@@ -64,7 +59,7 @@
     </template>
     <template is="dom-if"
         if="[[shouldShowExtensionIndicator_(networkProperties)]]">
-      <div class="settings-box continuation single-column">
+      <div class="list-frame">
         <extension-controlled-indicator
             extension-id="[[prefs.proxy.extensionId]]"
             extension-name="[[prefs.proxy.controlledByName]]"
@@ -74,7 +69,7 @@
     </template>
 
     <!-- Allow shared proxies -->
-    <div class="settings-box continuation"
+    <div class="settings-box continuation indent"
         hidden$="[[!shouldShowAllowShared_(
             networkProperties.ProxySettings.Type)]]">
       <settings-toggle-button id="allowShared" class="start"
@@ -86,7 +81,7 @@
     </div>
 
     <!-- Proxy type dropdown -->
-    <div class="settings-box continuation">
+    <div class="settings-box continuation indent">
       <div class="start">$i18n{networkProxyConnectionType}</div>
       <div class="md-select-wrapper">
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
@@ -105,7 +100,7 @@
     <div class="settings-box continuation indent"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.PAC)]]">
       <div>$i18n{networkProxyAutoConfig}</div>
-      <paper-input no-label-float class="middle flex" value="{{proxy_.PAC}}"
+      <paper-input no-label-float class="middle" value="{{proxy_.PAC}}"
           disabled="[[!isEditable_('PAC', networkProperties, editable,
               useSharedProxies_)]]"
           on-change="onPACChange_">
@@ -116,7 +111,7 @@
     <div class="settings-box continuation indent"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.WPAD)]]">
       <div>$i18n{networkSectionWpad}</div>
-      <div class="middle flex">[[WPAD_]]</div>
+      <div class="middle">[[WPAD_]]</div>
     </div>
 
     <!-- Manual -->
@@ -132,7 +127,7 @@
       </paper-toggle-button>
     </div>
 
-    <div class="settings-box continuation single-column indent"
+    <div class="list-frame"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.MANUAL)]]">
       <div hidden$="[[!useSameProxy_]]" class="layout vertical">
         <network-proxy-input

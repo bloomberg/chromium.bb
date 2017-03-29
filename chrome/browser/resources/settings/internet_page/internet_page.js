@@ -329,7 +329,7 @@ Polymer({
    * @private
    */
   deviceIsEnabled_: function(deviceState) {
-    return deviceState.State ==
+    return !!deviceState && deviceState.State ==
         chrome.networkingPrivate.DeviceStateType.ENABLED;
   },
 

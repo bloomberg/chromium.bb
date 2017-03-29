@@ -29,9 +29,12 @@ Polymer({
 
     /**
      * Device state for the network type.
-     * @type {?DeviceStateProperties|undefined}
+     * @type {?DeviceStateProperties}
      */
-    deviceState: Object,
+    deviceState: {
+      type: Object,
+      value: null,
+    },
 
     /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
     globalPolicy: Object,
@@ -175,6 +178,8 @@ Polymer({
       configured: false
     };
     this.networkingPrivate.getNetworks(filter, function(networkStates) {
+      if (!this.deviceState)
+        return;
       if (this.deviceState.Type != CrOnc.Type.VPN) {
         this.networkStateList_ = networkStates;
         return;
@@ -294,6 +299,7 @@ Polymer({
 
   /** @private */
   onAddButtonTap_: function() {
+    assert(this.deviceState);
     chrome.send('addNetwork', [this.deviceState.Type]);
   },
 

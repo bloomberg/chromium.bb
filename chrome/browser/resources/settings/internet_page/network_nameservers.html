@@ -7,7 +7,12 @@
 
 <dom-module id="network-nameservers">
   <template>
-    <style include="internet-shared md-select"></style>
+    <style include="internet-shared md-select">
+      paper-input-container {
+        -webkit-padding-start: 4px;
+      }
+    </style>
+
     <div class="settings-box first">
       <div class="start">$i18n{networkSectionNameservers}</div>
       <div class="md-select-wrapper">
@@ -21,7 +26,7 @@
       </div>
     </div>
 
-    <div class="settings-box continuation single-column indent"
+    <div class="settings-box continuation single-column"
         hidden$="[[!nameservers_.length]]">
       <template is="dom-repeat" items="[[nameservers_]]">
         <paper-input-container no-label-float>
