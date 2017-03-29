@@ -131,6 +131,7 @@ wcap_decoder_create(const char *filename)
 			    PROT_READ, MAP_PRIVATE, decoder->fd, 0);
 	if (decoder->map == MAP_FAILED) {
 		fprintf(stderr, "mmap failed\n");
+		close(decoder->fd);
 		free(decoder);
 		return NULL;
 	}
@@ -146,6 +147,7 @@ wcap_decoder_create(const char *filename)
 	frame_size = header->width * header->height * 4;
 	decoder->frame = malloc(frame_size);
 	if (decoder->frame == NULL) {
+		close(decoder->fd);
 		free(decoder);
 		return NULL;
 	}
