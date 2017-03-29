@@ -42,9 +42,7 @@ namespace blink {
 class Font;
 class SimpleFontData;
 class HarfBuzzShaper;
-class LayoutUnit;
 struct HolesQueueItem;
-enum class LineBreakType;
 
 class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
@@ -66,16 +64,8 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
   // end offset equal to the length.
   PassRefPtr<ShapeResult> shape(const Font*, TextDirection) const;
 
-  // Shapes a line of text by finding a valid and appropriate break opportunity
-  // based on the shaping results for the entire paragraph.
-  // The output parameter breakOffset indicates the resulting break offset.
-  PassRefPtr<ShapeResult> shapeLine(const Font*,
-                                    const ShapeResult*,
-                                    unsigned startOffset,
-                                    const AtomicString locale,
-                                    LineBreakType,
-                                    LayoutUnit availableSpace,
-                                    unsigned* breakOffset) const;
+  const UChar* text() const { return m_text; }
+  unsigned textLength() const { return m_textLength; }
 
   ~HarfBuzzShaper() {}
 
