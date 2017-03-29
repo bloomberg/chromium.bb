@@ -1,0 +1,37 @@
+Ensures the icon is properly displayed when network request blocking setting is enabled/disabled.
+
+Setting Enabled: false
+Has Patterns: false
+Does Not Have Icon
+
+Setting Enabled: true
+Has Patterns: false
+Does Not Have Icon
+
+Setting Enabled: true
+Has Patterns: true
+Has Icon
+
+Setting Enabled: false
+Has Patterns: true
+Does Not Have Icon
+
+Loading Network Module
+Network Module Loaded
+Setting Enabled: false
+Has Patterns: false
+Does Not Have Icon
+
+Setting Enabled: true
+Has Patterns: false
+Does Not Have Icon
+
+Setting Enabled: true
+Has Patterns: true
+Has Icon
+
+Setting Enabled: false
+Has Patterns: true
+Does Not Have Icon
+
+

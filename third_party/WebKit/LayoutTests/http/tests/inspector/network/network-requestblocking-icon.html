@@ -1,0 +1,49 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var blockedSetting = Common.settingForTest("networkBlockedURLs");
+
+    Common.moduleSetting('requestBlockingEnabled').set(false);
+    blockedSetting.set([]);
+    dumpIconResult();
+    Common.moduleSetting('requestBlockingEnabled').set(true);
+    dumpIconResult();
+    blockedSetting.set(['*']);
+    dumpIconResult();
+    Common.moduleSetting('requestBlockingEnabled').set(false);
+    dumpIconResult();
+
+    InspectorTest.addResult("Loading Network Module");
+    UI.inspectorView._tabbedPane.tabView('network')._materialize().then(() => {
+        InspectorTest.addResult("Network Module Loaded");
+
+        Common.moduleSetting('requestBlockingEnabled').set(false);
+        blockedSetting.set([]);
+        dumpIconResult();
+        Common.moduleSetting('requestBlockingEnabled').set(true);
+        dumpIconResult();
+        blockedSetting.set(['*']);
+        dumpIconResult();
+        Common.moduleSetting('requestBlockingEnabled').set(false);
+        dumpIconResult();
+        InspectorTest.completeTest();
+    })
+
+    function dumpIconResult() {
+        var hasIcon = !!UI.inspectorView._tabbedPane._tabsElement.getElementsByClassName("smallicon-warning").length;
+        InspectorTest.addResult("Setting Enabled: " + Common.moduleSetting('requestBlockingEnabled').get());
+        InspectorTest.addResult("Has Patterns: " + !!blockedSetting.get().length);
+        InspectorTest.addResult(hasIcon ? "Has Icon" : "Does Not Have Icon");
+        InspectorTest.addResult("");
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Ensures the icon is properly displayed when network request blocking setting is enabled/disabled.</p>
+</body>
+</html>
