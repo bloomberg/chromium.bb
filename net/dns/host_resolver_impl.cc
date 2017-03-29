@@ -2156,7 +2156,8 @@ int HostResolverImpl::ResolveHelper(const Key& key,
   }
   if (ServeFromCache(key, info, &net_error, addresses, allow_stale,
                      stale_info)) {
-    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT);
+    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_CACHE_HIT,
+                            addresses->CreateNetLogCallback());
     // |ServeFromCache()| will set |*stale_info| as needed.
     RunCacheHitCallbacks(key, info);
     return net_error;
@@ -2164,7 +2165,8 @@ int HostResolverImpl::ResolveHelper(const Key& key,
   // TODO(szym): Do not do this if nsswitch.conf instructs not to.
   // http://crbug.com/117655
   if (ServeFromHosts(key, info, addresses)) {
-    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT);
+    source_net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_HOSTS_HIT,
+                            addresses->CreateNetLogCallback());
     MakeNotStale(stale_info);
     return OK;
   }
