@@ -301,7 +301,7 @@ wayland_output_get_shm_buffer(struct wayland_output *output)
 	if (sb == NULL) {
 		weston_log("could not zalloc %zu memory for sb: %m\n", sizeof *sb);
 		close(fd);
-		free(data);
+		munmap(data, height * stride);
 		return NULL;
 	}
 
