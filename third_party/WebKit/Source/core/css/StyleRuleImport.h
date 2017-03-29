@@ -73,9 +73,11 @@ class StyleRuleImport : public StyleRuleBase {
     ~ImportedStyleSheetClient() override {}
     void setCSSStyleSheet(const String& href,
                           const KURL& baseURL,
+                          ReferrerPolicy referrerPolicy,
                           const String& charset,
                           const CSSStyleSheetResource* sheet) override {
-      m_ownerRule->setCSSStyleSheet(href, baseURL, charset, sheet);
+      m_ownerRule->setCSSStyleSheet(href, baseURL, referrerPolicy, charset,
+                                    sheet);
     }
     String debugName() const override { return "ImportedStyleSheetClient"; }
 
@@ -90,6 +92,7 @@ class StyleRuleImport : public StyleRuleBase {
 
   void setCSSStyleSheet(const String& href,
                         const KURL& baseURL,
+                        ReferrerPolicy,
                         const String& charset,
                         const CSSStyleSheetResource*);
 

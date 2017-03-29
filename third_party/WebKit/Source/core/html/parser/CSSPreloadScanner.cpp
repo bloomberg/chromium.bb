@@ -27,16 +27,18 @@
 
 #include "core/html/parser/CSSPreloadScanner.h"
 
+#include <memory>
 #include "core/dom/Document.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
+#include "platform/HTTPNames.h"
 #include "platform/Histogram.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/text/SegmentedString.h"
-#include <memory>
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -268,6 +270,7 @@ CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}
 void CSSPreloaderResourceClient::setCSSStyleSheet(
     const String& href,
     const KURL& baseURL,
+    ReferrerPolicy referrerPolicy,
     const String& charset,
     const CSSStyleSheetResource*) {
   clearResource();
@@ -301,6 +304,16 @@ void CSSPreloaderResourceClient::scanCSS(
   if (chunk.isNull())
     return;
   CSSPreloadScanner cssPreloadScanner;
+
+  ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
+  String referrerPolicyHeader =
+      resource->response().httpHeaderField(HTTPNames::Referrer_Policy);
+  if (!referrerPolicyHeader.isNull()) {
+    SecurityPolicy::referrerPolicyFromHeaderValue(
+        referrerPolicyHeader, DoNotSupportReferrerPolicyLegacyKeywords,
+        &referrerPolicy);
+  }
+  cssPreloadScanner.setReferrerPolicy(referrerPolicy);
   PreloadRequestStream preloads;
   cssPreloadScanner.scan(chunk, SegmentedString(), preloads,
                          resource->response().url());

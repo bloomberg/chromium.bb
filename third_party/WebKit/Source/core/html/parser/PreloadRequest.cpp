@@ -40,7 +40,10 @@ Resource* PreloadRequest::start(Document* document) {
 
   ResourceRequest resourceRequest(url);
   resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-      m_referrerPolicy, url, document->outgoingReferrer()));
+      m_referrerPolicy, url,
+      m_resourceType == Resource::CSSStyleSheet
+          ? m_baseURL.strippedForUseAsReferrer()
+          : document->outgoingReferrer()));
   resourceRequest.setRequestContext(
       ResourceFetcher::determineRequestContext(m_resourceType, false));
 

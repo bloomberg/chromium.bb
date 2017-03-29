@@ -52,6 +52,7 @@ class InspectorResourceContentLoader::ResourceClient final
 
   void setCSSStyleSheet(const String&,
                         const KURL&,
+                        ReferrerPolicy,
                         const String&,
                         const CSSStyleSheetResource*) override;
   void notifyFinished(Resource*) override;
@@ -77,6 +78,7 @@ void InspectorResourceContentLoader::ResourceClient::resourceFinished(
 void InspectorResourceContentLoader::ResourceClient::setCSSStyleSheet(
     const String&,
     const KURL& url,
+    ReferrerPolicy,
     const String&,
     const CSSStyleSheetResource* resource) {
   resourceFinished(const_cast<CSSStyleSheetResource*>(resource));

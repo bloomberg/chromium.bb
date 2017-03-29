@@ -28,11 +28,13 @@
 
 #include "core/css/StyleSheetContents.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
+#include "platform/HTTPNames.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -99,8 +101,17 @@ void CSSStyleSheetResource::didAddClient(ResourceClient* c) {
 
   // |c| might be removed in didAppendFirstData, so ensure it is still a client.
   if (hasClient(c) && !isLoading()) {
+    ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
+    String referrerPolicyHeader =
+        response().httpHeaderField(HTTPNames::Referrer_Policy);
+    if (!referrerPolicyHeader.isNull()) {
+      SecurityPolicy::referrerPolicyFromHeaderValue(
+          referrerPolicyHeader, DoNotSupportReferrerPolicyLegacyKeywords,
+          &referrerPolicy);
+    }
     static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(
-        resourceRequest().url(), response().url(), encoding(), this);
+        resourceRequest().url(), response().url(), referrerPolicy, encoding(),
+        this);
   }
 }
 
@@ -139,11 +150,20 @@ void CSSStyleSheetResource::checkNotify() {
   if (data())
     setDecodedSheetText(decodedText());
 
+  ReferrerPolicy referrerPolicy = ReferrerPolicyDefault;
+  String referrerPolicyHeader =
+      response().httpHeaderField(HTTPNames::Referrer_Policy);
+  if (!referrerPolicyHeader.isNull()) {
+    SecurityPolicy::referrerPolicyFromHeaderValue(
+        referrerPolicyHeader, DoNotSupportReferrerPolicyLegacyKeywords,
+        &referrerPolicy);
+  }
+
   ResourceClientWalker<StyleSheetResourceClient> w(clients());
   while (StyleSheetResourceClient* c = w.next()) {
     markClientFinished(c);
-    c->setCSSStyleSheet(resourceRequest().url(), response().url(), encoding(),
-                        this);
+    c->setCSSStyleSheet(resourceRequest().url(), response().url(),
+                        referrerPolicy, encoding(), this);
   }
 
   // Clear raw bytes as now we have the full decoded sheet text.

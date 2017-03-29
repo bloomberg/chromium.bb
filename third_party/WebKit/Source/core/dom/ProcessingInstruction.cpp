@@ -187,6 +187,7 @@ bool ProcessingInstruction::sheetLoaded() {
 void ProcessingInstruction::setCSSStyleSheet(
     const String& href,
     const KURL& baseURL,
+    ReferrerPolicy referrerPolicy,
     const String& charset,
     const CSSStyleSheetResource* sheet) {
   if (!isConnected()) {
@@ -195,8 +196,8 @@ void ProcessingInstruction::setCSSStyleSheet(
   }
 
   DCHECK(m_isCSS);
-  CSSParserContext* parserContext = CSSParserContext::create(
-      document(), baseURL, document().getReferrerPolicy(), charset);
+  CSSParserContext* parserContext =
+      CSSParserContext::create(document(), baseURL, referrerPolicy, charset);
 
   StyleSheetContents* newSheet =
       StyleSheetContents::create(href, parserContext);

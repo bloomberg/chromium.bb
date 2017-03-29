@@ -55,6 +55,7 @@ enum StyleSheetCacheStatus {
 void LinkStyle::setCSSStyleSheet(
     const String& href,
     const KURL& baseURL,
+    ReferrerPolicy referrerPolicy,
     const String& charset,
     const CSSStyleSheetResource* cachedStyleSheet) {
   if (!m_owner->isConnected()) {
@@ -110,8 +111,7 @@ void LinkStyle::setCSSStyleSheet(
   }
 
   CSSParserContext* parserContext = CSSParserContext::create(
-      m_owner->document(), baseURL, m_owner->document().getReferrerPolicy(),
-      charset);
+      m_owner->document(), baseURL, referrerPolicy, charset);
 
   DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheetHistogram,
                       ("Blink.RestoredCachedStyleSheet", 2));

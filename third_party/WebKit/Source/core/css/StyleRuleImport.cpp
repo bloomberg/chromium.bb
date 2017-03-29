@@ -67,6 +67,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport) {
 void StyleRuleImport::setCSSStyleSheet(
     const String& href,
     const KURL& baseURL,
+    ReferrerPolicy referrerPolicy,
     const String& charset,
     const CSSStyleSheetResource* cachedStyleSheet) {
   if (m_styleSheet)
@@ -78,11 +79,8 @@ void StyleRuleImport::setCSSStyleSheet(
     document = m_parentStyleSheet->singleOwnerDocument();
     context = m_parentStyleSheet->parserContext();
   }
-  context =
-      CSSParserContext::create(context, baseURL,
-                               document ? document->getReferrerPolicy()
-                                        : context->referrer().referrerPolicy,
-                               charset, document);
+  context = CSSParserContext::create(context, baseURL, referrerPolicy, charset,
+                                     document);
 
   m_styleSheet = StyleSheetContents::create(this, href, context);
 

@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -44,6 +45,7 @@ class CORE_EXPORT StyleSheetResourceClient : public ResourceClient {
   }
   virtual void setCSSStyleSheet(const String& /* href */,
                                 const KURL& /* baseURL */,
+                                ReferrerPolicy,
                                 const String& /* charset */,
                                 const CSSStyleSheetResource*) {}
   virtual void setXSLStyleSheet(const String& /* href */,

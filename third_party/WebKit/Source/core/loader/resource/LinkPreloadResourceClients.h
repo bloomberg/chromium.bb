@@ -88,6 +88,7 @@ class LinkPreloadStyleResourceClient
 
   void setCSSStyleSheet(const String&,
                         const KURL&,
+                        ReferrerPolicy,
                         const String&,
                         const CSSStyleSheetResource* resource) override {
     DCHECK_EQ(this->resource(), resource);

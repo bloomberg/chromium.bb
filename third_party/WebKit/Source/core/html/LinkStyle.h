@@ -61,6 +61,7 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
   // From StyleSheetResourceClient
   void setCSSStyleSheet(const String& href,
                         const KURL& baseURL,
+                        ReferrerPolicy,
                         const String& charset,
                         const CSSStyleSheetResource*) override;
   String debugName() const override { return "LinkStyle"; }

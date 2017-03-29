@@ -5,6 +5,8 @@
 #ifndef PreloadRequest_h
 #define PreloadRequest_h
 
+#include <memory>
+#include "core/CoreExport.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/loader/fetch/ClientHintsPreferences.h"
 #include "platform/loader/fetch/FetchRequest.h"
@@ -14,13 +16,12 @@
 #include "wtf/Allocator.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/TextPosition.h"
-#include <memory>
 
 namespace blink {
 
 class Document;
 
-class PreloadRequest {
+class CORE_EXPORT PreloadRequest {
   USING_FAST_MALLOC(PreloadRequest);
 
  public:

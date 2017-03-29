@@ -8,6 +8,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
@@ -15,6 +16,8 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -25,11 +28,22 @@ class MockHTMLResourcePreloader : public HTMLResourcePreloader {
   WTF_MAKE_NONCOPYABLE(MockHTMLResourcePreloader);
 
  public:
-  MockHTMLResourcePreloader(Document& document)
-      : HTMLResourcePreloader(document) {}
+  explicit MockHTMLResourcePreloader(Document& document,
+                                     const char* expectedReferrer = nullptr)
+      : HTMLResourcePreloader(document), m_expectedReferrer(expectedReferrer) {}
 
   void preload(std::unique_ptr<PreloadRequest> preloadRequest,
-               const NetworkHintsInterface&) override {}
+               const NetworkHintsInterface&) override {
+    if (m_expectedReferrer) {
+      Resource* resource = preloadRequest->start(document());
+      if (resource) {
+        EXPECT_EQ(m_expectedReferrer,
+                  resource->resourceRequest().httpReferrer());
+      }
+    }
+  }
+
+  const char* m_expectedReferrer;
 };
 
 class PreloadRecordingCSSPreloaderResourceClient final
@@ -40,12 +54,15 @@ class PreloadRecordingCSSPreloaderResourceClient final
       : CSSPreloaderResourceClient(resource, preloader) {}
 
   void fetchPreloads(PreloadRequestStream& preloads) override {
-    for (const auto& it : preloads)
+    for (const auto& it : preloads) {
       m_preloadUrls.push_back(it->resourceURL());
+      m_preloadReferrerPolicies.push_back(it->getReferrerPolicy());
+    }
     CSSPreloaderResourceClient::fetchPreloads(preloads);
   }
 
   Vector<String> m_preloadUrls;
+  Vector<ReferrerPolicy> m_preloadReferrerPolicies;
 };
 
 class CSSPreloadScannerTest : public ::testing::Test {};
@@ -154,6 +171,42 @@ TEST_F(CSSPreloadScannerTest, DoNotExpectValidDocument) {
   // Do not expect to gather any preloads, as the document loader is invalid,
   // which means we can't notify WebLoadingBehaviorData of the preloads.
   EXPECT_EQ(0u, resourceClient->m_preloadUrls.size());
+}
+
+TEST_F(CSSPreloadScannerTest, ReferrerPolicyHeader) {
+  std::unique_ptr<DummyPageHolder> dummyPageHolder =
+      DummyPageHolder::create(IntSize(500, 500));
+  dummyPageHolder->document().settings()->setCSSExternalScannerPreload(true);
+
+  MockHTMLResourcePreloader* preloader = new MockHTMLResourcePreloader(
+      dummyPageHolder->document(), "http://127.0.0.1/foo.css");
+
+  KURL url(ParsedURLString, "http://127.0.0.1/foo.css");
+  ResourceResponse response;
+  response.setURL(url);
+  response.setHTTPStatusCode(200);
+  response.setHTTPHeaderField("referrer-policy", "unsafe-url");
+  CSSStyleSheetResource* resource =
+      CSSStyleSheetResource::createForTest(ResourceRequest(url), "utf-8");
+  resource->setStatus(ResourceStatus::Pending);
+  resource->setResponse(response);
+
+  PreloadRecordingCSSPreloaderResourceClient* resourceClient =
+      new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
+
+  KURL preloadURL(ParsedURLString, "http://127.0.0.1/preload.css");
+  Platform::current()->getURLLoaderMockFactory()->registerURL(
+      preloadURL, WrappedResourceResponse(ResourceResponse()), "");
+
+  const char* data = "@import url('http://127.0.0.1/preload.css');";
+  resource->appendData(data, strlen(data));
+
+  EXPECT_EQ(Resource::PreloadNotReferenced, resource->getPreloadResult());
+  EXPECT_EQ(1u, resourceClient->m_preloadUrls.size());
+  EXPECT_EQ("http://127.0.0.1/preload.css",
+            resourceClient->m_preloadUrls.front());
+  EXPECT_EQ(ReferrerPolicyAlways,
+            resourceClient->m_preloadReferrerPolicies.front());
 }
 
 }  // namespace blink

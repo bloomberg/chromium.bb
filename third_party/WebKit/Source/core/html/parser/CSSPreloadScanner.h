@@ -109,6 +109,7 @@ class CORE_EXPORT CSSPreloaderResourceClient
   ~CSSPreloaderResourceClient();
   void setCSSStyleSheet(const String& href,
                         const KURL& baseURL,
+                        ReferrerPolicy,
                         const String& charset,
                         const CSSStyleSheetResource*) override;
   void didAppendFirstData(const CSSStyleSheetResource*) override;
