@@ -157,6 +157,14 @@ _BANNED_CPP_FUNCTIONS = (
     # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
     # used instead since that allows for FLAKY_ and DISABLED_ prefixes.
     (
+      r'\bNULL\b',
+      (
+       'New code should not use NULL. Use nullptr instead.',
+      ),
+      True,
+      (),
+    ),
+    (
       'FRIEND_TEST(',
       (
        'Chromium code should not use gtest\'s FRIEND_TEST() macro. Include',
