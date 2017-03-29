@@ -1160,8 +1160,9 @@ def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
     if skip_duts_check:
       args += ['--skip_duts_check']
 
-    if job_keyvals:
-      args += ['--job_keyvals', repr(job_keyvals)]
+  if job_keyvals:
+    args += ['--job_keyvals', repr(job_keyvals)]
+
   return args
 
 
