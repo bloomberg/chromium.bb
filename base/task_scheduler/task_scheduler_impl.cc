@@ -149,6 +149,14 @@ TaskSchedulerImpl::CreateSingleThreadTaskRunnerWithTraits(
       ->CreateSingleThreadTaskRunnerWithTraits(traits);
 }
 
+#if defined(OS_WIN)
+scoped_refptr<SingleThreadTaskRunner>
+TaskSchedulerImpl::CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) {
+  return single_thread_task_runner_manager_->CreateCOMSTATaskRunnerWithTraits(
+      traits);
+}
+#endif  // defined(OS_WIN)
+
 std::vector<const HistogramBase*> TaskSchedulerImpl::GetHistograms() const {
   std::vector<const HistogramBase*> histograms;
   for (const auto& worker_pool : worker_pools_)

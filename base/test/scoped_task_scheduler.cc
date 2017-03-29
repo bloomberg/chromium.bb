@@ -24,6 +24,12 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_com_initializer.h"
+#endif  // defined(OS_WIN)
 
 namespace base {
 namespace test {
@@ -51,6 +57,10 @@ class TestTaskScheduler : public TaskScheduler {
       const TaskTraits& traits) override;
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
       const TaskTraits& traits) override;
+#if defined(OS_WIN)
+  scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+      const TaskTraits& traits) override;
+#endif  // defined(OS_WIN)
   std::vector<const HistogramBase*> GetHistograms() const override;
   int GetMaxConcurrentTasksWithTraitsDeprecated(
       const TaskTraits& traits) const override;
@@ -81,6 +91,13 @@ class TestTaskScheduler : public TaskScheduler {
     return message_loop_->task_runner();
   }
 
+#if defined(OS_WIN)
+  void EnsureCOMSTA() {
+    if (!scoped_com_initializer_)
+      scoped_com_initializer_ = MakeUnique<win::ScopedCOMInitializer>();
+  }
+#endif  // defined(OS_WIN)
+
   // |message_loop_owned_| will be non-null if this TestTaskScheduler owns the
   // MessageLoop (wasn't provided an external one at construction).
   // |message_loop_| will always be set and is used by this TestTaskScheduler to
@@ -96,6 +113,12 @@ class TestTaskScheduler : public TaskScheduler {
   // RunTask() to guarantee that ScopedTaskScheduler always uses the latest
   // TaskRunner set by external code.
   scoped_refptr<SingleThreadTaskRunner> saved_task_runner_;
+
+#if defined(OS_WIN)
+  // Maintains the lifetime of the COM Single-Threaded Apartment. Allocation and
+  // deallocation should be done in the |message_loop_| via PostTask.
+  std::unique_ptr<win::ScopedCOMInitializer> scoped_com_initializer_;
+#endif  // defined(OS_WIN)
 
   // Handles shutdown behaviors and sets up the environment to run a task.
   internal::TaskTracker task_tracker_;
@@ -169,6 +192,15 @@ TestTaskScheduler::CreateSingleThreadTaskRunnerWithTraits(
   return make_scoped_refptr(new TestTaskSchedulerTaskRunner(
       this, ExecutionMode::SINGLE_THREADED, traits));
 }
+
+#if defined(OS_WIN)
+scoped_refptr<SingleThreadTaskRunner>
+TestTaskScheduler::CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) {
+  EnsureCOMSTA();
+  return make_scoped_refptr(new TestTaskSchedulerTaskRunner(
+      this, ExecutionMode::SINGLE_THREADED, traits));
+}
+#endif  // defined(OS_WIN)
 
 std::vector<const HistogramBase*> TestTaskScheduler::GetHistograms() const {
   NOTREACHED();

@@ -18,6 +18,7 @@
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 
 namespace gin {
 class V8Platform;
@@ -87,6 +88,19 @@ class BASE_EXPORT TaskScheduler {
   // order.
   virtual scoped_refptr<SingleThreadTaskRunner>
   CreateSingleThreadTaskRunnerWithTraits(const TaskTraits& traits) = 0;
+
+#if defined(OS_WIN)
+  // Returns a SingleThreadTaskRunner whose PostTask invocations result in
+  // scheduling tasks using |traits| in a COM Single-Threaded Apartment. Tasks
+  // run in the same Single-Threaded Apartment in posting order for the returned
+  // SingleThreadTaskRunner. There is not necessarily a one-to-one
+  // correspondence between SingleThreadTaskRunners and Single-Threaded
+  // Apartments. The implementation is free to share apartments or create new
+  // apartments as necessary. In either case, care should be taken to make sure
+  // COM pointers are not smuggled across apartments.
+  virtual scoped_refptr<SingleThreadTaskRunner>
+  CreateCOMSTATaskRunnerWithTraits(const TaskTraits& traits) = 0;
+#endif  // defined(OS_WIN)
 
   // Returns a vector of all histograms available in this task scheduler.
   virtual std::vector<const HistogramBase*> GetHistograms() const = 0;

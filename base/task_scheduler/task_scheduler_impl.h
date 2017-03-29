@@ -19,6 +19,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -69,6 +70,10 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
       const TaskTraits& traits) override;
   scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
       const TaskTraits& traits) override;
+#if defined(OS_WIN)
+  scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+      const TaskTraits& traits) override;
+#endif  // defined(OS_WIN)
   std::vector<const HistogramBase*> GetHistograms() const override;
   int GetMaxConcurrentTasksWithTraitsDeprecated(
       const TaskTraits& traits) const override;

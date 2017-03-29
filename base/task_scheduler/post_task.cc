@@ -95,4 +95,13 @@ scoped_refptr<SingleThreadTaskRunner> CreateSingleThreadTaskRunnerWithTraits(
       traits);
 }
 
+#if defined(OS_WIN)
+scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunnerWithTraits(
+    const TaskTraits& traits) {
+  DCHECK(TaskScheduler::GetInstance())
+      << "Ref. Prerequisite section of post_task.h";
+  return TaskScheduler::GetInstance()->CreateCOMSTATaskRunnerWithTraits(traits);
+}
+#endif  // defined(OS_WIN)
+
 }  // namespace base
