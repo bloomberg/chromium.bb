@@ -1815,6 +1815,7 @@ crbug.com/694525 external/wpt/content-security-policy/img-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/inside-worker [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/media-src [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/meta [ Pass ]
+crbug.com/694525 external/wpt/content-security-policy/navigation [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/securitypolicyviolation [ Pass ]
 crbug.com/694525 external/wpt/content-security-policy/worker-src [ Pass ]
 
