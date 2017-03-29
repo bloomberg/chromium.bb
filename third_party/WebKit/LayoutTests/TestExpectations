@@ -1586,20 +1586,30 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/quirks-percentage-height.ht
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-heights.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/subframes-percentage-height.html [ Failure ]
 
-# TODO(chrishtr) uncomment these after fixing crbug.com/665259.
+# TODO(chrishtr) uncomment ones marked crbug.com/591500 after fixing crbug.com/665259.
 #crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/fixed-positioned-but-static-headers-and-footers.html [ Skip ]
+crbug.com/706731 [ Win10 ] printing/fixed-positioned-but-static-headers-and-footers.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/absolute-position-headers-and-footers.html [ Skip ]
+crbug.com/706731 [ Win10 ] printing/absolute-position-headers-and-footers.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-inside-transform.html [ Skip ]
+crbug.com/706731 [ Win10 ] printing/fixed-positioned-headers-and-footers-inside-transform.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Skip ]
+crbug.com/706731 [ Win10 ] printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers.html [ Skip ]
+crbug.com/706731 [ Win10 ] printing/fixed-positioned-headers-and-footers.html [ Failure ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/absolute-position-headers-and-footers.html [ Skip ]
+crbug.com/706731 [ Win10 ] virtual/threaded/printing/absolute-position-headers-and-footers.html [ Failure ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ Skip ]
+crbug.com/706731 [ Win10 ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-clipped.html [ Skip ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Skip ]
+crbug.com/706731 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Failure ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Skip ]
+crbug.com/706731 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
+crbug.com/706731 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/iframe-print.html [ Failure ]
 #crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Failure ]
 #crbug.com/591500 [ Win10 ] printing/list-item-with-empty-first-line.html [ Failure ]
@@ -2482,6 +2492,8 @@ crbug.com/642376 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsMa
 crbug.com/642376 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsManualRebaseline ]
 crbug.com/642376 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsManualRebaseline ]
 crbug.com/642376 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
+crbug.com/706375 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
+crbug.com/706375 virtual/display_list_2d_canvas/fast/canvas/canvas-lost-gpu-context.html [ Failure ]
 
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
@@ -2664,4 +2676,7 @@ crbug.com/706091 [ Linux ] virtual/wheelscrolllatching/fast/events/wheel/wheel-s
 crbug.com/v8/5808 inspector/coverage/gutter-js.html  [ NeedsManualRebaseline ]
 crbug.com/v8/5808 inspector/coverage/multiple-instances-merge.html [ NeedsManualRebaseline ]
 
-crbug.com/700788 virtual/enable_wasm/http/tests/wasm/wasm_local_iframe_test.html [ Failure ] 
+crbug.com/700788 virtual/enable_wasm/http/tests/wasm/wasm_local_iframe_test.html [ Failure ]
+
+# Sheriff failures 2017-03-29
+crbug.com/706119 fast/forms/focus-selection-textarea.html [ Failure ]
