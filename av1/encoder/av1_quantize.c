@@ -1570,7 +1570,7 @@ void av1_quantize_fp_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 #else
       if (abs_coeff >= (dequant_ptr[rc != 0] >> 3)) {
 #endif
-        abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], 1);
+        abs_coeff += ROUND_POWER_OF_TWO(round_ptr[rc != 0], 2);
         abs_coeff = clamp(abs_coeff, INT16_MIN, INT16_MAX);
 #if CONFIG_AOM_QM
         tmp = abs_coeff * wt;
@@ -1578,7 +1578,7 @@ void av1_quantize_fp_64x64_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
         qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
         dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant) / 4;
 #else
-        tmp32 = (abs_coeff * quant_ptr[rc != 0]) >> 15;
+        tmp32 = (abs_coeff * quant_ptr[rc != 0]) >> 14;
         qcoeff_ptr[rc] = (tmp32 ^ coeff_sign) - coeff_sign;
         dqcoeff_ptr[rc] = (qcoeff_ptr[rc] * dequant_ptr[rc != 0]) / 4;
 #endif
