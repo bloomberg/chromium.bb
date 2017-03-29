@@ -31,8 +31,9 @@
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
+#include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
-#include "components/ntp_snippets/remote/scheduling_remote_suggestions_provider.h"
+#include "components/ntp_snippets/user_classifier.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
@@ -59,8 +60,9 @@ using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
+using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
-using ntp_snippets::SchedulingRemoteSuggestionsProvider;
+using ntp_snippets::UserClassifier;
 
 namespace {
 
@@ -118,6 +120,16 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   DCHECK(!browser_state->IsOffTheRecord());
   PrefService* prefs = chrome_browser_state->GetPrefs();
 
+  auto user_classifier = base::MakeUnique<UserClassifier>(
+      prefs, base::MakeUnique<base::DefaultClock>());
+  auto* user_classifier_raw = user_classifier.get();
+
+  // TODO(jkrcal): Implement a persistent scheduler for iOS. crbug.com/676249
+  auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
+      /*persistent_scheduler=*/nullptr, user_classifier_raw, prefs,
+      GetApplicationContext()->GetLocalState(),
+      base::MakeUnique<base::DefaultClock>());
+
   // Create the ContentSuggestionsService.
   SigninManager* signin_manager =
       ios::SigninManagerFactory::GetForBrowserState(chrome_browser_state);
@@ -130,7 +142,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(
           State::ENABLED, signin_manager, history_service, prefs,
-          std::move(category_ranker));
+          std::move(category_ranker), std::move(user_classifier),
+          std::move(scheduler));
 
   // Create the BookmarkSuggestionsProvider.
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature)) {
@@ -167,11 +180,12 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
         signin_manager, token_service, request_context, prefs, nullptr,
         base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
-        service->user_classifier());
+        user_classifier_raw);
 
     auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
         service.get(), prefs, GetApplicationContext()->GetApplicationLocale(),
-        service->category_ranker(), std::move(suggestions_fetcher),
+        service->category_ranker(), service->remote_suggestions_scheduler(),
+        std::move(suggestions_fetcher),
         base::MakeUnique<ImageFetcherImpl>(
             CreateIOSImageDecoder(web::WebThread::GetBlockingPool()),
             request_context.get()),
@@ -179,18 +193,9 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
                                                          prefs));
 
-    // TODO(jkrcal): Implement a persistent scheduler for iOS. crbug.com/676249
-    RemoteSuggestionsProviderImpl* provider_raw = provider.get();
-    auto scheduling_provider =
-        base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
-            service.get(), std::move(provider),
-            /*persistent_scheduler=*/nullptr, service->user_classifier(), prefs,
-            GetApplicationContext()->GetLocalState(),
-            base::MakeUnique<base::DefaultClock>());
-    provider_raw->SetRemoteSuggestionsScheduler(scheduling_provider.get());
-    service->set_remote_suggestions_provider(scheduling_provider.get());
-    service->set_remote_suggestions_scheduler(scheduling_provider.get());
-    service->RegisterProvider(std::move(scheduling_provider));
+    service->remote_suggestions_scheduler()->SetProvider(provider.get());
+    service->set_remote_suggestions_provider(provider.get());
+    service->RegisterProvider(std::move(provider));
   }
 
   // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.

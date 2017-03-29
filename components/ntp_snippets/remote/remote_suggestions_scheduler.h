@@ -9,10 +9,21 @@
 
 namespace ntp_snippets {
 
-// Interface for informing the scheduler.
+class RemoteSuggestionsProvider;
+struct Status;
+
+// The scheduler for background fetching of remote suggestions has two callers:
+//  a) The actual provider that implements the fetching informs the scheduler
+//     about relevant events and changes in its state.
+//  b) External parties (such as the UI) that need to inform the scheduler about
+//     their events.
 class RemoteSuggestionsScheduler {
  public:
-  // Internal triggers to consider fetching content suggestions.
+  // Set the provider that performs background fetching. Should be only called
+  // by the factory.
+  virtual void SetProvider(RemoteSuggestionsProvider* provider) = 0;
+
+  // ***** Internal triggers to consider fetching content suggestions. *****
 
   // Called whenever the remote suggestions provider becomes active (on startup,
   // or later on).
@@ -29,7 +40,14 @@ class RemoteSuggestionsScheduler {
   // because history gets cleared (and we must not show them any more).
   virtual void OnHistoryCleared() = 0;
 
-  // External triggers to consider fetching content suggestions.
+  // Returns true if quota is available for another request.
+  virtual bool AcquireQuotaForInteractiveFetch() = 0;
+
+  // Called whenever the remote suggestions provider finishes an interactive
+  // fetch (with provided |fetch_status|).
+  virtual void OnInteractiveFetchFinished(Status fetch_status) = 0;
+
+  // ***** External triggers to consider fetching content suggestions. *****
 
   // Called whenever chrome is started warm or the user switches to Chrome.
   virtual void OnBrowserForegrounded() = 0;

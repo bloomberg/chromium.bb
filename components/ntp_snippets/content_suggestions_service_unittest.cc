@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/default_clock.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
@@ -146,9 +147,15 @@ class ContentSuggestionsServiceTest : public testing::Test {
   void CreateContentSuggestionsService(
       ContentSuggestionsService::State enabled) {
     ASSERT_FALSE(service_);
+
+    // TODO(jkrcal): Replace by a mock.
+    auto user_classifier = base::MakeUnique<UserClassifier>(
+        pref_service_.get(), base::MakeUnique<base::DefaultClock>());
+
     service_ = base::MakeUnique<ContentSuggestionsService>(
         enabled, /*signin_manager=*/nullptr, /*history_service=*/nullptr,
-        pref_service_.get(), std::move(category_ranker_));
+        pref_service_.get(), std::move(category_ranker_),
+        std::move(user_classifier), /*scheduler=*/nullptr);
   }
 
   void ResetService() {

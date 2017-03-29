@@ -117,6 +117,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       PrefService* pref_service,
       const std::string& application_language_code,
       CategoryRanker* category_ranker,
+      RemoteSuggestionsScheduler* scheduler,
       std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
       std::unique_ptr<RemoteSuggestionsDatabase> database,
@@ -134,12 +135,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Returns whether the service is successfully initialized. While this is
   // false, some calls may trigger DCHECKs.
   bool initialized() const { return ready() || state_ == State::DISABLED; }
-
-  // Set the scheduler to be notified whenever the provider becomes active /
-  // in-active and whenever history is deleted. The initial change is also
-  // notified (switching from an initial undecided status). If the scheduler is
-  // set after the first change, it is called back immediately.
-  void SetRemoteSuggestionsScheduler(RemoteSuggestionsScheduler* scheduler);
 
   // RemoteSuggestionsProvider implementation.
   void RefetchInTheBackground(
@@ -430,6 +425,9 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // Ranker that orders the categories. Not owned.
   CategoryRanker* category_ranker_;
 
+  // Scheduler to inform about scheduling-related events. Not owned.
+  RemoteSuggestionsScheduler* remote_suggestions_scheduler_;
+
   // The suggestions fetcher.
   std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher_;
 
@@ -451,8 +449,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // The parameters for the fetch to perform later.
   bool fetch_when_ready_interactive_;
   std::unique_ptr<FetchStatusCallback> fetch_when_ready_callback_;
-
-  RemoteSuggestionsScheduler* remote_suggestions_scheduler_;
 
   // Set to true if ClearHistoryDependentState is called while the service isn't
   // ready. The nuke will be executed once the service finishes initialization

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/remote/scheduling_remote_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 
 #include <memory>
 #include <set>
@@ -72,10 +72,6 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
  public:
   MockRemoteSuggestionsProvider(Observer* observer)
       : RemoteSuggestionsProvider(observer) {}
-
-  MOCK_METHOD1(SetRemoteSuggestionsScheduler,
-               void(RemoteSuggestionsScheduler*));
-
   // Move-only params are not supported by GMock. We want to mock out
   // RefetchInTheBackground() which takes a unique_ptr<>. Instead, we add a new
   // mock function which takes a copy of the callback and override the
@@ -115,9 +111,9 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
 
 }  // namespace
 
-class SchedulingRemoteSuggestionsProviderTest : public ::testing::Test {
+class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
  public:
-  SchedulingRemoteSuggestionsProviderTest()
+  RemoteSuggestionsSchedulerImplTest()
       :  // For the test we enabled all trigger types.
         default_variation_params_{{"scheduler_trigger_types",
                                    "persistent_scheduler_wake_up,ntp_opened,"
@@ -127,7 +123,7 @@ class SchedulingRemoteSuggestionsProviderTest : public ::testing::Test {
                         {kArticleSuggestionsFeature.name}),
         user_classifier_(/*pref_service=*/nullptr,
                          base::MakeUnique<base::DefaultClock>()) {
-    SchedulingRemoteSuggestionsProvider::RegisterProfilePrefs(
+    RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
     // TODO(jkrcal) Create a static function in EulaAcceptedNotifier that
@@ -138,20 +134,17 @@ class SchedulingRemoteSuggestionsProviderTest : public ::testing::Test {
   }
 
   void ResetProvider() {
-    auto underlying_provider =
-        base::MakeUnique<StrictMock<MockRemoteSuggestionsProvider>>(
-            /*observer=*/nullptr);
-    underlying_provider_ = underlying_provider.get();
+    provider_ = base::MakeUnique<StrictMock<MockRemoteSuggestionsProvider>>(
+        /*observer=*/nullptr);
 
     auto test_clock = base::MakeUnique<base::SimpleTestClock>();
     test_clock_ = test_clock.get();
     test_clock_->SetNow(base::Time::Now());
 
-    scheduling_provider_ =
-        base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
-            /*observer=*/nullptr, std::move(underlying_provider),
-            &persistent_scheduler_, &user_classifier_, utils_.pref_service(),
-            &local_state_, std::move(test_clock));
+    scheduler_ = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
+        &persistent_scheduler_, &user_classifier_, utils_.pref_service(),
+        &local_state_, std::move(test_clock));
+    scheduler_->SetProvider(provider_.get());
   }
 
   void SetVariationParameter(const std::string& param_name,
@@ -189,25 +182,19 @@ class SchedulingRemoteSuggestionsProviderTest : public ::testing::Test {
   std::map<std::string, std::string> default_variation_params_;
   variations::testing::VariationParamsManager params_manager_;
 
-  void ActivateUnderlyingProvider() {
+  void ActivateProvider() {
     SetEulaAcceptedPref();
-    scheduling_provider()->OnProviderActivated();
+    scheduler_->OnProviderActivated();
   }
 
-  void InactivateUnderlyingProvider() {
-    scheduling_provider()->OnProviderDeactivated();
-  }
+  void DeactivateProvider() { scheduler_->OnProviderDeactivated(); }
 
   MockPersistentScheduler* persistent_scheduler() {
     return &persistent_scheduler_;
   }
   base::SimpleTestClock* test_clock() { return test_clock_; }
-  MockRemoteSuggestionsProvider* underlying_provider() {
-    return underlying_provider_;
-  }
-  SchedulingRemoteSuggestionsProvider* scheduling_provider() {
-    return scheduling_provider_.get();
-  }
+  MockRemoteSuggestionsProvider* provider() { return provider_.get(); }
+  RemoteSuggestionsSchedulerImpl* scheduler() { return scheduler_.get(); }
 
  private:
   test::RemoteSuggestionsTestUtils utils_;
@@ -215,21 +202,20 @@ class SchedulingRemoteSuggestionsProviderTest : public ::testing::Test {
   TestingPrefServiceSimple local_state_;
   StrictMock<MockPersistentScheduler> persistent_scheduler_;
   base::SimpleTestClock* test_clock_;
-  StrictMock<MockRemoteSuggestionsProvider>* underlying_provider_;
-  std::unique_ptr<SchedulingRemoteSuggestionsProvider> scheduling_provider_;
+  std::unique_ptr<MockRemoteSuggestionsProvider> provider_;
+  std::unique_ptr<RemoteSuggestionsSchedulerImpl> scheduler_;
 
-  DISALLOW_COPY_AND_ASSIGN(SchedulingRemoteSuggestionsProviderTest);
+  DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsSchedulerImplTest);
 };
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ShouldIgnoreSignalsWhenNotEnabled) {
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
-  scheduling_provider()->OnNTPOpened();
-  scheduling_provider()->OnBrowserForegrounded();
-  scheduling_provider()->OnBrowserColdStart();
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldIgnoreSignalsWhenNotEnabled) {
+  scheduler()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnNTPOpened();
+  scheduler()->OnBrowserForegrounded();
+  scheduler()->OnBrowserColdStart();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldIgnoreEulaStateOnPlatformsWhereNotAvaiable) {
   // Only run this tests on platforms that don't support Eula.
   if (IsEulaNotifierAvailable()) {
@@ -238,14 +224,14 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduling_provider()->OnProviderActivated();
+  scheduler()->OnProviderActivated();
 
   // Verify fetches get triggered.
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldIgnoreSignalsWhenEulaNotAccepted) {
   // Only run this tests on platforms supporting Eula.
   if (!IsEulaNotifierAvailable()) {
@@ -253,34 +239,33 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
   }
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduling_provider()->OnProviderActivated();
+  scheduler()->OnProviderActivated();
 
   // All signals are ignored because of Eula not being accepted.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
-  scheduling_provider()->OnNTPOpened();
-  scheduling_provider()->OnBrowserForegrounded();
-  scheduling_provider()->OnBrowserColdStart();
+  scheduler()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnNTPOpened();
+  scheduler()->OnBrowserForegrounded();
+  scheduler()->OnBrowserColdStart();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ShouldFetchWhenEulaGetsAccepted) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldFetchWhenEulaGetsAccepted) {
   // Only run this tests on platforms supporting Eula.
   if (!IsEulaNotifierAvailable()) {
     return;
   }
   // Activating the provider should schedule the persistent background fetches.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduling_provider()->OnProviderActivated();
+  scheduler()->OnProviderActivated();
 
   // Make one (ignored) call to make sure we are interested in eula state.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
 
   // Accepting Eula afterwards results in a background fetch.
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   SetEulaAcceptedPref();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldIgnoreSignalsWhenDisabledByParam) {
   // First set an empty list of allowed trigger types.
   SetVariationParameter("scheduler_trigger_types", "-");
@@ -288,15 +273,15 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
-  scheduling_provider()->OnNTPOpened();
-  scheduling_provider()->OnBrowserForegrounded();
-  scheduling_provider()->OnBrowserColdStart();
+  scheduler()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnNTPOpened();
+  scheduler()->OnBrowserForegrounded();
+  scheduler()->OnBrowserColdStart();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldHandleEmptyParamForTriggerTypes) {
   // First set an empty param for allowed trigger types -> should result in the
   // default list.
@@ -305,14 +290,14 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // For instance, persistent scheduler wake up should be enabled by default.
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldHandleIncorrentParamForTriggerTypes) {
   // First set an invalid list of allowed trigger types.
   SetVariationParameter("scheduler_trigger_types", "ntp_opened,foo;");
@@ -320,65 +305,65 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // For instance, persistent scheduler wake up should be enabled by default.
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldFetchOnPersistentSchedulerWakeUp) {
   // First set only this type to be allowed.
   SetVariationParameter("scheduler_trigger_types",
-                        "*persistent_scheduler()wake_up");
+                        "persistent_scheduler_wake_up");
   ResetProvider();
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldFetchOnPersistentSchedulerWakeUpRepeated) {
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
   {
     InSequence s;
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(SaveArg<0>(&signal_fetch_done));
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
   // First enable the scheduler -- calling Schedule() for the first time.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
   // Make the first persistent fetch successful -- calling Schedule() again.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
   signal_fetch_done.Run(Status::Success());
   // Make the second fetch.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotTriggerBackgroundFetchIfAlreadyInProgess) {
   {
     InSequence s;
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
     // RefetchInTheBackground is not called after the second trigger.
   }
   // First enable the scheduler -- calling Schedule() for the first time.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
   // Make the first persistent fetch never finish.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
   // Make the second fetch.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldFetchOnNTPOpenedForTheFirstTime) {
   // First set only this type to be allowed.
   SetVariationParameter("scheduler_trigger_types", "ntp_opened");
@@ -386,13 +371,13 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnNTPOpened();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldFetchOnBrowserForegroundedForTheFirstTime) {
   // First set only this type to be allowed.
   SetVariationParameter("scheduler_trigger_types", "browser_foregrounded");
@@ -400,13 +385,13 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnBrowserForegrounded();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnBrowserForegrounded();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldFetchOnBrowserColdStartForTheFirstTime) {
   // First set only this type to be allowed.
   SetVariationParameter("scheduler_trigger_types", "browser_cold_start");
@@ -414,81 +399,81 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Then enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
-  scheduling_provider()->OnBrowserColdStart();
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
+  scheduler()->OnBrowserColdStart();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotFetchOnNTPOpenedAfterSuccessfulSoftFetch) {
   // First enable the scheduler; the second Schedule is called after the
   // successful fetch.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // Make the first soft fetch successful.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
   signal_fetch_done.Run(Status::Success());
   // The second call is ignored if it happens right after the first one.
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotFetchOnNTPOpenedAfterSuccessfulPersistentFetch) {
   // First enable the scheduler; the second Schedule is called after the
   // successful fetch.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // Make the first persistent fetch successful.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
   signal_fetch_done.Run(Status::Success());
   // The second call is ignored if it happens right after the first one.
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotFetchOnNTPOpenedAfterFailedSoftFetch) {
   // First enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // Make the first soft fetch failed.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
   signal_fetch_done.Run(Status(StatusCode::PERMANENT_ERROR, ""));
 
   // The second call is ignored if it happens right after the first one.
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotFetchOnNTPOpenedAfterFailedPersistentFetch) {
   // First enable the scheduler.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // Make the first persistent fetch failed.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
   signal_fetch_done.Run(Status(StatusCode::PERMANENT_ERROR, ""));
 
   // The second call is ignored if it happens right after the first one.
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldFetchAgainOnBrowserForgroundLaterAgain) {
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
   {
@@ -496,123 +481,121 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
     // Initial scheduling after being enabled.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The first call to NTPOpened results in a fetch.
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(SaveArg<0>(&signal_fetch_done));
     // Rescheduling after a succesful fetch.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The second call to NTPOpened 2hrs later again results in a fetch.
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
 
   // First enable the scheduler.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
   // Make the first soft fetch successful.
-  scheduling_provider()->OnBrowserForegrounded();
+  scheduler()->OnBrowserForegrounded();
   signal_fetch_done.Run(Status::Success());
   // Open NTP again after 2hrs.
   test_clock()->Advance(base::TimeDelta::FromHours(2));
-  scheduling_provider()->OnBrowserForegrounded();
+  scheduler()->OnBrowserForegrounded();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldRescheduleOnRescheduleFetching) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  scheduling_provider()->RescheduleFetching();
+  scheduler()->RescheduleFetching();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest, ShouldScheduleOnActivation) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldScheduleOnActivation) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldUnscheduleOnLaterInactivation) {
   {
     InSequence s;
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     EXPECT_CALL(*persistent_scheduler(), Unschedule());
   }
-  ActivateUnderlyingProvider();
-  InactivateUnderlyingProvider();
+  ActivateProvider();
+  DeactivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ShouldScheduleOnLaterActivation) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldScheduleOnLaterActivation) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   // There is no schedule yet, so inactivation does not trigger unschedule.
-  InactivateUnderlyingProvider();
-  ActivateUnderlyingProvider();
+  DeactivateProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldRescheduleAfterSuccessfulFetch) {
   // First reschedule on becoming active.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
 
   // Trigger a fetch.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
   // Second reschedule after a successful fetch.
   signal_fetch_done.Run(Status::Success());
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldNotRescheduleAfterFailedFetch) {
   // Only reschedule on becoming active.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
 
   // Trigger a fetch.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
   // No furter reschedule after a failure.
   signal_fetch_done.Run(Status(StatusCode::PERMANENT_ERROR, ""));
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest, ShouldScheduleOnlyOnce) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldScheduleOnlyOnce) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
   // No further call to Schedule on a second status callback.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest, ShouldUnscheduleOnlyOnce) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldUnscheduleOnlyOnce) {
   {
     InSequence s;
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     EXPECT_CALL(*persistent_scheduler(), Unschedule());
   }
   // First schedule so that later we really unschedule.
-  ActivateUnderlyingProvider();
-  InactivateUnderlyingProvider();
+  ActivateProvider();
+  DeactivateProvider();
   // No further call to Unschedule on second status callback.
-  InactivateUnderlyingProvider();
+  DeactivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ReschedulesWhenWifiParamChanges) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ReschedulesWhenWifiParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the wifi interval for this class.
   SetVariationParameter("fetching_interval_hours-wifi-active_ntp_user", "1.5");
 
   // Schedule() should get called for the second time after params have changed.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ReschedulesWhenFallbackParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the fallback interval for this class.
@@ -620,13 +603,13 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
                         "1.5");
 
   // Schedule() should get called for the second time after params have changed.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ReschedulesWhenOnUsageEventParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the on usage interval for this class.
@@ -634,13 +617,13 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
                         "1.5");
 
   // Schedule() should get called for the second time after params have changed.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ReschedulesWhenOnNtpOpenedParamChanges) {
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(2);
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the fallback interval for this class.
@@ -648,28 +631,27 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
                         "1.5");
 
   // Schedule() should get called for the second time after params have changed.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       FetchIntervalForNtpOpenedTrigger) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, FetchIntervalForNtpOpenedTrigger) {
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
   {
     InSequence s;
     // Initial scheduling after being enabled.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The first call to NTPOpened results in a fetch.
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(SaveArg<0>(&signal_fetch_done));
     // Rescheduling after a succesful fetch.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The third call to NTPOpened 35min later again results in a fetch.
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
 
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
   signal_fetch_done.Run(Status::Success());
 
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER which uses a 2h time
@@ -677,15 +659,15 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
 
   // Open NTP again after 20min. This time no fetch is executed.
   test_clock()->Advance(base::TimeDelta::FromMinutes(20));
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 
   // Open NTP again after 101min (121min since first opened). Since the default
   // time interval has passed refetch again.
   test_clock()->Advance(base::TimeDelta::FromMinutes(101));
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        OverrideFetchIntervalForNtpOpenedTrigger) {
   // UserClassifier defaults to UserClass::ACTIVE_NTP_USER if PrefService is
   // null. Change the on usage interval for this class from 2h to 30min.
@@ -698,125 +680,85 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
     // Initial scheduling after being enabled.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The first call to NTPOpened results in a fetch.
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_))
         .WillOnce(SaveArg<0>(&signal_fetch_done));
     // Rescheduling after a succesful fetch.
     EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
     // The third call to NTPOpened 35min later again results in a fetch.
-    EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+    EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   }
 
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
   signal_fetch_done.Run(Status::Success());
 
   // Open NTP again after 20min. No fetch request is issues since the 30 min
   // time interval has not passed yet.
   test_clock()->Advance(base::TimeDelta::FromMinutes(20));
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 
   // Open NTP again after 15min (35min since first opened)
   test_clock()->Advance(base::TimeDelta::FromMinutes(15));
-  scheduling_provider()->OnNTPOpened();
+  scheduler()->OnNTPOpened();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldBlockFetchingForSomeTimeAfterHistoryCleared) {
   // First enable the scheduler -- this will trigger the persistent scheduling.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
   // Clear the history.
-  scheduling_provider()->OnHistoryCleared();
+  scheduler()->OnHistoryCleared();
 
   // A trigger after 15 minutes is ignored.
   test_clock()->Advance(base::TimeDelta::FromMinutes(15));
-  scheduling_provider()->OnBrowserForegrounded();
+  scheduler()->OnBrowserForegrounded();
 
   // A trigger after another 16 minutes is performed (more than 30m after
   // clearing the history).
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_));
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_));
   test_clock()->Advance(base::TimeDelta::FromMinutes(16));
-  scheduling_provider()->OnBrowserForegrounded();
+  scheduler()->OnBrowserForegrounded();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldImmediatelyFetchAfterSuggestionsCleared) {
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
 
   // First enable the scheduler -- this will trigger the persistent scheduling.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // The first trigger results in a fetch.
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .WillOnce(SaveArg<0>(&signal_fetch_done));
-  scheduling_provider()->OnBrowserForegrounded();
+  scheduler()->OnBrowserForegrounded();
   // Make the fetch successful -- this results in rescheduling.
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _));
   signal_fetch_done.Run(Status::Success());
 
   // Clear the suggestions - results in an immediate fetch.
-  EXPECT_CALL(*underlying_provider(), ReloadSuggestions());
-  scheduling_provider()->OnSuggestionsCleared();
+  EXPECT_CALL(*provider(), ReloadSuggestions());
+  scheduler()->OnSuggestionsCleared();
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
-       ShouldThrottleInteractiveRequests) {
+TEST_F(RemoteSuggestionsSchedulerImplTest, ShouldThrottleInteractiveRequests) {
   // Change the quota for interactive requests ("active NTP user" is the default
   // class in tests).
   SetVariationParameter("interactive_quota_SuggestionFetcherActiveNTPUser",
                         "10");
   ResetProvider();
 
-  Category category = Category::FromKnownCategory(KnownCategories::ARTICLES);
-  std::set<std::string> known_suggestions;
-
-  // Both Fetch(..) and ReloadSuggestions() consume the same quota. As long as
-  // the quota suffices, the call gets through.
-  EXPECT_CALL(*underlying_provider(), ReloadSuggestions()).Times(5);
-  for (int x = 0; x < 5; ++x) {
-    scheduling_provider()->ReloadSuggestions();
+  for (int x = 0; x < 10; ++x) {
+    EXPECT_THAT(scheduler()->AcquireQuotaForInteractiveFetch(), Eq(true));
   }
 
-  // Expect underlying provider being called and store the callback to inform
-  // scheduling provider.
-  FetchDoneCallback signal_fetch_done_from_underlying_provider;
-  EXPECT_CALL(*underlying_provider(), Fetch(_, _, _))
-      .Times(5)
-      .WillRepeatedly(SaveArg<2>(&signal_fetch_done_from_underlying_provider));
-  // Expect scheduling provider to pass the information through.
-  MockFunction<void(Status status_code,
-                    const std::vector<ContentSuggestion>& suggestions)>
-      fetch_done_from_scheduling_provider;
-  EXPECT_CALL(fetch_done_from_scheduling_provider,
-              Call(Field(&Status::code, StatusCode::SUCCESS), _))
-      .Times(5);
-  // Scheduling is not activated, each successful fetch results in Unschedule().
-  EXPECT_CALL(*persistent_scheduler(), Unschedule()).Times(5);
-  for (int x = 0; x < 5; ++x) {
-    scheduling_provider()->Fetch(
-        category, known_suggestions,
-        base::Bind(&SchedulingRemoteSuggestionsProviderTest::FetchDoneWrapper,
-                   base::Unretained(this),
-                   &fetch_done_from_scheduling_provider));
-    // Inform scheduling provider the fetc is successful (with no suggestions).
-    signal_fetch_done_from_underlying_provider.Run(
-        Status::Success(), std::vector<ContentSuggestion>{});
-  }
-
-  // When the quota expires, it is blocked by the scheduling provider, directly
-  // calling the callback.
-  EXPECT_CALL(fetch_done_from_scheduling_provider,
-              Call(Field(&Status::code, StatusCode::TEMPORARY_ERROR), _));
-  scheduling_provider()->ReloadSuggestions();
-  scheduling_provider()->Fetch(
-      category, known_suggestions,
-      base::Bind(&SchedulingRemoteSuggestionsProviderTest::FetchDoneWrapper,
-                 base::Unretained(this), &fetch_done_from_scheduling_provider));
+  // Now the quota is over.
+  EXPECT_THAT(scheduler()->AcquireQuotaForInteractiveFetch(), Eq(false));
 }
 
-TEST_F(SchedulingRemoteSuggestionsProviderTest,
+TEST_F(RemoteSuggestionsSchedulerImplTest,
        ShouldThrottleNonInteractiveRequests) {
   // Change the quota for interactive requests ("active NTP user" is the default
   // class in tests).
@@ -827,20 +769,20 @@ TEST_F(SchedulingRemoteSuggestionsProviderTest,
   EXPECT_CALL(*persistent_scheduler(), Schedule(_, _)).Times(6);
 
   // First enable the scheduler -- this will trigger the persistent scheduling.
-  ActivateUnderlyingProvider();
+  ActivateProvider();
 
   // As long as the quota suffices, the call gets through.
   RemoteSuggestionsProvider::FetchStatusCallback signal_fetch_done;
-  EXPECT_CALL(*underlying_provider(), RefetchInTheBackground(_))
+  EXPECT_CALL(*provider(), RefetchInTheBackground(_))
       .Times(5)
       .WillRepeatedly(SaveArg<0>(&signal_fetch_done));
   for (int x = 0; x < 5; ++x) {
-    scheduling_provider()->OnPersistentSchedulerWakeUp();
+    scheduler()->OnPersistentSchedulerWakeUp();
     signal_fetch_done.Run(Status::Success());
   }
 
   // For the 6th time, it is blocked by the scheduling provider.
-  scheduling_provider()->OnPersistentSchedulerWakeUp();
+  scheduler()->OnPersistentSchedulerWakeUp();
 }
 
 }  // namespace ntp_snippets

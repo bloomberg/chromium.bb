@@ -256,6 +256,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
     PrefService* pref_service,
     const std::string& application_language_code,
     CategoryRanker* category_ranker,
+    RemoteSuggestionsScheduler* scheduler,
     std::unique_ptr<RemoteSuggestionsFetcher> suggestions_fetcher,
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
@@ -267,6 +268,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
           Category::FromKnownCategory(KnownCategories::ARTICLES)),
       application_language_code_(application_language_code),
       category_ranker_(category_ranker),
+      remote_suggestions_scheduler_(scheduler),
       suggestions_fetcher_(std::move(suggestions_fetcher)),
       database_(std::move(database)),
       image_fetcher_(std::move(image_fetcher), pref_service, database_.get()),
@@ -274,7 +276,6 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
       fetch_when_ready_(false),
       fetch_when_ready_interactive_(false),
       fetch_when_ready_callback_(nullptr),
-      remote_suggestions_scheduler_(nullptr),
       clear_history_dependent_state_when_initialized_(false),
       clock_(base::MakeUnique<base::DefaultClock>()) {
   RestoreCategoriesFromPrefs();
@@ -316,16 +317,17 @@ void RemoteSuggestionsProviderImpl::RegisterProfilePrefs(
   RemoteSuggestionsStatusService::RegisterProfilePrefs(registry);
 }
 
-void RemoteSuggestionsProviderImpl::SetRemoteSuggestionsScheduler(
-    RemoteSuggestionsScheduler* scheduler) {
-  remote_suggestions_scheduler_ = scheduler;
-  // Call the observer right away if we've reached any final state.
-  NotifyStateChanged();
-}
-
 void RemoteSuggestionsProviderImpl::ReloadSuggestions() {
-  FetchSuggestions(/*interactive_request=*/true,
-                   /*callback=*/nullptr);
+  if (!remote_suggestions_scheduler_->AcquireQuotaForInteractiveFetch()) {
+    return;
+  }
+  FetchSuggestions(
+      /*interactive_request=*/true,
+      base::MakeUnique<FetchStatusCallback>(base::Bind(
+          [](RemoteSuggestionsScheduler* scheduler, Status status_code) {
+            scheduler->OnInteractiveFetchFinished(status_code);
+          },
+          base::Unretained(remote_suggestions_scheduler_))));
 }
 
 void RemoteSuggestionsProviderImpl::RefetchInTheBackground(
@@ -368,6 +370,21 @@ void RemoteSuggestionsProviderImpl::Fetch(
                                 "RemoteSuggestionsProvider is not ready!"));
     return;
   }
+  if (!remote_suggestions_scheduler_->AcquireQuotaForInteractiveFetch()) {
+    CallWithEmptyResults(callback, Status(StatusCode::TEMPORARY_ERROR,
+                                          "Interactive quota exceeded!"));
+    return;
+  }
+  // Make sure after the fetch, the scheduler is informed about the status.
+  FetchDoneCallback callback_wrapper = base::Bind(
+      [](RemoteSuggestionsScheduler* scheduler,
+         const FetchDoneCallback& callback, Status status_code,
+         std::vector<ContentSuggestion> suggestions) {
+        scheduler->OnInteractiveFetchFinished(status_code);
+        callback.Run(status_code, std::move(suggestions));
+      },
+      base::Unretained(remote_suggestions_scheduler_), callback);
+
   RequestParams params = BuildFetchParams();
   params.excluded_ids.insert(known_suggestion_ids.begin(),
                              known_suggestion_ids.end());
@@ -377,7 +394,7 @@ void RemoteSuggestionsProviderImpl::Fetch(
   suggestions_fetcher_->FetchSnippets(
       params,
       base::BindOnce(&RemoteSuggestionsProviderImpl::OnFetchMoreFinished,
-                     base::Unretained(this), callback));
+                     base::Unretained(this), callback_wrapper));
 }
 
 // Builds default fetcher params.
@@ -642,7 +659,6 @@ void RemoteSuggestionsProviderImpl::OnFetchMoreFinished(
   // Should Nuke also cancel outstanding requests, or do we want to check the
   // status?
   UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
-  // Notify callers and observers.
   fetching_callback.Run(Status::Success(), std::move(result));
   NotifyNewSuggestions(category, *existing_content);
 }
@@ -872,18 +888,14 @@ void RemoteSuggestionsProviderImpl::ClearHistoryDependentState() {
   }
 
   NukeAllSuggestions();
-  if (remote_suggestions_scheduler_) {
-    remote_suggestions_scheduler_->OnHistoryCleared();
-  }
+  remote_suggestions_scheduler_->OnHistoryCleared();
 }
 
 void RemoteSuggestionsProviderImpl::ClearSuggestions() {
   DCHECK(initialized());
 
   NukeAllSuggestions();
-  if (remote_suggestions_scheduler_) {
-    remote_suggestions_scheduler_->OnSuggestionsCleared();
-  }
+  remote_suggestions_scheduler_->OnSuggestionsCleared();
 }
 
 void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
@@ -1070,10 +1082,6 @@ void RemoteSuggestionsProviderImpl::EnterState(State state) {
 }
 
 void RemoteSuggestionsProviderImpl::NotifyStateChanged() {
-  if (!remote_suggestions_scheduler_) {
-    return;
-  }
-
   switch (state_) {
     case State::NOT_INITED:
       // Initial state, not sure yet whether active or not.

@@ -39,10 +39,11 @@
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
+#include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
-#include "components/ntp_snippets/remote/scheduling_remote_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
+#include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -95,9 +96,10 @@ using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
 using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
+using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
-using ntp_snippets::SchedulingRemoteSuggestionsProvider;
 using ntp_snippets::TabDelegateSyncAdapter;
+using ntp_snippets::UserClassifier;
 using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
 using translate::LanguageModel;
@@ -189,6 +191,7 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
                              OAuth2TokenService* token_service,
                              ContentSuggestionsService* service,
                              LanguageModel* language_model,
+                             UserClassifier* user_classifier,
                              PrefService* pref_service,
                              Profile* profile) {
   scoped_refptr<net::URLRequestContextGetter> request_context =
@@ -213,32 +216,20 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
       signin_manager, token_service, request_context, pref_service,
       language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
-      GetFetchEndpoint(chrome::GetChannel()), api_key,
-      service->user_classifier());
+      GetFetchEndpoint(chrome::GetChannel()), api_key, user_classifier);
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, pref_service, g_browser_process->GetApplicationLocale(),
-      service->category_ranker(), std::move(suggestions_fetcher),
+      service->category_ranker(), service->remote_suggestions_scheduler(),
+      std::move(suggestions_fetcher),
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
       base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
                                                        pref_service));
 
-  PersistentScheduler* scheduler = nullptr;
-#if defined(OS_ANDROID)
-  scheduler = NTPSnippetsLauncher::Get();
-#endif  // OS_ANDROID
-
-  RemoteSuggestionsProviderImpl* provider_raw = provider.get();
-  auto scheduling_provider =
-      base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
-          service, std::move(provider), scheduler, service->user_classifier(),
-          pref_service, g_browser_process->local_state(),
-          base::MakeUnique<base::DefaultClock>());
-  provider_raw->SetRemoteSuggestionsScheduler(scheduling_provider.get());
-  service->set_remote_suggestions_provider(scheduling_provider.get());
-  service->set_remote_suggestions_scheduler(scheduling_provider.get());
-  service->RegisterProvider(std::move(scheduling_provider));
+  service->remote_suggestions_scheduler()->SetProvider(provider.get());
+  service->set_remote_suggestions_provider(provider.get());
+  service->RegisterProvider(std::move(provider));
 }
 
 void RegisterForeignSessionsProvider(SyncService* sync_service,
@@ -298,19 +289,33 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   using State = ContentSuggestionsService::State;
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord());
+  PrefService* pref_service = profile->GetPrefs();
+
+  auto user_classifier = base::MakeUnique<UserClassifier>(
+      pref_service, base::MakeUnique<base::DefaultClock>());
+  auto* user_classifier_raw = user_classifier.get();
+
+  // Create the RemoteSuggestionsScheduler.
+  PersistentScheduler* persistent_scheduler = nullptr;
+#if defined(OS_ANDROID)
+  persistent_scheduler = NTPSnippetsLauncher::Get();
+#endif  // OS_ANDROID
+  auto scheduler = base::MakeUnique<RemoteSuggestionsSchedulerImpl>(
+      persistent_scheduler, user_classifier_raw, pref_service,
+      g_browser_process->local_state(), base::MakeUnique<base::DefaultClock>());
 
   // Create the ContentSuggestionsService.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
-  PrefService* pref_service = profile->GetPrefs();
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
           pref_service, base::MakeUnique<base::DefaultClock>());
-  auto* service = new ContentSuggestionsService(State::ENABLED, signin_manager,
-                                                history_service, pref_service,
-                                                std::move(category_ranker));
+  auto* service = new ContentSuggestionsService(
+      State::ENABLED, signin_manager, history_service, pref_service,
+      std::move(category_ranker), std::move(user_classifier),
+      std::move(scheduler));
 
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =
@@ -370,7 +375,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     RegisterArticleProvider(signin_manager, token_service, service,
-                            language_model, pref_service, profile);
+                            language_model, user_classifier_raw, pref_service,
+                            profile);
   }
 
   if (base::FeatureList::IsEnabled(

@@ -28,14 +28,16 @@ ContentSuggestionsService::ContentSuggestionsService(
     SigninManagerBase* signin_manager,
     history::HistoryService* history_service,
     PrefService* pref_service,
-    std::unique_ptr<CategoryRanker> category_ranker)
+    std::unique_ptr<CategoryRanker> category_ranker,
+    std::unique_ptr<UserClassifier> user_classifier,
+    std::unique_ptr<RemoteSuggestionsScheduler> remote_suggestions_scheduler)
     : state_(state),
       signin_observer_(this),
       history_service_observer_(this),
       remote_suggestions_provider_(nullptr),
-      remote_suggestions_scheduler_(nullptr),
       pref_service_(pref_service),
-      user_classifier_(pref_service, base::MakeUnique<base::DefaultClock>()),
+      remote_suggestions_scheduler_(std::move(remote_suggestions_scheduler)),
+      user_classifier_(std::move(user_classifier)),
       category_ranker_(std::move(category_ranker)) {
   // Can be null in tests.
   if (signin_manager) {
