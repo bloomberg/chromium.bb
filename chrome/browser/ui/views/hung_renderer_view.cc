@@ -447,7 +447,7 @@ void HungRendererDialogView::Init() {
       0, delegate->GetMetric(
              LayoutDelegate::Metric::RELATED_CONTROL_VERTICAL_SPACING));
 
-  layout->StartRow(0, double_column_set_id);
+  layout->StartRow(1, double_column_set_id);
   layout->SkipColumns(1);
   layout->AddView(hung_pages_table_->CreateParentIfNecessary(), 1, 1,
                   views::GridLayout::FILL,
