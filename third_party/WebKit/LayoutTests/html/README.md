@@ -41,6 +41,10 @@ Some areas have their own directories not under html/.
 
     MARQUEE element.
 
+*   menu_menuitem/
+
+    MENU and MENUITEM elements.
+
 *   sections/
 
     [Sections elements](https://html.spec.whatwg.org/multipage/semantics.html#sections);
