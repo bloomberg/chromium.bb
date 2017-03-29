@@ -4701,6 +4701,9 @@ WL_EXPORT void
 weston_compositor_add_pending_output(struct weston_output *output,
 				     struct weston_compositor *compositor)
 {
+	assert(output->disable);
+	assert(output->enable);
+
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->pending_output_list.prev, &output->link);
 	wl_signal_emit(&compositor->output_pending_signal, output);
@@ -4744,8 +4747,6 @@ weston_output_enable(struct weston_output *output)
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
 	int x = 0, y = 0;
-
-	assert(output->enable);
 
 	iterator = container_of(c->output_list.prev,
 				struct weston_output, link);
@@ -4833,8 +4834,6 @@ weston_output_enable(struct weston_output *output)
 WL_EXPORT void
 weston_output_disable(struct weston_output *output)
 {
-	assert(output->disable);
-
 	/* Should we rename this? */
 	output->destroying = 1;
 
