@@ -25,19 +25,6 @@ class PixelExpectations(GpuTestExpectations):
               ['android'])
     self.Skip('Pixel_CanvasDisplayLinearRGBUnaccelerated2D', ['android'])
 
-    # TODO(xlai) check / generate reference images for newly updated tests
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              bug=697582)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=697582)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker', bug=697582)
-
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
