@@ -715,6 +715,8 @@ class CC_EXPORT LayerTreeHostImpl
   // scroll source info for Use Counters.
   void UpdateScrollSourceInfo(bool is_wheel_scroll);
 
+  bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
+
   using UIResourceMap = std::unordered_map<UIResourceId, UIResourceData>;
   UIResourceMap ui_resource_map_;
 

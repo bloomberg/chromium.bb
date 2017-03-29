@@ -602,13 +602,12 @@ EventListenerProperties LayerTreeHostImpl::GetEventListenerProperties(
 
 // Return true if scrollable node for 'ancestor' is the same as 'child' or an
 // ancestor along the scroll tree.
-bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor) {
+bool LayerTreeHostImpl::IsScrolledBy(LayerImpl* child, ScrollNode* ancestor) {
   DCHECK(ancestor && ancestor->scrollable);
   if (!child)
     return false;
-
-  auto* property_trees = child->layer_tree_impl()->property_trees();
-  ScrollTree& scroll_tree = property_trees->scroll_tree;
+  DCHECK_EQ(child->layer_tree_impl(), active_tree_.get());
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
        scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
     if (scroll_node->id == ancestor->id)
@@ -625,15 +624,22 @@ LayerTreeHostImpl::EventListenerTypeForTouchStartAt(
 
   // Now determine if there are actually any handlers at that point.
   // TODO(rbyers): Consider also honoring touch-action (crbug.com/347272).
-  LayerImpl* layer_impl =
+  LayerImpl* layer_impl_with_touch_handler =
       active_tree_->FindLayerThatIsHitByPointInTouchHandlerRegion(
           device_viewport_point);
-  if (layer_impl == NULL)
+  if (layer_impl_with_touch_handler == NULL)
     return InputHandler::TouchStartEventListenerType::NO_HANDLER;
 
   if (!CurrentlyScrollingNode())
     return InputHandler::TouchStartEventListenerType::HANDLER;
 
+  // Check if the touch start hits on the current scrolling layer or its
+  // descendant. layer_impl_with_touch_handler is the layer hit by the pointer
+  // and has an event handler, otherwise it is null.
+  // We want to compare the most inner layer we are hitting on which may not
+  // have an event listener with the actual scrolling layer.
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
   bool is_ancestor = IsScrolledBy(layer_impl, CurrentlyScrollingNode());
   return is_ancestor ? InputHandler::TouchStartEventListenerType::
                            HANDLER_ON_SCROLLING_LAYER
