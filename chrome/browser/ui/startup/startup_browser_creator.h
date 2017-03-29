@@ -107,6 +107,11 @@ class StartupBrowserCreator {
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  // Returns whether the Consolidated startup flow will be used, based on the
+  // platform-appropriate Feature.
+  // TODO(tmartino): Remove once this is on 100%.
+  static bool UseConsolidatedFlow();
+
  private:
   friend class CloudPrintProxyPolicyTest;
   friend class CloudPrintProxyPolicyStartupTest;

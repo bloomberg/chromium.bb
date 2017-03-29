@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
+#include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/common/chrome_constants.h"
@@ -102,6 +103,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/win/windows_version.h"
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
 #endif
 
@@ -489,6 +491,15 @@ void StartupBrowserCreator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // ProfileManager handles setting this to false for new profiles upon
   // creation.
   registry->RegisterBooleanPref(prefs::kHasSeenWelcomePage, true);
+}
+
+// static
+bool StartupBrowserCreator::UseConsolidatedFlow() {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    return base::FeatureList::IsEnabled(features::kEnableWelcomeWin10);
+#endif  // defined(OS_WIN)
+  return base::FeatureList::IsEnabled(features::kUseConsolidatedStartupFlow);
 }
 
 // static

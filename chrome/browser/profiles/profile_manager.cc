@@ -57,6 +57,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -996,12 +997,14 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
                                    supervised_user_id);
   }
 #if !defined(OS_ANDROID)
-  // TODO(pmonette): Fix IsNewProfile() to handle the case where the profile is
-  // new even if the "Preferences" file already existed (For example: The
-  // master_preferences file is dumped into the default profile on first run,
-  // before profile creation).
-  if (profile->IsNewProfile() || first_run::IsChromeFirstRun())
-    profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
+  if (StartupBrowserCreator::UseConsolidatedFlow()) {
+    // TODO(pmonette): Fix IsNewProfile() to handle the case where the profile
+    // is new even if the "Preferences" file already existed (For example: The
+    // master_preferences file is dumped into the default profile on first run,
+    // before profile creation).
+    if (profile->IsNewProfile() || first_run::IsChromeFirstRun())
+      profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, false);
+  }
 #endif
 }
 

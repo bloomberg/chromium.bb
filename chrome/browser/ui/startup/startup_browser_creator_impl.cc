@@ -72,7 +72,6 @@
 #include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
@@ -283,14 +282,14 @@ void AppendTabs(const StartupTabs& from, StartupTabs* to) {
     to->insert(to->end(), from.begin(), from.end());
 }
 
-// Determines whether the Consolidated startup flow should be used, based on
-// the kUseConsolidatedStartupFlow Feature. Not enabled on Windows 10+.
-bool UseConsolidatedFlow() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
-    return base::FeatureList::IsEnabled(features::kEnableWelcomeWin10);
-#endif  // defined(OS_WIN)
-  return base::FeatureList::IsEnabled(features::kUseConsolidatedStartupFlow);
+// Prevent profiles created in M56 from seeing Welcome page. See
+// crbug.com/704977.
+// TODO(tmartino): Remove this in ~M60.
+void ProcessErroneousWelcomePagePrefs(Profile* profile) {
+  const std::string kVersionErroneousWelcomeFixed = "58.0.0.0";
+  if (profile->WasCreatedByVersionOrLater(kVersionErroneousWelcomeFixed))
+    return;
+  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
 }
 
 }  // namespace
@@ -381,7 +380,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     RecordLaunchModeHistogram(urls_to_open.empty() ?
                               LM_TO_BE_DECIDED : LM_WITH_URLS);
 
-    if (UseConsolidatedFlow())
+    if (StartupBrowserCreator::UseConsolidatedFlow())
       ProcessLaunchUrlsUsingConsolidatedFlow(process_startup, urls_to_open);
     else
       ProcessLaunchURLs(process_startup, urls_to_open);
@@ -626,6 +625,8 @@ void StartupBrowserCreatorImpl::ProcessLaunchUrlsUsingConsolidatedFlow(
   // Don't open any browser windows if starting up in "background mode".
   if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow))
     return;
+
+  ProcessErroneousWelcomePagePrefs(profile_);
 
   StartupTabs cmd_line_tabs;
   UrlsToTabs(cmd_line_urls, &cmd_line_tabs);
