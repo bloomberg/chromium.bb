@@ -362,14 +362,14 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "details.";
 
     case UseCounter::CSSDeepCombinator:
-      return "/deep/ combinator is deprecated. See "
-             "https://www.chromestatus.com/features/6750456638341120 for more "
-             "details.";
+      return String::format(
+          "/deep/ combinator is deprecated and will be a no-op in %s. See "
+          "https://www.chromestatus.com/features/4964279606312960 for more "
+          "details.",
+          milestoneString(M60));
 
     case UseCounter::CSSSelectorPseudoShadow:
-      return "::shadow pseudo-element is deprecated. See "
-             "https://www.chromestatus.com/features/6750456638341120 for more "
-             "details.";
+      return willBeRemoved("::shadow pseudo-element", M60, "6750456638341120");
 
     case UseCounter::VRDeprecatedFieldOfView:
       return replacedBy("VREyeParameters.fieldOfView",
@@ -407,7 +407,8 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "Web Crypto API usage inside secure frames with non-secure ancestors "
           "is deprecated. The API will no longer be exposed in these contexts "
           "as of %s. See https://www.chromestatus.com/features/5030265697075200"
-          " for more details.", milestoneString(M59));
+          " for more details.",
+          milestoneString(M59));
 
     case UseCounter::RtcpMuxPolicyNegotiate:
       return String::format(
