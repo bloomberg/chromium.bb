@@ -4,6 +4,8 @@
 
 #include "components/translate/core/browser/translate_manager.h"
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -172,7 +174,8 @@ class TranslateManagerTest : public ::testing::Test {
   void PrepareULPTest(const char* ulp_json, bool turn_on_feature) {
     PrepareTranslateManager();
     std::unique_ptr<base::Value> profile(CreateProfileFromJSON(ulp_json));
-    prefs_.SetUserPref(TranslatePrefs::kPrefLanguageProfile, profile.release());
+    prefs_.SetUserPref(TranslatePrefs::kPrefLanguageProfile,
+                       std::move(profile));
     if (turn_on_feature)
       TurnOnTranslateByULP();
   }

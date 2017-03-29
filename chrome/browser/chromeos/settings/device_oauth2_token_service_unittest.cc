@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -141,7 +142,8 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   // (it must have a non-empty value or it won't be used).
   void SetDeviceRefreshTokenInLocalState(const std::string& refresh_token) {
     scoped_testing_local_state_.Get()->SetUserPref(
-        prefs::kDeviceRobotAnyApiRefreshToken, new base::Value(refresh_token));
+        prefs::kDeviceRobotAnyApiRefreshToken,
+        base::MakeUnique<base::Value>(refresh_token));
   }
 
   std::string GetValidTokenInfoResponse(const std::string& email) {

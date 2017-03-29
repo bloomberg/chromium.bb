@@ -7,9 +7,11 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,8 +32,8 @@ namespace {
 void SetOverrides(sync_preferences::TestingPrefServiceSyncable* prefs,
                   bool update) {
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     new base::Value(1));
-  base::ListValue* overrides = new base::ListValue;
+                     base::MakeUnique<base::Value>(1));
+  auto overrides = base::MakeUnique<base::ListValue>();
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
 
   entry->SetString("name", update ? "new_foo" : "foo");
@@ -59,7 +61,7 @@ void SetOverrides(sync_preferences::TestingPrefServiceSyncable* prefs,
   entry->SetString("keyword", "bazk");
   entry->SetString("encoding", "UTF-8");
   overrides->Append(entry->CreateDeepCopy());
-  prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
+  prefs->SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 }
 
 void SetPolicy(sync_preferences::TestingPrefServiceSyncable* prefs,
@@ -74,7 +76,7 @@ void SetPolicy(sync_preferences::TestingPrefServiceSyncable* prefs,
   entry->SetBoolean(DefaultSearchManager::kDisabledByPolicy, !enabled);
   prefs->SetManagedPref(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName,
-      entry.release());
+      std::move(entry));
 }
 
 }  // namespace

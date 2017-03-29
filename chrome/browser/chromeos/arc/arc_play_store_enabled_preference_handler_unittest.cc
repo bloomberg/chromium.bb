@@ -136,8 +136,8 @@ TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest,
 
 TEST_F(ArcPlayStoreEnabledPreferenceHandlerTest, RemoveDataDir_Managed) {
   // Set ARC to be managed and disabled.
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                     new base::Value(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, base::MakeUnique<base::Value>(false));
 
   // Starting session manager with prefs::kArcEnabled off in a managed profile
   // does automatically remove Android's data folder.

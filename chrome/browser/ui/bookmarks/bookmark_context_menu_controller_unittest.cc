@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -348,13 +349,13 @@ TEST_F(BookmarkContextMenuControllerTest,
 
   // Disabling the shorcut by policy disables the command.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::Value(false));
+                        base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 
   // And enabling the shortcut by policy disables the command too.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::Value(true));
+                        base::MakeUnique<base::Value>(true));
   EXPECT_FALSE(
       controller.IsCommandIdEnabled(IDC_BOOKMARK_BAR_SHOW_APPS_SHORTCUT));
 }

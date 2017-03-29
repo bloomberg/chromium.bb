@@ -53,7 +53,7 @@ class MockExternalPolicyProviderVisitor
              const std::set<std::string>& expected_extensions) {
     profile_.reset(new TestingProfile);
     profile_->GetTestingPrefService()->SetManagedPref(
-        pref_names::kInstallForceList, policy_forcelist.DeepCopy());
+        pref_names::kInstallForceList, policy_forcelist.CreateDeepCopy());
     provider_.reset(new ExternalProviderImpl(
         this,
         new ExternalPolicyLoader(

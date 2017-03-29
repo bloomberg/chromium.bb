@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -26,10 +27,11 @@ class SessionStartupPrefTest : public testing::Test {
 };
 
 TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {
-  base::ListValue* url_pref_list = new base::ListValue;
+  auto url_pref_list = base::MakeUnique<base::ListValue>();
   url_pref_list->Set(0, new base::Value("google.com"));
   url_pref_list->Set(1, new base::Value("chromium.org"));
-  pref_service_->SetUserPref(prefs::kURLsToRestoreOnStartup, url_pref_list);
+  pref_service_->SetUserPref(prefs::kURLsToRestoreOnStartup,
+                             std::move(url_pref_list));
 
   SessionStartupPref result =
       SessionStartupPref::GetStartupPref(pref_service_.get());
@@ -39,16 +41,17 @@ TEST_F(SessionStartupPrefTest, URLListIsFixedUp) {
 }
 
 TEST_F(SessionStartupPrefTest, URLListManagedOverridesUser) {
-  base::ListValue* url_pref_list1 = new base::ListValue;
+  auto url_pref_list1 = base::MakeUnique<base::ListValue>();
   url_pref_list1->Set(0, new base::Value("chromium.org"));
-  pref_service_->SetUserPref(prefs::kURLsToRestoreOnStartup, url_pref_list1);
+  pref_service_->SetUserPref(prefs::kURLsToRestoreOnStartup,
+                             std::move(url_pref_list1));
 
-  base::ListValue* url_pref_list2 = new base::ListValue;
+  auto url_pref_list2 = base::MakeUnique<base::ListValue>();
   url_pref_list2->Set(0, new base::Value("chromium.org"));
   url_pref_list2->Set(1, new base::Value("chromium.org"));
   url_pref_list2->Set(2, new base::Value("chromium.org"));
   pref_service_->SetManagedPref(prefs::kURLsToRestoreOnStartup,
-                                url_pref_list2);
+                                std::move(url_pref_list2));
 
   SessionStartupPref result =
       SessionStartupPref::GetStartupPref(pref_service_.get());

@@ -6,6 +6,7 @@
 #define COMPONENTS_PREFS_TESTING_PREF_SERVICE_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -33,8 +34,9 @@ class TestingPrefServiceBase : public SuperPrefService {
   const base::Value* GetManagedPref(const std::string& path) const;
 
   // Set a preference on the managed layer and fire observers if the preference
-  // changed. Assumes ownership of |value|.
-  void SetManagedPref(const std::string& path, base::Value* value);
+  // changed.
+  void SetManagedPref(const std::string& path,
+                      std::unique_ptr<base::Value> value);
 
   // Clear the preference on the managed layer and fire observers if the
   // preference has been defined previously.
@@ -45,17 +47,19 @@ class TestingPrefServiceBase : public SuperPrefService {
   // Useful in tests that only check that a preference is overridden by an
   // extension.
   const base::Value* GetExtensionPref(const std::string& path) const;
-  void SetExtensionPref(const std::string& path, base::Value* value);
+  void SetExtensionPref(const std::string& path,
+                        std::unique_ptr<base::Value> value);
   void RemoveExtensionPref(const std::string& path);
 
   // Similar to the above, but for user preferences.
   const base::Value* GetUserPref(const std::string& path) const;
-  void SetUserPref(const std::string& path, base::Value* value);
+  void SetUserPref(const std::string& path, std::unique_ptr<base::Value> value);
   void RemoveUserPref(const std::string& path);
 
   // Similar to the above, but for recommended policy preferences.
   const base::Value* GetRecommendedPref(const std::string& path) const;
-  void SetRecommendedPref(const std::string& path, base::Value* value);
+  void SetRecommendedPref(const std::string& path,
+                          std::unique_ptr<base::Value> value);
   void RemoveRecommendedPref(const std::string& path);
 
   // Do-nothing implementation for TestingPrefService.
@@ -78,7 +82,7 @@ class TestingPrefServiceBase : public SuperPrefService {
   // Sets the value for |path| in |pref_store|.
   void SetPref(TestingPrefStore* pref_store,
                const std::string& path,
-               base::Value* value);
+               std::unique_ptr<base::Value> value);
 
   // Removes the preference identified by |path| from |pref_store|.
   void RemovePref(TestingPrefStore* pref_store, const std::string& path);
@@ -133,8 +137,9 @@ const base::Value* TestingPrefServiceBase<
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
-    SetManagedPref(const std::string& path, base::Value* value) {
-  SetPref(managed_prefs_.get(), path, value);
+    SetManagedPref(const std::string& path,
+                   std::unique_ptr<base::Value> value) {
+  SetPref(managed_prefs_.get(), path, std::move(value));
 }
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
@@ -152,8 +157,9 @@ const base::Value* TestingPrefServiceBase<
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
-    SetExtensionPref(const std::string& path, base::Value* value) {
-  SetPref(extension_prefs_.get(), path, value);
+    SetExtensionPref(const std::string& path,
+                     std::unique_ptr<base::Value> value) {
+  SetPref(extension_prefs_.get(), path, std::move(value));
 }
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
@@ -171,8 +177,8 @@ TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::GetUserPref(
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
-    SetUserPref(const std::string& path, base::Value* value) {
-  SetPref(user_prefs_.get(), path, value);
+    SetUserPref(const std::string& path, std::unique_ptr<base::Value> value) {
+  SetPref(user_prefs_.get(), path, std::move(value));
 }
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
@@ -190,8 +196,9 @@ TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
-    SetRecommendedPref(const std::string& path, base::Value* value) {
-  SetPref(recommended_prefs_.get(), path, value);
+    SetRecommendedPref(const std::string& path,
+                       std::unique_ptr<base::Value> value) {
+  SetPref(recommended_prefs_.get(), path, std::move(value));
 }
 
 template <class SuperPrefService, class ConstructionPrefRegistry>
@@ -213,8 +220,8 @@ template <class SuperPrefService, class ConstructionPrefRegistry>
 void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
     SetPref(TestingPrefStore* pref_store,
             const std::string& path,
-            base::Value* value) {
-  pref_store->SetValue(path, base::WrapUnique(value),
+            std::unique_ptr<base::Value> value) {
+  pref_store->SetValue(path, std::move(value),
                        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
 }
 

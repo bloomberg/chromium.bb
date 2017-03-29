@@ -223,12 +223,14 @@ TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
 }
 
 TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
-  base::ListValue* blacklist = new base::ListValue;
+  auto blacklist = base::MakeUnique<base::ListValue>();
   blacklist->AppendString("*.google.com");
-  base::ListValue* whitelist = new base::ListValue;
+  auto whitelist = base::MakeUnique<base::ListValue>();
   whitelist->AppendString("mail.google.com");
-  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, blacklist);
-  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, whitelist);
+  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
+                               std::move(blacklist));
+  pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist,
+                               std::move(whitelist));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, blacklist_manager_->update_called());

@@ -381,7 +381,7 @@ TEST_F(PrefServiceSyncableTest, UpdatedSyncNodeUnknownPreference) {
 TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
   // Make the homepage preference managed.
   base::Value managed_value("http://example.com");
-  prefs_.SetManagedPref(kStringPrefName, managed_value.DeepCopy());
+  prefs_.SetManagedPref(kStringPrefName, managed_value.CreateDeepCopy());
 
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
@@ -389,7 +389,7 @@ TEST_F(PrefServiceSyncableTest, ManagedPreferences) {
 
   // Changing the homepage preference should not sync anything.
   base::Value user_value("http://chromium..com");
-  prefs_.SetUserPref(kStringPrefName, user_value.DeepCopy());
+  prefs_.SetUserPref(kStringPrefName, user_value.CreateDeepCopy());
   EXPECT_TRUE(out.empty());
 
   // An incoming sync transaction should change the user value, not the managed
@@ -412,7 +412,7 @@ TEST_F(PrefServiceSyncableTest, ManagedListPreferences) {
   base::ListValue managed_value;
   managed_value.AppendString(kExampleUrl0);
   managed_value.AppendString(kExampleUrl1);
-  prefs_.SetManagedPref(kListPrefName, managed_value.DeepCopy());
+  prefs_.SetManagedPref(kListPrefName, managed_value.CreateDeepCopy());
 
   // Set a cloud version.
   syncer::SyncDataList in;
@@ -431,7 +431,7 @@ TEST_F(PrefServiceSyncableTest, ManagedListPreferences) {
   // anything.
   base::ListValue user_value;
   user_value.AppendString("http://chromium.org");
-  prefs_.SetUserPref(kListPrefName, user_value.DeepCopy());
+  prefs_.SetUserPref(kListPrefName, user_value.CreateDeepCopy());
   EXPECT_FALSE(FindValue(kListPrefName, out).get());
 
   // An incoming sync transaction should change the user value, not the managed
@@ -460,7 +460,7 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedPreferences) {
   // Switch kHomePage to managed and set a different value.
   base::Value managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(kStringPrefName,
-                                          managed_value.DeepCopy());
+                                          managed_value.CreateDeepCopy());
 
   // The pref value should be the one dictated by policy.
   EXPECT_TRUE(managed_value.Equals(&GetPreferenceValue(kStringPrefName)));
@@ -485,7 +485,7 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedPreferencesWithSyncChange) {
   // Switch kHomePage to managed and set a different value.
   base::Value managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(kStringPrefName,
-                                          managed_value.DeepCopy());
+                                          managed_value.CreateDeepCopy());
 
   // Change the sync value.
   base::Value sync_value("http://example.com/sync");
@@ -518,7 +518,7 @@ TEST_F(PrefServiceSyncableTest, DynamicManagedDefaultPreferences) {
   // Switch kHomePage to managed and set a different value.
   base::Value managed_value("http://example.com/managed");
   GetTestingPrefService()->SetManagedPref(kStringPrefName,
-                                          managed_value.DeepCopy());
+                                          managed_value.CreateDeepCopy());
   // The pref value should be the one dictated by policy.
   EXPECT_TRUE(managed_value.Equals(&GetPreferenceValue(kStringPrefName)));
   EXPECT_FALSE(pref->IsDefaultValue());

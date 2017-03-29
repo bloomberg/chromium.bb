@@ -421,7 +421,7 @@ TEST_F(ChromePluginServiceFilterTest, ManagedSetting) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        new base::Value(CONTENT_SETTING_ASK));
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_ASK));
 
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   GURL url("http://www.google.com");

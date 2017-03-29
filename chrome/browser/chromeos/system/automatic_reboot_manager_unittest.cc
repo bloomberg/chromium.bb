@@ -374,8 +374,9 @@ void AutomaticRebootManagerBasicTest::SetRebootAfterUpdate(
     bool reboot_after_update,
     bool expect_reboot) {
   reboot_after_update_ = reboot_after_update;
-  local_state_.SetManagedPref(prefs::kRebootAfterUpdate,
-                              new base::Value(reboot_after_update));
+  local_state_.SetManagedPref(
+      prefs::kRebootAfterUpdate,
+      base::MakeUnique<base::Value>(reboot_after_update));
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,
             power_manager_client_->num_request_restart_calls());
@@ -390,7 +391,7 @@ void AutomaticRebootManagerBasicTest::SetUptimeLimit(
   } else {
     local_state_.SetManagedPref(
         prefs::kUptimeLimit,
-        new base::Value(static_cast<int>(limit.InSeconds())));
+        base::MakeUnique<base::Value>(static_cast<int>(limit.InSeconds())));
   }
   task_runner_->RunUntilIdle();
   EXPECT_EQ(expect_reboot ? 1 : 0,

@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -566,7 +567,7 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
-                                  new base::Value(true));
+                                  base::MakeUnique<base::Value>(true));
 
   // Setting a pref which is not applicable to a system (i.e., Android in this
   // case) does not necessarily create it. Don't bother continuing with the
@@ -601,7 +602,7 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   local_state_.Get()->SetUserPref(prefs::kBackgroundModeEnabled,
-                                  new base::Value(false));
+                                  base::MakeUnique<base::Value>(false));
 
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 

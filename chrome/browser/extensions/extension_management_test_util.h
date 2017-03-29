@@ -119,8 +119,7 @@ class ExtensionManagementPrefUpdater
   }
 
   virtual ~ExtensionManagementPrefUpdater() {
-    service_->SetManagedPref(pref_names::kExtensionManagement,
-                             TakePref().release());
+    service_->SetManagedPref(pref_names::kExtensionManagement, TakePref());
   }
 
  private:

@@ -10,6 +10,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -1691,12 +1692,12 @@ TEST_F(BookmarkBarControllerTest, ManagedShowAppsShortcutInBookmarksBar) {
 
   // Hide the apps shortcut by policy, via the managed pref.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::Value(false));
+                        base::MakeUnique<base::Value>(false));
   EXPECT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
 
   // And try showing it via policy too.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::Value(true));
+                        base::MakeUnique<base::Value>(true));
   EXPECT_FALSE([bar_ appsPageShortcutButtonIsHidden]);
 }
 

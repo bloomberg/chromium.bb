@@ -364,10 +364,8 @@ void DownloadTargetDeterminerTest::EnableAutoOpenBasedOnExtension(
 
 void DownloadTargetDeterminerTest::SetManagedDownloadPath(
     const base::FilePath& path) {
-  profile()->GetTestingPrefService()->
-      // TODO(crbug.com/697817): Convert SetManagedPrefs to take a unique_ptr.
-      SetManagedPref(prefs::kDownloadDefaultDirectory,
-                     base::CreateFilePathValue(path).release());
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kDownloadDefaultDirectory, base::CreateFilePathValue(path));
 }
 
 void DownloadTargetDeterminerTest::SetPromptForDownload(bool prompt) {

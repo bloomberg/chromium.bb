@@ -45,7 +45,7 @@ class ManagedBookmarkServiceTest : public testing::Test {
 
     // TODO(crbug.com/697817): Convert SetManagedPrefs to take a unique_ptr.
     prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
-                           CreateTestTree().release());
+                           CreateTestTree());
     ResetModel();
 
     // The managed node always exists.
@@ -178,7 +178,7 @@ TEST_F(ManagedBookmarkServiceTest, SwapNodes) {
   const BookmarkNode* parent = managed_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeMoved(model_, parent, 1, parent, 0));
   prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
-                         updated->DeepCopy());
+                         updated->CreateDeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -195,7 +195,7 @@ TEST_F(ManagedBookmarkServiceTest, RemoveNode) {
   const BookmarkNode* parent = managed_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_, parent, 1, _, _));
   prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
-                         updated->DeepCopy());
+                         updated->CreateDeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.
@@ -215,7 +215,7 @@ TEST_F(ManagedBookmarkServiceTest, CreateNewNodes) {
   const BookmarkNode* parent = managed_->managed_node();
   EXPECT_CALL(observer_, BookmarkNodeRemoved(model_, parent, 1, _, _)).Times(2);
   prefs_->SetManagedPref(bookmarks::prefs::kManagedBookmarks,
-                         updated->DeepCopy());
+                         updated->CreateDeepCopy());
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Verify the final tree.

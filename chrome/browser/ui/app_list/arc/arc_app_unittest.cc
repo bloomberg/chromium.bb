@@ -519,7 +519,7 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
         policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile());
     connector->OverrideIsManagedForTesting(true);
     profile()->GetTestingPrefService()->SetManagedPref(
-        prefs::kArcEnabled, new base::Value(IsEnabledByPolicy()));
+        prefs::kArcEnabled, base::MakeUnique<base::Value>(IsEnabledByPolicy()));
 
     ArcPlayStoreAppTest::OnBeforeArcTestSetup();
   }

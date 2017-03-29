@@ -124,10 +124,10 @@ TEST_F(ArcTermsOfServiceDefaultNegotiatorTest, Accept) {
   // The preferences are assigned to the managed false value, and the
   // corresponding checkboxes are unchecked.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, new base::Value(false));
+      prefs::kArcBackupRestoreEnabled, base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(fake_arc_support()->backup_and_restore_mode());
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, new base::Value(false));
+      prefs::kArcLocationServiceEnabled, base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(fake_arc_support()->location_service_mode());
 
   // The managed preference values are removed, and the corresponding checkboxes

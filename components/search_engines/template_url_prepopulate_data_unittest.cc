@@ -120,8 +120,8 @@ TEST_F(TemplateURLPrepopulateDataTest, UniqueIDs) {
 // override the built-in ones.
 TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     new base::Value(1));
-  base::ListValue* overrides = new base::ListValue;
+                     base::MakeUnique<base::Value>(1));
+  auto overrides = base::MakeUnique<base::ListValue>();
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
@@ -131,7 +131,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->SetString("encoding", "UTF-8");
   entry->SetInteger("id", 1001);
   overrides->Append(entry->CreateDeepCopy());
-  prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
+  prefs_.SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 
   int version = TemplateURLPrepopulateData::GetDataVersion(&prefs_);
   EXPECT_EQ(1, version);
@@ -163,9 +163,9 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", alternate_urls);
   entry->SetString("search_terms_replacement_key", "espv");
-  overrides = new base::ListValue;
+  overrides = base::MakeUnique<base::ListValue>();
   overrides->Append(entry->CreateDeepCopy());
-  prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
+  prefs_.SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 
   t_urls = TemplateURLPrepopulateData::GetPrepopulatedEngines(
       &prefs_, &default_index);
@@ -187,7 +187,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
-  overrides = new base::ListValue;
+  overrides = base::MakeUnique<base::ListValue>();
   overrides->Append(entry->CreateDeepCopy());
   entry->SetInteger("id", 1002);
   entry->SetString("name", "bar");
@@ -199,7 +199,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   entry->SetString("keyword", "bazk");
   entry->SetString("encoding", "UTF-8");
   overrides->Append(entry->CreateDeepCopy());
-  prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
+  prefs_.SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 
   t_urls =
       TemplateURLPrepopulateData::GetPrepopulatedEngines(&prefs_,
@@ -209,8 +209,8 @@ TEST_F(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
 TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   prefs_.SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     new base::Value(1));
-  base::ListValue* overrides = new base::ListValue;
+                     base::MakeUnique<base::Value>(1));
+  auto overrides = base::MakeUnique<base::ListValue>();
   std::unique_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
@@ -220,7 +220,7 @@ TEST_F(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   entry->SetString("encoding", "UTF-8");
   entry->SetInteger("id", 1001);
   overrides->Append(std::move(entry));
-  prefs_.SetUserPref(prefs::kSearchProviderOverrides, overrides);
+  prefs_.SetUserPref(prefs::kSearchProviderOverrides, std::move(overrides));
 
   int version = TemplateURLPrepopulateData::GetDataVersion(&prefs_);
   EXPECT_EQ(1, version);

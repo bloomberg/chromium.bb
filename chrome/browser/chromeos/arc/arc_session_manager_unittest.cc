@@ -500,7 +500,8 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 
   // Enable ARC through user pref or by policy, according to the test parameter.
   if (arc_enabled_pref_managed())
-    prefs->SetManagedPref(prefs::kArcEnabled, new base::Value(true));
+    prefs->SetManagedPref(prefs::kArcEnabled,
+                          base::MakeUnique<base::Value>(true));
   else
     prefs->SetBoolean(prefs::kArcEnabled, true);
   EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
@@ -508,11 +509,11 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   // Assign test values to the prefs.
   if (backup_restore_pref_value().is_bool()) {
     prefs->SetManagedPref(prefs::kArcBackupRestoreEnabled,
-                          backup_restore_pref_value().DeepCopy());
+                          backup_restore_pref_value().CreateDeepCopy());
   }
   if (location_service_pref_value().is_bool()) {
     prefs->SetManagedPref(prefs::kArcLocationServiceEnabled,
-                          location_service_pref_value().DeepCopy());
+                          location_service_pref_value().CreateDeepCopy());
   }
 
   arc_session_manager()->SetProfile(profile());
@@ -560,7 +561,8 @@ TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
       profile()->GetTestingPrefService();
 
   // Set ARC to be managed.
-  prefs->SetManagedPref(prefs::kArcEnabled, new base::Value(true));
+  prefs->SetManagedPref(prefs::kArcEnabled,
+                        base::MakeUnique<base::Value>(true));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
 
   arc_session_manager()->SetProfile(profile());
@@ -692,8 +694,8 @@ class ArcSessionOobeOptInNegotiatorTest
               profile());
       connector->OverrideIsManagedForTesting(true);
 
-      profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                         new base::Value(true));
+      profile()->GetTestingPrefService()->SetManagedPref(
+          prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
     }
 
     arc_session_manager()->SetProfile(profile());

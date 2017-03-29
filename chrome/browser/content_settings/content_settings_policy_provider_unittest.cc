@@ -9,6 +9,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
@@ -48,7 +49,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
   // Change the managed value of the default geolocation setting
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        new base::Value(CONTENT_SETTING_BLOCK));
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
 
   rule_iterator = provider.GetRuleIterator(CONTENT_SETTINGS_TYPE_GEOLOCATION,
                                            std::string(), false);
@@ -71,7 +72,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   PolicyProvider provider(prefs);
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        new base::Value(CONTENT_SETTING_BLOCK));
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
 
   std::unique_ptr<RuleIterator> rule_iterator(provider.GetRuleIterator(
       CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
@@ -98,9 +99,9 @@ TEST_F(PolicyProviderTest, ManagedDefaultPluginSettingsExperiment) {
 
   // ForceDefaultPluginsSettingAsk overrides this to ASK.
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        new base::Value(CONTENT_SETTING_BLOCK));
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        new base::Value(CONTENT_SETTING_BLOCK));
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
 
   std::unique_ptr<RuleIterator> plugin_rule_iterator(provider.GetRuleIterator(
       CONTENT_SETTINGS_TYPE_PLUGINS, std::string(), false));
@@ -140,7 +141,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
 
   // Set the managed default-content-setting.
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        new base::Value(CONTENT_SETTING_BLOCK));
+                        base::MakeUnique<base::Value>(CONTENT_SETTING_BLOCK));
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(_,
@@ -157,10 +158,9 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
-  base::ListValue* value = new base::ListValue();
+  auto value = base::MakeUnique<base::ListValue>();
   value->AppendString("[*.]google.com");
-  prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls,
-                        value);
+  prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls, std::move(value));
 
   PolicyProvider provider(prefs);
 
@@ -213,10 +213,9 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile.GetTestingPrefService();
 
-  base::ListValue* value = new base::ListValue();
+  auto value = base::MakeUnique<base::ListValue>();
   value->AppendString("[*.]google.com");
-  prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls,
-                        value);
+  prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls, std::move(value));
 
   PolicyProvider provider(prefs);
 
@@ -260,10 +259,10 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   // certificates.
   std::string pattern_str("\"pattern\":\"[*.]google.com\"");
   std::string filter_str("\"filter\":{\"ISSUER\":{\"CN\":\"issuer name\"}}");
-  base::ListValue* value = new base::ListValue();
+  auto value = base::MakeUnique<base::ListValue>();
   value->AppendString("{" + pattern_str + "," + filter_str + "}");
   prefs->SetManagedPref(prefs::kManagedAutoSelectCertificateForUrls,
-                        value);
+                        std::move(value));
   GURL youtube_url("https://www.youtube.com");
   EXPECT_EQ(NULL, TestUtils::GetContentSettingValue(
                       &provider, youtube_url, youtube_url,

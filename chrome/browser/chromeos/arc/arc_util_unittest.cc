@@ -302,8 +302,8 @@ TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_Managed) {
 
   // 1) Set managed preference to true, then try to set the value to false
   // via SetArcPlayStoreEnabledForProfile().
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                     new base::Value(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
   EXPECT_TRUE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
   EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
   SetArcPlayStoreEnabledForProfile(profile(), false);
@@ -316,8 +316,8 @@ TEST_F(ChromeArcUtilTest, ArcPlayStoreEnabledForProfile_Managed) {
 
   // 2) Set managed preference to false, then try to set the value to true
   // via SetArcPlayStoreEnabledForProfile().
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                     new base::Value(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, base::MakeUnique<base::Value>(false));
   EXPECT_TRUE(IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()));
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
   SetArcPlayStoreEnabledForProfile(profile(), true);
@@ -342,7 +342,7 @@ TEST_F(ChromeArcUtilTest, AreArcAllOptInPreferencesManagedForProfile) {
   // Backup-restore pref is managed, while location-service is not, and the
   // function returns false.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, new base::Value(false));
+      prefs::kArcBackupRestoreEnabled, base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(AreArcAllOptInPreferencesManagedForProfile(profile()));
 
   // Location-service pref is managed, while backup-restore is not, and the
@@ -350,12 +350,12 @@ TEST_F(ChromeArcUtilTest, AreArcAllOptInPreferencesManagedForProfile) {
   profile()->GetTestingPrefService()->RemoveManagedPref(
       prefs::kArcBackupRestoreEnabled);
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcLocationServiceEnabled, new base::Value(false));
+      prefs::kArcLocationServiceEnabled, base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(AreArcAllOptInPreferencesManagedForProfile(profile()));
 
   // Both OptIn prefs are set to managed values, and the function returns true.
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kArcBackupRestoreEnabled, new base::Value(false));
+      prefs::kArcBackupRestoreEnabled, base::MakeUnique<base::Value>(false));
   EXPECT_TRUE(AreArcAllOptInPreferencesManagedForProfile(profile()));
 }
 

@@ -1467,7 +1467,7 @@ TEST_F(ChromeLauncherControllerImplTest, MergePolicyAndUserPrefPinnedApps) {
   InsertPrefValue(&policy_value, 0, extension2_->id());
   InsertPrefValue(&policy_value, 1, extension4_->id());
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps, policy_value.DeepCopy());
+      prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
   // 2 is not pinned as it's not installed
@@ -2709,7 +2709,7 @@ TEST_F(ChromeLauncherControllerImplTest, Policy) {
   InsertPrefValue(&policy_value, 0, extension1_->id());
   InsertPrefValue(&policy_value, 1, extension2_->id());
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps, policy_value.DeepCopy());
+      prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
   // Only |extension1_| should get pinned. |extension2_| is specified but not
   // installed, and |extension3_| is part of the default set, but that shouldn't
@@ -2733,7 +2733,7 @@ TEST_F(ChromeLauncherControllerImplTest, Policy) {
   // launcher and pin will exist.
   policy_value.Remove(0, NULL);
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps, policy_value.DeepCopy());
+      prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
   EXPECT_EQ(4, model_->item_count());
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
@@ -3711,7 +3711,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcAppPinPolicy) {
   base::ListValue policy_value;
   InsertPrefValue(&policy_value, 0, appinfo.package_name);
   profile()->GetTestingPrefService()->SetManagedPref(
-      prefs::kPolicyPinnedLauncherApps, policy_value.DeepCopy());
+      prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
@@ -3744,16 +3744,16 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
 
   // ARC is managed and enabled, Play Store pin should be available.
   // Note: NEGOTIATING_TERMS_OF_SERVICE here means that opt-in flow starts.
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                     new base::Value(true));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, base::MakeUnique<base::Value>(true));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(true, true,
                    arc::ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
                    "AppList, Chrome, Play Store");
 
   // ARC is managed and disabled, Play Store pin should not be available.
-  profile()->GetTestingPrefService()->SetManagedPref(prefs::kArcEnabled,
-                                                     new base::Value(false));
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kArcEnabled, base::MakeUnique<base::Value>(false));
   base::RunLoop().RunUntilIdle();
   ValidateArcState(false, true, arc::ArcSessionManager::State::STOPPED,
                    "AppList, Chrome");

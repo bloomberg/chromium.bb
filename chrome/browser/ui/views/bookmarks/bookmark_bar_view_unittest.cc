@@ -350,12 +350,12 @@ TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
 
   // Hide the apps shortcut by policy, via the managed pref.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::Value(false));
+                        base::MakeUnique<base::Value>(false));
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->visible());
 
   // And try showing it via policy too.
   prefs->SetManagedPref(bookmarks::prefs::kShowAppsShortcutInBookmarkBar,
-                        new base::Value(true));
+                        base::MakeUnique<base::Value>(true));
   EXPECT_TRUE(test_helper_->apps_page_shortcut()->visible());
 }
 #endif

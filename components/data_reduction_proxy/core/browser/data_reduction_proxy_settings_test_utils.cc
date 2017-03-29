@@ -124,7 +124,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
   if (managed) {
     test_context_->pref_service()->SetManagedPref(
         test_context_->GetDataReductionProxyEnabledPrefName(),
-        new base::Value(enabled));
+        base::MakeUnique<base::Value>(enabled));
   } else {
     test_context_->SetDataReductionProxyEnabled(enabled);
   }

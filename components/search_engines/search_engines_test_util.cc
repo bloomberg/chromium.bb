@@ -4,6 +4,8 @@
 
 #include "components/search_engines/search_engines_test_util.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -66,7 +68,7 @@ void SetExtensionDefaultSearchInPrefs(
       TemplateURLDataToDictionary(data);
   prefs->SetExtensionPref(
       DefaultSearchManager::kDefaultSearchProviderDataPrefName,
-      entry.release());
+      std::move(entry));
 }
 
 void RemoveExtensionDefaultSearchFromPrefs(

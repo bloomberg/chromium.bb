@@ -240,7 +240,7 @@ TEST_F(TranslatePrefTest, ULPPrefs) {
                            << error_column << std::endl
                            << json1;
 
-  prefs_->SetUserPref(TranslatePrefs::kPrefLanguageProfile, profile.release());
+  prefs_->SetUserPref(TranslatePrefs::kPrefLanguageProfile, std::move(profile));
 
   TranslatePrefs::LanguageAndProbabilityList list;
   EXPECT_EQ(0.8, translate_prefs_->GetReadingFromUserLanguageProfile(&list));
@@ -288,7 +288,7 @@ TEST_F(TranslatePrefTest, ULPPrefs) {
                            << error_column << std::endl
                            << json2;
 
-  prefs_->SetUserPref(TranslatePrefs::kPrefLanguageProfile, profile.release());
+  prefs_->SetUserPref(TranslatePrefs::kPrefLanguageProfile, std::move(profile));
 
   list.clear();
   EXPECT_EQ(0.3, translate_prefs_->GetReadingFromUserLanguageProfile(&list));
@@ -325,7 +325,7 @@ TEST_F(TranslatePrefTest, ULPPrefs) {
                            << error_column << std::endl
                            << json3;
 
-  prefs_->SetUserPref(TranslatePrefs::kPrefLanguageProfile, profile.release());
+  prefs_->SetUserPref(TranslatePrefs::kPrefLanguageProfile, std::move(profile));
 
   list.clear();
   EXPECT_EQ(0.8, translate_prefs_->GetReadingFromUserLanguageProfile(&list));

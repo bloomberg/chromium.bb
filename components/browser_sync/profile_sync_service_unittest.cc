@@ -370,7 +370,8 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 
 // Verify a successful initialization.
 TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
-  prefs()->SetManagedPref(syncer::prefs::kSyncManaged, new base::Value(false));
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(false));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
@@ -382,7 +383,8 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 
 // Verify a successful initialization.
 TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
-  prefs()->SetManagedPref(syncer::prefs::kSyncManaged, new base::Value(false));
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(false));
   IssueTestTokens();
   CreateServiceWithLocalSyncBackend();
   ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
@@ -395,7 +397,8 @@ TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
 // Verify that an initialization where first setup is not complete does not
 // start up the backend.
 TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
-  prefs()->SetManagedPref(syncer::prefs::kSyncManaged, new base::Value(false));
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(false));
   IssueTestTokens();
   CreateService(ProfileSyncService::MANUAL_START);
   syncer::SyncPrefs sync_prefs(prefs());
@@ -430,7 +433,8 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
 
 // Verify that disable by enterprise policy works.
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
-  prefs()->SetManagedPref(syncer::prefs::kSyncManaged, new base::Value(true));
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(true));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
@@ -450,7 +454,8 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   EXPECT_FALSE(service()->IsManaged());
   EXPECT_TRUE(service()->IsSyncActive());
 
-  prefs()->SetManagedPref(syncer::prefs::kSyncManaged, new base::Value(true));
+  prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
+                          base::MakeUnique<base::Value>(true));
 
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->IsSyncActive());

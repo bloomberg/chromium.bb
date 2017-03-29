@@ -196,7 +196,7 @@ TEST_F(PrintersManagerTest, RecommendedPrinters) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile_->GetTestingPrefService();
   // TestingPrefSyncableService assumes ownership of |value|.
-  prefs->SetManagedPref(prefs::kRecommendedNativePrinters, value.release());
+  prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
   auto printers = manager_->GetRecommendedPrinters();
   ASSERT_EQ(2U, printers.size());
@@ -213,7 +213,7 @@ TEST_F(PrintersManagerTest, GetRecommendedPrinter) {
   sync_preferences::TestingPrefServiceSyncable* prefs =
       profile_->GetTestingPrefService();
   // TestingPrefSyncableService assumes ownership of |value|.
-  prefs->SetManagedPref(prefs::kRecommendedNativePrinters, value.release());
+  prefs->SetManagedPref(prefs::kRecommendedNativePrinters, std::move(value));
 
   auto printers = manager_->GetRecommendedPrinters();
 

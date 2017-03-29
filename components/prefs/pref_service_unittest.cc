@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/mock_pref_change_callback.h"
@@ -83,7 +84,8 @@ TEST(PrefServiceTest, Observers) {
   const char pref_name[] = "homepage";
 
   TestingPrefServiceSimple prefs;
-  prefs.SetUserPref(pref_name, new base::Value("http://www.cnn.com"));
+  prefs.SetUserPref(pref_name,
+                    base::MakeUnique<base::Value>("http://www.cnn.com"));
   prefs.registry()->RegisterStringPref(pref_name, std::string());
 
   const char new_pref_value[] = "http://www.google.com/";
@@ -119,7 +121,7 @@ TEST(PrefServiceTest, Observers) {
   obs2.Expect(pref_name, &expected_new_pref_value2);
   // This should fire the checks in obs and obs2 but with an unchanged value
   // as the recommended value is being overridden by the user-set value.
-  prefs.SetRecommendedPref(pref_name, recommended_pref_value.DeepCopy());
+  prefs.SetRecommendedPref(pref_name, recommended_pref_value.CreateDeepCopy());
   Mock::VerifyAndClearExpectations(&obs);
   Mock::VerifyAndClearExpectations(&obs2);
 
@@ -141,7 +143,7 @@ TEST(PrefServiceTest, GetValueChangedType) {
   prefs.registry()->RegisterIntegerPref(kPrefName, kTestValue);
 
   // Check falling back to a recommended value.
-  prefs.SetUserPref(kPrefName, new base::Value("not an integer"));
+  prefs.SetUserPref(kPrefName, base::MakeUnique<base::Value>("not an integer"));
   const PrefService::Preference* pref = prefs.FindPreference(kPrefName);
   ASSERT_TRUE(pref);
   const base::Value* value = pref->GetValue();
@@ -176,7 +178,7 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a user-set value.
-  prefs.SetUserPref(kPrefName, new base::Value(kUserValue));
+  prefs.SetUserPref(kPrefName, base::MakeUnique<base::Value>(kUserValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();
@@ -191,7 +193,8 @@ TEST(PrefServiceTest, GetValueAndGetRecommendedValue) {
   ASSERT_FALSE(value);
 
   // Set a recommended value.
-  prefs.SetRecommendedPref(kPrefName, new base::Value(kRecommendedValue));
+  prefs.SetRecommendedPref(kPrefName,
+                           base::MakeUnique<base::Value>(kRecommendedValue));
 
   // Check that GetValue() returns the user-set value.
   value = pref->GetValue();

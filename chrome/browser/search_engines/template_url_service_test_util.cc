@@ -50,7 +50,8 @@ void SetManagedDefaultSearchPreferences(const TemplateURLData& managed_data,
   dict->SetBoolean(DefaultSearchManager::kDisabledByPolicy, !enabled);
 
   profile->GetTestingPrefService()->SetManagedPref(
-      DefaultSearchManager::kDefaultSearchProviderDataPrefName, dict.release());
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName,
+      std::move(dict));
 }
 
 void RemoveManagedDefaultSearchPreferences(TestingProfile* profile) {

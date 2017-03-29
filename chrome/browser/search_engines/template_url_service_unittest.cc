@@ -330,8 +330,9 @@ void TemplateURLServiceTest::SetOverriddenEngines() {
 
   auto* prefs = test_util()->profile()->GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     new base::Value(1));
-  prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides_list.release());
+                     base::MakeUnique<base::Value>(1));
+  prefs->SetUserPref(prefs::kSearchProviderOverrides,
+                     std::move(overrides_list));
 }
 
 void TemplateURLServiceTest::VerifyObserverCount(int expected_changed_count) {

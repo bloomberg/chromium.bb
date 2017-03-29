@@ -857,7 +857,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
 // when DeveloperToolsDisabled policy is active.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDevModeDisabledPolicy) {
   testing_pref_service()->SetManagedPref(prefs::kExtensionsUIDeveloperMode,
-                                         new base::Value(false));
+                                         base::MakeUnique<base::Value>(false));
 
   UpdateProfileConfigurationDevMode(true);
 
