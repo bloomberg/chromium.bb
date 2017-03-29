@@ -173,6 +173,7 @@ ivi_view_create(struct ivi_layout_layer *ivilayer,
 	ivi_view->view = weston_view_create(ivisurf->surface);
 	if (ivi_view->view == NULL) {
 		weston_log("fails to allocate memory\n");
+		free(ivi_view);
 		return NULL;
 	}
 
