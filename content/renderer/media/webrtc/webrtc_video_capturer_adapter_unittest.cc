@@ -105,7 +105,10 @@ class WebRtcVideoCapturerAdapterTest
 
     // Request smaller scale to make sure scaling normally kicks in.
     rtc::VideoSinkWants wants;
-    wants.max_pixel_count = rtc::Optional<int>(kInputWidth * kInputHeight / 2);
+    // TODO(sprang): Remove this type hack when webrtc has updated the sink
+    // wants api. https://codereview.webrtc.org/2781433002/
+    using MaxPixelCountType = decltype(wants.max_pixel_count);
+    wants.max_pixel_count = MaxPixelCountType(kInputWidth * kInputHeight / 2);
     adapter_->AddOrUpdateSink(this, wants);
 
     adapter_->OnFrameCaptured(frame);
