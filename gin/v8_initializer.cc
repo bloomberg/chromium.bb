@@ -371,10 +371,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     ignition_enabled_crash_key = "N";
     std::string flag("--no-turbo");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
-  } else if (base::FeatureList::IsEnabled(features::kV8Future)) {
-    ignition_enabled_crash_key = "Y";
-    std::string flag("--future");
-    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
   } else if (base::FeatureList::IsEnabled(features::kV8IgnitionLowEnd) &&
              base::SysInfo::IsLowEndDevice()) {
     ignition_enabled_crash_key = "Y";
