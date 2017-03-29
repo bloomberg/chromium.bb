@@ -582,7 +582,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             mDelegate.onOpenInNewChromeTabFromCCT(getUrl(params), true);
         } else if (itemId == R.id.contextmenu_open_in_browser_id) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_OPEN_IN_BROWSER);
-            mDelegate.onOpenInDefaultBrowser(params.getLinkUrl());
+            mDelegate.onOpenInDefaultBrowser(getUrl(params));
         } else {
             assert false;
         }
