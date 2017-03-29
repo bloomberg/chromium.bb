@@ -340,4 +340,74 @@ TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_BasicCard) {
       response()->stringified_details);
 }
 
+// Tests the the generated PaymentResponse has the correct values for the
+// shipping address.
+TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_ShippingAddress) {
+  // Setup so that a shipping address is requested.
+  std::vector<mojom::PaymentShippingOptionPtr> shipping_options;
+  mojom::PaymentShippingOptionPtr option = mojom::PaymentShippingOption::New();
+  option->id = "option:1";
+  option->selected = true;
+  shipping_options.push_back(std::move(option));
+  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
+  details->shipping_options = std::move(shipping_options);
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_shipping = true;
+  RecreateStateWithOptionsAndDetails(std::move(options), std::move(details),
+                                     GetMethodDataForVisa());
+
+  EXPECT_TRUE(state()->is_ready_to_pay());
+  state()->GeneratePaymentResponse();
+
+  // Check that all the expected values were set.
+  EXPECT_EQ("US", response()->shipping_address->country);
+  EXPECT_EQ("666 Erebus St.", response()->shipping_address->address_line[0]);
+  EXPECT_EQ("Apt 8", response()->shipping_address->address_line[1]);
+  EXPECT_EQ("CA", response()->shipping_address->region);
+  EXPECT_EQ("Elysium", response()->shipping_address->city);
+  EXPECT_EQ("", response()->shipping_address->dependent_locality);
+  EXPECT_EQ("91111", response()->shipping_address->postal_code);
+  EXPECT_EQ("", response()->shipping_address->sorting_code);
+  EXPECT_EQ("", response()->shipping_address->language_code);
+  EXPECT_EQ("Underworld", response()->shipping_address->organization);
+  EXPECT_EQ("John H. Doe", response()->shipping_address->recipient);
+  EXPECT_EQ("16502111111", response()->shipping_address->phone);
+}
+
+// Tests the the generated PaymentResponse has the correct values for the
+// contact details when all values are requested.
+TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_ContactDetails_All) {
+  // Request all contact detail values.
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_payer_name = true;
+  options->request_payer_phone = true;
+  options->request_payer_email = true;
+  RecreateStateWithOptions(std::move(options));
+
+  EXPECT_TRUE(state()->is_ready_to_pay());
+  state()->GeneratePaymentResponse();
+
+  // Check that all the expected values were set.
+  EXPECT_EQ("John H. Doe", response()->payer_name.value());
+  EXPECT_EQ("16502111111", response()->payer_phone.value());
+  EXPECT_EQ("johndoe@hades.com", response()->payer_email.value());
+}
+
+// Tests the the generated PaymentResponse has the correct values for the
+// contact details when all values are requested.
+TEST_F(PaymentRequestStateTest, GeneratePaymentResponse_ContactDetails_Some) {
+  // Request one contact detail value.
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_payer_name = true;
+  RecreateStateWithOptions(std::move(options));
+
+  EXPECT_TRUE(state()->is_ready_to_pay());
+  state()->GeneratePaymentResponse();
+
+  // Check that the name was set, but not the other values.
+  EXPECT_EQ("John H. Doe", response()->payer_name.value());
+  EXPECT_FALSE(response()->payer_phone.has_value());
+  EXPECT_FALSE(response()->payer_email.has_value());
+}
+
 }  // namespace payments

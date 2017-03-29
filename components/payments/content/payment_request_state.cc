@@ -6,11 +6,13 @@
 
 #include <set>
 
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 
 namespace payments {
@@ -56,10 +58,10 @@ void PaymentRequestState::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+// TODO(sebsg): Move this to the PaymentResponseHelper.
 void PaymentRequestState::OnInstrumentDetailsReady(
     const std::string& method_name,
     const std::string& stringified_details) {
-  // TODO(mathp): Fill other fields in the PaymentResponsePtr object.
   mojom::PaymentResponsePtr payment_response = mojom::PaymentResponse::New();
 
   // Make sure that we return the method name that the merchant specified for
@@ -70,13 +72,45 @@ void PaymentRequestState::OnInstrumentDetailsReady(
           ? kBasicCardMethodName
           : method_name;
   payment_response->stringified_details = stringified_details;
+
+  // Shipping Address section
+  if (spec_->request_shipping()) {
+    DCHECK(selected_shipping_profile_);
+    payment_response->shipping_address =
+        PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
+            selected_shipping_profile_, app_locale_);
+
+    DCHECK(selected_shipping_option_);
+    payment_response->shipping_option = selected_shipping_option_->id;
+  }
+
+  // Contact Details section.
+  if (spec_->request_payer_name()) {
+    DCHECK(selected_contact_profile_);
+    payment_response->payer_name =
+        base::UTF16ToUTF8(selected_contact_profile_->GetInfo(
+            autofill::AutofillType(autofill::NAME_FULL), app_locale_));
+  }
+  if (spec_->request_payer_email()) {
+    DCHECK(selected_contact_profile_);
+    payment_response->payer_email = base::UTF16ToUTF8(
+        selected_contact_profile_->GetRawInfo(autofill::EMAIL_ADDRESS));
+  }
+  if (spec_->request_payer_phone()) {
+    DCHECK(selected_contact_profile_);
+    // TODO(crbug.com/705945): Format phone number according to spec.
+    payment_response->payer_phone =
+        base::UTF16ToUTF8(selected_contact_profile_->GetRawInfo(
+            autofill::PHONE_HOME_WHOLE_NUMBER));
+  }
+
   delegate_->OnPaymentResponseAvailable(std::move(payment_response));
 }
 
 void PaymentRequestState::GeneratePaymentResponse() {
   DCHECK(is_ready_to_pay());
   // Fetch the instrument details, will call back into
-  // PaymentRequest::OnInstrumentsDetailsReady.
+  // PaymentRequest::OnInstrumentDetailsReady.
   selected_instrument_->InvokePaymentApp(this);
 }
 
