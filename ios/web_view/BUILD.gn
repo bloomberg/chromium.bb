@@ -23,6 +23,7 @@ ios_framework_bundle("web_view") {
   ]
 
   public_headers = [
+    "public/ChromeWebView.h",
     "public/cwv.h",
     "public/cwv_delegate.h",
     "public/cwv_export.h",

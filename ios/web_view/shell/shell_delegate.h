@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/web_view/public/cwv_delegate.h"
+#import <ChromeWebView/ChromeWebView.h>
 
 // Shell-specific implementation of CWVDelegate.
 @interface ShellDelegate : NSObject<CWVDelegate>

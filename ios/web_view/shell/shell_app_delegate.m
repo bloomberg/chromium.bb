@@ -4,7 +4,8 @@
 
 #import "ios/web_view/shell/shell_app_delegate.h"
 
-#import "ios/web_view/public/cwv.h"
+#import <ChromeWebView/ChromeWebView.h>
+
 #import "ios/web_view/shell/shell_delegate.h"
 #import "ios/web_view/shell/shell_view_controller.h"
 
