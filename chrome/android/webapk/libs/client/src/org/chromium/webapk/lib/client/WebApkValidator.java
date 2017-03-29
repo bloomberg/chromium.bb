@@ -15,6 +15,8 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.Signature;
 import android.util.Log;
 
+import org.chromium.base.annotations.SuppressFBWarnings;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -159,10 +161,11 @@ public class WebApkValidator {
      * with for the current host.
      * @param expectedSignature
      */
+    @SuppressFBWarnings("EI_EXPOSE_STATIC_REP2")
     public static void initWithBrowserHostSignature(byte[] expectedSignature) {
         if (sExpectedSignature != null) {
             return;
         }
-        sExpectedSignature = Arrays.copyOf(expectedSignature, expectedSignature.length);
+        sExpectedSignature = expectedSignature;
     }
 }
