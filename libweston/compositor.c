@@ -4521,19 +4521,25 @@ weston_output_enable_undo(struct weston_output *output)
 	output->enabled = false;
 }
 
-/** Removes output from compositor's output list
+/** Removes output from compositor's list of enabled outputs
  *
  * \param output The weston_output object that is being removed.
  *
- * Presentation feedback is discarded.
- * Compositor is notified that outputs were changed and
- * applies the necessary changes.
- * All views assigned to the weston_output object are
- * moved to a new output.
- * Signal is emitted to notify all users of the weston_output
- * object that the output is being destroyed.
- * wl_output protocol objects referencing this weston_output
- * are made inert.
+ * The following happens:
+ *
+ * - The output assignments of all views in the current scenegraph are
+ *   recomputed.
+ *
+ * - Presentation feedback is discarded.
+ *
+ * - Compositor is notified that outputs were changed and
+ *   applies the necessary changes to re-layout outputs.
+ *
+ * - Signal is emitted to notify all users of the weston_output
+ *   object that the output is being destroyed.
+ *
+ * - wl_output protocol objects referencing this weston_output
+ *   are made inert.
  */
 static void
 weston_compositor_remove_output(struct weston_output *output)
