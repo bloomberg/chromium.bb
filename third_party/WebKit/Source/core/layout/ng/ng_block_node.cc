@@ -11,6 +11,7 @@
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 #include "core/layout/ng/ng_box_fragment.h"
+#include "core/layout/ng/ng_column_layout_algorithm.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -25,6 +26,18 @@
 namespace blink {
 
 namespace {
+
+RefPtr<NGLayoutResult> LayoutWithAlgorithm(const ComputedStyle& style,
+                                           NGBlockNode* node,
+                                           NGConstraintSpace* space,
+                                           NGBreakToken* break_token) {
+  if (style.specifiesColumns())
+    return NGColumnLayoutAlgorithm(node, space,
+                                   toNGBlockBreakToken(break_token))
+        .Layout();
+  return NGBlockLayoutAlgorithm(node, space, toNGBlockBreakToken(break_token))
+      .Layout();
+}
 
 // Copies data back to the legacy layout tree for a given child fragment.
 void FragmentPositionUpdated(const NGPhysicalFragment& fragment) {
@@ -91,9 +104,7 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
   }
 
   RefPtr<NGLayoutResult> layout_result =
-      NGBlockLayoutAlgorithm(this, constraint_space,
-                             toNGBlockBreakToken(break_token))
-          .Layout();
+      LayoutWithAlgorithm(Style(), this, constraint_space, break_token);
 
   CopyFragmentDataToLayoutBox(*constraint_space, layout_result.get());
   return layout_result;

@@ -8,19 +8,24 @@
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_min_max_content_size.h"
 #include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 #include "wtf/Optional.h"
 
 namespace blink {
 
-struct MinMaxContentSize;
+class ComputedStyle;
+class NGConstraintSpace;
 class NGLayoutResult;
 
 // Base class for all LayoutNG algorithms.
+template <typename NGInputNodeType, typename NGBreakTokenType>
 class CORE_EXPORT NGLayoutAlgorithm {
   STACK_ALLOCATED();
-
  public:
+  NGLayoutAlgorithm(NGInputNodeType* node,
+                    NGConstraintSpace* space,
+                    NGBreakTokenType* break_token)
+      : node_(node), constraint_space_(space), break_token_(break_token) {}
+
   virtual ~NGLayoutAlgorithm() {}
 
   // Actual layout function. Lays out the children and descendants within the
@@ -37,6 +42,28 @@ class CORE_EXPORT NGLayoutAlgorithm {
   virtual Optional<MinMaxContentSize> ComputeMinMaxContentSize() const {
     return WTF::nullopt;
   }
+
+ protected:
+  const NGConstraintSpace& ConstraintSpace() const {
+    DCHECK(constraint_space_);
+    return *constraint_space_;
+  }
+  NGConstraintSpace* MutableConstraintSpace() { return constraint_space_; }
+
+  const ComputedStyle& Style() const {
+    DCHECK(node_);
+    return node_->Style();
+  }
+
+  virtual NGInputNodeType* Node() const { return node_; }
+
+  NGBreakTokenType* BreakToken() const { return break_token_; }
+
+  Persistent<NGInputNodeType> node_;
+  NGConstraintSpace* constraint_space_;
+
+  // The break token from which we are currently resuming layout.
+  NGBreakTokenType* break_token_;
 };
 
 }  // namespace blink

@@ -5,7 +5,6 @@
 #include "core/layout/ng/ng_block_layout_algorithm.h"
 
 #include "core/layout/ng/ng_absolute_utils.h"
-#include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_child_iterator.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space.h"
@@ -59,13 +58,10 @@ bool IsOutOfSpace(const NGConstraintSpace& space, LayoutUnit content_size) {
 
 }  // namespace
 
-NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
-    NGBlockNode* node,
-    NGConstraintSpace* constraint_space,
-    NGBlockBreakToken* break_token)
-    : node_(node),
-      constraint_space_(constraint_space),
-      break_token_(break_token),
+NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode* node,
+                                               NGConstraintSpace* space,
+                                               NGBlockBreakToken* break_token)
+    : NGLayoutAlgorithm(node, space, break_token),
       builder_(NGPhysicalFragment::kFragmentBox, node),
       space_builder_(constraint_space_) {}
 
@@ -78,7 +74,7 @@ Optional<MinMaxContentSize> NGBlockLayoutAlgorithm::ComputeMinMaxContentSize()
     return sizes;
 
   // TODO: handle floats & orthogonal children.
-  for (NGLayoutInputNode* node = node_->FirstChild(); node;
+  for (NGLayoutInputNode* node = Node()->FirstChild(); node;
        node = node->NextSibling()) {
     MinMaxContentSize child_sizes;
     if (node->Type() == NGLayoutInputNode::kLegacyInline) {
@@ -165,14 +161,14 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   builder_.SetWritingMode(constraint_space_->WritingMode());
   builder_.SetInlineSize(inline_size).SetBlockSize(block_size);
 
-  NGBlockChildIterator child_iterator(node_->FirstChild(), break_token_);
+  NGBlockChildIterator child_iterator(Node()->FirstChild(), BreakToken());
   NGBlockChildIterator::Entry entry = child_iterator.NextChild();
   NGLayoutInputNode* child = entry.node;
   NGBreakToken* child_break_token = entry.token;
 
   // If we are resuming from a break token our start border and padding is
   // within a previous fragment.
-  content_size_ = break_token_ ? LayoutUnit() : border_and_padding_.block_start;
+  content_size_ = BreakToken() ? LayoutUnit() : border_and_padding_.block_start;
 
   curr_margin_strut_ = ConstraintSpace().MarginStrut();
   curr_bfc_offset_ = ConstraintSpace().BfcOffset();
@@ -415,7 +411,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
 
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   LayoutUnit used_block_size =
-      break_token_ ? break_token_->UsedBlockSize() : LayoutUnit();
+      BreakToken() ? BreakToken()->UsedBlockSize() : LayoutUnit();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), used_block_size + content_size_);
 

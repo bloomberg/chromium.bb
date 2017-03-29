@@ -602,6 +602,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-first
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-from-grand-parents.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/relayout-nested-float-after-line.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/selection-gap-clip-out-tiger-crash.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Skip ]
 
 #### external/wpt/css/css21/linebox
 #### Passed: 84

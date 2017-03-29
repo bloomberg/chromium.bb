@@ -9,6 +9,7 @@
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_inline_break_token.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
 #include "core/layout/ng/ng_line_height_metrics.h"
 #include "platform/fonts/FontBaseline.h"
@@ -33,15 +34,12 @@ class NGTextFragmentBuilder;
 // and |end|. |end| can be extended multiple times before creating a line,
 // usually until |!CanFitOnLine()|. |SetBreakOpportunity| can mark the last
 // confirmed offset that can fit.
-class CORE_EXPORT NGInlineLayoutAlgorithm final : public NGLayoutAlgorithm {
+class CORE_EXPORT NGInlineLayoutAlgorithm final
+    : public NGLayoutAlgorithm<NGInlineNode, NGInlineBreakToken> {
  public:
   NGInlineLayoutAlgorithm(NGInlineNode*,
                           NGConstraintSpace*,
                           NGInlineBreakToken* = nullptr);
-
-  const NGConstraintSpace& ConstraintSpace() const {
-    return *constraint_space_;
-  }
 
   LayoutUnit MaxInlineSize() const { return max_inline_size_; }
 
@@ -143,8 +141,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final : public NGLayoutAlgorithm {
   // Finds the next layout opportunity for the next text fragment.
   void FindNextLayoutOpportunity();
 
-  Persistent<NGInlineNode> inline_box_;
-  NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
   Vector<RefPtr<NGLayoutResult>, 32> layout_results_;
   unsigned start_index_ = 0;
   unsigned start_offset_ = 0;
