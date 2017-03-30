@@ -15,6 +15,7 @@ cr.define('cr.ui', function() {
    * @implements {EventListener}
    */
   function ContextMenuHandler() {
+    /** @private {!EventTracker} */
     this.showingEvents_ = new EventTracker();
   }
 
@@ -48,7 +49,7 @@ cr.define('cr.ui', function() {
 
       // When the menu is shown we steal a lot of events.
       var doc = menu.ownerDocument;
-      var win = doc.defaultView;
+      var win = /** @type {!Window} */ (doc.defaultView);
       this.showingEvents_.add(doc, 'keydown', this, true);
       this.showingEvents_.add(doc, 'mousedown', this, true);
       this.showingEvents_.add(doc, 'touchstart', this, true);

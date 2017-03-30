@@ -19,7 +19,7 @@ cr.define('cr.ui', function() {
    * @return {!CSSStyleDeclaration} The computed style.
    */
   function getComputedStyle(el) {
-    return el.ownerDocument.defaultView.getComputedStyle(el);
+    return assert(el.ownerDocument.defaultView.getComputedStyle(el));
   }
 
   /**
