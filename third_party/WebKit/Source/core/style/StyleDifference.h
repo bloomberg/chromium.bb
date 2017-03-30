@@ -5,6 +5,8 @@
 #ifndef StyleDifference_h
 #define StyleDifference_h
 
+#include <iosfwd>
+#include "core/CoreExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 
@@ -24,8 +26,7 @@ class StyleDifference {
     // The object needs to issue paint invalidations if it is affected by text
     // decorations or properties dependent on color (e.g., border or outline).
     TextDecorationOrColorChanged = 1 << 6,
-    // If you add a value here, be sure to update the number of bits on
-    // m_propertySpecificDifferences.
+    // If you add a value here, be sure to update kPropertyDifferenceCount.
   };
 
   StyleDifference()
@@ -139,6 +140,11 @@ class StyleDifference {
   }
 
  private:
+  static constexpr int kPropertyDifferenceCount = 7;
+
+  friend CORE_EXPORT std::ostream& operator<<(std::ostream&,
+                                              const StyleDifference&);
+
   enum PaintInvalidationType {
     NoPaintInvalidation,
     PaintInvalidationObject,
@@ -149,9 +155,11 @@ class StyleDifference {
   enum LayoutType { NoLayout = 0, PositionedMovement, FullLayout };
   unsigned m_layoutType : 2;
   unsigned m_recomputeOverflow : 1;
-  unsigned m_propertySpecificDifferences : 7;
+  unsigned m_propertySpecificDifferences : kPropertyDifferenceCount;
   unsigned m_scrollAnchorDisablingPropertyChanged : 1;
 };
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const StyleDifference&);
 
 }  // namespace blink
 

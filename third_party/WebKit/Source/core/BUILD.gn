@@ -1385,6 +1385,7 @@ source_set("unit_tests") {
     "style/FilterOperationsTest.cpp",
     "style/OutlineValueTest.cpp",
     "style/SVGComputedStyleTest.cpp",
+    "style/StyleDifferenceTest.cpp",
     "svg/SVGPathParserTest.cpp",
     "svg/UnsafeSVGAttributeSanitizationTest.cpp",
     "svg/graphics/SVGImageTest.cpp",
