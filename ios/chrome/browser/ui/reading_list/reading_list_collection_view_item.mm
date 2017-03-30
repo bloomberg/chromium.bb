@@ -24,6 +24,9 @@ namespace {
 NSString* kSuccessImageString = @"distillation_success";
 NSString* kFailureImageString = @"distillation_fail";
 
+// Height of the cell.
+const CGFloat kCellHeight = 72;
+
 // Distillation indicator constants.
 const CGFloat kDistillationIndicatorSize = 18;
 
@@ -327,11 +330,17 @@ const CGFloat kInfoTextTransparency = 0.38;
         [_textGuide.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor];
 
     [NSLayoutConstraint activateConstraints:@[
+      // Height for the cell.
+      [self.contentView.heightAnchor constraintEqualToConstant:kCellHeight],
+
+      // Text constraints.
       topTextConstraint,
       bottomTextConstraint,
+
       // Favicons are always the same size.
       [_faviconView.widthAnchor constraintEqualToConstant:faviconSize],
       [_faviconView.heightAnchor constraintEqualToConstant:faviconSize],
+
       // Center the content (favicon and text) vertically.
       [_faviconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
