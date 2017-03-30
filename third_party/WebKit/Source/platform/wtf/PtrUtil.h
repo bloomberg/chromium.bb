@@ -9,6 +9,7 @@
 #include "platform/wtf/TypeTraits.h"
 
 #include <memory>
+#include <type_traits>
 
 namespace WTF {
 
@@ -41,7 +42,7 @@ auto makeUnique(Args&&... args)
 template <typename T>
 auto makeUnique(size_t size) -> decltype(base::MakeUnique<T>(size)) {
   static_assert(
-      !WTF::IsGarbageCollectedType<T>::value,
+      !WTF::IsGarbageCollectedType<std::remove_extent<T>>::value,
       "Garbage collected types should not be stored in std::unique_ptr!");
   return base::MakeUnique<T>(size);
 }
