@@ -105,12 +105,12 @@ const CGFloat kButtonHeight = 36;
     };
 
     // Constraints shared between modes.
-    NSString* formatString = @"V:|-kVerticalPaddingx2-[imageView]-"
-                              "kVerticalPadding-[textLabel]-"
-                              "kVerticalPaddingkButtonVerticalPadding-["
-                              "primaryButton(kButtonHeight)]";
+    NSString* sharedVerticalConstraints =
+        @"V:|-kVerticalPaddingx2-[imageView]-kVerticalPadding-[textLabel]-"
+        @"kVerticalPaddingkButtonVerticalPadding-[primaryButton(kButtonHeight)"
+        @"]";
     NSArray* visualConstraints = @[
-      formatString,
+      sharedVerticalConstraints,
       @"H:|-kHorizontalPadding-[primaryButton]-kHorizontalPadding-|"
     ];
     ApplyVisualConstraintsWithMetricsAndOptions(
@@ -125,11 +125,11 @@ const CGFloat kButtonHeight = 36;
         coldStateVisualConstraints, views, metrics);
 
     // Constraints for warm state mode.
-    formatString = @"V:[primaryButton]-kButtonVerticalPaddingx2-["
-                    "secondaryButton(kButtonHeight)]-"
-                    "kVerticalPaddingkButtonVerticalPadding-|";
+    NSString* warmStateVerticalConstraints =
+        @"V:[primaryButton]-kButtonVerticalPaddingx2-[secondaryButton("
+        @"kButtonHeight)]-kVerticalPaddingkButtonVerticalPadding-|";
     NSArray* warmStateVisualConstraints = @[
-      formatString,
+      warmStateVerticalConstraints,
       @"H:|-kHorizontalPadding-[secondaryButton]-kHorizontalPadding-|",
     ];
     _warmStateConstraints = VisualConstraintsWithMetrics(
