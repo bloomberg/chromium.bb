@@ -68,6 +68,8 @@ int LayoutDelegate::GetMetric(Metric metric) const {
       return views::kUnrelatedControlVerticalSpacing;
     case Metric::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
       return views::kUnrelatedControlLargeVerticalSpacing;
+    case Metric::VECTOR_IMAGE_BUTTON_PADDING:
+      return views::kVectorButtonExtraTouchSize;
   }
   NOTREACHED();
   return 0;

@@ -92,6 +92,9 @@ const int kMinimumButtonWidth = 48;
 // Minimum width of dialog buttons.
 constexpr int kDialogMinimumButtonWidth = 75;
 
+// Extra space around vector buttons to increase their event target size.
+constexpr int kVectorButtonExtraTouchSize = 4;
+
 }  // namespace views
 
 #endif  // UI_VIEWS_LAYOUT_LAYOUT_CONSTANTS_H_

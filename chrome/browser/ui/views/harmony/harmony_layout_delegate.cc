@@ -30,10 +30,12 @@ int HarmonyLayoutDelegate::GetMetric(Metric metric) const {
              2 * GetMetric(Metric::BUTTON_HORIZONTAL_PADDING);
     case Metric::DIALOG_BUTTON_TOP_SPACING:
       return kHarmonyLayoutUnit;
-    case Metric::DIALOG_CLOSE_BUTTON_MARGIN:
-      // TODO(pkasting): The "- 4" here is a hack that matches the extra padding
-      // in vector_icon_button.cc and should be removed when that padding is.
-      return (kHarmonyLayoutUnit / 2) - 4;
+    case Metric::DIALOG_CLOSE_BUTTON_MARGIN: {
+      constexpr int kVisibleMargin = kHarmonyLayoutUnit / 2;
+      // The visible margin is based on the unpadded size, so to get the actual
+      // margin we need to subtract out the padding.
+      return kVisibleMargin - GetMetric(Metric::VECTOR_IMAGE_BUTTON_PADDING);
+    }
     case Metric::PANEL_CONTENT_MARGIN:
       return kHarmonyLayoutUnit;
     case Metric::RELATED_BUTTON_HORIZONTAL_SPACING:
@@ -58,6 +60,8 @@ int HarmonyLayoutDelegate::GetMetric(Metric metric) const {
       return kHarmonyLayoutUnit;
     case Metric::UNRELATED_CONTROL_VERTICAL_SPACING_LARGE:
       return kHarmonyLayoutUnit;
+    case Metric::VECTOR_IMAGE_BUTTON_PADDING:
+      return 4;
   }
   NOTREACHED();
   return 0;

@@ -61,6 +61,9 @@ class LayoutDelegate {
     UNRELATED_CONTROL_VERTICAL_SPACING,
     // Larger vertical spacing between unrelated controls.
     UNRELATED_CONTROL_VERTICAL_SPACING_LARGE,
+    // Padding to add to vector image buttons to increase their click and touch
+    // target size.
+    VECTOR_IMAGE_BUTTON_PADDING,
   };
 
   enum class DialogWidth {

@@ -11,6 +11,7 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/painter.h"
+#include "ui/views/views_delegate.h"
 
 namespace views {
 
@@ -21,9 +22,9 @@ ImageButton* CreateVectorImageButton(ButtonListener* listener) {
   button->SetImageAlignment(ImageButton::ALIGN_CENTER,
                             ImageButton::ALIGN_MIDDLE);
   button->SetFocusPainter(nullptr);
-  // Extra space around the buttons to increase their event target size.
-  constexpr int kButtonExtraTouchSize = 4;
-  button->SetBorder(CreateEmptyBorder(gfx::Insets(kButtonExtraTouchSize)));
+  button->SetBorder(
+      CreateEmptyBorder(ViewsDelegate::GetInstance()->GetInsetsMetric(
+          InsetsMetric::VECTOR_IMAGE_BUTTON_PADDING)));
   return button;
 }
 
