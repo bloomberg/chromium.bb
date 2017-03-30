@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 
 /**
  * The new tab page to display when Chrome Home is enabled.
@@ -116,7 +117,6 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
 
         mLogoDelegate = initializeLogoView();
         initializeCloseButton();
-        onNewTabPageShown();
 
         // TODO(twellington): disallow moving the NTP to the other window in Android N+
         //                    multi-window mode.
@@ -191,6 +191,8 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
         if (getLayoutManager() != null && getLayoutManager().overviewVisible()) return;
 
         mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+        mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
+                BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
     }
 
     private boolean isTabChromeHomeNewTabPage(Tab tab) {
