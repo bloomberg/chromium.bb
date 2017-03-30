@@ -10,11 +10,12 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/label_tray_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/resources/grit/ash_resources.h"
+#include "ash/common/system/tray/tray_constants.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -28,7 +29,7 @@ const char TraySupervisedUser::kNotificationId[] =
 
 TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_SUPERVISED_USER),
-      tray_view_(NULL),
+      tray_view_(nullptr),
       status_(LoginStatus::NOT_LOGGED_IN),
       is_user_supervised_(false) {
   Shell::Get()->system_tray_delegate()->AddCustodianInfoTrayObserver(this);
@@ -53,18 +54,18 @@ void TraySupervisedUser::UpdateMessage() {
 }
 
 views::View* TraySupervisedUser::CreateDefaultView(LoginStatus status) {
-  CHECK(tray_view_ == NULL);
+  DCHECK(!tray_view_);
   SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   if (!delegate->IsUserSupervised())
-    return NULL;
+    return nullptr;
 
-  tray_view_ = new LabelTrayView(this, GetSupervisedUserIconId());
+  tray_view_ = new LabelTrayView(this, GetSupervisedUserIcon());
   UpdateMessage();
   return tray_view_;
 }
 
 void TraySupervisedUser::DestroyDefaultView() {
-  tray_view_ = NULL;
+  tray_view_ = nullptr;
 }
 
 void TraySupervisedUser::OnViewClicked(views::View* sender) {
@@ -80,8 +81,9 @@ void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {
 
   if (is_user_supervised && !delegate->IsUserChild() &&
       status_ != LoginStatus::LOCKED &&
-      !delegate->GetSupervisedUserManager().empty())
+      !delegate->GetSupervisedUserManager().empty()) {
     CreateOrUpdateSupervisedWarningNotification();
+  }
 
   status_ = status;
   is_user_supervised_ = is_user_supervised;
@@ -89,11 +91,11 @@ void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {
 
 void TraySupervisedUser::CreateOrUpdateNotification(
     const base::string16& new_message) {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   std::unique_ptr<Notification> notification(
       message_center::Notification::CreateSystemNotification(
           kNotificationId, base::string16() /* no title */, new_message,
-          bundle.GetImageNamed(GetSupervisedUserIconId()),
+          gfx::Image(
+              gfx::CreateVectorIcon(GetSupervisedUserIcon(), kMenuIconColor)),
           system_notifier::kNotifierSupervisedUser,
           base::Closure() /* null callback */));
   message_center::MessageCenter::Get()->AddNotification(
@@ -118,15 +120,15 @@ void TraySupervisedUser::OnCustodianInfoChanged() {
   }
 }
 
-int TraySupervisedUser::GetSupervisedUserIconId() const {
+const gfx::VectorIcon& TraySupervisedUser::GetSupervisedUserIcon() const {
   SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
 
   // Not intended to be used for non-supervised users.
-  CHECK(delegate->IsUserSupervised());
+  DCHECK(delegate->IsUserSupervised());
 
   if (delegate->IsUserChild())
-    return IDR_AURA_UBER_TRAY_CHILD_USER;
-  return IDR_AURA_UBER_TRAY_SUPERVISED_USER;
+    return kSystemMenuChildUserIcon;
+  return kSystemMenuSupervisedUserIcon;
 }
 
 }  // namespace ash

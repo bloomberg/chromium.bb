@@ -8,7 +8,7 @@
 #include "ash/common/system/tray/label_tray_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/resources/grit/ash_resources.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -32,18 +32,18 @@ void TrayEnterprise::UpdateEnterpriseMessage() {
 }
 
 views::View* TrayEnterprise::CreateDefaultView(LoginStatus status) {
-  CHECK(tray_view_ == NULL);
+  DCHECK(!tray_view_);
   // For public accounts, enterprise ownership is indicated in the user details
   // instead.
   if (status == LoginStatus::PUBLIC)
-    return NULL;
-  tray_view_ = new LabelTrayView(this, IDR_AURA_UBER_TRAY_ENTERPRISE);
+    return nullptr;
+  tray_view_ = new LabelTrayView(this, kSystemMenuBusinessIcon);
   UpdateEnterpriseMessage();
   return tray_view_;
 }
 
 void TrayEnterprise::DestroyDefaultView() {
-  tray_view_ = NULL;
+  tray_view_ = nullptr;
 }
 
 void TrayEnterprise::OnEnterpriseDomainChanged() {

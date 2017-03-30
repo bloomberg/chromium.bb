@@ -49,7 +49,7 @@ TraySessionLengthLimit::TraySessionLengthLimit(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_SESSION_LENGTH_LIMIT),
       limit_state_(LIMIT_NONE),
       last_limit_state_(LIMIT_NONE),
-      tray_bubble_view_(NULL) {
+      tray_bubble_view_(nullptr) {
   Shell::Get()->system_tray_notifier()->AddSessionLengthLimitObserver(this);
   Update();
 }
@@ -63,17 +63,15 @@ views::View* TraySessionLengthLimit::CreateDefaultView(LoginStatus status) {
   CHECK(!tray_bubble_view_);
   UpdateState();
   if (limit_state_ == LIMIT_NONE)
-    return NULL;
-  tray_bubble_view_ =
-      new LabelTrayView(NULL /* click_listener */,
-                        IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT);
+    return nullptr;
+  tray_bubble_view_ = new LabelTrayView(nullptr, kSystemMenuTimerIcon);
   tray_bubble_view_->SetMessage(ComposeTrayBubbleMessage());
   return tray_bubble_view_;
 }
 
 // View has been removed from tray bubble.
 void TraySessionLengthLimit::DestroyDefaultView() {
-  tray_bubble_view_ = NULL;
+  tray_bubble_view_ = nullptr;
 }
 
 void TraySessionLengthLimit::OnSessionStartTimeChanged() {
@@ -157,7 +155,7 @@ void TraySessionLengthLimit::UpdateNotification() {
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierSessionLengthTimeout),
-          data, NULL /* delegate */));
+          data, nullptr /* delegate */));
   notification->SetSystemPriority();
   if (message_center->FindVisibleNotificationById(kNotificationId))
     message_center->UpdateNotification(kNotificationId,

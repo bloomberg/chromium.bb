@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
+
 namespace ash {
 class LabelTrayView;
 class SystemTray;
@@ -47,7 +51,7 @@ class ASH_EXPORT TraySupervisedUser : public SystemTrayItem,
 
   void CreateOrUpdateSupervisedWarningNotification();
 
-  int GetSupervisedUserIconId() const;
+  const gfx::VectorIcon& GetSupervisedUserIcon() const;
 
   LabelTrayView* tray_view_;
 

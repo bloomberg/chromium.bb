@@ -9,16 +9,19 @@
 #include "base/strings/string16.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
 
+namespace ash {
 class ViewClickListener;
 
-// View for simple information in tray. Automatically hides when message is
-// empty. Supports multiline messages.
-
+// A view to display an icon and message text in the system menu which
+// automatically hides when the message text is empty. Multi-line message text
+// is supported.
 class LabelTrayView : public views::View {
  public:
-  LabelTrayView(ViewClickListener* click_listener, int icon_resource_id);
+  LabelTrayView(ViewClickListener* click_listener, const gfx::VectorIcon& icon);
   ~LabelTrayView() override;
   void SetMessage(const base::string16& message);
 
@@ -26,7 +29,7 @@ class LabelTrayView : public views::View {
   views::View* CreateChildView(const base::string16& message) const;
 
   ViewClickListener* click_listener_;
-  int icon_resource_id_;
+  const gfx::VectorIcon& icon_;
   base::string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(LabelTrayView);

@@ -47,10 +47,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BLUETOOTH" file="cros/notification/notification_bluetooth_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT" file="cros/status/status_session_length_timer.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CHILD_USER" file="cros/status/status_child_user.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE" file="cros/status/status_managed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SUPERVISED_USER" file="cros/status/status_managed_mode_user.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
