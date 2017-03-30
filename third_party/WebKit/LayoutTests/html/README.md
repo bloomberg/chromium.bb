@@ -26,12 +26,12 @@ Some areas have their own directories not under html/.
 
     DIALOG element.
 
-*   document-metadata/
+*   document_metadata/
 
     [Document metadata elements](https://html.spec.whatwg.org/multipage/semantics.html#document-metadata);
     HEAD, TITLE, BASE, LINK, META, and STYLE.
 
-*   grouping-content/
+*   grouping_content/
 
     [Grouping content elmeents](https://html.spec.whatwg.org/multipage/semantics.html#grouping-content);
     P, HR, PRE, BLOCKQUOTE, OL, UL, LI, DL, DT, DD, FIGURE, FIGCAPTION, MAIN,
@@ -50,7 +50,7 @@ Some areas have their own directories not under html/.
     [Sections elements](https://html.spec.whatwg.org/multipage/semantics.html#sections);
     BODY, ARTICLE, SECTION, NAV, ASIDE, Hn, HGROUP, HEADER, FOOTER, and ADDRESS.
 
-*   text-level-semantics/
+*   text_level_semantics/
 
     [Text-level semantics elements](https://html.spec.whatwg.org/multipage/semantics.html#text-level-semantics);
     A, EM, STRONG, SMALL, S, CITE, Q, DFN, ABBR, RUBY, RT, RP, DATA, TIME, CODE,
