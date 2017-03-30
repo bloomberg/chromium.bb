@@ -24,7 +24,7 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!--
-      Enable Bluetooth permission via uses-permission in tip of tree builds
+      Enable runtime permissions as uses-permission in tip of tree builds
       only for ease of development on Android L and earlier. For consumer
       channels use "runtime permission" uses-permission-sdk-m which provides
       permission on Android M and later without a prompt.
@@ -32,9 +32,11 @@ by a child template that "extends" this file.
     {% if channel in ['default'] %}
         <uses-permission android:name="android.permission.BLUETOOTH"/>
         <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+        <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     {% endif %}
     <uses-permission-sdk-m android:name="android.permission.BLUETOOTH"/>
     <uses-permission-sdk-m android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission-sdk-m android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
