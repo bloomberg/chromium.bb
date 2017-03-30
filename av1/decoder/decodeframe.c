@@ -58,9 +58,9 @@
 #include "av1/decoder/detokenize.h"
 #include "av1/decoder/dsubexp.h"
 
-#if CONFIG_WARPED_MOTION
+#if CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
 #include "av1/common/warped_motion.h"
-#endif  // CONFIG_WARPED_MOTION
+#endif  // CONFIG_WARPED_MOTION || CONFIG_GLOBAL_MOTION
 
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
@@ -4479,6 +4479,8 @@ static void read_global_motion_params(WarpedMotionParams *params,
     case IDENTITY: break;
     default: assert(0);
   }
+  if (params->wmtype <= AFFINE)
+    if (!get_shear_params(params)) assert(0);
 }
 
 static void read_global_motion(AV1_COMMON *cm, aom_reader *r) {

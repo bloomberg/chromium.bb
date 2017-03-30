@@ -669,27 +669,22 @@ static int is_affine_shear_allowed(int32_t alpha, int32_t beta, int32_t gamma,
 }
 
 // Returns 1 on success or 0 on an invalid affine set
-static int get_shear_params(WarpedMotionParams *wm, int32_t *alpha,
-                            int32_t *beta, int32_t *gamma, int32_t *delta) {
+int get_shear_params(WarpedMotionParams *wm) {
   const int32_t *mat = wm->wmmat;
   if (!is_affine_valid(wm)) return 0;
-  *alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-  *beta = mat[3];
+  wm->alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
+  wm->beta = mat[3];
   int16_t shift;
   int16_t y = resolve_divisor_32(abs(mat[2]), &shift) * (mat[2] < 0 ? -1 : 1);
   int64_t v;
   v = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) * y;
-  *gamma = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  wm->gamma = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
   v = ((int64_t)mat[3] * mat[4]) * y;
-  *delta = mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
-           (1 << WARPEDMODEL_PREC_BITS);
-  if (!is_affine_shear_allowed(*alpha, *beta, *gamma, *delta)) return 0;
+  wm->delta = mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
+              (1 << WARPEDMODEL_PREC_BITS);
+  if (!is_affine_shear_allowed(wm->alpha, wm->beta, wm->gamma, wm->delta))
+    return 0;
   return 1;
-}
-
-int is_shearable_params(WarpedMotionParams *wm) {
-  int32_t alpha, beta, gamma, delta;
-  return get_shear_params(wm, &alpha, &beta, &gamma, &delta);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -867,14 +862,13 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     int32_t tmp[15 * 8];
     int i, j, k, l, m;
     int32_t *mat = wm->wmmat;
-    int32_t alpha, beta, gamma, delta;
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
     uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
 
-    if (!get_shear_params(wm, &alpha, &beta, &gamma, &delta)) {
-      assert(0 && "Warped motion model is incompatible with shear warp filter");
-      return;
-    }
+    const int32_t alpha = wm->alpha;
+    const int32_t beta = wm->beta;
+    const int32_t gamma = wm->gamma;
+    const int32_t delta = wm->delta;
 
     for (i = p_row; i < p_row + p_height; i += 8) {
       for (j = p_col; j < p_col + p_width; j += 8) {
@@ -1200,12 +1194,10 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
   if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) && x_scale == 16 &&
       y_scale == 16) {
     int32_t *mat = wm->wmmat;
-    int32_t alpha, beta, gamma, delta;
-
-    if (!get_shear_params(wm, &alpha, &beta, &gamma, &delta)) {
-      assert(0 && "Warped motion model is incompatible with shear warp filter");
-      return;
-    }
+    const int32_t alpha = wm->alpha;
+    const int32_t beta = wm->beta;
+    const int32_t gamma = wm->gamma;
+    const int32_t delta = wm->delta;
 
     // printf("%d %d %d %d\n", mat[2], mat[3], mat[4], mat[5]);
     av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
@@ -1253,6 +1245,8 @@ double av1_warp_erroradv(WarpedMotionParams *wm,
                          uint8_t *dst, int p_col, int p_row, int p_width,
                          int p_height, int p_stride, int subsampling_x,
                          int subsampling_y, int x_scale, int y_scale) {
+  if (wm->wmtype <= AFFINE)
+    if (!get_shear_params(wm)) return 1;
 #if CONFIG_AOM_HIGHBITDEPTH
   if (use_hbd)
     return highbd_warp_erroradv(
@@ -1557,8 +1551,7 @@ int find_projection(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
     }
     if (wm_params->wmtype == AFFINE || wm_params->wmtype == ROTZOOM) {
       // check compatibility with the fast warp filter
-      int32_t alpha, beta, gamma, delta;
-      if (!get_shear_params(wm_params, &alpha, &beta, &gamma, &delta)) return 1;
+      if (!get_shear_params(wm_params)) return 1;
     }
   }
 

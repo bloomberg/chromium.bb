@@ -5156,16 +5156,16 @@ static void encode_frame_internal(AV1_COMP *cpi) {
               }
             }
           }
-          if (cm->global_motion[frame].wmtype <= AFFINE)
-            if (!is_shearable_params(&cm->global_motion[frame]))
-              set_default_gmparams(&cm->global_motion[frame]);
-
           // If the best error advantage found doesn't meet the threshold for
           // this motion type, revert to IDENTITY.
           if (best_erroradvantage >
               gm_advantage_thresh[cm->global_motion[frame].wmtype]) {
             set_default_gmparams(&cm->global_motion[frame]);
           }
+
+          if (cm->global_motion[frame].wmtype <= AFFINE)
+            if (!get_shear_params(&cm->global_motion[frame]))
+              set_default_gmparams(&cm->global_motion[frame]);
 
           if (cm->global_motion[frame].wmtype != IDENTITY) break;
         }

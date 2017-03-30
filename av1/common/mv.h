@@ -87,6 +87,7 @@ static const int trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6, 6, 6, 8 };
 typedef struct {
   TransformationType wmtype;
   int32_t wmmat[8];
+  int32_t alpha, beta, gamma, delta;
 } WarpedMotionParams;
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
@@ -219,6 +220,7 @@ static INLINE void set_default_gmparams(WarpedMotionParams *wm) {
     0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0, (1 << WARPEDMODEL_PREC_BITS), 0, 0
   };
   memcpy(wm->wmmat, default_wm_mat, sizeof(wm->wmmat));
+  wm->alpha = wm->beta = wm->gamma = wm->delta = 0;
   wm->wmtype = IDENTITY;
 }
 #endif  // CONFIG_GLOBAL_MOTION
