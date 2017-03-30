@@ -150,6 +150,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
 
     MemoryState memory_state;
     bool is_visible = false;
+    base::TimeTicks can_purge_after;
     std::unique_ptr<MemoryCoordinatorHandleImpl> handle;
   };
 
@@ -174,6 +175,8 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, SetMemoryStateForTesting);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, ForceSetMemoryCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, DiscardTabUnderCritical);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnWarningCondition);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, OnCriticalCondition);
 
   friend struct MemoryCoordinatorSingletonTraits;
   friend class MemoryCoordinatorHandleImpl;
@@ -202,6 +205,24 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Notifies a state change to child processes.
   void NotifyStateToChildren(MemoryState state);
 
+  // Called periodically while the memory condition is WARNING.
+  void OnWarningCondition();
+
+  // Called periodically while the memory condition is CRITICAL.
+  void OnCriticalCondition();
+
+  enum class PurgeTarget {
+    BACKGROUNDED,
+    ALL,
+  };
+
+  // Tries to find a candidate child process for purging memory and asks the
+  // child to purge memory.
+  bool TryToPurgeMemoryFromChildren(PurgeTarget target);
+
+  // Tries to purge memory from the browser process.
+  bool TryToPurgeMemoryFromBrowser();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<MemoryCoordinatorDelegate> delegate_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
@@ -225,6 +246,10 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Used to delay setting browser's memory state. Cancelable to avoid executing
   // multiple tasks in the same time frame.
   base::CancelableClosure delayed_browser_memory_state_setter_;
+
+  // If this isn't null, purging memory from the browser process is suppressed
+  // until this ticks is passed.
+  base::TimeTicks can_purge_after_;
 
   // Tracks child processes. An entry is added when a renderer connects to
   // MemoryCoordinator and removed automatically when an underlying binding is

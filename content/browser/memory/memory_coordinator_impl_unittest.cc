@@ -66,12 +66,16 @@ class MockMemoryCoordinatorClient : public base::MemoryCoordinatorClient {
     state_ = state;
   }
 
+  void OnPurgeMemory() override { ++purge_memory_calls_; }
+
   bool did_state_changed() const { return did_state_changed_; }
   base::MemoryState state() const { return state_; }
+  int purge_memory_calls() const { return purge_memory_calls_; }
 
  private:
   bool did_state_changed_ = false;
   base::MemoryState state_ = base::MemoryState::NORMAL;
+  int purge_memory_calls_ = 0;
 };
 
 class MockMemoryMonitor : public MemoryMonitor {
@@ -564,6 +568,106 @@ TEST_F(MemoryCoordinatorImplTest, DiscardTabUnderCritical) {
   EXPECT_EQ(2, delegate->discard_tab_count());
   task_runner_->FastForwardBy(interval);
   EXPECT_EQ(2, delegate->discard_tab_count());
+}
+
+TEST_F(MemoryCoordinatorImplTest, OnWarningCondition) {
+  MockMemoryCoordinatorClient client;
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
+  auto* child1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* child2 = coordinator_->CreateChildMemoryCoordinator(2);
+  base::TimeDelta interval = base::TimeDelta::FromSeconds(31);
+
+  // child1: Foreground, child2: Background
+  coordinator_->OnChildVisibilityChanged(1, true);
+  coordinator_->OnChildVisibilityChanged(2, false);
+
+  // Note: we never ask foreground processes (including the browser process) to
+  // purge memory on WARNING condition.
+
+  // Don't ask the background child to purge until the child remains
+  // backgrounded for a certain period of time.
+  coordinator_->OnWarningCondition();
+  RunUntilIdle();
+  EXPECT_EQ(0, client.purge_memory_calls());
+  EXPECT_EQ(0, child1->purge_memory_calls());
+  EXPECT_EQ(0, child2->purge_memory_calls());
+
+  // After a certain period of time is passed, request the child to purge
+  // memory.
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnWarningCondition();
+  task_runner_->RunUntilIdle();
+  RunUntilIdle();
+  EXPECT_EQ(0, client.purge_memory_calls());
+  EXPECT_EQ(0, child1->purge_memory_calls());
+  EXPECT_EQ(1, child2->purge_memory_calls());
+
+  // Don't purge memory more than once when the child stays backgrounded.
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnWarningCondition();
+  RunUntilIdle();
+  EXPECT_EQ(0, client.purge_memory_calls());
+  EXPECT_EQ(0, child1->purge_memory_calls());
+  EXPECT_EQ(1, child2->purge_memory_calls());
+
+  // The background child goes to foreground, goes to background, then a
+  // certain period of time is passed. Another purging request should be sent.
+  coordinator_->OnChildVisibilityChanged(2, true);
+  coordinator_->OnChildVisibilityChanged(2, false);
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnWarningCondition();
+  RunUntilIdle();
+  EXPECT_EQ(0, client.purge_memory_calls());
+  EXPECT_EQ(0, child1->purge_memory_calls());
+  EXPECT_EQ(2, child2->purge_memory_calls());
+
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
+}
+
+TEST_F(MemoryCoordinatorImplTest, OnCriticalCondition) {
+  MockMemoryCoordinatorClient client;
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
+  auto* child1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto* child2 = coordinator_->CreateChildMemoryCoordinator(2);
+  auto* delegate = coordinator_->GetDelegate();
+  base::TimeDelta interval = base::TimeDelta::FromSeconds(31);
+
+  // child1: Foreground, child2: Background
+  coordinator_->OnChildVisibilityChanged(1, true);
+  coordinator_->OnChildVisibilityChanged(2, false);
+
+  // Purge memory from all children regardless of their visibility.
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnCriticalCondition();
+  RunUntilIdle();
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnCriticalCondition();
+  RunUntilIdle();
+  EXPECT_EQ(2, delegate->discard_tab_count());
+  EXPECT_EQ(0, client.purge_memory_calls());
+  EXPECT_EQ(1, child1->purge_memory_calls());
+  EXPECT_EQ(1, child2->purge_memory_calls());
+
+  // Purge memory from browser process only after we asked all children to
+  // purge memory.
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnCriticalCondition();
+  RunUntilIdle();
+  EXPECT_EQ(3, delegate->discard_tab_count());
+  EXPECT_EQ(1, client.purge_memory_calls());
+  EXPECT_EQ(1, child1->purge_memory_calls());
+  EXPECT_EQ(1, child2->purge_memory_calls());
+
+  // Don't request purging for a certain period of time if we already requested.
+  task_runner_->FastForwardBy(interval);
+  coordinator_->OnCriticalCondition();
+  RunUntilIdle();
+  EXPECT_EQ(4, delegate->discard_tab_count());
+  EXPECT_EQ(1, client.purge_memory_calls());
+  EXPECT_EQ(1, child1->purge_memory_calls());
+  EXPECT_EQ(1, child2->purge_memory_calls());
+
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
 }
 
 #if defined(OS_ANDROID)

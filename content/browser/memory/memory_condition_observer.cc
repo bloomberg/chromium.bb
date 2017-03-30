@@ -28,7 +28,7 @@ const int kDefaultNewRenderersUntilWarning = 4;
 const int kDefaultNewRenderersUntilCritical = 2;
 const int kDefaultNewRenderersBackToNormal = 5;
 const int kDefaultNewRenderersBackToWarning = 3;
-const int kDefaultMonitoringIntervalSeconds = 5;
+const int kDefaultMonitoringIntervalSeconds = 1;
 const int kMonitoringIntervalBackgroundedSeconds = 120;
 
 void SetIntVariationParameter(const std::map<std::string, std::string> params,

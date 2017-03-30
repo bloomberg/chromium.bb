@@ -534,6 +534,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnMemoryStateChange(base::MemoryState state) override;
   void OnPurgeMemory() override;
 
+  void RecordPurgeMemory(RendererMemoryMetrics before);
+
   void ClearMemory();
 
   void Init(

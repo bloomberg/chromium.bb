@@ -2238,11 +2238,32 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
 }
 
 void RenderThreadImpl::OnPurgeMemory() {
+  // Record amount of purged memory after 2 seconds. 2 seconds is arbitrary
+  // but it works most cases.
+  RendererMemoryMetrics metrics;
+  GetRendererMemoryMetrics(&metrics);
+  GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&RenderThreadImpl::RecordPurgeMemory, base::Unretained(this),
+                 std::move(metrics)),
+      base::TimeDelta::FromSeconds(2));
+
   OnTrimMemoryImmediately();
   ReleaseFreeMemory();
   ClearMemory();
   if (blink_platform_impl_)
     blink::WebMemoryCoordinator::onPurgeMemory();
+}
+
+void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
+  RendererMemoryMetrics after;
+  GetRendererMemoryMetrics(&after);
+  int64_t mbytes = static_cast<int64_t>(before.total_allocated_mb) -
+                   static_cast<int64_t>(after.total_allocated_mb);
+  if (mbytes < 0)
+    mbytes = 0;
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Renderer.PurgedMemory",
+                                mbytes);
 }
 
 void RenderThreadImpl::ClearMemory() {

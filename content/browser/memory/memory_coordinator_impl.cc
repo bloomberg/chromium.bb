@@ -28,6 +28,7 @@ using MemoryState = base::MemoryState;
 namespace {
 
 const int kDefaultMinimumTransitionPeriodSeconds = 30;
+const int kDefaultBackgroundChildPurgeCandidatePeriodSeconds = 30;
 
 mojom::MemoryState ToMojomMemoryState(MemoryState state) {
   switch (state) {
@@ -75,6 +76,16 @@ MemoryState CalculateMemoryStateForProcess(MemoryCondition condition,
   }
   NOTREACHED();
   return MemoryState::NORMAL;
+}
+
+void RecordBrowserPurge(size_t before) {
+  auto metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
+  size_t after = metrics->GetWorkingSetSize();
+  int64_t bytes = static_cast<int64_t>(before) - static_cast<int64_t>(after);
+  if (bytes < 0)
+    bytes = 0;
+  UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Browser.PurgedMemory",
+                                bytes / 1024 / 1024);
 }
 
 }  // namespace
@@ -285,9 +296,10 @@ void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
     MemoryCondition next_condition) {
   DCHECK(CalledOnValidThread());
 
-  // Discard one tab when the system is under high memory pressure.
-  if (next_condition == MemoryCondition::CRITICAL)
-    DiscardTab();
+  if (next_condition == MemoryCondition::WARNING)
+    OnWarningCondition();
+  else if (next_condition == MemoryCondition::CRITICAL)
+    OnCriticalCondition();
 
   if (memory_condition_ == next_condition)
     return;
@@ -316,7 +328,6 @@ void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
           iter.second.is_visible ? MemoryState::NORMAL : MemoryState::THROTTLED;
       SetChildMemoryState(iter.first, state);
     }
-    // Idea: Purge memory from background processes.
   } else if (next_condition == MemoryCondition::CRITICAL) {
     // Set THROTTLED state to all clients/processes.
     UpdateBrowserStateAndNotifyStateToClients(MemoryState::THROTTLED);
@@ -393,6 +404,14 @@ void MemoryCoordinatorImpl::OnChildVisibilityChanged(int render_process_id,
     return;
 
   iter->second.is_visible = is_visible;
+  if (!is_visible) {
+    // A backgrounded process becomes a candidate for purging memory when
+    // the process remains backgrounded for a certian period of time.
+    iter->second.can_purge_after =
+        tick_clock_->NowTicks() +
+        base::TimeDelta::FromSeconds(
+            kDefaultBackgroundChildPurgeCandidatePeriodSeconds);
+  }
   MemoryState new_state =
       CalculateMemoryStateForProcess(GetMemoryCondition(), is_visible);
   SetChildMemoryState(render_process_id, new_state);
@@ -463,6 +482,59 @@ void MemoryCoordinatorImpl::NotifyStateToChildren(MemoryState state) {
   // whether this state transition is valid.
   for (auto& iter : children())
     SetChildMemoryState(iter.first, state);
+}
+
+void MemoryCoordinatorImpl::OnWarningCondition() {
+  TryToPurgeMemoryFromChildren(PurgeTarget::BACKGROUNDED);
+}
+
+void MemoryCoordinatorImpl::OnCriticalCondition() {
+  DiscardTab();
+
+  // Prefer to purge memory from child processes than browser process because
+  // we prioritize the brower process.
+  if (TryToPurgeMemoryFromChildren(PurgeTarget::ALL))
+    return;
+
+  TryToPurgeMemoryFromBrowser();
+}
+
+bool MemoryCoordinatorImpl::TryToPurgeMemoryFromChildren(PurgeTarget target) {
+  base::TimeTicks now = tick_clock_->NowTicks();
+  // TODO(bashi): Better to sort child processes based on their priorities.
+  for (auto& iter : children()) {
+    if (iter.second.is_visible && target == PurgeTarget::BACKGROUNDED)
+      continue;
+    if (!iter.second.can_purge_after.is_null() &&
+        iter.second.can_purge_after > now)
+      continue;
+
+    // Set |can_purge_after| to the maximum value to suppress another purge
+    // request until the child process goes foreground and then goes background
+    // again.
+    iter.second.can_purge_after = base::TimeTicks::Max();
+    iter.second.handle->child()->PurgeMemory();
+    return true;
+  }
+  return false;
+}
+
+bool MemoryCoordinatorImpl::TryToPurgeMemoryFromBrowser() {
+  base::TimeTicks now = tick_clock_->NowTicks();
+  if (can_purge_after_ > now)
+    return false;
+
+  auto metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
+  size_t before = metrics->GetWorkingSetSize();
+  task_runner_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&RecordBrowserPurge, before),
+                                base::TimeDelta::FromSeconds(2));
+
+  // Suppress purging in the browser process until a certain period of time is
+  // passed.
+  can_purge_after_ = now + base::TimeDelta::FromMinutes(2);
+  base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
+  return true;
 }
 
 MemoryCoordinatorImpl::ChildInfo::ChildInfo() {}
