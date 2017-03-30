@@ -131,6 +131,8 @@ static_library("leveldatabase") {
   ]
 
   if (is_win) {
+    # leveldb compiles with a limited set of warnings enabled, and is not
+    # likely to accept fixes for other warnings. See crbug.com/698013
     cflags = [ "/wd4018" ]  # Signed/unsigned mismatch in comparison.
 
     if (is_official_build) {
@@ -205,8 +207,6 @@ if (!is_ios && !is_android) {
       ":leveldb_testutil",
     ]
 
-    # TODO(crbug.com/698013): Fix leveldb to remove the need for suppressing
-    #                         warnings.
     if (is_win) {
       # util\cache_test.cc(167): warning C4018: '<': signed/unsigned mismatch
       # util\cache_test.cc(171): warning C4018: '<': signed/unsigned mismatch
