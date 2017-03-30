@@ -28,7 +28,7 @@ class CastWebContentsActivity : base::SupportsUserData::Data {
 
   base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewEmbedder();
   void SetContentVideoViewEmbedder(
-      const base::android::JavaRef<jobject>& content_video_view_embedder);
+      const base::android::JavaParamRef<jobject>& content_video_view_embedder);
 
  private:
   explicit CastWebContentsActivity(content::WebContents* web_contents);

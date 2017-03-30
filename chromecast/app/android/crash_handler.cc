@@ -92,9 +92,7 @@ void CrashHandler::InitializeUploader() {
   base::android::ScopedJavaLocalRef<jstring> crash_dump_path_java =
       base::android::ConvertUTF8ToJavaString(env, crash_dump_path_.value());
   Java_CastCrashHandler_initializeUploader(
-      env,
-      base::android::GetApplicationContext(),
-      crash_dump_path_java.obj(),
+      env, base::android::GetApplicationContext(), crash_dump_path_java,
       UploadCrashToStaging());
 }
 

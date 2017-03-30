@@ -7,6 +7,10 @@
 #include "content/public/browser/web_contents.h"
 #include "jni/CastWebContentsActivity_jni.h"
 
+using base::android::JavaParamRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
+
 namespace chromecast {
 namespace shell {
 
@@ -17,11 +21,10 @@ const void* kCastWebContentsActivityKey =
 }  // namespace
 
 // static
-void SetContentVideoViewEmbedder(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jobject>& webContents,
-    const base::android::JavaParamRef<jobject>& embedder) {
+void SetContentVideoViewEmbedder(JNIEnv* env,
+                                 const JavaParamRef<jobject>& jcaller,
+                                 const JavaParamRef<jobject>& webContents,
+                                 const JavaParamRef<jobject>& embedder) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(webContents);
   DCHECK(web_contents);
@@ -50,21 +53,19 @@ CastWebContentsActivity* CastWebContentsActivity::Get(
 
 CastWebContentsActivity::CastWebContentsActivity(
     content::WebContents* web_contents)
-    : content_video_view_embedder_(
-          base::android::ScopedJavaLocalRef<jobject>()) {}
+    : content_video_view_embedder_(ScopedJavaLocalRef<jobject>()) {}
 
 CastWebContentsActivity::~CastWebContentsActivity() {}
 
-base::android::ScopedJavaLocalRef<jobject>
+ScopedJavaLocalRef<jobject>
 CastWebContentsActivity::GetContentVideoViewEmbedder() {
-  return base::android::ScopedJavaLocalRef<jobject>(
-      content_video_view_embedder_);
+  return ScopedJavaLocalRef<jobject>(content_video_view_embedder_);
 }
 
 void CastWebContentsActivity::SetContentVideoViewEmbedder(
-    const base::android::JavaRef<jobject>& content_video_view_embedder) {
+    const JavaParamRef<jobject>& content_video_view_embedder) {
   content_video_view_embedder_ =
-      base::android::ScopedJavaGlobalRef<jobject>(content_video_view_embedder);
+      ScopedJavaGlobalRef<jobject>(content_video_view_embedder);
 }
 
 }  // namespace shell

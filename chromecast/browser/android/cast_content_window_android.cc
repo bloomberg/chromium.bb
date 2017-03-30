@@ -45,7 +45,7 @@ CastContentWindowAndroid::CastContentWindowAndroid(
 
 CastContentWindowAndroid::~CastContentWindowAndroid() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_CastContentWindowAndroid_onNativeDestroyed(env, java_window_.obj());
+  Java_CastContentWindowAndroid_onNativeDestroyed(env, java_window_);
 }
 
 void CastContentWindowAndroid::SetTransparent() {}
@@ -58,8 +58,8 @@ void CastContentWindowAndroid::ShowWebContents(
   base::android::ScopedJavaLocalRef<jobject> java_web_contents =
       web_contents->GetJavaWebContents();
 
-  Java_CastContentWindowAndroid_showWebContents(env, java_window_.obj(),
-                                                java_web_contents.obj());
+  Java_CastContentWindowAndroid_showWebContents(env, java_window_,
+                                                java_web_contents);
 }
 
 void CastContentWindowAndroid::OnActivityStopped(

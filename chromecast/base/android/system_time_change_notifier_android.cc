@@ -7,6 +7,8 @@
 #include "base/android/context_utils.h"
 #include "jni/SystemTimeChangeNotifierAndroid_jni.h"
 
+using base::android::JavaParamRef;
+
 namespace chromecast {
 
 // static
@@ -25,16 +27,17 @@ void SystemTimeChangeNotifierAndroid::Initialize() {
   java_notifier_.Reset(Java_SystemTimeChangeNotifierAndroid_create(
       env, base::android::GetApplicationContext()));
   Java_SystemTimeChangeNotifierAndroid_initializeFromNative(
-      env, java_notifier_.obj(), reinterpret_cast<jlong>(this));
+      env, java_notifier_, reinterpret_cast<jlong>(this));
 }
 
 void SystemTimeChangeNotifierAndroid::Finalize() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SystemTimeChangeNotifierAndroid_finalizeFromNative(
-      env, java_notifier_.obj());
+  Java_SystemTimeChangeNotifierAndroid_finalizeFromNative(env, java_notifier_);
 }
 
-void SystemTimeChangeNotifierAndroid::OnTimeChanged(JNIEnv* env, jobject jobj) {
+void SystemTimeChangeNotifierAndroid::OnTimeChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj) {
   NotifySystemTimeChanged();
 }
 
