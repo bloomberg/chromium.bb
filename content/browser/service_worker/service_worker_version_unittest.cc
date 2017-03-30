@@ -41,13 +41,6 @@ IPC_MESSAGE_ROUTED1(TestMsg_MessageFromWorker, int)
 IPC_MESSAGE_CONTROL1(TestMsg_TestEvent, int)
 IPC_MESSAGE_CONTROL2(TestMsg_TestEvent_Multiple, int, int)
 IPC_MESSAGE_ROUTED2(TestMsg_TestEventResult, int, std::string)
-IPC_MESSAGE_ROUTED3(TestMsg_TestSimpleEventResult,
-                    int,
-                    blink::WebServiceWorkerEventResult,
-                    base::Time)
-
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
-                          blink::WebServiceWorkerEventResultLast)
 
 // ---------------------------------------------------------------------------
 
@@ -87,14 +80,6 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
                                const std::string& reply) {
     SimulateSend(
         new TestMsg_TestEventResult(embedded_worker_id, request_id, reply));
-  }
-
-  void SimulateSendSimpleEventResult(int embedded_worker_id,
-                                     int request_id,
-                                     blink::WebServiceWorkerEventResult reply,
-                                     base::Time dispatch_event_time) {
-    SimulateSend(new TestMsg_TestSimpleEventResult(
-        embedded_worker_id, request_id, reply, dispatch_event_time));
   }
 
  private:
@@ -1555,80 +1540,6 @@ TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   EXPECT_EQ(SERVICE_WORKER_OK, status1);
   EXPECT_TRUE(version_->FinishRequest(request_id1, true /* was_handled */,
                                       base::Time::Now()));
-}
-
-TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Completed) {
-  ServiceWorkerStatusCode status =
-      SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
-
-  // Activate and start worker.
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->StartWorker(ServiceWorkerMetrics::EventType::SYNC,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-
-  // Start request and dispatch test event.
-  status = SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
-  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
-  int request_id = version_->StartRequest(
-      ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  version_->DispatchSimpleEvent<TestMsg_TestSimpleEventResult>(
-      request_id, TestMsg_TestEvent(request_id));
-
-  // Verify event got dispatched to worker.
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(1u, helper_->inner_ipc_sink()->message_count());
-  const IPC::Message* msg = helper_->inner_ipc_sink()->GetMessageAt(0);
-  EXPECT_EQ(TestMsg_TestEvent::ID, msg->type());
-
-  // Simulate sending reply to event.
-  helper_->SimulateSendSimpleEventResult(
-      version_->embedded_worker()->embedded_worker_id(), request_id,
-      blink::WebServiceWorkerEventResultCompleted, base::Time::Now());
-  runner->Run();
-
-  // Verify callback was called with correct status.
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-}
-
-TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Rejected) {
-  ServiceWorkerStatusCode status =
-      SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
-
-  // Activate and start worker.
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->StartWorker(ServiceWorkerMetrics::EventType::SYNC,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-
-  // Start request and dispatch test event.
-  status = SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
-  scoped_refptr<MessageLoopRunner> runner(new MessageLoopRunner);
-  int request_id = version_->StartRequest(
-      ServiceWorkerMetrics::EventType::SYNC,
-      CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  version_->DispatchSimpleEvent<TestMsg_TestSimpleEventResult>(
-      request_id, TestMsg_TestEvent(request_id));
-
-  // Verify event got dispatched to worker.
-  base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(1u, helper_->inner_ipc_sink()->message_count());
-  const IPC::Message* msg = helper_->inner_ipc_sink()->GetMessageAt(0);
-  EXPECT_EQ(TestMsg_TestEvent::ID, msg->type());
-
-  // Simulate sending reply to event.
-  helper_->SimulateSendSimpleEventResult(
-      version_->embedded_worker()->embedded_worker_id(), request_id,
-      blink::WebServiceWorkerEventResultRejected, base::Time::Now());
-  runner->Run();
-
-  // Verify callback was called with correct status.
-  EXPECT_EQ(SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED, status);
 }
 
 TEST_F(ServiceWorkerVersionTest, DispatchEvent_MultipleResponse) {

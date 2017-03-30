@@ -1104,16 +1104,6 @@ void ServiceWorkerVersion::CountFeature(uint32_t feature) {
     provider_host_by_uuid.second->CountFeature(feature);
 }
 
-void ServiceWorkerVersion::OnSimpleEventResponse(
-    int request_id,
-    blink::WebServiceWorkerEventResult result,
-    base::Time dispatch_event_time) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
-  if (result == blink::WebServiceWorkerEventResultRejected)
-    status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-  OnSimpleEventFinished(request_id, status, dispatch_event_time);
-}
-
 void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
   // Just abort if we are shutting down.
   if (!context_)

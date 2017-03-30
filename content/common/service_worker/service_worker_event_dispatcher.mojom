@@ -52,6 +52,10 @@ struct ExtendableMessageEvent {
 
 // Renderer-side interface bound to ServiceWorkerContextClient for dispatching
 // events.
+// Those events expecting such response
+// (blink.mojom.ServiceWorkerEventStatus, mojo.common.mojom.Time) are considered
+// 'simple events'. ServiceWorkerVersion::CreateSimpleEventCallback can be used
+// to create the callback for these.
 interface ServiceWorkerEventDispatcher {
   DispatchActivateEvent()
       => (blink.mojom.ServiceWorkerEventStatus status,

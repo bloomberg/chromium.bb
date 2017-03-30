@@ -279,6 +279,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Creates a callback that is to be used for marking simple events dispatched
   // through the ServiceWorkerEventDispatcher as finished for the |request_id|.
+  // Simple event means those events expecting a response with only a status
+  // code and the dispatch time. See service_worker_event_dispatcher.mojom.
   SimpleEventCallback CreateSimpleEventCallback(int request_id);
 
   // This must be called when the worker is running.
@@ -290,10 +292,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Dispatches an event. If dispatching the event fails, all of the error
   // callbacks that were associated with |request_ids| via StartRequest are
   // called.
-  // Use RegisterRequestCallback or RegisterSimpleRequest to register a callback
-  // to receive messages sent back in response to this event before calling this
-  // method.
-  // This must be called when the worker is running.
+  // Use RegisterRequestCallback to register a callback to receive messages sent
+  // back in response to this event before calling this method. This must be
+  // called when the worker is running.
   void DispatchEvent(const std::vector<int>& request_ids,
                      const IPC::Message& message);
 
@@ -305,28 +306,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   template <typename ResponseMessage, typename ResponseCallbackType>
   void RegisterRequestCallback(int request_id,
                                const ResponseCallbackType& callback);
-
-  // You can use this method instead of RegisterRequestCallback when the
-  // response message sent back from the service worker consists of just
-  // a request_id and a blink::WebServiceWorkerEventResult field. The result
-  // field is converted to a ServiceWorkerStatusCode and passed to the error
-  // handler associated with the request_id which is registered by StartRequest.
-  // Additionally if you use this method, FinishRequest will be called before
-  // passing the reply to the callback.
-  // Callback registration should be done once for one request_id.
-  template <typename ResponseMessage>
-  void RegisterSimpleRequest(int request_id);
-
-  // This is a wrapper method equivalent to one RegisterSimpleRequest and one
-  // DispatchEvent. For simple events where the full functionality of
-  // RegisterRequestCallback/DispatchEvent is not needed, this method can be
-  // used instead. The ResponseMessage must consist
-  // of just a request_id and a blink::WebServiceWorkerEventResult field. The
-  // result is converted to a ServiceWorkerStatusCode and passed to the error
-  // handler associated with the request. Additionally this methods calls
-  // FinishRequest before passing the reply to the callback.
-  template <typename ResponseMessage>
-  void DispatchSimpleEvent(int request_id, const IPC::Message& message);
 
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
@@ -652,13 +631,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGetClients(int request_id,
                     const ServiceWorkerClientQueryOptions& options);
 
-  // Receiver function of responses of simple events dispatched through chromium
-  // IPCs. This is internally the same with OnSimpleEventFinished and will be
-  // replaced with OnSimpleEventFinished after all of simple events are
-  // dispatched via mojo.
-  void OnSimpleEventResponse(int request_id,
-                             blink::WebServiceWorkerEventResult result,
-                             base::Time dispatch_event_time);
   void OnOpenWindow(int request_id, GURL url);
   void OnOpenWindowFinished(int request_id,
                             ServiceWorkerStatusCode status,
@@ -872,13 +844,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
 
-template <typename ResponseMessage>
-void ServiceWorkerVersion::DispatchSimpleEvent(int request_id,
-                                               const IPC::Message& message) {
-  RegisterSimpleRequest<ResponseMessage>(request_id);
-  DispatchEvent({request_id}, message);
-}
-
 template <typename ResponseMessage, typename ResponseCallbackType>
 void ServiceWorkerVersion::RegisterRequestCallback(
     int request_id,
@@ -890,13 +855,6 @@ void ServiceWorkerVersion::RegisterRequestCallback(
   request->listener.reset(
       new EventResponseHandler<ResponseMessage, ResponseCallbackType>(
           embedded_worker()->AsWeakPtr(), request_id, callback));
-}
-
-template <typename ResponseMessage>
-void ServiceWorkerVersion::RegisterSimpleRequest(int request_id) {
-  RegisterRequestCallback<ResponseMessage>(
-      request_id,
-      base::Bind(&ServiceWorkerVersion::OnSimpleEventResponse, this));
 }
 
 template <typename ResponseMessage, typename CallbackType, typename... Args>
