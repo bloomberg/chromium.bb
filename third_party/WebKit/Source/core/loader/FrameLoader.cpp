@@ -201,15 +201,15 @@ FrameLoader::FrameLoader(LocalFrame* frame)
                    &FrameLoader::checkTimerFired),
       m_forcedSandboxFlags(SandboxNone),
       m_dispatchingDidClearWindowObjectInMainWorld(false),
-      m_protectProvisionalLoader(false) {
+      m_protectProvisionalLoader(false),
+      m_detached(false) {
   DCHECK(m_frame);
   TRACE_EVENT_OBJECT_CREATED_WITH_ID("loading", "FrameLoader", this);
   takeObjectSnapshot();
 }
 
 FrameLoader::~FrameLoader() {
-  // Verify that this FrameLoader has been detached.
-  DCHECK(!m_progressTracker);
+  DCHECK(m_detached);
 }
 
 DEFINE_TRACE(FrameLoader) {
@@ -1380,6 +1380,7 @@ void FrameLoader::detach() {
   }
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID("loading", "FrameLoader", this);
+  m_detached = true;
 }
 
 void FrameLoader::loadFailed(DocumentLoader* loader,
@@ -1884,6 +1885,10 @@ std::unique_ptr<TracedValue> FrameLoader::toTracedValue() const {
 }
 
 inline void FrameLoader::takeObjectSnapshot() const {
+  if (m_detached) {
+    // We already logged TRACE_EVENT_OBJECT_DELETED_WITH_ID in detach().
+    return;
+  }
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID("loading", "FrameLoader", this,
                                       toTracedValue());
 }

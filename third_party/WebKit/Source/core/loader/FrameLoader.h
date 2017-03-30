@@ -329,6 +329,7 @@ class CORE_EXPORT FrameLoader final {
 
   bool m_dispatchingDidClearWindowObjectInMainWorld;
   bool m_protectProvisionalLoader;
+  bool m_detached;
 };
 
 }  // namespace blink
