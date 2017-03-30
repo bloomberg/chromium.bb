@@ -95,6 +95,10 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
         error_callback_(error_callback),
         weak_ptr_factory_(this) {}
 
+  void RestrictToProfilePath(const std::string& profile_path) {
+    restrict_to_profile_path_ = profile_path;
+  }
+
   void Run() {
     DBusThreadManager::Get()
         ->GetShillServiceClient()
@@ -132,6 +136,15 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
                        << entry_path;
         continue;
       }
+
+      if (!restrict_to_profile_path_.empty() &&
+          profile_path != restrict_to_profile_path_) {
+        NET_LOG(DEBUG) << "Skip deleting Profile Entry: " << profile_path
+                       << ": " << entry_path << " - removal is restricted to "
+                       << restrict_to_profile_path_ << " profile";
+        continue;
+      }
+
       NET_LOG(DEBUG) << "Delete Profile Entry: " << profile_path << ": "
                      << entry_path;
       profile_delete_entries_[profile_path] = entry_path;
@@ -142,6 +155,8 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
           base::Bind(&ProfileEntryDeleter::ShillErrorCallback,
                      weak_ptr_factory_.GetWeakPtr(), profile_path, entry_path));
     }
+
+    RunCallbackIfDone();
   }
 
   void ProfileEntryDeletedCallback(const std::string& profile_path,
@@ -149,6 +164,11 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
     NET_LOG(DEBUG) << "Profile Entry Deleted: " << profile_path << ": "
                    << entry;
     profile_delete_entries_.erase(profile_path);
+
+    RunCallbackIfDone();
+  }
+
+  void RunCallbackIfDone() {
     if (!profile_delete_entries_.empty())
       return;
     // Run the callback if this is the last pending deletion.
@@ -175,6 +195,9 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
 
   NetworkConfigurationHandler* owner_;  // Unowned
   std::string service_path_;
+  // Non empty if the service has to be removed only from a single profile. This
+  // value is the profile path of the profile in question.
+  std::string restrict_to_profile_path_;
   std::string guid_;
   NetworkConfigurationObserver::Source source_;
   base::Closure callback_;
@@ -337,6 +360,32 @@ void NetworkConfigurationHandler::RemoveConfiguration(
     NetworkConfigurationObserver::Source source,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  RemoveConfigurationFromProfile(service_path, "", source, callback,
+                                 error_callback);
+}
+
+void NetworkConfigurationHandler::RemoveConfigurationFromCurrentProfile(
+    const std::string& service_path,
+    NetworkConfigurationObserver::Source source,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  const NetworkState* network_state =
+      network_state_handler_->GetNetworkState(service_path);
+
+  if (!network_state || network_state->profile_path().empty()) {
+    InvokeErrorCallback(service_path, error_callback, "NetworkNotConfigured");
+    return;
+  }
+  RemoveConfigurationFromProfile(service_path, network_state->profile_path(),
+                                 source, callback, error_callback);
+}
+
+void NetworkConfigurationHandler::RemoveConfigurationFromProfile(
+    const std::string& service_path,
+    const std::string& profile_path,
+    NetworkConfigurationObserver::Source source,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
   // Service.Remove is not reliable. Instead, request the profile entries
   // for the service and remove each entry.
   if (base::ContainsKey(profile_entry_deleters_, service_path)) {
@@ -350,9 +399,13 @@ void NetworkConfigurationHandler::RemoveConfiguration(
       network_state_handler_->GetNetworkState(service_path);
   if (network_state)
     guid = network_state->guid();
-  NET_LOG(USER) << "Remove Configuration: " << service_path;
+  NET_LOG(USER) << "Remove Configuration: " << service_path
+                << " from profiles: "
+                << (!profile_path.empty() ? profile_path : "all");
   ProfileEntryDeleter* deleter = new ProfileEntryDeleter(
       this, service_path, guid, source, callback, error_callback);
+  if (!profile_path.empty())
+    deleter->RestrictToProfilePath(profile_path);
   profile_entry_deleters_[service_path] = base::WrapUnique(deleter);
   deleter->Run();
 }

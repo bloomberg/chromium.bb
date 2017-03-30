@@ -272,6 +272,7 @@ NetworkingPrivateForgetNetworkFunction::Run() {
   GetDelegate(browser_context())
       ->ForgetNetwork(
           params->network_guid,
+          CanChangeSharedConfig(extension(), source_context_type()),
           base::Bind(&NetworkingPrivateForgetNetworkFunction::Success, this),
           base::Bind(&NetworkingPrivateForgetNetworkFunction::Failure, this));
   // Success() or Failure() might have been called synchronously at this point.

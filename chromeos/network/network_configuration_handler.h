@@ -115,6 +115,15 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback);
 
+  // Removes the network |service_path| from the profile that contains its
+  // currently active configuration.
+  // See notes on |source| and callbacks in class description above.
+  void RemoveConfigurationFromCurrentProfile(
+      const std::string& service_path,
+      NetworkConfigurationObserver::Source source,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
+
   // Changes the profile for the network |service_path| to |profile_path|.
   // See notes on |source| and callbacks in class description above.
   void SetNetworkProfile(const std::string& service_path,
@@ -204,6 +213,16 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
 
   // Signals the device handler to request an IP config refresh.
   void RequestRefreshIPConfigs(const std::string& service_path);
+
+  // Removes network configuration for |service_path| from the profile specified
+  // by |profile_path|. If |profile_path| is not set, the network is removed
+  // from all the profiles that include it.
+  void RemoveConfigurationFromProfile(
+      const std::string& service_path,
+      const std::string& profile_path,
+      NetworkConfigurationObserver::Source source,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback);
 
   // Unowned associated Network*Handlers (global or test instance).
   NetworkStateHandler* network_state_handler_;

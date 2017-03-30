@@ -72,6 +72,12 @@ class CHROMEOS_EXPORT ShillProfileClient : public DBusClient {
     // Sets |profiles| to the current list of profile paths.
     virtual void GetProfilePaths(std::vector<std::string>* profiles) = 0;
 
+    // Sets |profiles| to the current list of profile paths that contain an
+    // entry for |service_path|.
+    virtual void GetProfilePathsContainingService(
+        const std::string& service_path,
+        std::vector<std::string>* profiles) = 0;
+
     // Sets |properties| to the entry for |service_path|, sets |profile_path|
     // to the path of the profile with the entry, and returns true if the
     // service exists in any profile.

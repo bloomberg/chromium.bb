@@ -444,6 +444,16 @@ void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
       error_callback);
 }
 
+void ManagedNetworkConfigurationHandlerImpl::
+    RemoveConfigurationFromCurrentProfile(
+        const std::string& service_path,
+        const base::Closure& callback,
+        const network_handler::ErrorCallback& error_callback) const {
+  network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
+      service_path, NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
+      error_callback);
+}
+
 void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     ::onc::ONCSource onc_source,
     const std::string& userhash,

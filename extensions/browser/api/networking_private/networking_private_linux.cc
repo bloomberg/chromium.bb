@@ -267,6 +267,7 @@ void NetworkingPrivateLinux::CreateNetwork(
 
 void NetworkingPrivateLinux::ForgetNetwork(
     const std::string& guid,
+    bool allow_forget_shared_config,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   // TODO(zentaro): Implement for Linux.

@@ -262,21 +262,19 @@ void FakeShillServiceClient::CompleteCellularActivation(
 void FakeShillServiceClient::GetLoadableProfileEntries(
     const dbus::ObjectPath& service_path,
     const DictionaryValueCallback& callback) {
-  // Provide a dictionary with a single { profile_path, service_path } entry
-  // if the Profile property is set, or an empty dictionary.
+  ShillProfileClient::TestInterface* profile_client =
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+  std::vector<std::string> profiles;
+  profile_client->GetProfilePathsContainingService(service_path.value(),
+                                                   &profiles);
+
+  // Provide a dictionary with  {profile_path: service_path} entries for
+  // profile_paths that contain the service.
   std::unique_ptr<base::DictionaryValue> result_properties(
       new base::DictionaryValue);
-  base::DictionaryValue* service_properties =
-      GetModifiableServiceProperties(service_path.value(), false);
-  if (service_properties) {
-    std::string profile_path;
-    if (service_properties->GetStringWithoutPathExpansion(
-            shill::kProfileProperty, &profile_path)) {
-      result_properties->SetStringWithoutPathExpansion(
-          profile_path, service_path.value());
-    }
-  } else {
-    LOG(WARNING) << "Service not in profile: " << service_path.value();
+  for (const auto& profile : profiles) {
+    result_properties->SetStringWithoutPathExpansion(profile,
+                                                     service_path.value());
   }
 
   DBusMethodCallStatus call_status = DBUS_METHOD_CALL_SUCCESS;

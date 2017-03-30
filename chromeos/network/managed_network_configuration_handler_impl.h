@@ -70,6 +70,11 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const override;
 
+  void RemoveConfigurationFromCurrentProfile(
+      const std::string& service_path,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) const override;
+
   void SetPolicy(onc::ONCSource onc_source,
                  const std::string& userhash,
                  const base::ListValue& network_configs_onc,

@@ -177,11 +177,10 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
                               *device_policy_onc, base::DictionaryValue());
   }
 
-  void AddSharedNetworkToUserProfile() {
-    service_test_->SetServiceProperty(kSharedWifiServicePath,
-                                      shill::kProfileProperty,
+  void AddSharedNetworkToUserProfile(const std::string& service_path) {
+    service_test_->SetServiceProperty(service_path, shill::kProfileProperty,
                                       base::Value(kUserProfilePath));
-    profile_test_->AddService(kUserProfilePath, kSharedWifiServicePath);
+    profile_test_->AddService(kUserProfilePath, service_path);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -463,6 +462,131 @@ TEST_F(NetworkingPrivateApiTest,
                                                         }
                                                       }])",
                                                    network_hex_ssid.c_str())));
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetSharedNetwork) {
+  EXPECT_EQ(networking_private::kErrorAccessToSharedConfig,
+            RunFunctionAndReturnError(
+                new NetworkingPrivateForgetNetworkFunction(),
+                base::StringPrintf(R"(["%s"])", kSharedWifiGuid)));
+
+  base::RunLoop().RunUntilIdle();
+  std::string profile_path;
+  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_EQ(chromeos::ShillProfileClient::GetSharedProfilePath(), profile_path);
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetPrivateNetwork) {
+  RunFunction(new NetworkingPrivateForgetNetworkFunction(),
+              base::StringPrintf(R"(["%s"])", kPrivateWifiGuid));
+
+  std::string profile_path;
+  EXPECT_FALSE(GetServiceProfile(kPrivateWifiServicePath, &profile_path));
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetPrivateNetworkWebUI) {
+  scoped_refptr<NetworkingPrivateForgetNetworkFunction> forget_network =
+      new NetworkingPrivateForgetNetworkFunction();
+  forget_network->set_source_context_type(Feature::WEBUI_CONTEXT);
+
+  RunFunction(forget_network.get(),
+              base::StringPrintf(R"(["%s"])", kPrivateWifiGuid));
+
+  std::string profile_path;
+  EXPECT_FALSE(GetServiceProfile(kPrivateWifiServicePath, &profile_path));
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetUserPolicyNetwork) {
+  EXPECT_EQ(networking_private::kErrorPolicyControlled,
+            RunFunctionAndReturnError(
+                new NetworkingPrivateForgetNetworkFunction(),
+                base::StringPrintf(R"(["%s"])", kManagedUserWifiGuid)));
+
+  const chromeos::NetworkState* network =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetNetworkStateFromGuid(kManagedUserWifiGuid);
+
+  base::RunLoop().RunUntilIdle();
+  std::string profile_path;
+  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_EQ(kUserProfilePath, profile_path);
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetUserPolicyNetworkWebUI) {
+  scoped_refptr<NetworkingPrivateForgetNetworkFunction> forget_network =
+      new NetworkingPrivateForgetNetworkFunction();
+  forget_network->set_source_context_type(Feature::WEBUI_CONTEXT);
+
+  EXPECT_EQ(networking_private::kErrorPolicyControlled,
+            RunFunctionAndReturnError(
+                forget_network.get(),
+                base::StringPrintf(R"(["%s"])", kManagedUserWifiGuid)));
+
+  const chromeos::NetworkState* network =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetNetworkStateFromGuid(kManagedUserWifiGuid);
+
+  base::RunLoop().RunUntilIdle();
+  std::string profile_path;
+  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_EQ(kUserProfilePath, profile_path);
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetDevicePolicyNetworkWebUI) {
+  const chromeos::NetworkState* network =
+      chromeos::NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetNetworkStateFromGuid(kManagedDeviceWifiGuid);
+  ASSERT_TRUE(network);
+  AddSharedNetworkToUserProfile(network->path());
+
+  std::string profile_path;
+  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  ASSERT_EQ(kUserProfilePath, profile_path);
+
+  scoped_refptr<NetworkingPrivateForgetNetworkFunction> forget_network =
+      new NetworkingPrivateForgetNetworkFunction();
+  forget_network->set_source_context_type(Feature::WEBUI_CONTEXT);
+  RunFunction(forget_network.get(),
+              base::StringPrintf(R"(["%s"])", kManagedDeviceWifiGuid));
+
+  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_EQ(chromeos::ShillProfileClient::GetSharedProfilePath(), profile_path);
+}
+
+// Tests that forgetNetwork in case there is a network config in both user and
+// shared profile - only config from the user profile is expected to be removed.
+TEST_F(NetworkingPrivateApiTest, ForgetNetworkInMultipleProfiles) {
+  AddSharedNetworkToUserProfile(kSharedWifiServicePath);
+
+  std::string profile_path;
+  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  ASSERT_EQ(kUserProfilePath, profile_path);
+
+  RunFunction(new NetworkingPrivateForgetNetworkFunction(),
+              base::StringPrintf(R"(["%s"])", kSharedWifiGuid));
+
+  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_EQ(chromeos::ShillProfileClient::GetSharedProfilePath(), profile_path);
+}
+
+TEST_F(NetworkingPrivateApiTest, ForgetNetworkInMultipleProfilesWebUI) {
+  AddSharedNetworkToUserProfile(kSharedWifiServicePath);
+
+  std::string profile_path;
+  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  ASSERT_EQ(kUserProfilePath, profile_path);
+
+  scoped_refptr<NetworkingPrivateForgetNetworkFunction> forget_network =
+      new NetworkingPrivateForgetNetworkFunction();
+  forget_network->set_source_context_type(Feature::WEBUI_CONTEXT);
+
+  RunFunction(forget_network.get(),
+              base::StringPrintf(R"(["%s"])", kSharedWifiGuid));
+
+  EXPECT_FALSE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
 }
 
 }  // namespace extensions

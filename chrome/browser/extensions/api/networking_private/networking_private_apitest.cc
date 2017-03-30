@@ -83,6 +83,7 @@ class TestNetworkingPrivateDelegate : public NetworkingPrivateDelegate {
   }
 
   void ForgetNetwork(const std::string& guid,
+                     bool allow_forget_shared_network,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override {
     VoidResult(success_callback, failure_callback);

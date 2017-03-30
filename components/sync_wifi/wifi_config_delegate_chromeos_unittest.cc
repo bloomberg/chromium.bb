@@ -74,6 +74,12 @@ class FakeManagedNetworkConfigurationHandler
                            const ErrorCallback& error_callback) const override {
     NOTIMPLEMENTED();
   }
+  void RemoveConfigurationFromCurrentProfile(
+      const std::string& service_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) const override {
+    NOTIMPLEMENTED();
+  }
   void SetPolicy(::onc::ONCSource onc_source,
                  const std::string& userhash,
                  const base::ListValue& network_configs_onc,

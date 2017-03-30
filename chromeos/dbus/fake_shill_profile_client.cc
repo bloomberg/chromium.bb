@@ -23,6 +23,7 @@
 namespace chromeos {
 
 struct FakeShillProfileClient::ProfileProperties {
+  std::string path;               // Profile path
   base::DictionaryValue entries;  // Dictionary of Service Dictionaries
   base::DictionaryValue properties;  // Dictionary of Profile properties
 };
@@ -127,11 +128,17 @@ void FakeShillProfileClient::AddProfile(const std::string& profile_path,
   if (GetProfile(dbus::ObjectPath(profile_path), ErrorCallback()))
     return;
 
-  std::unique_ptr<ProfileProperties> profile =
-      base::MakeUnique<ProfileProperties>();
+  // If adding a shared profile, make sure there are no user profiles currently
+  // on the stack - this assumes there is at most one shared profile.
+  CHECK(profile_path != GetSharedProfilePath() || profiles_.empty())
+      << "Shared profile must be added before any user profile.";
+
+  auto profile = base::MakeUnique<ProfileProperties>();
   profile->properties.SetStringWithoutPathExpansion(shill::kUserHashProperty,
                                                     userhash);
-  profiles_[profile_path] = std::move(profile);
+  profile->path = profile_path;
+  profiles_.emplace_back(std::move(profile));
+
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddProfile(profile_path);
 }
@@ -211,26 +218,32 @@ bool FakeShillProfileClient::AddOrUpdateServiceImpl(
 
 void FakeShillProfileClient::GetProfilePaths(
     std::vector<std::string>* profiles) {
-  for (auto iter = profiles_.begin(); iter != profiles_.end(); ++iter)
-    profiles->push_back(iter->first);
+  for (const auto& profile : profiles_)
+    profiles->push_back(profile->path);
+}
+
+void FakeShillProfileClient::GetProfilePathsContainingService(
+    const std::string& service_path,
+    std::vector<std::string>* profiles) {
+  for (const auto& profile : profiles_) {
+    if (GetServiceDataFromProfile(profile.get(), service_path, nullptr))
+      profiles->push_back(profile->path);
+  }
 }
 
 bool FakeShillProfileClient::GetService(const std::string& service_path,
                                         std::string* profile_path,
                                         base::DictionaryValue* properties) {
   properties->Clear();
-  for (auto iter = profiles_.begin(); iter != profiles_.end(); ++iter) {
-    const ProfileProperties* profile = iter->second.get();
-    const base::DictionaryValue* entry;
-    if (!profile->entries.GetDictionaryWithoutPathExpansion(
-            service_path, &entry)) {
-      continue;
+
+  bool found_profile = false;
+  for (const auto& profile : profiles_) {
+    if (GetServiceDataFromProfile(profile.get(), service_path, properties)) {
+      found_profile = true;
+      *profile_path = profile->path;
     }
-    *profile_path = iter->first;
-    properties->MergeDictionary(entry);
-    return true;
   }
-  return false;
+  return found_profile;
 }
 
 void FakeShillProfileClient::ClearProfiles() {
@@ -240,14 +253,29 @@ void FakeShillProfileClient::ClearProfiles() {
 FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(
     const dbus::ObjectPath& profile_path,
     const ErrorCallback& error_callback) {
-  auto found = profiles_.find(profile_path.value());
-  if (found == profiles_.end()) {
-    if (!error_callback.is_null())
-      error_callback.Run("Error.InvalidProfile", "Invalid profile");
-    return nullptr;
+  for (auto& profile : profiles_) {
+    if (profile->path == profile_path.value())
+      return profile.get();
+  }
+  if (!error_callback.is_null())
+    error_callback.Run("Error.InvalidProfile", "Invalid profile");
+  return nullptr;
+}
+
+bool FakeShillProfileClient::GetServiceDataFromProfile(
+    const FakeShillProfileClient::ProfileProperties* profile,
+    const std::string& service_path,
+    base::DictionaryValue* properties) {
+  const base::DictionaryValue* entry;
+  if (!profile->entries.GetDictionaryWithoutPathExpansion(service_path,
+                                                          &entry)) {
+    return false;
   }
 
-  return found->second.get();
+  if (properties)
+    properties->MergeDictionary(entry);
+
+  return true;
 }
 
 }  // namespace chromeos

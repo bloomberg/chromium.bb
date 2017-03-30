@@ -444,6 +444,7 @@ void NetworkingPrivateChromeOS::CreateNetwork(
 
 void NetworkingPrivateChromeOS::ForgetNetwork(
     const std::string& guid,
+    bool allow_forget_shared_config,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   std::string service_path, error;
@@ -452,9 +453,50 @@ void NetworkingPrivateChromeOS::ForgetNetwork(
     return;
   }
 
-  GetManagedConfigurationHandler()->RemoveConfiguration(
-      service_path, success_callback,
-      base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromServicePath(
+          service_path, true /* configured only */);
+  if (!network) {
+    failure_callback.Run(networking_private::kErrorNetworkUnavailable);
+    return;
+  }
+
+  std::string user_id_hash;
+  // Don't allow non-primary user to remove private configs - the private
+  // configs belong to the primary user (non-primary users' network configs
+  // never get loaded by shill).
+  if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error) &&
+      network->IsPrivate()) {
+    failure_callback.Run(error);
+    return;
+  }
+
+  if (!allow_forget_shared_config && !network->IsPrivate()) {
+    failure_callback.Run(networking_private::kErrorAccessToSharedConfig);
+    return;
+  }
+
+  onc::ONCSource onc_source = onc::ONC_SOURCE_UNKNOWN;
+  if (GetManagedConfigurationHandler()->FindPolicyByGUID(user_id_hash, guid,
+                                                         &onc_source)) {
+    // Prevent a policy controlled configuration removal.
+    if (onc_source == onc::ONC_SOURCE_DEVICE_POLICY) {
+      allow_forget_shared_config = false;
+    } else {
+      failure_callback.Run(networking_private::kErrorPolicyControlled);
+      return;
+    }
+  }
+
+  if (allow_forget_shared_config) {
+    GetManagedConfigurationHandler()->RemoveConfiguration(
+        service_path, success_callback,
+        base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+  } else {
+    GetManagedConfigurationHandler()->RemoveConfigurationFromCurrentProfile(
+        service_path, success_callback,
+        base::Bind(&NetworkHandlerFailureCallback, failure_callback));
+  }
 }
 
 void NetworkingPrivateChromeOS::GetNetworks(

@@ -114,6 +114,15 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) const = 0;
 
+  // Removes the user's configuration from the network with |service_path| in
+  // the network's active network profile.
+  // Same applies as for |RemoveConfiguration|, with the difference that the
+  // configuration is only removed from a single network profile.
+  virtual void RemoveConfigurationFromCurrentProfile(
+      const std::string& service_path,
+      const base::Closure& callback,
+      const network_handler::ErrorCallback& error_callback) const = 0;
+
   // Only to be called by NetworkConfigurationUpdater or from tests. Sets
   // |network_configs_onc| and |global_network_config| as the current policy of
   // |userhash| and |onc_source|. The policy will be applied (not necessarily

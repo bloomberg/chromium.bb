@@ -55,6 +55,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
                      const StringCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void ForgetNetwork(const std::string& guid,
+                     bool allow_forget_shared_config,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void GetNetworks(const std::string& network_type,

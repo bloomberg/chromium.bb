@@ -84,6 +84,7 @@ class NetworkingPrivateDelegate : public KeyedService {
                              const StringCallback& success_callback,
                              const FailureCallback& failure_callback) = 0;
   virtual void ForgetNetwork(const std::string& guid,
+                             bool allow_forget_shared_config,
                              const VoidCallback& success_callback,
                              const FailureCallback& failure_callback) = 0;
   virtual void GetNetworks(const std::string& network_type,
