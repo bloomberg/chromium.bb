@@ -50,6 +50,14 @@ public interface ContextSelectionProvider {
          * OnClickListener for the suggested menu item.
          */
         public OnClickListener onClickListener;
+
+        /**
+         * A helper method that returns true if the result has both visual info
+         * and an action so that, for instance, one can make a new menu item.
+         */
+        public boolean hasNamedAction() {
+            return (label != null || icon != null) && (intent != null || onClickListener != null);
+        }
     }
 
     /**

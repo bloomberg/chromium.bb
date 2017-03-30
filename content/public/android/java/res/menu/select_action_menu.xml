@@ -8,12 +8,19 @@
 
 <!--suppress AlwaysShowAction -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/select_action_menu_assist"
+        android:title="@null"
+        android:showAsAction="always|withText"
+        android:orderInCategory="1"
+        />
    <item
         android:id="@+id/select_action_menu_cut"
         android:icon="?android:attr/actionModeCutDrawable"
         android:title="@android:string/cut"
         android:showAsAction="always|withText"
         android:alphabeticShortcut="x"
+        android:orderInCategory="2"
         />
     <item
         android:id="@+id/select_action_menu_copy"
@@ -21,6 +28,7 @@
         android:title="@android:string/copy"
         android:showAsAction="always|withText"
         android:alphabeticShortcut="c"
+        android:orderInCategory="3"
         />
     <item
         android:id="@+id/select_action_menu_paste"
@@ -28,12 +36,14 @@
         android:title="@android:string/paste"
         android:showAsAction="always|withText"
         android:alphabeticShortcut="v"
+        android:orderInCategory="4"
         />
     <item
         android:id="@+id/select_action_menu_share"
         android:title="@string/actionbar_share"
         android:showAsAction="always|withText"
         style="@style/SelectActionMenuShare"
+        android:orderInCategory="5"
         />
     <item
         android:id="@+id/select_action_menu_select_all"
@@ -41,14 +51,17 @@
         android:title="@android:string/selectAll"
         android:showAsAction="always|withText"
         android:alphabeticShortcut="a"
+        android:orderInCategory="6"
         />
-    <group
-        android:id="@+id/select_action_menu_text_processing_menus">
-    </group>
     <item
         android:id="@+id/select_action_menu_web_search"
         android:title="@string/actionbar_web_search"
         android:showAsAction="always|withText"
         style="@style/SelectActionMenuWebSearch"
+        android:orderInCategory="7"
         />
+    <group
+        android:id="@+id/select_action_menu_text_processing_menus"
+        android:orderInCategory="8">
+    </group>
 </menu>

@@ -1675,7 +1675,7 @@ public class ContentViewCore
     }
 
     private void showSelectActionMode() {
-        if (!mSelectionPopupController.showActionMode()) clearSelection();
+        mSelectionPopupController.showActionModeOrClearOnFailure();
     }
 
     public void clearSelection() {

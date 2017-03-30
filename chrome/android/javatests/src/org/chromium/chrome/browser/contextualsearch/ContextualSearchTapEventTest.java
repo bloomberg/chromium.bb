@@ -225,17 +225,24 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
     protected void setUp() throws Exception {
         super.setUp();
 
-        mPanelManager = new OverlayPanelManagerWrapper();
-        mPanelManager.setContainerView(new LinearLayout(getActivity()));
-        mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
+        final ChromeActivity activity = getActivity();
 
-        mContextualSearchManager =
-                new ContextualSearchManagerWrapper(getActivity(), getActivity().getWindowAndroid());
-        mPanel = new ContextualSearchPanelWrapper(getActivity(), null, mPanelManager);
-        mPanel.setManagementDelegate(mContextualSearchManager);
-        mContextualSearchManager.setContextualSearchPanel(mPanel);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mPanelManager = new OverlayPanelManagerWrapper();
+                mPanelManager.setContainerView(new LinearLayout(activity));
+                mPanelManager.setDynamicResourceLoader(new DynamicResourceLoader(0, null));
 
-        mContextualSearchClient = mContextualSearchManager;
+                mContextualSearchManager =
+                        new ContextualSearchManagerWrapper(activity, activity.getWindowAndroid());
+                mPanel = new ContextualSearchPanelWrapper(activity, null, mPanelManager);
+                mPanel.setManagementDelegate(mContextualSearchManager);
+                mContextualSearchManager.setContextualSearchPanel(mPanel);
+
+                mContextualSearchClient = mContextualSearchManager;
+            }
+        });
     }
 
     @Override

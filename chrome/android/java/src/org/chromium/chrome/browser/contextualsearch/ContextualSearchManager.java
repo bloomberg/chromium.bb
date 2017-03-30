@@ -1245,6 +1245,11 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
     }
 
+    @Override
+    public boolean sendsSelectionPopupUpdates() {
+        return false;
+    }
+
     private boolean isOverlayVideoMode() {
         return mActivity.getFullscreenManager() != null
                 && mActivity.getFullscreenManager().isOverlayVideoMode();

@@ -28,4 +28,11 @@ public interface SelectionClient {
      * @param y The y coordinate of the tap.
      */
     void showUnhandledTapUIIfNeeded(int x, int y);
+
+    /**
+     * Returns true if the SelectionClient sends responces that can contain information about
+     * the context menu (e.g. that we need a new menu item). In this case an embedder might want
+     * to wait for this responce before taking further actions.
+     */
+    boolean sendsSelectionPopupUpdates();
 }
