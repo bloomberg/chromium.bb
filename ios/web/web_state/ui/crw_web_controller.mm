@@ -2555,17 +2555,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     DLOG(WARNING) << "JS message parameter not found: href";
     return NO;
   }
-  const GURL targetURL(href);
-  const GURL currentURL([self currentURL]);
-  bool targetsFrame = false;
-  message->GetBoolean("targetsFrame", &targetsFrame);
-  if (!targetsFrame && web::UrlHasWebScheme(targetURL)) {
-    // The referrer is not known yet, and will be updated later.
-    const web::Referrer emptyReferrer;
-    [self registerLoadRequest:targetURL
-                     referrer:emptyReferrer
-                   transition:ui::PAGE_TRANSITION_FORM_SUBMIT];
-  }
   std::string formName;
   message->GetString("formName", &formName);
   base::scoped_nsobject<NSSet> observers([_observers copy]);

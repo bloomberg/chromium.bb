@@ -552,21 +552,17 @@ goog.require('__crWeb.message');
 
   // Capture form submit actions.
   document.addEventListener('submit', function(evt) {
+    var action;
     if (evt['defaultPrevented'])
       return;
-
-    var form = evt.target;
-    var targetsFrame = form.target && hasFrame_(window, form.target);
-
-    var action = form.getAttribute('action');
+    action = evt.target.getAttribute('action');
     // Default action is to re-submit to same page.
     if (!action)
       action = document.location.href;
     invokeOnHost_({
              'command': 'document.submit',
             'formName': __gCrWeb.common.getFormIdentifier(evt.srcElement),
-                'href': __gCrWeb['getFullyQualifiedURL'](action),
-        'targetsFrame': targetsFrame
+                'href': __gCrWeb['getFullyQualifiedURL'](action)
     });
   }, false);
 
