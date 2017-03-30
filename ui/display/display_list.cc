@@ -52,11 +52,11 @@ std::unique_ptr<DisplayListObserverLock> DisplayList::SuspendObserverUpdates() {
   return base::WrapUnique(new DisplayListObserverLock(this));
 }
 
-void DisplayList::UpdateDisplay(const Display& display) {
-  UpdateDisplay(display, GetTypeByDisplayId(display.id()));
+uint32_t DisplayList::UpdateDisplay(const Display& display) {
+  return UpdateDisplay(display, GetTypeByDisplayId(display.id()));
 }
 
-void DisplayList::UpdateDisplay(const Display& display, Type type) {
+uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
   auto iter = FindDisplayByIdInternal(display.id());
   DCHECK(iter != displays_.end());
 
@@ -90,6 +90,7 @@ void DisplayList::UpdateDisplay(const Display& display, Type type) {
     for (DisplayObserver& observer : observers_)
       observer.OnDisplayMetricsChanged(*local_display, changed_values);
   }
+  return changed_values;
 }
 
 void DisplayList::AddDisplay(const Display& display, Type type) {

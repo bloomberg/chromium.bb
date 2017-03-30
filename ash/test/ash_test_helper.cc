@@ -368,14 +368,7 @@ void AshTestHelper::UpdateDisplay(RootWindowController* root_window_controller,
   updated_display.set_bounds(bounds);
   updated_display.UpdateWorkAreaFromInsets(work_area_insets);
   updated_display.set_device_scale_factor(display_info.device_scale_factor());
-  root_window_controller->GetWindow()->SetBounds(gfx::Rect(bounds.size()));
-  ScreenMus* screen = window_manager_app_->window_manager()->screen_.get();
-  const bool is_primary =
-      screen->display_list().FindDisplayById(updated_display.id()) ==
-      screen->display_list().GetPrimaryDisplayIterator();
-  screen->display_list().UpdateDisplay(
-      updated_display, is_primary ? display::DisplayList::Type::PRIMARY
-                                  : display::DisplayList::Type::NOT_PRIMARY);
+  window_manager_app_->window_manager()->OnWmDisplayModified(updated_display);
 }
 
 std::vector<RootWindowController*> AshTestHelper::GetRootsOrderedByDisplayId() {

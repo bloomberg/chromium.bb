@@ -64,12 +64,15 @@ class DISPLAY_EXPORT DisplayList {
   // callers release the last lock they call the observers appropriately.
   std::unique_ptr<DisplayListObserverLock> SuspendObserverUpdates();
 
-  // Updates the cached display based on display.id().
-  void UpdateDisplay(const Display& display);
+  // Updates the cached display based on display.id(). This returns a bitmask
+  // of the changed values suitable for passing to
+  // DisplayObserver::OnDisplayMetricsChanged().
+  uint32_t UpdateDisplay(const Display& display);
 
   // Updates the cached display based on display.id(). Also updates the primary
-  // display if |type| indicates |display| is the primary display.
-  void UpdateDisplay(const Display& display, Type type);
+  // display if |type| indicates |display| is the primary display. See single
+  // argument version for description of return value.
+  uint32_t UpdateDisplay(const Display& display, Type type);
 
   // Adds a new Display.
   void AddDisplay(const Display& display, Type type);

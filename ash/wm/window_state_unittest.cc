@@ -320,10 +320,6 @@ TEST_F(WindowStateTest, RestoredWindowBoundsShrink) {
 }
 
 TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
-  // TODO: investigate failure. http://crbug.com/698914.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   std::unique_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> fullscreen(CreateTestWindowInShellWithId(1));
   WindowState* maximized_state = GetWindowState(maximized.get());
@@ -353,10 +349,6 @@ TEST_F(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
 }
 
 TEST_F(WindowStateTest, TrustedPinned) {
-  // TODO: investigate failure. http://crbug.com/698914.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsTrustedPinned());

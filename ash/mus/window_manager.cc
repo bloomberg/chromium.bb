@@ -485,7 +485,24 @@ void WindowManager::OnWmDisplayRemoved(
 }
 
 void WindowManager::OnWmDisplayModified(const display::Display& display) {
-  screen_->display_list().UpdateDisplay(display);
+  // Ash relies on the Display being updated, then the WindowTreeHost's window,
+  // and finally DisplayObservers.
+  display::DisplayList& display_list = screen_->display_list();
+  std::unique_ptr<display::DisplayListObserverLock> display_lock =
+      display_list.SuspendObserverUpdates();
+  const bool is_primary = display_list.FindDisplayById(display.id()) ==
+                          display_list.GetPrimaryDisplayIterator();
+  uint32_t display_changed_values = display_list.UpdateDisplay(
+      display, is_primary ? display::DisplayList::Type::PRIMARY
+                          : display::DisplayList::Type::NOT_PRIMARY);
+  RootWindowController* root_window_controller =
+      WmShellMus::Get()->GetRootWindowControllerWithDisplayId(display.id());
+  DCHECK(root_window_controller);
+  root_window_controller->GetRootWindow()->GetHost()->SetBoundsInPixels(
+      display.bounds());
+  display_lock.reset();
+  for (display::DisplayObserver& observer : *(display_list.observers()))
+    observer.OnDisplayMetricsChanged(display, display_changed_values);
 }
 
 void WindowManager::OnWmPerformMoveLoop(
