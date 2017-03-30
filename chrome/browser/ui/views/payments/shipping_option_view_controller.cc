@@ -75,7 +75,7 @@ ShippingOptionViewController::ShippingOptionViewController(
 ShippingOptionViewController::~ShippingOptionViewController() {}
 
 base::string16 ShippingOptionViewController::GetSheetTitle() {
-  return GetShippingOptionSectionString(spec()->options().shipping_type);
+  return GetShippingOptionSectionString(spec()->shipping_type());
 }
 
 void ShippingOptionViewController::FillContentView(views::View* content_view) {

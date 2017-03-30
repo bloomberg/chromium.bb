@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/payments/core/payment_options_provider.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -232,23 +233,21 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    bool show_payer_name,
-    bool show_payer_phone,
-    bool show_payer_email) {
+    const PaymentOptionsProvider& options) {
   base::string16 name =
-      show_payer_name
+      options.request_payer_name()
           ? profile.GetInfo(autofill::AutofillType(autofill::NAME_FULL), locale)
           : base::string16();
 
   base::string16 phone =
-      show_payer_phone
+      options.request_payer_phone()
           ? profile.GetInfo(
                 autofill::AutofillType(autofill::PHONE_HOME_WHOLE_NUMBER),
                 locale)
           : base::string16();
 
   base::string16 email =
-      show_payer_email
+      options.request_payer_email()
           ? profile.GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
                             locale)
           : base::string16();
@@ -272,13 +271,13 @@ std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text) {
 }
 
 base::string16 GetShippingAddressSectionString(
-    payments::mojom::PaymentShippingType shipping_type) {
+    PaymentShippingType shipping_type) {
   switch (shipping_type) {
-    case payments::mojom::PaymentShippingType::DELIVERY:
+    case PaymentShippingType::DELIVERY:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_DELIVERY_ADDRESS_LABEL);
-    case payments::mojom::PaymentShippingType::PICKUP:
+    case PaymentShippingType::PICKUP:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_PICKUP_ADDRESS_LABEL);
-    case payments::mojom::PaymentShippingType::SHIPPING:
+    case PaymentShippingType::SHIPPING:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL);
   }
   // MSVC doesn't compile with only the above switch statement because it can't
@@ -287,13 +286,13 @@ base::string16 GetShippingAddressSectionString(
 }
 
 base::string16 GetShippingOptionSectionString(
-    payments::mojom::PaymentShippingType shipping_type) {
+    PaymentShippingType shipping_type) {
   switch (shipping_type) {
-    case payments::mojom::PaymentShippingType::DELIVERY:
+    case PaymentShippingType::DELIVERY:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_DELIVERY_OPTION_LABEL);
-    case payments::mojom::PaymentShippingType::PICKUP:
+    case PaymentShippingType::PICKUP:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_PICKUP_OPTION_LABEL);
-    case payments::mojom::PaymentShippingType::SHIPPING:
+    case PaymentShippingType::SHIPPING:
       return l10n_util::GetStringUTF16(IDS_PAYMENTS_SHIPPING_OPTION_LABEL);
   }
   // MSVC doesn't compile with only the above switch statement because it can't

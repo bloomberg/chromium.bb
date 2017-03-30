@@ -36,6 +36,35 @@ void PaymentRequestSpec::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool PaymentRequestSpec::request_shipping() const {
+  return options_->request_shipping;
+}
+bool PaymentRequestSpec::request_payer_name() const {
+  return options_->request_payer_name;
+}
+bool PaymentRequestSpec::request_payer_phone() const {
+  return options_->request_payer_phone;
+}
+bool PaymentRequestSpec::request_payer_email() const {
+  return options_->request_payer_email;
+}
+
+PaymentShippingType PaymentRequestSpec::shipping_type() const {
+  // Transform Mojo-specific enum into platform-agnostic equivalent.
+  switch (options_->shipping_type) {
+    case mojom::PaymentShippingType::DELIVERY:
+      return PaymentShippingType::DELIVERY;
+    case payments::mojom::PaymentShippingType::PICKUP:
+      return PaymentShippingType::PICKUP;
+    case payments::mojom::PaymentShippingType::SHIPPING:
+      return PaymentShippingType::SHIPPING;
+    default:
+      NOTREACHED();
+  }
+  // Needed for compilation on some platforms.
+  return PaymentShippingType::SHIPPING;
+}
+
 bool PaymentRequestSpec::IsMethodSupportedThroughBasicCard(
     const std::string& method_name) {
   return basic_card_specified_networks_.count(method_name) > 0;

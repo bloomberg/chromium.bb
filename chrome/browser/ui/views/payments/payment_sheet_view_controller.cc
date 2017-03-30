@@ -398,7 +398,7 @@ PaymentSheetViewController::CreateShippingSectionContent() {
 // +----------------------------------------------+
 std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
-      this, GetShippingAddressSectionString(spec()->options().shipping_type),
+      this, GetShippingAddressSectionString(spec()->shipping_type()),
       CreateShippingSectionContent(), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(
@@ -457,12 +457,10 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
 std::unique_ptr<views::View>
 PaymentSheetViewController::CreateContactInfoSectionContent() {
   autofill::AutofillProfile* profile = state()->selected_contact_profile();
-  return profile
-             ? payments::GetContactInfoLabel(
-                   AddressStyleType::SUMMARY, state()->GetApplicationLocale(),
-                   *profile, spec()->request_payer_name(),
-                   spec()->request_payer_phone(), spec()->request_payer_email())
-             : base::MakeUnique<views::Label>(base::string16());
+  return profile ? payments::GetContactInfoLabel(
+                       AddressStyleType::SUMMARY,
+                       state()->GetApplicationLocale(), *profile, *spec())
+                 : base::MakeUnique<views::Label>(base::string16());
 }
 
 // Creates the Contact Info row, which contains a "Contact info" label; the
@@ -495,7 +493,7 @@ PaymentSheetViewController::CreateShippingOptionRow() {
                                              selected_option->amount->value)
                                        : base::ASCIIToUTF16(""));
   std::unique_ptr<views::Button> section = CreatePaymentSheetRow(
-      this, GetShippingOptionSectionString(spec()->options().shipping_type),
+      this, GetShippingOptionSectionString(spec()->shipping_type()),
       std::move(option_label), std::unique_ptr<views::View>(nullptr),
       widest_name_column_view_width_);
   section->set_tag(static_cast<int>(

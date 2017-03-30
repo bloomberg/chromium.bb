@@ -18,6 +18,7 @@ static_library("core") {
     "payment_address.h",
     "payment_instrument.cc",
     "payment_instrument.h",
+    "payment_options_provider.h",
     "payment_request_data_util.cc",
     "payment_request_data_util.h",
   ]

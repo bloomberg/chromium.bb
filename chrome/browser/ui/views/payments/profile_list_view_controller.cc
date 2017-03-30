@@ -122,7 +122,7 @@ class ShippingProfileViewController : public ProfileListViewController {
   }
 
   base::string16 GetSheetTitle() override {
-    return GetShippingAddressSectionString(spec()->options().shipping_type);
+    return GetShippingAddressSectionString(spec()->shipping_type());
   }
 
   int GetSecondaryButtonTextId() override {
@@ -160,10 +160,9 @@ class ContactProfileViewController : public ProfileListViewController {
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
-    return GetContactInfoLabel(
-        AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
-        spec()->request_payer_name(), spec()->request_payer_phone(),
-        spec()->request_payer_email());
+    return GetContactInfoLabel(AddressStyleType::DETAILED,
+                               state()->GetApplicationLocale(), *profile,
+                               *spec());
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {

@@ -25,6 +25,9 @@ class View;
 
 namespace payments {
 
+class PaymentOptionsProvider;
+enum class PaymentShippingType;
+
 constexpr int kPaymentRequestRowHorizontalInsets = 16;
 constexpr int kPaymentRequestRowVerticalInsets = 8;
 
@@ -86,9 +89,7 @@ std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
-    bool show_payer_name,
-    bool show_payer_phone,
-    bool show_payer_email);
+    const PaymentOptionsProvider& options);
 
 // Creates a views::Border object that can paint the gray horizontal ruler used
 // as a separator between items in the Payment Request dialog.
@@ -98,9 +99,9 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder();
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
 
 base::string16 GetShippingAddressSectionString(
-    payments::mojom::PaymentShippingType shipping_type);
+    PaymentShippingType shipping_type);
 base::string16 GetShippingOptionSectionString(
-    payments::mojom::PaymentShippingType shipping_type);
+    PaymentShippingType shipping_type);
 
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,

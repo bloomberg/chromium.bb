@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_options_provider.h"
 
 namespace payments {
 
@@ -22,7 +23,7 @@ extern const char kBasicCardMethodName[];
 // The spec contains all the options that the merchant has specified about this
 // Payment Request. It's a (mostly) read-only view, which can be updated in
 // certain occasions by the merchant (see API).
-class PaymentRequestSpec {
+class PaymentRequestSpec : public PaymentOptionsProvider {
  public:
   // Any class call add itself as Observer via AddObserver() and receive
   // notification about spec events.
@@ -40,15 +41,17 @@ class PaymentRequestSpec {
                      std::vector<mojom::PaymentMethodDataPtr> method_data,
                      PaymentRequestSpec::Observer* observer,
                      const std::string& app_locale);
-  ~PaymentRequestSpec();
+  ~PaymentRequestSpec() override;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool request_shipping() const { return options_->request_shipping; }
-  bool request_payer_name() const { return options_->request_payer_name; }
-  bool request_payer_phone() const { return options_->request_payer_phone; }
-  bool request_payer_email() const { return options_->request_payer_email; }
+  // PaymentOptionsProvider:
+  bool request_shipping() const override;
+  bool request_payer_name() const override;
+  bool request_payer_phone() const override;
+  bool request_payer_email() const override;
+  PaymentShippingType shipping_type() const override;
 
   const std::vector<std::string>& supported_card_networks() const {
     return supported_card_networks_;
@@ -72,7 +75,6 @@ class PaymentRequestSpec {
   std::string GetFormattedCurrencyCode();
 
   const mojom::PaymentDetails& details() const { return *details_.get(); }
-  const mojom::PaymentOptions& options() const { return *options_.get(); }
 
  private:
   // Validates the |method_data| and fills |supported_card_networks_|.
