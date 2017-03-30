@@ -24,6 +24,7 @@
 #include "chrome/browser/page_load_metrics/observers/subresource_filter_metrics_observer.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/v4_test_utils.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -121,8 +122,7 @@ const char kSubresourceFilterOnlySuffix[] = ".SubresourceFilterOnly";
 #endif
 
 // Other histograms.
-const char kSubresourceFilterPromptHistogram[] =
-    "SubresourceFilter.Prompt.NumVisibility";
+const char kSubresourceFilterActionsHistogram[] = "SubresourceFilter.Actions";
 
 // Human readable representation of expected redirect chain match patterns.
 // The explanations for the buckets given for the following redirect chain:
@@ -544,7 +544,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
       kSubframeNames, kExpectScriptInFrameToLoad));
 
-  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           1);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -795,13 +796,16 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ConfigureAsPhishingURL(url);
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
-  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           1);
   // Check that the bubble is not shown again for this navigation.
   EXPECT_FALSE(IsDynamicScriptElementLoaded(FindFrameByName("five")));
-  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           1);
   // Check that bubble is shown for new navigation.
   ui_test_utils::NavigateToURL(browser(), url);
-  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 2);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           2);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,

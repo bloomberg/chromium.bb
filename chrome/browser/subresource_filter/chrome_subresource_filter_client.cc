@@ -11,14 +11,17 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_observer_factory.h"
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/common/content_settings.h"
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
     : web_contents_(web_contents), shown_for_navigation_(false) {
   DCHECK(web_contents);
+  // Ensure the content settings observer is initialized.
+  SubresourceFilterContentSettingsObserverFactory::EnsureForProfile(
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
 }
 
 ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
@@ -27,8 +30,14 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
     bool visibility) {
   if (shown_for_navigation_ && visibility)
     return;
+
+  // |visibility| is false when a new navigation starts.
+  if (visibility)
+    LogAction(kActionUIShown);
+  else
+    LogAction(kActionNavigationStarted);
+
   shown_for_navigation_ = visibility;
-  UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumVisibility", visibility);
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
   content_settings->SetSubresourceBlocked(visibility);
@@ -45,19 +54,12 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
 
 bool ChromeSubresourceFilterClient::IsWhitelistedByContentSettings(
     const GURL& url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  DCHECK(profile);
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile);
-  ContentSetting setting = settings_map->GetContentSetting(
-      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-      std::string());
-  return setting == CONTENT_SETTING_BLOCK;
+  return GetContentSettingForUrl(url) == CONTENT_SETTING_BLOCK;
 }
 
 void ChromeSubresourceFilterClient::WhitelistByContentSettings(
     const GURL& url) {
+  // Whitelist via content settings.
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   DCHECK(profile);
@@ -66,4 +68,24 @@ void ChromeSubresourceFilterClient::WhitelistByContentSettings(
   settings_map->SetContentSettingDefaultScope(
       url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
       std::string(), CONTENT_SETTING_BLOCK);
+
+  LogAction(kActionContentSettingsBlockedFromUI);
+}
+
+// static
+void ChromeSubresourceFilterClient::LogAction(SubresourceFilterAction action) {
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.Actions", action,
+                            kActionLastEntry);
+}
+
+ContentSetting ChromeSubresourceFilterClient::GetContentSettingForUrl(
+    const GURL& url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  DCHECK(profile);
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  return settings_map->GetContentSetting(
+      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      std::string());
 }

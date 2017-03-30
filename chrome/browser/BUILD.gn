@@ -1277,6 +1277,8 @@ split_static_library("browser") {
     "subresource_filter/chrome_subresource_filter_client.h",
     "subresource_filter/navigation_throttle_util.cc",
     "subresource_filter/navigation_throttle_util.h",
+    "subresource_filter/subresource_filter_content_settings_observer_factory.cc",
+    "subresource_filter/subresource_filter_content_settings_observer_factory.h",
     "sync/chrome_sync_client.cc",
     "sync/chrome_sync_client.h",
     "sync/glue/extensions_activity_monitor.cc",
