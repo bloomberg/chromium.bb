@@ -257,13 +257,7 @@ WebCachePolicy determineWebCachePolicy(RequestMethod method,
                  ? WebCachePolicy::ValidatingCacheData
                  : WebCachePolicy::UseProtocolCachePolicy;
     case FrameLoadTypeReloadBypassingCache:
-      // TODO(toyoshim): Should return BypassingCache always, but keep legacy
-      // logic as is. To be changed in a follow-up patch soon.
-      return (resourceType == ResourceType::kIsMainResource &&
-              (requestType == RequestType::kIsConditional ||
-               method == RequestMethod::kIsPost))
-                 ? WebCachePolicy::ValidatingCacheData
-                 : WebCachePolicy::BypassingCache;
+      return WebCachePolicy::BypassingCache;
   }
   NOTREACHED();
   return WebCachePolicy::UseProtocolCachePolicy;

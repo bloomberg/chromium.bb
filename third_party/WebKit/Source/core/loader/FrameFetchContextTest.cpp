@@ -556,7 +556,7 @@ TEST_F(FrameFetchContextTest, MainResource) {
 
   // Post
   ResourceRequest postRequest("http://www.example.com");
-  postRequest.setHTTPMethod("POST");
+  postRequest.setHTTPMethod(HTTPNames::POST);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
             fetchContext->resourceRequestCachePolicy(
                 postRequest, Resource::MainResource, FetchRequest::NoDefer));
@@ -580,6 +580,24 @@ TEST_F(FrameFetchContextTest, MainResource) {
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
             fetchContext->resourceRequestCachePolicy(
                 conditional, Resource::MainResource, FetchRequest::NoDefer));
+
+  // FrameLoadTypeReloadBypassingCache
+  document->loader()->setLoadType(FrameLoadTypeReloadBypassingCache);
+  EXPECT_EQ(WebCachePolicy::BypassingCache,
+            fetchContext->resourceRequestCachePolicy(
+                request, Resource::MainResource, FetchRequest::NoDefer));
+
+  // FrameLoadTypeReloadBypassingCache with a conditional request
+  document->loader()->setLoadType(FrameLoadTypeReloadBypassingCache);
+  EXPECT_EQ(WebCachePolicy::BypassingCache,
+            fetchContext->resourceRequestCachePolicy(
+                conditional, Resource::MainResource, FetchRequest::NoDefer));
+
+  // FrameLoadTypeReloadBypassingCache with a post request
+  document->loader()->setLoadType(FrameLoadTypeReloadBypassingCache);
+  EXPECT_EQ(WebCachePolicy::BypassingCache,
+            fetchContext->resourceRequestCachePolicy(
+                postRequest, Resource::MainResource, FetchRequest::NoDefer));
 
   // Set up a child frame
   FrameFetchContext* childFetchContext = createChildFrame();
