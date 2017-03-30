@@ -27,18 +27,39 @@ void AccessibilityHandler::RegisterMessages() {
       "showChromeVoxSettings",
       base::Bind(&AccessibilityHandler::HandleShowChromeVoxSettings,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showSelectToSpeakSettings",
+      base::Bind(&AccessibilityHandler::HandleShowSelectToSpeakSettings,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showSwitchAccessSettings",
+      base::Bind(&AccessibilityHandler::HandleShowSwitchAccessSettings,
+                 base::Unretained(this)));
 }
 
 void AccessibilityHandler::HandleShowChromeVoxSettings(
     const base::ListValue* args) {
-  const extensions::Extension* chromevox_extension =
+  OpenExtensionOptionsPage(extension_misc::kChromeVoxExtensionId);
+}
+
+void AccessibilityHandler::HandleShowSelectToSpeakSettings(
+    const base::ListValue* args) {
+  OpenExtensionOptionsPage(extension_misc::kSelectToSpeakExtensionId);
+}
+
+void AccessibilityHandler::HandleShowSwitchAccessSettings(
+    const base::ListValue* args) {
+  OpenExtensionOptionsPage(extension_misc::kSwitchAccessExtensionId);
+}
+
+void AccessibilityHandler::OpenExtensionOptionsPage(const char extension_id[]) {
+  const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          extension_misc::kChromeVoxExtensionId,
-          extensions::ExtensionRegistry::ENABLED);
-  if (!chromevox_extension)
+          extension_id, extensions::ExtensionRegistry::ENABLED);
+  if (!extension)
     return;
   extensions::ExtensionTabUtil::OpenOptionsPage(
-      chromevox_extension,
+      extension,
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 

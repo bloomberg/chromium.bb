@@ -1,5 +1,7 @@
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
@@ -43,18 +45,25 @@
       <settings-toggle-button class="start"
           pref="{{prefs.settings.accessibility}}"
           label="$i18n{chromeVoxLabel}">
-        <button class="more-actions icon-external" is="paper-icon-button-light"
+        <paper-icon-button icon="cr:settings_icon"
+            class="more-actions"
             on-tap="onChromeVoxSettingsTap_"
             hidden="[[!prefs.settings.accessibility.value]]"
-            aria-label="$i18n{chromeVoxLabel}"></button>
+            aria-label="$i18n{chromeVoxOptionsLabel}"></paper-icon-button>
       </settings-toggle-button>
     </div>
     <template is="dom-if" if="[[showExperimentalFeatures_]]">
-      <div class="settings-box block">
+      <div class="settings-box block" actionable>
         <settings-toggle-button
             pref="{{prefs.settings.a11y.select_to_speak}}"
             label="$i18n{selectToSpeakTitle}"
             sub-label="$i18n{selectToSpeakDescription}">
+          <paper-icon-button icon="cr:settings_icon"
+              class="more-actions"
+              on-tap="onSelectToSpeakSettingsTap_"
+              hidden="[[!prefs.settings.a11y.select_to_speak.value]]"
+              aria-label="$i18n{selectToSpeakOptionsLabel}">
+          </paper-icon-button>
         </settings-toggle-button>
       </div>
     </template>
@@ -111,13 +120,21 @@
           pref="{{prefs.settings.a11y.caret_highlight}}"
           label="$i18n{caretHighlightLabel}">
       </settings-toggle-button>
-      <template is="dom-if" if="[[showExperimentalFeatures_]]">
+    </div>
+    <template is="dom-if" if="[[showExperimentalFeatures_]]">
+      <div class="settings-box block" actionable>
         <settings-toggle-button
             pref="{{prefs.settings.a11y.switch_access}}"
             label="$i18n{switchAccessLabel}">
+          <paper-icon-button icon="cr:settings_icon"
+              class="more-actions"
+              on-tap="onSwitchAccessSettingsTap_"
+              hidden="[[!prefs.settings.a11y.switch_access.value]]"
+              aria-label="$i18n{selectToSpeakOptionsLabel}">
+          </paper-icon-button>
         </settings-toggle-button>
-      </template>
-    </div>
+      </div>
+    </template>
     <div class="settings-box two-line" on-tap="onKeyboardTap_" actionable>
       <div class="start">
         $i18n{keyboardSettingsTitle}

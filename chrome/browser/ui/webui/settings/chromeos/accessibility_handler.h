@@ -32,8 +32,13 @@ class AccessibilityHandler : public ::settings::SettingsPageUIHandler {
   void OnJavascriptDisallowed() override {}
 
  private:
-  // Callback for the "showChromeVoxSettings" message.
+  // Callback for the messages to show settings for ChromeVox,
+  // Select To Speak, or Switch Access.
   void HandleShowChromeVoxSettings(const base::ListValue* args);
+  void HandleShowSelectToSpeakSettings(const base::ListValue* args);
+  void HandleShowSwitchAccessSettings(const base::ListValue* args);
+
+  void OpenExtensionOptionsPage(const char extension_id[]);
 
   Profile* profile_;  // Weak pointer.
 

@@ -70,6 +70,16 @@ Polymer({
   },
 
   /** @private */
+  onSelectToSpeakSettingsTap_: function() {
+    chrome.send('showSelectToSpeakSettings');
+  },
+
+  /** @private */
+  onSwitchAccessSettingsTap_: function() {
+    chrome.send('showSwitchAccessSettings');
+  },
+
+  /** @private */
   onDisplayTap_: function() {
     settings.navigateTo(
         settings.Route.DISPLAY,
