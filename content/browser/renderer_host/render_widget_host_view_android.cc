@@ -441,6 +441,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
       begin_frame_source_(nullptr),
+      latest_confirmed_begin_frame_source_id_(0),
+      latest_confirmed_begin_frame_sequence_number_(
+          cc::BeginFrameArgs::kInvalidFrameNumber),
       outstanding_begin_frame_requests_(0),
       is_showing_(!widget_host->is_hidden()),
       is_window_visible_(true),
@@ -1148,12 +1151,17 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
   ack_callbacks_.push(ack_callback);
 
+  cc::BeginFrameAck ack = frame.metadata.begin_frame_ack;
   if (!has_content) {
     DestroyDelegatedContent();
+
+    ack.has_damage = false;
+    OnBeginFrameDidNotSwap(ack);
   } else {
     delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
                                                  std::move(frame));
     frame_evictor_->SwappedFrame(!host_->is_hidden());
+    AcknowledgeBeginFrame(ack);
   }
 
   if (host_->is_hidden())
@@ -1177,6 +1185,20 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
 
   frame_evictor_->DiscardedFrame();
   delegated_frame_host_->DestroyDelegatedContent();
+}
+
+void RenderWidgetHostViewAndroid::OnBeginFrameDidNotSwap(
+    const cc::BeginFrameAck& ack) {
+  AcknowledgeBeginFrame(ack);
+}
+
+void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame(
+    const cc::BeginFrameAck& ack) {
+  latest_confirmed_begin_frame_source_id_ = ack.source_id;
+  latest_confirmed_begin_frame_sequence_number_ =
+      ack.latest_confirmed_sequence_number;
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
@@ -1978,14 +2000,24 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
 
 void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
   TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnBeginFrame");
-  if (!host_)
+  if (!host_) {
+    OnBeginFrameDidNotSwap(
+        cc::BeginFrameAck(args.source_id, args.sequence_number,
+                          cc::BeginFrameArgs::kInvalidFrameNumber, false));
     return;
+  }
 
   // In sync mode, we disregard missed frame args to ensure that
   // SynchronousCompositorBrowserFilter::SyncStateAfterVSync will be called
   // during WindowAndroid::WindowBeginFrameSource::OnVSync() observer iteration.
-  if (sync_compositor_ && args.type == cc::BeginFrameArgs::MISSED)
+  if (sync_compositor_ && args.type == cc::BeginFrameArgs::MISSED) {
+    uint64_t confirmed = cc::BeginFrameArgs::kInvalidFrameNumber;
+    if (args.source_id == latest_confirmed_begin_frame_source_id_)
+      confirmed = latest_confirmed_begin_frame_sequence_number_;
+    OnBeginFrameDidNotSwap(cc::BeginFrameAck(
+        args.source_id, args.sequence_number, confirmed, false));
     return;
+  }
 
   // Update |last_begin_frame_args_| before handling
   // |outstanding_begin_frame_requests_| to prevent the BeginFrameSource from
@@ -2005,6 +2037,9 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
       (outstanding_begin_frame_requests_ & PERSISTENT_BEGIN_FRAME)) {
     ClearBeginFrameRequest(BEGIN_FRAME);
     SendBeginFrame(args);
+  } else {
+    OnBeginFrameDidNotSwap(cc::BeginFrameAck(
+        args.source_id, args.sequence_number, args.sequence_number, false));
   }
 }
 

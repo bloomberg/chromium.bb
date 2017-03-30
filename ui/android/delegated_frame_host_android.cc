@@ -180,6 +180,9 @@ void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
 }
 
 void DelegatedFrameHostAndroid::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
+  // If there was damage, SubmitCompositorFrame includes the ack.
+  if (!ack.has_damage)
+    support_->BeginFrameDidNotSwap(ack);
 }
 
 void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
