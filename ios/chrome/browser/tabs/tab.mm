@@ -1018,7 +1018,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
          !urlSpec.compare(0, urlSpecLength - 1, originalURL.spec()))) {
       redirects.push_back(referrer.url);
     }
-    // TODO(crbug.com/661670): the redirect chain is not constructed the same
+    // TODO(crbug.com/703872): the redirect chain is not constructed the same
     // way as upstream so this part needs to be revised.
     redirects.push_back(originalURL);
     redirects.push_back(url);
