@@ -21,6 +21,8 @@ from chromite.lib import config_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import git
+from chromite.lib import failure_message_lib
+from chromite.lib import failure_message_lib_unittest
 from chromite.lib import metadata_lib
 from chromite.lib import osutils
 
@@ -172,6 +174,11 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     self.tmpmandir = os.path.join(self.tempdir, 'man')
     osutils.SafeMakedirs(self.tmpmandir)
     self.manager = None
+
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     '_InitSlaveInfo')
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild')
 
   def BuildManager(self, config=None, metadata=None,
                    buildbucket_client=None):
@@ -629,3 +636,25 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     # build2 cannot be retried for more than retry_limit times.
     self.assertTrue(retry_patch.call_count,
                     constants.BUILDBUCKET_BUILD_RETRY_LIMIT)
+
+  def testGetBuildersStatusWithSlaveBuilderStatus(self):
+    """Check syntax for GetBuildersStatus with SlaveBuilderStatus."""
+    self.manager = self.BuildManager()
+    build_status.SlaveStatus.__init__ = mock.Mock(return_value=None)
+    self.PatchObject(build_status.SlaveStatus, 'UpdateSlaveStatus')
+    self.PatchObject(build_status.SlaveStatus, 'ShouldWait', return_value=False)
+    self.PatchObject(builder_status_lib.BuilderStatusManager,
+                     'GetBuilderStatus')
+
+    failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper
+    failure_messages = [failure_msg_helper.GetStageFailureMessage(),
+                        failure_msg_helper.GetBuildScriptFailureMessage()]
+    message = failure_message_lib.BuildFailureMessage(
+        'summary', failure_messages, True, 'reason', 'build_2')
+
+    builder_status_1 = builder_status_lib.BuilderStatus('build_1', None)
+    builder_status_2 = builder_status_lib.BuilderStatus('build_2', message)
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
+                     side_effect=[builder_status_1, builder_status_2])
+    self.manager.GetBuildersStatus(1, mock.Mock(), ['build_1', 'build_2'])
