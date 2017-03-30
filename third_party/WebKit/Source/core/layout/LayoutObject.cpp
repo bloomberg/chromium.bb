@@ -126,7 +126,7 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
   unsigned m_bitfields2;
   LayoutRect m_visualRect;
   LayoutPoint m_paintOffset;
-  std::unique_ptr<void*> m_paintProperties;
+  std::unique_ptr<void*> m_rarePaintData;
 };
 
 static_assert(sizeof(LayoutObject) == sizeof(SameSizeAsLayoutObject),
@@ -3552,16 +3552,20 @@ void LayoutObject::setIsBackgroundAttachmentFixedObject(
     frameView()->removeBackgroundAttachmentFixedObject(this);
 }
 
-const ObjectPaintProperties* LayoutObject::paintProperties() const {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-  return m_paintProperties.get();
-}
+LayoutObject::RarePaintData::RarePaintData() {}
 
-ObjectPaintProperties& LayoutObject::ensurePaintProperties() {
-  DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+LayoutObject::RarePaintData::~RarePaintData() {}
+
+ObjectPaintProperties& LayoutObject::RarePaintData::ensurePaintProperties() {
   if (!m_paintProperties)
     m_paintProperties = ObjectPaintProperties::create();
-  return *m_paintProperties;
+  return *m_paintProperties.get();
+}
+
+LayoutObject::RarePaintData& LayoutObject::ensureRarePaintData() {
+  if (!m_rarePaintData)
+    m_rarePaintData = WTF::makeUnique<RarePaintData>();
+  return *m_rarePaintData.get();
 }
 
 LayoutRect LayoutObject::debugRect() const {

@@ -394,13 +394,37 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // For SlimmingPaintInvalidation/SPv2 only.
   // The ObjectPaintProperties structure holds references to the property tree
-  // nodes that are created by the layout object for painting. The property
-  // nodes are only updated during InPrePaint phase of the document lifecycle
-  // and shall remain immutable during other phases.
-  const ObjectPaintProperties* paintProperties() const;
+  // nodes that are created by the layout object. The property nodes should only
+  // be updated during InPrePaint phase of the document lifecycle.
+  const ObjectPaintProperties* paintProperties() const {
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+    return m_rarePaintData ? m_rarePaintData->paintProperties() : nullptr;
+  }
 
  private:
-  ObjectPaintProperties& ensurePaintProperties();
+  // This is for paint-related data that is not needed on all LayoutObjects.
+  // TODO(pdr): Store LayoutBoxModelObject's m_paintLayer in this structure.
+  // TODO(pdr): Store ObjectPaintProperties::LocalBorderBoxProperties here.
+  class CORE_EXPORT RarePaintData {
+    WTF_MAKE_NONCOPYABLE(RarePaintData);
+    USING_FAST_MALLOC(RarePaintData);
+
+   public:
+    RarePaintData();
+    ~RarePaintData();
+
+    ObjectPaintProperties* paintProperties() const {
+      return m_paintProperties.get();
+    }
+    ObjectPaintProperties& ensurePaintProperties();
+
+   private:
+    // Holds references to the paint property nodes created by this object.
+    std::unique_ptr<ObjectPaintProperties> m_paintProperties;
+  };
+
+  RarePaintData& ensureRarePaintData();
+  RarePaintData* rarePaintData() { return m_rarePaintData.get(); }
 
   //////////////////////////////////////////
   // Helper functions. Dangerous to use!
@@ -1780,11 +1804,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // The following two functions can be called from PaintPropertyTreeBuilder
     // only.
     ObjectPaintProperties& ensurePaintProperties() {
-      return m_layoutObject.ensurePaintProperties();
+      return m_layoutObject.ensureRarePaintData().ensurePaintProperties();
     }
     ObjectPaintProperties* paintProperties() {
-      return const_cast<ObjectPaintProperties*>(
-          m_layoutObject.paintProperties());
+      if (auto* paintData = m_layoutObject.rarePaintData())
+        return paintData->paintProperties();
+      return nullptr;
     }
 
     friend class LayoutObject;
@@ -2556,9 +2581,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // property tree update for SlimmingPaintInvalidation on SPv1 and SPv2.
   LayoutPoint m_paintOffset;
 
-  // For SPv2 only. The ObjectPaintProperties structure holds references to the
-  // property tree nodes that are created by the layout object for painting.
-  std::unique_ptr<ObjectPaintProperties> m_paintProperties;
+  std::unique_ptr<RarePaintData> m_rarePaintData;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer
