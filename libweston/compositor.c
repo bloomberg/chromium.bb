@@ -4712,7 +4712,8 @@ weston_compositor_add_pending_output(struct weston_output *output,
 
 /** Constructs a weston_output object that can be used by the compositor.
  *
- * \param output The weston_output object that needs to be enabled.
+ * \param output The weston_output object that needs to be enabled. Must not
+ * be enabled already.
  *
  * Output coordinates are calculated and each new output is by default
  * assigned to the right of previous one.
@@ -4748,6 +4749,12 @@ weston_output_enable(struct weston_output *output)
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
 	int x = 0, y = 0;
+
+	if (output->enabled) {
+		weston_log("Error: attempt to enable an enabled output '%s'\n",
+			   output->name);
+		return -1;
+	}
 
 	iterator = container_of(c->output_list.prev,
 				struct weston_output, link);
@@ -4829,6 +4836,10 @@ weston_output_enable(struct weston_output *output)
  *
  * See weston_output_init() for more information on the
  * state output is returned to.
+ *
+ * If the output has never been enabled yet, this function can still be
+ * called to ensure that the output is actually turned off rather than left
+ * in the state it was discovered in.
  */
 WL_EXPORT void
 weston_output_disable(struct weston_output *output)
