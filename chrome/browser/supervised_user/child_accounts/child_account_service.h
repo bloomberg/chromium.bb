@@ -10,14 +10,18 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "net/base/backoff_entry.h"
 
 namespace user_prefs {
@@ -32,7 +36,9 @@ class Profile;
 class ChildAccountService : public KeyedService,
                             public FamilyInfoFetcher::Consumer,
                             public AccountTrackerService::Observer,
-                            public SupervisedUserService::Delegate {
+                            public syncer::SyncServiceObserver,
+                            public SupervisedUserService::Delegate,
+                            public GaiaCookieManagerService::Observer {
  public:
   ~ChildAccountService() override;
 
@@ -50,6 +56,17 @@ class ChildAccountService : public KeyedService,
   void Shutdown() override;
 
   void AddChildStatusReceivedCallback(const base::Closure& callback);
+
+  // Returns whether or not the user is authenticated on Google web properties
+  // based on the state of the cookie jar. Also returns false if the
+  // authentication state can't be determined.
+  bool IsGoogleAuthenticated();
+
+  // Subscribes to changes to the Google authentication state
+  // (see IsGoogleAuthenticated()). Can send a notification even if the
+  // authentication state has not changed.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  ObserveGoogleAuthState(const base::Callback<void(bool)>& callback);
 
  private:
   friend class ChildAccountServiceFactory;
@@ -72,6 +89,15 @@ class ChildAccountService : public KeyedService,
       const std::vector<FamilyInfoFetcher::FamilyMember>& members) override;
   void OnFailure(FamilyInfoFetcher::ErrorCode error) override;
 
+  // syncer::SyncServiceObserver implementation.
+  void OnStateChanged(syncer::SyncService* sync) override;
+
+  // GaiaCookieManagerService::Observer implementation.
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const GoogleServiceAuthError& error) override;
+
   void StartFetchingFamilyInfo();
   void CancelFetchingFamilyInfo();
   void ScheduleNextFamilyInfoUpdate(base::TimeDelta delay);
@@ -93,6 +119,13 @@ class ChildAccountService : public KeyedService,
   // If fetching the family info fails, retry with exponential backoff.
   base::OneShotTimer family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;
+
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_service_observer_;
+
+  GaiaCookieManagerService* gaia_cookie_manager_;
+
+  base::CallbackList<void(bool)> google_auth_state_observers_;
 
   // Callbacks to run when the user status becomes known.
   std::vector<base::Closure> status_received_callback_list_;

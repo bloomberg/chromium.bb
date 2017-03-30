@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.h"
@@ -28,6 +29,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -40,6 +42,8 @@
 #if !defined(OS_ANDROID)
 const char kChildAccountDetectionFieldTrialName[] = "ChildAccountDetection";
 #endif
+
+const char kGaiaCookieManagerSource[] = "child_account_service";
 
 // Normally, re-check the family info once per day.
 const int kUpdateIntervalSeconds = 60 * 60 * 24;
@@ -73,11 +77,19 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 };
 
 ChildAccountService::ChildAccountService(Profile* profile)
-    : profile_(profile), active_(false),
+    : profile_(profile),
+      active_(false),
       family_fetch_backoff_(&kBackoffPolicy),
-      weak_ptr_factory_(this) {}
+      sync_service_observer_(this),
+      gaia_cookie_manager_(
+          GaiaCookieManagerServiceFactory::GetForProfile(profile)),
+      weak_ptr_factory_(this) {
+  gaia_cookie_manager_->AddObserver(this);
+}
 
-ChildAccountService::~ChildAccountService() {}
+ChildAccountService::~ChildAccountService() {
+  gaia_cookie_manager_->RemoveObserver(this);
+}
 
 // static
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
@@ -132,12 +144,31 @@ void ChildAccountService::AddChildStatusReceivedCallback(
     status_received_callback_list_.push_back(callback);
 }
 
+bool ChildAccountService::IsGoogleAuthenticated() {
+  std::vector<gaia::ListedAccount> accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  if (!gaia_cookie_manager_->ListAccounts(&accounts, &signed_out_accounts,
+                                          kGaiaCookieManagerSource)) {
+    return false;
+  }
+  return !accounts.empty();
+}
+
+std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+ChildAccountService::ObserveGoogleAuthState(
+    const base::Callback<void(bool)>& callback) {
+  return google_auth_state_observers_.Add(callback);
+}
+
 bool ChildAccountService::SetActive(bool active) {
   if (!profile_->IsChild() && !active_)
     return false;
   if (active_ == active)
     return true;
   active_ = active;
+
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
 
   if (active_) {
     SupervisedUserSettingsService* settings_service =
@@ -179,6 +210,8 @@ bool ChildAccountService::SetActive(bool active) {
       service->SetSafeSearchURLReporter(
           SafeSearchURLReporter::CreateWithProfile(profile_));
     }
+
+    sync_service_observer_.Add(sync_service);
   } else {
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForProfile(profile_);
@@ -196,12 +229,12 @@ bool ChildAccountService::SetActive(bool active) {
 #endif
 
     CancelFetchingFamilyInfo();
+
+    sync_service_observer_.Remove(sync_service);
   }
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service->IsFirstSetupComplete())
     sync_service->ReconfigureDatatypeManager();
 
@@ -283,6 +316,27 @@ void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
   DLOG(WARNING) << "GetFamilyMembers failed with code " << error;
   family_fetch_backoff_.InformOfRequest(false);
   ScheduleNextFamilyInfoUpdate(family_fetch_backoff_.GetTimeUntilRelease());
+}
+
+void ChildAccountService::OnStateChanged(syncer::SyncService* sync) {
+  if (sync->GetAuthError().state() ==
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+    // If there was an authentication error in Sync, check whether we are still
+    // signed in to Google. Because Sync is always enabled for supervised users,
+    // an authentication error will eventually be noticed by Sync.
+    // TODO(bauerb): Make SigninErrorController usable on Android and observe
+    // that instead. Also, investigate moving this into AccountReconcilor.
+    GaiaCookieManagerService* gaia_cookie_manager =
+        GaiaCookieManagerServiceFactory::GetForProfile(profile_);
+    gaia_cookie_manager->TriggerListAccounts(kGaiaCookieManagerSource);
+  }
+}
+
+void ChildAccountService::OnGaiaAccountsInCookieUpdated(
+    const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+    const GoogleServiceAuthError& error) {
+  google_auth_state_observers_.Notify(!accounts.empty());
 }
 
 void ChildAccountService::StartFetchingFamilyInfo() {

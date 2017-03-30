@@ -153,7 +153,6 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                     Log.w(TAG, "Updating credentials was cancelled.");
                 }
                 boolean success = bundle != null
-                        && bundle.getString(AccountManager.KEY_ACCOUNT_NAME) != null
                         && bundle.getString(AccountManager.KEY_ACCOUNT_TYPE) != null;
                 if (callback != null) {
                     callback.onResult(success);

@@ -3790,6 +3790,8 @@ split_static_library("browser") {
       "supervised_user/supervised_user_content_provider_android.h",
       "supervised_user/supervised_user_features.cc",
       "supervised_user/supervised_user_features.h",
+      "supervised_user/supervised_user_google_auth_navigation_throttle.cc",
+      "supervised_user/supervised_user_google_auth_navigation_throttle.h",
       "supervised_user/supervised_user_interstitial.cc",
       "supervised_user/supervised_user_interstitial.h",
       "supervised_user/supervised_user_navigation_observer.cc",
