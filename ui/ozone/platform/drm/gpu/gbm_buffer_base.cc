@@ -56,6 +56,8 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
 GbmBufferBase::~GbmBufferBase() {
   if (framebuffer_)
     drm_->RemoveFramebuffer(framebuffer_);
+  if (opaque_framebuffer_)
+    drm_->RemoveFramebuffer(opaque_framebuffer_);
 }
 
 uint32_t GbmBufferBase::GetFramebufferId() const {
