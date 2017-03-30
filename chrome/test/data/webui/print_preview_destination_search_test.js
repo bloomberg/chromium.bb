@@ -27,7 +27,7 @@ PrintPreviewDestinationSearchTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 };
 
-TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
+TEST_F('PrintPreviewDestinationSearchTest', 'DISABLED_Select', function() {
   var self = this;
 
   suite('DestinationSearchTest', function() {
