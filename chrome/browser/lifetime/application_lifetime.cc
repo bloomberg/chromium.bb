@@ -150,7 +150,7 @@ void CloseAllBrowsersAndQuit() {
 }
 
 void ShutdownIfNoBrowsers() {
-  if (chrome::GetTotalBrowserCount() > 0)
+  if (chrome::GetTotalBrowserCount())
     return;
 
   // Tell everyone that we are shutting down.
@@ -165,6 +165,12 @@ void ShutdownIfNoBrowsers() {
 
   chrome::NotifyAndTerminate(true);
   chrome::OnAppExiting();
+}
+
+void ShutdownIfNoBrowsersAndNotQuitting() {
+  if (browser_shutdown::IsTryingToQuit())
+    return;
+  ShutdownIfNoBrowsers();
 }
 
 void CloseAllBrowsers() {
@@ -364,10 +370,11 @@ void SessionEnding() {
 }
 
 void ShutdownIfNeeded() {
-  if (browser_shutdown::IsTryingToQuit())
-    return;
-
-  ShutdownIfNoBrowsers();
+  // This may be called from a compositor. Make sure we don't delete it
+  // in the same call stack. crbug.com/703113
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&ShutdownIfNoBrowsersAndNotQuitting));
 }
 
 #endif  // !defined(OS_ANDROID)
