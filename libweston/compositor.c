@@ -4472,7 +4472,8 @@ weston_output_move(struct weston_output *output, int x, int y)
  * Removes the output from the pending list and adds it to the compositor's
  * list of enabled outputs. The output created signal is emitted.
  *
- * The output gets an internal ID assigned.
+ * The output gets an internal ID assigned, and the wl_output global is
+ * created.
  *
  * \param compositor The compositor instance.
  * \param output The output to be added.
@@ -4500,6 +4501,10 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->output_list.prev, &output->link);
 	output->enabled = true;
+
+	output->global = wl_global_create(compositor->wl_display,
+					  &wl_output_interface, 3,
+					  output, bind_output);
 
 	wl_signal_emit(&compositor->output_created_signal, output);
 
@@ -4543,14 +4548,11 @@ weston_output_transform_coordinate(struct weston_output *output,
  * \param output The weston_output object that needs the changes undone.
  *
  * Removes the repaint timer.
- * Destroys the Wayland global assigned to the output.
  * Destroys pixman regions allocated to the output.
  */
 static void
 weston_output_enable_undo(struct weston_output *output)
 {
-	wl_global_destroy(output->global);
-
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 }
@@ -4575,7 +4577,7 @@ weston_output_enable_undo(struct weston_output *output)
  *   object that the output is being destroyed.
  *
  * - wl_output protocol objects referencing this weston_output
- *   are made inert.
+ *   are made inert, and the wl_output global is removed.
  *
  * - The output's internal ID is released.
  *
@@ -4608,6 +4610,8 @@ weston_compositor_remove_output(struct weston_output *output)
 	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
 
+	wl_global_destroy(output->global);
+	output->global = NULL;
 	wl_resource_for_each(resource, &output->resource_list) {
 		wl_resource_set_destructor(resource, NULL);
 	}
@@ -4800,10 +4804,6 @@ weston_output_enable(struct weston_output *output)
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 	wl_list_init(&output->feedback_list);
-
-	output->global =
-		wl_global_create(c->wl_display, &wl_output_interface, 3,
-				 output, bind_output);
 
 	/* Enable the output (set up the crtc or create a
 	 * window representing the output, set up the
