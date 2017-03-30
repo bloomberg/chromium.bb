@@ -16,6 +16,7 @@
 namespace content {
 
 class CSPContext;
+struct SourceLocation;
 
 // https://www.w3.org/TR/CSP3/#framework-policy
 //
@@ -41,8 +42,9 @@ struct CONTENT_EXPORT ContentSecurityPolicy {
   static bool Allow(const ContentSecurityPolicy& policy,
                     CSPDirective::Name directive,
                     const GURL& url,
+                    bool is_redirect,
                     CSPContext* context,
-                    bool is_redirect = false);
+                    const SourceLocation& source_location);
 };
 
 }  // namespace content

@@ -34,8 +34,8 @@
 #include <memory>
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebSourceLocation.h"
 #include "WebNavigationType.h"
-#include "WebSourceLocation.h"
 #include "WebTextDirection.h"
 
 namespace blink {

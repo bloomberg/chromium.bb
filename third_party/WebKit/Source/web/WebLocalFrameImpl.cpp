@@ -2087,6 +2087,15 @@ bool WebLocalFrameImpl::maybeRenderFallbackContent(
 // is infringed.
 void WebLocalFrameImpl::reportContentSecurityPolicyViolation(
     const blink::WebContentSecurityPolicyViolation& violation) {
+  addMessageToConsole(blink::WebConsoleMessage(
+      WebConsoleMessage::LevelError, violation.consoleMessage,
+      violation.sourceLocation.url, violation.sourceLocation.lineNumber,
+      violation.sourceLocation.columnNumber));
+
+  std::unique_ptr<SourceLocation> sourceLocation = SourceLocation::create(
+      violation.sourceLocation.url, violation.sourceLocation.lineNumber,
+      violation.sourceLocation.columnNumber, nullptr);
+
   DCHECK(frame() && frame()->document());
   Document* document = frame()->document();
   Vector<String> reportEndpoints;
@@ -2102,9 +2111,7 @@ void WebLocalFrameImpl::reportContentSecurityPolicyViolation(
       violation.header,                  /* header */
       static_cast<ContentSecurityPolicyHeaderType>(violation.disposition),
       ContentSecurityPolicy::ViolationType::URLViolation, /* ViolationType */
-      // TODO(arthursonzogni, clamy): Provide the source location here
-      // See http://crbug.com/690946
-      std::unique_ptr<SourceLocation>(), nullptr, /* LocalFrame */
+      std::move(sourceLocation), nullptr,                 /* LocalFrame */
       violation.afterRedirect ? RedirectStatus::FollowedRedirect
                               : RedirectStatus::NoRedirect,
       nullptr); /* Element */

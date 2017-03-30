@@ -32,6 +32,7 @@
 #define WebContentSecurityPolicyStruct_h
 
 #include "public/platform/WebContentSecurityPolicy.h"
+#include "public/platform/WebSourceLocation.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
@@ -98,6 +99,9 @@ struct WebContentSecurityPolicyViolation {
 
   // Whether or not the violation happens after a redirect.
   bool afterRedirect;
+
+  // The source code location that triggered the blocked navigation.
+  WebSourceLocation sourceLocation;
 };
 
 }  // namespace blink

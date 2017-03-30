@@ -42,7 +42,8 @@ void ReportViolation(CSPContext* context,
                      const CSPDirective& directive,
                      const CSPDirective::Name directive_name,
                      const GURL& url,
-                     bool is_redirect) {
+                     bool is_redirect,
+                     const SourceLocation& source_location) {
   // We should never have a violation against `child-src` or `default-src`
   // directly; the effective directive should always be one of the explicit
   // fetch directives.
@@ -72,13 +73,11 @@ void ReportViolation(CSPContext* context,
 
   message << "\n";
 
-  context->LogToConsole(message.str());
-
   context->ReportContentSecurityPolicyViolation(CSPViolationParams(
       CSPDirective::NameToString(directive.name),
       CSPDirective::NameToString(directive_name), message.str(), url,
       policy.report_endpoints, policy.header.header_value, policy.header.type,
-      is_redirect));
+      is_redirect, source_location));
 }
 
 bool AllowDirective(CSPContext* context,
@@ -86,11 +85,13 @@ bool AllowDirective(CSPContext* context,
                     const CSPDirective& directive,
                     CSPDirective::Name directive_name,
                     const GURL& url,
-                    bool is_redirect) {
+                    bool is_redirect,
+                    const SourceLocation& source_location) {
   if (CSPSourceList::Allow(directive.source_list, url, context, is_redirect))
     return true;
 
-  ReportViolation(context, policy, directive, directive_name, url, is_redirect);
+  ReportViolation(context, policy, directive, directive_name, url, is_redirect,
+                  source_location);
   return false;
 }
 
@@ -117,14 +118,16 @@ ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
                                   CSPDirective::Name directive_name,
                                   const GURL& url,
+                                  bool is_redirect,
                                   CSPContext* context,
-                                  bool is_redirect) {
+                                  const SourceLocation& source_location) {
   CSPDirective::Name current_directive_name = directive_name;
   do {
     for (const CSPDirective& directive : policy.directives) {
       if (directive.name == current_directive_name) {
-        bool allowed = AllowDirective(context, policy, directive,
-                                      directive_name, url, is_redirect);
+        bool allowed =
+            AllowDirective(context, policy, directive, directive_name, url,
+                           is_redirect, source_location);
         return allowed ||
                policy.header.type == blink::WebContentSecurityPolicyTypeReport;
       }

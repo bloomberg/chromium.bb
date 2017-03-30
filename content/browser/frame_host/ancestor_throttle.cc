@@ -189,10 +189,12 @@ AncestorThrottle::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
   RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
   DCHECK(parent);
 
-  if (!parent->IsAllowedByCsp(CSPDirective::FrameSrc, url, is_redirect))
-    return NavigationThrottle::BLOCK_REQUEST;
+  if (parent->IsAllowedByCsp(CSPDirective::FrameSrc, url, is_redirect,
+                             handle->source_location())) {
+    return NavigationThrottle::PROCEED;
+  }
 
-  return NavigationThrottle::PROCEED;
+  return NavigationThrottle::BLOCK_REQUEST;
 }
 
 NavigationThrottle::ThrottleCheckResult AncestorThrottle::WillStartRequest() {

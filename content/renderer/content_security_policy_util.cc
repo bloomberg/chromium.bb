@@ -70,6 +70,12 @@ blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
   violation.header = blink::WebString::fromASCII(violation_params.header);
   violation.disposition = violation_params.disposition;
   violation.afterRedirect = violation_params.after_redirect;
+  violation.sourceLocation.url =
+      blink::WebString::fromLatin1(violation_params.source_location.url);
+  violation.sourceLocation.lineNumber =
+      violation_params.source_location.line_number;
+  violation.sourceLocation.columnNumber =
+      violation_params.source_location.column_number;
   return violation;
 }
 

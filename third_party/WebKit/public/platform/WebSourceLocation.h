@@ -5,7 +5,7 @@
 #ifndef WebSourceLocation_h
 #define WebSourceLocation_h
 
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 

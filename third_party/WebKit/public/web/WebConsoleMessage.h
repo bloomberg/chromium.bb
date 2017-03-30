@@ -53,6 +53,16 @@ struct WebConsoleMessage {
   WebConsoleMessage() : level(LevelInfo), lineNumber(0), columnNumber(0) {}
   WebConsoleMessage(Level level, const WebString& text)
       : level(level), text(text), lineNumber(0), columnNumber(0) {}
+  WebConsoleMessage(Level level,
+                    const WebString& text,
+                    const WebString url,
+                    unsigned lineNumber,
+                    unsigned columnNumber)
+      : level(level),
+        text(text),
+        url(url),
+        lineNumber(lineNumber),
+        columnNumber(columnNumber) {}
 };
 
 }  // namespace blink

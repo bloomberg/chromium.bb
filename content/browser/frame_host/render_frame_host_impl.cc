@@ -927,10 +927,6 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   set_nav_entry_id(0);
 }
 
-void RenderFrameHostImpl::LogToConsole(const std::string& message) {
-  AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_ERROR, message);
-}
-
 void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
     const CSPViolationParams& violation_params) {
   Send(new FrameMsg_ReportContentSecurityPolicyViolation(routing_id_,

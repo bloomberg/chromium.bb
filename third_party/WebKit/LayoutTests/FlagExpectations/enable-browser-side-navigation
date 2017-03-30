@@ -6,15 +6,17 @@ crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failur
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 
 # https://crbug.com/690946 PlzNavigate: Missing line number in console messages when the 'frame-src' CSP is infringed.
-crbug.com/690946 http/tests/security/contentSecurityPolicy/1.1/child-src/frame-blocked.html [ Failure ]
-crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-blocked.html [ Failure ]
-crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+# SourceLocation is not set when the navigation is initiated outside of a script.
 crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
-crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/child-src/frame-blocked.html [ Failure ]
-crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-blocked.html [ Failure ]
-crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
 crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
 
 # These tests are flaky.
 Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
+
+# These tests are correct with PlzNavigate.
+# Without PlzNavigate, the line number of the console message is missing.
+Bug(none) http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Failure ]
+Bug(none) http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/child-src/frame-redirect-blocked.html [ Failure ]
+Bug(none) virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-redirect-blocked.html [ Failure ]

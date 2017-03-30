@@ -12,13 +12,14 @@ CSPContext::~CSPContext() {}
 
 bool CSPContext::IsAllowedByCsp(CSPDirective::Name directive_name,
                                 const GURL& url,
-                                bool is_redirect) {
+                                bool is_redirect,
+                                const SourceLocation& source_location) {
   if (SchemeShouldBypassCSP(url.scheme_piece()))
     return true;
 
   for (const auto& policy : policies_) {
-    if (!ContentSecurityPolicy::Allow(policy, directive_name, url, this,
-                                      is_redirect))
+    if (!ContentSecurityPolicy::Allow(policy, directive_name, url, is_redirect,
+                                      this, source_location))
       return false;
   }
   return true;
@@ -59,10 +60,6 @@ bool CSPContext::ProtocolMatchesSelf(const GURL& url) {
   return url.SchemeIs(self_scheme_);
 }
 
-void CSPContext::LogToConsole(const std::string& message) {
-  return;
-}
-
 bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {
   return false;
 }
@@ -88,7 +85,8 @@ CSPViolationParams::CSPViolationParams(
     const std::vector<std::string>& report_endpoints,
     const std::string& header,
     const blink::WebContentSecurityPolicyType& disposition,
-    bool after_redirect)
+    bool after_redirect,
+    const SourceLocation& source_location)
     : directive(directive),
       effective_directive(effective_directive),
       console_message(console_message),
@@ -96,7 +94,8 @@ CSPViolationParams::CSPViolationParams(
       report_endpoints(report_endpoints),
       header(header),
       disposition(disposition),
-      after_redirect(after_redirect) {}
+      after_redirect(after_redirect),
+      source_location(source_location) {}
 
 CSPViolationParams::CSPViolationParams(const CSPViolationParams& other) =
     default;

@@ -4,6 +4,7 @@
 
 #include "content/common/content_security_policy/csp_context.h"
 #include "content/common/content_security_policy_header.h"
+#include "content/common/navigation_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -14,8 +15,9 @@ class CSPContextTest : public CSPContext {
   const std::string& LastConsoleMessage() { return console_message_; }
 
  private:
-  void LogToConsole(const std::string& message) override {
-    console_message_ = message;
+  void ReportContentSecurityPolicyViolation(
+      const CSPViolationParams& violation_params) override {
+    console_message_ = violation_params.console_message;
   }
   std::string console_message_;
 };
@@ -36,7 +38,7 @@ TEST(ContentSecurityPolicy, NoDirective) {
 
   EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FormAction,
                                            GURL("http://www.example.com"),
-                                           &context));
+                                           false, &context, SourceLocation()));
   EXPECT_EQ("", context.LastConsoleMessage());
 }
 
@@ -54,7 +56,7 @@ TEST(ContentSecurityPolicy, ReportViolation) {
 
   EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FormAction,
                                             GURL("http://www.not-example.com"),
-                                            &context));
+                                            false, &context, SourceLocation()));
 
   const char console_message[] =
       "Refused to send form data to 'http://www.not-example.com/' because it "
@@ -78,7 +80,8 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         {CSPDirective(CSPDirective::DefaultSrc, source_list_a)},
         report_end_points);
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
-                                              GURL("http://b.com"), &context));
+                                              GURL("http://b.com"), false,
+                                              &context, SourceLocation()));
     const char console_message[] =
         "Refused to frame 'http://b.com/' because it violates "
         "the following Content Security Policy directive: \"default-src "
@@ -86,7 +89,8 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         "set, so 'default-src' is used as a fallback.\n";
     EXPECT_EQ(console_message, context.LastConsoleMessage());
     EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
-                                             GURL("http://a.com"), &context));
+                                             GURL("http://a.com"), false,
+                                             &context, SourceLocation()));
   }
   {
     CSPContextTest context;
@@ -94,7 +98,8 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         EmptyCspHeader(), {CSPDirective(CSPDirective::ChildSrc, source_list_a)},
         report_end_points);
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
-                                              GURL("http://b.com"), &context));
+                                              GURL("http://b.com"), false,
+                                              &context, SourceLocation()));
     const char console_message[] =
         "Refused to frame 'http://b.com/' because it violates "
         "the following Content Security Policy directive: \"child-src "
@@ -102,7 +107,8 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         "set, so 'child-src' is used as a fallback.\n";
     EXPECT_EQ(console_message, context.LastConsoleMessage());
     EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
-                                             GURL("http://a.com"), &context));
+                                             GURL("http://a.com"), false,
+                                             &context, SourceLocation()));
   }
   {
     CSPContextTest context;
@@ -113,9 +119,11 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
          CSPDirective(CSPDirective::ChildSrc, {source_list_b})},
         report_end_points);
     EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
-                                             GURL("http://a.com"), &context));
+                                             GURL("http://a.com"), false,
+                                             &context, SourceLocation()));
     EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
-                                              GURL("http://b.com"), &context));
+                                              GURL("http://b.com"), false,
+                                              &context, SourceLocation()));
     const char console_message[] =
         "Refused to frame 'http://b.com/' because it violates "
         "the following Content Security Policy directive: \"frame-src "

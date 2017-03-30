@@ -56,8 +56,10 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
   RenderFrameHostImpl* render_frame =
       handle->frame_tree_node()->current_frame_host();
 
-  if (render_frame->IsAllowedByCsp(CSPDirective::FormAction, url, is_redirect))
+  if (render_frame->IsAllowedByCsp(CSPDirective::FormAction, url, is_redirect,
+                                   handle->source_location())) {
     return NavigationThrottle::PROCEED;
+  }
 
   return NavigationThrottle::CANCEL;
 }

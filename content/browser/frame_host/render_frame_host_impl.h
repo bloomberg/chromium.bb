@@ -216,7 +216,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
 
   // CSPContext
-  void LogToConsole(const std::string& message) override;
   void ReportContentSecurityPolicyViolation(
       const CSPViolationParams& violation_params) override;
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override;

@@ -591,6 +591,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
   IPC_STRUCT_TRAITS_MEMBER(header)
   IPC_STRUCT_TRAITS_MEMBER(disposition)
   IPC_STRUCT_TRAITS_MEMBER(after_redirect)
+  IPC_STRUCT_TRAITS_MEMBER(source_location)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)

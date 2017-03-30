@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
+#include "content/common/navigation_params.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -18,24 +19,29 @@ namespace content {
 struct CSPViolationParams;
 
 // A CSPContext represents the system on which the Content-Security-Policy are
-// enforced. One must define via its virtual methods how to report violations,
-// how to log messages on the console and what is the set of scheme that bypass
-// the CSP. Its main implementation is in
-// content/browser/frame_host/render_frame_host_impl.h
+// enforced. One must define via its virtual methods how to report violations
+// and what is the set of scheme that bypass the CSP. Its main implementation
+// is in content/browser/frame_host/render_frame_host_impl.h
 class CONTENT_EXPORT CSPContext {
  public:
   CSPContext();
   virtual ~CSPContext();
 
+  // Check if an |url| is allowed by the set of Content-Security-Policy. It will
+  // report any violation by:
+  // * displaying a console message.
+  // * triggering the "SecurityPolicyViolation" javascript event.
+  // * sending a JSON report to any uri defined with the "report-uri" directive.
+  // Returns true when the request can proceed, false otherwise.
   bool IsAllowedByCsp(CSPDirective::Name directive_name,
                       const GURL& url,
-                      bool is_redirect = false);
+                      bool is_redirect,
+                      const SourceLocation& source_location);
 
   void SetSelf(const url::Origin origin);
   bool AllowSelf(const GURL& url);
   bool ProtocolMatchesSelf(const GURL& url);
 
-  virtual void LogToConsole(const std::string& message);
   virtual void ReportContentSecurityPolicyViolation(
       const CSPViolationParams& violation_params);
 
@@ -68,7 +74,8 @@ struct CONTENT_EXPORT CSPViolationParams {
                      const std::vector<std::string>& report_endpoints,
                      const std::string& header,
                      const blink::WebContentSecurityPolicyType& disposition,
-                     bool after_redirect);
+                     bool after_redirect,
+                     const SourceLocation& source_location);
   CSPViolationParams(const CSPViolationParams& other);
   ~CSPViolationParams();
 
@@ -98,6 +105,9 @@ struct CONTENT_EXPORT CSPViolationParams {
 
   // Whether or not the violation happens after a redirect.
   bool after_redirect;
+
+  // The source code location that triggered the blocked navigation.
+  SourceLocation source_location;
 };
 
 }  // namespace content
