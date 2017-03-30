@@ -294,7 +294,7 @@ const char* kPolicyWifi0 =
 }  // namespace
 
 TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectSuccess) {
-  EXPECT_TRUE(ConfigureService(kConfigConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
   Connect(kWifi0);
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
   EXPECT_EQ(shill::kStateOnline,
@@ -306,7 +306,7 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectSuccess) {
 
 TEST_F(NetworkConnectionHandlerTest,
        NetworkConnectionHandlerConnectProhibited) {
-  EXPECT_TRUE(ConfigureService(kConfigConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
   base::DictionaryValue global_config;
   global_config.SetBooleanWithoutPathExpansion(
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, true);
@@ -330,21 +330,21 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectFailure) {
   EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
             network_connection_observer_->GetResult(kNoNetwork));
 
-  EXPECT_TRUE(ConfigureService(kConfigConnected));
+  EXPECT_FALSE(ConfigureService(kConfigConnected).empty());
   Connect(kWifi1);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnected, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer_->GetRequested(kWifi1));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnected,
             network_connection_observer_->GetResult(kWifi1));
 
-  EXPECT_TRUE(ConfigureService(kConfigConnecting));
+  EXPECT_FALSE(ConfigureService(kConfigConnecting).empty());
   Connect(kWifi2);
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnecting, GetResultAndReset());
   EXPECT_TRUE(network_connection_observer_->GetRequested(kWifi2));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnecting,
             network_connection_observer_->GetResult(kWifi2));
 
-  EXPECT_TRUE(ConfigureService(kConfigRequiresPassphrase));
+  EXPECT_FALSE(ConfigureService(kConfigRequiresPassphrase).empty());
   Connect(kWifi3);
   EXPECT_EQ(NetworkConnectionHandler::kErrorPassphraseRequired,
             GetResultAndReset());
@@ -430,7 +430,7 @@ TEST_F(NetworkConnectionHandlerTest,
 
 TEST_F(NetworkConnectionHandlerTest,
        NetworkConnectionHandlerDisconnectSuccess) {
-  EXPECT_TRUE(ConfigureService(kConfigConnected));
+  EXPECT_FALSE(ConfigureService(kConfigConnected).empty());
   Disconnect(kWifi1);
   EXPECT_TRUE(network_connection_observer_->GetRequested(kWifi1));
   EXPECT_EQ(kSuccessResult, GetResultAndReset());
@@ -442,7 +442,7 @@ TEST_F(NetworkConnectionHandlerTest,
   EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
             GetResultAndReset());
 
-  EXPECT_TRUE(ConfigureService(kConfigConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigConnectable).empty());
   Disconnect(kWifi0);
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
 }

@@ -539,6 +539,8 @@ static_library("test_support") {
     "network/mock_managed_network_configuration_handler.h",
     "network/mock_network_device_handler.cc",
     "network/mock_network_device_handler.h",
+    "network/network_state_test.cc",
+    "network/network_state_test.h",
     "network/onc/onc_test_utils.cc",
     "network/onc/onc_test_utils.h",
   ]
@@ -644,8 +646,6 @@ test("chromeos_unittests") {
     "network/network_device_handler_unittest.cc",
     "network/network_sms_handler_unittest.cc",
     "network/network_state_handler_unittest.cc",
-    "network/network_state_test.cc",
-    "network/network_state_test.h",
     "network/network_state_unittest.cc",
     "network/network_type_pattern_unittest.cc",
     "network/network_ui_data_unittest.cc",

@@ -246,8 +246,8 @@ const char* kPolicyCertPattern =
 }  // namespace
 
 TEST_F(AutoConnectHandlerTest, ReconnectOnCertLoading) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
   test_manager_client()->SetBestServiceToConnect("wifi1");
 
   // User login shouldn't trigger any change until the certificates and policy
@@ -277,8 +277,8 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertLoading) {
 }
 
 TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
   test_manager_client()->SetBestServiceToConnect("wifi0");
 
   SetupPolicy(std::string(),            // no device policy
@@ -309,8 +309,8 @@ TEST_F(AutoConnectHandlerTest, ReconnectOnCertPatternResolved) {
 // Ensure that resolving of certificate patterns only triggers a reconnect if at
 // least one pattern was resolved.
 TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
   test_manager_client()->SetBestServiceToConnect("wifi0");
 
   SetupPolicy(std::string(),            // no device policy
@@ -338,8 +338,8 @@ TEST_F(AutoConnectHandlerTest, NoReconnectIfNoCertResolved) {
 }
 
 TEST_F(AutoConnectHandlerTest, DisconnectOnPolicyLoading) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
 
   // User login and certificate loading shouldn't trigger any change until the
   // policy is loaded.
@@ -370,8 +370,8 @@ TEST_F(AutoConnectHandlerTest, DisconnectOnPolicyLoading) {
 
 TEST_F(AutoConnectHandlerTest,
        DisconnectOnPolicyLoadingAllowOnlyPolicyNetworksToConnect) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
 
   // User login and certificate loading shouldn't trigger any change until the
   // policy is loaded.
@@ -401,8 +401,8 @@ TEST_F(AutoConnectHandlerTest,
 
 // After login a reconnect is triggered even if there is no managed network.
 TEST_F(AutoConnectHandlerTest, ReconnectAfterLogin) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
   test_manager_client()->SetBestServiceToConnect("wifi1");
 
   // User login and certificate loading shouldn't trigger any change until the
@@ -430,8 +430,8 @@ TEST_F(AutoConnectHandlerTest, ReconnectAfterLogin) {
 }
 
 TEST_F(AutoConnectHandlerTest, ManualConnectAbortsReconnectAfterLogin) {
-  EXPECT_TRUE(ConfigureService(kConfigUnmanagedSharedConnected));
-  EXPECT_TRUE(ConfigureService(kConfigManagedSharedConnectable));
+  EXPECT_FALSE(ConfigureService(kConfigUnmanagedSharedConnected).empty());
+  EXPECT_FALSE(ConfigureService(kConfigManagedSharedConnectable).empty());
   test_manager_client()->SetBestServiceToConnect("wifi1");
 
   // User login and certificate loading shouldn't trigger any change until the
