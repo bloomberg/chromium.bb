@@ -41,8 +41,6 @@
 #include "wtf/ThreadingPrimitives.h"
 #endif
 
-using namespace WTF;
-
 namespace blink {
 
 #if DCHECK_IS_ON()

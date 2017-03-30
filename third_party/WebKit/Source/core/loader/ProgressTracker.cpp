@@ -39,8 +39,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 
-using namespace std;
-
 namespace blink {
 
 // Always start progress at initialProgressValue. This helps provide feedback as

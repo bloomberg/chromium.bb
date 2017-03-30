@@ -55,8 +55,6 @@
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 
-using namespace WTF;
-
 namespace blink {
 namespace {
 
