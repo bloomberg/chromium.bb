@@ -2473,6 +2473,7 @@ void Document::shutdown() {
   // detaching Document is not in a consistent state.
   ScriptForbiddenScope forbidScript;
 
+  m_lifecycle.advanceTo(DocumentLifecycle::Stopping);
   view()->dispose();
 
   // If the FrameViewBase of the document's frame owner doesn't match view()
@@ -2484,8 +2485,6 @@ void Document::shutdown() {
     ownerElement->setWidget(nullptr);
 
   m_markers->prepareForDestruction();
-
-  m_lifecycle.advanceTo(DocumentLifecycle::Stopping);
 
   if (page())
     page()->documentDetached(this);
@@ -4581,12 +4580,18 @@ HTMLFrameOwnerElement* Document::localOwner() const {
 
 void Document::willChangeFrameOwnerProperties(int marginWidth,
                                               int marginHeight,
-                                              ScrollbarMode scrollingMode) {
-  if (!body())
-    return;
-
+                                              ScrollbarMode scrollingMode,
+                                              bool isDisplayNone) {
   DCHECK(frame() && frame()->owner());
   FrameOwner* owner = frame()->owner();
+
+  if (documentElement()) {
+    if (isDisplayNone != owner->isDisplayNone())
+      documentElement()->lazyReattachIfAttached();
+  }
+
+  if (!body())
+    return;
 
   if (marginWidth != owner->marginWidth())
     body()->setIntegralAttribute(marginwidthAttr, marginWidth);

@@ -4796,7 +4796,6 @@ void FrameView::updateViewportIntersectionsForSubtree(
     updateRenderThrottlingStatus(m_hiddenForThrottling, m_subtreeThrottled,
                                  DontForceThrottlingInvalidation,
                                  DontNotifyChildren);
-    DCHECK(!canThrottleRendering());
   }
 
   for (Frame* child = m_frame->tree().firstChild(); child;

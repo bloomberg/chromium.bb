@@ -242,9 +242,8 @@ TEST_F(VisualRectMappingTest, LayoutViewDisplayNone) {
   frameElement->setInlineStyleProperty(CSSPropertyDisplay, "none");
   document().view()->updateAllLifecyclePhases();
 
-  rect = originalRect;
-  EXPECT_FALSE(frameDiv->mapToVisualRectInAncestorSpace(&layoutView(), rect));
-  EXPECT_EQ(rect, LayoutRect());
+  frameBody = toLayoutBlock(childDocument().body()->layoutObject());
+  EXPECT_EQ(nullptr, frameBody);
 }
 
 TEST_F(VisualRectMappingTest, SelfFlippedWritingMode) {

@@ -344,6 +344,10 @@
       status: "stable",
     },
     {
+      name: "DisplayNoneIFrameCreatesNoLayoutObject",
+      status: "experimental",
+    },
+    {
       name: "DocumentCookie",
     },
     {

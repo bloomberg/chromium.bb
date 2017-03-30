@@ -2,18 +2,18 @@
   "layers": [
     {
       "name": "LayoutView #document",
-      "bounds": [785, 836],
+      "bounds": [785, 742],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutView #document",
-          "rect": [0, 742, 785, 94],
+          "rect": [0, 742, 785, 99],
           "reason": "incremental"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
-          "rect": [8, 186, 769, 642],
+          "rect": [8, 191, 769, 642],
           "reason": "bounds change"
         },
         {
@@ -22,26 +22,54 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutIFrame IFRAME id='iframe'",
-          "rect": [8, 92, 732, 94],
-          "reason": "layoutObject insertion"
+          "object": "LayoutBlockFlow (anonymous)",
+          "rect": [8, 92, 769, 99],
+          "reason": "layoutObject removal"
         },
         {
-          "object": "LayoutView #document",
+          "object": "LayoutIFrame IFRAME id='iframe'",
+          "rect": [8, 92, 732, 94],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
           "rect": [10, 94, 728, 90],
-          "reason": "style change"
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [18, 102, 712, 74],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 241, 489, 537],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 142, 489, 537],
+          "reason": "bounds change"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
-      "reason": "incremental"
+      "object": "LayoutIFrame IFRAME id='iframe'",
+      "reason": "layoutObject removal"
     },
     {
-      "object": "LayoutIFrame IFRAME id='iframe'",
-      "reason": "layoutObject insertion"
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
@@ -60,20 +88,12 @@
       "reason": "location change"
     },
     {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "style change"
+      "object": "LayoutBlockFlow BODY",
+      "reason": "layoutObject removal"
     },
     {
       "object": "LayoutBlockFlow HTML",
-      "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "layoutObject insertion"
+      "reason": "layoutObject removal"
     }
   ]
 }

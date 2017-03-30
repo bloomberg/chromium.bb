@@ -150,6 +150,9 @@
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "web/tests/FrameTestHelpers.h"
+#include "web/tests/sim/SimDisplayItemList.h"
+#include "web/tests/sim/SimRequest.h"
+#include "web/tests/sim/SimTest.h"
 #include "wtf/Forward.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/dtoa/utils.h"
@@ -11304,6 +11307,63 @@ TEST_F(WebFrameTest, TestNonCompositedOverlayScrollbarsFade) {
   EXPECT_TRUE(scrollableArea->scrollbarsHidden());
 
   mockOverlayTheme.setOverlayScrollbarFadeOutDelay(0.0);
+}
+
+class WebFrameSimTest : public SimTest {};
+
+TEST_F(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  SimRequest frameResource("https://example.com/frame.html", "text/html");
+
+  loadURL("https://example.com/test.html");
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<iframe src=frame.html style='display: none'></iframe>");
+  frameResource.complete(
+      "<!DOCTYPE html>"
+      "<html><body>This is a visible iframe.</body></html>");
+
+  Element* element = document().querySelector("iframe");
+  HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(element);
+  Document* iframeDoc = frameOwnerElement->contentDocument();
+  EXPECT_FALSE(iframeDoc->documentElement()->layoutObject());
+
+  // Changing the display from 'none' -> 'block' should cause layout objects to
+  // appear.
+  element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueBlock);
+  compositor().beginFrame();
+  EXPECT_TRUE(iframeDoc->documentElement()->layoutObject());
+
+  // Changing the display from 'block' -> 'none' should cause layout objects to
+  // disappear.
+  element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+
+  compositor().beginFrame();
+  EXPECT_FALSE(iframeDoc->documentElement()->layoutObject());
+}
+
+TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
+  SimRequest mainResource("https://example.com/test.html", "text/html");
+  SimRequest frameResource("https://example.com/frame.html", "text/html");
+
+  loadURL("https://example.com/test.html");
+  mainResource.complete(
+      "<!DOCTYPE html>"
+      "<iframe src=frame.html style='display: block'></iframe>");
+  frameResource.complete(
+      "<!DOCTYPE html>"
+      "<html><body>This is a visible iframe.</body></html>");
+
+  Element* element = document().querySelector("iframe");
+  HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(element);
+  Document* iframeDoc = frameOwnerElement->contentDocument();
+  EXPECT_TRUE(iframeDoc->documentElement()->layoutObject());
+
+  // Changing the display from 'block' -> 'none' should cause layout objects to
+  // disappear.
+  element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  compositor().beginFrame();
+  EXPECT_FALSE(iframeDoc->documentElement()->layoutObject());
 }
 
 TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {

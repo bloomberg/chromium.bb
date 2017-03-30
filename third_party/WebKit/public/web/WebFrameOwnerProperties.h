@@ -22,6 +22,7 @@ struct WebFrameOwnerProperties {
   int marginHeight;
   bool allowFullscreen;
   bool allowPaymentRequest;
+  bool isDisplayNone;
   WebString requiredCsp;
 
  public:
@@ -32,7 +33,8 @@ struct WebFrameOwnerProperties {
         marginWidth(-1),
         marginHeight(-1),
         allowFullscreen(false),
-        allowPaymentRequest(false) {}
+        allowPaymentRequest(false),
+        isDisplayNone(false) {}
 
 #if INSIDE_BLINK
   WebFrameOwnerProperties(
@@ -42,6 +44,7 @@ struct WebFrameOwnerProperties {
       int marginHeight,
       bool allowFullscreen,
       bool allowPaymentRequest,
+      bool isDisplayNone,
       const WebString& requiredCsp,
       const WebVector<WebFeaturePolicyFeature>& allowedFeatures)
       : name(name),
@@ -50,6 +53,7 @@ struct WebFrameOwnerProperties {
         marginHeight(marginHeight),
         allowFullscreen(allowFullscreen),
         allowPaymentRequest(allowPaymentRequest),
+        isDisplayNone(isDisplayNone),
         requiredCsp(requiredCsp),
         allowedFeatures(allowedFeatures) {}
 #endif

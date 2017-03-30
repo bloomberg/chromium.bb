@@ -928,7 +928,7 @@ void LocalFrameClientImpl::didAddContentSecurityPolicies(
 }
 
 void LocalFrameClientImpl::didChangeFrameOwnerProperties(
-    HTMLFrameElementBase* frameElement) {
+    HTMLFrameOwnerElement* frameElement) {
   if (!m_webFrame->client())
     return;
 
@@ -938,8 +938,8 @@ void LocalFrameClientImpl::didChangeFrameOwnerProperties(
           frameElement->browsingContextContainerName(),
           frameElement->scrollingMode(), frameElement->marginWidth(),
           frameElement->marginHeight(), frameElement->allowFullscreen(),
-          frameElement->allowPaymentRequest(), frameElement->csp(),
-          frameElement->allowedFeatures()));
+          frameElement->allowPaymentRequest(), frameElement->isDisplayNone(),
+          frameElement->csp(), frameElement->allowedFeatures()));
 }
 
 void LocalFrameClientImpl::dispatchWillStartUsingPeerConnectionHandler(

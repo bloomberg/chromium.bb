@@ -43,6 +43,7 @@
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/PaintController.h"
@@ -186,6 +187,15 @@ void LayoutView::updateLogicalWidth() {
 bool LayoutView::isChildAllowed(LayoutObject* child,
                                 const ComputedStyle&) const {
   return child->isBox();
+}
+
+bool LayoutView::canHaveChildren() const {
+  FrameOwner* owner = frame()->owner();
+  if (!owner)
+    return true;
+  if (!RuntimeEnabledFeatures::displayNoneIFrameCreatesNoLayoutObjectEnabled())
+    return true;
+  return !owner->isDisplayNone();
 }
 
 void LayoutView::layoutContent() {

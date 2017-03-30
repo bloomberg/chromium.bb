@@ -90,6 +90,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   int marginHeight() const override { return -1; }
   bool allowFullscreen() const override { return false; }
   bool allowPaymentRequest() const override { return false; }
+  bool isDisplayNone() const override { return !m_widget; }
   AtomicString csp() const override { return nullAtom; }
   const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override;
 
@@ -105,6 +106,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool isKeyboardFocusable() const override;
 
   void disposeWidgetSoon(FrameViewBase*);
+  void frameOwnerPropertiesChanged();
 
  private:
   // Intentionally private to prevent redundant checks when the type is

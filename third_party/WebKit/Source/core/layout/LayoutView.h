@@ -268,6 +268,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void computeSelfHitTestRects(Vector<LayoutRect>&,
                                const LayoutPoint& layerOffset) const override;
 
+  bool canHaveChildren() const override;
+
   void layoutContent();
 #if DCHECK_IS_ON()
   void checkLayoutState();
