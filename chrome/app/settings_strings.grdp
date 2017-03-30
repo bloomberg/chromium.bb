@@ -352,6 +352,9 @@
   <message name="IDS_SETTINGS_NOT_VALID" desc="Text indicating that an input is not valid.">
    Not valid
   </message>
+  <message name="IDS_SETTINGS_NOT_VALID_WEB_ADDRESS" desc="Text indicating that the Web address entered by the user is invalid." >
+    Not a valid web address
+  </message>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">

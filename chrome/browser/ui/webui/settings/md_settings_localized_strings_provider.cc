@@ -99,6 +99,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"toggleOn", IDS_SETTINGS_TOGGLE_ON},
     {"toggleOff", IDS_SETTINGS_TOGGLE_OFF},
     {"notValid", IDS_SETTINGS_NOT_VALID},
+    {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
