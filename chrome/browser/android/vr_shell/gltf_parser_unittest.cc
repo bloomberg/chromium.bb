@@ -45,20 +45,20 @@ std::unique_ptr<base::DictionaryValue> GltfParserTest::Deserialize(
 TEST_F(GltfParserTest, Parse) {
   auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
-  auto gltf_model = parser.Parse(*asset);
+  auto gltf_model = parser.Parse(*asset, &buffers);
   EXPECT_TRUE(gltf_model);
+  EXPECT_EQ(1u, buffers.size());
 
-  const gltf::Buffer* buffer = gltf_model->GetBuffer(0);
-  EXPECT_NE(nullptr, buffer);
-  EXPECT_EQ(nullptr, gltf_model->GetBuffer(1));
+  const gltf::Buffer* buffer = buffers[0].get();
   EXPECT_EQ("HELLO WORLD!", *buffer);
   EXPECT_EQ(12u, buffer->length());
 
   const gltf::BufferView* buffer_view = gltf_model->GetBufferView(0);
   EXPECT_NE(nullptr, buffer_view);
   EXPECT_EQ(nullptr, gltf_model->GetBufferView(1));
-  EXPECT_EQ(buffer, buffer_view->buffer);
+  EXPECT_EQ(0, buffer_view->buffer);
   EXPECT_EQ(20, buffer_view->byte_length);
   EXPECT_EQ(10, buffer_view->byte_offset);
   EXPECT_EQ(1, buffer_view->target);
@@ -109,36 +109,40 @@ TEST_F(GltfParserTest, Parse) {
 TEST_F(GltfParserTest, ParseUnknownBuffer) {
   auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
   // Parsing succeeds.
-  EXPECT_NE(nullptr, parser.Parse(*asset));
+  EXPECT_NE(nullptr, parser.Parse(*asset, &buffers));
 
   // Parsing fails when a referenced buffer is removed.
   std::unique_ptr<base::Value> value;
   asset->Remove("buffers.dummyBuffer", &value);
-  EXPECT_EQ(nullptr, parser.Parse(*asset));
+  EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 
-  // Parsing fails when the buffer reinserted with a different ID.
+  // Parsing fails when the buffer is reinserted with a different ID.
   asset->Set("buffers.anotherDummyBuffer", std::move(value));
-  EXPECT_EQ(nullptr, parser.Parse(*asset));
+  EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 }
 
 TEST_F(GltfParserTest, ParseMissingRequired) {
   auto asset = Deserialize(data_dir_.Append("sample_inline.gltf"));
   GltfParser parser;
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
   std::unique_ptr<base::Value> value;
   asset->Remove("buffers.dummyBuffer.uri", &value);
-  EXPECT_EQ(nullptr, parser.Parse(*asset));
+  EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 }
 
 TEST_F(GltfParserTest, ParseExternal) {
   auto gltf_path = data_dir_.Append("sample_external.gltf");
   GltfParser parser;
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
-  auto gltf_model = parser.Parse(gltf_path);
+  auto gltf_model = parser.Parse(gltf_path, &buffers);
   EXPECT_NE(nullptr, gltf_model);
-  const gltf::Buffer* buffer = gltf_model->GetBuffer(0);
+  EXPECT_EQ(1u, buffers.size());
+  const gltf::Buffer* buffer = buffers[0].get();
   EXPECT_NE(nullptr, buffer);
   EXPECT_EQ("HELLO WORLD!", *buffer);
   EXPECT_EQ(12u, buffer->length());
@@ -147,9 +151,10 @@ TEST_F(GltfParserTest, ParseExternal) {
 TEST_F(GltfParserTest, ParseExternalNoPath) {
   auto asset = Deserialize(data_dir_.Append("sample_external.gltf"));
   GltfParser parser;
+  std::vector<std::unique_ptr<gltf::Buffer>> buffers;
 
   // Parsing fails when no path is provided.
-  EXPECT_EQ(nullptr, parser.Parse(*asset));
+  EXPECT_EQ(nullptr, parser.Parse(*asset, &buffers));
 }
 
 }  // namespace vr_shell

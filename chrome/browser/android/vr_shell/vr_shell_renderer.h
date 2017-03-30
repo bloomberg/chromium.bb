@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gl/gl_bindings.h"
@@ -35,6 +36,8 @@ enum ShaderID {
   GRADIENT_QUAD_FRAGMENT_SHADER,
   GRADIENT_GRID_VERTEX_SHADER,
   GRADIENT_GRID_FRAGMENT_SHADER,
+  CONTROLLER_VERTEX_SHADER,
+  CONTROLLER_FRAGMENT_SHADER,
   SHADER_ID_MAX
 };
 
@@ -63,13 +66,9 @@ class BaseRenderer {
  protected:
   BaseRenderer(ShaderID vertex_id, ShaderID fragment_id);
 
-  void PrepareToDraw(GLuint view_proj_matrix_handle,
-                     const gvr::Mat4f& view_proj_matrix);
-
   GLuint program_handle_;
   GLuint position_handle_;
   GLuint tex_coord_handle_;
-  GLuint vertex_buffer_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BaseRenderer);
 };
@@ -78,6 +77,14 @@ class BaseQuadRenderer : public BaseRenderer {
  public:
   BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id);
   ~BaseQuadRenderer() override;
+
+  static void SetVertexBuffer();
+
+ protected:
+  void PrepareToDraw(GLuint view_proj_matrix_handle,
+                     const gvr::Mat4f& view_proj_matrix);
+
+  static GLuint vertex_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseQuadRenderer);
 };
@@ -158,6 +165,38 @@ class LaserRenderer : public BaseQuadRenderer {
   DISALLOW_COPY_AND_ASSIGN(LaserRenderer);
 };
 
+class ControllerRenderer : public BaseRenderer {
+ public:
+  ControllerRenderer();
+  ~ControllerRenderer() override;
+
+  void SetUp(std::unique_ptr<VrControllerModel> model);
+  void Draw(VrControllerModel::State state, const gvr::Mat4f& view_proj_matrix);
+  bool IsSetUp() const { return setup_; }
+
+ private:
+  GLuint model_view_proj_matrix_handle_;
+  GLuint tex_uniform_handle_;
+  GLuint indices_buffer_ = 0;
+  GLuint vertex_buffer_ = 0;
+  GLint position_components_ = 0;
+  GLenum position_type_ = GL_FLOAT;
+  GLsizei position_stride_ = 0;
+  const GLvoid* position_offset_ = nullptr;
+  GLint tex_coord_components_ = 0;
+  GLenum tex_coord_type_ = GL_FLOAT;
+  GLsizei tex_coord_stride_ = 0;
+  const GLvoid* tex_coord_offset_ = nullptr;
+  GLenum draw_mode_ = GL_TRIANGLES;
+  GLsizei indices_count_ = 0;
+  GLenum indices_type_ = GL_INT;
+  const GLvoid* indices_offset_ = nullptr;
+  std::vector<GLuint> texture_handles_;
+  bool setup_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ControllerRenderer);
+};
+
 class GradientQuadRenderer : public BaseQuadRenderer {
  public:
   GradientQuadRenderer();
@@ -192,6 +231,7 @@ class GradientGridRenderer : public BaseRenderer {
  private:
   void MakeGridLines(int gridline_count);
 
+  GLuint vertex_buffer_ = 0;
   GLuint model_view_proj_matrix_handle_;
   GLuint scene_radius_handle_;
   GLuint center_color_handle_;
@@ -217,6 +257,10 @@ class VrShellRenderer {
 
   LaserRenderer* GetLaserRenderer() { return laser_renderer_.get(); }
 
+  ControllerRenderer* GetControllerRenderer() {
+    return controller_renderer_.get();
+  }
+
   GradientQuadRenderer* GetGradientQuadRenderer() {
     return gradient_quad_renderer_.get();
   }
@@ -230,6 +274,7 @@ class VrShellRenderer {
   std::unique_ptr<WebVrRenderer> webvr_renderer_;
   std::unique_ptr<ReticleRenderer> reticle_renderer_;
   std::unique_ptr<LaserRenderer> laser_renderer_;
+  std::unique_ptr<ControllerRenderer> controller_renderer_;
   std::unique_ptr<GradientQuadRenderer> gradient_quad_renderer_;
   std::unique_ptr<GradientGridRenderer> gradient_grid_renderer_;
 

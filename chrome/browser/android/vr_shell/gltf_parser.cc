@@ -23,6 +23,7 @@ GltfParser::~GltfParser() = default;
 
 std::unique_ptr<gltf::Asset> GltfParser::Parse(
     const base::DictionaryValue& dict,
+    std::vector<std::unique_ptr<gltf::Buffer>>* buffers,
     const base::FilePath& path) {
   path_ = path;
   asset_ = base::MakeUnique<gltf::Asset>();
@@ -30,14 +31,15 @@ std::unique_ptr<gltf::Asset> GltfParser::Parse(
   base::ScopedClosureRunner runner(
       base::Bind(&GltfParser::Clear, base::Unretained(this)));
 
-  if (!ParseInternal(dict))
+  if (!ParseInternal(dict, buffers))
     return nullptr;
 
   return std::move(asset_);
 }
 
 std::unique_ptr<gltf::Asset> GltfParser::Parse(
-    const base::FilePath& gltf_path) {
+    const base::FilePath& gltf_path,
+    std::vector<std::unique_ptr<gltf::Buffer>>* buffers) {
   JSONFileValueDeserializer json_deserializer(gltf_path);
   int error_code;
   std::string error_msg;
@@ -47,16 +49,19 @@ std::unique_ptr<gltf::Asset> GltfParser::Parse(
   base::DictionaryValue* asset;
   if (!asset_value->GetAsDictionary(&asset))
     return nullptr;
-  return Parse(*asset, gltf_path);
+  return Parse(*asset, buffers, gltf_path);
 }
 
-bool GltfParser::ParseInternal(const base::DictionaryValue& dict) {
+bool GltfParser::ParseInternal(
+    const base::DictionaryValue& dict,
+    std::vector<std::unique_ptr<gltf::Buffer>>* buffers) {
   std::string gltf_version;
   if (!dict.GetString("asset.version", &gltf_version) || gltf_version != "1.0")
     return false;
 
   const base::DictionaryValue* sub_dict;
-  if (dict.GetDictionary("buffers", &sub_dict) && !SetBuffers(*sub_dict))
+  if (dict.GetDictionary("buffers", &sub_dict) &&
+      !SetBuffers(*sub_dict, buffers))
     return false;
   if (dict.GetDictionary("bufferViews", &sub_dict) &&
       !SetBufferViews(*sub_dict))
@@ -81,7 +86,10 @@ bool GltfParser::ParseInternal(const base::DictionaryValue& dict) {
   return true;
 }
 
-bool GltfParser::SetBuffers(const base::DictionaryValue& dict) {
+bool GltfParser::SetBuffers(
+    const base::DictionaryValue& dict,
+    std::vector<std::unique_ptr<gltf::Buffer>>* buffers) {
+  buffers->clear();
   for (base::DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* buffer_dict;
     if (!it.value().GetAsDictionary(&buffer_dict))
@@ -99,7 +107,8 @@ bool GltfParser::SetBuffers(const base::DictionaryValue& dict) {
         static_cast<int>(buffer->length()) != byte_length)
       return false;
 
-    buffer_ids_[it.key()] = asset_->AddBuffer(std::move(buffer));
+    buffer_ids_[it.key()] = buffers->size();
+    buffers->push_back(std::move(buffer));
   }
   return true;
 }
@@ -141,7 +150,7 @@ bool GltfParser::SetBufferViews(const base::DictionaryValue& dict) {
     auto buffer_it = buffer_ids_.find(buffer_key);
     if (buffer_it == buffer_ids_.end())
       return false;
-    buffer_view->buffer = asset_->GetBuffer(buffer_it->second);
+    buffer_view->buffer = buffer_it->second;
     if (!buffer_view_dict->GetInteger("byteOffset", &buffer_view->byte_offset))
       return false;
     buffer_view_dict->GetInteger("byteLength", &buffer_view->byte_length);

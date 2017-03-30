@@ -19,13 +19,16 @@
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
+#include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -44,6 +47,7 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -67,6 +71,17 @@ static constexpr float kWebVrRecommendedResolutionScale = 0.5;
 void SetIsInVR(content::WebContents* contents, bool is_in_vr) {
   if (contents && contents->GetRenderWidgetHostView())
     contents->GetRenderWidgetHostView()->SetIsInVR(is_in_vr);
+}
+
+void LoadControllerModelTask(
+    base::WeakPtr<VrShell> weak_vr_shell,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  auto controller_model = VrControllerModel::LoadFromComponent();
+  if (controller_model) {
+    main_thread_task_runner->PostTask(
+        FROM_HERE, base::Bind(&VrShell::SubmitControllerModel, weak_vr_shell,
+                              base::Passed(&controller_model)));
+  }
 }
 
 }  // namespace
@@ -110,6 +125,11 @@ VrShell::VrShell(JNIEnv* env,
 
   html_interface_ = base::MakeUnique<UiInterface>(
       for_web_vr ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(LoadControllerModelTask, weak_ptr_factory_.GetWeakPtr(),
+                 main_thread_task_runner_));
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -347,6 +367,12 @@ void VrShell::SubmitWebVRFrame(int16_t frame_index,
   PostToGlThreadWhenReady(base::Bind(&VrShellGl::SubmitWebVRFrame,
                                      gl_thread_->GetVrShellGl(), frame_index,
                                      mailbox));
+}
+
+void VrShell::SubmitControllerModel(std::unique_ptr<VrControllerModel> model) {
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::SetControllerModel,
+                                     gl_thread_->GetVrShellGl(),
+                                     base::Passed(&model)));
 }
 
 void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,

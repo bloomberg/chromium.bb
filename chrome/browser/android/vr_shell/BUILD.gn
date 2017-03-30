@@ -38,6 +38,8 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "vr_compositor.h",
       "vr_controller.cc",
       "vr_controller.h",
+      "vr_controller_model.cc",
+      "vr_controller_model.h",
       "vr_gesture.h",
       "vr_gl_thread.cc",
       "vr_gl_thread.h",

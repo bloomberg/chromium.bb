@@ -12,16 +12,35 @@ namespace vr_shell {
 
 namespace gltf {
 
+namespace {
+
 const std::unordered_map<std::string, Type> kTypeMap = {
     {"SCALAR", SCALAR}, {"VEC2", VEC2}, {"VEC3", VEC3}, {"VEC4", VEC4},
     {"MAT2", MAT2},     {"MAT3", MAT3}, {"MAT4", MAT4},
 };
+
+const std::vector<int> kTypeComponents = {
+    0,
+    1,   // SCALAR
+    2,   // VEC2
+    3,   // VEC3
+    4,   // VEC4
+    4,   // MAT2
+    9,   // MAT3
+    16,  // MAT4
+};
+
+}  // namespace
 
 Type GetType(const std::string& type) {
   auto it = kTypeMap.find(type);
   if (it == kTypeMap.end())
     return UNKNOWN;
   return it->second;
+}
+
+GLint GetTypeComponents(Type type) {
+  return kTypeComponents[type];
 }
 
 Mesh::Primitive::Primitive() : indices(nullptr), mode(4) {}
@@ -43,12 +62,6 @@ Scene::~Scene() = default;
 Asset::Asset() : scene_(nullptr) {}
 
 Asset::~Asset() = default;
-
-std::size_t Asset::AddBuffer(std::unique_ptr<Buffer> buffer) {
-  auto index = buffers_.size();
-  buffers_.push_back(std::move(buffer));
-  return index;
-}
 
 std::size_t Asset::AddBufferView(std::unique_ptr<BufferView> buffer_view) {
   auto index = buffer_views_.size();
@@ -78,10 +91,6 @@ std::size_t Asset::AddScene(std::unique_ptr<Scene> scene) {
   auto index = scenes_.size();
   scenes_.push_back(std::move(scene));
   return index;
-}
-
-const Buffer* Asset::GetBuffer(std::size_t id) const {
-  return id < buffers_.size() ? buffers_[id].get() : nullptr;
 }
 
 const BufferView* Asset::GetBufferView(std::size_t id) const {

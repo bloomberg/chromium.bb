@@ -33,13 +33,18 @@ class GltfParser {
   // IO, and a base path must be specified.
   std::unique_ptr<gltf::Asset> Parse(
       const base::DictionaryValue& dict,
+      std::vector<std::unique_ptr<gltf::Buffer>>* buffers,
       const base::FilePath& path = base::FilePath());
   // Note: This function will perform IO.
-  std::unique_ptr<gltf::Asset> Parse(const base::FilePath& gltf_path);
+  std::unique_ptr<gltf::Asset> Parse(
+      const base::FilePath& gltf_path,
+      std::vector<std::unique_ptr<gltf::Buffer>>* buffers);
 
  private:
-  bool ParseInternal(const base::DictionaryValue& dict);
-  bool SetBuffers(const base::DictionaryValue& dict);
+  bool ParseInternal(const base::DictionaryValue& dict,
+                     std::vector<std::unique_ptr<gltf::Buffer>>* buffers);
+  bool SetBuffers(const base::DictionaryValue& dict,
+                  std::vector<std::unique_ptr<gltf::Buffer>>* buffers);
   bool SetBufferViews(const base::DictionaryValue& dict);
   bool SetAccessors(const base::DictionaryValue& dict);
   bool SetMeshes(const base::DictionaryValue& dict);

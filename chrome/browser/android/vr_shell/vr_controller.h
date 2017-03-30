@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -51,7 +52,11 @@ class VrController {
 
   float TouchPosY();
 
-  const gvr::Quatf Orientation();
+  gvr::Quatf Orientation() const;
+
+  gvr::Mat4f GetTransform() const;
+
+  VrControllerModel::State GetModelState() const;
 
   bool TouchDownHappened();
 
@@ -59,6 +64,7 @@ class VrController {
 
   bool ButtonUpHappened(gvr::ControllerButton button);
   bool ButtonDownHappened(gvr::ControllerButton button);
+  bool ButtonState(gvr::ControllerButton button) const;
 
   bool IsConnected();
 

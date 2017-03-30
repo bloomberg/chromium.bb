@@ -935,6 +935,7 @@ void VrShellGl::DrawUiView(const gvr::Mat4f& head_pose,
     DrawElements(render_matrix, elementsInDrawOrder);
     if (draw_cursor) {
       DrawCursor(render_matrix);
+      DrawController(render_matrix);
     }
   }
 }
@@ -1095,6 +1096,14 @@ void VrShellGl::DrawCursor(const gvr::Mat4f& render_matrix) {
   }
 }
 
+void VrShellGl::DrawController(const gvr::Mat4f& view_proj_matrix) {
+  if (!vr_shell_renderer_->GetControllerRenderer()->IsSetUp())
+    return;
+  auto transform = MatrixMul(view_proj_matrix, controller_->GetTransform());
+  auto state = controller_->GetModelState();
+  vr_shell_renderer_->GetControllerRenderer()->Draw(state, transform);
+}
+
 bool VrShellGl::ShouldDrawWebVr() {
   return web_vr_mode_ && scene_->GetWebVrRenderingEnabled();
 }
@@ -1187,6 +1196,10 @@ void VrShellGl::UIPhysicalBoundsChanged(int width, int height) {
 
 base::WeakPtr<VrShellGl> VrShellGl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void VrShellGl::SetControllerModel(std::unique_ptr<VrControllerModel> model) {
+  vr_shell_renderer_->GetControllerRenderer()->SetUp(std::move(model));
 }
 
 void VrShellGl::OnVSync() {

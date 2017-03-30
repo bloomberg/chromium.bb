@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
 
@@ -39,6 +40,8 @@ constexpr float kRC = static_cast<float>(1.0 / (2.0 * M_PI * kCutoffHz));
 constexpr float kNanoSecondsPerSecond = 1.0e9f;
 
 constexpr int kMaxNumOfExtrapolations = 2;
+
+static constexpr gvr::Vec3f kControllerPosition = {0.2f, -0.5f, -0.15f};
 
 class Vector {
  public:
@@ -129,8 +132,32 @@ float VrController::TouchPosY() {
   return controller_state_->GetTouchPos().y;
 }
 
-const gvr::Quatf VrController::Orientation() {
+gvr::Quatf VrController::Orientation() const {
   return controller_state_->GetOrientation();
+}
+
+gvr::Mat4f VrController::GetTransform() const {
+  // TODO(acondor): Position and orientation needs to be obtained
+  // from an elbow model.
+  // Placing the controller in a fixed position for now.
+  gvr::Mat4f mat;
+  SetIdentityM(mat);
+  // Changing rotation point.
+  TranslateM(mat, mat, 0, 0, 0.05);
+  mat = MatrixMul(QuatToMatrix(Orientation()), mat);
+  TranslateM(mat, mat, kControllerPosition.x, kControllerPosition.y,
+             kControllerPosition.z - 0.05);
+  return mat;
+}
+
+VrControllerModel::State VrController::GetModelState() const {
+  if (ButtonState(gvr::ControllerButton::GVR_CONTROLLER_BUTTON_CLICK))
+    return VrControllerModel::TOUCHPAD;
+  if (ButtonState(gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP))
+    return VrControllerModel::APP;
+  if (ButtonState(gvr::ControllerButton::GVR_CONTROLLER_BUTTON_HOME))
+    return VrControllerModel::SYSTEM;
+  return VrControllerModel::IDLE;
 }
 
 bool VrController::TouchDownHappened() {
@@ -147,6 +174,10 @@ bool VrController::ButtonDownHappened(gvr::ControllerButton button) {
 
 bool VrController::ButtonUpHappened(gvr::ControllerButton button) {
   return controller_state_->GetButtonUp(button);
+}
+
+bool VrController::ButtonState(gvr::ControllerButton button) const {
+  return controller_state_->GetButtonState(button);
 }
 
 bool VrController::IsConnected() {

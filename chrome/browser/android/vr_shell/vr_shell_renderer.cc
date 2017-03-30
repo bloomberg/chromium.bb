@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 
 namespace {
@@ -73,6 +74,7 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
     case vr_shell::ShaderID::TEXTURE_QUAD_VERTEX_SHADER:
     case vr_shell::ShaderID::RETICLE_VERTEX_SHADER:
     case vr_shell::ShaderID::LASER_VERTEX_SHADER:
+    case vr_shell::ShaderID::CONTROLLER_VERTEX_SHADER:
       return SHADER(
           /* clang-format off */
           uniform mat4 u_ModelViewProjMatrix;
@@ -213,6 +215,16 @@ const char* GetShaderSource(vr_shell::ShaderID shader) {
                 u_EdgeColor * edgeColorWeight) * vec4(1.0, 1.0, 1.0, u_Opacity);
           }
           /* clang-format on */);
+    case vr_shell::ShaderID::CONTROLLER_FRAGMENT_SHADER:
+      return SHADER(
+          /* clang-format off */
+          uniform sampler2D u_texture;
+          varying vec2 v_TexCoordinate;
+
+          void main() {
+            gl_FragColor = texture2D(u_texture, v_TexCoordinate);
+          }
+          /* clang-format on */);
     default:
       LOG(ERROR) << "Shader source requested for unknown shader";
       return "";
@@ -247,8 +259,15 @@ BaseRenderer::BaseRenderer(ShaderID vertex_id, ShaderID fragment_id) {
 
 BaseRenderer::~BaseRenderer() = default;
 
-void BaseRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
-                                 const gvr::Mat4f& view_proj_matrix) {
+BaseQuadRenderer::BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id)
+    : BaseRenderer(vertex_id, fragment_id) {}
+
+GLuint BaseQuadRenderer::vertex_buffer_ = 0;
+
+BaseQuadRenderer::~BaseQuadRenderer() = default;
+
+void BaseQuadRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
+                                     const gvr::Mat4f& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
@@ -273,15 +292,12 @@ void BaseRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-BaseQuadRenderer::BaseQuadRenderer(ShaderID vertex_id, ShaderID fragment_id)
-    : BaseRenderer(vertex_id, fragment_id) {
+void BaseQuadRenderer::SetVertexBuffer() {
   glGenBuffersARB(1, &vertex_buffer_);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
   glBufferData(GL_ARRAY_BUFFER, kTextureQuadVerticesSize, kTextureQuadVertices,
                GL_STATIC_DRAW);
 }
-
-BaseQuadRenderer::~BaseQuadRenderer() = default;
 
 TexturedQuadRenderer::TexturedQuadRenderer()
     : BaseQuadRenderer(TEXTURE_QUAD_VERTEX_SHADER,
@@ -507,6 +523,89 @@ void LaserRenderer::Draw(const gvr::Mat4f& view_proj_matrix) {
 
 LaserRenderer::~LaserRenderer() = default;
 
+ControllerRenderer::ControllerRenderer()
+    : BaseRenderer(CONTROLLER_VERTEX_SHADER, CONTROLLER_FRAGMENT_SHADER),
+      texture_handles_(VrControllerModel::STATE_COUNT) {
+  model_view_proj_matrix_handle_ =
+      glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
+  tex_uniform_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+}
+
+ControllerRenderer::~ControllerRenderer() = default;
+
+void ControllerRenderer::SetUp(std::unique_ptr<VrControllerModel> model) {
+  glGenBuffersARB(1, &indices_buffer_);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer_);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model->IndicesBufferSize(),
+               model->IndicesBuffer(), GL_STATIC_DRAW);
+
+  glGenBuffersARB(1, &vertex_buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, model->ElementsBufferSize(),
+               model->ElementsBuffer(), GL_STATIC_DRAW);
+
+  glGenTextures(VrControllerModel::STATE_COUNT, texture_handles_.data());
+  for (int i = 0; i < VrControllerModel::STATE_COUNT; i++) {
+    glBindTexture(GL_TEXTURE_2D, texture_handles_[i]);
+    const SkBitmap* bitmap = model->GetTexture(i);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bitmap->width(), bitmap->height(),
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->getPixels());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  }
+
+  const gltf::Accessor* accessor = model->PositionAccessor();
+  position_components_ = gltf::GetTypeComponents(accessor->type);
+  position_type_ = accessor->component_type;
+  position_stride_ = accessor->byte_stride;
+  position_offset_ = VOID_OFFSET(accessor->byte_offset);
+
+  accessor = model->TextureCoordinateAccessor();
+  tex_coord_components_ = gltf::GetTypeComponents(accessor->type);
+  tex_coord_type_ = accessor->component_type;
+  tex_coord_stride_ = accessor->byte_stride;
+  tex_coord_offset_ = VOID_OFFSET(accessor->byte_offset);
+
+  draw_mode_ = model->DrawMode();
+  accessor = model->IndicesAccessor();
+  indices_count_ = accessor->count;
+  indices_type_ = accessor->component_type;
+  indices_offset_ = VOID_OFFSET(accessor->byte_offset);
+  setup_ = true;
+}
+
+void ControllerRenderer::Draw(VrControllerModel::State state,
+                              const gvr::Mat4f& view_proj_matrix) {
+  glUseProgram(program_handle_);
+
+  glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
+                     MatrixToGLArray(view_proj_matrix).data());
+
+  glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_);
+
+  glVertexAttribPointer(position_handle_, position_components_, position_type_,
+                        GL_FALSE, position_stride_, position_offset_);
+  glEnableVertexAttribArray(position_handle_);
+
+  glVertexAttribPointer(tex_coord_handle_, tex_coord_components_,
+                        tex_coord_type_, GL_FALSE, tex_coord_stride_,
+                        tex_coord_offset_);
+  glEnableVertexAttribArray(tex_coord_handle_);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer_);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture_handles_[state]);
+  glUniform1i(tex_uniform_handle_, 0);
+
+  glDrawElements(draw_mode_, indices_count_, indices_type_, indices_offset_);
+}
+
 GradientQuadRenderer::GradientQuadRenderer()
     : BaseQuadRenderer(GRADIENT_QUAD_VERTEX_SHADER,
                        GRADIENT_QUAD_FRAGMENT_SHADER) {
@@ -629,12 +728,15 @@ void GradientGridRenderer::MakeGridLines(int gridline_count) {
 }
 
 VrShellRenderer::VrShellRenderer()
-    : textured_quad_renderer_(new TexturedQuadRenderer),
-      webvr_renderer_(new WebVrRenderer),
-      reticle_renderer_(new ReticleRenderer),
-      laser_renderer_(new LaserRenderer),
-      gradient_quad_renderer_(new GradientQuadRenderer),
-      gradient_grid_renderer_(new GradientGridRenderer) {}
+    : textured_quad_renderer_(base::MakeUnique<TexturedQuadRenderer>()),
+      webvr_renderer_(base::MakeUnique<WebVrRenderer>()),
+      reticle_renderer_(base::MakeUnique<ReticleRenderer>()),
+      laser_renderer_(base::MakeUnique<LaserRenderer>()),
+      controller_renderer_(base::MakeUnique<ControllerRenderer>()),
+      gradient_quad_renderer_(base::MakeUnique<GradientQuadRenderer>()),
+      gradient_grid_renderer_(base::MakeUnique<GradientGridRenderer>()) {
+  BaseQuadRenderer::SetVertexBuffer();
+}
 
 VrShellRenderer::~VrShellRenderer() = default;
 

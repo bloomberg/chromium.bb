@@ -29,6 +29,8 @@ enum Type {
 
 Type GetType(const std::string& type);
 
+GLint GetTypeComponents(Type type);
+
 // A Buffer is data stored as binary blob in little-endian format.
 using Buffer = std::string;
 
@@ -37,7 +39,7 @@ using Buffer = std::string;
 
 // A BufferView is subset of data in a buffer.
 struct BufferView {
-  const Buffer* buffer;
+  int buffer;
   int byte_length = 0;
   int byte_offset;
   int target = GL_ARRAY_BUFFER;
@@ -91,13 +93,11 @@ class Asset {
   Asset();
   virtual ~Asset();
 
-  std::size_t AddBuffer(std::unique_ptr<Buffer> buffer);
   std::size_t AddBufferView(std::unique_ptr<BufferView> buffer_view);
   std::size_t AddAccessor(std::unique_ptr<Accessor> accessor);
   std::size_t AddMesh(std::unique_ptr<Mesh> mesh);
   std::size_t AddNode(std::unique_ptr<Node> node);
   std::size_t AddScene(std::unique_ptr<Scene> scene);
-  const Buffer* GetBuffer(std::size_t id) const;
   const BufferView* GetBufferView(std::size_t id) const;
   const Accessor* GetAccessor(std::size_t id) const;
   const Mesh* GetMesh(std::size_t id) const;
@@ -109,7 +109,6 @@ class Asset {
   void SetMainScene(const Scene* scene) { scene_ = scene; }
 
  private:
-  std::vector<std::unique_ptr<Buffer>> buffers_;
   std::vector<std::unique_ptr<BufferView>> buffer_views_;
   std::vector<std::unique_ptr<Accessor>> accessors_;
   std::vector<std::unique_ptr<Mesh>> meshes_;

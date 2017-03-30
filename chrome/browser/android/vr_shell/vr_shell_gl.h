@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -91,6 +92,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void UIPhysicalBoundsChanged(int width, int height);
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
+  void SetControllerModel(std::unique_ptr<VrControllerModel> model);
+
   void UpdateWebVRTextureBounds(int16_t frame_index,
                                 const gvr::Rectf& left_bounds,
                                 const gvr::Rectf& right_bounds,
@@ -126,6 +129,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
       const gvr::Mat4f& view_matrix,
       const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
+  void DrawController(const gvr::Mat4f& view_proj_matrix);
   bool ShouldDrawWebVr();
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
