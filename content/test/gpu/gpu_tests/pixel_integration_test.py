@@ -9,17 +9,21 @@ import sys
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import cloud_storage_integration_test_base
+from gpu_tests import path_util
 from gpu_tests import pixel_expectations
 from gpu_tests import pixel_test_pages
 
 from py_utils import cloud_storage
 from telemetry.util import image_util
 
+gpu_relative_path = "content/test/data/gpu/"
+gpu_data_dir = os.path.join(path_util.GetChromiumSrcDir(), gpu_relative_path)
 
-test_data_dir = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
+default_reference_image_dir = os.path.join(gpu_data_dir, 'gpu_reference')
 
-default_reference_image_dir = os.path.join(test_data_dir, 'gpu_reference')
+test_data_dirs = [gpu_data_dir,
+                  os.path.join(
+                      path_util.GetChromiumSrcDir(), 'media/test/data')]
 
 test_harness_script = r"""
   var domAutomationController = {};
@@ -68,7 +72,7 @@ class PixelIntegrationTest(
     cls._original_finder_options = cls._finder_options.Copy()
     cls.CustomizeBrowserArgs([])
     cls.StartBrowser()
-    cls.SetStaticServerDirs([test_data_dir])
+    cls.SetStaticServerDirs(test_data_dirs)
 
   @classmethod
   def CustomizeBrowserArgs(cls, browser_args):
@@ -119,7 +123,7 @@ class PixelIntegrationTest(
     if sys.platform.startswith('darwin'):
       pages += pixel_test_pages.MacSpecificPages(name)
     for p in pages:
-      yield(p.name, p.url, (p))
+      yield(p.name, gpu_relative_path + p.url, (p))
 
   def RunActualGpuTest(self, test_path, *args):
     page = args[0]

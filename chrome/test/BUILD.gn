@@ -294,6 +294,10 @@ group("telemetry_gpu_integration_test") {
     # For webgl_conformance
     "//third_party/webgl/",
     "//content/test/gpu/run_gpu_integration_test.py",
+
+    # For pixel_test
+    "//media/test/data/bear.mp4",
+    "//media/test/data/bear-vp9.webm",
   ]
 }
 

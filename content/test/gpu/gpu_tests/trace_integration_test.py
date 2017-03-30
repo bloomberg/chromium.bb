@@ -18,8 +18,12 @@ TOPLEVEL_SERVICE_CATEGORY = 'disabled-by-default-gpu.service'
 TOPLEVEL_DEVICE_CATEGORY = 'disabled-by-default-gpu.device'
 TOPLEVEL_CATEGORIES = [TOPLEVEL_SERVICE_CATEGORY, TOPLEVEL_DEVICE_CATEGORY]
 
-data_path = os.path.join(
-    path_util.GetChromiumSrcDir(), 'content', 'test', 'data', 'gpu')
+gpu_relative_path = "content/test/data/gpu/"
+
+data_paths = [os.path.join(
+                  path_util.GetChromiumSrcDir(), gpu_relative_path),
+              os.path.join(
+                  path_util.GetChromiumSrcDir(), 'media', 'test', 'data')]
 
 test_harness_script = r"""
   var domAutomationController = {};
@@ -71,9 +75,9 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # currently skipped on all platforms, to give a hint that they
     # should perhaps be enabled in the future.
     for p in pixel_test_pages.DefaultPages('TraceTest'):
-      yield (p.name, p.url, (TOPLEVEL_SERVICE_CATEGORY))
+      yield (p.name, gpu_relative_path + p.url, (TOPLEVEL_SERVICE_CATEGORY))
     for p in pixel_test_pages.DefaultPages('DeviceTraceTest'):
-      yield (p.name, p.url, (TOPLEVEL_DEVICE_CATEGORY))
+      yield (p.name, gpu_relative_path + p.url, (TOPLEVEL_DEVICE_CATEGORY))
 
   def RunActualGpuTest(self, test_path, *args):
     # The version of this test in the old GPU test harness restarted
@@ -126,7 +130,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     cls.CustomizeOptions()
     cls.SetBrowserOptions(cls._finder_options)
     cls.StartBrowser()
-    cls.SetStaticServerDirs([data_path])
+    cls.SetStaticServerDirs(data_paths)
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

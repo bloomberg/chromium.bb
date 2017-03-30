@@ -130,6 +130,18 @@ def DefaultPages(base_name):
       base_name + '_SolidColorBackground',
       test_rect=[500, 500, 100, 100],
       revision=1),
+
+    PixelTestPage(
+      'pixel_video_mp4.html',
+      base_name + '_Video_MP4',
+      test_rect=[0, 0, 400, 300],
+      revision=1),
+
+    PixelTestPage(
+      'pixel_video_vp9.html',
+      base_name + '_Video_VP9',
+      test_rect=[0, 0, 400, 300],
+      revision=1),
   ]
 
 
