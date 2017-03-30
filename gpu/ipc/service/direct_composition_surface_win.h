@@ -96,6 +96,7 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   gfx::Size size_ = gfx::Size(1, 1);
   bool first_swap_ = true;
   bool enable_dc_layers_ = false;
+  bool has_alpha_ = true;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   gfx::Rect swap_rect_;
   std::unique_ptr<DCLayerTree> layer_tree_;

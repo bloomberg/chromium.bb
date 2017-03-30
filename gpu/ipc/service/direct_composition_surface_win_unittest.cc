@@ -213,6 +213,48 @@ TEST(DirectCompositionSurfaceTest, DXGIDCLayerSwitch) {
   DestroySurface(std::move(surface));
 }
 
+// Ensure that the swapchain's alpha is correct.
+TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
+  if (!CheckIfDCSupported())
+    return;
+
+  TestImageTransportSurfaceDelegate delegate;
+
+  scoped_refptr<DirectCompositionSurfaceWin> surface(
+      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+                                      ui::GetHiddenWindow()));
+  EXPECT_TRUE(surface->Initialize());
+
+  scoped_refptr<gl::GLContext> context =
+      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0, true));
+  EXPECT_FALSE(surface->swap_chain());
+
+  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain = surface->swap_chain();
+  ASSERT_TRUE(swap_chain);
+  DXGI_SWAP_CHAIN_DESC1 desc;
+  swap_chain->GetDesc1(&desc);
+  EXPECT_EQ(DXGI_ALPHA_MODE_PREMULTIPLIED, desc.AlphaMode);
+
+  // Resize to the same parameters should have no effect.
+  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0, true));
+  EXPECT_TRUE(surface->swap_chain());
+
+  EXPECT_TRUE(surface->Resize(gfx::Size(100, 100), 1.0, false));
+  EXPECT_FALSE(surface->swap_chain());
+
+  EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
+
+  swap_chain = surface->swap_chain();
+  ASSERT_TRUE(swap_chain);
+  swap_chain->GetDesc1(&desc);
+  EXPECT_EQ(DXGI_ALPHA_MODE_IGNORE, desc.AlphaMode);
+
+  context = nullptr;
+  DestroySurface(std::move(surface));
+}
+
 COLORREF ReadBackWindowPixel(HWND window, const gfx::Point& point) {
   base::win::ScopedCreateDC mem_hdc(::CreateCompatibleDC(nullptr));
   void* bits = nullptr;

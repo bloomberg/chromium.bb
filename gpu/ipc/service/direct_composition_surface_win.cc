@@ -740,12 +740,16 @@ void DirectCompositionSurfaceWin::InitializeSurface() {
           ? DXGI_FORMAT_R16G16B16A16_FLOAT
           : DXGI_FORMAT_B8G8R8A8_UNORM;
   if (enable_dc_layers_) {
+    // Always treat as premultiplied, because an underlay could cause it to
+    // become transparent.
     HRESULT hr = dcomp_device_->CreateSurface(
         size_.width(), size_.height(), output_format,
         DXGI_ALPHA_MODE_PREMULTIPLIED, dcomp_surface_.Receive());
     has_been_rendered_to_ = false;
     CHECK(SUCCEEDED(hr));
   } else {
+    DXGI_ALPHA_MODE alpha_mode =
+        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
     d3d11_device_.QueryInterface(dxgi_device.Receive());
     base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
@@ -763,7 +767,7 @@ void DirectCompositionSurfaceWin::InitializeSurface() {
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     desc.Scaling = DXGI_SCALING_STRETCH;
     desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+    desc.AlphaMode = alpha_mode;
     desc.Flags = 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
         d3d11_device_.get(), &desc, nullptr, swap_chain_.Receive());
@@ -848,7 +852,7 @@ void* DirectCompositionSurfaceWin::GetHandle() {
 bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
                                          float scale_factor,
                                          bool has_alpha) {
-  if (size == GetSize())
+  if ((size == GetSize()) && (has_alpha == has_alpha_))
     return true;
 
   // Force a resize and redraw (but not a move, activate, etc.).
@@ -858,6 +862,7 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
     return false;
   }
   size_ = size;
+  has_alpha_ = has_alpha;
   ScopedReleaseCurrent release_current(this);
   // New surface will be initialized in SetDrawRectangle.
   ReleaseCurrentSurface();
