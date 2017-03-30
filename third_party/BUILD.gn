@@ -43,3 +43,17 @@ group("jpeg") {
     ]
   }
 }
+
+# This is a meta target that forwards include paths only to the system's
+# libjpeg, third_party/libjpeg, or third_party/libjpeg_turbo depending on the
+# build args declared in this file. This is needed, rarely, for targets that
+# need to reference libjpeg without explicitly building it.
+group("jpeg_includes") {
+  if (use_system_libjpeg) {
+    public_configs = [ ":system_libjpeg_config" ]
+  } else if (use_libjpeg_turbo) {
+    public_configs = [ "//third_party/libjpeg_turbo:libjpeg_config" ]
+  } else {
+    public_configs = [ "//third_party/libjpeg:libjpeg_config" ]
+  }
+}
