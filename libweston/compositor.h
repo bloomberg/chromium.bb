@@ -233,7 +233,7 @@ struct weston_output {
 
 	struct weston_timeline_object timeline;
 
-	bool enabled;
+	bool enabled; /**< is in the output_list, not pending list */
 	int scale;
 
 	int (*enable)(struct weston_output *output);

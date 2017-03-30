@@ -4483,8 +4483,10 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 {
 	struct weston_view *view, *next;
 
+	assert(!output->enabled);
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->output_list.prev, &output->link);
+	output->enabled = true;
 
 	wl_signal_emit(&compositor->output_created_signal, output);
 
@@ -4540,8 +4542,6 @@ weston_output_enable_undo(struct weston_output *output)
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
 	output->compositor->output_id_pool &= ~(1u << output->id);
-
-	output->enabled = false;
 }
 
 /** Removes output from compositor's list of enabled outputs
@@ -4577,6 +4577,7 @@ weston_compositor_remove_output(struct weston_output *output)
 	struct weston_view *view;
 
 	assert(output->destroying);
+	assert(output->enabled);
 
 	wl_list_for_each(view, &compositor->view_list, link) {
 		if (view->output_mask & (1u << output->id))
@@ -4589,6 +4590,7 @@ weston_compositor_remove_output(struct weston_output *output)
 
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->pending_output_list.prev, &output->link);
+	output->enabled = false;
 
 	wl_signal_emit(&compositor->output_destroyed_signal, output);
 	wl_signal_emit(&output->destroy_signal, output);
@@ -4671,7 +4673,6 @@ weston_output_init(struct weston_output *output,
 	assert(output->name);
 
 	wl_list_init(&output->link);
-
 	output->enabled = false;
 
 	/* Add some (in)sane defaults which can be used
@@ -4790,8 +4791,6 @@ weston_output_enable(struct weston_output *output)
 	output->global =
 		wl_global_create(c->wl_display, &wl_output_interface, 3,
 				 output, bind_output);
-
-	output->enabled = true;
 
 	/* Enable the output (set up the crtc or create a
 	 * window representing the output, set up the
