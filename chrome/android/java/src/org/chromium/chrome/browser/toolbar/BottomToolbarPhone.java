@@ -86,6 +86,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
     /** The toolbar handle view that indicates the toolbar can be pulled upward. */
     private ImageView mToolbarHandleView;
 
+    /** Whether accessibility is enabled. */
+    private boolean mAccessibilityEnabled;
+
     /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
@@ -263,8 +266,18 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         updateToolbarBackground(ColorUtils.getColorWithOverlay(
                 getTabThemeColor(), tabSwitcherThemeColor, progress));
-        float alphaTransition = 1f - TAB_SWITCHER_TOOLBAR_ALPHA;
-        mToolbarBackground.setAlpha((int) ((1f - (alphaTransition * progress)) * 255));
+
+        // Don't use transparency for accessibility mode.
+        if (!mAccessibilityEnabled) {
+            float alphaTransition = 1f - TAB_SWITCHER_TOOLBAR_ALPHA;
+            mToolbarBackground.setAlpha((int) ((1f - (alphaTransition * progress)) * 255));
+        }
+    }
+
+    @Override
+    protected void onAccessibilityStatusChanged(boolean enabled) {
+        super.onAccessibilityStatusChanged(enabled);
+        mAccessibilityEnabled = enabled;
     }
 
     @Override

@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelAdapter.AccessibilityTabModelAdapterListener;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelWrapper;
 
@@ -76,7 +77,13 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
         FrameLayout.LayoutParams params =
                 (FrameLayout.LayoutParams) mTabModelWrapper.getLayoutParams();
         if (params == null) return;
-        params.topMargin = (int) ((getHeight() - getHeightMinusBrowserControls()) * mDpToPx);
+
+        int margin = (int) ((getHeight() - getHeightMinusBrowserControls()) * mDpToPx);
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            params.bottomMargin = margin;
+        } else {
+            params.topMargin = margin;
+        }
         mTabModelWrapper.setLayoutParams(params);
     }
 
