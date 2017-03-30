@@ -10,6 +10,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadNotifier;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -137,7 +138,7 @@ public class OfflinePageNotificationBridge {
         DownloadNotifier notifier = getDownloadNotifier();
         if (notifier == null) return;
 
-        notifier.notifyDownloadCanceled(guid);
+        notifier.notifyDownloadCanceled(LegacyHelpers.buildLegacyContentId(true, guid));
     }
 
     /**

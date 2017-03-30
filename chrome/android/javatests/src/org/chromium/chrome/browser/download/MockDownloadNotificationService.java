@@ -96,12 +96,13 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     @Override
     public int notifyDownloadSuccessful(final ContentId id, final String filePath,
             final String fileName, final long systemDownloadId, final boolean isOffTheRecord,
-            final boolean isSupportedMimeType) {
+            final boolean isSupportedMimeType, final boolean isOpenable) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
                 return MockDownloadNotificationService.super.notifyDownloadSuccessful(id, filePath,
-                        fileName, systemDownloadId, isOffTheRecord, isSupportedMimeType);
+                        fileName, systemDownloadId, isOffTheRecord, isSupportedMimeType,
+                        isOpenable);
             }
         });
     }
@@ -110,13 +111,13 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     public void notifyDownloadProgress(final ContentId id, final String fileName,
             final int percentage, final long bytesReceived, final long timeRemainingInMillis,
             final long startTime, final boolean isOffTheRecord,
-            final boolean canDownloadWhileMetered) {
+            final boolean canDownloadWhileMetered, final boolean isTransient) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 MockDownloadNotificationService.super.notifyDownloadProgress(id, fileName,
                         percentage, bytesReceived, timeRemainingInMillis, startTime, isOffTheRecord,
-                        canDownloadWhileMetered);
+                        canDownloadWhileMetered, isTransient);
             }
         });
     }

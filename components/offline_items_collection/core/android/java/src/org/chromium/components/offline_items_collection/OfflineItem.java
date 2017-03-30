@@ -24,12 +24,14 @@ public class OfflineItem {
     public String description;
     @OfflineItemFilterEnum
     public int filter;
+    public boolean isTransient;
 
     // Content Metadata.
     public long totalSizeBytes;
     public boolean externallyRemoved;
     public long creationTimeMs;
     public long lastAccessedTimeMs;
+    public boolean isOpenable;
 
     // Request Metadata.
     public String pageUrl;
@@ -40,6 +42,7 @@ public class OfflineItem {
     @OfflineItemStateEnum
     public int state;
     public boolean isResumable;
+    public boolean allowMetered;
     public long receivedBytes;
     public int percentCompleted;
     public long timeRemainingMs;

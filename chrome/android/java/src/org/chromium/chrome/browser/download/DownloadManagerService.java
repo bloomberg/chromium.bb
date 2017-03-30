@@ -599,7 +599,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     }
                     break;
                 case DOWNLOAD_STATUS_CANCELLED:
-                    mDownloadNotifier.notifyDownloadCanceled(item.getId());
+                    mDownloadNotifier.notifyDownloadCanceled(item.getContentId());
                     break;
                 case DOWNLOAD_STATUS_INTERRUPTED:
                     mDownloadNotifier.notifyDownloadInterrupted(info, progress.mIsAutoResumable);

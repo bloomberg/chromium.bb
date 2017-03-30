@@ -41,9 +41,10 @@ public class OfflineItemBridge {
     @CalledByNative
     private static OfflineItem createOfflineItemAndMaybeAddToList(ArrayList<OfflineItem> list,
             String nameSpace, String id, String title, String description,
-            @OfflineItemFilterEnum int filter, long totalSizeBytes, boolean externallyRemoved,
-            long creationTimeMs, long lastAccessedTimeMs, String pageUrl, String originalUrl,
-            boolean isOffTheRecord, @OfflineItemStateEnum int state, boolean isResumable,
+            @OfflineItemFilterEnum int filter, boolean isTransient, long totalSizeBytes,
+            boolean externallyRemoved, long creationTimeMs, long lastAccessedTimeMs,
+            boolean isOpenable, String pageUrl, String originalUrl, boolean isOffTheRecord,
+            @OfflineItemStateEnum int state, boolean isResumable, boolean allowMetered,
             long receivedBytes, int percentCompleted, long timeRemainingMs) {
         OfflineItem item = new OfflineItem();
         item.id.namespace = nameSpace;
@@ -51,15 +52,18 @@ public class OfflineItemBridge {
         item.title = title;
         item.description = description;
         item.filter = filter;
+        item.isTransient = isTransient;
         item.totalSizeBytes = totalSizeBytes;
         item.externallyRemoved = externallyRemoved;
         item.creationTimeMs = creationTimeMs;
         item.lastAccessedTimeMs = lastAccessedTimeMs;
+        item.isOpenable = isOpenable;
         item.pageUrl = pageUrl;
         item.originalUrl = originalUrl;
         item.isOffTheRecord = isOffTheRecord;
         item.state = state;
         item.isResumable = isResumable;
+        item.allowMetered = allowMetered;
         item.receivedBytes = receivedBytes;
         item.percentCompleted = percentCompleted;
         item.timeRemainingMs = timeRemainingMs;

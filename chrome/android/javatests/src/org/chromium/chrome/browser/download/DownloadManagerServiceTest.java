@@ -176,8 +176,8 @@ public class DownloadManagerServiceTest {
         }
 
         @Override
-        public void notifyDownloadCanceled(String downloadGuid) {
-            assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, downloadGuid, true);
+        public void notifyDownloadCanceled(ContentId id) {
+            assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, id, true);
         }
 
         @Override

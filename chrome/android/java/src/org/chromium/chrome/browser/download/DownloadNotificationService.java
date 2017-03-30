@@ -40,6 +40,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -339,6 +340,7 @@ public class DownloadNotificationService extends Service {
 
         // This notification should not actually be shown.  But if it is, set the click intent to
         // open downloads home.
+        // TODO(dtrainor): Only do this if we have no transient downloads.
         Intent downloadHomeIntent = buildActionIntent(
                 context, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false);
         builder.setContentIntent(PendingIntent.getBroadcast(context,
@@ -529,7 +531,7 @@ public class DownloadNotificationService extends Service {
             // Move all regular downloads to pending.  Don't propagate the pause because
             // if native is still working and it triggers an update, then the service will be
             // restarted.
-            notifyDownloadPaused(entry.id, !entry.isOffTheRecord, true);
+            notifyDownloadPaused(entry.id, !entry.isOffTheRecord, true, entry.isTransient);
         }
     }
 
@@ -692,14 +694,15 @@ public class DownloadNotificationService extends Service {
      * @param startTime Time when download started.
      * @param isOffTheRecord Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
-     * @param isOfflinePage Whether the download is for offline page.
+     * @param isTransient Whether or not clicking on the download should launch downloads home.
      */
     @VisibleForTesting
     public void notifyDownloadProgress(ContentId id, String fileName, int percentage,
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered) {
+            boolean canDownloadWhileMetered, boolean isTransient) {
         updateActiveDownloadNotification(id, fileName, percentage, bytesReceived,
-                timeRemainingInMillis, startTime, isOffTheRecord, canDownloadWhileMetered, false);
+                timeRemainingInMillis, startTime, isOffTheRecord, canDownloadWhileMetered, false,
+                isTransient);
     }
 
     /**
@@ -708,12 +711,13 @@ public class DownloadNotificationService extends Service {
      * @param fileName File name of the download.
      * @param isOffTheRecord Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
+     * @param isTransient Whether or not clicking on the download should launch downloads home.
      */
     private void notifyDownloadPending(ContentId id, String fileName, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered) {
+            boolean canDownloadWhileMetered, boolean isTransient) {
         updateActiveDownloadNotification(id, fileName,
                 DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE, 0, 0, 0, isOffTheRecord,
-                canDownloadWhileMetered, true);
+                canDownloadWhileMetered, true, isTransient);
     }
 
     /**
@@ -729,10 +733,11 @@ public class DownloadNotificationService extends Service {
      * @param isOffTheRecord Whether the download is off the record.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
      * @param isDownloadPending Whether the download is pending.
+     * @param isTransient Whether or not clicking on the download should launch downloads home.
      */
     private void updateActiveDownloadNotification(ContentId id, String fileName, int percentage,
             long bytesReceived, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, boolean isDownloadPending) {
+            boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient) {
         boolean indeterminate =
                 (percentage == DownloadItem.INDETERMINATE_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         String contentText = null;
@@ -769,11 +774,13 @@ public class DownloadNotificationService extends Service {
         int notificationId = getNotificationId(id);
         if (startTime > 0) builder.setWhen(startTime);
 
-        // Clicking on an in-progress download sends the user to see all their downloads.
-        Intent downloadHomeIntent = buildActionIntent(
-                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, isOffTheRecord);
-        builder.setContentIntent(PendingIntent.getBroadcast(
-                mContext, notificationId, downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        if (!isTransient) {
+            // Clicking on an in-progress download sends the user to see all their downloads.
+            Intent downloadHomeIntent = buildActionIntent(
+                    mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, isOffTheRecord);
+            builder.setContentIntent(PendingIntent.getBroadcast(mContext, notificationId,
+                    downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
         builder.setAutoCancel(false);
 
         Intent pauseIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_PAUSE, id, isOffTheRecord);
@@ -789,7 +796,7 @@ public class DownloadNotificationService extends Service {
 
         updateNotification(notificationId, builder.build(), id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
-                        canDownloadWhileMetered, fileName, true));
+                        canDownloadWhileMetered, fileName, true, isTransient));
         startTrackingInProgressDownload(id);
     }
 
@@ -832,8 +839,10 @@ public class DownloadNotificationService extends Service {
      * @param id The {@link ContentId} of the download.
      * @param isResumable Whether download can be resumed.
      * @param isAutoResumable whether download is can be resumed automatically.
+     * @param isTransient Whether or not clicking on the download should launch downloads home.
      */
-    public void notifyDownloadPaused(ContentId id, boolean isResumable, boolean isAutoResumable) {
+    public void notifyDownloadPaused(
+            ContentId id, boolean isResumable, boolean isAutoResumable, boolean isTransient) {
         DownloadSharedPreferenceEntry entry =
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (entry == null) return;
@@ -845,8 +854,8 @@ public class DownloadNotificationService extends Service {
         if (!entry.isAutoResumable) return;
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
-            notifyDownloadPending(
-                    id, entry.fileName, entry.isOffTheRecord, entry.canDownloadWhileMetered);
+            notifyDownloadPending(id, entry.fileName, entry.isOffTheRecord,
+                    entry.canDownloadWhileMetered, isTransient);
             stopTrackingInProgressDownload(id, true);
             return;
         }
@@ -856,11 +865,13 @@ public class DownloadNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 buildNotification(R.drawable.ic_download_pause, entry.fileName, contentText);
 
-        // Clicking on an in-progress download sends the user to see all their downloads.
-        Intent downloadHomeIntent = buildActionIntent(
-                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false);
-        builder.setContentIntent(PendingIntent.getBroadcast(mContext, entry.notificationId,
-                downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        if (!isTransient) {
+            // Clicking on an in-progress download sends the user to see all their downloads.
+            Intent downloadHomeIntent = buildActionIntent(
+                    mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false);
+            builder.setContentIntent(PendingIntent.getBroadcast(mContext, entry.notificationId,
+                    downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
         builder.setAutoCancel(false);
 
         Intent resumeIntent =
@@ -874,11 +885,15 @@ public class DownloadNotificationService extends Service {
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, entry.notificationId));
-        builder.setDeleteIntent(buildSummaryIconIntent(entry.notificationId));
+        PendingIntent deleteIntent = isTransient
+                ? buildPendingIntent(cancelIntent, entry.notificationId)
+                : buildSummaryIconIntent(entry.notificationId);
+        builder.setDeleteIntent(deleteIntent);
 
         updateNotification(entry.notificationId, builder.build(), id,
                 new DownloadSharedPreferenceEntry(id, entry.notificationId, entry.isOffTheRecord,
-                        entry.canDownloadWhileMetered, entry.fileName, isAutoResumable));
+                        entry.canDownloadWhileMetered, entry.fileName, isAutoResumable,
+                        isTransient));
         stopTrackingInProgressDownload(id, true);
     }
 
@@ -889,33 +904,39 @@ public class DownloadNotificationService extends Service {
      * @param fileName Filename of the download.
      * @param systemDownloadId Download ID assigned by system DownloadManager.
      * @param isSupportedMimeType Whether the MIME type can be viewed inside browser.
+     * @param isOpenable Whether or not this download can be opened.
      * @return ID of the successful download notification. Used for removing the notification when
      *         user click on the snackbar.
      */
     @VisibleForTesting
     public int notifyDownloadSuccessful(ContentId id, String filePath, String fileName,
-            long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType) {
+            long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType,
+            boolean isOpenable) {
         int notificationId = getNotificationId(id);
         ChromeNotificationBuilder builder = buildNotification(R.drawable.offline_pin, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
         ComponentName component = new ComponentName(
                 mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
-        Intent intent;
-        if (!LegacyHelpers.isLegacyDownload(id)) {
-            intent = buildActionIntent(mContext, ACTION_DOWNLOAD_OPEN, id, false);
-        } else {
-            intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
-            long[] idArray = {systemDownloadId};
-            intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
-            intent.putExtra(EXTRA_DOWNLOAD_FILE_PATH, filePath);
-            intent.putExtra(EXTRA_IS_SUPPORTED_MIME_TYPE, isSupportedMimeType);
-            intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
-            intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, id.id);
-            intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, id.namespace);
+
+        if (isOpenable) {
+            Intent intent = null;
+            if (LegacyHelpers.isLegacyDownload(id)) {
+                intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
+                long[] idArray = {systemDownloadId};
+                intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
+                intent.putExtra(EXTRA_DOWNLOAD_FILE_PATH, filePath);
+                intent.putExtra(EXTRA_IS_SUPPORTED_MIME_TYPE, isSupportedMimeType);
+                intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
+                intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_ID, id.id);
+                intent.putExtra(EXTRA_DOWNLOAD_CONTENTID_NAMESPACE, id.namespace);
+            } else {
+                intent = buildActionIntent(mContext, ACTION_DOWNLOAD_OPEN, id, false);
+            }
+
+            intent.setComponent(component);
+            builder.setContentIntent(PendingIntent.getBroadcast(
+                    mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
-        intent.setComponent(component);
-        builder.setContentIntent(PendingIntent.getBroadcast(
-                mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         if (mDownloadSuccessLargeIcon == null) {
             Bitmap bitmap = BitmapFactory.decodeResource(
                     mContext.getResources(), R.drawable.offline_pin);
@@ -1083,7 +1104,7 @@ public class DownloadNotificationService extends Service {
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
             if (!DownloadManagerService.hasDownloadManagerService()) {
-                notifyDownloadPaused(entry.id, !entry.isOffTheRecord, false);
+                notifyDownloadPaused(entry.id, !entry.isOffTheRecord, false, entry.isTransient);
                 hideSummaryNotificationIfNecessary(-1);
                 return;
             }
@@ -1095,7 +1116,8 @@ public class DownloadNotificationService extends Service {
             // Update the SharedPreference entry.
             mDownloadSharedPreferenceHelper.addOrReplaceSharedPreferenceEntry(
                     new DownloadSharedPreferenceEntry(entry.id, entry.notificationId,
-                            entry.isOffTheRecord, canDownloadWhileMetered, entry.fileName, true));
+                            entry.isOffTheRecord, canDownloadWhileMetered, entry.fileName, true,
+                            entry.isTransient));
         } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())
                 && (mDownloadSharedPreferenceHelper.getEntries().isEmpty()
                         || DownloadManagerService.hasDownloadManagerService())) {
@@ -1118,6 +1140,9 @@ public class DownloadNotificationService extends Service {
 
             @Override
             public void finishNativeInitialization() {
+                // Make sure the OfflineContentAggregator bridge is initialized.
+                OfflineContentAggregatorNotificationBridgeUiFactory.instance();
+
                 DownloadServiceDelegate downloadServiceDelegate =
                         ACTION_DOWNLOAD_OPEN.equals(intent.getAction()) ? null
                                                                         : getServiceDelegate(id);
@@ -1131,11 +1156,11 @@ public class DownloadNotificationService extends Service {
                             observer.onDownloadCanceled(entry.id);
                         }
                 } else if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
-                    notifyDownloadPaused(entry.id, true, false);
+                    notifyDownloadPaused(entry.id, true, false, entry.isTransient);
                     downloadServiceDelegate.pauseDownload(entry.id, entry.isOffTheRecord);
                 } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
                     notifyDownloadPending(entry.id, entry.fileName, entry.isOffTheRecord,
-                            entry.canDownloadWhileMetered);
+                            entry.canDownloadWhileMetered, entry.isTransient);
                     downloadServiceDelegate.resumeDownload(
                             entry.id, entry.buildDownloadItem(), true);
                 } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) {
@@ -1209,10 +1234,7 @@ public class DownloadNotificationService extends Service {
         if (LegacyHelpers.isLegacyDownload(id)) {
             return DownloadManagerService.getDownloadManagerService();
         }
-
-        Log.e(TAG, "Unrecognized download type.", id);
-        // Return the DownloadManagerService if we can't detect the type.
-        return DownloadManagerService.getDownloadManagerService();
+        return OfflineContentAggregatorNotificationBridgeUiFactory.instance();
     }
 
     @VisibleForTesting
@@ -1301,7 +1323,8 @@ public class DownloadNotificationService extends Service {
             if (!canResumeDownload(mContext, entry)) continue;
             if (mDownloadsInProgress.contains(entry.id)) continue;
 
-            notifyDownloadPending(entry.id, entry.fileName, false, entry.canDownloadWhileMetered);
+            notifyDownloadPending(entry.id, entry.fileName, false, entry.canDownloadWhileMetered,
+                    entry.isTransient);
             DownloadServiceDelegate downloadServiceDelegate = getServiceDelegate(entry.id);
             downloadServiceDelegate.resumeDownload(entry.id, entry.buildDownloadItem(), false);
             downloadServiceDelegate.destroyServiceDelegate();

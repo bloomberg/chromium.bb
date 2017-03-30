@@ -170,10 +170,8 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     }
 
     @Override
-    public void notifyDownloadCanceled(String downloadGuid) {
-        DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setDownloadGuid(downloadGuid)
-                .build();
+    public void notifyDownloadCanceled(ContentId id) {
+        DownloadInfo downloadInfo = new DownloadInfo.Builder().setContentId(id).build();
         updateDownloadNotification(
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, downloadInfo), true);
     }
@@ -239,12 +237,16 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
 
     /**
      * Called when a successful notification is shown.
-     * @param info Pending notification information to be handled.
+     * @param notificationInfo Pending notification information to be handled.
      * @param notificationId ID of the notification.
      */
     @VisibleForTesting
     void onSuccessNotificationShown(
             final PendingNotificationInfo notificationInfo, final int notificationId) {
+        if (notificationInfo.downloadInfo != null
+                && !notificationInfo.downloadInfo.getIsOpenable()) {
+            return;
+        }
         DownloadManagerService.getDownloadManagerService().onSuccessNotificationShown(
                 notificationInfo.downloadInfo, notificationInfo.canResolve, notificationId,
                 notificationInfo.systemDownloadId);
@@ -278,20 +280,22 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
                 mBoundService.notifyDownloadProgress(info.getContentId(), info.getFileName(),
                         info.getPercentCompleted(), info.getBytesReceived(),
                         info.getTimeRemainingInMillis(), notificationInfo.startTime,
-                        info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered);
+                        info.isOffTheRecord(), notificationInfo.canDownloadWhileMetered,
+                        info.getIsTransient());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
-                mBoundService.notifyDownloadPaused(info.getContentId(), true, false);
+                mBoundService.notifyDownloadPaused(
+                        info.getContentId(), true, false, info.getIsTransient());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_INTERRUPT:
-                mBoundService.notifyDownloadPaused(
-                        info.getContentId(), info.isResumable(), notificationInfo.isAutoResumable);
+                mBoundService.notifyDownloadPaused(info.getContentId(), info.isResumable(),
+                        notificationInfo.isAutoResumable, info.getIsTransient());
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                 final int notificationId = mBoundService.notifyDownloadSuccessful(
                         info.getContentId(), info.getFilePath(), info.getFileName(),
                         notificationInfo.systemDownloadId, info.isOffTheRecord(),
-                        notificationInfo.isSupportedMimeType);
+                        notificationInfo.isSupportedMimeType, info.getIsOpenable());
                 onSuccessNotificationShown(notificationInfo, notificationId);
                 break;
             case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:

@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.download;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.components.offline_items_collection.OfflineItem;
+import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.content_public.browser.DownloadState;
 
 /**
@@ -35,7 +37,11 @@ public final class DownloadInfo {
     private final boolean mIsOfflinePage;
     private final int mState;
     private final long mLastAccessTime;
+
+    // New variables to assist with the migration to OfflineItems.
     private final ContentId mContentId;
+    private final boolean mIsOpenable;
+    private final boolean mIsTransient;
 
     private DownloadInfo(Builder builder) {
         mUrl = builder.mUrl;
@@ -60,11 +66,14 @@ public final class DownloadInfo {
         mIsOfflinePage = builder.mIsOfflinePage;
         mState = builder.mState;
         mLastAccessTime = builder.mLastAccessTime;
+
         if (builder.mContentId != null) {
             mContentId = builder.mContentId;
         } else {
             mContentId = LegacyHelpers.buildLegacyContentId(mIsOfflinePage, mDownloadGuid);
         }
+        mIsOpenable = builder.mIsOpenable;
+        mIsTransient = builder.mIsTransient;
     }
 
     public String getUrl() {
@@ -165,6 +174,60 @@ public final class DownloadInfo {
         return mContentId;
     }
 
+    public boolean getIsOpenable() {
+        return mIsOpenable;
+    }
+
+    public boolean getIsTransient() {
+        return mIsTransient;
+    }
+
+    /**
+     * Helper method to build a {@link DownloadInfo} from an {@link OfflineItem}.
+     * @param item The {@link OfflineItem} to mimic.
+     * @return     A {@link DownloadInfo} containing the relevant fields from {@code item}.
+     */
+    public static DownloadInfo fromOfflineItem(OfflineItem item) {
+        int state;
+        switch (item.state) {
+            case OfflineItemState.COMPLETE:
+                state = DownloadState.COMPLETE;
+                break;
+            case OfflineItemState.CANCELLED:
+                state = DownloadState.CANCELLED;
+                break;
+            case OfflineItemState.INTERRUPTED:
+                state = DownloadState.INTERRUPTED;
+                break;
+            case OfflineItemState.FAILED:
+                state = DownloadState.INTERRUPTED; // TODO(dtrainor): Validate what this state is.
+                break;
+            case OfflineItemState.PENDING: // TODO(dtrainor): Validate what this state is.
+            case OfflineItemState.IN_PROGRESS:
+            case OfflineItemState.PAUSED: // TODO(dtrainor): Validate what this state is.
+            default:
+                state = DownloadState.IN_PROGRESS;
+                break;
+        }
+
+        return new DownloadInfo.Builder()
+                .setContentId(item.id)
+                .setFileName(item.title)
+                .setDescription(item.description)
+                .setIsTransient(item.isTransient)
+                .setLastAccessTime(item.lastAccessedTimeMs)
+                .setIsOpenable(item.isOpenable)
+                .setOriginalUrl(item.originalUrl)
+                .setIsOffTheRecord(item.isOffTheRecord)
+                .setState(state)
+                .setIsPaused(item.state == OfflineItemState.PAUSED)
+                .setIsResumable(item.isResumable)
+                .setBytesReceived(item.receivedBytes)
+                .setPercentCompleted(item.percentCompleted)
+                .setTimeRemainingInMillis(item.timeRemainingMs)
+                .build();
+    }
+
     /**
      * Helper class for building the DownloadInfo object.
      */
@@ -192,6 +255,8 @@ public final class DownloadInfo {
         private int mState = DownloadState.IN_PROGRESS;
         private long mLastAccessTime;
         private ContentId mContentId;
+        private boolean mIsOpenable = true;
+        private boolean mIsTransient;
 
         public Builder setUrl(String url) {
             mUrl = url;
@@ -306,6 +371,16 @@ public final class DownloadInfo {
 
         public Builder setContentId(ContentId contentId) {
             mContentId = contentId;
+            return this;
+        }
+
+        public Builder setIsOpenable(boolean isOpenable) {
+            mIsOpenable = isOpenable;
+            return this;
+        }
+
+        public Builder setIsTransient(boolean isTransient) {
+            mIsTransient = isTransient;
             return this;
         }
 

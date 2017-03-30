@@ -23,7 +23,7 @@ public class DownloadSharedPreferenceEntry {
     // Current version of the DownloadSharedPreferenceEntry. When changing the SharedPreference,
     // we need to change the version number too.
     @VisibleForTesting
-    static final int VERSION = 5;
+    static final int VERSION = 6;
 
     public final int notificationId;
     public final boolean isOffTheRecord;  // Whether the download is public (non incognito).
@@ -33,18 +33,21 @@ public class DownloadSharedPreferenceEntry {
     // isAutoResumable should always be true.
     public final boolean isAutoResumable;
     public final ContentId id;
+    public final boolean isTransient;
 
     static final DownloadSharedPreferenceEntry INVALID_ENTRY =
-            new DownloadSharedPreferenceEntry(new ContentId(), -1, false, false, "", false);
+            new DownloadSharedPreferenceEntry(new ContentId(), -1, false, false, "", false, false);
 
     DownloadSharedPreferenceEntry(ContentId id, int notificationId, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, String fileName, boolean isAutoResumable) {
+            boolean canDownloadWhileMetered, String fileName, boolean isAutoResumable,
+            boolean isTransient) {
         this.notificationId = notificationId;
         this.isOffTheRecord = isOffTheRecord;
         this.canDownloadWhileMetered = canDownloadWhileMetered;
         this.fileName = fileName;
         this.isAutoResumable = isAutoResumable;
         this.id = id != null ? id : new ContentId();
+        this.isTransient = isTransient;
     }
 
     /**
@@ -64,12 +67,22 @@ public class DownloadSharedPreferenceEntry {
             return INVALID_ENTRY;
         }
 
-        if (version == 1) return parseFromVersion1(sharedPrefString);
-        if (version == 2) return parseFromVersion2(sharedPrefString);
-        if (version == 3) return parseFromVersion3(sharedPrefString);
-        if (version == 4) return parseFromVersion4(sharedPrefString);
-        if (version == 5) return parseFromVersion5(sharedPrefString);
-        return INVALID_ENTRY;
+        switch (version) {
+            case 1:
+                return parseFromVersion1(sharedPrefString);
+            case 2:
+                return parseFromVersion2(sharedPrefString);
+            case 3:
+                return parseFromVersion3(sharedPrefString);
+            case 4:
+                return parseFromVersion4(sharedPrefString);
+            case 5:
+                return parseFromVersion5(sharedPrefString);
+            case 6:
+                return parseFromVersion6(sharedPrefString);
+            default:
+                return INVALID_ENTRY;
+        }
     }
 
     static DownloadSharedPreferenceEntry parseFromVersion1(String string) {
@@ -99,7 +112,7 @@ public class DownloadSharedPreferenceEntry {
 
         return new DownloadSharedPreferenceEntry(
                 LegacyHelpers.buildLegacyContentId(false, stringGuid), notificationId, !onTheRecord,
-                metered, stringFileName, true);
+                metered, stringFileName, true, false);
     }
 
     static DownloadSharedPreferenceEntry parseFromVersion2(String string) {
@@ -129,7 +142,7 @@ public class DownloadSharedPreferenceEntry {
 
         return new DownloadSharedPreferenceEntry(
                 LegacyHelpers.buildLegacyContentId(false, stringGuid), notificationId, offTheRecord,
-                metered, stringFileName, true);
+                metered, stringFileName, true, false);
     }
 
     static DownloadSharedPreferenceEntry parseFromVersion3(String string) {
@@ -170,7 +183,7 @@ public class DownloadSharedPreferenceEntry {
 
         return new DownloadSharedPreferenceEntry(
                 LegacyHelpers.buildLegacyContentId(isOfflinePage, stringGuid), notificationId,
-                offTheRecord, metered, stringFileName, true);
+                offTheRecord, metered, stringFileName, true, false);
     }
 
     static DownloadSharedPreferenceEntry parseFromVersion4(String string) {
@@ -213,7 +226,7 @@ public class DownloadSharedPreferenceEntry {
 
         return new DownloadSharedPreferenceEntry(
                 LegacyHelpers.buildLegacyContentId(isOfflinePage, stringGuid), notificationId,
-                offTheRecord, metered, stringFileName, autoResume);
+                offTheRecord, metered, stringFileName, autoResume, false);
     }
 
     static DownloadSharedPreferenceEntry parseFromVersion5(String string) {
@@ -246,7 +259,43 @@ public class DownloadSharedPreferenceEntry {
         if (TextUtils.isEmpty(stringNamespace)) return INVALID_ENTRY;
 
         return new DownloadSharedPreferenceEntry(new ContentId(stringNamespace, stringGuid),
-                notificationId, offTheRecord, metered, stringFileName, autoResume);
+                notificationId, offTheRecord, metered, stringFileName, autoResume, false);
+    }
+
+    static DownloadSharedPreferenceEntry parseFromVersion6(String string) {
+        String[] entries = string.split(",", 9);
+        if (entries.length != 9) return INVALID_ENTRY;
+        // VERSION,NOTIFICATIONID,NAMESPACE,GUID,OFFTHERECORD,METEREDOK,AUTORESUMEOK,ISTRANSIENT,
+        // FILENAME
+        String stringVersion = entries[0];
+        String stringNotificationId = entries[1];
+        String stringNamespace = entries[2];
+        String stringGuid = entries[3];
+        String stringOffTheRecord = entries[4];
+        String stringMetered = entries[5];
+        String stringAutoResume = entries[6];
+        String stringTransient = entries[7];
+        String stringFileName = entries[8];
+
+        boolean offTheRecord = "1".equals(stringOffTheRecord);
+        boolean metered = "1".equals(stringMetered);
+        boolean autoResume = "1".equals(stringAutoResume);
+        boolean isTransient = "1".equals(stringTransient);
+        int version;
+        int notificationId;
+        try {
+            version = Integer.parseInt(stringVersion);
+            notificationId = Integer.parseInt(stringNotificationId);
+        } catch (NumberFormatException ex) {
+            return INVALID_ENTRY;
+        }
+
+        if (version != 6) return INVALID_ENTRY;
+        if (!isValidGUID(stringGuid)) return INVALID_ENTRY;
+        if (TextUtils.isEmpty(stringNamespace)) return INVALID_ENTRY;
+
+        return new DownloadSharedPreferenceEntry(new ContentId(stringNamespace, stringGuid),
+                notificationId, offTheRecord, metered, stringFileName, autoResume, isTransient);
     }
 
     /**
@@ -262,7 +311,10 @@ public class DownloadSharedPreferenceEntry {
         serialized += (isOffTheRecord ? "1" : "0") + ",";
         serialized += (canDownloadWhileMetered ? "1" : "0") + ",";
         serialized += (isAutoResumable ? "1" : "0") + ",";
+        serialized += (isTransient ? "1" : "0") + ",";
+        // Keep filename as the last serialized entry because a filename can have commas in it.
         serialized += fileName;
+
         return serialized;
     }
 
@@ -296,6 +348,7 @@ public class DownloadSharedPreferenceEntry {
                                     .setIsOffTheRecord(isOffTheRecord)
                                     .setBytesReceived(DownloadManagerService.UNKNOWN_BYTES_RECEIVED)
                                     .setContentId(id)
+                                    .setIsTransient(isTransient)
                                     .build();
         return new DownloadItem(false, info);
     }
@@ -309,7 +362,7 @@ public class DownloadSharedPreferenceEntry {
         return id.equals(other.id) && TextUtils.equals(fileName, other.fileName)
                 && notificationId == other.notificationId && isOffTheRecord == other.isOffTheRecord
                 && canDownloadWhileMetered == other.canDownloadWhileMetered
-                && isAutoResumable == other.isAutoResumable;
+                && isAutoResumable == other.isAutoResumable && isTransient == other.isTransient;
     }
 
     @Override
@@ -321,6 +374,7 @@ public class DownloadSharedPreferenceEntry {
         hash = 37 * hash + notificationId;
         hash = 37 * hash + id.hashCode();
         hash = 37 * hash + fileName.hashCode();
+        hash = 37 * hash + (isTransient ? 1 : 0);
         return hash;
     }
 }

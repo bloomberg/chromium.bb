@@ -76,6 +76,7 @@ import org.chromium.chrome.browser.dom_distiller.DistilledPagePrefsView;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.gsa.ContextReporter;
@@ -1180,6 +1181,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void finishNativeInitialization() {
         mNativeInitialized = true;
+        OfflineContentAggregatorNotificationBridgeUiFactory.instance();
         maybeRemoveWindowBackground();
         DownloadManagerService.getDownloadManagerService().onActivityLaunched();
 

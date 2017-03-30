@@ -70,6 +70,10 @@ struct OfflineItem {
   // items as well as for determining which default icon to use.
   OfflineItemFilter filter;
 
+  // Whether or not this item is transient.  Transient items won't show up in
+  // persistent UI spaces and will only show up as notifications.
+  bool is_transient;
+
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.
@@ -85,6 +89,9 @@ struct OfflineItem {
 
   // The last time the underlying offline content was accessed.
   base::Time last_accessed_time;
+
+  // Whether or not this item can be opened after it is done being downloaded.
+  bool is_openable;
 
   // Request Metadata.
   // ---------------------------------------------------------------------------
@@ -105,6 +112,10 @@ struct OfflineItem {
   // Whether or not the offlining of this content can be resumed if it was
   // paused or interrupted.
   bool is_resumable;
+
+  // Whether or not this OfflineItem can be downloaded using a metered
+  // connection.
+  bool allow_metered;
 
   // The current amount of bytes received for this item.  This field is not used
   // if |state| is COMPLETE.

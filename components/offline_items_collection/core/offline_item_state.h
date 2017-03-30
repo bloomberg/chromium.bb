@@ -11,9 +11,11 @@ namespace offline_items_collection {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offline_items_collection
 enum OfflineItemState {
   IN_PROGRESS = 0,
+  PENDING,
   COMPLETE,
   CANCELLED,
   INTERRUPTED,
+  FAILED,
   PAUSED,  // TODO(dtrainor): Make sure exposing a PAUSED state does not impact
            // downloads resumption.
   MAX_DOWNLOAD_STATE,

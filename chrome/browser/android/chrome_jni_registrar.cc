@@ -176,6 +176,7 @@
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
+#include "components/offline_items_collection/core/android/offline_content_aggregator_bridge.h"
 #include "components/payments/content/android/component_jni_registrar.h"
 #include "components/policy/core/browser/android/component_jni_registrar.h"
 #include "components/safe_browsing_db/android/jni_registrar.h"
@@ -218,6 +219,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"GCMDriver", gcm::android::RegisterGCMDriverJni},
     {"InstanceID", instance_id::android::RegisterInstanceIDJni},
     {"Invalidation", invalidation::android::RegisterInvalidationJni},
+    {"OfflineContentAggregatorBridge",
+     offline_items_collection::android::OfflineContentAggregatorBridge::
+         Register},
     {"OfflineContentAggregator", RegisterOfflineContentAggregatorFactoryJni},
     {"Payments", payments::android::RegisterPayments},
     {"Policy", policy::android::RegisterPolicy},
