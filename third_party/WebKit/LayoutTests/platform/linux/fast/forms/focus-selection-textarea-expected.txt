@@ -41,16 +41,16 @@ PASS third.selectionStart is 11
 PASS third.selectionEnd is 18
 PASS fourth.selectionStart is 11
 PASS fourth.selectionEnd is 18
-FAIL fourth.selectionStart should be 0. Was 11.
-FAIL fourth.selectionEnd should be 0. Was 18.
+PASS fourth.selectionStart is 0
+PASS fourth.selectionEnd is 0
 PASS fifth.selectionStart is 11
 PASS fifth.selectionEnd is 18
 PASS fifth.selectionStart is 11
 PASS fifth.selectionEnd is 18
-FAIL sixth.selectionStart should be 11. Was 2.
-FAIL sixth.selectionEnd should be 18. Was 2.
-FAIL sixth.selectionStart should be 11. Was 2.
-FAIL sixth.selectionEnd should be 18. Was 2.
+PASS sixth.selectionStart is 11
+PASS sixth.selectionEnd is 18
+PASS sixth.selectionStart is 11
+PASS sixth.selectionEnd is 18
 PASS seventh.selectionStart is 11
 PASS seventh.selectionEnd is 18
 PASS seventh.selectionStart is 11
