@@ -39,9 +39,12 @@ enum class ModuleGraphLevel { TopLevelModuleFetch, DependentModuleFetch };
 // https://html.spec.whatwg.org/#environment-settings-object
 //
 // A Modulator also serves as an entry point for various module spec algorithms.
-class CORE_EXPORT Modulator : public GarbageCollectedMixin {
+class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator> {
  public:
   static Modulator* from(LocalFrame*);
+  virtual ~Modulator();
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   virtual ScriptModuleResolver* scriptModuleResolver() = 0;
   virtual WebTaskRunner* taskRunner() = 0;

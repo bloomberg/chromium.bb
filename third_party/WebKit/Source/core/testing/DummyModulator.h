@@ -23,9 +23,7 @@ class ModuleScriptFetchRequest;
 // Not all module implementation components require full-blown Modulator
 // implementation. Unit tests can implement a subset of Modulator interface
 // which is exercised from unit-under-test.
-class DummyModulator : public GarbageCollectedFinalized<DummyModulator>,
-                       public Modulator {
-  USING_GARBAGE_COLLECTED_MIXIN(DummyModulator);
+class DummyModulator : public Modulator {
   DISALLOW_COPY_AND_ASSIGN(DummyModulator);
 
  public:

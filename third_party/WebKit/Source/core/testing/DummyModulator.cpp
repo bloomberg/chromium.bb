@@ -10,7 +10,9 @@ DummyModulator::DummyModulator() {}
 
 DummyModulator::~DummyModulator() {}
 
-DEFINE_TRACE(DummyModulator) {}
+DEFINE_TRACE(DummyModulator) {
+  Modulator::trace(visitor);
+}
 
 ReferrerPolicy DummyModulator::referrerPolicy() {
   NOTREACHED();

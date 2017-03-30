@@ -16,6 +16,8 @@ Modulator* Modulator::from(LocalFrame* frame) {
   return scriptState->perContextData()->modulator();
 }
 
+Modulator::~Modulator() {}
+
 KURL Modulator::resolveModuleSpecifier(const String& moduleRequest,
                                        const KURL& baseURL) {
   // Step 1. Apply the URL parser to specifier. If the result is not failure,
