@@ -50,9 +50,6 @@ class HidServiceMac : public HidService {
   void AddDevices();
   void RemoveDevices();
 
-  static scoped_refptr<device::HidDeviceInfo> CreateDeviceInfo(
-      io_service_t device);
-
   // Platform notification port.
   base::mac::ScopedIONotificationPortRef notify_port_;
   base::mac::ScopedIOObject<io_iterator_t> devices_added_iterator_;
