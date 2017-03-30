@@ -55,8 +55,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status) override;
 
-  bool ShouldSetExperimentLabels() override;
-
  protected:
   // Disallow construction from others.
   GoogleChromeDistribution();

@@ -240,7 +240,3 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
       InstallUtil::GetInstallReturnCode(install_status),
       install_static::GetAppGuid());
 }
-
-bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
-  return true;
-}

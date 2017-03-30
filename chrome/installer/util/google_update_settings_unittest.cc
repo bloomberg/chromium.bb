@@ -70,11 +70,8 @@ class GoogleUpdateSettingsTest : public testing::Test {
     // Install a basic InstallDetails instance.
     install_static::ScopedInstallDetails details(install == SYSTEM_INSTALL);
 
-    BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
     base::string16 value;
 #if defined(GOOGLE_CHROME_BUILD)
-    EXPECT_TRUE(chrome->ShouldSetExperimentLabels());
-
     // Before anything is set, ReadExperimentLabels should succeed but return
     // an empty string.
     EXPECT_TRUE(GoogleUpdateSettings::ReadExperimentLabels(
@@ -88,6 +85,7 @@ class GoogleUpdateSettingsTest : public testing::Test {
     RegKey key;
     HKEY root = install == SYSTEM_INSTALL ?
         HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    BrowserDistribution* chrome = BrowserDistribution::GetDistribution();
     base::string16 state_key = install == SYSTEM_INSTALL ?
         chrome->GetStateMediumKey() : chrome->GetStateKey();
 
@@ -114,7 +112,6 @@ class GoogleUpdateSettingsTest : public testing::Test {
     EXPECT_EQ(base::string16(), value);
     key.Close();
 #else
-    EXPECT_FALSE(chrome->ShouldSetExperimentLabels());
     EXPECT_FALSE(GoogleUpdateSettings::ReadExperimentLabels(
         install == SYSTEM_INSTALL, &value));
 #endif  // GOOGLE_CHROME_BUILD

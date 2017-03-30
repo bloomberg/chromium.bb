@@ -64,7 +64,3 @@ void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
 }
-
-bool GoogleChromeDistribution::ShouldSetExperimentLabels() {
-  return false;
-}

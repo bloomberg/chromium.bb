@@ -22,6 +22,7 @@
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -850,28 +851,32 @@ bool GoogleUpdateSettings::GetUpdateDetail(ProductData* data) {
 bool GoogleUpdateSettings::SetExperimentLabels(
     bool system_install,
     const base::string16& experiment_labels) {
+  // There is nothing to do if this brand does not support integration with
+  // Google Update.
+  if (!install_static::kUseGoogleUpdateIntegration)
+    return false;
+
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   // Use the browser distribution and install level to write to the correct
   // client state/app guid key.
   bool success = false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (dist->ShouldSetExperimentLabels()) {
-    base::string16 client_state_path(
-        system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
-    RegKey client_state(
-        reg_root, client_state_path.c_str(), KEY_SET_VALUE | KEY_WOW64_32KEY);
-    // It is possible that the registry keys do not yet exist or have not yet
-    // been ACLed by Google Update to be user writable.
-    if (!client_state.Valid())
-      return false;
-    if (experiment_labels.empty()) {
-      success = client_state.DeleteValue(google_update::kExperimentLabels)
-          == ERROR_SUCCESS;
-    } else {
-      success = client_state.WriteValue(google_update::kExperimentLabels,
-          experiment_labels.c_str()) == ERROR_SUCCESS;
-    }
+  base::string16 client_state_path(system_install ? dist->GetStateMediumKey()
+                                                  : dist->GetStateKey());
+  RegKey client_state(reg_root, client_state_path.c_str(),
+                      KEY_SET_VALUE | KEY_WOW64_32KEY);
+  // It is possible that the registry keys do not yet exist or have not yet
+  // been ACLed by Google Update to be user writable.
+  if (!client_state.Valid())
+    return false;
+  if (experiment_labels.empty()) {
+    success = client_state.DeleteValue(google_update::kExperimentLabels) ==
+              ERROR_SUCCESS;
+  } else {
+    success =
+        client_state.WriteValue(google_update::kExperimentLabels,
+                                experiment_labels.c_str()) == ERROR_SUCCESS;
   }
 
   return success;
@@ -880,14 +885,13 @@ bool GoogleUpdateSettings::SetExperimentLabels(
 bool GoogleUpdateSettings::ReadExperimentLabels(
     bool system_install,
     base::string16* experiment_labels) {
-  HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-
-  // If this distribution does not set the experiment labels, don't bother
-  // reading.
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!dist->ShouldSetExperimentLabels())
+  // There is nothing to do if this brand does not support integration with
+  // Google Update.
+  if (!install_static::kUseGoogleUpdateIntegration)
     return false;
 
+  HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   base::string16 client_state_path(
       system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
 

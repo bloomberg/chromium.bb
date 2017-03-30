@@ -80,10 +80,6 @@ class BrowserDistribution {
       installer::ArchiveType archive_type,
       installer::InstallStatus install_status);
 
-  // Returns true if this distribution should set the Omaha experiment_labels
-  // registry value.
-  virtual bool ShouldSetExperimentLabels();
-
  protected:
   explicit BrowserDistribution(
       std::unique_ptr<AppRegistrationData> app_reg_data);

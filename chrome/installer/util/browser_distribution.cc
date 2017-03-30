@@ -151,7 +151,3 @@ void BrowserDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
 }
-
-bool BrowserDistribution::ShouldSetExperimentLabels() {
-  return false;
-}

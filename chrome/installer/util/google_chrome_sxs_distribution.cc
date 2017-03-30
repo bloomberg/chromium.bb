@@ -40,7 +40,3 @@ base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
       return GetShortcutName();
   }
 }
-
-bool GoogleChromeSxSDistribution::ShouldSetExperimentLabels() {
-  return true;
-}
