@@ -25,6 +25,8 @@ function renderTemplate(nearbyUrlsData) {
   // This is the javascript code that processes the template:
   jstProcess(new JsEvalContext(nearbyUrlsData), templateDiv);
 
+  assignImageLoadErrorHandlers();
+
   let bodyContainer = $('body-container');
   bodyContainer.hidden = false;
 }
@@ -39,6 +41,17 @@ function physicalWebItemClicked(index) {
 
 function pushNearbyURLs(nearbyUrlsData) {
   renderTemplate(nearbyUrlsData);
+}
+
+function assignImageLoadErrorHandlers() {
+  var pwIcons = document.querySelectorAll('.physicalWebIcon');
+  pwIcons.forEach(function(e) {
+    let img = e.getElementsByTagName('img')[0];
+    img.addEventListener('error', function() {
+      img.src =
+          'chrome://physical-web/ic_link_grey600_36dp.png';
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', physicalWebPageLoaded);

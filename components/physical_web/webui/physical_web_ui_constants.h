@@ -11,6 +11,7 @@ namespace physical_web_ui {
 // Must match the resource file names.
 extern const char kPhysicalWebJS[];
 extern const char kPhysicalWebCSS[];
+extern const char kPhysicalWebLinkIcon[];
 
 // Message handlers.
 // Must match the constants used in the resource files.

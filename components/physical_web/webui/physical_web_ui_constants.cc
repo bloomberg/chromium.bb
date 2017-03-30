@@ -9,6 +9,7 @@ namespace physical_web_ui {
 // Resource paths.
 const char kPhysicalWebJS[] = "physical_web.js";
 const char kPhysicalWebCSS[] = "physical_web.css";
+const char kPhysicalWebLinkIcon[] = "ic_link_grey600_36dp.png";
 
 // Message handlers.
 const char kPhysicalWebPageLoaded[] = "physicalWebPageLoaded";

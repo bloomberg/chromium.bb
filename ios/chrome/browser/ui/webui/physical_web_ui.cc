@@ -35,6 +35,8 @@ web::WebUIIOSDataSource* CreatePhysicalWebUIDataSource() {
                                IDR_PHYSICAL_WEB_UI_JS);
   html_source->AddResourcePath(physical_web_ui::kPhysicalWebCSS,
                                IDR_PHYSICAL_WEB_UI_CSS);
+  html_source->AddResourcePath(physical_web_ui::kPhysicalWebLinkIcon,
+                               IDR_PHYSICAL_WEB_UI_LINK_ICON);
   html_source->SetDefaultResource(IDR_PHYSICAL_WEB_UI_HTML);
   return html_source;
 }
