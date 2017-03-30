@@ -503,16 +503,16 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_VPN_MONITORED" desc="The label used when a VPN connection may be monitored.">
         Connection may be monitored
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
+      <message name="IDS_ASH_STATUS_TRAY_WIFI_ADDRESS" desc="The label for the mac address of the wifi device.">
         Wi-Fi: <ph name="ADDRESS">$1<ex>23:45:67:89:AB:CD</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
         Network info
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network.">
+      <message name="IDS_ASH_STATUS_TRAY_IP_ADDRESS" desc="The label for the IP address of the network.">
         IP address: <ph name="ADDRESS">$1<ex>192.168.1.1</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_IPV6" desc="The label for the IP address of the network.">
+      <message name="IDS_ASH_STATUS_TRAY_IPV6_ADDRESS" desc="The label for the IPv6 address of the network.">
         IPv6 address: <ph name="ADDRESS">$1<ex>0:0:0:0:100:0:0:1</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
@@ -834,7 +834,10 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_MOBILE_SCANNING" desc="Message when scanning for mobile networks">
         Searching for mobile networks...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The ethernet network device.">
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The generic name for an Ethernet connection.">
+        Ethernet
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ETHERNET_ADDRESS" desc="The label for the mac address of the ethernet device.">
         Ethernet: <ph name="ADDRESS">$1<ex>01:23:45:67:89:AB</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">

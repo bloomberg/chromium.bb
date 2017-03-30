@@ -419,15 +419,12 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
     }
   }
 
-  std::string ethernet_address, wifi_address, vpn_address;
+  std::string ethernet_address, wifi_address;
   if (list_type_ != LIST_TYPE_VPN) {
     ethernet_address = handler->FormattedHardwareAddressForType(
         NetworkTypePattern::Ethernet());
     wifi_address =
         handler->FormattedHardwareAddressForType(NetworkTypePattern::WiFi());
-  } else {
-    vpn_address =
-        handler->FormattedHardwareAddressForType(NetworkTypePattern::VPN());
   }
 
   base::string16 bubble_text;
@@ -441,11 +438,10 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
     }
   };
 
-  add_line(ip_address, IDS_ASH_STATUS_TRAY_IP);
-  add_line(ipv6_address, IDS_ASH_STATUS_TRAY_IPV6);
-  add_line(ethernet_address, IDS_ASH_STATUS_TRAY_ETHERNET);
-  add_line(wifi_address, IDS_ASH_STATUS_TRAY_WIFI);
-  add_line(vpn_address, IDS_ASH_STATUS_TRAY_VPN);
+  add_line(ip_address, IDS_ASH_STATUS_TRAY_IP_ADDRESS);
+  add_line(ipv6_address, IDS_ASH_STATUS_TRAY_IPV6_ADDRESS);
+  add_line(ethernet_address, IDS_ASH_STATUS_TRAY_ETHERNET_ADDRESS);
+  add_line(wifi_address, IDS_ASH_STATUS_TRAY_WIFI_ADDRESS);
 
   // Avoid an empty bubble in the unlikely event that there is no network
   // information at all.
