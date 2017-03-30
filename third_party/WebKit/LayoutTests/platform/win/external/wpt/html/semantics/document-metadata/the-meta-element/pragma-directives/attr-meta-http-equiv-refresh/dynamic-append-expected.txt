@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Meta refresh applies even when dynamically appended Uncaught Error: assert_equals: expected "foo" but got "{\"error\": {\"message\": \"\", \"code\": 404}}"
-Harness: the test ran to completion.
-
