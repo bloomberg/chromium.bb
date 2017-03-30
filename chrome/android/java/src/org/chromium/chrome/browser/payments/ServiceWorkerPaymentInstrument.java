@@ -62,7 +62,7 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
             Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
         ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mAppRegistrationId, mOption.id,
                 origin, iframeOrigin, new HashSet<>(methodData.values()), total, displayItems,
-                new HashSet<>(modifiers.values()));
+                new HashSet<>(modifiers.values()), callback);
     }
 
     @Override

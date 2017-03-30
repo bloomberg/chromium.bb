@@ -66,6 +66,16 @@ void OnGotAllManifests(const JavaRef<jobject>& jweb_contents,
   Java_ServiceWorkerPaymentAppBridge_onGotAllManifests(env, jcallback);
 }
 
+void OnPaymentAppInvoked(const JavaRef<jobject>& jweb_contents,
+                         const JavaRef<jobject>& jcallback,
+                         payments::mojom::PaymentAppResponsePtr app_response) {
+  JNIEnv* env = AttachCurrentThread();
+
+  Java_ServiceWorkerPaymentAppBridge_onPaymentAppInvoked(
+      env, jcallback, ConvertUTF8ToJavaString(env, app_response->method_name),
+      ConvertUTF8ToJavaString(env, app_response->stringified_details));
+}
+
 }  // namespace
 
 static void GetAllAppManifests(JNIEnv* env,
@@ -92,7 +102,8 @@ static void InvokePaymentApp(JNIEnv* env,
                              const JavaParamRef<jstring>& jorigin,
                              const JavaParamRef<jobjectArray>& jmethod_data,
                              const JavaParamRef<jobject>& jtotal,
-                             const JavaParamRef<jobjectArray>& jmodifiers) {
+                             const JavaParamRef<jobjectArray>& jmodifiers,
+                             const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
@@ -170,7 +181,9 @@ static void InvokePaymentApp(JNIEnv* env,
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
       web_contents->GetBrowserContext(), registration_id,
       std::move(app_request),
-      content::PaymentAppProvider::InvokePaymentAppCallback());
+      base::Bind(&OnPaymentAppInvoked,
+                 ScopedJavaGlobalRef<jobject>(env, jweb_contents),
+                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 bool RegisterServiceWorkerPaymentAppBridge(JNIEnv* env) {
