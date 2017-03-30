@@ -1154,7 +1154,10 @@ class VideoDecodeAcceleratorTest : public ::testing::Test {
   void InitializeRenderingHelper(const RenderingHelperParams& helper_params);
   void CreateAndStartDecoder(GLRenderingVDAClient* client,
                              ClientStateNotification<ClientState>* note);
-  void WaitUntilDecodeFinish(ClientStateNotification<ClientState>* note);
+
+  // Wait until decode finishes and return the last state.
+  ClientState WaitUntilDecodeFinish(ClientStateNotification<ClientState>* note);
+
   void WaitUntilIdle();
   void OutputLogFile(const base::FilePath::CharType* log_path,
                      const std::string& content);
@@ -1168,6 +1171,12 @@ class VideoDecodeAcceleratorTest : public ::testing::Test {
   static void Delete(T item) {
     // |item| is cleared when the scope of this function is left.
   }
+  using NotesVector =
+      std::vector<std::unique_ptr<ClientStateNotification<ClientState>>>;
+  using ClientsVector = std::vector<std::unique_ptr<GLRenderingVDAClient>>;
+
+  NotesVector notes_;
+  ClientsVector clients_;
 
  private:
   // Required for Thread to work.  Not used otherwise.
@@ -1183,6 +1192,15 @@ void VideoDecodeAcceleratorTest::SetUp() {
 }
 
 void VideoDecodeAcceleratorTest::TearDown() {
+  // |clients_| must be deleted first because |clients_| use |notes_|.
+  g_env->GetRenderingTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&Delete<ClientsVector>, base::Passed(&clients_)));
+
+  g_env->GetRenderingTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&Delete<NotesVector>, base::Passed(&notes_)));
+
+  WaitUntilIdle();
+
   g_env->GetRenderingTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&Delete<TestFilesVector>, base::Passed(&test_video_files_)));
@@ -1286,12 +1304,15 @@ void VideoDecodeAcceleratorTest::CreateAndStartDecoder(
   ASSERT_EQ(note->Wait(), CS_DECODER_SET);
 }
 
-void VideoDecodeAcceleratorTest::WaitUntilDecodeFinish(
+ClientState VideoDecodeAcceleratorTest::WaitUntilDecodeFinish(
     ClientStateNotification<ClientState>* note) {
+  ClientState state = CS_DESTROYED;
   for (int i = 0; i < CS_MAX; i++) {
-    if (note->Wait() == CS_DESTROYED)
+    state = note->Wait();
+    if (state == CS_DESTROYED || state == CS_ERROR)
       break;
   }
+  return state;
 }
 
 void VideoDecodeAcceleratorTest::WaitUntilIdle() {
@@ -1325,30 +1346,7 @@ class VideoDecodeAcceleratorParamTest
     : public VideoDecodeAcceleratorTest,
       public ::testing::WithParamInterface<
           std::tuple<int, int, int, ResetPoint, ClientState, bool, bool>> {
- protected:
-  using NotesVector =
-      std::vector<std::unique_ptr<ClientStateNotification<ClientState>>>;
-  using ClientsVector = std::vector<std::unique_ptr<GLRenderingVDAClient>>;
-
-  void TearDown() override;
-
-  NotesVector notes_;
-  ClientsVector clients_;
 };
-
-void VideoDecodeAcceleratorParamTest::TearDown() {
-  // |clients_| must be deleted first because |clients_| use |notes_|.
-  g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&Delete<ClientsVector>, base::Passed(&clients_)));
-
-  g_env->GetRenderingTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&Delete<NotesVector>, base::Passed(&notes_)));
-
-  WaitUntilIdle();
-
-  // Do VideoDecodeAcceleratorTest clean-up after deleting clients and notes.
-  VideoDecodeAcceleratorTest::TearDown();
-}
 
 // Wait for |note| to report a state and if it's not |expected_state| then
 // assert |client| has deleted its decoder.
@@ -1759,39 +1757,22 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 // Measure the median of the decode time when VDA::Decode is called 30 times per
 // second.
 TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
+  notes_.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
+  clients_.push_back(base::MakeUnique<GLRenderingVDAClient>(
+      0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
+      1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
+      test_video_files_[0]->width, test_video_files_[0]->height,
+      test_video_files_[0]->profile, g_fake_decoder, true,
+      std::numeric_limits<int>::max(), kWebRtcDecodeCallsPerSecond, false));
   RenderingHelperParams helper_params;
-
-  // Disable rendering by setting the rendering_fps = 0.
-  helper_params.rendering_fps = 0;
-  helper_params.warm_up_iterations = 0;
-  helper_params.render_as_thumbnails = false;
-
-  ClientStateNotification<ClientState>* note =
-      new ClientStateNotification<ClientState>();
-  GLRenderingVDAClient* client =
-    new GLRenderingVDAClient(0,
-                             &rendering_helper_,
-                             note,
-                             test_video_files_[0]->data_str,
-                             1,
-                             1,
-                             test_video_files_[0]->reset_after_frame_num,
-                             CS_RESET,
-                             test_video_files_[0]->width,
-                             test_video_files_[0]->height,
-                             test_video_files_[0]->profile,
-                             g_fake_decoder,
-                             true,
-                             std::numeric_limits<int>::max(),
-                             kWebRtcDecodeCallsPerSecond,
-                             false /* render_as_thumbnail */);
   helper_params.window_sizes.push_back(
       gfx::Size(test_video_files_[0]->width, test_video_files_[0]->height));
   InitializeRenderingHelper(helper_params);
-  CreateAndStartDecoder(client, note);
-  WaitUntilDecodeFinish(note);
+  CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
+  ClientState last_state = WaitUntilDecodeFinish(notes_[0].get());
+  EXPECT_NE(CS_ERROR, last_state);
 
-  base::TimeDelta decode_time_median = client->decode_time_median();
+  base::TimeDelta decode_time_median = clients_[0]->decode_time_median();
   std::string output_string =
       base::StringPrintf("Decode time median: %" PRId64 " us",
                          decode_time_median.InMicroseconds());
@@ -1799,10 +1780,25 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 
   if (g_output_log != NULL)
     OutputLogFile(g_output_log, output_string);
+};
 
-  g_env->GetRenderingTaskRunner()->DeleteSoon(FROM_HERE, client);
-  g_env->GetRenderingTaskRunner()->DeleteSoon(FROM_HERE, note);
-  WaitUntilIdle();
+// This test passes as long as there is no crash. If VDA notifies an error, it
+// is not considered as a failure because the input may be unsupported or
+// corrupted videos.
+TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
+  notes_.push_back(base::MakeUnique<ClientStateNotification<ClientState>>());
+  clients_.push_back(base::MakeUnique<GLRenderingVDAClient>(
+      0, &rendering_helper_, notes_[0].get(), test_video_files_[0]->data_str, 1,
+      1, test_video_files_[0]->reset_after_frame_num, CS_RESET,
+      test_video_files_[0]->width, test_video_files_[0]->height,
+      test_video_files_[0]->profile, g_fake_decoder, true,
+      std::numeric_limits<int>::max(), 0, false));
+  RenderingHelperParams helper_params;
+  helper_params.window_sizes.push_back(
+      gfx::Size(test_video_files_[0]->width, test_video_files_[0]->height));
+  InitializeRenderingHelper(helper_params);
+  CreateAndStartDecoder(clients_[0].get(), notes_[0].get());
+  WaitUntilDecodeFinish(notes_[0].get());
 };
 
 // TODO(fischman, vrk): add more tests!  In particular:
