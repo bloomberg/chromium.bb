@@ -669,6 +669,10 @@
                   '|chrome/browser/ui/webui/media_router/' \
                   '|chrome/test/media_router/',
     },
+    'memory_coordinator': {
+      'filepath': 'base/memory/memory_|' \
+                  'content/browser/memory/'
+    },
     'message_loop': {
       'filepath': 'base/message_'
     },
@@ -2035,6 +2039,7 @@
                        'miu+watch@chromium.org',
                        'xjz+watch@chromium.org'],
     'media_router': ['media-router+watch@chromium.org'],
+    'memory_coordinator': ['chrome-grc-reviews+memory@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'metrics': ['asvitkine+watch@chromium.org'],
     'metrics_xml_files': ['asvitkine+watch@chromium.org'],
