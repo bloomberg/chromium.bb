@@ -52,6 +52,7 @@ load_library_perf_tests,,
 loading.cluster_telemetry,,
 loading.mobile,"kouhei@chromium.org, ksakamoto@chromium.org",
 media.android.tough_video_cases,,
+media.android.tough_video_cases_tbmv2,"johnchen@chromium.org, crouleau@chromium.org",Internals>Media
 media.chromeOS.tough_video_cases,,
 media.chromeOS4kOnly.tough_video_cases,,
 media.media_cns_cases,"crouleau@chromium.org, videostack-eng@google.com",
