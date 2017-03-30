@@ -16,11 +16,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
 #include "components/sync/engine_impl/worker_entity_tracker.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
@@ -328,6 +330,15 @@ void ModelTypeWorker::AbortMigration() {
   pending_updates_.clear();
   has_encrypted_updates_ = false;
   nudge_handler_->NudgeForInitialDownload(type_);
+}
+
+size_t ModelTypeWorker::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  memory_usage += EstimateMemoryUsage(model_type_state_);
+  memory_usage += EstimateMemoryUsage(entities_);
+  memory_usage += EstimateMemoryUsage(pending_updates_);
+  return memory_usage;
 }
 
 base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {

@@ -122,6 +122,9 @@ class ProcessorEntityTracker {
   // base_specifics_hash if the entity was not already unsynced.
   void IncrementSequenceNumber();
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class ProcessorEntityTrackerTest;
 

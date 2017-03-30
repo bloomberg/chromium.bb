@@ -98,6 +98,9 @@ class ModelTypeWorker : public UpdateHandler,
   // clear the update data that has been added so far.
   void AbortMigration();
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 
  private:

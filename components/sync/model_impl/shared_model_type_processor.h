@@ -74,6 +74,9 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         const UpdateResponseDataList& updates) override;
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend class ModelTypeDebugInfo;
   friend class SharedModelTypeProcessorTest;

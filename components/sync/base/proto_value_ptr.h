@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/trace_event/memory_usage_estimator.h"
 
 namespace syncer {
 
@@ -127,6 +128,10 @@ class ProtoValuePtr {
 
 template <typename T, typename Traits>
 size_t EstimateMemoryUsage(const ProtoValuePtr<T, Traits>& ptr) {
+  // Including estimators from base::trace_event (memory_usage_estimator.h)
+  // allows to resolve EstimateMemoryUsage name in cases when T is not a sync
+  // protobuf and thus sync_pb::EstimateMemoryUsage doesn't get matched.
+  using base::trace_event::EstimateMemoryUsage;
   return &ptr.value() != &Traits::DefaultValue()
              ? EstimateMemoryUsage(ptr.value())
              : 0;

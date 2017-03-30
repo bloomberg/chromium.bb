@@ -121,8 +121,11 @@ size_t EstimateMemoryUsage(const P& proto) {
 #define INSTANTIATE(Proto) \
   template size_t EstimateMemoryUsage<Proto>(const Proto&);
 
-INSTANTIATE(EntitySpecifics)
 INSTANTIATE(AttachmentMetadata)
 INSTANTIATE(DataTypeContext)
+INSTANTIATE(EntityMetadata)
+INSTANTIATE(EntitySpecifics)
+INSTANTIATE(ModelTypeState)
+INSTANTIATE(UniquePosition)
 
 }  // namespace sync_pb

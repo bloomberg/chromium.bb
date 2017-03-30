@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/syncable/syncable_util.h"
@@ -175,6 +176,17 @@ UpdateResponseData WorkerEntityTracker::GetEncryptedUpdate() const {
 
 void WorkerEntityTracker::ClearEncryptedUpdate() {
   encrypted_update_.reset();
+}
+
+size_t WorkerEntityTracker::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  memory_usage += EstimateMemoryUsage(client_tag_hash_);
+  memory_usage += EstimateMemoryUsage(id_);
+  memory_usage += EstimateMemoryUsage(pending_commit_);
+  memory_usage += EstimateMemoryUsage(pending_commit_specifics_hash_);
+  memory_usage += EstimateMemoryUsage(encrypted_update_);
+  return memory_usage;
 }
 
 bool WorkerEntityTracker::IsInConflict() const {

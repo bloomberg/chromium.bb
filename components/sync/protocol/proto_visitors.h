@@ -21,6 +21,7 @@
 #include "components/sync/protocol/favicon_image_specifics.pb.h"
 #include "components/sync/protocol/favicon_tracking_specifics.pb.h"
 #include "components/sync/protocol/history_delete_directive_specifics.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/preference_specifics.pb.h"
@@ -857,6 +858,13 @@ VISIT_PROTO_FIELDS(const sync_pb::AttachmentMetadataRecord& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::AttachmentMetadata& proto) {
   VISIT_REP(record);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::ModelTypeState& proto) {
+  VISIT(progress_marker);
+  VISIT(type_context);
+  VISIT(encryption_key_name);
+  VISIT(initial_sync_done);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {

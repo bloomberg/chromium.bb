@@ -75,6 +75,9 @@ class WorkerEntityTracker {
   // Clears the encrypted update. Allows us to resume regular commit behavior.
   void ClearEncryptedUpdate();
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
   const std::string& id() const { return id_; }
   const std::string& client_tag_hash() const { return client_tag_hash_; }
 

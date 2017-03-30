@@ -6,8 +6,10 @@
 
 #include "base/base64.h"
 #include "base/sha1.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
 
@@ -237,6 +239,15 @@ void ProcessorEntityTracker::IncrementSequenceNumber() {
     metadata_.set_base_specifics_hash(metadata_.specifics_hash());
   }
   metadata_.set_sequence_number(metadata_.sequence_number() + 1);
+}
+
+size_t ProcessorEntityTracker::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  memory_usage += EstimateMemoryUsage(storage_key_);
+  memory_usage += EstimateMemoryUsage(metadata_);
+  memory_usage += EstimateMemoryUsage(commit_data_);
+  return memory_usage;
 }
 
 bool ProcessorEntityTracker::MatchesSpecificsHash(

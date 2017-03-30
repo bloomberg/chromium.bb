@@ -79,6 +79,9 @@ struct EntityData {
   // Dumps all info into a DictionaryValue and returns it.
   std::unique_ptr<base::DictionaryValue> ToDictionaryValue();
 
+  // Returns the estimate of dynamically allocated memory in bytes.
+  size_t EstimateMemoryUsage() const;
+
  private:
   friend struct EntityDataTraits;
   // Used to transfer the data without copying.

@@ -12,11 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/engine/activation_context.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
+#include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
 
@@ -662,6 +664,15 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
   // Verify the tag hash matches, may be relaxed in the future.
   DCHECK_EQ(data.client_tag_hash, GetHashForTag(bridge_->GetClientTag(data)));
   return CreateEntity(bridge_->GetStorageKey(data), data);
+}
+
+size_t SharedModelTypeProcessor::EstimateMemoryUsage() const {
+  using base::trace_event::EstimateMemoryUsage;
+  size_t memory_usage = 0;
+  memory_usage += EstimateMemoryUsage(model_type_state_);
+  memory_usage += EstimateMemoryUsage(entities_);
+  memory_usage += EstimateMemoryUsage(storage_key_to_tag_hash_);
+  return memory_usage;
 }
 
 }  // namespace syncer
