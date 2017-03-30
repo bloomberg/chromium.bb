@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/StackUtil.h"
+#include "platform/wtf/StackUtil.h"
 
-#include "wtf/Assertions.h"
-#include "wtf/Threading.h"
-#include "wtf/WTFThreadData.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/WTFThreadData.h"
 
 #if OS(WIN)
 #include <stddef.h>

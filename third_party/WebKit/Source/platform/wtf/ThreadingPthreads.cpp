@@ -28,18 +28,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/Threading.h"
+#include "platform/wtf/Threading.h"
 
 #if OS(POSIX)
 
-#include "wtf/CurrentTime.h"
-#include "wtf/DateMath.h"
-#include "wtf/HashMap.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/WTFThreadData.h"
-#include "wtf/dtoa/double-conversion.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DateMath.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/WTFThreadData.h"
+#include "platform/wtf/dtoa/double-conversion.h"
 #include <errno.h>
 #include <limits.h>
 #include <sched.h>

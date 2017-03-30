@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/FilePrintStream.h"
+#include "platform/wtf/FilePrintStream.h"
 
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 #include <memory>
 
 namespace WTF {

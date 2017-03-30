@@ -24,11 +24,11 @@
  *
  */
 
-#include "wtf/WTFThreadData.h"
+#include "platform/wtf/WTFThreadData.h"
 
-#include "wtf/StackUtil.h"
-#include "wtf/text/AtomicStringTable.h"
-#include "wtf/text/TextCodecICU.h"
+#include "platform/wtf/StackUtil.h"
+#include "platform/wtf/text/AtomicStringTable.h"
+#include "platform/wtf/text/TextCodecICU.h"
 
 namespace WTF {
 

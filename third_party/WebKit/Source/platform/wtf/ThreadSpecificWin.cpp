@@ -19,14 +19,14 @@
  *
  */
 
-#include "ThreadSpecific.h"
+#include "platform/wtf/ThreadSpecific.h"
 
 #if OS(WIN)
 
-#include "StdLibExtras.h"
-#include "ThreadingPrimitives.h"
-#include "wtf/Allocator.h"
-#include "wtf/DoublyLinkedList.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/DoublyLinkedList.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace WTF {
 

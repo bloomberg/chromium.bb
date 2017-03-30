@@ -38,12 +38,11 @@ component("wtf") {
     "CryptographicallyRandomNumber.h",
     "CurrentTime.h",
     "DataLog.h",
-    "DateMath.cpp",
     "DateMath.h",
     "Deque.h",
+    "Dummy.cpp",
     "DoublyLinkedList.h",
     "DynamicAnnotations.h",
-    "FilePrintStream.cpp",
     "FilePrintStream.h",
     "Forward.h",
     "Functional.h",
@@ -57,7 +56,6 @@ component("wtf") {
     "HashTableDeletedValueType.h",
     "HashTraits.h",
     "HexNumber.h",
-    "InstanceCounter.cpp",
     "InstanceCounter.h",
     "LeakAnnotations.h",
     "ListHashSet.h",
@@ -68,7 +66,6 @@ component("wtf") {
     "NotFound.h",
     "Optional.h",
     "PassRefPtr.h",
-    "PrintStream.cpp",
     "PrintStream.h",
     "PtrUtil.h",
     "RefCounted.h",
@@ -77,9 +74,7 @@ component("wtf") {
     "RetainPtr.h",
     "SaturatedArithmetic.h",
     "SizeAssertions.h",
-    "SizeLimits.cpp",
     "SpinLock.h",
-    "StackUtil.cpp",
     "StackUtil.h",
     "StaticConstructors.h",
     "StdLibExtras.h",
@@ -90,20 +85,15 @@ component("wtf") {
     "ThreadRestrictionVerifier.h",
     "ThreadSafeRefCounted.h",
     "ThreadSpecific.h",
-    "ThreadSpecificWin.cpp",
     "Threading.h",
     "ThreadingPrimitives.h",
-    "ThreadingPthreads.cpp",
-    "ThreadingWin.cpp",
     "Time.h",
     "TreeNode.h",
     "TypeTraits.h",
     "Vector.h",
     "VectorTraits.h",
-    "WTF.cpp",
     "WTF.h",
     "WTFExport.h",
-    "WTFThreadData.cpp",
     "WTFThreadData.h",
     "WeakPtr.h",
     "allocator/PartitionAllocator.h",
@@ -194,18 +184,6 @@ component("wtf") {
     "//third_party/WebKit/Source/platform/wtf:platform_wtf",
     "//third_party/icu",
   ]
-
-  if (is_win) {
-    sources -= [ "ThreadingPthreads.cpp" ]
-
-    cflags = [ "/wd4068" ]  # Unknown pragma.
-  } else {
-    # Non-Windows.
-    sources -= [
-      "ThreadSpecificWin.cpp",
-      "ThreadingWin.cpp",
-    ]
-  }
 
   if (is_android) {
     libs = [ "log" ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2012, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,52 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/WTF.h"
+#ifndef SaturatedArithmetic_h
+#define SaturatedArithmetic_h
 
-#include "wtf/Assertions.h"
-#include "wtf/Functional.h"
-#include "wtf/StackUtil.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringStatics.h"
-#include "wtf/typed_arrays/ArrayBufferContents.h"
+#include "base/numerics/saturated_arithmetic.h"
 
 namespace WTF {
-
-extern void initializeThreading();
-
-bool s_initialized;
-void (*s_callOnMainThreadFunction)(MainThreadFunction, void*);
-ThreadIdentifier s_mainThreadIdentifier;
-
-namespace internal {
-
-void callOnMainThread(MainThreadFunction* function, void* context) {
-  (*s_callOnMainThreadFunction)(function, context);
-}
-
-}  // namespace internal
-
-bool isMainThread() {
-  return currentThread() == s_mainThreadIdentifier;
-}
-
-void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*)) {
-  // WTF, and Blink in general, cannot handle being re-initialized.
-  // Make that explicit here.
-  RELEASE_ASSERT(!s_initialized);
-  s_initialized = true;
-  initializeCurrentThread();
-  s_mainThreadIdentifier = currentThread();
-
-  initializeThreading();
-
-  s_callOnMainThreadFunction = callOnMainThreadFunction;
-  internal::initializeMainThreadStackEstimate();
-  AtomicString::init();
-  StringStatics::init();
-}
-
+using base::SaturatedAddition;
+using base::SaturatedSubtraction;
+using base::SaturatedNegative;
+using base::SaturatedSet;
 }  // namespace WTF
+
+using WTF::SaturatedAddition;
+using WTF::SaturatedSubtraction;
+using WTF::SaturatedNegative;
+using WTF::SaturatedSet;
+
+#endif  // SaturatedArithmetic_h
