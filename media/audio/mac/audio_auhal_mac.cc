@@ -52,19 +52,104 @@ static_assert(0 == LEFT && 1 == RIGHT && 2 == CENTER && 3 == LFE &&
 static void WrapBufferList(AudioBufferList* buffer_list,
                            AudioBus* bus,
                            int frames) {
-  DCHECK(buffer_list);
-  DCHECK(bus);
   const int channels = bus->channels();
   const int buffer_list_channels = buffer_list->mNumberBuffers;
   CHECK_EQ(channels, buffer_list_channels);
 
   // Copy pointers from AudioBufferList.
-  for (int i = 0; i < channels; ++i) {
+  for (int i = 0; i < channels; ++i)
     bus->SetChannelData(i, static_cast<float*>(buffer_list->mBuffers[i].mData));
-  }
 
   // Finally set the actual length.
   bus->set_frames(frames);
+}
+
+// Sets the stream format on the AUHAL to PCM Float32 non-interleaved for the
+// given number of channels on the given scope and element. The created stream
+// description will be stored in |desc|.
+static bool SetStreamFormat(int channels,
+                            int sample_rate,
+                            AudioUnit audio_unit,
+                            AudioStreamBasicDescription* format) {
+  format->mSampleRate = sample_rate;
+  format->mFormatID = kAudioFormatLinearPCM;
+  format->mFormatFlags =
+      kAudioFormatFlagsNativeFloatPacked | kLinearPCMFormatFlagIsNonInterleaved;
+  format->mBytesPerPacket = sizeof(Float32);
+  format->mFramesPerPacket = 1;
+  format->mBytesPerFrame = sizeof(Float32);
+  format->mChannelsPerFrame = channels;
+  format->mBitsPerChannel = 32;
+  format->mReserved = 0;
+
+  // Set stream formats. See Apple's tech note for details on the peculiar way
+  // that inputs and outputs are handled in the AUHAL concerning scope and bus
+  // (element) numbers:
+  // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
+  return AudioUnitSetProperty(audio_unit, kAudioUnitProperty_StreamFormat,
+                              kAudioUnitScope_Input, AUElement::OUTPUT, format,
+                              sizeof(*format)) == noErr;
+}
+
+// Converts |channel_layout| into CoreAudio format and sets up the AUHAL with
+// our layout information so it knows how to remap the channels.
+static void SetAudioChannelLayout(int channels,
+                                  ChannelLayout channel_layout,
+                                  AudioUnit audio_unit) {
+  DCHECK(audio_unit);
+  DCHECK_GT(channels, 0);
+  DCHECK_GT(channel_layout, CHANNEL_LAYOUT_UNSUPPORTED);
+
+  // AudioChannelLayout is structure ending in a variable length array, so we
+  // can't directly allocate one. Instead compute the size and and allocate one
+  // inside of a byte array.
+  //
+  // Code modeled after example from Apple documentation here:
+  // https://developer.apple.com/library/content/qa/qa1627/_index.html
+  const size_t layout_size =
+      offsetof(AudioChannelLayout, mChannelDescriptions[channels]);
+  std::unique_ptr<uint8_t[]> layout_storage(new uint8_t[layout_size]);
+  memset(layout_storage.get(), 0, layout_size);
+  AudioChannelLayout* coreaudio_layout =
+      reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
+
+  coreaudio_layout->mNumberChannelDescriptions = channels;
+  coreaudio_layout->mChannelLayoutTag =
+      kAudioChannelLayoutTag_UseChannelDescriptions;
+  AudioChannelDescription* descriptions =
+      coreaudio_layout->mChannelDescriptions;
+
+  if (channel_layout == CHANNEL_LAYOUT_DISCRETE) {
+    // For the discrete case just assume common input mappings; once we run out
+    // of known channels mark them as unknown.
+    for (int ch = 0; ch < channels; ++ch) {
+      descriptions[ch].mChannelLabel = ch > CHANNELS_MAX
+                                           ? kAudioChannelLabel_Unknown
+                                           : kCoreAudioChannelMapping[ch];
+      descriptions[ch].mChannelFlags = kAudioChannelFlags_AllOff;
+    }
+  } else if (channel_layout == CHANNEL_LAYOUT_MONO) {
+    // CoreAudio has a special label for mono.
+    DCHECK_EQ(channels, 1);
+    descriptions[0].mChannelLabel = kAudioChannelLabel_Mono;
+    descriptions[0].mChannelFlags = kAudioChannelFlags_AllOff;
+  } else {
+    for (int ch = 0; ch <= CHANNELS_MAX; ++ch) {
+      const int order = ChannelOrder(channel_layout, static_cast<Channels>(ch));
+      if (order == -1)
+        continue;
+      descriptions[order].mChannelLabel = kCoreAudioChannelMapping[ch];
+      descriptions[order].mChannelFlags = kAudioChannelFlags_AllOff;
+    }
+  }
+
+  OSStatus result = AudioUnitSetProperty(
+      audio_unit, kAudioUnitProperty_AudioChannelLayout, kAudioUnitScope_Input,
+      0, coreaudio_layout, layout_size);
+  if (result != noErr) {
+    OSSTATUS_DLOG(ERROR, result)
+        << "Failed to set audio channel layout. Using default layout.";
+  }
 }
 
 AUHALStream::AUHALStream(AudioManagerMac* manager,
@@ -73,12 +158,10 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
                          const AudioManager::LogCallback& log_callback)
     : manager_(manager),
       params_(params),
-      output_channels_(params_.channels()),
       number_of_frames_(params_.frames_per_buffer()),
       number_of_frames_requested_(0),
       source_(NULL),
       device_(device),
-      audio_unit_(0),
       volume_(1),
       stopped_(true),
       current_lost_frames_(0),
@@ -90,18 +173,13 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
       log_callback_(log_callback) {
   // We must have a manager.
   DCHECK(manager_);
+  DCHECK(params_.IsValid());
+  DCHECK_NE(device, kAudioObjectUnknown);
   CHECK(!log_callback_.Equals(AudioManager::LogCallback()));
-
-  DVLOG(1) << "ctor";
-  DVLOG(1) << "device ID: 0x" << std::hex << device;
-  DVLOG(1) << "buffer size: " << number_of_frames_;
-  DVLOG(1) << "output channels: " << output_channels_;
-  DVLOG(1) << "sample rate: " << params_.sample_rate();
 }
 
 AUHALStream::~AUHALStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "~dtor";
   CHECK(!audio_unit_);
 
   ReportAndResetStats();
@@ -109,26 +187,26 @@ AUHALStream::~AUHALStream() {
 
 bool AUHALStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!output_bus_.get());
+  DCHECK(!output_bus_);
   DCHECK(!audio_unit_);
-  DVLOG(1) << "Open";
 
   // The output bus will wrap the AudioBufferList given to us in
   // the Render() callback.
-  DCHECK_GT(output_channels_, 0);
-  output_bus_ = AudioBus::CreateWrapper(output_channels_);
+  output_bus_ = AudioBus::CreateWrapper(params_.channels());
 
   bool configured = ConfigureAUHAL();
-  if (configured)
+  if (configured) {
+    DCHECK(audio_unit_);
+    DCHECK(audio_unit_->is_valid());
     hardware_latency_ = GetHardwareLatency();
+  }
 
   return configured;
 }
 
 void AUHALStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "Close";
-  CloseAudioUnit();
+  audio_unit_.reset();
   // Inform the audio manager that we have been closed. This will cause our
   // destruction. Also include the device ID as a signal to the audio manager
   // that it should try to increase the native I/O buffer size after the stream
@@ -138,7 +216,6 @@ void AUHALStream::Close() {
 
 void AUHALStream::Start(AudioSourceCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(1) << "Start";
   DCHECK(callback);
   if (!audio_unit_) {
     DLOG(ERROR) << "Open() has not been called successfully";
@@ -170,7 +247,7 @@ void AUHALStream::Start(AudioSourceCallback* callback) {
     source_ = callback;
   }
 
-  OSStatus result = AudioOutputUnitStart(audio_unit_);
+  OSStatus result = AudioOutputUnitStart(audio_unit_->audio_unit());
   if (result == noErr)
     return;
 
@@ -184,9 +261,8 @@ void AUHALStream::Stop() {
   deferred_start_cb_.Cancel();
   if (stopped_)
     return;
-  DVLOG(1) << "Stop";
-  DVLOG(2) << "number_of_frames: " << number_of_frames_;
-  OSStatus result = AudioOutputUnitStop(audio_unit_);
+
+  OSStatus result = AudioOutputUnitStop(audio_unit_->audio_unit());
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioOutputUnitStop() failed.";
   if (result != noErr)
@@ -231,7 +307,7 @@ OSStatus AUHALStream::Render(AudioUnitRenderActionFlags* flags,
       DVLOG(1) << "Audio frame size changed from " << number_of_frames_
                << " to " << number_of_frames << " adding FIFO to compensate.";
       audio_fifo_.reset(new AudioPullFifo(
-          output_channels_, number_of_frames_,
+          params_.channels(), number_of_frames_,
           base::Bind(&AUHALStream::ProvideInput, base::Unretained(this))));
     }
   }
@@ -287,17 +363,14 @@ OSStatus AUHALStream::InputProc(void* user_data,
 }
 
 base::TimeDelta AUHALStream::GetHardwareLatency() {
-  if (!audio_unit_ || device_ == kAudioObjectUnknown) {
-    DLOG(WARNING) << "AudioUnit is NULL or device ID is unknown";
-    return base::TimeDelta();
-  }
+  DCHECK(audio_unit_);
 
   // Get audio unit latency.
-  Float64 audio_unit_latency_sec = 0.0;
+  Float64 audio_unit_latency_sec;
   UInt32 size = sizeof(audio_unit_latency_sec);
   OSStatus result = AudioUnitGetProperty(
-      audio_unit_, kAudioUnitProperty_Latency, kAudioUnitScope_Global, 0,
-      &audio_unit_latency_sec, &size);
+      audio_unit_->audio_unit(), kAudioUnitProperty_Latency,
+      kAudioUnitScope_Global, 0, &audio_unit_latency_sec, &size);
   if (result != noErr) {
     OSSTATUS_DLOG(WARNING, result) << "Could not get AudioUnit latency";
     return base::TimeDelta();
@@ -399,88 +472,32 @@ void AUHALStream::ReportAndResetStats() {
   largest_glitch_frames_ = 0;
 }
 
-bool AUHALStream::SetStreamFormat(AudioStreamBasicDescription* desc,
-                                  int channels,
-                                  UInt32 scope,
-                                  UInt32 element) {
-  DCHECK(desc);
-  AudioStreamBasicDescription& format = *desc;
-
-  format.mSampleRate = params_.sample_rate();
-  format.mFormatID = kAudioFormatLinearPCM;
-  format.mFormatFlags =
-      kAudioFormatFlagsNativeFloatPacked | kLinearPCMFormatFlagIsNonInterleaved;
-  format.mBytesPerPacket = sizeof(Float32);
-  format.mFramesPerPacket = 1;
-  format.mBytesPerFrame = sizeof(Float32);
-  format.mChannelsPerFrame = channels;
-  format.mBitsPerChannel = 32;
-  format.mReserved = 0;
-
-  OSStatus result =
-      AudioUnitSetProperty(audio_unit_, kAudioUnitProperty_StreamFormat, scope,
-                           element, &format, sizeof(format));
-  return (result == noErr);
-}
-
 bool AUHALStream::ConfigureAUHAL() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_ == kAudioObjectUnknown || output_channels_ == 0)
-    return false;
 
-  AudioComponentDescription desc = {kAudioUnitType_Output,
-                                    kAudioUnitSubType_HALOutput,
-                                    kAudioUnitManufacturer_Apple, 0, 0};
-  AudioComponent comp = AudioComponentFindNext(0, &desc);
-  if (!comp)
+  std::unique_ptr<ScopedAudioUnit> local_audio_unit(
+      new ScopedAudioUnit(device_, AUElement::OUTPUT));
+  if (!local_audio_unit->is_valid())
     return false;
-
-  OSStatus result = AudioComponentInstanceNew(comp, &audio_unit_);
-  if (result != noErr) {
-    OSSTATUS_DLOG(ERROR, result) << "AudioComponentInstanceNew() failed.";
-    return false;
-  }
 
   // Enable output as appropriate.
-  // See Apple technote for details about the EnableIO property.
-  // Note that we use bus 1 for input and bus 0 for output:
-  // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
-  UInt32 enable_IO = 1;
-  result = AudioUnitSetProperty(audio_unit_, kAudioOutputUnitProperty_EnableIO,
-                                kAudioUnitScope_Output, 0, &enable_IO,
-                                sizeof(enable_IO));
-  if (result != noErr) {
-    CloseAudioUnit();
+  UInt32 enable_io = 1;
+  OSStatus result = AudioUnitSetProperty(
+      local_audio_unit->audio_unit(), kAudioOutputUnitProperty_EnableIO,
+      kAudioUnitScope_Output, AUElement::OUTPUT, &enable_io, sizeof(enable_io));
+  if (result != noErr)
     return false;
-  }
 
-  // Set the device to be used with the AUHAL AudioUnit.
-  result = AudioUnitSetProperty(
-      audio_unit_, kAudioOutputUnitProperty_CurrentDevice,
-      kAudioUnitScope_Global, 0, &device_, sizeof(AudioDeviceID));
-  if (result != noErr) {
-    CloseAudioUnit();
-    return false;
-  }
-
-  // Set stream formats.
-  // See Apple's tech note for details on the peculiar way that
-  // inputs and outputs are handled in the AUHAL concerning scope and bus
-  // (element) numbers:
-  // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
-
-  if (!SetStreamFormat(&output_format_, output_channels_, kAudioUnitScope_Input,
-                       0)) {
-    CloseAudioUnit();
+  if (!SetStreamFormat(params_.channels(), params_.sample_rate(),
+                       local_audio_unit->audio_unit(), &output_format_)) {
     return false;
   }
 
   bool size_was_changed = false;
   size_t io_buffer_frame_size = 0;
-  if (!manager_->MaybeChangeBufferSize(device_, audio_unit_, 0,
-                                       number_of_frames_, &size_was_changed,
+  if (!manager_->MaybeChangeBufferSize(device_, local_audio_unit->audio_unit(),
+                                       0, number_of_frames_, &size_was_changed,
                                        &io_buffer_frame_size)) {
-    CloseAudioUnit();
     return false;
   }
 
@@ -489,92 +506,22 @@ bool AUHALStream::ConfigureAUHAL() {
   callback.inputProc = InputProc;
   callback.inputProcRefCon = this;
   result = AudioUnitSetProperty(
-      audio_unit_, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input,
-      0, &callback, sizeof(callback));
-  if (result != noErr) {
-    CloseAudioUnit();
+      local_audio_unit->audio_unit(), kAudioUnitProperty_SetRenderCallback,
+      kAudioUnitScope_Input, AUElement::OUTPUT, &callback, sizeof(callback));
+  if (result != noErr)
     return false;
-  }
 
-  SetAudioChannelLayout();
+  SetAudioChannelLayout(params_.channels(), params_.channel_layout(),
+                        local_audio_unit->audio_unit());
 
-  result = AudioUnitInitialize(audio_unit_);
+  result = AudioUnitInitialize(local_audio_unit->audio_unit());
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result) << "AudioUnitInitialize() failed.";
-    CloseAudioUnit();
     return false;
   }
 
+  audio_unit_ = std::move(local_audio_unit);
   return true;
-}
-
-void AUHALStream::CloseAudioUnit() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!audio_unit_)
-    return;
-
-  OSStatus result = AudioUnitUninitialize(audio_unit_);
-  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-      << "AudioUnitUninitialize() failed.";
-  result = AudioComponentInstanceDispose(audio_unit_);
-  OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
-      << "AudioComponentInstanceDispose() failed.";
-  audio_unit_ = 0;
-}
-
-void AUHALStream::SetAudioChannelLayout() {
-  DCHECK(audio_unit_);
-
-  // AudioChannelLayout is structure ending in a variable length array, so we
-  // can't directly allocate one. Instead compute the size and and allocate one
-  // inside of a byte array.
-  //
-  // Code modeled after example from Apple documentation here:
-  // https://developer.apple.com/library/content/qa/qa1627/_index.html
-  const size_t layout_size =
-      offsetof(AudioChannelLayout, mChannelDescriptions[params_.channels()]);
-  std::unique_ptr<uint8_t[]> layout_storage(new uint8_t[layout_size]);
-  memset(layout_storage.get(), 0, layout_size);
-  AudioChannelLayout* channel_layout =
-      reinterpret_cast<AudioChannelLayout*>(layout_storage.get());
-
-  channel_layout->mNumberChannelDescriptions = params_.channels();
-  channel_layout->mChannelLayoutTag =
-      kAudioChannelLayoutTag_UseChannelDescriptions;
-  AudioChannelDescription* descriptions = channel_layout->mChannelDescriptions;
-
-  if (params_.channel_layout() == CHANNEL_LAYOUT_DISCRETE) {
-    // For the discrete case just assume common input mappings; once we run out
-    // of known channels mark them as unknown.
-    for (int ch = 0; ch < params_.channels(); ++ch) {
-      descriptions[ch].mChannelLabel = ch > CHANNELS_MAX
-                                           ? kAudioChannelLabel_Unknown
-                                           : kCoreAudioChannelMapping[ch];
-      descriptions[ch].mChannelFlags = kAudioChannelFlags_AllOff;
-    }
-  } else if (params_.channel_layout() == CHANNEL_LAYOUT_MONO) {
-    // CoreAudio has a special label for mono.
-    DCHECK_EQ(params_.channels(), 1);
-    descriptions[0].mChannelLabel = kAudioChannelLabel_Mono;
-    descriptions[0].mChannelFlags = kAudioChannelFlags_AllOff;
-  } else {
-    for (int ch = 0; ch <= CHANNELS_MAX; ++ch) {
-      const int order =
-          ChannelOrder(params_.channel_layout(), static_cast<Channels>(ch));
-      if (order == -1)
-        continue;
-      descriptions[order].mChannelLabel = kCoreAudioChannelMapping[ch];
-      descriptions[order].mChannelFlags = kAudioChannelFlags_AllOff;
-    }
-  }
-
-  OSStatus result = AudioUnitSetProperty(
-      audio_unit_, kAudioUnitProperty_AudioChannelLayout, kAudioUnitScope_Input,
-      0, channel_layout, layout_size);
-  if (result != noErr) {
-    OSSTATUS_DLOG(ERROR, result)
-        << "Failed to set audio channel layout. Using default layout.";
-  }
 }
 
 }  // namespace media
