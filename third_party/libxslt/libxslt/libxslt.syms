@@ -310,6 +310,7 @@ LIBXML2_1.0.24 {
   xsltLibxmlVersion; # variable
   xsltLibxsltVersion; # variable
   xsltMaxDepth; # variable
+  xsltMaxVars; # variable
 
 # xsltInternals
   xsltParseStylesheetImportedDoc;
@@ -486,9 +487,6 @@ LIBXML2_1.1.27 {
 # xsltlocale
   xsltFreeLocales;
 
-# xslt
-  xsltMaxVars; # variable
-
 # xsltutils
   xsltXPathCompileFlags;
 } LIBXML2_1.1.26;
@@ -498,5 +496,6 @@ LIBXML2_1.1.30 {
 
 # xsltInternals
   xsltFlagRVTs;
+  xsltDecimalFormatGetByQName;
 } LIBXML2_1.1.27;
 

@@ -275,7 +275,7 @@ xsltIsBlank(xmlChar *str) {
  *									*
  ************************************************************************/
 static xsltDecimalFormatPtr
-xsltNewDecimalFormat(xmlChar *name)
+xsltNewDecimalFormat(const xmlChar *nsUri, xmlChar *name)
 {
     xsltDecimalFormatPtr self;
     /* UTF-8 for 0x2030 */
@@ -284,6 +284,7 @@ xsltNewDecimalFormat(xmlChar *name)
     self = xmlMalloc(sizeof(xsltDecimalFormat));
     if (self != NULL) {
 	self->next = NULL;
+        self->nsUri = nsUri;
 	self->name = name;
 
 	/* Default values */
@@ -369,7 +370,39 @@ xsltDecimalFormatGetByName(xsltStylesheetPtr style, xmlChar *name)
 	for (result = style->decimalFormat->next;
 	     result != NULL;
 	     result = result->next) {
-	    if (xmlStrEqual(name, result->name))
+	    if ((result->nsUri == NULL) && xmlStrEqual(name, result->name))
+		return result;
+	}
+	style = xsltNextImport(style);
+    }
+    return result;
+}
+
+/**
+ * xsltDecimalFormatGetByQName:
+ * @style: the XSLT stylesheet
+ * @nsUri: the namespace URI of the QName
+ * @name: the local part of the QName
+ *
+ * Find decimal-format by QName
+ *
+ * Returns the xsltDecimalFormatPtr
+ */
+xsltDecimalFormatPtr
+xsltDecimalFormatGetByQName(xsltStylesheetPtr style, const xmlChar *nsUri,
+                            const xmlChar *name)
+{
+    xsltDecimalFormatPtr result = NULL;
+
+    if (name == NULL)
+	return style->decimalFormat;
+
+    while (style != NULL) {
+	for (result = style->decimalFormat->next;
+	     result != NULL;
+	     result = result->next) {
+	    if (xmlStrEqual(nsUri, result->nsUri) &&
+                xmlStrEqual(name, result->name))
 		return result;
 	}
 	style = xsltNextImport(style);
@@ -747,7 +780,7 @@ xsltNewStylesheet(void) {
 
     ret->omitXmlDeclaration = -1;
     ret->standalone = -1;
-    ret->decimalFormat = xsltNewDecimalFormat(NULL);
+    ret->decimalFormat = xsltNewDecimalFormat(NULL, NULL);
     ret->indent = -1;
     ret->errors = 0;
     ret->warnings = 0;
@@ -1384,18 +1417,37 @@ xsltParseStylesheetDecimalFormat(xsltStylesheetPtr style, xmlNodePtr cur)
 
     prop = xmlGetNsProp(cur, BAD_CAST("name"), NULL);
     if (prop != NULL) {
-	format = xsltDecimalFormatGetByName(style, prop);
+        const xmlChar *nsUri;
+
+        if (xmlValidateQName(prop, 0) != 0) {
+            xsltTransformError(NULL, style, cur,
+                "xsl:decimal-format: Invalid QName '%s'.\n", prop);
+	    style->warnings++;
+            xmlFree(prop);
+            return;
+        }
+        /*
+        * TODO: Don't use xsltGetQNameURI().
+        */
+        nsUri = xsltGetQNameURI(cur, &prop);
+        if (prop == NULL) {
+	    style->warnings++;
+            return;
+        }
+	format = xsltDecimalFormatGetByQName(style, nsUri, prop);
 	if (format != NULL) {
 	    xsltTransformError(NULL, style, cur,
 	 "xsltParseStylestyleDecimalFormat: %s already exists\n", prop);
-	    if (style != NULL) style->warnings++;
+	    style->warnings++;
+            xmlFree(prop);
 	    return;
 	}
-	format = xsltNewDecimalFormat(prop);
+	format = xsltNewDecimalFormat(nsUri, prop);
 	if (format == NULL) {
 	    xsltTransformError(NULL, style, cur,
      "xsltParseStylestyleDecimalFormat: failed creating new decimal-format\n");
-	    if (style != NULL) style->errors++;
+	    style->errors++;
+            xmlFree(prop);
 	    return;
 	}
 	/* Append new decimal-format structure */

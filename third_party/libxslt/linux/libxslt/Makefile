@@ -122,7 +122,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" \
 	"$(DESTDIR)$(xsltincdir)" "$(DESTDIR)$(xsltincdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libxslt_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+libxslt_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_libxslt_la_OBJECTS = attrvt.lo xslt.lo xsltlocale.lo xsltutils.lo \
 	pattern.lo templates.lo variables.lo keys.lo numbers.lo \
 	extensions.lo extra.lo functions.lo namespaces.lo imports.lo \
@@ -299,7 +300,7 @@ PYTHON_SITE_PACKAGES = /usr/lib/python2.7/dist-packages
 PYTHON_SUBDIR = python
 PYTHON_VERSION = 2.7
 RANLIB = ranlib
-RELDATE = Fri Jan 13 2017
+RELDATE = Tue Mar 28 2017
 RM = /bin/rm
 SED = /bin/sed
 SET_MAKE = 
@@ -437,7 +438,7 @@ nodist_libxslt_la_SOURCES = \
 
 #LIBXSLT_VERSION_SCRIPT = 
 LIBXSLT_VERSION_SCRIPT = $(VERSION_SCRIPT_FLAGS)$(srcdir)/libxslt.syms
-libxslt_la_LIBADD = $(LIBXML_LIBS) $(EXTRA_LIBS)
+libxslt_la_LIBADD = $(LIBXML_LIBS) $(EXTRA_LIBS) $(M_LIBS)
 libxslt_la_LDFLAGS = \
 		$(WIN32_EXTRA_LDFLAGS)			\
 		$(LIBXSLT_VERSION_SCRIPT)		\

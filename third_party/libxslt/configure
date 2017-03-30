@@ -13484,7 +13484,7 @@ _ACEOF
 fi
 done
 
-for ac_func in mktime localtime localtime_r asctime time gmtime gmtime_r ftime
+for ac_func in localtime localtime_r time gmtime gmtime_r ftime
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

@@ -324,6 +324,7 @@ struct _xsltDecimalFormat {
     xmlChar *percent;
     xmlChar *permille;
     xmlChar *zeroDigit;
+    const xmlChar *nsUri;
 };
 
 /**
@@ -1854,6 +1855,10 @@ XSLTPUBFUN void XSLTCALL
 XSLTPUBFUN xsltDecimalFormatPtr XSLTCALL
 			xsltDecimalFormatGetByName(xsltStylesheetPtr style,
 						 xmlChar *name);
+XSLTPUBFUN xsltDecimalFormatPtr XSLTCALL
+			xsltDecimalFormatGetByQName(xsltStylesheetPtr style,
+						 const xmlChar *nsUri,
+                                                 const xmlChar *name);
 
 XSLTPUBFUN xsltStylesheetPtr XSLTCALL
 			xsltParseStylesheetProcess(xsltStylesheetPtr ret,

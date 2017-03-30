@@ -332,6 +332,21 @@ exsltFuncFunctionFunction (xmlXPathParserContextPtr ctxt, int nargs) {
     }
 
     /*
+    * When a function is called recursively during evaluation of its
+    * arguments, the recursion check in xsltApplySequenceConstructor
+    * isn't reached.
+    */
+    if (tctxt->depth >= tctxt->maxTemplateDepth) {
+        xsltTransformError(tctxt, NULL, NULL,
+            "exsltFuncFunctionFunction: Potentially infinite recursion "
+            "detected in function {%s}%s.\n",
+            ctxt->context->functionURI, ctxt->context->function);
+        tctxt->state = XSLT_STATE_STOPPED;
+        return;
+    }
+    tctxt->depth++;
+
+    /*
      * We have a problem with the evaluation of function parameters.
      * The original library code did not evaluate XPath expressions until
      * the last moment.  After version 1.1.17 of the libxslt, the logic
@@ -413,7 +428,7 @@ exsltFuncFunctionFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 	xsltFreeStackElemList(params);
 
     if (data->error != 0)
-	return;
+        goto error;
 
     if (data->result != NULL) {
 	ret = data->result;
@@ -441,10 +456,13 @@ exsltFuncFunctionFunction (xmlXPathParserContextPtr ctxt, int nargs) {
 			 "executing a function\n",
 			 ctxt->context->functionURI, ctxt->context->function);
 	xmlFreeNode(fake);
-	return;
+	goto error;
     }
     xmlFreeNode(fake);
     valuePush(ctxt, ret);
+
+error:
+    tctxt->depth--;
 }
 
 

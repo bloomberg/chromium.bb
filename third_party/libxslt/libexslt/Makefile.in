@@ -123,7 +123,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libexslt_la_DEPENDENCIES = $(top_builddir)/libxslt/libxslt.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_libexslt_la_OBJECTS = exslt.lo common.lo crypto.lo math.lo sets.lo \
 	functions.lo strings.lo date.lo saxon.lo dynamic.lo
 libexslt_la_OBJECTS = $(am_libexslt_la_OBJECTS)
@@ -403,7 +404,7 @@ libexslt_la_SOURCES = \
 	libexslt.h			\
 	dynamic.c
 
-libexslt_la_LIBADD = $(top_builddir)/libxslt/libxslt.la $(EXTRA_LIBS) $(LIBGCRYPT_LIBS)
+libexslt_la_LIBADD = $(top_builddir)/libxslt/libxslt.la $(EXTRA_LIBS) $(LIBGCRYPT_LIBS) $(M_LIBS)
 libexslt_la_LDFLAGS = $(WIN32_EXTRA_LDFLAGS) -version-info $(LIBEXSLT_VERSION_INFO)
 man_MANS = libexslt.3
 EXTRA_DIST = $(man_MANS)

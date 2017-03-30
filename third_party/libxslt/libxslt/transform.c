@@ -2686,6 +2686,18 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
 			"xsltApplySequenceConstructor: extension construct %s\n",
 			cur->name));
 #endif
+                    /*
+                     * Disable the xsltCopyTextString optimization for
+                     * extension elements. Extensions could append text using
+                     * xmlAddChild which will free the buffer pointed to by
+                     * 'lasttext'. This buffer could later be reallocated with
+                     * a different size than recorded in 'lasttsize'. See bug
+                     * #777432.
+                     */
+                    if (cur->psvi == xsltExtMarker) {
+                        ctxt->lasttext = NULL;
+                    }
+
 		    ctxt->insert = insert;
 
 		    func(ctxt, contextNode, cur, cur->psvi);
@@ -2868,6 +2880,18 @@ xsltApplySequenceConstructor(xsltTransformContextPtr ctxt,
 		    "xsltApplySequenceConstructor: extension construct %s\n",
                     cur->name));
 #endif
+
+                /*
+                 * Disable the xsltCopyTextString optimization for
+                 * extension elements. Extensions could append text using
+                 * xmlAddChild which will free the buffer pointed to by
+                 * 'lasttext'. This buffer could later be reallocated with
+                 * a different size than recorded in 'lasttsize'. See bug
+                 * #777432.
+                 */
+                if (cur->psvi == xsltExtMarker) {
+	            ctxt->lasttext = NULL;
+                }
 
                 ctxt->insert = insert;
 
@@ -5621,6 +5645,7 @@ typedef struct xsltHTMLVersion {
 } xsltHTMLVersion;
 
 static xsltHTMLVersion xsltHTMLVersions[] = {
+    { "5", NULL, "about:legacy-compat" },
     { "4.01frame", "-//W3C//DTD HTML 4.01 Frameset//EN",
       "http://www.w3.org/TR/1999/REC-html401-19991224/frameset.dtd"},
     { "4.01strict", "-//W3C//DTD HTML 4.01//EN",

@@ -1,6 +1,6 @@
 Name: libxslt
 URL: http://xmlsoft.org/XSLT
-Version: 96c9c644f30ed762735802a27784cc522cff1643
+Version: ac341cbd792ee572941cc9a66e73800219a1a386
 Security Critical: yes
 License: MIT
 License File: Copyright
@@ -20,36 +20,7 @@ Modifications:
   https://crbug.com/676623#c18
 
 To import a new version:
-
-On Linux, get the latest tar via libxml.org and extract and replace
-libxslt/ with libxslt-X.Y.Z/ or clone git://git.gnome.org/libxslt
-remove .gitignore and archive it.
-
-mkdir linux && cd linux
-../configure --without-debug --without-mem-debug --without-debugger --without-plugins --with-libxml-src=../../libxml/linux/ 
-
-Patch to not define HAVE_CLOCK_GETTIME, HAVE_ASCTIME, HAVE_LOCALTIME
-or HAVE_MKTIME.
-
-Disable both branches of locale support in libxslt/xsltconfig.h. This
-file is shared between all platforms and there is no common locale
-support. In particular, Android supports neither xlocale nor,
-unsurprisingly, Win32 locales.
-
-Do the same on Mac and copy the mac/config.h to Linux.
-
-On Windows:
-
-In win32\ run
-cscript //E:jscript configure.js compiler=msvc iconv=no xslt_debug=no mem_debug=no debugger=no modules=no
-and copy config.h to Linux in win32/
-
-Remove:
-  doc/
-  examples/
-  python/
-  tests/
-  vms/
+https://docs.google.com/document/d/18gD61GGEUjFiGqFot4WeV97eyyCa17dTg6r6r7r6ZFE/edit
 
 This roll was done using a script:
-<https://github.com/dominiccooney/blink-tools/blob/bb28df6/roll.py>
+https://github.com/dominiccooney/blink-tools/blob/ac9f8e093ec3d00267d67927a37956e5e8993961/roll.py
