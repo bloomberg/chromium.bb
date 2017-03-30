@@ -682,7 +682,7 @@ enum class SnapshotViewOption {
       (transitionType == TransitionType::TRANSITION_DISMISS) ? 0 : 1.0;
 
   base::WeakNSObject<TabSwitcherController> weakSelf(self);
-  void (^completionBlock)(BOOL) = ^(BOOL) {
+  void (^completionBlock)(BOOL) = ^(BOOL finished) {
     base::scoped_nsobject<TabSwitcherController> strongSelf([weakSelf retain]);
 
     [tabStripPlaceholderView removeFromSuperview];
@@ -690,8 +690,12 @@ enum class SnapshotViewOption {
     [selectedCell setHidden:NO];
     [placeholderView removeFromSuperview];
 
-    if (transitionType == TransitionType::TRANSITION_DISMISS)
+    if (transitionType == TransitionType::TRANSITION_DISMISS) {
       [strongSelf restoreWindowBackgroundColor];
+      if (finished) {
+        [strongSelf setTransitionContext:nil];
+      }
+    }
     [[[strongSelf delegate] tabSwitcherTransitionToolbarOwner]
         reparentToolbarController];
     [[strongSelf view] setUserInteractionEnabled:YES];
