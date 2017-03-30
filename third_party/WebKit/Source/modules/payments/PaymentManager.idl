@@ -11,4 +11,5 @@
 ] interface PaymentManager {
     [CallWith=ScriptState] Promise<void> setManifest(PaymentAppManifest manifest);
     [CallWith=ScriptState] Promise<PaymentAppManifest> getManifest();
+    readonly attribute PaymentInstruments instruments;
 };

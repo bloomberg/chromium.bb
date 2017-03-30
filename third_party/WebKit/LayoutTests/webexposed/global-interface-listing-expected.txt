@@ -4683,6 +4683,7 @@ interface PaymentAddress
     method toJSON
 interface PaymentManager
     attribute @@toStringTag
+    getter instruments
     method constructor
     method getManifest
     method setManifest

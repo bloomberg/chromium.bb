@@ -9,6 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "modules/payments/PaymentAppManifest.h"
 #include "modules/payments/PaymentAppOption.h"
+#include "modules/payments/PaymentInstruments.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
@@ -128,12 +129,19 @@ ScriptPromise PaymentManager::getManifest(ScriptState* scriptState) {
   return promise;
 }
 
+PaymentInstruments* PaymentManager::instruments() {
+  if (!m_instruments)
+    m_instruments = new PaymentInstruments();
+  return m_instruments;
+}
+
 DEFINE_TRACE(PaymentManager) {
   visitor->trace(m_registration);
+  visitor->trace(m_instruments);
 }
 
 PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
-    : m_registration(registration) {
+    : m_registration(registration), m_instruments(nullptr) {
   DCHECK(registration);
   Platform::current()->interfaceProvider()->getInterface(
       mojo::MakeRequest(&m_manager));

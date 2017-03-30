@@ -754,6 +754,13 @@ interface Path2D
     method moveTo
     method quadraticCurveTo
     method rect
+interface PaymentInstruments
+    method constructor
+    method delete
+    method get
+    method has
+    method keys
+    method set
 interface PaymentRequestEvent : ExtendableEvent
     getter appRequest
     method constructor

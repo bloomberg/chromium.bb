@@ -14,6 +14,7 @@
 namespace blink {
 
 class PaymentAppManifest;
+class PaymentInstruments;
 class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
@@ -30,6 +31,8 @@ class MODULES_EXPORT PaymentManager final
   ScriptPromise setManifest(ScriptState*, const PaymentAppManifest&);
   ScriptPromise getManifest(ScriptState*);
 
+  PaymentInstruments* instruments();
+
   DECLARE_TRACE();
 
  private:
@@ -43,6 +46,7 @@ class MODULES_EXPORT PaymentManager final
   void onServiceConnectionError();
 
   Member<ServiceWorkerRegistration> m_registration;
+  Member<PaymentInstruments> m_instruments;
   payments::mojom::blink::PaymentManagerPtr m_manager;
 };
 

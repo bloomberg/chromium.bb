@@ -16,6 +16,8 @@ blink_modules_sources("payments") {
     "PaymentAppServiceWorkerRegistration.cpp",
     "PaymentAppServiceWorkerRegistration.h",
     "PaymentCompleter.h",
+    "PaymentInstruments.cpp",
+    "PaymentInstruments.h",
     "PaymentManager.cpp",
     "PaymentManager.h",
     "PaymentRequest.cpp",
