@@ -4,6 +4,7 @@
 
 #include "core/fileapi/File.h"
 
+#include "platform/FileMetadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -25,6 +26,17 @@ TEST(FileTest, blobBackingFile) {
 
 TEST(FileTest, fileSystemFileWithNativeSnapshot) {
   FileMetadata metadata;
+  metadata.platformPath = "/native/snapshot";
+  File* const file =
+      File::createForFileSystemFile("name", metadata, File::IsUserVisible);
+  EXPECT_TRUE(file->hasBackingFile());
+  EXPECT_EQ("/native/snapshot", file->path());
+  EXPECT_TRUE(file->fileSystemURL().isEmpty());
+}
+
+TEST(FileTest, fileSystemFileWithNativeSnapshotAndSize) {
+  FileMetadata metadata;
+  metadata.length = 1024ll;
   metadata.platformPath = "/native/snapshot";
   File* const file =
       File::createForFileSystemFile("name", metadata, File::IsUserVisible);

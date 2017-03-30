@@ -152,10 +152,18 @@ class PLATFORM_EXPORT BlobData {
 
  public:
   static std::unique_ptr<BlobData> create();
-  // Calling append* on the returned object will check-fail. The caller can only
-  // have an unknown-length file if it is the only item in the blob.
+
+  // Calling append* on objects returned by createFor___WithUnknownSize will
+  // check-fail. The caller can only have an unknown-length file if it is the
+  // only item in the blob.
   static std::unique_ptr<BlobData> createForFileWithUnknownSize(
       const String& path);
+  static std::unique_ptr<BlobData> createForFileWithUnknownSize(
+      const String& path,
+      double expectedModificationTime);
+  static std::unique_ptr<BlobData> createForFileSystemURLWithUnknownSize(
+      const KURL& fileSystemURL,
+      double expectedModificationTime);
 
   // Detaches from current thread so that it can be passed to another thread.
   void detachFromCurrentThread();
@@ -171,6 +179,9 @@ class PLATFORM_EXPORT BlobData {
                   long long offset,
                   long long length,
                   double expectedModificationTime);
+
+  // The given blob must not be a file with unknown size. Please use the
+  // File::appendTo instead.
   void appendBlob(PassRefPtr<BlobDataHandle>,
                   long long offset,
                   long long length);
@@ -184,6 +195,10 @@ class PLATFORM_EXPORT BlobData {
   // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet
   // determined.
   long long length() const;
+
+  bool isSingleUnknownSizeFile() const {
+    return m_fileComposition == FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobDataTest, Consolidation);
@@ -228,6 +243,8 @@ class PLATFORM_EXPORT BlobDataHandle
   String type() const { return m_type.isolatedCopy(); }
   unsigned long long size() const { return m_size; }
 
+  bool isSingleUnknownSizeFile() const { return m_isSingleUnknownSizeFile; }
+
   ~BlobDataHandle();
 
  private:
@@ -238,6 +255,7 @@ class PLATFORM_EXPORT BlobDataHandle
   const String m_uuid;
   const String m_type;
   const long long m_size;
+  const bool m_isSingleUnknownSizeFile;
 };
 
 }  // namespace blink

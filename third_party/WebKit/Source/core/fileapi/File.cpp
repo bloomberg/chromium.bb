@@ -85,22 +85,34 @@ static std::unique_ptr<BlobData> createBlobDataForFileWithName(
 static std::unique_ptr<BlobData> createBlobDataForFileWithMetadata(
     const String& fileSystemName,
     const FileMetadata& metadata) {
-  std::unique_ptr<BlobData> blobData = BlobData::create();
+  std::unique_ptr<BlobData> blobData;
+  if (metadata.length == BlobDataItem::toEndOfFile) {
+    blobData = BlobData::createForFileWithUnknownSize(
+        metadata.platformPath, metadata.modificationTime / msPerSecond);
+  } else {
+    blobData = BlobData::create();
+    blobData->appendFile(metadata.platformPath, 0, metadata.length,
+                         metadata.modificationTime / msPerSecond);
+  }
   blobData->setContentType(
       getContentTypeFromFileName(fileSystemName, File::WellKnownContentTypes));
-  blobData->appendFile(metadata.platformPath, 0, metadata.length,
-                       metadata.modificationTime / msPerSecond);
   return blobData;
 }
 
 static std::unique_ptr<BlobData> createBlobDataForFileSystemURL(
     const KURL& fileSystemURL,
     const FileMetadata& metadata) {
-  std::unique_ptr<BlobData> blobData = BlobData::create();
+  std::unique_ptr<BlobData> blobData;
+  if (metadata.length == BlobDataItem::toEndOfFile) {
+    blobData = BlobData::createForFileSystemURLWithUnknownSize(
+        fileSystemURL, metadata.modificationTime / msPerSecond);
+  } else {
+    blobData = BlobData::create();
+    blobData->appendFileSystemURL(fileSystemURL, 0, metadata.length,
+                                  metadata.modificationTime / msPerSecond);
+  }
   blobData->setContentType(getContentTypeFromFileName(
       fileSystemURL.path(), File::WellKnownContentTypes));
-  blobData->appendFileSystemURL(fileSystemURL, 0, metadata.length,
-                                metadata.modificationTime / msPerSecond);
   return blobData;
 }
 

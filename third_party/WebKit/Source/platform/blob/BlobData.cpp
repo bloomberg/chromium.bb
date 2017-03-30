@@ -86,6 +86,26 @@ std::unique_ptr<BlobData> BlobData::createForFileWithUnknownSize(
   return data;
 }
 
+std::unique_ptr<BlobData> BlobData::createForFileWithUnknownSize(
+    const String& path,
+    double expectedModificationTime) {
+  std::unique_ptr<BlobData> data = WTF::wrapUnique(
+      new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
+  data->m_items.push_back(BlobDataItem(path, 0, BlobDataItem::toEndOfFile,
+                                       expectedModificationTime));
+  return data;
+}
+
+std::unique_ptr<BlobData> BlobData::createForFileSystemURLWithUnknownSize(
+    const KURL& fileSystemURL,
+    double expectedModificationTime) {
+  std::unique_ptr<BlobData> data = WTF::wrapUnique(
+      new BlobData(FileCompositionStatus::SINGLE_UNKNOWN_SIZE_FILE));
+  data->m_items.push_back(BlobDataItem(
+      fileSystemURL, 0, BlobDataItem::toEndOfFile, expectedModificationTime));
+  return data;
+}
+
 void BlobData::detachFromCurrentThread() {
   m_contentType = m_contentType.isolatedCopy();
   for (size_t i = 0; i < m_items.size(); ++i)
@@ -102,7 +122,7 @@ void BlobData::setContentType(const String& contentType) {
 void BlobData::appendData(PassRefPtr<RawData> data,
                           long long offset,
                           long long length) {
-  CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+  DCHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   m_items.push_back(BlobDataItem(std::move(data), offset, length));
 }
@@ -111,8 +131,13 @@ void BlobData::appendFile(const String& path,
                           long long offset,
                           long long length,
                           double expectedModificationTime) {
-  CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+  DCHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
+  DCHECK_NE(length, BlobDataItem::toEndOfFile)
+      << "It is illegal to append file items that have an unknown size. To "
+         "create a blob with a single file with unknown size, use "
+         "BlobData::createForFileWithUnknownSize. Otherwise please provide the "
+         "file size.";
   m_items.push_back(
       BlobDataItem(path, offset, length, expectedModificationTime));
 }
@@ -120,8 +145,10 @@ void BlobData::appendFile(const String& path,
 void BlobData::appendBlob(PassRefPtr<BlobDataHandle> dataHandle,
                           long long offset,
                           long long length) {
-  CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+  DCHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
+  DCHECK(!dataHandle->isSingleUnknownSizeFile())
+      << "It is illegal to append an unknown size file blob.";
   m_items.push_back(BlobDataItem(std::move(dataHandle), offset, length));
 }
 
@@ -129,7 +156,7 @@ void BlobData::appendFileSystemURL(const KURL& url,
                                    long long offset,
                                    long long length,
                                    double expectedModificationTime) {
-  CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+  DCHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   m_items.push_back(
       BlobDataItem(url, offset, length, expectedModificationTime));
@@ -137,7 +164,7 @@ void BlobData::appendFileSystemURL(const KURL& url,
 
 void BlobData::appendText(const String& text,
                           bool doNormalizeLineEndingsToNative) {
-  CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+  DCHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   CString utf8Text = UTF8Encoding().encode(text, WTF::EntitiesForUnencodables);
   RefPtr<RawData> data = nullptr;
@@ -160,7 +187,7 @@ void BlobData::appendText(const String& text,
 }
 
 void BlobData::appendBytes(const void* bytes, size_t length) {
-  CHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
+  DCHECK_EQ(m_fileComposition, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   if (canConsolidateData(length)) {
     m_items.back().data->mutableData()->append(static_cast<const char*>(bytes),
@@ -210,14 +237,17 @@ bool BlobData::canConsolidateData(size_t length) {
 }
 
 BlobDataHandle::BlobDataHandle()
-    : m_uuid(createCanonicalUUIDString()), m_size(0) {
+    : m_uuid(createCanonicalUUIDString()),
+      m_size(0),
+      m_isSingleUnknownSizeFile(false) {
   BlobRegistry::registerBlobData(m_uuid, BlobData::create());
 }
 
 BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
     : m_uuid(createCanonicalUUIDString()),
       m_type(data->contentType().isolatedCopy()),
-      m_size(size) {
+      m_size(size),
+      m_isSingleUnknownSizeFile(data->isSingleUnknownSizeFile()) {
   BlobRegistry::registerBlobData(m_uuid, std::move(data));
 }
 
@@ -226,7 +256,8 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
                                long long size)
     : m_uuid(uuid.isolatedCopy()),
       m_type(isValidBlobType(type) ? type.isolatedCopy() : ""),
-      m_size(size) {
+      m_size(size),
+      m_isSingleUnknownSizeFile(false) {
   BlobRegistry::addBlobDataRef(m_uuid);
 }
 
