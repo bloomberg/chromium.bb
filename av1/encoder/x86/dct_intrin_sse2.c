@@ -257,6 +257,12 @@ void av1_fht4x4_sse2(const int16_t *input, tran_low_t *output, int stride,
       fadst4_sse2(in);
       write_buffer_4x4(output, in);
       break;
+    case IDTX:
+      load_buffer_4x4(input, in, stride, 0, 0);
+      fidtx4_sse2(in);
+      fidtx4_sse2(in);
+      write_buffer_4x4(output, in);
+      break;
     case V_DCT:
       load_buffer_4x4(input, in, stride, 0, 0);
       fdct4_sse2(in);
@@ -1354,6 +1360,13 @@ void av1_fht8x8_sse2(const int16_t *input, tran_low_t *output, int stride,
       load_buffer_8x8(input, in, stride, 1, 0);
       fadst8_sse2(in);
       fadst8_sse2(in);
+      right_shift_8x8(in, 1);
+      write_buffer_8x8(output, in, 8);
+      break;
+    case IDTX:
+      load_buffer_8x8(input, in, stride, 0, 0);
+      fidtx8_sse2(in);
+      fidtx8_sse2(in);
       right_shift_8x8(in, 1);
       write_buffer_8x8(output, in, 8);
       break;
@@ -2577,6 +2590,13 @@ void av1_fht16x16_sse2(const int16_t *input, tran_low_t *output, int stride,
       fadst16_sse2(in0, in1);
       right_shift_16x16(in0, in1);
       fadst16_sse2(in0, in1);
+      write_buffer_16x16(output, in0, in1, 16);
+      break;
+    case IDTX:
+      load_buffer_16x16(input, in0, in1, stride, 0, 0);
+      fidtx16_sse2(in0, in1);
+      right_shift_16x16(in0, in1);
+      fidtx16_sse2(in0, in1);
       write_buffer_16x16(output, in0, in1, 16);
       break;
     case V_DCT:

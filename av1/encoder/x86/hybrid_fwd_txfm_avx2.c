@@ -1025,6 +1025,13 @@ void av1_fht16x16_avx2(const int16_t *input, tran_low_t *output, int stride,
       right_shift_16x16(in);
       fadst16_avx2(in);
       break;
+    case IDTX:
+      load_buffer_16x16(input, stride, 0, 0, in);
+      fidtx16_avx2(in);
+      mm256_transpose_16x16(in);
+      right_shift_16x16(in);
+      fidtx16_avx2(in);
+      break;
     case V_DCT:
       load_buffer_16x16(input, stride, 0, 0, in);
       fdct16_avx2(in);
@@ -1620,6 +1627,12 @@ void av1_fht32x32_avx2(const int16_t *input, tran_low_t *output, int stride,
       fhalfright32_avx2(in0, in1);
       right_shift_32x32(in0, in1);
       fhalfright32_avx2(in0, in1);
+      break;
+    case IDTX:
+      load_buffer_32x32(input, stride, 0, 0, in0, in1);
+      fidtx32_avx2(in0, in1);
+      right_shift_32x32(in0, in1);
+      fidtx32_avx2(in0, in1);
       break;
     case V_DCT:
       load_buffer_32x32(input, stride, 0, 0, in0, in1);

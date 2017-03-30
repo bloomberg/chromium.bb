@@ -494,6 +494,10 @@ void av1_iht16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest,
       aom_iadst16_sse2(in0, in1);
       FLIPUD_PTR(dest, stride, 16);
       break;
+    case IDTX:
+      iidtx16_sse2(in0, in1);
+      iidtx16_sse2(in0, in1);
+      break;
     case V_DCT:
       iidtx16_sse2(in0, in1);
       aom_idct16_sse2(in0, in1);

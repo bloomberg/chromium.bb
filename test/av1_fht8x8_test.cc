@@ -177,6 +177,7 @@ const Ht8x8Param kArrayHt8x8Param_sse2[] = {
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 6, AOM_BITS_8, 64),
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 7, AOM_BITS_8, 64),
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 8, AOM_BITS_8, 64),
+  make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 9, AOM_BITS_8, 64),
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 10, AOM_BITS_8, 64),
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 11, AOM_BITS_8, 64),
   make_tuple(&av1_fht8x8_sse2, &av1_iht8x8_64_add_sse2, 12, AOM_BITS_8, 64),

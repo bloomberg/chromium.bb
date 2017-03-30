@@ -177,6 +177,7 @@ const Ht4x4Param kArrayHt4x4Param_sse2[] = {
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 6, AOM_BITS_8, 16),
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 7, AOM_BITS_8, 16),
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 8, AOM_BITS_8, 16),
+  make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 9, AOM_BITS_8, 16),
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 10, AOM_BITS_8, 16),
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 11, AOM_BITS_8, 16),
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, 12, AOM_BITS_8, 16),

@@ -470,6 +470,10 @@ void av1_iht16x16_256_add_avx2(const tran_low_t *input, uint8_t *dest,
       iadst16(in);
       flip_col(&dest, &stride, 16);
       break;
+    case IDTX:
+      iidtx16(in);
+      iidtx16(in);
+      break;
     case V_DCT:
       iidtx16(in);
       idct16(in);
