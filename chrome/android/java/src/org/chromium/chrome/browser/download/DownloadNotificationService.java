@@ -113,13 +113,10 @@ public class DownloadNotificationService extends Service {
     private static final String KEY_NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
 
     /**
-     * An Observer interface that allows other classes to know when this class wants to shut itself
-     * down.  This lets them unbind if necessary.
+     * An Observer interface that allows other classes to know when this class is canceling
+     * downloads.
      */
     public interface Observer {
-        /** Called when this service is about to start attempting to stop itself. */
-        void onServiceShutdownRequested();
-
         /**
          * Called when a download was canceled from the notification.  The implementer is not
          * responsible for canceling the actual download (that should be triggered internally from
@@ -649,12 +646,10 @@ public class DownloadNotificationService extends Service {
             stopForegroundInternal(false);
         }
 
-        // Notify all observers that we are requesting a chance to shut down.  This will let any
-        // observers unbind from us if necessary.
-        for (Observer observer : mObservers) observer.onServiceShutdownRequested();
-
         // Stop the service which should start the destruction process.  At this point we should be
-        // (1) a background service and (2) unbound from any clients.
+        // a background service.  We might not be unbound from any clients.  When they unbind we
+        // will shut down.  That is okay because they will only unbind from us when they are ok with
+        // us going away (e.g. we shouldn't be unbound while in the foreground).
         stopSelf();
         return true;
     }
