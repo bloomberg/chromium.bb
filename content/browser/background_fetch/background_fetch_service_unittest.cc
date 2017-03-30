@@ -347,18 +347,28 @@ TEST_F(BackgroundFetchServiceTest, AbortInvalidArguments) {
   // This test verifies that the Abort() function will kill the renderer and
   // return INVALID_ARGUMENT when invalid data is send over the Mojo channel.
 
-  BackgroundFetchOptions options;
+  BackgroundFetchRegistrationId registration_id(
+      42 /* service_worker_registration_id */, origin(), "" /* tag */);
 
-  // The `tag` must be a non-empty string.
-  {
-    BackgroundFetchRegistrationId registration_id(
-        42 /* service_worker_registration_id */, origin(), "" /* tag */);
+  blink::mojom::BackgroundFetchError error;
 
-    blink::mojom::BackgroundFetchError error;
+  ASSERT_NO_FATAL_FAILURE(Abort(registration_id, &error));
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
+}
 
-    ASSERT_NO_FATAL_FAILURE(Abort(registration_id, &error));
-    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
-  }
+TEST_F(BackgroundFetchServiceTest, AbortInvalidTag) {
+  // This test verifies that aborting a Background Fetch registration with a
+  // tag that does not correspond to an active fetch kindly tells us so.
+
+  BackgroundFetchRegistrationId registration_id;
+  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+
+  // Deliberate do *not* create a fetch for the |registration_id|.
+
+  blink::mojom::BackgroundFetchError error;
+
+  ASSERT_NO_FATAL_FAILURE(Abort(registration_id, &error));
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_TAG);
 }
 
 TEST_F(BackgroundFetchServiceTest, GetTags) {
