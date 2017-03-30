@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Basic Functionality of AudioBuffer.copyFromChannel and AudioBuffer.copyToChannel</title>
   </head>
 
@@ -47,7 +47,8 @@
       // Test that the array |x| is a ramp starting at value |start| of length |length|, starting at
       // |startIndex| in the array.  |startIndex| is optional and defaults to 0. Any other values
       // must be -1.
-      function shouldBeRamp(testName, x, startValue, length, startIndex) {
+      function shouldBeRamp(should, testName, x, startValue, length,
+        startIndex) {
         var k;
         var startingIndex = startIndex || 0;
         var expected = Array(x.length);
@@ -69,7 +70,9 @@
           expected[k] = -1;
         }
 
-        Should(testName, x, {numberOfArrayLog: 32}).beEqualToArray(expected);
+        should(x, testName, {
+          numberOfArrayLog: 32
+        }).beEqualToArray(expected);
       }
 
       var audit = Audit.createTaskRunner();
@@ -92,84 +95,100 @@
       var initialValues = Array(numberOfChannels);
 
       // Initialize things
-      audit.defineTask("initialize", function (done) {
+      audit.define("initialize", (task, should) => {
         // Initialize to -1.
-        for (var k = 0; k < numberOfChannels; ++k) {
-          initialValues[k] = -1;
-        }
-
-        done();
+        initialValues.fill(-1);
+        should(initialValues, "Initialized values")
+          .beConstantValueOf(-1)
+        task.done();
       });
 
       // Test that expected exceptions are signaled for copyFrom.
-      audit.defineTask("copyFrom-exceptions", function (done) {
-        Should("AudioBuffer.prototype.copyFromChannel",
-        AudioBuffer.prototype.copyFromChannel)
+      audit.define("copyFrom-exceptions", (task, should) => {
+        should(AudioBuffer.prototype.copyFromChannel,
+            "AudioBuffer.prototype.copyFromChannel")
           .exist();
 
-        Should("0: buffer = context.createBuffer(" + numberOfChannels + ", " + bufferLength + ", context.sampleRate)",
-          function () {
-            buffer = context.createBuffer(numberOfChannels, bufferLength, context.sampleRate);
-          }).notThrow();
-        Should("1: buffer.copyFromChannel(null, 0)", function () {
-          buffer.copyFromChannel(null, 0);
-        }).throw("TypeError");
-        Should("2: buffer.copyFromChannel(context, 0)", function () {
-          buffer.copyFromChannel(context, 0);
-        }).throw("TypeError");
-        Should("3: buffer.copyFromChannel(x, -1)", function () {
-          buffer.copyFromChannel(x, -1);
-        }).throw("IndexSizeError");
-        Should("4: buffer.copyFromChannel(x, " + numberOfChannels + ")", function () {
-          buffer.copyFromChannel(x, numberOfChannels);
-        }).throw("IndexSizeError");;
-        Should("5: buffer.copyFromChannel(x, 0, -1)", function () {
-          buffer.copyFromChannel(x, 0, -1);
-        }).throw("IndexSizeError");
-        Should("6: buffer.copyFromChannel(x, 0, " + bufferLength + ")", function () {
-          buffer.copyFromChannel(x, 0, bufferLength);
-        }).throw("IndexSizeError");
+        should(() => {
+              buffer = context.createBuffer(numberOfChannels, bufferLength,
+                context.sampleRate);
+            },
+            "0: buffer = context.createBuffer(" + numberOfChannels + ", " +
+            bufferLength + ", context.sampleRate)")
+          .notThrow();
+        should(() => {
+            buffer.copyFromChannel(null, 0);
+          }, "1: buffer.copyFromChannel(null, 0)")
+          .throw("TypeError");
+        should(() => {
+            buffer.copyFromChannel(context, 0);
+          }, "2: buffer.copyFromChannel(context, 0)")
+          .throw("TypeError");
+        should(() => {
+            buffer.copyFromChannel(x, -1);
+          }, "3: buffer.copyFromChannel(x, -1)")
+          .throw("IndexSizeError");
+        should(() => {
+            buffer.copyFromChannel(x, numberOfChannels);
+          }, "4: buffer.copyFromChannel(x, " + numberOfChannels + ")")
+          .throw("IndexSizeError");;
+        should(() => {
+            buffer.copyFromChannel(x, 0, -1);
+          }, "5: buffer.copyFromChannel(x, 0, -1)")
+          .throw("IndexSizeError");
+        should(() => {
+            buffer.copyFromChannel(x, 0, bufferLength);
+          }, "6: buffer.copyFromChannel(x, 0, " + bufferLength + ")")
+          .throw("IndexSizeError");
 
-        Should("7: buffer.copyFromChannel(x, 3)", function () {
-          buffer.copyFromChannel(x, 3);
-        }).throw("IndexSizeError");
+        should(() => {
+            buffer.copyFromChannel(x, 3);
+          }, "7: buffer.copyFromChannel(x, 3)")
+          .throw("IndexSizeError");
 
-        done();
+        task.done();
       });
 
       // Test that expected exceptions are signaled for copyTo.
-      audit.defineTask("copyTo-exceptions", function (done) {
-        Should("AudioBuffer.prototype.copyToChannel",
-        AudioBuffer.prototype.copyToChannel)
+      audit.define("copyTo-exceptions", (task, should) => {
+        should(AudioBuffer.prototype.copyToChannel,
+            "AudioBuffer.prototype.copyToChannel")
           .exist();
-        Should("0: buffer.copyToChannel(null, 0)", function () {
-          buffer.copyToChannel(null, 0);
-        }).throw("TypeError");
-        Should("1: buffer.copyToChannel(context, 0)", function () {
-          buffer.copyToChannel(context, 0);
-        }).throw("TypeError");
-        Should("2: buffer.copyToChannel(x, -1)", function () {
-          buffer.copyToChannel(x, -1);
-        }).throw("IndexSizeError");
-        Should("3: buffer.copyToChannel(x, " + numberOfChannels + ")", function () {
-          buffer.copyToChannel(x, numberOfChannels);
-        }).throw("IndexSizeError");
-        Should("4: buffer.copyToChannel(x, 0, -1)", function () {
-          buffer.copyToChannel(x, 0, -1);
-        }).throw("IndexSizeError");
-        Should("5: buffer.copyToChannel(x, 0, " + bufferLength + ")", function () {
-          buffer.copyToChannel(x, 0, bufferLength);
-        }).throw("IndexSizeError");
+        should(() => {
+            buffer.copyToChannel(null, 0);
+          }, "0: buffer.copyToChannel(null, 0)")
+          .throw("TypeError");
+        should(() => {
+            buffer.copyToChannel(context, 0);
+          }, "1: buffer.copyToChannel(context, 0)")
+          .throw("TypeError");
+        should(() => {
+            buffer.copyToChannel(x, -1);
+          }, "2: buffer.copyToChannel(x, -1)")
+          .throw("IndexSizeError");
+        should(() => {
+            buffer.copyToChannel(x, numberOfChannels);
+          }, "3: buffer.copyToChannel(x, " + numberOfChannels + ")")
+          .throw("IndexSizeError");
+        should(() => {
+            buffer.copyToChannel(x, 0, -1);
+          }, "4: buffer.copyToChannel(x, 0, -1)")
+          .throw("IndexSizeError");
+        should(() => {
+            buffer.copyToChannel(x, 0, bufferLength);
+          }, "5: buffer.copyToChannel(x, 0, " + bufferLength + ")")
+          .throw("IndexSizeError");
 
-        Should("6: buffer.copyToChannel(x, 3)", function () {
-          buffer.copyToChannel(x, 3);
-        }).throw("IndexSizeError");
+        should(() => {
+            buffer.copyToChannel(x, 3);
+          }, "6: buffer.copyToChannel(x, 3)")
+          .throw("IndexSizeError");
 
-        done();
+        task.done();
       });
 
       // Test copyFromChannel
-      audit.defineTask("copyFrom-validate", function (done) {
+      audit.define("copyFrom-validate", (task, should) => {
         // Initialize the AudioBuffer to a ramp for testing copyFrom.
         initializeAudioBufferRamp(buffer);
 
@@ -177,7 +196,7 @@
         for (var c = 0; c < numberOfChannels; ++c) {
           var dst8 = createInitializedF32Array(8);
           buffer.copyFromChannel(dst8, c);
-          shouldBeRamp("buffer.copyFromChannel(dst8, " + c + ")", dst8, c + 1, 8)
+          shouldBeRamp(should, "buffer.copyFromChannel(dst8, " + c + ")", dst8, c + 1, 8)
         }
 
         // Test copyFrom operation with a short destination array using a non-zero start index that
@@ -185,7 +204,7 @@
         for (var c = 0; c < numberOfChannels; ++c) {
           var dst8 = createInitializedF32Array(8);
           buffer.copyFromChannel(dst8, c, 1);
-          shouldBeRamp("buffer.copyFromChannel(dst8, " + c + ", 1)", dst8, c + 2, 8)
+          shouldBeRamp(should, "buffer.copyFromChannel(dst8, " + c + ", 1)", dst8, c + 2, 8)
         }
 
         // Test copyFrom operation with a short destination array using a non-zero start index that
@@ -194,7 +213,7 @@
           var dst8 = createInitializedF32Array(8);
           var startInChannel = bufferLength - 5;
           buffer.copyFromChannel(dst8, c, startInChannel);
-          shouldBeRamp("buffer.copyFromChannel(dst8, " + c + ", " + startInChannel + ")", dst8,
+          shouldBeRamp(should, "buffer.copyFromChannel(dst8, " + c + ", " + startInChannel + ")", dst8,
             c + 1 + startInChannel, bufferLength - startInChannel);
         }
 
@@ -203,28 +222,32 @@
         for (var c = 0; c < numberOfChannels; ++c) {
           var dst26 = createInitializedF32Array(bufferLength + 10);
           buffer.copyFromChannel(dst26, c);
-          shouldBeRamp("buffer.copyFromChannel(dst26, " + c + ")", dst26,
+          shouldBeRamp(should, "buffer.copyFromChannel(dst26, " + c + ")", dst26,
             c + 1, bufferLength);
         }
 
-        done();
+        task.done();
       });
 
       // Test copyTo
-      audit.defineTask("copyTo-validate", function (done) {
+      audit.define("copyTo-validate", (task, should) => {
         // Create a source consisting of a ramp starting at 1, longer than the AudioBuffer
         var src = createFloat32RampArray(bufferLength + 10);
 
         // Test copyTo with AudioBuffer shorter than Float32Array. The AudioBuffer should be
         // completely filled with the Float32Array.
-        Should("buffer = createConstantBuffer(context, " + bufferLength + ", [" + initialValues+ "])",
-          function () {
-            buffer = createConstantBuffer(context, bufferLength, initialValues);
-        }).notThrow();;
+        should(() => {
+              buffer = createConstantBuffer(context, bufferLength,
+                initialValues);
+            },
+            "buffer = createConstantBuffer(context, " + bufferLength + ", [" +
+            initialValues + "])")
+          .notThrow();
 
         for (var c = 0; c < numberOfChannels; ++c) {
           buffer.copyToChannel(src, c);
-          shouldBeRamp("buffer.copyToChannel(src, " + c + ")", buffer.getChannelData(c), 1, bufferLength);
+          shouldBeRamp(should, "buffer.copyToChannel(src, " + c + ")",
+            buffer.getChannelData(c), 1, bufferLength);
         }
 
         // Test copyTo with AudioBuffer longer than the Float32Array.  The tail of the AudioBuffer
@@ -233,7 +256,8 @@
         var src10 = createFloat32RampArray(10);
         for (var c = 0; c < numberOfChannels; ++c) {
           buffer.copyToChannel(src10, c);
-          shouldBeRamp("buffer.copyToChannel(src10, " + c + ")", buffer.getChannelData(c), 1, 10);
+          shouldBeRamp(should, "buffer.copyToChannel(src10, " + c + ")",
+            buffer.getChannelData(c), 1, 10);
         }
 
         // Test copyTo with non-default startInChannel.  Part of the AudioBuffer should filled with
@@ -243,28 +267,15 @@
           var startInChannel = 5;
           buffer.copyToChannel(src10, c, startInChannel);
 
-          shouldBeRamp("buffer.copyToChannel(src10, " + c + ", " + startInChannel + ")",
+          shouldBeRamp(should, "buffer.copyToChannel(src10, " + c + ", " +
+            startInChannel + ")",
             buffer.getChannelData(c), 1, src10.length, startInChannel);
         }
 
-        done();
+        task.done();
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks(
-        "initialize",
-        "copyFrom-exceptions",
-        "copyTo-exceptions",
-        "copyFrom-validate",
-        "copyTo-validate",
-        "finish"
-      );
-
-      successfullyParsed = true;
-
+      audit.run();
     </script>
 
   </body>
