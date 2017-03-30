@@ -234,7 +234,10 @@ enum HtmlFieldType {
   HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR,
   HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR,
 
-  // Non standard autcomplete types.
+  // Universal Payment Interface - Virtual Payment Address.
+  HTML_TYPE_UPI_VPA,
+
+  // Non-standard autocomplete types.
   HTML_TYPE_UNRECOGNIZED,
 };
 

@@ -456,20 +456,29 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttribute) {
   field.autocomplete_attribute = "email";
   form.fields.push_back(field);
 
+  field.label = base::string16();
+  field.name = ASCIIToUTF16("field4");
+  field.autocomplete_attribute = "upi-vpa";
+  form.fields.push_back(field);
+
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
   EXPECT_TRUE(form_structure->IsAutofillable());
+  EXPECT_TRUE(form_structure->has_author_specified_types());
+  EXPECT_TRUE(form_structure->has_author_specified_upi_vpa_hint());
 
   // Expect the correct number of fields.
-  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(4U, form_structure->field_count());
   ASSERT_EQ(3U, form_structure->autofill_count());
 
   EXPECT_EQ(HTML_TYPE_GIVEN_NAME, form_structure->field(0)->html_type());
   EXPECT_EQ(HTML_TYPE_FAMILY_NAME, form_structure->field(1)->html_type());
   EXPECT_EQ(HTML_TYPE_EMAIL, form_structure->field(2)->html_type());
+  EXPECT_EQ(HTML_TYPE_UNRECOGNIZED, form_structure->field(3)->html_type());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(3)->heuristic_type());
 }
 
 // Verify that the heuristics are not run for non checkout formless forms.

@@ -268,6 +268,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "email")
     return HTML_TYPE_EMAIL;
 
+  if (autocomplete_attribute_value == "upi-vpa")
+    return HTML_TYPE_UPI_VPA;
+
   return HTML_TYPE_UNRECOGNIZED;
 }
 
@@ -300,6 +303,7 @@ FormStructure::FormStructure(const FormData& form)
       upload_required_(USE_UPLOAD_RATES),
       has_author_specified_types_(false),
       has_author_specified_sections_(false),
+      has_author_specified_upi_vpa_hint_(false),
       was_parsed_for_autocomplete_attributes_(false),
       has_password_field_(false),
       is_form_tag_(form.is_form_tag),
@@ -364,6 +368,11 @@ void FormStructure::DetermineHeuristicTypes() {
       AutofillMetrics::LogDeveloperEngagementMetric(
           AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS);
     }
+  }
+
+  if (has_author_specified_upi_vpa_hint_) {
+    AutofillMetrics::LogDeveloperEngagementMetric(
+        AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
   }
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(
@@ -887,6 +896,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
 
   has_author_specified_types_ = false;
   has_author_specified_sections_ = false;
+  has_author_specified_upi_vpa_hint_ = false;
   for (const auto& field : fields_) {
     // To prevent potential section name collisions, add a default suffix for
     // other fields.  Without this, 'autocomplete' attribute values
@@ -924,6 +934,11 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     tokens.pop_back();
     HtmlFieldType field_type =
         FieldTypeFromAutocompleteAttributeValue(field_type_token, *field);
+    if (field_type == HTML_TYPE_UPI_VPA) {
+      has_author_specified_upi_vpa_hint_ = true;
+      // TODO(crbug/702223): Flesh out support for UPI-VPA.
+      field_type = HTML_TYPE_UNRECOGNIZED;
+    }
     if (field_type == HTML_TYPE_UNSPECIFIED)
       continue;
 

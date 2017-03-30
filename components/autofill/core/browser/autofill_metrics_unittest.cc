@@ -1498,6 +1498,31 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
     histogram_tester.ExpectBucketCount(
         "Autofill.DeveloperEngagement",
         AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.DeveloperEngagement",
+        AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT, 0);
+  }
+
+  // Add a field with an author-specified UPI-VPA field type in the form.
+  test::CreateTestFormField("", "", "", "text", &field);
+  field.autocomplete_attribute = "upi-vpa";
+  forms.back().fields.push_back(field);
+
+  // Expect the "form parsed" metric, the "author-specified field type
+  // hints" metric, and the "author-specified upi-vpa type" metric to be logged.
+  {
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    autofill_manager_->Reset();
+    histogram_tester.ExpectBucketCount("Autofill.DeveloperEngagement",
+                                       AutofillMetrics::FILLABLE_FORM_PARSED,
+                                       1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.DeveloperEngagement",
+        AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.DeveloperEngagement",
+        AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT, 1);
   }
 }
 

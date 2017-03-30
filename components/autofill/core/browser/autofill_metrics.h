@@ -90,6 +90,9 @@ class AutofillMetrics {
     // web developer-specified field type hint, a la
     // http://is.gd/whatwg_autocomplete
     FILLABLE_FORM_CONTAINS_TYPE_HINTS,
+    // Parsed a form that is potentially autofillable and contains at least one
+    // UPI Virtual Payment Address hint (upi-vpa)
+    FORM_CONTAINS_UPI_VPA_HINT,
     NUM_DEVELOPER_ENGAGEMENT_METRICS,
   };
 

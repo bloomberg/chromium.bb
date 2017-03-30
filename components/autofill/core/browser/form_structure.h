@@ -202,10 +202,16 @@ class FormStructure {
 
   const GURL& target_url() const { return target_url_; }
 
-  bool has_author_specified_types() { return has_author_specified_types_; }
+  bool has_author_specified_types() const {
+    return has_author_specified_types_;
+  }
 
-  bool has_author_specified_sections() {
+  bool has_author_specified_sections() const {
     return has_author_specified_sections_;
+  }
+
+  bool has_author_specified_upi_vpa_hint() const {
+    return has_author_specified_upi_vpa_hint_;
   }
 
   void set_upload_required(UploadRequired required) {
@@ -292,6 +298,10 @@ class FormStructure {
   // Whether the form includes any sections explicitly specified by the site
   // author, via the autocomplete attribute.
   bool has_author_specified_sections_;
+
+  // Whether the form includes a field that explicitly sets it autocomplete
+  // type to "upi-vpa".
+  bool has_author_specified_upi_vpa_hint_;
 
   // Whether the form was parsed for autocomplete attribute, thus assigning
   // the real values of |has_author_specified_types_| and

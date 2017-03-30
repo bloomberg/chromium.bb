@@ -208,6 +208,10 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_EMAIL:
       return EMAIL;
 
+    case HTML_TYPE_UPI_VPA:
+      // TODO(crbug/702223): Add support for UPI-VPA.
+      break;
+
     case HTML_TYPE_UNSPECIFIED:
     case HTML_TYPE_UNRECOGNIZED:
       break;
@@ -418,6 +422,10 @@ ServerFieldType AutofillType::GetStorableType() const {
     case HTML_TYPE_TRANSACTION_CURRENCY:
       return UNKNOWN_TYPE;
 
+    // TODO(crbug/702223): Add autofill support for UPI-VPA.
+    case HTML_TYPE_UPI_VPA:
+      return UNKNOWN_TYPE;
+
     case HTML_TYPE_UNRECOGNIZED:
       return UNKNOWN_TYPE;
   }
@@ -591,6 +599,8 @@ std::string AutofillType::ToString() const {
       return "HTML_TRANSACTION_AMOUNT";
     case HTML_TYPE_TRANSACTION_CURRENCY:
       return "HTML_TRANSACTION_CURRENCY";
+    case HTML_TYPE_UPI_VPA:
+      return "HTML_TYPE_UPI_VPA";
     case HTML_TYPE_UNRECOGNIZED:
       return "HTML_TYPE_UNRECOGNIZED";
   }
