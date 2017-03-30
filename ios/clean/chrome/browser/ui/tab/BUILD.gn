@@ -16,6 +16,7 @@ source_set("tab") {
     "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/ntp",
+    "//ios/clean/chrome/browser/ui/tab_strip",
     "//ios/clean/chrome/browser/ui/toolbar",
     "//ios/clean/chrome/browser/ui/web_contents",
     "//ios/shared/chrome/browser/coordinator_context",

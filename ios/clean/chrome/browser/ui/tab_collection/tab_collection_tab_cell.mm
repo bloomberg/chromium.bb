@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_tab_cell.h"
+#import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,7 +13,7 @@ const CGFloat kSelectedBorderCornerRadius = 8.0f;
 const CGFloat kSelectedBorderWidth = 4.0f;
 }
 
-@implementation TabGridTabCell
+@implementation TabCollectionTabCell
 
 - (instancetype)initWithFrame:(CGRect)frame {
   if ((self = [super initWithFrame:frame])) {

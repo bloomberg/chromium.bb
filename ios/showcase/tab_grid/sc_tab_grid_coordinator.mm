@@ -6,7 +6,7 @@
 
 #import "base/format_macros.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
-#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_data_source.h"
+#import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
@@ -14,7 +14,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SCTabGridCoordinator ()<TabGridDataSource>
+@interface SCTabGridCoordinator ()<TabCollectionDataSource>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, strong) ProtocolAlerter* alerter;
 @end
@@ -39,9 +39,9 @@
   [self.baseViewController pushViewController:self.viewController animated:YES];
 }
 
-#pragma mark - TabGridDataSource
+#pragma mark - TabCollectionDataSource
 
-- (int)numberOfTabsInTabGrid {
+- (int)numberOfTabs {
   return 3;
 }
 
@@ -50,7 +50,7 @@
 }
 
 - (int)indexOfActiveTab {
-  return kTabGridDataSourceInvalidIndex;
+  return kTabCollectionDataSourceInvalidIndex;
 }
 
 @end

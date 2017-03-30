@@ -5,16 +5,10 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONSUMER_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_CONSUMER_H_
 
-@protocol TabGridConsumer
+#import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 
-// Inserts item into tab grid at |index|.
-- (void)insertTabGridItemAtIndex:(int)index;
-
-// Deletes |index| from tab grid.
-- (void)deleteTabGridItemAtIndex:(int)index;
-
-// Reloads |indexes| in tab grid.
-- (void)reloadTabGridItemsAtIndexes:(NSIndexSet*)indexes;
+// Interface to support addition or removal of an overlay.
+@protocol TabGridConsumer<TabCollectionConsumer>
 
 // Adds an overlay covering the entire tab grid that informs the user that
 // there are no tabs.

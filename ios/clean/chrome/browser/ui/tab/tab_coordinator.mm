@@ -8,11 +8,10 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
-#import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
-#import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_animator.h"
 #import "ios/clean/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
+#import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_coordinator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_coordinator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
@@ -43,6 +42,8 @@ const BOOL kUseBottomToolbar = NO;
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
 
+#pragma mark - BrowserCoordinator
+
 - (void)start {
   self.viewController = [self newTabContainer];
   self.viewController.transitioningDelegate = self;
@@ -61,25 +62,16 @@ const BOOL kUseBottomToolbar = NO;
   ToolbarCoordinator* toolbarCoordinator = [[ToolbarCoordinator alloc] init];
   toolbarCoordinator.webState = self.webState;
   [self addChildCoordinator:toolbarCoordinator];
-
   // Unset the base view controller, so |toolbarCoordinator| doesn't present
   // its view controller.
   toolbarCoordinator.context.baseViewController = nil;
   [toolbarCoordinator start];
 
-  // PLACEHOLDER: Replace this placeholder with an actual tab strip view
-  // controller.
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
-  [button addTarget:nil
-                action:@selector(hideTabStrip:)
-      forControlEvents:UIControlEventTouchUpInside];
-  [button setTitle:@"Hide Strip" forState:UIControlStateNormal];
-  button.frame = CGRectMake(10, 10, 100, 100);
-
-  UIViewController* tabStripViewController = [[UIViewController alloc] init];
-  tabStripViewController.view.backgroundColor = [UIColor blackColor];
-  [tabStripViewController.view addSubview:button];
-  self.viewController.tabStripViewController = tabStripViewController;
+  TabStripCoordinator* tabStripCoordinator = [[TabStripCoordinator alloc] init];
+  [self addChildCoordinator:tabStripCoordinator];
+  // Unset the base view controller since this is a contained view controller.
+  tabStripCoordinator.context.baseViewController = nil;
+  [tabStripCoordinator start];
 
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
@@ -105,6 +97,8 @@ const BOOL kUseBottomToolbar = NO;
     self.viewController.toolbarViewController = coordinator.viewController;
   } else if ([coordinator isKindOfClass:[WebCoordinator class]]) {
     self.viewController.contentViewController = coordinator.viewController;
+  } else if ([coordinator isKindOfClass:[TabStripCoordinator class]]) {
+    self.viewController.tabStripViewController = coordinator.viewController;
   }
 }
 

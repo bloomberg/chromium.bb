@@ -1,0 +1,31 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("tab_strip") {
+  sources = [
+    "tab_strip_coordinator.h",
+    "tab_strip_coordinator.mm",
+  ]
+  deps = [
+    ":tab_strip_ui",
+    "//ios/chrome/browser/browser_state",
+    "//ios/clean/chrome/browser/ui/tab_collection",
+    "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/tabs",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//ios/shared/chrome/browser/ui/coordinators",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("tab_strip_ui") {
+  sources = [
+    "tab_strip_view_controller.h",
+    "tab_strip_view_controller.mm",
+  ]
+  deps = [
+    "//ios/clean/chrome/browser/ui/tab_collection:tab_collection_ui",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

@@ -13,7 +13,7 @@
 
 namespace {
 CGFloat kToolbarHeight = 44.0f;
-CGFloat kTabStripHeight = 90.0f;
+CGFloat kTabStripHeight = 120.0f;
 }
 
 @interface TabContainerViewController ()
