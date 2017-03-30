@@ -5082,7 +5082,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Send to phone
       </message>
       <message name="IDS_DESKTOP_TO_IOS_PROMO_NO_THANKS" desc="The title of the No Thanks button in the bubble promoting Chrome for iPhone.">
-        No Thanks
+        No thanks
       </message>
 
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
