@@ -126,6 +126,12 @@ bool AppLauncherPageUI::HTMLSource::ShouldReplaceExistingSource() const {
   return false;
 }
 
+bool AppLauncherPageUI::HTMLSource::AllowCaching() const {
+  // Should not be cached to reflect dynamically-generated contents that may
+  // depend on user profiles.
+  return false;
+}
+
 std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyScriptSrc()
     const {
   // 'unsafe-inline' is added to script-src.

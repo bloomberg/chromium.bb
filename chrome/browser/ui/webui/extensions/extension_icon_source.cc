@@ -138,6 +138,12 @@ void ExtensionIconSource::StartDataRequest(
   }
 }
 
+bool ExtensionIconSource::AllowCaching() const {
+  // Should not be cached to reflect the latest contents that may be updated by
+  // Extensions.
+  return false;
+}
+
 ExtensionIconSource::~ExtensionIconSource() {
 }
 

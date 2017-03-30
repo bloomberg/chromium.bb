@@ -73,6 +73,7 @@ class ExtensionIconSource : public content::URLDataSource,
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
+  bool AllowCaching() const override;
 
  private:
   // Encapsulates the request parameters for |request_id|.

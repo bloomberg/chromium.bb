@@ -109,6 +109,12 @@ void SharedResourcesDataSource::StartDataRequest(
   callback.Run(bytes.get());
 }
 
+bool SharedResourcesDataSource::AllowCaching() const {
+  // Should not be cached to reflect dynamically-generated contents that may
+  // depend on the current locale.
+  return false;
+}
+
 std::string SharedResourcesDataSource::GetMimeType(
     const std::string& path) const {
   if (path.empty())

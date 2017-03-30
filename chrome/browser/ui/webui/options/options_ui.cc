@@ -200,6 +200,7 @@ class OptionsUIHTMLSource : public content::URLDataSource {
       const std::string& path,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
+  bool AllowCaching() const override;
   std::string GetMimeType(const std::string&) const override;
   bool ShouldDenyXFrameOptions() const override;
 
@@ -268,6 +269,12 @@ void OptionsUIHTMLSource::StartDataRequest(
   }
 
   callback.Run(response_bytes.get());
+}
+
+bool OptionsUIHTMLSource::AllowCaching() const {
+  // Should not be cached to reflect dynamically-generated contents that depends
+  // on the current locale.
+  return false;
 }
 
 std::string OptionsUIHTMLSource::GetMimeType(const std::string& path) const {
