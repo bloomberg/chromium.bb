@@ -50,6 +50,11 @@ Some areas have their own directories not under html/.
     [Sections elements](https://html.spec.whatwg.org/multipage/semantics.html#sections);
     BODY, ARTICLE, SECTION, NAV, ASIDE, Hn, HGROUP, HEADER, FOOTER, and ADDRESS.
 
+*   tabular_data/
+
+    [Tabular data](https://html.spec.whatwg.org/multipage/tables.html#tables);
+    TABLE, CAPTION, COLGROUP, COL, TBODY, THEAD, TFOOT, TR, TD, and TH.
+
 *   text_level_semantics/
 
     [Text-level semantics elements](https://html.spec.whatwg.org/multipage/semantics.html#text-level-semantics);
