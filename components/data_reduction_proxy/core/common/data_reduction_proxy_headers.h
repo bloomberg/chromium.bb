@@ -6,16 +6,17 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_COMMON_DATA_REDUCTION_PROXY_HEADERS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/proxy/proxy_service.h"
 
+class GURL;
+
 namespace net {
-
 class HttpResponseHeaders;
-
 }  // namespace net
 
 namespace data_reduction_proxy {
@@ -126,7 +127,7 @@ bool IsLitePagePreview(const net::HttpResponseHeaders& headers);
 // (as specified in |ProxyList::UpdateRetryInfoOnFallback|) should be used.
 // If all available data reduction proxies should by bypassed, |bypass_all| is
 // set to true. |proxy_info| must be non-NULL.
-bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders* headers,
+bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders& headers,
                                DataReductionProxyInfo* proxy_info);
 
 // Returns true if the response contains the data reduction proxy Via header
@@ -134,14 +135,15 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders* headers,
 // a Via header after the data reduction proxy, and to false otherwise. Used to
 // check the integrity of data reduction proxy responses and whether there are
 // other middleboxes between the data reduction proxy and the client.
-bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
+bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders& headers,
                                     bool* has_intermediary);
 
 // Returns the reason why the Chrome proxy should be bypassed or not, and
 // populates |proxy_info| with information on how long to bypass if
-// applicable.
+// applicable. |url_chain| is the chain of URLs traversed by the request.
 DataReductionProxyBypassType GetDataReductionProxyBypassType(
-    const net::HttpResponseHeaders* headers,
+    const std::vector<GURL>& url_chain,
+    const net::HttpResponseHeaders& headers,
     DataReductionProxyInfo* proxy_info);
 
 // Searches for the specified Chrome-Proxy action, and if present saves its

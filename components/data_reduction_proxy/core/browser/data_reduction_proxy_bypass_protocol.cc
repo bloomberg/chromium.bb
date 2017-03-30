@@ -105,7 +105,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   DataReductionProxyTypeInfo data_reduction_proxy_type_info;
   if (!config_->WasDataReductionProxyUsed(request,
                                           &data_reduction_proxy_type_info)) {
-    if (!HasDataReductionProxyViaHeader(response_headers, nullptr)) {
+    if (!HasDataReductionProxyViaHeader(*response_headers, nullptr)) {
       ReportResponseProxyServerStatusHistogram(
           RESPONSE_PROXY_SERVER_STATUS_NON_DRP_NO_VIA);
       return false;
@@ -138,12 +138,12 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   // At this point, the response is expected to have the data reduction proxy
   // via header, so detect and report cases where the via header is missing.
   DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
-      data_reduction_proxy_type_info.proxy_index == 0, response_headers);
+      data_reduction_proxy_type_info.proxy_index == 0, *response_headers);
 
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers
   DataReductionProxyBypassType bypass_type = GetDataReductionProxyBypassType(
-      response_headers, data_reduction_proxy_info);
+      request->url_chain(), *response_headers, data_reduction_proxy_info);
 
   if (proxy_bypass_type)
     *proxy_bypass_type = bypass_type;

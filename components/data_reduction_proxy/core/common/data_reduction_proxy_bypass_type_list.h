@@ -45,5 +45,8 @@ BYPASS_EVENT_TYPE(STATUS_503_HTTP_SERVICE_UNAVAILABLE, 9)
 // Bypass due to any network error.
 BYPASS_EVENT_TYPE(NETWORK_ERROR, 10)
 
+// Bypass due to URL redirect cycle.
+BYPASS_EVENT_TYPE(URL_REDIRECT_CYCLE, 11)
+
 // This must always be last.
-BYPASS_EVENT_TYPE(MAX, 11)
+BYPASS_EVENT_TYPE(MAX, 12)

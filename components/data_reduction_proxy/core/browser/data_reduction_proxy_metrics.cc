@@ -36,7 +36,7 @@ DataReductionProxyRequestType GetDataReductionProxyRequestType(
   // Data Reduction Proxy, since 304s aren't required to have a Via header even
   // if they came through the Data Reduction Proxy.
   if (request.response_headers() &&
-      (HasDataReductionProxyViaHeader(request.response_headers(), nullptr) ||
+      (HasDataReductionProxyViaHeader(*request.response_headers(), nullptr) ||
        (request.response_headers()->response_code() == net::HTTP_NOT_MODIFIED &&
         config.WasDataReductionProxyUsed(&request, nullptr)))) {
     return VIA_DATA_REDUCTION_PROXY;

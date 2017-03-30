@@ -20,6 +20,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_request.h"
 
 using base::StringPiece;
 using base::TimeDelta;
@@ -106,6 +107,17 @@ bool IsPreviewType(const net::HttpResponseHeaders& headers,
   return IsPreviewTypeInHeaderValue(header_value, transform_type);
 }
 
+// Returns true if there is a cycle in |url_chain|.
+bool HasURLRedirectCycle(const std::vector<GURL>& url_chain) {
+  if (url_chain.size() <= 1)
+    return false;
+
+  // If the last entry occurs earlier in the |url_chain|, then very likely there
+  // is a redirect cycle.
+  return std::find(url_chain.rbegin() + 1, url_chain.rend(),
+                   url_chain.back()) != url_chain.rend();
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -180,14 +192,13 @@ bool GetDataReductionProxyActionValue(const net::HttpResponseHeaders* headers,
   return false;
 }
 
-bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
+bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders& headers,
                                       base::StringPiece action_prefix,
                                       base::TimeDelta* bypass_duration) {
-  DCHECK(headers);
   size_t iter = 0;
   std::string value;
 
-  while (headers->EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
+  while (headers.EnumerateHeader(&iter, kChromeProxyHeader, &value)) {
     if (StartsWithActionPrefix(value, action_prefix)) {
       int64_t seconds;
       if (!base::StringToInt64(
@@ -208,7 +219,7 @@ bool ParseHeadersAndSetBypassDuration(const net::HttpResponseHeaders* headers,
   return false;
 }
 
-bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders* headers,
+bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders& headers,
                                DataReductionProxyInfo* proxy_info) {
   DCHECK(proxy_info);
 
@@ -245,8 +256,7 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders* headers,
   // reduction proxies. Unlike 'block', 'block-once' does not cause data
   // reduction proxies to be bypassed for an extended period of time;
   // 'block-once' only affects the retry of the current request.
-  if (headers->HasHeaderValue(kChromeProxyHeader,
-                              kChromeProxyActionBlockOnce)) {
+  if (headers.HasHeaderValue(kChromeProxyHeader, kChromeProxyActionBlockOnce)) {
     proxy_info->bypass_all = true;
     proxy_info->mark_proxies_as_bad = false;
     proxy_info->bypass_duration = TimeDelta();
@@ -257,7 +267,7 @@ bool ParseHeadersForBypassInfo(const net::HttpResponseHeaders* headers,
   return false;
 }
 
-bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
+bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders& headers,
                                     bool* has_intermediary) {
   static const size_t kVersionSize = 4;
   static const char kDataReductionProxyViaValue[] = "Chrome-Compression-Proxy";
@@ -267,14 +277,14 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
   // Case-sensitive comparison of |value|. Assumes the received protocol and the
   // space following it are always |kVersionSize| characters. E.g.,
   // 'Via: 1.1 Chrome-Compression-Proxy'
-  while (headers->EnumerateHeader(&iter, "via", &value)) {
+  while (headers.EnumerateHeader(&iter, "via", &value)) {
     if (base::StringPiece(value).substr(
             kVersionSize, arraysize(kDataReductionProxyViaValue) - 1) ==
         kDataReductionProxyViaValue) {
       if (has_intermediary)
         // We assume intermediary exists if there is another Via header after
         // the data reduction proxy's Via header.
-        *has_intermediary = !(headers->EnumerateHeader(&iter, "via", &value));
+        *has_intermediary = !(headers.EnumerateHeader(&iter, "via", &value));
       return true;
     }
   }
@@ -283,9 +293,21 @@ bool HasDataReductionProxyViaHeader(const net::HttpResponseHeaders* headers,
 }
 
 DataReductionProxyBypassType GetDataReductionProxyBypassType(
-    const net::HttpResponseHeaders* headers,
+    const std::vector<GURL>& url_chain,
+    const net::HttpResponseHeaders& headers,
     DataReductionProxyInfo* data_reduction_proxy_info) {
   DCHECK(data_reduction_proxy_info);
+
+  bool has_via_header = HasDataReductionProxyViaHeader(headers, nullptr);
+
+  if (has_via_header && HasURLRedirectCycle(url_chain)) {
+    data_reduction_proxy_info->bypass_all = true;
+    data_reduction_proxy_info->mark_proxies_as_bad = false;
+    data_reduction_proxy_info->bypass_duration = base::TimeDelta();
+    data_reduction_proxy_info->bypass_action = BYPASS_ACTION_TYPE_BLOCK_ONCE;
+    return BYPASS_EVENT_TYPE_URL_REDIRECT_CYCLE;
+  }
+
   if (ParseHeadersForBypassInfo(headers, data_reduction_proxy_info)) {
     // A chrome-proxy response header is only present in a 502. For proper
     // reporting, this check must come before the 5xx checks below.
@@ -307,20 +329,19 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
   data_reduction_proxy_info->bypass_duration = GetDefaultBypassDuration();
 
   // Fall back if a 500, 502 or 503 is returned.
-  if (headers->response_code() == net::HTTP_INTERNAL_SERVER_ERROR)
+  if (headers.response_code() == net::HTTP_INTERNAL_SERVER_ERROR)
     return BYPASS_EVENT_TYPE_STATUS_500_HTTP_INTERNAL_SERVER_ERROR;
-  if (headers->response_code() == net::HTTP_BAD_GATEWAY)
+  if (headers.response_code() == net::HTTP_BAD_GATEWAY)
     return BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY;
-  if (headers->response_code() == net::HTTP_SERVICE_UNAVAILABLE)
+  if (headers.response_code() == net::HTTP_SERVICE_UNAVAILABLE)
     return BYPASS_EVENT_TYPE_STATUS_503_HTTP_SERVICE_UNAVAILABLE;
   // TODO(kundaji): Bypass if Proxy-Authenticate header value cannot be
   // interpreted by data reduction proxy.
-  if (headers->response_code() == net::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
-      !headers->HasHeader("Proxy-Authenticate")) {
+  if (headers.response_code() == net::HTTP_PROXY_AUTHENTICATION_REQUIRED &&
+      !headers.HasHeader("Proxy-Authenticate")) {
     return BYPASS_EVENT_TYPE_MALFORMED_407;
   }
-  if (!HasDataReductionProxyViaHeader(headers, NULL) &&
-      (headers->response_code() != net::HTTP_NOT_MODIFIED)) {
+  if (!has_via_header && (headers.response_code() != net::HTTP_NOT_MODIFIED)) {
     // A Via header might not be present in a 304. Since the goal of a 304
     // response is to minimize information transfer, a sender in general
     // should not generate representation metadata other than Cache-Control,
@@ -328,8 +349,8 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
 
     // The proxy Via header might also not be present in a 4xx response.
     // Separate this case from other responses that are missing the header.
-    if (headers->response_code() >= net::HTTP_BAD_REQUEST &&
-        headers->response_code() < net::HTTP_INTERNAL_SERVER_ERROR) {
+    if (headers.response_code() >= net::HTTP_BAD_REQUEST &&
+        headers.response_code() < net::HTTP_INTERNAL_SERVER_ERROR) {
       // At this point, any 4xx response that is missing the via header
       // indicates an issue that is scoped to only the current request, so only
       // bypass the data reduction proxy for the current request.

@@ -45,7 +45,7 @@ class DataReductionProxyBypassStats
   // proxy via header is not present.
   static void DetectAndRecordMissingViaHeaderResponseCode(
       bool is_primary,
-      const net::HttpResponseHeaders* headers);
+      const net::HttpResponseHeaders& headers);
 
   // |config| outlives this class instance. |unreachable_callback| provides a
   // hook to inform the user that the Data Reduction Proxy is unreachable.

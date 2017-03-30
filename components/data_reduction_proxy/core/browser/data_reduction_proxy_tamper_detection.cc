@@ -299,9 +299,8 @@ bool DataReductionProxyTamperDetection::ValidateViaHeader(
     base::StringPiece fingerprint,
     bool* has_chrome_proxy_via_header) const {
   bool has_intermediary;
-  *has_chrome_proxy_via_header = HasDataReductionProxyViaHeader(
-      response_headers_,
-      &has_intermediary);
+  *has_chrome_proxy_via_header =
+      HasDataReductionProxyViaHeader(*response_headers_, &has_intermediary);
 
   if (*has_chrome_proxy_via_header)
     return !has_intermediary;
