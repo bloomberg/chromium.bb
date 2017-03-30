@@ -70,6 +70,12 @@ TEST(InstallModes, VerifyModes) {
     else
       ASSERT_THAT(mode.app_guid, StrEq(L""));
 
+    // Every mode must have a base app name.
+    ASSERT_THAT(mode.base_app_name, StrNe(L""));
+
+    // Every mode must have a base app id.
+    ASSERT_THAT(mode.base_app_id, StrNe(L""));
+
     // The ProgID prefix must not be empty, must be no greater than 11
     // characters long, must contain no punctuation, and may not start with a
     // digit (https://msdn.microsoft.com/library/windows/desktop/dd542719.aspx).

@@ -45,13 +45,6 @@ class BrowserDistribution {
       const base::FilePath& local_data_path,
       const base::string16& distribution_data);
 
-  // Returns the unsuffixed application name of this program.
-  // This is the base of the name registered with Default Programs on Windows.
-  // IMPORTANT: This should only be called by the installer which needs to make
-  // decisions on the suffixing of the upcoming install, not by external callers
-  // at run-time.
-  virtual base::string16 GetBaseAppName();
-
   // Returns the localized display name of this distribution.
   virtual base::string16 GetDisplayName();
 

@@ -78,6 +78,11 @@ std::wstring GetUninstallRegistryPath();
 // a simple convenience wrapper around InstallDetails.
 const wchar_t* GetAppGuid();
 
+// Returns the unsuffixed application name of this program. This is the base of
+// the name registered with Default Programs. IMPORTANT: This must only be
+// called by the installer.
+std::wstring GetBaseAppName();
+
 // Returns the unsuffixed portion of the AppUserModelId. The AppUserModelId is
 // used to group an app's windows together on the Windows taskbar along with its
 // corresponding shortcuts; see

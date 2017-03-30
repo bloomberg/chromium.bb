@@ -59,6 +59,10 @@ struct InstallConstants {
   // empty string if the brand does not integrate with Google Update.
   const wchar_t* app_guid;
 
+  // The unsuffixed application name of this program. This is the base of the
+  // name registered with Default Programs on Windows.
+  const wchar_t* base_app_name;
+
   // The unsuffixed portion of the AppUserModelId. The AppUserModelId is used to
   // group an app's windows together on the Windows taskbar along with its
   // corresponding shortcuts; see

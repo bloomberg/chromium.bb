@@ -104,6 +104,15 @@ base::string16 GetBrowserProgId(const base::string16& suffix) {
   return chrome_html;
 }
 
+// Returns the browser's application name. This application name will be
+// suffixed as is appropriate for the current install. This is the name that is
+// registered with Default Programs on Windows and that should thus be used to
+// "make chrome default" and such.
+base::string16 GetApplicationName(const base::FilePath& chrome_exe) {
+  return install_static::GetBaseAppName().append(
+      ShellUtil::GetCurrentInstallationSuffix(chrome_exe));
+}
+
 // This class is used to initialize and cache a base 32 encoding of the md5 hash
 // of this user's sid preceded by a dot.
 // This is guaranteed to be unique on the machine and 27 characters long
@@ -198,21 +207,19 @@ struct ApplicationInfo {
 // default browser, which isn't polite.  |suffix| is the user-specific
 // registration suffix; see GetUserSpecificDefaultBrowserSuffix in shell_util.h
 // for details.
-base::string16 GetBrowserClientKey(BrowserDistribution* dist,
-                                   const base::string16& suffix) {
+base::string16 GetBrowserClientKey(const base::string16& suffix) {
   DCHECK(suffix.empty() || suffix[0] == L'.');
   return base::string16(ShellUtil::kRegStartMenuInternet)
       .append(1, L'\\')
-      .append(dist->GetBaseAppName())
+      .append(install_static::GetBaseAppName())
       .append(suffix);
 }
 
 // Returns the Windows Default Programs capabilities key for Chrome.  For
 // example:
 // "Software\Clients\StartMenuInternet\Chromium[.user]\Capabilities".
-base::string16 GetCapabilitiesKey(BrowserDistribution* dist,
-                                  const base::string16& suffix) {
-  return GetBrowserClientKey(dist, suffix).append(L"\\Capabilities");
+base::string16 GetCapabilitiesKey(const base::string16& suffix) {
+  return GetBrowserClientKey(suffix).append(L"\\Capabilities");
 }
 
 // DelegateExecute ProgId. Needed for Chrome Metro in Windows 8. This is only
@@ -349,9 +356,6 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
                             const base::FilePath& chrome_exe,
                             const base::string16& suffix,
                             ScopedVector<RegistryEntry>* entries) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   int chrome_icon_index = install_static::GetIconResourceIndex();
 
   ApplicationInfo app_info;
@@ -394,13 +398,12 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
 
 // This method returns a list of the registry entries needed to declare a
 // capability of handling a protocol on Windows.
-void GetProtocolCapabilityEntries(BrowserDistribution* dist,
-                                  const base::string16& suffix,
+void GetProtocolCapabilityEntries(const base::string16& suffix,
                                   const base::string16& protocol,
                                   ScopedVector<RegistryEntry>* entries) {
-  entries->push_back(new RegistryEntry(
-      GetCapabilitiesKey(dist, suffix).append(L"\\URLAssociations"), protocol,
-      GetBrowserProgId(suffix)));
+  entries->push_back(
+      new RegistryEntry(GetCapabilitiesKey(suffix).append(L"\\URLAssociations"),
+                        protocol, GetBrowserProgId(suffix)));
 }
 
 // This method returns a list of the registry entries required to register this
@@ -412,13 +415,12 @@ void GetShellIntegrationEntries(BrowserDistribution* dist,
                                 const base::FilePath& chrome_exe,
                                 const base::string16& suffix,
                                 ScopedVector<RegistryEntry>* entries) {
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   const base::string16 icon_path(ShellUtil::FormatIconLocation(
       chrome_exe, install_static::GetIconResourceIndex()));
   const base::string16 quoted_exe_path(L"\"" + chrome_exe.value() + L"\"");
 
   // Register for the Start Menu "Internet" link (pre-Win7).
-  const base::string16 start_menu_entry(GetBrowserClientKey(dist, suffix));
+  const base::string16 start_menu_entry(GetBrowserClientKey(suffix));
   // Register Chrome's display name.
   // TODO(grt): http://crbug.com/75152 Also set LocalizedString; see
   // http://msdn.microsoft.com/en-us/library/windows/desktop/cc144109(v=VS.85).aspx#registering_the_display_name
@@ -448,9 +450,10 @@ void GetShellIntegrationEntries(BrowserDistribution* dist,
   entries->push_back(new RegistryEntry(install_info, L"IconsVisible", 1));
 
   // Register with Default Programs.
-  const base::string16 reg_app_name(dist->GetBaseAppName().append(suffix));
+  const base::string16 reg_app_name(
+      install_static::GetBaseAppName().append(suffix));
   // Tell Windows where to find Chrome's Default Programs info.
-  const base::string16 capabilities(GetCapabilitiesKey(dist, suffix));
+  const base::string16 capabilities(GetCapabilitiesKey(suffix));
   entries->push_back(new RegistryEntry(ShellUtil::kRegRegisteredApplications,
                                        reg_app_name, capabilities));
   // Write out Chrome's Default Programs info.
@@ -588,11 +591,9 @@ void GetXPStyleUserProtocolEntries(const base::string16& protocol,
 // needed to make Chromium default browser on XP. Some of these entries are
 // irrelevant in recent versions of Windows, but we register them anyways as
 // some legacy apps are hardcoded to lookup those values.
-void GetXPStyleDefaultBrowserUserEntries(BrowserDistribution* dist,
-                                         const base::FilePath& chrome_exe,
+void GetXPStyleDefaultBrowserUserEntries(const base::FilePath& chrome_exe,
                                          const base::string16& suffix,
                                          ScopedVector<RegistryEntry>* entries) {
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   // File extension associations.
   base::string16 html_prog_id(GetBrowserProgId(suffix));
   for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
@@ -611,7 +612,7 @@ void GetXPStyleDefaultBrowserUserEntries(BrowserDistribution* dist,
 
   // start->Internet shortcut.
   base::string16 start_menu(ShellUtil::kRegStartMenuInternet);
-  base::string16 app_name = dist->GetBaseAppName() + suffix;
+  base::string16 app_name = install_static::GetBaseAppName().append(suffix);
   entries->push_back(new RegistryEntry(start_menu, app_name));
 }
 
@@ -651,12 +652,11 @@ bool IsChromeRegistered(BrowserDistribution* dist,
 // This method checks if Chrome is already registered on the local machine
 // for the requested protocol. It just checks the one value required for this.
 // See RegistryEntry::ExistsInRegistry for the behavior of |look_for_in|.
-bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
-                                   const base::string16& suffix,
+bool IsChromeRegisteredForProtocol(const base::string16& suffix,
                                    const base::string16& protocol,
                                    uint32_t look_for_in) {
   ScopedVector<RegistryEntry> entries;
-  GetProtocolCapabilityEntries(dist, suffix, protocol, &entries);
+  GetProtocolCapabilityEntries(suffix, protocol, &entries);
   return AreEntriesAsDesired(entries, look_for_in);
 }
 
@@ -793,13 +793,9 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
 // points to |chrome_exe|. This should only be used at run-time to determine
 // how Chrome is registered, not to know whether the registration is complete
 // at install-time (IsChromeRegistered() can be used for that).
-bool QuickIsChromeRegistered(BrowserDistribution* dist,
-                             const base::FilePath& chrome_exe,
+bool QuickIsChromeRegistered(const base::FilePath& chrome_exe,
                              const base::string16& suffix,
                              RegistrationConfirmationLevel confirmation_level) {
-  // Assert that this is only called with the one relevant distribution.
-  // TODO(grt): Remove this when BrowserDistribution goes away.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   // Get the appropriate key to look for based on the level desired.
   base::string16 reg_key;
   switch (confirmation_level) {
@@ -813,7 +809,7 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
     case CONFIRM_SHELL_REGISTRATION:
     case CONFIRM_SHELL_REGISTRATION_IN_HKLM:
       // Software\Clients\StartMenuInternet\Google Chrome|suffix|
-      reg_key = GetBrowserClientKey(dist, suffix);
+      reg_key = GetBrowserClientKey(suffix);
       break;
     default:
       NOTREACHED();
@@ -853,11 +849,10 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
 // |suffix| should then be appended to all Chrome properties that may conflict
 // with other Chrome user-level installs.
 // Returns true unless one of the underlying calls fails.
-bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
-                                   const base::FilePath& chrome_exe,
+bool GetInstallationSpecificSuffix(const base::FilePath& chrome_exe,
                                    base::string16* suffix) {
   if (!InstallUtil::IsPerUserInstall() ||
-      QuickIsChromeRegistered(dist, chrome_exe, base::string16(),
+      QuickIsChromeRegistered(chrome_exe, base::string16(),
                               CONFIRM_SHELL_REGISTRATION)) {
     // No suffix on system-level installs and user-level installs already
     // registered with no suffix.
@@ -870,7 +865,7 @@ bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
     NOTREACHED();
     return false;
   }
-  if (QuickIsChromeRegistered(dist, chrome_exe, *suffix,
+  if (QuickIsChromeRegistered(chrome_exe, *suffix,
                               CONFIRM_SHELL_REGISTRATION)) {
     // Username suffix for installs that are suffixed as per the old-style.
     return true;
@@ -890,14 +885,13 @@ HKEY DetermineRegistrationRoot(bool is_per_user) {
 // Associates Chrome with supported protocols and file associations. This should
 // not be required on Vista+ but since some applications still read
 // Software\Classes\http key directly, we have to do this on Vista+ as well.
-bool RegisterChromeAsDefaultXPStyle(BrowserDistribution* dist,
-                                    int shell_change,
+bool RegisterChromeAsDefaultXPStyle(int shell_change,
                                     const base::FilePath& chrome_exe) {
   bool ret = true;
   ScopedVector<RegistryEntry> entries;
   GetXPStyleDefaultBrowserUserEntries(
-      dist, chrome_exe,
-      ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe), &entries);
+      chrome_exe, ShellUtil::GetCurrentInstallationSuffix(chrome_exe),
+      &entries);
 
   // Change the default browser for current user.
   if ((shell_change & ShellUtil::CURRENT_USER) &&
@@ -921,10 +915,8 @@ bool RegisterChromeAsDefaultXPStyle(BrowserDistribution* dist,
 // keys directly, we have to do this on Vista+ as well.
 // See http://msdn.microsoft.com/library/aa767914.aspx for more details.
 bool RegisterChromeAsDefaultProtocolClientXPStyle(
-    BrowserDistribution* dist,
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   ScopedVector<RegistryEntry> entries;
   const base::string16 chrome_open(
       ShellUtil::GetChromeShellOpenCmd(chrome_exe));
@@ -1043,8 +1035,7 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
     return ShellUtil::UNKNOWN_DEFAULT;
 
   base::string16 prog_id(install_static::GetProgIdPrefix());
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  prog_id += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe);
+  prog_id += ShellUtil::GetCurrentInstallationSuffix(chrome_exe);
 
   for (size_t i = 0; i < num_protocols; ++i) {
     base::win::ScopedCoMem<wchar_t> current_app;
@@ -1069,8 +1060,7 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
   if (FAILED(hr))
     return ShellUtil::UNKNOWN_DEFAULT;
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 app_name(ShellUtil::GetApplicationName(dist, chrome_exe));
+  base::string16 app_name(GetApplicationName(chrome_exe));
 
   BOOL result;
   for (size_t i = 0; i < num_protocols; ++i) {
@@ -1417,10 +1407,9 @@ ShellUtil::ShortcutProperties::ShortcutProperties(
 ShellUtil::ShortcutProperties::~ShortcutProperties() {
 }
 
-bool ShellUtil::QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
-                                              const base::FilePath& chrome_exe,
+bool ShellUtil::QuickIsChromeRegisteredInHKLM(const base::FilePath& chrome_exe,
                                               const base::string16& suffix) {
-  return QuickIsChromeRegistered(dist, chrome_exe, suffix,
+  return QuickIsChromeRegistered(chrome_exe, suffix,
                                  CONFIRM_SHELL_REGISTRATION_IN_HKLM);
 }
 
@@ -1446,8 +1435,10 @@ bool ShellUtil::GetShortcutPath(ShortcutLocation location,
                                 BrowserDistribution* dist,
                                 ShellChange level,
                                 base::FilePath* path) {
-  DCHECK(path);
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  DCHECK(path);
   int dir_key = -1;
   base::string16 folder_to_append;
   switch (location) {
@@ -1503,6 +1494,9 @@ bool ShellUtil::MoveExistingShortcut(ShortcutLocation old_location,
                                      ShortcutLocation new_location,
                                      BrowserDistribution* dist,
                                      const ShortcutProperties& properties) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   // Explicitly whitelist locations to which this is applicable.
   if (old_location != SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED ||
       new_location != SHORTCUT_LOCATION_START_MENU_ROOT) {
@@ -1530,6 +1524,9 @@ bool ShellUtil::CreateOrUpdateShortcut(
     BrowserDistribution* dist,
     const ShortcutProperties& properties,
     ShortcutOperation operation) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   // Explicitly whitelist locations to which this is applicable.
   if (location != SHORTCUT_LOCATION_DESKTOP &&
       location != SHORTCUT_LOCATION_QUICK_LAUNCH &&
@@ -1638,9 +1635,7 @@ base::string16 ShellUtil::GetChromeDelegateCommand(
 }
 
 void ShellUtil::GetRegisteredBrowsers(
-    BrowserDistribution* dist,
     std::map<base::string16, base::string16>* browsers) {
-  DCHECK(dist);
   DCHECK(browsers);
 
   const base::string16 base_key(kRegStartMenuInternet);
@@ -1657,11 +1652,10 @@ void ShellUtil::GetRegisteredBrowsers(
          iter.Valid(); ++iter) {
       client_path.assign(base_key).append(1, L'\\').append(iter.Name());
       // Read the browser's name (localized according to install language).
-      if (key.Open(root, client_path.c_str(),
-                   KEY_QUERY_VALUE) != ERROR_SUCCESS ||
-          key.ReadValue(NULL, &name) != ERROR_SUCCESS ||
-          name.empty() ||
-          name.find(dist->GetBaseAppName()) != base::string16::npos) {
+      if (key.Open(root, client_path.c_str(), KEY_QUERY_VALUE) !=
+              ERROR_SUCCESS ||
+          key.ReadValue(NULL, &name) != ERROR_SUCCESS || name.empty() ||
+          name.find(install_static::GetBaseAppName()) != base::string16::npos) {
         continue;
       }
       // Read the browser's reinstall command.
@@ -1676,7 +1670,6 @@ void ShellUtil::GetRegisteredBrowsers(
 }
 
 base::string16 ShellUtil::GetCurrentInstallationSuffix(
-    BrowserDistribution* dist,
     const base::FilePath& chrome_exe) {
   // This method is somewhat the opposite of GetInstallationSpecificSuffix().
   // In this case we are not trying to determine the current suffix for the
@@ -1690,12 +1683,12 @@ base::string16 ShellUtil::GetCurrentInstallationSuffix(
   base::string16 tested_suffix;
   if (InstallUtil::IsPerUserInstall() &&
       (!GetUserSpecificRegistrySuffix(&tested_suffix) ||
-       !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
+       !QuickIsChromeRegistered(chrome_exe, tested_suffix,
                                 CONFIRM_PROGID_REGISTRATION)) &&
       (!GetOldUserSpecificRegistrySuffix(&tested_suffix) ||
-       !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
+       !QuickIsChromeRegistered(chrome_exe, tested_suffix,
                                 CONFIRM_PROGID_REGISTRATION)) &&
-      !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix.erase(),
+      !QuickIsChromeRegistered(chrome_exe, tested_suffix.erase(),
                                CONFIRM_PROGID_REGISTRATION)) {
     // If Chrome is not registered under any of the possible suffixes (e.g.
     // tests, Canary, etc.): use the new-style suffix at run-time.
@@ -1703,13 +1696,6 @@ base::string16 ShellUtil::GetCurrentInstallationSuffix(
       NOTREACHED();
   }
   return tested_suffix;
-}
-
-base::string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
-                                             const base::FilePath& chrome_exe) {
-  base::string16 app_name = dist->GetBaseAppName();
-  app_name += GetCurrentInstallationSuffix(dist, chrome_exe);
-  return app_name;
 }
 
 base::string16 ShellUtil::GetBrowserModelId(bool is_per_user_install) {
@@ -1842,11 +1828,11 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   int shell_change,
                                   const base::FilePath& chrome_exe,
                                   bool elevate_if_not_admin) {
-  DCHECK(!(shell_change & SYSTEM_LEVEL) || IsUserAnAdmin());
-
   // Assert that this is only called with the one relevant distribution.
   // TODO(grt): Remove this when BrowserDistribution goes away.
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  DCHECK(!(shell_change & SYSTEM_LEVEL) || IsUserAnAdmin());
+
   if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
 
@@ -1865,7 +1851,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   bool ret = true;
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
-  base::string16 app_name = GetApplicationName(dist, chrome_exe);
+  base::string16 app_name = GetApplicationName(chrome_exe);
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // On Windows Vista and Win7 we still can set ourselves via the
@@ -1899,7 +1885,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
     }
   }
 
-  if (!RegisterChromeAsDefaultXPStyle(dist, shell_change, chrome_exe))
+  if (!RegisterChromeAsDefaultXPStyle(shell_change, chrome_exe))
     ret = false;
 
   // Send Windows notification event so that it can update icons for
@@ -1911,11 +1897,11 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
 bool ShellUtil::ShowMakeChromeDefaultSystemUI(
     BrowserDistribution* dist,
     const base::FilePath& chrome_exe) {
-  DCHECK(!CanMakeChromeDefaultUnattended());
-
   // Assert that this is only called with the one relevant distribution.
   // TODO(grt): Remove this when BrowserDistribution goes away.
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  DCHECK(!CanMakeChromeDefaultUnattended());
+
   if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
 
@@ -1948,7 +1934,7 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(
     is_default = (succeeded && GetChromeDefaultState() == IS_DEFAULT);
   }
   if (succeeded && is_default)
-    RegisterChromeAsDefaultXPStyle(dist, CURRENT_USER, chrome_exe);
+    RegisterChromeAsDefaultXPStyle(CURRENT_USER, chrome_exe);
   return succeeded;
 }
 
@@ -1982,7 +1968,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(
     HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
       NULL, CLSCTX_INPROC);
     if (SUCCEEDED(hr)) {
-      base::string16 app_name = GetApplicationName(dist, chrome_exe);
+      base::string16 app_name = GetApplicationName(chrome_exe);
       hr = pAAR->SetAppAsDefault(app_name.c_str(), protocol.c_str(),
                                  AT_URLPROTOCOL);
     }
@@ -1996,7 +1982,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(
   // Now use the old way to associate Chrome with the desired protocol. This
   // should not be required on Vista+, but since some applications still read
   // Software\Classes\<protocol> key directly, do this on Vista+ also.
-  if (!RegisterChromeAsDefaultProtocolClientXPStyle(dist, chrome_exe, protocol))
+  if (!RegisterChromeAsDefaultProtocolClientXPStyle(chrome_exe, protocol))
     ret = false;
 
   return ret;
@@ -2006,11 +1992,11 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
     BrowserDistribution* dist,
     const base::FilePath& chrome_exe,
     const base::string16& protocol) {
-  DCHECK(!CanMakeChromeDefaultUnattended());
-
   // Assert that this is only called with the one relevant distribution.
   // TODO(grt): Remove this when BrowserDistribution goes away.
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  DCHECK(!CanMakeChromeDefaultUnattended());
+
   if (!install_static::SupportsSetAsDefaultBrowser())
     return false;
 
@@ -2044,7 +2030,7 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
                   GetChromeDefaultProtocolClientState(protocol) == IS_DEFAULT);
   }
   if (succeeded && is_default)
-    RegisterChromeAsDefaultProtocolClientXPStyle(dist, chrome_exe, protocol);
+    RegisterChromeAsDefaultProtocolClientXPStyle(chrome_exe, protocol);
   return succeeded;
 }
 
@@ -2052,6 +2038,8 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
                                       const base::FilePath& chrome_exe,
                                       const base::string16& unique_suffix,
                                       bool elevate_if_not_admin) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
   DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
 
@@ -2062,7 +2050,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
                  installer::switches::kRegisterChromeBrowserSuffix)) {
     suffix = command_line.GetSwitchValueNative(
         installer::switches::kRegisterChromeBrowserSuffix);
-  } else if (!GetInstallationSpecificSuffix(dist, chrome_exe, &suffix)) {
+  } else if (!GetInstallationSpecificSuffix(chrome_exe, &suffix)) {
     return false;
   }
 
@@ -2138,10 +2126,13 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
                                           const base::string16& unique_suffix,
                                           const base::string16& protocol,
                                           bool elevate_if_not_admin) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   base::string16 suffix;
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;
-  } else if (!GetInstallationSpecificSuffix(dist, chrome_exe, &suffix)) {
+  } else if (!GetInstallationSpecificSuffix(chrome_exe, &suffix)) {
     return false;
   }
 
@@ -2156,7 +2147,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
                                     : RegistryEntry::LOOK_IN_HKLM;
 
   // Check if chrome is already registered with this suffix.
-  if (IsChromeRegisteredForProtocol(dist, suffix, protocol, look_for_in))
+  if (IsChromeRegisteredForProtocol(suffix, protocol, look_for_in))
     return true;
 
   if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
@@ -2167,7 +2158,7 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 
     // Write in the capabillity for the protocol.
     ScopedVector<RegistryEntry> entries;
-    GetProtocolCapabilityEntries(dist, suffix, protocol, &entries);
+    GetProtocolCapabilityEntries(suffix, protocol, &entries);
     return AddRegistryEntries(root, entries);
   } else if (elevate_if_not_admin &&
              base::win::GetVersion() >= base::win::VERSION_VISTA) {
@@ -2184,6 +2175,9 @@ bool ShellUtil::RemoveShortcuts(ShortcutLocation location,
                                 BrowserDistribution* dist,
                                 ShellChange level,
                                 const base::FilePath& target_exe) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   if (!ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
@@ -2213,6 +2207,9 @@ bool ShellUtil::RetargetShortcutsWithArgs(
     ShellChange level,
     const base::FilePath& old_target_exe,
     const base::FilePath& new_target_exe) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   if (!ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
@@ -2232,6 +2229,9 @@ bool ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
     bool do_removal,
     const scoped_refptr<SharedCancellationFlag>& cancel,
     std::vector<std::pair<base::FilePath, base::string16> >* shortcuts) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   if (!ShortcutLocationIsSupported(location))
     return false;
   DCHECK(dist);

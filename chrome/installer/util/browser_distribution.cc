@@ -102,16 +102,12 @@ void BrowserDistribution::DoPostUninstallOperations(
     const base::string16& distribution_data) {
 }
 
-base::string16 BrowserDistribution::GetBaseAppName() {
-  return L"Chromium";
-}
-
 base::string16 BrowserDistribution::GetDisplayName() {
   return GetShortcutName();
 }
 
 base::string16 BrowserDistribution::GetShortcutName() {
-  return GetBaseAppName();
+  return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
 }
 
 base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(

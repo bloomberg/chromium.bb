@@ -21,10 +21,6 @@ GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
     : GoogleChromeDistribution(std::unique_ptr<AppRegistrationData>(
           new UpdatingAppRegistrationData(kChromeSxSGuid))) {}
 
-base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {
-  return L"Google Chrome Canary";
-}
-
 base::string16 GoogleChromeSxSDistribution::GetShortcutName() {
   return installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
 }

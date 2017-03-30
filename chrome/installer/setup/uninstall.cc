@@ -682,9 +682,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
 
   // Delete Software\RegisteredApplications\Chromium
   InstallUtil::DeleteRegistryValue(
-      root, ShellUtil::kRegRegisteredApplications,
-      WorkItem::kWow64Default,
-      dist->GetBaseAppName() + browser_entry_suffix);
+      root, ShellUtil::kRegRegisteredApplications, WorkItem::kWow64Default,
+      install_static::GetBaseAppName().append(browser_entry_suffix));
 
   // Delete the App Paths and Applications keys that let Explorer find Chrome:
   // http://msdn.microsoft.com/en-us/library/windows/desktop/ee872121
@@ -732,7 +731,8 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   // lives in HKLM.
   InstallUtil::DeleteRegistryValueIf(
       root, ShellUtil::kRegStartMenuInternet, WorkItem::kWow64Default, NULL,
-      InstallUtil::ValueEquals(dist->GetBaseAppName() + browser_entry_suffix));
+      InstallUtil::ValueEquals(
+          install_static::GetBaseAppName().append(browser_entry_suffix)));
 
   // Delete each protocol association if it references this Chrome.
   InstallUtil::ProgramCompare open_command_pred(chrome_exe);
@@ -774,7 +774,7 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
   for (size_t i = 0; i < arraysize(roots); ++i) {
     base::string16 suffix;
     if (roots[i] == HKEY_LOCAL_MACHINE)
-      suffix = ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe);
+      suffix = ShellUtil::GetCurrentInstallationSuffix(chrome_exe);
 
     // Delete Software\Classes\ChromeExt,
     base::string16 ext_prog_id(ShellUtil::kRegClasses);
@@ -810,7 +810,6 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
                                const base::CommandLine& cmd_line) {
   InstallStatus status = installer::UNINSTALL_CONFIRMED;
   BrowserDistribution* browser_dist = product.distribution();
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), browser_dist);
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
 
@@ -828,7 +827,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
       return status;
 
     const base::string16 suffix(
-        ShellUtil::GetCurrentInstallationSuffix(browser_dist, chrome_exe));
+        ShellUtil::GetCurrentInstallationSuffix(chrome_exe));
 
     // Check if we need admin rights to cleanup HKLM (the conditions for
     // requiring a cleanup are the same as the conditions to do the actual
@@ -837,8 +836,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     // (silent) in elevated mode to do HKLM cleanup.
     // And continue uninstalling in the current process also to do HKCU cleanup.
     if (remove_all &&
-        ShellUtil::QuickIsChromeRegisteredInHKLM(
-            browser_dist, chrome_exe, suffix) &&
+        ShellUtil::QuickIsChromeRegisteredInHKLM(chrome_exe, suffix) &&
         !::IsUserAnAdmin() &&
         base::win::GetVersion() >= base::win::VERSION_VISTA &&
         !cmd_line.HasSwitch(installer::switches::kRunAsAdmin)) {
@@ -910,7 +908,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   InstallStatus ret = installer::UNKNOWN_STATUS;
 
   const base::string16 suffix(
-      ShellUtil::GetCurrentInstallationSuffix(browser_dist, chrome_exe));
+      ShellUtil::GetCurrentInstallationSuffix(chrome_exe));
 
   // Remove all Chrome registration keys.
   // Registration data is put in HKCU for both system level and user level
@@ -956,8 +954,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     // !|remove_all| for now).
     if (installer_state.system_install() ||
         (remove_all &&
-         ShellUtil::QuickIsChromeRegisteredInHKLM(
-             browser_dist, chrome_exe, suffix))) {
+         ShellUtil::QuickIsChromeRegisteredInHKLM(chrome_exe, suffix))) {
       DeleteChromeRegistrationKeys(installer_state, browser_dist,
                                    HKEY_LOCAL_MACHINE, suffix, &ret);
     }

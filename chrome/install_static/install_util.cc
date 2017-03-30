@@ -329,6 +329,10 @@ const wchar_t* GetAppGuid() {
   return InstallDetails::Get().app_guid();
 }
 
+std::wstring GetBaseAppName() {
+  return InstallDetails::Get().mode().base_app_name;
+}
+
 const wchar_t* GetBaseAppId() {
   return InstallDetails::Get().base_app_id();
 }

@@ -141,17 +141,6 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   NavigateToUrlWithIExplore(url);
 }
 
-base::string16 GoogleChromeDistribution::GetBaseAppName() {
-  // I'd really like to return L ## PRODUCT_FULLNAME_STRING; but that's no good
-  // since it'd be "Chromium" in a non-Chrome build, which isn't at all what I
-  // want.  Sigh.
-  return L"Google Chrome";
-}
-
-base::string16 GoogleChromeDistribution::GetShortcutName() {
-  return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
-}
-
 base::string16 GoogleChromeDistribution::GetPublisherName() {
   const base::string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);

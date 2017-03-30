@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/uninstall_browser_prompt.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/grit/chromium_strings.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/shell_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -80,8 +79,7 @@ void UninstallView::SetupControls() {
   if (ShellUtil::CanMakeChromeDefaultUnattended() &&
       shell_integration::GetDefaultBrowser() == shell_integration::IS_DEFAULT) {
     browsers_.reset(new BrowsersMap());
-    ShellUtil::GetRegisteredBrowsers(BrowserDistribution::GetDistribution(),
-                                     browsers_.get());
+    ShellUtil::GetRegisteredBrowsers(browsers_.get());
     if (!browsers_->empty()) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 

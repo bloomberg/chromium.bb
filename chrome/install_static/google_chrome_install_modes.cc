@@ -32,6 +32,7 @@ const InstallConstants kInstallModes[] = {
         L"",           // Empty install_suffix for the primary install mode.
         L"",           // No logo suffix for the primary install mode.
         L"{8A69D345-D564-463c-AFF1-A69D9E530F96}",
+        L"Google Chrome",                           // A distinct base_app_name.
         L"Chrome",                                  // A distinct base_app_id.
         L"ChromeHTML",                              // ProgID prefix.
         L"Chrome HTML Document",                    // ProgID description.
@@ -54,6 +55,7 @@ const InstallConstants kInstallModes[] = {
         L" SxS",       // Install suffix.
         L"Canary",     // Logo suffix.
         L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}",  // A distinct app GUID.
+        L"Google Chrome Canary",                    // A distinct base_app_name.
         L"ChromeCanary",                            // A distinct base_app_id.
         L"ChromeSSHTM",                             // ProgID prefix.
         L"Chrome Canary HTML Document",             // ProgID description.
