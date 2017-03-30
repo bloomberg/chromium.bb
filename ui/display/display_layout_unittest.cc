@@ -13,6 +13,8 @@
 
 namespace display {
 
+using Position = DisplayPlacement::Position;
+
 TEST(DisplayLayoutTest, Empty) {
   Displays display_list;
   std::vector<int64_t> updated_ids;
@@ -50,6 +52,73 @@ TEST(DisplayLayoutTest, SingleDisplayNonRelevantPlacement) {
   EXPECT_EQ(0u, updated_ids.size());
   ASSERT_EQ(1u, display_list.size());
   EXPECT_EQ(gfx::Rect(0, 0, 800, 600), display_list[0].bounds());
+}
+
+TEST(DisplayLayoutTest, SwapPrimaryDisplay) {
+  std::unique_ptr<DisplayLayout> layout =
+      DisplayLayoutBuilder(123)
+          .AddDisplayPlacement(456, 123, Position::LEFT, 150)
+          .Build();
+
+  // Initial layout will be 123 <-- 456
+  EXPECT_EQ(123, layout->primary_id);
+  EXPECT_EQ(456, layout->placement_list[0].display_id);
+  EXPECT_EQ(123, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(Position::LEFT, layout->placement_list[0].position);
+  EXPECT_EQ(150, layout->placement_list[0].offset);
+
+  // Swap layout to 123 --> 456.
+  layout->SwapPrimaryDisplay(456);
+  EXPECT_EQ(456, layout->primary_id);
+  EXPECT_EQ(123, layout->placement_list[0].display_id);
+  EXPECT_EQ(456, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(Position::RIGHT, layout->placement_list[0].position);
+  EXPECT_EQ(-150, layout->placement_list[0].offset);
+
+  // Swap layout back to 123 <-- 456.
+  layout->SwapPrimaryDisplay(123);
+  EXPECT_EQ(123, layout->primary_id);
+  EXPECT_EQ(456, layout->placement_list[0].display_id);
+  EXPECT_EQ(123, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(Position::LEFT, layout->placement_list[0].position);
+  EXPECT_EQ(150, layout->placement_list[0].offset);
+}
+
+TEST(DisplayLayoutTest, SwapPrimaryDisplayThreeDisplays) {
+  std::unique_ptr<DisplayLayout> layout =
+      DisplayLayoutBuilder(456)
+          .AddDisplayPlacement(123, 456, Position::LEFT, 0)
+          .AddDisplayPlacement(789, 456, Position::RIGHT, 0)
+          .Build();
+
+  // Initial layout will be 123 --> 456 <-- 789.
+  EXPECT_EQ(456, layout->primary_id);
+  EXPECT_EQ(123, layout->placement_list[0].display_id);
+  EXPECT_EQ(456, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(Position::LEFT, layout->placement_list[0].position);
+  EXPECT_EQ(789, layout->placement_list[1].display_id);
+  EXPECT_EQ(456, layout->placement_list[1].parent_display_id);
+  EXPECT_EQ(Position::RIGHT, layout->placement_list[1].position);
+
+  // Swap layout to 123 --> 456 --> 789.
+  layout->SwapPrimaryDisplay(789);
+  EXPECT_EQ(789, layout->primary_id);
+  EXPECT_EQ(123, layout->placement_list[0].display_id);
+  EXPECT_EQ(456, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(Position::LEFT, layout->placement_list[0].position);
+  EXPECT_EQ(456, layout->placement_list[1].display_id);
+  EXPECT_EQ(789, layout->placement_list[1].parent_display_id);
+  EXPECT_EQ(Position::LEFT, layout->placement_list[1].position);
+
+  // Swap layout to 123 <-- 456 <-- 789.
+  layout->SwapPrimaryDisplay(123);
+  EXPECT_EQ(123, layout->primary_id);
+  EXPECT_EQ(456, layout->placement_list[0].display_id);
+  EXPECT_EQ(123, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(Position::RIGHT, layout->placement_list[0].position);
+  EXPECT_EQ(789, layout->placement_list[1].display_id);
+  EXPECT_EQ(456, layout->placement_list[1].parent_display_id);
+  EXPECT_EQ(Position::RIGHT, layout->placement_list[1].position);
 }
 
 namespace {

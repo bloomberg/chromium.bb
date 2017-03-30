@@ -33,26 +33,6 @@ namespace {
 // Needed for DisplayConfigurator::ForceInitialConfigure.
 const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
-// Recursively swaps the displays in a DisplayLayout to change the primary
-// display but keep the same relative display layout.
-// TODO(kylechar): This is copied from WindowTreeHostManager. The concept of
-// getting the same relative display layout with a different primary display id
-// should become a function on DisplayLayout itself to avoid reimplementing it
-// here.
-void SwapRecursive(const std::map<int64_t, DisplayPlacement*>& id_to_placement,
-                   int64_t current_primary_id,
-                   int64_t display_id) {
-  if (display_id == current_primary_id)
-    return;
-
-  DCHECK(id_to_placement.count(display_id));
-  DisplayPlacement* placement = id_to_placement.at(display_id);
-  DCHECK(placement);
-  SwapRecursive(id_to_placement, current_primary_id,
-                placement->parent_display_id);
-  placement->Swap();
-}
-
 }  // namespace
 
 // static
@@ -108,21 +88,8 @@ void ScreenManagerOzoneInternal::SetPrimaryDisplayId(int64_t display_id) {
   // when the primary id is set after new displays are connected.
   // Only update the layout if it is requested to swap primary display.
   if (layout.primary_id != new_primary_display.id()) {
-    std::unique_ptr<DisplayLayout> swapped_layout(layout.Copy());
-
-    std::map<int64_t, DisplayPlacement*> id_to_placement;
-    for (auto& placement : swapped_layout->placement_list)
-      id_to_placement[placement.display_id] = &placement;
-    SwapRecursive(id_to_placement, primary_display_id_,
-                  new_primary_display.id());
-
-    std::sort(swapped_layout->placement_list.begin(),
-              swapped_layout->placement_list.end(),
-              [](const DisplayPlacement& d1, const DisplayPlacement& d2) {
-                return d1.display_id < d2.display_id;
-              });
-
-    swapped_layout->primary_id = new_primary_display.id();
+    std::unique_ptr<display::DisplayLayout> swapped_layout = layout.Copy();
+    swapped_layout->SwapPrimaryDisplay(new_primary_display.id());
     DisplayIdList list = display_manager_->GetCurrentDisplayIdList();
     display_manager_->layout_store()->RegisterLayoutForDisplayIdList(
         list, std::move(swapped_layout));

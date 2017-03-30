@@ -161,21 +161,6 @@ aura::Window* GetWindow(AshWindowTreeHost* ash_host) {
   return ash_host->AsWindowTreeHost()->window();
 }
 
-void SwapRecursive(
-    const std::map<int64_t, display::DisplayPlacement*>& id_to_placement,
-    int64_t current_primary_id,
-    int64_t display_id) {
-  if (display_id == current_primary_id)
-    return;
-
-  DCHECK(id_to_placement.count(display_id));
-  display::DisplayPlacement* placement = id_to_placement.at(display_id);
-  DCHECK(placement);
-  SwapRecursive(id_to_placement, current_primary_id,
-                placement->parent_display_id);
-  placement->Swap();
-}
-
 }  // namespace
 
 // A utility class to store/restore focused/active window
@@ -446,22 +431,8 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   // when the primary id is set after new displays are connected.
   // Only update the layout if it is requested to swap primary display.
   if (layout.primary_id != new_primary_display.id()) {
-    std::unique_ptr<display::DisplayLayout> swapped_layout(layout.Copy());
-
-    std::map<int64_t, display::DisplayPlacement*> id_to_placement;
-    for (auto& placement : swapped_layout->placement_list)
-      id_to_placement[placement.display_id] = &placement;
-    SwapRecursive(id_to_placement, primary_display_id,
-                  new_primary_display.id());
-
-    std::sort(swapped_layout->placement_list.begin(),
-              swapped_layout->placement_list.end(),
-              [](const display::DisplayPlacement& d1,
-                 const display::DisplayPlacement& d2) {
-                return d1.display_id < d2.display_id;
-              });
-
-    swapped_layout->primary_id = new_primary_display.id();
+    std::unique_ptr<display::DisplayLayout> swapped_layout = layout.Copy();
+    swapped_layout->SwapPrimaryDisplay(new_primary_display.id());
     display::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(
         list, std::move(swapped_layout));

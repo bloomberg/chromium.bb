@@ -111,6 +111,10 @@ class DISPLAY_EXPORT DisplayLayout final {
 
   std::unique_ptr<DisplayLayout> Copy() const;
 
+  // Swaps the primary display so it is |new_primary_id|. This modifies the
+  // display placements such so they are anchored on |new_primary_id|.
+  void SwapPrimaryDisplay(int64_t new_primary_id);
+
   // Test if the |layout| has the same placement list. Other fields such
   // as mirrored, primary_id are ignored.
   bool HasSamePlacementList(const DisplayLayout& layout) const;

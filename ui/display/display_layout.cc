@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include <unordered_map>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -35,6 +36,10 @@ bool IsIdInList(int64_t id, const DisplayIdList& list) {
       std::find_if(list.begin(), list.end(),
                    [id](int64_t display_id) { return display_id == id; });
   return iter != list.end();
+}
+
+bool ComparePlacements(const DisplayPlacement& d1, const DisplayPlacement& d2) {
+  return d1.display_id < d2.display_id;
 }
 
 // Extracts the displays IDs list from the displays list.
@@ -101,10 +106,7 @@ bool AreDisplaysTouching(const Display& child_display,
 // IDs.
 void UpdatePlacementList(Displays* display_list,
                          std::vector<DisplayPlacement>* placement_list) {
-  std::sort(placement_list->begin(), placement_list->end(),
-            [](const DisplayPlacement& p1, const DisplayPlacement& p2) {
-              return p1.display_id < p2.display_id;
-            });
+  std::sort(placement_list->begin(), placement_list->end(), ComparePlacements);
 
   for (DisplayPlacement& placement : *placement_list) {
     const Display* child_display =
@@ -578,6 +580,27 @@ std::unique_ptr<DisplayLayout> DisplayLayout::Copy() const {
   copy->default_unified = default_unified;
   copy->primary_id = primary_id;
   return copy;
+}
+
+void DisplayLayout::SwapPrimaryDisplay(int64_t new_primary_id) {
+  if (primary_id == new_primary_id)
+    return;
+
+  // Build a map of the *original* |display_id| for each placement.
+  std::unordered_map<int64_t, DisplayPlacement*> id_to_placement;
+  for (auto& placement : placement_list)
+    id_to_placement[placement.display_id] = &placement;
+
+  // Swap placements so that |new_primary_id| is the display that placements are
+  // anchored on and set |primary_id|.
+  int64_t swap_display_id = new_primary_id;
+  while (swap_display_id != primary_id) {
+    DisplayPlacement* placement = id_to_placement.at(swap_display_id);
+    swap_display_id = placement->parent_display_id;
+    placement->Swap();
+  }
+  std::sort(placement_list.begin(), placement_list.end(), ComparePlacements);
+  primary_id = new_primary_id;
 }
 
 bool DisplayLayout::HasSamePlacementList(const DisplayLayout& layout) const {
