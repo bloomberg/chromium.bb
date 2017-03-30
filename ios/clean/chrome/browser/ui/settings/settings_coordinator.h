@@ -9,13 +9,9 @@
 
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator.h"
 
-@protocol SettingsCommands;
-
 // A coordinator for the Settings UI, which is usually presented modally
 // on top of whatever other UI is currently active.
 @interface SettingsCoordinator : BrowserCoordinator
-// Action delegate for this coordinator.
-@property(nonatomic, weak) id<SettingsCommands> settingsCommandHandler;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SETTINGS_COORDINATOR_H_

@@ -160,7 +160,6 @@ TEST(CommandDispatcherTest, TargetWithArguments) {
   EXPECT_EQ(13, [dispatcher methodToAddFirstArgument:7 toSecond:6]);
   EXPECT_FALSE(target.intMethodCalled);
   EXPECT_FALSE(target.objectMethodCalled);
-  EXPECT_EQ(42, [dispatcher methodToAddFirstArgument:34 toSecond:8]);
 }
 
 // Tests that messages are routed to the proper handler when multiple targets
@@ -185,8 +184,39 @@ TEST(CommandDispatcherTest, MultipleTargets) {
   EXPECT_TRUE(hideTarget.hideCalled);
 }
 
-// Tests that handlers are no longer forwarded messages after deregistration.
-TEST(CommandDispatcherTest, Deregistration) {
+// Tests that handlers are no longer forwarded messages after selector
+// deregistration.
+TEST(CommandDispatcherTest, SelectorDeregistration) {
+  id dispatcher = [[CommandDispatcher alloc] init];
+  CommandDispatcherTestSimpleTarget* target =
+      [[CommandDispatcherTestSimpleTarget alloc] init];
+
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(show)];
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(hide)];
+
+  [dispatcher show];
+  EXPECT_TRUE(target.showCalled);
+  EXPECT_FALSE(target.hideCalled);
+
+  [target resetProperties];
+  [dispatcher stopDispatchingForSelector:@selector(show)];
+  bool exception_caught = false;
+  @try {
+    [dispatcher show];
+  } @catch (NSException* exception) {
+    EXPECT_EQ(NSInvalidArgumentException, [exception name]);
+    exception_caught = true;
+  }
+  EXPECT_TRUE(exception_caught);
+
+  [dispatcher hide];
+  EXPECT_FALSE(target.showCalled);
+  EXPECT_TRUE(target.hideCalled);
+}
+
+// Tests that handlers are no longer forwarded messages after target
+// deregistration.
+TEST(CommandDispatcherTest, TargetDeregistration) {
   id dispatcher = [[CommandDispatcher alloc] init];
   CommandDispatcherTestSimpleTarget* showTarget =
       [[CommandDispatcherTestSimpleTarget alloc] init];

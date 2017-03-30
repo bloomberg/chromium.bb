@@ -8,6 +8,7 @@
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,7 +20,6 @@
 @end
 
 @implementation SettingsCoordinator
-@synthesize settingsCommandHandler = _settingsCommandHandler;
 @synthesize viewController = _viewController;
 
 #pragma mark - BrowserCoordinator
@@ -59,7 +59,7 @@
 }
 
 - (void)closeSettings {
-  [self.settingsCommandHandler closeSettings];
+  [static_cast<id>(self.browser->dispatcher()) closeSettings];
 }
 
 @end

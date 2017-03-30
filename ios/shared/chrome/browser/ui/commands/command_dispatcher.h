@@ -16,6 +16,9 @@
 // |selector|.
 - (void)startDispatchingToTarget:(id)target forSelector:(SEL)selector;
 
+// Removes forwarding registration for the given |selector|.
+- (void)stopDispatchingForSelector:(SEL)selector;
+
 // Removes all forwarding registrations for the given |target|.
 - (void)stopDispatchingToTarget:(id)target;
 

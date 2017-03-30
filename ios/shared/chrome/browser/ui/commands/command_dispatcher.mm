@@ -25,6 +25,10 @@
   _forwardingTargets[selector] = target;
 }
 
+- (void)stopDispatchingForSelector:(SEL)selector {
+  _forwardingTargets.erase(selector);
+}
+
 // |-stopDispatchingToTarget| should be called much less often than
 // |-forwardingTargetForSelector|, so removal is intentionally O(n) in order
 // to prioritize the speed of lookups.
@@ -37,7 +41,7 @@
   }
 
   for (auto* selector : selectorsToErase) {
-    _forwardingTargets.erase(selector);
+    [self stopDispatchingForSelector:selector];
   }
 }
 

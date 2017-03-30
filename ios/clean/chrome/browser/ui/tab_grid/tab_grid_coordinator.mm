@@ -18,6 +18,7 @@
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -123,14 +124,18 @@
 #pragma mark - SettingsCommands
 
 - (void)showSettings {
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(closeSettings)];
   SettingsCoordinator* settingsCoordinator = [[SettingsCoordinator alloc] init];
-  settingsCoordinator.settingsCommandHandler = self;
   [self addOverlayCoordinator:settingsCoordinator];
   self.settingsCoordinator = settingsCoordinator;
   [settingsCoordinator start];
 }
 
 - (void)closeSettings {
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  [dispatcher stopDispatchingForSelector:@selector(closeSettings)];
   [self.settingsCoordinator stop];
   [self.settingsCoordinator.parentCoordinator
       removeChildCoordinator:self.settingsCoordinator];
