@@ -6,24 +6,43 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
+#include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/origin.h"
 
 namespace content {
 
+namespace {
+
+// Records the |error| status issued by the DataManager after it was requested
+// to create and store a new Background Fetch registration.
+void RecordRegistrationCreatedError(blink::mojom::BackgroundFetchError error) {
+  // TODO(peter): Add UMA.
+}
+
+// Records the |error| status issued by the DataManager after the storage
+// associated with a registration has been completely deleted.
+void RecordRegistrationDeletedError(blink::mojom::BackgroundFetchError error) {
+  // TODO(peter): Add UMA.
+}
+
+}  // namespace
+
 BackgroundFetchContext::BackgroundFetchContext(
     BrowserContext* browser_context,
     StoragePartitionImpl* storage_partition,
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : browser_context_(browser_context),
-      service_worker_context_(service_worker_context),
-      background_fetch_data_manager_(
-          base::MakeUnique<BackgroundFetchDataManager>(browser_context)) {
+      data_manager_(
+          base::MakeUnique<BackgroundFetchDataManager>(browser_context)),
+      event_dispatcher_(base::MakeUnique<BackgroundFetchEventDispatcher>(
+          std::move(service_worker_context))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   request_context_ =
       make_scoped_refptr(storage_partition->GetURLRequestContext());
@@ -51,7 +70,7 @@ void BackgroundFetchContext::StartFetch(
     const BackgroundFetchOptions& options,
     const blink::mojom::BackgroundFetchService::FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  background_fetch_data_manager_->CreateRegistration(
+  data_manager_->CreateRegistration(
       registration_id, requests, options,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration, this,
                      registration_id, options, callback));
@@ -63,6 +82,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     const blink::mojom::BackgroundFetchService::FetchCallback& callback,
     blink::mojom::BackgroundFetchError error,
     std::vector<BackgroundFetchRequestInfo> initial_requests) {
+  RecordRegistrationCreatedError(error);
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     callback.Run(error, base::nullopt /* registration */);
     return;
@@ -125,8 +145,8 @@ void BackgroundFetchContext::CreateController(
     std::vector<BackgroundFetchRequestInfo> initial_requests) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
-          registration_id, options, background_fetch_data_manager_.get(),
-          browser_context_, request_context_,
+          registration_id, options, data_manager_.get(), browser_context_,
+          request_context_,
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this));
 
   // TODO(peter): We should actually be able to use Background Fetch in layout
@@ -148,11 +168,52 @@ void BackgroundFetchContext::DidCompleteJob(
 
   DCHECK_GT(active_fetches_.count(registration_id), 0u);
 
-  if (controller->state() == BackgroundFetchJobController::State::COMPLETED) {
-    // TODO(peter): Dispatch the `backgroundfetched` or `backgroundfetchfail`
-    // event to the Service Worker to inform the developer.
+  // TODO(peter): Fire `backgroundfetchabort` if the |controller|'s state is
+  // ABORTED, which does not require a sequence of the settled fetches.
+
+  // The `backgroundfetched` and/or `backgroundfetchfail` event will only be
+  // invoked for Background Fetch jobs which have been completed.
+  if (controller->state() != BackgroundFetchJobController::State::COMPLETED) {
+    DeleteRegistration(registration_id);
+    return;
   }
 
+  // Get the sequence of settled fetches from the data manager.
+  data_manager_->GetSettledFetchesForRegistration(
+      registration_id,
+      base::BindOnce(&BackgroundFetchContext::DidGetSettledFetches, this,
+                     registration_id));
+}
+
+void BackgroundFetchContext::DidGetSettledFetches(
+    const BackgroundFetchRegistrationId& registration_id,
+    blink::mojom::BackgroundFetchError error,
+    std::vector<BackgroundFetchSettledFetch> settled_fetches,
+    std::vector<std::unique_ptr<BlobHandle>> blob_handles) {
+  if (error != blink::mojom::BackgroundFetchError::NONE) {
+    DeleteRegistration(registration_id);
+    return;
+  }
+
+  // TODO(peter): Distinguish between the `backgroundfetched` and
+  // `backgroundfetchfail` events based on the status code of all fetches. We
+  // don't populate that field yet, so always assume it's successful for now.
+
+  event_dispatcher_->DispatchBackgroundFetchedEvent(
+      registration_id, std::move(settled_fetches),
+      base::Bind(&BackgroundFetchContext::DeleteRegistration, this,
+                 registration_id));
+}
+
+void BackgroundFetchContext::DeleteRegistration(
+    const BackgroundFetchRegistrationId& registration_id) {
+  DCHECK_GT(active_fetches_.count(registration_id), 0u);
+
+  // Delete all persistent information associated with the |registration_id|.
+  data_manager_->DeleteRegistration(
+      registration_id, base::BindOnce(&RecordRegistrationDeletedError));
+
+  // Delete the local state associated with the |registration_id|.
   active_fetches_.erase(registration_id);
 }
 

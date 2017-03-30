@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/guid.h"
 #include "content/public/browser/download_item.h"
 
 namespace content {
@@ -16,18 +15,17 @@ BackgroundFetchRequestInfo::BackgroundFetchRequestInfo() = default;
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     int request_index,
     const ServiceWorkerFetchRequest& fetch_request)
-    : request_index_(request_index),
-      fetch_request_(fetch_request),
-      guid_(base::GenerateGUID()) {}
+    : request_index_(request_index), fetch_request_(fetch_request) {}
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     const BackgroundFetchRequestInfo& request)
-    : fetch_request_(request.fetch_request_),
-      guid_(request.guid_),
+    : request_index_(request.request_index_),
+      fetch_request_(request.fetch_request_),
       download_guid_(request.download_guid_),
       state_(request.state_),
       interrupt_reason_(request.interrupt_reason_),
-      file_path_(request.file_path_) {}
+      file_path_(request.file_path_),
+      received_bytes_(request.received_bytes_) {}
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {}
 

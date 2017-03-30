@@ -26,10 +26,12 @@ class Origin;
 namespace content {
 
 class BackgroundFetchDataManager;
+class BackgroundFetchEventDispatcher;
 class BackgroundFetchJobController;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRequestInfo;
+class BlobHandle;
 class BrowserContext;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
@@ -45,10 +47,9 @@ class CONTENT_EXPORT BackgroundFetchContext
  public:
   // The BackgroundFetchContext will watch the ServiceWorkerContextWrapper so
   // that it can respond to service worker events such as unregister.
-  BackgroundFetchContext(
-      BrowserContext* browser_context,
-      StoragePartitionImpl* storage_partition,
-      const scoped_refptr<ServiceWorkerContextWrapper>& context);
+  BackgroundFetchContext(BrowserContext* browser_context,
+                         StoragePartitionImpl* storage_partition,
+                         scoped_refptr<ServiceWorkerContextWrapper> context);
 
   // Shutdown must be called before deleting this. Call on the UI thread.
   void Shutdown();
@@ -99,16 +100,28 @@ class CONTENT_EXPORT BackgroundFetchContext
       blink::mojom::BackgroundFetchError error,
       std::vector<BackgroundFetchRequestInfo> initial_requests);
 
-  // Called when a the given |controller| has finished processing its job.
+  // Called when the given |controller| has finished processing its job.
   void DidCompleteJob(BackgroundFetchJobController* controller);
+
+  // Called when the sequence of settled fetches for |registration_id| have been
+  // retrieved from storage, and the Service Worker event can be invoked.
+  void DidGetSettledFetches(
+      const BackgroundFetchRegistrationId& registration_id,
+      blink::mojom::BackgroundFetchError error,
+      std::vector<BackgroundFetchSettledFetch> settled_fetches,
+      std::vector<std::unique_ptr<BlobHandle>> blob_handles);
+
+  // Called when all processing for the |registration_id| has been finished and
+  // the job, including its associated data, is ready to be deleted.
+  void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id);
 
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;
 
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
-  std::unique_ptr<BackgroundFetchDataManager> background_fetch_data_manager_;
+  std::unique_ptr<BackgroundFetchDataManager> data_manager_;
+  std::unique_ptr<BackgroundFetchEventDispatcher> event_dispatcher_;
 
   // Map of the Background Fetch fetches that are currently in-progress.
   std::map<BackgroundFetchRegistrationId,

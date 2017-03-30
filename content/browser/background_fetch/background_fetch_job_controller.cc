@@ -41,6 +41,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
 
   // Starts fetching the |request| with the download manager.
   void StartRequest(const BackgroundFetchRequestInfo& request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(request_context_);
 
     DownloadManager* download_manager =
@@ -62,6 +63,8 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
 
   // DownloadItem::Observer overrides:
   void OnDownloadUpdated(DownloadItem* item) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
     auto iter = downloads_.find(item);
     DCHECK(iter != downloads_.end());
 
@@ -99,6 +102,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
   }
 
   void OnDownloadDestroyed(DownloadItem* item) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(downloads_.count(item), 1u);
     downloads_.erase(item);
 
@@ -112,6 +116,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
   void DidStartRequest(const BackgroundFetchRequestInfo& request,
                        DownloadItem* download_item,
                        DownloadInterruptReason interrupt_reason) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(interrupt_reason, DOWNLOAD_INTERRUPT_REASON_NONE);
     DCHECK(download_item);
 

@@ -13,8 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/browser/background_fetch/background_fetch_job_info.h"
-#include "content/browser/background_fetch/background_fetch_job_response_data.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/content_export.h"
@@ -23,6 +21,8 @@
 
 namespace content {
 
+struct BackgroundFetchSettledFetch;
+class BlobHandle;
 class BrowserContext;
 class ChromeBlobStorageContext;
 
@@ -39,6 +39,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
   using NextRequestCallback = base::OnceCallback<void(
       const base::Optional<BackgroundFetchRequestInfo>&)>;
+  using SettledFetchesCallback =
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              std::vector<BackgroundFetchSettledFetch>,
+                              std::vector<std::unique_ptr<BlobHandle>>)>;
 
   explicit BackgroundFetchDataManager(BrowserContext* browser_context);
   ~BackgroundFetchDataManager();
@@ -67,77 +71,29 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const BackgroundFetchRequestInfo& request,
       NextRequestCallback callback);
 
+  // Reads all settled fetches for the given |registration_id|. Both the Request
+  // and Response objects will be initialised based on the stored data. Will
+  // invoke the |callback| when the list of fetches has been compiled.
+  void GetSettledFetchesForRegistration(
+      const BackgroundFetchRegistrationId& registration_id,
+      SettledFetchesCallback callback);
+
   // Deletes the registration identified by |registration_id|. Will invoke the
   // |callback| when the registration has been deleted from storage.
   void DeleteRegistration(const BackgroundFetchRegistrationId& registration_id,
                           DeleteRegistrationCallback callback);
-
-  // TODO(harkness): Replace the OnceClosure with a callback to return the
-  // response object once it is decided whether lifetime should be passed to the
-  // caller or stay here.
-  void GetJobResponse(const std::string& job_guid,
-                      const BackgroundFetchResponseCompleteCallback& callback);
-
-  // The following methods are called by the JobController to update job state.
-  // Returns a boolean indicating whether there are more requests to process.
-  bool UpdateRequestState(const std::string& job_guid,
-                          const std::string& request_guid,
-                          DownloadItem::DownloadState state,
-                          DownloadInterruptReason interrupt_reason);
-  void UpdateRequestStorageState(const std::string& job_guid,
-                                 const std::string& request_guid,
-                                 const base::FilePath& file_path,
-                                 int64_t received_bytes);
-  void UpdateRequestDownloadGuid(const std::string& job_guid,
-                                 const std::string& request_guid,
-                                 const std::string& download_guid);
-
-  // Called by the JobController to get a BackgroundFetchRequestInfo to
-  // process.
-  const BackgroundFetchRequestInfo& GetNextBackgroundFetchRequestInfo(
-      const std::string& job_guid);
-
-  // Indicates whether all requests have been handed to the JobController.
-  bool HasRequestsRemaining(const std::string& job_guid) const;
-
-  // Indicates whether all requests have been handed out and completed.
-  bool IsComplete(const std::string& job_guid) const;
 
  private:
   friend class BackgroundFetchDataManagerTest;
 
   class RegistrationData;
 
-  // Storage interface.
-  void WriteJobToStorage(
-      std::unique_ptr<BackgroundFetchJobInfo> job_info,
-      std::vector<std::unique_ptr<BackgroundFetchRequestInfo>> request_infos);
-  void WriteRequestToStorage(const std::string& job_guid,
-                             BackgroundFetchRequestInfo* request_info);
-  std::unique_ptr<BackgroundFetchRequestInfo> GetRequestInfo(
-      const std::string& job_guid,
-      size_t request_index);
-
-  void DidGetBlobStorageContext(
-      const std::string& job_guid,
-      const BackgroundFetchResponseCompleteCallback& callback,
-      ChromeBlobStorageContext* blob_context);
-
-  // Indirectly, this is owned by the BrowserContext.
-  BrowserContext* browser_context_;
+  // The blob storage request with which response information will be stored.
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
   // Map of known background fetch registration ids to their associated data.
   std::map<BackgroundFetchRegistrationId, std::unique_ptr<RegistrationData>>
       registrations_;
-
-  // Map from job_guid to JobInfo.
-  std::unordered_map<std::string, std::unique_ptr<BackgroundFetchJobInfo>>
-      job_map_;
-
-  // Temporary map to hold data which will be written to storage.
-  // Map from job_guid to RequestInfos.
-  std::unordered_map<std::string, std::vector<BackgroundFetchRequestInfo>>
-      request_map_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 

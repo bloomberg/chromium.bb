@@ -33,7 +33,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   // Should only be consumed by the BackgroundFetchDataManager.
   int request_index() const { return request_index_; }
 
-  const std::string& guid() const { return guid_; }
+  // Returns the Fetch API request object this object encapsulates.
+  const ServiceWorkerFetchRequest& fetch_request() const {
+    return fetch_request_;
+  }
 
   const GURL& GetURL() const;
 
@@ -69,7 +72,6 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   // The request information provided by the developer.
   ServiceWorkerFetchRequest fetch_request_;
 
-  std::string guid_;
   std::string download_guid_;
 
   // The following members do not need to be persisted, they can be reset after
