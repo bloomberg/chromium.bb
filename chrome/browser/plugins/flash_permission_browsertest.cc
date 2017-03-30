@@ -204,7 +204,14 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, AllowFileURL) {
   EXPECT_TRUE(FeatureUsageSucceeds());
 }
 
-IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, BlockFileURL) {
+// Failing often. http://crbug.com/706780.
+#if defined(OS_LINUX)
+#define MAYBE_BlockFileURL DISABLED_BlockFileURL
+#else
+#define MAYBE_BlockFileURL BlockFileURL
+#endif
+
+IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, MAYBE_BlockFileURL) {
   base::FilePath test_path;
   PathService::Get(chrome::DIR_TEST_DATA, &test_path);
   ui_test_utils::NavigateToURL(
