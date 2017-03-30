@@ -72,22 +72,10 @@ class MockRemoteSuggestionsProvider : public RemoteSuggestionsProvider {
  public:
   MockRemoteSuggestionsProvider(Observer* observer)
       : RemoteSuggestionsProvider(observer) {}
-  // Move-only params are not supported by GMock. We want to mock out
-  // RefetchInTheBackground() which takes a unique_ptr<>. Instead, we add a new
-  // mock function which takes a copy of the callback and override the
-  // RemoteSuggestionsProvider's method to forward the call into the new mock
-  // function.
-  void RefetchInTheBackground(
-      std::unique_ptr<RemoteSuggestionsProvider::FetchStatusCallback> callback)
-      override {
-    RefetchInTheBackground(*callback);
-  }
   MOCK_METHOD1(RefetchInTheBackground,
-               void(RemoteSuggestionsProvider::FetchStatusCallback));
-
+               void(const RemoteSuggestionsProvider::FetchStatusCallback&));
   MOCK_CONST_METHOD0(suggestions_fetcher_for_debugging,
                      const RemoteSuggestionsFetcher*());
-
   MOCK_METHOD1(GetCategoryStatus, CategoryStatus(Category));
   MOCK_METHOD1(GetCategoryInfo, CategoryInfo(Category));
   MOCK_METHOD3(ClearHistory,

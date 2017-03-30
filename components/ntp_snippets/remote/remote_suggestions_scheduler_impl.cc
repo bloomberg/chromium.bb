@@ -442,11 +442,9 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackground() {
   }
 
   background_fetch_in_progress_ = true;
-  provider_->RefetchInTheBackground(
-      base::MakeUnique<RemoteSuggestionsProvider::FetchStatusCallback>(
-          base::Bind(
-              &RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundFinished,
-              base::Unretained(this))));
+  provider_->RefetchInTheBackground(base::Bind(
+      &RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundFinished,
+      base::Unretained(this)));
 }
 
 bool RemoteSuggestionsSchedulerImpl::ShouldRefetchInTheBackgroundNow(

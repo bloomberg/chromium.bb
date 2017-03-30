@@ -314,7 +314,8 @@ void SnippetsInternalsMessageHandler::ClearClassification(
 void SnippetsInternalsMessageHandler::FetchRemoteSuggestionsInTheBackground(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
-  remote_suggestions_provider_->RefetchInTheBackground(nullptr);
+  remote_suggestions_provider_->RefetchInTheBackground(
+      RemoteSuggestionsProvider::FetchStatusCallback());
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {

@@ -557,7 +557,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
                           const std::string& json) {
     SetUpFetchResponse(json);
     service->FetchSuggestions(/*interactive_request=*/true,
-                              /*callback=*/nullptr);
+                              RemoteSuggestionsProvider::FetchStatusCallback());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -1731,7 +1731,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   // background fetch.
   simple_test_clock_ptr->Advance(TimeDelta::FromHours(1));
 
-  service->RefetchInTheBackground(/*callback=*/nullptr);
+  service->RefetchInTheBackground(
+      RemoteSuggestionsProvider::FetchStatusCallback());
   base::RunLoop().RunUntilIdle();
   // TODO(jkrcal): Move together with the pref storage into the scheduler.
   EXPECT_EQ(

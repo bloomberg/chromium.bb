@@ -137,8 +137,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   bool initialized() const { return ready() || state_ == State::DISABLED; }
 
   // RemoteSuggestionsProvider implementation.
-  void RefetchInTheBackground(
-      std::unique_ptr<FetchStatusCallback> callback) override;
+  void RefetchInTheBackground(const FetchStatusCallback& callback) override;
 
   // TODO(fhorschig): Remove this getter when there is an interface for the
   // fetcher that allows better mocks.
@@ -293,7 +292,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
   // the fetch finished, the provided |callback| will be triggered with the
   // status of the fetch.
   void FetchSuggestions(bool interactive_request,
-                        std::unique_ptr<FetchStatusCallback> callback);
+                        const FetchStatusCallback& callback);
 
   // Returns the URL of the image of a suggestion if it is among the current or
   // among the archived suggestions in the matching category. Returns an empty
@@ -312,7 +311,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // Callback for regular fetch requests with the RemoteSuggestionsFetcher.
   void OnFetchFinished(
-      std::unique_ptr<FetchStatusCallback> callback,
+      const FetchStatusCallback& callback,
       bool interactive_request,
       Status status,
       RemoteSuggestionsFetcher::OptionalFetchedCategories fetched_categories);
@@ -448,7 +447,7 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
 
   // The parameters for the fetch to perform later.
   bool fetch_when_ready_interactive_;
-  std::unique_ptr<FetchStatusCallback> fetch_when_ready_callback_;
+  FetchStatusCallback fetch_when_ready_callback_;
 
   // Set to true if ClearHistoryDependentState is called while the service isn't
   // ready. The nuke will be executed once the service finishes initialization
