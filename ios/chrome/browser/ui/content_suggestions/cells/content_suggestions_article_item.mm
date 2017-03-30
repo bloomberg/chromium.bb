@@ -123,6 +123,7 @@ const CGFloat kAnimationDuration = 0.3;
     _imageContainer = [[UIView alloc] initWithFrame:CGRectZero];
     _noImageIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
     _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
 
     _titleLabel.numberOfLines = 2;
     _subtitleLabel.numberOfLines = 2;
@@ -131,11 +132,16 @@ const CGFloat kAnimationDuration = 0.3;
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                    forAxis:UILayoutConstraintAxisVertical];
 
+    _contentImageView.contentMode = UIViewContentModeScaleAspectFill;
+    _contentImageView.clipsToBounds = YES;
+    _contentImageView.hidden = YES;
+
     _imageContainer.translatesAutoresizingMaskIntoConstraints = NO;
     _noImageIcon.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _publisherLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _contentImageView.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.contentView addSubview:_imageContainer];
     [self.contentView addSubview:_titleLabel];
@@ -143,6 +149,7 @@ const CGFloat kAnimationDuration = 0.3;
     [self.contentView addSubview:_publisherLabel];
 
     [_imageContainer addSubview:_noImageIcon];
+    [_imageContainer addSubview:_contentImageView];
 
     _imageContainer.backgroundColor =
         [UIColor colorWithWhite:kNoImageBackgroundWhite alpha:1];
@@ -164,17 +171,15 @@ const CGFloat kAnimationDuration = 0.3;
 }
 
 - (void)setContentImage:(UIImage*)image {
-  if (!image)
+  if (!image) {
+    self.contentImageView.hidden = YES;
     return;
-  self.contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-  self.contentImageView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.contentImageView.contentMode = UIViewContentModeScaleAspectFill;
-  self.contentImageView.clipsToBounds = YES;
+  }
+
   self.contentImageView.image = image;
 
   self.contentImageView.alpha = 0;
-  [self.imageContainer addSubview:self.contentImageView];
-  AddSameSizeConstraint(self.contentImageView, self.imageContainer);
+  self.contentImageView.hidden = NO;
 
   [UIView animateWithDuration:kAnimationDuration
                    animations:^{
@@ -194,7 +199,7 @@ const CGFloat kAnimationDuration = 0.3;
 }
 
 - (void)prepareForReuse {
-  [self.contentImageView removeFromSuperview];
+  self.contentImageView.hidden = YES;
 }
 
 #pragma mark - UIView
@@ -241,6 +246,8 @@ const CGFloat kAnimationDuration = 0.3;
     [_noImageIcon.widthAnchor constraintEqualToConstant:kIconSize],
     [_noImageIcon.heightAnchor constraintEqualToAnchor:_noImageIcon.widthAnchor]
   ]];
+
+  AddSameSizeConstraint(_contentImageView, _imageContainer);
 
   ApplyVisualConstraintsWithMetrics(
       @[
