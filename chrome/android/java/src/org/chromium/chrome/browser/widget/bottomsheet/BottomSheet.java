@@ -149,6 +149,9 @@ public class BottomSheet
     /** A placeholder for if there is no content in the bottom sheet. */
     private View mPlaceholder;
 
+    /** A handle to the find-in-page toolbar. */
+    private View mFindInPageView;
+
     /** A handle to the FrameLayout that holds the content of the bottom sheet. */
     private FrameLayout mBottomSheetContentContainer;
 
@@ -952,6 +955,10 @@ public class BottomSheet
         boolean isInOverviewMode = mTabModelSelector != null
                 && (mTabModelSelector.getCurrentTab() == null
                            || mTabModelSelector.getCurrentTab().getActivity().isInOverviewMode());
-        return !isToolbarAndroidViewHidden() && !isInOverviewMode;
+
+        if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
+        boolean isFindInPageVisible =
+                mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
+        return !isToolbarAndroidViewHidden() && !isInOverviewMode && !isFindInPageVisible;
     }
 }

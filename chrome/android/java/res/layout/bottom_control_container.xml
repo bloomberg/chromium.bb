@@ -43,6 +43,14 @@
 
             </FrameLayout>
 
+            <ImageView
+                android:id="@+id/toolbar_handle"
+                android:layout_width="@dimen/toolbar_handle_width"
+                android:layout_height="@dimen/toolbar_handle_height"
+                android:layout_marginTop="@dimen/toolbar_handle_margin_top"
+                android:layout_gravity="center|top"
+                android:contentDescription="@null" />
+
             <ViewStub
                 android:id="@+id/find_toolbar_stub"
                 android:inflatedId="@+id/find_toolbar"
@@ -51,13 +59,6 @@
                 android:layout_height="@dimen/bottom_control_container_height"
                 android:layout="@layout/find_toolbar" />
 
-            <ImageView
-                android:id="@+id/toolbar_handle"
-                android:layout_width="@dimen/toolbar_handle_width"
-                android:layout_height="@dimen/toolbar_handle_height"
-                android:layout_marginTop="@dimen/toolbar_handle_margin_top"
-                android:layout_gravity="center|top"
-                android:contentDescription="@null" />
         </view>
     </org.chromium.chrome.browser.toolbar.ToolbarControlContainer>
 
