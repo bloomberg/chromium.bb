@@ -25,7 +25,7 @@ namespace {
 
 scoped_refptr<ContentHashReader> CreateContentHashReader(
     const Extension& extension,
-    base::FilePath& extension_resource_path) {
+    const base::FilePath& extension_resource_path) {
   return make_scoped_refptr(new ContentHashReader(
       extension.id(), *extension.version(), extension.path(),
       extension_resource_path,
@@ -113,6 +113,26 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
     return extension;
   }
 
+ protected:
+  ContentVerifyJob::FailureReason RunContentVerifyJob(
+      const Extension& extension,
+      const base::FilePath& resource_path,
+      std::string& resource_contents) {
+    JobTestObserver observer(extension.id(), resource_path);
+    scoped_refptr<ContentHashReader> content_hash_reader =
+        CreateContentHashReader(extension, resource_path);
+    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
+        content_hash_reader.get(), base::Bind(&DoNothingWithReasonParam));
+    verify_job->Start();
+    {
+      // Simulate serving |resource_contents| from |resource_path|.
+      verify_job->BytesRead(resource_contents.size(),
+                            base::string_as_array(&resource_contents));
+      verify_job->DoneReading();
+    }
+    return observer.WaitAndGetFailureReason();
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<content::TestBrowserThreadBundle> browser_threads_;
@@ -140,48 +160,25 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
   base::FilePath existent_resource_path(kExistentResource);
   {
     // Make sure background.js passes verification correctly.
-    JobTestObserver observer(extension->id(), existent_resource_path);
-
-    scoped_refptr<ContentHashReader> content_hash_reader =
-        CreateContentHashReader(*extension.get(), existent_resource_path);
-    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
-        content_hash_reader.get(), base::Bind(&DoNothingWithReasonParam));
-    verify_job->Start();
-    {
-      // Simulate serving background.js.
-      std::string background_contents;
-      base::ReadFileToString(
-          unzipped_path.Append(base::FilePath(kExistentResource)),
-          &background_contents);
-      verify_job->BytesRead(background_contents.size(),
-                            base::string_as_array(&background_contents));
-      verify_job->DoneReading();
-    }
-    ContentVerifyJob::FailureReason reason = observer.WaitAndGetFailureReason();
-    // Expect no content-verification failure.
-    EXPECT_EQ(ContentVerifyJob::NONE, reason);
+    std::string contents;
+    base::ReadFileToString(
+        unzipped_path.Append(base::FilePath(kExistentResource)), &contents);
+    EXPECT_EQ(ContentVerifyJob::NONE,
+              RunContentVerifyJob(*extension.get(), existent_resource_path,
+                                  contents));
   }
 
   {
     // Once background.js is deleted, verification will result in HASH_MISMATCH.
-    JobTestObserver observer(extension->id(), existent_resource_path);
-    // Now delete the existent file.
+    // Delete the existent file first.
     EXPECT_TRUE(base::DeleteFile(
         unzipped_path.Append(base::FilePath(kExistentResource)), false));
 
-    scoped_refptr<ContentHashReader> content_hash_reader =
-        CreateContentHashReader(*extension.get(), existent_resource_path);
-    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
-        content_hash_reader.get(), base::Bind(&DoNothingWithReasonParam));
-    verify_job->Start();
-    {
-      // Simulate serving deleted background.js.
-      std::string tmp;
-      verify_job->BytesRead(0, base::string_as_array(&tmp));
-      verify_job->DoneReading();
-    }
-    ContentVerifyJob::FailureReason reason = observer.WaitAndGetFailureReason();
-    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH, reason);
+    // Deleted file will serve empty contents.
+    std::string empty_contents;
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
+              RunContentVerifyJob(*extension.get(), existent_resource_path,
+                                  empty_contents));
   }
 
   {
@@ -190,22 +187,11 @@ TEST_F(ContentVerifyJobUnittest, DeletedAndMissingFiles) {
     const base::FilePath::CharType kNonExistentResource[] =
         FILE_PATH_LITERAL("non-existent.js");
     base::FilePath non_existent_resource_path(kNonExistentResource);
-    JobTestObserver observer(extension->id(), non_existent_resource_path);
-
-    scoped_refptr<ContentHashReader> content_hash_reader =
-        CreateContentHashReader(*extension.get(), non_existent_resource_path);
-    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
-        content_hash_reader.get(), base::Bind(&DoNothingWithReasonParam));
-    verify_job->Start();
-    {
-      // Simulate non existent file read.
-      std::string tmp;
-      verify_job->BytesRead(0, base::string_as_array(&tmp));
-      verify_job->DoneReading();
-    }
-    ContentVerifyJob::FailureReason reason = observer.WaitAndGetFailureReason();
-    // Expect no content-verification failure.
-    EXPECT_EQ(ContentVerifyJob::NONE, reason);
+    // Non-existent file will serve empty contents.
+    std::string empty_contents;
+    EXPECT_EQ(ContentVerifyJob::NONE,
+              RunContentVerifyJob(*extension.get(), non_existent_resource_path,
+                                  empty_contents));
   }
 }
 
@@ -227,25 +213,49 @@ TEST_F(ContentVerifyJobUnittest, ContentMismatch) {
   base::FilePath existent_resource_path(kResource);
   {
     // Make sure modified background.js fails content verification.
-    JobTestObserver observer(extension->id(), existent_resource_path);
+    std::string modified_contents;
+    base::ReadFileToString(unzipped_path.Append(base::FilePath(kResource)),
+                           &modified_contents);
+    modified_contents.append("console.log('modified');");
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
+              RunContentVerifyJob(*extension.get(), existent_resource_path,
+                                  modified_contents));
+  }
+}
 
-    scoped_refptr<ContentHashReader> content_hash_reader =
-        CreateContentHashReader(*extension.get(), existent_resource_path);
-    scoped_refptr<ContentVerifyJob> verify_job = new ContentVerifyJob(
-        content_hash_reader.get(), base::Bind(&DoNothingWithReasonParam));
-    verify_job->Start();
-    {
-      // Simulate serving *modified* background.js.
-      std::string modified_contents;
-      base::ReadFileToString(unzipped_path.Append(base::FilePath(kResource)),
-                             &modified_contents);
-      modified_contents.append("console.log('modified');");
-      verify_job->BytesRead(modified_contents.size(),
-                            base::string_as_array(&modified_contents));
-      verify_job->DoneReading();
-    }
-    ContentVerifyJob::FailureReason reason = observer.WaitAndGetFailureReason();
-    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH, reason);
+// Tests that extension resources that are originally 0 byte behave correctly
+// with content verification.
+TEST_F(ContentVerifyJobUnittest, LegitimateZeroByteFile) {
+  base::FilePath unzipped_path;
+  base::FilePath test_dir_base =
+      GetTestPath(base::FilePath(FILE_PATH_LITERAL("zero_byte_file")));
+  // |extension| has a 0 byte background.js file in it.
+  scoped_refptr<Extension> extension = UnzipToTempDirAndLoad(
+      test_dir_base.AppendASCII("source.zip"), &unzipped_path);
+  ASSERT_TRUE(extension.get());
+  // Make sure there is a verified_contents.json file there as this test cannot
+  // fetch it.
+  EXPECT_TRUE(
+      base::PathExists(file_util::GetVerifiedContentsPath(extension->path())));
+
+  const base::FilePath::CharType kResource[] =
+      FILE_PATH_LITERAL("background.js");
+  base::FilePath resource_path(kResource);
+  {
+    // Make sure 0 byte background.js passes content verification.
+    std::string contents;
+    base::ReadFileToString(unzipped_path.Append(base::FilePath(kResource)),
+                           &contents);
+    EXPECT_EQ(ContentVerifyJob::NONE,
+              RunContentVerifyJob(*extension.get(), resource_path, contents));
+  }
+
+  {
+    // Make sure non-empty background.js fails content verification.
+    std::string modified_contents = "console.log('non empty');";
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH,
+              RunContentVerifyJob(*extension.get(), resource_path,
+                                  modified_contents));
   }
 }
 
