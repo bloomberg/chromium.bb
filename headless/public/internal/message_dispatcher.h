@@ -5,6 +5,14 @@
 #ifndef HEADLESS_PUBLIC_INTERNAL_MESSAGE_DISPATCHER_H_
 #define HEADLESS_PUBLIC_INTERNAL_MESSAGE_DISPATCHER_H_
 
+#include <memory>
+
+#include "base/callback_forward.h"
+
+namespace base {
+class Value;
+}
+
 namespace headless {
 namespace internal {
 
@@ -17,16 +25,14 @@ class MessageDispatcher {
       base::Callback<void(const base::Value&)> callback) = 0;
   virtual void SendMessage(const char* method,
                            std::unique_ptr<base::Value> params,
-                           base::Callback<void()> callback) = 0;
-  virtual void SendMessage(
-      const char* method,
-      base::Callback<void(const base::Value&)> callback) = 0;
-  virtual void SendMessage(const char* method,
-                           base::Callback<void()> callback) = 0;
+                           base::Closure callback) = 0;
 
   virtual void RegisterEventHandler(
       const char* method,
       base::Callback<void(const base::Value&)> callback) = 0;
+
+ protected:
+  virtual ~MessageDispatcher() {}
 };
 
 }  // namespace internal

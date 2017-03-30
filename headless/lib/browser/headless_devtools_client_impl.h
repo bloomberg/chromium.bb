@@ -106,11 +106,7 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
                    base::Callback<void(const base::Value&)> callback) override;
   void SendMessage(const char* method,
                    std::unique_ptr<base::Value> params,
-                   base::Callback<void()> callback) override;
-  void SendMessage(const char* method,
-                   base::Callback<void(const base::Value&)> callback) override;
-  void SendMessage(const char* method,
-                   base::Callback<void()> callback) override;
+                   base::Closure callback) override;
   void RegisterEventHandler(
       const char* method,
       base::Callback<void(const base::Value&)> callback) override;
@@ -125,13 +121,13 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   struct Callback {
     Callback();
     Callback(Callback&& other);
-    explicit Callback(base::Callback<void()> callback);
+    explicit Callback(base::Closure callback);
     explicit Callback(base::Callback<void(const base::Value&)> callback);
     ~Callback();
 
     Callback& operator=(Callback&& other);
 
-    base::Callback<void()> callback;
+    base::Closure callback;
     base::Callback<void(const base::Value&)> callback_with_result;
   };
 
@@ -143,9 +139,6 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
   void SendMessageWithParams(const char* method,
                              std::unique_ptr<base::Value> params,
                              CallbackType callback);
-
-  template <typename CallbackType>
-  void SendMessageWithoutParams(const char* method, CallbackType callback);
 
   bool DispatchMessageReply(const base::DictionaryValue& message_dict);
 

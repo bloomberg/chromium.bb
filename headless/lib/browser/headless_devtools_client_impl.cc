@@ -333,15 +333,6 @@ void HeadlessDevToolsClientImpl::SendMessageWithParams(
   FinalizeAndSendMessage(&message, std::move(callback));
 }
 
-template <typename CallbackType>
-void HeadlessDevToolsClientImpl::SendMessageWithoutParams(
-    const char* method,
-    CallbackType callback) {
-  base::DictionaryValue message;
-  message.SetString("method", method);
-  FinalizeAndSendMessage(&message, std::move(callback));
-}
-
 void HeadlessDevToolsClientImpl::SendMessage(
     const char* method,
     std::unique_ptr<base::Value> params,
@@ -352,19 +343,8 @@ void HeadlessDevToolsClientImpl::SendMessage(
 void HeadlessDevToolsClientImpl::SendMessage(
     const char* method,
     std::unique_ptr<base::Value> params,
-    base::Callback<void()> callback) {
+    base::Closure callback) {
   SendMessageWithParams(method, std::move(params), std::move(callback));
-}
-
-void HeadlessDevToolsClientImpl::SendMessage(
-    const char* method,
-    base::Callback<void(const base::Value&)> callback) {
-  SendMessageWithoutParams(method, std::move(callback));
-}
-
-void HeadlessDevToolsClientImpl::SendMessage(const char* method,
-                                             base::Callback<void()> callback) {
-  SendMessageWithoutParams(method, std::move(callback));
 }
 
 void HeadlessDevToolsClientImpl::RegisterEventHandler(
@@ -378,7 +358,7 @@ HeadlessDevToolsClientImpl::Callback::Callback() {}
 
 HeadlessDevToolsClientImpl::Callback::Callback(Callback&& other) = default;
 
-HeadlessDevToolsClientImpl::Callback::Callback(base::Callback<void()> callback)
+HeadlessDevToolsClientImpl::Callback::Callback(base::Closure callback)
     : callback(callback) {}
 
 HeadlessDevToolsClientImpl::Callback::Callback(

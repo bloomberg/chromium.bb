@@ -1,6 +1,6 @@
 // This file is generated
 
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,10 @@
 #include "headless/public/devtools/internal/types_forward_declarations_{{domain_name | camelcase_to_hacker_style}}.h"
 {% endfor %}
 #include "headless/public/headless_export.h"
-#include "headless/public/util/error_reporter.h"
-
-#include "base/memory/ptr_util.h"
 
 namespace headless {
+
+class ErrorReporter;
 
 namespace {{domain.domain | camelcase_to_hacker_style}} {
 {% for type in domain.types %}
