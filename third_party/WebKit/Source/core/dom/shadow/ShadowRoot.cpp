@@ -40,6 +40,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
+#include "core/layout/LayoutObject.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -155,15 +156,48 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change) {
   clearChildNeedsStyleRecalc();
 }
 
-void ShadowRoot::rebuildLayoutTree() {
+void ShadowRoot::rebuildLayoutTree(Text*& nextTextSibling) {
   // ShadowRoot doesn't support custom callbacks.
   DCHECK(!hasCustomStyleCallbacks());
+
+  if (!needsReattachLayoutTree() && !childNeedsReattachLayoutTree()) {
+    skipRebuildLayoutTree(nextTextSibling);
+    return;
+  }
 
   StyleSharingDepthScope sharingScope(*this);
 
   clearNeedsReattachLayoutTree();
-  rebuildChildrenLayoutTrees();
+  rebuildChildrenLayoutTrees(nextTextSibling);
   clearChildNeedsReattachLayoutTree();
+}
+
+void ShadowRoot::skipRebuildLayoutTree(Text*& nextTextSibling) const {
+  // We call this method when neither this, nor our child nodes are marked
+  // for re-attachment, but the host has been marked with
+  // childNeedsReattachLayoutTree. That happens when ::before or ::after needs
+  // re-attachment. In that case, we update nextTextSibling with the first text
+  // node sibling not preceeded by any in-flow children to allow for correct
+  // whitespace re-attachment if the ::before element display changes.
+  DCHECK(document().inStyleRecalc());
+  DCHECK(!document().childNeedsDistributionRecalc());
+  DCHECK(!needsStyleRecalc());
+  DCHECK(!childNeedsStyleRecalc());
+  DCHECK(!needsReattachLayoutTree());
+  DCHECK(!childNeedsReattachLayoutTree());
+
+  for (Node* sibling = firstChild(); sibling;
+       sibling = sibling->nextSibling()) {
+    if (sibling->isTextNode()) {
+      nextTextSibling = toText(sibling);
+      return;
+    }
+    LayoutObject* layoutObject = sibling->layoutObject();
+    if (layoutObject && !layoutObject->isFloatingOrOutOfFlowPositioned()) {
+      nextTextSibling = nullptr;
+      return;
+    }
+  }
 }
 
 void ShadowRoot::attachLayoutTree(const AttachContext& context) {

@@ -2055,12 +2055,13 @@ void Element::rebuildLayoutTree(Text* nextTextSibling) {
     DCHECK(!needsReattachLayoutTree());
     SelectorFilterParentScope filterScope(*this);
     StyleSharingDepthScope sharingScope(*this);
-    reattachPseudoElementLayoutTree(PseudoIdBefore);
-    rebuildShadowRootLayoutTree();
-    rebuildChildrenLayoutTrees();
-    reattachPseudoElementLayoutTree(PseudoIdAfter);
-    reattachPseudoElementLayoutTree(PseudoIdBackdrop);
-    reattachPseudoElementLayoutTree(PseudoIdFirstLetter);
+    Text* nextTextSibling = nullptr;
+    rebuildPseudoElementLayoutTree(PseudoIdAfter);
+    rebuildShadowRootLayoutTree(nextTextSibling);
+    rebuildChildrenLayoutTrees(nextTextSibling);
+    rebuildPseudoElementLayoutTree(PseudoIdBefore, nextTextSibling);
+    rebuildPseudoElementLayoutTree(PseudoIdBackdrop);
+    rebuildPseudoElementLayoutTree(PseudoIdFirstLetter);
   }
   DCHECK(!needsStyleRecalc());
   DCHECK(!childNeedsStyleRecalc());
@@ -2068,19 +2069,22 @@ void Element::rebuildLayoutTree(Text* nextTextSibling) {
   DCHECK(!childNeedsReattachLayoutTree());
 }
 
-void Element::rebuildShadowRootLayoutTree() {
+void Element::rebuildShadowRootLayoutTree(Text*& nextTextSibling) {
   for (ShadowRoot* root = youngestShadowRoot(); root;
        root = root->olderShadowRoot()) {
-    if (root->needsReattachLayoutTree() || root->childNeedsReattachLayoutTree())
-      root->rebuildLayoutTree();
+    // TODO(rune@opera.com): nextTextSibling is not set correctly when we have
+    // slotted nodes (crbug.com/648931). Also, it may be incorrect when we have
+    // multiple shadow roots (for V0 shadow hosts).
+    root->rebuildLayoutTree(nextTextSibling);
   }
 }
 
-void Element::reattachPseudoElementLayoutTree(PseudoId pseudoId) {
+void Element::rebuildPseudoElementLayoutTree(PseudoId pseudoId,
+                                             Text* nextTextSibling) {
   if (PseudoElement* element = pseudoElement(pseudoId)) {
     if (element->needsReattachLayoutTree() ||
         element->childNeedsReattachLayoutTree())
-      element->rebuildLayoutTree();
+      element->rebuildLayoutTree(nextTextSibling);
   } else {
     createPseudoElementIfNeeded(pseudoId);
   }

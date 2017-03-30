@@ -1285,7 +1285,7 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change) {
   }
 }
 
-void ContainerNode::rebuildChildrenLayoutTrees() {
+void ContainerNode::rebuildChildrenLayoutTrees(Text*& nextTextSibling) {
   DCHECK(!needsReattachLayoutTree());
 
   // This loop is deliberately backwards because we use insertBefore in the
@@ -1293,21 +1293,20 @@ void ContainerNode::rebuildChildrenLayoutTrees() {
   // point while building the layout tree.  Having us start from the last child
   // and work our way back means in the common case, we'll find the insertion
   // point in O(1) time.  See crbug.com/288225
-  Text* lastTextNode = nullptr;
   for (Node* child = lastChild(); child; child = child->previousSibling()) {
     bool rebuildChild = child->needsReattachLayoutTree() ||
                         child->childNeedsReattachLayoutTree();
     if (child->isTextNode()) {
       Text* textNode = toText(child);
       if (rebuildChild)
-        textNode->rebuildTextLayoutTree(lastTextNode);
-      lastTextNode = textNode;
+        textNode->rebuildTextLayoutTree(nextTextSibling);
+      nextTextSibling = textNode;
     } else if (child->isElementNode()) {
       Element* element = toElement(child);
       if (rebuildChild)
-        element->rebuildLayoutTree(lastTextNode);
+        element->rebuildLayoutTree(nextTextSibling);
       if (element->layoutObject())
-        lastTextNode = nullptr;
+        nextTextSibling = nullptr;
     }
   }
   // This is done in ContainerNode::attachLayoutTree but will never be cleared

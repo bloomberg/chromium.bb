@@ -869,8 +869,9 @@ class CORE_EXPORT Element : public ContainerNode {
   PassRefPtr<ComputedStyle> propagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
-  void reattachPseudoElementLayoutTree(PseudoId);
-  void rebuildShadowRootLayoutTree();
+  void rebuildPseudoElementLayoutTree(PseudoId,
+                                      Text* nextTextSibling = nullptr);
+  void rebuildShadowRootLayoutTree(Text*& nextTextSibling);
   inline void checkForEmptyStyleChange();
 
   void updatePseudoElement(PseudoId, StyleRecalcChange);

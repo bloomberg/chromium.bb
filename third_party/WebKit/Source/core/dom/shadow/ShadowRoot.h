@@ -119,7 +119,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   unsigned childShadowRootCount() const { return m_childShadowRootCount; }
 
   void recalcStyle(StyleRecalcChange);
-  void rebuildLayoutTree();
+  void rebuildLayoutTree(Text*& nextTextSibling);
 
   void registerScopedHTMLStyleChild();
   void unregisterScopedHTMLStyleChild();
@@ -172,6 +172,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
     --m_childShadowRootCount;
   }
   void invalidateDescendantInsertionPoints();
+  void skipRebuildLayoutTree(Text*& nextTextSibling) const;
 
   Member<ShadowRootRareDataV0> m_shadowRootRareDataV0;
   Member<StyleSheetList> m_styleSheetList;
