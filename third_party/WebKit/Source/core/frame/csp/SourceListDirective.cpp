@@ -100,8 +100,6 @@ bool SourceListDirective::allowHashedAttributes() const {
 }
 
 bool SourceListDirective::allowReportSample() const {
-  if (!m_policy->experimentalFeaturesEnabled())
-    return false;
   return m_reportSample;
 }
 
