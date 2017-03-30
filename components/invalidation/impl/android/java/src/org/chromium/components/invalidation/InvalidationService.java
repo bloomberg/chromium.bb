@@ -86,7 +86,7 @@ public class InvalidationService {
 
     private boolean shouldRestrictBackgroundServices() {
         // Restricts the use of background services when not in foreground. See crbug.com/680812.
-        return BuildInfo.isGreaterThanN() && !ApplicationStatus.hasVisibleActivities();
+        return BuildInfo.isAtLeastO() && !ApplicationStatus.hasVisibleActivities();
     }
 
     /**

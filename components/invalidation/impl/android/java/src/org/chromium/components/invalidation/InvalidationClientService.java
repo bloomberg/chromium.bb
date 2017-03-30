@@ -553,6 +553,6 @@ public class InvalidationClientService extends AndroidListener {
 
     private boolean shouldRestrictBackgroundServices() {
         // Restricts the use of background services when not in foreground. See crbug.com/680812.
-        return BuildInfo.isGreaterThanN() && !isChromeInForeground();
+        return BuildInfo.isAtLeastO() && !isChromeInForeground();
     }
 }
