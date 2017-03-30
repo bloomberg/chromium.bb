@@ -17,18 +17,13 @@ Rect ToEnclosingRect(const RectF& rect) {
   int min_y = ToFlooredInt(rect.y());
   float max_x = rect.right();
   float max_y = rect.bottom();
-  int width =
-      rect.width() == 0
-          ? 0
-          : std::max(
-                ToCeiledInt(static_cast<double>(ToCeiledInt(max_x)) - min_x),
-                0);
+  int width = rect.width()
+                  ? ToCeiledInt(static_cast<double>(ToCeiledInt(max_x)) - min_x)
+                  : 0;
   int height =
-      rect.height() == 0
-          ? 0
-          : std::max(
-                ToCeiledInt(static_cast<double>(ToCeiledInt(max_y)) - min_y),
-                0);
+      rect.height()
+          ? ToCeiledInt(static_cast<double>(ToCeiledInt(max_y)) - min_y)
+          : 0;
   return Rect(min_x, min_y, width, height);
 }
 
@@ -91,4 +86,3 @@ Rect ToFlooredRectDeprecated(const RectF& rect) {
 }
 
 }  // namespace gfx
-

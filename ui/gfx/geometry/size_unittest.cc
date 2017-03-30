@@ -153,4 +153,99 @@ TEST(SizeTest, IntegerOverflow) {
   EXPECT_EQ(test, min_size);
 }
 
+// This checks that we set IsEmpty appropriately.
+TEST(SizeTest, TrivialDimensionTests) {
+  const float clearly_trivial = SizeF::kTrivial / 2.f;
+  const float massize_dimension = 4e13f;
+
+  // First, using the constructor.
+  EXPECT_TRUE(SizeF(clearly_trivial, 1.f).IsEmpty());
+  EXPECT_TRUE(SizeF(.01f, clearly_trivial).IsEmpty());
+  EXPECT_TRUE(SizeF(0.f, 0.f).IsEmpty());
+  EXPECT_FALSE(SizeF(.01f, .01f).IsEmpty());
+
+  // Then use the setter.
+  SizeF test(2.f, 1.f);
+  EXPECT_FALSE(test.IsEmpty());
+
+  test.SetSize(clearly_trivial, 1.f);
+  EXPECT_TRUE(test.IsEmpty());
+
+  test.SetSize(.01f, clearly_trivial);
+  EXPECT_TRUE(test.IsEmpty());
+
+  test.SetSize(0.f, 0.f);
+  EXPECT_TRUE(test.IsEmpty());
+
+  test.SetSize(.01f, .01f);
+  EXPECT_FALSE(test.IsEmpty());
+
+  // Now just one dimension at a time.
+  test.set_width(clearly_trivial);
+  EXPECT_TRUE(test.IsEmpty());
+
+  test.set_width(massize_dimension);
+  test.set_height(clearly_trivial);
+  EXPECT_TRUE(test.IsEmpty());
+
+  test.set_width(clearly_trivial);
+  test.set_height(massize_dimension);
+  EXPECT_TRUE(test.IsEmpty());
+
+  test.set_width(2.f);
+  EXPECT_FALSE(test.IsEmpty());
+}
+
+// These are the ramifications of the decision to keep the recorded size
+// at zero for trivial sizes.
+TEST(SizeTest, ClampsToZero) {
+  const float clearly_trivial = SizeF::kTrivial / 2.f;
+  const float nearly_trivial = SizeF::kTrivial * 1.5f;
+
+  SizeF test(clearly_trivial, 1.f);
+
+  EXPECT_FLOAT_EQ(0.f, test.width());
+  EXPECT_FLOAT_EQ(1.f, test.height());
+
+  test.SetSize(.01f, clearly_trivial);
+
+  EXPECT_FLOAT_EQ(.01f, test.width());
+  EXPECT_FLOAT_EQ(0.f, test.height());
+
+  test.SetSize(nearly_trivial, nearly_trivial);
+
+  EXPECT_FLOAT_EQ(nearly_trivial, test.width());
+  EXPECT_FLOAT_EQ(nearly_trivial, test.height());
+
+  test.Scale(0.5f);
+
+  EXPECT_FLOAT_EQ(0.f, test.width());
+  EXPECT_FLOAT_EQ(0.f, test.height());
+
+  test.SetSize(0.f, 0.f);
+  test.Enlarge(clearly_trivial, clearly_trivial);
+  test.Enlarge(clearly_trivial, clearly_trivial);
+  test.Enlarge(clearly_trivial, clearly_trivial);
+
+  EXPECT_EQ(SizeF(0.f, 0.f), test);
+}
+
+// These make sure the constructor and setter have the same effect on the
+// boundary case. This claims to know the boundary, but not which way it goes.
+TEST(SizeTest, ConsistentClamping) {
+  SizeF resized;
+
+  resized.SetSize(SizeF::kTrivial, 0.f);
+  EXPECT_EQ(SizeF(SizeF::kTrivial, 0.f), resized);
+
+  resized.SetSize(0.f, SizeF::kTrivial);
+  EXPECT_EQ(SizeF(0.f, SizeF::kTrivial), resized);
+}
+
+// Let's make sure we don't unexpectedly grow the struct by adding constants.
+// Also, if some platform packs floats inefficiently, it would be worth noting.
+TEST(SizeTest, StaysSmall) {
+  EXPECT_EQ(2 * sizeof(float), sizeof(SizeF));
+}
+
 }  // namespace gfx

@@ -521,6 +521,7 @@ TEST(RectTest, ToEnclosingRect) {
   static const int max_int = std::numeric_limits<int>::max();
   static const int min_int = std::numeric_limits<int>::min();
   static const float max_float = std::numeric_limits<float>::max();
+  static const float epsilon_float = std::numeric_limits<float>::epsilon();
   static const struct Test {
     float x1; // source
     float y1;
@@ -533,6 +534,7 @@ TEST(RectTest, ToEnclosingRect) {
   } tests[] = {
       {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
       {5.5f, 5.5f, 0.0f, 0.0f, 5, 5, 0, 0},
+      {3.5f, 2.5f, epsilon_float, -0.0f, 3, 2, 0, 0},
       {-1.5f, -1.5f, 3.0f, 3.0f, -2, -2, 4, 4},
       {-1.5f, -1.5f, 3.5f, 3.5f, -2, -2, 4, 4},
       {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
