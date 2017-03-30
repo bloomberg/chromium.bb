@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
@@ -33,21 +32,16 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-// This class manages the filtering behavior for a given URL, i.e. it tells
-// callers if a given URL should be allowed, blocked or warned about. It uses
-// information from multiple sources:
+// This class manages the filtering behavior for URLs, i.e. it tells callers
+// if a URL should be allowed, blocked or warned about. It uses information
+// from multiple sources:
 //   * A default setting (allow, block or warn).
 //   * The set of installed and enabled whitelists which contain URL patterns
 //     and hostname hashes that should be allowed.
 //   * User-specified manual overrides (allow or block) for either sites
 //     (hostnames) or exact URLs, which take precedence over the previous
 //     sources.
-// References to it can be passed around on different threads (the refcounting
-// is thread-safe), but the object itself should always be accessed on the same
-// thread (member access isn't thread-safe).
-class SupervisedUserURLFilter
-    : public base::RefCountedThreadSafe<SupervisedUserURLFilter>,
-      public base::NonThreadSafe {
+class SupervisedUserURLFilter : public base::NonThreadSafe {
  public:
   enum FilteringBehavior {
     ALLOW,
@@ -74,6 +68,7 @@ class SupervisedUserURLFilter
   struct Contents;
 
   SupervisedUserURLFilter();
+  ~SupervisedUserURLFilter();
 
   static FilteringBehavior BehaviorFromInt(int behavior_value);
 
@@ -155,10 +150,10 @@ class SupervisedUserURLFilter
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
   // Sets the set of manually allowed or blocked hosts.
-  void SetManualHosts(const std::map<std::string, bool>* host_map);
+  void SetManualHosts(std::map<std::string, bool> host_map);
 
   // Sets the set of manually allowed or blocked URLs.
-  void SetManualURLs(const std::map<GURL, bool>* url_map);
+  void SetManualURLs(std::map<GURL, bool> url_map);
 
   // Initializes the experimental asynchronous checker.
   void InitAsyncURLChecker(net::URLRequestContextGetter* context);
@@ -181,9 +176,7 @@ class SupervisedUserURLFilter
       const scoped_refptr<base::TaskRunner>& task_runner);
 
  private:
-  friend class base::RefCountedThreadSafe<SupervisedUserURLFilter>;
   friend class SupervisedUserURLFilterTest;
-  ~SupervisedUserURLFilter();
 
   void SetContents(std::unique_ptr<Contents> url_matcher);
 
@@ -221,6 +214,8 @@ class SupervisedUserURLFilter
   re2::RE2 google_web_cache_query_regex_;
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
+  base::WeakPtrFactory<SupervisedUserURLFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserURLFilter);
 };

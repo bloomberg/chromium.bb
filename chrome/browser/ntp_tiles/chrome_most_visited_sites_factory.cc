@@ -74,7 +74,7 @@ void SupervisorBridge::SetObserver(Observer* new_observer) {
 bool SupervisorBridge::IsBlocked(const GURL& url) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  auto* url_filter = supervised_user_service->GetURLFilterForUIThread();
+  auto* url_filter = supervised_user_service->GetURLFilter();
   return url_filter->GetFilteringBehaviorForURL(url) ==
          SupervisedUserURLFilter::FilteringBehavior::BLOCK;
 }

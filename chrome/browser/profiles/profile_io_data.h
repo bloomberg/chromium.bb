@@ -46,7 +46,6 @@ class HostContentSettingsMap;
 class MediaDeviceIDSalt;
 class NetHttpSessionParamsObserver;
 class ProtocolHandlerRegistry;
-class SupervisedUserURLFilter;
 
 namespace chromeos {
 class CertificateProvider;
@@ -220,12 +219,6 @@ class ProfileIOData {
     return policy_header_helper_.get();
   }
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  const SupervisedUserURLFilter* supervised_user_url_filter() const {
-    return supervised_user_url_filter_.get();
-  }
-#endif
-
   // Initialize the member needed to track the metrics enabled state. This is
   // only to be called on the UI thread.
   void InitializeMetricsEnabledStateOnUIThread();
@@ -341,10 +334,6 @@ class ProfileIOData {
     // because on linux it relies on initializing things through gconf,
     // and needs to be on the main thread.
     std::unique_ptr<net::ProxyConfigService> proxy_config_service;
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    scoped_refptr<const SupervisedUserURLFilter> supervised_user_url_filter;
-#endif
 
 #if defined(OS_CHROMEOS)
     std::string username_hash;
@@ -616,11 +605,6 @@ class ProfileIOData {
 
   mutable std::unique_ptr<ChromeHttpUserAgentSettings>
       chrome_http_user_agent_settings_;
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  mutable scoped_refptr<const SupervisedUserURLFilter>
-      supervised_user_url_filter_;
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Is NULL if switches::kDisableExtensionsHttpThrottling is on.

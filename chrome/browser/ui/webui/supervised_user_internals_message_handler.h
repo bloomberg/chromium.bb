@@ -8,6 +8,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
@@ -22,14 +23,13 @@ class SupervisedUserService;
 // The implementation for the chrome://supervised-user-internals page.
 class SupervisedUserInternalsMessageHandler
     : public content::WebUIMessageHandler,
-      public SupervisedUserServiceObserver {
+      public SupervisedUserServiceObserver,
+      public SupervisedUserURLFilter::Observer {
  public:
   SupervisedUserInternalsMessageHandler();
   ~SupervisedUserInternalsMessageHandler() override;
 
  private:
-  class IOThreadHelper;
-
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
@@ -51,16 +51,19 @@ class SupervisedUserInternalsMessageHandler
       supervised_user_error_page::FilteringBehaviorReason reason,
       bool uncertain);
 
+  // SupervisedUserURLFilter::Observer:
+  void OnSiteListUpdated() override;
   void OnURLChecked(const GURL& url,
                     SupervisedUserURLFilter::FilteringBehavior behavior,
                     supervised_user_error_page::FilteringBehaviorReason reason,
-                    bool uncertain);
+                    bool uncertain) override;
 
   std::unique_ptr<
       base::CallbackList<void(const base::DictionaryValue*)>::Subscription>
       user_settings_subscription_;
 
-  scoped_refptr<IOThreadHelper> io_thread_helper_;
+  ScopedObserver<SupervisedUserURLFilter, SupervisedUserURLFilter::Observer>
+      scoped_observer_;
 
   base::WeakPtrFactory<SupervisedUserInternalsMessageHandler> weak_factory_;
 

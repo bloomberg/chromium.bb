@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
-
 #include <memory>
 
 #include "base/command_line.h"
@@ -43,10 +41,10 @@ static const char* kIframeHost2 = "www.iframe2.com";
 
 }  // namespace
 
-class SupervisedUserResourceThrottleTest : public InProcessBrowserTest {
+class SupervisedUserNavigationThrottleTest : public InProcessBrowserTest {
  protected:
-  SupervisedUserResourceThrottleTest() {}
-  ~SupervisedUserResourceThrottleTest() override {}
+  SupervisedUserNavigationThrottleTest() {}
+  ~SupervisedUserNavigationThrottleTest() override {}
 
   void BlockHost(const std::string& host) {
     Profile* profile = browser()->profile();
@@ -63,21 +61,21 @@ class SupervisedUserResourceThrottleTest : public InProcessBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override;
 };
 
-void SupervisedUserResourceThrottleTest::SetUpOnMainThread() {
+void SupervisedUserNavigationThrottleTest::SetUpOnMainThread() {
   // Resolve everything to localhost.
   host_resolver()->AddIPLiteralRule("*", "127.0.0.1", "localhost");
 
   ASSERT_TRUE(embedded_test_server()->Start());
 }
 
-void SupervisedUserResourceThrottleTest::SetUpCommandLine(
+void SupervisedUserNavigationThrottleTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(switches::kSupervisedUserId, "asdf");
 }
 
 // Tests that showing the blocking interstitial for a WebContents without a
 // SupervisedUserNavigationObserver doesn't crash.
-IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        NoNavigationObserverBlock) {
   Profile* profile = browser()->profile();
   SupervisedUserSettingsService* supervised_user_settings_service =
@@ -99,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
   EXPECT_EQ(content::PAGE_TYPE_INTERSTITIAL, entry->GetPageType());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
                        BlockMainFrameWithInterstitial) {
   BlockHost(kExampleHost2);
 
@@ -116,7 +114,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
   EXPECT_TRUE(tab->ShowingInterstitialPage());
 }
 
-IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest, DontBlockSubFrame) {
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
+                       DontBlockSubFrame) {
   BlockHost(kExampleHost2);
   BlockHost(kIframeHost2);
 

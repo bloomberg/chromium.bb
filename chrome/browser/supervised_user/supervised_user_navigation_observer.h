@@ -13,7 +13,6 @@
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -38,8 +37,7 @@ class SupervisedUserNavigationObserver
 
   // Called when a network request to |url| is blocked.
   static void OnRequestBlocked(
-      const content::ResourceRequestInfo::WebContentsGetter&
-          web_contents_getter,
+      content::WebContents* web_contents,
       const GURL& url,
       supervised_user_error_page::FilteringBehaviorReason reason,
       const base::Callback<void(bool)>& callback);

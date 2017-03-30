@@ -386,7 +386,7 @@ class SupervisedUserServiceExtensionTestBase
     service->Init();
     site_list_observer_.Init(service->GetWhitelistService());
 
-    SupervisedUserURLFilter* url_filter = service->GetURLFilterForUIThread();
+    SupervisedUserURLFilter* url_filter = service->GetURLFilter();
     url_filter->SetBlockingTaskRunnerForTesting(
         base::ThreadTaskRunnerHandle::Get());
     url_filter_observer_.Init(url_filter);
@@ -587,8 +587,7 @@ TEST_F(SupervisedUserServiceExtensionTest,
 TEST_F(SupervisedUserServiceExtensionTest, NoContentPacks) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
-  SupervisedUserURLFilter* url_filter =
-      supervised_user_service->GetURLFilterForUIThread();
+  SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
 
   // ASSERT_EQ instead of ASSERT_TRUE([...].empty()) so that the error
   // message contains the size in case of failure.
@@ -602,8 +601,7 @@ TEST_F(SupervisedUserServiceExtensionTest, NoContentPacks) {
 TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_.get());
-  SupervisedUserURLFilter* url_filter =
-      supervised_user_service->GetURLFilterForUIThread();
+  SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
 
   const std::string id1 = "ID 1";
   const base::string16 title1 = base::ASCIIToUTF16("Title 1");

@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
+#include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
-#include "net/url_request/redirect_info.h"
-#include "net/url_request/url_request.h"
+#include "content/public/browser/navigation_handle.h"
 #include "ui/base/page_transition_types.h"
-
-using content::BrowserThread;
+#include "url/gurl.h"
 
 namespace {
 
@@ -44,7 +47,8 @@ static_assert(kHistogramPageTransitionMaxKnownValue <
                   kHistogramPageTransitionFallbackValue,
               "HistogramPageTransition MaxKnownValue must be < FallbackValue");
 static_assert(FILTERING_BEHAVIOR_MAX * kHistogramFilteringBehaviorSpacing +
-                  kHistogramPageTransitionFallbackValue < kHistogramMax,
+                      kHistogramPageTransitionFallbackValue <
+                  kHistogramMax,
               "Invalid HistogramMax value");
 
 int GetHistogramValueForFilteringBehavior(
@@ -110,91 +114,89 @@ void RecordFilterResultEvent(
     UMA_HISTOGRAM_SPARSE_SLOWLY("ManagedUsers.FilteringResult", value);
 }
 
-// Helper function to wrap a given callback in one that will post it to the
-// IO thread.
-base::Callback<void(bool)> ResultTrampoline(
-    const base::Callback<void(bool)>& callback) {
-  return base::Bind(
-      [](const base::Callback<void(bool)>& callback, bool result) {
-        BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                                base::Bind(callback, result));
-      },
-      callback);
-}
-
 }  // namespace
 
 // static
-std::unique_ptr<SupervisedUserResourceThrottle>
-SupervisedUserResourceThrottle::MaybeCreate(
-    const net::URLRequest* request,
-    content::ResourceType resource_type,
-    const SupervisedUserURLFilter* url_filter) {
-  // Only treat main frame requests (ignoring subframes and subresources).
-  bool is_main_frame = resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
-  if (!is_main_frame)
+std::unique_ptr<SupervisedUserNavigationThrottle>
+SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
     return nullptr;
-
   // Can't use base::MakeUnique because the constructor is private.
   return base::WrapUnique(
-      new SupervisedUserResourceThrottle(request, url_filter));
+      new SupervisedUserNavigationThrottle(navigation_handle));
 }
 
-SupervisedUserResourceThrottle::SupervisedUserResourceThrottle(
-    const net::URLRequest* request,
-    const SupervisedUserURLFilter* url_filter)
-    : request_(request),
-      url_filter_(url_filter),
+SupervisedUserNavigationThrottle::SupervisedUserNavigationThrottle(
+    content::NavigationHandle* navigation_handle)
+    : NavigationThrottle(navigation_handle),
+      url_filter_(
+          SupervisedUserServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(
+                  navigation_handle->GetWebContents()->GetBrowserContext()))
+              ->GetURLFilter()),
       deferred_(false),
       behavior_(SupervisedUserURLFilter::INVALID),
       weak_ptr_factory_(this) {}
 
-SupervisedUserResourceThrottle::~SupervisedUserResourceThrottle() {}
+SupervisedUserNavigationThrottle::~SupervisedUserNavigationThrottle() {}
 
-void SupervisedUserResourceThrottle::CheckURL(const GURL& url, bool* defer) {
+content::NavigationThrottle::ThrottleCheckResult
+SupervisedUserNavigationThrottle::CheckURL() {
   deferred_ = false;
   DCHECK_EQ(SupervisedUserURLFilter::INVALID, behavior_);
+  GURL url = navigation_handle()->GetURL();
   bool got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
-      url,
-      base::Bind(&SupervisedUserResourceThrottle::OnCheckDone,
-                 weak_ptr_factory_.GetWeakPtr(), url));
+      url, base::Bind(&SupervisedUserNavigationThrottle::OnCheckDone,
+                      weak_ptr_factory_.GetWeakPtr(), url));
   DCHECK_EQ(got_result, behavior_ != SupervisedUserURLFilter::INVALID);
   // If we got a "not blocked" result synchronously, don't defer.
-  *defer = deferred_ = !got_result ||
-                       (behavior_ == SupervisedUserURLFilter::BLOCK);
+  deferred_ = !got_result || (behavior_ == SupervisedUserURLFilter::BLOCK);
   if (got_result)
     behavior_ = SupervisedUserURLFilter::INVALID;
+  if (deferred_)
+    return ThrottleCheckResult::DEFER;
+  return ThrottleCheckResult::PROCEED;
 }
 
-void SupervisedUserResourceThrottle::ShowInterstitial(
+void SupervisedUserNavigationThrottle::ShowInterstitial(
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason) {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request_);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&SupervisedUserNavigationObserver::OnRequestBlocked,
-                 info->GetWebContentsGetterForRequest(), url, reason,
-                 ResultTrampoline(base::Bind(
-                     &SupervisedUserResourceThrottle::OnInterstitialResult,
-                     weak_ptr_factory_.GetWeakPtr()))));
+  // Don't show interstitial synchronously - it doesn't seem like a good idea to
+  // show an interstitial right in the middle of a call into a
+  // NavigationThrottle. This also lets OnInterstitialResult to be invoked
+  // synchronously, once a callback is passed into the
+  // SupervisedUserNavigationObserver.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&SupervisedUserNavigationThrottle::ShowInterstitialAsync,
+                 weak_ptr_factory_.GetWeakPtr(), reason));
 }
 
-void SupervisedUserResourceThrottle::WillStartRequest(bool* defer) {
-  CheckURL(request_->url(), defer);
+void SupervisedUserNavigationThrottle::ShowInterstitialAsync(
+    supervised_user_error_page::FilteringBehaviorReason reason) {
+  // May not yet have been set when ShowInterstitial was called, but should have
+  // been set by the time this is invoked.
+  DCHECK(deferred_);
+
+  SupervisedUserNavigationObserver::OnRequestBlocked(
+      navigation_handle()->GetWebContents(), navigation_handle()->GetURL(),
+      reason,
+      base::Bind(&SupervisedUserNavigationThrottle::OnInterstitialResult,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SupervisedUserResourceThrottle::WillRedirectRequest(
-    const net::RedirectInfo& redirect_info,
-    bool* defer) {
-  CheckURL(redirect_info.new_url, defer);
+content::NavigationThrottle::ThrottleCheckResult
+SupervisedUserNavigationThrottle::WillStartRequest() {
+  return CheckURL();
 }
 
-const char* SupervisedUserResourceThrottle::GetNameForLogging() const {
-  return "SupervisedUserResourceThrottle";
+content::NavigationThrottle::ThrottleCheckResult
+SupervisedUserNavigationThrottle::WillRedirectRequest() {
+  return CheckURL();
 }
 
-void SupervisedUserResourceThrottle::OnCheckDone(
+void SupervisedUserNavigationThrottle::OnCheckDone(
     const GURL& url,
     SupervisedUserURLFilter::FilteringBehavior behavior,
     supervised_user_error_page::FilteringBehaviorReason reason,
@@ -204,8 +206,7 @@ void SupervisedUserResourceThrottle::OnCheckDone(
   if (!deferred_)
     behavior_ = behavior;
 
-  ui::PageTransition transition =
-      content::ResourceRequestInfo::ForRequest(request_)->GetPageTransition();
+  ui::PageTransition transition = navigation_handle()->GetPageTransition();
 
   RecordFilterResultEvent(false, behavior, reason, uncertain, transition);
 
@@ -223,10 +224,22 @@ void SupervisedUserResourceThrottle::OnCheckDone(
     Resume();
 }
 
-void SupervisedUserResourceThrottle::OnInterstitialResult(
+void SupervisedUserNavigationThrottle::OnInterstitialResult(
     bool continue_request) {
   if (continue_request)
     Resume();
   else
     Cancel();
+}
+
+void SupervisedUserNavigationThrottle::Resume() {
+  DCHECK(deferred_);
+  deferred_ = false;
+  navigation_handle()->Resume();
+}
+
+void SupervisedUserNavigationThrottle::Cancel() {
+  DCHECK(deferred_);
+  deferred_ = false;
+  navigation_handle()->CancelDeferredNavigation(CANCEL);
 }

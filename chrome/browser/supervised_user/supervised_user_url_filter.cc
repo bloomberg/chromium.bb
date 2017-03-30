@@ -241,7 +241,8 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
           BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
                   base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
-              .get()) {
+              .get()),
+      weak_ptr_factory_(this) {
   DCHECK(amp_cache_path_regex_.ok());
   DCHECK(google_amp_viewer_path_regex_.ok());
   DCHECK(google_web_cache_query_regex_.ok());
@@ -250,9 +251,7 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
   DetachFromThread();
 }
 
-SupervisedUserURLFilter::~SupervisedUserURLFilter() {
-  DCHECK(CalledOnValidThread());
-}
+SupervisedUserURLFilter::~SupervisedUserURLFilter() {}
 
 // static
 SupervisedUserURLFilter::FilteringBehavior
@@ -481,10 +480,10 @@ void SupervisedUserURLFilter::LoadWhitelists(
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&LoadWhitelistsOnBlockingPoolThread, site_lists),
-      base::Bind(&SupervisedUserURLFilter::SetContents, this));
+      base::Bind(&SupervisedUserURLFilter::SetContents,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetBlacklist(
@@ -501,10 +500,10 @@ void SupervisedUserURLFilter::SetFromPatternsForTesting(
   DCHECK(CalledOnValidThread());
 
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&CreateWhitelistFromPatternsForTesting, patterns),
-      base::Bind(&SupervisedUserURLFilter::SetContents, this));
+      base::Bind(&SupervisedUserURLFilter::SetContents,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetFromSiteListsForTesting(
@@ -514,19 +513,19 @@ void SupervisedUserURLFilter::SetFromSiteListsForTesting(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&CreateWhitelistsFromSiteListsForTesting, site_lists),
-      base::Bind(&SupervisedUserURLFilter::SetContents, this));
+      base::Bind(&SupervisedUserURLFilter::SetContents,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SupervisedUserURLFilter::SetManualHosts(
-    const std::map<std::string, bool>* host_map) {
+    std::map<std::string, bool> host_map) {
   DCHECK(CalledOnValidThread());
-  host_map_ = *host_map;
+  host_map_ = std::move(host_map);
 }
 
-void SupervisedUserURLFilter::SetManualURLs(
-    const std::map<GURL, bool>* url_map) {
+void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
   DCHECK(CalledOnValidThread());
-  url_map_ = *url_map;
+  url_map_ = std::move(url_map);
 }
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(

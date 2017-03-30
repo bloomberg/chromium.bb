@@ -37,23 +37,16 @@ SupervisedUserNavigationObserver::SupervisedUserNavigationObserver(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   supervised_user_service_ =
       SupervisedUserServiceFactory::GetForProfile(profile);
-  url_filter_ = supervised_user_service_->GetURLFilterForUIThread();
+  url_filter_ = supervised_user_service_->GetURLFilter();
   supervised_user_service_->AddObserver(this);
 }
 
 // static
 void SupervisedUserNavigationObserver::OnRequestBlocked(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    content::WebContents* web_contents,
     const GURL& url,
     supervised_user_error_page::FilteringBehaviorReason reason,
     const base::Callback<void(bool)>& callback) {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE, base::Bind(callback, false));
-    return;
-  }
-
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents);
   if (navigation_observer)

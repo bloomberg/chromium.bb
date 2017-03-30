@@ -310,8 +310,8 @@ void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
 bool SupervisedUserInterstitial::ShouldProceed() {
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  SupervisedUserURLFilter* url_filter =
-      supervised_user_service->GetURLFilterForUIThread();
+  const SupervisedUserURLFilter* url_filter =
+      supervised_user_service->GetURLFilter();
   SupervisedUserURLFilter::FilteringBehavior behavior;
   if (url_filter->HasAsyncURLChecker()) {
     if (!url_filter->GetManualFilteringBehaviorForURL(url_, &behavior))

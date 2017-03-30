@@ -20,36 +20,36 @@
 class SupervisedUserURLFilterTest : public ::testing::Test,
                                     public SupervisedUserURLFilter::Observer {
  public:
-  SupervisedUserURLFilterTest() : filter_(new SupervisedUserURLFilter) {
-    filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
-    filter_->AddObserver(this);
+  SupervisedUserURLFilterTest() {
+    filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+    filter_.AddObserver(this);
   }
 
-  ~SupervisedUserURLFilterTest() override { filter_->RemoveObserver(this); }
+  ~SupervisedUserURLFilterTest() override { filter_.RemoveObserver(this); }
 
   // SupervisedUserURLFilter::Observer:
   void OnSiteListUpdated() override { run_loop_.Quit(); }
 
  protected:
   bool IsURLWhitelisted(const std::string& url) {
-    return filter_->GetFilteringBehaviorForURL(GURL(url)) ==
+    return filter_.GetFilteringBehaviorForURL(GURL(url)) ==
            SupervisedUserURLFilter::ALLOW;
   }
 
   GURL GetEmbeddedURL(const std::string& url) {
-    return filter_->GetEmbeddedURL(GURL(url));
+    return filter_.GetEmbeddedURL(GURL(url));
   }
 
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  scoped_refptr<SupervisedUserURLFilter> filter_;
+  SupervisedUserURLFilter filter_;
 };
 
 TEST_F(SupervisedUserURLFilterTest, Basic) {
   std::vector<std::string> list;
   // Allow domain and all subdomains, for any filtered scheme.
   list.push_back("google.com");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
@@ -74,7 +74,7 @@ TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {
   std::vector<std::string> list;
   // Allow domain and all subdomains, for any filtered scheme.
   list.push_back("example.com");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   ASSERT_TRUE(IsURLWhitelisted("http://example.com"));
@@ -148,11 +148,11 @@ TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {
 }
 
 TEST_F(SupervisedUserURLFilterTest, Inactive) {
-  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
 
   std::vector<std::string> list;
   list.push_back("google.com");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   // If the filter is inactive, every URL should be whitelisted.
@@ -166,7 +166,7 @@ TEST_F(SupervisedUserURLFilterTest, Scheme) {
   list.push_back("http://secure.com");
   list.push_back("ftp://secure.com");
   list.push_back("ws://secure.com");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://secure.com"));
@@ -184,7 +184,7 @@ TEST_F(SupervisedUserURLFilterTest, Path) {
   std::vector<std::string> list;
   // Filter only a certain path prefix.
   list.push_back("path.to/ruin");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruin"));
@@ -199,7 +199,7 @@ TEST_F(SupervisedUserURLFilterTest, PathAndScheme) {
   std::vector<std::string> list;
   // Filter only a certain path prefix and scheme.
   list.push_back("https://s.aaa.com/path");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("https://s.aaa.com/path"));
@@ -215,7 +215,7 @@ TEST_F(SupervisedUserURLFilterTest, Host) {
   std::vector<std::string> list;
   // Filter only a certain hostname, without subdomains.
   list.push_back(".www.example.com");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://www.example.com"));
@@ -227,7 +227,7 @@ TEST_F(SupervisedUserURLFilterTest, IPAddress) {
   std::vector<std::string> list;
   // Filter an ip address.
   list.push_back("123.123.123.123");
-  filter_->SetFromPatternsForTesting(list);
+  filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
   EXPECT_TRUE(IsURLWhitelisted("http://123.123.123.123/"));
@@ -242,8 +242,8 @@ TEST_F(SupervisedUserURLFilterTest, Canonicalization) {
   std::map<GURL, bool> urls;
   urls[GURL("http://www.example.com/foo/")] = true;
   urls[GURL("http://www.example.com/%C3%85t%C3%B8mstr%C3%B6m")] = true;
-  filter_->SetManualHosts(&hosts);
-  filter_->SetManualURLs(&urls);
+  filter_.SetManualHosts(std::move(hosts));
+  filter_.SetManualURLs(std::move(urls));
 
   // Base cases.
   EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/"));
@@ -414,7 +414,7 @@ TEST_F(SupervisedUserURLFilterTest, Patterns) {
 
   hosts["accounts.google.com"] = false;
   hosts["mail.google.com"] = true;
-  filter_->SetManualHosts(&hosts);
+  filter_.SetManualHosts(std::move(hosts));
 
   // Initially, the default filtering behavior is BLOCK.
   EXPECT_TRUE(IsURLWhitelisted("http://www.google.com/foo/"));
@@ -422,7 +422,7 @@ TEST_F(SupervisedUserURLFilterTest, Patterns) {
   EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
   EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
 
-  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
   EXPECT_FALSE(IsURLWhitelisted("http://www.google.com/foo/"));
   EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
   EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
@@ -456,8 +456,8 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsPatterns) {
   site_lists.push_back(site_list1);
   site_lists.push_back(site_list2);
 
-  filter_->SetFromSiteListsForTesting(site_lists);
-  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  filter_.SetFromSiteListsForTesting(site_lists);
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
   run_loop_.Run();
 
   std::map<std::string, base::string16> expected_whitelists;
@@ -465,13 +465,13 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsPatterns) {
   expected_whitelists[id2] = title2;
 
   std::map<std::string, base::string16> actual_whitelists =
-      filter_->GetMatchingWhitelistTitles(GURL("https://example.com"));
+      filter_.GetMatchingWhitelistTitles(GURL("https://example.com"));
   ASSERT_EQ(expected_whitelists, actual_whitelists);
 
   expected_whitelists.erase(id2);
 
   actual_whitelists =
-      filter_->GetMatchingWhitelistTitles(GURL("https://google.com"));
+      filter_.GetMatchingWhitelistTitles(GURL("https://google.com"));
   ASSERT_EQ(expected_whitelists, actual_whitelists);
 }
 
@@ -517,8 +517,8 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
   site_lists.push_back(site_list2);
   site_lists.push_back(site_list3);
 
-  filter_->SetFromSiteListsForTesting(site_lists);
-  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  filter_.SetFromSiteListsForTesting(site_lists);
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
   run_loop_.Run();
 
   std::map<std::string, base::string16> expected_whitelists;
@@ -527,13 +527,13 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
   expected_whitelists[id3] = title3;
 
   std::map<std::string, base::string16> actual_whitelists =
-      filter_->GetMatchingWhitelistTitles(GURL("http://example.com"));
+      filter_.GetMatchingWhitelistTitles(GURL("http://example.com"));
   ASSERT_EQ(expected_whitelists, actual_whitelists);
 
   expected_whitelists.erase(id1);
 
   actual_whitelists =
-      filter_->GetMatchingWhitelistTitles(GURL("https://secure.com"));
+      filter_.GetMatchingWhitelistTitles(GURL("https://secure.com"));
   ASSERT_EQ(expected_whitelists, actual_whitelists);
 }
 
@@ -561,27 +561,27 @@ TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
       "CIyrNH5qBru1lUSBNvzmjILCGwUjcIBaJqxgegSNy2melYqfodngLxKtHsGBehAMZSmuWSg6"
       "FupAcPS3Ih6NSVCOB9KNh6Mw/extension_2_0.crx");
 
-  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            filter_->GetFilteringBehaviorForURL(crx_download_url1));
+            filter_.GetFilteringBehaviorForURL(crx_download_url1));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            filter_->GetFilteringBehaviorForURL(crx_download_url2));
+            filter_.GetFilteringBehaviorForURL(crx_download_url2));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            filter_->GetFilteringBehaviorForURL(crx_download_url3));
+            filter_.GetFilteringBehaviorForURL(crx_download_url3));
 
   // Set explicit host rules to block those website, and make sure the
   // update URLs still work.
   std::map<std::string, bool> hosts;
   hosts["clients2.google.com"] = false;
   hosts["clients2.googleusercontent.com"] = false;
-  filter_->SetManualHosts(&hosts);
-  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
+  filter_.SetManualHosts(std::move(hosts));
+  filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            filter_->GetFilteringBehaviorForURL(crx_download_url1));
+            filter_.GetFilteringBehaviorForURL(crx_download_url1));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            filter_->GetFilteringBehaviorForURL(crx_download_url2));
+            filter_.GetFilteringBehaviorForURL(crx_download_url2));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
-            filter_->GetFilteringBehaviorForURL(crx_download_url3));
+            filter_.GetFilteringBehaviorForURL(crx_download_url3));
 }
 #endif
 

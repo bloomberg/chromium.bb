@@ -97,10 +97,6 @@
 #include "extensions/common/user_script.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
-#endif
-
 #if defined(USE_SYSTEM_PROTOBUF)
 #include <google/protobuf/repeated_field.h>
 #else
@@ -659,14 +655,6 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   if (first_throttle)
     throttles->push_back(base::WrapUnique(first_throttle));
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  std::unique_ptr<content::ResourceThrottle> supervised_user_throttle =
-      SupervisedUserResourceThrottle::MaybeCreate(
-          request, resource_type, io_data->supervised_user_url_filter());
-  if (supervised_user_throttle)
-    throttles->push_back(std::move(supervised_user_throttle));
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   content::ResourceThrottle* wait_for_extensions_init_throttle =

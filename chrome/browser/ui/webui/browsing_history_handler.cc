@@ -238,7 +238,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (supervised_user_service) {
     const SupervisedUserURLFilter* url_filter =
-        supervised_user_service->GetURLFilterForUIThread();
+        supervised_user_service->GetURLFilter();
     int filtering_behavior =
         url_filter->GetFilteringBehaviorForURL(entry->url.GetWithEmptyPath());
     is_blocked_visit = entry->blocked_visit;

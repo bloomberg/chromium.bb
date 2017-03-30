@@ -238,8 +238,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
                        HistoryVisitRecorded) {
   GURL allowed_url("http://www.example.com/simple.html");
 
-  scoped_refptr<SupervisedUserURLFilter> filter =
-      supervised_user_service_->GetURLFilterForUIThread();
+  const SupervisedUserURLFilter* filter =
+      supervised_user_service_->GetURLFilter();
 
   // Set the host as allowed.
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
@@ -343,8 +343,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, GoBackOnDontProceed) {
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
 
-  scoped_refptr<SupervisedUserURLFilter> filter =
-      supervised_user_service_->GetURLFilterForUIThread();
+  const SupervisedUserURLFilter* filter =
+      supervised_user_service_->GetURLFilter();
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
@@ -384,8 +384,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTest, BlockThenUnblock) {
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
 
-  scoped_refptr<SupervisedUserURLFilter> filter =
-      supervised_user_service_->GetURLFilterForUIThread();
+  const SupervisedUserURLFilter* filter =
+      supervised_user_service_->GetURLFilter();
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
@@ -426,8 +426,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, Unblock) {
   supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
 
-  scoped_refptr<SupervisedUserURLFilter> filter =
-      supervised_user_service_->GetURLFilterForUIThread();
+  const SupervisedUserURLFilter* filter =
+      supervised_user_service_->GetURLFilter();
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter->GetFilteringBehaviorForURL(test_url.GetWithEmptyPath()));
 

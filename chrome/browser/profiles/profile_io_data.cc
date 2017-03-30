@@ -121,12 +121,6 @@
 #include "extensions/common/constants.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/content_protocol_handler.h"
 #endif  // defined(OS_ANDROID)
@@ -422,12 +416,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   params->proxy_config_service = ProxyServiceFactory::CreateProxyConfigService(
       profile->GetProxyConfigTracker());
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-  params->supervised_user_url_filter =
-      supervised_user_service->GetURLFilterForIOThread();
-#endif
 #if defined(OS_CHROMEOS)
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager) {
@@ -1076,10 +1064,6 @@ void ProfileIOData::Init(
     resource_prefetch_predictor_observer_.reset(
         profile_params_->resource_prefetch_predictor_observer_.release());
   }
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  supervised_user_url_filter_ = profile_params_->supervised_user_url_filter;
-#endif
 
 #if defined(OS_CHROMEOS)
   username_hash_ = profile_params_->username_hash;

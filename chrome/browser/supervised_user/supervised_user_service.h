@@ -105,13 +105,10 @@ class SupervisedUserService : public KeyedService,
 
   void SetDelegate(Delegate* delegate);
 
-  // Returns the URL filter for the IO thread, for filtering network requests
-  // (in SupervisedUserResourceThrottle).
-  scoped_refptr<const SupervisedUserURLFilter> GetURLFilterForIOThread();
-
-  // Returns the URL filter for the UI thread, for filtering navigations and
-  // classifying sites in the history view.
-  SupervisedUserURLFilter* GetURLFilterForUIThread();
+  // Returns the URL filter for filtering navigations and classifying sites in
+  // the history view. Both this method and the returned filter may only be used
+  // on the UI thread.
+  SupervisedUserURLFilter* GetURLFilter();
 
   // Returns the whitelist service.
   SupervisedUserWhitelistService* GetWhitelistService();
@@ -237,50 +234,6 @@ class SupervisedUserService : public KeyedService,
 
   using CreatePermissionRequestCallback =
       base::Callback<void(PermissionRequestCreator*, const SuccessCallback&)>;
-
-  // A bridge from the UI thread to the SupervisedUserURLFilters, one of which
-  // lives on the IO thread. This class mediates access to them and makes sure
-  // they are kept in sync.
-  class URLFilterContext {
-   public:
-    URLFilterContext();
-    ~URLFilterContext();
-
-    SupervisedUserURLFilter* ui_url_filter() const;
-    SupervisedUserURLFilter* io_url_filter() const;
-
-    void SetDefaultFilteringBehavior(
-        SupervisedUserURLFilter::FilteringBehavior behavior);
-    void LoadWhitelists(
-        const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
-    // TODO(treib): Make SupervisedUserBlacklist refcounted, so the IO thread
-    // will retain a reference to the blacklist.
-    void SetBlacklist(const SupervisedUserBlacklist* blacklist);
-    bool HasBlacklist() const;
-    void SetManualHosts(std::unique_ptr<std::map<std::string, bool>> host_map);
-    void SetManualURLs(std::unique_ptr<std::map<GURL, bool>> url_map);
-
-    void InitAsyncURLChecker(
-        const scoped_refptr<net::URLRequestContextGetter>& context);
-    bool HasAsyncURLChecker() const;
-    void ClearAsyncURLChecker();
-
-    void Clear();
-
-   private:
-    void OnBlacklistLoaded(const base::Closure& callback);
-
-    // SupervisedUserURLFilter is refcounted because the IO thread filter is
-    // used both by ProfileImplIOData and OffTheRecordProfileIOData (to filter
-    // network requests), so they both keep a reference to it.
-    // Clients should not keep references to the UI thread filter, however
-    // (the filter will live as long as the profile lives, and afterwards it
-    // should not be used anymore either).
-    scoped_refptr<SupervisedUserURLFilter> ui_url_filter_;
-    scoped_refptr<SupervisedUserURLFilter> io_url_filter_;
-
-    DISALLOW_COPY_AND_ASSIGN(URLFilterContext);
-  };
 
   // Use |SupervisedUserServiceFactory::GetForProfile(..)| to get
   // an instance of this service.
@@ -437,7 +390,7 @@ class SupervisedUserService : public KeyedService,
   // True only when |Shutdown()| method has been called.
   bool did_shutdown_;
 
-  URLFilterContext url_filter_context_;
+  SupervisedUserURLFilter url_filter_;
 
   // Stores a map from extension_id -> approved version by the custodian.
   // It is only relevant for SU-initiated installs.

@@ -77,8 +77,7 @@ void SupervisedUserContentProvider::ShouldProceed(
   }
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  SupervisedUserURLFilter* url_filter =
-      supervised_user_service->GetURLFilterForUIThread();
+  SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
   url_filter->GetFilteringBehaviorForURLWithAsyncChecks(
       GURL(base::android::ConvertJavaStringToUTF16(env, url)),
       base::Bind(&SupervisedUserContentProvider::OnQueryComplete,
@@ -140,8 +139,7 @@ void SupervisedUserContentProvider::SetFilterForTesting(JNIEnv* env,
     return;
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  SupervisedUserURLFilter* url_filter =
-      supervised_user_service->GetURLFilterForUIThread();
+  SupervisedUserURLFilter* url_filter = supervised_user_service->GetURLFilter();
   url_filter->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
 }
 

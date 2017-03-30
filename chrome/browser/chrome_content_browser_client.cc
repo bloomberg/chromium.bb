@@ -396,6 +396,10 @@
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -3376,6 +3380,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       FlashDownloadInterception::MaybeCreateThrottleFor(handle);
   if (flash_url_throttle)
     throttles.push_back(std::move(flash_url_throttle));
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  std::unique_ptr<content::NavigationThrottle> supervised_user_throttle =
+      SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(handle);
+  if (supervised_user_throttle)
+    throttles.push_back(std::move(supervised_user_throttle));
 #endif
 
 #if defined(OS_ANDROID)
