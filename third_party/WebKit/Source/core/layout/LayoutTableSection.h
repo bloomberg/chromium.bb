@@ -141,7 +141,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     // This is the cell in the grid "slot" that is on top of the others
     // (aka the last cell in DOM order for this slot).
     //
-    // This is the cell originating from this slot if it exists.
+    // Multiple grid slots can have the same primary cell if the cell spans
+    // into the grid slots. The slot having the smallest row index and
+    // smallest effective column index is the originating slot of the cell.
     //
     // The concept of a primary cell is dubious at most as it doesn't
     // correspond to a DOM or rendering concept. Also callers should be
@@ -229,6 +231,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
         row, effectiveColumn);
   }
 
+  // Returns the primary cell at (row, effectiveColumn) if the cell exists and
+  // originates from (instead of spanning into) the grid slot, or nullptr.
+  const LayoutTableCell* originatingCellAt(unsigned row,
+                                           unsigned effectiveColumn) const;
+
   unsigned numCols(unsigned row) const { return m_grid[row].row.size(); }
 
   // Returns null for cells with a rowspan that exceed the last row. Possibly
@@ -300,8 +307,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // columnPos vectors.
   LayoutRect logicalRectForWritingModeAndDirection(const LayoutRect&) const;
 
+  // Returns a row or column span covering all grid slots from each of which
+  // a primary cell intersecting |visualRect| originates.
   CellSpan dirtiedRows(const LayoutRect& visualRect) const;
   CellSpan dirtiedEffectiveColumns(const LayoutRect& visualRect) const;
+
   const HashSet<LayoutTableCell*>& overflowingCells() const {
     return m_overflowingCells;
   }
@@ -475,6 +485,9 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // The use is to disable a painting optimization where we just paint the
   // invalidated cells.
   bool m_hasMultipleCellLevels;
+
+  // Whether any cell spans multiple rows or cols.
+  bool m_hasSpanningCells;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableSection, isTableSection());

@@ -18,28 +18,6 @@
 
 namespace blink {
 
-inline const LayoutTableCell* TableSectionPainter::primaryCellToPaint(
-    unsigned row,
-    unsigned column,
-    const CellSpan& dirtiedRows,
-    const CellSpan& dirtiedColumns) const {
-  DCHECK(row >= dirtiedRows.start() && row < dirtiedRows.end());
-  DCHECK(column >= dirtiedColumns.start() && column < dirtiedColumns.end());
-
-  const LayoutTableCell* cell = m_layoutTableSection.primaryCellAt(row, column);
-  if (!cell)
-    return nullptr;
-  // We have painted (row, column) when painting (row - 1, column).
-  if (row > dirtiedRows.start() &&
-      m_layoutTableSection.primaryCellAt(row - 1, column) == cell)
-    return nullptr;
-  // We have painted (row, column) when painting (row, column -1).
-  if (column > dirtiedColumns.start() &&
-      m_layoutTableSection.primaryCellAt(row, column - 1) == cell)
-    return nullptr;
-  return cell;
-}
-
 void TableSectionPainter::paintRepeatingHeaderGroup(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
@@ -193,17 +171,13 @@ void TableSectionPainter::paintCollapsedSectionBorders(
     for (unsigned c = std::min(dirtiedColumns.end(), nCols);
          c > dirtiedColumns.start(); c--) {
       unsigned col = c - 1;
-      const LayoutTableCell* cell =
-          m_layoutTableSection.primaryCellAt(row, col);
-      if (!cell || (row > dirtiedRows.start() &&
-                    m_layoutTableSection.primaryCellAt(row - 1, col) == cell) ||
-          (col > dirtiedColumns.start() &&
-           m_layoutTableSection.primaryCellAt(row, col - 1) == cell))
-        continue;
-      LayoutPoint cellPoint = m_layoutTableSection.flipForWritingModeForChild(
-          cell, adjustedPaintOffset);
-      TableCellPainter(*cell).paintCollapsedBorders(paintInfo, cellPoint,
-                                                    currentBorderValue);
+      if (const LayoutTableCell* cell =
+              m_layoutTableSection.originatingCellAt(row, col)) {
+        LayoutPoint cellPoint = m_layoutTableSection.flipForWritingModeForChild(
+            cell, adjustedPaintOffset);
+        TableCellPainter(*cell).paintCollapsedBorders(paintInfo, cellPoint,
+                                                      currentBorderValue);
+      }
     }
   }
 }
@@ -231,9 +205,10 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
     for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
       for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
         if (const LayoutTableCell* cell =
-                primaryCellToPaint(r, c, dirtiedRows, dirtiedColumns))
+                m_layoutTableSection.originatingCellAt(r, c)) {
           paintBackgroundsBehindCell(*cell, paintInfoForDescendants,
                                      paintOffset);
+        }
       }
     }
     paintBoxShadow(paintInfo, paintOffset, Inset);
@@ -255,9 +230,10 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
         for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end();
              c++) {
           if (const LayoutTableCell* cell =
-                  primaryCellToPaint(r, c, dirtiedRows, dirtiedColumns))
+                  m_layoutTableSection.originatingCellAt(r, c)) {
             rowPainter.paintBackgroundBehindCell(*cell, paintInfoForDescendants,
                                                  paintOffset);
+          }
         }
       }
       rowPainter.paintBoxShadow(paintInfoForDescendants, paintOffset, Inset);
@@ -278,7 +254,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
                                            paintOffset);
       for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
         if (const LayoutTableCell* cell =
-                primaryCellToPaint(r, c, dirtiedRows, dirtiedColumns))
+                m_layoutTableSection.originatingCellAt(r, c))
           paintCell(*cell, paintInfoForDescendants, paintOffset);
       }
     }

@@ -106,7 +106,8 @@ LayoutTableSection::LayoutTableSection(Element* element)
       m_outerBorderAfter(0),
       m_needsCellRecalc(false),
       m_forceSlowPaintPathWithOverflowingCell(false),
-      m_hasMultipleCellLevels(false) {
+      m_hasMultipleCellLevels(false),
+      m_hasSpanningCells(false) {
   // init LayoutObject attributes
   setInline(false);  // our object is not Inline
 }
@@ -247,6 +248,9 @@ void LayoutTableSection::addCell(LayoutTableCell* cell, LayoutTableRow* row) {
 
   unsigned rSpan = cell->rowSpan();
   unsigned cSpan = cell->colSpan();
+  if (rSpan > 1 || cSpan > 1)
+    m_hasSpanningCells = true;
+
   const Vector<LayoutTable::ColumnStruct>& columns =
       table()->effectiveColumns();
   unsigned insertionRow = row->rowIndex();
@@ -1546,8 +1550,24 @@ CellSpan LayoutTableSection::dirtiedRows(const LayoutRect& damageRect) const {
     coveredRows.increaseEnd();
 
   coveredRows.ensureConsistency(m_grid.size());
+  if (!m_hasSpanningCells || !coveredRows.start() ||
+      coveredRows.start() >= m_grid.size())
+    return coveredRows;
 
-  return coveredRows;
+  // If there are any cells spanning into the first row, expand coveredRows
+  // to cover the primary cells.
+  unsigned nCols = numCols(coveredRows.start());
+  unsigned smallestRow = coveredRows.start();
+  CellSpan coveredColumns = spannedEffectiveColumns(damageRect);
+  for (unsigned c = coveredColumns.start();
+       c < std::min(coveredColumns.end(), nCols); ++c) {
+    if (const auto* cell = primaryCellAt(coveredRows.start(), c)) {
+      smallestRow = std::min(smallestRow, cell->rowIndex());
+      if (!smallestRow)
+        break;
+    }
+  }
+  return CellSpan(smallestRow, coveredRows.end());
 }
 
 CellSpan LayoutTableSection::dirtiedEffectiveColumns(
@@ -1573,8 +1593,25 @@ CellSpan LayoutTableSection::dirtiedEffectiveColumns(
     coveredColumns.increaseEnd();
 
   coveredColumns.ensureConsistency(table()->numEffectiveColumns());
+  if (!m_hasSpanningCells || !coveredColumns.start())
+    return coveredColumns;
 
-  return coveredColumns;
+  // If there are any cells spanning into the first column, expand
+  // coveredRows to cover the primary cells.
+  unsigned smallestColumn = coveredColumns.start();
+  CellSpan coveredRows = spannedRows(damageRect);
+  for (unsigned r = coveredRows.start(); r < coveredRows.end(); ++r) {
+    const auto& row = m_grid[r].row;
+    if (coveredColumns.start() < row.size()) {
+      unsigned c = coveredColumns.start();
+      while (c && row[c].inColSpan)
+        --c;
+      smallestColumn = std::min(c, smallestColumn);
+      if (!smallestColumn)
+        break;
+    }
+  }
+  return CellSpan(smallestColumn, coveredColumns.end());
 }
 
 CellSpan LayoutTableSection::spannedRows(const LayoutRect& flippedRect) const {
@@ -1729,6 +1766,22 @@ const LayoutTableCell* LayoutTableSection::firstRowCellAdjoiningTableEnd()
   unsigned adjoiningEndCellColumnIndex =
       hasSameDirectionAs(table()) ? table()->lastEffectiveColumnIndex() : 0;
   return primaryCellAt(0, adjoiningEndCellColumnIndex);
+}
+
+const LayoutTableCell* LayoutTableSection::originatingCellAt(
+    unsigned row,
+    unsigned effectiveColumn) const {
+  const auto& rowVector = m_grid[row].row;
+  if (effectiveColumn >= rowVector.size())
+    return nullptr;
+  const auto& cellStruct = rowVector[effectiveColumn];
+  if (cellStruct.inColSpan)
+    return nullptr;
+  if (const auto* cell = cellStruct.primaryCell()) {
+    if (cell->rowIndex() == row)
+      return cell;
+  }
+  return nullptr;
 }
 
 void LayoutTableSection::appendEffectiveColumn(unsigned pos) {
