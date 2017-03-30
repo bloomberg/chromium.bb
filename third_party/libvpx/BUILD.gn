@@ -71,6 +71,7 @@ config("libvpx_warnings") {
       # libvpx has many static functions in header, which trigger this warning.
       "-Wno-unused-function",
     ]
+
     # Fixes a mac link error for vpx_scaled_2d:
     # Undefined symbols for architecture x86_64:
     # "_vpx_scaled_2d", referenced from:
