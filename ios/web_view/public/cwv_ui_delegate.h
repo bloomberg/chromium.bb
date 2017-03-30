@@ -8,13 +8,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
-// TODO(crbug.com/704946): Make framework style include work everywhere and
-// remove this #if.
-#if defined(CWV_IMPLEMENTATION)
-#include "ios/web_view/public/cwv_export.h"
-#else
-#include <ChromeWebView/cwv_export.h>
-#endif
+#include "cwv_export.h"
 
 @class CWVHTMLElement;
 @class CWVWebView;

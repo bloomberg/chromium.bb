@@ -7,10 +7,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "cwv_export.h"
+
 @class CWVUserScript;
 
 // Allows injecting custom scripts into CWVWebView created with the
 // configuration.
+CWV_EXPORT
 @interface CWVUserContentController : NSObject
 
 // The user scripts associated with the configuration.
