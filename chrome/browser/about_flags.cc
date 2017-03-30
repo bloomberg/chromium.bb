@@ -574,19 +574,10 @@ const FeatureEntry::FeatureVariation
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kRemoteSuggestionsFeatureVariationContentSuggestionsServer[] = {
-        {"content_suggestions_backend",
-         ntp_snippets::kContentSuggestionsServer}};
-
 const FeatureEntry::FeatureVariation kRemoteSuggestionsFeatureVariations[] = {
-    {"via content suggestion server (backed by ChromeReader)",
-     kRemoteSuggestionsFeatureVariationContentSuggestionsServer,
-     arraysize(kRemoteSuggestionsFeatureVariationContentSuggestionsServer),
+    {"via content suggestion server (backed by ChromeReader)", nullptr, 0,
      nullptr},
-    {"via content suggestion server (backed by Google Now)",
-     kRemoteSuggestionsFeatureVariationContentSuggestionsServer,
-     arraysize(kRemoteSuggestionsFeatureVariationContentSuggestionsServer),
+    {"via content suggestion server (backed by Google Now)", nullptr, 0,
      "3313279"}};
 #endif  // OS_ANDROID
 
@@ -1971,7 +1962,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kCategoryOrder,
          kContentSuggestionsCategoryOrderFeatureVariations,
-         ntp_snippets::kStudyName)},
+         ntp_snippets::kCategoryOrder.name)},
     {"content-suggestions-category-ranker",
      flag_descriptions::kContentSuggestionsCategoryRankerName,
      flag_descriptions::kContentSuggestionsCategoryRankerDescription,
@@ -1979,7 +1970,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          ntp_snippets::kCategoryRanker,
          kContentSuggestionsCategoryRankerFeatureVariations,
-         ntp_snippets::kStudyName)},
+         ntp_snippets::kCategoryRanker.name)},
     {"enable-ntp-snippets-increased-visibility",
      flag_descriptions::kEnableNtpSnippetsVisibilityName,
      flag_descriptions::kEnableNtpSnippetsVisibilityDescription, kOsAndroid,
@@ -1999,9 +1990,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-ntp-remote-suggestions",
      flag_descriptions::kEnableNtpRemoteSuggestionsName,
      flag_descriptions::kEnableNtpRemoteSuggestionsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_snippets::kArticleSuggestionsFeature,
-                                    kRemoteSuggestionsFeatureVariations,
-                                    ntp_snippets::kStudyName)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         ntp_snippets::kArticleSuggestionsFeature,
+         kRemoteSuggestionsFeatureVariations,
+         ntp_snippets::kArticleSuggestionsFeature.name)},
     {"enable-ntp-recent-offline-tab-suggestions",
      flag_descriptions::kEnableNtpRecentOfflineTabSuggestionsName,
      flag_descriptions::kEnableNtpRecentOfflineTabSuggestionsDescription,
@@ -2038,7 +2030,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          params::ntp_snippets::kNotificationsFeature,
          kContentSuggestionsNotificationsFeatureVariations,
-         ntp_snippets::kStudyName)},
+         params::ntp_snippets::kNotificationsFeature.name)},
     {"ntp-condensed-layout", flag_descriptions::kNtpCondensedLayoutName,
      flag_descriptions::kNtpCondensedLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNTPCondensedLayoutFeature)},
@@ -2048,7 +2040,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          chrome::android::kNTPCondensedTileLayoutFeature,
          kNTPCondensedTileLayoutFeatureVariations,
-         ntp_snippets::kStudyName)},
+         chrome::android::kNTPCondensedTileLayoutFeature.name)},
     {"ntp-google-g-in-omnibox", flag_descriptions::kNtpGoogleGInOmniboxName,
      flag_descriptions::kNtpGoogleGInOmniboxDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::NTPShowGoogleGInOmniboxFeature)},

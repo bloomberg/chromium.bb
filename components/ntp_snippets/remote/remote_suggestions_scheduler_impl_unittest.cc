@@ -106,7 +106,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
         default_variation_params_{{"scheduler_trigger_types",
                                    "persistent_scheduler_wake_up,ntp_opened,"
                                    "browser_foregrounded,browser_cold_start"}},
-        params_manager_(ntp_snippets::kStudyName,
+        params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         default_variation_params_,
                         {kArticleSuggestionsFeature.name}),
         user_classifier_(/*pref_service=*/nullptr,
@@ -142,7 +142,7 @@ class RemoteSuggestionsSchedulerImplTest : public ::testing::Test {
 
     params_manager_.ClearAllVariationParams();
     params_manager_.SetVariationParamsWithFeatureAssociations(
-        ntp_snippets::kStudyName, params,
+        ntp_snippets::kArticleSuggestionsFeature.name, params,
         {ntp_snippets::kArticleSuggestionsFeature.name});
   }
 

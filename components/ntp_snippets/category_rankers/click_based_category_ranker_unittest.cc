@@ -84,7 +84,7 @@ class ClickBasedCategoryRankerTest : public testing::Test {
 
   void SetDismissedCategoryPenaltyVariationParam(int value) {
     variation_params_manager_.SetVariationParamsWithFeatureAssociations(
-        ntp_snippets::kStudyName,
+        kCategoryRanker.name,
         {{"click_based_category_ranker-dismissed_category_penalty",
           base::IntToString(value)}},
         {kCategoryRanker.name});
@@ -92,7 +92,7 @@ class ClickBasedCategoryRankerTest : public testing::Test {
 
   void SetPromotedCategoryVariationParam(int value) {
     variation_params_manager_.SetVariationParamsWithFeatureAssociations(
-        ntp_snippets::kStudyName,
+        kCategoryRanker.name,
         {{"click_based_category_ranker-promoted_category",
           base::IntToString(value)}},
         {kCategoryRanker.name});

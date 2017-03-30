@@ -61,7 +61,7 @@ class JsonRequestTest : public testing::Test {
  public:
   JsonRequestTest()
       : params_manager_(
-            ntp_snippets::kStudyName,
+            ntp_snippets::kArticleSuggestionsFeature.name,
             {{"send_top_languages", "true"}, {"send_user_class", "true"}},
             {ntp_snippets::kArticleSuggestionsFeature.name}),
         pref_service_(base::MakeUnique<TestingPrefServiceSimple>()),

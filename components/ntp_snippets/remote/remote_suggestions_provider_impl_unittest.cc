@@ -399,7 +399,7 @@ class MockScheduler : public RemoteSuggestionsScheduler {
 class RemoteSuggestionsProviderImplTest : public ::testing::Test {
  public:
   RemoteSuggestionsProviderImplTest()
-      : params_manager_(ntp_snippets::kStudyName,
+      : params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         {{"content_suggestions_backend",
                           kTestContentSuggestionsServerEndpoint}},
                         {ntp_snippets::kArticleSuggestionsFeature.name}),

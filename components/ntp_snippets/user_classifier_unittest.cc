@@ -90,7 +90,7 @@ TEST_F(UserClassifierTest,
        ShouldBecomeActiveSuggestionsConsumerByClickingOftenWithDecreasedParam) {
   // Increase the param to one half.
   variations::testing::VariationParamsManager variation_params(
-      kStudyName,
+      kArticleSuggestionsFeature.name,
       {{"user_classifier_active_consumer_clicks_at_least_once_per_hours",
         "36"}},
       {kArticleSuggestionsFeature.name});
@@ -128,7 +128,7 @@ TEST_F(UserClassifierTest,
        ShouldBecomeRareNtpUserByNoActivityWithDecreasedParam) {
   // Decrease the param to one half.
   variations::testing::VariationParamsManager variation_params(
-      kStudyName,
+      kArticleSuggestionsFeature.name,
       {{"user_classifier_rare_user_opens_ntp_at_most_once_per_hours", "48"}},
       {kArticleSuggestionsFeature.name});
   UserClassifier* user_classifier = CreateUserClassifier();
@@ -230,7 +230,7 @@ TEST_P(UserClassifierMetricTest,
   UserClassifier::Metric metric = GetParam().first;
   // Increase the min_hours to 1.0, i.e. 60 minutes.
   variations::testing::VariationParamsManager variation_params(
-      kStudyName, {{"user_classifier_min_hours", "1.0"}},
+      kArticleSuggestionsFeature.name, {{"user_classifier_min_hours", "1.0"}},
       {kArticleSuggestionsFeature.name});
   UserClassifier* user_classifier = CreateUserClassifier();
 
@@ -277,7 +277,7 @@ TEST_P(UserClassifierMetricTest,
   UserClassifier::Metric metric = GetParam().first;
   // Decrease the max_hours to 72, i.e. 3 days.
   variations::testing::VariationParamsManager variation_params(
-      kStudyName, {{"user_classifier_max_hours", "72"}},
+      kArticleSuggestionsFeature.name, {{"user_classifier_max_hours", "72"}},
       {kArticleSuggestionsFeature.name});
   UserClassifier* user_classifier = CreateUserClassifier();
 

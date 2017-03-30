@@ -23,7 +23,6 @@ public final class CardsVariationParameters {
     private static final String TAG = "CardsVariationParams";
 
     // Also defined in ntp_snippets_constants.cc
-    private static final String FIELD_TRIAL_NAME_MAIN = "NTPSnippets";
     private static final String FIELD_TRIAL_NAME_VISIBILITY = "NTPSnippetsVisibility";
 
     private static final String PARAM_FAVICON_SERVICE_NAME = "favicons_fetch_from_service";
@@ -37,6 +36,9 @@ public final class CardsVariationParameters {
     private static final String PARAM_DISABLED_VALUE = "off";
 
     private static final int FIRST_CARD_ANIMATION_DEFAULT_VALUE = 7;
+
+    // TODO(sfiera): replace with feature-specific field trials, as has been done in C++.
+    private static final String FIELD_TRIAL_NAME_MAIN = "NTPSnippets";
 
     private CardsVariationParameters() {}
 

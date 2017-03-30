@@ -9,9 +9,6 @@
 
 namespace ntp_snippets {
 
-// Name of the variation parameters study to configure NTP snippets.
-extern const char kStudyName[];
-
 // Name of the folder where the snippets database should be stored. This is only
 // the name of the folder, not a full path - it must be appended to e.g. the
 // profile path.

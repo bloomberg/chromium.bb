@@ -271,7 +271,7 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
   explicit RemoteSuggestionsFetcherTestBase(const GURL& gurl)
       : default_variation_params_(
             {{"send_top_languages", "true"}, {"send_user_class", "true"}}),
-        params_manager_(ntp_snippets::kStudyName,
+        params_manager_(ntp_snippets::kArticleSuggestionsFeature.name,
                         default_variation_params_,
                         {ntp_snippets::kArticleSuggestionsFeature.name}),
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
@@ -358,7 +358,7 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
 
     params_manager_.ClearAllVariationParams();
     params_manager_.SetVariationParamsWithFeatureAssociations(
-        ntp_snippets::kStudyName, params,
+        ntp_snippets::kArticleSuggestionsFeature.name, params,
         {ntp_snippets::kArticleSuggestionsFeature.name});
   }
 
