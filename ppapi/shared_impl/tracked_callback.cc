@@ -228,6 +228,11 @@ void TrackedCallback::MarkAsCompletedWithLock() {
   if (resource_id_)
     tracker_->Remove(thiz);
   tracker_ = NULL;
+
+  // Relax the cross-thread access restriction to non-thread-safe RefCount.
+  // |lock_| protects the access to Resource instances.
+  base::ScopedAllowCrossThreadRefCountAccess
+      allow_cross_thread_ref_count_access;
   target_loop_ = NULL;
 }
 
