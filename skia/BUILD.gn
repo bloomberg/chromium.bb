@@ -43,10 +43,6 @@ config("skia_config") {
 
   defines = skia_for_chromium_defines
 
-  if (is_win) {
-    defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) << 24) | ((FREETYPE_MINOR) << 16) | ((FREETYPE_PATCH) << 8))" ]
-  }
-
   if (is_component_build) {
     defines += [
       "SKIA_DLL",
@@ -362,6 +358,9 @@ component("skia") {
 
   if (is_linux || is_android) {
     sources += [
+      "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
+      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
+
       # Retain the files for the SkFontMgr_Android on linux to emulate android
       # fonts. See content/zygote/zygote_main_linux.cc
       # Note that this requires expat.
@@ -370,22 +369,9 @@ component("skia") {
     ]
   }
 
-  if (is_linux || is_android || is_win) {
-    sources += [
-      "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
-      "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
-    ]
-  }
-
+  # Select the right BitmapPlatformDevice.
   if (is_win) {
-    sources += [
-      # Add the custom FreeType font manager to instantiate variable fonts on Windows.
-      "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
-      "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
-
-      # Select the right BitmapPlatformDevice.
-      "ext/raster_handle_allocator_win.cc",
-    ]
+    sources += [ "ext/raster_handle_allocator_win.cc" ]
   }
 
   if (is_clang && !is_nacl) {
@@ -414,8 +400,8 @@ component("skia") {
       configs += [ "//build/config/linux/pangocairo" ]
     }
     deps += [
-      "//build/config/freetype",
       "//build/linux:fontconfig",
+      "//build/config/freetype",
       "//third_party/expat",
       "//third_party/icu:icuuc",
     ]
@@ -425,11 +411,8 @@ component("skia") {
     deps += [
       "//third_party/android_tools:cpu_features",
       "//third_party/expat",
+      "//build/config/freetype",
     ]
-  }
-
-  if (is_win || is_android) {
-    deps += [ "//build/config/freetype" ]
   }
 
   if (skia_support_pdf) {

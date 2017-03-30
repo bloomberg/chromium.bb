@@ -315,9 +315,6 @@ deps = {
 
 deps_os = {
   'win': {
-    'src/third_party/freetype/src':
-      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
-
     'src/third_party/cygwin':
       Var('chromium_git') + '/chromium/deps/cygwin.git' + '@' + 'c89e446b273697fadf3a10ff1007a97c0b7de6df',
 

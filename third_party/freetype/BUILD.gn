@@ -50,16 +50,13 @@ component("freetype") {
     "src/src/base/ftsystem.c",
     "src/src/base/fttype1.c",
     "src/src/cff/cff.c",
-    "src/src/cid/type1cid.c",
     "src/src/gzip/ftgzip.c",
-    "src/src/psaux/psaux.c",
     "src/src/pshinter/pshinter.c",
     "src/src/psnames/psnames.c",
     "src/src/raster/raster.c",
     "src/src/sfnt/sfnt.c",
     "src/src/smooth/smooth.c",
     "src/src/truetype/truetype.c",
-    "src/src/type1/type1.c",
   ]
 
   if (is_linux || is_chromecast) {
