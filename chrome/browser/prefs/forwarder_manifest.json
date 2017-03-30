@@ -1,0 +1,16 @@
+{
+  "name": "preferences_forwarder",
+  "display_name": "Preferences Forwarder",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "pref_client": [
+          "prefs::mojom::PrefStoreConnector"
+        ]
+      },
+      "requires": {
+        "preferences2": [ "pref_client" ]
+      }
+    }
+  }
+}

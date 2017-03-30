@@ -283,43 +283,4 @@ IN_PROC_BROWSER_TEST_F(PreferencesTest, MultiProfiles) {
   CheckLocalStateCorrespondsToPrefs(prefs1);
 }
 
-IN_PROC_BROWSER_TEST_F(PreferencesServiceBrowserTest, Basic) {
-  constexpr int kInitialValue = 1;
-  PrefService* pref_service = browser()->profile()->GetPrefs();
-  pref_service->SetInteger(prefs::kMouseSensitivity, kInitialValue);
-
-  prefs::mojom::PreferencesServiceFactoryPtr factory_a;
-  connector()->BindInterface(prefs::mojom::kServiceName, &factory_a);
-  scoped_refptr<preferences::PrefClientStore> pref_store_a =
-      new preferences::PrefClientStore(std::move(factory_a));
-  pref_store_a->Subscribe({prefs::kMouseSensitivity});
-  WaitForPrefChange(pref_store_a.get(), prefs::kMouseSensitivity);
-
-  prefs::mojom::PreferencesServiceFactoryPtr factory_b;
-  connector()->BindInterface(prefs::mojom::kServiceName, &factory_b);
-  scoped_refptr<preferences::PrefClientStore> pref_store_b =
-      new preferences::PrefClientStore(std::move(factory_b));
-  pref_store_b->Subscribe({prefs::kMouseSensitivity});
-  WaitForPrefChange(pref_store_b.get(), prefs::kMouseSensitivity);
-
-  int value_a = 0;
-  ASSERT_TRUE(GetIntegerPrefValue(pref_store_a.get(), prefs::kMouseSensitivity,
-                                  &value_a));
-  EXPECT_EQ(kInitialValue, value_a);
-
-  int value_b = 0;
-  ASSERT_TRUE(GetIntegerPrefValue(pref_store_b.get(), prefs::kMouseSensitivity,
-                                  &value_b));
-  EXPECT_EQ(kInitialValue, value_b);
-
-  const int kTestValue = 42;
-  pref_store_a->SetValue(prefs::kMouseSensitivity,
-                         base::MakeUnique<base::Value>(kTestValue),
-                         WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  WaitForPrefChange(pref_store_b.get(), prefs::kMouseSensitivity);
-  ASSERT_TRUE(GetIntegerPrefValue(pref_store_b.get(), prefs::kMouseSensitivity,
-                                  &value_b));
-  EXPECT_EQ(kTestValue, value_b);
-}
-
 }  // namespace chromeos

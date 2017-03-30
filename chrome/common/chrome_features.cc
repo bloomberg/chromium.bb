@@ -4,6 +4,8 @@
 
 #include "chrome/common/chrome_features.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 
@@ -310,5 +312,15 @@ const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
 const base::Feature kCrosCompUpdates{"CrosCompUpdates",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
+
+bool PrefServiceEnabled() {
+  return base::FeatureList::IsEnabled(features::kPrefService) ||
+#if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
+         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+             switches::kMusConfig) == switches::kMash;
+#else
+         false;
+#endif
+}
 
 }  // namespace features

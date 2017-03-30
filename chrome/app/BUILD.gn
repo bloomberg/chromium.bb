@@ -368,6 +368,11 @@ chrome_packaged_services = [
   "//chrome/browser:preferences_manifest",
 ]
 
+if (is_chromeos) {
+  chrome_packaged_services +=
+      [ "//chrome/browser:preferences_forwarder_manifest" ]
+}
+
 service_manifest("chrome_manifest") {
   source = "chrome_manifest.json"
 }

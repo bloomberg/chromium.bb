@@ -30,6 +30,7 @@ interface PreferencesService {
 };
 
 const string kPrefStoreServiceName = "preferences2";
+const string kForwarderServiceName = "preferences_forwarder";
 
 // The know pref store types.
 //

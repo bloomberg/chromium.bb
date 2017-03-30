@@ -25,6 +25,8 @@
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+class PrefService;
+
 namespace aura {
 class RootWindow;
 class UserActivityForwarder;
@@ -56,10 +58,6 @@ class DisplayManager;
 
 namespace gfx {
 class Insets;
-}
-
-namespace preferences {
-class PrefClientStore;
 }
 
 namespace ui {
@@ -382,7 +380,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   LockStateController* lock_state_controller() {
     return lock_state_controller_.get();
   }
-  preferences::PrefClientStore* pref_store() { return pref_store_.get(); }
+  PrefService* pref_service() { return pref_service_.get(); }
   PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
@@ -647,6 +645,9 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   // SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
 
+  // Callback for prefs::ConnectToPrefService.
+  void OnPrefServiceInitialized(std::unique_ptr<::PrefService> pref_service);
+
   static Shell* instance_;
 
   // Only valid in mash, for classic ash this is null.
@@ -705,7 +706,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
   std::unique_ptr<app_list::AppList> app_list_;
-  scoped_refptr<preferences::PrefClientStore> pref_store_;
+  std::unique_ptr<::PrefService> pref_service_;
   std::unique_ptr<ui::devtools::UiDevToolsServer> devtools_server_;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   LinkHandlerModelFactory* link_handler_model_factory_;

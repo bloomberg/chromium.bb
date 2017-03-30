@@ -2302,6 +2302,8 @@ split_static_library("browser") {
       "metrics/perf/windowed_incognito_observer.h",
       "policy/default_geolocation_policy_handler.cc",
       "policy/default_geolocation_policy_handler.h",
+      "prefs/active_profile_pref_service.cc",
+      "prefs/active_profile_pref_service.h",
       "task_manager/providers/arc/arc_process_filter.cc",
       "task_manager/providers/arc/arc_process_filter.h",
       "task_manager/providers/arc/arc_process_task.cc",
@@ -4627,4 +4629,9 @@ if (enable_pepper_cdms) {
 service_manifest("preferences_manifest") {
   name = "preferences"
   source = "prefs/preferences_manifest.json"
+}
+
+service_manifest("preferences_forwarder_manifest") {
+  name = "preferences_forwarder"
+  source = "prefs/forwarder_manifest.json"
 }

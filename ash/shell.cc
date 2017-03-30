@@ -129,8 +129,10 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/devicemode.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/ui_devtools/devtools_server.h"
-#include "services/preferences/public/cpp/pref_client_store.h"
+#include "services/preferences/public/cpp/pref_service_factory.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -746,7 +748,7 @@ Shell::~Shell() {
   // Must be destroyed before FocusController.
   shelf_delegate_.reset();
 
-  // Removes itself as an observer of |pref_store_|.
+  // Removes itself as an observer of |pref_service_|.
   shelf_controller_.reset();
 
   wm_shell_->Shutdown();
@@ -778,7 +780,7 @@ Shell::~Shell() {
   wm_shell_.reset();
   session_controller_->RemoveSessionStateObserver(this);
   wallpaper_delegate_.reset();
-  pref_store_ = nullptr;
+  pref_service_ = nullptr;
   shell_delegate_.reset();
 
   DCHECK(instance_ == this);
@@ -794,11 +796,12 @@ void Shell::Init(const ShellInitParams& init_params) {
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
   // Can be null in tests.
-  if (shell_delegate_->GetShellConnector()) {
-    prefs::mojom::PreferencesServiceFactoryPtr pref_factory_ptr;
-    shell_delegate_->GetShellConnector()->BindInterface(
-        prefs::mojom::kServiceName, &pref_factory_ptr);
-    pref_store_ = new preferences::PrefClientStore(std::move(pref_factory_ptr));
+  if (wm_shell_->IsRunningInMash() && shell_delegate_->GetShellConnector()) {
+    prefs::ConnectToPrefService(
+        shell_delegate_->GetShellConnector(),
+        make_scoped_refptr(new PrefRegistrySimple()),
+        base::Bind(&Shell::OnPrefServiceInitialized, base::Unretained(this)),
+        prefs::mojom::kForwarderServiceName);
   }
 
   // Some delegates access WmShell during their construction. Create them here
@@ -1245,6 +1248,14 @@ void Shell::SessionStateChanged(session_manager::SessionState state) {
     // TODO(jamescook): Should this call Shell::OnLoginStatusChanged() too?
     UpdateAfterLoginStatusChange(session_controller_->GetLoginStatus());
   }
+}
+
+void Shell::OnPrefServiceInitialized(
+    std::unique_ptr<::PrefService> pref_service) {
+  if (!instance_)
+    return;
+  DCHECK(pref_service);
+  pref_service_ = std::move(pref_service);
 }
 
 }  // namespace ash

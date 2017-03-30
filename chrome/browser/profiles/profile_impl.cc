@@ -494,7 +494,7 @@ ProfileImpl::ProfileImpl(
 
   {
     service_manager::Connector* connector = nullptr;
-    if (base::FeatureList::IsEnabled(features::kPrefService)) {
+    if (features::PrefServiceEnabled()) {
       connector = content::BrowserContext::GetConnectorFor(this);
     }
     prefs_ = chrome_prefs::CreateProfilePrefs(
@@ -1066,7 +1066,7 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
 }
 
 void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
-  if (base::FeatureList::IsEnabled(features::kPrefService)) {
+  if (features::PrefServiceEnabled()) {
     content::ServiceInfo info;
     info.factory = base::Bind(
         &prefs::CreatePrefService, std::set<PrefValueStore::PrefStoreType>(),

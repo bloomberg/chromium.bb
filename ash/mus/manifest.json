@@ -25,7 +25,7 @@
       },
       "requires": {
         "*": [ "accessibility", "app" ],
-        "preferences": [ "preferences_manager" ],
+        "preferences_forwarder": [ "pref_client" ],
         "ui": [ "display_test", "window_manager" ],
         "touch_hud": [ "mash:launchable" ]
       }

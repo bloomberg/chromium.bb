@@ -97,10 +97,11 @@ void OnConnectError(
 
 void ConnectToPrefService(service_manager::Connector* connector,
                           scoped_refptr<PrefRegistry> pref_registry,
-                          ConnectCallback callback) {
+                          ConnectCallback callback,
+                          base::StringPiece service_name) {
   auto connector_ptr = make_scoped_refptr(
       new RefCountedInterfacePtr<mojom::PrefStoreConnector>());
-  connector->BindInterface(mojom::kPrefStoreServiceName, &connector_ptr->get());
+  connector->BindInterface(service_name.as_string(), &connector_ptr->get());
   connector_ptr->get().set_connection_error_handler(base::Bind(
       &OnConnectError, connector_ptr, base::Passed(ConnectCallback{callback})));
   auto serialized_pref_registry = SerializePrefRegistry(*pref_registry);

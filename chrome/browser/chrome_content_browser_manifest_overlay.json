@@ -26,7 +26,7 @@
         "identity": [ "identity_manager" ],
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
-        "preferences": [ "preferences_manager" ],
+        "preferences_forwarder": [ "pref_client" ],
         "preferences2": [ "pref_client", "pref_control" ],
         "ui": [ "display_controller", "ime_registrar", "window_manager" ]
       }

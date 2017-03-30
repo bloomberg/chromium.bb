@@ -58,7 +58,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/prefs/preferences_connection_manager.h"
+#include "chrome/browser/prefs/active_profile_pref_service.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -3228,14 +3228,14 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     services->insert(std::make_pair(kChromeServiceName, info));
   }
 
-  {
+  if (features::PrefServiceEnabled()) {
     content::ServiceInfo info;
     info.factory = base::Bind([] {
       return std::unique_ptr<service_manager::Service>(
-          base::MakeUnique<PreferencesConnectionManager>());
+          base::MakeUnique<ActiveProfilePrefService>());
     });
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
-    services->insert(std::make_pair(prefs::mojom::kServiceName, info));
+    services->insert(std::make_pair(prefs::mojom::kForwarderServiceName, info));
   }
 
   if (!ash_util::IsRunningInMash()) {

@@ -109,7 +109,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     prefs::mojom::TrackedPreferenceValidationDelegate* validation_delegate,
     service_manager::Connector* connector,
     scoped_refptr<PrefRegistry> pref_registry) {
-  if (base::FeatureList::IsEnabled(features::kPrefService)) {
+  if (features::PrefServiceEnabled()) {
     ConfigurePrefService(on_reset_on_load, connector);
     prefs::mojom::PrefStoreConnectorPtr pref_connector;
     connector->BindInterface(prefs::mojom::kPrefStoreServiceName,
