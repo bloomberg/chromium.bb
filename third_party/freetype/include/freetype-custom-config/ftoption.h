@@ -102,7 +102,7 @@ FT_BEGIN_HEADER
   /*                       cff:no-stem-darkening=1 \                       */
   /*                       autofitter:warping=1                            */
   /*                                                                       */
-/*#define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES*/
+#define FT_CONFIG_OPTION_ENVIRONMENT_PROPERTIES
 
 
   /*************************************************************************/
@@ -122,7 +122,7 @@ FT_BEGIN_HEADER
   /* This is done to allow FreeType clients to run unmodified, forcing     */
   /* them to display normal gray-level anti-aliased glyphs.                */
   /*                                                                       */
-/* #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
+#define FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 
 
   /*************************************************************************/
@@ -414,7 +414,7 @@ FT_BEGIN_HEADER
   /* supply font data incrementally as the document is parsed, such        */
   /* as the Ghostscript interpreter for the PostScript language.           */
   /*                                                                       */
-/* #define FT_CONFIG_OPTION_INCREMENTAL */
+#define FT_CONFIG_OPTION_INCREMENTAL
 
 
   /*************************************************************************/
@@ -790,7 +790,7 @@ FT_BEGIN_HEADER
   /*                                                                       */
   /* The Chinese font MingTiEG-Medium (CNS 11643 character set) needs 256. */
   /*                                                                       */
-#define T1_MAX_CHARSTRINGS_OPERANDS  256
+#define T1_MAX_CHARSTRINGS_OPERANDS  512
 
 
   /*************************************************************************/
