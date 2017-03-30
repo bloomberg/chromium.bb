@@ -257,7 +257,7 @@ cr.define('bookmarks', function() {
       case 'clear-search':
         // TODO(tsergeant): Return to the folder that was selected before the
         // search.
-        return nodes['0'].children[0];
+        return nodes[bookmarks.util.ROOT_NODE_ID].children[0];
       default:
         return selectedFolder;
     }
@@ -276,9 +276,9 @@ cr.define('bookmarks', function() {
     var modifications = {};
     var currentId = id;
     while (currentId) {
-      if (closedFolders[currentId]) {
+      if (closedFolders[currentId])
         modifications[currentId] = false;
-      }
+
       currentId = nodes[currentId].parentId;
     }
 

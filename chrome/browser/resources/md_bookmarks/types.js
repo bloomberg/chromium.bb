@@ -8,7 +8,7 @@
 
 /**
  * A normalized version of chrome.bookmarks.BookmarkTreeNode.
- * @typedef{{
+ * @typedef {{
  *   id: string,
  *   parentId: (string|undefined),
  *   url: (string|undefined),
@@ -22,20 +22,22 @@
 var BookmarkNode;
 
 /**
- * @typedef{!Object<string, BookmarkNode>}
+ * @typedef {!Object<string, BookmarkNode>}
  */
 var NodeList;
 
 /**
- * @typedef{{
+ * @typedef {{
  *   items: !Object<string, boolean>,
  *   anchor: ?string,
  * }}
+ *
+ * |items| is used as a set and all values in the map are true.
  */
 var SelectionState;
 
 /**
- * @typedef{{
+ * @typedef {{
  *   term: string,
  *   inProgress: boolean,
  *   results: !Array<string>,
@@ -47,7 +49,7 @@ var SearchState;
 var ClosedFolderState;
 
 /**
- * @typedef{{
+ * @typedef {{
  *   nodes: NodeList,
  *   selectedFolder: ?string,
  *   closedFolders: ClosedFolderState,
@@ -59,6 +61,26 @@ var BookmarksPageState;
 
 /** @typedef {{name: string}} */
 var Action;
+
+/**
+ * @record
+ */
+function BookmarkElement() {}
+
+/** @type {string} */
+BookmarkElement.itemId;
+
+/** @return {HTMLElement} */
+BookmarkElement.getDropTarget = function() {};
+
+/** @constructor */
+function DragData() {
+  /** @type {Array<BookmarkTreeNode>} */
+  this.elements = null;
+
+  /** @type {boolean} */
+  this.sameProfile = false;
+}
 
 /** @interface */
 function StoreObserver(){};

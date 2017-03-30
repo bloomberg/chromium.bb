@@ -14,6 +14,8 @@ cr.define('bookmarks', function() {
       this.observers_.push(client);
     },
 
+    init: function() {},
+
     removeObserver: function(client) {},
 
     isInitialized: function() {

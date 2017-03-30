@@ -27,6 +27,20 @@ MaterialBookmarksBrowserTest.prototype = {
   ]),
 };
 
+function MaterialBookmarksDNDManagerTest() {}
+
+MaterialBookmarksDNDManagerTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'dnd_manager_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksDNDManagerTest', 'All', function() {
+  mocha.run();
+});
+
 function MaterialBookmarksEditDialogTest() {}
 
 MaterialBookmarksEditDialogTest.prototype = {

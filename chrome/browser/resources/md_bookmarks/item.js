@@ -40,6 +40,7 @@ Polymer({
     'dblclick': 'onDblClick_',
   },
 
+  /** @override */
   attached: function() {
     this.watch('item_', function(store) {
       return store.nodes[this.itemId];
@@ -49,6 +50,11 @@ Polymer({
     }.bind(this));
 
     this.updateFromStore();
+  },
+
+  /** @return {BookmarksItemElement} */
+  getDropTarget: function() {
+    return this;
   },
 
   /**

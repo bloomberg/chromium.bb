@@ -38,6 +38,7 @@ Polymer({
     },
   },
 
+  /** @override */
   attached: function() {
     this.watch('item_', function(state) {
       return state.nodes[this.itemId];
@@ -50,6 +51,11 @@ Polymer({
     });
 
     this.updateFromStore();
+  },
+
+  /** @return {HTMLElement} */
+  getDropTarget: function() {
+    return this.$.container;
   },
 
   /**
@@ -91,11 +97,7 @@ Polymer({
    * @return {boolean}
    */
   hasChildFolder_: function() {
-    for (var i = 0; i < this.item_.children.length; i++) {
-      if (this.isFolder_(this.item_.children[i]))
-        return true;
-    }
-    return false;
+    return bookmarks.util.hasChildFolders(this.itemId, this.getState().nodes);
   },
 
   /** @private */
@@ -118,5 +120,13 @@ Polymer({
    */
   isFolder_: function(itemId) {
     return !this.getState().nodes[itemId].url;
-  }
+  },
+
+  /**
+   * @private
+   * @return {boolean}
+   */
+  isRootFolder_: function() {
+    return this.depth == 0;
+  },
 });

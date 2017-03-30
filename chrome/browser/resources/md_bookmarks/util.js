@@ -12,8 +12,8 @@ cr.define('bookmarks.util', function() {
    * @return {!Array<string>}
    */
   function getDisplayedList(state) {
-    if (state.selectedFolder)
-      return assert(state.nodes[state.selectedFolder].children);
+    if (!isShowingSearch(state))
+      return assert(state.nodes[assert(state.selectedFolder)].children);
 
     return state.search.results;
   }
@@ -67,9 +67,34 @@ cr.define('bookmarks.util', function() {
     };
   }
 
+  /**
+   * @param {BookmarksPageState} state
+   * @return boolean
+   */
+  function isShowingSearch(state) {
+    return !state.selectedFolder;
+  }
+
+  /**
+   * @param {string} id
+   * @param {NodeList} nodes
+   * @return {boolean}
+   */
+  function hasChildFolders(id, nodes) {
+    var children = nodes[id].children;
+    for (var i = 0; i < children.length; i++) {
+      if (nodes[children[i]].children)
+        return true;
+    }
+    return false;
+  }
+
   return {
     createEmptyState: createEmptyState,
     getDisplayedList: getDisplayedList,
+    hasChildFolders: hasChildFolders,
+    isShowingSearch: isShowingSearch,
     normalizeNodes: normalizeNodes,
+    ROOT_NODE_ID: '0',
   };
 });

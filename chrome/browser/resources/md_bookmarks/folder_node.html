@@ -36,6 +36,7 @@
             calc(var(--node-depth, 0) * var(--padding-start-per-depth));
         cursor: pointer;
         height: 40px;
+        position: relative;
       }
 
       #folder-label {
@@ -47,7 +48,7 @@
 
       :host([is-selected-folder_]) .menu-label,
       :host([is-selected-folder_]) #folder-label {
-        color: var(--folder-active-color);
+        color: var(--interactive-color);
       }
 
       iron-icon {
@@ -79,7 +80,8 @@
       }
     </style>
 
-    <div id="container" class="v-centered" on-tap="selectFolder_">
+    <div id="container" class="v-centered" on-tap="selectFolder_"
+        draggable="[[!isRootFolder_(depth)]]">
       <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
         <paper-icon-button id="arrow" icon="cr:arrow-drop-down"
             is-open$="[[!isClosed_]]" on-tap="toggleFolder_">

@@ -49,7 +49,7 @@
     </dialog>
     <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList_.length)]]">
       <template is="dom-repeat" items="[[displayedList_]]" as="id">
-        <bookmarks-item item-id="[[id]]">
+        <bookmarks-item item-id="[[id]]" draggable="true">
         </bookmarks-item>
       </template>
     </div>

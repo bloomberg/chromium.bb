@@ -23,6 +23,9 @@ Polymer({
   /** @private{?function(!Event)} */
   boundUpdateSidebarWidth_: null,
 
+  /** @private {bookmarks.DNDManager} */
+  dndManager_: null,
+
   /** @override */
   attached: function() {
     this.watch('searchTerm_', function(store) {
@@ -33,7 +36,8 @@ Polymer({
       var nodeList = bookmarks.util.normalizeNodes(results[0]);
       var initialState = bookmarks.util.createEmptyState();
       initialState.nodes = nodeList;
-      initialState.selectedFolder = nodeList['0'].children[0];
+      initialState.selectedFolder =
+          nodeList[bookmarks.util.ROOT_NODE_ID].children[0];
 
       bookmarks.Store.getInstance().init(initialState);
       bookmarks.ApiListener.init();
@@ -43,10 +47,14 @@ Polymer({
     this.boundUpdateSidebarWidth_ = this.updateSidebarWidth_.bind(this);
 
     this.initializeSplitter_();
+
+    this.dndManager_ = new bookmarks.DNDManager();
+    this.dndManager_.init();
   },
 
   detached: function() {
     window.removeEventListener('resize', this.boundUpdateSidebarWidth_);
+    this.dndManager_.destroy();
   },
 
   /**
