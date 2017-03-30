@@ -64,11 +64,14 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // presented or can't be parse, set to 0.
   int64_t total_bytes;
 
-  // The starting position of the request to save to the target file.
+  // The starting position of the initial request.
   // This value matches the offset in DownloadSaveInfo.
-  // TODO(xingliu): Remove this after we refactor DownloadJob to own
-  // DownloadFile.
+  // TODO(xingliu): Refactor to remove |offset| and |length|.
   int64_t offset;
+
+  // The length of the initial request.
+  // This value matches the length in DownloadSaveInfo.
+  int64_t length;
 
   // True if the download was initiated by user action.
   bool has_user_gesture;

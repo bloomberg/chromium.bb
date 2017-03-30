@@ -23,6 +23,7 @@ ParallelDownloadJob::ParallelDownloadJob(
     const DownloadCreateInfo& create_info)
     : DownloadJobImpl(download_item, std::move(request_handle)),
       initial_request_offset_(create_info.offset),
+      initial_request_length_(create_info.length),
       content_length_(create_info.total_bytes),
       requests_sent_(false),
       is_canceled_(false) {}
@@ -79,6 +80,9 @@ void ParallelDownloadJob::Resume(bool resume_request) {
 int ParallelDownloadJob::GetParallelRequestCount() const {
   return GetParallelRequestCountConfig();
 }
+int64_t ParallelDownloadJob::GetMinSliceSize() const {
+  return GetMinSliceSizeConfig();
+}
 
 bool ParallelDownloadJob::UsesParallelRequests() const {
   return true;
@@ -129,40 +133,57 @@ void ParallelDownloadJob::BuildParallelRequests() {
   // Get the next |kParallelRequestCount - 1| slices and fork
   // new requests. For the remaining slices, they will be handled once some
   // of the workers finish their job.
-  DownloadItem::ReceivedSlices slices_to_download;
-  if (download_item_->GetReceivedSlices().empty()) {
-    slices_to_download = FindSlicesForRemainingContent(
-        initial_request_offset_, content_length_, GetParallelRequestCount());
-  } else {
+  DownloadItem::ReceivedSlices slices_to_download =
+      FindSlicesToDownload(download_item_->GetReceivedSlices());
+
+  DCHECK(!slices_to_download.empty());
+  int64_t first_slice_offset = slices_to_download[0].offset;
+
+  if (initial_request_offset_ > first_slice_offset) {
+    DVLOG(kVerboseLevel) << "Initial request is after the first slice to"
+                            " download.";
+  }
+
+  // Create more slices for a new download. The initial request may generate
+  // a received slice. If there are holes before |initial_request_offset_|,
+  // don't create more slices.
+  if (slices_to_download.size() <= 1 &&
+      initial_request_length_ == DownloadSaveInfo::kLengthFullContent &&
+      initial_request_offset_ <= first_slice_offset) {
     // TODO(qinmin): Check the size of the last slice. If it is huge, we can
     // split it into N pieces and pass the last N-1 pieces to different workers.
     // Otherwise, just fork |slices_to_download.size()| number of workers.
-    slices_to_download =
-        FindSlicesToDownload(download_item_->GetReceivedSlices());
+    slices_to_download = FindSlicesForRemainingContent(
+        first_slice_offset,
+        content_length_ - first_slice_offset + initial_request_offset_,
+        GetParallelRequestCount(), GetMinSliceSize());
   }
 
-  if (slices_to_download.empty())
-    return;
-
-  DCHECK_EQ(slices_to_download[0].offset, initial_request_offset_);
+  DCHECK(!slices_to_download.empty());
   DCHECK_EQ(slices_to_download.back().received_bytes,
             DownloadSaveInfo::kLengthFullContent);
 
-  // Send requests, does not including the original request.
   ForkSubRequests(slices_to_download);
-
   requests_sent_ = true;
 }
 
 void ParallelDownloadJob::ForkSubRequests(
     const DownloadItem::ReceivedSlices& slices_to_download) {
-  if (slices_to_download.size() < 2)
-    return;
-
-  for (auto it = slices_to_download.begin() + 1; it != slices_to_download.end();
+  bool initial_request_skipped = false;
+  for (auto it = slices_to_download.begin(); it != slices_to_download.end();
        ++it) {
-    // received_bytes here is the bytes need to download.
-    CreateRequest(it->offset, it->received_bytes);
+    // Create requests for holes before the |initial_request_offset_|.
+    if (it->offset < initial_request_offset_) {
+      CreateRequest(it->offset, it->received_bytes);
+      continue;
+    }
+
+    // Assume the first slice to download after |initial_request_offset_| will
+    // be handled by the initial request.
+    if (initial_request_skipped)
+      CreateRequest(it->offset, it->received_bytes);
+    else
+      initial_request_skipped = true;
   }
 }
 

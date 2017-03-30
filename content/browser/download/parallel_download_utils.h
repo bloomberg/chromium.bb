@@ -17,12 +17,16 @@ namespace content {
 CONTENT_EXPORT bool ShouldUseParallelDownload(
     const DownloadCreateInfo& create_info);
 
-// Return the slices to download for the remaining content.
-// This function chunks the content into slices.
+// Chunks the content that starts from |current_offset|, into at most
+// std::max(|request_count|, 1) smaller slices.
+// Each slice contains at least |min_slice_size| bytes unless |total_length|
+// is less than |min_slice_size|.
+// The last slice is half opened.
 CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice>
-FindSlicesForRemainingContent(int64_t bytes_received,
-                              int64_t content_length,
-                              int request_count);
+FindSlicesForRemainingContent(int64_t current_offset,
+                              int64_t total_length,
+                              int request_count,
+                              int64_t min_slice_size);
 
 // Given an array of slices that are received, returns an array of slices to
 // download. |received_slices| must be ordered by offsets.

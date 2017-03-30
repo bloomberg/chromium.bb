@@ -88,7 +88,39 @@ TEST(ParallelDownloadUtilsTest, AddOrMergeReceivedSliceIntoSortedArray) {
   EXPECT_EQ(0, slices[0].offset);
   EXPECT_EQ(100, slices[0].received_bytes);
   EXPECT_EQ(slice4, slices[1]);
+}
 
+// Ensure the minimum slice size is correctly applied.
+TEST(ParallelDownloadUtilsTest, FindSlicesForRemainingContentMinSliceSize) {
+  // Minimum slice size is smaller than total length, only one slice returned.
+  DownloadItem::ReceivedSlices slices =
+      FindSlicesForRemainingContent(0, 100, 3, 150);
+  EXPECT_EQ(1u, slices.size());
+  EXPECT_EQ(0, slices[0].offset);
+  EXPECT_EQ(0, slices[0].received_bytes);
+
+  // Request count is large, the minimum slice size should limit the number of
+  // slices returned.
+  slices = FindSlicesForRemainingContent(0, 100, 33, 50);
+  EXPECT_EQ(2u, slices.size());
+  EXPECT_EQ(0, slices[0].offset);
+  EXPECT_EQ(50, slices[0].received_bytes);
+  EXPECT_EQ(50, slices[1].offset);
+  EXPECT_EQ(0, slices[1].received_bytes);
+
+  // Can chunk 2 slices under minimum slice size, but request count is only 1,
+  // request count should win.
+  slices = FindSlicesForRemainingContent(0, 100, 1, 50);
+  EXPECT_EQ(1u, slices.size());
+  EXPECT_EQ(0, slices[0].offset);
+  EXPECT_EQ(0, slices[0].received_bytes);
+
+  // A total 100 bytes data and a 51 bytes minimum slice size, only one slice is
+  // returned.
+  slices = FindSlicesForRemainingContent(0, 100, 3, 51);
+  EXPECT_EQ(1u, slices.size());
+  EXPECT_EQ(0, slices[0].offset);
+  EXPECT_EQ(0, slices[0].received_bytes);
 }
 
 }  // namespace content

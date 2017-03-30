@@ -63,28 +63,27 @@ bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
 }
 
 std::vector<DownloadItem::ReceivedSlice> FindSlicesForRemainingContent(
-    int64_t bytes_received,
-    int64_t content_length,
-    int request_count) {
-  std::vector<DownloadItem::ReceivedSlice> slices_to_download;
-  if (request_count <= 0)
-    return slices_to_download;
+    int64_t current_offset,
+    int64_t total_length,
+    int request_count,
+    int64_t min_slice_size) {
+  std::vector<DownloadItem::ReceivedSlice> new_slices;
 
-  // TODO(xingliu): Consider to use minimum size of a slice.
-  int64_t slice_size = content_length / request_count;
-  slice_size = slice_size > 0 ? slice_size : 1;
-  int64_t current_offset = bytes_received;
-  for (int i = 0, num_requests = content_length / slice_size;
-       i < num_requests - 1; ++i) {
-    slices_to_download.emplace_back(current_offset, slice_size);
-    current_offset += slice_size;
+  if (request_count > 0) {
+    int64_t slice_size =
+        std::max<int64_t>(total_length / request_count, min_slice_size);
+    slice_size = slice_size > 0 ? slice_size : 1;
+    for (int i = 0, num_requests = total_length / slice_size;
+         i < num_requests - 1; ++i) {
+      new_slices.emplace_back(current_offset, slice_size);
+      current_offset += slice_size;
+    }
   }
 
   // Last slice is a half open slice, which results in sending range request
   // like "Range:50-" to fetch from 50 bytes to the end of the file.
-  slices_to_download.emplace_back(current_offset,
-                                  DownloadSaveInfo::kLengthFullContent);
-  return slices_to_download;
+  new_slices.emplace_back(current_offset, DownloadSaveInfo::kLengthFullContent);
+  return new_slices;
 }
 
 std::vector<DownloadItem::ReceivedSlice> FindSlicesToDownload(

@@ -39,6 +39,7 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
  protected:
   // Virtual for testing.
   virtual int GetParallelRequestCount() const;
+  virtual int64_t GetMinSliceSize() const;
 
   using WorkerMap =
       std::unordered_map<int64_t, std::unique_ptr<DownloadWorker>>;
@@ -74,9 +75,12 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
 
   // Information about the initial request when download is started.
   int64_t initial_request_offset_;
+  int64_t initial_request_length_;
 
-  // The length of the response body of the original request. May be less than
-  // the size of the target file if the request starts from non-zero offset.
+  // The length of the response body of the original request.
+  // Used to estimate the remaining size of the content when the initial
+  // request is half open, i.e, |initial_request_length_| is
+  // DownloadSaveInfo::kLengthFullContent.
   int64_t content_length_;
 
   // Used to send parallel requests after a delay based on Finch config.
