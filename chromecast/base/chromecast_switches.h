@@ -51,12 +51,6 @@ extern const char kAlsaMuteDeviceName[];
 extern const char kAlsaMuteElementName[];
 extern const char kMaxOutputVolumeDba1m[];
 
-// Deprecated ALSA switches.
-extern const char kDeprecatedAlsaVolumeDeviceName[];
-extern const char kDeprecatedAlsaVolumeElementName[];
-extern const char kDeprecatedAlsaMuteDeviceName[];
-extern const char kDeprecatedAlsaMuteElementName[];
-
 // Memory pressure switches
 extern const char kMemPressureSystemReservedKb[];
 

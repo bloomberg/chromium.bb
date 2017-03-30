@@ -30,14 +30,6 @@ const char kAlsaDefaultDeviceName[] = "default";
 const char kAlsaDefaultVolumeElementName[] = "Master";
 const char kAlsaMuteMixerElementName[] = "Mute";
 
-std::string GetSwitchValue(const std::string& name,
-                           const std::string& deprecated_name) {
-  auto* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(name)
-             ? command_line->GetSwitchValueASCII(name)
-             : command_line->GetSwitchValueASCII(deprecated_name);
-}
-
 }  // namespace
 
 class AlsaVolumeControl::ScopedAlsaMixer {
@@ -78,8 +70,8 @@ class AlsaVolumeControl::ScopedAlsaMixer {
 // static
 std::string AlsaVolumeControl::GetVolumeElementName() {
   std::string mixer_element_name =
-      GetSwitchValue(switches::kAlsaVolumeElementName,
-                     switches::kDeprecatedAlsaVolumeElementName);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAlsaVolumeElementName);
   if (mixer_element_name.empty()) {
     mixer_element_name = kAlsaDefaultVolumeElementName;
   }
@@ -88,16 +80,15 @@ std::string AlsaVolumeControl::GetVolumeElementName() {
 
 // static
 std::string AlsaVolumeControl::GetVolumeDeviceName() {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
   std::string mixer_device_name =
-      GetSwitchValue(switches::kAlsaVolumeDeviceName,
-                     switches::kDeprecatedAlsaVolumeDeviceName);
+      command_line->GetSwitchValueASCII(switches::kAlsaVolumeDeviceName);
   if (!mixer_device_name.empty()) {
     return mixer_device_name;
   }
 
   // If the output device was overridden, then the mixer should default to
   // that device.
-  auto* command_line = base::CommandLine::ForCurrentProcess();
   mixer_device_name =
       command_line->GetSwitchValueASCII(switches::kAlsaOutputDevice);
   if (!mixer_device_name.empty()) {
@@ -116,8 +107,9 @@ std::string AlsaVolumeControl::GetMuteElementName(
     const std::string& mixer_element_name,
     const std::string& mute_device_name) {
   DCHECK(alsa);
-  std::string mute_element_name = GetSwitchValue(
-      switches::kAlsaMuteElementName, switches::kDeprecatedAlsaMuteElementName);
+  std::string mute_element_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAlsaMuteElementName);
   if (!mute_element_name.empty()) {
     return mute_element_name;
   }
@@ -147,8 +139,9 @@ std::string AlsaVolumeControl::GetMuteElementName(
 
 // static
 std::string AlsaVolumeControl::GetMuteDeviceName() {
-  std::string mute_device_name = GetSwitchValue(
-      switches::kAlsaMuteDeviceName, switches::kDeprecatedAlsaMuteDeviceName);
+  std::string mute_device_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAlsaMuteDeviceName);
   if (!mute_device_name.empty()) {
     return mute_device_name;
   }

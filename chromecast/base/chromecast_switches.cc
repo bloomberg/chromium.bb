@@ -91,30 +91,6 @@ const char kAlsaMuteDeviceName[] = "alsa-mute-device-name";
 // Calibrated max output volume dBa for voice content at 1 meter, if known.
 const char kMaxOutputVolumeDba1m[] = "max-output-volume-dba1m";
 
-// Name of the simple mixer control element that the ALSA-based media library
-// should use to control the volume.
-// DEPRECATED, prefer kAlsaVolumeElementName instead.
-const char kDeprecatedAlsaVolumeElementName[] =
-    "av-settings-alsa-mixer-element-name";
-
-// Name of the device the volume control mixer should be opened on. Will use the
-// same device as kAlsaOutputDevice and fall back to "default" if
-// kAlsaOutputDevice is not supplied.
-// DEPRECATED, prefer kAlsaVolumeDeviceName instead.
-const char kDeprecatedAlsaVolumeDeviceName[] =
-    "av-settings-alsa-mixer-card-name";
-
-// Name of the simple mixer control element that the ALSA-based media library
-// should use to mute the system.
-// DEPRECATED, prefer kAlsaMuteElementName instead.
-const char kDeprecatedAlsaMuteElementName[] =
-    "av-settings-alsa-mute-element-name";
-
-// Name of the device the mute mixer should be opened on. If this flag is not
-// specified it will default to the same device as kAlsaVolumeDeviceName.
-// DEPRECATED, prefer kAlsaMuteDeviceName instead.
-const char kDeprecatedAlsaMuteDeviceName[] = "av-settings-alsa-mute-card-name";
-
 // Some platforms typically have very little 'free' memory, but plenty is
 // available in buffers+cached.  For such platforms, configure this amount
 // as the portion of buffers+cached memory that should be treated as
