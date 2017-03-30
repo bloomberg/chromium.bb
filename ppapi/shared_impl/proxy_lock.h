@@ -191,12 +191,6 @@ class RunWhileLockedHelper<void()> {
     // is destroyed on the same thread (see the comments in the destructor).
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
-
-    // Relax the cross-thread access restriction to non-thread-safe RefCount.
-    // |lock| above protects the access to Resource instances.
-    base::ScopedAllowCrossThreadRefCountAccess
-        allow_cross_thread_ref_count_access;
-
     {
       // Use a scope and local Callback to ensure that the callback is cleared
       // before the lock is released, even in the unlikely event that Run()
@@ -228,12 +222,6 @@ class RunWhileLockedHelper<void()> {
       //   call the ResourceTracker and also the Resource's destructor, which
       //   both require the ProxyLock.
       ProxyAutoLock lock;
-
-      // Relax the cross-thread access restriction to non-thread-safe RefCount.
-      // |lock| above protects the access to Resource instances.
-      base::ScopedAllowCrossThreadRefCountAccess
-          allow_cross_thread_ref_count_access;
-
       callback_.reset();
     }
   }
@@ -258,10 +246,6 @@ class RunWhileLockedHelper<void(P1)> {
                               P1 p1) {
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
-    // Relax the cross-thread access restriction to non-thread-safe RefCount.
-    // |lock| above protects the access to Resource instances.
-    base::ScopedAllowCrossThreadRefCountAccess
-        allow_cross_thread_ref_count_access;
     {
       std::unique_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run(p1);
@@ -271,10 +255,6 @@ class RunWhileLockedHelper<void(P1)> {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (callback_) {
       ProxyAutoLock lock;
-      // Relax the cross-thread access restriction to non-thread-safe RefCount.
-      // |lock| above protects the access to Resource instances.
-      base::ScopedAllowCrossThreadRefCountAccess
-          allow_cross_thread_ref_count_access;
       callback_.reset();
     }
   }
@@ -298,10 +278,6 @@ class RunWhileLockedHelper<void(P1, P2)> {
                               P2 p2) {
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
-    // Relax the cross-thread access restriction to non-thread-safe RefCount.
-    // |lock| above protects the access to Resource instances.
-    base::ScopedAllowCrossThreadRefCountAccess
-        allow_cross_thread_ref_count_access;
     {
       std::unique_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run(p1, p2);
@@ -311,10 +287,6 @@ class RunWhileLockedHelper<void(P1, P2)> {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (callback_) {
       ProxyAutoLock lock;
-      // Relax the cross-thread access restriction to non-thread-safe RefCount.
-      // |lock| above protects the access to Resource instances.
-      base::ScopedAllowCrossThreadRefCountAccess
-          allow_cross_thread_ref_count_access;
       callback_.reset();
     }
   }
@@ -339,10 +311,6 @@ class RunWhileLockedHelper<void(P1, P2, P3)> {
                               P3 p3) {
     DCHECK(ptr->thread_checker_.CalledOnValidThread());
     ProxyAutoLock lock;
-    // Relax the cross-thread access restriction to non-thread-safe RefCount.
-    // |lock| above protects the access to Resource instances.
-    base::ScopedAllowCrossThreadRefCountAccess
-        allow_cross_thread_ref_count_access;
     {
       std::unique_ptr<CallbackType> temp_callback(std::move(ptr->callback_));
       temp_callback->Run(p1, p2, p3);
@@ -352,10 +320,6 @@ class RunWhileLockedHelper<void(P1, P2, P3)> {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (callback_) {
       ProxyAutoLock lock;
-      // Relax the cross-thread access restriction to non-thread-safe RefCount.
-      // |lock| above protects the access to Resource instances.
-      base::ScopedAllowCrossThreadRefCountAccess
-          allow_cross_thread_ref_count_access;
       callback_.reset();
     }
   }

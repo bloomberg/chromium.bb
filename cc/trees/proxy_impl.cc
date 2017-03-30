@@ -495,12 +495,6 @@ void ProxyImpl::ScheduledActionCommit() {
   DCHECK(IsMainThreadBlocked());
   DCHECK(commit_completion_event_);
 
-  // Relax the cross-thread access restriction to non-thread-safe RefCount.
-  // It's safe since the main thread is blocked while a main-thread-bound
-  // compositor stuff are accessed from the impl thread.
-  base::ScopedAllowCrossThreadRefCountAccess
-      allow_cross_thread_ref_count_access;
-
   layer_tree_host_impl_->BeginCommit();
   blocked_main_commit().layer_tree_host->FinishCommitOnImplThread(
       layer_tree_host_impl_.get());

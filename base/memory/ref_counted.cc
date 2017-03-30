@@ -3,17 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/memory/ref_counted.h"
-
 #include "base/threading/thread_collision_warner.h"
 
 namespace base {
-namespace {
-
-#if DCHECK_IS_ON()
-AtomicRefCount g_cross_thread_ref_count_access_allow_count = 0;
-#endif
-
-}  // namespace
 
 namespace subtle {
 
@@ -51,23 +43,6 @@ bool RefCountedThreadSafeBase::Release() const {
   return false;
 }
 
-#if DCHECK_IS_ON()
-bool RefCountedBase::CalledOnValidSequence() const {
-  return sequence_checker_.CalledOnValidSequence() ||
-         !AtomicRefCountIsZero(&g_cross_thread_ref_count_access_allow_count);
-}
-#endif
-
 }  // namespace subtle
-
-#if DCHECK_IS_ON()
-ScopedAllowCrossThreadRefCountAccess::ScopedAllowCrossThreadRefCountAccess() {
-  AtomicRefCountInc(&g_cross_thread_ref_count_access_allow_count);
-}
-
-ScopedAllowCrossThreadRefCountAccess::~ScopedAllowCrossThreadRefCountAccess() {
-  AtomicRefCountDec(&g_cross_thread_ref_count_access_allow_count);
-}
-#endif
 
 }  // namespace base

@@ -195,10 +195,6 @@ bool MailboxManagerSync::UsesSync() {
 
 Texture* MailboxManagerSync::ConsumeTexture(const Mailbox& mailbox) {
   base::AutoLock lock(g_lock.Get());
-  // Relax the cross-thread access restriction to non-thread-safe RefCount.
-  // The lock above protects non-thread-safe RefCount in TextureGroup.
-  base::ScopedAllowCrossThreadRefCountAccess
-      scoped_allow_cross_thread_ref_count_access;
   TextureGroup* group = TextureGroup::FromName(mailbox);
   if (!group)
     return NULL;
@@ -226,10 +222,6 @@ Texture* MailboxManagerSync::ConsumeTexture(const Mailbox& mailbox) {
 void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
                                         TextureBase* texture_base) {
   base::AutoLock lock(g_lock.Get());
-  // Relax the cross-thread access restriction to non-thread-safe RefCount.
-  // The lock above protects non-thread-safe RefCount in TextureGroup.
-  base::ScopedAllowCrossThreadRefCountAccess
-      scoped_allow_cross_thread_ref_count_access;
 
   Texture* texture = static_cast<Texture*>(texture_base);
   DCHECK(texture != nullptr);
@@ -277,10 +269,6 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
 
 void MailboxManagerSync::TextureDeleted(TextureBase* texture_base) {
   base::AutoLock lock(g_lock.Get());
-  // Relax the cross-thread access restriction to non-thread-safe RefCount.
-  // The lock above protects non-thread-safe RefCount in TextureGroup.
-  base::ScopedAllowCrossThreadRefCountAccess
-      scoped_allow_cross_thread_ref_count_access;
 
   Texture* texture = static_cast<Texture*>(texture_base);
   DCHECK(texture != nullptr);
@@ -328,10 +316,6 @@ void MailboxManagerSync::UpdateDefinitionLocked(TextureBase* texture_base,
 
 void MailboxManagerSync::PushTextureUpdates(const SyncToken& token) {
   base::AutoLock lock(g_lock.Get());
-  // Relax the cross-thread access restriction to non-thread-safe RefCount.
-  // The lock above protects non-thread-safe RefCount in TextureGroup.
-  base::ScopedAllowCrossThreadRefCountAccess
-      scoped_allow_cross_thread_ref_count_access;
 
   for (TextureToGroupMap::iterator it = texture_to_group_.begin();
        it != texture_to_group_.end(); it++) {
@@ -345,10 +329,6 @@ void MailboxManagerSync::PullTextureUpdates(const SyncToken& token) {
   std::vector<TextureUpdatePair> needs_update;
   {
     base::AutoLock lock(g_lock.Get());
-    // Relax the cross-thread access restriction to non-thread-safe RefCount.
-    // The lock above protects non-thread-safe RefCount in TextureGroup.
-    base::ScopedAllowCrossThreadRefCountAccess
-        scoped_allow_cross_thread_ref_count_access;
     AcquireFenceLocked(token);
 
     for (TextureToGroupMap::iterator it = texture_to_group_.begin();
