@@ -37,7 +37,6 @@ std::string PathWithoutParams(const std::string& path) {
 }
 
 const char kRemoteBase[] = "http://localhost:8080/";
-const char kRemoteBaseAlt[] = "https://jcarpenter.github.io/hoverboard-ui/";
 const char kRemoteDefaultPath[] = "vr_shell_ui.html";
 const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
@@ -101,14 +100,13 @@ class RemoteDataSource : public content::URLDataSource,
 
   using PendingRequestsMap = std::map<const net::URLFetcher*, GotDataCallback>;
   PendingRequestsMap pending_;
-  bool use_localhost_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDataSource);
 };
 
 RemoteDataSource::RemoteDataSource(
     net::URLRequestContextGetter* request_context)
-    : request_context_(request_context), use_localhost_(true) {}
+    : request_context_(request_context) {}
 
 RemoteDataSource::~RemoteDataSource() {
   for (const auto& pair : pending_) {
@@ -126,7 +124,7 @@ void RemoteDataSource::StartDataRequest(
     const std::string& path,
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
-  GURL url = GURL((use_localhost_ ? kRemoteBase : kRemoteBaseAlt) +
+  GURL url = GURL(kRemoteBase +
                   (path.empty() ? std::string(kRemoteDefaultPath) : path));
   if (!url.is_valid()) {
     callback.Run(
@@ -165,21 +163,8 @@ void RemoteDataSource::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(it != pending_.end());
   std::string response;
   source->GetResponseAsString(&response);
-
-  if (response.empty() && use_localhost_) {
-    if (source->GetOriginalURL().path().substr(1) == kRemoteDefaultPath) {
-      // Failed to request default page from local host, try request default
-      // page from remote server. Empty string indicates default page.
-      use_localhost_ = false;
-      content::URLDataSource::GotDataCallback callback = it->second;
-      StartDataRequest(std::string(),
-                       content::ResourceRequestInfo::WebContentsGetter(),
-                       callback);
-    }
-  } else {
-    it->second.Run(base::RefCountedString::TakeString(&response));
-  }
   delete source;
+  it->second.Run(base::RefCountedString::TakeString(&response));
   pending_.erase(it);
 }
 #else
