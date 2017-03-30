@@ -70,6 +70,15 @@ Polymer({
   },
 
   /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeypress_: function(e) {
+    if (e.key == 'Enter' && !this.$.actionButton.disabled)
+      this.onActionButtonTap_();
+  },
+
+  /**
    * Handler for tapping the show/hide button. Will fire an event to request the
    * password for this login pair.
    * @private
@@ -82,19 +91,10 @@ Polymer({
   },
 
   /**
-   * Handler for tapping the 'cancel' button. Should just dismiss the dialog.
+   * Handler for tapping the 'done' button. Should just dismiss the dialog.
    * @private
    */
-  onCancelButtonTap_: function() {
-    this.close();
-  },
-
-  /**
-   * Handler for tapping the save button.
-   * @private
-   */
-  onSaveButtonTap_: function() {
-    // TODO(hcarmona): what to save?
+  onActionButtonTap_: function() {
     this.close();
   },
 });
