@@ -10,5 +10,11 @@
     font-family: variabletest_box, sans-serif;
     font-size: 200px;
     }
+
+    /* Set a dummy value to trigger going
+     * through the font varitions code path. */
+    .ref_up {
+    font-variation-settings: "none" 0;
+    }
 </style>
-▄ ▀
+▄ <span class="ref_up">▀</span>

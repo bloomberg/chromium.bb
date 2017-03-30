@@ -40,13 +40,16 @@
 #include "platform/fonts/opentype/FontSettings.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#if OS(WIN)
+#include "third_party/skia/include/ports/SkFontMgr_empty.h"
+#endif
 #include "wtf/PtrUtil.h"
 
 namespace blink {
 
 FontCustomPlatformData::FontCustomPlatformData(sk_sp<SkTypeface> typeface,
                                                size_t dataSize)
-    : m_baseTypeface(typeface), m_dataSize(dataSize) {}
+    : m_baseTypeface(std::move(typeface)), m_dataSize(dataSize) {}
 
 FontCustomPlatformData::~FontCustomPlatformData() {}
 
@@ -67,7 +70,11 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(
   // reasonable upper limit and leaving the deduplication for TODO(drott),
   // crbug.com/674878 second duplicate value should supersede first..
   if (variationSettings && variationSettings->size() < UINT16_MAX) {
+#if OS(WIN)
+    sk_sp<SkFontMgr> fm(SkFontMgr_New_Custom_Empty());
+#else
     sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
+#endif
     Vector<SkFontMgr::FontParameters::Axis, 0> axes;
     axes.reserveCapacity(variationSettings->size());
     for (size_t i = 0; i < variationSettings->size(); ++i) {
