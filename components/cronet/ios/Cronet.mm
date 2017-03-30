@@ -41,7 +41,8 @@ NSString* gUserAgent = nil;
 BOOL gUserAgentPartial = NO;
 NSString* gSslKeyLogFileName = nil;
 RequestFilterBlock gRequestFilterBlock = nil;
-std::unique_ptr<CronetHttpProtocolHandlerDelegate> gHttpProtocolHandlerDelegate;
+base::LazyInstance<std::unique_ptr<CronetHttpProtocolHandlerDelegate>>::Leaky
+    gHttpProtocolHandlerDelegate = LAZY_INSTANCE_INITIALIZER;
 NSURLCache* gPreservedSharedURLCache = nil;
 BOOL gEnableTestCertVerifierForTesting = FALSE;
 NSString* gAcceptLanguages = nil;
@@ -196,8 +197,8 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 + (void)setRequestFilterBlock:(RequestFilterBlock)block {
-  if (gHttpProtocolHandlerDelegate.get())
-    gHttpProtocolHandlerDelegate.get()->SetRequestFilterBlock(block);
+  if (gHttpProtocolHandlerDelegate.Get().get())
+    gHttpProtocolHandlerDelegate.Get().get()->SetRequestFilterBlock(block);
   else
     gRequestFilterBlock = block;
 }
@@ -222,10 +223,11 @@ class CronetHttpProtocolHandlerDelegate
 
   [self configureCronetEnvironmentForTesting:gChromeNet.Get().get()];
   gChromeNet.Get()->Start();
-  gHttpProtocolHandlerDelegate.reset(new CronetHttpProtocolHandlerDelegate(
-      gChromeNet.Get()->GetURLRequestContextGetter(), gRequestFilterBlock));
+  gHttpProtocolHandlerDelegate.Get().reset(
+      new CronetHttpProtocolHandlerDelegate(
+          gChromeNet.Get()->GetURLRequestContextGetter(), gRequestFilterBlock));
   net::HTTPProtocolHandlerDelegate::SetInstance(
-      gHttpProtocolHandlerDelegate.get());
+      gHttpProtocolHandlerDelegate.Get().get());
   gRequestFilterBlock = nil;
 }
 
