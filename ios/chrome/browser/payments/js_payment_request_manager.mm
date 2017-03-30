@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/payments/core/payment_address.h"

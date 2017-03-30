@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -22,14 +23,21 @@
 #error "This file requires ARC support."
 #endif
 
-typedef PlatformTest PaymentItemsDisplayCoordinatorTest;
+class PaymentRequestPaymentItemsDisplayCoordinatorTest : public PlatformTest {
+ protected:
+  PaymentRequestPaymentItemsDisplayCoordinatorTest() {
+    payment_request_ = base::MakeUnique<PaymentRequest>(
+        payment_request_test_util::CreateTestWebPaymentRequest(),
+        &personal_data_manager_);
+  }
+
+  autofill::TestPersonalDataManager personal_data_manager_;
+  std::unique_ptr<PaymentRequest> payment_request_;
+};
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
 // the payment items display view controller, respectively.
-TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
-  std::unique_ptr<PaymentRequest> payment_request =
-      payment_request_test_util::CreateTestPaymentRequest();
-
+TEST_F(PaymentRequestPaymentItemsDisplayCoordinatorTest, StartAndStop) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
       [[UINavigationController alloc]
@@ -38,7 +46,7 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
   PaymentItemsDisplayCoordinator* coordinator =
       [[PaymentItemsDisplayCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request.get()];
+  [coordinator setPaymentRequest:payment_request_.get()];
 
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
 
@@ -56,10 +64,7 @@ TEST(PaymentItemsDisplayCoordinatorTest, StartAndStop) {
 // Tests that calling the view controller delegate method which notifies the
 // coordinator that the user has confirmed the payment request invokes the
 // corresponding coordinator delegate method.
-TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
-  std::unique_ptr<PaymentRequest> payment_request =
-      payment_request_test_util::CreateTestPaymentRequest();
-
+TEST_F(PaymentRequestPaymentItemsDisplayCoordinatorTest, DidConfirm) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
       [[UINavigationController alloc]
@@ -68,7 +73,7 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
   PaymentItemsDisplayCoordinator* coordinator =
       [[PaymentItemsDisplayCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request.get()];
+  [coordinator setPaymentRequest:payment_request_.get()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject
@@ -95,10 +100,7 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidConfirm) {
 // Tests that calling the view controller delegate method which notifies the
 // coordinator that the user has chosen to return to the previous screen invokes
 // the corresponding coordinator delegate method.
-TEST(PaymentItemsDisplayCoordinatorTest, DidReturn) {
-  std::unique_ptr<PaymentRequest> payment_request =
-      payment_request_test_util::CreateTestPaymentRequest();
-
+TEST_F(PaymentRequestPaymentItemsDisplayCoordinatorTest, DidReturn) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   UINavigationController* navigation_controller =
       [[UINavigationController alloc]
@@ -107,7 +109,7 @@ TEST(PaymentItemsDisplayCoordinatorTest, DidReturn) {
   PaymentItemsDisplayCoordinator* coordinator =
       [[PaymentItemsDisplayCoordinator alloc]
           initWithBaseViewController:base_view_controller];
-  [coordinator setPaymentRequest:payment_request.get()];
+  [coordinator setPaymentRequest:payment_request_.get()];
 
   // Mock the coordinator delegate.
   id delegate = [OCMockObject

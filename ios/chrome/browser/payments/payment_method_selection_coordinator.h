@@ -10,11 +10,12 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/payment_method_selection_view_controller.h"
-#include "ios/chrome/browser/payments/payment_request.h"
+
+class PaymentRequest;
 
 namespace autofill {
 class CreditCard;
-}
+}  // namespace autofill
 
 @class PaymentMethodSelectionCoordinator;
 
@@ -39,9 +40,9 @@ class CreditCard;
 @interface PaymentMethodSelectionCoordinator
     : ChromeCoordinator<PaymentMethodSelectionViewControllerDelegate>
 
-// The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This pointer is not
-// owned by this class and should outlive it.
+// The PaymentRequest object having a copy of web::PaymentRequest as provided by
+// the page invoking the Payment Request API. This pointer is not owned by this
+// class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects a payment method or returns

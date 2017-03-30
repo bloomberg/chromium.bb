@@ -9,11 +9,11 @@
 
 namespace ios {
 class ChromeBrowserState;
-}
+}  // namespace ios
 
 namespace web {
 class WebState;
-}
+}  // namespace web
 
 // Manager for handling invocations of the Payment Request API.
 //

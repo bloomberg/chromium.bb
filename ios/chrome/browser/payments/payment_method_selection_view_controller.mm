@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#include "ios/web/public/payments/payment_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -50,9 +51,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface PaymentMethodSelectionViewController ()<
     PaymentMethodSelectionViewControllerActions> {
-  // The PaymentRequest object owning an instance of web::PaymentRequest as
-  // provided by the page invoking the Payment Request API. This is a weak
-  // pointer and should outlive this class.
+  // The PaymentRequest object having a copy of web::PaymentRequest as provided
+  // by the page invoking the Payment Request API. This is a weak pointer and
+  // should outlive this class.
   PaymentRequest* _paymentRequest;
 
   // The currently selected item. May be nil.

@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/payments/payment_items_display_view_controller_actions.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -50,9 +51,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     PaymentItemsDisplayViewControllerActions> {
   MDCFlatButton* _payButton;
 
-  // The PaymentRequest object owning an instance of web::PaymentRequest as
-  // provided by the page invoking the Payment Request API. This is a weak
-  // pointer and should outlive this class.
+  // The PaymentRequest object having a copy of web::PaymentRequest as provided
+  // by the page invoking the Payment Request API. This is a weak pointer and
+  // should outlive this class.
   PaymentRequest* _paymentRequest;
 }
 

@@ -11,12 +11,12 @@
 
 namespace payments {
 struct PaymentAddress;
-}
+}  // namespace payments
 
 namespace web {
 class PaymentResponse;
 class PaymentShippingOption;
-}
+}  // namespace web
 
 // Injects the JavaScript that implements the Payment Request API and provides
 // an app-side interface for interacting with it.

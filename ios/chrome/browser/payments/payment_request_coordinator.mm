@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -172,10 +172,15 @@ class FullCardRequester
   [[_navigationController presentingViewController]
       dismissViewControllerAnimated:YES
                          completion:nil];
+  [_itemsDisplayCoordinator stop];
   _itemsDisplayCoordinator = nil;
+  [_shippingAddressSelectionCoordinator stop];
   _shippingAddressSelectionCoordinator = nil;
+  [_shippingOptionSelectionCoordinator stop];
   _shippingOptionSelectionCoordinator = nil;
+  [_methodSelectionCoordinator stop];
   _methodSelectionCoordinator = nil;
+  [_errorCoordinator stop];
   _errorCoordinator = nil;
   _viewController = nil;
   _navigationController = nil;

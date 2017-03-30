@@ -15,7 +15,7 @@
 namespace {
 
 // Tests that the labels are set properly after a call to |configureCell:|.
-TEST(AutofillProfileItemTest, TextLabels) {
+TEST(PaymentRequestAutofillProfileItemTest, TextLabels) {
   AutofillProfileItem* item = [[AutofillProfileItem alloc] initWithType:0];
 
   NSString* name = @"Jon Doe";

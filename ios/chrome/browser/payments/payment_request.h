@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "ios/web/public/payments/payment_request.h"
 
 namespace autofill {
@@ -21,27 +20,26 @@ namespace payments {
 class CurrencyFormatter;
 }  // namespace payments
 
-// Owns an instance of web::PaymentRequest as provided by the page invoking the
+// Has a copy of web::PaymentRequest as provided by the page invoking the
 // PaymentRequest API. Also caches credit cards and addresses provided by the
 // |personal_data_manager| and manages shared resources and user selections for
-// the current PaymentRequest flow. It takes ownership of |web_payment_request|
-// and must be initialized with a non-null instance of |personal_data_manager|
-// that outlives this class.
+// the current PaymentRequest flow. It must be initialized with a non-null
+// instance of |personal_data_manager| that outlives this class.
 class PaymentRequest {
  public:
   // |personal_data_manager| should not be null and should outlive this object.
-  PaymentRequest(std::unique_ptr<web::PaymentRequest> web_payment_request,
+  PaymentRequest(const web::PaymentRequest& web_payment_request,
                  autofill::PersonalDataManager* personal_data_manager);
   ~PaymentRequest();
 
   // Returns the payment details from |web_payment_request_|.
   const web::PaymentDetails& payment_details() const {
-    return web_payment_request_->details;
+    return web_payment_request_.details;
   }
 
   // Returns the payment options from |web_payment_request_|.
   const web::PaymentOptions& payment_options() const {
-    return web_payment_request_->options;
+    return web_payment_request_.options;
   }
 
   // Updates the payment details of the |web_payment_request_|. It also updates
@@ -99,7 +97,7 @@ class PaymentRequest {
   }
 
   // Adds |credit_card| to the list of cached credit cards.
-  void AddCreditCard(std::unique_ptr<autofill::CreditCard> credit_card);
+  void AddCreditCard(const autofill::CreditCard& credit_card);
 
   // Returns the available autofill credit cards for this user that match a
   // supported type specified in |web_payment_request_|.
@@ -144,8 +142,8 @@ class PaymentRequest {
   void PopulateShippingOptionCache();
 
   // The web::PaymentRequest object as provided by the page invoking the Payment
-  // Request API, owned by this PaymentRequest.
-  std::unique_ptr<web::PaymentRequest> web_payment_request_;
+  // Request API, owned by this object.
+  web::PaymentRequest web_payment_request_;
 
   // Never null and outlives this object.
   autofill::PersonalDataManager* personal_data_manager_;
@@ -155,9 +153,9 @@ class PaymentRequest {
 
   // Profiles returned by the Data Manager may change due to (e.g.) sync events,
   // meaning PaymentRequest may outlive them. Therefore, profiles are fetched
-  // once and owned here. Whenever profiles are requested a vector of pointers
-  // to these copies are returned.
-  std::vector<std::unique_ptr<autofill::AutofillProfile>> profile_cache_;
+  // once and their copies are cached here. Whenever profiles are requested a
+  // vector of pointers to these copies are returned.
+  std::vector<autofill::AutofillProfile> profile_cache_;
 
   std::vector<autofill::AutofillProfile*> shipping_profiles_;
   autofill::AutofillProfile* selected_shipping_profile_;
@@ -167,9 +165,9 @@ class PaymentRequest {
 
   // Credit cards returnd by the Data Manager may change due to (e.g.)
   // sync events, meaning PaymentRequest may outlive them. Therefore, credit
-  // cards are fetched once and owned here. Whenever credit cards are requested
-  // a vector of pointers to these copies are returned.
-  std::vector<std::unique_ptr<autofill::CreditCard>> credit_card_cache_;
+  // cards are fetched once and their copies are cached here. Whenever credit
+  // cards are requested a vector of pointers to these copies are returned.
+  std::vector<autofill::CreditCard> credit_card_cache_;
 
   std::vector<autofill::CreditCard*> credit_cards_;
   autofill::CreditCard* selected_credit_card_;

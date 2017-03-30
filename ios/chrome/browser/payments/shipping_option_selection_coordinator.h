@@ -9,9 +9,13 @@
 #include <vector>
 
 #import "ios/chrome/browser/chrome_coordinator.h"
-#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_view_controller.h"
-#include "ios/web/public/payments/payment_request.h"
+
+class PaymentRequest;
+
+namespace web {
+class PaymentShippingOption;
+}  // namespace web
 
 @class ShippingOptionSelectionCoordinator;
 
@@ -37,9 +41,9 @@
 @interface ShippingOptionSelectionCoordinator
     : ChromeCoordinator<ShippingOptionSelectionViewControllerDelegate>
 
-// The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This pointer is not
-// owned by this class and should outlive it.
+// The PaymentRequest object having a copy of web::PaymentRequest as provided by
+// the page invoking the Payment Request API. This pointer is not owned by this
+// class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects a shipping option or

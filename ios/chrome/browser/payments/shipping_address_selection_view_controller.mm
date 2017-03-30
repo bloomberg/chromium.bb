@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/application_context.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
@@ -57,9 +58,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface ShippingAddressSelectionViewController ()<
     ShippingAddressSelectionViewControllerActions> {
-  // The PaymentRequest object owning an instance of web::PaymentRequest as
-  // provided by the page invoking the Payment Request API. This is a weak
-  // pointer and should outlive this class.
+  // The PaymentRequest object having a copy of web::PaymentRequest as provided
+  // by the page invoking the Payment Request API. This is a weak pointer and
+  // should outlive this class.
   PaymentRequest* _paymentRequest;
 
   // The currently selected item. May be nil.

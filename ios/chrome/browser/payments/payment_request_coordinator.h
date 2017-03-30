@@ -8,23 +8,34 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "base/strings/string16.h"
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/payment_items_display_coordinator.h"
 #import "ios/chrome/browser/payments/payment_method_selection_coordinator.h"
-#include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_error_coordinator.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
 
+class PaymentRequest;
+
+namespace autofill {
+class AutofillManager;
+}  // namespace autofill
+
 namespace ios {
 class ChromeBrowserState;
-}
+}  // namespace ios
 
 namespace payments {
 struct PaymentAddress;
-}
+}  // namespace payments
+
+namespace web {
+class PaymentDetails;
+class PaymentShippingOption;
+class PaymentResponse;
+}  // namespace web
 
 @class PaymentRequestCoordinator;
 
@@ -60,9 +71,9 @@ struct PaymentAddress;
                         ShippingAddressSelectionCoordinatorDelegate,
                         ShippingOptionSelectionCoordinatorDelegate>
 
-// The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This pointer is not
-// owned by this class and should outlive it.
+// The PaymentRequest object having a copy of web::PaymentRequest as provided by
+// the page invoking the Payment Request API. This pointer is not owned by this
+// class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // An instance of autofill::AutofillManager used for credit card unmasking. This

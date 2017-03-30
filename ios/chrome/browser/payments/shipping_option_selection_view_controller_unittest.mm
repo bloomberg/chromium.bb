@@ -22,19 +22,13 @@
 #error "This file requires ARC support."
 #endif
 
-class ShippingOptionSelectionViewControllerTest
+class PaymentRequestShippingOptionSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    personal_data_manager_ =
-        base::MakeUnique<autofill::TestPersonalDataManager>();
-
-    web::PaymentRequest web_payment_request =
-        payment_request_test_util::CreateTestWebPaymentRequest();
-
     payment_request_ = base::MakeUnique<PaymentRequest>(
-        base::MakeUnique<web::PaymentRequest>(web_payment_request),
-        personal_data_manager_.get());
+        payment_request_test_util::CreateTestWebPaymentRequest(),
+        &personal_data_manager_);
 
     return [[ShippingOptionSelectionViewController alloc]
         initWithPaymentRequest:payment_request_.get()];
@@ -46,13 +40,13 @@ class ShippingOptionSelectionViewControllerTest
         controller());
   }
 
-  std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
+  autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
 };
 
 // Tests that the correct number of items are displayed after loading the model
 // and that the correct item appears to be selected.
-TEST_F(ShippingOptionSelectionViewControllerTest, TestModel) {
+TEST_F(PaymentRequestShippingOptionSelectionViewControllerTest, TestModel) {
   CreateController();
   CheckController();
   CheckTitleWithId(IDS_PAYMENTS_SHIPPING_OPTION_LABEL);

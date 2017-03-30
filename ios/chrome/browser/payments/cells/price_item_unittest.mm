@@ -15,7 +15,7 @@
 namespace {
 
 // Tests that the labels are set properly after a call to |configureCell:|.
-TEST(PriceItemTest, TextLabels) {
+TEST(PaymentRequestPriceItemTest, TextLabels) {
   PriceItem* priceItem = [[PriceItem alloc] initWithType:0];
 
   NSString* item = @"Total";
@@ -41,7 +41,7 @@ TEST(PriceItemTest, TextLabels) {
 }
 
 // Tests that the labels are provided with the correct amount of space.
-TEST(PriceItemTest, TextLabelTargetWidths) {
+TEST(PaymentRequestPriceItemTest, TextLabelTargetWidths) {
   // Make the cell 164 wide so that after allocating 4 * kHorizontalPadding (16)
   // space for the margins and area between the labels, there is 100 available.
   // Accordingly, in each of the cases below where the sum of the desired label

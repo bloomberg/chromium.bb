@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/payments/cells/page_info_item.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/cells/price_item.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/payments/payment_request_view_controller_actions.h"
 #import "ios/chrome/browser/ui/autofill/cells/status_item.h"
@@ -35,6 +36,7 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#include "ios/web/public/payments/payment_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -92,9 +94,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIBarButtonItem* _cancelButton;
   MDCFlatButton* _payButton;
 
-  // The PaymentRequest object owning an instance of web::PaymentRequest as
-  // provided by the page invoking the Payment Request API. This is a weak
-  // pointer and should outlive this class.
+  // The PaymentRequest object having a copy of web::PaymentRequest as provided
+  // by the page invoking the Payment Request API. This is a weak pointer and
+  // should outlive this class.
   PaymentRequest* _paymentRequest;
 
   __weak PriceItem* _paymentSummaryItem;

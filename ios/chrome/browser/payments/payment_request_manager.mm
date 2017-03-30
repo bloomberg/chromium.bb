@@ -58,7 +58,7 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   // PersonalDataManager used to manage user credit cards and addresses.
   autofill::PersonalDataManager* _personalDataManager;
 
-  // Object that owns an instance of web::PaymentRequest as provided by the page
+  // Object that has a copy of web::PaymentRequest as provided by the page
   // invoking the PaymentRequest API. Also caches credit cards and addresses
   // provided by the _personalDataManager and manages selected ones for the
   // current PaymentRequest flow.
@@ -326,19 +326,18 @@ const NSTimeInterval kTimeoutInterval = 60.0;
   //   if the intersection is empty.
 
   const base::DictionaryValue* paymentRequestData;
-  web::PaymentRequest paymentRequest;
+  web::PaymentRequest webPaymentRequest;
   if (!message.GetDictionary("payment_request", &paymentRequestData)) {
     DLOG(ERROR) << "JS message parameter 'payment_request' is missing";
     return NO;
   }
-  if (!paymentRequest.FromDictionaryValue(*paymentRequestData)) {
+  if (!webPaymentRequest.FromDictionaryValue(*paymentRequestData)) {
     DLOG(ERROR) << "JS message parameter 'payment_request' is invalid";
     return NO;
   }
 
-  _paymentRequest.reset(
-      new PaymentRequest(base::MakeUnique<web::PaymentRequest>(paymentRequest),
-                         _personalDataManager));
+  _paymentRequest =
+      base::MakeUnique<PaymentRequest>(webPaymentRequest, _personalDataManager);
 
   UIImage* pageFavicon = nil;
   web::NavigationItem* navigationItem =

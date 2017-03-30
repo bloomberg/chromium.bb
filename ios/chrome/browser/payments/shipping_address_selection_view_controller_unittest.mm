@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/autofill_profile_item.h"
@@ -22,25 +23,21 @@
 #error "This file requires ARC support."
 #endif
 
-class ShippingAddressSelectionViewControllerTest
+class PaymentRequestShippingAddressSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
+  PaymentRequestShippingAddressSelectionViewControllerTest()
+      : autofill_profile1_(autofill::test::GetFullProfile()),
+        autofill_profile2_(autofill::test::GetFullProfile2()) {
+    // Add testing profiles to autofill::TestPersonalDataManager.
+    personal_data_manager_.AddTestingProfile(&autofill_profile1_);
+    personal_data_manager_.AddTestingProfile(&autofill_profile2_);
+  }
+
   CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    personal_data_manager_ =
-        base::MakeUnique<autofill::TestPersonalDataManager>();
-    // Add testing profiles. autofill::TestPersonalDataManager does not take
-    // ownership of the profiles.
-    profile1_ = payment_request_test_util::CreateTestAutofillProfile();
-    personal_data_manager_->AddTestingProfile(profile1_.get());
-    profile2_ = payment_request_test_util::CreateTestAutofillProfile();
-    personal_data_manager_->AddTestingProfile(profile2_.get());
-
-    web::PaymentRequest web_payment_request =
-        payment_request_test_util::CreateTestWebPaymentRequest();
-
     payment_request_ = base::MakeUnique<PaymentRequest>(
-        base::MakeUnique<web::PaymentRequest>(web_payment_request),
-        personal_data_manager_.get());
+        payment_request_test_util::CreateTestWebPaymentRequest(),
+        &personal_data_manager_);
 
     return [[ShippingAddressSelectionViewController alloc]
         initWithPaymentRequest:payment_request_.get()];
@@ -52,15 +49,15 @@ class ShippingAddressSelectionViewControllerTest
         controller());
   }
 
-  std::unique_ptr<autofill::AutofillProfile> profile1_;
-  std::unique_ptr<autofill::AutofillProfile> profile2_;
-  std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
+  autofill::AutofillProfile autofill_profile1_;
+  autofill::AutofillProfile autofill_profile2_;
+  autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
 };
 
 // Tests that the correct number of items are displayed after loading the model
 // and that the correct item appears to be selected.
-TEST_F(ShippingAddressSelectionViewControllerTest, TestModel) {
+TEST_F(PaymentRequestShippingAddressSelectionViewControllerTest, TestModel) {
   CreateController();
   CheckController();
   CheckTitleWithId(IDS_PAYMENTS_SHIPPING_ADDRESS_LABEL);

@@ -31,24 +31,18 @@
 
 class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
  protected:
+  PaymentRequestViewControllerTest()
+      : autofill_profile_(autofill::test::GetFullProfile()),
+        credit_card_(autofill::test::GetCreditCard()) {
+    // Add testing profile and credit card to autofill::TestPersonalDataManager.
+    personal_data_manager_.AddTestingProfile(&autofill_profile_);
+    personal_data_manager_.AddTestingCreditCard(&credit_card_);
+  }
+
   CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    personal_data_manager_ =
-        base::MakeUnique<autofill::TestPersonalDataManager>();
-    // Add testing profile. autofill::TestPersonalDataManager does not take
-    // ownership of the profile.
-    profile_ = payment_request_test_util::CreateTestAutofillProfile();
-    personal_data_manager_->AddTestingProfile(profile_.get());
-    // Add testing credit card. autofill::TestPersonalDataManager does not take
-    // ownership of the card.
-    credit_card_ = payment_request_test_util::CreateTestCreditCard();
-    personal_data_manager_->AddTestingCreditCard(credit_card_.get());
-
-    web::PaymentRequest web_payment_request =
-        payment_request_test_util::CreateTestWebPaymentRequest();
-
     payment_request_ = base::MakeUnique<PaymentRequest>(
-        base::MakeUnique<web::PaymentRequest>(web_payment_request),
-        personal_data_manager_.get());
+        payment_request_test_util::CreateTestWebPaymentRequest(),
+        &personal_data_manager_);
 
     return [[PaymentRequestViewController alloc]
         initWithPaymentRequest:payment_request_.get()];
@@ -59,10 +53,10 @@ class PaymentRequestViewControllerTest : public CollectionViewControllerTest {
         controller());
   }
 
-  std::unique_ptr<autofill::AutofillProfile> profile_;
-  std::unique_ptr<autofill::CreditCard> credit_card_;
+  autofill::AutofillProfile autofill_profile_;
+  autofill::CreditCard credit_card_;
+  autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
-  std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
 };
 
 // Tests that the correct items are displayed after loading the model.

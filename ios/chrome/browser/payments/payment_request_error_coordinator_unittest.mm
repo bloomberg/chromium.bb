@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/payments/payment_request_error_coordinator.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/payments/payment_request_error_view_controller.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -13,11 +14,11 @@
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
-typedef PlatformTest PaymentRequestErrorCoordinatorTest;
+class PaymentRequestErrorCoordinatorTest : public PlatformTest {};
 
 // Tests that invoking start and stop on the coordinator presents and dismisses
 // the payment request error view controller, respectively.
-TEST(PaymentRequestErrorCoordinatorTest, StartAndStop) {
+TEST_F(PaymentRequestErrorCoordinatorTest, StartAndStop) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];
@@ -43,7 +44,7 @@ TEST(PaymentRequestErrorCoordinatorTest, StartAndStop) {
 // Tests that calling the view controller delegate method which notifies the
 // coordinator that the user has dismissed the error invokes the corresponding
 // coordinator delegate method.
-TEST(PaymentRequestErrorCoordinatorTest, DidDismiss) {
+TEST_F(PaymentRequestErrorCoordinatorTest, DidDismiss) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
   ScopedKeyWindow scoped_key_window_;
   [scoped_key_window_.Get() setRootViewController:base_view_controller];

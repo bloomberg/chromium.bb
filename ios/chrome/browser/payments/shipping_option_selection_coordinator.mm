@@ -5,7 +5,9 @@
 #import "ios/chrome/browser/payments/shipping_option_selection_coordinator.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/payments/payment_request.h"
 #import "ios/chrome/browser/payments/payment_request_util.h"
+#include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

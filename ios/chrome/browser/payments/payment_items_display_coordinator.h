@@ -10,7 +10,8 @@
 
 #import "ios/chrome/browser/chrome_coordinator.h"
 #import "ios/chrome/browser/payments/payment_items_display_view_controller.h"
-#include "ios/chrome/browser/payments/payment_request.h"
+
+class PaymentRequest;
 
 @class PaymentItemsDisplayCoordinator;
 
@@ -34,9 +35,9 @@
 @interface PaymentItemsDisplayCoordinator
     : ChromeCoordinator<PaymentItemsDisplayViewControllerDelegate>
 
-// The PaymentRequest object owning an instance of web::PaymentRequest as
-// provided by the page invoking the Payment Request API. This pointer is not
-// owned by this class and should outlive it.
+// The PaymentRequest object having a copy of web::PaymentRequest as provided by
+// the page invoking the Payment Request API. This pointer is not owned by this
+// class and should outlive it.
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The delegate to be notified when the user selects touches the return button

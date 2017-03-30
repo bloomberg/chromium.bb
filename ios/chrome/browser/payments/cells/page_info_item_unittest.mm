@@ -16,7 +16,7 @@ namespace {
 
 // Tests that the labels and image are set properly after a call to
 // |configureCell:|.
-TEST(PageInfoItemTest, TextLabels) {
+TEST(PaymentRequestPageInfoItemTest, TextLabels) {
   PageInfoItem* item = [[PageInfoItem alloc] initWithType:0];
 
   UIImage* pageFavicon = ios_internal::CollectionViewTestImage();

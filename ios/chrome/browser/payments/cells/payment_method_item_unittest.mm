@@ -16,7 +16,7 @@ namespace {
 
 // Tests that the labels and image are set properly after a call to
 // |configureCell:|.
-TEST(PaymentMethodItemTest, TextLabels) {
+TEST(PaymentRequestPaymentMethodItemTest, TextLabels) {
   PaymentMethodItem* item = [[PaymentMethodItem alloc] initWithType:0];
 
   NSString* methodID = @"BobPay - ****-6789";

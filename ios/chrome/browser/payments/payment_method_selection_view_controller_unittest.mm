@@ -23,25 +23,21 @@
 #error "This file requires ARC support."
 #endif
 
-class PaymentMethodSelectionViewControllerTest
+class PaymentRequestPaymentMethodSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
+  PaymentRequestPaymentMethodSelectionViewControllerTest()
+      : credit_card1_(autofill::test::GetCreditCard()),
+        credit_card2_(autofill::test::GetCreditCard2()) {
+    // Add testing credit cards to autofill::TestPersonalDataManager.
+    personal_data_manager_.AddTestingCreditCard(&credit_card1_);
+    personal_data_manager_.AddTestingCreditCard(&credit_card2_);
+  }
+
   CollectionViewController* NewController() override NS_RETURNS_RETAINED {
-    personal_data_manager_ =
-        base::MakeUnique<autofill::TestPersonalDataManager>();
-    // Add testing credit cards. autofill::TestPersonalDataManager does not take
-    // ownership of the cards.
-    credit_card1_ = payment_request_test_util::CreateTestCreditCard();
-    personal_data_manager_->AddTestingCreditCard(credit_card1_.get());
-    credit_card2_ = payment_request_test_util::CreateTestCreditCard();
-    personal_data_manager_->AddTestingCreditCard(credit_card2_.get());
-
-    web::PaymentRequest web_payment_request =
-        payment_request_test_util::CreateTestWebPaymentRequest();
-
     payment_request_ = base::MakeUnique<PaymentRequest>(
-        base::MakeUnique<web::PaymentRequest>(web_payment_request),
-        personal_data_manager_.get());
+        payment_request_test_util::CreateTestWebPaymentRequest(),
+        &personal_data_manager_);
 
     return [[PaymentMethodSelectionViewController alloc]
         initWithPaymentRequest:payment_request_.get()];
@@ -53,15 +49,15 @@ class PaymentMethodSelectionViewControllerTest
         controller());
   }
 
-  std::unique_ptr<autofill::CreditCard> credit_card1_;
-  std::unique_ptr<autofill::CreditCard> credit_card2_;
-  std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
+  autofill::CreditCard credit_card1_;
+  autofill::CreditCard credit_card2_;
+  autofill::TestPersonalDataManager personal_data_manager_;
   std::unique_ptr<PaymentRequest> payment_request_;
 };
 
 // Tests that the correct number of items are displayed after loading the model
 // and that the correct item appears to be selected.
-TEST_F(PaymentMethodSelectionViewControllerTest, TestModel) {
+TEST_F(PaymentRequestPaymentMethodSelectionViewControllerTest, TestModel) {
   CreateController();
   CheckController();
   CheckTitleWithId(IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL);
