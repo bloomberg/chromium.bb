@@ -651,7 +651,6 @@ group("gn_all") {
       "//third_party/opus:test_opus_decode",
       "//third_party/opus:test_opus_encode",
       "//third_party/opus:test_opus_padding",
-      "//third_party/pdfium/third_party:fx_freetype",
       "//third_party/webrtc/system_wrappers:field_trial_default",
       "//third_party/webrtc/system_wrappers:metrics_default",
       "//ui/display/types",
