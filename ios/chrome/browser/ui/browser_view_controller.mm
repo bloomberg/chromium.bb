@@ -4222,7 +4222,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)enableDesktopUserAgent {
-  [[_model currentTab] enableDesktopUserAgent];
   [[_model currentTab] reloadForDesktopUserAgent];
 }
 

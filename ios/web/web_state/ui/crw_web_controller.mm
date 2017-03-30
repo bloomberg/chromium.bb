@@ -1493,7 +1493,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // A new session history entry needs to be created.
     self.navigationManagerImpl->AddPendingItem(
         requestURL, referrer, transition,
-        web::NavigationInitiationType::RENDERER_INITIATED);
+        web::NavigationInitiationType::RENDERER_INITIATED,
+        web::NavigationManager::UserAgentOverrideOption::INHERIT);
   }
   _webStateImpl->SetIsLoading(true);
   _webStateImpl->OnProvisionalNavigationStarted(requestURL);
@@ -1819,7 +1820,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           ? web::NavigationInitiationType::RENDERER_INITIATED
           : web::NavigationInitiationType::USER_INITIATED;
   self.navigationManagerImpl->AddPendingItem(
-      navUrl, params.referrer, transition, navigationInitiationType);
+      navUrl, params.referrer, transition, navigationInitiationType,
+      params.user_agent_override_option);
 
   web::NavigationItemImpl* addedItem = self.currentNavItem;
   DCHECK(addedItem);

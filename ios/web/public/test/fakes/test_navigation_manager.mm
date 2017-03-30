@@ -155,10 +155,6 @@ bool TestNavigationManager::CanPruneAllButLastCommittedItem() const {
   return false;
 }
 
-void TestNavigationManager::OverrideDesktopUserAgentForNextPendingItem() {
-  NOTREACHED();
-}
-
 // Adds a new navigation item of |transition| type at the end of this
 // navigation manager.
 void TestNavigationManager::AddItem(const GURL& url,

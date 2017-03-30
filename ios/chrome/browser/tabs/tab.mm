@@ -622,8 +622,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                                          opener:opener
                                     openedByDOM:NO
                                           model:nil] autorelease];
-  if (desktopUserAgent)
-    [tab enableDesktopUserAgent];
   [[tab webController] setNativeProvider:provider];
   [[tab webController] setWebUsageEnabled:YES];
 
@@ -633,6 +631,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   web::NavigationManager::WebLoadParams params(URL);
   params.transition_type = transition;
   params.referrer = referrer;
+  if (desktopUserAgent) {
+    params.user_agent_override_option =
+        web::NavigationManager::UserAgentOverrideOption::DESKTOP;
+  }
+
   [[tab webController] loadWithParams:params];
 
   return tab;
@@ -1484,12 +1487,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
          visibleItem->GetUserAgentType() == web::UserAgentType::DESKTOP;
 }
 
-- (void)enableDesktopUserAgent {
-  DCHECK_EQ(self.usesDesktopUserAgent, NO);
-  DCHECK([self navigationManager]);
-  [self navigationManager]->OverrideDesktopUserAgentForNextPendingItem();
-}
-
 - (void)reloadForDesktopUserAgent {
   // This removes the web view, which will be recreated at the end of this.
   [self.webController requirePageReconstruction];
@@ -1514,6 +1511,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   web::NavigationManager::WebLoadParams params(reloadURL);
   params.referrer = lastNonRedirectedItem->GetReferrer();
   // A new navigation is needed here for reloading with desktop User-Agent.
+  params.user_agent_override_option =
+      web::NavigationManager::UserAgentOverrideOption::DESKTOP;
   params.transition_type =
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT);
   navigationManager->LoadURLWithParams(params);

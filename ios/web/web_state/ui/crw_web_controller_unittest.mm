@@ -641,7 +641,8 @@ TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
 TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
   [web_controller() webStateImpl]->GetNavigationManagerImpl().AddPendingItem(
       GURL("http://chromium.test"), web::Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED);
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
   [[[mock_web_view_ stub] andReturnBool:NO] hasOnlySecureContent];
   [[[mock_web_view_ stub] andReturn:@""] title];
@@ -678,7 +679,8 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
     navigation_manager.AddPendingItem(
         URL, web::Referrer(), ui::PAGE_TRANSITION_TYPED,
-        web::NavigationInitiationType::USER_INITIATED);
+        web::NavigationInitiationType::USER_INITIATED,
+        web::NavigationManager::UserAgentOverrideOption::INHERIT);
     [web_controller() loadCurrentURL];
   }
 
@@ -923,9 +925,10 @@ TEST_F(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   // Change last committed URL to app-specific URL.
   web::NavigationManagerImpl& nav_manager =
       [web_controller() webStateImpl]->GetNavigationManagerImpl();
-  nav_manager.AddPendingItem(GURL(kTestAppSpecificURL), web::Referrer(),
-                             ui::PAGE_TRANSITION_TYPED,
-                             web::NavigationInitiationType::USER_INITIATED);
+  nav_manager.AddPendingItem(
+      GURL(kTestAppSpecificURL), web::Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
   [nav_manager.GetSessionController() commitPendingItem];
 
   NSError* error = nil;

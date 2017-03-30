@@ -44,6 +44,7 @@ namespace web {
 NavigationManager::WebLoadParams::WebLoadParams(const GURL& url)
     : url(url),
       transition_type(ui::PAGE_TRANSITION_LINK),
+      user_agent_override_option(UserAgentOverrideOption::INHERIT),
       is_renderer_initiated(false),
       post_data(nil) {}
 
@@ -53,6 +54,7 @@ NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
     : url(other.url),
       referrer(other.referrer),
       transition_type(other.transition_type),
+      user_agent_override_option(other.user_agent_override_option),
       is_renderer_initiated(other.is_renderer_initiated),
       extra_headers([other.extra_headers copy]),
       post_data([other.post_data copy]) {}
@@ -63,6 +65,7 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
   referrer = other.referrer;
   is_renderer_initiated = other.is_renderer_initiated;
   transition_type = other.transition_type;
+  user_agent_override_option = other.user_agent_override_option;
   extra_headers.reset([other.extra_headers copy]);
   post_data.reset([other.post_data copy]);
 
@@ -70,10 +73,7 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
 }
 
 NavigationManagerImpl::NavigationManagerImpl()
-    : override_desktop_user_agent_for_next_pending_item_(false),
-      delegate_(nullptr),
-      browser_state_(nullptr),
-      facade_delegate_(nullptr) {}
+    : delegate_(nullptr), browser_state_(nullptr), facade_delegate_(nullptr) {}
 
 NavigationManagerImpl::~NavigationManagerImpl() {
   // The facade layer should be deleted before this object.
@@ -174,7 +174,8 @@ void NavigationManagerImpl::AddPendingItem(
     const GURL& url,
     const web::Referrer& referrer,
     ui::PageTransition navigation_type,
-    NavigationInitiationType initiation_type) {
+    NavigationInitiationType initiation_type,
+    UserAgentOverrideOption user_agent_override_option) {
   [session_controller_ addPendingItem:url
                              referrer:referrer
                            transition:navigation_type
@@ -185,35 +186,41 @@ void NavigationManagerImpl::AddPendingItem(
   if (!pending_item)
     return;
 
-  // |override_desktop_user_agent_for_next_pending_item_| must be false if
-  // |pending_item|'s UserAgentType is NONE, as requesting a desktop user
-  // agent should be disabled for app-specific URLs.
+  // |user_agent_override_option| must be INHERIT if |pending_item|'s
+  // UserAgentType is NONE, as requesting a desktop or mobile user agent should
+  // be disabled for app-specific URLs.
   DCHECK(pending_item->GetUserAgentType() != UserAgentType::NONE ||
-         !override_desktop_user_agent_for_next_pending_item_);
+         user_agent_override_option == UserAgentOverrideOption::INHERIT);
 
   // Newly created pending items are created with UserAgentType::NONE for native
   // pages or UserAgentType::MOBILE for non-native pages.  If the pending item's
-  // URL is non-native, check whether it should be created with
-  // UserAgentType::DESKTOP.
+  // URL is non-native, check which user agent type it should be created with
+  // based on |user_agent_override_option|.
   DCHECK_NE(UserAgentType::DESKTOP, pending_item->GetUserAgentType());
-  if (pending_item->GetUserAgentType() != UserAgentType::NONE) {
-    bool use_desktop_user_agent =
-        override_desktop_user_agent_for_next_pending_item_;
-    if (!use_desktop_user_agent) {
-      // If the flag is not set, propagate the last non-native item's
-      // UserAgentType.
+  if (pending_item->GetUserAgentType() == UserAgentType::NONE)
+    return;
+
+  switch (user_agent_override_option) {
+    case UserAgentOverrideOption::DESKTOP:
+      pending_item->SetUserAgentType(UserAgentType::DESKTOP);
+      break;
+    case UserAgentOverrideOption::MOBILE:
+      pending_item->SetUserAgentType(UserAgentType::MOBILE);
+      break;
+    case UserAgentOverrideOption::INHERIT: {
+      // Propagate the last committed non-native item's UserAgentType if there
+      // is one, otherwise keep the default value, which is mobile.
       NavigationItem* last_non_native_item =
           GetLastCommittedNonAppSpecificItem();
       DCHECK(!last_non_native_item ||
              last_non_native_item->GetUserAgentType() != UserAgentType::NONE);
-      use_desktop_user_agent =
-          last_non_native_item &&
-          last_non_native_item->GetUserAgentType() == UserAgentType::DESKTOP;
+      if (last_non_native_item) {
+        pending_item->SetUserAgentType(
+            last_non_native_item->GetUserAgentType());
+      }
+      break;
     }
-    if (use_desktop_user_agent)
-      pending_item->SetUserAgentType(UserAgentType::DESKTOP);
   }
-  override_desktop_user_agent_for_next_pending_item_ = false;
 }
 
 NavigationItemList NavigationManagerImpl::GetItems() const {
@@ -433,18 +440,6 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
   }
 
   return result;
-}
-
-void NavigationManagerImpl::OverrideDesktopUserAgentForNextPendingItem() {
-  NavigationItem* pending_item = GetPendingItem();
-  if (pending_item) {
-    // The desktop user agent cannot be used for a pending navigation to an
-    // app-specific URL.
-    DCHECK_NE(pending_item->GetUserAgentType(), UserAgentType::NONE);
-    pending_item->SetUserAgentType(UserAgentType::DESKTOP);
-  } else {
-    override_desktop_user_agent_for_next_pending_item_ = true;
-  }
 }
 
 bool NavigationManagerImpl::IsRedirectItemAtIndex(int index) const {

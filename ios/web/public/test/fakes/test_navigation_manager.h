@@ -45,7 +45,6 @@ class TestNavigationManager : public NavigationManager {
   NavigationItemList GetForwardItems() const override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
   bool CanPruneAllButLastCommittedItem() const override;
-  void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Setters for test data.
   // Sets a value for last committed item that will be returned by

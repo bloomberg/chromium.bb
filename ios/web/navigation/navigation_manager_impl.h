@@ -95,15 +95,16 @@ class NavigationManagerImpl : public NavigationManager {
                const Referrer& referrer,
                ui::PageTransition type);
 
-  // Adds a new item with the given url, referrer, navigation type, and
-  // initiation type, making it the pending item. If pending item is the same as
-  // the current item, this does nothing. |referrer| may be nil if there isn't
-  // one. The item starts out as pending, and will be lost unless
-  // |-commitPendingItem| is called.
+  // Adds a new item with the given url, referrer, navigation type, initiation
+  // type and user agent override option, making it the pending item. If pending
+  // item is the same as the current item, this does nothing. |referrer| may be
+  // nil if there isn't one. The item starts out as pending, and will be lost
+  // unless |-commitPendingItem| is called.
   void AddPendingItem(const GURL& url,
                       const web::Referrer& referrer,
                       ui::PageTransition navigation_type,
-                      NavigationInitiationType initiation_type);
+                      NavigationInitiationType initiation_type,
+                      UserAgentOverrideOption user_agent_override_option);
 
   // Temporary method. Returns a vector of NavigationItems corresponding to
   // the SessionEntries of the uderlying CRWSessionController.
@@ -138,7 +139,6 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItemList GetForwardItems() const override;
   void CopyStateFromAndPrune(const NavigationManager* source) override;
   bool CanPruneAllButLastCommittedItem() const override;
-  void OverrideDesktopUserAgentForNextPendingItem() override;
 
   // Returns the current list of transient url rewriters, passing ownership to
   // the caller.
@@ -169,12 +169,6 @@ class NavigationManagerImpl : public NavigationManager {
   // Returns the most recent NavigationItem that does not have an app-specific
   // URL.
   NavigationItem* GetLastCommittedNonAppSpecificItem() const;
-
-  // If true, override navigation item's useDesktopUserAgent flag and always
-  // create the pending entry using the desktop user agent.
-  // TODO(crbug.com/692303): Remove this when overriding the user agent doesn't
-  // create a new NavigationItem.
-  bool override_desktop_user_agent_for_next_pending_item_;
 
   // The primary delegate for this manager.
   NavigationManagerDelegate* delegate_;

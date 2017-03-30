@@ -237,7 +237,8 @@ class TabTest : public BlockCleanupTest {
     web::Referrer empty_referrer;
     [tab_ navigationManagerImpl]->AddPendingItem(
         redirectUrl, empty_referrer, ui::PAGE_TRANSITION_CLIENT_REDIRECT,
-        web::NavigationInitiationType::RENDERER_INITIATED);
+        web::NavigationInitiationType::RENDERER_INITIATED,
+        web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
     web_state_impl_->OnProvisionalNavigationStarted(redirectUrl);
     [[tab_ navigationManagerImpl]->GetSessionController() commitPendingItem];

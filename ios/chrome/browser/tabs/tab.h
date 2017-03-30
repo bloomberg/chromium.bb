@@ -285,10 +285,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // current content.
 - (void)switchToReaderMode;
 
-// Update internal state to use the desktop user agent. Must call
-// -reloadWebViewAndURL for changes to take effect.
-- (void)enableDesktopUserAgent;
-
 // Remove the UIWebView and reload the current url.  Used by request desktop
 // so the updated user agent is used.
 - (void)reloadForDesktopUserAgent;
