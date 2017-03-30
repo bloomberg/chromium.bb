@@ -51,7 +51,8 @@ import java.lang.reflect.InvocationTargetException;
  * Manages interactions with the VR Shell.
  */
 @JNINamespace("vr_shell")
-public class VrShellDelegate implements ApplicationStatus.ActivityStateListener {
+public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
+                                        View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "VrShellDelegate";
     // Pseudo-random number to avoid request id collisions.
     public static final int EXIT_VR_RESULT = 721251;
@@ -82,6 +83,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
             "org.chromium.chrome.browser.VRChromeTabbedActivity";
 
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
+
+    private static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
     private static VrShellDelegate sInstance;
 
@@ -383,7 +389,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
         if (mPaused) {
             // We can't enter VR before the application resumes, or we encounter bizarre crashes
             // related to gpu surfaces. Set this flag to enter VR on the next resume.
-            prepareToEnterVR();
+            setWindowModeForVr();
             mEnteringVr = true;
         } else {
             enterVR();
@@ -391,21 +397,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
         return true;
     }
 
-    private void prepareToEnterVR() {
-        if (mRestoreOrientation == null) {
-            mRestoreOrientation = mActivity.getRequestedOrientation();
-        }
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        setupVrModeWindowFlags();
-    }
-
     private void enterVR() {
         if (mNativeVrShellDelegate == 0) return;
         if (mInVr) return;
-        if (mRestoreSystemUiVisibilityFlag == -1
-                || mActivity.getResources().getConfiguration().orientation
-                        != Configuration.ORIENTATION_LANDSCAPE) {
-            prepareToEnterVR();
+        if (!isWindowModeCorrectForVr()) {
+            setWindowModeForVr();
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -434,6 +430,26 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
         mVrShell.resume();
 
         setEnterVRResult(true);
+        mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(this);
+    }
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        if (mInVr && !isWindowModeCorrectForVr()) setWindowModeForVr();
+    }
+
+    private boolean isWindowModeCorrectForVr() {
+        int flags = mActivity.getWindow().getDecorView().getSystemUiVisibility();
+        int orientation = mActivity.getResources().getConfiguration().orientation;
+        return flags == VR_SYSTEM_UI_FLAGS && orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    private void setWindowModeForVr() {
+        if (mRestoreOrientation == null) {
+            mRestoreOrientation = mActivity.getRequestedOrientation();
+        }
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        setupVrModeWindowFlags();
     }
 
     private void setEnterVRResult(boolean success) {
@@ -755,10 +771,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
                     .getSystemUiVisibility();
         }
         mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        mActivity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+        mActivity.getWindow().getDecorView().setSystemUiVisibility(VR_SYSTEM_UI_FLAGS);
     }
 
     private void clearVrModeWindowFlags() {
@@ -775,6 +788,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener 
      */
     private void destroyVrShell() {
         if (mVrShell != null) {
+            mVrShell.getContainer().setOnSystemUiVisibilityChangeListener(null);
             mVrShell.teardown();
             mVrShell = null;
             mActivity.getCompositorViewHolder().onExitVR(mTabModelSelector);
