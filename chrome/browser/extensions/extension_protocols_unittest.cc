@@ -196,8 +196,8 @@ class ExtensionProtocolsTest : public testing::Test {
         switches::kExtensionContentVerification,
         switches::kExtensionContentVerificationEnforce);
     content_verifier_ = new ContentVerifier(
-        testing_profile_.get(),
-        new ChromeContentVerifierDelegate(testing_profile_.get()));
+        testing_profile_.get(), base::MakeUnique<ChromeContentVerifierDelegate>(
+                                    testing_profile_.get()));
     extension_info_map_->SetContentVerifier(content_verifier_.get());
   }
 

@@ -197,7 +197,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   ExtensionErrorReporter::Init(allow_noisy_errors);
 
   content_verifier_ = new ContentVerifier(
-      profile_, new ChromeContentVerifierDelegate(profile_));
+      profile_, base::MakeUnique<ChromeContentVerifierDelegate>(profile_));
 
   service_worker_manager_.reset(new ServiceWorkerManager(profile_));
 

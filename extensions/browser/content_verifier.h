@@ -44,9 +44,8 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   };
   static void SetObserverForTests(TestObserver* observer);
 
-  // Takes ownership of |delegate|.
   ContentVerifier(content::BrowserContext* context,
-                  ContentVerifierDelegate* delegate);
+                  std::unique_ptr<ContentVerifierDelegate> delegate);
   void Start();
   void Shutdown();
 

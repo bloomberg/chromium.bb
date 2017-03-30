@@ -60,15 +60,16 @@ void ContentVerifier::SetObserverForTests(TestObserver* observer) {
   g_test_observer = observer;
 }
 
-ContentVerifier::ContentVerifier(content::BrowserContext* context,
-                                 ContentVerifierDelegate* delegate)
+ContentVerifier::ContentVerifier(
+    content::BrowserContext* context,
+    std::unique_ptr<ContentVerifierDelegate> delegate)
     : shutdown_(false),
       context_(context),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       fetcher_(new ContentHashFetcher(
           content::BrowserContext::GetDefaultStoragePartition(context)
               ->GetURLRequestContext(),
-          delegate,
+          delegate_.get(),
           base::Bind(&ContentVerifier::OnFetchComplete, this))),
       observer_(this),
       io_data_(new ContentVerifierIOData) {}
