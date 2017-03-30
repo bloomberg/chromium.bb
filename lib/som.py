@@ -6,6 +6,8 @@
 
 from __future__ import print_function
 
+import json
+
 from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -14,6 +16,7 @@ from chromite.cbuildbot import topology
 
 
 # Methods
+GET_METHOD = 'GET'
 POST_METHOD = 'POST'
 
 
@@ -165,3 +168,74 @@ class SheriffOMaticClient(object):
         'tree': tree,
     }
     return self.SendRequest(url, POST_METHOD, summary_json, dryrun=dryrun)
+
+  def SendAlert(self, alert_json, key=None, tree=constants.SOM_TREE,
+                dryrun=False):
+    """Upload alert to Sheriff-o-matic.
+
+    Args:
+      alert_json: JSON version of Alert structure.
+      key: Key for alert, defaults to alert.key if None.
+      tree: Sheriff-o-Matic tree to send alerts to.
+      dryrun: Whether a dryrun.
+
+    Returns:
+      Results of HTTP request.
+    """
+    if key is None:
+      key = json.loads(alert_json)['key']
+
+    url = '%(scheme)s://%(hostname)s/api/v1/alert/%(tree)s/%(key)s' % {
+        'scheme': 'http' if self.insecure else 'https',
+        'hostname': self.host,
+        'tree': tree,
+        'key': key,
+    }
+    return self.SendRequest(url, POST_METHOD, alert_json, dryrun=dryrun)
+
+  def ResolveAlert(self, key, resolved=True, xsrf_token=None,
+                   tree=constants.SOM_TREE, dryrun=False):
+    """Resolve alert in Sheriff-o-matic.
+
+    Args:
+      key: Key for alert.
+      resolved: Should the alert be resolved or unresolved.
+      xsrf_token: XSRF token to include with request.
+      tree: Sheriff-o-Matic tree of alerts.
+      dryrun: Whether a dryrun.
+
+    Returns:
+      Results of HTTP request.
+    """
+    url = '%(scheme)s://%(hostname)s/api/v1/resolve/%(tree)s/%(key)s' % {
+        'scheme': 'http' if self.insecure else 'https',
+        'hostname': self.host,
+        'tree': tree,
+        'key': key,
+    }
+    if xsrf_token is None:
+      xsrf_token = self.XSRFToken()
+    request = {
+        'xsrf_token': xsrf_token,
+        'data': {
+            'resolved': resolved,
+        },
+    }
+    return self.SendRequest(url, POST_METHOD, json.dumps(request),
+                            dryrun=dryrun)
+
+  def XSRFToken(self, dryrun=False):
+    """Retrieve XSRF token from Sheriff-o-matic.
+
+    Args:
+      dryrun: Whether a dryrun.
+
+    Returns:
+      XSRF token, None if response cannot be parsed.
+    """
+    url = '%(scheme)s://%(hostname)s/api/v1/xsrf_token' % {
+        'scheme': 'http' if self.insecure else 'https',
+        'hostname': self.host,
+    }
+    response = json.loads(self.SendRequest(url, GET_METHOD, '', dryrun=dryrun))
+    return response.get('token')
