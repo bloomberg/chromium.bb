@@ -1497,6 +1497,8 @@ class CORE_EXPORT UseCounter {
     V0CustomElementsCreateCustomTagElement = 1877,
     V0CustomElementsCreateTypeExtensionElement = 1878,
     V0CustomElementsConstruct = 1879,
+    V8IDBObserver_Observe_Method = 1880,
+    V8IDBObserver_Unobserve_Method = 1881,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
