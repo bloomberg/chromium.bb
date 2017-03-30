@@ -84,6 +84,14 @@ static void variance(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 }
 
+uint32_t aom_sse_odd_size(const uint8_t *a, int a_stride, const uint8_t *b,
+                          int b_stride, int w, int h) {
+  uint32_t sse;
+  int sum;
+  variance(a, a_stride, b, b_stride, w, h, &sse, &sum);
+  return sse;
+}
+
 // Applies a 1-D 2-tap bilinear filter to the source block in either horizontal
 // or vertical direction to produce the filtered output block. Used to implement
 // the first-pass of 2-D separable filter.
@@ -312,6 +320,14 @@ static void highbd_variance64(const uint8_t *a8, int a_stride,
     a += a_stride;
     b += b_stride;
   }
+}
+
+uint64_t aom_highbd_sse_odd_size(const uint8_t *a, int a_stride,
+                                 const uint8_t *b, int b_stride, int w, int h) {
+  uint64_t sse;
+  int64_t sum;
+  highbd_variance64(a, a_stride, b, b_stride, w, h, &sse, &sum);
+  return sse;
 }
 
 static void highbd_8_variance(const uint8_t *a8, int a_stride,

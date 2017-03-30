@@ -117,6 +117,14 @@ void aom_highbd_var_filter_block2d_bil_second_pass(
     unsigned int output_height, unsigned int output_width,
     const uint8_t *filter);
 
+uint32_t aom_sse_odd_size(const uint8_t *a, int a_stride, const uint8_t *b,
+                          int b_stride, int w, int h);
+
+#if CONFIG_AOM_HIGHBITDEPTH
+uint64_t aom_highbd_sse_odd_size(const uint8_t *a, int a_stride,
+                                 const uint8_t *b, int b_stride, int w, int h);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
