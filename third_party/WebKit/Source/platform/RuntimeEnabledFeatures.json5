@@ -66,6 +66,11 @@
       status: "stable",
     },
     {
+      name: "AccessibilityObjectModel",
+      settable_from_internals: true,
+      status: "experimental",
+    },
+    {
       name: "AudioOutputDevices",
       status: "stable",
     },

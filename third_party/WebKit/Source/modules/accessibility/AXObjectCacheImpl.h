@@ -76,6 +76,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   void textChanged(LayoutObject*) override;
+  void textChanged(AXObject*);
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
   void updateCacheAfterNodeIsAttached(Node*) override;
@@ -188,7 +189,6 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
 
  protected:
   void postPlatformNotification(AXObject*, AXNotification);
-  void textChanged(AXObject*);
   void labelChanged(Element*);
 
   AXObject* createFromRenderer(LayoutObject*);
