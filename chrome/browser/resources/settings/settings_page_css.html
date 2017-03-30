@@ -15,13 +15,11 @@
         width: 96%;
       }
 
-      :host(.showing-subpage) {
+      :host(.showing-subpage),
+      :host(.showing-subpage) #basicPage,
+      :host(.showing-subpage) #advancedPage {
         /* The subpage container should extend to the bottom of the page. */
         height: 100%;
-      }
-
-      :host > div {
-        height: inherit;
       }
 
       :host > div > :not(.expanded) {

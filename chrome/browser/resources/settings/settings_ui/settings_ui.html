@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../direction_delegate.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../i18n_setup.html">
@@ -24,10 +23,6 @@
     <style include="settings-shared">
       :host {
         @apply(--layout-fit);
-        --paper-header-panel-waterfall-container: {
-          overflow-x: auto;  /* Undo paper-header-panel default of 'hidden'. */
-          overflow-y: overlay;
-        };
         -webkit-user-select: none;
         background-color: var(--settings-background-color);
         color: var(--paper-grey-900);
@@ -39,19 +34,6 @@
 
       .drawer-header {
         outline: none;
-      }
-
-      paper-header-panel {
-        flex: 1;
-      }
-
-      .paper-header {
-        -webkit-padding-start: 24px;
-        align-items: center;
-        border-bottom: var(--settings-separator-line);
-        display: flex;
-        font-size: 123.08%; /* go to 16px from 13px */
-        min-height: 56px;
       }
 
       .last {
@@ -72,6 +54,30 @@
         color: white;
         min-height: 56px;
         z-index: 2;
+      }
+
+      #container {
+        flex: 1;
+        overflow: overlay;
+      }
+
+      #dropShadow {
+        /* TODO(dpapad): This box-shadow is repeated in Settings, History and
+           Downloads. Define a CSS variable instead and re-use. */
+        box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
+        height: 6px;
+        left: 0;
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 56px;
+        transition: opacity 500ms;
+        z-index: 1;
+      }
+
+      #dropShadow.has-shadow {
+        opacity: 1;
       }
     </style>
     <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
@@ -97,14 +103,17 @@
         </template>
       </div>
     </dialog>
-    <paper-header-panel id="headerPanel" mode="waterfall" role="none">
+    <div id="dropShadow"></div>
+    <div id="container">
+      <!-- Used by IntersectionObserver, has a 0px height intentionally -->
+      <div id="intersectionProbe"></div>
       <settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
           show-android-apps="[[showAndroidApps_]]"
           advanced-toggle-expanded="{{advancedOpened_}}">
       </settings-main>
-    </paper-header-panel>
+    </div>
   </template>
   <script src="settings_ui.js"></script>
 </dom-module>

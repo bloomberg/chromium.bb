@@ -160,6 +160,9 @@ Polymer({
         loadTimeData.getBoolean('androidAppsAllowed');
   },
 
+  /** @private {?IntersectionObserver} */
+  intersectionObserver_: null,
+
   /** @override */
   attached: function() {
     setTimeout(function() {
@@ -169,12 +172,29 @@ Polymer({
     });
     // Preload bold Roboto so it doesn't load and flicker the first time used.
     document.fonts.load('bold 12px Roboto');
-    settings.setGlobalScrollTarget(this.$.headerPanel.scroller);
+    settings.setGlobalScrollTarget(this.$.container);
+
+    // Setup drop shadow logic.
+    var callback = function(entries) {
+      assert(entries.length == 1);
+      this.$.dropShadow.classList.toggle(
+          'has-shadow', entries[0].intersectionRatio == 0);
+    }.bind(this);
+
+    this.intersectionObserver_ = new IntersectionObserver(
+        callback,
+        /** @type {IntersectionObserverInit} */ ({
+          root: this.$.container,
+          threshold: 0,
+        }));
+    this.intersectionObserver_.observe(this.$.intersectionProbe);
   },
 
   /** @override */
   detached: function() {
     settings.resetRouteForTesting();
+    this.intersectionObserver_.disconnect();
+    this.intersectionObserver_ = null;
   },
 
   /** @param {!settings.Route} route */
