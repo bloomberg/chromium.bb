@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "url/origin.h"
 
 namespace content {
@@ -20,11 +21,12 @@ BackgroundFetchContext::BackgroundFetchContext(
     StoragePartitionImpl* storage_partition,
     const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
     : browser_context_(browser_context),
-      storage_partition_(storage_partition),
       service_worker_context_(service_worker_context),
       background_fetch_data_manager_(
           base::MakeUnique<BackgroundFetchDataManager>(browser_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  request_context_ =
+      make_scoped_refptr(storage_partition->GetURLRequestContext());
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {
@@ -123,11 +125,17 @@ void BackgroundFetchContext::CreateController(
     std::vector<BackgroundFetchRequestInfo> initial_requests) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
-          registration_id, options, browser_context_, storage_partition_,
-          background_fetch_data_manager_.get(),
+          registration_id, options, background_fetch_data_manager_.get(),
+          browser_context_, request_context_,
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this));
 
-  // TODO(peter): Start actually fetching the files.
+  // TODO(peter): We should actually be able to use Background Fetch in layout
+  // tests. That requires a download manager and a request context.
+  if (request_context_) {
+    // Start fetching the |initial_requests| immediately. At some point in the
+    // future we may want a more elaborate scheduling mechanism here.
+    controller->Start(std::move(initial_requests));
+  }
 
   active_fetches_.insert(
       std::make_pair(registration_id, std::move(controller)));

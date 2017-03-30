@@ -17,8 +17,10 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -159,10 +161,13 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // Creates a new BackgroundFetchJobController instance.
   std::unique_ptr<BackgroundFetchJobController> CreateJobController(
       const BackgroundFetchRegistrationId& registration_id) {
+    StoragePartition* storage_partition =
+        BrowserContext::GetDefaultStoragePartition(browser_context());
+
     return base::MakeUnique<BackgroundFetchJobController>(
-        registration_id, BackgroundFetchOptions(), browser_context(),
-        BrowserContext::GetDefaultStoragePartition(browser_context()),
-        &data_manager_,
+        registration_id, BackgroundFetchOptions(), &data_manager_,
+        browser_context(),
+        make_scoped_refptr(storage_partition->GetURLRequestContext()),
         base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
                        base::Unretained(this)));
   }
@@ -234,12 +239,17 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 
   // Mark the single download item as finished, completing the job.
   {
+    base::RunLoop run_loop;
+    job_completed_closure_ = run_loop.QuitClosure();
+
     FakeDownloadItem* item = download_items[0];
 
     EXPECT_EQ(DownloadItem::DownloadState::IN_PROGRESS, item->GetState());
 
     item->SetState(DownloadItem::DownloadState::COMPLETE);
     item->NotifyDownloadUpdated();
+
+    run_loop.Run();
   }
 
   EXPECT_EQ(controller->state(),
@@ -305,12 +315,20 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
 
   EXPECT_EQ(controller->state(),
             BackgroundFetchJobController::State::INITIALIZED);
-  EXPECT_CALL(*download_manager_, DownloadUrlMock(_)).Times(1);
 
-  controller->Start(initial_requests /* deliberate copy */);
-  EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
+  // Start the set of |initial_requests|, and abort them immediately after.
+  {
+    base::RunLoop run_loop;
+    job_completed_closure_ = run_loop.QuitClosure();
 
-  controller->Abort();
+    controller->Start(initial_requests /* deliberate copy */);
+    EXPECT_EQ(controller->state(),
+              BackgroundFetchJobController::State::FETCHING);
+
+    controller->Abort();
+
+    run_loop.Run();
+  }
 
   // TODO(peter): Verify that the issued download items have had their state
   // updated to be cancelled as well.

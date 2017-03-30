@@ -15,6 +15,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace url {
 class Origin;
 }
@@ -98,11 +102,12 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Called when a the given |controller| has finished processing its job.
   void DidCompleteJob(BackgroundFetchJobController* controller);
 
-  // |this| is owned by the BrowserContext via the StoragePartitionImpl.
+  // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;
-  StoragePartitionImpl* storage_partition_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+
   std::unique_ptr<BackgroundFetchDataManager> background_fetch_data_manager_;
 
   // Map of the Background Fetch fetches that are currently in-progress.

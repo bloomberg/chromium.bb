@@ -17,19 +17,21 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/download_item.h"
+#include "content/public/browser/browser_thread.h"
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace content {
 
 class BackgroundFetchDataManager;
 class BrowserContext;
-class StoragePartition;
 
 // The JobController will be responsible for coordinating communication with the
 // DownloadManager. It will get requests from the DataManager and dispatch them
 // to the DownloadManager. It lives entirely on the IO thread.
-class CONTENT_EXPORT BackgroundFetchJobController
-    : public DownloadItem::Observer {
+class CONTENT_EXPORT BackgroundFetchJobController {
  public:
   enum class State { INITIALIZED, FETCHING, ABORTED, COMPLETED };
 
@@ -39,11 +41,11 @@ class CONTENT_EXPORT BackgroundFetchJobController
   BackgroundFetchJobController(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
-      BrowserContext* browser_context,
-      StoragePartition* storage_partition,
       BackgroundFetchDataManager* data_manager,
+      BrowserContext* browser_context,
+      scoped_refptr<net::URLRequestContextGetter> request_context,
       CompletedCallback completed_callback);
-  ~BackgroundFetchJobController() override;
+  ~BackgroundFetchJobController();
 
   // Starts fetching the |initial_fetches|. The controller will continue to
   // fetch new content until all requests have been handled.
@@ -67,20 +69,19 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }
 
-  // DownloadItem::Observer methods.
-  void OnDownloadUpdated(DownloadItem* item) override;
-  void OnDownloadDestroyed(DownloadItem* item) override;
-
  private:
+  class Core;
+
   // Requests the download manager to start fetching |request|.
   void StartRequest(const BackgroundFetchRequestInfo& request);
 
-  // Called when the request identified by |request_index| has been started.
-  // The |download_item| continues to be owned by the download system. The
-  // |interrupt_reason| will indicate when a request could not be started.
+  // Called when the given |request| has started fetching, after having been
+  // assigned the |download_guid| by the download system.
   void DidStartRequest(const BackgroundFetchRequestInfo& request,
-                       DownloadItem* download_item,
-                       DownloadInterruptReason interrupt_reason);
+                       const std::string& download_guid);
+
+  // Called when the given |request| has been completed.
+  void DidCompleteRequest(const BackgroundFetchRequestInfo& request);
 
   // Called when a completed download has been marked as such in the DataManager
   // and the next request, if any, has been read from storage.
@@ -96,23 +97,16 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // The current state of this Job Controller.
   State state_ = State::INITIALIZED;
 
-  // Map from DownloadItem* to the request info for the in-progress downloads.
-  std::unordered_map<DownloadItem*, BackgroundFetchRequestInfo> downloads_;
-
-  // Number of outstanding acknowledgements we expect to get from the
-  // DataManager about
-  int pending_completed_file_acknowledgements_ = 0;
-
-  // The BrowserContext that indirectly owns us.
-  BrowserContext* browser_context_;
-
-  // Pointer to the storage partition. This object is owned by the partition
-  // (through a sequence of other classes).
-  StoragePartition* storage_partition_;
+  // Inner core of this job controller which lives on the UI thread.
+  std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
+  base::WeakPtr<Core> ui_core_ptr_;
 
   // The DataManager's lifetime is controlled by the BackgroundFetchContext and
   // will be kept alive until after the JobController is destroyed.
   BackgroundFetchDataManager* data_manager_;
+
+  // Number of outstanding acknowledgements we still expect to receive.
+  int pending_completed_file_acknowledgements_ = 0;
 
   // Callback for when all fetches have been completed.
   CompletedCallback completed_callback_;
