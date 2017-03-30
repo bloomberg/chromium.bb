@@ -220,9 +220,12 @@
 
     [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
 
+    // HTMLMediaElement, HTMLAudioElement and HTMLVideoElement.
     DOMString effectivePreload(HTMLMediaElement mediaElement);
     void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement mediaElement, boolean available);
     void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement mediaElement, boolean remote);
+    void setMediaElementNetworkState(HTMLMediaElement element, long state);
+    void setPersistent(HTMLVideoElement video, boolean persistent);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme, sequence<DOMString> policyAreas);
@@ -362,8 +365,6 @@
     bool setScrollbarVisibilityInScrollableArea(Node node, boolean visible);
 
     [RaisesException] double monotonicTimeToZeroBasedDocumentTime(double platformTime);
-
-    void setMediaElementNetworkState(HTMLMediaElement element, long state);
 
     DOMString getScrollAnimationState(Node node);
 

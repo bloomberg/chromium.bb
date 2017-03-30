@@ -140,13 +140,6 @@ enum MediaControlsShow {
   MediaControlsShowMax
 };
 
-// This enum is used to record histograms. Do not reorder.
-enum VideoPersistenceControlsType {
-  VideoPersistenceControlsTypeNative = 0,
-  VideoPersistenceControlsTypeCustom,
-  VideoPersistenceControlsTypeCount
-};
-
 String urlForLoggingMedia(const KURL& url) {
   static const unsigned maximumURLLengthForLogging = 128;
 
@@ -474,8 +467,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_remotePlaybackClient(nullptr),
       m_autoplayVisibilityObserver(nullptr),
       m_mediaControls(nullptr),
-      m_controlsList(HTMLMediaElementControlsList::create(this)),
-      m_isPersistentVideo(false) {
+      m_controlsList(HTMLMediaElementControlsList::create(this)) {
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);
@@ -3229,39 +3221,6 @@ void HTMLMediaElement::cancelledRemotePlaybackRequest() {
 void HTMLMediaElement::remotePlaybackStarted() {
   if (remotePlaybackClient())
     remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connected);
-}
-
-// TODO(zqzhang): move logic for hiding controls here.
-void HTMLMediaElement::onBecamePersistentVideo(bool value) {
-  if (!isHTMLVideoElement())
-    return;
-
-  if (value) {
-    // Record the type of video. If it is already fullscreen, it is a video with
-    // native controls, otherwise it is assumed to be with custom controls.
-    // This is only recorded when entering this mode.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
-                        ("Media.VideoPersistence.ControlsType",
-                         VideoPersistenceControlsTypeCount));
-    if (isFullscreen())
-      histogram.count(VideoPersistenceControlsTypeNative);
-    else
-      histogram.count(VideoPersistenceControlsTypeCustom);
-
-    if (isFullscreen())
-      return;
-
-    UserGestureIndicator gestureIndicator(
-        DocumentUserGestureToken::create(&document()));
-    Fullscreen::requestFullscreen(*this);
-    m_isPersistentVideo = true;
-  } else {
-    if (!m_isPersistentVideo)
-      return;
-
-    Fullscreen::exitFullscreen(document());
-    m_isPersistentVideo = false;
-  }
 }
 
 bool HTMLMediaElement::hasSelectedVideoTrack() {

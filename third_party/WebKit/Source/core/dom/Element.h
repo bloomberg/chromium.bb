@@ -88,9 +88,9 @@ enum ElementFlags {
   IsInTopLayer = 1 << 4,
   HasPendingResources = 1 << 5,
   AlreadySpellChecked = 1 << 6,
+  ContainsPersistentVideo = 1 << 7,
 
-  NumberOfElementFlags =
-      7,  // Required size of bitfield used to store the flags.
+  NumberOfElementFlags = 8,  // Size of bitfield used to store the flags.
 };
 
 enum class ShadowRootType;
@@ -705,6 +705,11 @@ class CORE_EXPORT Element : public ContainerNode {
   }
   void setContainsFullScreenElement(bool);
   void setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool);
+
+  bool containsPersistentVideo() const {
+    return hasElementFlag(ContainsPersistentVideo);
+  }
+  void setContainsPersistentVideo(bool);
 
   bool isInTopLayer() const { return hasElementFlag(IsInTopLayer); }
   void setIsInTopLayer(bool);

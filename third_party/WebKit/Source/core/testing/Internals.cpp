@@ -87,6 +87,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasFontCache.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/html/forms/FormController.h"
@@ -2290,6 +2291,20 @@ void Internals::mediaPlayerPlayingRemotelyChanged(
     mediaElement->disconnectedFromRemoteDevice();
 }
 
+void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement,
+                                            int state) {
+  DCHECK(mediaElement);
+  DCHECK(state >= WebMediaPlayer::NetworkState::NetworkStateEmpty);
+  DCHECK(state <= WebMediaPlayer::NetworkState::NetworkStateDecodeError);
+  mediaElement->setNetworkState(
+      static_cast<WebMediaPlayer::NetworkState>(state));
+}
+
+void Internals::setPersistent(HTMLVideoElement* videoElement, bool persistent) {
+  DCHECK(videoElement);
+  videoElement->onBecamePersistentVideo(persistent);
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme) {
   SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(scheme);
@@ -3178,15 +3193,6 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
     ExceptionState& exceptionState) {
   return m_document->loader()->timing().monotonicTimeToZeroBasedDocumentTime(
       platformTime);
-}
-
-void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement,
-                                            int state) {
-  DCHECK(mediaElement);
-  DCHECK(state >= WebMediaPlayer::NetworkState::NetworkStateEmpty);
-  DCHECK(state <= WebMediaPlayer::NetworkState::NetworkStateDecodeError);
-  mediaElement->setNetworkState(
-      static_cast<WebMediaPlayer::NetworkState>(state));
 }
 
 String Internals::getScrollAnimationState(Node* node) const {

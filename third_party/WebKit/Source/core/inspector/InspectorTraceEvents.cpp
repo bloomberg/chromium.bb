@@ -307,6 +307,8 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType) {
     DEFINE_STRING_MAPPING(PseudoSpatialNavigationFocus)
     DEFINE_STRING_MAPPING(PseudoListBox)
     DEFINE_STRING_MAPPING(PseudoHostHasAppearance)
+    DEFINE_STRING_MAPPING(PseudoVideoPersistent)
+    DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
 #undef DEFINE_STRING_MAPPING
   }
 

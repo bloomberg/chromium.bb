@@ -58,6 +58,7 @@ class GCObservation;
 class HTMLInputElement;
 class HTMLMediaElement;
 class HTMLSelectElement;
+class HTMLVideoElement;
 class InternalRuntimeFlags;
 class InternalSettings;
 class LayerRectList;
@@ -360,9 +361,10 @@ class Internals final : public GarbageCollected<Internals>,
   void setIsCursorVisible(Document*, bool, ExceptionState&);
 
   String effectivePreload(HTMLMediaElement*);
-
   void mediaPlayerRemoteRouteAvailabilityChanged(HTMLMediaElement*, bool);
   void mediaPlayerPlayingRemotelyChanged(HTMLMediaElement*, bool);
+  void setMediaElementNetworkState(HTMLMediaElement*, int state);
+  void setPersistent(HTMLVideoElement*, bool);
 
   void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
   void registerURLSchemeAsBypassingContentSecurityPolicy(
@@ -520,8 +522,6 @@ class Internals final : public GarbageCollected<Internals>,
   // Translate given platform monotonic time in seconds to high resolution
   // document time in seconds
   double monotonicTimeToZeroBasedDocumentTime(double, ExceptionState&);
-
-  void setMediaElementNetworkState(HTMLMediaElement*, int state);
 
   // Returns the run state of the node's scroll animator (see
   // ScrollAnimatorCompositorCoordinater::RunState), or -1 if the node does not

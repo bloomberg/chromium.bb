@@ -59,3 +59,24 @@ iframe:-webkit-full-screen {
     left: 0 !important;
     top: 0 !important;
 }
+
+:-webkit-full-screen:-internal-video-persistent-ancestor :not(:-internal-video-persistent-ancestor) {
+  display: none !important;
+}
+
+:-internal-video-persistent {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+
+  background-color: black !important;
+  z-index: 2147483647 !important;
+}

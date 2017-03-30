@@ -156,6 +156,8 @@ bool supportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::PseudoListBox:
     case CSSSelector::PseudoHostHasAppearance:
     case CSSSelector::PseudoSlotted:
+    case CSSSelector::PseudoVideoPersistent:
+    case CSSSelector::PseudoVideoPersistentAncestor:
       return true;
     case CSSSelector::PseudoUnknown:
     case CSSSelector::PseudoLeftPage:
@@ -439,6 +441,8 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSimpleSelector(
       case CSSSelector::PseudoOutOfRange:
       case CSSSelector::PseudoUnresolved:
       case CSSSelector::PseudoDefined:
+      case CSSSelector::PseudoVideoPersistent:
+      case CSSSelector::PseudoVideoPersistentAncestor:
         return &ensurePseudoInvalidationSet(selector.getPseudoType(), type);
       case CSSSelector::PseudoFirstOfType:
       case CSSSelector::PseudoLastOfType:

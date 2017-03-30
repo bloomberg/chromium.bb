@@ -42,6 +42,7 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutVideo.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -52,6 +53,17 @@
 namespace blink {
 
 using namespace HTMLNames;
+
+namespace {
+
+// This enum is used to record histograms. Do not reorder.
+enum VideoPersistenceControlsType {
+  VideoPersistenceControlsTypeNative = 0,
+  VideoPersistenceControlsTypeCustom,
+  VideoPersistenceControlsTypeCount
+};
+
+}  // anonymous namespace
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(videoTag, document) {
@@ -92,6 +104,8 @@ void HTMLVideoElement::removedFrom(ContainerNode* insertionPoint) {
 
   if (m_customControlsFullscreenDetector)
     m_customControlsFullscreenDetector->detach();
+
+  onBecamePersistentVideo(false);
 }
 
 void HTMLVideoElement::contextDestroyed(ExecutionContext* context) {
@@ -211,6 +225,62 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode) {
 
   if (layoutObject() && getDisplayMode() != oldMode)
     layoutObject()->updateFromElement();
+}
+
+// TODO(zqzhang): this callback could be used to hide native controls instead of
+// using a settings. See `HTMLMediaElement::onMediaControlsEnabledChange`.
+void HTMLVideoElement::onBecamePersistentVideo(bool value) {
+  if (value) {
+    // Record the type of video. If it is already fullscreen, it is a video with
+    // native controls, otherwise it is assumed to be with custom controls.
+    // This is only recorded when entering this mode.
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
+                        ("Media.VideoPersistence.ControlsType",
+                         VideoPersistenceControlsTypeCount));
+    if (isFullscreen())
+      histogram.count(VideoPersistenceControlsTypeNative);
+    else
+      histogram.count(VideoPersistenceControlsTypeCustom);
+
+    Element* fullscreenElement =
+        Fullscreen::currentFullScreenElementFrom(document());
+    // Only set the video in persistent mode if it is not using native controls
+    // and is currently fullscreen.
+    if (!fullscreenElement || isFullscreen())
+      return;
+
+    m_isPersistent = true;
+    pseudoStateChanged(CSSSelector::PseudoVideoPersistent);
+
+    // The video is also marked as containing a persistent video to simplify the
+    // internal CSS logic.
+    for (Element* element = this; element && element != fullscreenElement;
+         element = element->parentOrShadowHostElement()) {
+      element->setContainsPersistentVideo(true);
+    }
+    fullscreenElement->setContainsPersistentVideo(true);
+  } else {
+    if (!m_isPersistent)
+      return;
+
+    m_isPersistent = false;
+    pseudoStateChanged(CSSSelector::PseudoVideoPersistent);
+
+    Element* fullscreenElement =
+        Fullscreen::currentFullScreenElementFrom(document());
+    // If the page is no longer fullscreen, the full tree will have to be
+    // traversed to make sure things are cleaned up.
+    for (Element* element = this; element && element != fullscreenElement;
+         element = element->parentOrShadowHostElement()) {
+      element->setContainsPersistentVideo(false);
+    }
+    if (fullscreenElement)
+      fullscreenElement->setContainsPersistentVideo(false);
+  }
+}
+
+bool HTMLVideoElement::isPersistent() const {
+  return m_isPersistent;
 }
 
 void HTMLVideoElement::updateDisplayState() {

@@ -50,6 +50,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLSlotElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/page/FocusController.h"
@@ -1012,6 +1013,12 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       return Fullscreen::isCurrentFullScreenElement(element);
     case CSSSelector::PseudoFullScreenAncestor:
       return element.containsFullScreenElement();
+    case CSSSelector::PseudoVideoPersistent:
+      if (!m_isUARule || !isHTMLVideoElement(element))
+        return false;
+      return toHTMLVideoElement(element).isPersistent();
+    case CSSSelector::PseudoVideoPersistentAncestor:
+      return m_isUARule && element.containsPersistentVideo();
     case CSSSelector::PseudoInRange:
       if (m_mode == ResolvingStyle)
         element.document().setContainsValidityStyleRules();

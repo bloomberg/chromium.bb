@@ -125,9 +125,15 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                   const ImageBitmapOptions&,
                                   ExceptionState&) override;
 
+  // WebMediaPlayerClient implementation.
+  void onBecamePersistentVideo(bool) final;
+
+  bool isPersistent() const;
+
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;
+  friend class HTMLVideoElementPersistentTest;
 
   HTMLVideoElement(Document&);
 
@@ -154,6 +160,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
       m_customControlsFullscreenDetector;
 
   AtomicString m_defaultPosterURL;
+
+  bool m_isPersistent = false;
 };
 
 }  // namespace blink

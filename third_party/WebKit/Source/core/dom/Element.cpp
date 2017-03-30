@@ -3555,6 +3555,26 @@ void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
     element->setContainsFullScreenElement(flag);
 }
 
+void Element::setContainsPersistentVideo(bool value) {
+  setElementFlag(ContainsPersistentVideo, value);
+  pseudoStateChanged(CSSSelector::PseudoVideoPersistentAncestor);
+
+  // In some rare situations, when the persistent video has been removed from
+  // the tree, part of the tree might still carry the flag.
+  if (!value && Fullscreen::isCurrentFullScreenElement(*this)) {
+    for (Node* node = firstChild(); node;) {
+      if (!node->isElementNode() ||
+          !toElement(node)->containsPersistentVideo()) {
+        node = node->nextSibling();
+        break;
+      }
+
+      toElement(node)->setContainsPersistentVideo(false);
+      node = node->firstChild();
+    }
+  }
+}
+
 void Element::setIsInTopLayer(bool inTopLayer) {
   if (isInTopLayer() == inTopLayer)
     return;

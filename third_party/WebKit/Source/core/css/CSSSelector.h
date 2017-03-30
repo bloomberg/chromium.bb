@@ -224,7 +224,9 @@ class CORE_EXPORT CSSSelector {
     PseudoSpatialNavigationFocus,
     PseudoListBox,
     PseudoHostHasAppearance,
-    PseudoSlotted
+    PseudoSlotted,
+    PseudoVideoPersistent,
+    PseudoVideoPersistentAncestor,
   };
 
   enum AttributeMatchType {
