@@ -497,7 +497,7 @@ deps_os = {
       Var('chromium_git') + '/external/netty4.git' + '@' + 'e0f26303b4ce635365be19414d0ac81f2ef6ba3c',
 
     'src/third_party/robolectric/robolectric':
-      Var('chromium_git') + '/external/robolectric.git' + '@' + '5244ef6a3a6aada84a7f4f270f253b760019c14c',
+      Var('chromium_git') + '/external/robolectric.git' + '@' + '2a0b6ba221c14f3371813a676ce06143353e448d',
 
     'src/third_party/ub-uiautomator/lib':
       Var('chromium_git') + '/chromium/third_party/ub-uiautomator.git' + '@' + '00270549ce3161ae72ceb24712618ea28b4f9434',

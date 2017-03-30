@@ -14,6 +14,7 @@ java_group("robolectric_all_java") {
     ":robolectric_utils_java",
     ":shadows_core_java",
     ":shadows_multidex_java",
+    ":shadows_play_services_java",
   ]
 }
 
@@ -40,7 +41,6 @@ java_library("robolectric_java") {
     ":robolectric_resources_java",
     ":robolectric_utils_java",
     ":shadows_core_java",
-    ":shadows_multidex_java",
     "//third_party/bouncycastle:bouncycastle_java",
     "//third_party/guava:guava_java",
     "//third_party/icu4j:icu4j_java",
@@ -641,6 +641,10 @@ java_library("shadows_core_java") {
 }
 
 java_library("shadows_multidex_java") {
+  # Skip platform checks since we must depend on android_support_multidex_java
+  # here which requires_android.
+  bypass_platform_checks = true
+
   testonly = true
   processors_javac =
       [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
@@ -659,6 +663,38 @@ java_library("shadows_multidex_java") {
     "//build/android:sun_tools_java",
     "//third_party/android_tools:android_support_multidex_java",
     "//third_party/guava:guava_java",
+  ]
+
+  # Work-around for gradle generator not yet supporting annotation processors.
+  gradle_treat_as_prebuilt = true
+}
+
+java_library("shadows_play_services_java") {
+  # Skip platform checks since we must depend on android_support_v4_java
+  # and google_play_services_library here which both requires_android.
+  bypass_platform_checks = true
+
+  testonly = true
+  processors_javac =
+      [ "org.robolectric.annotation.processing.RobolectricProcessor" ]
+  processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms" ]
+  provider_configurations = [ "robolectric/robolectric-shadows/shadows-play-services/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
+  java_files = [
+    "robolectric/robolectric-shadows/shadows-play-services/src/main/java/org/robolectric/shadows/gms/ShadowGoogleAuthUtil.java",
+    "robolectric/robolectric-shadows/shadows-play-services/src/main/java/org/robolectric/shadows/gms/ShadowGooglePlayServicesUtil.java",
+    "robolectric/robolectric-shadows/shadows-play-services/src/main/java/org/robolectric/shadows/gms/common/ShadowGoogleApiAvailability.java",
+    "robolectric/robolectric-shadows/shadows-play-services/src/main/java/org/robolectric/shadows/gms/package-info.java",
+  ]
+
+  deps = [
+    ":android-all-7.1.0_r7-robolectric-0_java",
+    ":robolectric_annotations_java",
+    ":robolectric_processor_java",
+    ":robolectric_resources_java",
+    ":robolectric_utils_java",
+    "//third_party/android_tools:android_support_v4_java",
+    "//third_party/guava:guava_java",
+    google_play_services_library,
   ]
 
   # Work-around for gradle generator not yet supporting annotation processors.

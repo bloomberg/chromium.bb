@@ -11,6 +11,8 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.Task;
 
@@ -20,6 +22,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.gms.Shadows;
+import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.util.Feature;
@@ -41,6 +45,9 @@ public class BackgroundSchedulerTest {
 
     @Before
     public void setUp() throws Exception {
+        Shadows.shadowOf(GoogleApiAvailability.getInstance())
+                .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
+
         mContext = RuntimeEnvironment.application;
         mGcmNetworkManager = (ShadowGcmNetworkManager) ShadowExtractor.extract(
                 GcmNetworkManager.getInstance(mContext));

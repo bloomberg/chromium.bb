@@ -15,6 +15,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.Task;
 
@@ -26,6 +28,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.internal.ShadowExtractor;
+import org.robolectric.shadows.gms.Shadows;
+import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -71,6 +75,8 @@ public class BackgroundOfflinerTaskTest {
 
     @Before
     public void setUp() throws Exception {
+        Shadows.shadowOf(GoogleApiAvailability.getInstance())
+                .setIsGooglePlayServicesAvailable(ConnectionResult.SUCCESS);
         ShadowDeviceConditions.setCurrentConditions(mDeviceConditions);
 
         // Build a bundle with trigger conditions.
