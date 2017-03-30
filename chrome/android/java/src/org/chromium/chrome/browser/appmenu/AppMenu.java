@@ -286,14 +286,17 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             boolean isAnchorViewAtBottomOfApp =
                     (anchorLocationScreen[1] + anchorHeight) == appRect.bottom;
 
-            if (isAnchorViewAtBottomOfApp) {
-                // When the anchor view is at the bottom of the screen, the menu is displayed over
-                // and above the anchored view, so shift the menu down by the height of the anchor
-                // view.
+            if (isAnchorViewAtBottomOfApp && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // When the anchor view is at the bottom of the screen on Android N+, the menu
+                // must be shifted down by the height of the anchor view in order to be displayed
+                // over and above it. The framework's PopupWindow positioning changed between
+                // N and M. Pre-N, setting a positive offset here shifts the menu up rather than
+                // down.
+                // See crbug.com/705348.
                 popup.setVerticalOffset(-mNegativeSoftwareVerticalOffset + anchorHeight);
             } else {
-                // When the anchor view is at the top of the screen, the menu is displayed over and
-                // below the anchored view, so shift the menu up by the height of the anchor view.
+                // Shift the menu by the height of the anchor view so that it is displayed
+                // over the anchor view.
                 popup.setVerticalOffset(-mNegativeSoftwareVerticalOffset - anchorHeight);
             }
         }
