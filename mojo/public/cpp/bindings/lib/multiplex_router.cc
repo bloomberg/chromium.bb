@@ -29,7 +29,7 @@ namespace internal {
 // No one other than the router's |endpoints_| and |tasks_| should hold refs to
 // this object.
 class MultiplexRouter::InterfaceEndpoint
-    : public base::RefCounted<InterfaceEndpoint>,
+    : public base::RefCountedThreadSafe<InterfaceEndpoint>,
       public InterfaceEndpointController {
  public:
   InterfaceEndpoint(MultiplexRouter* router, InterfaceId id)
@@ -150,7 +150,7 @@ class MultiplexRouter::InterfaceEndpoint
   }
 
  private:
-  friend class base::RefCounted<InterfaceEndpoint>;
+  friend class base::RefCountedThreadSafe<InterfaceEndpoint>;
 
   ~InterfaceEndpoint() override {
     router_->AssertLockAcquired();
