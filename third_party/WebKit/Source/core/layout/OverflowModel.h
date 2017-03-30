@@ -140,6 +140,9 @@ class SimpleOverflowModel {
 // visual overflow.
 
 class BoxOverflowModel {
+  WTF_MAKE_NONCOPYABLE(BoxOverflowModel);
+  USING_FAST_MALLOC(BoxOverflowModel);
+
  public:
   BoxOverflowModel(const LayoutRect& layoutRect,
                    const LayoutRect& selfVisualOverflowRect)
