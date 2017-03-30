@@ -257,11 +257,13 @@ const CGFloat kInfoTextTransparency = 0.38;
     _titleLabel.font = [fontLoader mediumFontOfSize:16];
     _titleLabel.textColor = [[MDCPalette greyPalette] tint900];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _titleLabel.accessibilityIdentifier = @"Reading List Item title";
 
     _subtitleLabel = [[UILabel alloc] init];
     _subtitleLabel.font = [fontLoader mediumFontOfSize:14];
     _subtitleLabel.textColor = [[MDCPalette greyPalette] tint500];
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _subtitleLabel.accessibilityIdentifier = @"Reading List Item subtitle";
 
     _distillationDateLabel = [[UILabel alloc] init];
     _distillationDateLabel.font = [fontLoader mediumFontOfSize:12];
@@ -271,6 +273,8 @@ const CGFloat kInfoTextTransparency = 0.38;
     _distillationDateLabel.textColor =
         [UIColor colorWithWhite:0 alpha:kInfoTextTransparency];
     _distillationDateLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _distillationDateLabel.accessibilityIdentifier =
+        @"Reading List Item distillation date";
 
     _distillationSizeLabel = [[UILabel alloc] init];
     _distillationSizeLabel.font = [fontLoader mediumFontOfSize:12];
@@ -280,6 +284,8 @@ const CGFloat kInfoTextTransparency = 0.38;
     _distillationSizeLabel.textColor =
         [UIColor colorWithWhite:0 alpha:kInfoTextTransparency];
     _distillationSizeLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _distillationSizeLabel.accessibilityIdentifier =
+        @"Reading List Item distillation size";
 
     _faviconView = [[FaviconViewNew alloc] init];
     CGFloat fontSize = floorf(faviconSize / 2);
@@ -288,6 +294,8 @@ const CGFloat kInfoTextTransparency = 0.38;
 
     _downloadIndicator = [[UIImageView alloc] init];
     [_downloadIndicator setTranslatesAutoresizingMaskIntoConstraints:NO];
+    _downloadIndicator.accessibilityIdentifier =
+        @"Reading List Item download indicator";
     [_faviconView addSubview:_downloadIndicator];
 
     [self.contentView addSubview:_faviconView];

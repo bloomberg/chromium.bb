@@ -61,6 +61,7 @@ const CFTimeInterval kSnackbarDisappearanceTimeout =
     MDCSnackbarMessageDurationMax + 1;
 const CFTimeInterval kLoadOfflineTimeout = 5;
 const CFTimeInterval kLongPressDuration = 1.0;
+const CFTimeInterval kDistillationTimeout = 5;
 const char kReadHeader[] = "Read";
 const char kUnreadHeader[] = "Unread";
 
@@ -250,6 +251,22 @@ void AddCurrentPageToReadingList() {
              @"Snackbar did not disappear.");
 }
 
+// Wait until one element is distilled.
+void WaitForDistillation() {
+  ConditionBlock wait_for_distillation_date = ^{
+    NSError* error = nil;
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(
+                                     @"Reading List Item distillation date")]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(kDistillationTimeout,
+                                                  wait_for_distillation_date),
+             @"Item was not distilled.");
+}
+
 // Returns the responses for a web server that can serve a distillable content
 // at kDistillableURL and a not distillable content at kNotDistillableURL.
 std::map<GURL, std::string> ResponsesForDistillationServer() {
@@ -376,6 +393,8 @@ void AssertIsShowingDistillablePage(bool online) {
   OpenReadingList();
   AssertEntryVisible(pageTitle);
 
+  WaitForDistillation();
+
   // Long press the entry, and open it offline.
   LongPressEntry(pageTitle);
   TapButtonWithID(IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE);
@@ -417,6 +436,8 @@ void AssertIsShowingDistillablePage(bool online) {
   // Verify that an entry with the correct title is present in the reading list.
   OpenReadingList();
   AssertEntryVisible(pageTitle);
+  WaitForDistillation();
+
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
 
@@ -445,12 +466,13 @@ void AssertIsShowingDistillablePage(bool online) {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNonDistillableURL)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  // Stop server to generate error.
-  server.Stop();
-
   // Verify that an entry with the correct title is present in the reading list.
   OpenReadingList();
   AssertEntryVisible(pageTitle);
+  WaitForDistillation();
+
+  // Stop server to generate error.
+  server.Stop();
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
 
@@ -479,13 +501,14 @@ void AssertIsShowingDistillablePage(bool online) {
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNonDistillableURL)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
-  web::test::SetUpHttpServer(base::MakeUnique<web::DelayedResponseProvider>(
-      base::MakeUnique<HtmlResponseProvider>(ResponsesForDistillationServer()),
-      5));
-
   // Verify that an entry with the correct title is present in the reading list.
   OpenReadingList();
   AssertEntryVisible(pageTitle);
+  WaitForDistillation();
+
+  web::test::SetUpHttpServer(base::MakeUnique<web::DelayedResponseProvider>(
+      base::MakeUnique<HtmlResponseProvider>(ResponsesForDistillationServer()),
+      5));
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
 
