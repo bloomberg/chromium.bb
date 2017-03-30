@@ -553,4 +553,50 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForFileAccessErrors) {
   test_job_delegate.WaitForDoneReading(extension->id());
 }
 
+// Tests that zero byte files correctly go through ContentVerifyJob.
+TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
+  const char kFooJsContents[] = "";  // Empty.
+  JobDelegate test_job_delegate(kFooJsContents);
+  SetProtocolHandler(false);
+
+  const std::string kFooJs("foo.js");
+  // Create a temporary directory that a fake extension will live in and fill
+  // it with some test files.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath foo_js(FILE_PATH_LITERAL("foo.js"));
+  ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), foo_js, kFooJsContents))
+      << "Failed to write " << temp_dir.GetPath().value() << "/"
+      << foo_js.value();
+
+  // Sanity check foo.js.
+  base::FilePath foo_path = temp_dir.GetPath().AppendASCII(kFooJs);
+  int64_t foo_file_size = -1;
+  ASSERT_TRUE(base::GetFileSize(foo_path, &foo_file_size));
+  ASSERT_EQ(0, foo_file_size);
+
+  ExtensionBuilder builder;
+  builder
+      .SetManifest(DictionaryBuilder()
+                       .Set("name", "Foo")
+                       .Set("version", "1.0")
+                       .Set("manifest_version", 2)
+                       .Set("update_url",
+                            "https://clients2.google.com/service/update2/crx")
+                       .Build())
+      .SetID(crx_file::id_util::GenerateId("whatever"))
+      .SetPath(temp_dir.GetPath())
+      .SetLocation(Manifest::INTERNAL);
+  scoped_refptr<Extension> extension(builder.Build());
+
+  ASSERT_TRUE(extension.get());
+  content_verifier_->OnExtensionLoaded(testing_profile_.get(), extension.get());
+  // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
+  content::RunAllPendingInMessageLoop();
+
+  // Request foo.js.
+  EXPECT_EQ(net::OK, DoRequest(*extension, kFooJs));
+  test_job_delegate.WaitForDoneReading(extension->id());
+}
+
 }  // namespace extensions

@@ -268,12 +268,15 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                                   -result);
     if (result > 0) {
       bytes_read_ += result;
-      if (verify_job_.get()) {
+      if (verify_job_.get())
         verify_job_->BytesRead(result, buffer->data());
-        if (!remaining_bytes())
-          verify_job_->DoneReading();
-      }
     }
+  }
+
+  void DoneReading() override {
+    URLRequestFileJob::DoneReading();
+    if (verify_job_.get())
+      verify_job_->DoneReading();
   }
 
  private:
