@@ -201,9 +201,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
     // a device services.
-    VLOG(1) << *this << ": Can't discover primary services: "
-            << error.localizedDescription.UTF8String << " (" << error.domain
-            << ": " << error.code << ").";
+    VLOG(1) << *this << ": Can't discover primary services: " << error;
     return;
   }
 
@@ -247,9 +245,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
   if (error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
-    VLOG(1) << *this << ": Can't discover characteristics: "
-            << error.localizedDescription.UTF8String << " (" << error.domain
-            << ": " << error.code << ").";
+    VLOG(1) << *this << ": Can't discover characteristics: " << error;
     return;
   }
 
@@ -320,9 +316,7 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverDescriptors(
   if (error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
-    VLOG(1) << *this << ": Can't discover descriptors: "
-            << error.localizedDescription.UTF8String << " (" << error.domain
-            << ": " << error.code << ").";
+    VLOG(1) << *this << ": Can't discover descriptors: " << error;
     return;
   }
   if (!IsGattConnected()) {
@@ -408,8 +402,7 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
 void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(NSError* error) {
   VLOG(1) << *this << ": Disconnected from peripheral.";
   if (error) {
-    VLOG(1) << *this << ": Bluetooth error, domain: " << error.domain.UTF8String
-            << ", error code: " << error.code;
+    VLOG(1) << *this << ": Bluetooth error: " << error;
   }
   SetGattServicesDiscoveryComplete(false);
   // Removing all services at once to ensure that calling GetGattService on

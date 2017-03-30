@@ -674,11 +674,9 @@ void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,
       BluetoothDevice::ConnectErrorCode::ERROR_UNKNOWN;
   if (error) {
     error_code = BluetoothDeviceMac::GetConnectErrorCodeFromNSError(error);
-    VLOG(1) << "Converting Bluetooth error, domain: " << error.domain.UTF8String
-            << ", error code: " << error.code << ", to: " << error_code;
   }
   VLOG(1) << *device_mac << ": Failed to connect to peripheral with error "
-          << error;
+          << error << ", error code: " << error_code;
   device_mac->DidFailToConnectGatt(error_code);
 }
 
@@ -724,6 +722,16 @@ bool BluetoothAdapterMac::DoesCollideWithKnownDevice(
     return true;
   }
   return false;
+}
+
+DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(std::ostream& out,
+                                                 NSError* error) {
+  if (!error) {
+    return out << "no error";
+  }
+  return out << "error domain: " << base::SysNSStringToUTF8(error.domain)
+             << ", code: " << std::to_string(error.code) << ", description: "
+             << base::SysNSStringToUTF8(error.localizedDescription);
 }
 
 }  // namespace device

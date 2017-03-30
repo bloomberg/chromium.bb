@@ -258,12 +258,11 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
     callbacks.swap(read_characteristic_value_callbacks_);
     characteristic_value_read_or_write_in_progress_ = false;
     if (error) {
-      VLOG(1) << *this
-              << ": Bluetooth error while reading for characteristic, domain: "
-              << base::SysNSStringToUTF8(error.domain)
-              << ", error code: " << error.code;
       BluetoothGattService::GattErrorCode error_code =
           BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
+      VLOG(1) << *this
+              << ": Bluetooth error while reading for characteristic, domain: "
+              << error << ", error code: " << error_code;
       callbacks.second.Run(error_code);
       return;
     }
@@ -304,12 +303,11 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
   callbacks.swap(write_characteristic_value_callbacks_);
   characteristic_value_read_or_write_in_progress_ = false;
   if (error) {
-    VLOG(1) << *this
-            << ": Bluetooth error while writing for characteristic, domain: "
-            << base::SysNSStringToUTF8(error.domain)
-            << ", error code: " << error.code;
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
+    VLOG(1) << *this
+            << ": Bluetooth error while writing for characteristic, error: "
+            << error << ", error code: " << error_code;
     callbacks.second.Run(error_code);
     return;
   }
@@ -331,14 +329,12 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     return;
   }
   if (error) {
-    VLOG(1) << *this
-            << ": Bluetooth error while modifying notification state for "
-               "characteristic, domain: "
-            << base::SysNSStringToUTF8(error.domain)
-            << ", error code: " << error.code << ", localized description: "
-            << base::SysNSStringToUTF8(error.localizedDescription);
     BluetoothGattService::GattErrorCode error_code =
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
+    VLOG(1) << *this
+            << ": Bluetooth error while modifying notification state for "
+               "characteristic, error: "
+            << error << ", error code: " << error_code;
     reentrant_safe_callbacks.second.Run(error_code);
     return;
   }

@@ -229,6 +229,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
   DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterMac);
 };
 
+// Stream operator for logging.
+DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(std::ostream& out,
+                                                 NSError* error);
+
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_MAC_H_
