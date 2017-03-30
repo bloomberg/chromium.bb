@@ -34,7 +34,6 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
   void Initialize() override;
 
   // Handlers
-  void HandleGetUsers();
   void HandleHardlockPod(const AccountId& account_id);
   void HandleAttemptUnlock(const AccountId& account_id);
   void HandleRecordClickOnLockIcon(const AccountId& account_id);

@@ -20,7 +20,6 @@ void UserBoardScreenHandler::DeclareLocalizedValues(
 }
 
 void UserBoardScreenHandler::RegisterMessages() {
-  AddCallback("getUsers", &UserBoardScreenHandler::HandleGetUsers);
   AddCallback("attemptUnlock", &UserBoardScreenHandler::HandleAttemptUnlock);
   AddCallback("hardlockPod", &UserBoardScreenHandler::HandleHardlockPod);
   AddCallback("recordClickOnLockIcon",
@@ -31,11 +30,6 @@ void UserBoardScreenHandler::Initialize() {
 }
 
 //----------------- Handlers
-
-void UserBoardScreenHandler::HandleGetUsers() {
-  CHECK(screen_);
-  screen_->SendUserList();
-}
 
 void UserBoardScreenHandler::HandleHardlockPod(const AccountId& account_id) {
   CHECK(screen_);
