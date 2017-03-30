@@ -297,10 +297,12 @@ var MainPageBehaviorImpl = {
             this.getSection(settings.getCurrentRoute().section);
 
         // Scroll to the new section or the original position.
-        if (newSection && !settings.lastRouteChangeWasPopstate())
+        if (newSection && !settings.lastRouteChangeWasPopstate() &&
+            !settings.getCurrentRoute().isSubpage()) {
           newSection.scrollIntoView();
-        else
+        } else {
           this.scroller.scrollTop = this.origScrollTop_;
+        }
 
         this.currentAnimation_ = section.animateCollapse(
             /** @type {!HTMLElement} */(this.scroller));
