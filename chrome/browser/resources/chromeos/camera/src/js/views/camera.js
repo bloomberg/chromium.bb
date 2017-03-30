@@ -1075,15 +1075,31 @@ camera.views.Camera.prototype.onScrollEnded_ = function() {
 };
 
 /**
- * Updates the UI to reflect the mirroring from settings.
+ * Updates the UI to reflect the mirroring either set automatically or by user.
  * @private
  */
 camera.views.Camera.prototype.updateMirroring_ = function() {
-  var enabled = this.legacyMirroringToggle_;
-  if (this.videoDeviceId_ in this.mirroringToggles_)
-    enabled = this.mirroringToggles_[this.videoDeviceId_];
+  var toggleMirror = document.querySelector('#toggle-mirror')
+  var enabled;
 
-  document.querySelector('#toggle-mirror').checked = enabled;
+  var track = this.stream_ && this.stream_.getVideoTracks()[0];
+  var trackSettings = track.getSettings && track.getSettings();
+  var facingMode = trackSettings && trackSettings.facingMode;
+
+  toggleMirror.hidden = !!facingMode;
+
+  if (facingMode) {
+    // Automatic mirroring detection.
+    enabled = facingMode == 'user';
+  } else {
+    // Manual mirroring.
+    if (this.videoDeviceId_ in this.mirroringToggles_)
+      enabled = this.mirroringToggles_[this.videoDeviceId_];
+    else
+      enabled = this.legacyMirroringToggle_;
+  }
+
+  toggleMirror.checked = enabled;
   document.body.classList.toggle('mirror', enabled);
 };
 
