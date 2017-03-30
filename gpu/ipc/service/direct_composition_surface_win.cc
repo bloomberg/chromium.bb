@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/switches.h"
@@ -632,6 +633,11 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
     return true;
   if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
+    return false;
+
+  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes
+  // wouldn't be assigned to non-UWP apps.
+  if (base::win::GetVersion() < base::win::VERSION_WIN10_R1)
     return false;
 
   base::win::ScopedComPtr<ID3D11Device> d3d11_device =
