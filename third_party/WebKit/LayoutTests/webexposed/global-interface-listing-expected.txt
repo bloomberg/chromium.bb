@@ -4682,7 +4682,7 @@ interface PaymentAddress
     getter sortingCode
     method constructor
     method toJSON
-interface PaymentAppManager
+interface PaymentManager
     attribute @@toStringTag
     method constructor
     method getManifest
@@ -6429,7 +6429,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter backgroundFetch
     getter installing
     getter onupdatefound
-    getter paymentAppManager
+    getter paymentManager
     getter pushManager
     getter scope
     getter sync

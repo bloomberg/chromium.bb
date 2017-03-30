@@ -38,28 +38,28 @@ void GetManifestCallback(bool* called,
 
 }  // namespace
 
-class PaymentAppManagerTest : public PaymentAppContentUnitTestBase {
+class PaymentManagerTest : public PaymentAppContentUnitTestBase {
  public:
-  PaymentAppManagerTest() {
-    manager_ = CreatePaymentAppManager(GURL(kServiceWorkerPattern),
-                                       GURL(kServiceWorkerScript));
+  PaymentManagerTest() {
+    manager_ = CreatePaymentManager(GURL(kServiceWorkerPattern),
+                                    GURL(kServiceWorkerScript));
     EXPECT_NE(nullptr, manager_);
   }
 
-  PaymentAppManager* payment_app_manager() const { return manager_; }
+  PaymentManager* payment_manager() const { return manager_; }
 
  private:
   // Owned by payment_app_context_.
-  PaymentAppManager* manager_;
+  PaymentManager* manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaymentAppManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(PaymentManagerTest);
 };
 
-TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
+TEST_F(PaymentManagerTest, SetAndGetManifest) {
   bool called = false;
   PaymentAppManifestError error =
       PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
-  SetManifest(payment_app_manager(),
+  SetManifest(payment_manager(),
               CreatePaymentAppManifestForTest(kServiceWorkerPattern),
               base::Bind(&SetManifestCallback, &called, &error));
   ASSERT_TRUE(called);
@@ -70,8 +70,8 @@ TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
   PaymentAppManifestPtr read_manifest;
   PaymentAppManifestError read_error =
       PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
-  GetManifest(payment_app_manager(), base::Bind(&GetManifestCallback, &called,
-                                                &read_manifest, &read_error));
+  GetManifest(payment_manager(), base::Bind(&GetManifestCallback, &called,
+                                            &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
   ASSERT_EQ(payments::mojom::PaymentAppManifestError::NONE, read_error);
@@ -85,11 +85,11 @@ TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
   EXPECT_EQ("visa", read_manifest->options[0]->enabled_methods[0]);
 }
 
-TEST_F(PaymentAppManagerTest, SetManifestWithoutAssociatedServiceWorker) {
+TEST_F(PaymentManagerTest, SetManifestWithoutAssociatedServiceWorker) {
   bool called = false;
   PaymentAppManifestError error = PaymentAppManifestError::NONE;
   UnregisterServiceWorker(GURL(kServiceWorkerPattern));
-  SetManifest(payment_app_manager(),
+  SetManifest(payment_manager(),
               CreatePaymentAppManifestForTest(kServiceWorkerPattern),
               base::Bind(&SetManifestCallback, &called, &error));
   ASSERT_TRUE(called);
@@ -97,24 +97,24 @@ TEST_F(PaymentAppManagerTest, SetManifestWithoutAssociatedServiceWorker) {
   EXPECT_EQ(PaymentAppManifestError::NO_ACTIVE_WORKER, error);
 }
 
-TEST_F(PaymentAppManagerTest, GetManifestWithoutAssociatedServiceWorker) {
+TEST_F(PaymentManagerTest, GetManifestWithoutAssociatedServiceWorker) {
   bool called = false;
   PaymentAppManifestPtr read_manifest;
   PaymentAppManifestError read_error = PaymentAppManifestError::NONE;
   UnregisterServiceWorker(GURL(kServiceWorkerPattern));
-  GetManifest(payment_app_manager(), base::Bind(&GetManifestCallback, &called,
-                                                &read_manifest, &read_error));
+  GetManifest(payment_manager(), base::Bind(&GetManifestCallback, &called,
+                                            &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
   EXPECT_EQ(PaymentAppManifestError::NO_ACTIVE_WORKER, read_error);
 }
 
-TEST_F(PaymentAppManagerTest, GetManifestWithNoSavedManifest) {
+TEST_F(PaymentManagerTest, GetManifestWithNoSavedManifest) {
   bool called = false;
   PaymentAppManifestPtr read_manifest;
   PaymentAppManifestError read_error = PaymentAppManifestError::NONE;
-  GetManifest(payment_app_manager(), base::Bind(&GetManifestCallback, &called,
-                                                &read_manifest, &read_error));
+  GetManifest(payment_manager(), base::Bind(&GetManifestCallback, &called,
+                                            &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
   EXPECT_EQ(PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED,

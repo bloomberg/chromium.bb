@@ -180,7 +180,7 @@ modules_idl_files =
                     "notifications/NotificationPermissionCallback.idl",
                     "offscreencanvas2d/OffscreenCanvasRenderingContext2D.idl",
                     "payments/PaymentAddress.idl",
-                    "payments/PaymentAppManager.idl",
+                    "payments/PaymentManager.idl",
                     "payments/PaymentRequestEvent.idl",
                     "payments/PaymentRequestUpdateEvent.idl",
                     "payments/PaymentRequest.idl",

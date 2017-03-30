@@ -28,7 +28,7 @@ struct PaymentAppManifest {
   array<PaymentAppOption> options;
 };
 
-interface PaymentAppManager {
+interface PaymentManager {
   Init(string service_worker_scope);
   SetManifest(PaymentAppManifest payment_app_manifest)
       => (PaymentAppManifestError error);

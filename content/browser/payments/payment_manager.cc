@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/payments/payment_app_manager.h"
+#include "content/browser/payments/payment_manager.h"
 
 #include <utility>
 
@@ -17,13 +17,13 @@
 
 namespace content {
 
-PaymentAppManager::~PaymentAppManager() {
+PaymentManager::~PaymentManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-PaymentAppManager::PaymentAppManager(
+PaymentManager::PaymentManager(
     PaymentAppContextImpl* payment_app_context,
-    mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request)
+    mojo::InterfaceRequest<payments::mojom::PaymentManager> request)
     : payment_app_context_(payment_app_context),
       binding_(this, std::move(request)),
       weak_ptr_factory_(this) {
@@ -31,16 +31,15 @@ PaymentAppManager::PaymentAppManager(
   DCHECK(payment_app_context);
 
   binding_.set_connection_error_handler(
-      base::Bind(&PaymentAppManager::OnConnectionError,
-                 base::Unretained(this)));
+      base::Bind(&PaymentManager::OnConnectionError, base::Unretained(this)));
 }
 
-void PaymentAppManager::Init(const std::string& scope) {
+void PaymentManager::Init(const std::string& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scope_ = GURL(scope);
 }
 
-void PaymentAppManager::SetManifest(
+void PaymentManager::SetManifest(
     payments::mojom::PaymentAppManifestPtr manifest,
     const SetManifestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -52,15 +51,15 @@ void PaymentAppManager::SetManifest(
       scope_, std::move(manifest), callback);
 }
 
-void PaymentAppManager::GetManifest(const GetManifestCallback& callback) {
+void PaymentManager::GetManifest(const GetManifestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->ReadManifest(scope_, callback);
 }
 
-void PaymentAppManager::OnConnectionError() {
+void PaymentManager::OnConnectionError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  payment_app_context_->PaymentAppManagerHadConnectionError(this);
+  payment_app_context_->PaymentManagerHadConnectionError(this);
 }
 
 }  // namespace content

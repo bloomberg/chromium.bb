@@ -9,7 +9,7 @@ function registerPaymentApp() {
         return navigator.serviceWorker.ready;
       })
     .then(registration => {
-        return registration.paymentAppManager.setManifest({
+        return registration.paymentManager.setManifest({
             name: 'Payment App',
             icon: 'payment-app-icon',
             options: [{

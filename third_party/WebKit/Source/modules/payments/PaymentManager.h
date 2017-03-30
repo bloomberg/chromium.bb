@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentAppManager_h
-#define PaymentAppManager_h
+#ifndef PaymentManager_h
+#define PaymentManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -18,14 +18,14 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
 
-class MODULES_EXPORT PaymentAppManager final
-    : public GarbageCollectedFinalized<PaymentAppManager>,
+class MODULES_EXPORT PaymentManager final
+    : public GarbageCollectedFinalized<PaymentManager>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
-  WTF_MAKE_NONCOPYABLE(PaymentAppManager);
+  WTF_MAKE_NONCOPYABLE(PaymentManager);
 
  public:
-  static PaymentAppManager* create(ServiceWorkerRegistration*);
+  static PaymentManager* create(ServiceWorkerRegistration*);
 
   ScriptPromise setManifest(ScriptState*, const PaymentAppManifest&);
   ScriptPromise getManifest(ScriptState*);
@@ -33,7 +33,7 @@ class MODULES_EXPORT PaymentAppManager final
   DECLARE_TRACE();
 
  private:
-  explicit PaymentAppManager(ServiceWorkerRegistration*);
+  explicit PaymentManager(ServiceWorkerRegistration*);
 
   void onSetManifest(ScriptPromiseResolver*,
                      payments::mojom::blink::PaymentAppManifestError);
@@ -43,9 +43,9 @@ class MODULES_EXPORT PaymentAppManager final
   void onServiceConnectionError();
 
   Member<ServiceWorkerRegistration> m_registration;
-  payments::mojom::blink::PaymentAppManagerPtr m_manager;
+  payments::mojom::blink::PaymentManagerPtr m_manager;
 };
 
 }  // namespace blink
 
-#endif  // PaymentAppManager_h
+#endif  // PaymentManager_h

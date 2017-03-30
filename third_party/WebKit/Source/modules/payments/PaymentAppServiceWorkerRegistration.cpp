@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
-#include "modules/payments/PaymentAppManager.h"
+#include "modules/payments/PaymentManager.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
 namespace blink {
@@ -30,24 +30,24 @@ PaymentAppServiceWorkerRegistration& PaymentAppServiceWorkerRegistration::from(
 }
 
 // static
-PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
+PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
     ScriptState* scriptState,
     ServiceWorkerRegistration& registration) {
   return PaymentAppServiceWorkerRegistration::from(registration)
-      .paymentAppManager(scriptState);
+      .paymentManager(scriptState);
 }
 
-PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
+PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
     ScriptState* scriptState) {
-  if (!m_paymentAppManager) {
-    m_paymentAppManager = PaymentAppManager::create(m_registration);
+  if (!m_paymentManager) {
+    m_paymentManager = PaymentManager::create(m_registration);
   }
-  return m_paymentAppManager.get();
+  return m_paymentManager.get();
 }
 
 DEFINE_TRACE(PaymentAppServiceWorkerRegistration) {
   visitor->trace(m_registration);
-  visitor->trace(m_paymentAppManager);
+  visitor->trace(m_paymentManager);
   Supplement<ServiceWorkerRegistration>::trace(visitor);
 }
 

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "content/browser/payments/payment_app_manager.h"
+#include "content/browser/payments/payment_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -38,22 +38,22 @@ void PaymentAppContextImpl::Shutdown() {
       base::Bind(&PaymentAppContextImpl::DidShutdown, this));
 }
 
-void PaymentAppContextImpl::CreatePaymentAppManager(
-    mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request) {
+void PaymentAppContextImpl::CreatePaymentManager(
+    mojo::InterfaceRequest<payments::mojom::PaymentManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::CreatePaymentAppManagerOnIO, this,
+      base::Bind(&PaymentAppContextImpl::CreatePaymentManagerOnIO, this,
                  base::Passed(&request)));
 }
 
-void PaymentAppContextImpl::PaymentAppManagerHadConnectionError(
-    PaymentAppManager* payment_app_manager) {
+void PaymentAppContextImpl::PaymentManagerHadConnectionError(
+    PaymentManager* payment_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(payment_app_managers_, payment_app_manager));
+  DCHECK(base::ContainsKey(payment_managers_, payment_manager));
 
-  payment_app_managers_.erase(payment_app_manager);
+  payment_managers_.erase(payment_manager);
 }
 
 PaymentAppDatabase* PaymentAppContextImpl::payment_app_database() const {
@@ -73,19 +73,18 @@ void PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO(
       base::MakeUnique<PaymentAppDatabase>(service_worker_context);
 }
 
-void PaymentAppContextImpl::CreatePaymentAppManagerOnIO(
-    mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request) {
+void PaymentAppContextImpl::CreatePaymentManagerOnIO(
+    mojo::InterfaceRequest<payments::mojom::PaymentManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  PaymentAppManager* payment_app_manager =
-      new PaymentAppManager(this, std::move(request));
-  payment_app_managers_[payment_app_manager] =
-      base::WrapUnique(payment_app_manager);
+  PaymentManager* payment_manager =
+      new PaymentManager(this, std::move(request));
+  payment_managers_[payment_manager] = base::WrapUnique(payment_manager);
 }
 
 void PaymentAppContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  payment_app_managers_.clear();
+  payment_managers_.clear();
   payment_app_database_.reset();
 }
 

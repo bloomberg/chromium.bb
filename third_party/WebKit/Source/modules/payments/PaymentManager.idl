@@ -8,7 +8,7 @@
     RuntimeEnabled=PaymentApp,
     ConstructorCallWith=ExecutionContext,
     DependentLifetime,
-] interface PaymentAppManager {
+] interface PaymentManager {
     [CallWith=ScriptState] Promise<void> setManifest(PaymentAppManifest manifest);
     [CallWith=ScriptState] Promise<PaymentAppManifest> getManifest();
 };

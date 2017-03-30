@@ -7,5 +7,5 @@
 [
     RuntimeEnabled=PaymentApp,
 ] partial interface ServiceWorkerRegistration {
-    [CallWith=ScriptState] readonly attribute PaymentAppManager paymentAppManager;
+    [CallWith=ScriptState] readonly attribute PaymentManager paymentManager;
 };

@@ -853,7 +853,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter backgroundFetch
     getter installing
     getter onupdatefound
-    getter paymentAppManager
+    getter paymentManager
     getter pushManager
     getter scope
     getter sync

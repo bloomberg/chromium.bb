@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_MANAGER_H_
-#define CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_MANAGER_H_
+#ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_MANAGER_H_
+#define CONTENT_BROWSER_PAYMENTS_PAYMENT_MANAGER_H_
 
 #include <string>
 
@@ -18,19 +18,19 @@ namespace content {
 
 class PaymentAppContextImpl;
 
-class CONTENT_EXPORT PaymentAppManager
-    : public NON_EXPORTED_BASE(payments::mojom::PaymentAppManager) {
+class CONTENT_EXPORT PaymentManager
+    : public NON_EXPORTED_BASE(payments::mojom::PaymentManager) {
  public:
-  PaymentAppManager(
+  PaymentManager(
       PaymentAppContextImpl* payment_app_context,
-      mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request);
+      mojo::InterfaceRequest<payments::mojom::PaymentManager> request);
 
-  ~PaymentAppManager() override;
+  ~PaymentManager() override;
 
  private:
   friend class PaymentAppContentUnitTestBase;
 
-  // payments::mojom::PaymentAppManager methods:
+  // payments::mojom::PaymentManager methods:
   void Init(const std::string& scope) override;
   void SetManifest(payments::mojom::PaymentAppManifestPtr manifest,
                    const SetManifestCallback& callback) override;
@@ -39,15 +39,15 @@ class CONTENT_EXPORT PaymentAppManager
   // Called when an error is detected on binding_.
   void OnConnectionError();
 
-  // PaymentAppContextImpl owns PaymentAppManager
+  // PaymentAppContextImpl owns PaymentManager
   PaymentAppContextImpl* payment_app_context_;
 
   GURL scope_;
-  mojo::Binding<payments::mojom::PaymentAppManager> binding_;
-  base::WeakPtrFactory<PaymentAppManager> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(PaymentAppManager);
+  mojo::Binding<payments::mojom::PaymentManager> binding_;
+  base::WeakPtrFactory<PaymentManager> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(PaymentManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_PAYMENTS_PAYMENT_APP_MANAGER_H_
+#endif  // CONTENT_BROWSER_PAYMENTS_PAYMENT_MANAGER_H_

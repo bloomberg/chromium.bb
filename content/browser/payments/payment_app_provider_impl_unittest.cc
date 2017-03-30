@@ -19,7 +19,7 @@ using payments::mojom::PaymentAppManifestPtr;
 
 namespace content {
 
-class PaymentAppManager;
+class PaymentManager;
 
 namespace {
 
@@ -64,8 +64,7 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
   }
 
   void CreatePaymentApp(const GURL& scope_url, const GURL& sw_script_url) {
-    PaymentAppManager* manager =
-        CreatePaymentAppManager(scope_url, sw_script_url);
+    PaymentManager* manager = CreatePaymentManager(scope_url, sw_script_url);
 
     PaymentAppManifestError error =
         PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;

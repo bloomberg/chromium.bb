@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAppManager.h"
+#include "modules/payments/PaymentManager.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -86,14 +86,13 @@ struct TypeConverter<blink::PaymentAppOption, PaymentAppOptionPtr> {
 
 namespace blink {
 
-PaymentAppManager* PaymentAppManager::create(
+PaymentManager* PaymentManager::create(
     ServiceWorkerRegistration* registration) {
-  return new PaymentAppManager(registration);
+  return new PaymentManager(registration);
 }
 
-ScriptPromise PaymentAppManager::setManifest(
-    ScriptState* scriptState,
-    const PaymentAppManifest& manifest) {
+ScriptPromise PaymentManager::setManifest(ScriptState* scriptState,
+                                          const PaymentAppManifest& manifest) {
   if (!m_manager) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError,
@@ -105,14 +104,14 @@ ScriptPromise PaymentAppManager::setManifest(
 
   m_manager->SetManifest(
       payments::mojom::blink::PaymentAppManifest::From(manifest),
-      convertToBaseCallback(WTF::bind(&PaymentAppManager::onSetManifest,
+      convertToBaseCallback(WTF::bind(&PaymentManager::onSetManifest,
                                       wrapPersistent(this),
                                       wrapPersistent(resolver))));
 
   return promise;
 }
 
-ScriptPromise PaymentAppManager::getManifest(ScriptState* scriptState) {
+ScriptPromise PaymentManager::getManifest(ScriptState* scriptState) {
   if (!m_manager) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError,
@@ -123,29 +122,29 @@ ScriptPromise PaymentAppManager::getManifest(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
 
   m_manager->GetManifest(convertToBaseCallback(
-      WTF::bind(&PaymentAppManager::onGetManifest, wrapPersistent(this),
+      WTF::bind(&PaymentManager::onGetManifest, wrapPersistent(this),
                 wrapPersistent(resolver))));
 
   return promise;
 }
 
-DEFINE_TRACE(PaymentAppManager) {
+DEFINE_TRACE(PaymentManager) {
   visitor->trace(m_registration);
 }
 
-PaymentAppManager::PaymentAppManager(ServiceWorkerRegistration* registration)
+PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
     : m_registration(registration) {
   DCHECK(registration);
   Platform::current()->interfaceProvider()->getInterface(
       mojo::MakeRequest(&m_manager));
 
   m_manager.set_connection_error_handler(convertToBaseCallback(WTF::bind(
-      &PaymentAppManager::onServiceConnectionError, wrapWeakPersistent(this))));
+      &PaymentManager::onServiceConnectionError, wrapWeakPersistent(this))));
 
   m_manager->Init(m_registration->scope());
 }
 
-void PaymentAppManager::onSetManifest(
+void PaymentManager::onSetManifest(
     ScriptPromiseResolver* resolver,
     payments::mojom::blink::PaymentAppManifestError error) {
   DCHECK(resolver);
@@ -169,7 +168,7 @@ void PaymentAppManager::onSetManifest(
   }
 }
 
-void PaymentAppManager::onGetManifest(
+void PaymentManager::onGetManifest(
     ScriptPromiseResolver* resolver,
     payments::mojom::blink::PaymentAppManifestPtr manifest,
     payments::mojom::blink::PaymentAppManifestError error) {
@@ -193,7 +192,7 @@ void PaymentAppManager::onGetManifest(
   }
 }
 
-void PaymentAppManager::onServiceConnectionError() {
+void PaymentManager::onServiceConnectionError() {
   m_manager.reset();
 }
 

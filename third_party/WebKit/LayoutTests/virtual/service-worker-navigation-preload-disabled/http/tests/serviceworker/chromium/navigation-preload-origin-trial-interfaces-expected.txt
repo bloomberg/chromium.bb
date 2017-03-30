@@ -12,7 +12,7 @@ interface ServiceWorkerRegistration
  getter installing
  getter navigationPreload
  getter onupdatefound
- getter paymentAppManager
+ getter paymentManager
  getter pushManager
  getter scope
  getter sync
@@ -35,7 +35,7 @@ interface ServiceWorkerRegistration
  getter backgroundFetch
  getter installing
  getter onupdatefound
- getter paymentAppManager
+ getter paymentManager
  getter pushManager
  getter scope
  getter sync
@@ -66,7 +66,7 @@ interface ServiceWorkerRegistration
  getter installing
  getter navigationPreload
  getter onupdatefound
- getter paymentAppManager
+ getter paymentManager
  getter pushManager
  getter scope
  getter sync

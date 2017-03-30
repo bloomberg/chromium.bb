@@ -36,7 +36,7 @@
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
           "memory_instrumentation::mojom::Coordinator",
-          "payments::mojom::PaymentAppManager",
+          "payments::mojom::PaymentManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",
           "shape_detection::mojom::TextDetection",

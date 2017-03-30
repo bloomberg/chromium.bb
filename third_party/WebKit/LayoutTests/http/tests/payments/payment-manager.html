@@ -16,7 +16,7 @@ promise_test(test => {
         })
       .then(state => {
           assert_equals(state, 'activated');
-          return registration.paymentAppManager.setManifest({
+          return registration.paymentManager.setManifest({
               name: 'Payment App',
               icon: 'payment-app-icon',
               options: [{
@@ -46,7 +46,7 @@ promise_test(test => {
         })
       .then(state => {
           assert_equals(state, 'installed');
-          return registration.paymentAppManager.setManifest({
+          return registration.paymentManager.setManifest({
               name: 'Payment App',
               icon: 'payment-app-icon',
               options: [{
@@ -80,7 +80,7 @@ promise_test(test => {
           assert_equals(registration.installing, null);
           assert_equals(registration.waiting, null);
           assert_equals(registration.active, null);
-          return registration.paymentAppManager.setManifest({
+          return registration.paymentManager.setManifest({
               name: 'Payment App',
               icon: 'payment-app-icon',
               options: [{
@@ -120,11 +120,11 @@ promise_test(test => {
         })
       .then(state => {
           assert_equals(state, 'activated');
-          return registration.paymentAppManager.setManifest(manifest);
+          return registration.paymentManager.setManifest(manifest);
         })
       .then(result => {
           assert_equals(result, undefined);
-          return registration.paymentAppManager.getManifest();
+          return registration.paymentManager.getManifest();
         })
       .then(read_manifest => {
           assert_object_equals(read_manifest, manifest);
@@ -154,7 +154,7 @@ promise_test(test => {
         })
       .then(state => {
           assert_equals(state, 'activated');
-          return registration.paymentAppManager.setManifest(manifest);
+          return registration.paymentManager.setManifest(manifest);
         })
       .then(result => {
           assert_equals(result, undefined);
@@ -162,7 +162,7 @@ promise_test(test => {
         })
       .then(result => {
           assert_equals(result, true);
-          return registration.paymentAppManager.getManifest();
+          return registration.paymentManager.getManifest();
         })
       .then(unreached_fulfillment(test))
       .catch(error => {
@@ -182,7 +182,7 @@ promise_test(test => {
         })
       .then(state => {
           assert_equals(state, 'activated');
-          return registration.paymentAppManager.getManifest();
+          return registration.paymentManager.getManifest();
         })
       .then(unreached_fulfillment(test))
       .catch(error => {
@@ -202,7 +202,7 @@ promise_test(test => {
         })
       .then(state => {
           assert_equals(state, 'activated');
-          return registration.paymentAppManager.setManifest({
+          return registration.paymentManager.setManifest({
               name: 'Payment App',
               icon: 'payment-app-icon',
               options: [{

@@ -103,10 +103,10 @@ BrowserContext* PaymentAppContentUnitTestBase::browser_context() {
   return worker_helper_->browser_context();
 }
 
-PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
+PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
     const GURL& scope_url,
     const GURL& sw_script_url) {
-  // Register service worker for payment app manager.
+  // Register service worker for payment manager.
   bool called = false;
   worker_helper_->context()->RegisterServiceWorker(
       scope_url, sw_script_url, nullptr,
@@ -114,28 +114,28 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  // This function should eventually return created payment app manager
-  // but there is no way to get last created payment app manager from
-  // payment_app_context()->payment_app_managers_ because its type is std::map
+  // This function should eventually return created payment manager
+  // but there is no way to get last created payment manager from
+  // payment_app_context()->payment_managers_ because its type is std::map
   // and can not ensure its order. So, just make a set of existing payment app
   // managers before creating a new manager and then check what is a new thing.
-  std::set<PaymentAppManager*> existing_managers;
+  std::set<PaymentManager*> existing_managers;
   for (const auto& existing_manager :
-       payment_app_context()->payment_app_managers_) {
+       payment_app_context()->payment_managers_) {
     existing_managers.insert(existing_manager.first);
   }
 
-  // Create a new payment app manager.
-  payments::mojom::PaymentAppManagerPtr manager;
-  mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request =
+  // Create a new payment manager.
+  payments::mojom::PaymentManagerPtr manager;
+  mojo::InterfaceRequest<payments::mojom::PaymentManager> request =
       mojo::MakeRequest(&manager);
-  payment_app_managers_.push_back(std::move(manager));
-  payment_app_context()->CreatePaymentAppManager(std::move(request));
+  payment_managers_.push_back(std::move(manager));
+  payment_app_context()->CreatePaymentManager(std::move(request));
   base::RunLoop().RunUntilIdle();
 
-  // Find a last registered payment app manager.
+  // Find a last registered payment manager.
   for (const auto& candidate_manager :
-       payment_app_context()->payment_app_managers_) {
+       payment_app_context()->payment_managers_) {
     if (!base::ContainsKey(existing_managers, candidate_manager.first)) {
       candidate_manager.first->Init(scope_url.spec());
       base::RunLoop().RunUntilIdle();
@@ -148,17 +148,17 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
 }
 
 void PaymentAppContentUnitTestBase::SetManifest(
-    PaymentAppManager* manager,
+    PaymentManager* manager,
     payments::mojom::PaymentAppManifestPtr manifest,
-    const PaymentAppManager::SetManifestCallback& callback) {
+    const PaymentManager::SetManifestCallback& callback) {
   ASSERT_NE(nullptr, manager);
   manager->SetManifest(std::move(manifest), callback);
   base::RunLoop().RunUntilIdle();
 }
 
 void PaymentAppContentUnitTestBase::GetManifest(
-    PaymentAppManager* manager,
-    const PaymentAppManager::GetManifestCallback& callback) {
+    PaymentManager* manager,
+    const PaymentManager::GetManifestCallback& callback) {
   ASSERT_NE(nullptr, manager);
   manager->GetManifest(callback);
   base::RunLoop().RunUntilIdle();
