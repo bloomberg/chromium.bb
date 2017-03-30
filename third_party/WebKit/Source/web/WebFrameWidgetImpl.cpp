@@ -187,13 +187,12 @@ void WebFrameWidgetImpl::sendResizeEventAndRepaint() {
     m_localRoot->frame()->document()->enqueueResizeEvent();
   }
 
-  if (m_client) {
-    if (isAcceleratedCompositingActive()) {
-      updateLayerTreeViewport();
-    } else {
-      WebRect damagedRect(0, 0, m_size.width, m_size.height);
-      m_client->didInvalidateRect(damagedRect);
-    }
+  DCHECK(m_client);
+  if (isAcceleratedCompositingActive()) {
+    updateLayerTreeViewport();
+  } else {
+    WebRect damagedRect(0, 0, m_size.width, m_size.height);
+    m_client->didInvalidateRect(damagedRect);
   }
 }
 
@@ -339,6 +338,7 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
   AutoReset<const WebInputEvent*> currentEventChange(&m_currentInputEvent,
                                                      &inputEvent);
 
+  DCHECK(m_client);
   if (m_client->isPointerLocked() &&
       WebInputEvent::isMouseEventType(inputEvent.type())) {
     pointerLockMouseEvent(inputEvent);
@@ -422,8 +422,8 @@ void WebFrameWidgetImpl::scheduleAnimation() {
     m_layerTreeView->setNeedsBeginFrame();
     return;
   }
-  if (m_client)
-    m_client->scheduleAnimation();
+  DCHECK(m_client);
+  m_client->scheduleAnimation();
 }
 
 CompositorMutatorImpl& WebFrameWidgetImpl::mutator() {
@@ -830,6 +830,7 @@ WebInputEventResult WebFrameWidgetImpl::handleMouseWheel(
 
 WebInputEventResult WebFrameWidgetImpl::handleGestureEvent(
     const WebGestureEvent& event) {
+  DCHECK(m_client);
   WebInputEventResult eventResult = WebInputEventResult::NotHandled;
   bool eventCancelled = false;
   switch (event.type()) {
@@ -982,13 +983,12 @@ Element* WebFrameWidgetImpl::focusedElement() const {
 }
 
 void WebFrameWidgetImpl::initializeLayerTreeView() {
-  if (m_client) {
-    DCHECK(!m_mutator);
-    m_layerTreeView = m_client->initializeLayerTreeView();
-    if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
-      m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
-          m_layerTreeView->compositorAnimationHost());
-    }
+  DCHECK(m_client);
+  DCHECK(!m_mutator);
+  m_layerTreeView = m_client->initializeLayerTreeView();
+  if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
+    m_animationHost = WTF::makeUnique<CompositorAnimationHost>(
+        m_layerTreeView->compositorAnimationHost());
   }
 
   if (WebDevToolsAgentImpl* devTools = m_localRoot->devToolsAgentImpl())
@@ -1003,8 +1003,7 @@ void WebFrameWidgetImpl::initializeLayerTreeView() {
   // FIXME: only unittests, click to play, Android priting, and printing (for
   // headers and footers) make this assert necessary. We should make them not
   // hit this code and then delete allowsBrokenNullLayerTreeView.
-  DCHECK(m_layerTreeView || !m_client ||
-         m_client->allowsBrokenNullLayerTreeView());
+  DCHECK(m_layerTreeView || m_client->allowsBrokenNullLayerTreeView());
 }
 
 void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active) {
@@ -1017,9 +1016,6 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active) {
   DCHECK(!active || m_layerTreeView);
 
   if (m_isAcceleratedCompositingActive == active)
-    return;
-
-  if (!m_client)
     return;
 
   if (active) {
