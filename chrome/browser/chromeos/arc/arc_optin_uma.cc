@@ -25,6 +25,11 @@ void UpdateEnabledStateUMA(bool enabled) {
   UMA_HISTOGRAM_BOOLEAN("Arc.State", enabled);
 }
 
+void UpdateOptInFlowResultUMA(OptInFlowResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.OptInResult", static_cast<int>(result),
+                            static_cast<int>(OptInFlowResult::SIZE));
+}
+
 void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed) {
   DCHECK_NE(result, ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
   std::string histogram_name = "Arc.Provisioning.Result.";

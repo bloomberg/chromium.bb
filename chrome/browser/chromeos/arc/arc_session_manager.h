@@ -233,6 +233,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   void StartArcForTesting() { StartArc(); }
 
  private:
+  // Reports statuses of OptIn flow to UMA.
+  class ScopedOptInFlowTracker;
+
   // RequestEnable() has a check in order not to trigger starting procedure
   // twice. This method can be called to bypass that check when restarting.
   void RequestEnableImpl();
@@ -325,6 +328,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
+
+  std::unique_ptr<ScopedOptInFlowTracker> scoped_opt_in_tracker_;
 
   // The time when the sign in process started.
   base::Time sign_in_start_time_;

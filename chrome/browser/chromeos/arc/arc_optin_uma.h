@@ -18,46 +18,83 @@ namespace arc {
 // These enums are used to define the buckets for an enumerated UMA histogram
 // and need to be synced with histograms.xml
 enum class OptInActionType : int {
-  OPTED_OUT = 0,               // ARC was opted out by user.
-  OPTED_IN = 1,                // ARC was opted in by user.
-  NOTIFICATION_ACCEPTED = 2,   // ARC OptIn notification was accepted.
-  NOTIFICATION_DECLINED = 3,   // ARC OptIn notification was declined.
-  NOTIFICATION_TIMED_OUT = 4,  // ARC OptIn notification was timed out.
-  RETRY = 5,                   // User asked to retry OptIn.
-  SIZE,                        // The size of this enum; keep last.
+  // ARC was opted out by user.
+  OPTED_OUT = 0,
+
+  // ARC was opted in by user.
+  OPTED_IN = 1,
+
+  // ARC OptIn notification was accepted.
+  NOTIFICATION_ACCEPTED = 2,
+
+  // ARC OptIn notification was declined.
+  NOTIFICATION_DECLINED = 3,
+
+  // ARC OptIn notification was timed out.
+  NOTIFICATION_TIMED_OUT = 4,
+
+  // User asked to retry OptIn.
+  RETRY = 5,
+
+  // The size of this enum; keep last.
+  SIZE,
 };
 
 enum class OptInCancelReason {
-  USER_CANCEL = 0,          // Canceled by user.
-  UNKNOWN_ERROR = 1,        // Unclassified failure.
-  NETWORK_ERROR = 2,        // Network failure.
-  SERVICE_UNAVAILABLE = 3,  // GMS Services are not available.
+  // Canceled by user.
+  USER_CANCEL = 0,
+
+  // Unclassified failure.
+  UNKNOWN_ERROR = 1,
+
+  // Network failure.
+  NETWORK_ERROR = 2,
+
+  DEPRECATED_SERVICE_UNAVAILABLE = 3,
   DEPRECATED_BAD_AUTHENTICATION = 4,
   DEPRECATED_GMS_CORE_NOT_AVAILABLE = 5,
-  CLOUD_PROVISION_FLOW_FAIL = 6,    // Cloud provision flow failed.
-  ANDROID_MANAGEMENT_REQUIRED = 7,  // Android management is required for user.
-  SIZE,                             // The size of this enum; keep last.
+
+  // Cloud provision flow failed.
+  CLOUD_PROVISION_FLOW_FAIL = 6,
+
+  // Android management is required for user.
+  ANDROID_MANAGEMENT_REQUIRED = 7,
+
+  // Cannot start ARC because it is busy.
+  SESSION_BUSY = 8,
+
+  // The size of this enum; keep last.
+  SIZE,
 };
 
 enum class OptInSilentAuthCode {
   // Silent auth code feature is disabled.
   DISABLED = 0,
+
   // Silent auth code fetched normally.
   SUCCESS = 1,
+
   // HTTP Context cannot be prepared.
   CONTEXT_NOT_READY = 2,
+
   // No LST token is available.
   NO_LST_TOKEN = 3,
+
   // Silent auth code failed due sever HTTP error 5XX.
   HTTP_SERVER_FAILURE = 4,
+
   // Silent auth code failed due client HTTP error 4XX.
   HTTP_CLIENT_FAILURE = 5,
+
   // Silent auth code failed due unknown HTTP error.
   HTTP_UNKNOWN_FAILURE = 6,
+
   // Cannot parse HTTP response.
   RESPONSE_PARSE_FAILURE = 7,
+
   // No Auth code in response.
   NO_AUTH_CODE_IN_RESPONSE = 8,
+
   // The size of this enum, keep last.
   SIZE,
 };
@@ -121,8 +158,29 @@ enum class ProvisioningResult : int {
   SIZE,
 };
 
+enum class OptInFlowResult : int {
+  // OptIn has started.
+  STARTED = 0,
+
+  // OptIn has been succeeded, this also includes succeeded with error cases.
+  SUCCEEDED = 1,
+
+  // OptIn has been succeeded but with retry after an error.
+  SUCCEEDED_AFTER_RETRY = 2,
+
+  // OptIn has been canceled, this also includes canceled after error cases.
+  CANCELED = 3,
+
+  // OptIn has been canceled after an error was reported.
+  CANCELED_AFTER_ERROR = 4,
+
+  // The size of this enum; keep last.
+  SIZE,
+};
+
 void UpdateOptInActionUMA(OptInActionType type);
 void UpdateOptInCancelUMA(OptInCancelReason reason);
+void UpdateOptInFlowResultUMA(OptInFlowResult result);
 void UpdateEnabledStateUMA(bool enabled);
 void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed);
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
