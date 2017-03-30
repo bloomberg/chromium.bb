@@ -35,7 +35,7 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              ['mac', ('nvidia', 0xfe9)], bug=706016)
+        ['mac', ('nvidia', 0xfe9)], bug=706016)
     self.Fail('Pixel_CSSFilterEffects',
         ['mac', ('nvidia', 0xfe9)], bug=690277)
 
@@ -53,3 +53,18 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(jbauman): Enable when reference images exist.
     self.Fail('Pixel_Video_MP4', bug=704389)
     self.Fail('Pixel_Video_VP9', bug=704389)
+
+    # TODO(xlai): Remove this after test dimension is shrunk
+    # Intended to skip only Nexus 5
+    self.Skip('Pixel_OffscreenCanvasAccelerated2D',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
+    self.Skip('Pixel_OffscreenCanvasAccelerated2DWorker',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
+    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
+    self.Skip('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
+    self.Skip('Pixel_OffscreenCanvasWebGLDefault',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
+    self.Skip('Pixel_OffscreenCanvasWebGLDefaultWorker',
+        ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
