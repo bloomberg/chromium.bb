@@ -530,6 +530,12 @@ SkColor GetSelectionBgColor(const std::string& css_selector) {
   return GdkRgbaToSkColor(selection_color);
 }
 
+bool ContextHasClass(GtkStyleContext* context, const std::string& style_class) {
+  return gtk_style_context_has_class(context, style_class.c_str()) ||
+         gtk_widget_path_iter_has_class(gtk_style_context_get_path(context), -1,
+                                        style_class.c_str());
+}
+
 SkColor GetSeparatorColor(const std::string& css_selector) {
   if (!GtkVersionCheck(3, 20))
     return GetFgColor(css_selector);
@@ -545,12 +551,12 @@ SkColor GetSeparatorColor(const std::string& css_selector) {
   w += border.left + padding.left + padding.right + border.right;
   h += border.top + padding.top + padding.bottom + border.bottom;
 
-  bool horizontal = gtk_style_context_has_class(context, "horizontal");
+  bool horizontal = ContextHasClass(context, "horizontal");
   if (horizontal) {
     w = 24;
     h = std::max(h, 1);
   } else {
-    DCHECK(gtk_style_context_has_class(context, "vertical"));
+    DCHECK(ContextHasClass(context, "vertical"));
     h = 24;
     w = std::max(w, 1);
   }
