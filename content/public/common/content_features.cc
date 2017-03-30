@@ -150,9 +150,19 @@ const base::Feature kPassiveEventListenersDueToFling{
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables purge and suspend.
-const base::Feature kPurgeAndSuspend{"PurgeAndSuspend",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables Purge+Throttle on platforms except Android and MacOS.
+// (Android) Purge+Throttle depends on TabManager, but TabManager doesn't
+// support Android. Enable after Android is supported.
+// (MacOS X) Enable after Purge+Throttle handles memory pressure signals
+// send by OS correctly.
+const base::Feature kPurgeAndSuspend {
+  "PurgeAndSuspend",
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // RAF aligned mouse input events support.
 const base::Feature kRafAlignedMouseInputEvents{
