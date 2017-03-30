@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// PagePopupController provides functions used by form control popup
+// implementations, and it's not exposed to the Web. WebPagePopupImpl class
+// enables this interface by provideContextFeaturesTo().
 [
     NoInterfaceObject,
     RuntimeEnabled=PagePopup
