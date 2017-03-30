@@ -68,15 +68,15 @@ def main():
   try:
     j = r.json()
   except ValueError:
-    print(r.text)
+    print(r.text.encode("utf-8"))
     sys.exit(1)
   if j.get("error"):
-    print(r.text)
+    print(r.text.encode("utf-8"))
     sys.exit(1)
   if args.short:
     PrintShortResponse(j)
     return
-  print(r.text)
+  print(r.text.encode("utf-8"))
   if r.status_code != 200:
     sys.exit(1)
 
