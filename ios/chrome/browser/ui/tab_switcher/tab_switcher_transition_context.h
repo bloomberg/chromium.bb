@@ -27,9 +27,10 @@
 // Holds a snapshot view of the browser view controller's toolbar.
 @property(nonatomic, retain) UIView* toolbarSnapshotView;
 
-// Index of the selected tab in the browser view controller when the transition
-// context content was created.
-@property(nonatomic, assign) NSInteger initialSelectedTabIndex;
+// The tabID that was in the browser view controller when the transition context
+// content was created. Used to understand what might have changed in the model
+// when entering and leaving the tab switcher.
+@property(nonatomic, copy) NSString* initialTabID;
 @end
 
 // A Tab switcher transition context holds the informations needed to compute

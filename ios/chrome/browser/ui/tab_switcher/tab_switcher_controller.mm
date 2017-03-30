@@ -568,16 +568,19 @@ enum class SnapshotViewOption {
   base::WeakNSObject<UIImageView> weakTabScreenshotImageView(
       tabScreenshotImageView.get());
 
-  if (self.transitionContext.initialTabModel != tabModel ||
-      transitionContextContent.initialSelectedTabIndex != selectedTabIndex) {
+  if ([self initialTabModelAndTabIDMatchesTabModel:tabModel
+                                             tabID:selectedTab.tabId]) {
+    tabScreenshotImageView.get().image =
+        self.transitionContext.tabSnapshotImage;
+  } else {
+    // If transitioning to a different tab than the one animated in
+    // from, a new snapshot should be generated instead of using the transition
+    // context
     tabScreenshotImageView.get().image =
         [self updateScreenshotForCellIfNeeded:selectedCell tabModel:tabModel];
     [selectedTab retrieveSnapshot:^(UIImage* snapshot) {
       [weakTabScreenshotImageView setImage:snapshot];
     }];
-  } else {
-    tabScreenshotImageView.get().image =
-        self.transitionContext.tabSnapshotImage;
   }
 
   const CGSize tabScreenshotImageSize = tabScreenshotImageView.get().image.size;
@@ -718,6 +721,14 @@ enum class SnapshotViewOption {
                       options:UIViewAnimationCurveEaseInOut
                    animations:animationBlock
                    completion:completionBlock];
+}
+
+- (BOOL)initialTabModelAndTabIDMatchesTabModel:(nonnull TabModel*)tabModel
+                                         tabID:(nonnull NSString*)tabID {
+  TabModel* initialTabModel = self.transitionContext.initialTabModel;
+  NSString* initialTabID =
+      [self transitionContextContentForTabModel:initialTabModel].initialTabID;
+  return initialTabModel == tabModel && [initialTabID isEqualToString:tabID];
 }
 
 - (void)updateLocalPanelsCells {

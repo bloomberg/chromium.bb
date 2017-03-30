@@ -32,9 +32,7 @@
   TabSwitcherTransitionContextContent* transitionContextContent =
       [[[TabSwitcherTransitionContextContent alloc] init] autorelease];
 
-  Tab* currentTab = [[bvc tabModel] currentTab];
-  transitionContextContent.initialSelectedTabIndex =
-      [[bvc tabModel] indexOfTab:currentTab];
+  transitionContextContent.initialTabID = bvc.tabModel.currentTab.tabId;
 
   if (![bvc isViewLoaded]) {
     [bvc ensureViewCreated];
@@ -62,7 +60,7 @@
 }
 
 @synthesize toolbarSnapshotView = _toolbarSnapshotView;
-@synthesize initialSelectedTabIndex = _initialSelectedTabIndex;
+@synthesize initialTabID = _initialTabID;
 
 - (instancetype)init {
   self = [super init];
