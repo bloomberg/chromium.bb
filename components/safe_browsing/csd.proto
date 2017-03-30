@@ -506,10 +506,23 @@ message ClientDownloadRequest {
 
 message ReferrerChainEntry {
   enum URLType {
-    DOWNLOAD_URL = 1;
+    // URL of safe browsing events that are at the end of the referrer chain.
+    // e.g. URL of a download, URL of a low reputation login page, etc.
+    EVENT_URL = 1;  // e.g.
+
+    // Landing page is the page user directly interacts with to trigger the
+    // above event, e.g. the page where user clicks a download button.
     LANDING_PAGE = 2;
+
+    // Landing referrer is the one user directly interacts with right before
+    // navigating to the landing page.
     LANDING_REFERRER = 3;
+
+    // Client redirect refers to committed navigation between landing page and
+    // the targeted event, or between landing referrer page and landing page.
+    // Client redirect is not triggered by user gesture.
     CLIENT_REDIRECT = 4;
+
     DEPRECATED_SERVER_REDIRECT = 5;  // Deprecated
   }
 
@@ -526,7 +539,7 @@ message ReferrerChainEntry {
   // Only set if it is different from |url|.
   optional string main_frame_url = 9;
 
-  // Type of URLs, such as download url, download referrer, etc.
+  // Type of URLs, such as event url, landing page, etc.
   optional URLType type = 2 [default = CLIENT_REDIRECT];
 
   // IP addresses corresponding to this host.

@@ -43,10 +43,10 @@ struct NavigationEventList {
 
   ~NavigationEventList();
 
-  // Find the most recent navigation event that navigated to |target_url| and
+  // Finds the most recent navigation event that navigated to |target_url| and
   // its associated |target_main_frame_url| in the tab with ID |target_tab_id|.
-  // If navigation happened in the main frame, |target_url| and |target_main_
-  // frame_url| are the same.
+  // If navigation happened in the main frame, |target_url| and
+  // |target_main_frame_url| are the same.
   // If |target_url| is empty, we use its main frame url (a.k.a.
   // |target_main_frame_url|) to search for navigation events.
   // If |target_tab_id| is not available (-1), we look for all tabs for the most
@@ -55,8 +55,8 @@ struct NavigationEventList {
   // relevant.
   // For example, url1 in window A opens url2 in window B, url1 then opens an
   // about:blank page window C and injects script code in it to trigger a
-  // delayed download in Window D. Before the download occurs, url2 in window B
-  // opens a different about:blank page in window C.
+  // delayed event (e.g. a download) in Window D. Before the event occurs, url2
+  // in window B opens a different about:blank page in window C.
   // A ---- C - D
   //   \   /
   //     B
@@ -68,14 +68,14 @@ struct NavigationEventList {
                                        const GURL& target_main_frame_url,
                                        int target_tab_id);
 
-  // Find the most recent retargeting NavigationEvent that satisfies
+  // Finds the most recent retargeting NavigationEvent that satisfies
   // |target_url|, and |target_tab_id|.
   NavigationEvent* FindRetargetingNavigationEvent(const GURL& target_url,
                                                   int target_tab_id);
 
   void RecordNavigationEvent(std::unique_ptr<NavigationEvent> nav_event);
 
-  // Remove stale NavigationEvents and return the number of items removed.
+  // Removes stale NavigationEvents and return the number of items removed.
   std::size_t CleanUpNavigationEvents();
 
   std::size_t Size() { return navigation_events_.size(); }
@@ -91,7 +91,7 @@ struct NavigationEventList {
 
 // Manager class for SafeBrowsingNavigationObserver, which is in charge of
 // cleaning up stale navigation events, and identifying landing page/landing
-// referrer for a specific download.
+// referrer for a specific Safe Browsing event.
 class SafeBrowsingNavigationObserverManager
     : public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
@@ -120,13 +120,13 @@ class SafeBrowsingNavigationObserverManager
   static GURL ClearEmptyRef(const GURL& url);
 
   // Checks if we should enable observing navigations for safe browsing purpose.
-  // Return true if the safe browsing service and the download attribution
+  // Return true if the safe browsing service and the |kDownloadAttribution|
   // feature are both enabled, and safe browsing service is initialized.
   static bool IsEnabledAndReady(Profile* profile);
 
   SafeBrowsingNavigationObserverManager();
 
-  // Add |nav_event| to |navigation_event_list_|. Object pointed to by
+  // Adds |nav_event| to |navigation_event_list_|. Object pointed to by
   // |nav_event| will be no longer accessible after this function.
   void RecordNavigationEvent(std::unique_ptr<NavigationEvent> nav_event);
   void RecordUserGestureForWebContents(content::WebContents* web_contents,
@@ -139,42 +139,42 @@ class SafeBrowsingNavigationObserverManager
   // Clean-ups need to be done when a WebContents gets destroyed.
   void OnWebContentDestroyed(content::WebContents* web_contents);
 
-  // Remove all the observed NavigationEvents, user gestures, and resolved IP
+  // Removes all the observed NavigationEvents, user gestures, and resolved IP
   // addresses that are older than kNavigationFootprintTTLInSecond.
   void CleanUpStaleNavigationFootprints();
 
-  // Based on the |target_url| and |target_tab_id|, trace back the observed
+  // Based on the |target_url| and |target_tab_id|, traces back the observed
   // NavigationEvents in navigation_event_list_ to identify the sequence of
   // navigations leading to the target, with the coverage limited to
-  // |user_gesture_count_limit| number of user gestures. Then convert these
+  // |user_gesture_count_limit| number of user gestures. Then converts these
   // identified NavigationEvents into ReferrerChainEntrys and append them to
   // |out_referrer_chain|.
-  AttributionResult IdentifyReferrerChainForDownload(
-      const GURL& target_url,
-      int target_tab_id,  // -1 if tab id is not valid
+  AttributionResult IdentifyReferrerChainByEventURL(
+      const GURL& event_url,
+      int event_tab_id,  // -1 if tab id is unknown or not available
       int user_gesture_count_limit,
       ReferrerChain* out_referrer_chain);
 
-  // Based on the |web_contents| associated with a download, trace back the
-  // observed NavigationEvents in navigation_event_list_ to identify the
-  // sequence of navigations leading to the download hosting page, with the
+  // Based on the |web_contents| associated with an event, traces back the
+  // observed NavigationEvents in |navigation_event_list_| to identify the
+  // sequence of navigations leading to the event hosting page, with the
   // coverage limited to |user_gesture_count_limit| number of user gestures.
-  // Then convert these identified NavigationEvents into ReferrerChainEntrys
+  // Then converts these identified NavigationEvents into ReferrerChainEntrys
   // and append them to |out_referrer_chain|.
-  AttributionResult IdentifyReferrerChainByDownloadWebContent(
+  AttributionResult IdentifyReferrerChainByWebContents(
       content::WebContents* web_contents,
       int user_gesture_count_limit,
       ReferrerChain* out_referrer_chain);
 
-  // Based on the |initiating_frame_url| and its associated |tab_id|, trace back
-  // the observed NavigationEvents in navigation_event_list_ to identify those
-  // navigations leading to this |initiating_frame_url|. If this initiating
-  // frame has a user gesture, we trace back with the coverage limited to
-  // |user_gesture_count_limit|-1 number of user gestures, otherwise we trace
-  // back |user_gesture_count_limit| number of user gestures. We then convert
-  // these identified NavigationEvents into ReferrerChainEntrys and append them
-  // to |out_referrer_chain|.
-  AttributionResult IdentifyReferrerChainForDownloadHostingPage(
+  // Based on the |initiating_frame_url| and its associated |tab_id|, traces
+  // back the observed NavigationEvents in navigation_event_list_ to identify
+  // those navigations leading to this |initiating_frame_url|. If this
+  // initiating frame has a user gesture, we trace back with the coverage
+  // limited to |user_gesture_count_limit|-1 number of user gestures, otherwise
+  // we trace back |user_gesture_count_limit| number of user gestures. We then
+  // converts these identified NavigationEvents into ReferrerChainEntrys and
+  // appends them to |out_referrer_chain|.
+  AttributionResult IdentifyReferrerChainByHostingPage(
       const GURL& initiating_frame_url,
       const GURL& initiating_main_frame_url,
       int tab_id,
@@ -262,8 +262,7 @@ class SafeBrowsingNavigationObserverManager
   // Host to timestamped IP addresses map that covers all the main frame and
   // subframe URLs' hosts. Since it is possible for a host to resolve to more
   // than one IP in even a short period of time, we map a single host to a
-  // vector of ResolvedIPAddresss. This map is used to fill in ip_address field
-  // in URLChainEntry in ClientDownloadRequest.
+  // vector of ResolvedIPAddresss.
   HostToIpMap host_to_ip_map_;
 
   base::OneShotTimer cleanup_timer_;

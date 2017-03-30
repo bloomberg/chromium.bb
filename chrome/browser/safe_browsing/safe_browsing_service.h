@@ -338,9 +338,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // both UI and IO thread.
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
-  // The navigation observer manager handles download attribution.
+  // The navigation observer manager handles attribution of safe browsing
+  // events.
   scoped_refptr<SafeBrowsingNavigationObserverManager>
-  navigation_observer_manager_;
+      navigation_observer_manager_;
 
   // The password protection service detects and handles password related
   // incidents.

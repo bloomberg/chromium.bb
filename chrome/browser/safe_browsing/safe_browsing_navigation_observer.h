@@ -17,8 +17,8 @@ namespace safe_browsing {
 class SafeBrowsingNavigationObserverManager;
 
 // Struct to record the details of a navigation event for any frame.
-// This information will be used to fill |url_chain| field in safe browsing
-// download pings.
+// This information will be used to fill referrer chain info in various Safe
+// Browsing requests and reports.
 struct NavigationEvent {
   NavigationEvent();
   NavigationEvent(NavigationEvent&& nav_event);

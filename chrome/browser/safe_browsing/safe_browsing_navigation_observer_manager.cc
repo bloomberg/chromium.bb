@@ -43,10 +43,9 @@ bool IsEventExpired(const base::Time& event_time, double ttl_in_second) {
 ReferrerChainEntry::URLType GetURLTypeAndAdjustAttributionResult(
     bool at_user_gesture_limit,
     SafeBrowsingNavigationObserverManager::AttributionResult* out_result) {
-  // Landing page of a download refers to the page user directly interacts
-  // with to trigger this download (e.g. clicking on download button). Landing
-  // referrer page is the one user interacts with right before navigating to
-  // the landing page.
+  // Landing page refers to the page user directly interacts with to trigger
+  // this event (e.g. clicking on download button). Landing referrer page is the
+  // one user interacts with right before navigating to the landing page.
   // Since we are tracing navigations backwards, if we've reached
   // user gesture limit before this navigation event, this is a navigation
   // leading to the landing referrer page, otherwise it leads to landing page.
@@ -303,23 +302,23 @@ void SafeBrowsingNavigationObserverManager::CleanUpStaleNavigationFootprints() {
 }
 
 SafeBrowsingNavigationObserverManager::AttributionResult
-SafeBrowsingNavigationObserverManager::IdentifyReferrerChainForDownload(
-    const GURL& target_url,
-    int target_tab_id,
+SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByEventURL(
+    const GURL& event_url,
+    int event_tab_id,
     int user_gesture_count_limit,
     ReferrerChain* out_referrer_chain) {
-  if (!target_url.is_valid())
+  if (!event_url.is_valid())
     return INVALID_URL;
 
   NavigationEvent* nav_event = navigation_event_list_.FindNavigationEvent(
-      target_url, GURL(), target_tab_id);
+      event_url, GURL(), event_tab_id);
   if (!nav_event) {
-    // We cannot find a single navigation event related to this download.
+    // We cannot find a single navigation event related to this event.
     return NAVIGATION_EVENT_NOT_FOUND;
   }
   AttributionResult result = SUCCESS;
   AddToReferrerChain(out_referrer_chain, nav_event, GURL(),
-                     ReferrerChainEntry::DOWNLOAD_URL);
+                     ReferrerChainEntry::EVENT_URL);
   int user_gesture_count = 0;
   GetRemainingReferrerChain(
       nav_event,
@@ -331,37 +330,34 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChainForDownload(
 }
 
 SafeBrowsingNavigationObserverManager::AttributionResult
-SafeBrowsingNavigationObserverManager::
-    IdentifyReferrerChainByDownloadWebContent(
-        content::WebContents* web_contents,
-        int user_gesture_count_limit,
-        ReferrerChain* out_referrer_chain) {
+SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByWebContents(
+    content::WebContents* web_contents,
+    int user_gesture_count_limit,
+    ReferrerChain* out_referrer_chain) {
   if (!web_contents || !web_contents->GetLastCommittedURL().is_valid())
     return INVALID_URL;
   bool has_user_gesture = HasUserGesture(web_contents);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
-  return IdentifyReferrerChainForDownloadHostingPage(
+  return IdentifyReferrerChainByHostingPage(
       web_contents->GetLastCommittedURL(), GURL(), tab_id, has_user_gesture,
       user_gesture_count_limit, out_referrer_chain);
 }
 
 SafeBrowsingNavigationObserverManager::AttributionResult
-SafeBrowsingNavigationObserverManager::
-    IdentifyReferrerChainForDownloadHostingPage(
-        const GURL& initiating_frame_url,
-        const GURL& initiating_main_frame_url,
-        int tab_id,
-        bool has_user_gesture,
-        int user_gesture_count_limit,
-        ReferrerChain* out_referrer_chain) {
+SafeBrowsingNavigationObserverManager::IdentifyReferrerChainByHostingPage(
+    const GURL& initiating_frame_url,
+    const GURL& initiating_main_frame_url,
+    int tab_id,
+    bool has_user_gesture,
+    int user_gesture_count_limit,
+    ReferrerChain* out_referrer_chain) {
   if (!initiating_frame_url.is_valid())
     return INVALID_URL;
 
   NavigationEvent* nav_event = navigation_event_list_.FindNavigationEvent(
       initiating_frame_url, initiating_main_frame_url, tab_id);
   if (!nav_event) {
-    // We cannot find a single navigation event related to this download hosting
-    // page.
+    // We cannot find a single navigation event related to this hosting page.
     return NAVIGATION_EVENT_NOT_FOUND;
   }
 
@@ -369,7 +365,7 @@ SafeBrowsingNavigationObserverManager::
 
   int user_gesture_count = 0;
   // If this initiating_frame has user gesture, we consider this as the landing
-  // page of the PPAPI download.
+  // page of this event.
   if (has_user_gesture) {
     user_gesture_count = 1;
     AddToReferrerChain(
