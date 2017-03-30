@@ -325,6 +325,7 @@ void WebViewPlugin::WebViewHelper::scheduleAnimation() {
 
 void WebViewPlugin::WebViewHelper::didClearWindowObject(
     WebLocalFrame* frame) {
+  DCHECK_EQ(frame, web_view_->mainFrame());
   if (!plugin_->delegate_)
     return;
 
