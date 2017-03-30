@@ -17,6 +17,7 @@
 }
 
 #destination-search .user-info {
+  -webkit-padding-end: 18px;
   -webkit-padding-start: 18px;
   display: flex;
   padding-bottom: 14px;
