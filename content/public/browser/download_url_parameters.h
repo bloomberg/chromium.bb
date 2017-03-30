@@ -127,6 +127,9 @@ class CONTENT_EXPORT DownloadUrlParameters {
     etag_ = etag;
   }
 
+  // If the "If-Range" header is used in a partial request.
+  void set_use_if_range(bool use_if_range) { use_if_range_ = use_if_range; }
+
   // HTTP method to use.
   void set_method(const std::string& method) {
     method_ = method;
@@ -219,6 +222,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   bool content_initiated() const { return content_initiated_; }
   const std::string& last_modified() const { return last_modified_; }
   const std::string& etag() const { return etag_; }
+  bool use_if_range() const { return use_if_range_; }
   const std::string& method() const { return method_; }
   const std::string& post_body() const { return post_body_; }
   int64_t post_id() const { return post_id_; }
@@ -269,6 +273,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   RequestHeadersType request_headers_;
   std::string last_modified_;
   std::string etag_;
+  bool use_if_range_;
   std::string method_;
   std::string post_body_;
   int64_t post_id_;

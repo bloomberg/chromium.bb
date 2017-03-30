@@ -209,6 +209,9 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   // file.
   download_params->set_length(length);
 
+  // Subsequent range requests don't need the "If-Range" header.
+  download_params->set_use_if_range(false);
+
   // Subsequent range requests have the same referrer URL as the original
   // download request.
   download_params->set_referrer(Referrer(download_item_->GetReferrerUrl(),

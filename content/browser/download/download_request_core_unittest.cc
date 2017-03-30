@@ -17,6 +17,12 @@
 
 namespace content {
 
+namespace {
+
+const char kTestLastModifiedTime[] = "Tue, 15 Nov 1994 12:45:26 GMT";
+
+}  // namespace
+
 class DownloadRequestCoreTest : public testing::Test {
  public:
   std::unique_ptr<DownloadUrlParameters> BuildDownloadParameters(
@@ -72,6 +78,7 @@ TEST_F(DownloadRequestCoreTest, BuildRangeRequest) {
   // Check initial states.
   EXPECT_EQ(DownloadSaveInfo::kLengthFullContent, params->length());
   EXPECT_EQ(0, params->offset());
+  EXPECT_TRUE(params->use_if_range());
 
   // Non-range request.
   CreateRequestOnIOThread(params.get());
@@ -82,9 +89,11 @@ TEST_F(DownloadRequestCoreTest, BuildRangeRequest) {
   url_request_.reset();
 
   // Range request with header "Range:bytes=50-99", and etag.
+  params = BuildDownloadParameters("example.com");
   params->set_etag("123");
   params->set_offset(50);
   params->set_length(50);
+  params->set_use_if_range(false);
   CreateRequestOnIOThread(params.get());
   CheckRequestHeaders(net::HttpRequestHeaders::kRange, "bytes=50-99");
   EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfRange));
@@ -93,31 +102,49 @@ TEST_F(DownloadRequestCoreTest, BuildRangeRequest) {
   url_request_.reset();
 
   // Range request with header "Range:bytes=0-49" and last modified time.
-  std::string last_modified_time = "Tue, 15 Nov 1994 12:45:26 GMT";
+  params = BuildDownloadParameters("example.com");
   params->set_etag("");
-  params->set_last_modified(last_modified_time);
+  params->set_last_modified(kTestLastModifiedTime);
   params->set_offset(0);
   params->set_length(50);
+  params->set_use_if_range(false);
   CreateRequestOnIOThread(params.get());
   CheckRequestHeaders(net::HttpRequestHeaders::kRange, "bytes=0-49");
   EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfRange));
   EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfMatch));
   CheckRequestHeaders(net::HttpRequestHeaders::kIfUnmodifiedSince,
-                      last_modified_time);
+                      kTestLastModifiedTime);
   url_request_.reset();
 
   // Range request with header "Range:bytes=10-59" and includes both etag and
   // last modified time.
+  params = BuildDownloadParameters("example.com");
   params->set_etag("123");
-  params->set_last_modified(last_modified_time);
+  params->set_last_modified(kTestLastModifiedTime);
   params->set_offset(10);
   params->set_length(50);
+  params->set_use_if_range(false);
   CreateRequestOnIOThread(params.get());
   CheckRequestHeaders(net::HttpRequestHeaders::kRange, "bytes=10-59");
   EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfRange));
   CheckRequestHeaders(net::HttpRequestHeaders::kIfMatch, "123");
   CheckRequestHeaders(net::HttpRequestHeaders::kIfUnmodifiedSince,
-                      last_modified_time);
+                      kTestLastModifiedTime);
+  url_request_.reset();
+
+  // Range request with header "Range:bytes=10-59" and use "If-Range"
+  // header.
+  params = BuildDownloadParameters("example.com");
+  params->set_etag("123");
+  params->set_last_modified(kTestLastModifiedTime);
+  params->set_offset(10);
+  params->set_length(50);
+  params->set_use_if_range(true);
+  CreateRequestOnIOThread(params.get());
+  CheckRequestHeaders(net::HttpRequestHeaders::kRange, "bytes=10-59");
+  CheckRequestHeaders(net::HttpRequestHeaders::kIfRange, "123");
+  EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfMatch));
+  EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfUnmodifiedSince));
   url_request_.reset();
 }
 
@@ -134,6 +161,18 @@ TEST_F(DownloadRequestCoreTest, BuildRangeRequestWithoutLength) {
   CheckRequestHeaders(net::HttpRequestHeaders::kIfRange, "123");
   EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfMatch));
   EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfUnmodifiedSince));
+  url_request_.reset();
+
+  params = BuildDownloadParameters("example.com");
+  params->set_last_modified(kTestLastModifiedTime);
+  params->set_offset(50);
+  params->set_use_if_range(false);
+  CreateRequestOnIOThread(params.get());
+  CheckRequestHeaders(net::HttpRequestHeaders::kRange, "bytes=50-");
+  CheckRequestHeaders(net::HttpRequestHeaders::kIfUnmodifiedSince,
+                      kTestLastModifiedTime);
+  EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfRange));
+  EXPECT_FALSE(HasRequestHeader(net::HttpRequestHeaders::kIfMatch));
   url_request_.reset();
 }
 

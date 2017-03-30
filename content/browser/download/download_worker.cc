@@ -89,14 +89,18 @@ void DownloadWorker::OnUrlDownloaderStarted(
     return;
   }
 
-  // TODO(xingliu): Add the interrupt reason and metric data for precondition
-  // failure. Make DownloadRequestCore know if it should return error if the
-  // the server gives a different part of the content, e.g. "If-Match" return
-  // http 200.
+  // TODO(xingliu): Add metric for error handling.
   if (create_info->result !=
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
     VLOG(kVerboseLevel) << "Parallel download sub-request failed. reason = "
                         << create_info->result;
+
+    // Ignore HTTP 416 for the workers.
+    if (create_info->result ==
+        DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
+      return;
+    }
+
     delegate_->OnServerResponseError(this, create_info->result);
     return;
   }

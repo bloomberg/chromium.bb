@@ -111,6 +111,7 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
   DCHECK(download_id == DownloadItem::kInvalidId ||
          !params->content_initiated())
       << "Content initiated downloads shouldn't specify a download ID";
+  DCHECK(params->offset() >= 0);
 
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
@@ -156,60 +157,8 @@ std::unique_ptr<net::URLRequest> DownloadRequestCore::CreateRequestOnIOThread(
   }
   request->SetLoadFlags(load_flags);
 
-  bool has_last_modified = !params->last_modified().empty();
-  bool has_etag = !params->etag().empty();
-
-  // Strong validator(i.e. etag or last modified) is required in range requests
-  // for download resumption and parallel download.
-  DCHECK((params->offset() == 0 &&
-          params->length() == DownloadSaveInfo::kLengthFullContent) ||
-         has_etag || has_last_modified);
-
-  // Add "Range" and "If-Range" request header fields if the range request is to
-  // retrieve bytes from {offset} to the end of the file.
-  // E.g. "Range:bytes=50-".
-  if (params->offset() > 0 &&
-      params->length() == DownloadSaveInfo::kLengthFullContent &&
-      (has_etag || has_last_modified)) {
-    request->SetExtraRequestHeaderByName(
-        net::HttpRequestHeaders::kRange,
-        base::StringPrintf("bytes=%" PRId64 "-", params->offset()), true);
-
-    // In accordance with RFC 7233 Section 3.2, use If-Range to specify that
-    // the server return the entire entity if the validator doesn't match.
-    // Last-Modified can be used in the absence of ETag as a validator if the
-    // response headers satisfied the HttpUtil::HasStrongValidators() predicate.
-    //
-    // This function assumes that HasStrongValidators() was true and that the
-    // ETag and Last-Modified header values supplied are valid.
-    request->SetExtraRequestHeaderByName(
-        net::HttpRequestHeaders::kIfRange,
-        has_etag ? params->etag() : params->last_modified(), true);
-  }
-
-  // Add "Range", "If-Match", and "If-Unmodified-Since" for range requests with
-  // last byte position specified. e.g. "Range:bytes=50-59". If the file is
-  // updated on the server, we should get http 412 response code.
-  if (params->length() != DownloadSaveInfo::kLengthFullContent &&
-      (has_etag || has_last_modified)) {
-    request->SetExtraRequestHeaderByName(
-        net::HttpRequestHeaders::kRange,
-        base::StringPrintf("bytes=%" PRId64 "-%" PRId64, params->offset(),
-                           params->offset() + params->length() - 1),
-        true);
-    if (has_etag) {
-      request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kIfMatch,
-                                           params->etag(), true);
-    }
-    // According to RFC 7232 section 3.4, "If-Unmodified-Since" is mainly for
-    // old servers that didn't implement "If-Match" and must be ignored when
-    // "If-Match" presents.
-    if (has_last_modified) {
-      request->SetExtraRequestHeaderByName(
-          net::HttpRequestHeaders::kIfUnmodifiedSince, params->last_modified(),
-          true);
-    }
-  }
+  // Add partial requests headers.
+  AddPartialRequestHeaders(request.get(), params);
 
   // Downloads are treated as top level navigations. Hence the first-party
   // origin for cookies is always based on the target URL and is updated on
@@ -666,6 +615,65 @@ DownloadInterruptReason DownloadRequestCore::HandleSuccessfulServerResponse(
     return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
 
   return DOWNLOAD_INTERRUPT_REASON_NONE;
+}
+
+// static
+void DownloadRequestCore::AddPartialRequestHeaders(
+    net::URLRequest* request,
+    DownloadUrlParameters* params) {
+  if (params->offset() == 0 &&
+      params->length() == DownloadSaveInfo::kLengthFullContent)
+    return;
+
+  bool has_last_modified = !params->last_modified().empty();
+  bool has_etag = !params->etag().empty();
+
+  // Strong validator(i.e. etag or last modified) is required in range requests
+  // for download resumption and parallel download.
+  DCHECK(has_etag || has_last_modified);
+  if (!has_etag && !has_last_modified) {
+    DVLOG(1) << "Creating partial request without strong validators.";
+    return;
+  }
+
+  // Add "Range" header.
+  std::string range_header =
+      (params->length() == DownloadSaveInfo::kLengthFullContent)
+          ? base::StringPrintf("bytes=%" PRId64 "-", params->offset())
+          : base::StringPrintf("bytes=%" PRId64 "-%" PRId64, params->offset(),
+                               params->offset() + params->length() - 1);
+  request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kRange,
+                                       range_header, true);
+
+  // Add "If-Range" headers.
+  if (params->use_if_range()) {
+    // In accordance with RFC 7233 Section 3.2, use If-Range to specify that
+    // the server return the entire entity if the validator doesn't match.
+    // Last-Modified can be used in the absence of ETag as a validator if the
+    // response headers satisfied the HttpUtil::HasStrongValidators()
+    // predicate.
+    //
+    // This function assumes that HasStrongValidators() was true and that the
+    // ETag and Last-Modified header values supplied are valid.
+    request->SetExtraRequestHeaderByName(
+        net::HttpRequestHeaders::kIfRange,
+        has_etag ? params->etag() : params->last_modified(), true);
+    return;
+  }
+
+  // Add "If-Match"/"If-Unmodified-Since" headers.
+  if (has_etag) {
+    request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kIfMatch,
+                                         params->etag(), true);
+  }
+  // According to RFC 7232 section 3.4, "If-Unmodified-Since" is mainly for
+  // old servers that didn't implement "If-Match" and must be ignored when
+  // "If-Match" presents.
+  if (has_last_modified) {
+    request->SetExtraRequestHeaderByName(
+        net::HttpRequestHeaders::kIfUnmodifiedSince, params->last_modified(),
+        true);
+  }
 }
 
 }  // namespace content

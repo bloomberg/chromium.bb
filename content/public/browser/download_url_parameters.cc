@@ -29,6 +29,7 @@ DownloadUrlParameters::DownloadUrlParameters(
     int render_frame_host_routing_id,
     net::URLRequestContextGetter* url_request_context_getter)
     : content_initiated_(false),
+      use_if_range_(true),
       method_("GET"),
       post_id_(-1),
       prefer_cache_(false),
