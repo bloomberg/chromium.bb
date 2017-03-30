@@ -211,7 +211,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void ReorderFromServer(WindowMus* child,
                          WindowMus* relative,
                          ui::mojom::OrderDirection) override;
-  void SetBoundsFromServer(const gfx::Rect& bounds) override;
+  void SetBoundsFromServer(
+      const gfx::Rect& bounds,
+      const base::Optional<cc::LocalSurfaceId>& local_surface_id) override;
   void SetVisibleFromServer(bool visible) override;
   void SetOpacityFromServer(float opacity) override;
   void SetPredefinedCursorFromServer(ui::mojom::CursorType cursor) override;
@@ -219,12 +221,15 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
   void SetFrameSinkIdFromServer(const cc::FrameSinkId& frame_sink_id) override;
+  const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
+      const gfx::Size& surface_size) override;
   void SetSurfaceInfoFromServer(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
   ChangeSource OnTransientChildAdded(WindowMus* child) override;
   ChangeSource OnTransientChildRemoved(WindowMus* child) override;
+  const cc::LocalSurfaceId& GetLocalSurfaceId() override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerBoundsChange(
       const gfx::Rect& bounds) override;
   std::unique_ptr<WindowMusChangeData> PrepareForServerVisibilityChange(
@@ -263,6 +268,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   base::Closure pending_compositor_frame_sink_request_;
 
   cc::SurfaceInfo surface_info_;
+
+  cc::LocalSurfaceId local_surface_id_;
+  cc::LocalSurfaceIdAllocator local_surface_id_allocator_;
+  gfx::Size last_surface_size_;
 
   ui::mojom::CursorType predefined_cursor_ = ui::mojom::CursorType::CURSOR_NULL;
 

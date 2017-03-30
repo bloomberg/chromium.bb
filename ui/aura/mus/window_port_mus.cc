@@ -231,10 +231,17 @@ void WindowPortMus::ReorderFromServer(WindowMus* child,
     window_->StackChildAbove(child->GetWindow(), relative->GetWindow());
 }
 
-void WindowPortMus::SetBoundsFromServer(const gfx::Rect& bounds) {
+void WindowPortMus::SetBoundsFromServer(
+    const gfx::Rect& bounds,
+    const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   ServerChangeData data;
   data.bounds_in_dip = bounds;
   ScopedServerChange change(this, ServerChangeType::BOUNDS, data);
+  last_surface_size_ = bounds.size();
+  if (local_surface_id)
+    local_surface_id_ = *local_surface_id;
+  else
+    local_surface_id_ = cc::LocalSurfaceId();
   window_->SetBounds(bounds);
 }
 
@@ -282,6 +289,22 @@ void WindowPortMus::SetFrameSinkIdFromServer(
   // TODO(fsamuel): If the window type is TOP_LEVEL_IN_WM or EMBED_IN_OWNER then
   // we should check if we have a cc::LocalSurfaeId ready as well. If we do,
   // then we are ready to embed.
+}
+
+const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
+    const gfx::Size& surface_size) {
+  if (last_surface_size_ == surface_size && local_surface_id_.is_valid())
+    return local_surface_id_;
+
+  local_surface_id_ = local_surface_id_allocator_.GenerateId();
+  last_surface_size_ = surface_size;
+
+  // TODO(fsamuel): If surface synchronization is enabled and the FrameSinkId
+  // is available, then immediately embed the SurfaceId. The newly generated
+  // frame by the embedder will block in the display compositor until the
+  // child submits a corresponding CompositorFrame or a deadline hits.
+
+  return local_surface_id_;
 }
 
 void WindowPortMus::SetSurfaceInfoFromServer(
@@ -361,6 +384,10 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
                                    change_data)
              ? ChangeSource::SERVER
              : ChangeSource::LOCAL;
+}
+
+const cc::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
+  return local_surface_id_;
 }
 
 std::unique_ptr<WindowMusChangeData>

@@ -94,6 +94,10 @@ class TestWindowTree : public ui::mojom::WindowTree {
     return last_hit_test_mask_;
   }
 
+  const base::Optional<cc::LocalSurfaceId>& last_local_surface_id() const {
+    return last_local_surface_id_;
+  }
+
  private:
   struct Change {
     WindowTreeChangeType type;
@@ -227,6 +231,8 @@ class TestWindowTree : public ui::mojom::WindowTree {
   gfx::Insets last_client_area_;
 
   base::Optional<gfx::Rect> last_hit_test_mask_;
+
+  base::Optional<cc::LocalSurfaceId> last_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTree);
 };

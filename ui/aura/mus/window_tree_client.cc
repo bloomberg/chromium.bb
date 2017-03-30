@@ -479,7 +479,8 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
   window_mus->SetBoundsFromServer(
-      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window), window_data.bounds));
+      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window), window_data.bounds),
+      base::nullopt);
   if (parent)
     parent->AddChildFromServer(window_port_mus_ptr);
   if (window_data.visible)
@@ -606,8 +607,10 @@ void WindowTreeClient::SetWindowBoundsFromServer(
     return;
   }
 
-  window->SetBoundsFromServer(gfx::ConvertRectToDIP(
-      ScaleFactorForDisplay(window->GetWindow()), revert_bounds_in_pixels));
+  window->SetBoundsFromServer(
+      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window->GetWindow()),
+                            revert_bounds_in_pixels),
+      local_surface_id);
 }
 
 void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
@@ -630,12 +633,16 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
     WindowMus* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds) {
-  // TODO(fsamuel): Allocate a new LocalSurfaceId on size change.
   const uint32_t change_id =
       ScheduleInFlightChange(base::MakeUnique<InFlightBoundsChange>(
-          this, window, old_bounds, base::nullopt));
+          this, window, old_bounds, window->GetLocalSurfaceId()));
+  base::Optional<cc::LocalSurfaceId> local_surface_id;
+  if ((window->window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
+       window->window_mus_type() == WindowMusType::EMBED_IN_OWNER)) {
+    local_surface_id = window->GetOrAllocateLocalSurfaceId(new_bounds.size());
+  }
   tree_->SetWindowBounds(change_id, window->server_id(), new_bounds,
-                         base::nullopt);
+                         local_surface_id);
 }
 
 void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
