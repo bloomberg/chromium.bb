@@ -40,6 +40,7 @@
 #include "content/common/frame_owner_properties.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -1293,6 +1294,20 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         dest_url.SchemeIs(kChromeUIScheme)) {
       return SiteInstanceDescriptor(parent_site_instance);
     }
+    // TODO(alexmos, nick): Remove this once https://crbug.com/706169 is fixed.
+    if (parent_site_instance->GetSiteURL().SchemeIs(kChromeDevToolsScheme)) {
+      url::Origin origin(dest_url);
+      auto* policy = ChildProcessSecurityPolicy::GetInstance();
+      // Some non-devtools origins (e.g., devtools extensions) have special
+      // permission to stay in the devtools process.
+      bool is_origin_allowed_in_devtools_process =
+          policy->HasSpecificPermissionForOrigin(
+              parent_site_instance->GetProcess()->GetID(), origin);
+      if (origin.scheme() == kChromeDevToolsScheme ||
+          is_origin_allowed_in_devtools_process) {
+        return SiteInstanceDescriptor(parent_site_instance);
+      }
+    }
   }
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
@@ -1471,12 +1486,19 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
     return false;
 
-  // Don't swap processes for extensions embedded in DevTools. See
-  // https://crbug.com/564216.
+  // TODO(alexmos, nick): Remove this once https://crbug.com/706169 is fixed.
+  // Devtools pages and devtools extensions must stay in the devtools process.
+  // See https://crbug.com/564216.
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kChromeDevToolsScheme)) {
-    // TODO(nick): https://crbug.com/570483 Check to see if |dest_url| is a
-    // devtools extension, and swap processes if not.
-    return false;
+    url::Origin origin(dest_url);
+    auto* policy = ChildProcessSecurityPolicy::GetInstance();
+    // Some non-devtools origins (e.g., devtools extensions) have special
+    // permission to stay in the devtools process.
+    bool is_origin_allowed_in_devtools_process =
+        policy->HasSpecificPermissionForOrigin(rfh->GetProcess()->GetID(),
+                                               origin);
+    return !(origin.scheme() == kChromeDevToolsScheme ||
+             is_origin_allowed_in_devtools_process);
   }
 
   BrowserContext* context = rfh->GetSiteInstance()->GetBrowserContext();
