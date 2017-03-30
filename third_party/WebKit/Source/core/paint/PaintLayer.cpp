@@ -95,7 +95,7 @@ static CompositingQueryMode gCompositingQueryMode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
   int bitFields;
-  void* pointers[11];
+  void* pointers[10];
   LayoutUnit layoutUnits[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollableArea;
@@ -104,6 +104,7 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
     void* pointer;
     LayoutRect rect;
   } previousPaintStatus;
+  ClipRects previousClipRects;
 };
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
@@ -156,6 +157,7 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layoutObject)
       m_hasNonIsolatedDescendantWithBlendMode(false),
       m_hasAncestorWithClipPath(false),
       m_selfPaintingStatusChanged(false),
+      m_hasPreviousPaintingClipRects(false),
       m_layoutObject(layoutObject),
       m_parent(0),
       m_previous(0),

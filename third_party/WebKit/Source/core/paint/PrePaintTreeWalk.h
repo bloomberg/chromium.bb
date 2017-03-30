@@ -31,22 +31,23 @@ class PrePaintTreeWalk {
 
   // Invalidates paint-layer painting optimizations, such as subsequence caching
   // and empty paint phase optimizations if clips from the context have changed.
-  void invalidatePaintLayerOptimizationsIfNeeded(const LayoutObject&,
-                                                 PrePaintTreeWalkContext&);
+  void ALWAYS_INLINE
+  invalidatePaintLayerOptimizationsIfNeeded(const LayoutObject&,
+                                            PrePaintTreeWalkContext&);
 
   // Returns in |clipRect| the clip applied to children for the given
   // contaiing block context + effect, in the space of ancestorState adjusted
   // by ancestorPaintOffset. Sets hasClip to true if a clip was applied.
-  void computeClipRectForContext(
+  void ALWAYS_INLINE computeClipRectForContext(
       const PaintPropertyTreeBuilderContext::ContainingBlockContext&,
       const EffectPaintPropertyNode*,
       const PropertyTreeState& ancestorState,
       const LayoutPoint& ancestorPaintOffset,
-      bool& hasClip,
       FloatClipRect&);
 
   // Returns true if the tree walk should stop before processing this object.
-  bool shouldEndWalkBefore(const LayoutObject&, const PrePaintTreeWalkContext&);
+  bool ALWAYS_INLINE shouldEndWalkBefore(const LayoutObject&,
+                                         const PrePaintTreeWalkContext&);
 
   PaintPropertyTreeBuilder m_propertyTreeBuilder;
   PaintInvalidator m_paintInvalidator;

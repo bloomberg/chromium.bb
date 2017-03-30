@@ -128,7 +128,7 @@ ClipRects* PaintLayerClipper::clipRectsIfCached(
   DCHECK(entry.overlayScrollbarClipBehavior ==
          context.overlayScrollbarClipBehavior);
 #endif
-  return entry.clipRects.get();
+  return &entry.clipRects;
 }
 
 ClipRects& PaintLayerClipper::storeClipRectsInCache(
@@ -144,12 +144,12 @@ ClipRects& PaintLayerClipper::storeClipRectsInCache(
   if (parentClipRects) {
     // If our clip rects match the clip rects of our parent, we share storage.
     if (clipRects == *parentClipRects) {
-      entry.clipRects = parentClipRects;
+      entry.clipRects = *parentClipRects;
       return *parentClipRects;
     }
   }
-  entry.clipRects = ClipRects::create(clipRects);
-  return *entry.clipRects;
+  entry.clipRects = clipRects;
+  return entry.clipRects;
 }
 
 ClipRects& PaintLayerClipper::getClipRects(
@@ -165,9 +165,9 @@ ClipRects& PaintLayerClipper::getClipRects(
     parentClipRects =
         &PaintLayerClipper(*m_layer.parent(), nullptr).getClipRects(context);
   }
-  RefPtr<ClipRects> clipRects = ClipRects::create();
-  calculateClipRects(context, *clipRects);
-  return storeClipRectsInCache(context, parentClipRects, *clipRects);
+  ClipRects clipRects;
+  calculateClipRects(context, clipRects);
+  return storeClipRectsInCache(context, parentClipRects, clipRects);
 }
 
 void PaintLayerClipper::clearCache(ClipRectsCacheSlot cacheSlot) {
@@ -533,20 +533,20 @@ void PaintLayerClipper::calculateBackgroundClipRect(
   LayoutView* layoutView = m_layer.layoutObject().view();
   DCHECK(layoutView);
 
-  RefPtr<ClipRects> parentClipRects = ClipRects::create();
+  ClipRects parentClipRects;
   if (&m_layer == context.rootLayer) {
-    parentClipRects->reset(LayoutRect(LayoutRect::infiniteIntRect()));
+    parentClipRects.reset(LayoutRect(LayoutRect::infiniteIntRect()));
   } else {
     PaintLayerClipper(*m_layer.parent(), m_geometryMapper)
-        .getOrCalculateClipRects(context, *parentClipRects);
+        .getOrCalculateClipRects(context, parentClipRects);
   }
 
   output = backgroundClipRectForPosition(
-      *parentClipRects, m_layer.layoutObject().styleRef().position());
+      parentClipRects, m_layer.layoutObject().styleRef().position());
 
   // Note: infinite clipRects should not be scrolled here, otherwise they will
   // accidentally no longer be considered infinite.
-  if (parentClipRects->fixed() &&
+  if (parentClipRects.fixed() &&
       &context.rootLayer->layoutObject() == layoutView &&
       output != LayoutRect(LayoutRect::infiniteIntRect()))
     output.move(LayoutSize(layoutView->frameView()->getScrollOffset()));

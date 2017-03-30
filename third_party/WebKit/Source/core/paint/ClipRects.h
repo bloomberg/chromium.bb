@@ -27,20 +27,24 @@
 #define ClipRects_h
 
 #include "core/paint/ClipRect.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class ClipRects : public RefCounted<ClipRects> {
+class ClipRects {
   USING_FAST_MALLOC(ClipRects);
 
  public:
-  static PassRefPtr<ClipRects> create() { return adoptRef(new ClipRects); }
-  static PassRefPtr<ClipRects> create(const ClipRects& other) {
-    return adoptRef(new ClipRects(other));
-  }
-
   ClipRects() : m_fixed(0) {}
+  ClipRects(const LayoutRect& r)
+      : m_overflowClipRect(r),
+        m_fixedClipRect(r),
+        m_posClipRect(r),
+        m_fixed(0) {}
+  ClipRects(const ClipRects& other)
+      : m_overflowClipRect(other.overflowClipRect()),
+        m_fixedClipRect(other.fixedClipRect()),
+        m_posClipRect(other.posClipRect()),
+        m_fixed(other.fixed()) {}
 
   void reset(const LayoutRect& r) {
     m_overflowClipRect = r;
@@ -78,18 +82,6 @@ class ClipRects : public RefCounted<ClipRects> {
   }
 
  private:
-  ClipRects(const LayoutRect& r)
-      : m_overflowClipRect(r),
-        m_fixedClipRect(r),
-        m_posClipRect(r),
-        m_fixed(0) {}
-
-  ClipRects(const ClipRects& other)
-      : m_overflowClipRect(other.overflowClipRect()),
-        m_fixedClipRect(other.fixedClipRect()),
-        m_posClipRect(other.posClipRect()),
-        m_fixed(other.fixed()) {}
-
   ClipRect m_overflowClipRect;
   ClipRect m_fixedClipRect;
   ClipRect m_posClipRect;
