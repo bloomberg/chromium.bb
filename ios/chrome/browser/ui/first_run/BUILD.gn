@@ -55,6 +55,7 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/fancy_ui",
+    "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/material_components",
     "//ios/chrome/browser/ui/promos",
     "//ios/chrome/browser/ui/settings",

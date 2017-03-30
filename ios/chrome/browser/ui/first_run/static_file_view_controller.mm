@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
@@ -29,6 +30,9 @@
   // The header.
   MDCAppBar* _appBar;
 }
+
+// Called when the back button is pressed.
+- (void)back;
 
 @end
 
@@ -73,6 +77,19 @@
 
   // Add the app bar at the end.
   [_appBar addSubviewsToParent];
+
+  // Create a custom Back bar button item, as Material Navigation Bar deprecated
+  // the back arrow with a shaft.
+  self.navigationItem.leftBarButtonItem =
+      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
+                                          target:self
+                                          action:@selector(back)];
+}
+
+#pragma mark - Actions
+
+- (void)back {
+  [self.navigationController popViewControllerAnimated:YES];
 }
 
 @end

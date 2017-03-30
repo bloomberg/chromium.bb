@@ -119,7 +119,7 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
                                           IDS_IOS_FIRSTRUN_TERMS_TITLE))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"back_bar_button")]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"ic_arrow_back")]
       performAction:grey_tap()];
 
   // Ensure we went back to the First Run screen.
