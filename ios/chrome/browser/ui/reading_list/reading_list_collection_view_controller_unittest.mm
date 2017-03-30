@@ -176,7 +176,8 @@ TEST_F(ReadingListCollectionViewControllerTest,
   EXPECT_EQ(base::SysNSStringToUTF16([readingListItem subtitle]),
             url_formatter::FormatUrl(url));
   EXPECT_EQ([readingListItem faviconPageURL], url);
-  EXPECT_EQ([readingListItem distillationState], ReadingListEntry::WAITING);
+  EXPECT_EQ([readingListItem distillationState],
+            ReadingListUIDistillationStatusPending);
 }
 
 // Tests that the ReadingListCollectionView is creating
@@ -208,5 +209,6 @@ TEST_F(ReadingListCollectionViewControllerTest,
   EXPECT_EQ(base::SysNSStringToUTF16([readingListItem subtitle]),
             url_formatter::FormatUrl(url));
   EXPECT_EQ([readingListItem faviconPageURL], distilled_url);
-  EXPECT_EQ([readingListItem distillationState], ReadingListEntry::PROCESSED);
+  EXPECT_EQ([readingListItem distillationState],
+            ReadingListUIDistillationStatusSuccess);
 }

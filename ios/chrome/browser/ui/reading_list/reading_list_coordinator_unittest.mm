@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -148,9 +149,9 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
 
   base::scoped_nsobject<ReadingListCollectionViewItem> item(
       [[ReadingListCollectionViewItem alloc]
-                initWithType:0
-                         url:url
-           distillationState:ReadingListEntry::PROCESSED]);
+               initWithType:0
+                        url:url
+          distillationState:ReadingListUIDistillationStatusSuccess]);
 
   // Action.
   [GetCoordinator() readingListCollectionViewController:

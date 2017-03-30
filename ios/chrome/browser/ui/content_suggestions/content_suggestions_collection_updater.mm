@@ -274,7 +274,7 @@ SectionIdentifier SectionIdentifierForInfo(
             [[ContentSuggestionsReadingListItem alloc]
                      initWithType:ItemTypeReadingList
                               url:suggestion.url
-                distillationState:ReadingListEntry::PROCESSING];
+                distillationState:ReadingListUIDistillationStatusPending];
         readingListItem.title = suggestion.title;
         readingListItem.subtitle = suggestion.publisher;
 

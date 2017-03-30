@@ -5,13 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_ITEM_H_
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COLLECTION_VIEW_ITEM_H_
 
-#import "components/reading_list/core/reading_list_entry.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 class GURL;
 @class FaviconAttributes;
 @protocol ReadingListCollectionViewItemAccessibilityDelegate;
+
+typedef NS_ENUM(NSInteger, ReadingListUIDistillationStatus) {
+  ReadingListUIDistillationStatusPending,
+  ReadingListUIDistillationStatusSuccess,
+  ReadingListUIDistillationStatusFailure
+};
 
 // Collection view item for representing a ReadingListEntry.
 @interface ReadingListCollectionViewItem : CollectionViewItem
@@ -25,8 +30,7 @@ class GURL;
 // The URL of the page presenting the favicon to display.
 @property(nonatomic, assign) GURL faviconPageURL;
 // Status of the offline version.
-@property(nonatomic, assign)
-    ReadingListEntry::DistillationState distillationState;
+@property(nonatomic, assign) ReadingListUIDistillationStatus distillationState;
 // Size of the distilled files.
 @property(nonatomic, assign) int64_t distillationSize;
 // Timestamp of the distillation in microseconds since Jan 1st 1970.
@@ -44,7 +48,7 @@ class GURL;
 // indicator of the distillation status.
 - (instancetype)initWithType:(NSInteger)type
                          url:(const GURL&)url
-           distillationState:(ReadingListEntry::DistillationState)state
+           distillationState:(ReadingListUIDistillationStatus)state
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
 
@@ -65,8 +69,7 @@ class GURL;
 // View for displaying the favicon for the reading list entry.
 @property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
 // Status of the offline version. Updates the visual indicator when updated.
-@property(nonatomic, assign)
-    ReadingListEntry::DistillationState distillationState;
+@property(nonatomic, assign) ReadingListUIDistillationStatus distillationState;
 
 @end
 

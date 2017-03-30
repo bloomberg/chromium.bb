@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
@@ -61,7 +62,7 @@ const CGFloat kInfoTextTransparency = 0.38;
 
 - (instancetype)initWithType:(NSInteger)type
                          url:(const GURL&)url
-           distillationState:(ReadingListEntry::DistillationState)state {
+           distillationState:(ReadingListUIDistillationStatus)state {
   self = [super initWithType:type];
   if (!self)
     return nil;
@@ -92,7 +93,7 @@ const CGFloat kInfoTextTransparency = 0.38;
 
 - (NSString*)accessibilityLabel {
   NSString* accessibilityState = nil;
-  if (self.distillationState == ReadingListEntry::PROCESSED) {
+  if (self.distillationState == ReadingListUIDistillationStatusSuccess) {
     accessibilityState = l10n_util::GetNSString(
         IDS_IOS_READING_LIST_ACCESSIBILITY_STATE_DOWNLOADED);
   } else {
@@ -151,7 +152,7 @@ const CGFloat kInfoTextTransparency = 0.38;
       arrayWithObjects:deleteAction, toogleReadStatus, openInNewTabAction,
                        openInNewIncognitoTabAction, copyURLAction, nil];
 
-  if (self.distillationState == ReadingListEntry::PROCESSED) {
+  if (self.distillationState == ReadingListUIDistillationStatusSuccess) {
     // Add the possibility to open offline version only if the entry is
     // distilled.
     UIAccessibilityCustomAction* openOfflineAction =
@@ -364,24 +365,21 @@ const CGFloat kInfoTextTransparency = 0.38;
 }
 
 - (void)setDistillationState:
-    (ReadingListEntry::DistillationState)distillationState {
+    (ReadingListUIDistillationStatus)distillationState {
   if (_distillationState == distillationState)
     return;
 
   _distillationState = distillationState;
   switch (distillationState) {
-    case ReadingListEntry::DISTILLATION_ERROR:
+    case ReadingListUIDistillationStatusFailure:
       [_downloadIndicator setImage:[UIImage imageNamed:kFailureImageString]];
       break;
 
-    case ReadingListEntry::PROCESSED:
+    case ReadingListUIDistillationStatusSuccess:
       [_downloadIndicator setImage:[UIImage imageNamed:kSuccessImageString]];
       break;
 
-    // Same behavior for all pre-download states.
-    case ReadingListEntry::WAITING:
-    case ReadingListEntry::WILL_RETRY:
-    case ReadingListEntry::PROCESSING:
+    case ReadingListUIDistillationStatusPending:
       [_downloadIndicator setImage:nil];
       break;
   }
@@ -449,7 +447,7 @@ const CGFloat kInfoTextTransparency = 0.38;
 - (void)prepareForReuse {
   self.titleLabel.text = nil;
   self.subtitleLabel.text = nil;
-  self.distillationState = ReadingListEntry::WAITING;
+  self.distillationState = ReadingListUIDistillationStatusPending;
   self.distillationDate = 0;
   self.distillationSize = 0;
   [self setShowInfo:NO];
