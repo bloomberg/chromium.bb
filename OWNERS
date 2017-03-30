@@ -11,6 +11,7 @@ per-file .git-blame-ignore-revs=thakis@chromium.org
 per-file .gn=file://build/OWNERS
 per-file AUTHORS=*
 per-file BUILD.gn=file://build/OWNERS
+per-file codereview.settings=agable@chromium.org
 per-file DEPS=*
 per-file PRESUBMIT*.py=dpranke@chromium.org
 per-file PRESUBMIT*.py=jochen@chromium.org

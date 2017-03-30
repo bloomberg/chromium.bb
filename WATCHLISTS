@@ -348,6 +348,9 @@
       'filepath': 'third_party/closure_(compiler|linter)/|'
                   'compiled_resources2?.gyp',
     },
+    'codereview_settings': {
+      'filepath': 'codereview.settings',
+    },
     'components_deps': {
       'filepath': 'components/([^/]*/)*DEPS',
     },
@@ -1886,6 +1889,7 @@
     'closure': ['dbeam+watch-closure@chromium.org',
                 'jlklein+watch-closure@chromium.org',
                 'vitalyp+closure@chromium.org'],
+    'codereview_settings': ['agable+watch@chromium.org'],
     'components_deps': ['blundell+watchlist@chromium.org',
                         'droger+watchlist@chromium.org',
                         'sdefresne+watchlist@chromium.org'],
