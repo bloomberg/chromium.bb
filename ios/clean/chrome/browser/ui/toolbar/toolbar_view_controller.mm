@@ -104,7 +104,7 @@ CGFloat kHorizontalMargin = 8.0f;
   self.backButton = [ToolbarButton backToolbarButton];
   self.backButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                    ToolbarComponentVisibilityRegularWidth;
-  [self.backButton addTarget:nil
+  [self.backButton addTarget:self
                       action:@selector(goBack:)
             forControlEvents:UIControlEventTouchUpInside];
 
@@ -112,7 +112,7 @@ CGFloat kHorizontalMargin = 8.0f;
   self.forwardButton = [ToolbarButton forwardToolbarButton];
   self.forwardButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                       ToolbarComponentVisibilityRegularWidth;
-  [self.forwardButton addTarget:nil
+  [self.forwardButton addTarget:self
                          action:@selector(goForward:)
                forControlEvents:UIControlEventTouchUpInside];
 
@@ -153,14 +153,14 @@ CGFloat kHorizontalMargin = 8.0f;
   // Reload button.
   self.reloadButton = [ToolbarButton reloadToolbarButton];
   self.reloadButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [self.reloadButton addTarget:nil
+  [self.reloadButton addTarget:self
                         action:@selector(reload:)
               forControlEvents:UIControlEventTouchUpInside];
 
   // Stop button.
   self.stopButton = [ToolbarButton stopToolbarButton];
   self.stopButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [self.stopButton addTarget:nil
+  [self.stopButton addTarget:self
                       action:@selector(stop:)
             forControlEvents:UIControlEventTouchUpInside];
 }
