@@ -107,7 +107,8 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
 
     private void displayHeaderIfVisibleItems(ContextMenuParams params, ViewGroup baseLayout) {
         String headerText = ChromeContextMenuPopulator.createHeaderText(params);
-        TextView headerTextView = (TextView) baseLayout.findViewById(R.id.context_header_text);
+        final TextView headerTextView =
+                (TextView) baseLayout.findViewById(R.id.context_header_text);
         if (TextUtils.isEmpty(headerText)) {
             headerTextView.setVisibility(View.GONE);
             baseLayout.findViewById(R.id.context_divider).setVisibility(View.GONE);
@@ -115,6 +116,18 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         }
         headerTextView.setVisibility(View.VISIBLE);
         headerTextView.setText(headerText);
+        headerTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (headerTextView.getMaxLines() == Integer.MAX_VALUE) {
+                    headerTextView.setMaxLines(1);
+                    headerTextView.setEllipsize(TextUtils.TruncateAt.END);
+                } else {
+                    headerTextView.setMaxLines(Integer.MAX_VALUE);
+                    headerTextView.setEllipsize(null);
+                }
+            }
+        });
     }
 
     /**

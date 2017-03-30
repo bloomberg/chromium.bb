@@ -139,4 +139,38 @@ public class TabularContextMenuUiTest extends ChromeActivityTestCaseBase<ChromeA
         assertEquals(view.findViewById(R.id.context_header_text).getVisibility(), View.GONE);
         assertEquals(view.findViewById(R.id.context_divider).getVisibility(), View.GONE);
     }
+
+    @SmallTest
+    @Feature({"CustomContextMenu"})
+    public void testLinkShowsMultipleLinesWhenClicked() throws ExecutionException {
+        final TabularContextMenuUi dialog = new TabularContextMenuUi();
+        final List<ContextMenuItem> item =
+                CollectionUtil.newArrayList(ContextMenuItem.ADD_TO_CONTACTS, ContextMenuItem.CALL,
+                        ContextMenuItem.COPY_LINK_ADDRESS);
+        View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
+            @Override
+            public View call() {
+                return dialog.createContextMenuPageUi(
+                        getActivity(), new MockMenuParams("http://google.com"), item, item.size());
+            }
+        });
+
+        final TextView headerTextView = (TextView) view.findViewById(R.id.context_header_text);
+        int expectedMaxLines = 1;
+        int actualMaxLines = headerTextView.getMaxLines();
+        assertEquals("Expected a different number of default maximum lines.", expectedMaxLines,
+                actualMaxLines);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                headerTextView.callOnClick();
+            }
+        });
+
+        expectedMaxLines = Integer.MAX_VALUE;
+        actualMaxLines = headerTextView.getMaxLines();
+        assertEquals("Expected a different number of maximum lines when the header is clicked.",
+                expectedMaxLines, actualMaxLines);
+    }
 }
