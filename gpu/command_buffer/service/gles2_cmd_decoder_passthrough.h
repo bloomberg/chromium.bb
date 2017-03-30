@@ -126,6 +126,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void RestoreAllTextureUnitBindings(
       const ContextState* prev_state) const override;
   void RestoreActiveTextureUnitBinding(unsigned int target) const override;
+  void RestoreBufferBinding(unsigned int target) const override;
   void RestoreBufferBindings() const override;
   void RestoreFramebufferBindings() const override;
   void RestoreRenderbufferBindings() override;
@@ -133,6 +134,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   void RestoreProgramBindings() const override;
   void RestoreTextureState(unsigned service_id) const override;
   void RestoreTextureUnitBindings(unsigned unit) const override;
+  void RestoreVertexAttribArray(unsigned index) override;
   void RestoreAllExternalTextureBindingsIfNeeded() override;
 
   void ClearAllAttributes() const override;

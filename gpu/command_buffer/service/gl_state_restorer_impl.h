@@ -28,9 +28,13 @@ class GPU_EXPORT GLStateRestorerImpl : public gl::GLStateRestorer {
    bool IsInitialized() override;
    void RestoreState(const gl::GLStateRestorer* prev_state) override;
    void RestoreAllTextureUnitBindings() override;
+   void RestoreActiveTexture() override;
    void RestoreActiveTextureUnitBinding(unsigned int target) override;
    void RestoreAllExternalTextureBindingsIfNeeded() override;
    void RestoreFramebufferBindings() override;
+   void RestoreProgramBindings() override;
+   void RestoreBufferBinding(unsigned int target) override;
+   void RestoreVertexAttribArray(unsigned int index) override;
    void PauseQueries() override;
    void ResumeQueries() override;
 

@@ -217,6 +217,7 @@ struct GPU_EXPORT ContextState {
   void RestoreVertexAttribArrays(
       const scoped_refptr<VertexAttribManager> attrib_manager) const;
   void RestoreVertexAttribs() const;
+  void RestoreBufferBinding(unsigned int target) const;
   void RestoreBufferBindings() const;
   void RestoreGlobalState(const ContextState* prev_state) const;
   void RestoreProgramSettings(const ContextState* prev_state,

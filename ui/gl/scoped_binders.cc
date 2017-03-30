@@ -30,13 +30,23 @@ ScopedFramebufferBinder::~ScopedFramebufferBinder() {
 }
 
 ScopedActiveTexture::ScopedActiveTexture(unsigned int texture)
-    : old_texture_(-1) {
-  glGetIntegerv(GL_ACTIVE_TEXTURE, &old_texture_);
+    : state_restorer_(!GLContext::GetCurrent()
+                          ? NULL
+                          : GLContext::GetCurrent()->GetGLStateRestorer()),
+      old_texture_(-1) {
+  if (!state_restorer_)
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &old_texture_);
   glActiveTexture(texture);
 }
 
 ScopedActiveTexture::~ScopedActiveTexture() {
-  glActiveTexture(old_texture_);
+  if (state_restorer_) {
+    DCHECK(!!GLContext::GetCurrent());
+    DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());
+    state_restorer_->RestoreActiveTexture();
+  } else {
+    glActiveTexture(old_texture_);
+  }
 }
 
 ScopedTextureBinder::ScopedTextureBinder(unsigned int target, unsigned int id)
@@ -78,13 +88,24 @@ ScopedTextureBinder::~ScopedTextureBinder() {
   }
 }
 
-ScopedUseProgram::ScopedUseProgram(unsigned int program) : old_program_(-1) {
-  glGetIntegerv(GL_CURRENT_PROGRAM, &old_program_);
+ScopedUseProgram::ScopedUseProgram(unsigned int program)
+    : state_restorer_(!GLContext::GetCurrent()
+                          ? NULL
+                          : GLContext::GetCurrent()->GetGLStateRestorer()),
+      old_program_(-1) {
+  if (!state_restorer_)
+    glGetIntegerv(GL_CURRENT_PROGRAM, &old_program_);
   glUseProgram(program);
 }
 
 ScopedUseProgram::~ScopedUseProgram() {
-  glUseProgram(old_program_);
+  if (state_restorer_) {
+    DCHECK(!!GLContext::GetCurrent());
+    DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());
+    state_restorer_->RestoreProgramBindings();
+  } else {
+    glUseProgram(old_program_);
+  }
 }
 
 ScopedVertexAttribArray::ScopedVertexAttribArray(unsigned int index,
@@ -93,7 +114,10 @@ ScopedVertexAttribArray::ScopedVertexAttribArray(unsigned int index,
                                                  char normalized,
                                                  int stride,
                                                  const void* pointer)
-    : buffer_(0),
+    : state_restorer_(!GLContext::GetCurrent()
+                          ? NULL
+                          : GLContext::GetCurrent()->GetGLStateRestorer()),
+      buffer_(0),
       enabled_(GL_FALSE),
       index_(index),
       size_(-1),
@@ -101,43 +125,61 @@ ScopedVertexAttribArray::ScopedVertexAttribArray(unsigned int index,
       normalized_(GL_FALSE),
       stride_(0),
       pointer_(0) {
-  glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &buffer_);
-  glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled_);
+  if (!state_restorer_) {
+    glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, &buffer_);
+    glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_ENABLED, &enabled_);
+    glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_SIZE, &size_);
+    glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_TYPE, &type_);
+    glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &normalized_);
+    glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &stride_);
+    glGetVertexAttribPointerv(index, GL_VERTEX_ATTRIB_ARRAY_POINTER, &pointer_);
+  }
+
   glEnableVertexAttribArray(index);
-
-  glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_SIZE, &size_);
-  glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_TYPE, &type_);
-  glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, &normalized_);
-  glGetVertexAttribiv(index, GL_VERTEX_ATTRIB_ARRAY_STRIDE, &stride_);
-  glGetVertexAttribPointerv(index, GL_VERTEX_ATTRIB_ARRAY_POINTER, &pointer_);
-
   glVertexAttribPointer(index, size, type, normalized, stride, pointer);
 }
 
 ScopedVertexAttribArray::~ScopedVertexAttribArray() {
-  ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, buffer_);
-  glVertexAttribPointer(index_, size_, type_, normalized_, stride_, pointer_);
-  if (enabled_ == GL_FALSE) {
-    glDisableVertexAttribArray(index_);
+  if (state_restorer_) {
+    DCHECK(!!GLContext::GetCurrent());
+    DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());
+    state_restorer_->RestoreVertexAttribArray(index_);
+  } else {
+    ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, buffer_);
+    glVertexAttribPointer(index_, size_, type_, normalized_, stride_, pointer_);
+    if (enabled_ == GL_FALSE)
+      glDisableVertexAttribArray(index_);
   }
 }
 
 ScopedBufferBinder::ScopedBufferBinder(unsigned int target, unsigned int id)
-    : target_(target), old_id_(-1) {
-  GLenum target_getter = 0;
-  switch (target) {
-    case GL_ARRAY_BUFFER:
-      target_getter = GL_ARRAY_BUFFER_BINDING;
-      break;
-    default:
-      NOTIMPLEMENTED() << " Target not supported.";
+    : state_restorer_(!GLContext::GetCurrent()
+                          ? NULL
+                          : GLContext::GetCurrent()->GetGLStateRestorer()),
+      target_(target),
+      old_id_(-1) {
+  if (!state_restorer_) {
+    GLenum target_getter = 0;
+    switch (target) {
+      case GL_ARRAY_BUFFER:
+        target_getter = GL_ARRAY_BUFFER_BINDING;
+        break;
+      default:
+        NOTIMPLEMENTED() << " Target not supported.";
+    }
+    glGetIntegerv(target_getter, &old_id_);
   }
-  glGetIntegerv(target_getter, &old_id_);
   glBindBuffer(target_, id);
 }
 
 ScopedBufferBinder::~ScopedBufferBinder() {
-  glBindBuffer(target_, old_id_);
+  if (state_restorer_) {
+    DCHECK(!!GLContext::GetCurrent());
+    DCHECK_EQ(state_restorer_, GLContext::GetCurrent()->GetGLStateRestorer());
+    state_restorer_->RestoreBufferBinding(target_);
+  } else {
+    glBindBuffer(target_, old_id_);
+  }
 }
 
 ScopedViewport::ScopedViewport(int x, int y, int width, int height) {

@@ -547,6 +547,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreActiveTextureUnitBinding(unsigned int target) const override {
     state_.RestoreActiveTextureUnitBinding(target);
   }
+  void RestoreBufferBinding(unsigned int target) const override {
+    state_.RestoreBufferBinding(target);
+  }
   void RestoreBufferBindings() const override {
     state_.RestoreBufferBindings();
   }
@@ -556,6 +559,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   }
   void RestoreTextureUnitBindings(unsigned unit) const override {
     state_.RestoreTextureUnitBindings(unit, NULL);
+  }
+  void RestoreVertexAttribArray(unsigned index) override {
+    RestoreStateForAttrib(index, true);
   }
   void RestoreFramebufferBindings() const override;
   void RestoreRenderbufferBindings() override;
