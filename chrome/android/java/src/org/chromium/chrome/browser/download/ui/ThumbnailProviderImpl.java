@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.download.ui;
 
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.Looper;;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -35,7 +36,8 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
     private static final int MAX_CACHE_BYTES = 5 * 1024 * 1024;
 
     /** Weakly referenced cache containing thumbnails that can be deleted under memory pressure. */
-    private static WeakReference<LruCache<String, Bitmap>> sBitmapCache = new WeakReference<>(null);
+    private static WeakReference<LruCache<String, Pair<Bitmap, Integer>>> sBitmapCache =
+            new WeakReference<>(null);
 
     /** Enqueues requests. */
     private final Handler mHandler;
@@ -71,7 +73,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         String filePath = request.getFilePath();
         if (TextUtils.isEmpty(filePath)) return null;
 
-        Bitmap cachedBitmap = getBitmapCache().get(filePath);
+        Bitmap cachedBitmap = getBitmapCache().get(filePath).first;
         if (cachedBitmap != null && !cachedBitmap.isRecycled()) return cachedBitmap;
 
         mRequestQueue.offer(request);
@@ -100,7 +102,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         mCurrentRequest = mRequestQueue.poll();
         String currentFilePath = mCurrentRequest.getFilePath();
 
-        Bitmap cachedBitmap = getBitmapCache().get(currentFilePath);
+        Bitmap cachedBitmap = getBitmapCache().get(currentFilePath).first;
         if (cachedBitmap == null || cachedBitmap.isRecycled()) {
             // Asynchronously process the file to make a thumbnail.
             nativeRetrieveThumbnail(mNativeThumbnailProvider, currentFilePath, mIconSizePx);
@@ -113,7 +115,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
     @CalledByNative
     private void onThumbnailRetrieved(String filePath, @Nullable Bitmap bitmap) {
         if (bitmap != null) {
-            getBitmapCache().put(filePath, bitmap);
+            getBitmapCache().put(filePath, Pair.create(bitmap, bitmap.getByteCount()));
             mCurrentRequest.onThumbnailRetrieved(filePath, bitmap);
         }
 
@@ -125,17 +127,18 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         return mNativeThumbnailProvider != 0;
     }
 
-    private static LruCache<String, Bitmap> getBitmapCache() {
+    private static LruCache<String, Pair<Bitmap, Integer>> getBitmapCache() {
         ThreadUtils.assertOnUiThread();
 
-        LruCache<String, Bitmap> cache = sBitmapCache == null ? null : sBitmapCache.get();
+        LruCache<String, Pair<Bitmap, Integer>> cache =
+                sBitmapCache == null ? null : sBitmapCache.get();
         if (cache != null) return cache;
 
         // Create a new weakly-referenced cache.
-        cache = new LruCache<String, Bitmap>(MAX_CACHE_BYTES) {
+        cache = new LruCache<String, Pair<Bitmap, Integer>>(MAX_CACHE_BYTES) {
             @Override
-            protected int sizeOf(String key, Bitmap thumbnail) {
-                return thumbnail == null ? 0 : thumbnail.getByteCount();
+            protected int sizeOf(String key, Pair<Bitmap, Integer> thumbnail) {
+                return thumbnail == null ? 0 : thumbnail.second;
             }
         };
         sBitmapCache = new WeakReference<>(cache);
