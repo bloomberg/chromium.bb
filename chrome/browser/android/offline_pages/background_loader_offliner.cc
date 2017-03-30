@@ -372,8 +372,6 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
   }
 
   save_state_ = NONE;
-  // Prevent snapshot controller from making any more snapshots.
-  snapshot_controller_->Stop();
 
   Offliner::RequestStatus save_status;
   if (save_result == SavePageResult::SUCCESS)
