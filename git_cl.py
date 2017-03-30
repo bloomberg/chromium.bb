@@ -2897,28 +2897,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         change_id = change_ids[0]
 
       remote, upstream_branch = self.FetchUpstreamTuple(self.GetBranch())
-      if remote is '.':
-        # If our upstream branch is local, we base our squashed commit on its
-        # squashed version.
-        upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
-        # Check the squashed hash of the parent.
-        parent = RunGit(['config',
-                         'branch.%s.gerritsquashhash' % upstream_branch_name],
-                        error_ok=True).strip()
-        # Verify that the upstream branch has been uploaded too, otherwise
-        # Gerrit will create additional CLs when uploading.
-        if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
-                          RunGitSilent(['rev-parse', parent + ':'])):
-          DieWithError(
-              '\nUpload upstream branch %s first.\n'
-              'It is likely that this branch has been rebased since its last '
-              'upload, so you just need to upload it again.\n'
-              '(If you uploaded it with --no-squash, then branch dependencies '
-              'are not supported, and you should reupload with --squash.)'
-              % upstream_branch_name, change_desc)
-      else:
-        parent = self.GetCommonAncestorWithUpstream()
-
+      parent = self._ComputeParent(remote, upstream_branch, change_desc)
       tree = RunGit(['rev-parse', 'HEAD:']).strip()
       ref_to_push = RunGit(['commit-tree', tree, '-p', parent,
                             '-m', message]).strip()
@@ -3036,6 +3015,37 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           self._GetGerritHost(), self.GetIssue(), cc,
           is_reviewer=False, notify=bool(options.send_mail))
     return 0
+
+  def _ComputeParent(self, remote, upstream_branch, change_desc):
+    if remote != '.':
+      return self.GetCommonAncestorWithUpstream()
+
+    # If our upstream branch is local, we base our squashed commit on its
+    # squashed version.
+    upstream_branch_name = scm.GIT.ShortBranchName(upstream_branch)
+
+    # TODO(tandrii): Remove this master-specific hack
+    # Bug: https://bugs.chromium.org/p/chromium/issues/detail?id=682104
+    if upstream_branch_name == 'master':
+      return RunGitSilent(['rev-parse', 'origin/master']).strip()
+
+    # Check the squashed hash of the parent.
+    parent = RunGit(['config',
+                     'branch.%s.gerritsquashhash' % upstream_branch_name],
+                    error_ok=True).strip()
+    # Verify that the upstream branch has been uploaded too, otherwise
+    # Gerrit will create additional CLs when uploading.
+    if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
+                      RunGitSilent(['rev-parse', parent + ':'])):
+      DieWithError(
+          '\nUpload upstream branch %s first.\n'
+          'It is likely that this branch has been rebased since its last '
+          'upload, so you just need to upload it again.\n'
+          '(If you uploaded it with --no-squash, then branch dependencies '
+          'are not supported, and you should reupload with --squash.)'
+          % upstream_branch_name,
+          change_desc)
+    return parent
 
   def _AddChangeIdToCommitMessage(self, options, args):
     """Re-commits using the current message, assumes the commit hook is in
