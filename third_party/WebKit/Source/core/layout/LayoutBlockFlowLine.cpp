@@ -400,7 +400,8 @@ static void updateLogicalWidthForLeftAlignedBlock(
     return;
   }
 
-  if (trailingSpaceRun)
+  if (trailingSpaceRun &&
+      trailingSpaceRun->m_lineLayoutItem.styleRef().collapseWhiteSpace())
     trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
   else if (totalLogicalWidth > availableLogicalWidth)
     logicalLeft -= (totalLogicalWidth - availableLogicalWidth);
@@ -416,7 +417,8 @@ static void updateLogicalWidthForRightAlignedBlock(
   // So even if text-align is right, if direction is LTR, wide lines should
   // overflow out of the right side of the block.
   if (isLeftToRightDirection) {
-    if (trailingSpaceRun) {
+    if (trailingSpaceRun &&
+        trailingSpaceRun->m_lineLayoutItem.styleRef().collapseWhiteSpace()) {
       totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
       trailingSpaceRun->m_box->setLogicalWidth(LayoutUnit());
     }
@@ -442,7 +444,8 @@ static void updateLogicalWidthForCenterAlignedBlock(
     LayoutUnit& totalLogicalWidth,
     LayoutUnit availableLogicalWidth) {
   LayoutUnit trailingSpaceWidth;
-  if (trailingSpaceRun) {
+  if (trailingSpaceRun &&
+      trailingSpaceRun->m_lineLayoutItem.styleRef().collapseWhiteSpace()) {
     totalLogicalWidth -= trailingSpaceRun->m_box->logicalWidth();
     trailingSpaceWidth =
         std::min(trailingSpaceRun->m_box->logicalWidth(),
