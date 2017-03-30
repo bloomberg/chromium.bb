@@ -37,9 +37,11 @@ const int kInterestingFlagsMask =
 
 Accelerator::Accelerator() : Accelerator(VKEY_UNKNOWN, EF_NONE) {}
 
-Accelerator::Accelerator(KeyboardCode key_code, int modifiers)
+Accelerator::Accelerator(KeyboardCode key_code,
+                         int modifiers,
+                         KeyState key_state)
     : key_code_(key_code),
-      key_state_(KeyState::PRESSED),
+      key_state_(key_state),
       modifiers_(modifiers & kInterestingFlagsMask) {}
 
 Accelerator::Accelerator(const KeyEvent& key_event)

@@ -288,8 +288,7 @@ void EventDispatcher::ProcessEvent(const ui::Event& event,
 #endif
   if (event.IsKeyEvent()) {
     const ui::KeyEvent* key_event = event.AsKeyEvent();
-    if (event.type() == ui::ET_KEY_PRESSED && !key_event->is_char() &&
-        match_phase == AcceleratorMatchPhase::ANY) {
+    if (!key_event->is_char() && match_phase == AcceleratorMatchPhase::ANY) {
       Accelerator* pre_target =
           FindAccelerator(*key_event, ui::mojom::AcceleratorPhase::PRE_TARGET);
       if (pre_target) {

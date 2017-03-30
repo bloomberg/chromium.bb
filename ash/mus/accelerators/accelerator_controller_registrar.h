@@ -45,6 +45,10 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
  private:
   friend class AcceleratorControllerRegistrarTestApi;
 
+  // Accelerators for window cycle.
+  const ui::Accelerator window_cycle_complete_accelerator_;
+  const ui::Accelerator window_cycle_cancel_accelerator_;
+
   // ui::AcceleratorManagerDelegate:
   void OnAcceleratorsRegistered(
       const std::vector<ui::Accelerator>& accelerators) override;
@@ -56,6 +60,12 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   void AddAcceleratorToVector(
       const ui::Accelerator& accelerator,
       std::vector<ui::mojom::WmAcceleratorPtr>& accelerator_vector);
+
+  // TODO(moshayedi): crbug.com/629191. Handling window cycle accelerators here
+  // is just a temporary solution and we should remove these once we have a
+  // proper solution.
+  void RegisterWindowCycleAccelerators();
+  bool HandleWindowCycleAccelerator(const ui::Accelerator& accelerator);
 
   // The flow of accelerators in ash is:
   // . wm::AcceleratorFilter() sees events first as it's a pre-target handler.

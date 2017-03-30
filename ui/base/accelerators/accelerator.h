@@ -42,7 +42,9 @@ class UI_BASE_EXPORT Accelerator {
 
   Accelerator();
   // NOTE: this constructor strips out non key related flags.
-  Accelerator(KeyboardCode key_code, int modifiers);
+  Accelerator(KeyboardCode key_code,
+              int modifiers,
+              KeyState key_state = KeyState::PRESSED);
   explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
   ~Accelerator();

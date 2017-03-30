@@ -8,6 +8,7 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/accelerator_router.h"
+#include "ash/common/wm/window_cycle_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_ids.h"
 #include "ash/mus/window_manager.h"
@@ -16,6 +17,7 @@
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_history.h"
 
 namespace ash {
@@ -34,11 +36,16 @@ void OnAcceleratorsAdded(const std::vector<ui::Accelerator>& accelerators,
 AcceleratorControllerRegistrar::AcceleratorControllerRegistrar(
     WindowManager* window_manager,
     uint16_t id_namespace)
-    : window_manager_(window_manager),
+    : window_cycle_complete_accelerator_(ui::VKEY_MENU,
+                                         ui::EF_NONE,
+                                         ui::Accelerator::KeyState::RELEASED),
+      window_cycle_cancel_accelerator_(ui::VKEY_ESCAPE, ui::EF_ALT_DOWN),
+      window_manager_(window_manager),
       id_namespace_(id_namespace),
       next_id_(0),
       router_(new AcceleratorRouter) {
   window_manager_->AddAcceleratorHandler(id_namespace, this);
+  RegisterWindowCycleAccelerators();
 }
 
 AcceleratorControllerRegistrar::~AcceleratorControllerRegistrar() {
@@ -82,6 +89,8 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
     // http://crbug.com/630683.
     accelerator_controller->accelerator_history()->StoreCurrentAccelerator(
         accelerator);
+    if (HandleWindowCycleAccelerator(accelerator))
+      return ui::mojom::EventResult::HANDLED;
     WmWindow* target_window = WmShell::Get()->GetFocusedWindow();
     if (!target_window)
       target_window = Shell::GetWmRootWindowForNewWindows();
@@ -183,6 +192,33 @@ uint16_t AcceleratorControllerRegistrar::GetNextLocalAcceleratorId() {
     ++next_id_;
   ids_.insert(next_id_);
   return next_id_++;
+}
+
+void AcceleratorControllerRegistrar::RegisterWindowCycleAccelerators() {
+  std::vector<ui::Accelerator> accelerators;
+  accelerators.push_back(window_cycle_complete_accelerator_);
+  accelerators.push_back(window_cycle_cancel_accelerator_);
+  OnAcceleratorsRegistered(accelerators);
+}
+
+bool AcceleratorControllerRegistrar::HandleWindowCycleAccelerator(
+    const ui::Accelerator& accelerator) {
+  ash::WindowCycleController* window_cycle_controller =
+      Shell::Get()->window_cycle_controller();
+  if (!window_cycle_controller->IsCycling())
+    return false;
+
+  if (accelerator == window_cycle_complete_accelerator_) {
+    window_cycle_controller->CompleteCycling();
+    return true;
+  }
+
+  if (accelerator == window_cycle_cancel_accelerator_) {
+    window_cycle_controller->CancelCycling();
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace mus
