@@ -1378,22 +1378,6 @@
             ]
         }
     ],
-    "NTPSnippets": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "//1": "This represents a group that controls how we hit the content",
-                    "//2": "suggestions server, but there's nothing to specify as experiment_id",
-                    "//3": "and send_to_gws are not allowed in the test config. This exists to",
-                    "//4": "silence warnings for real configs that must have a matching group.",
-                    "name": "ContentSuggestionsBackend-FCS"
-                }
-            ]
-        }
-    ],
     "NTPTilesInInstantService": [
         {
             "platforms": [
