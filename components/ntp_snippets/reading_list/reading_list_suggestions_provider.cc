@@ -4,17 +4,29 @@
 
 #include "components/ntp_snippets/reading_list/reading_list_suggestions_provider.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ntp_snippets/category.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ntp_snippets {
+
+namespace {
+// Max number of entries to return.
+const int kMaxEntries = 3;
+
+bool CompareEntries(const ReadingListEntry* lhs, const ReadingListEntry* rhs) {
+  return lhs->UpdateTime() > rhs->UpdateTime();
+}
+}
 
 ReadingListSuggestionsProvider::ReadingListSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
@@ -23,17 +35,16 @@ ReadingListSuggestionsProvider::ReadingListSuggestionsProvider(
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(
           Category::FromKnownCategory(KnownCategories::READING_LIST)),
-      reading_list_model_(reading_list_model) {
+      reading_list_model_(reading_list_model),
+      scoped_observer_(this) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
-  reading_list_model->AddObserver(this);
-  if (reading_list_model_->loaded()) {
-    FetchReadingListInternal();
-  }
+
+  // If the ReadingListModel is loaded, this will trigger a call to
+  // ReadingListModelLoaded. Keep it as last instruction.
+  scoped_observer_.Add(reading_list_model_);
 }
 
-ReadingListSuggestionsProvider::~ReadingListSuggestionsProvider() {
-  reading_list_model_->RemoveObserver(this);
-}
+ReadingListSuggestionsProvider::~ReadingListSuggestionsProvider(){};
 
 CategoryStatus ReadingListSuggestionsProvider::GetCategoryStatus(
     Category category) {
@@ -107,8 +118,62 @@ void ReadingListSuggestionsProvider::ReadingListModelLoaded(
   FetchReadingListInternal();
 }
 
+void ReadingListSuggestionsProvider::ReadingListModelBeingDeleted(
+    const ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+  scoped_observer_.Remove(reading_list_model_);
+  reading_list_model_ = nullptr;
+}
+
 void ReadingListSuggestionsProvider::FetchReadingListInternal() {
-  // TODO(crbug.com/702241): Implement this method.
+  if (!reading_list_model_)
+    return;
+
+  DCHECK(reading_list_model_->loaded());
+  std::vector<const ReadingListEntry*> entries;
+  for (const GURL& url : reading_list_model_->Keys()) {
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+    if (!entry->IsRead()) {
+      entries.emplace_back(entry);
+    }
+  }
+
+  if (entries.size() > kMaxEntries) {
+    // Get the |kMaxEntries| most recent entries.
+    std::partial_sort(entries.begin(), entries.begin() + kMaxEntries,
+                      entries.end(), CompareEntries);
+    entries.resize(kMaxEntries);
+  } else {
+    std::sort(entries.begin(), entries.end(), CompareEntries);
+  }
+
+  std::vector<ContentSuggestion> suggestions;
+  for (const ReadingListEntry* entry : entries) {
+    ContentSuggestion suggestion(provided_category_, entry->URL().spec(),
+                                 entry->URL());
+
+    if (!entry->Title().empty()) {
+      suggestion.set_title(base::UTF8ToUTF16(entry->Title()));
+    } else {
+      suggestion.set_title(url_formatter::FormatUrl(entry->URL()));
+    }
+    suggestion.set_publisher_name(
+        url_formatter::FormatUrl(entry->URL().GetOrigin()));
+    suggestions.emplace_back(std::move(suggestion));
+  }
+
+  NotifyStatusChanged(CategoryStatus::AVAILABLE);
+  observer()->OnNewSuggestions(this, provided_category_,
+                               std::move(suggestions));
+}
+
+void ReadingListSuggestionsProvider::NotifyStatusChanged(
+    CategoryStatus new_status) {
+  if (category_status_ == new_status) {
+    return;
+  }
+  category_status_ = new_status;
+  observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
 }
 
 }  // namespace ntp_snippets

@@ -15,17 +15,29 @@ namespace ntp_snippets {
 
 namespace {
 
+using ::testing::_;
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Property;
+
 class ReadingListSuggestionsProviderTest : public ::testing::Test {
  public:
   ReadingListSuggestionsProviderTest() {
+    std::unique_ptr<base::SimpleTestClock> clock =
+        base::MakeUnique<base::SimpleTestClock>();
+    clock_ = clock.get();
     model_ = base::MakeUnique<ReadingListModelImpl>(
-        /*storage_layer=*/nullptr, /*pref_service=*/nullptr,
-        base::MakeUnique<base::SimpleTestClock>());
+        /*storage_layer=*/nullptr, /*pref_service=*/nullptr, std::move(clock));
+  }
+
+  void CreateProvider() {
     EXPECT_CALL(observer_,
-                OnCategoryStatusChanged(testing::_, ReadingListCategory(),
+                OnCategoryStatusChanged(_, ReadingListCategory(),
                                         CategoryStatus::AVAILABLE_LOADING))
         .RetiresOnSaturation();
-
+    EXPECT_CALL(observer_, OnCategoryStatusChanged(_, ReadingListCategory(),
+                                                   CategoryStatus::AVAILABLE))
+        .RetiresOnSaturation();
     provider_ = base::MakeUnique<ReadingListSuggestionsProvider>(&observer_,
                                                                  model_.get());
   }
@@ -35,16 +47,79 @@ class ReadingListSuggestionsProviderTest : public ::testing::Test {
   }
 
  protected:
+  base::SimpleTestClock* clock_;
   std::unique_ptr<ReadingListModelImpl> model_;
   testing::StrictMock<MockContentSuggestionsProviderObserver> observer_;
   std::unique_ptr<ReadingListSuggestionsProvider> provider_;
 };
 
 TEST_F(ReadingListSuggestionsProviderTest, CategoryInfo) {
+  EXPECT_CALL(observer_, OnNewSuggestions(_, ReadingListCategory(), IsEmpty()))
+      .RetiresOnSaturation();
+  CreateProvider();
+
   CategoryInfo categoryInfo = provider_->GetCategoryInfo(ReadingListCategory());
   EXPECT_EQ(ContentSuggestionsAdditionalAction::VIEW_ALL,
             categoryInfo.additional_action());
 }
 
+TEST_F(ReadingListSuggestionsProviderTest, ReturnsThreeLatestUnreadSuggestion) {
+  GURL url_unread1 = GURL("http://www.foo1.bar");
+  GURL url_unread2 = GURL("http://www.foo2.bar");
+  GURL url_unread3 = GURL("http://www.foo3.bar");
+  GURL url_unread4 = GURL("http://www.foo4.bar");
+  GURL url_read1 = GURL("http://www.bar.foor");
+  std::string title_unread1 = "title1";
+  std::string title_unread2 = "title2";
+  std::string title_unread3 = "title3";
+  std::string title_unread4 = "title4";
+  std::string title_read1 = "title_read1";
+  model_->AddEntry(url_unread1, title_unread1,
+                   reading_list::ADDED_VIA_CURRENT_APP);
+  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  model_->AddEntry(url_unread2, title_unread2,
+                   reading_list::ADDED_VIA_CURRENT_APP);
+  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  model_->AddEntry(url_read1, title_read1, reading_list::ADDED_VIA_CURRENT_APP);
+  model_->SetReadStatus(url_read1, true);
+  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  model_->AddEntry(url_unread3, title_unread3,
+                   reading_list::ADDED_VIA_CURRENT_APP);
+  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  model_->AddEntry(url_unread4, title_unread4,
+                   reading_list::ADDED_VIA_CURRENT_APP);
+
+  EXPECT_CALL(observer_,
+              OnNewSuggestions(
+                  _, ReadingListCategory(),
+                  ElementsAre(Property(&ContentSuggestion::url, url_unread4),
+                              Property(&ContentSuggestion::url, url_unread3),
+                              Property(&ContentSuggestion::url, url_unread2))));
+
+  CreateProvider();
+}
+
+// Tests that the provider returns only unread suggestions even if there is less
+// unread suggestions than the maximum number of suggestions.
+TEST_F(ReadingListSuggestionsProviderTest, ReturnsOnlyUnreadSuggestion) {
+  GURL url_unread1 = GURL("http://www.foo1.bar");
+  GURL url_read1 = GURL("http://www.bar.foor");
+  std::string title_unread1 = "title1";
+  std::string title_read1 = "title_read1";
+  model_->AddEntry(url_unread1, title_unread1,
+                   reading_list::ADDED_VIA_CURRENT_APP);
+  clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+  model_->AddEntry(url_read1, title_read1, reading_list::ADDED_VIA_CURRENT_APP);
+  model_->SetReadStatus(url_read1, true);
+
+  EXPECT_CALL(observer_,
+              OnNewSuggestions(
+                  _, ReadingListCategory(),
+                  ElementsAre(Property(&ContentSuggestion::url, url_unread1))));
+
+  CreateProvider();
+}
+
 }  // namespace
+
 }  // namespace ntp_snippets

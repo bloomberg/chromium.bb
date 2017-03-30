@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/scoped_observer.h"
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
@@ -49,14 +50,20 @@ class ReadingListSuggestionsProvider : public ContentSuggestionsProvider,
 
   // ReadingListModelObserver implementation.
   void ReadingListModelLoaded(const ReadingListModel* model) override;
+  void ReadingListModelBeingDeleted(const ReadingListModel* model) override;
 
  private:
+  // The actual method to fetch Reading List entries. Must be called after the
+  // model is loaded.
   void FetchReadingListInternal();
 
+  // Updates the |category_status_| and notifies the |observer_|, if necessary.
+  void NotifyStatusChanged(CategoryStatus new_status);
   CategoryStatus category_status_;
   const Category provided_category_;
 
   ReadingListModel* reading_list_model_;
+  ScopedObserver<ReadingListModel, ReadingListModelObserver> scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListSuggestionsProvider);
 };

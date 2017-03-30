@@ -114,6 +114,7 @@ static_library("ntp_snippets") {
     "//components/strings",
     "//components/sync_sessions",
     "//components/translate/core/browser",
+    "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",
     "//components/web_resource",
