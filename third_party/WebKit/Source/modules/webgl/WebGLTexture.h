@@ -27,6 +27,7 @@
 #define WebGLTexture_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "public/platform/WebMediaPlayer.h"
 
 namespace blink {
 
@@ -46,6 +47,13 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
 
   static GLint computeLevelCount(GLsizei width, GLsizei height, GLsizei depth);
 
+  void updateLastUploadedVideo(WebMediaPlayer*);
+  unsigned lastUploadedVideoWidth() const { return m_lastUploadedVideoWidth; }
+  unsigned lastUploadedVideoHeight() const { return m_lastUploadedVideoHeight; }
+  double lastUploadedVideoTimestamp() const {
+    return m_lastUploadedVideoTimestamp;
+  }
+
  private:
   explicit WebGLTexture(WebGLRenderingContextBase*);
 
@@ -56,6 +64,10 @@ class WebGLTexture final : public WebGLSharedPlatform3DObject {
   int mapTargetToIndex(GLenum) const;
 
   GLenum m_target;
+
+  unsigned m_lastUploadedVideoWidth = 0;
+  unsigned m_lastUploadedVideoHeight = 0;
+  double m_lastUploadedVideoTimestamp = 0.0;
 };
 
 }  // namespace blink

@@ -5293,6 +5293,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
     if (video->copyVideoTextureToPlatformTexture(contextGL(), texture->object(),
                                                  m_unpackPremultiplyAlpha,
                                                  m_unpackFlipY)) {
+      texture->updateLastUploadedVideo(video->webMediaPlayer());
       return;
     }
 
@@ -5321,6 +5322,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
                 texture->object(), internalformat, type, level,
                 m_unpackPremultiplyAlpha, m_unpackFlipY, IntPoint(0, 0),
                 IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
+          texture->updateLastUploadedVideo(video->webMediaPlayer());
           return;
         }
       }
@@ -5337,8 +5339,10 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
             contextGL(), level, convertTexInternalFormat(internalformat, type),
             format, type, xoffset, yoffset, zoffset, m_unpackFlipY,
             m_unpackPremultiplyAlpha &&
-                m_unpackColorspaceConversion == GL_NONE))
+                m_unpackColorspaceConversion == GL_NONE)) {
+      texture->updateLastUploadedVideo(video->webMediaPlayer());
       return;
+    }
   }
 
   RefPtr<Image> image = videoFrameToImage(video);
@@ -5349,6 +5353,7 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
                WebGLImageConversion::HtmlDomVideo, m_unpackFlipY,
                m_unpackPremultiplyAlpha, sourceImageRect, depth,
                unpackImageHeight);
+  texture->updateLastUploadedVideo(video->webMediaPlayer());
 }
 
 void WebGLRenderingContextBase::texImageBitmapByGPU(ImageBitmap* bitmap,

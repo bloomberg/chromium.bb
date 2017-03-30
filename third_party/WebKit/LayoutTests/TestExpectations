@@ -2680,3 +2680,6 @@ crbug.com/700788 virtual/enable_wasm/http/tests/wasm/wasm_local_iframe_test.html
 
 # Sheriff failures 2017-03-29
 crbug.com/706119 fast/forms/focus-selection-textarea.html [ Failure ]
+
+# Tests to be run only under virtual/experimental-canvas-features/
+crbug.com/682753 fast/canvas-experimental [ Skip ]

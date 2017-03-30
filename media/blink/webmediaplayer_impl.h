@@ -138,6 +138,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void selectedVideoTrackChanged(
       blink::WebMediaPlayer::TrackId* selectedTrackId) override;
 
+  bool getLastUploadedFrameInfo(unsigned* width,
+                                unsigned* height,
+                                double* timestamp) override;
+
   // Dimensions of the video.
   blink::WebSize naturalSize() const override;
 
@@ -704,6 +708,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether embedded media experience is currently enabled.
   bool embedded_media_experience_enabled_ = false;
+
+  gfx::Size last_uploaded_frame_size_;
+  base::TimeDelta last_uploaded_frame_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

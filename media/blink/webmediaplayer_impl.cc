@@ -676,6 +676,15 @@ void WebMediaPlayerImpl::selectedVideoTrackChanged(
   pipeline_controller_.OnSelectedVideoTrackChanged(selected_video_track_id);
 }
 
+bool WebMediaPlayerImpl::getLastUploadedFrameInfo(unsigned* width,
+                                                  unsigned* height,
+                                                  double* timestamp) {
+  *width = last_uploaded_frame_size_.width();
+  *height = last_uploaded_frame_size_.height();
+  *timestamp = last_uploaded_frame_timestamp_.InSecondsF();
+  return true;
+}
+
 blink::WebSize WebMediaPlayerImpl::naturalSize() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -1803,8 +1812,16 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
 
   // Needed when the |main_task_runner_| and |compositor_task_runner_| are the
   // same to avoid deadlock in the Wait() below.
-  if (compositor_task_runner_->BelongsToCurrentThread())
-    return compositor_->GetCurrentFrameAndUpdateIfStale();
+  if (compositor_task_runner_->BelongsToCurrentThread()) {
+    scoped_refptr<VideoFrame> video_frame =
+        compositor_->GetCurrentFrameAndUpdateIfStale();
+    if (!video_frame) {
+      return nullptr;
+    }
+    last_uploaded_frame_size_ = video_frame->natural_size();
+    last_uploaded_frame_timestamp_ = video_frame->timestamp();
+    return video_frame;
+  }
 
   // Use a posted task and waitable event instead of a lock otherwise
   // WebGL/Canvas can see different content than what the compositor is seeing.
@@ -1816,6 +1833,12 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
       base::Bind(&GetCurrentFrameAndSignal, base::Unretained(compositor_),
                  &video_frame, &event));
   event.Wait();
+
+  if (!video_frame) {
+    return nullptr;
+  }
+  last_uploaded_frame_size_ = video_frame->natural_size();
+  last_uploaded_frame_timestamp_ = video_frame->timestamp();
   return video_frame;
 }
 

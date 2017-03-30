@@ -278,6 +278,15 @@ class WebMediaPlayer {
       const WebVector<TrackId>& enabledTrackIds) {}
   // |selectedTrackId| is null if no track is selected.
   virtual void selectedVideoTrackChanged(TrackId* selectedTrackId) {}
+
+  // TODO(kainino): This is for a prototype implementation for getting the
+  // width, height, and timestamp of the last frame uploaded to a WebGL
+  // texture. https://crbug.com/639174
+  virtual bool getLastUploadedFrameInfo(unsigned* width,
+                                        unsigned* height,
+                                        double* timestamp) {
+    return false;
+  }
 };
 
 }  // namespace blink
