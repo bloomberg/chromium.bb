@@ -479,7 +479,8 @@ def _CreateParser():
       parser,
       'Remote Trybot Options (--remote)')
 
-  group.add_option('--use-buildbucket', action='store_true', default=False,
+  group.add_option('--do-not-use-buildbucket', action='store_false',
+                   dest='use_buildbucket', default=True,
                    help='Use buildbucket instead of git to request'
                         'the tryjob(s).')
 

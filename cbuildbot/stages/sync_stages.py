@@ -1393,12 +1393,7 @@ class PreCQLauncherStage(SyncStage):
       cmd += ['-g', cros_patch.AddPrefix(patch, patch.gerrit_number)]
       self._PrintPatchStatus(patch, 'testing')
 
-    use_buildbucket = False
     config_buildbucket_id_map = {}
-    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      # use buildbucket to launch trybots.
-      cmd += ['--use-buildbucket']
-      use_buildbucket = True
 
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
@@ -1407,9 +1402,8 @@ class PreCQLauncherStage(SyncStage):
           cmd, cwd=self._build_root, capture_output=True)
       if result and result.output:
         logging.info('cbuildbot output: %s' % result.output)
-        if use_buildbucket:
-          config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
-              result.output)
+        config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
+            result.output)
 
     actions = []
     build_id, db = self._run.GetCIDBHandle()
