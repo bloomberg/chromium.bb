@@ -60,6 +60,54 @@ void AdjustAlongAxis(int dst_origin, int dst_size, int* origin, int* size) {
 
 namespace gfx {
 
+// This is the per-axis heuristic for picking the most useful origin and
+// width/height to represent the input range.
+static void SaturatedClampRange(int min, int max, int* origin, int* span) {
+  if (max < min) {
+    *span = 0;
+    *origin = min;
+    return;
+  }
+
+  int effective_span = base::SaturatedSubtraction(max, min);
+  int span_loss = base::SaturatedSubtraction(max, min + effective_span);
+
+  // If the desired width is within the limits of ints, we can just
+  // use the simple computations to represent the range precisely.
+  if (span_loss == 0) {
+    *span = effective_span;
+    *origin = min;
+    return;
+  }
+
+  // Now we have to approximate. If one of min or max is close enough
+  // to zero we choose to represent that one precisely. The other side is
+  // probably practically "infinite", so we move it.
+  if (base::SaturatedAbsolute(max) < std::numeric_limits<int>::max() / 2) {
+    // Maintain origin + span == max.
+    *span = effective_span;
+    *origin = max - effective_span;
+  } else if (base::SaturatedAbsolute(min) <
+             std::numeric_limits<int>::max() / 2) {
+    // Maintain origin == min.
+    *span = effective_span;
+    *origin = min;
+  } else {
+    // Both are big, so keep the center.
+    *span = effective_span;
+    *origin = min + span_loss / 2;
+  }
+}
+
+void Rect::SetByBounds(int left, int top, int right, int bottom) {
+  int x, y;
+  int width, height;
+  SaturatedClampRange(left, right, &x, &width);
+  SaturatedClampRange(top, bottom, &y, &height);
+  origin_.SetPoint(x, y);
+  size_.SetSize(width, height);
+}
+
 void Rect::Inset(const Insets& insets) {
   Inset(insets.left(), insets.top(), insets.right(), insets.bottom());
 }
@@ -128,19 +176,21 @@ bool Rect::Intersects(const Rect& rect) const {
 
 void Rect::Intersect(const Rect& rect) {
   if (IsEmpty() || rect.IsEmpty()) {
-    SetRect(0, 0, 0, 0);
+    SetRect(0, 0, 0, 0);  // Throws away empty position.
     return;
   }
 
-  int rx = std::max(x(), rect.x());
-  int ry = std::max(y(), rect.y());
-  int rr = std::min(right(), rect.right());
-  int rb = std::min(bottom(), rect.bottom());
+  int left = std::max(x(), rect.x());
+  int top = std::max(y(), rect.y());
+  int new_right = std::min(right(), rect.right());
+  int new_bottom = std::min(bottom(), rect.bottom());
 
-  if (rx >= rr || ry >= rb)
-    rx = ry = rr = rb = 0;  // non-intersecting
+  if (left >= new_right || top >= new_bottom) {
+    SetRect(0, 0, 0, 0);  // Throws away empty position.
+    return;
+  }
 
-  SetRect(rx, ry, rr - rx, rb - ry);
+  SetByBounds(left, top, new_right, new_bottom);
 }
 
 void Rect::Union(const Rect& rect) {
@@ -151,14 +201,9 @@ void Rect::Union(const Rect& rect) {
   if (rect.IsEmpty())
     return;
 
-  int rx = std::min(x(), rect.x());
-  int ry = std::min(y(), rect.y());
-  int rr = std::max(right(), rect.right());
-  int rb = std::max(bottom(), rect.bottom());
-
-  // Subtracting to get width/height might overflow integers, so clamp them.
-  SetRect(rx, ry, base::SaturatedSubtraction(rr, rx),
-          base::SaturatedSubtraction(rb, ry));
+  SetByBounds(std::min(x(), rect.x()), std::min(y(), rect.y()),
+              std::max(right(), rect.right()),
+              std::max(bottom(), rect.bottom()));
 }
 
 void Rect::Subtract(const Rect& rect) {
@@ -189,7 +234,7 @@ void Rect::Subtract(const Rect& rect) {
       rb = rect.y();
     }
   }
-  SetRect(rx, ry, rr - rx, rb - ry);
+  SetByBounds(rx, ry, rr, rb);
 }
 
 void Rect::AdjustToFit(const Rect& rect) {
@@ -292,11 +337,10 @@ Rect SubtractRects(const Rect& a, const Rect& b) {
 }
 
 Rect BoundingRect(const Point& p1, const Point& p2) {
-  int rx = std::min(p1.x(), p2.x());
-  int ry = std::min(p1.y(), p2.y());
-  int rr = std::max(p1.x(), p2.x());
-  int rb = std::max(p1.y(), p2.y());
-  return Rect(rx, ry, rr - rx, rb - ry);
+  Rect result;
+  result.SetByBounds(std::min(p1.x(), p2.x()), std::min(p1.y(), p2.y()),
+                     std::max(p1.x(), p2.x()), std::max(p1.y(), p2.y()));
+  return result;
 }
 
 }  // namespace gfx

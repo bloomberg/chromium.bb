@@ -110,6 +110,11 @@ class GFX_EXPORT Rect {
     set_height(height);
   }
 
+  // Use in place of SetRect() when you know the edges of the rectangle instead
+  // of the dimensions, rather than trying to determine the width/height
+  // yourself. This safely handles cases where the width/height would overflow.
+  void SetByBounds(int left, int top, int right, int bottom);
+
   // Shrink the rectangle by a horizontal and vertical distance on all sides.
   void Inset(int horizontal, int vertical) {
     Inset(horizontal, vertical, horizontal, vertical);

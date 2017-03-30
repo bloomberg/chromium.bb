@@ -33,16 +33,15 @@ TEST(RectTest, SkIRectToRectClamping) {
   // right-left and bottom-top would overflow.
   // These should be mapped to max width/height, which is as close as gfx::Rect
   // can represent.
-  EXPECT_EQ(
-      gfx::Rect(Limits::min(), Limits::min(), Limits::max(), Limits::max()),
-      SkIRectToRect(SkIRect::MakeLTRB(Limits::min(), Limits::min(),
-                                      Limits::max(), Limits::max())));
+  Rect result = SkIRectToRect(SkIRect::MakeLTRB(Limits::min(), Limits::min(),
+                                                Limits::max(), Limits::max()));
+  EXPECT_EQ(gfx::Size(Limits::max(), Limits::max()), result.size());
 
   // right-left and bottom-top would underflow.
   // These should be mapped to zero, like all negative values.
-  EXPECT_EQ(gfx::Rect(Limits::max(), Limits::max(), 0, 0),
-            SkIRectToRect(SkIRect::MakeLTRB(Limits::max(), Limits::max(),
-                                            Limits::min(), Limits::min())));
+  result = SkIRectToRect(SkIRect::MakeLTRB(Limits::max(), Limits::max(),
+                                           Limits::min(), Limits::min()));
+  EXPECT_EQ(gfx::Rect(Limits::max(), Limits::max(), 0, 0), result);
 }
 
 }  // namespace gfx

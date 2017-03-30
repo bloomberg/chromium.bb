@@ -473,47 +473,55 @@ TEST(RectTest, ToEnclosedRect) {
   static const int max_int = std::numeric_limits<int>::max();
   static const int min_int = std::numeric_limits<int>::min();
   static const float max_float = std::numeric_limits<float>::max();
+  static const float max_int_f = static_cast<float>(max_int);
+  static const float min_int_f = static_cast<float>(min_int);
+
   static const struct Test {
-    float x1; // source
-    float y1;
-    float w1;
-    float h1;
-    int x2; // target
-    int y2;
-    int w2;
-    int h2;
-  } tests[] = {{0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
-               {-1.5f, -1.5f, 3.0f, 3.0f, -1, -1, 2, 2},
-               {-1.5f, -1.5f, 3.5f, 3.5f, -1, -1, 3, 3},
-               {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
-               {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
-               {20000.5f, 20000.5f, 0.5f, 0.5f, 20001, 20001, 0, 0},
-               {static_cast<float>(min_int),
-                static_cast<float>(min_int),
-                max_int * 2.f,
-                max_int * 2.f,
-                min_int,
-                min_int,
-                max_int,
-                max_int},
-               {static_cast<float>(max_int),
-                static_cast<float>(max_int),
-                static_cast<float>(max_int),
-                static_cast<float>(max_int),
-                max_int,
-                max_int,
-                0,
-                0}};
+    struct {
+      float x;
+      float y;
+      float width;
+      float height;
+    } in;
+    struct {
+      int x;
+      int y;
+      int width;
+      int height;
+    } expected;
+  } tests[] = {
+      {{0.0f, 0.0f, 0.0f, 0.0f}, {0, 0, 0, 0}},
+      {{-1.5f, -1.5f, 3.0f, 3.0f}, {-1, -1, 2, 2}},
+      {{-1.5f, -1.5f, 3.5f, 3.5f}, {-1, -1, 3, 3}},
+      {{max_float, max_float, 2.0f, 2.0f}, {max_int, max_int, 0, 0}},
+      {{0.0f, 0.0f, max_float, max_float}, {0, 0, max_int, max_int}},
+      {{20000.5f, 20000.5f, 0.5f, 0.5f}, {20001, 20001, 0, 0}},
+      {{max_int_f, max_int_f, max_int_f, max_int_f}, {max_int, max_int, 0, 0}}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    RectF source(tests[i].in.x, tests[i].in.y, tests[i].in.width,
+                 tests[i].in.height);
+    Rect enclosed = ToEnclosedRect(source);
 
-    Rect enclosed = ToEnclosedRect(r1);
-    EXPECT_FLOAT_AND_NAN_EQ(r2.x(), enclosed.x());
-    EXPECT_FLOAT_AND_NAN_EQ(r2.y(), enclosed.y());
-    EXPECT_FLOAT_AND_NAN_EQ(r2.width(), enclosed.width());
-    EXPECT_FLOAT_AND_NAN_EQ(r2.height(), enclosed.height());
+    EXPECT_EQ(tests[i].expected.x, enclosed.x());
+    EXPECT_EQ(tests[i].expected.y, enclosed.y());
+    EXPECT_EQ(tests[i].expected.width, enclosed.width());
+    EXPECT_EQ(tests[i].expected.height, enclosed.height());
+  }
+
+  {
+    RectF source(min_int_f, min_int_f, max_int_f * 3.f, max_int_f * 3.f);
+    Rect enclosed = ToEnclosedRect(source);
+
+    // That rect can't be represented, but it should be big.
+    EXPECT_EQ(max_int, enclosed.width());
+    EXPECT_EQ(max_int, enclosed.height());
+    // It should include some axis near the global origin.
+    EXPECT_GT(1, enclosed.x());
+    EXPECT_GT(1, enclosed.y());
+    // And it should not cause computation issues for itself.
+    EXPECT_LT(0, enclosed.right());
+    EXPECT_LT(0, enclosed.bottom());
   }
 }
 
@@ -522,40 +530,58 @@ TEST(RectTest, ToEnclosingRect) {
   static const int min_int = std::numeric_limits<int>::min();
   static const float max_float = std::numeric_limits<float>::max();
   static const float epsilon_float = std::numeric_limits<float>::epsilon();
+  static const float max_int_f = static_cast<float>(max_int);
+  static const float min_int_f = static_cast<float>(min_int);
   static const struct Test {
-    float x1; // source
-    float y1;
-    float w1;
-    float h1;
-    int x2; // target
-    int y2;
-    int w2;
-    int h2;
+    struct {
+      float x;
+      float y;
+      float width;
+      float height;
+    } in;
+    struct {
+      int x;
+      int y;
+      int width;
+      int height;
+    } expected;
   } tests[] = {
-      {0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0, 0},
-      {5.5f, 5.5f, 0.0f, 0.0f, 5, 5, 0, 0},
-      {3.5f, 2.5f, epsilon_float, -0.0f, 3, 2, 0, 0},
-      {-1.5f, -1.5f, 3.0f, 3.0f, -2, -2, 4, 4},
-      {-1.5f, -1.5f, 3.5f, 3.5f, -2, -2, 4, 4},
-      {max_float, max_float, 2.0f, 2.0f, max_int, max_int, 0, 0},
-      {0.0f, 0.0f, max_float, max_float, 0, 0, max_int, max_int},
-      {20000.5f, 20000.5f, 0.5f, 0.5f, 20000, 20000, 1, 1},
-      {static_cast<float>(min_int), static_cast<float>(min_int), max_int * 2.f,
-       max_int * 2.f, min_int, min_int, max_int, max_int},
-      {static_cast<float>(max_int), static_cast<float>(max_int),
-       static_cast<float>(max_int), static_cast<float>(max_int), max_int,
-       max_int, 0, 0},
-      {-0.5f, -0.5f, 22777712.f, 1.f, -1, -1, 22777713, 2}};
+      {{0.0f, 0.0f, 0.0f, 0.0f}, {0, 0, 0, 0}},
+      {{5.5f, 5.5f, 0.0f, 0.0f}, {5, 5, 0, 0}},
+      {{3.5f, 2.5f, epsilon_float, -0.0f}, {3, 2, 0, 0}},
+      {{3.5f, 2.5f, 0.f, 0.001f}, {3, 2, 0, 1}},
+      {{-1.5f, -1.5f, 3.0f, 3.0f}, {-2, -2, 4, 4}},
+      {{-1.5f, -1.5f, 3.5f, 3.5f}, {-2, -2, 4, 4}},
+      {{max_float, max_float, 2.0f, 2.0f}, {max_int, max_int, 0, 0}},
+      {{0.0f, 0.0f, max_float, max_float}, {0, 0, max_int, max_int}},
+      {{20000.5f, 20000.5f, 0.5f, 0.5f}, {20000, 20000, 1, 1}},
+      {{max_int_f, max_int_f, max_int_f, max_int_f}, {max_int, max_int, 0, 0}},
+      {{-0.5f, -0.5f, 22777712.f, 1.f}, {-1, -1, 22777713, 2}}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    RectF r1(tests[i].x1, tests[i].y1, tests[i].w1, tests[i].h1);
-    Rect r2(tests[i].x2, tests[i].y2, tests[i].w2, tests[i].h2);
+    RectF source(tests[i].in.x, tests[i].in.y, tests[i].in.width,
+                 tests[i].in.height);
 
-    Rect enclosed = ToEnclosingRect(r1);
-    EXPECT_EQ(r2.x(), enclosed.x());
-    EXPECT_EQ(r2.y(), enclosed.y());
-    EXPECT_EQ(r2.width(), enclosed.width());
-    EXPECT_EQ(r2.height(), enclosed.height());
+    Rect enclosing = ToEnclosingRect(source);
+    EXPECT_EQ(tests[i].expected.x, enclosing.x());
+    EXPECT_EQ(tests[i].expected.y, enclosing.y());
+    EXPECT_EQ(tests[i].expected.width, enclosing.width());
+    EXPECT_EQ(tests[i].expected.height, enclosing.height());
+  }
+
+  {
+    RectF source(min_int_f, min_int_f, max_int_f * 3.f, max_int_f * 3.f);
+    Rect enclosing = ToEnclosingRect(source);
+
+    // That rect can't be represented, but it should be big.
+    EXPECT_EQ(max_int, enclosing.width());
+    EXPECT_EQ(max_int, enclosing.height());
+    // It should include some axis near the global origin.
+    EXPECT_GT(1, enclosing.x());
+    EXPECT_GT(1, enclosing.y());
+    // And it should cause computation issues for itself.
+    EXPECT_LT(0, enclosing.right());
+    EXPECT_LT(0, enclosing.bottom());
   }
 }
 
@@ -1048,13 +1074,27 @@ TEST(RectTest, IntegerOverflow) {
   }
 
   // Unioning a left=minint rect with a right=maxint rect.
-  // Width is always clamped before adjusting position, so this
-  // should taking the min left/top and then finding the max width.
+  // We can't represent both ends of the spectrum in the same rect.
+  // Make sure we keep the most useful area.
   {
+    int part_limit = min_limit / 3;
     Rect left_minint(min_limit, min_limit, 1, 1);
     Rect right_maxint(limit - 1, limit - 1, limit, limit);
-    Rect expected(min_limit, min_limit, limit, limit);
-    EXPECT_EQ(UnionRects(left_minint, right_maxint), expected);
+    Rect expected(part_limit, part_limit, 2 * part_limit, 2 * part_limit);
+    Rect result = UnionRects(left_minint, right_maxint);
+
+    // The result should be maximally big.
+    EXPECT_EQ(limit, result.height());
+    EXPECT_EQ(limit, result.width());
+
+    // The result should include the area near the origin.
+    EXPECT_GT(-part_limit, result.x());
+    EXPECT_LT(part_limit, result.right());
+    EXPECT_GT(-part_limit, result.y());
+    EXPECT_LT(part_limit, result.bottom());
+
+    // More succinctly, but harder to read in the results.
+    EXPECT_TRUE(UnionRects(left_minint, right_maxint).Contains(expected));
   }
 }
 

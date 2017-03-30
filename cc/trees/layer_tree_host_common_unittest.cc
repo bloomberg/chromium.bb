@@ -1124,9 +1124,14 @@ TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
                                  page_scale_layer, inner_viewport_scroll_layer,
                                  outer_viewport_scroll_layer);
 
-  // Mapping grand_child's bounds to screen space produces an empty rect so
-  // grand_child should be hidden.
-  EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
+  // Mapping grand_child's bounds to screen space produces an empty rect, but
+  // only because it is turned sideways.  The entire rect is contained inside
+  // the clip, and is only empty so long as the numerical precision of the
+  // transform is effectively perfect.  Currently we do the calculation the
+  // other way around, and the Projection of the screen space clip into layer
+  // space includes the entire bounds.
+  EXPECT_EQ(gfx::Rect(grand_child->bounds()),
+            grand_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
