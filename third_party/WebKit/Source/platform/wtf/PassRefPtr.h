@@ -44,7 +44,7 @@ inline void adopted(const void*) {}
 
 // requireAdoption() is not overloaded for WTF::RefCounted, which has a built-in
 // assumption that adoption is required. requireAdoption() is for bootstrapping
-// alternate reference count classes that are compatible with ReftPtr/PassRefPtr
+// alternate reference count classes that are compatible with RefPtr/PassRefPtr
 // but cannot have adoption checks enabled by default, such as skia's
 // SkRefCnt. The purpose of requireAdoption() is to enable adoption checks only
 // once it is known that the object will be used with RefPtr/PassRefPtr.
