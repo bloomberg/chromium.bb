@@ -633,6 +633,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
   data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
 
   net::HttpRequestHeaders headers;
+  // Call network delegate methods to ensure that appropriate chrome proxy
+  // headers get added/removed.
+  network_delegate()->NotifyBeforeStartTransaction(
+      fake_request.get(),
+      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                 base::Unretained(this)),
+      &headers);
   network_delegate()->NotifyBeforeSendHeaders(fake_request.get(),
                                               data_reduction_proxy_info,
                                               proxy_retry_info, &headers);
@@ -843,6 +850,14 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RequestDataConfigurations) {
                                           : 0);
     lofi_decider()->SetIsUsingLoFi(test.lofi_on);
     io_data()->request_options()->SetSecureSession("fake-session");
+
+    // Call network delegate methods to ensure that appropriate chrome proxy
+    // headers get added/removed.
+    network_delegate()->NotifyBeforeStartTransaction(
+        request.get(),
+        base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                   base::Unretained(this)),
+        &headers);
     network_delegate()->NotifyBeforeSendHeaders(
         request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
     DataReductionProxyData* data =
@@ -918,7 +933,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   data_reduction_proxy_info.UseNamedProxy(data_reduction_proxy);
 
   // Main frame loaded. Lo-Fi should be used.
-  net::HttpRequestHeaders headers;
+  net::HttpRequestHeaders headers_original;
   net::ProxyRetryInfoMap proxy_retry_info;
 
   test_network_quality_estimator()->set_effective_connection_type(
@@ -929,8 +944,17 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
   lofi_decider()->SetIsUsingLoFi(true);
   io_data()->request_options()->SetSecureSession("fake-session");
+
+  // Call network delegate methods to ensure that appropriate chrome proxy
+  // headers get added/removed.
+  network_delegate()->NotifyBeforeStartTransaction(
+      request.get(),
+      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                 base::Unretained(this)),
+      &headers_original);
   network_delegate()->NotifyBeforeSendHeaders(
-      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+      request.get(), data_reduction_proxy_info, proxy_retry_info,
+      &headers_original);
   DataReductionProxyData* data =
       DataReductionProxyData::GetData(*request.get());
 
@@ -951,9 +975,19 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectRequestDataCleared) {
   EXPECT_FALSE(data);
 
   // Call NotifyBeforeSendHeaders again with different proxy info to check that
-  // new data isn't added.
+  // new data isn't added. Use a new set of headers since the redirected HTTP
+  // jobs do not reuse headers from the previous jobs. Also, call network
+  // delegate methods to ensure that appropriate chrome proxy headers get
+  // added/removed.
+  net::HttpRequestHeaders headers_redirect;
+  network_delegate()->NotifyBeforeStartTransaction(
+      request.get(),
+      base::Bind(&DataReductionProxyNetworkDelegateTest::DelegateStageDone,
+                 base::Unretained(this)),
+      &headers_redirect);
   network_delegate()->NotifyBeforeSendHeaders(
-      request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
+      request.get(), data_reduction_proxy_info, proxy_retry_info,
+      &headers_redirect);
   data = DataReductionProxyData::GetData(*request.get());
   EXPECT_FALSE(data);
 }

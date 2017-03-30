@@ -115,6 +115,21 @@ int64_t EstimateOriginalReceivedBytes(const net::URLRequest& request) {
          util::CalculateEffectiveOCL(request);
 }
 
+// Verifies that the chrome proxy related request headers are set correctly.
+// |via_chrome_proxy| is true if the request is being fetched via Chrome Data
+// Saver proxy.
+void VerifyHttpRequestHeaders(bool via_chrome_proxy,
+                              const net::HttpRequestHeaders& headers) {
+  if (via_chrome_proxy) {
+    DCHECK(headers.HasHeader(chrome_proxy_header()));
+    DCHECK(headers.HasHeader(chrome_proxy_ect_header()));
+  } else {
+    DCHECK(!headers.HasHeader(chrome_proxy_header()));
+    DCHECK(!headers.HasHeader(chrome_proxy_accept_transform_header()));
+    DCHECK(!headers.HasHeader(chrome_proxy_ect_header()));
+  }
+}
+
 }  // namespace
 
 DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
@@ -220,6 +235,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
         DataReductionProxyData::GetDataAndCreateIfNecessary(request);
     if (data)
       data->set_used_data_reduction_proxy(true);
+    VerifyHttpRequestHeaders(false, *headers);
     return;
   }
 
@@ -246,6 +262,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
       lofi_decider->RemoveAcceptTransformHeader(headers);
     }
     RemoveChromeProxyECTHeader(headers);
+    VerifyHttpRequestHeaders(false, *headers);
     return;
   }
 
@@ -282,6 +299,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   data_reduction_proxy_request_options_->AddRequestHeader(headers);
   if (lofi_decider)
     lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
+  VerifyHttpRequestHeaders(true, *headers);
 }
 
 void DataReductionProxyNetworkDelegate::OnBeforeRedirectInternal(
@@ -514,7 +532,8 @@ void DataReductionProxyNetworkDelegate::MaybeAddChromeProxyECTHeader(
   DCHECK(!request.url().SchemeIsCryptographic());
   DCHECK(request.url().SchemeIsHTTPOrHTTPS());
 
-  DCHECK(!request_headers->HasHeader(chrome_proxy_ect_header()));
+  if (request_headers->HasHeader(chrome_proxy_ect_header()))
+    request_headers->RemoveHeader(chrome_proxy_ect_header());
 
   if (request.context()->network_quality_estimator()) {
     net::EffectiveConnectionType type = request.context()
