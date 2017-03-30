@@ -292,7 +292,7 @@ class AndroidPort(base.Port):
 
     SUPPORTED_VERSIONS = ('android')
 
-    FALLBACK_PATHS = {'icecreamsandwich': ['android'] + linux.LinuxPort.latest_platform_fallback_path()}
+    FALLBACK_PATHS = {'kitkat': ['android'] + linux.LinuxPort.latest_platform_fallback_path()}
 
     BUILD_REQUIREMENTS_URL = 'https://www.chromium.org/developers/how-tos/android-build-instructions'
 
@@ -301,7 +301,7 @@ class AndroidPort(base.Port):
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
 
         self._operating_system = 'android'
-        self._version = 'icecreamsandwich'
+        self._version = 'kitkat'
 
         self._host_port = factory.PortFactory(host).get(**kwargs)
         self.server_process_constructor = self._android_server_process_constructor

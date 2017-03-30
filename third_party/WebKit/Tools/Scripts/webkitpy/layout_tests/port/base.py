@@ -96,14 +96,14 @@ class Port(object):
         # architecture type breaks TestConfigurationConverter.
         # If we need this to be 'arm' in the future, then we first have to
         # fix TestConfigurationConverter.
-        ('icecreamsandwich', 'x86'),
+        ('kitkat', 'x86'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['retina', 'mac10.9', 'mac10.10', 'mac10.11', 'mac10.12'],
         'win': ['win7', 'win10'],
         'linux': ['trusty'],
-        'android': ['icecreamsandwich'],
+        'android': ['kitkat'],
     }
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
