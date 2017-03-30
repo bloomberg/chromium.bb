@@ -4472,6 +4472,8 @@ weston_output_move(struct weston_output *output, int x, int y)
  * Removes the output from the pending list and adds it to the compositor's
  * list of enabled outputs. The output created signal is emitted.
  *
+ * The output gets an internal ID assigned.
+ *
  * \param compositor The compositor instance.
  * \param output The output to be added.
  *
@@ -4484,6 +4486,17 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 	struct weston_view *view, *next;
 
 	assert(!output->enabled);
+
+	/* Verify we haven't reached the limit of 32 available output IDs */
+	assert(ffs(~compositor->output_id_pool) > 0);
+
+	/* Invert the output id pool and look for the lowest numbered
+	 * switch (the least significant bit).  Take that bit's position
+	 * as our ID, and mark it used in the compositor's output_id_pool.
+	 */
+	output->id = ffs(~compositor->output_id_pool) - 1;
+	compositor->output_id_pool |= 1u << output->id;
+
 	wl_list_remove(&output->link);
 	wl_list_insert(compositor->output_list.prev, &output->link);
 	output->enabled = true;
@@ -4532,7 +4545,6 @@ weston_output_transform_coordinate(struct weston_output *output,
  * Removes the repaint timer.
  * Destroys the Wayland global assigned to the output.
  * Destroys pixman regions allocated to the output.
- * Deallocates output's ID and updates compositor's output_id_pool.
  */
 static void
 weston_output_enable_undo(struct weston_output *output)
@@ -4541,7 +4553,6 @@ weston_output_enable_undo(struct weston_output *output)
 
 	pixman_region32_fini(&output->region);
 	pixman_region32_fini(&output->previous_damage);
-	output->compositor->output_id_pool &= ~(1u << output->id);
 }
 
 /** Removes output from compositor's list of enabled outputs
@@ -4565,6 +4576,8 @@ weston_output_enable_undo(struct weston_output *output)
  *
  * - wl_output protocol objects referencing this weston_output
  *   are made inert.
+ *
+ * - The output's internal ID is released.
  *
  * \memberof weston_output
  * \internal
@@ -4598,6 +4611,9 @@ weston_compositor_remove_output(struct weston_output *output)
 	wl_resource_for_each(resource, &output->resource_list) {
 		wl_resource_set_destructor(resource, NULL);
 	}
+
+	compositor->output_id_pool &= ~(1u << output->id);
+	output->id = 0xffffffff; /* invalid */
 }
 
 /** Sets the output scale for a given output.
@@ -4768,9 +4784,6 @@ weston_output_enable(struct weston_output *output)
 	/* Make sure we have a transform set */
 	assert(output->transform != UINT32_MAX);
 
-	/* Verify we haven't reached the limit of 32 available output IDs */
-	assert(ffs(~c->output_id_pool) > 0);
-
 	output->x = x;
 	output->y = y;
 	output->dirty = 1;
@@ -4787,13 +4800,6 @@ weston_output_enable(struct weston_output *output)
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 	wl_list_init(&output->feedback_list);
-
-	/* Invert the output id pool and look for the lowest numbered
-	 * switch (the least significant bit).  Take that bit's position
-	 * as our ID, and mark it used in the compositor's output_id_pool.
-	 */
-	output->id = ffs(~output->compositor->output_id_pool) - 1;
-	output->compositor->output_id_pool |= 1u << output->id;
 
 	output->global =
 		wl_global_create(c->wl_display, &wl_output_interface, 3,
