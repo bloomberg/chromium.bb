@@ -65,9 +65,14 @@ IndexedDBCursor::IndexedDBCursor(
       transaction_(transaction),
       cursor_(std::move(cursor)),
       closed_(false),
-      ptr_factory_(this) {}
+      ptr_factory_(this) {
+  IDB_ASYNC_TRACE_BEGIN("IndexedDBCursor::open", this);
+}
 
-IndexedDBCursor::~IndexedDBCursor() {}
+IndexedDBCursor::~IndexedDBCursor() {
+  // Call to make sure we complete our lifetime trace.
+  Close();
+}
 
 void IndexedDBCursor::Continue(std::unique_ptr<IndexedDBKey> key,
                                std::unique_ptr<IndexedDBKey> primary_key,
@@ -268,6 +273,9 @@ leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,
 }
 
 void IndexedDBCursor::Close() {
+  if (closed_)
+    return;
+  IDB_ASYNC_TRACE_END("IndexedDBCursor::open", this);
   IDB_TRACE("IndexedDBCursor::Close");
   closed_ = true;
   cursor_.reset();
