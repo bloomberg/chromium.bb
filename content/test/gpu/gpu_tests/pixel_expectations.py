@@ -50,10 +50,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
         ['win10', ('intel', 0x1912)], bug=690663)
 
-    # TODO(jbauman): Enable when reference images exist.
-    self.Fail('Pixel_Video_MP4', bug=704389)
-    self.Fail('Pixel_Video_VP9', bug=704389)
-
     # TODO(xlai): Remove this after test dimension is shrunk
     # Intended to skip only Nexus 5
     self.Skip('Pixel_OffscreenCanvasAccelerated2D',
