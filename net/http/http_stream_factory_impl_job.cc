@@ -1268,6 +1268,11 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     return set_result;
   }
 
+  // Close idle sockets in this group, since subsequent requests will go over
+  // |spdy_session|.
+  if (connection_->socket()->IsConnected())
+    connection_->CloseIdleSocketsInGroup();
+
   base::WeakPtr<SpdySession> spdy_session =
       session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
           spdy_session_key, std::move(connection_), net_log_, using_ssl_);

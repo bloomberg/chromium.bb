@@ -189,7 +189,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
                      HttpStream* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      loop_.Quit();
     stream_.reset(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
@@ -201,7 +201,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
       WebSocketHandshakeStreamBase* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      loop_.Quit();
     websocket_stream_.reset(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
@@ -213,7 +213,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
       BidirectionalStreamImpl* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      loop_.Quit();
     bidirectional_stream_impl_.reset(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
@@ -222,7 +222,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnStreamFailed(int status, const SSLConfig& used_ssl_config) override {
     stream_done_ = true;
     if (waiting_for_stream_)
-      base::MessageLoop::current()->QuitWhenIdle();
+      loop_.Quit();
     used_ssl_config_ = used_ssl_config;
     error_status_ = status;
   }
@@ -249,7 +249,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void WaitForStream() {
     while (!stream_done_) {
       waiting_for_stream_ = true;
-      base::RunLoop().Run();
+      loop_.Run();
       waiting_for_stream_ = false;
     }
   }
@@ -280,6 +280,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
  private:
   bool waiting_for_stream_;
   bool stream_done_;
+  base::RunLoop loop_;
   std::unique_ptr<HttpStream> stream_;
   std::unique_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
   std::unique_ptr<BidirectionalStreamImpl> bidirectional_stream_impl_;
@@ -2051,6 +2052,92 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
                    HttpNetworkSession::WEBSOCKET_SOCKET_POOL)));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
   EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port));
+}
+
+// Tests that when a new SpdySession is established, duplicated idle H2 sockets
+// to the same server are closed.
+TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
+  SpdySessionDependencies session_deps(ProxyService::CreateDirect());
+
+  const int kNumIdleSockets = 4;
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  std::vector<std::unique_ptr<SequencedSocketData>> providers;
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  ssl_socket_data.next_proto = kProtoHTTP2;
+  for (int i = 0; i < kNumIdleSockets; i++) {
+    auto provider = base::MakeUnique<SequencedSocketData>(
+        reads, arraysize(reads), nullptr, 0);
+    provider->set_connect_data(MockConnect(ASYNC, OK));
+    session_deps.socket_factory->AddSocketDataProvider(provider.get());
+    providers.push_back(std::move(provider));
+    session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+  }
+
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(&session_deps));
+
+  HostPortPair host_port_pair("www.google.com", 443);
+
+  // Create some HTTP/2 sockets.
+  std::vector<std::unique_ptr<ClientSocketHandle>> handles;
+  for (size_t i = 0; i < kNumIdleSockets; i++) {
+    scoped_refptr<TransportSocketParams> transport_params(
+        new TransportSocketParams(
+            host_port_pair, false, OnHostResolutionCallback(),
+            TransportSocketParams::COMBINE_CONNECT_AND_WRITE_DEFAULT));
+
+    auto connection = base::MakeUnique<ClientSocketHandle>();
+    TestCompletionCallback callback;
+
+    SSLConfig ssl_config;
+    scoped_refptr<SSLSocketParams> ssl_params(
+        new SSLSocketParams(transport_params, nullptr, nullptr, host_port_pair,
+                            ssl_config, PRIVACY_MODE_DISABLED, 0, false));
+    std::string group_name = "ssl/" + host_port_pair.ToString();
+    int rv = connection->Init(
+        group_name, ssl_params, MEDIUM,
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL),
+        NetLogWithSource());
+    rv = callback.GetResult(rv);
+    handles.push_back(std::move(connection));
+  }
+
+  // Releases handles now, and these sockets should go into the socket pool.
+  handles.clear();
+  EXPECT_EQ(kNumIdleSockets,
+            session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
+                ->IdleSocketCount());
+
+  // Request two streams at once and make sure they use the same connection.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+  request_info.load_flags = 0;
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter1;
+  StreamRequestWaiter waiter2;
+  std::unique_ptr<HttpStreamRequest> request1(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter1,
+          NetLogWithSource()));
+  std::unique_ptr<HttpStreamRequest> request2(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter2,
+          NetLogWithSource()));
+  waiter1.WaitForStream();
+  waiter2.WaitForStream();
+  EXPECT_TRUE(waiter1.stream_done());
+  EXPECT_TRUE(waiter2.stream_done());
+  ASSERT_NE(nullptr, waiter1.stream());
+  ASSERT_NE(nullptr, waiter2.stream());
+  ASSERT_NE(waiter1.stream(), waiter2.stream());
+
+  // Establishing the SpdySession will close idle H2 sockets.
+  EXPECT_EQ(0, session->GetSSLSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
+                   ->IdleSocketCount());
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
 }
 
 TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
