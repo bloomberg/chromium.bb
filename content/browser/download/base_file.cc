@@ -109,6 +109,13 @@ DownloadInterruptReason BaseFile::WriteDataToFile(int64_t offset,
     return LogSystemError("Write", logging::GetLastSystemErrorCode());
 
   DCHECK_EQ(static_cast<size_t>(write_result), data_len);
+
+  if (bytes_so_far_ != offset) {
+    // A hole is created in the file.
+    is_sparse_file_ = true;
+    secure_hash_.reset();
+  }
+
   bytes_so_far_ += data_len;
   net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN,
                     net::NetLog::Int64Callback("bytes", data_len));

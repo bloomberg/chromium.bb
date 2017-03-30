@@ -92,7 +92,6 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<ByteStreamReader> stream_reader,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& download_item_net_log,
-    bool is_sparse_file,
     base::WeakPtr<DownloadDestinationObserver> observer)
     : net_log_(
           net::NetLogWithSource::Make(download_item_net_log.net_log(),
@@ -100,7 +99,6 @@ DownloadFileImpl::DownloadFileImpl(
       file_(net_log_),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
-      is_sparse_file_(is_sparse_file),
       bytes_seen_(0),
       num_active_streams_(0),
       record_stream_bandwidth_(true),
@@ -130,18 +128,18 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
 
   update_timer_.reset(new base::RepeatingTimer());
   int64_t bytes_so_far = 0;
-  if (is_sparse_file_) {
+  if (IsSparseFile()) {
     for (const auto& received_slice : received_slices_) {
       bytes_so_far += received_slice.received_bytes;
     }
   } else {
     bytes_so_far = save_info_->offset;
   }
-  DownloadInterruptReason result =
-      file_.Initialize(save_info_->file_path, default_download_directory_,
-                       std::move(save_info_->file), bytes_so_far,
-                       save_info_->hash_of_partial_file,
-                       std::move(save_info_->hash_state), is_sparse_file_);
+  DownloadInterruptReason result = file_.Initialize(
+      save_info_->file_path, default_download_directory_,
+      std::move(save_info_->file), bytes_so_far,
+      save_info_->hash_of_partial_file, std::move(save_info_->hash_state),
+      IsSparseFile());
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
@@ -172,6 +170,13 @@ void DownloadFileImpl::AddByteStream(
   source_streams_[offset] =
       base::MakeUnique<SourceStream>(offset, length, std::move(stream_reader));
 
+  // There are writers at different offsets now, create the received slices
+  // vector if necessary.
+  if (received_slices_.empty() && TotalBytesReceived() > 0) {
+    size_t index = AddOrMergeReceivedSliceIntoSortedArray(
+        DownloadItem::ReceivedSlice(0, TotalBytesReceived()), received_slices_);
+    DCHECK_EQ(index, 0u);
+  }
   // If the file is initialized, start to write data, or wait until file opened.
   if (file_.in_progress())
     RegisterAndActivateStream(source_streams_[offset].get());
@@ -390,7 +395,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
           if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
             int64_t prev_bytes_written = source_stream->bytes_written();
             source_stream->OnWriteBytesToDisk(bytes_to_write);
-            if (!is_sparse_file_)
+            if (!IsSparseFile())
               break;
             // If the write operation creates a new slice, add it to the
             // |received_slices_| and update all the entries in
@@ -450,7 +455,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     if (IsDownloadCompleted()) {
       RecordFileBandwidth(bytes_seen_, disk_writes_time_,
                           base::TimeTicks::Now() - download_start_);
-      if (is_sparse_file_ && record_stream_bandwidth_) {
+      if (IsSparseFile() && record_stream_bandwidth_) {
         RecordParallelDownloadStats(bytes_seen_with_parallel_streams_,
                                     download_time_with_parallel_streams_,
                                     bytes_seen_without_parallel_streams_,
@@ -511,23 +516,19 @@ void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
                          this, &DownloadFileImpl::SendUpdate);
   }
   rate_estimator_.Increment(data_len);
-  if (is_sparse_file_) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta time_elapsed = (now - last_update_time_);
-    last_update_time_ = now;
-    if (num_active_streams_ > 1) {
-      download_time_with_parallel_streams_ += time_elapsed;
-      bytes_seen_with_parallel_streams_ += data_len;
-    } else {
-      download_time_without_parallel_streams_ += time_elapsed;
-      bytes_seen_without_parallel_streams_ += data_len;
-    }
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta time_elapsed = (now - last_update_time_);
+  last_update_time_ = now;
+  if (num_active_streams_ > 1) {
+    download_time_with_parallel_streams_ += time_elapsed;
+    bytes_seen_with_parallel_streams_ += data_len;
+  } else {
+    download_time_without_parallel_streams_ += time_elapsed;
+    bytes_seen_without_parallel_streams_ += data_len;
   }
 }
 
 void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
-  if (!is_sparse_file_)
-    return;
   size_t index = AddOrMergeReceivedSliceIntoSortedArray(
       DownloadItem::ReceivedSlice(offset, length), received_slices_);
   // Check if the slice is added as a new slice, or merged with an existing one.
@@ -560,7 +561,7 @@ bool DownloadFileImpl::IsDownloadCompleted() {
       return false;
   }
 
-  if (!is_sparse_file_)
+  if (!IsSparseFile())
     return true;
 
   // Verify that all the file slices have been downloaded.
@@ -597,7 +598,7 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
 
   bool can_recover_from_error = false;
 
-  if (is_sparse_file_ && source_stream->length() != kNoBytesToWrite) {
+  if (IsSparseFile() && source_stream->length() != kNoBytesToWrite) {
     // If a neighboring stream request is available, check if it can help
     // download all the data left by |source stream| or has already done so. We
     // want to avoid the situation that a server always fail additional requests
@@ -654,6 +655,10 @@ void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,
         base::Bind(&DownloadDestinationObserver::DestinationError, observer_,
                    reason, TotalBytesReceived(), base::Passed(&hash_state)));
   }
+}
+
+bool DownloadFileImpl::IsSparseFile() const {
+  return source_streams_.size() > 1 || !received_slices_.empty();
 }
 
 DownloadFileImpl::SourceStream* DownloadFileImpl::FindPrecedingNeighbor(

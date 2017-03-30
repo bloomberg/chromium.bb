@@ -214,7 +214,6 @@ DownloadFileWithDelay::DownloadFileWithDelay(
                        std::move(stream),
                        received_slices,
                        net_log,
-                       false,
                        observer),
       owner_(owner) {}
 
@@ -323,7 +322,6 @@ class CountingDownloadFile : public DownloadFileImpl {
                          std::move(stream),
                          received_slices,
                          net_log,
-                         false,
                          observer) {}
 
   ~CountingDownloadFile() override {

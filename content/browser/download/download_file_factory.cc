@@ -21,7 +21,6 @@ DownloadFile* DownloadFileFactory::CreateFile(
     base::WeakPtr<DownloadDestinationObserver> observer) {
   return new DownloadFileImpl(std::move(save_info), default_downloads_directory,
                               std::move(byte_stream), received_slices, net_log,
-                              false, /* is_sparse_file */
                               observer);
 }
 

@@ -117,7 +117,6 @@ DownloadFileWithError::DownloadFileWithError(
                        std::move(byte_stream),
                        received_slices,
                        net_log,
-                       false, /* is_sparse_file */
                        observer),
       error_info_(error_info),
       destruction_callback_(dtor_callback) {

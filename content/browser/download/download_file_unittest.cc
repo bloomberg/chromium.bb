@@ -124,14 +124,12 @@ class TestDownloadFileImpl : public DownloadFileImpl {
       std::unique_ptr<ByteStreamReader> stream,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
-      bool is_sparse_file,
       base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
                          received_slices,
                          net_log,
-                         is_sparse_file,
                          observer) {}
 
  protected:
@@ -208,14 +206,13 @@ class DownloadFileTest : public testing::Test {
   }
 
   bool CreateDownloadFile(int offset, bool calculate_hash) {
-    return CreateDownloadFile(offset, 0, calculate_hash, false,
+    return CreateDownloadFile(offset, 0, calculate_hash,
                               DownloadItem::ReceivedSlices());
   }
 
   bool CreateDownloadFile(int offset,
                           int length,
                           bool calculate_hash,
-                          bool is_sparse_file,
                           const DownloadItem::ReceivedSlices& received_slices) {
     // There can be only one.
     DCHECK(!download_file_.get());
@@ -235,8 +232,7 @@ class DownloadFileTest : public testing::Test {
     download_file_.reset(new TestDownloadFileImpl(
         std::move(save_info), base::FilePath(),
         std::unique_ptr<ByteStreamReader>(input_stream_), received_slices,
-        net::NetLogWithSource(), is_sparse_file,
-        observer_factory_.GetWeakPtr()));
+        net::NetLogWithSource(), observer_factory_.GetWeakPtr()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))
@@ -910,7 +906,7 @@ TEST_F(DownloadFileTest, MutipleStreamsWrite) {
   int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
   int64_t stream_1_length = GetBuffersLength(kTestData7, 2);
 
-  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true, true,
+  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true,
                                  DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData6, 2);
@@ -949,7 +945,7 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   // "Range:50-".
   int64_t stream_2_length = GetBuffersLength(kTestData6, 2);
 
-  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true, true,
+  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true,
                                  DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData6, 2);
@@ -998,7 +994,7 @@ TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
   int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
 
   ASSERT_TRUE(CreateDownloadFile(0, DownloadSaveInfo::kLengthFullContent, true,
-                                 true, DownloadItem::ReceivedSlices()));
+                                 DownloadItem::ReceivedSlices()));
 
   PrepareStream(&input_stream_, 0, false, true, kTestData8, 4);
 

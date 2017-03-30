@@ -49,7 +49,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
       std::unique_ptr<ByteStreamReader> stream_reader,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log,
-      bool is_sparse_file,
       base::WeakPtr<DownloadDestinationObserver> observer);
 
   ~DownloadFileImpl() override;
@@ -222,6 +221,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void HandleStreamError(SourceStream* source_stream,
                          DownloadInterruptReason reason);
 
+  // Check whether this file is potentially sparse.
+  bool IsSparseFile() const;
+
   // Given a SourceStream object, returns its neighbor that preceds it if
   // SourceStreams are ordered by their offsets
   SourceStream* FindPrecedingNeighbor(SourceStream* source_stream);
@@ -248,12 +250,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Used to trigger progress updates.
   std::unique_ptr<base::RepeatingTimer> update_timer_;
-
-  // Set to true when multiple byte streams write to the same file.
-  // The file may contain null bytes(holes) in between of valid data slices.
-  // TODO(xingliu): Remove this variable. We can use size of |received_slices_|
-  // to determine if the file is sparse
-  bool is_sparse_file_;
 
   // Statistics
   size_t bytes_seen_;
