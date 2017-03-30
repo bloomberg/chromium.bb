@@ -19,6 +19,8 @@ namespace blink {
 // DCHECKs ensure PropertyTreeState never retains the last reference to a
 // property tree node.
 class PLATFORM_EXPORT PropertyTreeState {
+  USING_FAST_MALLOC(PropertyTreeState);
+
  public:
   PropertyTreeState(const TransformPaintPropertyNode* transform,
                     const ClipPaintPropertyNode* clip,

@@ -18,6 +18,8 @@ class TransformPaintPropertyNode;
 // stores cached "transformed rects" (See GeometryMapper.h) from that node in
 // ancestor spaces.
 class PLATFORM_EXPORT GeometryMapperTransformCache {
+  USING_FAST_MALLOC(GeometryMapperTransformCache);
+
  public:
   GeometryMapperTransformCache();
 

@@ -19,6 +19,8 @@ class TransformPaintPropertyNode;
 // cached "clip visual rects" (See GeometryMapper.h) from that node in
 // ancestor spaces.
 class PLATFORM_EXPORT GeometryMapperClipCache {
+  USING_FAST_MALLOC(GeometryMapperClipCache);
+
  public:
   GeometryMapperClipCache();
 

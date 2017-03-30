@@ -94,6 +94,10 @@ class CORE_EXPORT DisableCompositingQueryAsserts {
 };
 
 struct PaintLayerRareData {
+  USING_FAST_MALLOC(PaintLayerRareData);
+  WTF_MAKE_NONCOPYABLE(PaintLayerRareData);
+
+ public:
   PaintLayerRareData();
   ~PaintLayerRareData();
 

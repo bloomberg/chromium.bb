@@ -50,6 +50,9 @@ namespace blink {
 class LayoutBoxModelObject;
 
 struct CORE_EXPORT PaintInfo {
+  USING_FAST_MALLOC(PaintInfo);
+
+ public:
   PaintInfo(GraphicsContext& newContext,
             const IntRect& cullRect,
             PaintPhase newPhase,

@@ -28,6 +28,8 @@ namespace blink {
 //
 // TODO(chrishtr): take effect tree into account.
 class PLATFORM_EXPORT GeometryMapper {
+  USING_FAST_MALLOC(GeometryMapper);
+
  public:
   static std::unique_ptr<GeometryMapper> create() {
     return WTF::wrapUnique(new GeometryMapper());

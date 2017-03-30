@@ -39,6 +39,7 @@ struct PaintChunk;
 // PaintArtifactCompositor is the successor to PaintLayerCompositor, reflecting
 // the new home of compositing decisions after paint in Slimming Paint v2.
 class PLATFORM_EXPORT PaintArtifactCompositor {
+  USING_FAST_MALLOC(PaintArtifactCompositor);
   WTF_MAKE_NONCOPYABLE(PaintArtifactCompositor);
 
  public:
