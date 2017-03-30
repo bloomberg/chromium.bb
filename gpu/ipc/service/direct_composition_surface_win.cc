@@ -8,6 +8,7 @@
 #include <dcomptypes.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
@@ -345,6 +346,15 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   swap_chain_scale_y_ = bounds_rect.height() * 1.0f / swap_chain_size.height();
 
   swap_chain_->Present(first_present ? 0 : 1, 0);
+
+  base::win::ScopedComPtr<IDXGISwapChainMedia> swap_chain_media;
+  if (SUCCEEDED(swap_chain_.QueryInterface(swap_chain_media.Receive()))) {
+    DXGI_FRAME_STATISTICS_MEDIA stats = {};
+    if (SUCCEEDED(swap_chain_media->GetFrameStatisticsMedia(&stats))) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("GPU.DirectComposition.CompositionMode",
+                                  stats.CompositionMode);
+    }
+  }
 }
 
 bool DCLayerTree::SwapChainPresenter::InitializeVideoProcessor(
@@ -556,6 +566,8 @@ void DCLayerTree::UpdateVisualClip(VisualInfo* visual_info,
 bool DCLayerTree::CommitAndClearPendingOverlays() {
   TRACE_EVENT1("gpu", "DCLayerTree::CommitAndClearPendingOverlays", "size",
                pending_overlays_.size());
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysUsed",
+                        !pending_overlays_.empty());
   // Add an overlay with z-order 0 representing the main plane.
   gfx::Size surface_size = surface_->GetSize();
   pending_overlays_.push_back(base::MakeUnique<ui::DCRendererLayerParams>(

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/win/windows_version.h"
 #include "gpu/ipc/service/child_window_surface_win.h"
 #include "gpu/ipc/service/direct_composition_surface_win.h"
@@ -49,7 +50,11 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
 
     if (gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
-      if (DirectCompositionSurfaceWin::AreOverlaysSupported()) {
+      bool overlays_supported =
+          DirectCompositionSurfaceWin::AreOverlaysSupported();
+      UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
+                            overlays_supported);
+      if (overlays_supported) {
         scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
             make_scoped_refptr(
                 new DirectCompositionSurfaceWin(delegate, surface_handle));
