@@ -4,13 +4,32 @@
 
 #import "chrome/browser/ui/cocoa/notifications/alert_notification_service.h"
 
+#include <unistd.h>
+
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/string_number_conversions.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #import "chrome/browser/ui/cocoa/notifications/xpc_transaction_handler.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
+#include "third_party/crashpad/crashpad/client/crashpad_info.h"
+#include "third_party/crashpad/crashpad/client/simple_string_dictionary.h"
 
 @class NSUserNotificationCenter;
+
+namespace {
+
+crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
+  static crashpad::SimpleStringDictionary* annotations = []() {
+    auto* annotations = new crashpad::SimpleStringDictionary();
+    annotations->SetKeyValue("ptype", "AlertNotificationService.xpc");
+    annotations->SetKeyValue("pid", base::IntToString(getpid()).c_str());
+    return annotations;
+  }();
+  return annotations;
+}
+
+}  // namespace
 
 @implementation AlertNotificationService {
   XPCTransactionHandler* transactionHandler_;
@@ -18,6 +37,8 @@
   // Ensures that the XPC service has been configured for crash reporting.
   // Other messages should not be sent to a new instance of the service
   // before -setMachExceptionPort: is called.
+  // Because XPC callouts occur on a concurrent dispatch queue, this must be
+  // accessed in a @synchronized(self) block.
   BOOL didSetExceptionPort_;
 }
 
@@ -35,9 +56,18 @@
     return;
   }
 
-  crashpad::CrashpadClient client;
-  didSetExceptionPort_ = client.SetHandlerMachPort(std::move(sendRight));
-  DCHECK(didSetExceptionPort_);
+  @synchronized(self) {
+    if (didSetExceptionPort_) {
+      return;
+    }
+
+    crashpad::CrashpadClient client;
+    didSetExceptionPort_ = client.SetHandlerMachPort(std::move(sendRight));
+    DCHECK(didSetExceptionPort_);
+
+    crashpad::CrashpadInfo::GetCrashpadInfo()->set_simple_annotations(
+        GetCrashpadAnnotations());
+  }
 }
 
 - (void)deliverNotification:(NSDictionary*)notificationData {
