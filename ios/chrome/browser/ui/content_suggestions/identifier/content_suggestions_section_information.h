@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionLayout) {
 typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
   ContentSuggestionsSectionBookmarks = 0,
   ContentSuggestionsSectionArticles = 1,
+  ContentSuggestionsSectionReadingList = 2,
 
   // Do not use this. It will trigger a DCHECK.
   // Do not add value after this one.

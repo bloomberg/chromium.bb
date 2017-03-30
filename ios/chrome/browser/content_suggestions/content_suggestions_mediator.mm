@@ -44,8 +44,12 @@ void BindWrapper(
 
 // Returns the Type for this |category|.
 ContentSuggestionType TypeForCategory(ntp_snippets::Category category) {
-  // For now, only Article is a relevant type.
-  return ContentSuggestionTypeArticle;
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
+    return ContentSuggestionTypeArticle;
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST))
+    return ContentSuggestionTypeReadingList;
+
+  return ContentSuggestionTypeEmpty;
 }
 
 // Returns the section ID for this |category|.
@@ -55,6 +59,8 @@ ContentSuggestionsSectionID SectionIDForCategory(
     return ContentSuggestionsSectionBookmarks;
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
     return ContentSuggestionsSectionArticles;
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST))
+    return ContentSuggestionsSectionReadingList;
 
   return ContentSuggestionsSectionUnknown;
 }

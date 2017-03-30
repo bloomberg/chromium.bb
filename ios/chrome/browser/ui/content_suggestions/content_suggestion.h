@@ -21,7 +21,8 @@ typedef NS_ENUM(NSInteger, ContentSuggestionType) {
   // this type are empty and should not be displayed. The informations to be
   // displayed are contained in the SectionInfo.
   ContentSuggestionTypeEmpty,
-  ContentSuggestionTypeArticle
+  ContentSuggestionTypeArticle,
+  ContentSuggestionTypeReadingList,
 };
 
 // Data for a suggestions item, compatible with Objective-C. Mostly acts as a

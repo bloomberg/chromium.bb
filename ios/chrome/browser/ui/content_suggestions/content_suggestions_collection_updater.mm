@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
@@ -16,6 +17,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_reading_list_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
@@ -49,20 +51,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeFooter,
   ItemTypeHeader,
   ItemTypeEmpty,
+  ItemTypeReadingList,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierBookmarks = kSectionIdentifierEnumZero,
   SectionIdentifierArticles,
+  SectionIdentifierReadingList,
   SectionIdentifierDefault,
 };
 
+// Update ContentSuggestionTypeForItemType if you update this function.
 ItemType ItemTypeForContentSuggestionType(ContentSuggestionType type) {
   switch (type) {
     case ContentSuggestionTypeArticle:
       return ItemTypeArticle;
     case ContentSuggestionTypeEmpty:
       return ItemTypeEmpty;
+    case ContentSuggestionTypeReadingList:
+      return ItemTypeReadingList;
   }
 }
 
@@ -71,6 +78,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypeArticle;
   if (type == ItemTypeEmpty)
     return ContentSuggestionTypeEmpty;
+  if (type == ItemTypeReadingList)
+    return ContentSuggestionTypeReadingList;
   // Add new type here
 
   // Default type.
@@ -86,6 +95,9 @@ SectionIdentifier SectionIdentifierForInfo(
 
     case ContentSuggestionsSectionArticles:
       return SectionIdentifierArticles;
+
+    case ContentSuggestionsSectionReadingList:
+      return SectionIdentifierReadingList;
 
     case ContentSuggestionsSectionUnknown:
       return SectionIdentifierDefault;
@@ -253,6 +265,22 @@ SectionIdentifier SectionIdentifierForInfo(
         articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
 
         NSIndexPath* addedIndexPath = [self addItem:articleItem
+                            toSectionWithIdentifier:sectionIdentifier];
+        [indexPaths addObject:addedIndexPath];
+        break;
+      }
+      case ContentSuggestionTypeReadingList: {
+        ContentSuggestionsReadingListItem* readingListItem =
+            [[ContentSuggestionsReadingListItem alloc]
+                     initWithType:ItemTypeReadingList
+                              url:suggestion.url
+                distillationState:ReadingListEntry::PROCESSING];
+        readingListItem.title = suggestion.title;
+        readingListItem.subtitle = suggestion.publisher;
+
+        readingListItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+
+        NSIndexPath* addedIndexPath = [self addItem:readingListItem
                             toSectionWithIdentifier:sectionIdentifier];
         [indexPaths addObject:addedIndexPath];
         break;

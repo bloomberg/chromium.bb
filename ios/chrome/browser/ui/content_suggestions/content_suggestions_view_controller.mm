@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_button_item_actions.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_reading_list_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/expandable_item.h"
@@ -140,6 +141,9 @@ const NSTimeInterval kAnimationDuration = 0.35;
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
+    case ContentSuggestionTypeReadingList:
+      [self openReadingListItem:item];
+      break;
     case ContentSuggestionTypeArticle:
       [self openArticle:item];
       break;
@@ -233,6 +237,16 @@ const NSTimeInterval kAnimationDuration = 0.35;
   }
 }
 
+// Opens the Reading List entry associated with |item|. |item| must be a
+// ContentSuggestionsReadingListItem.
+- (void)openReadingListItem:(CollectionViewItem*)item {
+  ContentSuggestionsReadingListItem* readingListItem =
+      base::mac::ObjCCastStrict<ContentSuggestionsReadingListItem>(item);
+  [self.suggestionCommandHandler openURL:readingListItem.url];
+}
+
+// Opens the article associated with |item|. |item| must be a
+// ContentSuggestionsArticleItem.
 - (void)openArticle:(CollectionViewItem*)item {
   ContentSuggestionsArticleItem* article =
       base::mac::ObjCCastStrict<ContentSuggestionsArticleItem>(item);
