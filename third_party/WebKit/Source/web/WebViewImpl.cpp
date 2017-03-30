@@ -2344,15 +2344,16 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const {
   if (!localFrame)
     return false;
   FrameSelection& selection = localFrame->selection();
-  if (!selection.isAvailable() ||
-      selection.computeVisibleSelectionInDOMTreeDeprecated().isNone()) {
-    // plugins/mouse-capture-inside-shadow.html reaches here.
+  if (!selection.isAvailable() || selection.selectionInDOMTree().isNone())
     return false;
-  }
 
   // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
   localFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  if (selection.computeVisibleSelectionInDOMTree().isNone()) {
+    // plugins/mouse-capture-inside-shadow.html reaches here.
+    return false;
+  }
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
       localFrame->document()->lifecycle());
