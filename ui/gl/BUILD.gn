@@ -380,6 +380,10 @@ test("gl_unittests") {
     "gpu_timing_unittest.cc",
   ]
 
+  if (use_egl && !use_ozone) {
+    sources += [ "gl_surface_egl_unittest.cc" ]
+  }
+
   if (use_egl) {
     sources += [
       "egl_api_unittest.cc",
