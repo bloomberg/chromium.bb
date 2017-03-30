@@ -357,20 +357,20 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 // works well for both borders.  The idea is we have two variables: alpha and
 // lightness.  And we have two constraints (on lightness):
 // 1. the border color, when painted on |header_bg|, should give |header_fg|
-// 2. the border color, when painted on |toolbar_bg|, should give |toolbar_fg|
+// 2. the border color, when painted on |tab_bg|, should give |tab_fg|
 // This gives the equations:
 // alpha*lightness + (1 - alpha)*header_bg = header_fg
-// alpha*lightness + (1 - alpha)*toolbar_bg = toolbar_fg
+// alpha*lightness + (1 - alpha)*tab_bg = tab_fg
 // The algorithm below is just a result of solving those equations for alpha
 // and lightness.  If a problem is encountered, like division by zero, or
-// |a| or |l| not in [0, 1], then fallback on |header_fg| or |toolbar_fg|.
+// |a| or |l| not in [0, 1], then fallback on |header_fg| or |tab_fg|.
 SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
                                     SkColor header_bg,
-                                    SkColor toolbar_fg,
-                                    SkColor toolbar_bg) {
+                                    SkColor tab_fg,
+                                    SkColor tab_bg) {
   using namespace color_utils;
 
-  SkColor default_color = SkColorGetA(header_fg) ? header_fg : toolbar_fg;
+  SkColor default_color = SkColorGetA(header_fg) ? header_fg : tab_fg;
   if (!SkColorGetA(default_color))
     return SK_ColorTRANSPARENT;
 
@@ -382,8 +382,8 @@ SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
 
   double f1 = get_lightness(GetResultingPaintColor(header_fg, header_bg));
   double b1 = get_lightness(header_bg);
-  double f2 = get_lightness(GetResultingPaintColor(toolbar_fg, toolbar_bg));
-  double b2 = get_lightness(toolbar_bg);
+  double f2 = get_lightness(GetResultingPaintColor(tab_fg, tab_bg));
+  double b2 = get_lightness(tab_bg);
 
   if (b1 == b2)
     return default_color;
@@ -827,7 +827,7 @@ void GtkUi::LoadGtkValues() {
   GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 
-  SkColor toolbar_color =
+  SkColor tab_color =
       native_theme_->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   SkColor label_color = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor);
@@ -847,9 +847,9 @@ void GtkUi::LoadGtkValues() {
 
   // We pick the text and background colors for the NTP out of the
   // colors for a GtkEntry. We do this because GtkEntries background
-  // color is never the same as |toolbar_color|, is usually a white,
+  // color is never the same as |tab_color|, is usually a white,
   // and when it isn't a white, provides sufficient contrast to
-  // |toolbar_color|. Try this out with Darklooks, HighContrastInverse
+  // |tab_color|. Try this out with Darklooks, HighContrastInverse
   // or ThinIce.
   colors_[ThemeProperties::COLOR_NTP_BACKGROUND] =
       native_theme_->GetSystemColor(
@@ -876,22 +876,17 @@ void GtkUi::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] =
       color_utils::HSLShift(frame_color_inactive, kDefaultTintFrameIncognito);
 
-  SkColor toolbar_color = GetBgColor("GtkToolbar#toolbar");
-  SkColor toolbar_text_color = color_utils::GetReadableColor(
-      GetFgColor("GtkToolbar#toolbar GtkLabel#label"),
-      toolbar_color);
+  SkColor tab_color = GetBgColor("");
+  SkColor tab_text_color = GetFgColor("GtkLabel");
 
-  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = toolbar_text_color;
+  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
 
-  // Tabs use the same background color as the toolbar, so use the
-  // toolbar text color as the tab text color.
-  colors_[ThemeProperties::COLOR_TAB_TEXT] = toolbar_text_color;
-  colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = toolbar_text_color;
+  colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
+  colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
-      color_utils::BlendTowardOppositeLuma(toolbar_text_color, 50);
+      color_utils::BlendTowardOppositeLuma(tab_text_color, 50);
 
-  SkColor location_bar_border =
-      GetBorderColor("GtkToolbar#toolbar GtkEntry#entry");
+  SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))
     colors_[ThemeProperties::COLOR_LOCATION_BAR_BORDER] = location_bar_border;
 
@@ -904,30 +899,25 @@ void GtkUi::LoadGtkValues() {
                                           "#text:backdrop #selection:backdrop"
                                         : "GtkTextView.view:selected:backdrop");
 
-  SkColor toolbar_button_border =
-      GetBorderColor("GtkToolbar#toolbar GtkButton#button");
-  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] =
-      toolbar_color;
+  SkColor tab_border = GetBorderColor("GtkButton#button");
+  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND] = tab_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT] =
-      toolbar_text_color;
+      tab_text_color;
   // Separates the toolbar from the bookmark bar or butter bars.
-  colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] =
-      toolbar_button_border;
+  colors_[ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
-  colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] =
-      toolbar_button_border;
+  colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
   // Separates the bookmark bar from the web content.
-  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] =
-      toolbar_button_border;
+  colors_[ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR] = tab_border;
 
   // These colors represent the border drawn around tabs and between
   // the tabstrip and toolbar.
   SkColor toolbar_top_separator = GetToolbarTopSeparatorColor(
       GetBorderColor(header_selector + " GtkButton#button"), frame_color,
-      toolbar_button_border, toolbar_color);
+      tab_border, tab_color);
   SkColor toolbar_top_separator_inactive = GetToolbarTopSeparatorColor(
       GetBorderColor(header_selector + ":backdrop GtkButton#button"),
-      frame_color_inactive, toolbar_button_border, toolbar_color);
+      frame_color_inactive, tab_border, tab_color);
   // Unlike with toolbars, we always want a border around tabs, so let
   // ThemeService choose the border color if the theme doesn't provide one.
   if (SkColorGetA(toolbar_top_separator) &&
@@ -947,8 +937,8 @@ void GtkUi::LoadGtkValues() {
       GetBorderColor("GtkButton#button");
 #endif
 
-  colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
-  colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
+  colors_[ThemeProperties::COLOR_TOOLBAR] = tab_color;
+  colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = tab_color;
 
   colors_[ThemeProperties::COLOR_NTP_LINK] = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
@@ -965,14 +955,12 @@ void GtkUi::LoadGtkValues() {
   active_selection_fg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
-  SkColor throbber_spinning = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_ThrobberSpinningColor);
   colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
-      color_utils::GetReadableColor(throbber_spinning, toolbar_color);
-  SkColor throbber_waiting = native_theme_->GetSystemColor(
-      ui::NativeTheme::kColorId_ThrobberWaitingColor);
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
   colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
-      color_utils::GetReadableColor(throbber_waiting, toolbar_color);
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberWaitingColor);
 }
 
 void GtkUi::UpdateCursorTheme() {

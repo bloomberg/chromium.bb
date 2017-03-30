@@ -234,8 +234,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_TooltipBackground:
       return GetBgColor("GtkTooltip#tooltip");
     case ui::NativeTheme::kColorId_TooltipText:
-      return color_utils::GetReadableColor(GetFgColor("GtkTooltip#tooltip"),
-                                           GetBgColor("GtkTooltip#tooltip"));
+      return GetFgColor("GtkTooltip#tooltip GtkLabel");
 
     // Trees and Tables (implemented on GTK using the same class)
     case ui::NativeTheme::kColorId_TableBackground:
@@ -347,10 +346,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     // Throbber
     // TODO(thomasanderson): Render GtkSpinner directly.
     case ui::NativeTheme::kColorId_ThrobberSpinningColor:
+      return GetFgColor("GtkSpinner#spinner");
     case ui::NativeTheme::kColorId_ThrobberWaitingColor:
-      return GetFgColor("GtkMenu#menu GtkSpinner#spinner");
     case ui::NativeTheme::kColorId_ThrobberLightColor:
-      return GetFgColor("GtkMenu#menu GtkSpinner#spinner:disabled");
+      return GetFgColor("GtkSpinner#spinner:disabled");
 
     // Alert icons
     // Fallback to the same colors as Aura.
@@ -358,9 +357,10 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_AlertSeverityMedium:
     case ui::NativeTheme::kColorId_AlertSeverityHigh: {
       // Alert icons appear on the toolbar, so use the toolbar BG
-      // color to determine if the dark Aura theme should be used.
+      // color (the GTK window bg color) to determine if the dark Aura
+      // theme should be used.
       ui::NativeTheme* fallback_theme =
-          color_utils::IsDark(GetBgColor("GtkToolbar#toolbar"))
+          color_utils::IsDark(GetBgColor(""))
               ? ui::NativeTheme::GetInstanceForNativeUi()
               : ui::NativeThemeDarkAura::instance();
       return fallback_theme->GetSystemColor(color_id);
@@ -403,7 +403,6 @@ NativeThemeGtk3::NativeThemeGtk3() {
   g_type_class_unref(g_type_class_ref(gtk_separator_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_spinner_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_text_view_get_type()));
-  g_type_class_unref(g_type_class_ref(gtk_toolbar_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_tooltip_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_tree_view_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_window_get_type()));
