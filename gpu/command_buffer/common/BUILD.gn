@@ -37,6 +37,8 @@ source_set("common_sources") {
     "constants.h",
     "debug_marker_manager.cc",
     "debug_marker_manager.h",
+    "discardable_handle.cc",
+    "discardable_handle.h",
     "gles2_cmd_format.cc",
     "gles2_cmd_format.h",
     "gles2_cmd_format_autogen.h",
