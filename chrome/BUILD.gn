@@ -216,6 +216,11 @@ if (!is_android && !is_mac) {
         "/DELAYLOAD:ole32.dll",
         "/DELAYLOAD:oleaut32.dll",
       ]
+
+      if (current_cpu == "x64") {
+        # Increase the initial stack size. The default is 1MB, this is 2MB.
+        ldflags += [ "/STACK:2097152" ]
+      }
     } else if (use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
