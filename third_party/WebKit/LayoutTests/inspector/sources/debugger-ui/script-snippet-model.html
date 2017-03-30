@@ -66,10 +66,10 @@ function test()
             workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
             workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
 
-            function renameSnippetAndCheckWorkspace(uiSourceCode, snippetName)
+            async function renameSnippetAndCheckWorkspace(uiSourceCode, snippetName)
             {
                 InspectorTest.addResult("Renaming snippet to '" + snippetName + "' ...");
-                uiSourceCode.rename(snippetName, renameCallback);
+                await uiSourceCode.rename(snippetName).then(success => renameCallback(success));
 
                 function renameCallback(success)
                 {
@@ -118,16 +118,16 @@ function test()
                 }
             }
 
-            function step3(uiSourceCode)
+            async function step3(uiSourceCode)
             {
                 var uiSourceCode2 = uiSourceCode;
                 InspectorTest.addResult("Snippet2 created.");
-                renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
-                renameSnippetAndCheckWorkspace(uiSourceCode1, "   ");
-                renameSnippetAndCheckWorkspace(uiSourceCode1, " bar ");
-                renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
-                renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
-                renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
+                await renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
+                await renameSnippetAndCheckWorkspace(uiSourceCode1, "   ");
+                await renameSnippetAndCheckWorkspace(uiSourceCode1, " bar ");
+                await renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
+                await renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
+                await renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
                 uiSourceCode1._requestContentPromise = null;
                 uiSourceCode1.contentLoaded = false;
                 uiSourceCode1.requestContent()
@@ -175,7 +175,7 @@ function test()
             function step2(uiSourceCode)
             {
                 uiSourceCode1 = uiSourceCode;
-                uiSourceCode1.rename("Snippet1", function() { });
+                uiSourceCode1.rename("Snippet1");
                 var content = "";
                 content += "// This snippet does nothing.\n";
                 content += "var i = 2+2;\n";
@@ -186,7 +186,7 @@ function test()
             function step3(uiSourceCode)
             {
                 uiSourceCode2 = uiSourceCode;
-                uiSourceCode2.rename("Snippet2", function() { });
+                uiSourceCode2.rename("Snippet2");
                 content = "";
                 content += "// This snippet creates a function that does nothing and returns it.\n";
                 content += "function doesNothing() {\n";
@@ -200,7 +200,7 @@ function test()
             function step4(uiSourceCode)
             {
                 uiSourceCode3 = uiSourceCode;
-                uiSourceCode3.rename("Snippet3", function() { });
+                uiSourceCode3.rename("Snippet3");
                 content = "";
                 content += "// This snippet uses Command Line API.\n";
                 content += "$$(\"p\").length";
@@ -248,7 +248,7 @@ function test()
             function step3(uiSourceCode)
             {
                 var uiSourceCode1 = uiSourceCode;
-                uiSourceCode1.rename("Snippet1", function() { });
+                uiSourceCode1.rename("Snippet1");
                 var content = "";
                 content += "// This snippet does nothing.\n";
                 content += "var i = 2+2;\n";
@@ -276,7 +276,7 @@ function test()
 
             function step2(uiSourceCode)
             {
-                uiSourceCode.rename("Snippet1", function() { });
+                uiSourceCode.rename("Snippet1");
                 var content = "2+2;\n";
                 uiSourceCode.setWorkingCopy(content);
                 evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, context, next);
@@ -291,7 +291,7 @@ function test()
 
             function step2(uiSourceCode)
             {
-                uiSourceCode.rename("toString", function() { });
+                uiSourceCode.rename("toString");
                 InspectorTest.showUISourceCode(uiSourceCode,step3.bind(this));
             }
 
@@ -302,7 +302,7 @@ function test()
 
             function step4(uiSourceCode)
             {
-                uiSourceCode.rename("myfile.toString", function() { });
+                uiSourceCode.rename("myfile.toString");
                 InspectorTest.showUISourceCode(uiSourceCode,next);
             }
         }

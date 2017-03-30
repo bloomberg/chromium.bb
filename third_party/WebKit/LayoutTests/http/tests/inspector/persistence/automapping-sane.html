@@ -75,7 +75,7 @@ function test()
 
     function onFileSystemCreated()
     {
-        automappingTest.waitUntilMappingIsStabilized(InspectorTest.completeTest.bind(InspectorTest));
+        automappingTest.waitUntilMappingIsStabilized().then(InspectorTest.completeTest.bind(InspectorTest));
     }
 }
 </script>

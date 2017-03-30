@@ -62,7 +62,7 @@ function test()
     {
         var callback;
         var promise = new Promise(fullfill => callback = fullfill);
-        uiSourceCode.rename(newName, () => callback(uiSourceCode));
+        uiSourceCode.rename(newName).then(() => callback(uiSourceCode));
         return promise;
     }
 

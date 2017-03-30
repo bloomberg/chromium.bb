@@ -39,7 +39,7 @@ function test()
     function onFileSystemCreated()
     {
         var automappingTest = new InspectorTest.AutomappingTest(Workspace.workspace);
-        automappingTest.waitUntilMappingIsStabilized(InspectorTest.completeTest.bind(InspectorTest));
+        automappingTest.waitUntilMappingIsStabilized().then(InspectorTest.completeTest.bind(InspectorTest));
     }
 
     function getResourceContent(name)

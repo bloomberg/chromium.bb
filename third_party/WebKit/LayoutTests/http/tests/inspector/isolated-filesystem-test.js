@@ -214,9 +214,11 @@ InspectorTest.TestFileSystem.Entry.prototype = {
     moveTo: function(parent, newName, callback, errorCallback)
     {
         this._parent._children.remove(this);
+        delete this._parent._childrenMap[this.name]
         this._parent = parent;
         this._parent._children.push(this);
         this.name = newName;
+        this._parent._childrenMap[this.name] = this;
         callback(this);
     },
 

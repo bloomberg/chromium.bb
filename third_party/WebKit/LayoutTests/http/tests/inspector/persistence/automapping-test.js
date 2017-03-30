@@ -66,10 +66,11 @@ InspectorTest.AutomappingTest.prototype = {
         }
     },
 
-    waitUntilMappingIsStabilized: function(callback)
+    waitUntilMappingIsStabilized: function()
     {
-        this._stabilizedCallback = callback;
+        var promise = new Promise(x => this._stabilizedCallback = x);
         this._checkStabilized();
+        return promise;
     },
 
     _onSweepHappened: function()

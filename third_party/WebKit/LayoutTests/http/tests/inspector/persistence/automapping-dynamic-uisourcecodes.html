@@ -28,7 +28,7 @@ function test()
             automappingTest.addNetworkResources({
                 "http://example.com/path/foo.js": foo_js,
             });
-            automappingTest.waitUntilMappingIsStabilized(next);
+            automappingTest.waitUntilMappingIsStabilized().then(next);
         },
 
         function addFileSystemUISourceCode(next)
@@ -36,13 +36,13 @@ function test()
             InspectorTest.addFiles(fs, {
                 "scripts/foo.js": foo_js,
             });
-            automappingTest.waitUntilMappingIsStabilized(next);
+            automappingTest.waitUntilMappingIsStabilized().then(next);
         },
 
         function removeNetworkUISourceCode(next)
         {
             automappingTest.removeResources(["http://example.com/path/foo.js"]);
-            automappingTest.waitUntilMappingIsStabilized(next);
+            automappingTest.waitUntilMappingIsStabilized().then(next);
         },
 
         function reAddNetworkUISourceCode(next)
@@ -51,13 +51,13 @@ function test()
                 // Make sure simple resource gets mapped.
                 "http://example.com/path/foo.js": foo_js,
             });
-            automappingTest.waitUntilMappingIsStabilized(next);
+            automappingTest.waitUntilMappingIsStabilized().then(next);
         },
 
         function removeFileSystem(next)
         {
             fs.reportRemoved();
-            automappingTest.waitUntilMappingIsStabilized(next);
+            automappingTest.waitUntilMappingIsStabilized().then(next);
         },
     ];
 }

@@ -298,7 +298,7 @@ function test()
                 uiSourceCode = sourceCode;
                 originalURL = uiSourceCode.url();
                 InspectorTest.addResult('URL before rename: ' + originalURL);
-                uiSourceCode.rename('goodbye.js', renamed);
+                uiSourceCode.rename('goodbye.js').then(renamed);
             }
 
             function renamed()
