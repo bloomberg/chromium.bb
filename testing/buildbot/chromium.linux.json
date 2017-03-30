@@ -2529,7 +2529,7 @@
       {
         "args": [
           "--enable-local-file-accesses",
-          "--ozone-platform=cast",
+          "--ozone-platform=headless",
           "--no-sandbox",
           "--test-launcher-jobs=1"
         ],
