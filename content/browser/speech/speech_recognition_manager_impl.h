@@ -21,6 +21,7 @@
 
 namespace media {
 class AudioSystem;
+class AudioManager;
 }
 
 namespace content {
@@ -97,6 +98,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   // Needed for dtor.
   friend std::default_delete<SpeechRecognitionManagerImpl>;
   SpeechRecognitionManagerImpl(media::AudioSystem* audio_system,
+                               media::AudioManager* audio_manager,
                                MediaStreamManager* media_stream_manager);
   ~SpeechRecognitionManagerImpl() override;
 
@@ -172,6 +174,7 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   int GetNextSessionID();
 
   media::AudioSystem* audio_system_;
+  media::AudioManager* audio_manager_;
   MediaStreamManager* media_stream_manager_;
   typedef std::map<int, Session*> SessionsTable;
   SessionsTable sessions_;

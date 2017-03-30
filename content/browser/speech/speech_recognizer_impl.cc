@@ -114,6 +114,7 @@ const int SpeechRecognizerImpl::kNumBitsPerAudioSample = 16;
 const int SpeechRecognizerImpl::kNoSpeechTimeoutMs = 8000;
 const int SpeechRecognizerImpl::kEndpointerEstimationTimeMs = 300;
 media::AudioSystem* SpeechRecognizerImpl::audio_system_for_tests_ = nullptr;
+media::AudioManager* SpeechRecognizerImpl::audio_manager_for_tests_ = nullptr;
 
 static_assert(SpeechRecognizerImpl::kNumBitsPerAudioSample % 8 == 0,
               "kNumBitsPerAudioSample must be a multiple of 8");
@@ -178,12 +179,14 @@ double SpeechRecognizerImpl::OnDataConverter::ProvideInput(
 SpeechRecognizerImpl::SpeechRecognizerImpl(
     SpeechRecognitionEventListener* listener,
     media::AudioSystem* audio_system,
+    media::AudioManager* audio_manager,
     int session_id,
     bool continuous,
     bool provisional_results,
     SpeechRecognitionEngine* engine)
     : SpeechRecognizer(listener, session_id),
       audio_system_(audio_system),
+      audio_manager_(audio_manager),
       recognition_engine_(engine),
       endpointer_(kAudioSampleRate),
       audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
@@ -633,8 +636,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
       new OnDataConverter(input_parameters, output_parameters));
 
   audio_controller_ = AudioInputController::Create(
-      GetAudioSystem()->GetAudioManager(), this, this, nullptr,
-      input_parameters, device_id_,
+      GetAudioManager(), this, this, nullptr, input_parameters, device_id_,
       /*agc_is_enabled*/ false,
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
 
@@ -883,13 +885,19 @@ void SpeechRecognizerImpl::UpdateSignalAndNoiseLevels(const float& rms,
       session_id(), clip_detected ? 1.0f : audio_level_, noise_level);
 }
 
-void SpeechRecognizerImpl::SetAudioSystemForTesting(
-    media::AudioSystem* audio_system) {
+void SpeechRecognizerImpl::SetAudioEnvironmentForTesting(
+    media::AudioSystem* audio_system,
+    media::AudioManager* audio_manager) {
   audio_system_for_tests_ = audio_system;
+  audio_manager_for_tests_ = audio_manager;
 }
 
 media::AudioSystem* SpeechRecognizerImpl::GetAudioSystem() {
   return audio_system_for_tests_ ? audio_system_for_tests_ : audio_system_;
+}
+
+media::AudioManager* SpeechRecognizerImpl::GetAudioManager() {
+  return audio_manager_for_tests_ ? audio_manager_for_tests_ : audio_manager_;
 }
 
 SpeechRecognizerImpl::FSMEventArgs::FSMEventArgs(FSMEvent event_value)

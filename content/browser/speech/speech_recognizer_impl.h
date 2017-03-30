@@ -43,10 +43,12 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   static const int kNoSpeechTimeoutMs;
   static const int kEndpointerEstimationTimeMs;
 
-  static void SetAudioSystemForTesting(media::AudioSystem* audio_system);
+  static void SetAudioEnvironmentForTesting(media::AudioSystem* audio_system,
+                                            media::AudioManager* audio_manager);
 
   SpeechRecognizerImpl(SpeechRecognitionEventListener* listener,
                        media::AudioSystem* audio_system,
+                       media::AudioManager* audio_manager,
                        int session_id,
                        bool continuous,
                        bool provisional_results,
@@ -162,10 +164,13 @@ class CONTENT_EXPORT SpeechRecognizerImpl
       const SpeechRecognitionError& error) override;
 
   media::AudioSystem* GetAudioSystem();
+  media::AudioManager* GetAudioManager();
 
   // Substitutes the real audio system in browser tests.
   static media::AudioSystem* audio_system_for_tests_;
+  static media::AudioManager* audio_manager_for_tests_;
   media::AudioSystem* audio_system_;
+  media::AudioManager* audio_manager_;
   std::unique_ptr<SpeechRecognitionEngine> recognition_engine_;
   Endpointer endpointer_;
   scoped_refptr<media::AudioInputController> audio_controller_;

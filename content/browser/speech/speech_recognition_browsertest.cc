@@ -128,11 +128,12 @@ class SpeechRecognitionBrowserTest :
     audio_manager_->SetInputStreamParameters(
         media::AudioParameters::UnavailableDeviceParams());
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
-    SpeechRecognizerImpl::SetAudioSystemForTesting(audio_system_.get());
+    SpeechRecognizerImpl::SetAudioEnvironmentForTesting(audio_system_.get(),
+                                                        audio_manager_.get());
   }
 
   void TearDownOnMainThread() override {
-    SpeechRecognizerImpl::SetAudioSystemForTesting(nullptr);
+    SpeechRecognizerImpl::SetAudioEnvironmentForTesting(nullptr, nullptr);
 
     // Deleting AudioManager on audio thread,
     audio_system_.reset();
