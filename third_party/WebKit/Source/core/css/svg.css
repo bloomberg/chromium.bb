@@ -39,8 +39,11 @@
     the user agent will establish an initial clipping path equal to the bounds of the initial viewport; otherwise,
     the initial clipping path is set according to the clipping rules as defined in [CSS2-overflow].
 
-    Opera/Firefox & WebKit agreed on NOT setting "overflow: hidden" for the outermost svg element - SVG 1.1 Errata
+    Opera/Firefox & WebKit agreed on NOT setting "overflow: hidden" for a root svg element - SVG 1.1 Errata
     contains these changes as well as all future SVG specifications: see http://lists.w3.org/Archives/Public/public-svg-wg/2008JulSep/0347.html
+    Note that here "root svg element" means when <svg> is the document element. (":root" in CSS parlance.)
+    LayoutSVGRoot objects embedded within containing content get overflow: hidden by default.
+    https://svgwg.org/svg2-draft/single-page.html#render-OverflowAndClipProperties
 */
 
 svg:not(:root), symbol, image, marker, pattern, foreignObject {
