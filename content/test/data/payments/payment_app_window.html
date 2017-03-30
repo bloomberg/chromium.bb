@@ -2,7 +2,7 @@
 <script>
 
 navigator.serviceWorker.addEventListener('message', e => {
-  e.source.postMessage('payment_app_response');
+  e.source.postMessage({ methodName: 'test', details: {} });
   window.close();
 });
 navigator.serviceWorker.controller.postMessage('payment_app_window_ready');

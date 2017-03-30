@@ -5,10 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PAYMENT_APP_PROVIDER_H_
 #define CONTENT_PUBLIC_BROWSER_PAYMENT_APP_PROVIDER_H_
 
+#include <stdint.h>
 #include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "components/payments/content/payment_app.mojom.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -30,7 +32,12 @@ class CONTENT_EXPORT PaymentAppProvider {
   using ManifestWithID =
       std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
   using Manifests = std::vector<ManifestWithID>;
+
+  // TODO(zino): Consider to use base::OnceCallback instead of base::Callback.
+  // Please see: http://crbug.com/704193
   using GetAllManifestsCallback = base::Callback<void(Manifests)>;
+  using InvokePaymentAppCallback =
+      base::Callback<void(payments::mojom::PaymentAppResponsePtr)>;
 
   // Should be accessed only on the UI thread.
   virtual void GetAllManifests(BrowserContext* browser_context,
@@ -38,7 +45,8 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void InvokePaymentApp(
       BrowserContext* browser_context,
       int64_t registration_id,
-      payments::mojom::PaymentAppRequestPtr app_request) = 0;
+      payments::mojom::PaymentAppRequestPtr app_request,
+      const InvokePaymentAppCallback& callback) = 0;
 
  protected:
   virtual ~PaymentAppProvider() {}

@@ -69,9 +69,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   using SyncCallback =
       base::Callback<void(ServiceWorkerStatusCode,
                           base::Time /* dispatch_event_time */)>;
-  using PaymentRequestEventCallback =
-      base::Callback<void(ServiceWorkerStatusCode,
-                          base::Time /* dispatch_event_time */)>;
   using FetchCallback =
       base::Callback<void(ServiceWorkerStatusCode,
                           base::Time /* dispatch_event_time */)>;
@@ -182,7 +179,11 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void didHandleSyncEvent(int request_id,
                           blink::WebServiceWorkerEventResult result,
                           double dispatch_event_time) override;
-  void didHandlePaymentRequestEvent(int request_id,
+  void respondToPaymentRequestEvent(
+      int payment_request_id,
+      const blink::WebPaymentAppResponse& response,
+      double dispatch_event_time) override;
+  void didHandlePaymentRequestEvent(int payment_request_id,
                                     blink::WebServiceWorkerEventResult result,
                                     double dispatch_event_time) override;
 
@@ -264,7 +265,9 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       const DispatchSyncEventCallback& callback) override;
   void DispatchPaymentRequestEvent(
+      int payment_request_id,
       payments::mojom::PaymentAppRequestPtr app_request,
+      payments::mojom::PaymentAppResponseCallbackPtr response_callback,
       const DispatchPaymentRequestEventCallback& callback) override;
   void Ping(const PingCallback& callback) override;
 

@@ -240,11 +240,14 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
   }
 
   void DispatchPaymentRequestEvent(
+      int payment_request_id,
       payments::mojom::PaymentAppRequestPtr app_request,
+      payments::mojom::PaymentAppResponseCallbackPtr response_callback,
       const DispatchPaymentRequestEventCallback& callback) override {
     if (!helper_)
       return;
-    helper_->OnPaymentRequestEventStub(std::move(app_request), callback);
+    helper_->OnPaymentRequestEventStub(std::move(app_request),
+                                       std::move(response_callback), callback);
   }
 
   void DispatchExtendableMessageEvent(
@@ -513,8 +516,11 @@ void EmbeddedWorkerTestHelper::OnNotificationCloseEvent(
 
 void EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
     payments::mojom::PaymentAppRequestPtr app_request,
+    payments::mojom::PaymentAppResponseCallbackPtr response_callback,
     const mojom::ServiceWorkerEventDispatcher::
         DispatchPaymentRequestEventCallback& callback) {
+  response_callback->OnPaymentAppResponse(
+      payments::mojom::PaymentAppResponse::New(), base::Time::Now());
   callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
@@ -748,12 +754,14 @@ void EmbeddedWorkerTestHelper::OnPushEventStub(
 
 void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(
     payments::mojom::PaymentAppRequestPtr app_request,
+    payments::mojom::PaymentAppResponseCallbackPtr response_callback,
     const mojom::ServiceWorkerEventDispatcher::
         DispatchPaymentRequestEventCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnPaymentRequestEvent, AsWeakPtr(),
-                 base::Passed(std::move(app_request)), callback));
+                 base::Passed(std::move(app_request)),
+                 base::Passed(std::move(response_callback)), callback));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

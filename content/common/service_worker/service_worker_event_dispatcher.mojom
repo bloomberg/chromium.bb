@@ -95,7 +95,9 @@ interface ServiceWorkerEventDispatcher {
                     blink.mojom.BackgroundSyncEventLastChance last_chance)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
-  DispatchPaymentRequestEvent(payments.mojom.PaymentAppRequest app_request)
+  DispatchPaymentRequestEvent(int32 payment_request_id,
+                              payments.mojom.PaymentAppRequest app_request,
+                              payments.mojom.PaymentAppResponseCallback response_callback)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)

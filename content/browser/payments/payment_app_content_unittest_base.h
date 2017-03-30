@@ -41,7 +41,6 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   void UnregisterServiceWorker(const GURL& scope_url);
 
   void ResetPaymentAppInvoked() const;
-  bool payment_app_invoked() const;
   int64_t last_sw_registration_id() const;
   const GURL& last_sw_scope_url() const;
 

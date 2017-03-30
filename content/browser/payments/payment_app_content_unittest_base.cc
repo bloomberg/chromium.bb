@@ -47,7 +47,6 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
  public:
   PaymentAppForWorkerTestHelper()
       : EmbeddedWorkerTestHelper(base::FilePath()),
-        was_dispatched_(false),
         last_sw_registration_id_(kInvalidServiceWorkerRegistrationId) {}
   ~PaymentAppForWorkerTestHelper() override {}
 
@@ -69,15 +68,13 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
 
   void OnPaymentRequestEvent(
       payments::mojom::PaymentAppRequestPtr app_request,
+      payments::mojom::PaymentAppResponseCallbackPtr response_callback,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchPaymentRequestEventCallback& callback) override {
-    ASSERT_FALSE(was_dispatched_);
-    EmbeddedWorkerTestHelper::OnPaymentRequestEvent(std::move(app_request),
-                                                    callback);
-    was_dispatched_ = true;
+    EmbeddedWorkerTestHelper::OnPaymentRequestEvent(
+        std::move(app_request), std::move(response_callback), callback);
   }
 
-  bool was_dispatched_;
   int64_t last_sw_registration_id_;
   GURL last_sw_scope_;
 
@@ -194,14 +191,6 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
       scope_url, base::Bind(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-}
-
-void PaymentAppContentUnitTestBase::ResetPaymentAppInvoked() const {
-  worker_helper_->was_dispatched_ = false;
-}
-
-bool PaymentAppContentUnitTestBase::payment_app_invoked() const {
-  return worker_helper_->was_dispatched_;
 }
 
 int64_t PaymentAppContentUnitTestBase::last_sw_registration_id() const {

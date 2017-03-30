@@ -24,19 +24,22 @@ function getMessageFromPaymentAppWindow() {
 self.addEventListener('paymentrequest', e => {
   var payment_app_window;
 
-  // SW ------------------ openWindow() -----------------> payment_app_window
-  // SW <---- postMessage('payment_app_window_ready') ---- payment_app_window
-  // SW ------- postMessage('payment_app_request') ------> payment_app_window
-  // SW <------ postMessage('payment_app_response') ------ payment_app_window
-  e.waitUntil(clients.openWindow('payment_app_window.html')
-                  .then(window_client => {
-                    payment_app_window = window_client;
-                    return getMessageFromPaymentAppWindow();
-                  })
-                  .then(message => {
-                    sendResultToTest(message);
-                    payment_app_window.postMessage('payment_app_request');
-                    return getMessageFromPaymentAppWindow();
-                  })
-                  .then(message => { sendResultToTest(message); }));
+  // SW -------------------- openWindow() ------------------> payment_app_window
+  // SW <----- postMessage('payment_app_window_ready') ------ payment_app_window
+  // SW -------- postMessage('payment_app_request') --------> payment_app_window
+  // SW <-- postMessage({methodName: 'test', details: {}}) -- payment_app_window
+  e.respondWith(new Promise(resolve => {
+    clients.openWindow('payment_app_window.html')
+        .then(window_client => {
+          payment_app_window = window_client;
+          return getMessageFromPaymentAppWindow();
+        })
+        .then(message => {
+          payment_app_window.postMessage('payment_app_request');
+          return getMessageFromPaymentAppWindow();
+        })
+        .then(message => {
+          resolve(message);
+        });
+  }));
 });

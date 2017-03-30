@@ -169,7 +169,8 @@ static void InvokePaymentApp(JNIEnv* env,
 
   content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
       web_contents->GetBrowserContext(), registration_id,
-      std::move(app_request));
+      std::move(app_request),
+      content::PaymentAppProvider::InvokePaymentAppCallback());
 }
 
 bool RegisterServiceWorkerPaymentAppBridge(JNIEnv* env) {

@@ -26,6 +26,14 @@ void GetAllManifestsCallback(const base::Closure& done_callback,
   done_callback.Run();
 }
 
+void InvokePaymentAppCallback(
+    const base::Closure& done_callback,
+    payments::mojom::PaymentAppResponsePtr* out_response,
+    payments::mojom::PaymentAppResponsePtr response) {
+  *out_response = std::move(response);
+  done_callback.Run();
+}
+
 }  // namespace
 
 class PaymentAppBrowserTest : public ContentBrowserTest {
@@ -83,16 +91,25 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     return ids;
   }
 
-  void InvokePaymentApp(int64_t registration_id) {
+  payments::mojom::PaymentAppResponsePtr InvokePaymentApp(
+      int64_t registration_id) {
     payments::mojom::PaymentAppRequestPtr app_request =
         payments::mojom::PaymentAppRequest::New();
     app_request->methodData.push_back(
         payments::mojom::PaymentMethodData::New());
     app_request->total = payments::mojom::PaymentItem::New();
     app_request->total->amount = payments::mojom::PaymentCurrencyAmount::New();
+
+    base::RunLoop run_loop;
+    payments::mojom::PaymentAppResponsePtr response;
     PaymentAppProvider::GetInstance()->InvokePaymentApp(
         shell()->web_contents()->GetBrowserContext(), registration_id,
-        std::move(app_request));
+        std::move(app_request),
+        base::Bind(&InvokePaymentAppCallback, run_loop.QuitClosure(),
+                   &response));
+    run_loop.Run();
+
+    return response;
   }
 
  private:
@@ -107,10 +124,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, PaymentAppInvocation) {
   std::vector<int64_t> ids = GetAllPaymentAppIDs();
   ASSERT_EQ(1U, ids.size());
 
-  InvokePaymentApp(ids[0]);
-
-  ASSERT_EQ("payment_app_window_ready", PopConsoleString());
-  ASSERT_EQ("payment_app_response", PopConsoleString());
+  payments::mojom::PaymentAppResponsePtr response(InvokePaymentApp(ids[0]));
+  ASSERT_EQ("test", response->method_name);
 }
 
 }  // namespace content
