@@ -253,6 +253,10 @@ bool SignInWithUI(Browser* browser,
 }
 
 bool TryDismissSyncConfirmationDialog(Browser* browser) {
+#if defined(OS_CHROMEOS)
+  NOTREACHED();
+  return false;
+#else
   SigninViewController* signin_view_controller =
       browser->signin_view_controller();
   DCHECK_NE(signin_view_controller, nullptr);
@@ -273,6 +277,7 @@ bool TryDismissSyncConfirmationDialog(Browser* browser) {
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(dialog_web_contents, js,
                                                      &message));
   return message == "Ok";
+#endif
 }
 
 bool DismissSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout) {

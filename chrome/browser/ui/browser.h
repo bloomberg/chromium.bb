@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
-#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -50,6 +49,10 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/signin_view_controller.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry_observer.h"
@@ -279,9 +282,12 @@ class Browser : public TabStripModelObserver,
   extensions::HostedAppBrowserController* hosted_app_controller() {
     return hosted_app_controller_.get();
   }
+
+#if !defined(OS_CHROMEOS)
   SigninViewController* signin_view_controller() {
     return &signin_view_controller_;
   }
+#endif
 
   // Will lazy create the bubble manager.
   ChromeBubbleManager* GetBubbleManager();
@@ -417,25 +423,6 @@ class Browser : public TabStripModelObserver,
                                   ui::PageTransition transition,
                                   chrome::NavigateParams::WindowAction action,
                                   bool user_initiated);
-
-  // Shows the signin flow for |mode| in a tab-modal dialog.
-  // |access_point| indicates the access point used to open the Gaia sign in
-  // page.
-  void ShowModalSigninWindow(profiles::BubbleViewMode mode,
-                             signin_metrics::AccessPoint access_point);
-
-  // Closes the tab-modal signin flow opened with ShowModalSigninWindow, if it's
-  // open. Does nothing otherwise.
-  void CloseModalSigninWindow();
-
-  // Shows the tab modal sync confirmation dialog that informs the user about
-  // sync and gives them a chance to abort signin under the tab modal signin
-  // flow.
-  void ShowModalSyncConfirmationWindow();
-
-  // Shows the tab modal signin error dialog that informs the user about
-  // signin errors.
-  void ShowModalSigninErrorWindow();
 
   // Used to register a KeepAlive to affect the Chrome lifetime. The KeepAlive
   // is registered when the browser is added to the browser list, and unregisted
@@ -1014,7 +1001,9 @@ class Browser : public TabStripModelObserver,
 
   base::WeakPtr<ValidationMessageBubble> validation_message_bubble_;
 
+#if !defined(OS_CHROMEOS)
   SigninViewController signin_view_controller_;
+#endif
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
 

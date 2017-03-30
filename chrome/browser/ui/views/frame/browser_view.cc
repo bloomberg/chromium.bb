@@ -152,6 +152,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #endif  // !defined(OS_CHROMEOS)
 
@@ -2527,7 +2528,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
                                                &tutorial_mode);
   if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
-    browser_->ShowModalSigninWindow(bubble_view_mode, access_point);
+    browser_->signin_view_controller()->ShowModalSignin(
+        bubble_view_mode, browser_.get(), access_point);
   } else {
     ProfileChooserView::ShowBubble(bubble_view_mode, tutorial_mode,
                                    manage_accounts_params, access_point,

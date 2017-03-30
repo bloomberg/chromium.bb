@@ -811,7 +811,8 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
                                                &tutorial_mode);
 
   if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
-    browser_->ShowModalSigninWindow(bubble_view_mode, access_point);
+    browser_->signin_view_controller()->ShowModalSignin(bubble_view_mode,
+                                                        browser_, access_point);
   } else {
     AvatarBaseController* controller = [controller_ avatarButtonController];
     NSView* anchor = [controller buttonView];

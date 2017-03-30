@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
-#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
@@ -707,8 +706,6 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
 
   std::unique_ptr<WebContentsCloseHandler> web_contents_close_handler_;
-
-  SigninViewController signin_view_controller_;
 
   // The class that registers for keyboard shortcuts for extension commands.
   std::unique_ptr<ExtensionKeybindingRegistryViews>

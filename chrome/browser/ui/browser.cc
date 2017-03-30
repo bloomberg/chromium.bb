@@ -929,23 +929,6 @@ void Browser::UpdateUIForNavigationInTab(
   }
 }
 
-void Browser::ShowModalSigninWindow(profiles::BubbleViewMode mode,
-                                    signin_metrics::AccessPoint access_point) {
-  signin_view_controller_.ShowModalSignin(mode, this, access_point);
-}
-
-void Browser::CloseModalSigninWindow() {
-  signin_view_controller_.CloseModalSignin();
-}
-
-void Browser::ShowModalSyncConfirmationWindow() {
-  signin_view_controller_.ShowModalSyncConfirmationDialog(this);
-}
-
-void Browser::ShowModalSigninErrorWindow() {
-  signin_view_controller_.ShowModalSigninErrorDialog(this);
-}
-
 void Browser::RegisterKeepAlive() {
   keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::BROWSER,
                                         KeepAliveRestartOption::DISABLED));

@@ -60,7 +60,7 @@ void SigninErrorHandler::HandleConfirm(const base::ListValue* args) {
 void SigninErrorHandler::HandleLearnMore(const base::ListValue* args) {
   Browser* browser = signin::GetDesktopBrowser(web_ui());
   DCHECK(browser);
-  browser->CloseModalSigninWindow();
+  browser->signin_view_controller()->CloseModalSignin();
   signin_ui_util::ShowSigninErrorLearnMorePage(browser->profile());
 }
 
@@ -88,6 +88,6 @@ void SigninErrorHandler::CloseDialog() {
   } else {
     Browser* browser = signin::GetDesktopBrowser(web_ui());
     DCHECK(browser);
-    browser->CloseModalSigninWindow();
+    browser->signin_view_controller()->CloseModalSignin();
   }
 }

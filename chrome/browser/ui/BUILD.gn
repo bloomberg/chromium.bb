@@ -816,10 +816,6 @@ split_static_library("ui") {
       "settings_window_manager.cc",
       "settings_window_manager.h",
       "settings_window_manager_observer.h",
-      "signin_view_controller.cc",
-      "signin_view_controller.h",
-      "signin_view_controller_delegate.cc",
-      "signin_view_controller_delegate.h",
       "singleton_tabs.cc",
       "singleton_tabs.h",
       "startup/automation_infobar_delegate.cc",
@@ -1833,8 +1829,6 @@ split_static_library("ui") {
         "views/process_singleton_dialog_linux.cc",
         "views/profiles/profile_indicator_icon.cc",
         "views/profiles/profile_indicator_icon.h",
-        "views/profiles/signin_view_controller_delegate_views.cc",
-        "views/profiles/signin_view_controller_delegate_views.h",
         "views/profiles/user_manager_view.cc",
         "views/profiles/user_manager_view.h",
         "views/proximity_auth/proximity_auth_error_bubble_view.cc",
@@ -1940,6 +1934,13 @@ split_static_library("ui") {
 
         deps += [ "//ui/views/mus" ]
       }
+
+      if (!is_chromeos) {
+        sources += [
+          "views/profiles/signin_view_controller_delegate_views.cc",
+          "views/profiles/signin_view_controller_delegate_views.h",
+        ]
+      }
     }
     if (use_ash) {
       sources += [
@@ -1981,6 +1982,10 @@ split_static_library("ui") {
       "avatar_button_error_controller_delegate.h",
       "external_protocol_dialog_delegate.cc",
       "external_protocol_dialog_delegate.h",
+      "signin_view_controller.cc",
+      "signin_view_controller.h",
+      "signin_view_controller_delegate.cc",
+      "signin_view_controller_delegate.h",
       "startup/default_browser_infobar_delegate.cc",
       "startup/default_browser_infobar_delegate.h",
       "startup/default_browser_prompt.cc",

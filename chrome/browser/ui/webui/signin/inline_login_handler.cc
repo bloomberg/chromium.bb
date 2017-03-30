@@ -280,7 +280,7 @@ void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
   Browser* browser = signin::GetDesktopBrowser(web_ui());
   // If the dialog was opened in the User Manager browser will be null here.
   if (browser)
-    browser->CloseModalSigninWindow();
+    browser->signin_view_controller()->CloseModalSignin();
 
   // Does nothing if user manager is not showing.
   UserManagerProfileDialog::HideDialog();

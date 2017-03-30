@@ -115,7 +115,7 @@ void CloseModalSigninIfNeeded(InlineLoginHandlerImpl* handler) {
   if (handler && switches::UsePasswordSeparatedSigninFlow()) {
     Browser* browser = handler->GetDesktopBrowser();
     if (browser)
-      browser->CloseModalSigninWindow();
+      browser->signin_view_controller()->CloseModalSignin();
   }
 }
 
