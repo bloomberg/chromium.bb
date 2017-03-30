@@ -32,8 +32,7 @@ WindowPortMus::WindowPortMus(WindowTreeClient* client,
     : WindowMus(window_mus_type), window_tree_client_(client) {}
 
 WindowPortMus::~WindowPortMus() {
-  if (surface_info_.is_valid())
-    SetSurfaceInfoFromServer(cc::SurfaceInfo());
+  SetPrimarySurfaceInfo(cc::SurfaceInfo());
 
   // DESTROY is only scheduled from DestroyFromServer(), meaning if DESTROY is
   // present then the server originated the change.
@@ -307,28 +306,9 @@ const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
   return local_surface_id_;
 }
 
-void WindowPortMus::SetSurfaceInfoFromServer(
-    const cc::SurfaceInfo& surface_info) {
-  if (surface_info_.is_valid()) {
-    const cc::SurfaceId& existing_surface_id = surface_info_.id();
-    const cc::SurfaceId& new_surface_id = surface_info.id();
-    if (existing_surface_id.is_valid() &&
-        existing_surface_id != new_surface_id) {
-      // TODO(kylechar): Start return reference here?
-    }
-  }
-
-  // The fact that SetSurfaceIdFromServer was called means that this window
-  // corresponds to an embedded client.
-  if (!client_surface_embedder && surface_info.is_valid())
-    client_surface_embedder = base::MakeUnique<ClientSurfaceEmbedder>(window_);
-
-  if (surface_info.is_valid())
-    client_surface_embedder->UpdateSurface(surface_info);
-  else
-    client_surface_embedder.reset();
-
-  surface_info_ = surface_info;
+void WindowPortMus::SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) {
+  primary_surface_info_ = surface_info;
+  UpdatePrimarySurfaceInfoInternal();
 }
 
 void WindowPortMus::DestroyFromServer() {
@@ -476,6 +456,8 @@ void WindowPortMus::OnVisibilityChanged(bool visible) {
   change_data.visible = visible;
   if (!RemoveChangeByTypeAndData(ServerChangeType::VISIBLE, change_data))
     window_tree_client_->OnWindowMusSetVisible(this, visible);
+  // We should only embed a client if its visible.
+  UpdatePrimarySurfaceInfoInternal();
 }
 
 void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
@@ -514,6 +496,16 @@ void WindowPortMus::OnPropertyChanged(const void* key,
   if (!RemoveChangeByTypeAndData(ServerChangeType::PROPERTY, change_data))
     window_tree_client_->OnWindowMusPropertyChanged(this, key, old_value,
                                                     std::move(data));
+}
+
+void WindowPortMus::UpdatePrimarySurfaceInfoInternal() {
+  if (!client_surface_embedder_ && primary_surface_info_.is_valid())
+    client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(window_);
+
+  if (primary_surface_info_.is_valid() && window_->IsVisible())
+    client_surface_embedder_->SetPrimarySurfaceInfo(primary_surface_info_);
+  else
+    client_surface_embedder_.reset();
 }
 
 }  // namespace aura

@@ -1300,7 +1300,7 @@ void WindowTreeClient::OnWindowSurfaceChanged(
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
-  window->SetSurfaceInfoFromServer(surface_info);
+  window->SetPrimarySurfaceInfo(surface_info);
 }
 
 void WindowTreeClient::OnDragDropStart(

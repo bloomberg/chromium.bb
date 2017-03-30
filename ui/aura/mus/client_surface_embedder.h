@@ -26,8 +26,9 @@ class ClientSurfaceEmbedder {
   explicit ClientSurfaceEmbedder(Window* window);
   ~ClientSurfaceEmbedder();
 
-  // Updates the surface layer and the clip layer based on the surface info.
-  void UpdateSurface(const cc::SurfaceInfo& surface_info);
+  // Updates the clip layer and primary SurfaceInfo of the surface layer based
+  // on the provided |surface_info|.
+  void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info);
 
  private:
   // The window which embeds the client.

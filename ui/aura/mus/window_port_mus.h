@@ -50,6 +50,10 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   Window* window() { return window_; }
   const Window* window() const { return window_; }
 
+  ClientSurfaceEmbedder* client_surface_embedder() const {
+    return client_surface_embedder_.get();
+  }
+
   void SetTextInputState(mojo::TextInputStatePtr state);
   void SetImeVisibility(bool visible, mojo::TextInputStatePtr state);
 
@@ -223,7 +227,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetFrameSinkIdFromServer(const cc::FrameSinkId& frame_sink_id) override;
   const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size) override;
-  void SetSurfaceInfoFromServer(const cc::SurfaceInfo& surface_info) override;
+  void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -254,12 +258,14 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
 
+  void UpdatePrimarySurfaceInfoInternal();
+
   WindowTreeClient* window_tree_client_;
 
   Window* window_ = nullptr;
 
   // Used when this window is embedding a client.
-  std::unique_ptr<ClientSurfaceEmbedder> client_surface_embedder;
+  std::unique_ptr<ClientSurfaceEmbedder> client_surface_embedder_;
 
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
@@ -267,7 +273,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   cc::FrameSinkId frame_sink_id_;
   base::Closure pending_compositor_frame_sink_request_;
 
-  cc::SurfaceInfo surface_info_;
+  cc::SurfaceInfo primary_surface_info_;
 
   cc::LocalSurfaceId local_surface_id_;
   cc::LocalSurfaceIdAllocator local_surface_id_allocator_;

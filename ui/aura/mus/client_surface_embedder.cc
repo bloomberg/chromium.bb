@@ -55,7 +55,8 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(Window* window) : window_(window) {
 
 ClientSurfaceEmbedder::~ClientSurfaceEmbedder() = default;
 
-void ClientSurfaceEmbedder::UpdateSurface(const cc::SurfaceInfo& surface_info) {
+void ClientSurfaceEmbedder::SetPrimarySurfaceInfo(
+    const cc::SurfaceInfo& surface_info) {
   // TODO(mfomitchev): Currently the frame size may not match the window size.
   // In the future the surface id will be created by Ash (and used with the
   // surface layer) when the window resize happens, which will ensure that the

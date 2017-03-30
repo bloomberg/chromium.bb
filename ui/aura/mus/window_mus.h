@@ -88,8 +88,7 @@ class AURA_EXPORT WindowMus {
       const cc::FrameSinkId& frame_sink_id) = 0;
   virtual const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& new_size) = 0;
-  virtual void SetSurfaceInfoFromServer(
-      const cc::SurfaceInfo& surface_info) = 0;
+  virtual void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) = 0;
   // The window was deleted on the server side. DestroyFromServer() should
   // result in deleting |this|.
   virtual void DestroyFromServer() = 0;

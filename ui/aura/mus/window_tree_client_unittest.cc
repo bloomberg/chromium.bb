@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -24,6 +25,7 @@
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_client_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
@@ -140,6 +142,46 @@ class WindowTreeClientClientTestHighDPI : public WindowTreeClientClientTest {
   std::unique_ptr<ui::PointerEvent> last_event_observed_;
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientClientTestHighDPI);
 };
+
+// Verifies that a ClientSurfaceEmbedder will only be allocated if a window
+// is visible that embeds a WindowTreeClient.
+TEST_F(WindowTreeClientWmTest, ClientSurfaceEmbedderIfVisible) {
+  Window window(nullptr);
+  // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate cc::LocalSurfaceIds
+  // when their sizes change.
+  window.SetProperty(aura::client::kEmbedType,
+                     aura::client::WindowEmbedType::EMBED_IN_OWNER);
+  window.Init(ui::LAYER_NOT_DRAWN);
+
+  WindowMus* window_mus = WindowMus::Get(&window);
+  const cc::SurfaceId surface_id(
+      cc::FrameSinkId(1, 1),
+      cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
+  constexpr float device_scale_factor = 1.f;
+  constexpr gfx::Size size(100, 100);
+
+  window_mus->SetPrimarySurfaceInfo(
+      cc::SurfaceInfo(surface_id, device_scale_factor, size));
+
+  WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
+  ASSERT_NE(nullptr, window_port_mus);
+  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
+
+  // Showing the window results in the creation of a ClientSurfaceEmbedder.
+  window.Show();
+  EXPECT_NE(nullptr, window_port_mus->client_surface_embedder());
+
+  // Hiding it again removes the ClientSurfaceEmbedder.
+  window.Hide();
+  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
+
+  // Setting an invalid cc::SurfaceInfo also eliminates the
+  // ClientSurfaceEmbedder.
+  window.Show();
+  EXPECT_NE(nullptr, window_port_mus->client_surface_embedder());
+  window_mus->SetPrimarySurfaceInfo(cc::SurfaceInfo());
+  EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
+}
 
 // Verifies bounds are reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientWmTest, SetBoundsFailed) {
