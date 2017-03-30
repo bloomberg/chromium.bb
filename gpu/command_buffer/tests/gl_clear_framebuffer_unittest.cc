@@ -45,6 +45,14 @@ class GLClearFramebufferTest : public testing::TestWithParam<bool> {
     }
   }
 
+  bool IsApplicable() {
+    // The workaround doesn't use VAOs which would cause a failure on a core
+    // context and the hardware for each the workaround is necessary has a buggy
+    // VAO implementation. So we skip testing the workaround on core profiles.
+    return !GetParam() ||
+           !gl_.context()->GetVersionInfo()->is_desktop_core_profile;
+  }
+
   void InitDraw();
   void SetDrawColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
   void SetDrawDepth(GLfloat depth);
@@ -110,6 +118,10 @@ INSTANTIATE_TEST_CASE_P(GLClearFramebufferTestWithParam,
                         ::testing::Values(true, false));
 
 TEST_P(GLClearFramebufferTest, ClearColor) {
+  if (!IsApplicable()) {
+    return;
+  }
+
   glClearColor(1.0f, 0.5f, 0.25f, 0.5f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -120,6 +132,10 @@ TEST_P(GLClearFramebufferTest, ClearColor) {
 }
 
 TEST_P(GLClearFramebufferTest, ClearColorWithMask) {
+  if (!IsApplicable()) {
+    return;
+  }
+
   glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
@@ -133,6 +149,10 @@ TEST_P(GLClearFramebufferTest, ClearColorWithMask) {
 // crbug.com/434094
 #if !defined(OS_MACOSX)
 TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
+  if (!IsApplicable()) {
+    return;
+  }
+
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
 
@@ -153,6 +173,10 @@ TEST_P(GLClearFramebufferTest, ClearColorWithScissor) {
 #endif
 
 TEST_P(GLClearFramebufferTest, ClearDepthStencil) {
+  if (!IsApplicable()) {
+    return;
+  }
+
   const GLuint kStencilRef = 1 << 2;
   InitDraw();
   SetDrawColor(1.0f, 0.0f, 0.0f, 1.0f);

@@ -66,9 +66,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_CONST_METHOD0(GetFeatureInfo, const FeatureInfo*());
   MOCK_METHOD0(GetContextState, const ContextState*());
-  MOCK_CONST_METHOD1(
-      GetTranslator,
-      scoped_refptr<ShaderTranslatorInterface>(unsigned int type));
+  MOCK_METHOD1(GetTranslator,
+               scoped_refptr<ShaderTranslatorInterface>(unsigned int type));
   MOCK_METHOD0(GetCapabilities, Capabilities());
   MOCK_CONST_METHOD0(HasPendingQueries, bool());
   MOCK_METHOD1(ProcessPendingQueries, void(bool));

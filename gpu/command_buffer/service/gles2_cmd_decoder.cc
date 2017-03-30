@@ -597,8 +597,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   ErrorState* GetErrorState() override;
   const ContextState* GetContextState() override { return &state_; }
-  scoped_refptr<ShaderTranslatorInterface> GetTranslator(
-      GLenum type) const override;
+  scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
   void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
   void SetFenceSyncReleaseCallback(
@@ -3619,8 +3618,7 @@ bool GLES2DecoderImpl::Initialize(
   if (workarounds().gl_clear_broken) {
     DCHECK(!clear_framebuffer_blit_.get());
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glClearWorkaroundInit");
-    clear_framebuffer_blit_.reset(
-        new ClearFramebufferResourceManager(this, gl_version_info()));
+    clear_framebuffer_blit_.reset(new ClearFramebufferResourceManager(this));
     if (LOCAL_PEEK_GL_ERROR("glClearWorkaroundInit") != GL_NO_ERROR)
       return false;
   }
@@ -10466,7 +10464,7 @@ void GLES2DecoderImpl::DoTransformFeedbackVaryings(
 }
 
 scoped_refptr<ShaderTranslatorInterface> GLES2DecoderImpl::GetTranslator(
-    GLenum type) const {
+    GLenum type) {
   return type == GL_VERTEX_SHADER ? vertex_translator_ : fragment_translator_;
 }
 

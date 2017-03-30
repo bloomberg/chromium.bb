@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.38",
+  "version": "9.37",
   "entries": [
     {
       "id": 1,
@@ -2397,19 +2397,6 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
         "disallow_large_instanced_draw"
-      ]
-    },
-    {
-      "id": 222,
-      "description": "Linux AMD Catalyst drivers ignore clear if it's the only thing rendered to the target before the target is read",
-      "cr_bugs": [690122],
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x1002",
-      "driver_vendor": "AMD \\(Catalyst\\)",
-      "features": [
-        "gl_clear_broken"
       ]
     }
   ]
