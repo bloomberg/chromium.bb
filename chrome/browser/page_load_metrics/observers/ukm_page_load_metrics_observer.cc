@@ -28,6 +28,9 @@ const char kUkmFailedProvisionaLoadName[] =
     "PageTiming.NavigationToFailedProvisionalLoad";
 const char kUkmEffectiveConnectionType[] =
     "Net.EffectiveConnectionType.OnNavigationStart";
+const char kUkmHttpRttEstimate[] = "Net.HttpRttEstimate.OnNavigationStart";
+const char kUkmTransportRttEstimate[] =
+    "Net.TransportRttEstimate.OnNavigationStart";
 const char kUkmNetErrorCode[] = "Net.ErrorCode.OnFailedProvisionalLoad";
 const char kUkmPageTransition[] = "Navigation.PageTransition";
 
@@ -81,6 +84,8 @@ UkmPageLoadMetricsObserver::ObservePolicy UkmPageLoadMetricsObserver::OnStart(
   if (network_quality_provider_) {
     effective_connection_type_ =
         network_quality_provider_->GetEffectiveConnectionType();
+    http_rtt_estimate_ = network_quality_provider_->GetHttpRTT();
+    transport_rtt_estimate_ = network_quality_provider_->GetTransportRTT();
   }
   page_transition_ = navigation_handle->GetPageTransition();
   return CONTINUE_OBSERVING;
@@ -186,6 +191,16 @@ void UkmPageLoadMetricsObserver::RecordPageLoadExtraInfoMetrics(
   if (effective_connection_type_ != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     builder->AddMetric(internal::kUkmEffectiveConnectionType,
                        static_cast<int64_t>(effective_connection_type_));
+  }
+  if (http_rtt_estimate_) {
+    builder->AddMetric(
+        internal::kUkmHttpRttEstimate,
+        static_cast<int64_t>(http_rtt_estimate_.value().InMilliseconds()));
+  }
+  if (transport_rtt_estimate_) {
+    builder->AddMetric(
+        internal::kUkmTransportRttEstimate,
+        static_cast<int64_t>(transport_rtt_estimate_.value().InMilliseconds()));
   }
   // page_transition_ fits in a uint32_t, so we can safely cast to int64_t.
   builder->AddMetric(internal::kUkmPageTransition,

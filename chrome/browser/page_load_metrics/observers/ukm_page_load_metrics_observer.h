@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_UKM_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "ui/base/page_transition_types.h"
@@ -27,6 +29,8 @@ extern const char kUkmForegroundDurationName[];
 extern const char kUkmFailedProvisionaLoadName[];
 extern const char kUkmNetErrorCode[];
 extern const char kUkmEffectiveConnectionType[];
+extern const char kUkmHttpRttEstimate[];
+extern const char kUkmTransportRttEstimate[];
 extern const char kUkmPageTransition[];
 
 }  // namespace internal
@@ -85,8 +89,11 @@ class UkmPageLoadMetricsObserver
   // Unique UKM identifier for the page load we are recording metrics for.
   const int32_t source_id_;
 
+  // Network quality estimates.
   net::EffectiveConnectionType effective_connection_type_ =
       net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  base::Optional<base::TimeDelta> http_rtt_estimate_;
+  base::Optional<base::TimeDelta> transport_rtt_estimate_;
 
   // PAGE_TRANSITION_LINK is the default PageTransition value.
   ui::PageTransition page_transition_ = ui::PAGE_TRANSITION_LINK;
