@@ -139,27 +139,6 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   EXPECT_EQ(1, numPerformanceEntriesInObserver());  // added an entry
 }
 
-TEST_F(PerformanceBaseTest, GetNavigationType) {
-  m_pageHolder->page().setVisibilityState(PageVisibilityStatePrerender, false);
-  PerformanceNavigationTiming::NavigationType returnedType =
-      PerformanceBase::getNavigationType(NavigationTypeBackForward,
-                                         &m_pageHolder->document());
-  EXPECT_EQ(returnedType,
-            PerformanceNavigationTiming::NavigationType::Prerender);
-
-  m_pageHolder->page().setVisibilityState(PageVisibilityStateHidden, false);
-  returnedType = PerformanceBase::getNavigationType(NavigationTypeBackForward,
-                                                    &m_pageHolder->document());
-  EXPECT_EQ(returnedType,
-            PerformanceNavigationTiming::NavigationType::BackForward);
-
-  m_pageHolder->page().setVisibilityState(PageVisibilityStateVisible, false);
-  returnedType = PerformanceBase::getNavigationType(
-      NavigationTypeFormResubmitted, &m_pageHolder->document());
-  EXPECT_EQ(returnedType,
-            PerformanceNavigationTiming::NavigationType::Navigate);
-}
-
 TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   // When there are no cross-origin redirects.
   AtomicString originDomain = "http://127.0.0.1:8000";

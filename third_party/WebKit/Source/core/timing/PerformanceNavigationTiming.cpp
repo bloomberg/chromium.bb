@@ -85,6 +85,28 @@ unsigned long long PerformanceNavigationTiming::getDecodedBodySize() const {
   return m_resourceTimingInfo->finalResponse().decodedBodyLength();
 }
 
+AtomicString PerformanceNavigationTiming::getNavigationType(
+    NavigationType type,
+    const Document* document) {
+  if (document &&
+      document->pageVisibilityState() == PageVisibilityStatePrerender) {
+    return "prerender";
+  }
+  switch (type) {
+    case NavigationTypeReload:
+      return "reload";
+    case NavigationTypeBackForward:
+      return "back_forward";
+    case NavigationTypeLinkClicked:
+    case NavigationTypeFormSubmitted:
+    case NavigationTypeFormResubmitted:
+    case NavigationTypeOther:
+      return "navigate";
+  }
+  NOTREACHED();
+  return "navigate";
+}
+
 AtomicString PerformanceNavigationTiming::initiatorType() const {
   return "navigation";
 }
@@ -177,21 +199,8 @@ DOMHighResTimeStamp PerformanceNavigationTiming::loadEventEnd() const {
 
 AtomicString PerformanceNavigationTiming::type() const {
   DocumentLoader* loader = documentLoader();
-  if (!loader)
-    return "navigate";
-  Document* document = frame() ? frame()->document(): nullptr;
-  switch (PerformanceBase::getNavigationType(loader->getNavigationType(),
-                                             document)) {
-    case NavigationType::Prerender:
-      return "prerender";
-    case NavigationType::Reload:
-      return "reload";
-    case NavigationType::BackForward:
-      return "back_forward";
-    case NavigationType::Navigate:
-      return "navigate";
-  }
-  NOTREACHED();
+  if (frame() && loader)
+    return getNavigationType(loader->getNavigationType(), frame()->document());
   return "navigate";
 }
 

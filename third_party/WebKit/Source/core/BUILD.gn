@@ -1391,6 +1391,7 @@ source_set("unit_tests") {
     "svg/graphics/SVGImageTest.cpp",
     "timing/MemoryInfoTest.cpp",
     "timing/PerformanceBaseTest.cpp",
+    "timing/PerformanceNavigationTimingTest.cpp",
     "timing/PerformanceObserverTest.cpp",
     "timing/PerformanceTest.cpp",
     "workers/DedicatedWorkerTest.cpp",

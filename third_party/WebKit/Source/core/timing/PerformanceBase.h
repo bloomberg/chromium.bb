@@ -137,10 +137,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
                                    const SecurityOrigin&,
                                    ExecutionContext*);
 
-  static PerformanceNavigationTiming::NavigationType getNavigationType(
-      NavigationType,
-      const Document*);
-
   DECLARE_VIRTUAL_TRACE();
 
  private:

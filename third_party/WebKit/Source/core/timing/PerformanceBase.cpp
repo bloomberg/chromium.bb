@@ -80,28 +80,6 @@ PerformanceBase::PerformanceBase(double timeOrigin,
 
 PerformanceBase::~PerformanceBase() {}
 
-PerformanceNavigationTiming::NavigationType PerformanceBase::getNavigationType(
-    NavigationType type,
-    const Document* document) {
-  if (document &&
-      document->pageVisibilityState() == PageVisibilityStatePrerender) {
-    return PerformanceNavigationTiming::NavigationType::Prerender;
-  }
-  switch (type) {
-    case NavigationTypeReload:
-      return PerformanceNavigationTiming::NavigationType::Reload;
-    case NavigationTypeBackForward:
-      return PerformanceNavigationTiming::NavigationType::BackForward;
-    case NavigationTypeLinkClicked:
-    case NavigationTypeFormSubmitted:
-    case NavigationTypeFormResubmitted:
-    case NavigationTypeOther:
-      return PerformanceNavigationTiming::NavigationType::Navigate;
-  }
-  NOTREACHED();
-  return PerformanceNavigationTiming::NavigationType::Navigate;
-}
-
 const AtomicString& PerformanceBase::interfaceName() const {
   return EventTargetNames::Performance;
 }

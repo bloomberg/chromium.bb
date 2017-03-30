@@ -30,8 +30,6 @@ class CORE_EXPORT PerformanceNavigationTiming final
   friend class PerformanceNavigationTimingTest;
 
  public:
-  enum class NavigationType { Navigate, Reload, BackForward, Prerender };
-
   PerformanceNavigationTiming(LocalFrame*,
                               ResourceTimingInfo*,
                               double timeOrigin);
@@ -66,6 +64,8 @@ class CORE_EXPORT PerformanceNavigationTiming final
 
  private:
   ~PerformanceNavigationTiming() override;
+
+  static AtomicString getNavigationType(NavigationType, const Document*);
 
   const DocumentTiming* documentTiming() const;
   DocumentLoader* documentLoader() const;
