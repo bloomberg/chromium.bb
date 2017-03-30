@@ -5062,6 +5062,7 @@ interface RTCPeerConnection : EventTarget
     method createDataChannel
     method createOffer
     method getLocalStreams
+    method getReceivers
     method getRemoteStreams
     method getStats
     method getStreamById
@@ -5080,6 +5081,10 @@ interface RTCPeerConnection : EventTarget
 interface RTCPeerConnectionIceEvent : Event
     attribute @@toStringTag
     getter candidate
+    method constructor
+interface RTCRtpReceiver
+    attribute @@toStringTag
+    getter track
     method constructor
 interface RTCSessionDescription
     attribute @@toStringTag
@@ -8717,6 +8722,7 @@ interface webkitRTCPeerConnection : EventTarget
     method createDataChannel
     method createOffer
     method getLocalStreams
+    method getReceivers
     method getRemoteStreams
     method getStats
     method getStreamById

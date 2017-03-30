@@ -69,6 +69,12 @@ class WebMediaStream {
 
   BLINK_PLATFORM_EXPORT void audioTracks(WebVector<WebMediaStreamTrack>&) const;
   BLINK_PLATFORM_EXPORT void videoTracks(WebVector<WebMediaStreamTrack>&) const;
+  // If a track is not found with the specified id, the returned track's
+  // |isNull| will return true.
+  BLINK_PLATFORM_EXPORT WebMediaStreamTrack
+  getAudioTrack(const WebString& trackId) const;
+  BLINK_PLATFORM_EXPORT WebMediaStreamTrack
+  getVideoTrack(const WebString& trackId) const;
 
   BLINK_PLATFORM_EXPORT void addTrack(const WebMediaStreamTrack&);
   BLINK_PLATFORM_EXPORT void removeTrack(const WebMediaStreamTrack&);

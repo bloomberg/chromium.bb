@@ -649,6 +649,8 @@ target(link_target_type, "renderer") {
       "media/webrtc/peer_connection_remote_audio_source.h",
       "media/webrtc/processed_local_audio_source.cc",
       "media/webrtc/processed_local_audio_source.h",
+      "media/webrtc/rtc_rtp_receiver.cc",
+      "media/webrtc/rtc_rtp_receiver.h",
       "media/webrtc/rtc_stats.cc",
       "media/webrtc/rtc_stats.h",
       "media/webrtc/stun_field_trial.cc",

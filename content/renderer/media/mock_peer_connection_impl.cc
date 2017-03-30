@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "content/renderer/media/mock_data_channel_impl.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
+#include "third_party/webrtc/api/rtpreceiverinterface.h"
+#include "third_party/webrtc/base/refcountedobject.h"
 
 using testing::_;
 using webrtc::AudioTrackInterface;
@@ -114,6 +116,44 @@ class MockDtmfSender : public DtmfSenderInterface {
   int inter_tone_gap_;
 };
 
+class FakeRtpReceiver
+    : public rtc::RefCountedObject<webrtc::RtpReceiverInterface> {
+ public:
+  FakeRtpReceiver(rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track)
+      : track_(track) {}
+
+  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track() const override {
+    return track_;
+  }
+
+  cricket::MediaType media_type() const override {
+    NOTIMPLEMENTED();
+    return cricket::MEDIA_TYPE_AUDIO;
+  }
+
+  std::string id() const override {
+    NOTIMPLEMENTED();
+    return "";
+  }
+
+  webrtc::RtpParameters GetParameters() const override {
+    NOTIMPLEMENTED();
+    return webrtc::RtpParameters();
+  }
+
+  bool SetParameters(const webrtc::RtpParameters& parameters) override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  void SetObserver(webrtc::RtpReceiverObserverInterface* observer) override {
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+};
+
 const char MockPeerConnectionImpl::kDummyOffer[] = "dummy offer";
 const char MockPeerConnectionImpl::kDummyAnswer[] = "dummy answer";
 
@@ -166,6 +206,20 @@ MockPeerConnectionImpl::CreateDtmfSender(AudioTrackInterface* track) {
     return NULL;
   }
   return new rtc::RefCountedObject<MockDtmfSender>(track);
+}
+
+std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
+MockPeerConnectionImpl::GetReceivers() const {
+  std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> receivers;
+  for (size_t i = 0; i < remote_streams_->count(); ++i) {
+    for (const auto& audio_track : remote_streams_->at(i)->GetAudioTracks()) {
+      receivers.push_back(new FakeRtpReceiver(audio_track));
+    }
+    for (const auto& video_track : remote_streams_->at(i)->GetVideoTracks()) {
+      receivers.push_back(new FakeRtpReceiver(video_track));
+    }
+  }
+  return receivers;
 }
 
 rtc::scoped_refptr<webrtc::DataChannelInterface>

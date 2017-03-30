@@ -24,16 +24,17 @@
 
 #include "public/platform/WebMediaStream.h"
 
+#include <memory>
 #include "platform/UUID.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamDescriptor.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebString.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 
@@ -91,6 +92,32 @@ void WebMediaStream::videoTracks(
   for (size_t i = 0; i < numberOfTracks; ++i)
     result[i] = m_private->videoComponent(i);
   webTracks.swap(result);
+}
+
+WebMediaStreamTrack WebMediaStream::getAudioTrack(
+    const WebString& trackId) const {
+  size_t numberOfTracks = m_private->numberOfAudioComponents();
+  String id = trackId;
+  for (size_t i = 0; i < numberOfTracks; ++i) {
+    MediaStreamComponent* audioComponent = m_private->audioComponent(i);
+    DCHECK(audioComponent);
+    if (audioComponent->id() == id)
+      return m_private->audioComponent(i);
+  }
+  return nullptr;
+}
+
+WebMediaStreamTrack WebMediaStream::getVideoTrack(
+    const WebString& trackId) const {
+  size_t numberOfTracks = m_private->numberOfVideoComponents();
+  String id = trackId;
+  for (size_t i = 0; i < numberOfTracks; ++i) {
+    MediaStreamComponent* videoComponent = m_private->videoComponent(i);
+    DCHECK(videoComponent);
+    if (videoComponent->id() == id)
+      return m_private->videoComponent(i);
+  }
+  return nullptr;
 }
 
 void WebMediaStream::addTrack(const WebMediaStreamTrack& track) {

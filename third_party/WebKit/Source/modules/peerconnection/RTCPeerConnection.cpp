@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Microtask.h"
@@ -67,6 +68,7 @@
 #include "modules/peerconnection/RTCOfferOptions.h"
 #include "modules/peerconnection/RTCPeerConnectionErrorCallback.h"
 #include "modules/peerconnection/RTCPeerConnectionIceEvent.h"
+#include "modules/peerconnection/RTCRtpReceiver.h"
 #include "modules/peerconnection/RTCSessionDescription.h"
 #include "modules/peerconnection/RTCSessionDescriptionCallback.h"
 #include "modules/peerconnection/RTCSessionDescriptionInit.h"
@@ -1179,6 +1181,30 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState) {
   return promise;
 }
 
+HeapVector<Member<RTCRtpReceiver>> RTCPeerConnection::getReceivers() {
+  WebVector<std::unique_ptr<WebRTCRtpReceiver>> webRtpReceivers =
+      m_peerHandler->getReceivers();
+  HeapVector<Member<RTCRtpReceiver>> rtpReceivers(webRtpReceivers.size());
+  for (size_t i = 0; i < webRtpReceivers.size(); ++i) {
+    uintptr_t id = webRtpReceivers[i]->id();
+    const auto it = m_rtpReceivers.find(id);
+    if (it != m_rtpReceivers.end()) {
+      rtpReceivers[i] = it->value;
+    } else {
+      // There does not exist a |RTCRtpReceiver| for this |WebRTCRtpReceiver|
+      // yet, create it.
+      MediaStreamTrack* track =
+          getRemoteTrackById(webRtpReceivers[i]->track().id());
+      DCHECK(track);
+      RTCRtpReceiver* rtpReceiver =
+          new RTCRtpReceiver(std::move(webRtpReceivers[i]), track);
+      m_rtpReceivers.insert(id, rtpReceiver);
+      rtpReceivers[i] = rtpReceiver;
+    }
+  }
+  return rtpReceivers;
+}
+
 RTCDataChannel* RTCPeerConnection::createDataChannel(
     ScriptState* scriptState,
     String label,
@@ -1232,6 +1258,29 @@ bool RTCPeerConnection::hasLocalStreamWithTrackId(const String& trackId) {
       return true;
   }
   return false;
+}
+
+MediaStreamTrack* RTCPeerConnection::getRemoteTrackById(
+    const String& trackId) const {
+  for (const auto& remoteStream : m_remoteStreams) {
+    MediaStreamTrack* track = remoteStream->getTrackById(trackId);
+    if (track)
+      return track;
+  }
+  return nullptr;
+}
+
+void RTCPeerConnection::removeInactiveReceivers() {
+  std::set<uintptr_t> inactiveReceiverIds;
+  for (uintptr_t id : m_rtpReceivers.keys()) {
+    inactiveReceiverIds.insert(id);
+  }
+  for (const auto& webRtpReceiver : m_peerHandler->getReceivers()) {
+    inactiveReceiverIds.erase(webRtpReceiver->id());
+  }
+  for (uintptr_t id : inactiveReceiverIds) {
+    m_rtpReceivers.erase(id);
+  }
 }
 
 RTCDTMFSender* RTCPeerConnection::createDTMFSender(
@@ -1332,6 +1381,9 @@ void RTCPeerConnection::didRemoveRemoteStream(
   size_t pos = m_remoteStreams.find(stream);
   DCHECK(pos != kNotFound);
   m_remoteStreams.erase(pos);
+
+  // The receivers of removed tracks will have become inactive.
+  removeInactiveReceivers();
 
   scheduleDispatchEvent(
       MediaStreamEvent::create(EventTypeNames::removestream, stream));
@@ -1505,6 +1557,7 @@ void RTCPeerConnection::recordRapporMetrics() {
 DEFINE_TRACE(RTCPeerConnection) {
   visitor->trace(m_localStreams);
   visitor->trace(m_remoteStreams);
+  visitor->trace(m_rtpReceivers);
   visitor->trace(m_dispatchScheduledEventRunner);
   visitor->trace(m_scheduledEvents);
   EventTargetWithInlineData::trace(visitor);

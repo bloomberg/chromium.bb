@@ -41,6 +41,7 @@
 #include "modules/peerconnection/RTCIceCandidate.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/heap/HeapAllocator.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
 #include "public/platform/WebRTCPeerConnectionHandlerClient.h"
@@ -55,6 +56,7 @@ class RTCDataChannel;
 class RTCIceCandidateInitOrRTCIceCandidate;
 class RTCOfferOptions;
 class RTCPeerConnectionErrorCallback;
+class RTCRtpReceiver;
 class RTCSessionDescription;
 class RTCSessionDescriptionCallback;
 class RTCSessionDescriptionInit;
@@ -147,6 +149,8 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
                          MediaStreamTrack* selector = nullptr);
   ScriptPromise getStats(ScriptState*);
 
+  HeapVector<Member<RTCRtpReceiver>> getReceivers();
+
   RTCDataChannel* createDataChannel(ScriptState*,
                                     String label,
                                     const Dictionary& dataChannelDict,
@@ -223,6 +227,11 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   void scheduleDispatchEvent(Event*, std::unique_ptr<BoolFunction>);
   void dispatchScheduledEvent();
   bool hasLocalStreamWithTrackId(const String& trackId);
+  MediaStreamTrack* getRemoteTrackById(const String& trackId) const;
+  // Receivers returned by the handler are in use by the peer connection, a
+  // receiver that is no longer in use is permanently inactive and does not need
+  // to be referenced anymore. Removes such receivers from |m_rtpReceivers|.
+  void removeInactiveReceivers();
 
   void changeSignalingState(WebRTCPeerConnectionHandlerClient::SignalingState);
   void changeIceGatheringState(
@@ -244,8 +253,12 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   ICEGatheringState m_iceGatheringState;
   ICEConnectionState m_iceConnectionState;
 
+  // TODO(hbos): Move away from "addStream" and "removeStream" in favor of
+  // "addTrack" and "removeTrack". Update tracks, senders and receivers on
+  // relevant events. https://crbug.com/705901
   MediaStreamVector m_localStreams;
   MediaStreamVector m_remoteStreams;
+  HeapHashMap<uintptr_t, Member<RTCRtpReceiver>> m_rtpReceivers;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> m_peerHandler;
 

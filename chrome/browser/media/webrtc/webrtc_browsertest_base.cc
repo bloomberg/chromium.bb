@@ -559,3 +559,21 @@ void WebRtcTestBase::SetDefaultVideoCodec(
 void WebRtcTestBase::EnableOpusDtx(content::WebContents* tab) const {
   EXPECT_EQ("ok-forced", ExecuteJavascript("forceOpusDtx()", tab));
 }
+
+void WebRtcTestBase::CreateAndAddStreams(content::WebContents* tab,
+                                         size_t count) const {
+  EXPECT_EQ(
+      "ok-streams-created-and-added",
+      ExecuteJavascript(
+          "createAndAddStreams(" + base::SizeTToString(count) + ")", tab));
+}
+
+void WebRtcTestBase::VerifyRtpReceivers(
+    content::WebContents* tab,
+    base::Optional<size_t> expected_num_tracks) const {
+  std::string javascript =
+      expected_num_tracks ? "verifyRtpReceivers(" +
+                                base::SizeTToString(*expected_num_tracks) + ")"
+                          : "verifyRtpReceivers()";
+  EXPECT_EQ("ok-receivers-verified", ExecuteJavascript(javascript, tab));
+}
