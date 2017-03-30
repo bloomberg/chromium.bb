@@ -43,6 +43,10 @@ const base::Feature kPreferAmpUrlsFeature{"NTPPreferAmpUrls",
 const base::Feature kCategoryRanker{"ContentSuggestionsCategoryRanker",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kPublisherFaviconsFromNewServerFeature{
+    "ContentSuggestionsFaviconsFromNewServer",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kCategoryRankerParameter[] = "category_ranker";
 const char kCategoryRankerConstantRanker[] = "constant";
 const char kCategoryRankerClickBasedRanker[] = "click_based";

@@ -42,6 +42,9 @@ extern const base::Feature kPreferAmpUrlsFeature;
 // Feature to choose a category ranker.
 extern const base::Feature kCategoryRanker;
 
+// Feature to allow the new Google favicon server for fetching publisher icons.
+extern const base::Feature kPublisherFaviconsFromNewServerFeature;
+
 // Parameter and its values for the kCategoryRanker feature flag.
 extern const char kCategoryRankerParameter[];
 extern const char kCategoryRankerConstantRanker[];

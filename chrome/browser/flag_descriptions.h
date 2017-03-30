@@ -2462,6 +2462,14 @@ extern const char kEnableNtpSnippetsVisibilityName[];
 // tabs on the New Tab page.
 extern const char kEnableNtpSnippetsVisibilityDescription[];
 
+// Name for the flag to enable new favicon server for content suggestions on the
+// New Tab Page.
+extern const char kEnableContentSuggestionsNewFaviconServerName[];
+
+// Description for the flag to enable new favicon server for content suggestions
+// on the New Tab Page.
+extern const char kEnableContentSuggestionsNewFaviconServerDescription[];
+
 // Name for the flag to enable server-side suggestions on the New Tab Page.
 extern const char kEnableNtpRemoteSuggestionsName[];
 

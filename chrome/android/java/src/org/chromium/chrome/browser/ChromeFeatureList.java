@@ -125,6 +125,8 @@ public abstract class ChromeFeatureList {
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
     public static final String CHROME_HOME = "ChromeHome";
     public static final String CONSISTENT_OMNIBOX_GEOLOCATION = "ConsistentOmniboxGeolocation";
+    public static final String CONTENT_SUGGESTIONS_FAVICONS_FROM_NEW_SERVER =
+            "ContentSuggestionsFaviconsFromNewServer";
     public static final String CONTEXTUAL_SEARCH_SINGLE_ACTIONS = "ContextualSearchSingleActions";
     public static final String CONTEXTUAL_SEARCH_URL_ACTIONS = "ContextualSearchUrlActions";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
