@@ -33,7 +33,6 @@ namespace content {
 CONTENT_EXPORT bool AddVideoTrackToMediaStream(
     std::unique_ptr<media::VideoCapturerSource> video_source,
     bool is_remote,
-    bool is_readonly,
     blink::WebMediaStream* web_media_stream);
 
 // |sample_rate|, |channel_layout|, and |frames_per_buffer| specify the audio
@@ -46,7 +45,6 @@ CONTENT_EXPORT bool AddAudioTrackToMediaStream(
     media::ChannelLayout channel_layout,
     int frames_per_buffer,
     bool is_remote,
-    bool is_readonly,
     blink::WebMediaStream* web_media_stream);
 
 // On success returns pointer to the current format of the given video track;

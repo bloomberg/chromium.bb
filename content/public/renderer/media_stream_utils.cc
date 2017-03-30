@@ -26,7 +26,6 @@ namespace content {
 bool AddVideoTrackToMediaStream(
     std::unique_ptr<media::VideoCapturerSource> video_source,
     bool is_remote,
-    bool is_readonly,
     blink::WebMediaStream* web_media_stream) {
   DCHECK(video_source.get());
   if (!web_media_stream || web_media_stream->isNull()) {
@@ -59,7 +58,6 @@ bool AddAudioTrackToMediaStream(
     media::ChannelLayout channel_layout,
     int frames_per_buffer,
     bool is_remote,
-    bool is_readonly,
     blink::WebMediaStream* web_media_stream) {
   DCHECK(audio_source.get());
   if (!web_media_stream || web_media_stream->isNull()) {
