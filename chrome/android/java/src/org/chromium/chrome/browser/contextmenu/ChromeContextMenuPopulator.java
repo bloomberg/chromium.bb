@@ -399,6 +399,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             disabledOptions.add(ContextMenuItem.OPEN_IN_OTHER_WINDOW);
             disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_TAB);
             disabledOptions.add(ContextMenuItem.OPEN_IN_INCOGNITO_TAB);
+            disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
+            disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
         }
 
         if (MailTo.isMailTo(params.getLinkUrl())) {
