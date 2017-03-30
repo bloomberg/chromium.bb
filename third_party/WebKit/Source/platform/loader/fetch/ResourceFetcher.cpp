@@ -302,20 +302,19 @@ static const int kMaxValidatedURLsSize = 10000;
 void ResourceFetcher::requestLoadStarted(unsigned long identifier,
                                          Resource* resource,
                                          const FetchRequest& request,
-                                         ResourceLoadStartType type,
+                                         RevalidationPolicy policy,
                                          bool isStaticData) {
-  if (type == ResourceLoadingFromCache &&
-      resource->getStatus() == ResourceStatus::Cached &&
+  if (policy == Use && resource->getStatus() == ResourceStatus::Cached &&
       !m_validatedURLs.contains(resource->url())) {
-    context().dispatchDidLoadResourceFromMemoryCache(
-        identifier, resource, request.resourceRequest().frameType(),
-        request.resourceRequest().requestContext());
+    // Loaded from MemoryCache.
+    didLoadResourceFromMemoryCache(identifier, resource,
+                                   request.resourceRequest());
   }
 
   if (isStaticData)
     return;
 
-  if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() &&
+  if (policy == Use && !resource->stillNeedsLoad() &&
       !m_validatedURLs.contains(request.resourceRequest().url())) {
     // Resources loaded from memory cache should be reported the first time
     // they're used.
@@ -334,6 +333,30 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
     m_validatedURLs.clear();
   }
   m_validatedURLs.insert(request.resourceRequest().url());
+}
+
+void ResourceFetcher::didLoadResourceFromMemoryCache(
+    unsigned long identifier,
+    Resource* resource,
+    const ResourceRequest& originalResourceRequest) {
+  ResourceRequest resourceRequest(resource->url());
+  resourceRequest.setFrameType(originalResourceRequest.frameType());
+  resourceRequest.setRequestContext(originalResourceRequest.requestContext());
+  context().dispatchDidLoadResourceFromMemoryCache(identifier, resourceRequest,
+                                                   resource->response());
+  context().dispatchWillSendRequest(identifier, resourceRequest,
+                                    ResourceResponse() /* redirects */,
+                                    resource->options().initiatorInfo);
+  context().dispatchDidReceiveResponse(
+      identifier, resource->response(), resourceRequest.frameType(),
+      resourceRequest.requestContext(), resource,
+      FetchContext::ResourceResponseType::kFromMemoryCache);
+
+  if (resource->encodedSize() > 0)
+    context().dispatchDidReceiveData(identifier, 0, resource->encodedSize());
+
+  context().dispatchDidFinishLoading(identifier, 0, 0,
+                                     resource->response().decodedBodyLength());
 }
 
 static std::unique_ptr<TracedValue> urlForTraceEvent(const KURL& url) {
@@ -619,10 +642,7 @@ Resource* ResourceFetcher::requestResource(
 
   // If only the fragment identifiers differ, it is the same resource.
   DCHECK(equalIgnoringFragmentIdentifier(resource->url(), request.url()));
-  requestLoadStarted(
-      identifier, resource, request,
-      policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork,
-      isStaticData);
+  requestLoadStarted(identifier, resource, request, policy, isStaticData);
   m_documentResources.set(
       MemoryCache::removeFragmentIdentifierIfNeeded(request.url()), resource);
 
@@ -1507,8 +1527,7 @@ void ResourceFetcher::emulateLoadStartedForInspector(
                        resource->lastResourceRequest().url(), request.options(),
                        SecurityViolationReportingPolicy::Report,
                        request.getOriginRestriction());
-  requestLoadStarted(resource->identifier(), resource, request,
-                     ResourceLoadingFromCache);
+  requestLoadStarted(resource->identifier(), resource, request, Use);
 }
 
 ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()

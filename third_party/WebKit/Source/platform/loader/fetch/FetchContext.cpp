@@ -73,15 +73,15 @@ void FetchContext::dispatchWillSendRequest(unsigned long,
 
 void FetchContext::dispatchDidLoadResourceFromMemoryCache(
     unsigned long,
-    Resource*,
-    WebURLRequest::FrameType,
-    WebURLRequest::RequestContext) {}
+    const ResourceRequest&,
+    const ResourceResponse&) {}
 
 void FetchContext::dispatchDidReceiveResponse(unsigned long,
                                               const ResourceResponse&,
                                               WebURLRequest::FrameType,
                                               WebURLRequest::RequestContext,
-                                              Resource*) {}
+                                              Resource*,
+                                              ResourceResponseType) {}
 
 void FetchContext::dispatchDidReceiveData(unsigned long, const char*, int) {}
 

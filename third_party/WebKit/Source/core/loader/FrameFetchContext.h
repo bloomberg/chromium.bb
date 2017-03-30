@@ -87,16 +87,15 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
       ResourceRequest&,
       const ResourceResponse& redirectResponse,
       const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
-  void dispatchDidLoadResourceFromMemoryCache(
-      unsigned long identifier,
-      Resource*,
-      WebURLRequest::FrameType,
-      WebURLRequest::RequestContext) override;
+  void dispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
+                                              const ResourceRequest&,
+                                              const ResourceResponse&) override;
   void dispatchDidReceiveResponse(unsigned long identifier,
                                   const ResourceResponse&,
                                   WebURLRequest::FrameType,
                                   WebURLRequest::RequestContext,
-                                  Resource*) override;
+                                  Resource*,
+                                  ResourceResponseType) override;
   void dispatchDidReceiveData(unsigned long identifier,
                               const char* data,
                               int dataLength) override;

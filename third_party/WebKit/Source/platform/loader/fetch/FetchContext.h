@@ -105,17 +105,16 @@ class PLATFORM_EXPORT FetchContext
       ResourceRequest&,
       const ResourceResponse& redirectResponse,
       const FetchInitiatorInfo& = FetchInitiatorInfo());
-
-  virtual void dispatchDidLoadResourceFromMemoryCache(
-      unsigned long identifier,
-      Resource*,
-      WebURLRequest::FrameType,
-      WebURLRequest::RequestContext);
+  virtual void dispatchDidLoadResourceFromMemoryCache(unsigned long identifier,
+                                                      const ResourceRequest&,
+                                                      const ResourceResponse&);
+  enum class ResourceResponseType { kNotFromMemoryCache, kFromMemoryCache };
   virtual void dispatchDidReceiveResponse(unsigned long identifier,
                                           const ResourceResponse&,
                                           WebURLRequest::FrameType,
                                           WebURLRequest::RequestContext,
-                                          Resource*);
+                                          Resource*,
+                                          ResourceResponseType);
   virtual void dispatchDidReceiveData(unsigned long identifier,
                                       const char* data,
                                       int dataLength);

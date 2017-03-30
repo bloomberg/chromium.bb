@@ -123,10 +123,6 @@ class PLATFORM_EXPORT ResourceFetcher
   void handleLoaderError(Resource*, const ResourceError&);
   bool isControlledByServiceWorker() const;
 
-  enum ResourceLoadStartType {
-    ResourceLoadingFromNetwork,
-    ResourceLoadingFromCache
-  };
   static const ResourceLoaderOptions& defaultResourceOptions();
 
   String getCacheIdentifier() const;
@@ -204,8 +200,12 @@ class PLATFORM_EXPORT ResourceFetcher
   void requestLoadStarted(unsigned long identifier,
                           Resource*,
                           const FetchRequest&,
-                          ResourceLoadStartType,
+                          RevalidationPolicy,
                           bool isStaticData = false);
+
+  void didLoadResourceFromMemoryCache(unsigned long identifier,
+                                      Resource*,
+                                      const ResourceRequest&);
 
   bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
 

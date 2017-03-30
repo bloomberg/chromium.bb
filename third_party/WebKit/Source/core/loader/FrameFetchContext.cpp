@@ -482,10 +482,50 @@ void FrameFetchContext::dispatchDidReceiveResponse(
     const ResourceResponse& response,
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext,
-    Resource* resource) {
-  dispatchDidReceiveResponseInternal(identifier, response, frameType,
-                                     requestContext, resource,
-                                     LinkLoader::LoadResourcesAndPreconnect);
+    Resource* resource,
+    ResourceResponseType responseType) {
+  if (responseType == ResourceResponseType::kFromMemoryCache) {
+    // Note: probe::willSendRequest needs to precede before this probe method.
+    probe::markResourceAsCached(frame(), identifier);
+    if (response.isNull())
+      return;
+  }
+
+  MixedContentChecker::checkMixedPrivatePublic(frame(),
+                                               response.remoteIPAddress());
+  LinkLoader::CanLoadResources resourceLoadingPolicy =
+      responseType == ResourceResponseType::kFromMemoryCache
+          ? LinkLoader::DoNotLoadResources
+          : LinkLoader::LoadResourcesAndPreconnect;
+  if (m_documentLoader &&
+      m_documentLoader ==
+          m_documentLoader->frame()->loader().provisionalDocumentLoader()) {
+    FrameClientHintsPreferencesContext hintsContext(frame());
+    m_documentLoader->clientHintsPreferences()
+        .updateFromAcceptClientHintsHeader(
+            response.httpHeaderField(HTTPNames::Accept_CH), &hintsContext);
+    // When response is received with a provisional docloader, the resource
+    // haven't committed yet, and we cannot load resources, only preconnect.
+    resourceLoadingPolicy = LinkLoader::DoNotLoadResources;
+  }
+  LinkLoader::loadLinksFromHeader(
+      response.httpHeaderField(HTTPNames::Link), response.url(),
+      frame()->document(), NetworkHintsInterfaceImpl(), resourceLoadingPolicy,
+      LinkLoader::LoadAll, nullptr);
+
+  if (response.hasMajorCertificateErrors()) {
+    MixedContentChecker::handleCertificateError(frame(), response, frameType,
+                                                requestContext);
+  }
+
+  frame()->loader().progress().incrementProgress(identifier, response);
+  localFrameClient()->dispatchDidReceiveResponse(response);
+  DocumentLoader* documentLoader = masterDocumentLoader();
+  probe::didReceiveResourceResponse(frame(), identifier, documentLoader,
+                                    response, resource);
+  // It is essential that inspector gets resource response BEFORE console.
+  frame()->console().reportResourceResponseReceived(documentLoader, identifier,
+                                                    response);
 }
 
 void FrameFetchContext::dispatchDidReceiveData(unsigned long identifier,
@@ -535,28 +575,10 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier,
 
 void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
     unsigned long identifier,
-    Resource* resource,
-    WebURLRequest::FrameType frameType,
-    WebURLRequest::RequestContext requestContext) {
-  ResourceRequest request(resource->url());
-  request.setFrameType(frameType);
-  request.setRequestContext(requestContext);
-  localFrameClient()->dispatchDidLoadResourceFromMemoryCache(
-      request, resource->response());
-  dispatchWillSendRequest(identifier, request, ResourceResponse(),
-                          resource->options().initiatorInfo);
-  probe::markResourceAsCached(frame(), identifier);
-  if (!resource->response().isNull()) {
-    dispatchDidReceiveResponseInternal(identifier, resource->response(),
-                                       frameType, requestContext, resource,
-                                       LinkLoader::DoNotLoadResources);
-  }
-
-  if (resource->encodedSize() > 0)
-    dispatchDidReceiveData(identifier, 0, resource->encodedSize());
-
-  dispatchDidFinishLoading(identifier, 0, 0,
-                           resource->response().decodedBodyLength());
+    const ResourceRequest& resourceRequest,
+    const ResourceResponse& resourceResponse) {
+  localFrameClient()->dispatchDidLoadResourceFromMemoryCache(resourceRequest,
+                                                             resourceResponse);
 }
 
 bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const {
@@ -1030,46 +1052,6 @@ ResourceLoadPriority FrameFetchContext::modifyPriorityForExperiments(
 
 RefPtr<WebTaskRunner> FrameFetchContext::loadingTaskRunner() const {
   return frame()->frameScheduler()->loadingTaskRunner();
-}
-
-void FrameFetchContext::dispatchDidReceiveResponseInternal(
-    unsigned long identifier,
-    const ResourceResponse& response,
-    WebURLRequest::FrameType frameType,
-    WebURLRequest::RequestContext requestContext,
-    Resource* resource,
-    LinkLoader::CanLoadResources resourceLoadingPolicy) {
-  MixedContentChecker::checkMixedPrivatePublic(frame(),
-                                               response.remoteIPAddress());
-  if (m_documentLoader &&
-      m_documentLoader ==
-          m_documentLoader->frame()->loader().provisionalDocumentLoader()) {
-    FrameClientHintsPreferencesContext hintsContext(frame());
-    m_documentLoader->clientHintsPreferences()
-        .updateFromAcceptClientHintsHeader(
-            response.httpHeaderField(HTTPNames::Accept_CH), &hintsContext);
-    // When response is received with a provisional docloader, the resource
-    // haven't committed yet, and we cannot load resources, only preconnect.
-    resourceLoadingPolicy = LinkLoader::DoNotLoadResources;
-  }
-  LinkLoader::loadLinksFromHeader(
-      response.httpHeaderField(HTTPNames::Link), response.url(),
-      frame()->document(), NetworkHintsInterfaceImpl(), resourceLoadingPolicy,
-      LinkLoader::LoadAll, nullptr);
-
-  if (response.hasMajorCertificateErrors()) {
-    MixedContentChecker::handleCertificateError(frame(), response, frameType,
-                                                requestContext);
-  }
-
-  frame()->loader().progress().incrementProgress(identifier, response);
-  localFrameClient()->dispatchDidReceiveResponse(response);
-  DocumentLoader* documentLoader = masterDocumentLoader();
-  probe::didReceiveResourceResponse(frame(), identifier, documentLoader,
-                                    response, resource);
-  // It is essential that inspector gets resource response BEFORE console.
-  frame()->console().reportResourceResponseReceived(documentLoader, identifier,
-                                                    response);
 }
 
 DEFINE_TRACE(FrameFetchContext) {

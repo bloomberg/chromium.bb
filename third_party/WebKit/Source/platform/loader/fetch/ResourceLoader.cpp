@@ -373,7 +373,8 @@ void ResourceLoader::didReceiveResponse(
   context().dispatchDidReceiveResponse(
       m_resource->identifier(), response,
       m_resource->resourceRequest().frameType(),
-      m_resource->resourceRequest().requestContext(), m_resource);
+      m_resource->resourceRequest().requestContext(), m_resource,
+      FetchContext::ResourceResponseType::kNotFromMemoryCache);
 
   m_resource->responseReceived(response, std::move(handle));
   if (!m_resource->loader())

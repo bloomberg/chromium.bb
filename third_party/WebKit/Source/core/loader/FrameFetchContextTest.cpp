@@ -754,6 +754,7 @@ TEST_F(FrameFetchContextTest, ChangeDataSaverConfig) {
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        DispatchDidLoadResourceFromMemoryCache) {
   ResourceRequest resourceRequest(url);
+  resourceRequest.setRequestContext(WebURLRequest::RequestContextImage);
   Resource* resource = MockResource::create(resourceRequest);
   EXPECT_CALL(
       *client,
@@ -765,8 +766,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
                                            WebURLRequest::RequestContextImage)),
           ResourceResponse()));
   fetchContext->dispatchDidLoadResourceFromMemoryCache(
-      createUniqueIdentifier(), resource, WebURLRequest::FrameTypeNone,
-      WebURLRequest::RequestContextImage);
+      createUniqueIdentifier(), resourceRequest, resource->response());
 }
 
 // Tests that when a resource with certificate errors is loaded from the memory
@@ -774,6 +774,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
 TEST_F(FrameFetchContextMockedLocalFrameClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resourceRequest(url);
+  resourceRequest.setRequestContext(WebURLRequest::RequestContextImage);
   ResourceResponse response;
   response.setURL(url);
   response.setHasMajorCertificateErrors(true);
@@ -781,8 +782,7 @@ TEST_F(FrameFetchContextMockedLocalFrameClientTest,
   resource->setResponse(response);
   EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url));
   fetchContext->dispatchDidLoadResourceFromMemoryCache(
-      createUniqueIdentifier(), resource, WebURLRequest::FrameTypeNone,
-      WebURLRequest::RequestContextImage);
+      createUniqueIdentifier(), resourceRequest, resource->response());
 }
 
 TEST_F(FrameFetchContextTest, SetIsExternalRequestForPublicDocument) {
