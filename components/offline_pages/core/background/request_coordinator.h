@@ -62,6 +62,12 @@ class RequestCoordinator : public KeyedService,
     DISABLED_FOR_OFFLINER,
   };
 
+  enum class RequestCoordinatorState {
+    IDLE,
+    PICKING,
+    OFFLINING,
+  };
+
   // Describes the parameters to control how to save a page when system
   // conditions allow.
   struct SavePageLaterParams {
@@ -204,11 +210,8 @@ class RequestCoordinator : public KeyedService,
     return last_offlining_status_;
   }
 
-  bool is_busy() { return is_busy_; }
-
-  // Returns whether processing is starting (before it is decided to actually
-  // process a request (is_busy()) at this time or not.
-  bool is_starting() { return is_starting_; }
+  // Return the state of the request coordinator.
+  RequestCoordinatorState state() { return state_; }
 
   // Tracks whether the last offlining attempt got canceled.  This is reset by
   // the next call to start processing.
@@ -406,13 +409,8 @@ class RequestCoordinator : public KeyedService,
   // Cached value of whether low end device. Overwritable for testing.
   bool is_low_end_device_;
 
-  // The offliner can only handle one request at a time - if the offliner is
-  // busy, prevent other requests.  This flag marks whether the offliner is in
-  // use.
-  bool is_busy_;
-  // There is more than one path to start processing so this flag is used
-  // to avoid race conditions before is_busy_ is established.
-  bool is_starting_;
+  // Current state of the request coordinator.
+  RequestCoordinatorState state_;
   // Identifies the type of current processing window or if processing stopped.
   ProcessingWindowState processing_state_;
   // True if we should use the test device conditions instead of actual
