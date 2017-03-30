@@ -17,6 +17,15 @@ Polymer({
 
     /** @private */
     origin_: String,
+
+    /**
+     * Whether the current input is invalid.
+     * @private
+     */
+    invalid_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {!settings.SiteSettingsPrefsBrowserProxy} */
@@ -68,8 +77,13 @@ Polymer({
 
   /** @private */
   validate_: function() {
+    if (this.$$('paper-input').value.trim() == '') {
+      this.invalid_ = true;
+      return;
+    }
+
     this.browserProxy_.isPatternValid(this.origin_).then(function(isValid) {
-      this.$.actionButton.disabled = !isValid;
+      this.invalid_ = !isValid;
     }.bind(this));
   },
 });

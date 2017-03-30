@@ -55,7 +55,16 @@ Polymer({
    * @private
    */
   validate_: function() {
+    // If input is empty, disable the action button, but don't show the red
+    // invalid message.
+    if (this.$.site.value.trim() == '') {
+      this.$.site.invalid = false;
+      this.$.add.disabled = true;
+      return;
+    }
+
     this.browserProxy.isPatternValid(this.site_).then(function(isValid) {
+      this.$.site.invalid = !isValid;
       this.$.add.disabled = !isValid;
     }.bind(this));
   },

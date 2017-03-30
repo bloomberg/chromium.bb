@@ -1059,7 +1059,8 @@ cr.define('site_list', function() {
   }
 
   suite('EditExceptionDialog', function() {
-    var dialog;
+    /** @type {SettingsEditExceptionDialogElement} */ var dialog;
+
     /**
      * The dialog tests don't call |getExceptionList| so the exception needs to
      * be processes as a |SiteSettingsPref|.
@@ -1088,22 +1089,32 @@ cr.define('site_list', function() {
       dialog.remove();
     });
 
-    test('action button disabled on invalid input', function() {
+    test('invalid input', function() {
       var input = dialog.$$('paper-input');
       assertTrue(!!input);
+      assertFalse(input.invalid);
+
       var actionButton = dialog.$.actionButton;
       assertTrue(!!actionButton);
       assertFalse(actionButton.disabled);
 
+      // Simulate user input of whitespace only text.
+      input.value = '  ';
+      input.fire('input');
+      Polymer.dom.flush();
+      assertTrue(actionButton.disabled);
+      assertTrue(input.invalid);
+
+      // Simulate user input of invalid text.
       browserProxy.setIsPatternValid(false);
       var expectedPattern = 'foobarbaz';
-      // Simulate user input.
       input.value = expectedPattern;
       input.fire('input');
 
       return browserProxy.whenCalled('isPatternValid').then(function(pattern) {
         assertEquals(expectedPattern, pattern);
         assertTrue(actionButton.disabled);
+        assertTrue(input.invalid);
       });
     });
 
@@ -1137,6 +1148,48 @@ cr.define('site_list', function() {
 
             assertFalse(dialog.$.dialog.open);
           });
+    });
+  });
+
+  suite('AddExceptionDialog', function() {
+    /** @type {AddSiteDialogElement} */ var dialog;
+
+    setup(function() {
+      browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+      settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+      PolymerTest.clearBody();
+      dialog = document.createElement('add-site-dialog');
+      dialog.category = settings.ContentSettingsTypes.GEOLOCATION;
+      dialog.contentSetting = settings.PermissionValues.ALLOW;
+      document.body.appendChild(dialog);
+    });
+
+    teardown(function() {
+      dialog.remove();
+    });
+
+    test('invalid input', function() {
+      // Initially the action button should be disabled, but the error warning
+      // should not be shown for an empty input.
+      var input = dialog.$$('paper-input');
+      assertTrue(!!input);
+      assertFalse(input.invalid);
+
+      var actionButton = dialog.$.add;
+      assertTrue(!!actionButton);
+      assertTrue(actionButton.disabled);
+
+      // Simulate user input of invalid text.
+      browserProxy.setIsPatternValid(false);
+      var expectedPattern = 'foobarbaz';
+      input.value = expectedPattern;
+      input.fire('input');
+
+      return browserProxy.whenCalled('isPatternValid').then(function(pattern) {
+        assertEquals(expectedPattern, pattern);
+        assertTrue(actionButton.disabled);
+        assertTrue(input.invalid);
+      });
     });
   });
 
