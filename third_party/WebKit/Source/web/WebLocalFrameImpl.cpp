@@ -158,8 +158,6 @@
 #include "core/style/StyleInheritedData.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
-#include "modules/app_banner/AppBannerController.h"
-#include "modules/installation/InstallationServiceImpl.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/WebFrameScheduler.h"
@@ -182,8 +180,6 @@
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/InterfaceRegistry.h"
 #include "public/platform/WebDoubleSize.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
@@ -1628,14 +1624,6 @@ void WebLocalFrameImpl::initializeCoreFrame(Page& page,
       frame()->document()->getSecurityOrigin()->grantUniversalAccess();
     }
 
-    // TODO(dominickn): This interface should be document-scoped rather than
-    // frame-scoped, as the resulting banner event is dispatched to
-    // frame()->document().
-    frame()->interfaceRegistry()->addInterface(WTF::bind(
-        &AppBannerController::bindMojoRequest, wrapWeakPersistent(frame())));
-
-    frame()->interfaceRegistry()->addInterface(WTF::bind(
-        &InstallationServiceImpl::create, wrapWeakPersistent(frame())));
     if (!owner) {
       // This trace event is needed to detect the main frame of the
       // renderer in telemetry metrics. See crbug.com/692112#c11.

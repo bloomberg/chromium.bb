@@ -8,6 +8,7 @@
 #include "core/EventTypeNames.h"
 #include "core/css/CSSPaintImageGenerator.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "modules/EventModulesFactory.h"
@@ -15,17 +16,20 @@
 #include "modules/EventTargetModulesNames.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/app_banner/AppBannerController.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
+#include "modules/installation/InstallationServiceImpl.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 #include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/InterfaceRegistry.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
@@ -75,6 +79,16 @@ void ModulesInitializer::initialize() {
   OffscreenCanvas::registerRenderingContextFactory(
       WTF::makeUnique<WebGL2RenderingContext::Factory>());
 
+  // Mojo Interfaces registered with LocalFrame
+  LocalFrame::registerInitializationCallback([](LocalFrame* frame) {
+    frame->interfaceRegistry()->addInterface(
+        WTF::bind(&InstallationServiceImpl::create, wrapWeakPersistent(frame)));
+    // TODO(dominickn): This interface should be document-scoped rather than
+    // frame-scoped, as the resulting banner event is dispatched to
+    // frame()->document().
+    frame->interfaceRegistry()->addInterface(WTF::bind(
+        &AppBannerController::bindMojoRequest, wrapWeakPersistent(frame)));
+  });
   ASSERT(isInitialized());
 }
 

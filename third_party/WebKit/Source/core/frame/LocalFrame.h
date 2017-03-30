@@ -225,6 +225,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   PerformanceMonitor* performanceMonitor() { return m_performanceMonitor; }
 
+  using FrameInitCallback = void (*)(LocalFrame*);
+  // Allows for the registration of a callback that is invoked whenever a new
+  // LocalFrame is initialized. Callbacks are executed in the order that they
+  // were added using registerInitializationCallback, and there are no checks
+  // for adding a callback multiple times.
+  static void registerInitializationCallback(FrameInitCallback);
+
  private:
   friend class FrameNavigationDisabler;
 
@@ -274,10 +281,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceProvider* const m_interfaceProvider;
   InterfaceRegistry* const m_interfaceRegistry;
 };
-
-inline void LocalFrame::init() {
-  m_loader.init();
-}
 
 inline FrameLoader& LocalFrame::loader() const {
   return m_loader;

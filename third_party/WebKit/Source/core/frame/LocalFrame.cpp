@@ -240,6 +240,13 @@ inline float parentTextZoomFactor(LocalFrame* frame) {
   return toLocalFrame(parent)->textZoomFactor();
 }
 
+using FrameInitCallbackVector = WTF::Vector<LocalFrame::FrameInitCallback>;
+FrameInitCallbackVector& getInitializationVector() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(FrameInitCallbackVector, initializationVector,
+                                  new FrameInitCallbackVector());
+  return initializationVector;
+}
+
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -257,6 +264,17 @@ LocalFrame* LocalFrame::create(LocalFrameClient* client,
                         : InterfaceRegistry::getEmptyInterfaceRegistry());
   probe::frameAttachedToParent(frame);
   return frame;
+}
+
+void LocalFrame::init() {
+  // Initialization code needs to run first as the call to m_loader.init() can
+  // actually lead to this object being freed!
+  DCHECK(!getInitializationVector().isEmpty());
+  for (auto& initilizationCallback : getInitializationVector()) {
+    initilizationCallback(this);
+  }
+
+  m_loader.init();
 }
 
 void LocalFrame::setView(FrameView* view) {
@@ -829,6 +847,10 @@ String LocalFrame::layerTreeAsText(unsigned flags) const {
 
 bool LocalFrame::shouldThrottleRendering() const {
   return view() && view()->shouldThrottleRendering();
+}
+
+void LocalFrame::registerInitializationCallback(FrameInitCallback callback) {
+  getInitializationVector().push_back(callback);
 }
 
 inline LocalFrame::LocalFrame(LocalFrameClient* client,
