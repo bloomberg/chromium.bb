@@ -727,11 +727,12 @@ struct kernel_statfs {
 #endif
 #ifndef MAKE_PROCESS_CPUCLOCK
 #define MAKE_PROCESS_CPUCLOCK(pid, clock)                                     \
-        ((~(int)(pid) << 3) | (int)(clock))
+        ((int)(~(unsigned)(pid) << 3) | (int)(clock))
 #endif
 #ifndef MAKE_THREAD_CPUCLOCK
 #define MAKE_THREAD_CPUCLOCK(tid, clock)                                      \
-        ((~(int)(tid) << 3) | (int)((clock) | CPUCLOCK_PERTHREAD_MASK))
+        ((int)(~(unsigned)(tid) << 3) |                                       \
+         (int)((clock) | CPUCLOCK_PERTHREAD_MASK))
 #endif
 
 #ifndef FUTEX_WAIT
