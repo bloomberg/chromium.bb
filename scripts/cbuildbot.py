@@ -479,7 +479,13 @@ def _CreateParser():
       parser,
       'Remote Trybot Options (--remote)')
 
-  group.add_option('--use-buildbucket', action='store_true', default=False,
+  # TODO(dgarrett): Remove after a reasonable delay.
+  group.add_option('--use-buildbucket', action='store_true',
+                   dest='deprecated_use_buildbucket',
+                   help='Deprecated option. Ignored.')
+
+  group.add_option('--do-not-use-buildbucket', action='store_false',
+                   dest='use_buildbucket', default=True,
                    help='Use buildbucket instead of git to request'
                         'the tryjob(s).')
 
@@ -980,6 +986,9 @@ def ParseCommandLine(parser, argv):
   # Strip out null arguments.
   # TODO(rcui): Remove when buildbot is fixed
   args = [arg for arg in args if arg]
+
+  if options.deprecated_use_buildbucket:
+    logging.warning('--use-buildbucket is deprecated, and ignored.')
 
   if options.output_api_version:
     print(constants.REEXEC_API_VERSION)
