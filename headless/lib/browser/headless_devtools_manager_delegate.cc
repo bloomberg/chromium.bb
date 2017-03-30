@@ -71,14 +71,16 @@ std::unique_ptr<base::DictionaryValue> CreateInvalidParamResponse(
 HeadlessDevToolsManagerDelegate::HeadlessDevToolsManagerDelegate(
     base::WeakPtr<HeadlessBrowserImpl> browser)
     : browser_(std::move(browser)) {
-  command_map_["Target.createTarget"] =
-      &HeadlessDevToolsManagerDelegate::CreateTarget;
-  command_map_["Target.closeTarget"] =
-      &HeadlessDevToolsManagerDelegate::CloseTarget;
+  command_map_["Target.createTarget"] = base::Bind(
+      &HeadlessDevToolsManagerDelegate::CreateTarget, base::Unretained(this));
+  command_map_["Target.closeTarget"] = base::Bind(
+      &HeadlessDevToolsManagerDelegate::CloseTarget, base::Unretained(this));
   command_map_["Target.createBrowserContext"] =
-      &HeadlessDevToolsManagerDelegate::CreateBrowserContext;
+      base::Bind(&HeadlessDevToolsManagerDelegate::CreateBrowserContext,
+                 base::Unretained(this));
   command_map_["Target.disposeBrowserContext"] =
-      &HeadlessDevToolsManagerDelegate::DisposeBrowserContext;
+      base::Bind(&HeadlessDevToolsManagerDelegate::DisposeBrowserContext,
+                 base::Unretained(this));
 }
 
 HeadlessDevToolsManagerDelegate::~HeadlessDevToolsManagerDelegate() {}
@@ -93,18 +95,16 @@ base::DictionaryValue* HeadlessDevToolsManagerDelegate::HandleCommand(
 
   int id;
   std::string method;
-  if (!command->GetInteger("id", &id) ||
-      !command->GetString("method", &method)) {
+  if (!command->GetInteger("id", &id) || !command->GetString("method", &method))
     return nullptr;
-  }
+
   auto find_it = command_map_.find(method);
   if (find_it == command_map_.end())
     return nullptr;
-  CommandMemberFnPtr command_fn_ptr = find_it->second;
+
   const base::DictionaryValue* params = nullptr;
   command->GetDictionary("params", &params);
-  std::unique_ptr<base::DictionaryValue> cmd_result(
-      ((this)->*command_fn_ptr)(id, params));
+  auto cmd_result = find_it->second.Run(id, params);
   return cmd_result.release();
 }
 

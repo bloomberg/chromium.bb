@@ -5,14 +5,14 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_MANAGER_DELEGATE_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_MANAGER_DELEGATE_H_
 
-#include "content/public/browser/devtools_manager_delegate.h"
-
 #include <map>
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 
 namespace headless {
 class HeadlessBrowserImpl;
@@ -48,11 +48,11 @@ class HeadlessDevToolsManagerDelegate
 
   base::WeakPtr<HeadlessBrowserImpl> browser_;
 
-  using CommandMemberFnPtr = std::unique_ptr<base::DictionaryValue> (
-      HeadlessDevToolsManagerDelegate::*)(int command_id,
-                                          const base::DictionaryValue* params);
-
-  std::map<std::string, CommandMemberFnPtr> command_map_;
+  using CommandMemberCallback =
+      base::Callback<std::unique_ptr<base::DictionaryValue>(
+          int command_id,
+          const base::DictionaryValue* params)>;
+  std::map<std::string, CommandMemberCallback> command_map_;
 };
 
 }  // namespace headless
