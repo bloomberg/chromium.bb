@@ -128,6 +128,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
+        UiUtils.hideKeyboard(mSearchEditText);
     }
 
     /**
