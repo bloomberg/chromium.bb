@@ -203,7 +203,7 @@ CONTENT OF TEST
 </body>
 </html>
 """
-        parser = TestParser('/some/csswg-test/path/somefile.html', MockHost())
+        parser = TestParser('/some/wpt/css/path/somefile.html', MockHost())
         test_info = parser.analyze_test(test_contents=test_html)
         self.assertIsNotNone(test_info, 'test_info should not be None')
         self.assertIn('test', test_info.keys(), 'should find a test file')

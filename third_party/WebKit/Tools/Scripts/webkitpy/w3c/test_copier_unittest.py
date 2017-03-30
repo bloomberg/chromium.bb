@@ -118,7 +118,6 @@ class TestCopierTest(LoggingTestCase):
                 {
                     'copy_list': [
                         {'src': '/blink/w3c/dir1/ref-file.html', 'dest': 'ref-file.html'},
-                        {'src': '/blink/w3c/dir1/ref-file.html', 'dest': 'my-ref-test-expected.html', 'reference_support_info': {}},
                         {'src': '/blink/w3c/dir1/my-ref-test.html', 'dest': 'my-ref-test.html'}
                     ],
                     'dirname': '/blink/w3c/dir1',
@@ -143,22 +142,22 @@ class TestCopierTest(LoggingTestCase):
         ])
 
     def test_should_try_to_convert_positive_cases(self):
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.css', 'LayoutTests/external/csswg-test/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.htm', 'LayoutTests/external/csswg-test/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.html', 'LayoutTests/external/csswg-test/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.xht', 'LayoutTests/external/csswg-test/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.xhtml', 'LayoutTests/external/csswg-test/x'))
+        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.css', 'LayoutTests/external/wpt/css/x'))
+        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.htm', 'LayoutTests/external/wpt/css/x'))
+        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.html', 'LayoutTests/external/wpt/css/x'))
+        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.xht', 'LayoutTests/external/wpt/css/x'))
+        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.xhtml', 'LayoutTests/external/wpt/css/x'))
 
     def test_should_not_try_to_convert_js_test(self):
-        self.assertFalse(TestCopier.should_try_to_convert({'is_jstest': True}, 'foo.html', 'LayoutTests/external/csswg-test/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({'is_jstest': True}, 'foo.html', 'LayoutTests/external/wpt/css/x'))
 
     def test_should_not_try_to_convert_test_in_wpt(self):
         self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.html', 'LayoutTests/external/wpt/foo'))
 
     def test_should_not_try_to_convert_other_file_types(self):
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.bar', 'LayoutTests/external/csswg-test/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.js', 'LayoutTests/external/csswg-test/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.md', 'LayoutTests/external/csswg-test/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.png', 'LayoutTests/external/csswg-test/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.svg', 'LayoutTests/external/csswg-test/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.svgz', 'LayoutTests/external/csswg-test/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.bar', 'LayoutTests/external/wpt/css/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.js', 'LayoutTests/external/wpt/css/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.md', 'LayoutTests/external/wpt/css/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.png', 'LayoutTests/external/wpt/css/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.svg', 'LayoutTests/external/wpt/css/x'))
+        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.svgz', 'LayoutTests/external/wpt/css/x'))

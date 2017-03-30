@@ -125,8 +125,8 @@ class TestParser(object):
         elif self.is_jstest():
             test_info = {'test': self.filename, 'jstest': True}
 
-        elif 'csswg-test' in self.filename:
-            # In csswg-test, all other files should be manual tests.
+        elif re.search(r'[/\\]wpt[/\\]css[/\\]', self.filename):
+            # In the former csswg-test tests, all other files should be manual tests.
             # This function isn't called for non-test files in support/.
             test_info = {'test': self.filename}
 

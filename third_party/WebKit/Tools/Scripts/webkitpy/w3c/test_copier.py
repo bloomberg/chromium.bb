@@ -50,8 +50,7 @@ class TestCopier(object):
 
         Args:
             host: An instance of Host.
-            source_repo_path: Path to the local checkout of a
-                web-platform-tests or csswg-test repository.
+            source_repo_path: Path to the local checkout of web-platform-tests.
             dest_dir_name: The name of the directory under the layout tests
                 directory where imported tests should be copied to.
                 TODO(qyearsley): This can be made into a constant.
@@ -73,7 +72,6 @@ class TestCopier(object):
                 self.filesystem.basename(self.source_repo_path)))
         self.import_in_place = (self.source_repo_path == self.destination_directory)
         self.dir_above_repo = self.filesystem.dirname(self.source_repo_path)
-        self.is_wpt = self.filesystem.basename(self.source_repo_path) == 'wpt'
 
         self.import_list = []
 
@@ -174,19 +172,6 @@ class TestCopier(object):
                         _log.warning('Skipping: %s', path_full)
                         _log.warning('  Reason: Ref file "%s" was not found.', ref_path_full)
                         continue
-
-                    if not self.is_wpt:
-                        # For csswg-test, we still need to add a ref file
-                        # using WebKit naming conventions. See crbug.com/268729.
-                        # FIXME: Remove this when csswg-test is merged into wpt.
-                        test_basename = self.filesystem.basename(test_info['test'])
-                        ref_file = self.filesystem.splitext(test_basename)[0] + '-expected'
-                        ref_file += self.filesystem.splitext(ref_path_full)[1]
-                        copy_list.append({
-                            'src': test_info['reference'],
-                            'dest': ref_file,
-                            'reference_support_info': test_info['reference_support_info'],
-                        })
 
                     reftests += 1
                     total_tests += 1
@@ -324,7 +309,7 @@ class TestCopier(object):
 
         # Conversion is not necessary for any tests in wpt now; see http://crbug.com/654081.
         # Note, we want to move away from converting files, see http://crbug.com/663773.
-        if re.search(r'[/\\]external[/\\]wpt[/\\]', dest_dir):
+        if not re.search(r'[/\\]external[/\\]wpt[/\\]css[/\\]', dest_dir):
             return False
 
         # Only HTML, XHTML and CSS files should be converted.
