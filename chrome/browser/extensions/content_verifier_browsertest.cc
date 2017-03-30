@@ -126,7 +126,7 @@ class JobDelegate : public ContentVerifyJob::TestDelegate {
         bytes_read_failed_(0),
         done_reading_failed_(0) {}
 
-  virtual ~JobDelegate() {}
+  ~JobDelegate() override {}
 
   void set_id(const ExtensionId& id) { id_ = id; }
   void fail_next_read() { fail_next_read_ = true; }
@@ -189,7 +189,7 @@ class JobObserver : public ContentVerifyJob::TestObserver {
 
   void JobFinished(const std::string& extension_id,
                    const base::FilePath& relative_path,
-                   bool failed) override;
+                   ContentVerifyJob::FailureReason failure_reason) override;
 
  private:
   struct ExpectedResult {
@@ -241,15 +241,16 @@ void JobObserver::JobStarted(const std::string& extension_id,
 
 void JobObserver::JobFinished(const std::string& extension_id,
                               const base::FilePath& relative_path,
-                              bool failed) {
+                              ContentVerifyJob::FailureReason failure_reason) {
   if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
     content::BrowserThread::PostTask(
         creation_thread_, FROM_HERE,
         base::Bind(&JobObserver::JobFinished, base::Unretained(this),
-                   extension_id, relative_path, failed));
+                   extension_id, relative_path, failure_reason));
     return;
   }
-  Result result = failed ? Result::FAILURE : Result::SUCCESS;
+  Result result = failure_reason == ContentVerifyJob::NONE ? Result::SUCCESS
+                                                           : Result::FAILURE;
   bool found = false;
   for (std::list<ExpectedResult>::iterator i = expectations_.begin();
        i != expectations_.end(); ++i) {
@@ -265,7 +266,8 @@ void JobObserver::JobFinished(const std::string& extension_id,
       loop_runner_->Quit();
   } else {
     LOG(WARNING) << "Ignoring unexpected JobFinished " << extension_id << "/"
-                 << relative_path.value() << " failed:" << failed;
+                 << relative_path.value()
+                 << " failure_reason:" << failure_reason;
   }
 }
 

@@ -237,6 +237,20 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
     URLRequestFileJob::SetExtraRequestHeaders(headers);
   }
 
+  void OnOpenComplete(int result) override {
+    if (result < 0) {
+      // This can happen when the file is unreadable (which can happen during
+      // corruption or third-party interaction). We need to be sure to inform
+      // the verification job that we've finished reading so that it can
+      // proceed; see crbug.com/703888.
+      if (verify_job_.get()) {
+        std::string tmp;
+        verify_job_->BytesRead(0, base::string_as_array(&tmp));
+        verify_job_->DoneReading();
+      }
+    }
+  }
+
   void OnSeekComplete(int64_t result) override {
     DCHECK_EQ(seek_position_, 0);
     seek_position_ = result;

@@ -35,11 +35,10 @@ ContentHashReader::ContentHashReader(const std::string& extension_id,
       relative_path_(relative_path),
       key_(key),
       status_(NOT_INITIALIZED),
-      content_exists_(false),
       have_verified_contents_(false),
       have_computed_hashes_(false),
-      block_size_(0) {
-}
+      file_missing_from_verified_contents_(false),
+      block_size_(0) {}
 
 ContentHashReader::~ContentHashReader() {
 }
@@ -50,14 +49,6 @@ bool ContentHashReader::Init() {
   status_ = FAILURE;
   base::FilePath verified_contents_path =
       file_util::GetVerifiedContentsPath(extension_root_);
-
-  // Check that this is a valid resource to verify (i.e., it exists).
-  base::FilePath content_path = extension_root_.Append(relative_path_);
-  if (!base::PathExists(content_path) || base::DirectoryExists(content_path))
-    return false;
-
-  content_exists_ = true;
-
   if (!base::PathExists(verified_contents_path))
     return false;
 
@@ -81,6 +72,15 @@ bool ContentHashReader::Init() {
     return false;
 
   have_computed_hashes_ = true;
+
+  if (!verified_contents.HasTreeHashRoot(relative_path_)) {
+    // Extension is requesting a non-existent resource that does not have an
+    // entry in verified_contents.json. This can happen when an extension sends
+    // XHR to its non-existent resource. This should not result in content
+    // verification failure.
+    file_missing_from_verified_contents_ = true;
+    return false;
+  }
 
   if (!reader.GetHashes(relative_path_, &block_size_, &hashes_) ||
       block_size_ % crypto::kSHA256Length != 0)

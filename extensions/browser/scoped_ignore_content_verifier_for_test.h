@@ -19,7 +19,7 @@ class ScopedIgnoreContentVerifierForTest
     : public ContentVerifyJob::TestDelegate {
  public:
   ScopedIgnoreContentVerifierForTest();
-  ~ScopedIgnoreContentVerifierForTest();
+  ~ScopedIgnoreContentVerifierForTest() override;
 
   // ContentVerifyJob::TestDelegate interface
   ContentVerifyJob::FailureReason BytesRead(const std::string& extension_id,

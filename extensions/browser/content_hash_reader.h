@@ -39,15 +39,17 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   // should likely be discarded.
   bool Init();
 
-  // Indicates whether the content in question exists in the local extension
-  // installation. This may be |false| if Init fails.
-  bool content_exists() const { return content_exists_; }
-
   // These return whether we found valid verified_contents.json /
   // computed_hashes.json files respectively. Note that both of these can be
   // true but we still didn't find an entry for |relative_path_| in them.
   bool have_verified_contents() const { return have_verified_contents_; }
   bool have_computed_hashes() const { return have_computed_hashes_; }
+  // Returns whether or not this resource's entry exists in
+  // verified_contents.json (given that both |have_verified_contents_| and
+  // |have_computed_hashes_| are true).
+  bool file_missing_from_verified_contents() const {
+    return file_missing_from_verified_contents_;
+  }
 
   // Return the number of blocks and block size, respectively. Only valid after
   // calling Init().
@@ -72,10 +74,9 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
 
   InitStatus status_;
 
-  bool content_exists_;
-
   bool have_verified_contents_;
   bool have_computed_hashes_;
+  bool file_missing_from_verified_contents_;
 
   // The blocksize used for generating the hashes.
   int block_size_;

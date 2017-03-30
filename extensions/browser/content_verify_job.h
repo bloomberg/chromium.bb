@@ -72,6 +72,8 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
   class TestDelegate {
    public:
+    virtual ~TestDelegate() {}
+
     // These methods will be called inside BytesRead/DoneReading respectively.
     // If either return something other than NONE, then the failure callback
     // will be dispatched with that reason.
@@ -88,7 +90,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
 
     virtual void JobFinished(const std::string& extension_id,
                              const base::FilePath& relative_path,
-                             bool failed) = 0;
+                             FailureReason failure_reason) = 0;
   };
 
   // Note: having interleaved delegates is not supported.

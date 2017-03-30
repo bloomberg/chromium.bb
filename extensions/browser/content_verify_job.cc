@@ -134,17 +134,23 @@ void ContentVerifyJob::DoneReading() {
   }
   done_reading_ = true;
   if (hashes_ready_) {
-    if (!FinishBlock())
+    if (!FinishBlock()) {
       DispatchFailureCallback(HASH_MISMATCH);
-    else if (g_test_observer)
+    } else if (g_test_observer) {
       g_test_observer->JobFinished(hash_reader_->extension_id(),
-                                   hash_reader_->relative_path(), failed_);
+                                   hash_reader_->relative_path(), NONE);
+    }
   }
 }
 
 bool ContentVerifyJob::FinishBlock() {
-  if (current_hash_byte_count_ <= 0)
+  if (!done_reading_ && current_hash_byte_count_ == 0)
     return true;
+  if (!current_hash_) {
+    // This happens when we fail to read the resource. Compute empty content's
+    // hash in this case.
+    current_hash_ = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
+  }
   std::string final(crypto::kSHA256Length, 0);
   current_hash_->Finish(base::string_as_array(& final), final.size());
   current_hash_.reset();
@@ -154,23 +160,33 @@ bool ContentVerifyJob::FinishBlock() {
 
   const std::string* expected_hash = NULL;
   if (!hash_reader_->GetHashForBlock(block, &expected_hash) ||
-      *expected_hash != final)
+      *expected_hash != final) {
     return false;
+  }
 
   return true;
 }
 
 void ContentVerifyJob::OnHashesReady(bool success) {
   if (!success && !g_test_delegate) {
-    if (!hash_reader_->content_exists()) {
-      // Ignore verification of non-existent resources.
-      return;
-    } else if (hash_reader_->have_verified_contents() &&
-               hash_reader_->have_computed_hashes()) {
-      DispatchFailureCallback(NO_HASHES_FOR_FILE);
-    } else {
+    // TODO(lazyboy): Make ContentHashReader::Init return an enum instead of
+    // bool. This should make the following checks on |hash_reader_| easier
+    // to digest and will avoid future bugs from creeping up.
+    if (!hash_reader_->have_verified_contents() ||
+        !hash_reader_->have_computed_hashes()) {
       DispatchFailureCallback(MISSING_ALL_HASHES);
+      return;
     }
+
+    if (hash_reader_->file_missing_from_verified_contents()) {
+      // Ignore verification of non-existent resources.
+      if (g_test_observer) {
+        g_test_observer->JobFinished(hash_reader_->extension_id(),
+                                     hash_reader_->relative_path(), NONE);
+      }
+      return;
+    }
+    DispatchFailureCallback(NO_HASHES_FOR_FILE);
     return;
   }
 
@@ -186,7 +202,7 @@ void ContentVerifyJob::OnHashesReady(bool success) {
       DispatchFailureCallback(HASH_MISMATCH);
     } else if (g_test_observer) {
       g_test_observer->JobFinished(hash_reader_->extension_id(),
-                                   hash_reader_->relative_path(), failed_);
+                                   hash_reader_->relative_path(), NONE);
     }
   }
 }
@@ -214,9 +230,10 @@ void ContentVerifyJob::DispatchFailureCallback(FailureReason reason) {
     failure_callback_.Run(reason);
     failure_callback_.Reset();
   }
-  if (g_test_observer)
-    g_test_observer->JobFinished(
-        hash_reader_->extension_id(), hash_reader_->relative_path(), failed_);
+  if (g_test_observer) {
+    g_test_observer->JobFinished(hash_reader_->extension_id(),
+                                 hash_reader_->relative_path(), reason);
+  }
 }
 
 }  // namespace extensions
