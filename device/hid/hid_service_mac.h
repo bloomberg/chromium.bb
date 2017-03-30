@@ -7,6 +7,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
+#include <IOKit/hid/IOHIDDevice.h>
 
 #include <string>
 
@@ -15,6 +16,7 @@
 #include "base/mac/scoped_ioobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "device/hid/hid_service.h"
 
 namespace base {
@@ -32,6 +34,15 @@ class HidServiceMac : public HidService {
                const ConnectCallback& connect) override;
 
  private:
+  static void OpenOnBlockingThread(
+      scoped_refptr<HidDeviceInfo> device_info,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<HidServiceMac> hid_service,
+      const ConnectCallback& callback);
+  void DeviceOpened(scoped_refptr<HidDeviceInfo> device_info,
+                    base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device,
+                    const ConnectCallback& callback);
+
   // IOService matching callbacks.
   static void FirstMatchCallback(void* context, io_iterator_t iterator);
   static void TerminatedCallback(void* context, io_iterator_t iterator);
@@ -53,6 +64,8 @@ class HidServiceMac : public HidService {
   // The task runner for the FILE thread of the application using this service
   // on which slow running I/O operations can be performed.
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+
+  base::WeakPtrFactory<HidServiceMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HidServiceMac);
 };

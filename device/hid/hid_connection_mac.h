@@ -6,7 +6,7 @@
 #define DEVICE_HID_HID_CONNECTION_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/hid/IOHIDManager.h>
+#include <IOKit/hid/IOHIDDevice.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -29,7 +29,7 @@ namespace device {
 class HidConnectionMac : public HidConnection {
  public:
   HidConnectionMac(
-      IOHIDDeviceRef device,
+      base::ScopedCFTypeRef<IOHIDDeviceRef> device,
       scoped_refptr<HidDeviceInfo> device_info,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner);
 

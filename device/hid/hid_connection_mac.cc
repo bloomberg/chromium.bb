@@ -25,11 +25,11 @@ std::string HexErrorCode(IOReturn error_code) {
 }  // namespace
 
 HidConnectionMac::HidConnectionMac(
-    IOHIDDeviceRef device,
+    base::ScopedCFTypeRef<IOHIDDeviceRef> device,
     scoped_refptr<HidDeviceInfo> device_info,
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
     : HidConnection(device_info),
-      device_(device, base::scoped_policy::RETAIN),
+      device_(std::move(device)),
       file_task_runner_(file_task_runner) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());

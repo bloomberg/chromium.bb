@@ -5,7 +5,6 @@
 #include "device/hid/hid_service_mac.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/hid/IOHIDDevice.h>
 #include <stdint.h>
 
 #include <set>
@@ -84,7 +83,7 @@ bool TryGetHidDataProperty(IOHIDDeviceRef device,
 
 HidServiceMac::HidServiceMac(
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner)
-    : file_task_runner_(file_task_runner) {
+    : file_task_runner_(file_task_runner), weak_factory_(this) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner_.get());
 
@@ -132,14 +131,25 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
     task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
-  scoped_refptr<HidDeviceInfo> device_info = map_entry->second;
 
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&HidServiceMac::OpenOnBlockingThread, map_entry->second,
+                 task_runner_, weak_factory_.GetWeakPtr(), callback));
+}
+
+// static
+void HidServiceMac::OpenOnBlockingThread(
+    scoped_refptr<HidDeviceInfo> device_info,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<HidServiceMac> hid_service,
+    const ConnectCallback& callback) {
   base::ScopedCFTypeRef<CFDictionaryRef> matching_dict(
-      IORegistryEntryIDMatching(device_id));
+      IORegistryEntryIDMatching(device_info->device_id()));
   if (!matching_dict.get()) {
     HID_LOG(EVENT) << "Failed to create matching dictionary for ID: "
-                   << device_id;
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+                   << device_info->device_id();
+    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
 
@@ -148,8 +158,9 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
   base::mac::ScopedIOObject<io_service_t> service(IOServiceGetMatchingService(
       kIOMasterPortDefault, matching_dict.release()));
   if (!service.get()) {
-    HID_LOG(EVENT) << "IOService not found for ID: " << device_id;
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    HID_LOG(EVENT) << "IOService not found for ID: "
+                   << device_info->device_id();
+    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
 
@@ -157,21 +168,28 @@ void HidServiceMac::Connect(const HidDeviceId& device_id,
       IOHIDDeviceCreate(kCFAllocatorDefault, service));
   if (!hid_device) {
     HID_LOG(EVENT) << "Unable to create IOHIDDevice object.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
 
   IOReturn result = IOHIDDeviceOpen(hid_device, kIOHIDOptionsTypeNone);
   if (result != kIOReturnSuccess) {
     HID_LOG(EVENT) << "Failed to open device: " << HexErrorCode(result);
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
+    task_runner->PostTask(FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
 
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(callback, make_scoped_refptr(new HidConnectionMac(
-                                          hid_device.release(), device_info,
-                                          file_task_runner_))));
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&HidServiceMac::DeviceOpened, hid_service,
+                            device_info, base::Passed(&hid_device), callback));
+}
+
+void HidServiceMac::DeviceOpened(
+    scoped_refptr<HidDeviceInfo> device_info,
+    base::ScopedCFTypeRef<IOHIDDeviceRef> hid_device,
+    const ConnectCallback& callback) {
+  callback.Run(make_scoped_refptr(new HidConnectionMac(
+      std::move(hid_device), std::move(device_info), file_task_runner_)));
 }
 
 // static
