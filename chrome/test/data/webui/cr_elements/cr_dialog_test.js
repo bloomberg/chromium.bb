@@ -44,4 +44,32 @@ suite('cr-dialog', function() {
     expectNotEquals(dialog, document.activeElement);
     expectEquals(button, document.activeElement);
   });
+
+  test('dialog body indicates over-scroll when appropriate', function() {
+    document.body.innerHTML = `
+      <dialog is="cr-dialog" show-scroll-borders>
+        <div class="title">title</div>
+        <div class="body">body</div>
+      </dialog>`;
+
+    var dialog = document.body.querySelector('dialog');
+    var innerBody = document.body.querySelector('.body');
+    var bodyContainer = dialog.$$('.body-container');
+    assertTrue(!!bodyContainer);
+
+    // Height is normally set via CSS, but mixin doesn't work with innerHTML.
+    bodyContainer.style.height = '1px';
+    innerBody.style.height = '100px';
+    dialog.showModal();
+
+    return PolymerTest.flushTasks()
+        .then(function() {
+          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
+          bodyContainer.scrollTop = 100;
+          return PolymerTest.flushTasks();
+        })
+        .then(function() {
+          assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
+        });
+  });
 });
