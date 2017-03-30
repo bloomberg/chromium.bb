@@ -246,7 +246,7 @@ TEST_P(DeringDirTest, TestSIMDNoMismatch) {
   test_dering(bsize, 1, dering, ref_dering);
 }
 
-TEST_P(DeringSpeedTest, TestSpeed) {
+TEST_P(DeringSpeedTest, DISABLED_TestSpeed) {
   test_dering_speed(bsize, 4, dering, ref_dering);
 }
 
@@ -254,7 +254,7 @@ TEST_P(DeringFindDirTest, TestSIMDNoMismatch) {
   test_finddir(finddir, ref_finddir);
 }
 
-TEST_P(DeringFindDirSpeedTest, TestSpeed) {
+TEST_P(DeringFindDirSpeedTest, DISABLED_TestSpeed) {
   test_finddir_speed(finddir, ref_finddir);
 }
 
