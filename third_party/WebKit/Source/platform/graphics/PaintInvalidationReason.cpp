@@ -71,4 +71,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
   return "";
 }
 
+std::ostream& operator<<(std::ostream& out, PaintInvalidationReason reason) {
+  return out << paintInvalidationReasonToString(reason);
+}
+
 }  // namespace blink

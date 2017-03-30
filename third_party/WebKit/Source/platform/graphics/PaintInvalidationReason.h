@@ -5,6 +5,7 @@
 #ifndef PaintInvalidationReason_h
 #define PaintInvalidationReason_h
 
+#include <iosfwd>
 #include "platform/PlatformExport.h"
 
 namespace blink {
@@ -59,6 +60,9 @@ inline bool isImmediateFullPaintInvalidationReason(
   return isFullPaintInvalidationReason(reason) &&
          reason != PaintInvalidationDelayedFull;
 }
+
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
+                                         PaintInvalidationReason);
 
 }  // namespace blink
 

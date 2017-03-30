@@ -1770,6 +1770,7 @@ test("blink_platform_unittests") {
     "graphics/ContiguousContainerTest.cpp",
     "graphics/DeferredImageDecoderTestWoPlatform.cpp",
     "graphics/GraphicsContextTest.cpp",
+    "graphics/PaintInvalidationReasonTest.cpp",
     "graphics/RecordingImageBufferSurfaceTest.cpp",
     "graphics/compositing/PaintArtifactCompositorTest.cpp",
     "graphics/filters/ImageFilterBuilderTest.cpp",
