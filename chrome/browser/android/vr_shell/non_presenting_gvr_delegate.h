@@ -38,7 +38,6 @@ class NonPresentingGvrDelegate : public device::GvrDelegate,
       device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(int64_t timebase_nanos,
                            double interval_seconds) override;
-  bool SupportsPresentation() override;
   void ResetPose() override;
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,

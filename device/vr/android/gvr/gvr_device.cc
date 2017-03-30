@@ -99,8 +99,6 @@ void GvrDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
 
 void GvrDevice::OnDelegateChanged() {
   GvrDelegate* delegate = GetGvrDelegate();
-  if (!delegate || !delegate->SupportsPresentation())
-    OnExitPresent();
   // Notify the clients that this device has changed
   if (delegate)
     delegate->SetWebVRSecureOrigin(secure_origin_);

@@ -384,10 +384,6 @@ void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
                                      left_bounds, right_bounds, source_size));
 }
 
-bool VrShell::SupportsPresentation() {
-  return true;
-}
-
 void VrShell::ResetPose() {
   gl_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&VrShellGl::ResetPose, gl_thread_->GetVrShellGl()));
@@ -439,7 +435,7 @@ void VrShell::GvrDelegateReady() {
       &VrShellGl::SetSubmitClient, gl_thread_->GetVrShellGl(),
       base::Passed(
           delegate_provider_->TakeSubmitFrameClient().PassInterface())));
-  delegate_provider_->SetDelegate(this, gvr_api_);
+  delegate_provider_->SetPresentingDelegate(this, gvr_api_);
 }
 
 void VrShell::AppButtonGesturePerformed(UiInterface::Direction direction) {

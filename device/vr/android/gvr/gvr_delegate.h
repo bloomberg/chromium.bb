@@ -25,7 +25,6 @@ class DEVICE_VR_EXPORT GvrDelegate {
       mojom::VRVSyncProviderRequest request) = 0;
   virtual void UpdateVSyncInterval(int64_t timebase_nanos,
                                    double interval_seconds) = 0;
-  virtual bool SupportsPresentation() = 0;
   virtual void ResetPose() = 0;
   virtual void CreateVRDisplayInfo(
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
@@ -34,6 +33,9 @@ class DEVICE_VR_EXPORT GvrDelegate {
  protected:
   virtual ~GvrDelegate() {}
 };
+
+// GvrDelegate, which allows WebVR presentation.
+class DEVICE_VR_EXPORT PresentingGvrDelegate : public GvrDelegate {};
 
 class DEVICE_VR_EXPORT GvrDelegateProvider {
  public:

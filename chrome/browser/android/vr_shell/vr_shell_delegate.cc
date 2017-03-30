@@ -25,6 +25,7 @@ VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj) {
 VrShellDelegate::~VrShellDelegate() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   if (device_provider_) {
+    device_provider_->Device()->OnExitPresent();
     device_provider_->Device()->OnDelegateChanged();
   }
 }
@@ -44,11 +45,12 @@ VrShellDelegate* VrShellDelegate::GetNativeVrShellDelegate(JNIEnv* env,
       Java_VrShellDelegate_getNativePointer(env, jdelegate));
 }
 
-void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
-                                  gvr_context* context) {
-  delegate_ = delegate;
+void VrShellDelegate::SetPresentingDelegate(
+    device::PresentingGvrDelegate* delegate,
+    gvr_context* context) {
+  presenting_delegate_ = delegate;
   // Clean up the non-presenting delegate.
-  if (delegate_ && non_presenting_delegate_) {
+  if (presenting_delegate_ && non_presenting_delegate_) {
     non_presenting_delegate_ = nullptr;
     JNIEnv* env = AttachCurrentThread();
     Java_VrShellDelegate_shutdownNonPresentingNativeContext(
@@ -59,13 +61,14 @@ void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate,
     device->OnDelegateChanged();
   }
 
-  delegate_->UpdateVSyncInterval(timebase_nanos_, interval_seconds_);
+  presenting_delegate_->UpdateVSyncInterval(timebase_nanos_, interval_seconds_);
 }
 
 void VrShellDelegate::RemoveDelegate() {
-  delegate_ = nullptr;
+  presenting_delegate_ = nullptr;
   if (device_provider_) {
     CreateNonPresentingDelegate();
+    device_provider_->Device()->OnExitPresent();
     device_provider_->Device()->OnDelegateChanged();
   }
 }
@@ -92,8 +95,9 @@ void VrShellDelegate::UpdateVSyncInterval(JNIEnv* env,
                                           jdouble interval_seconds) {
   timebase_nanos_ = timebase_nanos;
   interval_seconds_ = interval_seconds;
-  if (delegate_) {
-    delegate_->UpdateVSyncInterval(timebase_nanos_, interval_seconds_);
+  if (presenting_delegate_) {
+    presenting_delegate_->UpdateVSyncInterval(timebase_nanos_,
+                                              interval_seconds_);
   }
   if (non_presenting_delegate_) {
     non_presenting_delegate_->UpdateVSyncInterval(timebase_nanos_,
@@ -129,8 +133,9 @@ void VrShellDelegate::SetDeviceProvider(
     ClearDeviceProvider();
   CHECK(!device_provider_);
   device_provider_ = device_provider;
-  if (!delegate_)
+  if (!presenting_delegate_) {
     CreateNonPresentingDelegate();
+  }
   device_provider_->Device()->OnDelegateChanged();
 }
 
@@ -179,8 +184,8 @@ void VrShellDelegate::CreateNonPresentingDelegate() {
 }
 
 device::GvrDelegate* VrShellDelegate::GetDelegate() {
-  if (delegate_)
-    return delegate_;
+  if (presenting_delegate_)
+    return presenting_delegate_;
   return non_presenting_delegate_.get();
 }
 

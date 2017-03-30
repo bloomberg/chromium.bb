@@ -157,10 +157,6 @@ void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
                device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
-bool NonPresentingGvrDelegate::SupportsPresentation() {
-  return false;
-}
-
 void NonPresentingGvrDelegate::ResetPose() {
   // Should never call RecenterTracking when using with Daydream viewers. On
   // those devices recentering should only be done via the controller.

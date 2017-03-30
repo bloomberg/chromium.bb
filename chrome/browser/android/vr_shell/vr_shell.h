@@ -73,7 +73,7 @@ class VrMetricsHelper;
 
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
-class VrShell : public device::GvrDelegate,
+class VrShell : public device::PresentingGvrDelegate,
                 content::WebContentsObserver,
                 device::GvrGamepadDataProvider {
  public:
@@ -216,7 +216,6 @@ class VrShell : public device::GvrDelegate,
       device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(int64_t timebase_nanos,
                            double interval_seconds) override;
-  bool SupportsPresentation() override;
   void ResetPose() override;
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,

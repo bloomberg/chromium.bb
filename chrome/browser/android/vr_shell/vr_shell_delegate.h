@@ -32,7 +32,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   static VrShellDelegate* GetNativeVrShellDelegate(JNIEnv* env,
                                                    jobject jdelegate);
 
-  void SetDelegate(device::GvrDelegate* delegate, gvr_context* context);
+  void SetPresentingDelegate(device::PresentingGvrDelegate* delegate,
+                             gvr_context* context);
   void RemoveDelegate();
 
   void SetPresentResult(JNIEnv* env,
@@ -66,7 +67,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   std::unique_ptr<NonPresentingGvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   device::GvrDeviceProvider* device_provider_ = nullptr;
-  device::GvrDelegate* delegate_ = nullptr;
+  device::PresentingGvrDelegate* presenting_delegate_ = nullptr;
   base::Callback<void(bool)> present_callback_;
   int64_t timebase_nanos_ = 0;
   double interval_seconds_ = 0;
