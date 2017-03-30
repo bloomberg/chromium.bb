@@ -195,8 +195,12 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return typeWithCalcResolved() == UnitType::Percentage;
   }
   bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
-  bool isTime() const {
-    return type() == UnitType::Seconds || type() == UnitType::Milliseconds;
+  static bool isTime(UnitType unit) {
+    return unit == UnitType::Seconds || unit == UnitType::Milliseconds;
+  }
+  bool isTime() const { return isTime(type()); }
+  static bool isFrequency(UnitType unit) {
+    return unit == UnitType::Hertz || unit == UnitType::Kilohertz;
   }
   bool isCalculated() const { return type() == UnitType::Calc; }
   bool isCalculatedPercentageWithNumber() const {
@@ -209,7 +213,8 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
     return type >= UnitType::DotsPerPixel &&
            type <= UnitType::DotsPerCentimeter;
   }
-  bool isFlex() const { return typeWithCalcResolved() == UnitType::Fraction; }
+  static bool isFlex(UnitType unit) { return unit == UnitType::Fraction; }
+  bool isFlex() const { return isFlex(type()); }
 
   static CSSPrimitiveValue* create(double value, UnitType);
   static CSSPrimitiveValue* create(const Length& value, float zoom) {

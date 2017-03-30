@@ -306,6 +306,8 @@ blink_core_sources("css") {
     "cssom/CSSTranslation.cpp",
     "cssom/CSSTranslation.h",
     "cssom/CSSURLImageValue.h",
+    "cssom/CSSUnitValue.cpp",
+    "cssom/CSSUnitValue.h",
     "cssom/CSSUnparsedValue.cpp",
     "cssom/CSSUnparsedValue.h",
     "cssom/CSSUnsupportedStyleValue.cpp",

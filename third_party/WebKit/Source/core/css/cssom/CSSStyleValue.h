@@ -34,8 +34,9 @@ class CORE_EXPORT CSSStyleValue
     PositionType,
     SimpleLengthType,
     TransformType,
-    URLImageType,
+    UnitType,
     UnparsedType,
+    URLImageType,
   };
 
   virtual ~CSSStyleValue() {}

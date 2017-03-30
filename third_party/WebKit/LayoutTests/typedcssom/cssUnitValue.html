@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+
+<script>
+
+let lengthUnits = [
+  'em',
+  'ex',
+  'px',
+  'cm',
+  'mm',
+  'in',
+  'pt',
+  'pc',
+  'vw',
+  'vh',
+  'vmin',
+  'vmax',
+  'rem',
+  'ch'
+];
+
+let angleUnits = [
+  'deg',
+  'rad',
+  'grad',
+  'turn'
+];
+
+let timeUnits = [
+  'ms',
+  's',
+];
+
+let frequencyUnits = [
+  'hz',
+  'khz'
+];
+
+let resolutionUnits = [
+  'dppx',
+  'dpi',
+  'dpcm'
+];
+
+function generateTests(unitList, typeString) {
+  for (let unit of unitList) {
+    test(() => {
+      let unitValue = new CSSUnitValue(1, unit);
+      assert_equals(unitValue.value, 1, 'value');
+      assert_equals(unitValue.unit, unit, 'unit');
+      assert_equals(unitValue.type, typeString, 'type');
+      assert_equals(unitValue.cssText, '1' + unit, 'cssText');
+    }, 'CSSUnitValue supports ' + typeString + ' unit ' + unit);
+  }
+}
+
+test(() => {
+  let unitValue = new CSSUnitValue(1, 'number');
+  assert_equals(unitValue.value, 1);
+  assert_equals(unitValue.unit, 'number', 'unit');
+  // For number/percent, the type is the same as the unit.
+  assert_equals(unitValue.type, 'number', 'type');
+  assert_equals(unitValue.cssText, '1', 'cssText');
+}, 'CSSUnitValue supports numbers');
+
+test(() => {
+  let unitValue = new CSSUnitValue(1, 'percent');
+  assert_equals(unitValue.value, 1, 'value');
+  assert_equals(unitValue.unit, 'percent', 'unit');
+  // For number/percent, the type is the same as the unit.
+  assert_equals(unitValue.type, 'percent', 'type');
+  assert_equals(unitValue.cssText, '1%', 'cssText');
+}, 'CSSUnitValue supports percents');
+
+generateTests(lengthUnits, 'length');
+generateTests(angleUnits, 'angle');
+generateTests(timeUnits, 'time');
+generateTests(frequencyUnits, 'frequency');
+generateTests(resolutionUnits, 'resolution');
+
+</script>

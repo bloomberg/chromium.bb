@@ -127,6 +127,13 @@ CONSOLE MESSAGE: line 138:     method constructor
 CONSOLE MESSAGE: line 138: interface CSSURLImageValue : CSSImageValue
 CONSOLE MESSAGE: line 138:     getter url
 CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138: interface CSSUnitValue : CSSNumericValue
+CONSOLE MESSAGE: line 138:     getter type
+CONSOLE MESSAGE: line 138:     getter unit
+CONSOLE MESSAGE: line 138:     getter value
+CONSOLE MESSAGE: line 138:     method constructor
+CONSOLE MESSAGE: line 138:     setter unit
+CONSOLE MESSAGE: line 138:     setter value
 CONSOLE MESSAGE: line 138: interface CSSUnparsedValue : CSSStyleValue
 CONSOLE MESSAGE: line 138:     getter length
 CONSOLE MESSAGE: line 138:     method constructor

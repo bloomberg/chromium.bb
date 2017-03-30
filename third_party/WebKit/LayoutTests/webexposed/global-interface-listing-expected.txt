@@ -737,6 +737,14 @@ interface CSSURLImageValue : CSSImageValue
     attribute @@toStringTag
     getter url
     method constructor
+interface CSSUnitValue : CSSNumericValue
+    attribute @@toStringTag
+    getter type
+    getter unit
+    getter value
+    method constructor
+    setter unit
+    setter value
 interface CSSUnparsedValue : CSSStyleValue
     attribute @@toStringTag
     getter length

@@ -21,12 +21,30 @@ class CORE_EXPORT CSSNumericValue : public CSSStyleValue {
  public:
   static CSSNumericValue* parse(const String& cssText, ExceptionState&);
 
-  virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) = 0;
-  virtual CSSNumericValue* sub(const CSSNumericValue*, ExceptionState&) = 0;
-  virtual CSSNumericValue* mul(double, ExceptionState&) = 0;
-  virtual CSSNumericValue* div(double, ExceptionState&) = 0;
+  virtual CSSNumericValue* add(const CSSNumericValue*, ExceptionState&) {
+    // TODO(meade): Implement.
+    return nullptr;
+  }
+  virtual CSSNumericValue* sub(const CSSNumericValue*, ExceptionState&) {
+    // TODO(meade): Implement.
+    return nullptr;
+  }
+  virtual CSSNumericValue* mul(double, ExceptionState&) {
+    // TODO(meade): Implement.
+    return nullptr;
+  }
+  virtual CSSNumericValue* div(double, ExceptionState&) {
+    // TODO(meade): Implement.
+    return nullptr;
+  }
 
-  virtual CSSNumericValue* to(const String&, ExceptionState&) = 0;
+  virtual CSSNumericValue* to(const String&, ExceptionState&) {
+    // TODO(meade): Implement.
+    return nullptr;
+  }
+
+ protected:
+  CSSNumericValue() {}
 };
 
 }  // namespace blink
