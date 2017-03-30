@@ -53,7 +53,7 @@
             on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
         </paper-icon-button>
         <paper-toggle-button  id="deviceEnabledButton"
-            aria-label="[[getToggleA11yString_(deviceState)]]"
+            aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             enabled="[[enableToggleIsEnabled_(deviceState)]]"
             on-tap="onDeviceEnabledTap_">
@@ -99,7 +99,7 @@
                 class="vpn-header layout horizontal center">
               <div class="flex">[[item.ProviderName]]</div>
               <paper-icon-button icon="settings:add-circle"
-                  aria-label="[[getAddThirdPartyVpnA11yString_(item)]]"
+                  aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
                   on-tap="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
               </paper-icon-button>
             </div>

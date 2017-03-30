@@ -17,7 +17,8 @@
       <div class="start">$i18n{networkSectionNameservers}</div>
       <div class="md-select-wrapper">
         <select id="nameserverType" class="md-select" on-change="onTypeChange_"
-            value="[[nameserversType_]]">
+            value="[[nameserversType_]]"
+            aria-label="$i18n{networkSectionNameservers}">
           <template is="dom-repeat" items="[[nameserverTypeNames_]]">
             <option value="[[item]]">[[nameserverTypeDesc_(item)]]</option>
           </template>

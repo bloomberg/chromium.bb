@@ -79,7 +79,7 @@
       </template>
       <div id="divText" class="layout horizontal flex">
         <div id="itemName" is-list-item$="[[isListItem]]">
-          [[itemName]]
+          [[ariaLabel]]
         </div>
         <div id="networkStateText"
             hidden$="[[!isStateTextVisible_(networkState, isListItem)]]"
@@ -96,7 +96,8 @@
           if="[[isSubpageButtonVisible_(networkState, showButtons)]]">
         <div id="subpageDiv" class="layout horizontal">
           <button class="subpage-arrow" is="paper-icon-button-light"
-              on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+              on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
+              aria-label$="[[ariaLabel]]">
           </button>
         </div>
       </template>

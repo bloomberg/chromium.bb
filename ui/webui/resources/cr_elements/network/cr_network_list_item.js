@@ -57,11 +57,12 @@ Polymer({
     },
 
     /** Expose the itemName so it can be used as a label for a11y.  */
-    itemName: {
+    ariaLabel: {
       type: String,
       notify: true,
+      reflectToAttribute: true,
       computed: 'getItemName_(item, isListItem)',
-    }
+    },
   },
 
   behaviors: [CrPolicyNetworkBehavior],

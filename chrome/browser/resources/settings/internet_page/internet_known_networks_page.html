@@ -27,7 +27,8 @@
         <div class="list-item">
           <div class="start">[[item.Name]]</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
-              actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+              actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
+              aria-label$="[[item.Name]]">
           </button>
           <div class="secondary-action">
             <paper-icon-button preferred icon="cr:more-vert"
@@ -49,7 +50,8 @@
         <div class="list-item">
           <div class="start">[[item.Name]]</div>
           <button class="subpage-arrow" is="paper-icon-button-light"
-              actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+              actionable on-tap="fireShowDetails_" tabindex$="[[tabindex]]"
+              aria-label$="[[item.Name]]">
           </button>
           <div class="secondary-action">
             <paper-icon-button icon="cr:more-vert"  tabindex$="[[tabindex]]"

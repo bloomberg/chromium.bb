@@ -42,15 +42,15 @@
 
       <template is="dom-if" if="[[showDetailsIsVisible_(deviceState)]]">
         <button class="subpage-arrow" is="paper-icon-button-light"
-            aria-label="[[getDetailsA11yString_(activeNetworkState,
-                deviceSate)]]">
+            aria-label$="[[getDetailsA11yString_(activeNetworkState,
+                deviceState, networkStateList)]]">
         </button>
       </template>
 
       <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
         <div class="secondary-action">
           <paper-toggle-button  id="deviceEnabledButton"
-              aria-label="[[getToggleA11yString_(deviceState)]]"
+              aria-label$="[[getToggleA11yString_(deviceState)]]"
               checked="[[deviceIsEnabled_(deviceState)]]"
               enabled="[[enableToggleIsEnabled_(deviceState)]]"
               on-tap="onDeviceEnabledTap_">

@@ -17,7 +17,8 @@
       <div class="start">$i18n{networkSectionAccessPoint}</div>
       <div class="md-select-wrapper">
         <select id="selectApn" class="md-select" on-change="onSelectApnChange_"
-            value="[[selectedApn_]]">
+            value="[[selectedApn_]]"
+            aria-label="$i18n{networkSectionAccessPoint}">
           <template is="dom-repeat" items="[[apnSelectList_]]">
             <option value="[[item.AccessPointName]]">[[apnDesc_(item)]]</option>
           </template>

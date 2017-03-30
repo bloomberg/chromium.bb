@@ -87,7 +87,8 @@
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
             value="[[proxy_.Type]]"
             disabled="[[!isEditable_('Type', networkProperties, editable,
-                useSharedProxies_)]]">
+                useSharedProxies_)]]"
+            aria-label="$i18n{networkProxyConnectionType}">
           <template is="dom-repeat" items="[[proxyTypes_]]">
             <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
           </template>
