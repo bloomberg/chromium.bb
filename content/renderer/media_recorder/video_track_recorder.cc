@@ -465,10 +465,10 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   std::unique_ptr<VideoFrameAndTimestamp> last_frame_;
 
   // Size used to initialize encoder.
-  gfx::Size input_size_;
+  gfx::Size input_visible_size_;
 
   // Coded size that encoder requests as input.
-  gfx::Size vea_requested_input_size_;
+  gfx::Size vea_requested_input_coded_size_;
 
   // Frames and corresponding timestamps in encode as FIFO.
   std::queue<VideoParamsAndTimestamp> frames_in_encode_;
@@ -630,7 +630,7 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
-  vea_requested_input_size_ = input_coded_size;
+  vea_requested_input_coded_size_ = input_coded_size;
   output_buffers_.clear();
   std::queue<std::unique_ptr<base::SharedMemory>>().swap(input_buffers_);
 
@@ -696,7 +696,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
-  if (input_size_ != frame->visible_rect().size() && video_encoder_)
+  if (input_visible_size_ != frame->visible_rect().size() && video_encoder_)
     video_encoder_.reset();
 
   if (!video_encoder_)
@@ -730,14 +730,14 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
   // a copy is required for other storage types.
   scoped_refptr<media::VideoFrame> video_frame = frame;
   if (video_frame->storage_type() != VideoFrame::STORAGE_SHMEM ||
-      vea_requested_input_size_ != input_size_ ||
-      input_size_.width() < kVEAEncoderMinResolutionWidth ||
-      input_size_.height() < kVEAEncoderMinResolutionHeight) {
+      vea_requested_input_coded_size_ != frame->coded_size() ||
+      input_visible_size_.width() < kVEAEncoderMinResolutionWidth ||
+      input_visible_size_.height() < kVEAEncoderMinResolutionHeight) {
     // Create SharedMemory backed input buffers as necessary. These SharedMemory
     // instances will be shared with GPU process.
     std::unique_ptr<base::SharedMemory> input_buffer;
     const size_t desired_mapped_size = media::VideoFrame::AllocationSize(
-        media::PIXEL_FORMAT_I420, vea_requested_input_size_);
+        media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_);
     if (input_buffers_.empty()) {
       input_buffer = gpu_factories_->CreateSharedMemory(desired_mapped_size);
     } else {
@@ -751,8 +751,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
     }
 
     video_frame = media::VideoFrame::WrapExternalSharedMemory(
-        media::PIXEL_FORMAT_I420, vea_requested_input_size_,
-        gfx::Rect(input_size_), input_size_,
+        media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_,
+        gfx::Rect(input_visible_size_), input_visible_size_,
         reinterpret_cast<uint8_t*>(input_buffer->memory()),
         input_buffer->mapped_size(), input_buffer->handle(), 0,
         frame->timestamp());
@@ -771,7 +771,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
                      video_frame->stride(media::VideoFrame::kUPlane),
                      video_frame->visible_data(media::VideoFrame::kVPlane),
                      video_frame->stride(media::VideoFrame::kVPlane),
-                     input_size_.width(), input_size_.height());
+                     input_visible_size_.width(), input_visible_size_.height());
   }
   frames_in_encode_.push(std::make_pair(
       media::WebmMuxer::VideoParameters(frame), capture_timestamp));
@@ -785,11 +785,11 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_GT(bits_per_second_, 0);
 
-  input_size_ = size;
+  input_visible_size_ = size;
   video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator();
   if (!video_encoder_ ||
-      !video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_size_, codec_,
-                                  bits_per_second_, this)) {
+      !video_encoder_->Initialize(media::PIXEL_FORMAT_I420, input_visible_size_,
+                                  codec_, bits_per_second_, this)) {
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
   }
 }
