@@ -93,8 +93,10 @@ MediaSessionImpl::~MediaSessionImpl() {
   DCHECK(pepper_players_.empty());
   DCHECK(one_shot_players_.empty());
   DCHECK(audio_focus_state_ == State::INACTIVE);
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.MediaSessionDestroyed();
+    observer.StopObserving();
+  }
 }
 
 void MediaSessionImpl::WebContentsDestroyed() {
