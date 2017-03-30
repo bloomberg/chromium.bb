@@ -172,10 +172,6 @@ class ASH_EXPORT ShelfView : public views::View,
   class FadeOutAnimationDelegate;
   class StartFadeAnimationDelegate;
 
-  struct IdealBounds {
-    gfx::Rect overflow_bounds;
-  };
-
   enum RemovableState {
     REMOVABLE,      // Item can be removed when dragged away.
     DRAGGABLE,      // Item can be dragged, but will snap always back to origin.
@@ -203,7 +199,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Calculates the ideal bounds. The bounds of each button corresponding to an
   // item in the model is set in |view_model_|.
-  void CalculateIdealBounds(IdealBounds* bounds) const;
+  void CalculateIdealBounds(gfx::Rect* overflow_bounds) const;
 
   // Returns the index of the last view whose max primary axis coordinate is
   // less than |max_value|. Returns -1 if nothing fits, or there are no views.
@@ -406,10 +402,6 @@ class ASH_EXPORT ShelfView : public views::View,
   std::unique_ptr<views::MenuRunner> launcher_menu_runner_;
   std::unique_ptr<ScopedRootWindowForNewWindows>
       scoped_root_window_for_new_windows_;
-
-  // Amount content is inset on the left edge (or top edge for vertical
-  // alignment).
-  int leading_inset_;
 
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_;

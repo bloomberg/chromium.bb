@@ -60,9 +60,6 @@ const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT = 1;
 const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT = 2;
 const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT = 3;
 
-// Default amount content is inset on the left edge.
-const int kDefaultLeadingInset = 8;
-
 // The proportion of the shelf space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
 // is contention for the space.
@@ -263,7 +260,6 @@ ShelfView::ShelfView(ShelfModel* model,
       drag_view_(nullptr),
       start_drag_index_(-1),
       context_menu_id_(0),
-      leading_inset_(kDefaultLeadingInset),
       cancelling_drag_model_changed_(false),
       last_hidden_index_(0),
       closing_event_time_(base::TimeTicks()),
@@ -736,10 +732,10 @@ void ShelfView::LayoutToIdealBounds() {
     return;
   }
 
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
+  gfx::Rect overflow_bounds;
+  CalculateIdealBounds(&overflow_bounds);
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
-  overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
+  overflow_button_->SetBoundsRect(overflow_bounds);
 }
 
 void ShelfView::UpdateShelfItemBackground(SkColor color) {
@@ -763,12 +759,10 @@ void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
   }
 }
 
-void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
-  int available_size = wm_shelf_->PrimaryAxisValue(width(), height());
+void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
   DCHECK(model_->item_count() == view_model_->view_size());
-  if (!available_size)
-    return;
 
+  int available_size = wm_shelf_->PrimaryAxisValue(width(), height());
   int first_panel_index = model_->FirstPanelIndex();
   int last_button_index = first_panel_index - 1;
 
@@ -817,7 +811,7 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
   else
     end_position = std::max(end_position, reserved_icon_space);
 
-  bounds->overflow_bounds.set_size(
+  overflow_bounds->set_size(
       gfx::Size(wm_shelf_->PrimaryAxisValue(w, width()),
                 wm_shelf_->PrimaryAxisValue(height(), h)));
 
@@ -886,8 +880,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) const {
     for (int i = first_panel_index; i <= last_hidden_index_; ++i)
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
 
-    bounds->overflow_bounds.set_x(x);
-    bounds->overflow_bounds.set_y(y);
+    overflow_bounds->set_x(x);
+    overflow_bounds->set_y(y);
     if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
       UpdateOverflowRange(overflow_bubble_->shelf_view());
   } else {
@@ -919,8 +913,8 @@ int ShelfView::DetermineFirstVisiblePanelIndex(int min_value) const {
 }
 
 void ShelfView::AnimateToIdealBounds() {
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
+  gfx::Rect overflow_bounds;
+  CalculateIdealBounds(&overflow_bounds);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     View* view = view_model_->view_at(i);
     bounds_animator_->AnimateViewTo(view, view_model_->ideal_bounds(i));
@@ -929,7 +923,7 @@ void ShelfView::AnimateToIdealBounds() {
     if (i && view->border())
       view->SetBorder(views::NullBorder());
   }
-  overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
+  overflow_button_->SetBoundsRect(overflow_bounds);
 }
 
 views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
@@ -1346,11 +1340,11 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     }
 
     if (wm_shelf_->IsHorizontalAlignment()) {
-      preferred_size = gfx::Size(last_button_bounds.right() + leading_inset_,
-                                 GetShelfConstant(SHELF_SIZE));
+      preferred_size =
+          gfx::Size(last_button_bounds.right(), GetShelfConstant(SHELF_SIZE));
     } else {
-      preferred_size = gfx::Size(GetShelfConstant(SHELF_SIZE),
-                                 last_button_bounds.bottom() + leading_inset_);
+      preferred_size =
+          gfx::Size(GetShelfConstant(SHELF_SIZE), last_button_bounds.bottom());
     }
   }
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
@@ -1397,8 +1391,8 @@ int ShelfView::CancelDrag(int modified_index) {
 }
 
 gfx::Size ShelfView::GetPreferredSize() const {
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
+  gfx::Rect overflow_bounds;
+  CalculateIdealBounds(&overflow_bounds);
   const int shelf_size = GetShelfConstant(SHELF_SIZE);
 
   int last_button_index = last_visible_index_;
@@ -1425,9 +1419,9 @@ gfx::Size ShelfView::GetPreferredSize() const {
           : gfx::Rect(gfx::Size(shelf_size, shelf_size));
 
   if (wm_shelf_->IsHorizontalAlignment())
-    return gfx::Size(last_button_bounds.right() + leading_inset_, shelf_size);
+    return gfx::Size(last_button_bounds.right(), shelf_size);
 
-  return gfx::Size(shelf_size, last_button_bounds.bottom() + leading_inset_);
+  return gfx::Size(shelf_size, last_button_bounds.bottom());
 }
 
 void ShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -1482,8 +1476,8 @@ void ShelfView::ShelfItemAdded(int model_index) {
   // button before this animation completes it doesn't appear at some random
   // spot (because it was in the middle of animating from 0,0 0x0 to its
   // target).
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
+  gfx::Rect overflow_bounds;
+  CalculateIdealBounds(&overflow_bounds);
   view->SetBoundsRect(view_model_->ideal_bounds(model_index));
 
   // The first animation moves all the views to their target position. |view|

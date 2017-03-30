@@ -40,11 +40,6 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDialogDelegateView {
  private:
   friend class test::OverflowBubbleViewTestAPI;
 
-  const gfx::Size GetContentsSize() const;
-
-  // Gets arrow location based on shelf alignment.
-  views::BubbleBorder::Arrow GetBubbleArrow() const;
-
   void ScrollByXOffset(int x_offset);
   void ScrollByYOffset(int y_offset);
 

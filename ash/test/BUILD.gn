@@ -115,6 +115,8 @@ static_library("test_support_common") {
     "mirror_window_test_api.h",
     "overflow_bubble_view_test_api.cc",
     "overflow_bubble_view_test_api.h",
+    "overflow_button_test_api.cc",
+    "overflow_button_test_api.h",
     "screen_orientation_controller_test_api.cc",
     "screen_orientation_controller_test_api.h",
     "shelf_button_pressed_metric_tracker_test_api.cc",

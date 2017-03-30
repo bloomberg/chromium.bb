@@ -23,6 +23,8 @@ namespace ash {
 
 OverflowButton::OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf)
     : CustomButton(nullptr),
+      upward_image_(gfx::CreateVectorIcon(kShelfOverflowIcon, kShelfIconColor)),
+      chevron_image_(nullptr),
       shelf_view_(shelf_view),
       wm_shelf_(wm_shelf),
       background_color_(kShelfDefaultBaseColor) {
@@ -32,28 +34,78 @@ OverflowButton::OverflowButton(ShelfView* shelf_view, WmShelf* wm_shelf)
   set_ink_drop_base_color(kShelfInkDropBaseColor);
   set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   set_hide_ink_drop_when_showing_context_menu(false);
-  bottom_image_ = gfx::CreateVectorIcon(kShelfOverflowIcon, kShelfIconColor);
 
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_OVERFLOW_NAME));
+
+  UpdateChevronImage();
 }
 
 OverflowButton::~OverflowButton() {}
 
 void OverflowButton::OnShelfAlignmentChanged() {
-  SchedulePaint();
+  UpdateChevronImage();
 }
 
 void OverflowButton::OnOverflowBubbleShown() {
   AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  UpdateChevronImage();
 }
 
 void OverflowButton::OnOverflowBubbleHidden() {
   AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  UpdateChevronImage();
 }
 
 void OverflowButton::UpdateShelfItemBackground(SkColor color) {
   background_color_ = color;
+  SchedulePaint();
+}
+
+OverflowButton::ChevronDirection OverflowButton::GetChevronDirection() const {
+  switch (wm_shelf_->GetAlignment()) {
+    case SHELF_ALIGNMENT_LEFT:
+      if (shelf_view_->IsShowingOverflowBubble())
+        return ChevronDirection::LEFT;
+      return ChevronDirection::RIGHT;
+    case SHELF_ALIGNMENT_RIGHT:
+      if (shelf_view_->IsShowingOverflowBubble())
+        return ChevronDirection::RIGHT;
+      return ChevronDirection::LEFT;
+    default:
+      if (shelf_view_->IsShowingOverflowBubble())
+        return ChevronDirection::DOWN;
+      return ChevronDirection::UP;
+  }
+}
+
+void OverflowButton::UpdateChevronImage() {
+  switch (GetChevronDirection()) {
+    case ChevronDirection::UP:
+      chevron_image_ = &upward_image_;
+      break;
+    case ChevronDirection::DOWN:
+      if (downward_image_.isNull()) {
+        downward_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+            upward_image_, SkBitmapOperations::ROTATION_180_CW);
+      }
+      chevron_image_ = &downward_image_;
+      break;
+    case ChevronDirection::LEFT:
+      if (leftward_image_.isNull()) {
+        leftward_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+            upward_image_, SkBitmapOperations::ROTATION_270_CW);
+      }
+      chevron_image_ = &leftward_image_;
+      break;
+    case ChevronDirection::RIGHT:
+      if (rightward_image_.isNull()) {
+        rightward_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
+            upward_image_, SkBitmapOperations::ROTATION_90_CW);
+      }
+      chevron_image_ = &rightward_image_;
+      break;
+  }
   SchedulePaint();
 }
 
@@ -107,31 +159,11 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas,
 
 void OverflowButton::PaintForeground(gfx::Canvas* canvas,
                                      const gfx::Rect& bounds) {
-  const gfx::ImageSkia* image = nullptr;
-
-  switch (wm_shelf_->GetAlignment()) {
-    case SHELF_ALIGNMENT_LEFT:
-      if (left_image_.isNull()) {
-        left_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
-            bottom_image_, SkBitmapOperations::ROTATION_90_CW);
-      }
-      image = &left_image_;
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      if (right_image_.isNull()) {
-        right_image_ = gfx::ImageSkiaOperations::CreateRotatedImage(
-            bottom_image_, SkBitmapOperations::ROTATION_270_CW);
-      }
-      image = &right_image_;
-      break;
-    default:
-      image = &bottom_image_;
-      break;
-  }
-
-  canvas->DrawImageInt(*image,
-                       bounds.x() + ((bounds.width() - image->width()) / 2),
-                       bounds.y() + ((bounds.height() - image->height()) / 2));
+  DCHECK(chevron_image_);
+  canvas->DrawImageInt(
+      *chevron_image_,
+      bounds.x() + ((bounds.width() - chevron_image_->width()) / 2),
+      bounds.y() + ((bounds.height() - chevron_image_->height()) / 2));
 }
 
 gfx::Rect OverflowButton::CalculateButtonBounds() const {

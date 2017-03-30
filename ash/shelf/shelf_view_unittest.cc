@@ -32,6 +32,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
+#include "ash/test/overflow_button_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
@@ -974,36 +975,6 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
       const gfx::Rect& bounds2 = test_api_->GetBoundsByIndex(i + 1);
       EXPECT_FALSE(bounds1.Intersects(bounds2));
     }
-  }
-}
-
-// Making sure the overflow bubble arrow correctly tracks with shelf position.
-TEST_P(ShelfViewTextDirectionTest, OverflowArrowForShelfPosition) {
-  const ShelfAlignment kAlignments[] = {
-      SHELF_ALIGNMENT_BOTTOM, SHELF_ALIGNMENT_LEFT, SHELF_ALIGNMENT_RIGHT,
-      SHELF_ALIGNMENT_BOTTOM_LOCKED,
-  };
-
-  // These must match what is expected for each alignment above.
-  const views::BubbleBorder::Arrow kArrows[] = {
-      views::BubbleBorder::BOTTOM_LEFT, views::BubbleBorder::LEFT_TOP,
-      views::BubbleBorder::RIGHT_TOP, views::BubbleBorder::BOTTOM_LEFT,
-  };
-
-  for (size_t i = 0; i < arraysize(kAlignments); i++) {
-    shelf_view_->wm_shelf()->SetAlignment(kAlignments[i]);
-
-    // Make sure there are enough icons to trigger the overflow in new
-    // orientation.
-    AddButtonsUntilOverflow();
-    test_api_->ShowOverflowBubble();
-    ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-
-    EXPECT_EQ(kArrows[i], test_api_->overflow_bubble()->bubble_view()->arrow());
-    OverflowBubbleViewTestAPI bubble_view_api(
-        test_api_->overflow_bubble()->bubble_view());
-    EXPECT_EQ(kArrows[i],
-              bubble_view_api.GetBubbleFrameView()->bubble_border()->arrow());
   }
 }
 
@@ -2478,6 +2449,19 @@ class TestOverflowButtonShellDelegate : public TestShellDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestOverflowButtonShellDelegate);
 };
 
+std::string ToString(ShelfAlignment shelf_alignment) {
+  switch (shelf_alignment) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      return "SHELF_ALIGNMENT_BOTTOM";
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return "SHELF_ALIGNMENT_BOTTOM_LOCKED";
+    case SHELF_ALIGNMENT_LEFT:
+      return "SHELF_ALIGNMENT_LEFT";
+    case SHELF_ALIGNMENT_RIGHT:
+      return "SHELF_ALIGNMENT_RIGHT";
+  }
+}
+
 }  // namespace
 
 // Test fixture for testing material design ink drop on overflow button.
@@ -2756,6 +2740,80 @@ TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
               IsEmpty());
 
   EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
+}
+
+// Test fixture to run overflow button tests for LTR and RTL directions.
+class OverflowButtonTextDirectionTest
+    : public OverflowButtonInkDropTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  OverflowButtonTextDirectionTest() : text_direction_change_(GetParam()) {}
+  ~OverflowButtonTextDirectionTest() override {}
+
+  void SetUp() override {
+    OverflowButtonInkDropTest::SetUp();
+
+    overflow_button_test_api_ =
+        base::MakeUnique<OverflowButtonTestApi>(overflow_button_);
+  }
+
+ protected:
+  std::unique_ptr<OverflowButtonTestApi> overflow_button_test_api_;
+
+ private:
+  ScopedTextDirectionChange text_direction_change_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverflowButtonTextDirectionTest);
+};
+
+INSTANTIATE_TEST_CASE_P(
+    /* prefix intentionally left blank due to only one parameterization */,
+    OverflowButtonTextDirectionTest,
+    testing::Bool());
+
+// Tests that overflow button's chevron points in correct direction for
+// different shelf alignments.
+TEST_P(OverflowButtonTextDirectionTest, ChevronDirection) {
+  struct {
+    ShelfAlignment shelf_alignment;
+    OverflowButtonTestApi::ChevronDirection inactive_direction;
+    OverflowButtonTestApi::ChevronDirection active_direction;
+  } const kTests[] = {
+      {
+          SHELF_ALIGNMENT_BOTTOM, OverflowButtonTestApi::ChevronDirection::UP,
+          OverflowButtonTestApi::ChevronDirection::DOWN,
+      },
+      {
+          SHELF_ALIGNMENT_BOTTOM_LOCKED,
+          OverflowButtonTestApi::ChevronDirection::UP,
+          OverflowButtonTestApi::ChevronDirection::DOWN,
+      },
+      {
+          SHELF_ALIGNMENT_LEFT, OverflowButtonTestApi::ChevronDirection::RIGHT,
+          OverflowButtonTestApi::ChevronDirection::LEFT,
+      },
+      {
+          SHELF_ALIGNMENT_RIGHT, OverflowButtonTestApi::ChevronDirection::LEFT,
+          OverflowButtonTestApi::ChevronDirection::RIGHT,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(kTests); i++) {
+    std::string extra_message =
+        "Shelf alignment: " + ToString(kTests[i].shelf_alignment);
+    GetPrimaryShelf()->SetAlignment(kTests[i].shelf_alignment);
+    EXPECT_TRUE(overflow_button_test_api_->ChevronDirectionMatches(
+        kTests[i].inactive_direction))
+        << extra_message;
+    test_api_->ShowOverflowBubble();
+    EXPECT_TRUE(overflow_button_test_api_->ChevronDirectionMatches(
+        kTests[i].active_direction))
+        << extra_message;
+    test_api_->HideOverflowBubble();
+    EXPECT_TRUE(overflow_button_test_api_->ChevronDirectionMatches(
+        kTests[i].inactive_direction))
+        << extra_message;
+  }
 }
 
 // Test fixture for testing material design ink drop on overflow button when it
