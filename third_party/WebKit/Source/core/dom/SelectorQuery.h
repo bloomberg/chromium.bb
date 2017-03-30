@@ -74,7 +74,7 @@ class CORE_EXPORT SelectorQuery {
       ContainerNode& rootNode,
       typename SelectorQueryTrait::OutputType&) const;
   template <typename SelectorQueryTrait>
-  void executeForTraverseRoot(ContainerNode* traverseRoot,
+  void executeForTraverseRoot(ContainerNode& traverseRoot,
                               ContainerNode& rootNode,
                               typename SelectorQueryTrait::OutputType&) const;
   template <typename SelectorQueryTrait>

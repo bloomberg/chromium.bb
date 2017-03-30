@@ -259,7 +259,9 @@ void SelectorQuery::findTraverseRootsAndExecute(
         start = element;
       if (startFromParent)
         start = start->parentNode();
-      executeForTraverseRoot<SelectorQueryTrait>(start, rootNode, output);
+      if (!start)
+        return;
+      executeForTraverseRoot<SelectorQueryTrait>(*start, rootNode, output);
       return;
     }
 
@@ -284,11 +286,8 @@ void SelectorQuery::findTraverseRootsAndExecute(
 
       ClassElementList<OnlyRoots> traverseRoots(rootNode, selector->value());
       while (!traverseRoots.isEmpty()) {
-        for (Element& element :
-             ElementTraversal::descendantsOf(*traverseRoots.next())) {
-          if (selectorMatches(*m_selectors[0], element, rootNode))
-            SelectorQueryTrait::appendElement(output, element);
-        }
+        executeForTraverseRoot<SelectorQueryTrait>(*traverseRoots.next(),
+                                                   rootNode, output);
       }
       return;
     }
@@ -303,21 +302,19 @@ void SelectorQuery::findTraverseRootsAndExecute(
       startFromParent = false;
   }
 
-  executeForTraverseRoot<SelectorQueryTrait>(&rootNode, rootNode, output);
+  executeForTraverseRoot<SelectorQueryTrait>(rootNode, rootNode, output);
 }
 
 template <typename SelectorQueryTrait>
 void SelectorQuery::executeForTraverseRoot(
-    ContainerNode* traverseRoot,
+    ContainerNode& traverseRoot,
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   DCHECK_EQ(m_selectors.size(), 1u);
 
-  if (!traverseRoot)
-    return;
   const CSSSelector& selector = *m_selectors[0];
 
-  for (Element& element : ElementTraversal::descendantsOf(*traverseRoot)) {
+  for (Element& element : ElementTraversal::descendantsOf(traverseRoot)) {
     if (selectorMatches(selector, element, rootNode)) {
       SelectorQueryTrait::appendElement(output, element);
       if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
