@@ -82,6 +82,7 @@
         spinner-active="[[toolbarSpinnerActive_]]"
         menu-label="$i18n{menuButtonLabel}"
         on-search-changed="onSearchChanged_"
+        role="none"
         show-menu>
     </cr-toolbar>
     <dialog id="drawer" is="cr-drawer">
@@ -96,7 +97,7 @@
         </template>
       </div>
     </dialog>
-    <paper-header-panel id="headerPanel" mode="waterfall">
+    <paper-header-panel id="headerPanel" mode="waterfall" role="none">
       <settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
