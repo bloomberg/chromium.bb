@@ -53,7 +53,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
     private final Rect mCacheAppRect = new Rect();
     private final int[] mCacheViewPosition = new int[2];
 
-    private CompositorSurfaceManager mCompositorSurfaceManager;
+    private final CompositorSurfaceManager mCompositorSurfaceManager;
     private boolean mOverlayVideoEnabled;
     private boolean mAlwaysTranslucent;
 
@@ -91,7 +91,14 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
         super(c);
         mRenderHost = host;
 
+        mCompositorSurfaceManager = new CompositorSurfaceManager(this, this);
+
         setVisibility(View.INVISIBLE);
+
+        // Request the opaque surface.  We might need the translucent one, but
+        // we don't know yet.  We'll switch back later if we discover that
+        // we're on a low memory device that always uses translucent.
+        mCompositorSurfaceManager.requestSurface(PixelFormat.OPAQUE);
     }
 
     /**
@@ -150,7 +157,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
      * Should be called for cleanup when the CompositorView instance is no longer used.
      */
     public void shutDown() {
-        if (mCompositorSurfaceManager != null) mCompositorSurfaceManager.shutDown();
+        mCompositorSurfaceManager.shutDown();
         if (mNativeCompositorView != 0) nativeDestroy(mNativeCompositorView);
         mNativeCompositorView = 0;
     }
@@ -183,12 +190,9 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
         // blending.
         mAlwaysTranslucent = lowMemDevice;
 
-        mCompositorSurfaceManager = new CompositorSurfaceManager(this, this);
-        // In case the background drawable was set before now, update it.
-        mCompositorSurfaceManager.setBackgroundDrawable(getBackground());
-        mCompositorSurfaceManager.setWillNotDraw(willNotDraw());
+        // In case we changed the requested format due to |lowMemDevice|,
+        // re-request the surface now.
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
-        mCompositorSurfaceManager.setVisibility(getVisibility());
 
         // Cover the black surface before it has valid content.
         setBackgroundColor(Color.WHITE);
@@ -398,9 +402,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
 
     @Override
     public void setWillNotDraw(boolean willNotDraw) {
-        if (mCompositorSurfaceManager != null) {
-            mCompositorSurfaceManager.setWillNotDraw(willNotDraw);
-        }
+        mCompositorSurfaceManager.setWillNotDraw(willNotDraw);
     }
 
     @Override
@@ -409,9 +411,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
         // setBackground* calls in View.  We still call to setBackground on the SurfaceView because
         // SetBackgroundDrawable is deprecated, and the semantics are the same I think.
         super.setBackgroundDrawable(background);
-        if (mCompositorSurfaceManager != null) {
-            mCompositorSurfaceManager.setBackgroundDrawable(background);
-        }
+        mCompositorSurfaceManager.setBackgroundDrawable(background);
     }
 
     @Override
@@ -420,9 +420,7 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
         // Also set the visibility on any child SurfaceViews, since that hides
         // the surface as well.  Otherwise, the surface is kept, which can
         // interfere with VR.
-        if (mCompositorSurfaceManager != null) {
-            mCompositorSurfaceManager.setVisibility(visibility);
-        }
+        mCompositorSurfaceManager.setVisibility(visibility);
     }
 
     // Implemented in native
