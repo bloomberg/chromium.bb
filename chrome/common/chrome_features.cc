@@ -218,12 +218,12 @@ const base::Feature kOfflinePageDownloadSuggestionsFeature{
 const base::Feature kPermissionsBlacklist{
     "PermissionsBlacklist", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables postscript generation instead of emf when printing to postscript
+// Enables PostScript generation instead of EMF when printing to PostScript
 // capable printers.
 #if defined(OS_WIN)
 const base::Feature kPostScriptPrinting{"PostScriptPrinting",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // OS_WIN
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.

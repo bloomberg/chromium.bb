@@ -301,7 +301,7 @@ PdfRenderSettings PWGRasterConverter::GetConversionSettings(
   // by autorotate.
   gfx::Rect area(std::min(page_size.width(), page_size.height()) * scale,
                  std::max(page_size.width(), page_size.height()) * scale);
-  return PdfRenderSettings(area, gfx::Point(0,0), dpi, /*autorotate=*/true,
+  return PdfRenderSettings(area, gfx::Point(0, 0), dpi, /*autorotate=*/true,
                            PdfRenderSettings::Mode::NORMAL);
 }
 

@@ -31,7 +31,6 @@ PRINTING_EXPORT void GetColorModelForMode(int color_mode,
 PRINTING_EXPORT void SetAgent(const std::string& user_agent);
 PRINTING_EXPORT const std::string& GetAgent();
 
-// OS-independent print settings.
 class PRINTING_EXPORT PrintSettings {
  public:
 #if defined(OS_WIN)

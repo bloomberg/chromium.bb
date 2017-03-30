@@ -26,8 +26,8 @@ struct PdfRenderSettings {
   };
 
   PdfRenderSettings() : dpi(0), autorotate(false), mode(Mode::NORMAL) {}
-  PdfRenderSettings(gfx::Rect area,
-                    gfx::Point offsets,
+  PdfRenderSettings(const gfx::Rect& area,
+                    const gfx::Point& offsets,
                     int dpi,
                     bool autorotate,
                     Mode mode)

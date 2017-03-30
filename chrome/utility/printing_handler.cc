@@ -89,16 +89,21 @@ void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
     const PdfRenderSettings& settings) {
   pdf_rendering_settings_ = settings;
-  chrome_pdf::SetPDFPostscriptPrintingLevel(0);  // Not using postscript.
   chrome_pdf::SetPDFUseGDIPrinting(pdf_rendering_settings_.mode ==
                                    PdfRenderSettings::Mode::GDI_TEXT);
-  if (pdf_rendering_settings_.mode ==
-      PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2) {
-    chrome_pdf::SetPDFPostscriptPrintingLevel(2);
-  } else if (pdf_rendering_settings_.mode ==
-             PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3) {
-    chrome_pdf::SetPDFPostscriptPrintingLevel(3);
+  int postscript_level;
+  switch (pdf_rendering_settings_.mode) {
+    case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2:
+      postscript_level = 2;
+      break;
+    case PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3:
+      postscript_level = 3;
+      break;
+    default:
+      postscript_level = 0;  // Not using postscript.
   }
+  chrome_pdf::SetPDFPostscriptPrintingLevel(postscript_level);
+
   base::File pdf_file = IPC::PlatformFileForTransitToFile(pdf_transit);
   int page_count = LoadPDF(std::move(pdf_file));
   Send(

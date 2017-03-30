@@ -445,7 +445,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       // PDF that matches paper size and orientation.
       if (utility_host->StartRenderPDFPagesToMetafile(
               pdf_path, printing::PdfRenderSettings(
-                            render_area, gfx::Point(0,0), render_dpi,
+                            render_area, gfx::Point(0, 0), render_dpi,
                             /*autorotate=*/false,
                             printing::PdfRenderSettings::Mode::NORMAL))) {
         // The object will self-destruct when the child process dies.
@@ -756,7 +756,7 @@ bool PrintSystemWin::ValidatePrintTicket(
 
 bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
                                    PlatformJobId job_id,
-                                   PrintJobDetails *job_details) {
+                                   PrintJobDetails* job_details) {
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend_->GetPrinterDriverInfo(printer_name));
   DCHECK(job_details);
@@ -775,8 +775,8 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
       std::unique_ptr<BYTE[]> job_info_buffer(new BYTE[bytes_needed]);
       if (GetJob(printer_handle.Get(), job_id, 1, job_info_buffer.get(),
                  bytes_needed, &bytes_needed)) {
-        JOB_INFO_1 *job_info =
-            reinterpret_cast<JOB_INFO_1 *>(job_info_buffer.get());
+        JOB_INFO_1* job_info =
+            reinterpret_cast<JOB_INFO_1*>(job_info_buffer.get());
         if (job_info->pStatus) {
           base::WideToUTF8(job_info->pStatus, wcslen(job_info->pStatus),
                            &job_details->status_message);

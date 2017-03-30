@@ -25,7 +25,6 @@ class Size;
 
 namespace printing {
 
-struct PdfRenderSettings;
 struct PwgRasterSettings;
 
 class PWGRasterConverter {
