@@ -370,6 +370,9 @@ CGFloat ContentSettingDecoration::GetWidthForSpace(CGFloat width) {
 void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const BOOL is_rtl = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   if ([animation_ animationState] != kNoAnimation) {
+    // Align to integral points so that drawing isn't blurry.
+    frame.origin.x = std::floor(frame.origin.x);
+
     NSRect background_rect = NSInsetRect(frame, 0.0, kBorderPadding);
     // This code is almost identical to code that appears in BubbleDecoration.
     // Unfortunately ContentSettingDecoration does not descend from
