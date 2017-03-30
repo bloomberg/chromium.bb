@@ -263,8 +263,10 @@ void ResourceMultiBufferDataProvider::didReceiveResponse(
   while (reasons) {
     DCHECK_LT(shift, max_enum);  // Sanity check.
     if (reasons & 0x1) {
-      UMA_HISTOGRAM_ENUMERATION("Media.UncacheableReason", shift,
-                                max_enum);  // PRESUBMIT_IGNORE_UMA_MAX
+      // Note: this uses an exact linear UMA to fake an enum UMA, as the actual
+      // enum is a bitmask.
+      UMA_HISTOGRAM_EXACT_LINEAR("Media.UncacheableReason", shift,
+                                 max_enum);  // PRESUBMIT_IGNORE_UMA_MAX
     }
 
     reasons >>= 1;

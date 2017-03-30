@@ -556,19 +556,20 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   // greater than the sample value. kMainThreadScrollingReasonCount doesn't
   // include the NotScrollingOnMain enum but the histograms do so adding
   // the +1 is necessary.
-  uint32_t mainThreadScrollingReasonEnumMax =
+  // TODO(dcheng): Fix https://crbug.com/705169 so this isn't needed.
+  constexpr uint32_t kMainThreadScrollingReasonEnumMax =
       cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount + 1;
   if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
     if (device == blink::WebGestureDeviceTouchscreen) {
       UMA_HISTOGRAM_ENUMERATION(
           kGestureHistogramName,
           cc::MainThreadScrollingReason::kNotScrollingOnMain,
-          mainThreadScrollingReasonEnumMax);
+          kMainThreadScrollingReasonEnumMax);
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           kWheelHistogramName,
           cc::MainThreadScrollingReason::kNotScrollingOnMain,
-          mainThreadScrollingReasonEnumMax);
+          kMainThreadScrollingReasonEnumMax);
     }
   }
 
@@ -587,10 +588,10 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
       }
       if (device == blink::WebGestureDeviceTouchscreen) {
         UMA_HISTOGRAM_ENUMERATION(kGestureHistogramName, i + 1,
-                                  mainThreadScrollingReasonEnumMax);
+                                  kMainThreadScrollingReasonEnumMax);
       } else {
         UMA_HISTOGRAM_ENUMERATION(kWheelHistogramName, i + 1,
-                                  mainThreadScrollingReasonEnumMax);
+                                  kMainThreadScrollingReasonEnumMax);
       }
     }
   }

@@ -97,9 +97,8 @@ void FirstRunController::Finalize() {
   int furthest_step = current_step_index_ == NONE_STEP_INDEX
                           ? steps_.size() - 1
                           : current_step_index_;
-  UMA_HISTOGRAM_ENUMERATION("CrosFirstRun.FurthestStep",
-                            furthest_step,
-                            steps_.size());
+  UMA_HISTOGRAM_EXACT_LINEAR("CrosFirstRun.FurthestStep", furthest_step,
+                             steps_.size());
   UMA_HISTOGRAM_MEDIUM_TIMES("CrosFirstRun.TimeSpent",
                              base::Time::Now() - start_time_);
   if (GetCurrentStep())

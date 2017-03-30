@@ -731,8 +731,8 @@ void HistoryBackend::CloseAllDatabases() {
 
 void HistoryBackend::RecordTopHostsMetrics(const GURL& url) {
   // Convert index from 0-based to 1-based.
-  UMA_HISTOGRAM_ENUMERATION("History.TopHostsVisitsByRank",
-                            HostRankIfAvailable(url) + 1, kMaxTopHosts + 2);
+  UMA_HISTOGRAM_EXACT_LINEAR("History.TopHostsVisitsByRank",
+                             HostRankIfAvailable(url) + 1, kMaxTopHosts + 2);
 }
 
 std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(

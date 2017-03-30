@@ -1060,11 +1060,11 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
     return;
   }
   // Each histogram name must follow a different code path in
-  // order to UMA_HISTOGRAM_ENUMERATION work correctly.
+  // order to UMA_HISTOGRAM_EXACT_LINEAR work correctly.
   if (name == kDevToolsActionTakenHistogram)
-    UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
+    UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
   else if (name == kDevToolsPanelShownHistogram)
-    UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
+    UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();
 }

@@ -855,8 +855,8 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
   int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
   if (enum_id != -1) {
     const size_t kMappingSize = arraysize(kUmaEnumToControlId);
-    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Used", enum_id,
-                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Used", enum_id,
+                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
     // Record to additional context specific histograms.
     enum_id = FindUMAEnumValueForCommand(id, CONTEXT_SPECIFIC_ENUM_ID);
 
@@ -864,23 +864,24 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
         content_type_->SupportsGroup(
             ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
-      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.ImageLink", enum_id,
-                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
+      UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.ImageLink",
+                                 enum_id,
+                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
     }
     // Selected text context.
     if (content_type_->SupportsGroup(
             ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
         content_type_->SupportsGroup(
             ContextMenuContentType::ITEM_GROUP_PRINT)) {
-      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.SelectedText",
-                                enum_id,
-                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
+      UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.SelectedText",
+                                 enum_id,
+                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
     }
     // Misspelled word context.
     if (!params_.misspelled_word.empty()) {
-      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.MisspelledWord",
-                                enum_id,
-                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
+      UMA_HISTOGRAM_EXACT_LINEAR("ContextMenu.SelectedOption.MisspelledWord",
+                                 enum_id,
+                                 kUmaEnumToControlId[kMappingSize - 1].enum_id);
     }
   } else {
     NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
@@ -891,8 +892,8 @@ void RenderViewContextMenu::RecordShownItem(int id) {
   int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
   if (enum_id != -1) {
     const size_t kMappingSize = arraysize(kUmaEnumToControlId);
-    UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Shown", enum_id,
-                              kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    UMA_HISTOGRAM_EXACT_LINEAR("RenderViewContextMenu.Shown", enum_id,
+                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
   } else {
     // Just warning here. It's harder to maintain list of all possibly
     // visible items than executable items.

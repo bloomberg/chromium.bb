@@ -55,11 +55,6 @@ using views::View;
 
 namespace ash {
 
-const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM = 0;
-const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT = 1;
-const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT = 2;
-const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT = 3;
-
 // The proportion of the shelf space reserved for non-panel icons. Panels
 // may flow into this space but will be put into the overflow bubble if there
 // is contention for the space.

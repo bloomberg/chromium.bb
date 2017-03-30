@@ -111,13 +111,14 @@ void TrackedPreferenceHelper::ReportAction(ResetAction reset_action) const {
       // No report for DONT_RESET.
       break;
     case WANTED_RESET:
-      UMA_HISTOGRAM_ENUMERATION(
+      UMA_HISTOGRAM_EXACT_LINEAR(
           user_prefs::tracked::kTrackedPrefHistogramWantedReset, reporting_id_,
           reporting_ids_count_);
       break;
     case DO_RESET:
-      UMA_HISTOGRAM_ENUMERATION(user_prefs::tracked::kTrackedPrefHistogramReset,
-                                reporting_id_, reporting_ids_count_);
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          user_prefs::tracked::kTrackedPrefHistogramReset, reporting_id_,
+          reporting_ids_count_);
       break;
   }
 }

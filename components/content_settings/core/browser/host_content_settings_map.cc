@@ -611,11 +611,11 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
         int histogram_value =
             ContentSettingTypeToHistogramValue(content_type, &num_values);
         if (setting_entry.primary_pattern.HasPath()) {
-          UMA_HISTOGRAM_ENUMERATION(
+          UMA_HISTOGRAM_EXACT_LINEAR(
               "ContentSettings.ExceptionSchemeFile.Type.WithPath",
               histogram_value, num_values);
         } else {
-          UMA_HISTOGRAM_ENUMERATION(
+          UMA_HISTOGRAM_EXACT_LINEAR(
               "ContentSettings.ExceptionSchemeFile.Type.WithoutPath",
               histogram_value, num_values);
         }

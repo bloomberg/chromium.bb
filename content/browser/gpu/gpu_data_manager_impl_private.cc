@@ -146,16 +146,16 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   // was recorded in this histogram in order to have a convenient
   // denominator to compute blacklist percentages for the rest of the
   // entries.
-  UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-      0, max_entry_id + 1);
+  UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerEntry", 0,
+                             max_entry_id + 1);
 
   if (blacklisted_features.size() != 0) {
     std::vector<uint32_t> flag_entries;
     blacklist->GetDecisionEntries(&flag_entries, disabled);
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
-      UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerEntry",
-          flag_entries[i], max_entry_id + 1);
+      UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerEntry",
+                                 flag_entries[i], max_entry_id + 1);
     }
   }
 
@@ -165,8 +165,8 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
   disabled = true;
   blacklist->GetDecisionEntries(&flag_disabled_entries, disabled);
   for (uint32_t disabled_entry : flag_disabled_entries) {
-    UMA_HISTOGRAM_ENUMERATION("GPU.BlacklistTestResultsPerDisabledEntry",
-        disabled_entry, max_entry_id + 1);
+    UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerDisabledEntry",
+                               disabled_entry, max_entry_id + 1);
   }
 
   const gpu::GpuFeatureType kGpuFeatures[] = {

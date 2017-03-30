@@ -648,9 +648,9 @@ void UserImageManagerImpl::UserLoggedIn(bool user_is_new,
     if (!user_is_local)
       SetInitialUserImage();
   } else {
-    UMA_HISTOGRAM_ENUMERATION("UserImage.LoggedIn",
-                              ImageIndexToHistogramIndex(user->image_index()),
-                              default_user_image::kHistogramImagesCount);
+    UMA_HISTOGRAM_EXACT_LINEAR("UserImage.LoggedIn",
+                               ImageIndexToHistogramIndex(user->image_index()),
+                               default_user_image::kHistogramImagesCount);
   }
 
   // Reset the downloaded profile image as a new user logged in.

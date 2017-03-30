@@ -146,8 +146,8 @@ void UserImageScreen::OnImageAccepted() {
       break;
   }
   if (user_has_selected_image_) {
-    UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice", uma_index,
-                              default_user_image::kHistogramImagesCount);
+    UMA_HISTOGRAM_EXACT_LINEAR("UserImage.FirstTimeChoice", uma_index,
+                               default_user_image::kHistogramImagesCount);
   }
   ExitScreen();
 }

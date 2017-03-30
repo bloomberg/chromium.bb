@@ -782,28 +782,30 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
                             int counter_max) override {
     switch (counter_type) {
       case webrtc::kEnumCounterAddressFamily:
-        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics", counter,
-                                  counter_max);
+        UMA_HISTOGRAM_EXACT_LINEAR("WebRTC.PeerConnection.IPMetrics", counter,
+                                   counter_max);
         break;
       case webrtc::kEnumCounterIceCandidatePairTypeUdp:
-        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.CandidatePairType_UDP",
-                                  counter, counter_max);
+        UMA_HISTOGRAM_EXACT_LINEAR(
+            "WebRTC.PeerConnection.CandidatePairType_UDP", counter,
+            counter_max);
         break;
       case webrtc::kEnumCounterIceCandidatePairTypeTcp:
-        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.CandidatePairType_TCP",
-                                  counter, counter_max);
+        UMA_HISTOGRAM_EXACT_LINEAR(
+            "WebRTC.PeerConnection.CandidatePairType_TCP", counter,
+            counter_max);
         break;
       case webrtc::kEnumCounterDtlsHandshakeError:
-        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.DtlsHandshakeError",
-                                  counter, counter_max);
+        UMA_HISTOGRAM_EXACT_LINEAR("WebRTC.PeerConnection.DtlsHandshakeError",
+                                   counter, counter_max);
         break;
       case webrtc::kEnumCounterIceRestart:
-        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IceRestartState",
-                                  counter, counter_max);
+        UMA_HISTOGRAM_EXACT_LINEAR("WebRTC.PeerConnection.IceRestartState",
+                                   counter, counter_max);
         break;
       case webrtc::kEnumCounterIceRegathering:
-        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IceRegatheringReason",
-                                  counter, counter_max);
+        UMA_HISTOGRAM_EXACT_LINEAR("WebRTC.PeerConnection.IceRegatheringReason",
+                                   counter, counter_max);
         break;
       default:
         // The default clause is expected to reach when new enum types are

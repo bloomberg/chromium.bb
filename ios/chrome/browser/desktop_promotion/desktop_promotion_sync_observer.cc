@@ -75,9 +75,11 @@ void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
   int entrypoint_prefixes_count =
       arraysize(kDesktopIOSPromotionEntrypointHistogramPrefix);
   for (int i = 1; i < entrypoint_prefixes_count + 1; i++) {
+    // Note this fakes an enum UMA using an exact linear UMA, since the enum is
+    // a modification of another enum, but isn't defined directly.
     if (sms_entrypoint == i) {
-      UMA_HISTOGRAM_ENUMERATION("DesktopIOSPromotion.SMSSent.IOSSigninReason",
-                                i, entrypoint_prefixes_count + 1);
+      UMA_HISTOGRAM_EXACT_LINEAR("DesktopIOSPromotion.SMSSent.IOSSigninReason",
+                                 i, entrypoint_prefixes_count + 1);
       // If the time delta is negative due to client bad clock we log 0 instead.
       base::Histogram::FactoryGet(
           base::StringPrintf(
@@ -89,8 +91,8 @@ void DesktopPromotionSyncObserver::OnStateChanged(syncer::SyncService* sync) {
       // If the user saw this promotion type, log that it could be a reason
       // for the signin.
       if ((1 << i) & shown_entrypoints)
-        UMA_HISTOGRAM_ENUMERATION("DesktopIOSPromotion.NoSMS.IOSSigninReason",
-                                  i, entrypoint_prefixes_count + 1);
+        UMA_HISTOGRAM_EXACT_LINEAR("DesktopIOSPromotion.NoSMS.IOSSigninReason",
+                                   i, entrypoint_prefixes_count + 1);
     }
   }
 

@@ -132,8 +132,8 @@ void RecordCreationFlags(const Extension* extension) {
   for (int i = 0; i < Extension::kInitFromValueFlagBits; ++i) {
     int flag = 1 << i;
     if (extension->creation_flags() & flag) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.LoadCreationFlags", i, Extension::kInitFromValueFlagBits);
+      UMA_HISTOGRAM_EXACT_LINEAR("Extensions.LoadCreationFlags", i,
+                                 Extension::kInitFromValueFlagBits);
     }
   }
 }

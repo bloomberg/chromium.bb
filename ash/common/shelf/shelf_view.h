@@ -54,10 +54,13 @@ namespace test {
 class ShelfViewTestAPI;
 }
 
-extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM;
-extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT;
-extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT;
-extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT;
+enum ShelfAlignmentUmaEnumValue {
+  SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+  SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT,
+  // Must be last entry in enum.
+  SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT,
+};
 
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,

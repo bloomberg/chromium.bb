@@ -259,7 +259,7 @@ void CollectModuleVerificationData(
     }
 
     if (!scan_complete) {
-      UMA_HISTOGRAM_ENUMERATION(
+      UMA_HISTOGRAM_EXACT_LINEAR(
           "ModuleIntegrityVerification.RelocationsUnordered", i,
           num_modules_to_verify);
     }
