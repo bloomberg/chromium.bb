@@ -4,6 +4,7 @@
 
 #include "chromecast/common/media/cast_media_client.h"
 
+#include "chromecast/media/base/media_caps.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
@@ -68,6 +69,31 @@ bool CastMediaClient::IsSupportedVideoConfig(
   return MediaCapabilitiesShlib::IsSupportedVideoConfig(
       ToCastVideoCodec(config.codec, config.profile),
       ToCastVideoProfile(config.profile), config.level);
+#endif
+}
+
+bool CastMediaClient::IsSupportedAudioConfig(
+    const ::media::AudioConfig& config) {
+#if defined(OS_ANDROID)
+  // TODO(sanfin): Implement this for Android.
+  return true;
+#else
+  AudioCodec codec = ToCastAudioCodec(config.codec);
+  // Cast platform implements software decoding of Opus and FLAC, so only PCM
+  // support is necessary in order to support Opus and FLAC.
+  if (codec == kCodecOpus || codec == kCodecFLAC)
+    codec = kCodecPCM;
+
+  // If HDMI sink supports AC3/EAC3 codecs then we don't need the vendor backend
+  // to support these codec directly.
+  if (codec == kCodecEAC3 && MediaCapabilities::HdmiSinkSupportsEAC3())
+    return true;
+  if (codec == kCodecAC3 && MediaCapabilities::HdmiSinkSupportsAC3())
+    return true;
+
+  AudioConfig cast_audio_config;
+  cast_audio_config.codec = codec;
+  return MediaCapabilitiesShlib::IsSupportedAudioConfig(cast_audio_config);
 #endif
 }
 

@@ -61,6 +61,32 @@ bool IsCodecSupported(const std::string& codec) {
   return base::Bind(&IsCodecSupported);
 }
 
+AudioCodec ToCastAudioCodec(const ::media::AudioCodec codec) {
+  switch (codec) {
+    case ::media::kCodecAAC:
+      return kCodecAAC;
+    case ::media::kCodecMP3:
+      return kCodecMP3;
+    case ::media::kCodecPCM:
+      return kCodecPCM;
+    case ::media::kCodecPCM_S16BE:
+      return kCodecPCM_S16BE;
+    case ::media::kCodecVorbis:
+      return kCodecVorbis;
+    case ::media::kCodecOpus:
+      return kCodecOpus;
+    case ::media::kCodecEAC3:
+      return kCodecEAC3;
+    case ::media::kCodecAC3:
+      return kCodecAC3;
+    case ::media::kCodecFLAC:
+      return kCodecFLAC;
+    default:
+      LOG(ERROR) << "Unsupported audio codec " << codec;
+  }
+  return kAudioCodecUnknown;
+}
+
 VideoCodec ToCastVideoCodec(const ::media::VideoCodec video_codec,
                             const ::media::VideoCodecProfile codec_profile) {
   switch (video_codec) {

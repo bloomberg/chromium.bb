@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "chromecast/public/media/decoder_config.h"
+#include "media/base/audio_codecs.h"
 #include "media/base/mime_util.h"
 #include "media/base/video_codecs.h"
 
@@ -23,6 +24,10 @@ namespace media {
 // Returns the callback to decide whether a given codec (passed in as a string
 // representation of the codec id conforming to RFC 6381) is supported or not.
 ::media::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB();
+
+// Converts ::media::AudioCodec to chromecast::media::AudioCodec. Any unknown or
+// unsupported codec will be converted to chromecast::media::kCodecUnknown.
+AudioCodec ToCastAudioCodec(const ::media::AudioCodec codec);
 
 // Converts ::media::VideoCodec to chromecast::media::VideoCodec. Any unknown or
 // unsupported codec will be converted to chromecast::media::kCodecUnknown. Note

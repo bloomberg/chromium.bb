@@ -136,6 +136,31 @@ MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
 
 MimeUtil::~MimeUtil() {}
 
+AudioCodec MimeUtilToAudioCodec(MimeUtil::Codec codec) {
+  switch (codec) {
+    case MimeUtil::PCM:
+      return kCodecPCM;
+    case MimeUtil::MP3:
+      return kCodecMP3;
+    case MimeUtil::AC3:
+      return kCodecAC3;
+    case MimeUtil::EAC3:
+      return kCodecEAC3;
+    case MimeUtil::MPEG2_AAC:
+    case MimeUtil::MPEG4_AAC:
+      return kCodecAAC;
+    case MimeUtil::VORBIS:
+      return kCodecVorbis;
+    case MimeUtil::OPUS:
+      return kCodecOpus;
+    case MimeUtil::FLAC:
+      return kCodecFLAC;
+    default:
+      break;
+  }
+  return kUnknownAudioCodec;
+}
+
 VideoCodec MimeUtilToVideoCodec(MimeUtil::Codec codec) {
   switch (codec) {
     case MimeUtil::H264:
@@ -708,6 +733,21 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
     // to add platform level querying to get supported profiles.
     // https://crbug.com/604566
     ambiguous_platform_support = true;
+  }
+
+  AudioCodec audio_codec = MimeUtilToAudioCodec(codec);
+  if (audio_codec != kUnknownAudioCodec) {
+    AudioConfig audio_config = {audio_codec};
+
+    // If MediaClient is provided use it to check for decoder support.
+    MediaClient* media_client = GetMediaClient();
+    if (media_client && !media_client->IsSupportedAudioConfig(audio_config))
+      return IsNotSupported;
+
+    // When no MediaClient is provided, assume default decoders are available
+    // as described by media::IsSupportedAudioConfig().
+    if (!media_client && !IsSupportedAudioConfig(audio_config))
+      return IsNotSupported;
   }
 
   if (video_codec != kUnknownVideoCodec) {

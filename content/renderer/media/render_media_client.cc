@@ -93,6 +93,12 @@ void RenderMediaClient::RecordRapporURL(const std::string& metric,
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
 }
 
+bool RenderMediaClient::IsSupportedAudioConfig(
+    const media::AudioConfig& config) {
+  // Render media client does not customize decoder support. Defer to media/.
+  return ::media::IsSupportedAudioConfig(config);
+}
+
 bool RenderMediaClient::IsSupportedVideoConfig(
     const media::VideoConfig& config) {
   // Render media client does not customize decoder support. Defer to media/.

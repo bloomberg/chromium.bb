@@ -102,6 +102,40 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
   return true;
 }
 
+bool IsSupportedAudioConfig(const AudioConfig& config) {
+  switch (config.codec) {
+    case media::kCodecAAC:
+    case media::kCodecFLAC:
+    case media::kCodecMP3:
+    case media::kCodecOpus:
+    case media::kCodecPCM:
+    case media::kCodecPCM_MULAW:
+    case media::kCodecPCM_S16BE:
+    case media::kCodecPCM_S24BE:
+    case media::kCodecPCM_ALAW:
+    case media::kCodecVorbis:
+      return true;
+
+    case media::kCodecAMR_NB:
+    case media::kCodecAMR_WB:
+    case media::kCodecGSM_MS:
+#if defined(OS_CHROMEOS)
+      return true;
+#else
+      return false;
+#endif
+
+    case media::kCodecEAC3:
+    case media::kCodecALAC:
+    case media::kCodecAC3:
+    case media::kUnknownAudioCodec:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 // TODO(chcunningham): Query decoders for codec profile support. Add platform
 // specific logic for Android (move from MimeUtilIntenral).
 bool IsSupportedVideoConfig(const VideoConfig& config) {

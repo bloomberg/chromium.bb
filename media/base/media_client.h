@@ -69,6 +69,9 @@ class MEDIA_EXPORT MediaClient {
   // metric. See: https://www.chromium.org/developers/design-documents/rappor
   virtual void RecordRapporURL(const std::string& metric, const GURL& url) = 0;
 
+  // Returns true if the given audio config is supported.
+  virtual bool IsSupportedAudioConfig(const AudioConfig& config) = 0;
+
   // Returns true if the given combination of video codec, profile and level is
   // supported. The |level| value is codec-specific.
   virtual bool IsSupportedVideoConfig(const VideoConfig& config) = 0;

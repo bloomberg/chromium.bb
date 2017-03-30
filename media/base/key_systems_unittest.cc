@@ -180,6 +180,7 @@ class TestMediaClient : public MediaClient {
   void AddSupportedKeySystems(std::vector<std::unique_ptr<KeySystemProperties>>*
                                   key_systems_properties) override;
   void RecordRapporURL(const std::string& metric, const GURL& url) final;
+  bool IsSupportedAudioConfig(const media::AudioConfig& config) final;
   bool IsSupportedVideoConfig(const media::VideoConfig& config) final;
 
   // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
@@ -229,6 +230,10 @@ void TestMediaClient::AddSupportedKeySystems(
 void TestMediaClient::RecordRapporURL(const std::string& /* metric */,
                                       const GURL& /* url */) {
   NOTIMPLEMENTED();
+}
+
+bool TestMediaClient::IsSupportedAudioConfig(const media::AudioConfig& config) {
+  return true;
 }
 
 bool TestMediaClient::IsSupportedVideoConfig(const media::VideoConfig& config) {

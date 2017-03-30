@@ -57,19 +57,6 @@ const char* kMp2tsMaybe = kNot;
 const char* kMp2tsProbably = kNot;
 #endif
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-const char* kAc3Eac3Probably = kPropProbably;
-#else
-const char* kAc3Eac3Probably = kNot;
-#endif
-
-#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER) && \
-    BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
-const char* kMp2tsAc3Eac3Probably = kPropProbably;
-#else
-const char* kMp2tsAc3Eac3Probably = kNot;
-#endif
-
 // High 10-bit profile is only available when we can use ffmpeg to decode H.264.
 // Even though FFmpeg is used on Android, we only use platform decoders for
 // H.264
@@ -828,30 +815,25 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kPropProbably,
             CanPlay("'video/mp4; codecs=\"avc3.42E01E, mp4a.40.29\"'"));
 
-  // AC3 and EAC3 (aka Dolby Digital Plus, DD+) audio codecs.
+  // AC3 and EAC3 (aka Dolby Digital Plus, DD+) audio codecs. These are not
+  // supported by Chrome by default.
   // TODO(servolk): Strictly speaking only mp4a.A5 and mp4a.A6 codec ids are
   // valid according to RFC 6381 section 3.3, 3.4. Lower-case oti (mp4a.a5 and
   // mp4a.a6) should be rejected. But we used to allow those in older versions
   // of Chromecast firmware and some apps (notably MPL) depend on those codec
   // types being supported, so they should be allowed for now (crbug.com/564960)
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'video/mp4; codecs=\"ac-3\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'video/mp4; codecs=\"mp4a.a5\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'video/mp4; codecs=\"mp4a.A5\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'video/mp4; codecs=\"ec-3\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'video/mp4; codecs=\"mp4a.a6\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'video/mp4; codecs=\"mp4a.A6\"'"));
-  EXPECT_EQ(kAc3Eac3Probably,
-            CanPlay("'video/mp4; codecs=\"avc1.640028,ac-3\"'"));
-  EXPECT_EQ(kAc3Eac3Probably,
-            CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.a5\"'"));
-  EXPECT_EQ(kAc3Eac3Probably,
-            CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.A5\"'"));
-  EXPECT_EQ(kAc3Eac3Probably,
-            CanPlay("'video/mp4; codecs=\"avc1.640028,ec-3\"'"));
-  EXPECT_EQ(kAc3Eac3Probably,
-            CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.a6\"'"));
-  EXPECT_EQ(kAc3Eac3Probably,
-            CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.A6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"ac-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"mp4a.a5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"mp4a.A5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"ec-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"mp4a.a6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"mp4a.A6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.640028,ac-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.a5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.A5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.640028,ec-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.a6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"avc1.640028,mp4a.A6\"'"));
 
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1, mp4a.40.2\"'"));
   EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1, mp4a.40.02\"'"));
@@ -976,12 +958,12 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
 
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"vp09.00.10.08\"'"));
 
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'audio/mp4; codecs=\"ac-3\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'audio/mp4; codecs=\"mp4a.a5\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'audio/mp4; codecs=\"mp4a.A5\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'audio/mp4; codecs=\"ec-3\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'audio/mp4; codecs=\"mp4a.a6\"'"));
-  EXPECT_EQ(kAc3Eac3Probably, CanPlay("'audio/mp4; codecs=\"mp4a.A6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"ac-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.a5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.A5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"ec-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.a6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"mp4a.A6\"'"));
 
   TestMPEGUnacceptableCombinations("audio/mp4");
   EXPECT_EQ(kNot, CanPlay("'audio/mp4; codecs=\"flac\"'"));
@@ -1445,18 +1427,12 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Mpeg2Ts) {
   EXPECT_EQ(kMp2tsProbably,
             CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.40.2\"'"));
   // H.264 + AC3/EAC3 audio combinations
-  EXPECT_EQ(kMp2tsAc3Eac3Probably,
-            CanPlay("'video/mp2t; codecs=\"avc1.640028,ac-3\"'"));
-  EXPECT_EQ(kMp2tsAc3Eac3Probably,
-            CanPlay("'video/mp2t; codecs=\"avc1.640028,ec-3\"'"));
-  EXPECT_EQ(kMp2tsAc3Eac3Probably,
-            CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.A5\"'"));
-  EXPECT_EQ(kMp2tsAc3Eac3Probably,
-            CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.A6\"'"));
-  EXPECT_EQ(kMp2tsAc3Eac3Probably,
-            CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.a5\"'"));
-  EXPECT_EQ(kMp2tsAc3Eac3Probably,
-            CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.a6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp2t; codecs=\"avc1.640028,ac-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp2t; codecs=\"avc1.640028,ec-3\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.A5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.A6\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.a5\"'"));
+  EXPECT_EQ(kNot, CanPlay("'video/mp2t; codecs=\"avc1.640028,mp4a.a6\"'"));
 
   TestMPEGUnacceptableCombinations("video/mp2t");
   // This result is incorrect. See https://crbug.com/592889.
