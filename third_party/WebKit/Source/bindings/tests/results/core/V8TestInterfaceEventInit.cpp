@@ -18,6 +18,14 @@
 
 namespace blink {
 
+static const v8::Eternal<v8::Name>* eternalV8TestInterfaceEventInitKeys(v8::Isolate* isolate) {
+  static const char* const kKeys[] = {
+    "stringMember",
+  };
+  return V8PerIsolateData::from(isolate)->findOrCreateEternalNameCache(
+      kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
+}
+
 void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState) {
   if (isUndefinedOrNull(v8Value)) {
     return;
@@ -33,9 +41,11 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
   if (exceptionState.hadException())
     return;
 
+  const v8::Eternal<v8::Name>* keys = eternalV8TestInterfaceEventInitKeys(isolate);
   v8::TryCatch block(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> stringMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
+  if (!v8Object->Get(context, keys[0].Get(isolate)).ToLocal(&stringMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -60,6 +70,8 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
   if (!toV8EventInit(impl, dictionary, creationContext, isolate))
     return false;
 
+  const v8::Eternal<v8::Name>* keys = eternalV8TestInterfaceEventInitKeys(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> stringMemberValue;
   bool stringMemberHasValueOrDefault = false;
   if (impl.hasStringMember()) {
@@ -67,7 +79,7 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
     stringMemberHasValueOrDefault = true;
   }
   if (stringMemberHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember"), stringMemberValue))) {
+      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), stringMemberValue))) {
     return false;
   }
 

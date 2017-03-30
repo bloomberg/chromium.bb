@@ -152,6 +152,15 @@ class CORE_EXPORT V8PerIsolateData {
       v8::Local<v8::Signature>,
       int length);
 
+  // Obtains a pointer to an array of names, given a lookup key. If it does not
+  // yet exist, it is created from the given array of strings. Once created,
+  // these live for as long as the isolate, so this is appropriate only for a
+  // compile-time list of related names, such as IDL dictionary keys.
+  const v8::Eternal<v8::Name>* findOrCreateEternalNameCache(
+      const void* lookupKey,
+      const char* const names[],
+      size_t count);
+
   bool hasInstance(const WrapperTypeInfo* untrusted, v8::Local<v8::Value>);
   v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*,
                                                      v8::Local<v8::Value>);
@@ -237,6 +246,9 @@ class CORE_EXPORT V8PerIsolateData {
   // the cross-origin accessible DOM operations.
   V8FunctionTemplateMap m_operationTemplateMapForMainWorld;
   V8FunctionTemplateMap m_operationTemplateMapForNonMainWorld;
+
+  // Contains lists of eternal names, such as dictionary keys.
+  HashMap<const void*, Vector<v8::Eternal<v8::Name>>> m_eternalNameCache;
 
   std::unique_ptr<StringCache> m_stringCache;
   std::unique_ptr<V8HiddenValue> m_hiddenValue;

@@ -17,6 +17,14 @@
 
 namespace blink {
 
+static const v8::Eternal<v8::Name>* eternalV8TestPermissiveDictionaryKeys(v8::Isolate* isolate) {
+  static const char* const kKeys[] = {
+    "booleanMember",
+  };
+  return V8PerIsolateData::from(isolate)->findOrCreateEternalNameCache(
+      kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
+}
+
 void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestPermissiveDictionary& impl, ExceptionState& exceptionState) {
   if (isUndefinedOrNull(v8Value)) {
     return;
@@ -28,9 +36,11 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
   ALLOW_UNUSED_LOCAL(v8Object);
 
+  const v8::Eternal<v8::Name>* keys = eternalV8TestPermissiveDictionaryKeys(isolate);
   v8::TryCatch block(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> booleanMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
+  if (!v8Object->Get(context, keys[0].Get(isolate)).ToLocal(&booleanMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -52,6 +62,8 @@ v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> cr
 }
 
 bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  const v8::Eternal<v8::Name>* keys = eternalV8TestPermissiveDictionaryKeys(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> booleanMemberValue;
   bool booleanMemberHasValueOrDefault = false;
   if (impl.hasBooleanMember()) {
@@ -59,7 +71,7 @@ bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Loca
     booleanMemberHasValueOrDefault = true;
   }
   if (booleanMemberHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "booleanMember"), booleanMemberValue))) {
+      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), booleanMemberValue))) {
     return false;
   }
 

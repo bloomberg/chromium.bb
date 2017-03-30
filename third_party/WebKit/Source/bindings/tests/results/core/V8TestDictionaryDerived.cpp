@@ -18,6 +18,17 @@
 
 namespace blink {
 
+static const v8::Eternal<v8::Name>* eternalV8TestDictionaryDerivedImplementedAsKeys(v8::Isolate* isolate) {
+  static const char* const kKeys[] = {
+    "derivedStringMember",
+    "derivedStringMemberWithDefault",
+    "requiredLongMember",
+    "stringOrDoubleSequenceMember",
+  };
+  return V8PerIsolateData::from(isolate)->findOrCreateEternalNameCache(
+      kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
+}
+
 void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionaryDerivedImplementedAs& impl, ExceptionState& exceptionState) {
   if (isUndefinedOrNull(v8Value)) {
     exceptionState.throwTypeError("Missing required member(s): requiredLongMember.");
@@ -34,9 +45,11 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   if (exceptionState.hadException())
     return;
 
+  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate);
   v8::TryCatch block(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> derivedStringMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "derivedStringMember")).ToLocal(&derivedStringMemberValue)) {
+  if (!v8Object->Get(context, keys[0].Get(isolate)).ToLocal(&derivedStringMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -50,7 +63,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   }
 
   v8::Local<v8::Value> derivedStringMemberWithDefaultValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "derivedStringMemberWithDefault")).ToLocal(&derivedStringMemberWithDefaultValue)) {
+  if (!v8Object->Get(context, keys[1].Get(isolate)).ToLocal(&derivedStringMemberWithDefaultValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -64,7 +77,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   }
 
   v8::Local<v8::Value> requiredLongMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "requiredLongMember")).ToLocal(&requiredLongMemberValue)) {
+  if (!v8Object->Get(context, keys[2].Get(isolate)).ToLocal(&requiredLongMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -79,7 +92,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   }
 
   v8::Local<v8::Value> stringOrDoubleSequenceMemberValue;
-  if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringOrDoubleSequenceMember")).ToLocal(&stringOrDoubleSequenceMemberValue)) {
+  if (!v8Object->Get(context, keys[3].Get(isolate)).ToLocal(&stringOrDoubleSequenceMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
     return;
   }
@@ -104,6 +117,8 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
   if (!toV8TestDictionary(impl, dictionary, creationContext, isolate))
     return false;
 
+  const v8::Eternal<v8::Name>* keys = eternalV8TestDictionaryDerivedImplementedAsKeys(isolate);
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
   v8::Local<v8::Value> derivedStringMemberValue;
   bool derivedStringMemberHasValueOrDefault = false;
   if (impl.hasDerivedStringMember()) {
@@ -111,7 +126,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     derivedStringMemberHasValueOrDefault = true;
   }
   if (derivedStringMemberHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "derivedStringMember"), derivedStringMemberValue))) {
+      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[0].Get(isolate), derivedStringMemberValue))) {
     return false;
   }
 
@@ -125,7 +140,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     derivedStringMemberWithDefaultHasValueOrDefault = true;
   }
   if (derivedStringMemberWithDefaultHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "derivedStringMemberWithDefault"), derivedStringMemberWithDefaultValue))) {
+      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[1].Get(isolate), derivedStringMemberWithDefaultValue))) {
     return false;
   }
 
@@ -138,7 +153,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     NOTREACHED();
   }
   if (requiredLongMemberHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "requiredLongMember"), requiredLongMemberValue))) {
+      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[2].Get(isolate), requiredLongMemberValue))) {
     return false;
   }
 
@@ -149,7 +164,7 @@ bool toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
     stringOrDoubleSequenceMemberHasValueOrDefault = true;
   }
   if (stringOrDoubleSequenceMemberHasValueOrDefault &&
-      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringOrDoubleSequenceMember"), stringOrDoubleSequenceMemberValue))) {
+      !v8CallBoolean(dictionary->CreateDataProperty(context, keys[3].Get(isolate), stringOrDoubleSequenceMemberValue))) {
     return false;
   }
 

@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
@@ -187,6 +188,28 @@ void V8PerIsolateData::setInterfaceTemplate(
     v8::Local<v8::FunctionTemplate> value) {
   auto& map = selectInterfaceTemplateMap(world);
   map.insert(key, v8::Eternal<v8::FunctionTemplate>(isolate(), value));
+}
+
+const v8::Eternal<v8::Name>* V8PerIsolateData::findOrCreateEternalNameCache(
+    const void* lookupKey,
+    const char* const names[],
+    size_t count) {
+  auto it = m_eternalNameCache.find(lookupKey);
+  const Vector<v8::Eternal<v8::Name>>* vector = nullptr;
+  if (UNLIKELY(it == m_eternalNameCache.end())) {
+    v8::Isolate* isolate = this->isolate();
+    Vector<v8::Eternal<v8::Name>> newVector(count);
+    std::transform(
+        names, names + count, newVector.begin(), [isolate](const char* name) {
+          return v8::Eternal<v8::Name>(isolate, v8AtomicString(isolate, name));
+        });
+    vector = &m_eternalNameCache.set(lookupKey, std::move(newVector))
+                  .storedValue->value;
+  } else {
+    vector = &it->value;
+  }
+  DCHECK_EQ(vector->size(), count);
+  return vector->data();
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext() {
