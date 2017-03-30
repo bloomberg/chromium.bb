@@ -430,8 +430,7 @@ bool GetAllRegions(std::vector<VMRegion>* regions) {
   vm_region_submap_info_64 info;
   natural_t depth = 1;
   mach_msg_type_number_t count = sizeof(info);
-  mach_vm_address_t address = MACH_VM_MIN_ADDRESS;
-  while (true) {
+  for (mach_vm_address_t address = MACH_VM_MIN_ADDRESS;; address += size) {
     memset(&info, 0, sizeof(info));
     kern_return_t kr = mach_vm_region_recurse(
         task, &address, &size, &depth,
