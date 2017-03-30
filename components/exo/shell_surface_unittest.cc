@@ -207,6 +207,26 @@ TEST_F(ShellSurfaceTest, SetPinned) {
           ->IsPinned());
 }
 
+TEST_F(ShellSurfaceTest, SetSystemUiVisibility) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  shell_surface->SetSystemUiVisibility(true);
+  EXPECT_TRUE(
+      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
+          ->autohide_shelf_when_maximized_or_fullscreen());
+
+  shell_surface->SetSystemUiVisibility(false);
+  EXPECT_FALSE(
+      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
+          ->autohide_shelf_when_maximized_or_fullscreen());
+}
+
 TEST_F(ShellSurfaceTest, SetTitle) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));

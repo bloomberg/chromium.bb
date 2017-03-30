@@ -507,8 +507,7 @@ void ShellSurface::SetPinned(bool pinned, bool trusted) {
 void ShellSurface::SetSystemUiVisibility(bool autohide) {
   TRACE_EVENT1("exo", "ShellSurface::SetSystemUiVisibility", "autohide",
                autohide);
-  // TODO: Implemented in next CL. crbug.com/705723
-  NOTIMPLEMENTED();
+  ash::wm::SetAutoHideShelf(widget_->GetNativeWindow(), autohide);
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {

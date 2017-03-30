@@ -1485,6 +1485,43 @@ TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
   }
 }
 
+TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
+  WmShelf* shelf = GetPrimaryShelf();
+
+  views::Widget* widget_one = CreateTestWidget();
+  views::Widget* widget_two = CreateTestWidget();
+  aura::Window* window_two = widget_two->GetNativeWindow();
+
+  // Turn on hide_shelf_when_active behavior for window two - shelf should
+  // still be visible when window two is made active since it is not yet
+  // maximized.
+  widget_one->Activate();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  wm::GetWindowState(window_two)
+      ->set_autohide_shelf_when_maximized_or_fullscreen(true);
+  widget_two->Activate();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+
+  // Now the flag takes effect once window two is maximized.
+  widget_two->Maximize();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+
+  // The hide_shelf_when_active flag should override the behavior of the
+  // hide_shelf_when_fullscreen flag even if the window is currently fullscreen.
+  wm::GetWindowState(window_two)->set_hide_shelf_when_fullscreen(false);
+  widget_two->SetFullscreen(true);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  wm::GetWindowState(window_two)->Restore();
+
+  // With the flag off, shelf no longer auto-hides.
+  widget_one->Activate();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+  wm::GetWindowState(window_two)
+      ->set_autohide_shelf_when_maximized_or_fullscreen(false);
+  widget_two->Activate();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
+}
+
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
   // TODO: investigate failure in mash, http://crbug.com/695686.
   if (WmShell::Get()->IsRunningInMash())

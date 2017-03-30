@@ -201,6 +201,18 @@ class ASH_EXPORT WindowState {
     hide_shelf_when_fullscreen_ = value;
   }
 
+  // Gets/sets whether the shelf should be autohidden when this window is
+  // fullscreen or active.
+  // Note: if true, this will override the logic controlled by
+  // hide_shelf_when_fullscreen.
+  bool autohide_shelf_when_maximized_or_fullscreen() const {
+    return autohide_shelf_when_maximized_or_fullscreen_;
+  }
+
+  void set_autohide_shelf_when_maximized_or_fullscreen(bool value) {
+    autohide_shelf_when_maximized_or_fullscreen_ = value;
+  }
+
   // If the minimum visibility is true, ash will try to keep a
   // minimum amount of the window is always visible on the work area
   // when shown.
@@ -369,6 +381,7 @@ class ASH_EXPORT WindowState {
   bool in_immersive_fullscreen_;
   bool ignore_keyboard_bounds_change_ = false;
   bool hide_shelf_when_fullscreen_;
+  bool autohide_shelf_when_maximized_or_fullscreen_;
   bool minimum_visibility_;
   bool can_be_dragged_;
   bool cached_always_on_top_;

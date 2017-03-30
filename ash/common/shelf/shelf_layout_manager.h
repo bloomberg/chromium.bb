@@ -280,6 +280,10 @@ class ASH_EXPORT ShelfLayoutManager
   // to be hidden.
   bool IsShelfHiddenForFullscreen() const;
 
+  // Returns true if there is a fullscreen or maximized window open that causes
+  // the shelf to be autohidden.
+  bool IsShelfAutoHideForFullscreenMaximized() const;
+
   // Gesture related functions:
   void StartGestureDrag(const ui::GestureEvent& gesture);
   void UpdateGestureDrag(const ui::GestureEvent& gesture);

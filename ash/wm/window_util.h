@@ -43,6 +43,10 @@ ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);
 // Pins the window on top of other windows.
 ASH_EXPORT void PinWindow(aura::Window* window, bool trusted);
 
+// Indicates that the window should autohide the shelf when it is the active
+// window.
+ASH_EXPORT void SetAutoHideShelf(aura::Window* window, bool autohide);
+
 // Moves |window| to the root window for the given |display_id|, if it is not
 // already in the same root window. Returns true if |window| was moved.
 ASH_EXPORT bool MoveWindowToDisplay(aura::Window* window, int64_t display_id);
