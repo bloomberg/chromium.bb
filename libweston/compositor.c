@@ -4426,7 +4426,10 @@ weston_output_init_geometry(struct weston_output *output, int x, int y)
 	output->x = x;
 	output->y = y;
 
+	pixman_region32_fini(&output->previous_damage);
 	pixman_region32_init(&output->previous_damage);
+
+	pixman_region32_fini(&output->region);
 	pixman_region32_init_rect(&output->region, x, y,
 				  output->width,
 				  output->height);
@@ -4541,20 +4544,6 @@ weston_output_transform_coordinate(struct weston_output *output,
 
 	*x = p.f[0] / p.f[3];
 	*y = p.f[1] / p.f[3];
-}
-
-/** Undoes changes to an output done by weston_output_enable()
- *
- * \param output The weston_output object that needs the changes undone.
- *
- * Removes the repaint timer.
- * Destroys pixman regions allocated to the output.
- */
-static void
-weston_output_enable_undo(struct weston_output *output)
-{
-	pixman_region32_fini(&output->region);
-	pixman_region32_fini(&output->previous_damage);
 }
 
 /** Removes output from compositor's list of enabled outputs
@@ -4703,6 +4692,9 @@ weston_output_init(struct weston_output *output,
 	output->scale = 0;
 	/* Can't use -1 on uint32_t and 0 is valid enum value */
 	output->transform = UINT32_MAX;
+
+	pixman_region32_init(&output->previous_damage);
+	pixman_region32_init(&output->region);
 }
 
 /** Adds weston_output object to pending output list.
@@ -4811,8 +4803,6 @@ weston_output_enable(struct weston_output *output)
 	 */
 	if (output->enable(output) < 0) {
 		weston_log("Enabling output \"%s\" failed.\n", output->name);
-
-		weston_output_enable_undo(output);
 		return -1;
 	}
 
@@ -4864,10 +4854,8 @@ weston_output_disable(struct weston_output *output)
 	if (output->disable(output) < 0)
 		return;
 
-	if (output->enabled) {
+	if (output->enabled)
 		weston_compositor_remove_output(output);
-		weston_output_enable_undo(output);
-	}
 
 	output->destroying = 0;
 }
@@ -4902,11 +4890,11 @@ weston_output_destroy(struct weston_output *output)
 {
 	output->destroying = 1;
 
-	if (output->enabled) {
+	if (output->enabled)
 		weston_compositor_remove_output(output);
-		weston_output_enable_undo(output);
-	}
 
+	pixman_region32_fini(&output->region);
+	pixman_region32_fini(&output->previous_damage);
 	wl_list_remove(&output->link);
 	free(output->name);
 }
