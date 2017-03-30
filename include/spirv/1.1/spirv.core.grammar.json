@@ -5410,6 +5410,7 @@
         {
           "enumerant" : "StorageUniform16",
           "value" : 4434,
+          "capabilities" : [ "StorageUniformBufferBlock16" ],
           "extensions" : [ "SPV_KHR_16bit_storage" ]
         },
         {

@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2015-2016 The Khronos Group Inc.
+** Copyright (c) 2015-2017 The Khronos Group Inc.
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy
 ** of this software and/or associated documentation files (the "Materials"),
@@ -24,15 +24,11 @@
 ** IN THE MATERIALS.
 */
 
-//
-// Author: Boaz Ouriel, Intel
-//
-
 namespace OpenCLLIB {
 
 enum Entrypoints {
 
-    // math functions
+    // Section 2.1: Math extended instructions
     Acos = 0,
     Acosh = 1,
     Acospi = 2,
@@ -129,65 +125,7 @@ enum Entrypoints {
     Native_sqrt = 93,
     Native_tan = 94,
     
-    // Common
-    FClamp = 95,
-    Degrees = 96,
-    FMax_common = 97,
-    FMin_common = 98, 
-    Mix = 99,
-    Radians = 100,
-    Step = 101,
-    Smoothstep = 102,
-    Sign = 103,
-    
-    // Geometrics
-    Cross = 104,
-    Distance = 105, 
-    Length = 106,
-    Normalize = 107,
-    Fast_distance = 108,
-    Fast_length = 109,
-    Fast_normalize = 110,
-
-    // Images - Deprecated 
-    Read_imagef = 111,
-    Read_imagei = 112,
-    Read_imageui = 113,
-    Read_imageh = 114,
-
-    Read_imagef_samplerless = 115,
-    Read_imagei_samplerless = 116,
-    Read_imageui_samplerless = 117,
-    Read_imageh_samplerless = 118,
-
-    Write_imagef = 119,
-    Write_imagei = 120,
-    Write_imageui = 121,
-    Write_imageh = 122,
-    Read_imagef_mipmap_lod = 123,
-    Read_imagei_mipmap_lod = 124,
-    Read_imageui_mipmap_lod = 125,
-    Read_imagef_mipmap_grad = 126,
-    Read_imagei_mipmap_grad = 127,
-    Read_imageui_mipmap_grad = 128,
-
-    // Image write with LOD
-    Write_imagef_mipmap_lod = 129,
-    Write_imagei_mipmap_lod = 130,
-    Write_imageui_mipmap_lod = 131,
-
-    // Images - Deprecated
-    Get_image_width = 132,
-    Get_image_height = 133,
-    Get_image_depth = 134,
-    Get_image_channel_data_type = 135,
-    Get_image_channel_order = 136,
-    Get_image_dim = 137,
-    Get_image_array_size = 138,
-    Get_image_num_samples = 139,
-    Get_image_num_mip_levels = 140,
-    
-    // Integers
+    // Section 2.2: Integer instructions
     SAbs = 141,
     SAbs_diff = 142,
     SAdd_sat = 143,
@@ -218,8 +156,36 @@ enum Entrypoints {
     UMad24 = 168,
     SMul24 = 169,
     UMul24 = 170,
+    UAbs = 201,
+    UAbs_diff = 202,
+    UMul_hi = 203,
+    UMad_hi = 204,
 
-    // Vector Loads/Stores
+    // Section 2.3: Common instructions
+    FClamp = 95,
+    Degrees = 96,
+    FMax_common = 97,
+    FMin_common = 98, 
+    Mix = 99,
+    Radians = 100,
+    Step = 101,
+    Smoothstep = 102,
+    Sign = 103,
+
+    // Section 2.4: Geometric instructions
+    Cross = 104,
+    Distance = 105, 
+    Length = 106,
+    Normalize = 107,
+    Fast_distance = 108,
+    Fast_length = 109,
+    Fast_normalize = 110,
+
+    // Section 2.5: Relational instructions
+    Bitselect = 186,
+    Select = 187,
+
+    // Section 2.6: Vector Data Load and Store instructions
     Vloadn = 171,
     Vstoren = 172,
     Vload_half = 173,
@@ -232,41 +198,13 @@ enum Entrypoints {
     Vstorea_halfn = 180,
     Vstorea_halfn_r = 181,
 
-    // Vector Misc 
+    // Section 2.7: Miscellaneous Vector instructions
     Shuffle = 182,
     Shuffle2 = 183,
 
-    // 
+    // Section 2.8: Misc instructions 
     Printf = 184,
     Prefetch = 185,
-    
-    // Relationals
-    Bitselect = 186,
-    Select = 187,
-        
-    // pipes
-    Read_pipe = 188,
-    Write_pipe = 189,
-    Reserve_read_pipe = 190,
-    Reserve_write_pipe = 191,
-    Commit_read_pipe = 192,
-    Commit_write_pipe = 193,
-    Is_valid_reserve_id = 194,
-    Work_group_reserve_read_pipe = 195,
-    Work_group_reserve_write_pipe = 196,
-    Work_group_commit_read_pipe = 197,
-    Work_group_commit_write_pipe = 198,
-    Get_pipe_num_packets = 199,
-    Get_pipe_max_packets = 200,
-    
-    // more integers
-    UAbs = 201,
-    UAbs_diff = 202,
-    UMul_hi = 203,
-    UMad_hi = 204
 };
 
-
-
-} // end namespace OpenCL20
-
+} // end namespace OpenCLLIB
