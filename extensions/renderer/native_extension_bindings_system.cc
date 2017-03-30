@@ -638,10 +638,11 @@ void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const std::string& event_name,
     binding::EventListenersChanged change,
     const base::DictionaryValue* filter,
+    bool was_manual,
     v8::Local<v8::Context> context) {
   send_event_listener_ipc_.Run(change,
                                ScriptContextSet::GetContextByV8Context(context),
-                               event_name, filter);
+                               event_name, filter, was_manual);
 }
 
 void NativeExtensionBindingsSystem::GetJSBindingUtil(

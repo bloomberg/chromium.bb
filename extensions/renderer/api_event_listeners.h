@@ -27,9 +27,14 @@ class EventFilteringInfo;
 // transitioning from 0 -> 1 or 1 -> 0 listeners.
 class APIEventListeners {
  public:
+  // The callback called when listeners change. |was_manual| indicates that the
+  // listener change was triggered by a direct call from the extension to add
+  // or remove listeners, rather than something like the context being
+  // destroyed.
   using ListenersUpdated =
       base::Callback<void(binding::EventListenersChanged,
                           const base::DictionaryValue* filter,
+                          bool was_manual,
                           v8::Local<v8::Context> context)>;
 
   virtual ~APIEventListeners() = default;
@@ -133,6 +138,7 @@ class FilteredEventListeners final : public APIEventListeners {
   struct ListenerData;
 
   void InvalidateListener(const ListenerData& listener,
+                          bool was_manual,
                           v8::Local<v8::Context> context);
 
   // Note: See TODO on UnfilteredEventListeners::listeners_.

@@ -21,6 +21,7 @@ using MockEventChangeHandler = ::testing::StrictMock<
 
 void DoNothingOnUpdate(binding::EventListenersChanged changed,
                        const base::DictionaryValue* filter,
+                       bool was_manual,
                        v8::Local<v8::Context> context) {}
 
 const char kFunction[] = "(function() {})";
@@ -46,7 +47,7 @@ TEST_F(APIEventListenersTest, UnfilteredListeners) {
 
   // Adding a new listener should trigger the callback (0 -> 1).
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           nullptr, context));
+                           nullptr, true, context));
   EXPECT_TRUE(listeners.AddListener(function_a, filter, context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
 
@@ -91,7 +92,7 @@ TEST_F(APIEventListenersTest, UnfilteredListeners) {
 
   // Remove function_b (the final listener). No more listeners should remain.
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, context));
+                           nullptr, true, context));
   listeners.RemoveListener(function_b, context);
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_FALSE(listeners.HasListener(function_b));
@@ -114,13 +115,13 @@ TEST_F(APIEventListenersTest, UnfilteredListenersInvalidation) {
   std::string error;
   v8::Local<v8::Object> filter;
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           nullptr, context));
+                           nullptr, true, context));
   EXPECT_TRUE(listeners.AddListener(function_a, filter, context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_TRUE(listeners.AddListener(function_b, filter, context, &error));
 
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, context));
+                           nullptr, false, context));
   listeners.Invalidate(context);
   ::testing::Mock::VerifyAndClearExpectations(&handler);
 
@@ -169,7 +170,7 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
   // a pain to match against a DictionaryValue (which doesn't have an
   // operator==).
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   EXPECT_TRUE(listeners.AddListener(function_a, empty_filter, context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
 
@@ -219,7 +220,7 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
     path_filter = val.As<v8::Object>();
   }
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   EXPECT_TRUE(listeners.AddListener(function_b, path_filter, context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
 
@@ -247,7 +248,7 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
   // change in listeners registered with a specific filter, this should trigger
   // the callback.
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::NO_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   listeners.RemoveListener(function_a, context);
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_FALSE(listeners.HasListener(function_a));
@@ -263,7 +264,7 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
 
   // Remove function_b. No listeners should remain.
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::NO_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   listeners.RemoveListener(function_b, context);
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_FALSE(listeners.HasListener(function_b));
@@ -293,7 +294,7 @@ TEST_F(APIEventListenersTest,
 
   std::string error;
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   EXPECT_TRUE(listeners.AddListener(function_a, get_filter(), context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_EQ(1, event_filter.GetMatcherCountForEventForTesting(kEvent));
@@ -317,7 +318,7 @@ TEST_F(APIEventListenersTest,
   listeners.RemoveListener(function_b, context);
 
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::NO_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   listeners.RemoveListener(function_a, context);
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_EQ(0, event_filter.GetMatcherCountForEventForTesting(kEvent));
@@ -403,11 +404,11 @@ TEST_F(APIEventListenersTest, FilteredListenersInvalidation) {
   v8::Local<v8::Function> function_c = FunctionFromString(context, kFunction);
 
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   EXPECT_TRUE(listeners.AddListener(function_a, empty_filter, context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           testing::NotNull(), context));
+                           testing::NotNull(), true, context));
   EXPECT_TRUE(listeners.AddListener(function_b, filter, context, &error));
   ::testing::Mock::VerifyAndClearExpectations(&handler);
   EXPECT_TRUE(listeners.AddListener(function_c, filter, context, &error));
@@ -415,7 +416,7 @@ TEST_F(APIEventListenersTest, FilteredListenersInvalidation) {
   // Since two listener filters are present in the list, we should be notified
   // of each going away when we invalidate the context.
   EXPECT_CALL(handler, Run(binding::EventListenersChanged::NO_LISTENERS,
-                           testing::NotNull(), context))
+                           testing::NotNull(), false, context))
       .Times(2);
   listeners.Invalidate(context);
   ::testing::Mock::VerifyAndClearExpectations(&handler);

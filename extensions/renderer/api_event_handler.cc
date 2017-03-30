@@ -26,6 +26,7 @@ namespace {
 
 void DoNothingOnListenersChanged(binding::EventListenersChanged change,
                                  const base::DictionaryValue* filter,
+                                 bool was_manual,
                                  v8::Local<v8::Context> context) {}
 
 const char kExtensionAPIEventPerContextKey[] = "extension_api_events";

@@ -160,6 +160,7 @@ void APIBindingsSystemTest::OnEventListenersChanged(
     const std::string& event_name,
     binding::EventListenersChanged changed,
     const base::DictionaryValue* filter,
+    bool was_manual,
     v8::Local<v8::Context> context) {}
 
 void APIBindingsSystemTest::ValidateLastRequest(

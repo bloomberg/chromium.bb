@@ -8,10 +8,13 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/browser/event_router.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/dns/mock_host_resolver.h"
@@ -85,6 +88,21 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
   ExtensionActionAPI::Get(profile())->DispatchExtensionActionClicked(
       *page_action, web_contents);
   ASSERT_TRUE(clicked_listener.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, LazyListeners) {
+  ProcessManager::SetEventPageIdleTimeForTesting(1);
+  ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+
+  LazyBackgroundObserver background_page_done;
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("native_bindings/lazy_listeners"));
+  ASSERT_TRUE(extension);
+  background_page_done.Wait();
+
+  EventRouter* event_router = EventRouter::Get(profile());
+  EXPECT_TRUE(event_router->ExtensionHasEventListener(extension->id(),
+                                                      "tabs.onCreated"));
 }
 
 }  // namespace extensions

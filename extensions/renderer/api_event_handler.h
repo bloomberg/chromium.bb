@@ -27,10 +27,15 @@ class EventFilteringInfo;
 // single thread.
 class APIEventHandler {
  public:
+  // The callback to be called when event listeners change. |was_manual|
+  // indicates that the change was due to an extension calling addListener or
+  // removeListener, rather than through something like context destruction.
+  // See also APIEventListeners.
   using EventListenersChangedMethod =
       base::Callback<void(const std::string& event_name,
                           binding::EventListenersChanged,
                           const base::DictionaryValue* filter,
+                          bool was_manual,
                           v8::Local<v8::Context>)>;
 
   APIEventHandler(const binding::RunJSFunction& call_js,

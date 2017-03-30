@@ -28,6 +28,7 @@ using MockEventChangeHandler = ::testing::StrictMock<
 void DoNothingOnEventListenersChanged(const std::string& event_name,
                                       binding::EventListenersChanged change,
                                       const base::DictionaryValue* value,
+                                      bool was_manual,
                                       v8::Local<v8::Context> context) {}
 
 class APIEventHandlerTest : public APIBindingTest {
@@ -659,7 +660,7 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   {
     EXPECT_CALL(change_handler,
                 Run(kEventName1, binding::EventListenersChanged::HAS_LISTENERS,
-                    nullptr, context_a))
+                    nullptr, true, context_a))
         .Times(1);
     v8::Local<v8::Value> argv[] = {event1_a, listener1};
     RunFunction(add_listener, context_a, arraysize(argv), argv);
@@ -696,7 +697,7 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   {
     EXPECT_CALL(change_handler,
                 Run(kEventName1, binding::EventListenersChanged::NO_LISTENERS,
-                    nullptr, context_a))
+                    nullptr, true, context_a))
         .Times(1);
     v8::Local<v8::Value> argv[] = {event1_a, listener2};
     RunFunction(remove_listener, context_a, arraysize(argv), argv);
@@ -712,7 +713,7 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   {
     EXPECT_CALL(change_handler,
                 Run(kEventName2, binding::EventListenersChanged::HAS_LISTENERS,
-                    nullptr, context_a))
+                    nullptr, true, context_a))
         .Times(1);
     v8::Local<v8::Value> argv[] = {event2_a, listener3};
     RunFunction(add_listener, context_a, arraysize(argv), argv);
@@ -724,7 +725,7 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
   {
     EXPECT_CALL(change_handler,
                 Run(kEventName1, binding::EventListenersChanged::HAS_LISTENERS,
-                    nullptr, context_b))
+                    nullptr, true, context_b))
         .Times(1);
     // And add a listener to an event in a different context to make sure the
     // associated context is correct.
@@ -740,17 +741,18 @@ TEST_F(APIEventHandlerTest, CallbackNotifications) {
             handler()->GetNumEventListenersForTesting(kEventName1, context_b));
 
   // When the contexts are invalidated, we should receive listener removed
-  // notifications.
+  // notifications. Additionally, since this was the context being torn down,
+  // rather than a removeListener call, was_manual should be false.
   EXPECT_CALL(change_handler,
               Run(kEventName2, binding::EventListenersChanged::NO_LISTENERS,
-                  nullptr, context_a))
+                  nullptr, false, context_a))
       .Times(1);
   DisposeContext(context_a);
   ::testing::Mock::VerifyAndClearExpectations(&change_handler);
 
   EXPECT_CALL(change_handler,
               Run(kEventName1, binding::EventListenersChanged::NO_LISTENERS,
-                  nullptr, context_b))
+                  nullptr, false, context_b))
       .Times(1);
   DisposeContext(context_b);
   ::testing::Mock::VerifyAndClearExpectations(&change_handler);

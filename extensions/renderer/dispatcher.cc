@@ -205,32 +205,37 @@ void SendRequestIPC(ScriptContext* context,
 void SendEventListenersIPC(binding::EventListenersChanged changed,
                            ScriptContext* context,
                            const std::string& event_name,
-                           const base::DictionaryValue* filter) {
-  // TODO(devlin): Fix this. We need to account for lazy listeners, but it
-  // also depends on if the listener is removed due to the context being torn
-  // down or the extension unregistering.
-  bool lazy = false;
+                           const base::DictionaryValue* filter,
+                           bool was_manual) {
+  bool lazy = ExtensionFrameHelper::IsContextForEventPage(context);
   std::string extension_id = context->GetExtensionID();
+  content::RenderThread* render_thread = content::RenderThread::Get();
 
   if (filter) {
     if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_AddFilteredListener(extension_id, event_name,
-                                                   *filter, lazy));
+      render_thread->Send(new ExtensionHostMsg_AddFilteredListener(
+          extension_id, event_name, *filter, lazy));
     } else {
       DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_RemoveFilteredListener(extension_id, event_name,
-                                                      *filter, lazy));
+      render_thread->Send(new ExtensionHostMsg_RemoveFilteredListener(
+          extension_id, event_name, *filter, lazy));
     }
   } else {
     if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
-      content::RenderThread::Get()->Send(new ExtensionHostMsg_AddListener(
-          context->GetExtensionID(), context->url(), event_name));
+      render_thread->Send(new ExtensionHostMsg_AddListener(
+          extension_id, context->url(), event_name));
+      if (lazy) {
+        render_thread->Send(
+            new ExtensionHostMsg_AddLazyListener(extension_id, event_name));
+      }
     } else {
       DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
-      content::RenderThread::Get()->Send(new ExtensionHostMsg_RemoveListener(
-          context->GetExtensionID(), context->url(), event_name));
+      render_thread->Send(new ExtensionHostMsg_RemoveListener(
+          extension_id, context->url(), event_name));
+      if (lazy && was_manual) {
+        render_thread->Send(
+            new ExtensionHostMsg_RemoveLazyListener(extension_id, event_name));
+      }
     }
   }
 }

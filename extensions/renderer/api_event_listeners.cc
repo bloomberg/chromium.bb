@@ -96,7 +96,7 @@ bool UnfilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
       v8::Global<v8::Function>(context->GetIsolate(), listener));
   if (listeners_.size() == 1) {
     listeners_updated_.Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           nullptr, context);
+                           nullptr, true, context);
   }
 
   return true;
@@ -111,7 +111,7 @@ void UnfilteredEventListeners::RemoveListener(v8::Local<v8::Function> listener,
   listeners_.erase(iter);
   if (listeners_.empty()) {
     listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, context);
+                           nullptr, true, context);
   }
 }
 
@@ -138,7 +138,7 @@ void UnfilteredEventListeners::Invalidate(v8::Local<v8::Context> context) {
   if (!listeners_.empty()) {
     listeners_.clear();
     listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           nullptr, context);
+                           nullptr, false, context);
   }
 }
 
@@ -190,7 +190,7 @@ bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
       {v8::Global<v8::Function>(context->GetIsolate(), listener), filter_id});
   if (value_counter_.Add(*matcher->value())) {
     listeners_updated_.Run(binding::EventListenersChanged::HAS_LISTENERS,
-                           matcher->value(), context);
+                           matcher->value(), true, context);
   }
 
   return true;
@@ -205,7 +205,7 @@ void FilteredEventListeners::RemoveListener(v8::Local<v8::Function> listener,
   ListenerData data = std::move(*iter);
   listeners_.erase(iter);
 
-  InvalidateListener(data, context);
+  InvalidateListener(data, true, context);
 }
 
 bool FilteredEventListeners::HasListener(v8::Local<v8::Function> listener) {
@@ -234,18 +234,19 @@ std::vector<v8::Local<v8::Function>> FilteredEventListeners::GetListeners(
 
 void FilteredEventListeners::Invalidate(v8::Local<v8::Context> context) {
   for (const auto& listener : listeners_)
-    InvalidateListener(listener, context);
+    InvalidateListener(listener, false, context);
   listeners_.clear();
 }
 
 void FilteredEventListeners::InvalidateListener(
     const ListenerData& listener,
+    bool was_manual,
     v8::Local<v8::Context> context) {
   EventMatcher* matcher = event_filter_->GetEventMatcher(listener.filter_id);
   DCHECK(matcher);
   if (value_counter_.Remove(*matcher->value())) {
     listeners_updated_.Run(binding::EventListenersChanged::NO_LISTENERS,
-                           matcher->value(), context);
+                           matcher->value(), was_manual, context);
   }
 
   event_filter_->RemoveEventMatcher(listener.filter_id);
