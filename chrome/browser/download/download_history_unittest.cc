@@ -235,7 +235,7 @@ class DownloadHistoryTest : public testing::Test {
           history::ToContentDownloadState(row.state),
           history::ToContentDownloadDangerType(row.danger_type),
           history::ToContentDownloadInterruptReason(row.interrupt_reason),
-          row.opened, row.last_access_time,
+          row.opened, row.last_access_time, row.transient,
           history::ToContentReceivedSlices(row.download_slice_info));
       EXPECT_CALL(manager(), MockCreateDownloadItem(adapter))
         .WillOnce(DoAll(
@@ -348,7 +348,7 @@ class DownloadHistoryTest : public testing::Test {
              "abc", 100, 100, state,
              content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
              content::DOWNLOAD_INTERRUPT_REASON_NONE, false, base::Time::Now(),
-             std::string(), std::string(),
+             false, std::string(), std::string(),
              std::vector<content::DownloadItem::ReceivedSlice>(), info);
   }
 
@@ -375,6 +375,7 @@ class DownloadHistoryTest : public testing::Test {
       content::DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
+      bool transient,
       const std::string& by_extension_id,
       const std::string& by_extension_name,
       const std::vector<content::DownloadItem::ReceivedSlice>& received_slices,
@@ -407,6 +408,7 @@ class DownloadHistoryTest : public testing::Test {
     info->guid = guid;
     info->opened = opened;
     info->last_access_time = last_access_time;
+    info->transient = transient;
     info->by_ext_id = by_extension_id;
     info->by_ext_name = by_extension_name;
 
@@ -451,6 +453,7 @@ class DownloadHistoryTest : public testing::Test {
     EXPECT_CALL(item(index), GetOpened()).WillRepeatedly(Return(opened));
     EXPECT_CALL(item(index), GetLastAccessTime())
         .WillRepeatedly(Return(last_access_time));
+    EXPECT_CALL(item(index), IsTransient()).WillRepeatedly(Return(transient));
     EXPECT_CALL(item(index), GetTargetDisposition())
         .WillRepeatedly(
             Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));

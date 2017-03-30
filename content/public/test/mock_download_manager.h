@@ -53,6 +53,7 @@ class MockDownloadManager : public DownloadManager {
     DownloadInterruptReason interrupt_reason;
     bool opened;
     base::Time last_access_time;
+    bool transient;
     std::vector<DownloadItem::ReceivedSlice> received_slices;
 
     CreateDownloadItemAdapter(
@@ -79,6 +80,7 @@ class MockDownloadManager : public DownloadManager {
         DownloadInterruptReason interrupt_reason,
         bool opened,
         base::Time last_access_time,
+        bool transient,
         const std::vector<DownloadItem::ReceivedSlice>& received_slices);
     // Required by clang compiler.
     CreateDownloadItemAdapter(const CreateDownloadItemAdapter& rhs);
@@ -141,6 +143,7 @@ class MockDownloadManager : public DownloadManager {
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
+      bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
 
   MOCK_METHOD1(MockCreateDownloadItem,

@@ -77,6 +77,7 @@ class CONTENT_EXPORT DownloadItemImpl
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
+      bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log);
 
@@ -165,6 +166,7 @@ class CONTENT_EXPORT DownloadItemImpl
   bool GetAutoOpened() override;
   bool GetOpened() const override;
   base::Time GetLastAccessTime() const override;
+  bool IsTransient() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type) override;
@@ -628,6 +630,9 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Time when the download was last accessed.
   base::Time last_access_time_;
+
+  // Whether the download item should be transient and not shown in the UI.
+  bool transient_ = false;
 
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_ = false;

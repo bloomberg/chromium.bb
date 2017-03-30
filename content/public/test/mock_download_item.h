@@ -99,6 +99,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetOpened, bool());
   MOCK_CONST_METHOD0(GetLastAccessTime, base::Time());
+  MOCK_CONST_METHOD0(IsTransient, bool());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
   MOCK_METHOD1(OnContentCheckCompleted, void(DownloadDangerType));

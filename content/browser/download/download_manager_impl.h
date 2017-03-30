@@ -106,6 +106,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
+      bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) override;
   int InProgressCount() const override;
   int NonMaliciousInProgressCount() const override;

@@ -149,6 +149,7 @@ DownloadItemImpl::DownloadItemImpl(
     DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
+    bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log)
     : guid_(base::ToUpperASCII(guid)),
@@ -171,6 +172,7 @@ DownloadItemImpl::DownloadItemImpl(
       delegate_(delegate),
       opened_(opened),
       last_access_time_(last_access_time),
+      transient_(transient),
       current_path_(current_path),
       received_bytes_(received_bytes),
       all_data_saved_(state == COMPLETE),
@@ -786,6 +788,10 @@ bool DownloadItemImpl::GetOpened() const {
 
 base::Time DownloadItemImpl::GetLastAccessTime() const {
   return last_access_time_;
+}
+
+bool DownloadItemImpl::IsTransient() const {
+  return transient_;
 }
 
 BrowserContext* DownloadItemImpl::GetBrowserContext() const {

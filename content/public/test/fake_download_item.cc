@@ -375,6 +375,11 @@ base::Time FakeDownloadItem::GetLastAccessTime() const {
   return base::Time();
 }
 
+bool FakeDownloadItem::IsTransient() const {
+  NOTREACHED();
+  return false;
+}
+
 BrowserContext* FakeDownloadItem::GetBrowserContext() const {
   NOTREACHED();
   return nullptr;

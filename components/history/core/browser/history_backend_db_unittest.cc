@@ -765,6 +765,44 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadsSlicesTable) {
   }
 }
 
+// Tests that last access time and transient is automatically added when
+// migrating to version 36.
+TEST_F(HistoryBackendDBTest, MigrateDownloadsLastAccessTimeAndTransient) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(32));
+  {
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+  }
+
+  // Re-open the db using the HistoryDatabase, which should migrate to the
+  // current version.
+  CreateBackendAndDatabase();
+  DeleteBackend();
+  {
+    // Re-open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+    // The version should have been updated.
+    int cur_version = HistoryDatabase::GetCurrentVersion();
+    ASSERT_LE(35, cur_version);
+    {
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT value FROM meta WHERE key = 'version'"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(cur_version, s.ColumnInt(0));
+    }
+    {
+      // The downloads table should have last_access_time and transient
+      // initialized to zero.
+      sql::Statement s(db.GetUniqueStatement(
+          "SELECT last_access_time, transient from downloads"));
+      EXPECT_TRUE(s.Step());
+      EXPECT_EQ(base::Time(), base::Time::FromInternalValue(s.ColumnInt64(0)));
+      EXPECT_EQ(0, s.ColumnInt(1));
+    }
+  }
+}
+
 TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
   CreateBackendAndDatabase();
 
@@ -788,7 +826,7 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
       "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
       100, 1000, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
       kTestDownloadInterruptReasonCrash, "hash-value1", 1,
-      "FE672168-26EF-4275-A149-FEC25F6A75F9", false, last_access_time,
+      "FE672168-26EF-4275-A149-FEC25F6A75F9", false, last_access_time, true,
       "extension-id", "extension-name", std::vector<DownloadSliceInfo>());
   ASSERT_TRUE(db_->CreateDownload(download_A));
 
@@ -807,7 +845,7 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndQuery) {
       "original/mime-type2", start_time2, end_time2, "etag2", "last_modified_2",
       1001, 1001, DownloadState::COMPLETE, DownloadDangerType::DANGEROUS_FILE,
       kTestDownloadInterruptReasonNone, std::string(), 2,
-      "b70f3869-7d75-4878-acb4-4caf7026d12b", false, last_access_time2,
+      "b70f3869-7d75-4878-acb4-4caf7026d12b", false, last_access_time2, true,
       "extension-id", "extension-name", std::vector<DownloadSliceInfo>());
   ASSERT_TRUE(db_->CreateDownload(download_B));
 
@@ -848,7 +886,7 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndUpdate_VolatileFields) {
       "original/mime-type", start_time, end_time, "etag1", "last_modified_1",
       100, 1000, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
       3, "some-hash-value", 1, "FE672168-26EF-4275-A149-FEC25F6A75F9", false,
-      last_access_time, "extension-id", "extension-name",
+      last_access_time, false, "extension-id", "extension-name",
       std::vector<DownloadSliceInfo>());
   db_->CreateDownload(download);
 
@@ -865,6 +903,7 @@ TEST_F(HistoryBackendDBTest, DownloadCreateAndUpdate_VolatileFields) {
   download.total_bytes += 1;
   download.hash = "some-other-hash";
   download.opened = !download.opened;
+  download.transient = !download.transient;
   download.by_ext_id = "by-new-extension-id";
   download.by_ext_name = "by-new-extension-name";
   download.etag = "new-etag";
@@ -964,7 +1003,7 @@ TEST_F(HistoryBackendDBTest, DownloadNukeRecordsMissingURLs) {
       "application/octet-stream", now, now, std::string(), std::string(), 0,
       512, DownloadState::COMPLETE, DownloadDangerType::NOT_DANGEROUS,
       kTestDownloadInterruptReasonNone, std::string(), 1,
-      "05AF6C8E-E4E0-45D7-B5CE-BC99F7019918", 0, now, "by_ext_id",
+      "05AF6C8E-E4E0-45D7-B5CE-BC99F7019918", 0, now, false, "by_ext_id",
       "by_ext_name", std::vector<DownloadSliceInfo>());
 
   // Creating records without any urls should fail.
@@ -1095,7 +1134,7 @@ TEST_F(HistoryBackendDBTest, CreateAndUpdateDownloadingSlice) {
       received, 1500, DownloadState::INTERRUPTED,
       DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonCrash,
       "hash-value1", id, "FE672168-26EF-4275-A149-FEC25F6A75F9", false,
-      last_access_time, "extension-id", "extension-name", slice_info);
+      last_access_time, false, "extension-id", "extension-name", slice_info);
   ASSERT_TRUE(db_->CreateDownload(download));
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);
@@ -1130,7 +1169,7 @@ TEST_F(HistoryBackendDBTest, UpdateDownloadWithNewSlice) {
       "original/mime-type", start_time, end_time, "etag1", "last_modified_1", 0,
       1500, DownloadState::INTERRUPTED, DownloadDangerType::NOT_DANGEROUS,
       kTestDownloadInterruptReasonCrash, "hash-value1", id,
-      "FE672168-26EF-4275-A149-FEC25F6A75F9", false, last_access_time,
+      "FE672168-26EF-4275-A149-FEC25F6A75F9", false, last_access_time, true,
       "extension-id", "extension-name", std::vector<DownloadSliceInfo>());
   ASSERT_TRUE(db_->CreateDownload(download));
 
@@ -1171,7 +1210,7 @@ TEST_F(HistoryBackendDBTest, DownloadSliceDeletedIfEmpty) {
       received, 1500, DownloadState::INTERRUPTED,
       DownloadDangerType::NOT_DANGEROUS, kTestDownloadInterruptReasonCrash,
       "hash-value1", id, "FE672168-26EF-4275-A149-FEC25F6A75F9", false,
-      last_access_time, "extension-id", "extension-name", slice_info);
+      last_access_time, true, "extension-id", "extension-name", slice_info);
   ASSERT_TRUE(db_->CreateDownload(download));
   std::vector<DownloadRow> results;
   db_->QueryDownloads(&results);

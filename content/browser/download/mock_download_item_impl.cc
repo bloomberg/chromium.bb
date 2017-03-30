@@ -33,6 +33,7 @@ MockDownloadItemImpl::MockDownloadItemImpl(
                        DOWNLOAD_INTERRUPT_REASON_NONE,
                        false,
                        base::Time(),
+                       true,
                        received_slices,
                        net::NetLogWithSource()) {}
 

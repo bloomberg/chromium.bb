@@ -152,6 +152,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
+      bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices) = 0;
 
   // The number of in progress (including paused) downloads.

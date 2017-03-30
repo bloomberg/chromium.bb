@@ -33,6 +33,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
     DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
+    bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices)
     : guid(guid),
       id(id),
@@ -55,6 +56,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       interrupt_reason(interrupt_reason),
       opened(opened),
       last_access_time(last_access_time),
+      transient(transient),
       received_slices(received_slices) {}
 
 MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
@@ -79,6 +81,7 @@ MockDownloadManager::CreateDownloadItemAdapter::CreateDownloadItemAdapter(
       interrupt_reason(rhs.interrupt_reason),
       opened(rhs.opened),
       last_access_time(rhs.last_access_time),
+      transient(rhs.transient),
       received_slices(rhs.received_slices) {}
 
 MockDownloadManager::CreateDownloadItemAdapter::~CreateDownloadItemAdapter() {}
@@ -97,7 +100,7 @@ bool MockDownloadManager::CreateDownloadItemAdapter::operator==(
       received_bytes == rhs.received_bytes && total_bytes == rhs.total_bytes &&
       state == rhs.state && danger_type == rhs.danger_type &&
       interrupt_reason == rhs.interrupt_reason && opened == rhs.opened &&
-      last_access_time == rhs.last_access_time &&
+      last_access_time == rhs.last_access_time && transient == rhs.transient &&
       received_slices == rhs.received_slices);
 }
 
@@ -136,12 +139,14 @@ DownloadItem* MockDownloadManager::CreateDownloadItem(
     DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
+    bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices) {
   CreateDownloadItemAdapter adapter(
       guid, id, current_path, target_path, url_chain, referrer_url, site_url,
       tab_url, tab_referrer_url, mime_type, original_mime_type, start_time,
       end_time, etag, last_modified, received_bytes, total_bytes, hash, state,
-      danger_type, interrupt_reason, opened, last_access_time, received_slices);
+      danger_type, interrupt_reason, opened, last_access_time, transient,
+      received_slices);
   return MockCreateDownloadItem(adapter);
 }
 

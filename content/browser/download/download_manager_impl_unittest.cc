@@ -151,6 +151,7 @@ class MockDownloadItemFactory
       DownloadInterruptReason interrupt_reason,
       bool opened,
       base::Time last_access_time,
+      bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
       const net::NetLogWithSource& net_log) override;
   DownloadItemImpl* CreateActiveItem(
@@ -225,6 +226,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     DownloadInterruptReason interrupt_reason,
     bool opened,
     base::Time last_access_time,
+    bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
     const net::NetLogWithSource& net_log) {
   DCHECK(items_.find(download_id) == items_.end());
@@ -611,7 +613,7 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
       base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
       DownloadItem::INTERRUPTED, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, base::Time::Now(),
+      DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, base::Time::Now(), true,
       std::vector<DownloadItem::ReceivedSlice>());
   ASSERT_TRUE(persisted_item);
 
