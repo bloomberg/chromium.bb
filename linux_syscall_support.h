@@ -2606,6 +2606,9 @@ struct kernel_statfs {
         __asm__ __volatile__(/* Push "arg" and "fn" onto the stack that will be
                               * used by the child.
                               */
+#ifdef __thumb2__
+                             "push  {r7}\n"
+#endif
                              "str   %4,[%2,#-4]!\n"
                              "str   %1,[%2,#-4]!\n"
 
@@ -2651,11 +2654,18 @@ struct kernel_statfs {
                              "mov r7, %9\n"
                              "swi 0x0\n"
                            "1:\n"
+#ifdef __thumb2__
+                             "pop {r7}"
+#endif
                              : "=r" (__res)
                              : "r"(fn), "r"(__stack), "r"(__flags), "r"(arg),
                                "r"(__ptid), "r"(__tls), "r"(__ctid),
                                "i"(__NR_clone), "i"(__NR_exit)
+#ifdef __thumb2__
+                             : "cc", "lr", "memory");
+#else
                              : "cc", "r7", "lr", "memory");
+#endif
       }
       LSS_RETURN(int, __res);
     }
