@@ -406,6 +406,8 @@ TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'testChromeSendHandler',
   // Just navigating to the page should trigger the chrome.send().
   var assertOverlayVisible = function() {
     assertTrue($('extension-commands-overlay').classList.contains('showing'));
+    assertEquals($('extension-commands-overlay').getAttribute('aria-hidden'),
+                 'false');
     this.nextStep();
   };
 
@@ -417,6 +419,8 @@ TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'extensionSettingsUri',
     function() {
   var closeCommandOverlay = function() {
     assertTrue($('extension-commands-overlay').classList.contains('showing'));
+    assertEquals($('extension-commands-overlay').getAttribute('aria-hidden'),
+                 'false');
     assertEquals(window.location.href,
                  'chrome://extensions-frame/configureCommands');
 
@@ -424,6 +428,8 @@ TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'extensionSettingsUri',
     $('extension-commands-dismiss').click();
 
     assertFalse($('extension-commands-overlay').classList.contains('showing'));
+    assertEquals($('extension-commands-overlay').getAttribute('aria-hidden'),
+                 'true');
     this.nextStep();
   };
 

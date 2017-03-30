@@ -392,7 +392,8 @@ cr.define('extensions', function() {
 
     var pages = document.querySelectorAll('.page');
     for (var i = 0; i < pages.length; i++) {
-      pages[i].setAttribute('aria-hidden', node ? 'true' : 'false');
+      var hidden = (node != pages[i]) ? 'true' : 'false';
+      pages[i].setAttribute('aria-hidden', hidden);
     }
 
     $('overlay').hidden = !node;
