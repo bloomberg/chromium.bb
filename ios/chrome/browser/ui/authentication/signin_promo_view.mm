@@ -25,8 +25,6 @@ const CGFloat kVerticalPadding = 12;
 const CGFloat kButtonVerticalPadding = 6;
 // Image size for warm state.
 const CGFloat kProfileImageFixedSize = 48;
-// Image size for cold state.
-const CGFloat kChromeImageFixedSize = 24;
 // Button height.
 const CGFloat kButtonHeight = 36;
 }
@@ -90,7 +88,6 @@ const CGFloat kButtonHeight = 36;
       @"kButtonHeight" : @(kButtonHeight),
       @"kButtonVerticalPadding" : @(kButtonVerticalPadding),
       @"kButtonVerticalPaddingx2" : @(kButtonVerticalPadding * 2),
-      @"kChromeImageFixedSize" : @(kChromeImageFixedSize),
       @"kHorizontalPadding" : @(kHorizontalPadding),
       @"kVerticalPadding" : @(kVerticalPadding),
       @"kVerticalPaddingx2" : @(kVerticalPadding * 2),
@@ -119,7 +116,6 @@ const CGFloat kButtonHeight = 36;
     // Constraints for cold state mode.
     NSArray* coldStateVisualConstraints = @[
       @"V:[primaryButton]-kVerticalPaddingkButtonVerticalPadding-|",
-      @"V:[imageView(kChromeImageFixedSize)]",
     ];
     _coldStateConstraints = VisualConstraintsWithMetrics(
         coldStateVisualConstraints, views, metrics);
@@ -158,10 +154,17 @@ const CGFloat kButtonHeight = 36;
 }
 
 - (void)activateColdMode {
-  // Needs to set the chromium icon in |imageView|.
   DCHECK_EQ(_mode, SigninPromoViewModeColdState);
   [NSLayoutConstraint deactivateConstraints:_warmStateConstraints];
   [NSLayoutConstraint activateConstraints:_coldStateConstraints];
+  UIImage* logo = nil;
+#if defined(GOOGLE_CHROME_BUILD)
+  logo = [UIImage imageNamed:@"signin_promo_logo_chrome_color"];
+#else
+  logo = [UIImage imageNamed:@"signin_promo_logo_chromium_color"];
+#endif  // defined(GOOGLE_CHROME_BUILD)
+  DCHECK(logo);
+  _imageView.image = logo;
   [_primaryButton
       setTitle:l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN)
       forState:UIControlStateNormal];

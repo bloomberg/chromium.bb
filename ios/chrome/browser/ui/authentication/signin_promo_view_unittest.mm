@@ -11,6 +11,23 @@
 #error "This file requires ARC support."
 #endif
 
+TEST(SigninPromoViewTest, ChromiumLogoImage) {
+  SigninPromoView* view =
+      [[SigninPromoView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  view.mode = SigninPromoViewModeColdState;
+  UIImage* chromiumLogo = view.imageView.image;
+  EXPECT_NE(nil, chromiumLogo);
+  view.mode = SigninPromoViewModeWarmState;
+  UIImage* customImage = [[UIImage alloc] init];
+  [view setProfileImage:customImage];
+  EXPECT_NE(nil, view.imageView.image);
+  // The image should has been changed from the logo.
+  EXPECT_NE(chromiumLogo, view.imageView.image);
+  // The image should be different than the one set, since a circular background
+  // should have been added.
+  EXPECT_NE(customImage, view.imageView.image);
+}
+
 TEST(SigninPromoViewTest, SecondaryButtonVisibility) {
   SigninPromoView* view =
       [[SigninPromoView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
