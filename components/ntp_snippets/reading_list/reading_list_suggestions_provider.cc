@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/reading_list/reading_list_distillation_state_util.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/strings/grit/components_strings.h"
@@ -149,22 +151,35 @@ void ReadingListSuggestionsProvider::FetchReadingListInternal() {
 
   std::vector<ContentSuggestion> suggestions;
   for (const ReadingListEntry* entry : entries) {
-    ContentSuggestion suggestion(provided_category_, entry->URL().spec(),
-                                 entry->URL());
-
-    if (!entry->Title().empty()) {
-      suggestion.set_title(base::UTF8ToUTF16(entry->Title()));
-    } else {
-      suggestion.set_title(url_formatter::FormatUrl(entry->URL()));
-    }
-    suggestion.set_publisher_name(
-        url_formatter::FormatUrl(entry->URL().GetOrigin()));
-    suggestions.emplace_back(std::move(suggestion));
+    suggestions.emplace_back(ConvertEntry(entry));
   }
 
   NotifyStatusChanged(CategoryStatus::AVAILABLE);
   observer()->OnNewSuggestions(this, provided_category_,
                                std::move(suggestions));
+}
+
+ContentSuggestion ReadingListSuggestionsProvider::ConvertEntry(
+    const ReadingListEntry* entry) {
+  ContentSuggestion suggestion(provided_category_, entry->URL().spec(),
+                               entry->URL());
+
+  if (!entry->Title().empty()) {
+    suggestion.set_title(base::UTF8ToUTF16(entry->Title()));
+  } else {
+    suggestion.set_title(url_formatter::FormatUrl(entry->URL()));
+  }
+  suggestion.set_publisher_name(
+      url_formatter::FormatUrl(entry->URL().GetOrigin()));
+
+  auto extra = base::MakeUnique<ReadingListSuggestionExtra>();
+  extra->distilled_state =
+      SuggestionStateFromReadingListState(entry->DistilledState());
+  extra->favicon_page_url =
+      entry->DistilledURL().is_valid() ? entry->DistilledURL() : entry->URL();
+  suggestion.set_reading_list_suggestion_extra(std::move(extra));
+
+  return suggestion;
 }
 
 void ReadingListSuggestionsProvider::NotifyStatusChanged(

@@ -57,6 +57,9 @@ class ReadingListSuggestionsProvider : public ContentSuggestionsProvider,
   // model is loaded.
   void FetchReadingListInternal();
 
+  // Converts |entry| to ContentSuggestion.
+  ContentSuggestion ConvertEntry(const ReadingListEntry* entry);
+
   // Updates the |category_status_| and notifies the |observer_|, if necessary.
   void NotifyStatusChanged(CategoryStatus new_status);
   CategoryStatus category_status_;

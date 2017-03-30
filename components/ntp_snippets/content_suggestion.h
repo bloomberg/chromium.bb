@@ -46,6 +46,21 @@ struct RecentTabSuggestionExtra {
   int64_t offline_page_id = 0;
 };
 
+// ReadingListSuggestionExtra contains additional data which is only available
+// for Reading List suggestions.
+struct ReadingListSuggestionExtra {
+  // State of the distillation a suggestion. This is the meaningful extract of
+  // ReadingListEntry::DistillationState for the suggestions. It is duplicated
+  // here to avoid a dependence on ReadingList.
+  enum class ReadingListSuggestionDistilledState { PENDING, SUCCESS, FAILURE };
+
+  // State of the distillation of the suggestion.
+  ReadingListSuggestionDistilledState distilled_state =
+      ReadingListSuggestionDistilledState::PENDING;
+  // URL of the page whose favicon should be displayed for this suggestion.
+  GURL favicon_page_url;
+};
+
 // Contains additional data for notification-worthy suggestions.
 struct NotificationExtra {
   // Deadline for showing notification. If the deadline is past, the
@@ -144,6 +159,15 @@ class ContentSuggestion {
   void set_recent_tab_suggestion_extra(
       std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra);
 
+  // Extra information for reading list suggestions. Only available for
+  // KnownCategories::READING_LIST suggestions.
+  ReadingListSuggestionExtra* reading_list_suggestion_extra() const {
+    return reading_list_suggestion_extra_.get();
+  }
+  void set_reading_list_suggestion_extra(
+      std::unique_ptr<ReadingListSuggestionExtra>
+          reading_list_suggestion_extra);
+
   // Extra information for notifications. When absent, no notification should be
   // sent for this suggestion. When present, a notification should be sent,
   // unless other factors disallow it (examples: the extra parameters say to;
@@ -169,6 +193,7 @@ class ContentSuggestion {
   float score_;
   std::unique_ptr<DownloadSuggestionExtra> download_suggestion_extra_;
   std::unique_ptr<RecentTabSuggestionExtra> recent_tab_suggestion_extra_;
+  std::unique_ptr<ReadingListSuggestionExtra> reading_list_suggestion_extra_;
   std::unique_ptr<NotificationExtra> notification_extra_;
 
   // The time when the remote suggestion was fetched from the server. This field
