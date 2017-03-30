@@ -62,7 +62,6 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                  Vector<RefPtr<NGFloatingObject>>& unpositioned_floats);
 
   RefPtr<NGPhysicalFragment> physical_fragment_;
-  LayoutObject* layout_object_;
   PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
   Vector<NGStaticPosition> out_of_flow_positions_;
   Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
