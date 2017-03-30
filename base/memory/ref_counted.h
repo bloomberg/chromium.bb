@@ -28,20 +28,13 @@ class BASE_EXPORT RefCountedBase {
   bool HasOneRef() const { return ref_count_ == 1; }
 
  protected:
-  RefCountedBase()
-      : ref_count_(0)
-#if DCHECK_IS_ON()
-        , in_dtor_(false)
-#endif
-  {
-  }
+  RefCountedBase() {}
 
   ~RefCountedBase() {
 #if DCHECK_IS_ON()
     DCHECK(in_dtor_) << "RefCounted object deleted without calling Release()";
 #endif
   }
-
 
   void AddRef() const {
     // TODO(maruel): Add back once it doesn't assert 500 times/sec.
@@ -51,31 +44,32 @@ class BASE_EXPORT RefCountedBase {
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);
 #endif
+
     ++ref_count_;
   }
 
   // Returns true if the object should self-delete.
   bool Release() const {
+    --ref_count_;
+
     // TODO(maruel): Add back once it doesn't assert 500 times/sec.
     // Current thread books the critical section "AddRelease"
     // without release it.
     // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
+
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);
-#endif
-    if (--ref_count_ == 0) {
-#if DCHECK_IS_ON()
+    if (ref_count_ == 0)
       in_dtor_ = true;
 #endif
-      return true;
-    }
-    return false;
+
+    return ref_count_ == 0;
   }
 
  private:
-  mutable size_t ref_count_;
+  mutable size_t ref_count_ = 0;
 #if DCHECK_IS_ON()
-  mutable bool in_dtor_;
+  mutable bool in_dtor_ = false;
 #endif
 
   DFAKE_MUTEX(add_release_);
