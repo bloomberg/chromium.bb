@@ -3,198 +3,264 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/router", [
-  "console",
-  "mojo/public/js/codec",
-  "mojo/public/js/core",
   "mojo/public/js/connector",
-  "mojo/public/js/lib/control_message_handler",
+  "mojo/public/js/core",
+  "mojo/public/js/interface_types",
+  "mojo/public/js/lib/interface_endpoint_handle",
+  "mojo/public/js/lib/pipe_control_message_handler",
+  "mojo/public/js/lib/pipe_control_message_proxy",
   "mojo/public/js/validator",
-], function(console, codec, core, connector, controlMessageHandler, validator) {
+  "timer",
+], function(connector, core, types, interfaceEndpointHandle,
+      controlMessageHandler, controlMessageProxy, validator, timer) {
 
   var Connector = connector.Connector;
-  var MessageReader = codec.MessageReader;
+  var PipeControlMessageHandler =
+      controlMessageHandler.PipeControlMessageHandler;
+  var PipeControlMessageProxy = controlMessageProxy.PipeControlMessageProxy;
   var Validator = validator.Validator;
-  var ControlMessageHandler = controlMessageHandler.ControlMessageHandler;
+  var InterfaceEndpointHandle = interfaceEndpointHandle.InterfaceEndpointHandle;
 
-  function Router(handle, interface_version, connectorFactory) {
-    if (!core.isHandle(handle))
-      throw new Error("Router constructor: Not a handle");
-    if (connectorFactory === undefined)
-      connectorFactory = Connector;
-    this.connector_ = new connectorFactory(handle);
-    this.incomingReceiver_ = null;
-    this.errorHandler_ = null;
-    this.nextRequestID_ = 0;
-    this.completers_ = new Map();
-    this.payloadValidators_ = [];
-    this.testingController_ = null;
+  /**
+   * The state of |endpoint|. If both the endpoint and its peer have been
+   * closed, removes it from |endpoints_|.
+   * @enum {string}
+   */
+  var EndpointStateUpdateType = {
+    ENDPOINT_CLOSED: 'endpoint_closed',
+    PEER_ENDPOINT_CLOSED: 'peer_endpoint_closed'
+  };
 
-    if (interface_version !== undefined) {
-      this.controlMessageHandler_ = new
-          ControlMessageHandler(interface_version);
+  function check(condition, output) {
+    if (!condition) {
+      // testharness.js does not rethrow errors so the error stack needs to be
+      // included as a string in the error we throw for debugging layout tests.
+      throw new Error((new Error()).stack);
     }
-
-    this.connector_.setIncomingReceiver({
-        accept: this.handleIncomingMessage_.bind(this),
-    });
-    this.connector_.setErrorHandler({
-        onError: this.handleConnectionError_.bind(this),
-    });
   }
 
-  Router.prototype.close = function() {
-    this.completers_.clear();  // Drop any responders.
-    this.connector_.close();
-    this.testingController_ = null;
+  function InterfaceEndpoint(router, interfaceId) {
+    this.router_ = router;
+    this.id = interfaceId;
+    this.closed = false;
+    this.peerClosed = false;
+    this.handleCreated = false;
+    this.disconnectReason = null;
+    this.client = null;
+  }
+
+  InterfaceEndpoint.prototype.sendMessage = function(message) {
+    message.setInterfaceId(this.id);
+    return this.router_.connector_.accept(message);
+  };
+
+  function Router(handle, setInterfaceIdNamespaceBit) {
+    if (!core.isHandle(handle)) {
+      throw new Error("Router constructor: Not a handle");
+    }
+    if (setInterfaceIdNamespaceBit === undefined) {
+      setInterfaceIdNamespaceBit = false;
+    }
+
+    this.connector_ = new Connector(handle);
+
+    this.connector_.setIncomingReceiver({
+        accept: this.accept.bind(this),
+    });
+    this.connector_.setErrorHandler({
+        onError: this.onPipeConnectionError.bind(this),
+    });
+
+    this.setInterfaceIdNamespaceBit_ = setInterfaceIdNamespaceBit;
+    this.controlMessageHandler_ = new PipeControlMessageHandler(this);
+    this.controlMessageProxy_ = new PipeControlMessageProxy(this.connector_);
+    this.nextInterfaceIdValue = 1;
+    this.encounteredError_ = false;
+    this.endpoints_ = new Map();
+  }
+
+  Router.prototype.attachEndpointClient = function(
+      interfaceEndpointHandle, interfaceEndpointClient) {
+    check(types.isValidInterfaceId(interfaceEndpointHandle.id()));
+    check(interfaceEndpointClient);
+
+    var endpoint = this.endpoints_.get(interfaceEndpointHandle.id());
+    check(endpoint);
+    check(!endpoint.client);
+    check(!endpoint.closed);
+    endpoint.client = interfaceEndpointClient;
+
+    if (endpoint.peerClosed) {
+      timer.createOneShot(0,
+          endpoint.client.notifyError.bind(endpoint.client));
+    }
+
+    return endpoint;
+  };
+
+  Router.prototype.detachEndpointClient = function(
+      interfaceEndpointHandle) {
+    check(types.isValidInterfaceId(interfaceEndpointHandle.id()));
+    var endpoint = this.endpoints_.get(interfaceEndpointHandle.id());
+    check(endpoint);
+    check(endpoint.client);
+    check(!endpoint.closed);
+
+    endpoint.client = null;
+  };
+
+  Router.prototype.createLocalEndpointHandle = function(
+      interfaceId) {
+    if (!types.isValidInterfaceId(interfaceId)) {
+      return new InterfaceEndpointHandle();
+    }
+
+    var endpoint = this.endpoints_.get(interfaceId);
+
+    if (!endpoint) {
+      endpoint = new InterfaceEndpoint(this, interfaceId);
+      this.endpoints_.set(interfaceId, endpoint);
+
+      check(!endpoint.handleCreated);
+
+      if (this.encounteredError_) {
+        this.updateEndpointStateMayRemove(endpoint,
+            EndpointStateUpdateType.PEER_ENDPOINT_CLOSED);
+      }
+    } else {
+      // If the endpoint already exist, it is because we have received a
+      // notification that the peer endpoint has closed.
+      check(!endpoint.closed);
+      check(endpoint.peerClosed);
+
+      if (endpoint.handleCreated) {
+        return new InterfaceEndpointHandle();
+      }
+    }
+
+    endpoint.handleCreated = true;
+    return new InterfaceEndpointHandle(interfaceId, this);
   };
 
   Router.prototype.accept = function(message) {
-    this.connector_.accept(message);
-  };
-
-  Router.prototype.reject = function(message) {
-    // TODO(mpcomplete): no way to trasmit errors over a Connection.
-  };
-
-  Router.prototype.acceptAndExpectResponse = function(message) {
-    // Reserve 0 in case we want it to convey special meaning in the future.
-    var requestID = this.nextRequestID_++;
-    if (requestID == 0)
-      requestID = this.nextRequestID_++;
-
-    message.setRequestID(requestID);
-    var result = this.connector_.accept(message);
-    if (!result)
-      return Promise.reject(Error("Connection error"));
-
-    var completer = {};
-    this.completers_.set(requestID, completer);
-    return new Promise(function(resolve, reject) {
-      completer.resolve = resolve;
-      completer.reject = reject;
-    });
-  };
-
-  Router.prototype.setIncomingReceiver = function(receiver) {
-    this.incomingReceiver_ = receiver;
-  };
-
-  Router.prototype.setPayloadValidators = function(payloadValidators) {
-    this.payloadValidators_ = payloadValidators;
-  };
-
-  Router.prototype.setErrorHandler = function(handler) {
-    this.errorHandler_ = handler;
-  };
-
-  Router.prototype.encounteredError = function() {
-    return this.connector_.encounteredError();
-  };
-
-  Router.prototype.enableTestingMode = function() {
-    this.testingController_ = new RouterTestingController(this.connector_);
-    return this.testingController_;
-  };
-
-  Router.prototype.handleIncomingMessage_ = function(message) {
-    var noError = validator.validationError.NONE;
     var messageValidator = new Validator(message);
     var err = messageValidator.validateMessageHeader();
-    for (var i = 0; err === noError && i < this.payloadValidators_.length; ++i)
-      err = this.payloadValidators_[i](messageValidator);
 
-    if (err == noError)
-      this.handleValidIncomingMessage_(message);
-    else
-      this.handleInvalidIncomingMessage_(message, err);
-  };
-
-  Router.prototype.handleValidIncomingMessage_ = function(message) {
-    if (this.testingController_)
-      return;
-
-    if (message.expectsResponse()) {
-      if (controlMessageHandler.isControlMessage(message)) {
-        if (this.controlMessageHandler_) {
-          this.controlMessageHandler_.acceptWithResponder(message, this);
-        } else {
-          this.close();
-        }
-      } else if (this.incomingReceiver_) {
-        this.incomingReceiver_.acceptWithResponder(message, this);
-      } else {
-        // If we receive a request expecting a response when the client is not
-        // listening, then we have no choice but to tear down the pipe.
-        this.close();
-      }
-    } else if (message.isResponse()) {
-      var reader = new MessageReader(message);
-      var requestID = reader.requestID;
-      var completer = this.completers_.get(requestID);
-      if (completer) {
-        this.completers_.delete(requestID);
-        completer.resolve(message);
-      } else {
-        console.log("Unexpected response with request ID: " + requestID);
-      }
+    var ok = false;
+    if (err !== validator.validationError.NONE) {
+      validator.reportValidationError(err);
+    } else if (controlMessageHandler.isPipeControlMessage(message)) {
+      ok = this.controlMessageHandler_.accept(message);
     } else {
-      if (controlMessageHandler.isControlMessage(message)) {
-        if (this.controlMessageHandler_) {
-          var ok = this.controlMessageHandler_.accept(message);
-          if (ok) return;
-        }
-        this.close();
-      } else if (this.incomingReceiver_) {
-        this.incomingReceiver_.accept(message);
+      var interfaceId = message.getInterfaceId();
+      var endpoint = this.endpoints_.get(interfaceId);
+      if (!endpoint || endpoint.closed) {
+        return true;
       }
+
+      if (!endpoint.client) {
+        // We need to wait until a client is attached in order to dispatch
+        // further messages.
+        return false;
+      }
+      ok = endpoint.client.handleIncomingMessage_(message);
     }
+
+    if (!ok) {
+      this.handleInvalidIncomingMessage_();
+    }
+    return ok;
   };
 
-  Router.prototype.handleInvalidIncomingMessage_ = function(message, error) {
-    if (!this.testingController_) {
+  Router.prototype.close = function() {
+    this.connector_.close();
+    // Closing the message pipe won't trigger connection error handler.
+    // Explicitly call onPipeConnectionError() so that associated endpoints
+    // will get notified.
+    this.onPipeConnectionError();
+  };
+
+  Router.prototype.waitForNextMessageForTesting = function() {
+    this.connector_.waitForNextMessageForTesting();
+  };
+
+  Router.prototype.handleInvalidIncomingMessage_ = function(message) {
+    if (!validator.isTestingMode()) {
       // TODO(yzshen): Consider notifying the embedder.
       // TODO(yzshen): This should also trigger connection error handler.
       // Consider making accept() return a boolean and let the connector deal
       // with this, as the C++ code does.
-      console.log("Invalid message: " + validator.validationError[error]);
-
       this.close();
       return;
     }
-
-    this.testingController_.onInvalidIncomingMessage(error);
   };
 
-  Router.prototype.handleConnectionError_ = function(result) {
-    this.completers_.forEach(function(value) {
-      value.reject(result);
-    });
-    if (this.errorHandler_)
-      this.errorHandler_();
-    this.close();
+  Router.prototype.onPeerAssociatedEndpointClosed = function(interfaceId,
+      reason) {
+    check(!types.isMasterInterfaceId(interfaceId) || reason);
+
+    var endpoint = this.endpoints_.get(interfaceId);
+    if (!endpoint) {
+      endpoint = new InterfaceEndpoint(this, interfaceId);
+      this.endpoints_.set(interfaceId, endpoint);
+    }
+
+    if (reason) {
+      endpoint.disconnectReason = reason;
+    }
+
+    if (!endpoint.peerClosed) {
+      if (endpoint.client) {
+        timer.createOneShot(0,
+            endpoint.client.notifyError.bind(endpoint.client, reason));
+      }
+      this.updateEndpointStateMayRemove(endpoint,
+          EndpointStateUpdateType.PEER_ENDPOINT_CLOSED);
+    }
+    return true;
   };
 
-  // The RouterTestingController is used in unit tests. It defeats valid message
-  // handling and delgates invalid message handling.
+  Router.prototype.onPipeConnectionError = function() {
+    this.encounteredError_ = true;
 
-  function RouterTestingController(connector) {
-    this.connector_ = connector;
-    this.invalidMessageHandler_ = null;
-  }
-
-  RouterTestingController.prototype.waitForNextMessage = function() {
-    this.connector_.waitForNextMessageForTesting();
+    for (var endpoint of this.endpoints_.values()) {
+      if (endpoint.client) {
+        timer.createOneShot(0,
+            endpoint.client.notifyError.bind(endpoint.client,
+              endpoint.disconnectReason));
+      }
+      this.updateEndpointStateMayRemove(endpoint,
+          EndpointStateUpdateType.PEER_ENDPOINT_CLOSED);
+    }
   };
 
-  RouterTestingController.prototype.setInvalidIncomingMessageHandler =
-      function(callback) {
-    this.invalidMessageHandler_ = callback;
+  Router.prototype.closeEndpointHandle = function(interfaceId, reason) {
+    if (!types.isValidInterfaceId(interfaceId)) {
+      return;
+    }
+    var endpoint = this.endpoints_.get(interfaceId);
+    check(endpoint);
+    check(!endpoint.client);
+    check(!endpoint.closed);
+
+    this.updateEndpointStateMayRemove(endpoint,
+        EndpointStateUpdateType.ENDPOINT_CLOSED);
+
+    if (!types.isMasterInterfaceId(interfaceId) || reason) {
+      this.controlMessageProxy_.notifyPeerEndpointClosed(interfaceId, reason);
+    }
   };
 
-  RouterTestingController.prototype.onInvalidIncomingMessage =
-      function(error) {
-    if (this.invalidMessageHandler_)
-      this.invalidMessageHandler_(error);
+  Router.prototype.updateEndpointStateMayRemove = function(endpoint,
+      endpointStateUpdateType) {
+    if (endpointStateUpdateType === EndpointStateUpdateType.ENDPOINT_CLOSED) {
+      endpoint.closed = true;
+    } else {
+      endpoint.peerClosed = true;
+    }
+    if (endpoint.closed && endpoint.peerClosed) {
+      this.endpoints_.delete(endpoint.id);
+    }
   };
 
   var exports = {};

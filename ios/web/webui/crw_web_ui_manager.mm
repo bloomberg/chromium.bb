@@ -226,12 +226,23 @@ const char kScriptCommandPrefix[] = "webui";
       {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
       {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
       {web::kConsoleModuleName, IDR_IOS_CONSOLE_JS},
+      {web::kTimerModuleName, IDR_IOS_TIMER_JS},
       {web::kCoreModuleName, IDR_IOS_MOJO_CORE_JS},
       {web::kHandleUtilModuleName, IDR_IOS_MOJO_HANDLE_UTIL_JS},
       {web::kInterfaceProviderModuleName, IDR_IOS_SHELL_INTERFACE_PROVIDER_JS},
       {web::kSupportModuleName, IDR_IOS_MOJO_SUPPORT_JS},
       {web::kSyncMessageChannelModuleName,
        IDR_IOS_MOJO_SYNC_MESSAGE_CHANNEL_JS},
+      {mojo::kPipeControlMessagesMojom,
+       IDR_MOJO_PIPE_CONTROL_MESSAGES_MOJOM_JS},
+      {mojo::kInterfaceEndpointClientModuleName,
+       IDR_MOJO_INTERFACE_ENDPOINT_CLIENT_JS},
+      {mojo::kInterfaceEndpointHandleModuleName,
+       IDR_MOJO_INTERFACE_ENDPOINT_HANDLE_JS},
+      {mojo::kPipeControlMessageHandlerModuleName,
+       IDR_MOJO_PIPE_CONTROL_MESSAGE_HANDLER_JS},
+      {mojo::kPipeControlMessageProxyModuleName,
+       IDR_MOJO_PIPE_CONTROL_MESSAGE_PROXY_JS},
   };
   scoped_refptr<base::RefCountedMemory> scriptData(
       web::GetWebClient()->GetDataResourceBytes(resource_map[moduleName]));

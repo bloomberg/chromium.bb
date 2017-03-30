@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 define("{{module.path}}", [
-{%- if module.path != "mojo/public/interfaces/bindings/interface_control_messages.mojom" %}
+{%- if module.path !=
+         "mojo/public/interfaces/bindings/interface_control_messages.mojom" and
+       module.path !=
+         "mojo/public/interfaces/bindings/pipe_control_messages.mojom" %}
     "mojo/public/js/bindings",
 {%- endif %}
     "mojo/public/js/codec",
@@ -13,7 +16,10 @@ define("{{module.path}}", [
     "{{import.module.path}}",
 {%- endfor %}
 ], function(
-{%- if module.path != "mojo/public/interfaces/bindings/interface_control_messages.mojom" -%}
+{%- if module.path !=
+         "mojo/public/interfaces/bindings/interface_control_messages.mojom" and
+       module.path !=
+         "mojo/public/interfaces/bindings/pipe_control_messages.mojom" -%}
 bindings, {% endif -%}
 codec, core, validator
 {%- for import in imports -%}

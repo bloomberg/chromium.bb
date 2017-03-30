@@ -14,6 +14,7 @@ source_set("js") {
 group("bindings") {
   data = [
     "$interfaces_bindings_gen_dir/interface_control_messages.mojom.js",
+    "$interfaces_bindings_gen_dir/pipe_control_messages.mojom.js",
     "bindings.js",
     "buffer.js",
     "codec.js",
@@ -22,6 +23,10 @@ group("bindings") {
     "interface_types.js",
     "lib/control_message_handler.js",
     "lib/control_message_proxy.js",
+    "lib/interface_endpoint_client.js",
+    "lib/interface_endpoint_handle.js",
+    "lib/pipe_control_message_handler.js",
+    "lib/pipe_control_message_proxy.js",
     "router.js",
     "support.js",
     "threading.js",

@@ -16,7 +16,17 @@ const char kControlMessageProxyModuleName[] =
     "mojo/public/js/lib/control_message_proxy";
 const char kInterfaceControlMessagesMojom[] =
     "mojo/public/interfaces/bindings/interface_control_messages.mojom";
+const char kInterfaceEndpointClientModuleName[] =
+    "mojo/public/js/lib/interface_endpoint_client";
+const char kInterfaceEndpointHandleModuleName[] =
+    "mojo/public/js/lib/interface_endpoint_handle";
 const char kInterfaceTypesModuleName[] = "mojo/public/js/interface_types";
+const char kPipeControlMessageHandlerModuleName[] =
+    "mojo/public/js/lib/pipe_control_message_handler";
+const char kPipeControlMessageProxyModuleName[] =
+    "mojo/public/js/lib/pipe_control_message_proxy";
+const char kPipeControlMessagesMojom[] =
+    "mojo/public/interfaces/bindings/pipe_control_messages.mojom";
 const char kRouterModuleName[] = "mojo/public/js/router";
 const char kUnicodeModuleName[] = "mojo/public/js/unicode";
 const char kValidatorModuleName[] = "mojo/public/js/validator";

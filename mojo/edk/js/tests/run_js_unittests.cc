@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
+#include "gin/modules/timer.h"
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
 #include "mojo/edk/js/core.h"
@@ -23,6 +24,7 @@ class TestRunnerDelegate : public gin::FileRunnerDelegate {
  public:
   TestRunnerDelegate() {
     AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
+    AddBuiltinModule(gin::TimerModule::kName, gin::TimerModule::GetModule);
     AddBuiltinModule(Core::kModuleName, Core::GetModule);
     AddBuiltinModule(Threading::kModuleName, Threading::GetModule);
     AddBuiltinModule(Support::kModuleName, Support::GetModule);

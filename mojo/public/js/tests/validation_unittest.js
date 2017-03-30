@@ -278,15 +278,9 @@ define([
     expect(testMessagePipe.result).toBe(core.RESULT_OK);
 
     endpoint.bind(testMessagePipe.handle1);
-    var testingController = endpoint.enableTestingMode();
-
-    var validationError;
-    testingController.setInvalidIncomingMessageHandler(function(error) {
-      validationError = error;
-    });
+    var observer = validator.ValidationErrorObserverForTesting.getInstance();
 
     for (var i = 0; i < testFiles.length; i++) {
-      validationError = noError;
       var testMessage = readTestMessage(testFiles[i]);
       var handles = new Array(testMessage.handleCount);
 
@@ -297,8 +291,9 @@ define([
           core.WRITE_MESSAGE_FLAG_NONE);
       expect(writeMessageValue).toBe(core.RESULT_OK);
 
-      testingController.waitForNextMessage();
-      checkValidationResult(testFiles[i], validationError);
+      endpoint.waitForNextMessageForTesting();
+      checkValidationResult(testFiles[i], observer.lastError);
+      observer.reset();
     }
 
     expect(core.close(testMessagePipe.handle0)).toBe(core.RESULT_OK);
@@ -333,6 +328,7 @@ define([
   testIntegratedMessageHeaderValidation();
   testIntegratedResponseMessageValidation();
   testIntegratedRequestMessageValidation();
+  validator.clearTestingMode();
 
   this.result = "PASS";
 });

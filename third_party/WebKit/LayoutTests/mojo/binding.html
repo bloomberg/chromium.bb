@@ -82,6 +82,22 @@ binding_test(async (bindings, math) => {
   var calcBinding = new bindings.Binding(math.Calculator,
                                          new CalculatorImpl(),
                                          bindings.makeRequest(calc));
+
+  await new Promise((resolve, reject) => {
+    calcBinding.setConnectionErrorHandler(({custom_reason, description}) => {
+      assert_equals(custom_reason, 32);
+      assert_equals(description, 'goodbye');
+      resolve();
+    });
+    calc.ptr.resetWithReason({custom_reason: 32, description: 'goodbye'});
+  });
+}, 'connection error with reason');
+
+binding_test(async (bindings, math) => {
+  var calc = new math.CalculatorPtr();
+  var calcBinding = new bindings.Binding(math.Calculator,
+                                         new CalculatorImpl(),
+                                         bindings.makeRequest(calc));
   assert_equals((await calc.add(2)).value, 2);
 
   var interfaceRequest = calcBinding.unbind();

@@ -453,6 +453,10 @@ define("mojo/public/js/codec", [
     return this.buffer.getUint32(kMessageFlagsOffset);
   };
 
+  Message.prototype.getInterfaceId = function() {
+    return this.buffer.getUint32(kMessageInterfaceIdOffset);
+  };
+
   Message.prototype.isResponse = function() {
     return (this.getFlags() & kMessageIsResponse) != 0;
   };
@@ -464,6 +468,10 @@ define("mojo/public/js/codec", [
   Message.prototype.setRequestID = function(requestID) {
     // TODO(darin): Verify that space was reserved for this field!
     this.buffer.setUint64(kMessageRequestIDOffset, requestID);
+  };
+
+  Message.prototype.setInterfaceId = function(interfaceId) {
+    this.buffer.setUint32(kMessageInterfaceIdOffset, interfaceId);
   };
 
 
@@ -537,10 +545,6 @@ define("mojo/public/js/codec", [
     this.payloadSize = message.buffer.byteLength - messageHeaderSize;
     var version = this.decoder.readUint32();
     var interface_id = this.decoder.readUint32();
-    if (interface_id != 0) {
-      throw new Error("Receiving non-zero interface ID. Associated interfaces " +
-                      "are not yet supported.");
-    }
     this.messageName = this.decoder.readUint32();
     this.flags = this.decoder.readUint32();
     // Skip the padding.

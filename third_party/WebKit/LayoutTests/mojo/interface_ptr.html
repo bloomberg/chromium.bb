@@ -97,6 +97,22 @@ define([
 
   promise_test(async () => {
     var calc = new math.CalculatorPtr();
+    var calcBinding = new bindings.Binding(math.Calculator,
+                                           new CalculatorImpl(),
+                                           bindings.makeRequest(calc));
+
+    await new Promise((resolve, reject) => {
+      calc.ptr.setConnectionErrorHandler(({custom_reason, description}) => {
+        assert_equals(custom_reason, 42);
+        assert_equals(description, 'hey');
+        resolve();
+      });
+      calcBinding.closeWithReason({custom_reason: 42, description: 'hey'});
+    });
+  }, 'connection error with reason');
+
+  promise_test(async () => {
+    var calc = new math.CalculatorPtr();
     var newCalc = null;
     var calcBinding = new bindings.Binding(math.Calculator,
                                            new CalculatorImpl(),

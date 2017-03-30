@@ -28,6 +28,49 @@ define("mojo/public/js/validator", [
   };
 
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
+  var gValidationErrorObserver = null;
+
+  function reportValidationError(error) {
+    if (gValidationErrorObserver) {
+      gValidationErrorObserver.setLastError(error);
+    }
+  }
+
+  var ValidationErrorObserverForTesting = (function() {
+    function Observer() {
+      this.lastError = validationError.NONE;
+      this.callback = null;
+    }
+
+    Observer.prototype.setLastError = function(error) {
+      this.lastError = error;
+      if (this.callback) {
+        this.callback(error);
+      }
+    };
+
+    Observer.prototype.reset = function(error) {
+      this.lastError = validationError.NONE;
+      this.callback = null;
+    };
+
+    return {
+      getInstance: function() {
+        if (!gValidationErrorObserver) {
+          gValidationErrorObserver = new Observer();
+        }
+        return gValidationErrorObserver;
+      }
+    };
+  })();
+
+  function isTestingMode() {
+    return Boolean(gValidationErrorObserver);
+  }
+
+  function clearTestingMode() {
+    gValidationErrorObserver = null;
+  }
 
   function isEnumClass(cls) {
     return cls instanceof codec.Enum;
@@ -180,6 +223,7 @@ define("mojo/public/js/validator", [
     return fieldVersion <= structVersion;
   };
 
+  // TODO(wangjimmy): Add support for v2 messages.
   Validator.prototype.validateMessageHeader = function() {
 
     var err = this.validateStructHeader(0, codec.kMessageHeaderSize);
@@ -508,5 +552,9 @@ define("mojo/public/js/validator", [
   var exports = {};
   exports.validationError = validationError;
   exports.Validator = Validator;
+  exports.ValidationErrorObserverForTesting = ValidationErrorObserverForTesting;
+  exports.reportValidationError = reportValidationError;
+  exports.isTestingMode = isTestingMode;
+  exports.clearTestingMode = clearTestingMode;
   return exports;
 });

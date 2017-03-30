@@ -14,5 +14,6 @@ const char kSupportModuleName[] = "mojo/public/js/support";
 const char kCoreModuleName[] = "mojo/public/js/core";
 const char kInterfaceProviderModuleName[] =
     "content/public/renderer/frame_interfaces";
+const char kTimerModuleName[] = "timer";
 
 }  // namespace web

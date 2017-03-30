@@ -18,6 +18,7 @@
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/modules/console.h"
+#include "gin/modules/timer.h"
 #include "mojo/edk/js/core.h"
 #include "mojo/edk/js/handle.h"
 #include "mojo/edk/js/support.h"
@@ -156,6 +157,9 @@ void ApiTestEnvironment::RegisterModules() {
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(env()->isolate(), gin::Console::kModuleName,
                          gin::Console::GetModule(env()->isolate()));
+  gin::ModuleRegistry::From(env()->context()->v8_context())
+      ->AddBuiltinModule(env()->isolate(), gin::TimerModule::kName,
+                         gin::TimerModule::GetModule(env()->isolate()));
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(env()->isolate(), mojo::edk::js::Core::kModuleName,
                          mojo::edk::js::Core::GetModule(env()->isolate()));

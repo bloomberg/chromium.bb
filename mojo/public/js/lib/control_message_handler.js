@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 define("mojo/public/js/lib/control_message_handler", [
-  "mojo/public/js/codec",
   "mojo/public/interfaces/bindings/interface_control_messages.mojom",
+  "mojo/public/js/codec",
   "mojo/public/js/validator",
-], function(codec, controlMessages, validator) {
+], function(controlMessages, codec, validator) {
 
   var Validator = validator.Validator;
 
@@ -89,18 +89,18 @@ define("mojo/public/js/lib/control_message_handler", [
   }
 
   function ControlMessageHandler(interface_version) {
-    this.interface_version = interface_version;
+    this.interface_version_ = interface_version;
   }
 
   ControlMessageHandler.prototype.accept = function(message) {
     validateControlRequestWithoutResponse(message);
-    return runOrClosePipe(message, this.interface_version);
+    return runOrClosePipe(message, this.interface_version_);
   };
 
   ControlMessageHandler.prototype.acceptWithResponder = function(message,
       responder) {
     validateControlRequestWithResponse(message);
-    return run(message, responder, this.interface_version);
+    return run(message, responder, this.interface_version_);
   };
 
   var exports = {};

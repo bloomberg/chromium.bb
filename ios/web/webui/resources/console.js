@@ -7,8 +7,10 @@
 // This module provides basic logging support. The reason to define this module
 // to forward calls to the |console| object exposed by the browser, instead of
 // using that object directly: mojo JS bindings are currently loaded using gin
-// and the |console| object is not always available. When the Mojo JS bindings
-// move away from gin, this module could be removed.
+// and the |console| object is not always available.
+//
+// TODO(crbug.com/703380): When the Mojo JS bindings move away from gin,
+// this module could be removed.
 
 define("console", [], function() {
   /**

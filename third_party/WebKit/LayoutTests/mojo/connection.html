@@ -88,17 +88,6 @@ define([
     var response = await provider.echoStrings("hello", "world");
     assert_equals(response.a, "hello");
     assert_equals(response.b, "world");
-
-    try {
-      core.readMessage = function() {
-        return { result: core.RESULT_UNKNOWN };
-      };
-      await provider.echoString("goodbye");
-      assert_unreachable();
-    } catch (e) {
-      assert_not_equals(e, null);
-    }
-
   }, 'request response');
 
   done();

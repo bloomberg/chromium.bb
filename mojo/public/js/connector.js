@@ -78,10 +78,6 @@ define("mojo/public/js/connector", [
     this.errorHandler_ = handler;
   };
 
-  Connector.prototype.encounteredError = function() {
-    return this.error_;
-  };
-
   Connector.prototype.waitForNextMessageForTesting = function() {
     var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE);
     this.readMore_(wait.result);
@@ -96,9 +92,12 @@ define("mojo/public/js/connector", [
       if (read.result == core.RESULT_SHOULD_WAIT)
         return;
       if (read.result != core.RESULT_OK) {
+        // TODO(wangjimmy): Add a handleError method to swap the handle to be
+        // closed with a dummy handle in the case when
+        // read.result != MOJO_RESULT_FAILED_PRECONDITION
         this.error_ = true;
         if (this.errorHandler_)
-          this.errorHandler_.onError(read.result);
+          this.errorHandler_.onError();
         return;
       }
       var messageBuffer = new buffer.Buffer(read.buffer);

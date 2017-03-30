@@ -150,6 +150,7 @@
 #include "crypto/sha2.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
+#include "gin/modules/timer.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/cdm_factory.h"
@@ -2639,6 +2640,8 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
 
   registry->AddBuiltinModule(isolate, gin::Console::kModuleName,
                              gin::Console::GetModule(isolate));
+  registry->AddBuiltinModule(isolate, gin::TimerModule::kName,
+                             gin::TimerModule::GetModule(isolate));
   registry->AddBuiltinModule(isolate, mojo::edk::js::Core::kModuleName,
                              mojo::edk::js::Core::GetModule(isolate));
   registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,
