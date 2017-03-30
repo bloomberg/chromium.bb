@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_
-#define ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_
-
-#include "android_webview/browser/aw_metrics_service_client.h"
+#ifndef ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_H_
+#define ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_H_
 
 #include <jni.h>
+#include <memory>
 #include <string>
 
+#include "android_webview/browser/aw_metrics_service_client.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -79,4 +79,4 @@ bool RegisterAwMetricsServiceClient(JNIEnv* env);
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_
+#endif  // ANDROID_WEBVIEW_NATIVE_AW_METRICS_SERVICE_CLIENT_IMPL_H_

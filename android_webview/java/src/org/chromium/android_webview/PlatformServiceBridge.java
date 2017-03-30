@@ -68,4 +68,7 @@ public class PlatformServiceBridge {
         ThreadUtils.assertOnUiThread();
         callback.onReceiveValue(false);
     }
+
+    // Takes an uncompressed, serialized UMA proto and logs it via a platform-specific mechanism.
+    public void logMetrics(byte[] data) {}
 }

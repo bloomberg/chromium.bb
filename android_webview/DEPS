@@ -24,6 +24,7 @@ include_rules = [
   "+net",
   "+skia",
   "+third_party/skia/include",
+  "+third_party/zlib/google",
   "+ui/android",
   "+ui/base",
   "+ui/gfx",

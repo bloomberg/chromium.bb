@@ -6,6 +6,8 @@
 
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/jni/AwMetricsServiceClient_jni.h"
+#include "android_webview/native/aw_metrics_log_uploader.h"
+#include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -18,7 +20,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
@@ -146,10 +147,15 @@ bool AwMetricsServiceClientImpl::IsConsentGiven() {
 void AwMetricsServiceClientImpl::SetMetricsEnabled(bool enabled) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // For now, UMA is only enabled on future versions.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SDK_VERSION_NOUGAT) {
+    return;
+  }
+
   if (is_enabled_ != enabled) {
     if (enabled) {
-      // TODO(paulmiller): Actually enable metrics when the server-side is ready
-      //metrics_service_->Start();
+      metrics_service_->Start();
     } else {
       metrics_service_->Stop();
     }
@@ -207,13 +213,15 @@ AwMetricsServiceClientImpl::CreateUploader(
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
     const base::Callback<void(int)>& on_upload_complete) {
+  // |server_url| and |mime_type| are unused because WebView uses the platform
+  // logging mechanism instead of the normal UMA server.
   return std::unique_ptr<::metrics::MetricsLogUploader>(
-      new metrics::NetMetricsLogUploader(request_context_, server_url,
-                                         mime_type, service_type,
-                                         on_upload_complete));
+      new AwMetricsLogUploader(on_upload_complete));
 }
 
 base::TimeDelta AwMetricsServiceClientImpl::GetStandardUploadInterval() {
+  // The platform logging mechanism is responsible for upload frequency; this
+  // just specifies how frequently to provide logs to the platform.
   return base::TimeDelta::FromMinutes(kUploadIntervalMinutes);
 }
 
