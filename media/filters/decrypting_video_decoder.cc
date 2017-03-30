@@ -115,15 +115,10 @@ void DecryptingVideoDecoder::Reset(const base::Closure& closure) {
          state_ == kWaitingForKey ||
          state_ == kDecodeFinished ||
          state_ == kError) << state_;
+  DCHECK(init_cb_.is_null());  // No Reset() during pending initialization.
   DCHECK(reset_cb_.is_null());
 
   reset_cb_ = BindToCurrentLoop(closure);
-
-  // TODO(xhwang): These CHECKs are used to help investigate a bug. Remove them
-  // after the investigation is over. See http://crbug.com/695554
-  CHECK(state_ != kUninitialized);
-  CHECK(state_ != kPendingDecoderInit);
-  CHECK(init_cb_.is_null());  // No Reset() during pending initialization.
 
   decryptor_->ResetDecoder(Decryptor::kVideo);
 
