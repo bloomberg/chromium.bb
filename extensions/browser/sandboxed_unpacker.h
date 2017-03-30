@@ -51,11 +51,12 @@ class SandboxedUnpackerClient
   // for deleting this memory.
   //
   // install_icon - The icon we will display in the installation UI, if any.
-  virtual void OnUnpackSuccess(const base::FilePath& temp_dir,
-                               const base::FilePath& extension_root,
-                               const base::DictionaryValue* original_manifest,
-                               const Extension* extension,
-                               const SkBitmap& install_icon) = 0;
+  virtual void OnUnpackSuccess(
+      const base::FilePath& temp_dir,
+      const base::FilePath& extension_root,
+      std::unique_ptr<base::DictionaryValue> original_manifest,
+      const Extension* extension,
+      const SkBitmap& install_icon) = 0;
   virtual void OnUnpackFailure(const CrxInstallError& error) = 0;
 
  protected:

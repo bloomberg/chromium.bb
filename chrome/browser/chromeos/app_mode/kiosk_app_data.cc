@@ -126,7 +126,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
   // extensions::SandboxedUnpackerClient
   void OnUnpackSuccess(const base::FilePath& temp_dir,
                        const base::FilePath& extension_root,
-                       const base::DictionaryValue* original_manifest,
+                       std::unique_ptr<base::DictionaryValue> original_manifest,
                        const extensions::Extension* extension,
                        const SkBitmap& install_icon) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());

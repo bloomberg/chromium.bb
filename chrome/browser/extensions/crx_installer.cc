@@ -215,8 +215,8 @@ void CrxInstaller::ConvertUserScriptOnFileThread() {
     return;
   }
 
-  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get(),
-                  SkBitmap());
+  OnUnpackSuccess(extension->path(), extension->path(), nullptr,
+                  extension.get(), SkBitmap());
 }
 
 void CrxInstaller::InstallWebApp(const WebApplicationInfo& web_app) {
@@ -240,8 +240,8 @@ void CrxInstaller::ConvertWebAppOnFileThread(
 
   // TODO(aa): conversion data gets lost here :(
 
-  OnUnpackSuccess(extension->path(), extension->path(), NULL, extension.get(),
-                  SkBitmap());
+  OnUnpackSuccess(extension->path(), extension->path(), nullptr,
+                  extension.get(), SkBitmap());
 }
 
 CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
@@ -418,7 +418,7 @@ void CrxInstaller::OnUnpackFailure(const CrxInstallError& error) {
 void CrxInstaller::OnUnpackSuccess(
     const base::FilePath& temp_dir,
     const base::FilePath& extension_dir,
-    const base::DictionaryValue* original_manifest,
+    std::unique_ptr<base::DictionaryValue> original_manifest,
     const Extension* extension,
     const SkBitmap& install_icon) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
@@ -436,10 +436,10 @@ void CrxInstaller::OnUnpackSuccess(
   if (!install_icon.empty())
     install_icon_.reset(new SkBitmap(install_icon));
 
-  if (original_manifest)
-    original_manifest_.reset(new Manifest(
-        Manifest::INVALID_LOCATION,
-        std::unique_ptr<base::DictionaryValue>(original_manifest->DeepCopy())));
+  if (original_manifest) {
+    original_manifest_.reset(
+        new Manifest(Manifest::INVALID_LOCATION, std::move(original_manifest)));
+  }
 
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.

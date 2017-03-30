@@ -52,7 +52,7 @@ void KioskExternalUpdateValidator::OnUnpackFailure(
 void KioskExternalUpdateValidator::OnUnpackSuccess(
     const base::FilePath& temp_dir,
     const base::FilePath& extension_dir,
-    const base::DictionaryValue* original_manifest,
+    std::unique_ptr<base::DictionaryValue> original_manifest,
     const extensions::Extension* extension,
     const SkBitmap& install_icon) {
   DCHECK(crx_file_.extension_id == extension->id());

@@ -684,11 +684,9 @@ void SandboxedUnpacker::ReportSuccess(
         base::TimeTicks::Now() - crx_unpack_start_time_);
   DCHECK(!temp_dir_.GetPath().empty());
 
-  // Client takes ownership of temporary directory and extension.
-  // TODO(https://crbug.com/699528): we should consider transferring the
-  // ownership of original_manifest to the client as well.
+  // Client takes ownership of temporary directory, manifest, and extension.
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_,
-                           original_manifest.get(), extension_.get(),
+                           std::move(original_manifest), extension_.get(),
                            install_icon);
   extension_ = NULL;
 }
