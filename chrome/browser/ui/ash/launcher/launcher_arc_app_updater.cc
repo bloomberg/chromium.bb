@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+
 LauncherArcAppUpdater::LauncherArcAppUpdater(
     Delegate* delegate,
     content::BrowserContext* browser_context)
@@ -26,6 +28,13 @@ void LauncherArcAppUpdater::OnAppRegistered(
 }
 
 void LauncherArcAppUpdater::OnAppRemoved(const std::string& app_id) {
+  // ChromeLauncherController generally removes items from the sync model when
+  // they are removed from the shelf model, but that should not happen when ARC
+  // apps are disabled due to ARC itself being disabled. The app entries should
+  // remain in the sync model for other synced devices that do support ARC, and
+  // to restore the respective shelf items if ARC is re-enabled on this device.
+  ChromeLauncherController::ScopedPinSyncDisabler scoped_pin_sync_disabler =
+      ChromeLauncherController::instance()->GetScopedPinSyncDisabler();
   delegate()->OnAppUninstalledPrepared(browser_context(), app_id);
   delegate()->OnAppUninstalled(browser_context(), app_id);
 }

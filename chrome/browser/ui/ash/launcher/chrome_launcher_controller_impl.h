@@ -300,9 +300,6 @@ class ChromeLauncherControllerImpl
 
   std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
 
-  // If true, incoming pinned state changes should be ignored.
-  bool ignore_persist_pinned_state_change_ = false;
-
   // The list of running & un-pinned applications for different users on hidden
   // desktops.
   typedef std::vector<std::string> RunningAppListIds;

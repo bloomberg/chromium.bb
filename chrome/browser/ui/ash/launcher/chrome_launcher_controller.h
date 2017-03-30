@@ -12,6 +12,7 @@
 #include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
+#include "base/auto_reset.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -232,6 +233,12 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   void SetShelfAlignmentFromPrefs();
   void SetShelfBehaviorsFromPrefs();
 
+  bool should_sync_pin_changes() const { return should_sync_pin_changes_; }
+
+  // Temporarily prevent pinned shelf item changes from updating the sync model.
+  using ScopedPinSyncDisabler = std::unique_ptr<base::AutoReset<bool>>;
+  ScopedPinSyncDisabler GetScopedPinSyncDisabler();
+
   // Sets LauncherControllerHelper or AppIconLoader for test, taking ownership.
   void SetLauncherControllerHelperForTest(
       std::unique_ptr<LauncherControllerHelper> helper);
@@ -287,6 +294,9 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
 
   // True when setting a shelf pref in response to an observer notification.
   bool updating_shelf_pref_from_observer_ = false;
+
+  // When true, changes to pinned shelf items should update the sync model.
+  bool should_sync_pin_changes_ = true;
 
   // Used to get app info for tabs.
   std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;

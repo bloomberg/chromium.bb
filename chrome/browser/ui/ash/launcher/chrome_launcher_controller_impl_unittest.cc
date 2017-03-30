@@ -536,8 +536,6 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   void InitLauncherController() {
     launcher_controller_.reset(
         new ChromeLauncherControllerImpl(profile(), model_));
-    // TODO(crbug.com/654622): Some tests break with a non-null static instance.
-    ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
     launcher_controller_->Init();
   }
 
@@ -1995,6 +1993,9 @@ TEST_P(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
+  // TODO(crbug.com/654622): This test breaks with a non-null static instance.
+  ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
+
   SetLauncherControllerHelper(new TestLauncherControllerHelper);
 
   // App1 exists all the time.
@@ -2281,6 +2282,9 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
        V1AppUpdateOnUserSwitch) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
+  // TODO(crbug.com/654622): This test breaks with a non-null static instance.
+  ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
+
   EXPECT_EQ(2, model_->item_count());
   {
     // Create a "windowed gmail app".
@@ -2311,6 +2315,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
        V1AppUpdateOnUserSwitchEdgecases) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
+  // TODO(crbug.com/654622): This test breaks with a non-null static instance.
+  ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
 
   // First test: Create an app when the user is not active.
   std::string user2 = "user2";
@@ -2347,6 +2353,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
        V1CloseOnVisitingDesktop) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
+  // TODO(crbug.com/654622): This test breaks with a non-null static instance.
+  ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
 
   chrome::MultiUserWindowManager* manager =
       chrome::MultiUserWindowManager::GetInstance();
@@ -2391,6 +2399,9 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
        V1AppUpdateOnUserSwitchEdgecases2) {
   // Create a browser item in the LauncherController.
   InitLauncherController();
+  // TODO(crbug.com/654622): This test breaks with a non-null static instance.
+  ChromeLauncherControllerImpl::set_instance_for_test(nullptr);
+
   SetLauncherControllerHelper(new TestLauncherControllerHelper);
 
   // First test: Create an app when the user is not active.
