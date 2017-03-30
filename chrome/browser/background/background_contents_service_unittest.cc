@@ -193,7 +193,7 @@ class BackgroundContentsServiceNotificationTest
   }
 
   void TearDown() override {
-    g_browser_process->notification_ui_manager()->CancelAll();
+    g_browser_process->notification_ui_manager()->StartShutdown();
     profile_manager_.reset();
 #if !defined(OS_CHROMEOS)
     message_center::MessageCenter::Shutdown();

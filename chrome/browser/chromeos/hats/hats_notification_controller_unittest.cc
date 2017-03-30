@@ -112,7 +112,7 @@ class HatsNotificationControllerTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    g_browser_process->notification_ui_manager()->CancelAll();
+    g_browser_process->notification_ui_manager()->StartShutdown();
     profile_manager_.reset();
     network_portal_detector::InitializeForTesting(nullptr);
     BrowserWithTestWindowTest::TearDown();

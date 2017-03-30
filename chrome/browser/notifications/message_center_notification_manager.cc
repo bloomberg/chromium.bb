@@ -80,6 +80,10 @@ MessageCenterNotificationManager::~MessageCenterNotificationManager() {
 
 void MessageCenterNotificationManager::Add(const Notification& notification,
                                            Profile* profile) {
+  // We won't have time to process and act on this notification.
+  if (is_shutdown_started_)
+    return;
+
   if (Update(notification, profile))
     return;
 
@@ -255,6 +259,11 @@ bool MessageCenterNotificationManager::CancelAllByProfile(
 void MessageCenterNotificationManager::CancelAll() {
   message_center_->RemoveAllNotifications(
       false /* by_user */, message_center::MessageCenter::RemoveType::ALL);
+}
+
+void MessageCenterNotificationManager::StartShutdown() {
+  is_shutdown_started_ = true;
+  CancelAll();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

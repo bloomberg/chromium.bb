@@ -23,7 +23,7 @@ namespace chrome {
 void HandleAppExitingForPlatform() {
   // Close all non browser windows now. Those includes notifications
   // and windows created by Ash (launcher, background, etc).
-  g_browser_process->notification_ui_manager()->CancelAll();
+  g_browser_process->notification_ui_manager()->StartShutdown();
 
 #if defined(USE_ASH)
   // This may be called before |ash::Shell| is initialized when

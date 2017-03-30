@@ -32,7 +32,7 @@ void NotificationSystemObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_TERMINATING) {
-    ui_manager_->CancelAll();
+    ui_manager_->StartShutdown();
   } else if (type == extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
     if (!content::Source<Profile>(source)->IsOffTheRecord()) {
       extensions::UnloadedExtensionInfo* extension_info =

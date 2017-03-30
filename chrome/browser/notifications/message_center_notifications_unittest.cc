@@ -51,7 +51,6 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
     MessageCenter::Initialize();
 #endif
 
-
     TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
     profile_manager_.reset(new TestingProfileManager(browser_process));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -102,6 +101,20 @@ class MessageCenterNotificationManagerTest : public BrowserWithTestWindowTest {
 TEST_F(MessageCenterNotificationManagerTest, SetupNotificationManager) {
   TestingProfile profile;
   notification_manager()->Add(GetANotification("test"), &profile);
+}
+
+TEST_F(MessageCenterNotificationManagerTest, AddNotificationOnShutdown) {
+  TestingProfile profile;
+  EXPECT_TRUE(message_center()->NotificationCount() == 0);
+  notification_manager()->Add(GetANotification("test"), &profile);
+  EXPECT_TRUE(message_center()->NotificationCount() == 1);
+
+  // Verify the number of notifications does not increase when trying to add a
+  // notifcation on shutdown.
+  notification_manager()->StartShutdown();
+  EXPECT_TRUE(message_center()->NotificationCount() == 0);
+  notification_manager()->Add(GetANotification("test2"), &profile);
+  EXPECT_TRUE(message_center()->NotificationCount() == 0);
 }
 
 TEST_F(MessageCenterNotificationManagerTest, UpdateNotification) {

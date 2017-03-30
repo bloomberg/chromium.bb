@@ -86,6 +86,11 @@ class NotificationUIManager {
   // Used when the app is terminating.
   virtual void CancelAll() = 0;
 
+  // Cancels all pending notifications and closes anything currently showing.
+  // After this is called, no new notifications can be added. Used when the app
+  // is terminating.
+  virtual void StartShutdown() = 0;
+
  protected:
   NotificationUIManager() {}
 

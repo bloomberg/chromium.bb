@@ -52,6 +52,9 @@ bool StubNotificationUIManager::SilentDismissById(
 
 void StubNotificationUIManager::Add(const Notification& notification,
                                     Profile* profile) {
+  if (is_shutdown_started_)
+    return;
+
   notifications_.push_back(std::make_pair(
       notification, NotificationUIManager::GetProfileID(profile)));
 
@@ -152,6 +155,11 @@ void StubNotificationUIManager::CancelAll() {
   for (const auto& pair : notifications_)
     pair.first.delegate()->Close(false /* by_user */);
   notifications_.clear();
+}
+
+void StubNotificationUIManager::StartShutdown() {
+  is_shutdown_started_ = true;
+  CancelAll();
 }
 
 FullscreenStateWaiter::FullscreenStateWaiter(
