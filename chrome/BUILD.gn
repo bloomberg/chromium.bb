@@ -662,8 +662,8 @@ if (is_win) {
     # Only official builds that include Widevine need the widevine
     # signature file.
     if (is_chrome_branded && enable_pepper_cdms) {
-      sources += [ "$root_out_dir/$chrome_framework_name.sig" ]
-      public_deps += [ ":sign_chrome_framework_for_widevine" ]
+      sources += [ "$root_out_dir/Widevine Resources.bundle" ]
+      public_deps += [ ":widevine_resources_bundle" ]
     }
   }
 
@@ -935,6 +935,50 @@ if (is_win) {
       signature_file = "$root_out_dir/$chrome_framework_name.sig"
       deps = [
         ":chrome_framework",
+      ]
+    }
+
+    mac_info_plist("widevine_resources_plist") {
+      info_plist = "//third_party/widevine/cdm/widevine_resources.plist"
+      extra_substitutions = [
+        "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+        "BUNDLE_ID=widevine_resources",
+      ]
+      executable_name = "Widevine Resources"
+    }
+
+    bundle_data("widevine_resources_plist_bundle_data") {
+      sources = get_target_outputs(":widevine_resources_plist")
+      outputs = [
+        "{{bundle_root_dir}}/Info.plist",
+      ]
+      public_deps = [
+        ":widevine_resources_plist",
+      ]
+    }
+
+    bundle_data("framework_widevine_signature") {
+      sources = [
+        "$root_out_dir/$chrome_framework_name.sig",
+      ]
+
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+
+      public_deps = [
+        ":sign_chrome_framework_for_widevine",
+      ]
+    }
+
+    create_bundle("widevine_resources_bundle") {
+      output_name = "Widevine Resources.bundle"
+      bundle_root_dir = "$root_build_dir/$output_name/Contents"
+      bundle_resources_dir = bundle_root_dir + "/Resources"
+
+      deps = [
+        ":framework_widevine_signature",
+        ":widevine_resources_plist_bundle_data",
       ]
     }
   }
