@@ -612,13 +612,15 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
   size_t private_bytes;
   size_t shared_bytes;
   size_t resident_bytes;
+  size_t locked_bytes;
   if (!process_metrics_->GetMemoryBytes(&private_bytes, &shared_bytes,
-                                        &resident_bytes)) {
+                                        &resident_bytes, &locked_bytes)) {
     return false;
   }
   uint64_t rss_bytes = resident_bytes;
   pmd->process_totals()->SetExtraFieldInBytes("private_bytes", private_bytes);
   pmd->process_totals()->SetExtraFieldInBytes("shared_bytes", shared_bytes);
+  pmd->process_totals()->SetExtraFieldInBytes("locked_bytes", locked_bytes);
 #else
   uint64_t rss_bytes = process_metrics_->GetWorkingSetSize();
 #endif  // defined(OS_MACOSX)

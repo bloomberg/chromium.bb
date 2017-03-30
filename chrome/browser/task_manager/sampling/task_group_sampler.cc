@@ -130,7 +130,7 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
   size_t shared_bytes = 0;
   size_t resident_bytes = 0;
   if (process_metrics_->GetMemoryBytes(&private_bytes, &shared_bytes,
-                                       &resident_bytes)) {
+                                       &resident_bytes, nullptr)) {
     memory_usage.private_bytes = static_cast<int64_t>(private_bytes);
     memory_usage.shared_bytes = static_cast<int64_t>(shared_bytes);
     memory_usage.physical_bytes = resident_bytes;
