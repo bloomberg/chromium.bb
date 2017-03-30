@@ -94,6 +94,12 @@ AudioRendererImpl::~AudioRendererImpl() {
   // After this call, the |sink_| will not call back into |this| anymore.
   sink_->Stop();
 
+  // Trying to track down AudioClock crash, http://crbug.com/674856. If the sink
+  // hasn't truly stopped above we will fail to acquire the lock. The sink must
+  // be stopped to avoid destroying the AudioClock while its still being used.
+  CHECK(lock_.Try());
+  lock_.Release();
+
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
 }
@@ -336,6 +342,11 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!init_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
   DCHECK(sink_.get());
+
+  // Trying to track down AudioClock crash, http://crbug.com/674856.
+  // AudioRenderImpl should only be initialized once to avoid destroying
+  // AudioClock while the audio thread is still using it.
+  CHECK_EQ(audio_clock_.get(), nullptr);
 
   state_ = kInitializing;
   client_ = client;
