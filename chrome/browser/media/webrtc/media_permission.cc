@@ -10,6 +10,7 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -67,6 +68,12 @@ ContentSetting MediaPermission::GetPermissionStatus(
     if (content_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
       *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
       return CONTENT_SETTING_BLOCK;
+    }
+
+    // When creating new user (including supervised user), we must
+    // be able to use photo for user image.
+    if (requesting_origin_.spec() == chrome::kChromeUIOobeURL) {
+      return CONTENT_SETTING_ALLOW;
     }
 
     const chromeos::CrosSettings* const settings =

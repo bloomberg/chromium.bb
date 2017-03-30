@@ -471,7 +471,8 @@ void WebUILoginView::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  // Note: This is only needed for SAML logins.
+  // Note: This is needed for taking photos when selecting new user images
+  // and SAML logins. Must work for all user types (including supervised).
   MediaStreamDevicesController::RequestPermissions(web_contents, request,
                                                    callback);
 }
