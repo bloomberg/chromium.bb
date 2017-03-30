@@ -71,8 +71,8 @@ class PolicyWatcherTest : public testing::Test {
     // Retaining a raw pointer to keep control over policy contents.
     policy_loader_ =
         new policy::FakeAsyncPolicyLoader(base::ThreadTaskRunnerHandle::Get());
-    policy_watcher_ =
-        PolicyWatcher::CreateFromPolicyLoader(base::WrapUnique(policy_loader_));
+    policy_watcher_ = PolicyWatcher::CreateFromPolicyLoaderForTesting(
+        base::WrapUnique(policy_loader_));
 
     nat_true_.SetBoolean(key::kRemoteAccessHostFirewallTraversal, true);
     nat_false_.SetBoolean(key::kRemoteAccessHostFirewallTraversal, false);

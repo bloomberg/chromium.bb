@@ -78,6 +78,14 @@ class PolicyWatcher : public policy::PolicyService::Observer,
       policy::PolicyService* policy_service,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
 
+  // Creates a PolicyWatcher from the given loader instead of loading the policy
+  // from the default location.
+  //
+  // This can be used with FakeAsyncPolicyLoader to test policy handling of
+  // other components.
+  static std::unique_ptr<PolicyWatcher> CreateFromPolicyLoaderForTesting(
+      std::unique_ptr<policy::AsyncPolicyLoader> async_policy_loader);
+
  private:
   friend class PolicyWatcherTest;
 

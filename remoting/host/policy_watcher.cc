@@ -390,4 +390,9 @@ std::unique_ptr<PolicyWatcher> PolicyWatcher::Create(
 #endif  // !(OS_CHROMEOS)
 }
 
+std::unique_ptr<PolicyWatcher> PolicyWatcher::CreateFromPolicyLoaderForTesting(
+    std::unique_ptr<policy::AsyncPolicyLoader> async_policy_loader) {
+  return CreateFromPolicyLoader(std::move(async_policy_loader));
+}
+
 }  // namespace remoting
