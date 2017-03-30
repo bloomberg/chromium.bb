@@ -601,6 +601,16 @@ TEST_F(FrameFetchContextTest, MainResource) {
   EXPECT_EQ(WebCachePolicy::BypassingCache,
             childFetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
+
+  // Per-frame bypassing reload, but parent load type is different.
+  // This is not the case users can trigger through user interfaces, but for
+  // checking code correctness and consistency.
+  document->loader()->setLoadType(FrameLoadTypeReload);
+  childFrame->loader().documentLoader()->setLoadType(
+      FrameLoadTypeReloadBypassingCache);
+  EXPECT_EQ(WebCachePolicy::BypassingCache,
+            childFetchContext->resourceRequestCachePolicy(
+                request, Resource::MainResource, FetchRequest::NoDefer));
 }
 
 TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {

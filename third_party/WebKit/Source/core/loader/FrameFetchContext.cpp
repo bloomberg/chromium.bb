@@ -288,13 +288,10 @@ WebCachePolicy determineFrameWebCachePolicy(Frame* frame,
   }
 
   // Respects BypassingCache rather than parent's policy.
-  // TODO(toyoshim): Adopt BypassingCache even for MainResource.
   FrameLoadType loadType =
       toLocalFrame(frame)->loader().documentLoader()->loadType();
-  if (resourceType == ResourceType::kIsNotMainResource &&
-      loadType == FrameLoadTypeReloadBypassingCache) {
+  if (loadType == FrameLoadTypeReloadBypassingCache)
     return WebCachePolicy::BypassingCache;
-  }
 
   // Respects parent's policy if it has a special one.
   WebCachePolicy parentPolicy =
