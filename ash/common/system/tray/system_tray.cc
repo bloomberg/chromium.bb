@@ -698,6 +698,10 @@ void SystemTray::CreateKeyEventWatcher() {
 
 void SystemTray::ActivateBubble() {
   TrayBubbleView* bubble_view = GetSystemBubble()->bubble_view();
+  // If system tray bubble is in the process of closing, do not try to activate
+  // bubble.
+  if (bubble_view->GetWidget()->IsClosed())
+    return;
   bubble_view->set_can_activate(true);
   bubble_view->GetWidget()->Activate();
 }
