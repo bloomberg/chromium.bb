@@ -24,6 +24,10 @@ class SubresourceFilterClient {
   // Returns true if the given URL is whitelisted from activation via content
   // settings. This should only be called for main frame URLs.
   virtual bool IsWhitelistedByContentSettings(const GURL& url) = 0;
+
+  // Adds |url| to the BLOCKED state via content settings for the current
+  // profile.
+  virtual void WhitelistByContentSettings(const GURL& url) = 0;
 };
 
 }  // namespace subresource_filter

@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -197,7 +198,16 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
 void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
   const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
-  AddHostOfURLToWhitelistSet(whitelist_url);
+
+  // Only whitelist via content settings when using the experimental UI,
+  // otherwise could get into a situation where content settings cannot be
+  // adjusted.
+  if (base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
+    client_->WhitelistByContentSettings(whitelist_url);
+  } else {
+    AddHostOfURLToWhitelistSet(whitelist_url);
+  }
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 

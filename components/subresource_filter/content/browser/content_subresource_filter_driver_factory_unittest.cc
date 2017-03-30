@@ -187,6 +187,8 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
     return false;
   }
 
+  void WhitelistByContentSettings(const GURL& url) override {}
+
   MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
 
  private:

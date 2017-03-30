@@ -165,6 +165,8 @@ class ContentSubresourceFilterDriverFactory
 
   std::unique_ptr<SubresourceFilterClient> client_;
 
+  // Hosts to whitelist. This is only used for per-WebContents whitelisting and
+  // is distinct from content settings whitelisting.
   HostPathSet whitelisted_hosts_;
 
   ActivationLevel activation_level_;

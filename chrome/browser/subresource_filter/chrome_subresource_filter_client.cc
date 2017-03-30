@@ -4,6 +4,8 @@
 
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 
+#include <string>
+
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -52,4 +54,16 @@ bool ChromeSubresourceFilterClient::IsWhitelistedByContentSettings(
       url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
       std::string());
   return setting == CONTENT_SETTING_BLOCK;
+}
+
+void ChromeSubresourceFilterClient::WhitelistByContentSettings(
+    const GURL& url) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  DCHECK(profile);
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  settings_map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      std::string(), CONTENT_SETTING_BLOCK);
 }

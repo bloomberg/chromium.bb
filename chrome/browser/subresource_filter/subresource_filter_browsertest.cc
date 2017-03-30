@@ -213,7 +213,8 @@ class SubresourceFilterBrowserTestImpl : public InProcessBrowserTest {
         switches::kEnableFeatures,
         base::JoinString(
             {kSafeBrowsingSubresourceFilter.name, "SafeBrowsingV4OnlyEnabled",
-             kSubresourceFilterSafeBrowsingActivationThrottle.name},
+             kSubresourceFilterSafeBrowsingActivationThrottle.name,
+             kSafeBrowsingSubresourceFilterExperimentalUI.name},
             ","));
   }
 
@@ -870,6 +871,63 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // Setting the site to "allow" should not activate filtering.
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ContentSettingsWhitelistViaReload_DoNotActivate) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // Whitelist via a reload.
+  ContentSubresourceFilterDriverFactory* driver_factory =
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
+  ASSERT_TRUE(driver_factory);
+
+  content::TestNavigationObserver navigation_observer(web_contents(), 1);
+  driver_factory->OnReloadRequested();
+  navigation_observer.Wait();
+
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       ContentSettingsWhitelistViaReload_WhitelistIsByDomain) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(url);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // Whitelist via a reload.
+  ContentSubresourceFilterDriverFactory* driver_factory =
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents());
+  ASSERT_TRUE(driver_factory);
+
+  content::TestNavigationObserver navigation_observer(web_contents(), 1);
+  driver_factory->OnReloadRequested();
+  navigation_observer.Wait();
+
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // Another navigation to the same domain should be whitelisted too.
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GetTestUrl("subresource_filter/frame_with_included_script.html?query"));
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+
+  // A cross site blacklisted navigation should stay activated, however.
+  GURL a_url(embedded_test_server()->GetURL(
+      "a.com", "/subresource_filter/frame_with_included_script.html"));
+  ConfigureAsPhishingURL(a_url);
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 }
 
 IN_PROC_BROWSER_TEST_P(SubresourceFilterWebSocketBrowserTest, BlockWebSocket) {
