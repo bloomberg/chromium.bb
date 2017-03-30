@@ -318,13 +318,6 @@ void SpellChecker::showSpellingGuessPanel() {
   spellCheckerClient().showSpellingUI(true);
 }
 
-void SpellChecker::clearMisspellingsForMovingParagraphs(
-    const SelectionInDOMTree& movingSelection) {
-  removeMarkers(
-      createVisibleSelection(movingSelection).toNormalizedEphemeralRange(),
-      DocumentMarker::MisspellingMarkers());
-}
-
 void SpellChecker::markMisspellingsForMovingParagraphs(
     const VisibleSelection& movingSelection) {
   if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())

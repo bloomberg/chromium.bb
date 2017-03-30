@@ -1494,8 +1494,6 @@ void CompositeEditCommand::moveParagraphs(
   const SelectionInDOMTree& selectionToDelete =
       SelectionInDOMTree::Builder().collapse(start).extend(end).build();
   setEndingSelection(selectionToDelete);
-  document().frame()->spellChecker().clearMisspellingsForMovingParagraphs(
-      selectionToDelete);
   deleteSelection(editingState, false, false, false);
   if (editingState->isAborted())
     return;
