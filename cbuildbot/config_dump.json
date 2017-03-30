@@ -14565,7 +14565,6 @@
             "panther-release",
             "parrot-release",
             "parrot_ivb-release",
-            "pbody-release",
             "peach_pi-release",
             "peach_pit-release",
             "peppy-release",
@@ -17608,12 +17607,10 @@
     },
     "pbody-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "pbody"
         ],
-        "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "buildslave_type": "baremetal"
     },
     "pbody-release-afdo": {
         "_template": "release_afdo_generate",
