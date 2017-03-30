@@ -61,7 +61,6 @@ top
       bindings
         resources
           sourcemap-typescript.ts
-          sourcemap-sass.scss
         shadowdom-navigator.html
         bindings-test.js
       inspector-test.js

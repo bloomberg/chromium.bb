@@ -27,10 +27,10 @@ InspectorTest.loadASTMapping = function(header, callback)
     sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onAttached);
 
     function onAttached(event) {
-        if (event.data !== header)
+        if (event.data.client !== header)
             return;
         sourceMapManager.removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onAttached);
-        var sourceMap = sourceMapManager.sourceMapForClient(header);
+        var sourceMap = event.data.sourceMap;
         callback(sourceMap.editable()? sourceMap : null);
     }
 }

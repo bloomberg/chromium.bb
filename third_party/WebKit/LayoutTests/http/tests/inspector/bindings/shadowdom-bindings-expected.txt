@@ -75,8 +75,9 @@ Workspace: 18 uiSourceCodes.
 [+] _test_detachShadow1.js
 
 Running: detachShadow2
-Removed: 0 uiSourceCodes
-Workspace: 20 uiSourceCodes.
+Removed: 1 uiSourceCodes
+[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
+Workspace: 19 uiSourceCodes.
     debugger:///VM[XXX] bindings-test.js
     debugger:///VM[XXX] inspector-test.js
     debugger:///VM[XXX] shadowdom-bindings.html
@@ -88,7 +89,6 @@ Workspace: 20 uiSourceCodes.
     debugger:///VM[XXX] _test_detachShadow1.js
 [+] debugger:///VM[XXX] _test_detachShadow2.js
     http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-    http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
     http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-typescript.ts
     http://127.0.0.1:8000/inspector/bindings/shadowdom-bindings.html
     http://127.0.0.1:8000/inspector/inspector-test.js

@@ -24,8 +24,8 @@ function test()
 
     function onSourceMapAttached(event)
     {
-        var header = event.data;
-        var sourceMap = InspectorTest.cssModel.sourceMapManager().sourceMapForClient(header);
+        var header = event.data.client;
+        var sourceMap = event.data.sourceMap;
         InspectorTest.addResult("SourceMap is editable: " + sourceMap.editable());
         InspectorTest.completeTest();
     }
