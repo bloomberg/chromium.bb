@@ -199,7 +199,7 @@ TEST_P(ClpfBlockTest, TestSIMDNoMismatch) {
   test_clpf(sizex, sizey, 8, 1, clpf, ref_clpf);
 }
 
-TEST_P(ClpfSpeedTest, TestSpeed) {
+TEST_P(ClpfSpeedTest, DISABLED_TestSpeed) {
   test_clpf_speed(sizex, sizey, 8, 16, clpf, ref_clpf);
 }
 
@@ -208,7 +208,7 @@ TEST_P(ClpfBlockHbdTest, TestSIMDNoMismatch) {
   test_clpf(sizex, sizey, 12, 1, clpf, ref_clpf);
 }
 
-TEST_P(ClpfHbdSpeedTest, TestSpeed) {
+TEST_P(ClpfHbdSpeedTest, DISABLED_TestSpeed) {
   test_clpf_speed(sizex, sizey, 12, 1, clpf, ref_clpf);
 }
 #endif
