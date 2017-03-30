@@ -44,6 +44,23 @@ bool isBaselineKeyword(CSSValueID id) {
                                                 CSSValueBaseline>(id);
 }
 
+CSSValueID getBaselineKeyword(CSSValue& value) {
+  if (!value.isValuePair()) {
+    DCHECK(toCSSIdentifierValue(value).getValueID() == CSSValueBaseline);
+    return CSSValueBaseline;
+  }
+
+  DCHECK(toCSSIdentifierValue(toCSSValuePair(value).second()).getValueID() ==
+         CSSValueBaseline);
+  if (toCSSIdentifierValue(toCSSValuePair(value).first()).getValueID() ==
+      CSSValueLast) {
+    return CSSValueLastBaseline;
+  }
+  DCHECK(toCSSIdentifierValue(toCSSValuePair(value).first()).getValueID() ==
+         CSSValueFirst);
+  return CSSValueFirstBaseline;
+}
+
 CSSValue* consumeBaselineKeyword(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
   if (CSSPropertyParserHelpers::identMatches<CSSValueBaseline>(id))
@@ -104,17 +121,8 @@ CSSValue* CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
     CSSValue* baseline = consumeBaselineKeyword(range);
     if (!baseline)
       return nullptr;
-    CSSValueID baselineID = CSSValueBaseline;
-    if (baseline->isValuePair()) {
-      if (toCSSIdentifierValue(toCSSValuePair(baseline)->first())
-              .getValueID() == CSSValueLast) {
-        baselineID = CSSValueLastBaseline;
-      } else {
-        baselineID = CSSValueFirstBaseline;
-      }
-    }
-    return CSSContentDistributionValue::create(CSSValueInvalid, baselineID,
-                                               CSSValueInvalid);
+    return CSSContentDistributionValue::create(
+        CSSValueInvalid, getBaselineKeyword(*baseline), CSSValueInvalid);
   }
 
   CSSValueID distribution = CSSValueInvalid;
@@ -151,6 +159,32 @@ CSSValue* CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
     return nullptr;
 
   return CSSContentDistributionValue::create(distribution, position, overflow);
+}
+
+CSSValue* CSSPropertyAlignmentUtils::consumeSimplifiedContentPosition(
+    CSSParserTokenRange& range) {
+  CSSValueID id = range.peek().id();
+  if (CSSPropertyParserHelpers::identMatches<CSSValueNormal>(id) ||
+      isContentPositionKeyword(id)) {
+    return CSSContentDistributionValue::create(
+        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
+        CSSValueInvalid);
+  }
+
+  if (isBaselineKeyword(id)) {
+    CSSValue* baseline = consumeBaselineKeyword(range);
+    if (!baseline)
+      return nullptr;
+    return CSSContentDistributionValue::create(
+        CSSValueInvalid, getBaselineKeyword(*baseline), CSSValueInvalid);
+  }
+
+  if (isContentDistributionKeyword(id)) {
+    return CSSContentDistributionValue::create(
+        range.consumeIncludingWhitespace().id(), CSSValueInvalid,
+        CSSValueInvalid);
+  }
+  return nullptr;
 }
 
 }  // namespace blink

@@ -3278,41 +3278,20 @@ bool CSSPropertyParser::consumeGridShorthand(bool important) {
   return true;
 }
 
-static CSSValue* consumeSimplifiedContentPosition(CSSParserTokenRange& range) {
-  CSSValueID id = range.peek().id();
-  if (identMatches<CSSValueNormal, CSSValueBaseline, CSSValueLastBaseline>(
-          id)) {
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
-        CSSValueInvalid);
-  }
-  if (identMatches<CSSValueSpaceBetween, CSSValueSpaceAround,
-                   CSSValueSpaceEvenly, CSSValueStretch>(id)) {
-    return CSSContentDistributionValue::create(
-        range.consumeIncludingWhitespace().id(), CSSValueInvalid,
-        CSSValueInvalid);
-  }
-  if (identMatches<CSSValueStart, CSSValueEnd, CSSValueCenter,
-                   CSSValueFlexStart, CSSValueFlexEnd, CSSValueLeft,
-                   CSSValueRight>(id)) {
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
-        CSSValueInvalid);
-  }
-  return nullptr;
-}
-
 bool CSSPropertyParser::consumePlaceContentShorthand(bool important) {
   DCHECK(RuntimeEnabledFeatures::cssGridLayoutEnabled());
   DCHECK_EQ(shorthandForProperty(CSSPropertyPlaceContent).length(),
             static_cast<unsigned>(2));
 
-  CSSValue* alignContentValue = consumeSimplifiedContentPosition(m_range);
+  CSSValue* alignContentValue =
+      CSSPropertyAlignmentUtils::consumeSimplifiedContentPosition(m_range);
   if (!alignContentValue)
     return false;
   CSSValue* justifyContentValue =
-      m_range.atEnd() ? alignContentValue
-                      : consumeSimplifiedContentPosition(m_range);
+      m_range.atEnd()
+          ? alignContentValue
+          : CSSPropertyAlignmentUtils::consumeSimplifiedContentPosition(
+                m_range);
   if (!justifyContentValue)
     return false;
   if (!m_range.atEnd())
