@@ -87,9 +87,6 @@ class VIEWS_EXPORT MenuRunnerImpl
   // Set if |running_| and Release() has been invoked.
   bool delete_after_run_;
 
-  // Are we running asynchronously?
-  bool async_;
-
   // Are we running for a drop?
   bool for_drop_;
 

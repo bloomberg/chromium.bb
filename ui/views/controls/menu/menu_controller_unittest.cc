@@ -26,7 +26,6 @@
 #include "ui/views/controls/menu/menu_host.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
 #include "ui/views/controls/menu/menu_item_view.h"
-#include "ui/views/controls/menu/menu_message_loop.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/test/menu_test_utils.h"
@@ -153,46 +152,6 @@ class TestEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
-// A wrapper around MenuMessageLoop that can be used to track whether a message
-// loop is running or not.
-class TestMenuMessageLoop : public MenuMessageLoop {
- public:
-  explicit TestMenuMessageLoop(std::unique_ptr<MenuMessageLoop> original);
-  ~TestMenuMessageLoop() override;
-
-  bool is_running() const { return is_running_; }
-
-  // MenuMessageLoop:
-  void QuitNow() override;
-
- private:
-  // MenuMessageLoop:
-  void Run() override;
-
-  std::unique_ptr<MenuMessageLoop> original_;
-  bool is_running_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMenuMessageLoop);
-};
-
-TestMenuMessageLoop::TestMenuMessageLoop(
-    std::unique_ptr<MenuMessageLoop> original)
-    : original_(std::move(original)) {
-  DCHECK(original_);
-}
-
-TestMenuMessageLoop::~TestMenuMessageLoop() {}
-
-void TestMenuMessageLoop::Run() {
-  is_running_ = true;
-  original_->Run();
-}
-
-void TestMenuMessageLoop::QuitNow() {
-  is_running_ = false;
-  original_->QuitNow();
-}
-
 #if defined(USE_AURA)
 // A DragDropClient which does not trigger a nested message loop. Instead a
 // callback is triggered during StartDragAndDrop in order to allow testing.
@@ -317,24 +276,6 @@ class MenuControllerTest : public ViewsTestBase {
     event_generator_->PressKey(key_code, 0);
   }
 
-#if defined(OS_LINUX) && defined(USE_X11)
-  void TestEventTargeter() {
-    {
-      // With the |ui::NullEventTargeter| instantiated and assigned we expect
-      // the menu to not handle the key event.
-      aura::ScopedWindowTargeter scoped_targeter(
-          owner()->GetNativeWindow()->GetRootWindow(),
-          std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
-      event_generator_->PressKey(ui::VKEY_ESCAPE, 0);
-      EXPECT_EQ(MenuController::EXIT_NONE, menu_exit_type());
-    }
-    // Now that the targeter has been destroyed, expect to exit the menu
-    // normally when hitting escape.
-    event_generator_->PressKey(ui::VKEY_ESCAPE, 0);
-    EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
-  }
-#endif  // defined(OS_LINUX) && defined(USE_X11
-
 #if defined(USE_AURA)
   // Verifies that a non-nested menu fully closes when receiving an escape key.
   void TestAsyncEscapeKey() {
@@ -366,66 +307,6 @@ class MenuControllerTest : public ViewsTestBase {
                    base::Unretained(this)));
   }
 
-  void TestAsynchronousNestedExitAll() {
-    ASSERT_TRUE(test_message_loop_->is_running());
-
-    std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
-        new TestMenuControllerDelegate());
-
-    menu_controller()->AddNestedDelegate(nested_delegate.get());
-    menu_controller()->SetAsyncRun(true);
-
-    int mouse_event_flags = 0;
-    MenuItemView* run_result = menu_controller()->Run(
-        owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
-        false, &mouse_event_flags);
-    EXPECT_EQ(run_result, nullptr);
-
-    // Exit all menus and check that the parent menu's message loop is
-    // terminated.
-    menu_controller()->Cancel(MenuController::EXIT_ALL);
-    EXPECT_EQ(MenuController::EXIT_ALL, menu_controller()->exit_type());
-    EXPECT_FALSE(test_message_loop_->is_running());
-  }
-
-  void TestAsynchronousNestedExitOutermost() {
-    ASSERT_TRUE(test_message_loop_->is_running());
-
-    std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
-        new TestMenuControllerDelegate());
-
-    menu_controller()->AddNestedDelegate(nested_delegate.get());
-    menu_controller()->SetAsyncRun(true);
-
-    int mouse_event_flags = 0;
-    MenuItemView* run_result = menu_controller()->Run(
-        owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
-        false, &mouse_event_flags);
-    EXPECT_EQ(run_result, nullptr);
-
-    // Exit the nested menu and check that the parent menu's message loop is
-    // still running.
-    menu_controller()->Cancel(MenuController::EXIT_OUTERMOST);
-    EXPECT_EQ(MenuController::EXIT_NONE, menu_controller()->exit_type());
-    EXPECT_TRUE(test_message_loop_->is_running());
-
-    // Now, exit the parent menu and check that its message loop is terminated.
-    menu_controller()->Cancel(MenuController::EXIT_OUTERMOST);
-    EXPECT_EQ(MenuController::EXIT_OUTERMOST, menu_controller()->exit_type());
-    EXPECT_FALSE(test_message_loop_->is_running());
-  }
-
-  // This nested an asynchronous delegate onto a menu with a nested message
-  // loop, then kills the loop. Simulates the loop being killed not by
-  // MenuController.
-  void TestNestedMessageLoopKillsItself(
-      TestMenuControllerDelegate* nested_delegate) {
-    menu_controller_->AddNestedDelegate(nested_delegate);
-    menu_controller_->SetAsyncRun(true);
-
-    test_message_loop_->QuitNow();
-  }
-
   // Tests destroying the active |menu_controller_| and replacing it with a new
   // active instance.
   void TestMenuControllerReplacementDuringDrag() {
@@ -450,7 +331,7 @@ class MenuControllerTest : public ViewsTestBase {
     // until TearDown. MenuControllerTest outlives it.
     test_views_delegate_->set_release_ref_callback(base::Bind(
         &MenuControllerTest::DestroyMenuController, base::Unretained(this)));
-    menu_controller_->ExitAsyncRun();
+    menu_controller_->ExitMenu();
   }
 
  protected:
@@ -515,8 +396,6 @@ class MenuControllerTest : public ViewsTestBase {
     return menu_controller_->delegate_;
   }
 
-  bool IsAsyncRun() { return menu_controller_->async_run_; }
-
   bool IsShowing() { return menu_controller_->showing_; }
 
   MenuHost* GetMenuHost(SubmenuView* submenu) { return submenu->host_; }
@@ -565,25 +444,8 @@ class MenuControllerTest : public ViewsTestBase {
     menu_controller_->OnMouseReleased(source, event);
   }
 
-  void RunMenu() {
-#if defined(USE_AURA)
-    std::unique_ptr<MenuPreTargetHandler> menu_pre_target_handler(
-        new MenuPreTargetHandler(menu_controller_, owner_.get()));
-#endif
-
-    menu_controller_->message_loop_depth_++;
-    menu_controller_->RunMessageLoop();
-    menu_controller_->message_loop_depth_--;
-  }
-
   void Accept(MenuItemView* item, int event_flags) {
     menu_controller_->Accept(item, event_flags);
-  }
-
-  void InstallTestMenuMessageLoop() {
-    test_message_loop_ =
-        new TestMenuMessageLoop(std::move(menu_controller_->message_loop_));
-    menu_controller_->message_loop_.reset(test_message_loop_);
   }
 
   // Causes the |menu_controller_| to begin dragging. Use TestDragDropClient to
@@ -636,7 +498,7 @@ class MenuControllerTest : public ViewsTestBase {
 
   void ExitMenuRun() {
     menu_controller_->SetExitType(MenuController::ExitType::EXIT_OUTERMOST);
-    menu_controller_->ExitMenuRun();
+    menu_controller_->ExitTopMostMenu();
   }
 
   void DestroyMenuController() {
@@ -695,7 +557,6 @@ class MenuControllerTest : public ViewsTestBase {
   std::unique_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
   std::unique_ptr<TestMenuDelegate> menu_delegate_;
   MenuController* menu_controller_;
-  TestMenuMessageLoop* test_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
@@ -704,16 +565,17 @@ class MenuControllerTest : public ViewsTestBase {
 // Tests that an event targeter which blocks events will be honored by the menu
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MenuControllerTest::TestEventTargeter,
-                            base::Unretained(this)));
-  RunMenu();
-}
-
-// Tests that an non-nested menu receiving an escape key will fully shut. This
-// should not crash by attempting to retarget the key to an inner menu.
-TEST_F(MenuControllerTest, AsyncEscapeKey) {
-  menu_controller()->SetAsyncRun(true);
+  {
+    // With the |ui::NullEventTargeter| instantiated and assigned we expect
+    // the menu to not handle the key event.
+    aura::ScopedWindowTargeter scoped_targeter(
+        owner()->GetNativeWindow()->GetRootWindow(),
+        std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+    PressKey(ui::VKEY_ESCAPE);
+    EXPECT_EQ(MenuController::EXIT_NONE, menu_exit_type());
+  }
+  // Now that the targeter has been destroyed, expect to exit the menu
+  // normally when hitting escape.
   TestAsyncEscapeKey();
   EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
 }
@@ -736,15 +598,14 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   event_generator()->PressTouchId(1);
   event_generator()->ReleaseTouchId(0);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MenuControllerTest::ReleaseTouchId,
-                            base::Unretained(this), 1));
+  int mouse_event_flags = 0;
+  MenuItemView* run_result = menu_controller()->Run(
+      owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
+      false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MenuControllerTest::PressKey,
-                            base::Unretained(this), ui::VKEY_ESCAPE));
-
-  RunMenu();
+  MenuControllerTest::ReleaseTouchId(1);
+  TestAsyncEscapeKey();
 
   EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
   EXPECT_EQ(0, test_event_handler.outstanding_touches());
@@ -1052,7 +913,6 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
   EXPECT_EQ(button2, GetHotButton());
 
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
   int mouse_event_flags = 0;
   MenuItemView* run_result =
       controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
@@ -1081,7 +941,6 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
 // MenuControllerDelegate when Accept is called.
 TEST_F(MenuControllerTest, AsynchronousAccept) {
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
 
   int mouse_event_flags = 0;
   MenuItemView* run_result =
@@ -1106,7 +965,6 @@ TEST_F(MenuControllerTest, AsynchronousAccept) {
 // MenuControllerDelegate when CancelAll is called.
 TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
 
   int mouse_event_flags = 0;
   MenuItemView* run_result =
@@ -1125,19 +983,15 @@ TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
-// Tests that an asynchrnous menu nested within a synchronous menu restores the
-// previous MenuControllerDelegate and synchronous settings.
+// Tests that canceling a nested menu restores the previous
+// MenuControllerDelegate, and notifies each delegate.
 TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
   MenuController* controller = menu_controller();
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
 
-  ASSERT_FALSE(IsAsyncRun());
   controller->AddNestedDelegate(nested_delegate.get());
-  controller->SetAsyncRun(true);
-
-  EXPECT_TRUE(IsAsyncRun());
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   int mouse_event_flags = 0;
@@ -1147,9 +1001,8 @@ TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
   EXPECT_EQ(run_result, nullptr);
 
   controller->CancelAll();
-  EXPECT_FALSE(IsAsyncRun());
   EXPECT_EQ(delegate, GetCurrentDelegate());
-  EXPECT_EQ(0, delegate->on_menu_closed_called());
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
   EXPECT_EQ(nullptr, nested_delegate->on_menu_closed_menu());
   EXPECT_EQ(0, nested_delegate->on_menu_closed_mouse_event_flags());
@@ -1162,7 +1015,6 @@ TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
 // and does not notify the controller.
 TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
   SubmenuView* source = menu_item()->GetSubmenu();
   MenuItemView* target = source->GetMenuItemAt(0);
 
@@ -1187,7 +1039,6 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
 // MenuControllerDelegate for shutdown.
 TEST_F(MenuControllerTest, AsynchronousDragComplete) {
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
   TestDragCompleteThenDestroyOnMenuClosed();
 
   controller->OnDragWillStart();
@@ -1204,7 +1055,6 @@ TEST_F(MenuControllerTest, AsynchronousDragComplete) {
 // notified when the drag completes.
 TEST_F(MenuControllerTest, AsynchronousCancelDuringDrag) {
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
   TestDragCompleteThenDestroyOnMenuClosed();
 
   controller->OnDragWillStart();
@@ -1221,9 +1071,6 @@ TEST_F(MenuControllerTest, AsynchronousCancelDuringDrag) {
 // Tests that if a menu is destroyed while drag operations are occuring, that
 // the MenuHost does not crash as the drag completes.
 TEST_F(MenuControllerTest, AsynchronousDragHostDeleted) {
-  MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
-
   SubmenuView* submenu = menu_item()->GetSubmenu();
   submenu->ShowAt(owner(), menu_item()->bounds(), false);
   MenuHost* host = GetMenuHost(submenu);
@@ -1237,9 +1084,6 @@ TEST_F(MenuControllerTest, AsynchronousDragHostDeleted) {
 // MenuController has been destroyed. A MenuHostRootView should not attempt to
 // access a destroyed MenuController. This test should not cause a crash.
 TEST_F(MenuControllerTest, HostReceivesInputBeforeDestruction) {
-  MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
-
   SubmenuView* submenu = menu_item()->GetSubmenu();
   submenu->ShowAt(owner(), menu_item()->bounds(), false);
   gfx::Point location(submenu->bounds().bottom_right());
@@ -1267,13 +1111,8 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
 
-  ASSERT_FALSE(IsAsyncRun());
-  // Sets the run created in SetUp
-  controller->SetAsyncRun(true);
-
   // Nested run
   controller->AddNestedDelegate(nested_delegate.get());
-  controller->SetAsyncRun(true);
   int mouse_event_flags = 0;
   MenuItemView* run_result =
       controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
@@ -1285,21 +1124,16 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
 }
 
-// Tests that an asynchronous menu nested within a synchronous menu does not
-// crash when trying to repost events that occur outside of the bounds of the
-// menu. Instead a proper shutdown should occur.
+// Tests that a nested menu does not crash when trying to repost events that
+// occur outside of the bounds of the menu. Instead a proper shutdown should
+// occur.
 TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
   MenuController* controller = menu_controller();
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
 
-  ASSERT_FALSE(IsAsyncRun());
-
   controller->AddNestedDelegate(nested_delegate.get());
-  controller->SetAsyncRun(true);
-
-  EXPECT_TRUE(IsAsyncRun());
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   MenuItemView* item = menu_item();
@@ -1322,9 +1156,8 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
   // shutdown. This should not crash while attempting to repost the event.
   SetSelectionOnPointerDown(sub_menu, &event);
 
-  EXPECT_FALSE(IsAsyncRun());
   EXPECT_EQ(delegate, GetCurrentDelegate());
-  EXPECT_EQ(0, delegate->on_menu_closed_called());
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
   EXPECT_EQ(nullptr, nested_delegate->on_menu_closed_menu());
   EXPECT_EQ(0, nested_delegate->on_menu_closed_mouse_event_flags());
@@ -1338,7 +1171,6 @@ TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
 TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   MenuController* controller = menu_controller();
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
-  controller->SetAsyncRun(true);
 
   // Show a sub menu to target with a touch event. However have the event occur
   // outside of the bounds of the entire menu.
@@ -1361,32 +1193,6 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
-// Tests that if you exit all menus when an asynchrnous menu is nested within a
-// synchronous menu, the message loop for the parent menu finishes running.
-TEST_F(MenuControllerTest, AsynchronousNestedExitAll) {
-  InstallTestMenuMessageLoop();
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MenuControllerTest::TestAsynchronousNestedExitAll,
-                            base::Unretained(this)));
-
-  RunMenu();
-}
-
-// Tests that if you exit the nested menu when an asynchrnous menu is nested
-// within a synchronous menu, the message loop for the parent menu remains
-// running.
-TEST_F(MenuControllerTest, AsynchronousNestedExitOutermost) {
-  InstallTestMenuMessageLoop();
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::TestAsynchronousNestedExitOutermost,
-                 base::Unretained(this)));
-
-  RunMenu();
-}
-
 // Tests that having the MenuController deleted during RepostEvent does not
 // cause a crash. ASAN bots should not detect use-after-free in MenuController.
 TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
@@ -1394,12 +1200,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
 
-  ASSERT_FALSE(IsAsyncRun());
-
   controller->AddNestedDelegate(nested_delegate.get());
-  controller->SetAsyncRun(true);
-
-  EXPECT_TRUE(IsAsyncRun());
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   MenuItemView* item = menu_item();
@@ -1436,12 +1237,8 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   MenuController* controller = menu_controller();
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
-  ASSERT_FALSE(IsAsyncRun());
 
   controller->AddNestedDelegate(nested_delegate.get());
-  controller->SetAsyncRun(true);
-
-  EXPECT_TRUE(IsAsyncRun());
   EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
 
   MenuItemView* item = menu_item();
@@ -1469,56 +1266,21 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
 }
 
-// Tests that when an asynchronous menu is nested, and the nested message loop
-// is kill not by the MenuController, that the nested menu is notified of
-// destruction.
-TEST_F(MenuControllerTest, NestedMessageLoopDiesWithNestedMenu) {
-  menu_controller()->CancelAll();
-  InstallTestMenuMessageLoop();
-  std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
-      new TestMenuControllerDelegate());
-  // This will nest an asynchronous menu, and then kill the nested message loop.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::TestNestedMessageLoopKillsItself,
-                 base::Unretained(this), nested_delegate.get()));
-
-  int result_event_flags = 0;
-  // This creates a nested message loop.
-  EXPECT_EQ(nullptr, menu_controller()->Run(owner(), nullptr, menu_item(),
-                                            gfx::Rect(), MENU_ANCHOR_TOPLEFT,
-                                            false, false, &result_event_flags));
-  EXPECT_FALSE(menu_controller_delegate()->on_menu_closed_called());
-  EXPECT_TRUE(nested_delegate->on_menu_closed_called());
-}
-
 #if defined(USE_AURA)
-// Tests that when a synchronous menu receives a cancel event, that it closes.
-TEST_F(MenuControllerTest, SynchronousCancelEvent) {
-  ExitMenuRun();
-  // Post actual test to run once the menu has created a nested message loop.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&MenuControllerTest::TestCancelEvent, base::Unretained(this)));
-  int mouse_event_flags = 0;
-  MenuItemView* run_result = menu_controller()->Run(
-      owner(), nullptr, menu_item(), gfx::Rect(), MENU_ANCHOR_TOPLEFT, false,
-      false, &mouse_event_flags);
-  EXPECT_EQ(run_result, nullptr);
-}
-
 // Tests that when an asynchronous menu receives a cancel event, that it closes.
 TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
   ExitMenuRun();
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
 
   int mouse_event_flags = 0;
   MenuItemView* run_result =
       controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
                       MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
   EXPECT_EQ(run_result, nullptr);
-  TestCancelEvent();
+  EXPECT_EQ(MenuController::EXIT_NONE, controller->exit_type());
+  ui::CancelModeEvent cancel_event;
+  event_generator()->Dispatch(&cancel_event);
+  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
 // Tests that if a menu is ran without a widget, that MenuPreTargetHandler does
@@ -1526,7 +1288,6 @@ TEST_F(MenuControllerTest, AsynchronousCancelEvent) {
 TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
   ExitMenuRun();
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
   int mouse_event_flags = 0;
   MenuItemView* run_result =
       controller->Run(nullptr, nullptr, menu_item(), gfx::Rect(),
@@ -1557,9 +1318,6 @@ TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
 // destroy the MenuController. On Windows and Linux this destruction also
 // destroys the Widget used for drag-and-drop, thereby ending the drag.
 TEST_F(MenuControllerTest, CancelAllDuringDrag) {
-  MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
-
   // Build the menu so that the appropriate root window is available to set the
   // drag drop client on.
   AddButtonMenuItems();
@@ -1579,7 +1337,6 @@ TEST_F(MenuControllerTest, CancelAllDuringDrag) {
 TEST_F(MenuControllerTest, DestroyedDuringViewsRelease) {
   ExitMenuRun();
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
 
   int mouse_event_flags = 0;
   MenuItemView* run_result =
@@ -1597,7 +1354,6 @@ TEST_F(MenuControllerTest, RepostEventToEmptyMenuItem) {
   // Setup a submenu. Additionally hook up appropriate Widget and View
   // containers, with bounds, so that hit testing works.
   MenuController* controller = menu_controller();
-  controller->SetAsyncRun(true);
   MenuItemView* base_menu = menu_item();
   base_menu->SetBounds(0, 0, 200, 200);
   SubmenuView* base_submenu = base_menu->GetSubmenu();
