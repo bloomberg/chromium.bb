@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -47,11 +48,15 @@ class BackgroundFetchTestBase : public ::testing::Test {
     return &embedded_worker_test_helper_;
   }
 
+  // Returns the browser context that should be used for the tests.
+  BrowserContext* browser_context() { return &browser_context_; }
+
   // Returns the origin that should be used for Background Fetch tests.
   const url::Origin& origin() const { return origin_; }
 
  private:
   TestBrowserThreadBundle thread_bundle_;
+  TestBrowserContext browser_context_;
 
   BackgroundFetchEmbeddedWorkerTestHelper embedded_worker_test_helper_;
 

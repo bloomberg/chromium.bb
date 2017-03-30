@@ -5,14 +5,15 @@
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
-#include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -27,43 +28,71 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     CompletedCallback completed_callback)
     : registration_id_(registration_id),
       options_(options),
-      job_guid_(base::GenerateGUID()),
       browser_context_(browser_context),
       storage_partition_(storage_partition),
       data_manager_(data_manager),
       completed_callback_(std::move(completed_callback)),
       weak_ptr_factory_(this) {}
 
-BackgroundFetchJobController::~BackgroundFetchJobController() = default;
+BackgroundFetchJobController::~BackgroundFetchJobController() {
+  // TODO(harkness): Write final status to the DataManager.
 
-void BackgroundFetchJobController::Shutdown() {
-  DownloadManager* manager =
-      BrowserContext::GetDownloadManager(browser_context_);
-  // For any downloads in progress, remove the observer.
-  for (auto& guid_map_entry : download_guid_map_) {
-    DownloadItem* item = manager->GetDownloadByGuid(guid_map_entry.first);
-    // TODO(harkness): Follow up with DownloadManager team  about whether this
-    // should be a DCHECK.
-    if (item)
-      item->RemoveObserver(this);
-  }
-  download_guid_map_.clear();
-
-  // TODO(harkness): Write final status to the DataManager. After this call, the
-  // |data_manager_| is no longer valid.
-  data_manager_ = nullptr;
+  for (const auto& pair : downloads_)
+    pair.first->RemoveObserver(this);
 }
 
-void BackgroundFetchJobController::StartProcessing() {
-  DCHECK(data_manager_);
+void BackgroundFetchJobController::Start(
+    std::vector<BackgroundFetchRequestInfo> initial_requests) {
+  DCHECK_LE(initial_requests.size(), kMaximumBackgroundFetchParallelRequests);
+  DCHECK_EQ(state_, State::INITIALIZED);
 
   state_ = State::FETCHING;
 
-  const BackgroundFetchRequestInfo& fetch_request =
-      data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_);
-  ProcessRequest(fetch_request);
+  for (const BackgroundFetchRequestInfo& request : initial_requests)
+    StartRequest(request);
+}
 
-  // Currently, this processes a single request at a time.
+void BackgroundFetchJobController::StartRequest(
+    const BackgroundFetchRequestInfo& request) {
+  DCHECK_EQ(state_, State::FETCHING);
+
+  std::unique_ptr<DownloadUrlParameters> download_parameters(
+      base::MakeUnique<DownloadUrlParameters>(
+          request.GetURL(), storage_partition_->GetURLRequestContext()));
+
+  // TODO(peter): The |download_parameters| should be populated with all the
+  // properties set in the |request|'s ServiceWorkerFetchRequest member.
+
+  download_parameters->set_callback(
+      base::Bind(&BackgroundFetchJobController::DidStartRequest,
+                 weak_ptr_factory_.GetWeakPtr(), request));
+
+  // TODO(peter): Move this call to the UI thread.
+  // See https://codereview.chromium.org/2781623009/
+  DownloadManager* download_manager =
+      BrowserContext::GetDownloadManager(browser_context_);
+  DCHECK(download_manager);
+
+  download_manager->DownloadUrl(std::move(download_parameters));
+}
+
+void BackgroundFetchJobController::DidStartRequest(
+    const BackgroundFetchRequestInfo& request,
+    DownloadItem* download_item,
+    DownloadInterruptReason interrupt_reason) {
+  DCHECK_EQ(interrupt_reason, DOWNLOAD_INTERRUPT_REASON_NONE);
+  DCHECK(download_item);
+
+  // Update the |request|'s download GUID in the DataManager.
+  data_manager_->MarkRequestAsStarted(registration_id_, request,
+                                      download_item->GetGuid());
+
+  // Register for updates on the download's progress.
+  download_item->AddObserver(this);
+
+  // Associate the |download_item| with the |request| so that we can retrieve
+  // it's information when further updates happen.
+  downloads_.insert(std::make_pair(download_item, request));
 }
 
 void BackgroundFetchJobController::UpdateUI(const std::string& title) {
@@ -75,51 +104,36 @@ void BackgroundFetchJobController::Abort() {
 
   state_ = State::ABORTED;
 
+  // Inform the owner of the controller about the job having completed.
   std::move(completed_callback_).Run(this);
 }
 
-void BackgroundFetchJobController::DownloadStarted(
-    const std::string& request_guid,
-    DownloadItem* item,
-    DownloadInterruptReason reason) {
-  // Start observing the DownloadItem. No need to store the pointer because it
-  // can be retrieved from the DownloadManager.
-  item->AddObserver(this);
-  download_guid_map_[item->GetGuid()] = request_guid;
-  data_manager_->UpdateRequestDownloadGuid(job_guid_, request_guid,
-                                           item->GetGuid());
-
-  // TODO(harkness): If DownloadStarted is called with a real interrupt reason,
-  // record that and don't mark it as in-progress.
-}
-
 void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
-  DCHECK(download_guid_map_.find(item->GetGuid()) != download_guid_map_.end());
+  auto iter = downloads_.find(item);
+  DCHECK(iter != downloads_.end());
 
-  // Update the state of the request on the DataManager. If the state is a final
-  // state, this will also update the complete status of the JobInfo.
-  const std::string& request_guid = download_guid_map_[item->GetGuid()];
-  bool requests_remaining = data_manager_->UpdateRequestState(
-      job_guid_, request_guid, item->GetState(), item->GetLastReason());
+  const BackgroundFetchRequestInfo& request = iter->second;
 
   switch (item->GetState()) {
     case DownloadItem::DownloadState::COMPLETE:
-      // If the download completed, update the storage location and size.
-      data_manager_->UpdateRequestStorageState(job_guid_, request_guid,
-                                               item->GetTargetFilePath(),
-                                               item->GetReceivedBytes());
-    // Fall through.
-    case DownloadItem::DownloadState::CANCELLED:
-      // TODO(harkness): Tell the notification service to update the download
-      // notification.
+      // TODO(peter): Populate the responses' information in the |request|.
 
-      if (requests_remaining) {
-        ProcessRequest(
-            data_manager_->GetNextBackgroundFetchRequestInfo(job_guid_));
-      } else if (data_manager_->IsComplete(job_guid_)) {
-        state_ = State::COMPLETED;
-        std::move(completed_callback_).Run(this);
-      }
+      // Remove the |item| from the list of active downloads. Expect one more
+      // completed file acknowledgement too, to prevent race conditions.
+      pending_completed_file_acknowledgements_++;
+      downloads_.erase(iter);
+
+      item->RemoveObserver(this);
+
+      // Mark the |request| as having completed and fetch the next request from
+      // storage. This may also mean that we've completed the job.
+      data_manager_->MarkRequestAsCompleteAndGetNextRequest(
+          registration_id_, request,
+          base::BindOnce(&BackgroundFetchJobController::DidGetNextRequest,
+                         weak_ptr_factory_.GetWeakPtr()));
+      break;
+    case DownloadItem::DownloadState::CANCELLED:
+      // TODO(harkness): Consider how we want to handle cancelled downloads.
       break;
     case DownloadItem::DownloadState::INTERRUPTED:
       // TODO(harkness): Just update the notification that it is paused.
@@ -129,31 +143,37 @@ void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
       // unpause the notification.
       break;
     case DownloadItem::DownloadState::MAX_DOWNLOAD_STATE:
-      // TODO(harkness): Consider how we want to handle errors here.
+      NOTREACHED();
       break;
   }
 }
 
-void BackgroundFetchJobController::OnDownloadDestroyed(DownloadItem* item) {
-  // This can be called as part of Shutdown. Make sure the observers are
-  // removed.
-  item->RemoveObserver(this);
+void BackgroundFetchJobController::DidGetNextRequest(
+    const base::Optional<BackgroundFetchRequestInfo>& request) {
+  DCHECK_LE(pending_completed_file_acknowledgements_, 1);
+  pending_completed_file_acknowledgements_--;
+
+  // If a |request| has been given, start downloading the file and bail.
+  if (request) {
+    StartRequest(request.value());
+    return;
+  }
+
+  // If there are outstanding completed file acknowlegements, bail as well.
+  if (pending_completed_file_acknowledgements_ > 0)
+    return;
+
+  state_ = State::COMPLETED;
+
+  // Otherwise the job this controller is responsible for has completed.
+  std::move(completed_callback_).Run(this);
 }
 
-void BackgroundFetchJobController::ProcessRequest(
-    const BackgroundFetchRequestInfo& fetch_request) {
-  // TODO(harkness): Check if the download is already in progress or completed.
+void BackgroundFetchJobController::OnDownloadDestroyed(DownloadItem* item) {
+  DCHECK_EQ(downloads_.count(item), 1u);
+  downloads_.erase(item);
 
-  // Set up the download parameters and the OnStartedCallback.
-  std::unique_ptr<DownloadUrlParameters> params(
-      base::MakeUnique<DownloadUrlParameters>(
-          fetch_request.GetURL(), storage_partition_->GetURLRequestContext()));
-  params->set_callback(
-      base::Bind(&BackgroundFetchJobController::DownloadStarted,
-                 weak_ptr_factory_.GetWeakPtr(), fetch_request.guid()));
-
-  BrowserContext::GetDownloadManager(browser_context_)
-      ->DownloadUrl(std::move(params));
+  item->RemoveObserver(this);
 }
 
 }  // namespace content

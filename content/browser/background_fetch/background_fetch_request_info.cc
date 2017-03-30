@@ -14,8 +14,11 @@ namespace content {
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo() = default;
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
+    int request_index,
     const ServiceWorkerFetchRequest& fetch_request)
-    : fetch_request_(fetch_request), guid_(base::GenerateGUID()) {}
+    : request_index_(request_index),
+      fetch_request_(fetch_request),
+      guid_(base::GenerateGUID()) {}
 
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     const BackgroundFetchRequestInfo& request)

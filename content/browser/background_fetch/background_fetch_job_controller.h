@@ -12,7 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
+#include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
@@ -20,7 +22,6 @@
 namespace content {
 
 class BackgroundFetchDataManager;
-class BackgroundFetchRequestInfo;
 class BrowserContext;
 class StoragePartition;
 
@@ -44,9 +45,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
       CompletedCallback completed_callback);
   ~BackgroundFetchJobController() override;
 
-  // Start processing on a batch of requests. Some of these may already be in
-  // progress or completed from a previous chromium instance.
-  void StartProcessing();
+  // Starts fetching the |initial_fetches|. The controller will continue to
+  // fetch new content until all requests have been handled.
+  void Start(std::vector<BackgroundFetchRequestInfo> initial_requests);
 
   // Updates the representation of this Background Fetch in the user interface
   // to match the given |title|.
@@ -54,9 +55,6 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Immediately aborts this Background Fetch by request of the developer.
   void Abort();
-
-  // Called by the BackgroundFetchContext when the system is shutting down.
-  void Shutdown();
 
   // Returns the current state of this Job Controller.
   State state() const { return state_; }
@@ -69,18 +67,25 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }
 
- private:
   // DownloadItem::Observer methods.
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadDestroyed(DownloadItem* item) override;
 
-  // Callback passed to the DownloadManager which will be invoked once the
-  // download starts.
-  void DownloadStarted(const std::string& request_guid,
-                       DownloadItem* item,
-                       DownloadInterruptReason reason);
+ private:
+  // Requests the download manager to start fetching |request|.
+  void StartRequest(const BackgroundFetchRequestInfo& request);
 
-  void ProcessRequest(const BackgroundFetchRequestInfo& request);
+  // Called when the request identified by |request_index| has been started.
+  // The |download_item| continues to be owned by the download system. The
+  // |interrupt_reason| will indicate when a request could not be started.
+  void DidStartRequest(const BackgroundFetchRequestInfo& request,
+                       DownloadItem* download_item,
+                       DownloadInterruptReason interrupt_reason);
+
+  // Called when a completed download has been marked as such in the DataManager
+  // and the next request, if any, has been read from storage.
+  void DidGetNextRequest(
+      const base::Optional<BackgroundFetchRequestInfo>& request);
 
   // The registration id on behalf of which this controller is fetching data.
   BackgroundFetchRegistrationId registration_id_;
@@ -91,13 +96,14 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // The current state of this Job Controller.
   State state_ = State::INITIALIZED;
 
-  // TODO(peter): Deprecated, remove in favor of |registration_id|.
-  std::string job_guid_;
+  // Map from DownloadItem* to the request info for the in-progress downloads.
+  std::unordered_map<DownloadItem*, BackgroundFetchRequestInfo> downloads_;
 
-  // Pointer to the browser context. The BackgroundFetchJobController is owned
-  // by the BrowserContext via the StoragePartition.
-  // TODO(harkness): Currently this is only used to lookup the DownloadManager.
-  // Investigate whether the DownloadManager should be passed instead.
+  // Number of outstanding acknowledgements we expect to get from the
+  // DataManager about
+  int pending_completed_file_acknowledgements_ = 0;
+
+  // The BrowserContext that indirectly owns us.
   BrowserContext* browser_context_;
 
   // Pointer to the storage partition. This object is owned by the partition
@@ -110,9 +116,6 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // Callback for when all fetches have been completed.
   CompletedCallback completed_callback_;
-
-  // Map from the GUID assigned by the DownloadManager to the request_guid.
-  std::unordered_map<std::string, std::string> download_guid_map_;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;
 

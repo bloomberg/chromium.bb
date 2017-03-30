@@ -5,13 +5,14 @@
 #ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_H_
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_H_
 
+#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_job_info.h"
 #include "content/browser/background_fetch/background_fetch_job_response_data.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -32,9 +33,12 @@ class ChromeBlobStorageContext;
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
   using CreateRegistrationCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
+      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
+                              std::vector<BackgroundFetchRequestInfo>)>;
   using DeleteRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
+  using NextRequestCallback = base::OnceCallback<void(
+      const base::Optional<BackgroundFetchRequestInfo>&)>;
 
   explicit BackgroundFetchDataManager(BrowserContext* browser_context);
   ~BackgroundFetchDataManager();
@@ -47,6 +51,21 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
       const std::vector<ServiceWorkerFetchRequest>& requests,
       const BackgroundFetchOptions& options,
       CreateRegistrationCallback callback);
+
+  // Marks that the |request|, part of the Background Fetch identified by
+  // |registration_id|, has been started as |download_guid|.
+  void MarkRequestAsStarted(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRequestInfo& request,
+      const std::string& download_guid);
+
+  // Marks that the |request|, part of the Background Fetch identified by
+  // |registration_id|, has completed. Will invoke the |callback| with the
+  // next request, if any, when the operation has completed.
+  void MarkRequestAsCompleteAndGetNextRequest(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchRequestInfo& request,
+      NextRequestCallback callback);
 
   // Deletes the registration identified by |registration_id|. Will invoke the
   // |callback| when the registration has been deleted from storage.
@@ -61,31 +80,33 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
 
   // The following methods are called by the JobController to update job state.
   // Returns a boolean indicating whether there are more requests to process.
-  virtual bool UpdateRequestState(const std::string& job_guid,
-                                  const std::string& request_guid,
-                                  DownloadItem::DownloadState state,
-                                  DownloadInterruptReason interrupt_reason);
-  virtual void UpdateRequestStorageState(const std::string& job_guid,
-                                         const std::string& request_guid,
-                                         const base::FilePath& file_path,
-                                         int64_t received_bytes);
-  virtual void UpdateRequestDownloadGuid(const std::string& job_guid,
-                                         const std::string& request_guid,
-                                         const std::string& download_guid);
+  bool UpdateRequestState(const std::string& job_guid,
+                          const std::string& request_guid,
+                          DownloadItem::DownloadState state,
+                          DownloadInterruptReason interrupt_reason);
+  void UpdateRequestStorageState(const std::string& job_guid,
+                                 const std::string& request_guid,
+                                 const base::FilePath& file_path,
+                                 int64_t received_bytes);
+  void UpdateRequestDownloadGuid(const std::string& job_guid,
+                                 const std::string& request_guid,
+                                 const std::string& download_guid);
 
   // Called by the JobController to get a BackgroundFetchRequestInfo to
   // process.
-  virtual const BackgroundFetchRequestInfo& GetNextBackgroundFetchRequestInfo(
+  const BackgroundFetchRequestInfo& GetNextBackgroundFetchRequestInfo(
       const std::string& job_guid);
 
   // Indicates whether all requests have been handed to the JobController.
-  virtual bool HasRequestsRemaining(const std::string& job_guid) const;
+  bool HasRequestsRemaining(const std::string& job_guid) const;
 
   // Indicates whether all requests have been handed out and completed.
-  virtual bool IsComplete(const std::string& job_guid) const;
+  bool IsComplete(const std::string& job_guid) const;
 
  private:
   friend class BackgroundFetchDataManagerTest;
+
+  class RegistrationData;
 
   // Storage interface.
   void WriteJobToStorage(
@@ -105,8 +126,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Indirectly, this is owned by the BrowserContext.
   BrowserContext* browser_context_;
 
-  // Set of known background fetch registration ids.
-  std::set<BackgroundFetchRegistrationId> registrations_;
+  // Map of known background fetch registration ids to their associated data.
+  std::map<BackgroundFetchRegistrationId, std::unique_ptr<RegistrationData>>
+      registrations_;
 
   // Map from job_guid to JobInfo.
   std::unordered_map<std::string, std::unique_ptr<BackgroundFetchJobInfo>>

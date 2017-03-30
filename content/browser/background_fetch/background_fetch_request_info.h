@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -21,12 +22,16 @@ namespace content {
 class CONTENT_EXPORT BackgroundFetchRequestInfo {
  public:
   BackgroundFetchRequestInfo();
-  explicit BackgroundFetchRequestInfo(
-      const ServiceWorkerFetchRequest& fetch_request);
+  BackgroundFetchRequestInfo(int request_index,
+                             const ServiceWorkerFetchRequest& fetch_request);
   // TODO(harkness): Remove copy constructor once the final (non-map-based)
   // state management is in place.
   BackgroundFetchRequestInfo(const BackgroundFetchRequestInfo& request);
   ~BackgroundFetchRequestInfo();
+
+  // Returns the index of this request in the larger Background Fetch fetch.
+  // Should only be consumed by the BackgroundFetchDataManager.
+  int request_index() const { return request_index_; }
 
   const std::string& guid() const { return guid_; }
 
@@ -58,6 +63,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   bool IsComplete() const;
 
  private:
+  // Index of this request within a Background Fetch registration.
+  int request_index_ = kInvalidBackgroundFetchRequestIndex;
+
+  // The request information provided by the developer.
   ServiceWorkerFetchRequest fetch_request_;
 
   std::string guid_;

@@ -25,6 +25,7 @@ class BackgroundFetchDataManager;
 class BackgroundFetchJobController;
 struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
+class BackgroundFetchRequestInfo;
 class BrowserContext;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
@@ -81,15 +82,18 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   // Creates a new Job Controller for the given |registration_id| and |options|,
   // which will start fetching the files that are part of the registration.
-  void CreateController(const BackgroundFetchRegistrationId& registration_id,
-                        const BackgroundFetchOptions& options);
+  void CreateController(
+      const BackgroundFetchRegistrationId& registration_id,
+      const BackgroundFetchOptions& options,
+      std::vector<BackgroundFetchRequestInfo> initial_requests);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
       const blink::mojom::BackgroundFetchService::FetchCallback& callback,
-      blink::mojom::BackgroundFetchError error);
+      blink::mojom::BackgroundFetchError error,
+      std::vector<BackgroundFetchRequestInfo> initial_requests);
 
   // Called when a the given |controller| has finished processing its job.
   void DidCompleteJob(BackgroundFetchJobController* controller);

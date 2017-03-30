@@ -59,14 +59,15 @@ void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
     const blink::mojom::BackgroundFetchService::FetchCallback& callback,
-    blink::mojom::BackgroundFetchError error) {
+    blink::mojom::BackgroundFetchError error,
+    std::vector<BackgroundFetchRequestInfo> initial_requests) {
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     callback.Run(error, base::nullopt /* registration */);
     return;
   }
 
   // Create the BackgroundFetchJobController, which will do the actual fetching.
-  CreateController(registration_id, options);
+  CreateController(registration_id, options, std::move(initial_requests));
 
   // Create the BackgroundFetchRegistration the renderer process will receive,
   // which enables it to resolve the promise telling the developer it worked.
@@ -118,12 +119,15 @@ BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
 
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchOptions& options) {
+    const BackgroundFetchOptions& options,
+    std::vector<BackgroundFetchRequestInfo> initial_requests) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
           registration_id, options, browser_context_, storage_partition_,
           background_fetch_data_manager_.get(),
           base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this));
+
+  // TODO(peter): Start actually fetching the files.
 
   active_fetches_.insert(
       std::make_pair(registration_id, std::move(controller)));

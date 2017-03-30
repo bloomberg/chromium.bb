@@ -4,7 +4,10 @@
 
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 
+#include <queue>
+
 #include "base/memory/ptr_util.h"
+#include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_job_response_data.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
@@ -16,11 +19,47 @@
 
 namespace content {
 
+// The Registration Data class encapsulates the data stored for a particular
+// Background Fetch registration. This roughly matches the on-disk format that
+// will be adhered to in the future.
+class BackgroundFetchDataManager::RegistrationData {
+ public:
+  RegistrationData(const std::vector<ServiceWorkerFetchRequest>& requests,
+                   const BackgroundFetchOptions& options)
+      : options_(options) {
+    int request_index = 0;
+
+    // Convert the given |requests| to BackgroundFetchRequestInfo objects.
+    for (const ServiceWorkerFetchRequest& request : requests)
+      requests_.emplace(request_index++, request);
+  }
+
+  ~RegistrationData() = default;
+
+  // Returns whether there are remaining requests on the request queue.
+  bool HasPendingRequests() const { return !requests_.empty(); }
+
+  // Consumes a request from the queue that is to be fetched.
+  BackgroundFetchRequestInfo ConsumeRequest() {
+    DCHECK(!requests_.empty());
+
+    BackgroundFetchRequestInfo request = requests_.front();
+    requests_.pop();
+
+    return request;
+  }
+
+ private:
+  std::queue<BackgroundFetchRequestInfo> requests_;
+  BackgroundFetchOptions options_;
+
+  DISALLOW_COPY_AND_ASSIGN(RegistrationData);
+};
+
 BackgroundFetchDataManager::BackgroundFetchDataManager(
     BrowserContext* browser_context)
     : browser_context_(browser_context), weak_ptr_factory_(this) {
   DCHECK(browser_context_);
-  // TODO(harkness) Read from persistent storage and recreate requests.
 }
 
 BackgroundFetchDataManager::~BackgroundFetchDataManager() = default;
@@ -31,16 +70,58 @@ void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchOptions& options,
     CreateRegistrationCallback callback) {
   if (registrations_.find(registration_id) != registrations_.end()) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
+    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_TAG,
+                            std::vector<BackgroundFetchRequestInfo>());
     return;
   }
 
-  registrations_.insert(registration_id);
+  std::unique_ptr<RegistrationData> registration_data =
+      base::MakeUnique<RegistrationData>(requests, options);
 
-  // TODO(peter): Store the |requests|.
-  // TODO(peter): Store the |options|.
+  // Create a vector with the initial requests to feed the Job Controller with.
+  std::vector<BackgroundFetchRequestInfo> initial_requests;
+  for (size_t i = 0; i < kMaximumBackgroundFetchParallelRequests; ++i) {
+    if (!registration_data->HasPendingRequests())
+      break;
 
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE);
+    initial_requests.push_back(registration_data->ConsumeRequest());
+  }
+
+  // Store the created |registration_data| so that we can easily access it.
+  registrations_.insert(
+      std::make_pair(registration_id, std::move(registration_data)));
+
+  // Inform the |callback| of the newly created registration.
+  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
+                          std::move(initial_requests));
+}
+
+void BackgroundFetchDataManager::MarkRequestAsStarted(
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRequestInfo& request,
+    const std::string& download_guid) {
+  auto iter = registrations_.find(registration_id);
+  DCHECK(iter != registrations_.end());
+
+  // TODO(peter): Associate the |download_guid| with the |request|.
+}
+
+void BackgroundFetchDataManager::MarkRequestAsCompleteAndGetNextRequest(
+    const BackgroundFetchRegistrationId& registration_id,
+    const BackgroundFetchRequestInfo& request,
+    NextRequestCallback callback) {
+  auto iter = registrations_.find(registration_id);
+  DCHECK(iter != registrations_.end());
+
+  RegistrationData* registration_data = iter->second.get();
+
+  // TODO(peter): Store the |request| with the |registration_data|.
+
+  base::Optional<BackgroundFetchRequestInfo> next_request;
+  if (registration_data->HasPendingRequests())
+    next_request = registration_data->ConsumeRequest();
+
+  std::move(callback).Run(next_request);
 }
 
 void BackgroundFetchDataManager::DeleteRegistration(
