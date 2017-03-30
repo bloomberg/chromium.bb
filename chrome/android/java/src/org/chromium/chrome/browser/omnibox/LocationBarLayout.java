@@ -2260,7 +2260,7 @@ public class LocationBarLayout extends FrameLayout
     /**
      * Initialize the fading background for when the omnibox is focused.
      */
-    private void initFadingOverlayView() {
+    protected void initFadingOverlayView() {
         mFadingView =
                 (FadingBackgroundView) getRootView().findViewById(R.id.fading_focus_target);
         mFadingView.addObserver(this);

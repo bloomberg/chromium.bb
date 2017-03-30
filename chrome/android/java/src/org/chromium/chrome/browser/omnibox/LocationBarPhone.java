@@ -218,6 +218,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
         NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
         if (hasFocus && ntp != null && ntp.isLocationBarShownInNTP() && mBottomSheet == null) {
+            if (mFadingView == null) initFadingOverlayView();
             mFadingView.showFadingOverlay();
         }
     }
