@@ -145,6 +145,8 @@ void aom_idct4x4_1_add_c(const tran_low_t *input, uint8_t *dest,
   out = WRAPLOW(dct_const_round_shift(out * cospi_16_64));
   a1 = ROUND_POWER_OF_TWO(out, 4);
 
+  if (a1 == 0) return;
+
   for (i = 0; i < 4; i++) {
     dest[0] = clip_pixel_add(dest[0], a1);
     dest[1] = clip_pixel_add(dest[1], a1);
@@ -238,6 +240,7 @@ void aom_idct8x8_1_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   tran_low_t out = WRAPLOW(dct_const_round_shift(input[0] * cospi_16_64));
   out = WRAPLOW(dct_const_round_shift(out * cospi_16_64));
   a1 = ROUND_POWER_OF_TWO(out, 5);
+  if (a1 == 0) return;
   for (j = 0; j < 8; ++j) {
     for (i = 0; i < 8; ++i) dest[i] = clip_pixel_add(dest[i], a1);
     dest += stride;
@@ -776,6 +779,7 @@ void aom_idct16x16_1_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   tran_low_t out = WRAPLOW(dct_const_round_shift(input[0] * cospi_16_64));
   out = WRAPLOW(dct_const_round_shift(out * cospi_16_64));
   a1 = ROUND_POWER_OF_TWO(out, 6);
+  if (a1 == 0) return;
   for (j = 0; j < 16; ++j) {
     for (i = 0; i < 16; ++i) dest[i] = clip_pixel_add(dest[i], a1);
     dest += stride;
@@ -1245,6 +1249,7 @@ void aom_idct32x32_1_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   tran_low_t out = WRAPLOW(dct_const_round_shift(input[0] * cospi_16_64));
   out = WRAPLOW(dct_const_round_shift(out * cospi_16_64));
   a1 = ROUND_POWER_OF_TWO(out, 6);
+  if (a1 == 0) return;
 
   for (j = 0; j < 32; ++j) {
     for (i = 0; i < 32; ++i) dest[i] = clip_pixel_add(dest[i], a1);
