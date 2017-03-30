@@ -252,6 +252,8 @@ class GridTrackSizingAlgorithmStrategy {
 
   LayoutUnit logicalHeightForChild(LayoutBox&) const;
 
+  void setGridItemNeedsLayout(LayoutBox&) const;
+
   bool updateOverrideContainingBlockContentSizeForChild(
       LayoutBox&,
       GridTrackSizingDirection) const;

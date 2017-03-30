@@ -4,6 +4,7 @@
 
 #include "core/layout/GridTrackSizingAlgorithm.h"
 
+#include "core/frame/FrameView.h"
 #include "core/layout/Grid.h"
 #include "core/layout/LayoutGrid.h"
 #include "platform/LengthFunctions.h"
@@ -266,7 +267,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::logicalHeightForChild(
   if (shouldClearOverrideContainingBlockContentSizeForChild(child, ForRows)) {
     setOverrideContainingBlockContentSizeForChild(child, childBlockDirection,
                                                   LayoutUnit(-1));
-    child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
+    setGridItemNeedsLayout(child);
   }
 
   // We need to clear the stretched height to properly compute logical height
@@ -303,21 +304,9 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::minContentForChild(
     return child.minPreferredLogicalWidth() + marginLogicalWidth;
   }
 
-  // All orthogonal flow boxes were already laid out during an early layout
-  // phase performed in FrameView::performLayout.
-  // It's true that grid track sizing was not completed at that time and it may
-  // afffect the final height of a grid item, but since it's forbidden to
-  // perform a layout during intrinsic width computation, we have to use that
-  // computed height for now.
-  if (direction() == ForColumns &&
-      m_algorithm.m_sizingOperation == IntrinsicSizeComputation) {
-    DCHECK(layoutGrid()->isOrthogonalChild(child));
-    return child.logicalHeight() + child.marginLogicalHeight();
-  }
-
   if (updateOverrideContainingBlockContentSizeForChild(child,
                                                        childInlineDirection))
-    child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
+    setGridItemNeedsLayout(child);
   return logicalHeightForChild(child);
 }
 
@@ -346,20 +335,9 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::maxContentForChild(
     return child.maxPreferredLogicalWidth() + marginLogicalWidth;
   }
 
-  if (direction() == ForColumns &&
-      m_algorithm.m_sizingOperation == IntrinsicSizeComputation) {
-    // All orthogonal flow boxes were already laid out during an early layout
-    // phase performed in FrameView::performLayout. It's true that grid track
-    // sizing was not completed at that time and it may afffect the final height
-    // of a grid item, but since it's forbidden to perform a layout during
-    // intrinsic width computation, we have to use that computed height for now.
-    DCHECK(layoutGrid()->isOrthogonalChild(child));
-    return child.logicalHeight() + child.marginLogicalHeight();
-  }
-
   if (updateOverrideContainingBlockContentSizeForChild(child,
                                                        childInlineDirection))
-    child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
+    setGridItemNeedsLayout(child);
   return logicalHeightForChild(child);
 }
 
@@ -419,6 +397,16 @@ void GridTrackSizingAlgorithmStrategy::distributeSpaceToTracks(
                                                       availableLogicalSpace);
 }
 
+void GridTrackSizingAlgorithmStrategy::setGridItemNeedsLayout(
+    LayoutBox& gridItem) const {
+  // Mac code can call computIntrinsicLogicalWidths() after the layout in
+  // content::RenderViewImpl::didUpdateLayout().
+  if (!layoutGrid()->document().view()->isInPerformLayout())
+    return;
+
+  gridItem.setNeedsLayout(LayoutInvalidationReason::GridChanged, MarkOnlyThis);
+}
+
 LayoutUnit DefiniteSizeStrategy::minLogicalWidthForChild(
     LayoutBox& child,
     Length childMinSize,
@@ -436,7 +424,7 @@ void DefiniteSizeStrategy::layoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool overrideSizeHasChanged) const {
   if (overrideSizeHasChanged)
-    child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
+    setGridItemNeedsLayout(child);
   child.layoutIfNeeded();
 }
 
@@ -484,7 +472,7 @@ void IndefiniteSizeStrategy::layoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool overrideSizeHasChanged) const {
   if (overrideSizeHasChanged && direction() != ForColumns)
-    child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
+    setGridItemNeedsLayout(child);
   child.layoutIfNeeded();
 }
 

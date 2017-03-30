@@ -2197,7 +2197,8 @@ static bool prepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
   DCHECK(root.isBox() && toLayoutBox(root).isOrthogonalWritingModeRoot());
   if (!root.needsLayout() || root.isOutOfFlowPositioned() ||
       root.isColumnSpanAll() ||
-      !root.styleRef().logicalHeight().isIntrinsicOrAuto())
+      !root.styleRef().logicalHeight().isIntrinsicOrAuto() ||
+      toLayoutBox(root).isGridItem())
     return false;
 
   removeFloatingObjectsForSubtreeRoot(root);
