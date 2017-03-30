@@ -420,8 +420,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
                                  dict.Get(pp::Var(kJSYOffset)).AsDouble());
 
     if (pinch_phase == PINCH_START) {
-      starting_scroll_offset_ = scroll_offset;
-      initial_zoom_ratio_ = zoom_ratio;
+      scroll_offset_at_last_raster_ = scroll_offset;
       last_bitmap_smaller_ = false;
       needs_reraster_ = false;
       return;
@@ -460,9 +459,9 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
         // We want to keep the paint in the middle but it must stay in the same
         // position relative to the scroll bars.
         paint_offset = pp::Point(0, (1 - zoom_ratio) * pinch_center.y());
-        scroll_delta = pp::Point(0,
-            (scroll_offset.y() -
-             starting_scroll_offset_.y() * zoom_ratio / initial_zoom_ratio_));
+        scroll_delta =
+            pp::Point(0, (scroll_offset.y() -
+                          scroll_offset_at_last_raster_.y() * zoom_ratio));
 
         pinch_vector = pp::Point();
         last_bitmap_smaller_ = true;
@@ -475,11 +474,11 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
               (1 - zoom / zoom_when_doc_covers_plugin_width) * pinch_center.x(),
               (1 - zoom_ratio) * pinch_center.y());
           pinch_vector = pp::Point();
-          scroll_delta = pp::Point(
-              (scroll_offset.x() -
-               starting_scroll_offset_.x() * zoom_ratio / initial_zoom_ratio_),
-              (scroll_offset.y() -
-               starting_scroll_offset_.y() * zoom_ratio / initial_zoom_ratio_));
+          scroll_delta =
+              pp::Point((scroll_offset.x() -
+                         scroll_offset_at_last_raster_.x() * zoom_ratio),
+                        (scroll_offset.y() -
+                         scroll_offset_at_last_raster_.y() * zoom_ratio));
       }
 
       paint_manager_.SetTransform(zoom_ratio, pinch_center,
@@ -497,6 +496,11 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
       paint_manager_.ClearTransform();
       last_bitmap_smaller_ = false;
       needs_reraster_ = true;
+
+      // If we're rerastering due to zooming out, we need to update
+      // |scroll_offset_at_last_raster_|, in case the user continues the
+      // gesture by zooming in.
+      scroll_offset_at_last_raster_ = scroll_offset;
     }
 
     // Bound the input parameters.

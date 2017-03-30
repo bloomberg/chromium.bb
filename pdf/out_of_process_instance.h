@@ -249,11 +249,11 @@ class OutOfProcessInstance : public pp::Instance,
 
   // Current zoom factor.
   double zoom_;
-  double initial_zoom_ratio_;
   // True if we request a new bitmap rendering.
   bool needs_reraster_;
-  // Scroll position at the start of a pinch zoom.
-  pp::FloatPoint starting_scroll_offset_;
+  // The scroll position for the last raster, before any transformations are
+  // applied.
+  pp::FloatPoint scroll_offset_at_last_raster_;
   // True if last bitmap was smaller than screen.
   bool last_bitmap_smaller_;
   // Current device scale factor.
