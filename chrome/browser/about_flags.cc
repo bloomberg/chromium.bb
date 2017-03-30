@@ -2485,6 +2485,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     kDelayNavigationFeatureVariations,
                                     "DelayNavigation")},
 
+#if defined(OS_ANDROID)
+    {"enable-custom-context-menu",
+     flag_descriptions::kEnableCustomContextMenuName,
+     flag_descriptions::kEnableCustomContextMenuDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCustomContextMenu)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

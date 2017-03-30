@@ -51,6 +51,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeFeature,
     &kContextualSearchSingleActions,
     &kContextualSearchUrlActions,
+    &kCustomContextMenu,
     &kCustomFeedbackUi,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
@@ -120,6 +121,9 @@ const base::Feature kContextualSearchSingleActions{
 
 const base::Feature kContextualSearchUrlActions{
     "ContextualSearchUrlActions", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCustomContextMenu{"CustomContextMenu",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

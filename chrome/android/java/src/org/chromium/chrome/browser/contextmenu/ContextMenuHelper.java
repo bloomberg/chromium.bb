@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -15,6 +16,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -31,7 +33,10 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
     private ContextMenuPopulator mPopulator;
     private ContextMenuParams mCurrentContextMenuParams;
-    private Activity mActivity;
+    private Context mContext;
+    private Callback<Integer> mCallback;
+    private Runnable mOnMenuShown;
+    private Runnable mOnMenuClosed;
 
     private ContextMenuHelper(long nativeContextMenuHelper) {
         mNativeContextMenuHelper = nativeContextMenuHelper;
@@ -64,31 +69,60 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * @param params          The {@link ContextMenuParams} that indicate what menu items to show.
      */
     @CalledByNative
-    private void showContextMenu(ContentViewCore contentViewCore, ContextMenuParams params) {
+    private void showContextMenu(final ContentViewCore contentViewCore, ContextMenuParams params) {
         if (params.isFile()) return;
         View view = contentViewCore.getContainerView();
         final WindowAndroid windowAndroid = contentViewCore.getWindowAndroid();
 
         if (view == null || view.getVisibility() != View.VISIBLE || view.getParent() == null
-                || windowAndroid == null || windowAndroid.getActivity().get() == null) {
+                || windowAndroid == null || windowAndroid.getContext().get() == null
+                || mPopulator == null) {
             return;
         }
 
         mCurrentContextMenuParams = params;
-        mActivity = windowAndroid.getActivity().get();
+        mContext = windowAndroid.getContext().get();
+        mCallback = new Callback<Integer>() {
+            @Override
+            public void onResult(Integer result) {
+                mPopulator.onItemSelected(
+                        ContextMenuHelper.this, mCurrentContextMenuParams, result);
+            }
+        };
+        mOnMenuShown = new Runnable() {
+            @Override
+            public void run() {
+                WebContents webContents = contentViewCore.getWebContents();
+                RecordHistogram.recordBooleanHistogram("ContextMenu.Shown", webContents != null);
+            }
+        };
+        mOnMenuClosed = new Runnable() {
+            @Override
+            public void run() {
+                if (mNativeContextMenuHelper == 0) return;
+                nativeOnContextMenuClosed(mNativeContextMenuHelper);
+            }
+        };
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
+            List<Pair<Integer, List<ContextMenuItem>>> items =
+                    mPopulator.buildContextMenu(null, mContext, mCurrentContextMenuParams);
+
+            ContextMenuUi menuUi = new TabularContextMenuUi();
+            menuUi.displayMenu(mContext, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
+                    mOnMenuClosed);
+            return;
+        }
+
+        // The Platform Context Menu requires the listener within this hepler since this helper and
+        // provides context menu for us to show.
         view.setOnCreateContextMenuListener(this);
         if (view.showContextMenu()) {
-            WebContents webContents = contentViewCore.getWebContents();
-            RecordHistogram.recordBooleanHistogram(
-                    "ContextMenu.Shown", webContents != null);
-
+            mOnMenuShown.run();
             windowAndroid.addContextMenuCloseListener(new OnCloseContextMenuListener() {
                 @Override
                 public void onContextMenuClosed() {
-                    if (mNativeContextMenuHelper == 0) return;
-
-                    nativeOnContextMenuClosed(mNativeContextMenuHelper);
+                    mOnMenuClosed.run();
                     windowAndroid.removeContextMenuCloseListener(this);
                 }
             });
@@ -132,18 +166,11 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        assert mPopulator != null;
-
         List<Pair<Integer, List<ContextMenuItem>>> items =
                 mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
         ContextMenuUi menuUi = new PlatformContextMenuUi(menu);
-        menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, new Callback<Integer>() {
-            @Override
-            public void onResult(Integer result) {
-                mPopulator.onItemSelected(
-                        ContextMenuHelper.this, mCurrentContextMenuParams, result);
-            }
-        });
+        menuUi.displayMenu(
+                mContext, mCurrentContextMenuParams, items, mCallback, mOnMenuShown, mOnMenuClosed);
     }
 
     /**

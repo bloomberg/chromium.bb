@@ -1,0 +1,183 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.contextmenu;
+
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
+import android.util.Pair;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A custom dialog that separates each group into separate tabs. It uses a dialog instead.
+ */
+public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemClickListener {
+    private Dialog mDialog;
+    private Callback<Integer> mCallback;
+    private int mMenuItemHeight;
+
+    @Override
+    public void displayMenu(Context context, ContextMenuParams params,
+            List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
+            final Runnable onMenuShown, final Runnable onMenuClosed) {
+        mCallback = onItemClicked;
+        mDialog = createDialog(context, params, items);
+        mDialog.getWindow().setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                context.getResources(), R.drawable.bg_find_toolbar_popup));
+
+        mDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                onMenuShown.run();
+            }
+        });
+
+        mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                onMenuClosed.run();
+            }
+        });
+
+        mDialog.show();
+    }
+
+    /**
+     * Returns the fully complete dialog based off the params and the itemGroups.
+     * @param context Used to inflate the dialog.
+     * @param params Used to get the header title.
+     * @param itemGroups If there is more than one group it will create a paged view.
+     * @return Returns a final dialog that does not have a background can be displayed using
+     *         {@link AlertDialog#show()}.
+     */
+    private Dialog createDialog(Context context, ContextMenuParams params,
+            List<Pair<Integer, List<ContextMenuItem>>> itemGroups) {
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(createPagerView(context, params, itemGroups));
+        return dialog;
+    }
+
+    /**
+     * Creates the view of a context menu. Based off the Context Type, it'll adjust the list of
+     * items and display only the ones that'll be on that specific group.
+     * @param context Used to get the resources of an item.
+     * @param params used to create the header text.
+     * @param items A set of Items to display in a context menu. Filtered based off the type.
+     * @return Returns a filled LinearLayout with all the context menu items
+     */
+    @VisibleForTesting
+    ViewGroup createContextMenuPageUi(
+            Context context, ContextMenuParams params, List<ContextMenuItem> items, int maxCount) {
+        ViewGroup baseLayout = (ViewGroup) LayoutInflater.from(context).inflate(
+                R.layout.tabular_context_menu_page, null);
+        ListView listView = (ListView) baseLayout.findViewById(R.id.selectable_items);
+        displayHeaderIfVisibleItems(params, baseLayout);
+
+        // Set the list adapter and get the height to display it appropriately in a dialog.
+        TabularContextMenuListAdapter listAdapter =
+                new TabularContextMenuListAdapter(items, context);
+        ViewGroup.LayoutParams layoutParams = listView.getLayoutParams();
+        layoutParams.height = measureApproximateListViewHeight(listView, listAdapter, maxCount);
+        listView.setLayoutParams(layoutParams);
+        listView.setAdapter(listAdapter);
+        listView.setOnItemClickListener(this);
+
+        return baseLayout;
+    }
+
+    private void displayHeaderIfVisibleItems(ContextMenuParams params, ViewGroup baseLayout) {
+        String headerText = ChromeContextMenuPopulator.createHeaderText(params);
+        TextView headerTextView = (TextView) baseLayout.findViewById(R.id.context_header_text);
+        if (TextUtils.isEmpty(headerText)) {
+            headerTextView.setVisibility(View.GONE);
+            baseLayout.findViewById(R.id.context_divider).setVisibility(View.GONE);
+            return;
+        }
+        headerTextView.setVisibility(View.VISIBLE);
+        headerTextView.setText(headerText);
+    }
+
+    /**
+     * To save time measuring the height, this method gets an item if the height has not been
+     * previous measured and multiplies it by count of the total amount of items. It is fine if the
+     * height too small as the ListView will scroll through the other values.
+     * @param listView The ListView to measure the surrounding padding.
+     * @param listAdapter The adapter which contains the items within the list.
+     * @return Returns the combined height of the padding of the ListView and the approximate height
+     *         of the ListView based off the an item.
+     */
+    private int measureApproximateListViewHeight(
+            ListView listView, BaseAdapter listAdapter, int maxCount) {
+        int totalHeight = listView.getPaddingTop() + listView.getPaddingBottom();
+        if (mMenuItemHeight == 0 && !listAdapter.isEmpty()) {
+            View view = listAdapter.getView(0, null, listView);
+            view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                    View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+            mMenuItemHeight = view.getMeasuredHeight();
+        }
+        return totalHeight + mMenuItemHeight * maxCount;
+    }
+
+    /**
+     * Creates a ViewPageAdapter based off the given list of views.
+     * @param context Used to inflate the new ViewPager
+     * @param params Used to get the header text.
+     * @param itemGroups The list of views to put into the ViewPager. The string is the title of the
+     *                   tab
+     * @return Returns a complete tabular context menu view.
+     */
+    @VisibleForTesting
+    View createPagerView(Context context, ContextMenuParams params,
+            List<Pair<Integer, List<ContextMenuItem>>> itemGroups) {
+        View view = LayoutInflater.from(context).inflate(R.layout.tabular_context_menu, null);
+
+        List<Pair<String, ViewGroup>> viewGroups = new ArrayList<>();
+        int maxCount = 0;
+        for (int i = 0; i < itemGroups.size(); i++) {
+            Pair<Integer, List<ContextMenuItem>> itemGroup = itemGroups.get(i);
+            maxCount = Math.max(maxCount, itemGroup.second.size());
+        }
+        for (int i = 0; i < itemGroups.size(); i++) {
+            Pair<Integer, List<ContextMenuItem>> itemGroup = itemGroups.get(i);
+            viewGroups.add(new Pair<>(context.getString(itemGroup.first),
+                    createContextMenuPageUi(context, params, itemGroup.second, maxCount)));
+        }
+        TabularContextMenuViewPager pager =
+                (TabularContextMenuViewPager) view.findViewById(R.id.custom_pager);
+        pager.setAdapter(new TabularContextMenuPagerAdapter(viewGroups));
+
+        TabLayout tabLayout = (TabLayout) view.findViewById(R.id.tab_layout);
+        if (itemGroups.size() <= 1) {
+            tabLayout.setVisibility(View.GONE);
+        }
+        tabLayout.setupWithViewPager((ViewPager) view.findViewById(R.id.custom_pager));
+
+        return view;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+        mDialog.dismiss();
+        mCallback.onResult((int) id);
+    }
+}

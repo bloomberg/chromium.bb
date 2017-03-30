@@ -2740,6 +2740,16 @@ const char kDebugShortcutsDescription[] =
     "Enables additional keyboard shortcuts that are useful for debugging "
     "Ash.";
 
+#if defined(OS_ANDROID)
+
+const char kEnableCustomContextMenuName[] = "Enable custom context menu";
+
+const char kEnableCustomContextMenuDescription[] =
+    "Enables a new context menu when a link, image, or video is pressed within "
+    "Chrome.";
+
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 
 //  File Manager

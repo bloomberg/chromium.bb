@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
-import android.app.Activity;
+import android.content.Context;
 import android.util.Pair;
 
 import org.chromium.base.Callback;
@@ -18,7 +18,7 @@ import java.util.List;
 public interface ContextMenuUi {
     /**
      * Shows the Context Menu in Chrome.
-     * @param activity Used to inflate the context menu.
+     * @param context Used to inflate the context menu.
      * @param params The current parameters for the the context menu.
      * @param items The list of items that need to be displayed in the context menu items. This is
      *              taken from the return value of {@link ContextMenuPopulator#buildContextMenu(
@@ -26,7 +26,12 @@ public interface ContextMenuUi {
      * @param onItemClicked When the user has pressed an item the menuId associated with the item
      *                      is sent back through {@link Callback#onResult(Object)}. The ids that
      *                      could be called are in ids.xml.
+     * @param onMenuShown After the menu is displayed this method should be called to present a
+     *                    full menu.
+     * @param onMenuClosed When the menu is closed, this method is called to do any possible final
+     *                     clean up.
      */
-    void displayMenu(Activity activity, ContextMenuParams params,
-            List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked);
+    void displayMenu(Context context, ContextMenuParams params,
+            List<Pair<Integer, List<ContextMenuItem>>> items, Callback<Integer> onItemClicked,
+            Runnable onMenuShown, Runnable onMenuClosed);
 }

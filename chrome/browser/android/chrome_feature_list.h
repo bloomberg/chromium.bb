@@ -22,6 +22,7 @@ extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kChromeHomeFeature;
 extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kContextualSearchUrlActions;
+extern const base::Feature kCustomContextMenu;
 extern const base::Feature kCustomFeedbackUi;
 extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kImportantSitesInCBD;
