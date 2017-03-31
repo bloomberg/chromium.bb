@@ -8,9 +8,9 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -39,7 +39,7 @@ bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   }
 
   // Find the active window (from the primary screen) to un-fullscreen.
-  WmWindow* window = WmShell::Get()->GetActiveWindow();
+  WmWindow* window = WmWindow::Get(GetActiveWindow());
   if (!window)
     return false;
 

@@ -12,6 +12,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -198,7 +199,7 @@ bool SystemModalContainerLayoutManager::IsModalBackground(WmWindow* window) {
 
 void SystemModalContainerLayoutManager::AddModalWindow(WmWindow* window) {
   if (modal_windows_.empty()) {
-    WmWindow* capture_window = WmShell::Get()->GetCaptureWindow();
+    WmWindow* capture_window = WmWindow::Get(wm::GetCaptureWindow());
     if (capture_window)
       capture_window->ReleaseCapture();
   }

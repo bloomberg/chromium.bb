@@ -74,11 +74,6 @@ class ASH_EXPORT WmShell {
   virtual bool IsRunningInMash() const = 0;
   virtual Config GetConfig() const = 0;
 
-  virtual WmWindow* GetFocusedWindow() = 0;
-  virtual WmWindow* GetActiveWindow() = 0;
-
-  virtual WmWindow* GetCaptureWindow() = 0;
-
   // Convenience for GetPrimaryRootWindow()->GetRootWindowController().
   RootWindowController* GetPrimaryRootWindowController();
 

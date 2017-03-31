@@ -6,9 +6,9 @@
 
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/wm/window_util.h"
 #include "ui/compositor/layer.h"
 
 namespace ash {
@@ -16,7 +16,7 @@ namespace wm {
 
 WmWindow* GetWindowForFullscreenMode(WmWindow* context) {
   WmWindow* topmost_window = nullptr;
-  WmWindow* active_window = context->GetShell()->GetActiveWindow();
+  WmWindow* active_window = WmWindow::Get(GetActiveWindow());
   if (active_window &&
       active_window->GetRootWindow() == context->GetRootWindow() &&
       IsSwitchableContainer(active_window->GetParent())) {

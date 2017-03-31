@@ -13,6 +13,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "ui/aura/window.h"
 #include "ui/wm/public/activation_client.h"
@@ -126,7 +127,7 @@ void MruWindowTracker::SetIgnoreActivations(bool ignore) {
   // If no longer ignoring window activations, move currently active window
   // to front.
   if (!ignore)
-    SetActiveWindow(WmShell::Get()->GetActiveWindow());
+    SetActiveWindow(WmWindow::Get(wm::GetActiveWindow()));
 }
 
 //////////////////////////////////////////////////////////////////////////////

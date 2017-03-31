@@ -17,6 +17,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -43,7 +44,7 @@ void HandlePrintLayerHierarchy() {
 }
 
 void HandlePrintViewHierarchy() {
-  WmWindow* active_window = WmShell::Get()->GetActiveWindow();
+  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
   if (!active_window)
     return;
   views::Widget* widget = active_window->GetInternalWidget();
@@ -76,7 +77,7 @@ void PrintWindowHierarchy(const WmWindow* active_window,
 }
 
 void HandlePrintWindowHierarchy() {
-  WmWindow* active_window = WmShell::Get()->GetActiveWindow();
+  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
   WmWindow::Windows roots = WmShell::Get()->GetAllRootWindows();
   for (size_t i = 0; i < roots.size(); ++i) {
     std::ostringstream out;

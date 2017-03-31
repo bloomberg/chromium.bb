@@ -406,7 +406,7 @@ void HandleToggleOverview() {
 }
 
 bool CanHandleWindowSnap() {
-  WmWindow* active_window = WmShell::Get()->GetActiveWindow();
+  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
   if (!active_window)
     return false;
   wm::WindowState* window_state = active_window->GetWindowState();
@@ -425,7 +425,7 @@ void HandleWindowSnap(AcceleratorAction action) {
   const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
                               ? wm::WM_EVENT_CYCLE_SNAP_LEFT
                               : wm::WM_EVENT_CYCLE_SNAP_RIGHT);
-  WmWindow* active_window = WmShell::Get()->GetActiveWindow();
+  WmWindow* active_window = WmWindow::Get(wm::GetActiveWindow());
   DCHECK(active_window);
   active_window->GetWindowState()->OnWMEvent(&event);
 }
@@ -436,12 +436,12 @@ void HandleWindowMinimize() {
 }
 
 bool CanHandlePositionCenter() {
-  return WmShell::Get()->GetActiveWindow() != nullptr;
+  return wm::GetActiveWindow() != nullptr;
 }
 
 void HandlePositionCenter() {
   base::RecordAction(UserMetricsAction("Accel_Window_Position_Center"));
-  wm::CenterWindow(WmShell::Get()->GetActiveWindow());
+  wm::CenterWindow(WmWindow::Get(wm::GetActiveWindow()));
 }
 
 void HandleShowImeMenuBubble() {

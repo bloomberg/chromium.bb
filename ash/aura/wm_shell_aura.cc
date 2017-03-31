@@ -35,8 +35,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_event_handler_aura.h"
 #include "base/memory/ptr_util.h"
-#include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_manager.h"
 
@@ -77,23 +75,6 @@ bool WmShellAura::IsRunningInMash() const {
 
 Config WmShellAura::GetConfig() const {
   return Config::CLASSIC;
-}
-
-WmWindow* WmShellAura::GetFocusedWindow() {
-  return WmWindow::Get(
-      aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
-          ->GetFocusedWindow());
-}
-
-WmWindow* WmShellAura::GetActiveWindow() {
-  return WmWindow::Get(wm::GetActiveWindow());
-}
-
-WmWindow* WmShellAura::GetCaptureWindow() {
-  // Ash shares capture client among all RootWindowControllers, so we need only
-  // check the primary root.
-  return WmWindow::Get(
-      aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow()));
 }
 
 WmWindow* WmShellAura::GetPrimaryRootWindow() {

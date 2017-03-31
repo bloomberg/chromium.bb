@@ -18,6 +18,8 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -73,6 +75,15 @@ aura::Window* GetActivatableWindow(aura::Window* window) {
 
 bool CanActivateWindow(aura::Window* window) {
   return ::wm::CanActivateWindow(window);
+}
+
+aura::Window* GetFocusedWindow() {
+  return aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
+      ->GetFocusedWindow();
+}
+
+aura::Window* GetCaptureWindow() {
+  return aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow());
 }
 
 bool IsWindowUserPositionable(aura::Window* window) {

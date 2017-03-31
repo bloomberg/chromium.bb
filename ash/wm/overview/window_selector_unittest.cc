@@ -231,11 +231,6 @@ class WindowSelectorTest : public test::AshTestBase {
 
   bool IsSelecting() { return window_selector_controller()->IsSelecting(); }
 
-  aura::Window* GetFocusedWindow() {
-    return aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
-        ->GetFocusedWindow();
-  }
-
   const std::vector<std::unique_ptr<WindowSelectorItem>>& GetWindowItemsForRoot(
       int index) {
     return window_selector()->grid_list_[index]->window_list();
@@ -423,7 +418,7 @@ TEST_F(WindowSelectorTest, Basic) {
   wm::ActivateWindow(window2.get());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-  EXPECT_EQ(window2.get(), GetFocusedWindow());
+  EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
   // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
   if (!WmShell::Get()->IsRunningInMash()) {
     // Hide the cursor before entering overview to test that it will be shown.
@@ -433,7 +428,7 @@ TEST_F(WindowSelectorTest, Basic) {
   // In overview mode the windows should no longer overlap and the text filter
   // widget should be focused.
   ToggleOverview();
-  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
   EXPECT_FALSE(WindowsOverlapping(window1.get(), panel1.get()));
   EXPECT_FALSE(WindowsOverlapping(panel1.get(), panel2.get()));
@@ -442,7 +437,7 @@ TEST_F(WindowSelectorTest, Basic) {
   ClickWindow(window1.get());
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
-  EXPECT_EQ(window1.get(), GetFocusedWindow());
+  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 
   // TODO: mash doesn't support CursorClient. http://crbug.com/637853.
   if (!WmShell::Get()->IsRunningInMash()) {
@@ -496,7 +491,7 @@ TEST_F(WindowSelectorTest, TextFilterActive) {
   wm::ActivateWindow(window1.get());
 
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
-  EXPECT_EQ(window1.get(), GetFocusedWindow());
+  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 
   Shell::Get()->ToggleAppList();
 
@@ -505,8 +500,8 @@ TEST_F(WindowSelectorTest, TextFilterActive) {
   // and activation to the text filter widget.
   ToggleOverview();
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
-  EXPECT_TRUE(wm::IsActiveWindow(GetFocusedWindow()));
-  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
+  EXPECT_TRUE(wm::IsActiveWindow(wm::GetFocusedWindow()));
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
 }
 
 // Tests that the ordering of windows is stable across different overview
@@ -546,14 +541,14 @@ TEST_F(WindowSelectorTest, BasicGesture) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
   wm::ActivateWindow(window1.get());
-  EXPECT_EQ(window1.get(), GetFocusedWindow());
+  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
   ToggleOverview();
-  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      window2.get());
   generator.GestureTapAt(
       GetTransformedTargetBounds(window2.get()).CenterPoint());
-  EXPECT_EQ(window2.get(), GetFocusedWindow());
+  EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
 }
 
 // Tests that the user action WindowSelector_ActiveWindowChanged is
@@ -619,14 +614,14 @@ TEST_F(WindowSelectorTest, ActiveWindowChangedUserActionNotRecorded) {
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 
   // |window1| remains active. Click on it to exit overview.
-  ASSERT_EQ(window1.get(), GetFocusedWindow());
+  ASSERT_EQ(window1.get(), wm::GetFocusedWindow());
   ToggleOverview();
   ClickWindow(window1.get());
   EXPECT_EQ(
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 
   // |window1| remains active. Select using the keyboard.
-  ASSERT_EQ(window1.get(), GetFocusedWindow());
+  ASSERT_EQ(window1.get(), wm::GetFocusedWindow());
   ToggleOverview();
   ASSERT_TRUE(SelectWindow(window1.get()));
   SendKey(ui::VKEY_RETURN);
@@ -1056,7 +1051,7 @@ TEST_F(WindowSelectorTest, ActivationCancelsOveriew) {
 
   // window1 should be focused after exiting even though window2 was focused on
   // entering overview because we exited due to an activation.
-  EXPECT_EQ(window1.get(), GetFocusedWindow());
+  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
 }
 
 // Tests that exiting overview mode without selecting a window restores focus
@@ -1065,15 +1060,15 @@ TEST_F(WindowSelectorTest, CancelRestoresFocus) {
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), GetFocusedWindow());
+  EXPECT_EQ(window.get(), wm::GetFocusedWindow());
 
   // In overview mode, the text filter widget should be focused.
   ToggleOverview();
-  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), GetFocusedWindow());
+  EXPECT_EQ(text_filter_widget()->GetNativeWindow(), wm::GetFocusedWindow());
 
   // If canceling overview mode, focus should be restored.
   ToggleOverview();
-  EXPECT_EQ(window.get(), GetFocusedWindow());
+  EXPECT_EQ(window.get(), wm::GetFocusedWindow());
 }
 
 // Tests that overview mode is exited if the last remaining window is destroyed.

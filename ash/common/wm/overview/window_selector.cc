@@ -27,6 +27,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -217,7 +218,7 @@ bool WindowSelector::IsSelectable(WmWindow* window) {
 
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
     : delegate_(delegate),
-      restore_focus_window_(WmShell::Get()->GetFocusedWindow()),
+      restore_focus_window_(WmWindow::Get(wm::GetFocusedWindow())),
       ignore_activations_(false),
       selected_grid_index_(0),
       overview_start_time_(base::Time::Now()),

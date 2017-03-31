@@ -29,6 +29,7 @@ ASH_EXPORT void DeactivateWindow(aura::Window* window);
 ASH_EXPORT bool IsActiveWindow(aura::Window* window);
 ASH_EXPORT aura::Window* GetActiveWindow();
 ASH_EXPORT bool CanActivateWindow(aura::Window* window);
+ASH_EXPORT aura::Window* GetFocusedWindow();
 
 // Retrieves the activatable window for |window|. If |window| is activatable,
 // this will just return it, otherwise it will climb the parent/transient parent
@@ -36,6 +37,9 @@ ASH_EXPORT bool CanActivateWindow(aura::Window* window);
 // If you're looking for a function to get the activatable "top level" window,
 // this is probably what you're looking for.
 ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
+
+// Returns the window with capture, null if no window currently has capture.
+ASH_EXPORT aura::Window* GetCaptureWindow();
 
 // Returns true if |window|'s location can be controlled by the user.
 ASH_EXPORT bool IsWindowUserPositionable(aura::Window* window);

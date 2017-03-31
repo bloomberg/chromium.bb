@@ -24,6 +24,7 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_switches.h"
@@ -144,7 +145,7 @@ void WorkspaceLayoutManager::OnKeyboardBoundsChanging(
   if (!change_work_area)
     return;
 
-  WmWindow* window = shell_->GetActiveWindow();
+  WmWindow* window = WmWindow::Get(wm::GetActiveWindow());
   if (!window)
     return;
 

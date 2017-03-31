@@ -667,7 +667,7 @@ void PanelLayoutManager::Relayout() {
       continue;
 
     if (panel->IsFocused() ||
-        panel->Contains(panel->GetShell()->GetFocusedWindow())) {
+        panel->Contains(WmWindow::Get(wm::GetFocusedWindow()))) {
       DCHECK(!active_panel);
       active_panel = panel;
     }

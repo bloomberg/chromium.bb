@@ -55,8 +55,6 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
-#include "ui/wm/core/capture_controller.h"
-#include "ui/wm/core/focus_controller.h"
 
 namespace ash {
 namespace mus {
@@ -163,23 +161,6 @@ bool WmShellMus::IsRunningInMash() const {
 
 Config WmShellMus::GetConfig() const {
   return window_manager_->config();
-}
-
-WmWindow* WmShellMus::GetFocusedWindow() {
-  // TODO: remove as both WmShells use same implementation.
-  return WmWindow::Get(
-      aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())
-          ->GetFocusedWindow());
-}
-
-WmWindow* WmShellMus::GetActiveWindow() {
-  // TODO: remove as both WmShells use same implementation.
-  return WmWindow::Get(wm::GetActiveWindow());
-}
-
-WmWindow* WmShellMus::GetCaptureWindow() {
-  // TODO: remove as both WmShells use same implementation.
-  return WmWindow::Get(::wm::CaptureController::Get()->GetCaptureWindow());
 }
 
 WmWindow* WmShellMus::GetPrimaryRootWindow() {

@@ -14,6 +14,7 @@
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
 #include "ui/display/types/display_constants.h"
@@ -153,8 +154,8 @@ void SetBoundsInScreen(WmWindow* window,
     }
 
     if (dst_container && window->GetParent() != dst_container) {
-      WmWindow* focused = WmShell::Get()->GetFocusedWindow();
-      WmWindow* active = WmShell::Get()->GetActiveWindow();
+      WmWindow* focused = WmWindow::Get(GetFocusedWindow());
+      WmWindow* active = WmWindow::Get(GetActiveWindow());
 
       aura::WindowTracker tracker;
       if (focused)

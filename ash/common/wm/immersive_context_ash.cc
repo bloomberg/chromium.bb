@@ -9,6 +9,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -56,7 +57,7 @@ void ImmersiveContextAsh::RemovePointerWatcher(views::PointerWatcher* watcher) {
 }
 
 bool ImmersiveContextAsh::DoesAnyWindowHaveCapture() {
-  return WmShell::Get()->GetCaptureWindow() != nullptr;
+  return wm::GetCaptureWindow() != nullptr;
 }
 
 bool ImmersiveContextAsh::IsMouseEventsEnabled() {

@@ -11,6 +11,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -158,7 +159,7 @@ WmWindow* GetReferenceWindow(const WmWindow* root_window,
   if (single_window)
     *single_window = true;
   // Get the active window.
-  WmWindow* active = root_window->GetShell()->GetActiveWindow();
+  WmWindow* active = WmWindow::Get(wm::GetActiveWindow());
   if (active && active->GetRootWindow() != root_window)
     active = NULL;
 
@@ -418,7 +419,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   pop_position_offset_increment_y = grid;
   // We handle the Multi monitor support by retrieving the active window's
   // work area.
-  WmWindow* window = WmShell::Get()->GetActiveWindow();
+  WmWindow* window = WmWindow::Get(wm::GetActiveWindow());
   const gfx::Rect work_area =
       window && window->IsVisible()
           ? window->GetDisplayNearestWindow().work_area()

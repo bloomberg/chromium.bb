@@ -34,9 +34,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void Shutdown() override;
   bool IsRunningInMash() const override;
   Config GetConfig() const override;
-  WmWindow* GetFocusedWindow() override;
-  WmWindow* GetActiveWindow() override;
-  WmWindow* GetCaptureWindow() override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   const display::ManagedDisplayInfo& GetDisplayInfo(

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_instance_throttle.h"
 
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shared/app_types.h"
 #include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -53,7 +53,7 @@ void ThrottleInstanceIfNeeded(ash::WmWindow* active) {
 
 ArcInstanceThrottle::ArcInstanceThrottle() {
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
-  ThrottleInstanceIfNeeded(ash::WmShell::Get()->GetActiveWindow());
+  ThrottleInstanceIfNeeded(ash::WmWindow::Get(ash::wm::GetActiveWindow()));
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() {
