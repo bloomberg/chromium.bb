@@ -54,7 +54,6 @@ class PLATFORM_EXPORT Reverb {
   Reverb(AudioBus* impulseResponseBuffer,
          size_t renderSliceSize,
          size_t maxFFTSize,
-         size_t numberOfChannels,
          bool useBackgroundThreads,
          bool normalize);
 
@@ -70,10 +69,12 @@ class PLATFORM_EXPORT Reverb {
   void initialize(AudioBus* impulseResponseBuffer,
                   size_t renderSliceSize,
                   size_t maxFFTSize,
-                  size_t numberOfChannels,
                   bool useBackgroundThreads);
 
   size_t m_impulseResponseLength;
+  // The actual number of channels in the response.  This can be less
+  // than the number of ReverbConvolver's in |m_convolvers|.
+  unsigned m_numberOfResponseChannels;
 
   Vector<std::unique_ptr<ReverbConvolver>> m_convolvers;
 

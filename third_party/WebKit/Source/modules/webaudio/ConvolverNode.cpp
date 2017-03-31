@@ -48,7 +48,7 @@ namespace blink {
 ConvolverHandler::ConvolverHandler(AudioNode& node, float sampleRate)
     : AudioHandler(NodeTypeConvolver, node, sampleRate), m_normalize(true) {
   addInput();
-  addOutput(2);
+  addOutput(1);
 
   // Node-specific default mixing rules.
   m_channelCount = 2;
@@ -137,7 +137,7 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer,
 
   // Create the reverb with the given impulse response.
   std::unique_ptr<Reverb> reverb = WTF::wrapUnique(new Reverb(
-      bufferBus.get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize, 2,
+      bufferBus.get(), AudioUtilities::kRenderQuantumFrames, MaxFFTSize,
       context() && context()->hasRealtimeConstraint(), m_normalize));
 
   {
@@ -177,6 +177,66 @@ double ConvolverHandler::latencyTime() const {
   return std::numeric_limits<double>::infinity();
 }
 
+void ConvolverHandler::setChannelCount(unsigned long channelCount,
+                                       ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  BaseAudioContext::AutoLocker locker(context());
+
+  // channelCount must be 2.
+  if (channelCount != 2) {
+    exceptionState.throwDOMException(
+        NotSupportedError,
+        "ConvolverNode: channelCount cannot be changed from 2");
+  }
+}
+
+void ConvolverHandler::setChannelCountMode(const String& mode,
+                                           ExceptionState& exceptionState) {
+  DCHECK(isMainThread());
+  BaseAudioContext::AutoLocker locker(context());
+
+  // channcelCountMode must be 'clamped-max'.
+  if (mode != "clamped-max") {
+    exceptionState.throwDOMException(
+        NotSupportedError,
+        "ConvolverNode: channelCountMode cannot be changed from 'clamped-max'");
+  }
+}
+
+void ConvolverHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
+  DCHECK(context()->isAudioThread());
+#if DCHECK_IS_ON()
+  DCHECK(context()->isGraphOwner());
+#endif
+
+  DCHECK(input);
+  DCHECK_EQ(input, &this->input(0));
+  if (input != &this->input(0))
+    return;
+
+  if (m_buffer) {
+    unsigned numberOfChannels = input->numberOfChannels();
+    unsigned numberOfReverbeChannels = m_buffer->numberOfChannels();
+    unsigned numberOfOutputChannels =
+        std::min(2u, std::max(numberOfChannels, numberOfReverbeChannels));
+
+    if (isInitialized() &&
+        numberOfOutputChannels != output(0).numberOfChannels()) {
+      // We're already initialized but the channel count has changed.
+      uninitialize();
+    }
+
+    if (!isInitialized()) {
+      // This will propagate the channel count to any nodes connected further
+      // downstream in the graph.
+      output(0).setNumberOfChannels(numberOfOutputChannels);
+      initialize();
+    }
+  }
+
+  // Update the input's internal bus if needed.
+  AudioHandler::checkNumberOfChannelsForInput(input);
+}
 // ----------------------------------------------------------------
 
 ConvolverNode::ConvolverNode(BaseAudioContext& context) : AudioNode(context) {

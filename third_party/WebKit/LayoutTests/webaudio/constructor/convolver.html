@@ -62,7 +62,7 @@
         success = Should("node0.channelInterpretation", node.channelInterpretation)
           .beEqualTo("speakers") && success;
 
-        success = Should("new AnalyserNode(context)", success)
+        success = Should("new ConvolverNode(context)", success)
             .summarize(
                 "constructed node with correct attributes",
                 "did not construct correct node correctly")
@@ -71,7 +71,18 @@
       });
 
       audit.defineTask("test AudioNodeOptions", function (taskDone) {
-        testAudioNodeOptions(context, "ConvolverNode");
+        testAudioNodeOptions(context, "ConvolverNode", {
+          expectedChannelCount: {
+            value: 2,
+            isFixed: true,
+            errorType: "NotSupportedError"
+          },
+          expectedChannelCountMode: {
+            value: "clamped-max",
+            isFixed: true,
+            errorType: "NotSupportedError"
+          },
+        });
         taskDone();
       });
 

@@ -47,6 +47,9 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 
   // AudioHandler
   void process(size_t framesToProcess) override;
+  // Called in the main thread when the number of channels for the input may
+  // have changed.
+  void checkNumberOfChannelsForInput(AudioNodeInput*) override;
 
   // Impulse responses
   void setBuffer(AudioBuffer*, ExceptionState&);
@@ -54,6 +57,8 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
 
   bool normalize() const { return m_normalize; }
   void setNormalize(bool normalize) { m_normalize = normalize; }
+  void setChannelCount(unsigned long, ExceptionState&) final;
+  void setChannelCountMode(const String&, ExceptionState&) final;
 
  private:
   ConvolverHandler(AudioNode&, float sampleRate);
