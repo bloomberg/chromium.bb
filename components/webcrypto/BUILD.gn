@@ -164,7 +164,7 @@ fuzzer_test("webcrypto_rsa_import_key_pkcs8_fuzzer") {
 # Tests the import of SPKI formatted RSA keys.
 fuzzer_test("webcrypto_rsa_import_key_spki_fuzzer") {
   sources = [
-    "rsa_import_key_pkcs8_fuzzer.cc",
+    "rsa_import_key_spki_fuzzer.cc",
   ]
   deps = [
     ":fuzzer_support",
