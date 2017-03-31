@@ -8,12 +8,10 @@
 
 <!--suppress AlwaysShowAction -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/select_action_menu_assist"
-        android:title="@null"
-        android:showAsAction="always|withText"
-        android:orderInCategory="1"
-        />
+    <!-- The orderInCategory starts with 2 to give a room for
+         assist menu item. Remove the ordering when Android
+         can reorder the assist menu item itself.
+         -->
    <item
         android:id="@+id/select_action_menu_cut"
         android:icon="?android:attr/actionModeCutDrawable"

@@ -471,15 +471,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     private void updateAssistMenuItem(Menu menu) {
+        // There is no Assist functionality before Android O.
+        if (!BuildInfo.isAtLeastO() || mAssistMenuItemId == 0) return;
+
         // The assist menu item ID has to be equal to android.R.id.textAssist. Until we compile
         // with Android O SDK where this ID is defined we replace the corresponding inflated
         // item with an item with the proper ID.
         // TODO(timav): Use android.R.id.textAssist for the Assist item id once we switch to
         // Android O SDK and remove |mAssistMenuItemId|.
-        menu.removeItem(R.id.select_action_menu_assist);
-
-        // There is no Assist functionality before Android O.
-        if (!BuildInfo.isAtLeastO() || mAssistMenuItemId == 0) return;
 
         if (mClassificationResult != null && mClassificationResult.hasNamedAction()) {
             menu.add(mAssistMenuItemId, mAssistMenuItemId, 1, mClassificationResult.label)
