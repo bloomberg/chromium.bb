@@ -27,6 +27,7 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_snippets/reading_list/reading_list_suggestions_provider.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
@@ -34,6 +35,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/ntp_snippets/user_classifier.h"
+#include "components/reading_list/core/reading_list_model.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
@@ -41,6 +43,7 @@
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/common/channel_info.h"
@@ -106,6 +109,7 @@ IOSChromeContentSuggestionsServiceFactory::
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(OAuth2TokenServiceFactory::GetInstance());
   DependsOn(ios::SigninManagerFactory::GetInstance());
+  DependsOn(ReadingListModelFactory::GetInstance());
 }
 
 IOSChromeContentSuggestionsServiceFactory::
@@ -154,6 +158,15 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                                                       bookmark_model, prefs);
     service->RegisterProvider(std::move(bookmark_suggestions_provider));
   }
+
+  // Create the ReadingListSuggestionsProvider.
+  ReadingListModel* reading_list_model =
+      ReadingListModelFactory::GetForBrowserState(chrome_browser_state);
+  std::unique_ptr<ntp_snippets::ReadingListSuggestionsProvider>
+      reading_list_suggestions_provider =
+          base::MakeUnique<ntp_snippets::ReadingListSuggestionsProvider>(
+              service.get(), reading_list_model);
+  service->RegisterProvider(std::move(reading_list_suggestions_provider));
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     // Create the RemoteSuggestionsProvider (articles provider).
