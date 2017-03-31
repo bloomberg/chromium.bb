@@ -294,8 +294,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
                         kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
                         kClearKeyCdmPepperMimeType);
-      // Need to tell CdmHostFile(s) to ignore missing CDM host files in tests.
-      command_line->AppendSwitch(switches::kIgnoreMissingCdmHostFile);
       command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                       media::kExternalClearKeyForTesting.name);
     }

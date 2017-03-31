@@ -72,27 +72,23 @@ class CdmHostFiles {
  private:
 #if defined(POSIX_WITH_ZYGOTE)
   // Opens all common files and CDM specific files for all registered CDMs.
-  bool OpenFilesForAllRegisteredCdms();
+  void OpenFilesForAllRegisteredCdms();
 #endif
 
   // Opens all common files and CDM specific files for the CDM adapter
   // registered at |cdm_adapter_path|.
-  bool OpenFiles(const base::FilePath& cdm_adapter_path);
+  void OpenFiles(const base::FilePath& cdm_adapter_path);
 
-  // Opens common CDM host files shared by all CDMs. Upon failure, close all
-  // files opened.
-  bool OpenCommonFiles();
+  // Opens common CDM host files shared by all CDMs.
+  void OpenCommonFiles();
 
   // Opens CDM specific files for the CDM adapter registered at
-  // |cdm_adapter_path|. Returns whether all CDM specific files are opened.
-  // Upon failure, close all files opened.
-  bool OpenCdmFiles(const base::FilePath& cdm_adapter_path);
+  // |cdm_adapter_path|.
+  void OpenCdmFiles(const base::FilePath& cdm_adapter_path);
 
   // Fills |cdm_host_files| with common and CDM specific files for
   // |cdm_adapter_path|. The ownership of those files are also transferred.
-  // Returns true upon success where the remaining files will be closed.
-  // Returns false upon any failure and all files will be closed.
-  bool TakePlatformFiles(const base::FilePath& cdm_adapter_path,
+  void TakePlatformFiles(const base::FilePath& cdm_adapter_path,
                          std::vector<cdm::HostFile>* cdm_host_files);
 
   void CloseAllFiles();
