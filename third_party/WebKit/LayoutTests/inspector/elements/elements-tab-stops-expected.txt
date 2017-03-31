@@ -1,0 +1,20 @@
+Tests what elements have focus after pressing tab.
+
+INPUT:Filter Styles
+BUTTON:Toggle Element State
+BUTTON:Element Classes
+BUTTON:New Style Rule
+BUTTON:Select an element in the page to inspect it
+BUTTON:Customize and control DevTools
+LI:<body onload="runTest()​">​
+
+Shift+Tab:
+
+INPUT:Filter Styles
+LI:<body onload="runTest()​">​
+BUTTON:Customize and control DevTools
+BUTTON:Select an element in the page to inspect it
+BUTTON:New Style Rule
+BUTTON:Element Classes
+BUTTON:Toggle Element State
+
