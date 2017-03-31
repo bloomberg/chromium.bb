@@ -268,6 +268,7 @@ public class ConfirmSyncDataStateMachine
                     public void onRetry() {
                         requestNewAccountManagementStatus();
                         scheduleTimeout();
+                        showProgressDialog();
                     }
                 });
     }
