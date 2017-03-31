@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.drawable.Drawable;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.share.ShareHelper;
 
 import java.util.List;
 
@@ -23,16 +25,19 @@ import java.util.List;
  */
 class TabularContextMenuListAdapter extends BaseAdapter {
     private final List<ContextMenuItem> mMenuItems;
-    private final Context mContext;
+    private final Activity mActivity;
+    private final Runnable mOnShareItemClicked;
 
     /**
      * Adapter for the tabular context menu UI
      * @param menuItems The list of items to display in the view.
-     * @param context Used to inflate the layout.
+     * @param activity Used to inflate the layout.
      */
-    TabularContextMenuListAdapter(List<ContextMenuItem> menuItems, Context context) {
+    TabularContextMenuListAdapter(
+            List<ContextMenuItem> menuItems, Activity activity, Runnable onShareItemClicked) {
         mMenuItems = menuItems;
-        mContext = context;
+        mActivity = activity;
+        mOnShareItemClicked = onShareItemClicked;
     }
 
     @Override
@@ -56,27 +61,50 @@ class TabularContextMenuListAdapter extends BaseAdapter {
         ViewHolderItem viewHolder;
 
         if (convertView == null) {
-            LayoutInflater inflater = LayoutInflater.from(mContext);
+            LayoutInflater inflater = LayoutInflater.from(mActivity);
             convertView = inflater.inflate(R.layout.tabular_context_menu_row, null);
 
             viewHolder = new ViewHolderItem();
             viewHolder.mIcon = (ImageView) convertView.findViewById(R.id.context_menu_icon);
             viewHolder.mText = (TextView) convertView.findViewById(R.id.context_text);
+            viewHolder.mShareIcon =
+                    (ImageView) convertView.findViewById(R.id.context_menu_share_icon);
 
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolderItem) convertView.getTag();
         }
 
-        viewHolder.mText.setText(menuItem.getString(mContext));
-        Drawable icon = menuItem.getDrawableAndDescription(mContext);
+        viewHolder.mText.setText(menuItem.getString(mActivity));
+        Drawable icon = menuItem.getDrawableAndDescription(mActivity);
         viewHolder.mIcon.setImageDrawable(icon);
         viewHolder.mIcon.setVisibility(icon != null ? View.VISIBLE : View.INVISIBLE);
+
+        if (menuItem == ContextMenuItem.SHARE_IMAGE) {
+            final Pair<Drawable, CharSequence> shareInfo =
+                    ShareHelper.getShareableIconAndName(mActivity);
+            if (shareInfo.first != null) {
+                viewHolder.mShareIcon.setImageDrawable(shareInfo.first);
+                viewHolder.mShareIcon.setVisibility(View.VISIBLE);
+                viewHolder.mShareIcon.setContentDescription(mActivity.getString(
+                        R.string.accessibility_menu_share_via, shareInfo.second));
+                viewHolder.mShareIcon.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mOnShareItemClicked.run();
+                    }
+                });
+            }
+        } else {
+            viewHolder.mShareIcon.setVisibility(View.GONE);
+        }
+
         return convertView;
     }
 
     private static class ViewHolderItem {
         ImageView mIcon;
         TextView mText;
+        ImageView mShareIcon;
     }
 }

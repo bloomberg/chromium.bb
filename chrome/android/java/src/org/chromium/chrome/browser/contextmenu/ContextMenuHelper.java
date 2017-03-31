@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.ComponentName;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Pair;
@@ -36,11 +36,12 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
     private ContextMenuPopulator mPopulator;
     private ContextMenuParams mCurrentContextMenuParams;
-    private Context mContext;
+    private Activity mActivity;
     private Callback<Integer> mCallback;
     private Runnable mOnMenuShown;
     private Runnable mOnMenuClosed;
     private Callback<Bitmap> mOnThumbnailReceivedCallback;
+    private ComponentName mComponentName;
 
     private ContextMenuHelper(long nativeContextMenuHelper) {
         mNativeContextMenuHelper = nativeContextMenuHelper;
@@ -79,13 +80,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         final WindowAndroid windowAndroid = contentViewCore.getWindowAndroid();
 
         if (view == null || view.getVisibility() != View.VISIBLE || view.getParent() == null
-                || windowAndroid == null || windowAndroid.getContext().get() == null
+                || windowAndroid == null || windowAndroid.getActivity().get() == null
                 || mPopulator == null) {
             return;
         }
 
         mCurrentContextMenuParams = params;
-        mContext = windowAndroid.getContext().get();
+        mActivity = windowAndroid.getActivity().get();
         mCallback = new Callback<Integer>() {
             @Override
             public void onResult(Integer result) {
@@ -110,10 +111,15 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)) {
             List<Pair<Integer, List<ContextMenuItem>>> items =
-                    mPopulator.buildContextMenu(null, mContext, mCurrentContextMenuParams);
+                    mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
 
-            final ContextMenuUi menuUi = new TabularContextMenuUi();
-            menuUi.displayMenu(mContext, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
+            final ContextMenuUi menuUi = new TabularContextMenuUi(new Runnable() {
+                @Override
+                public void run() {
+                    shareImageDirectly(ShareHelper.getLastShareComponentName());
+                }
+            });
+            menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
                     mOnMenuClosed);
             if (mCurrentContextMenuParams.isImage()) {
                 getThumbnail(new Callback<Bitmap>() {
@@ -173,7 +179,19 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) return;
 
-        ShareHelper.shareImage(activity, jpegImageData);
+        ShareHelper.shareImage(activity, jpegImageData, mComponentName);
+        // This needs to be reset to null after a share. This way the next time a user shares an
+        // image it won't share with the last shared app unless explicitly told.
+        mComponentName = null;
+    }
+
+    /**
+     * Share image triggered with the current context menu directly with a specific app.
+     * @param name The {@link ComponentName} of the app to share the image directly with.
+     */
+    public void shareImageDirectly(ComponentName name) {
+        mComponentName = name;
+        shareImage();
     }
 
     /**
@@ -183,7 +201,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private void getThumbnail(Callback<Bitmap> callback) {
         mOnThumbnailReceivedCallback = callback;
         if (mNativeContextMenuHelper == 0) return;
-        int maxSizePx = mContext.getResources().getDimensionPixelSize(
+        int maxSizePx = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.context_menu_header_image_max_size);
         nativeRetrieveHeaderThumbnail(mNativeContextMenuHelper, maxSizePx);
     }
@@ -202,8 +220,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         List<Pair<Integer, List<ContextMenuItem>>> items =
                 mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
         ContextMenuUi menuUi = new PlatformContextMenuUi(menu);
-        menuUi.displayMenu(
-                mContext, mCurrentContextMenuParams, items, mCallback, mOnMenuShown, mOnMenuClosed);
+        menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
+                mOnMenuClosed);
     }
 
     /**

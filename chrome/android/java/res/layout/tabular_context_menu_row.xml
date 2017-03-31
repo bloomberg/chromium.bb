@@ -26,4 +26,11 @@
         android:layout_weight="1"
         android:textSize="15sp"
         android:textColor="#dd000000" />
+    <ImageView
+        android:id="@+id/context_menu_share_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@null"
+        android:visibility="gone"/>
 </LinearLayout>
