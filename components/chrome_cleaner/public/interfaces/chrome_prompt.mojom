@@ -1,0 +1,65 @@
+// Copyright 2017 The Chromium Authors. All Rights Reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chrome_cleaner.mojom;
+
+// The behaviours that have been observed for a given UwS.
+struct ObservedBehaviours {
+  bool ad_injector;
+  bool settings_hijacker;
+  bool extensions_injector;
+  bool dropper;
+};
+
+// Information about removable Unwanted Software matched by the Software
+// Reporter to be shown in the Chrome prompt.
+struct UwS {
+  // The id of this unwanted software.
+  int32 id;
+
+  // The name of this unwanted software.
+  string name;
+
+  // Behaviors observed for this UwS to be presented to the user in the Chrome
+  // prompt.
+  ObservedBehaviours observed_behaviours;
+
+  // List of fully-qualified paths of the files that will be deleted by the
+  // Chrome Cleanup Tool for this unwanted software.
+  array<string> files_to_delete;
+};
+
+[Extensible]
+enum PromptAcceptance {
+  UNSPECIFIED = 0,
+  // The Chrome prompt was not shown to the user (for example, due to an
+  // experiment run that shouldn't prompt the user or because the user has
+  // been prompted recently).
+  NOT_SHOWN = 1,
+  // The user explicitly accepted the Chrome prompt, but didn't opt into
+  // uploading logs to Google.
+  ACCEPTED_WITHOUT_LOGS = 2,
+  // The user explicitly accepted the Chrome prompt and also opted into
+  // uploading logs to Google.
+  ACCEPTED_WITH_LOGS = 3,
+  // The user explicitly denied the Chrome prompt.
+  DENIED = 4,
+  // The user didn't interact with the Chrome prompt after a while.
+  IGNORED = 5,
+};
+
+// Service provided by Chrome to prompt the user to run the Chrome Cleanup Tool
+// if unwanted software is detected on the system. This service is used by the
+// Software Reporter Tool so that all user interaction is provided by Chrome.
+interface ChromePrompt {
+  // Params:
+  //  - removable_uws_found: the list of UwS detected by the reporter;
+  //  - elevation_required: if the cleaner will need to run in elevated mode.
+  // Returns:
+  //  - prompt_acceptance: indicates if the user accepted the prompt; if the
+  //                       prompt is accepted, it also indicates if logs
+  //                       uploading is allowed.
+  PromptUser(array<UwS> removable_uws_found, bool elevation_required)
+      => (PromptAcceptance prompt_acceptance);
+};
