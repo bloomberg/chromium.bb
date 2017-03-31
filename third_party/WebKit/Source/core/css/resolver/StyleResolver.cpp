@@ -222,13 +222,15 @@ void StyleResolver::clearStyleSharingList() {
 }
 
 static inline ScopedStyleResolver* scopedResolverFor(const Element& element) {
-  // Ideally, returning element->treeScope().scopedStyleResolver() should be
-  // enough, but ::cue and custom pseudo elements like ::-webkit-meter-bar
-  // pierce through a shadow dom boundary, yet they are not part of boundary
-  // crossing rules. The assumption here is that these rules only pierce through
-  // one boundary and that the scope of these elements do not have a style
-  // resolver due to the fact that VTT scopes and UA shadow trees don't have
-  // <style> elements. This is backed up by the DCHECKs below.
+  // For normal elements, returning element->treeScope().scopedStyleResolver()
+  // is enough. Rules for ::cue and custom pseudo elements like
+  // ::-webkit-meter-bar pierce through a single shadow dom boundary and apply
+  // to elements in sub-scopes.
+  //
+  // An assumption here is that these elements belong to scopes without a
+  // ScopedStyleResolver due to the fact that VTT scopes and UA shadow trees
+  // don't have <style> or <link> elements. This is backed up by the DCHECKs
+  // below.
 
   TreeScope* treeScope = &element.treeScope();
   if (ScopedStyleResolver* resolver = treeScope->scopedStyleResolver()) {
