@@ -404,17 +404,17 @@ static INLINE aom_prob av1_mode_mv_merge_probs(aom_prob pre_prob,
 #if CONFIG_EC_ADAPT
 void av1_average_tile_coef_cdfs(struct frame_contexts *fc,
                                 struct frame_contexts *ec_ctxs[],
-                                const int num_tiles);
+                                aom_cdf_prob *cdf_ptrs[], const int num_tiles);
 void av1_average_tile_mv_cdfs(struct frame_contexts *fc,
                               struct frame_contexts *ec_ctxs[],
-                              const int num_tiles);
+                              aom_cdf_prob *cdf_ptrs[], const int num_tiles);
 void av1_average_tile_intra_cdfs(struct frame_contexts *fc,
                                  struct frame_contexts *ec_ctxs[],
-                                 const int num_tiles);
+                                 aom_cdf_prob *cdf_ptrs[], const int num_tiles);
 void av1_average_tile_inter_cdfs(struct AV1Common *cm,
                                  struct frame_contexts *fc,
                                  struct frame_contexts *ec_ctxs[],
-                                 const int num_tiles);
+                                 aom_cdf_prob *cdf_ptrs[], const int num_tiles);
 #endif
 #ifdef __cplusplus
 }  // extern "C"

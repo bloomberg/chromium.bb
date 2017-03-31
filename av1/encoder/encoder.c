@@ -4676,7 +4676,11 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   struct segmentation *const seg = &cm->seg;
   TX_SIZE t;
 #if CONFIG_EC_ADAPT
-  FRAME_CONTEXT *tile_ctxs[MAX_TILE_ROWS * MAX_TILE_COLS];
+  FRAME_CONTEXT **tile_ctxs = aom_malloc(cm->tile_rows * cm->tile_cols *
+                                         sizeof(&cpi->tile_data[0].tctx));
+  aom_cdf_prob **cdf_ptrs =
+      aom_malloc(cm->tile_rows * cm->tile_cols *
+                 sizeof(&cpi->tile_data[0].tctx.partition_cdf[0][0]));
 #endif
 #if CONFIG_XIPHRC
   int frame_type;
@@ -4956,9 +4960,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     av1_adapt_intra_frame_probs(cm);
 #if CONFIG_EC_ADAPT
     make_update_tile_list_enc(cpi, cm->tile_rows, cm->tile_cols, tile_ctxs);
-    av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs,
+    av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                cm->tile_rows * cm->tile_cols);
-    av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs,
+    av1_average_tile_intra_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                 cm->tile_rows * cm->tile_cols);
 #endif
 #if CONFIG_ADAPT_SCAN
@@ -4972,8 +4976,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
 #if CONFIG_EC_ADAPT
       av1_average_tile_inter_cdfs(&cpi->common, cpi->common.fc, tile_ctxs,
-                                  cm->tile_rows * cm->tile_cols);
-      av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs,
+                                  cdf_ptrs, cm->tile_rows * cm->tile_cols);
+      av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                cm->tile_rows * cm->tile_cols);
 #endif
     }
@@ -5057,6 +5061,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (cm->is_reference_frame)
 #endif  // CONFIG_EXT_REFS
     cm->prev_frame = cm->cur_frame;
+#if CONFIG_EC_ADAPT
+  aom_free(tile_ctxs);
+  aom_free(cdf_ptrs);
+#endif
 }
 
 static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,

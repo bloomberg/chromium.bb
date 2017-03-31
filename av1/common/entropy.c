@@ -5685,10 +5685,9 @@ static void av1_average_cdf(aom_cdf_prob *cdf_ptr[], aom_cdf_prob *fc_cdf_ptr,
   av1_average_cdf(cdf_ptr, fc_cdf_ptr, cdf_size, num_tiles);
 
 void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
-                                const int num_tiles) {
+                                aom_cdf_prob *cdf_ptr[], const int num_tiles) {
   int i, cdf_size;
 
-  aom_cdf_prob *cdf_ptr[MAX_TILE_ROWS * MAX_TILE_COLS];
   aom_cdf_prob *fc_cdf_ptr;
 
 #if CONFIG_NEW_TOKENSET
@@ -5700,10 +5699,9 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 }
 
 void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
-                              const int num_tiles) {
+                              aom_cdf_prob *cdf_ptr[], const int num_tiles) {
   int i, k, cdf_size;
 
-  aom_cdf_prob *cdf_ptr[MAX_TILE_ROWS * MAX_TILE_COLS];
   aom_cdf_prob *fc_cdf_ptr;
 
 #if CONFIG_REF_MV
@@ -5729,10 +5727,9 @@ void av1_average_tile_mv_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 }
 
 void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
-                                 const int num_tiles) {
+                                 aom_cdf_prob *cdf_ptr[], const int num_tiles) {
   int i, cdf_size;
 
-  aom_cdf_prob *cdf_ptr[MAX_TILE_ROWS * MAX_TILE_COLS];
   aom_cdf_prob *fc_cdf_ptr;
 
   AVERAGE_TILE_CDFS(tx_size_cdf);
@@ -5763,10 +5760,9 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
 void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
                                  FRAME_CONTEXT *ec_ctxs[],
-                                 const int num_tiles) {
+                                 aom_cdf_prob *cdf_ptr[], const int num_tiles) {
   int i, cdf_size;
 
-  aom_cdf_prob *cdf_ptr[MAX_TILE_ROWS * MAX_TILE_COLS];
   aom_cdf_prob *fc_cdf_ptr;
 
 // FIXME: comp_inter_cdf not defined
