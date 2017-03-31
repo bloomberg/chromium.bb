@@ -556,6 +556,9 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
   else if (diffNeedsPaintInvalidationObject(other))
     diff.setNeedsPaintInvalidationObject();
 
+  if (diffNeedsVisualRectUpdate(other))
+    diff.setNeedsVisualRectUpdate();
+
   updatePropertySpecificDifferences(other, diff);
 
   // The following condition needs to be at last, because it may depend on
@@ -993,6 +996,21 @@ bool ComputedStyle::diffNeedsPaintInvalidationObjectForPaintImage(
         return true;
     }
   }
+
+  return false;
+}
+
+// This doesn't include conditions needing layout or overflow recomputation
+// which implies visual rect update.
+bool ComputedStyle::diffNeedsVisualRectUpdate(
+    const ComputedStyle& other) const {
+  // Visual rect is empty if visibility is hidden.
+  if (visibility() != other.visibility())
+    return true;
+
+  // Need to update visual rect of the resizer.
+  if (resize() != other.resize())
+    return true;
 
   return false;
 }

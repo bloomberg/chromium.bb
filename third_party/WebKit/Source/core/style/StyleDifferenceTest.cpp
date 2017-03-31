@@ -16,7 +16,8 @@ TEST(StyleDifferenceTest, StreamOutputDefault) {
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "paintInvalidationType=NoPaintInvalidation, recomputeOverflow=0, "
-      "propertySpecificDifferences=, scrollAnchorDisablingPropertyChanged=0}",
+      "visualRectUpdate=0, propertySpecificDifferences=, "
+      "scrollAnchorDisablingPropertyChanged=0}",
       stringStream.str());
 }
 
@@ -26,13 +27,14 @@ TEST(StyleDifferenceTest, StreamOutputAllFieldsMutated) {
   diff.setNeedsPaintInvalidationObject();
   diff.setNeedsPositionedMovementLayout();
   diff.setNeedsRecomputeOverflow();
+  diff.setNeedsVisualRectUpdate();
   diff.setTransformChanged();
   diff.setScrollAnchorDisablingPropertyChanged();
   stringStream << diff;
   EXPECT_EQ(
       "StyleDifference{layoutType=PositionedMovement, "
       "paintInvalidationType=PaintInvalidationObject, recomputeOverflow=1, "
-      "propertySpecificDifferences=TransformChanged, "
+      "visualRectUpdate=1, propertySpecificDifferences=TransformChanged, "
       "scrollAnchorDisablingPropertyChanged=1}",
       stringStream.str());
 }
@@ -51,6 +53,7 @@ TEST(StyleDifferenceTest, StreamOutputSetAllProperties) {
   EXPECT_EQ(
       "StyleDifference{layoutType=NoLayout, "
       "paintInvalidationType=NoPaintInvalidation, recomputeOverflow=0, "
+      "visualRectUpdate=0, "
       "propertySpecificDifferences=TransformChanged|OpacityChanged|"
       "ZIndexChanged|FilterChanged|BackdropFilterChanged|CSSClipChanged|"
       "TextDecorationOrColorChanged, scrollAnchorDisablingPropertyChanged=0}",

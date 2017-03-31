@@ -3624,6 +3624,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool diffNeedsPaintInvalidationObjectForPaintImage(
       const StyleImage*,
       const ComputedStyle& other) const;
+  bool diffNeedsVisualRectUpdate(const ComputedStyle& other) const;
   void updatePropertySpecificDifferences(const ComputedStyle& other,
                                          StyleDifference&) const;
 

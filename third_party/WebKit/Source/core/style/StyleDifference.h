@@ -33,17 +33,14 @@ class StyleDifference {
       : m_paintInvalidationType(NoPaintInvalidation),
         m_layoutType(NoLayout),
         m_recomputeOverflow(false),
+        m_visualRectUpdate(false),
         m_propertySpecificDifferences(0),
         m_scrollAnchorDisablingPropertyChanged(false) {}
 
   bool hasDifference() const {
-    bool result = m_paintInvalidationType || m_layoutType ||
-                  m_propertySpecificDifferences;
-    // m_recomputeOverflow, m_scrollAnchorDisablingPropertyChanged and
-    // are never set without other flags set.
-    DCHECK(result ||
-           (!m_recomputeOverflow && !m_scrollAnchorDisablingPropertyChanged));
-    return result;
+    return m_paintInvalidationType || m_layoutType ||
+           m_propertySpecificDifferences || m_recomputeOverflow ||
+           m_visualRectUpdate || m_scrollAnchorDisablingPropertyChanged;
   }
 
   bool hasAtMostPropertySpecificDifferences(
@@ -90,6 +87,9 @@ class StyleDifference {
 
   bool needsRecomputeOverflow() const { return m_recomputeOverflow; }
   void setNeedsRecomputeOverflow() { m_recomputeOverflow = true; }
+
+  bool needsVisualRectUpdate() const { return m_visualRectUpdate; }
+  void setNeedsVisualRectUpdate() { m_visualRectUpdate = true; }
 
   bool transformChanged() const {
     return m_propertySpecificDifferences & TransformChanged;
@@ -155,6 +155,7 @@ class StyleDifference {
   enum LayoutType { NoLayout = 0, PositionedMovement, FullLayout };
   unsigned m_layoutType : 2;
   unsigned m_recomputeOverflow : 1;
+  unsigned m_visualRectUpdate : 1;
   unsigned m_propertySpecificDifferences : kPropertyDifferenceCount;
   unsigned m_scrollAnchorDisablingPropertyChanged : 1;
 };
