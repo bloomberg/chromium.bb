@@ -162,7 +162,7 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
         static_cast<HttpStreamFactoryImpl*>(session_->http_stream_factory());
     job_controller_ = new HttpStreamFactoryImpl::JobController(
         factory_, &request_delegate_, session_.get(), &job_factory_,
-        request_info, is_preconnect_);
+        request_info, is_preconnect_, /* enable_ip_based_pooling = */ true);
     HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
   }
 
@@ -203,6 +203,7 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
  private:
   bool use_alternative_proxy_;
   bool is_preconnect_;
+
   // Not owned by |this|.
   TestProxyDelegate* test_proxy_delegate_;
 
@@ -1336,7 +1337,8 @@ class HttpStreamFactoryImplJobControllerPreconnectTest
     request_info_.url = GURL("https://www.example.com");
     job_controller_ = new HttpStreamFactoryImpl::JobController(
         factory_, &request_delegate_, session_.get(), &job_factory_,
-        request_info_, true);
+        request_info_, /* is_preconnect = */ true,
+        /* enable_ip_based_pooling = */ true);
     HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
   }
 

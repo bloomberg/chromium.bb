@@ -24,7 +24,8 @@ class HttpStreamFactoryImpl::JobController
                 HttpNetworkSession* session,
                 JobFactory* job_factory,
                 const HttpRequestInfo& request_info,
-                bool is_preconnect);
+                bool is_preconnect,
+                bool enable_ip_based_pooling);
 
   ~JobController() override;
 
@@ -287,6 +288,10 @@ class HttpStreamFactoryImpl::JobController
 
   // True if this JobController is used to preconnect streams.
   const bool is_preconnect_;
+
+  // Enable pooling to a SpdySession with matching IP and certificate even if
+  // the SpdySessionKey is different.
+  const bool enable_ip_based_pooling_;
 
   // |main_job_| is a job waiting to see if |alternative_job_| can reuse a
   // connection. If |alternative_job_| is unable to do so, |this| will notify
