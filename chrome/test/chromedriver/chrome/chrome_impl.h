@@ -8,10 +8,10 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
 struct BrowserInfo;
@@ -47,7 +47,8 @@ class ChromeImpl : public Chrome {
  protected:
   ChromeImpl(std::unique_ptr<DevToolsHttpClient> http_client,
              std::unique_ptr<DevToolsClient> websocket_client,
-             ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+             std::vector<std::unique_ptr<DevToolsEventListener>>
+                 devtools_event_listeners,
              std::unique_ptr<PortReservation> port_reservation,
              std::string page_load_strategy);
 
@@ -64,7 +65,7 @@ class ChromeImpl : public Chrome {
 
   // Web views in this list are in the same order as they are opened.
   WebViewList web_views_;
-  ScopedVector<DevToolsEventListener> devtools_event_listeners_;
+  std::vector<std::unique_ptr<DevToolsEventListener>> devtools_event_listeners_;
   std::unique_ptr<PortReservation> port_reservation_;
   std::string page_load_strategy_;
 };

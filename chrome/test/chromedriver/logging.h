@@ -8,9 +8,9 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
 
@@ -83,10 +83,11 @@ bool InitLogging();
 
 // Creates |Log|s, |DevToolsEventListener|s, and |CommandListener|s based on
 // logging preferences.
-Status CreateLogs(const Capabilities& capabilities,
-                  const Session* session,
-                  ScopedVector<WebDriverLog>* out_logs,
-                  ScopedVector<DevToolsEventListener>* out_devtools_listeners,
-                  ScopedVector<CommandListener>* out_command_listeners);
+Status CreateLogs(
+    const Capabilities& capabilities,
+    const Session* session,
+    std::vector<std::unique_ptr<WebDriverLog>>* out_logs,
+    std::vector<std::unique_ptr<DevToolsEventListener>>* out_devtools_listeners,
+    std::vector<std::unique_ptr<CommandListener>>* out_command_listeners);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_LOGGING_H_

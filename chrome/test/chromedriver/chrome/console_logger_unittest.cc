@@ -4,9 +4,12 @@
 
 #include "chrome/test/chromedriver/chrome/console_logger.h"
 
+#include <memory>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/log.h"
@@ -89,19 +92,20 @@ class FakeLog : public Log {
 
   bool Emptied() const override;
 
-  const ScopedVector<LogEntry>& GetEntries() {
+  const std::vector<std::unique_ptr<LogEntry>>& GetEntries() {
     return entries_;
   }
 
-private:
-  ScopedVector<LogEntry> entries_;
+ private:
+  std::vector<std::unique_ptr<LogEntry>> entries_;
 };
 
 void FakeLog::AddEntryTimestamped(const base::Time& timestamp,
                                   Level level,
                                   const std::string& source,
                                   const std::string& message) {
-  entries_.push_back(new LogEntry(timestamp, level, source, message));
+  entries_.push_back(
+      base::MakeUnique<LogEntry>(timestamp, level, source, message));
 }
 
 bool FakeLog::Emptied() const {
@@ -188,24 +192,24 @@ TEST(ConsoleLogger, ConsoleMessages) {
   EXPECT_TRUE(client.PopSentCommand().empty());  // No other commands sent.
 
   ASSERT_EQ(8u, log.GetEntries().size());
-  ValidateLogEntry(log.GetEntries()[0], Log::kDebug, "source1",
+  ValidateLogEntry(log.GetEntries()[0].get(), Log::kDebug, "source1",
                    "url1 10:1 text1");
-  ValidateLogEntry(log.GetEntries()[1], Log::kInfo, "source2",
+  ValidateLogEntry(log.GetEntries()[1].get(), Log::kInfo, "source2",
                    "source2 - text2");
-  ValidateLogEntry(log.GetEntries()[2], Log::kWarning, "", "url3 30 text3");
-  ValidateLogEntry(log.GetEntries()[3], Log::kError, "source4",
+  ValidateLogEntry(log.GetEntries()[2].get(), Log::kWarning, "",
+                   "url3 30 text3");
+  ValidateLogEntry(log.GetEntries()[3].get(), Log::kError, "source4",
                    "url4 - text4");
   ValidateLogEntry(
-      log.GetEntries()[4], Log::kWarning, "",
+      log.GetEntries()[4].get(), Log::kWarning, "",
       "{\"message\":{\"column\":5,\"level\":\"gaga\",\"line\":50,"
       "\"source\":\"source5\",\"text\":\"ulala\",\"url\":\"url5\"}}");
-  ValidateLogEntry(
-      log.GetEntries()[5], Log::kWarning, "",
-      "{\"message\":{\"column\":6,\"line\":60,"
-      "\"source\":\"source6\",\"url\":\"url6\"}}");
-  ValidateLogEntry(
-      log.GetEntries()[6], Log::kWarning, "",
-      "{\"message\":{\"level\":\"log\","
-      "\"source\":\"source7\",\"url\":\"url7\"}}");
-  ValidateLogEntry(log.GetEntries()[7], Log::kWarning, "", "{\"gaga\":8}");
+  ValidateLogEntry(log.GetEntries()[5].get(), Log::kWarning, "",
+                   "{\"message\":{\"column\":6,\"line\":60,"
+                   "\"source\":\"source6\",\"url\":\"url6\"}}");
+  ValidateLogEntry(log.GetEntries()[6].get(), Log::kWarning, "",
+                   "{\"message\":{\"level\":\"log\","
+                   "\"source\":\"source7\",\"url\":\"url7\"}}");
+  ValidateLogEntry(log.GetEntries()[7].get(), Log::kWarning, "",
+                   "{\"gaga\":8}");
 }

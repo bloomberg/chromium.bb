@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -404,11 +403,8 @@ Status UnzipSoleFile(const base::FilePath& unzip_dir,
 
 Status NotifyCommandListenersBeforeCommand(Session* session,
                                            const std::string& command_name) {
-  for (ScopedVector<CommandListener>::const_iterator it =
-       session->command_listeners.begin();
-       it != session->command_listeners.end();
-       ++it) {
-    Status status = (*it)->BeforeCommand(command_name);
+  for (const auto& listener : session->command_listeners) {
+    Status status = listener->BeforeCommand(command_name);
     if (status.IsError()) {
       // Do not continue if an error is encountered. Mark session for deletion,
       // quit Chrome if necessary, and return a detailed error.

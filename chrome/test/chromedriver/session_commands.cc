@@ -209,8 +209,8 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   // Create Log's and DevToolsEventListener's for ones that are DevTools-based.
   // Session will own the Log's, Chrome will own the listeners.
   // Also create |CommandListener|s for the appropriate logs.
-  ScopedVector<DevToolsEventListener> devtools_event_listeners;
-  ScopedVector<CommandListener> command_listeners;
+  std::vector<std::unique_ptr<DevToolsEventListener>> devtools_event_listeners;
+  std::vector<std::unique_ptr<CommandListener>> command_listeners;
   status = CreateLogs(capabilities,
                       session,
                       &session->devtools_logs,
@@ -222,15 +222,12 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   // |session| will own the |CommandListener|s.
   session->command_listeners.swap(command_listeners);
 
-  status = LaunchChrome(bound_params.context_getter.get(),
-                        bound_params.socket_factory,
-                        bound_params.device_manager,
-                        bound_params.port_server,
-                        bound_params.port_manager,
-                        capabilities,
-                        &devtools_event_listeners,
-                        &session->chrome,
-                        session->w3c_compliant);
+  status =
+      LaunchChrome(bound_params.context_getter.get(),
+                   bound_params.socket_factory, bound_params.device_manager,
+                   bound_params.port_server, bound_params.port_manager,
+                   capabilities, std::move(devtools_event_listeners),
+                   &session->chrome, session->w3c_compliant);
   if (status.IsError())
     return status;
 

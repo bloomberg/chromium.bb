@@ -8,11 +8,12 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
@@ -44,7 +45,7 @@ class FakeDevToolsClient : public StubDevToolsClient {
 
   bool PopSentCommand(DevToolsCommand** out_command) {
     if (sent_commands_.size() > command_index_) {
-      *out_command = sent_commands_.get().at(command_index_++);
+      *out_command = sent_commands_[command_index_++].get();
       return true;
     }
     return false;
@@ -67,8 +68,8 @@ class FakeDevToolsClient : public StubDevToolsClient {
       const std::string& method,
       const base::DictionaryValue& params,
       std::unique_ptr<base::DictionaryValue>* result) override {
-    sent_commands_.push_back(new DevToolsCommand(method,
-                                                 params.DeepCopy()));
+    sent_commands_.push_back(
+        base::MakeUnique<DevToolsCommand>(method, params.DeepCopy()));
     return Status(kOk);
   }
 
@@ -81,7 +82,8 @@ class FakeDevToolsClient : public StubDevToolsClient {
 
  private:
   const std::string id_;  // WebView id.
-  ScopedVector<DevToolsCommand> sent_commands_;  // Commands that were sent.
+  std::vector<std::unique_ptr<DevToolsCommand>>
+      sent_commands_;                // Commands that were sent.
   DevToolsEventListener* listener_;  // The fake allows only one event listener.
   size_t command_index_;
 };
@@ -108,19 +110,20 @@ class FakeLog : public Log {
 
   bool Emptied() const override;
 
-  const ScopedVector<LogEntry>& GetEntries() {
+  const std::vector<std::unique_ptr<LogEntry>>& GetEntries() {
     return entries_;
   }
 
  private:
-  ScopedVector<LogEntry> entries_;
+  std::vector<std::unique_ptr<LogEntry>> entries_;
 };
 
 void FakeLog::AddEntryTimestamped(const base::Time& timestamp,
                                   Level level,
                                   const std::string& source,
                                   const std::string& message) {
-  entries_.push_back(new LogEntry(timestamp, level, source, message));
+  entries_.push_back(
+      base::MakeUnique<LogEntry>(timestamp, level, source, message));
 }
 
 bool FakeLog::Emptied() const {
@@ -203,8 +206,8 @@ TEST(PerformanceLogger, OneWebView) {
   ASSERT_EQ(kOk, client.TriggerEvent("Console.bad").code());
 
   ASSERT_EQ(2u, log.GetEntries().size());
-  ValidateLogEntry(log.GetEntries()[0], "webview-1", "Network.gaga");
-  ValidateLogEntry(log.GetEntries()[1], "webview-1", "Page.ulala");
+  ValidateLogEntry(log.GetEntries()[0].get(), "webview-1", "Network.gaga");
+  ValidateLogEntry(log.GetEntries()[1].get(), "webview-1", "Page.ulala");
 }
 
 TEST(PerformanceLogger, TwoWebViews) {
@@ -230,8 +233,8 @@ TEST(PerformanceLogger, TwoWebViews) {
   ASSERT_EQ(kOk, client2.TriggerEvent("Network.gaga2").code());
 
   ASSERT_EQ(2u, log.GetEntries().size());
-  ValidateLogEntry(log.GetEntries()[0], "webview-1", "Page.gaga1");
-  ValidateLogEntry(log.GetEntries()[1], "webview-2", "Network.gaga2");
+  ValidateLogEntry(log.GetEntries()[0].get(), "webview-1", "Page.gaga1");
+  ValidateLogEntry(log.GetEntries()[1].get(), "webview-2", "Network.gaga2");
 }
 
 TEST(PerformanceLogger, PerfLoggingPrefs) {
@@ -340,10 +343,10 @@ TEST(PerformanceLogger, RecordTraceEvents) {
   ASSERT_EQ(kOk, client.TriggerEvent("Tracing.dataCollected", params).code());
 
   ASSERT_EQ(2u, log.GetEntries().size());
-  ValidateLogEntry(log.GetEntries()[0],
+  ValidateLogEntry(log.GetEntries()[0].get(),
                    DevToolsClientImpl::kBrowserwideDevToolsClientId,
                    "Tracing.dataCollected", *event1);
-  ValidateLogEntry(log.GetEntries()[1],
+  ValidateLogEntry(log.GetEntries()[1].get(),
                    DevToolsClientImpl::kBrowserwideDevToolsClientId,
                    "Tracing.dataCollected", *event2);
 }
@@ -384,7 +387,7 @@ TEST(PerformanceLogger, WarnWhenTraceBufferFull) {
   ASSERT_EQ(kOk, client.TriggerEvent("Tracing.bufferUsage", params).code());
 
   ASSERT_EQ(1u, log.GetEntries().size());
-  LogEntry* entry = log.GetEntries()[0];
+  LogEntry* entry = log.GetEntries()[0].get();
   EXPECT_EQ(Log::kWarning, entry->level);
   EXPECT_LT(0, entry->timestamp.ToTimeT());
   std::unique_ptr<base::DictionaryValue> message(

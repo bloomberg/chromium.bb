@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -684,11 +685,11 @@ class MockCommandListener : public CommandListener {
 };
 
 Status ExecuteAddListenerToSessionCommand(
-    CommandListener* listener,
+    std::unique_ptr<CommandListener> listener,
     Session* session,
     const base::DictionaryValue& params,
     std::unique_ptr<base::Value>* return_value) {
-  session->command_listeners.push_back(listener);
+  session->command_listeners.push_back(std::move(listener));
   return Status(kOk);
 }
 
@@ -722,12 +723,13 @@ TEST(CommandsTest, SuccessNotifyingCommandListeners) {
   map[id] = thread;
 
   base::DictionaryValue params;
-  std::unique_ptr<MockCommandListener> listener(new MockCommandListener());
-  CommandListenerProxy* proxy = new CommandListenerProxy(listener.get());
+  auto listener = base::MakeUnique<MockCommandListener>();
+  auto proxy = base::MakeUnique<CommandListenerProxy>(listener.get());
   // We add |proxy| to the session instead of adding |listener| directly so that
   // after the session is destroyed by ExecuteQuitSessionCommand, we can still
   // verify the listener was called. The session owns and will destroy |proxy|.
-  SessionCommand cmd = base::Bind(&ExecuteAddListenerToSessionCommand, proxy);
+  SessionCommand cmd =
+      base::Bind(&ExecuteAddListenerToSessionCommand, base::Passed(&proxy));
   base::MessageLoop loop;
   base::RunLoop run_loop_addlistener;
 
@@ -776,10 +778,11 @@ class FailingCommandListener : public CommandListener {
   }
 };
 
-void AddListenerToSessionIfSessionExists(CommandListener* listener) {
+void AddListenerToSessionIfSessionExists(
+    std::unique_ptr<CommandListener> listener) {
   Session* session = GetThreadLocalSession();
   if (session) {
-    session->command_listeners.push_back(listener);
+    session->command_listeners.push_back(std::move(listener));
   }
 }
 
@@ -812,9 +815,10 @@ TEST(CommandsTest, ErrorNotifyingCommandListeners) {
   // In SuccessNotifyingCommandListenersBeforeCommand, we verified BeforeCommand
   // was called before (as opposed to after) command execution. We don't need to
   // verify this again, so we can just add |listener| with PostTask.
-  CommandListener* listener = new FailingCommandListener();
+  auto listener = base::MakeUnique<FailingCommandListener>();
   thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&AddListenerToSessionIfSessionExists, listener));
+      FROM_HERE, base::Bind(&AddListenerToSessionIfSessionExists,
+                            base::Passed(&listener)));
 
   base::DictionaryValue params;
   // The command should never be executed if BeforeCommand fails for a listener.

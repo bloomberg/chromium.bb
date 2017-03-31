@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
@@ -28,16 +27,16 @@ class PortServer;
 class Status;
 class URLRequestContextGetter;
 
-Status LaunchChrome(
-    URLRequestContextGetter* context_getter,
-    const SyncWebSocketFactory& socket_factory,
-    DeviceManager* device_manager,
-    PortServer* port_server,
-    PortManager* port_manager,
-    const Capabilities& capabilities,
-    ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    std::unique_ptr<Chrome>* chrome,
-    bool w3c_compliant);
+Status LaunchChrome(URLRequestContextGetter* context_getter,
+                    const SyncWebSocketFactory& socket_factory,
+                    DeviceManager* device_manager,
+                    PortServer* port_server,
+                    PortManager* port_manager,
+                    const Capabilities& capabilities,
+                    std::vector<std::unique_ptr<DevToolsEventListener>>
+                        devtools_event_listeners,
+                    std::unique_ptr<Chrome>* chrome,
+                    bool w3c_compliant);
 
 namespace internal {
 Status ProcessExtensions(const std::vector<std::string>& extensions,

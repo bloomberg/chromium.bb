@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
+#include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/web_view_impl.h"
@@ -73,7 +74,8 @@ bool KillProcess(const base::Process& process, bool kill_gracefully) {
 ChromeDesktopImpl::ChromeDesktopImpl(
     std::unique_ptr<DevToolsHttpClient> http_client,
     std::unique_ptr<DevToolsClient> websocket_client,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    std::vector<std::unique_ptr<DevToolsEventListener>>
+        devtools_event_listeners,
     std::unique_ptr<PortReservation> port_reservation,
     std::string page_load_strategy,
     base::Process process,
@@ -83,7 +85,7 @@ ChromeDesktopImpl::ChromeDesktopImpl(
     bool network_emulation_enabled)
     : ChromeImpl(std::move(http_client),
                  std::move(websocket_client),
-                 devtools_event_listeners,
+                 std::move(devtools_event_listeners),
                  std::move(port_reservation),
                  page_load_strategy),
       process_(std::move(process)),

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
+#include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/net/port_server.h"
@@ -14,11 +15,12 @@
 ChromeRemoteImpl::ChromeRemoteImpl(
     std::unique_ptr<DevToolsHttpClient> http_client,
     std::unique_ptr<DevToolsClient> websocket_client,
-    ScopedVector<DevToolsEventListener>& devtools_event_listeners,
+    std::vector<std::unique_ptr<DevToolsEventListener>>
+        devtools_event_listeners,
     std::string page_load_strategy)
     : ChromeImpl(std::move(http_client),
                  std::move(websocket_client),
-                 devtools_event_listeners,
+                 std::move(devtools_event_listeners),
                  std::unique_ptr<PortReservation>(),
                  page_load_strategy) {}
 
