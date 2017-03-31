@@ -327,3 +327,24 @@ if (XCODE)
     endforeach ()
   endif ()
 endif ()
+
+# Aomedia install rule.
+# TODO(tomfinegan): Add the missing pkg-config related bits.
+set(AOM_INSTALL_INCS
+    "${AOM_ROOT}/aom/aom.h"
+    "${AOM_ROOT}/aom/aomcx.h"
+    "${AOM_ROOT}/aom/aomdx.h"
+    "${AOM_ROOT}/aom/aom_codec.h"
+    "${AOM_ROOT}/aom/aom_frame_buffer.h"
+    "${AOM_ROOT}/aom/aom_image.h"
+    "${AOM_ROOT}/aom/aom_integer.h"
+    "${AOM_ROOT}/aom/aom_decoder.h"
+    "${AOM_ROOT}/aom/aom_encoder.h"
+    "${AOM_ROOT}/aom/aom.h")
+set(AOM_INSTALL_BINS aomdec aomenc)
+set(AOM_INSTALL_LIBS aom)
+
+install(FILES ${AOM_INSTALL_INCS}
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/include/aom")
+install(TARGETS ${AOM_INSTALL_LIBS} DESTINATION "${CMAKE_INSTALL_PREFIX}/lib")
+install(TARGETS ${AOM_INSTALL_BINS} DESTINATION "${CMAKE_INSTALL_PREFIX}/bin")

@@ -230,7 +230,8 @@ if (CONFIG_UNIT_TESTS)
   include_directories(
     "${AOM_ROOT}/third_party/googletest/src/googletest/src"
     "${AOM_ROOT}/third_party/googletest/src/googletest/include")
-  add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest")
+  add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest"
+                   EXCLUDE_FROM_ALL)
 
   # Generate a stub file containing the C function usage_exit(); this is
   # required because of the test dependency on aom_common_app_util.
