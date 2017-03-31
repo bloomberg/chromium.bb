@@ -16527,8 +16527,6 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
       valid_dest_format = feature_info_->IsWebGL2OrES3Context();
       break;
     case GL_RGB9_E5:
-      valid_dest_format = !gl_version_info().is_es;
-      break;
     case GL_R16F:
     case GL_R32F:
     case GL_RG16F:
@@ -16598,6 +16596,36 @@ CopyTextureMethod GLES2DecoderImpl::getCopyTextureCHROMIUMMethod(
   bool dest_format_color_renderable =
       Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format, false);
   std::string output_error_msg;
+
+  switch (dest_internal_format) {
+#if defined(OS_MACOSX)
+    // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
+    case GL_RGB5_A1:
+      return DRAW_AND_READBACK;
+#endif
+    // RGB9_E5 isn't accepted by glCopyTexImage2D if underlying context is ES.
+    case GL_RGB9_E5:
+      if (gl_version_info().is_es)
+        return DRAW_AND_READBACK;
+      break;
+    // SRGB format has color-space conversion issue. WebGL spec doesn't define
+    // clearly if linear-to-srgb color space conversion is required or not when
+    // uploading DOM elements to SRGB textures. WebGL conformance test expects
+    // no linear-to-srgb conversion, while current GPU path for
+    // CopyTextureCHROMIUM does the conversion. Do a fallback path before the
+    // issue is resolved. see https://github.com/KhronosGroup/WebGL/issues/2165.
+    // TODO(qiankun.miao@intel.com): revisit this once the above issue is
+    // resolved.
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+    case GL_SRGB8:
+    case GL_SRGB8_ALPHA8:
+      if (feature_info_->IsWebGLContext())
+        return DRAW_AND_READBACK;
+      break;
+    default:
+      break;
+  }
 
   // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
   // GL_BGRA8_EXT. crbug.com/663086.

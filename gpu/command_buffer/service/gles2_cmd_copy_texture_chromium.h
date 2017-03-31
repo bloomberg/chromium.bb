@@ -25,6 +25,10 @@ enum CopyTextureMethod {
   DIRECT_DRAW,
   // Draw to an intermediate texture, and then copy to the destination texture.
   DRAW_AND_COPY,
+  // Draw to an intermediate texture in RGBA format, read back pixels in the
+  // intermediate texture from GPU to CPU, and then upload to the destination
+  // texture.
+  DRAW_AND_READBACK,
   // CopyTexture isn't available.
   NOT_COPYABLE
 };
@@ -32,13 +36,8 @@ enum CopyTextureMethod {
 // TODOs(qiankun.miao@intel.com):
 // 1. Add readback path for RGB9_E5 and float formats (if extension isn't
 // available and they are not color-renderable).
-// 2. Support faces of cube map texture as valid dest target. The cube map
-// texture may be incomplete currently.
-// 3. Add support for levels other than 0.
-// 4. Support ALPHA, LUMINANCE and LUMINANCE_ALPHA formats on core profile.
-// 5. Update the extension doc after the whole work is done
-// in gpu/GLES2/extensions/CHROMIUM/CHROMIUM_copy_texture.txt. We probably
-// will need a ES2 version and a ES3 version.
+// 2. Support GL_TEXTURE_3D as valid dest_target.
+// 3. Support ALPHA, LUMINANCE and LUMINANCE_ALPHA formats on core profile.
 
 // This class encapsulates the resources required to implement the
 // GL_CHROMIUM_copy_texture extension.  The copy operation is performed

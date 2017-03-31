@@ -509,16 +509,6 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     return (!gl_.decoder() || !gl_.decoder()->GetContextGroup());
   }
 
-  // RGB9_E5 isn't accepted by glCopyTexImage2D if underlying context is ES.
-  // TODO(qiankun.miao@intel.com): we should support RGB9_E5 in ES context.
-  // Maybe, we can add a readback path for RGB9_E5 format in ES context.
-  bool ShouldSkipRGB9_E5() const {
-    DCHECK(!ShouldSkipTest());
-    const gl::GLVersionInfo& gl_version_info =
-        gl_.decoder()->GetFeatureInfo()->gl_version_info();
-    return gl_version_info.is_es;
-  }
-
   // If EXT_color_buffer_float isn't available, float format isn't supported.
   bool ShouldSkipFloatFormat() const {
     DCHECK(!ShouldSkipTest());
@@ -536,16 +526,6 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
   bool ShouldSkipSRGBEXT() const {
     DCHECK(!ShouldSkipTest());
     return !gl_.decoder()->GetFeatureInfo()->feature_flags().ext_srgb;
-  }
-
-  // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
-  bool ShouldSkipRGB5_A1() const {
-    DCHECK(!ShouldSkipTest());
-#if defined(OS_MACOSX)
-    return true;
-#else
-    return false;
-#endif
   }
 };
 
@@ -656,8 +636,6 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
 
   for (auto src_format_type : src_format_types) {
     for (auto dest_format_type : dest_format_types) {
-      if (dest_format_type.internal_format == GL_RGB9_E5 && ShouldSkipRGB9_E5())
-        continue;
       if ((src_format_type.internal_format == GL_BGRA_EXT ||
            src_format_type.internal_format == GL_BGRA8_EXT ||
            dest_format_type.internal_format == GL_BGRA_EXT ||
@@ -671,8 +649,6 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
       if ((dest_format_type.internal_format == GL_SRGB_EXT ||
            dest_format_type.internal_format == GL_SRGB_ALPHA_EXT) &&
           ShouldSkipSRGBEXT())
-        continue;
-      if (dest_format_type.internal_format == GL_RGB5_A1 && ShouldSkipRGB5_A1())
         continue;
 
       RunCopyTexture(GL_TEXTURE_2D, copy_type, src_format_type, 0,
