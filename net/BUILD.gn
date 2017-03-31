@@ -5135,6 +5135,11 @@ test("net_unittests") {
     sources += [ "ssl/ssl_platform_key_chromecast_unittest.cc" ]
     sources -= [ "ssl/ssl_platform_key_nss_unittest.cc" ]
   }
+
+  # Include transport_security_state_generator tests.
+  if (host_toolchain == current_toolchain) {
+    deps += [ "//net/tools/transport_security_state_generator:transport_security_state_generator_test_sources" ]
+  }
 }
 
 # !is_android && !is_win && !is_mac
