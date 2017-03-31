@@ -1210,8 +1210,8 @@ void StartupBrowserCreatorImpl::InitializeWelcomeRunType(
       return;
     }
 
-    // Do not welcome if there is no local state (tests).
-    if (!local_state)
+    // Do not welcome if there is no local state or profile (tests).
+    if (!local_state || !profile_)
       return;
 
     // Do not welcome if disabled by policy or master_preferences.
@@ -1221,6 +1221,13 @@ void StartupBrowserCreatorImpl::InitializeWelcomeRunType(
     // Do not welcome if already shown for this OS version.
     if (local_state->GetString(prefs::kLastWelcomedOSVersion) == this_version)
       return;
+
+    // Do not welcome if this user has seen chrome://welcome-win10 or
+    // chrome://welcome, which are intended to replace this page.
+    if (local_state->GetBoolean(prefs::kHasSeenWin10PromoPage) ||
+        profile_->GetPrefs()->GetBoolean(prefs::kHasSeenWelcomePage)) {
+      return;
+    }
 
     // Do not welcome if offline.
     if (net::NetworkChangeNotifier::IsOffline())
