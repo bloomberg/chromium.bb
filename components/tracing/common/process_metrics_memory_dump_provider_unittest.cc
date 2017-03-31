@@ -410,28 +410,5 @@ TEST(ProcessMetricsMemoryDumpProviderTest, TestMachOReading) {
   EXPECT_TRUE(found_appkit);
 }
 
-TEST(ProcessMetricsMemoryDumpProviderTest, NoDuplicateRegions) {
-  using VMRegion = base::trace_event::ProcessMemoryMaps::VMRegion;
-  ProcessMetricsMemoryDumpProvider mdp(base::kNullProcessId);
-  base::trace_event::MemoryDumpArgs args;
-  base::trace_event::ProcessMemoryDump dump(nullptr, args);
-  ASSERT_TRUE(mdp.DumpProcessMemoryMaps(args, &dump));
-  ASSERT_TRUE(dump.has_process_mmaps());
-
-  std::vector<VMRegion> regions;
-  regions.reserve(dump.process_mmaps()->vm_regions().size());
-  for (const VMRegion& region : dump.process_mmaps()->vm_regions())
-    regions.push_back(region);
-  std::sort(regions.begin(), regions.end(),
-            [](const VMRegion& a, const VMRegion& b) -> bool {
-              return a.start_address < b.start_address;
-            });
-  uint64_t last_address = 0;
-  for (const VMRegion& region : regions) {
-    EXPECT_GE(region.start_address, last_address);
-    last_address = region.start_address + region.size_in_bytes;
-  }
-}
-
 #endif  // defined(OS_MACOSX)
 }  // namespace tracing
