@@ -998,6 +998,8 @@ component("base") {
     "trace_event/memory_dump_manager.cc",
     "trace_event/memory_dump_manager.h",
     "trace_event/memory_dump_provider.h",
+    "trace_event/memory_dump_provider_info.cc",
+    "trace_event/memory_dump_provider_info.h",
     "trace_event/memory_dump_request_args.cc",
     "trace_event/memory_dump_request_args.h",
     "trace_event/memory_dump_scheduler.cc",
@@ -2566,10 +2568,9 @@ if (is_android) {
   android_aidl("base_java_aidl") {
     import_include = [ "android/java/src" ]
     sources = [
-        "android/java/src/org/chromium/base/process_launcher/IChildProcessService.aidl",
+      "android/java/src/org/chromium/base/process_launcher/IChildProcessService.aidl",
     ]
-}
-
+  }
 
   android_library("base_javatests") {
     testonly = true
