@@ -123,29 +123,27 @@ void ChromeCommandLinePrefStore::ApplySimpleSwitches() {
 
 void ChromeCommandLinePrefStore::ApplyProxyMode() {
   if (command_line()->HasSwitch(switches::kNoProxyServer)) {
-    SetValue(proxy_config::prefs::kProxy,
-             base::WrapUnique(ProxyConfigDictionary::CreateDirect()),
+    SetValue(proxy_config::prefs::kProxy, ProxyConfigDictionary::CreateDirect(),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line()->HasSwitch(switches::kProxyPacUrl)) {
     std::string pac_script_url =
         command_line()->GetSwitchValueASCII(switches::kProxyPacUrl);
     SetValue(proxy_config::prefs::kProxy,
-             base::WrapUnique(
-                 ProxyConfigDictionary::CreatePacScript(pac_script_url, false)),
+             ProxyConfigDictionary::CreatePacScript(pac_script_url, false),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line()->HasSwitch(switches::kProxyAutoDetect)) {
     SetValue(proxy_config::prefs::kProxy,
-             base::WrapUnique(ProxyConfigDictionary::CreateAutoDetect()),
+             ProxyConfigDictionary::CreateAutoDetect(),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   } else if (command_line()->HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
         command_line()->GetSwitchValueASCII(switches::kProxyServer);
     std::string bypass_list =
         command_line()->GetSwitchValueASCII(switches::kProxyBypassList);
-    SetValue(proxy_config::prefs::kProxy,
-             base::WrapUnique(ProxyConfigDictionary::CreateFixedServers(
-                 proxy_server, bypass_list)),
-             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+    SetValue(
+        proxy_config::prefs::kProxy,
+        ProxyConfigDictionary::CreateFixedServers(proxy_server, bypass_list),
+        WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
 

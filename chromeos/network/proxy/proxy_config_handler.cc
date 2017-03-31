@@ -4,6 +4,8 @@
 
 #include "chromeos/network/proxy/proxy_config_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -60,7 +62,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
 
     std::unique_ptr<base::DictionaryValue> proxy_dict =
         onc::ConvertOncProxySettingsToProxyConfig(*proxy_policy);
-    return base::MakeUnique<ProxyConfigDictionary>(proxy_dict.get());
+    return base::MakeUnique<ProxyConfigDictionary>(std::move(proxy_dict));
   }
 
   if (network.profile_path().empty())
@@ -90,7 +92,7 @@ std::unique_ptr<ProxyConfigDictionary> GetProxyConfigForNetwork(
   const base::DictionaryValue& value = network.proxy_config();
   if (value.empty())
     return std::unique_ptr<ProxyConfigDictionary>();
-  return base::MakeUnique<ProxyConfigDictionary>(&value);
+  return base::MakeUnique<ProxyConfigDictionary>(value.CreateDeepCopy());
 }
 
 void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,

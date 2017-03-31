@@ -835,7 +835,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
         ProxyConfigDictionary::CreateFixedServers("127.0.0.1:8080",
                                                   "*.google.com, 1.2.3.4:22"));
 
-    ProxyConfigDictionary proxy_config(proxy_config_dict.get());
+    ProxyConfigDictionary proxy_config(std::move(proxy_config_dict));
 
     const chromeos::NetworkState* network = GetDefaultNetwork();
     ASSERT_TRUE(network);

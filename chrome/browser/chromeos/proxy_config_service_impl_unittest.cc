@@ -324,19 +324,19 @@ class ProxyConfigServiceImplTest : public testing::Test {
     std::unique_ptr<base::DictionaryValue> new_config;
     switch (input.mode) {
       case MK_MODE(DIRECT):
-        new_config.reset(ProxyConfigDictionary::CreateDirect());
+        new_config = ProxyConfigDictionary::CreateDirect();
         break;
       case MK_MODE(AUTO_DETECT):
-        new_config.reset(ProxyConfigDictionary::CreateAutoDetect());
+        new_config = ProxyConfigDictionary::CreateAutoDetect();
         break;
       case MK_MODE(PAC_SCRIPT):
-        new_config.reset(
-            ProxyConfigDictionary::CreatePacScript(input.pac_url, false));
+        new_config =
+            ProxyConfigDictionary::CreatePacScript(input.pac_url, false);
         break;
       case MK_MODE(SINGLE_PROXY):
       case MK_MODE(PROXY_PER_SCHEME):
-        new_config.reset(ProxyConfigDictionary::CreateFixedServers(
-            input.server, input.bypass_rules));
+        new_config = ProxyConfigDictionary::CreateFixedServers(
+            input.server, input.bypass_rules);
         break;
     }
     result->Swap(new_config.get());

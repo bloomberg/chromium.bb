@@ -924,16 +924,16 @@ std::unique_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
   std::unique_ptr<base::DictionaryValue> proxy_dict;
 
   if (type == ::onc::proxy::kDirect) {
-    proxy_dict.reset(ProxyConfigDictionary::CreateDirect());
+    proxy_dict = ProxyConfigDictionary::CreateDirect();
   } else if (type == ::onc::proxy::kWPAD) {
-    proxy_dict.reset(ProxyConfigDictionary::CreateAutoDetect());
+    proxy_dict = ProxyConfigDictionary::CreateAutoDetect();
   } else if (type == ::onc::proxy::kPAC) {
     std::string pac_url;
     onc_proxy_settings.GetStringWithoutPathExpansion(::onc::proxy::kPAC,
                                                      &pac_url);
     GURL url(url_formatter::FixupURL(pac_url, std::string()));
-    proxy_dict.reset(ProxyConfigDictionary::CreatePacScript(
-        url.is_valid() ? url.spec() : std::string(), false));
+    proxy_dict = ProxyConfigDictionary::CreatePacScript(
+        url.is_valid() ? url.spec() : std::string(), false);
   } else if (type == ::onc::proxy::kManual) {
     const base::DictionaryValue* manual_dict = nullptr;
     onc_proxy_settings.GetDictionaryWithoutPathExpansion(::onc::proxy::kManual,
@@ -953,8 +953,8 @@ std::unique_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
       bypass_rules.AssignFrom(
           ConvertOncExcludeDomainsToBypassRules(*exclude_domains));
     }
-    proxy_dict.reset(ProxyConfigDictionary::CreateFixedServers(
-        manual_spec, bypass_rules.ToString()));
+    proxy_dict = ProxyConfigDictionary::CreateFixedServers(
+        manual_spec, bypass_rules.ToString());
   } else {
     NOTREACHED();
   }
@@ -962,10 +962,10 @@ std::unique_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
 }
 
 std::unique_ptr<base::DictionaryValue> ConvertProxyConfigToOncProxySettings(
-    const base::DictionaryValue& proxy_config_value) {
+    std::unique_ptr<base::DictionaryValue> proxy_config_value) {
   // Create a ProxyConfigDictionary from the DictionaryValue.
-  std::unique_ptr<ProxyConfigDictionary> proxy_config(
-      new ProxyConfigDictionary(&proxy_config_value));
+  auto proxy_config =
+      base::MakeUnique<ProxyConfigDictionary>(std::move(proxy_config_value));
 
   // Create the result DictionaryValue and populate it.
   std::unique_ptr<base::DictionaryValue> proxy_settings(

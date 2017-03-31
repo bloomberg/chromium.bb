@@ -5,6 +5,7 @@
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -143,11 +144,11 @@ void UIProxyConfigService::SetProxyConfig(const std::string& network_guid,
   // Store config for this network.
   std::unique_ptr<base::DictionaryValue> proxy_config_value(
       config.ToPrefProxyConfig());
-  ProxyConfigDictionary proxy_config_dict(proxy_config_value.get());
 
   VLOG(1) << "Set proxy for " << current_ui_network_guid_ << " to "
           << *proxy_config_value;
 
+  ProxyConfigDictionary proxy_config_dict(std::move(proxy_config_value));
   proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
   current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;
 }

@@ -164,7 +164,7 @@ ConvertOncProxySettingsToProxyConfig(
 // (see proxy_config_dictionary.h) to an ONC ProxySettings dictionary.
 CHROMEOS_EXPORT std::unique_ptr<base::DictionaryValue>
 ConvertProxyConfigToOncProxySettings(
-    const base::DictionaryValue& proxy_config_value);
+    std::unique_ptr<base::DictionaryValue> proxy_config_value);
 
 // Replaces string placeholders in |network_configs|, which must be a list of
 // ONC NetworkConfigurations. Currently only user name placeholders are

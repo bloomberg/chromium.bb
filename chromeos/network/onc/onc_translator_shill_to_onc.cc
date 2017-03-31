@@ -583,7 +583,7 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
         ReadDictionaryFromJson(proxy_config_str));
     if (proxy_config_value) {
       std::unique_ptr<base::DictionaryValue> proxy_settings =
-          ConvertProxyConfigToOncProxySettings(*proxy_config_value);
+          ConvertProxyConfigToOncProxySettings(std::move(proxy_config_value));
       if (proxy_settings) {
         onc_object_->SetWithoutPathExpansion(
             ::onc::network_config::kProxySettings, proxy_settings.release());

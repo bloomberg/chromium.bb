@@ -39,7 +39,7 @@ class TestCommandLinePrefStore : public ChromeCommandLinePrefStore {
     ASSERT_TRUE(GetValue(proxy_config::prefs::kProxy, &value));
     ASSERT_EQ(base::Value::Type::DICTIONARY, value->GetType());
     ProxyConfigDictionary dict(
-        static_cast<const base::DictionaryValue*>(value));
+        static_cast<const base::DictionaryValue*>(value)->CreateDeepCopy());
     ProxyPrefs::ProxyMode actual_mode;
     ASSERT_TRUE(dict.GetMode(&actual_mode));
     EXPECT_EQ(expected_mode, actual_mode);
@@ -122,7 +122,8 @@ TEST(ChromeCommandLinePrefStoreTest, MultipleSwitches) {
   const base::Value* value = NULL;
   ASSERT_TRUE(store->GetValue(proxy_config::prefs::kProxy, &value));
   ASSERT_EQ(base::Value::Type::DICTIONARY, value->GetType());
-  ProxyConfigDictionary dict(static_cast<const base::DictionaryValue*>(value));
+  ProxyConfigDictionary dict(
+      static_cast<const base::DictionaryValue*>(value)->CreateDeepCopy());
 
   std::string string_result;
 

@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -281,7 +282,7 @@ class ArcSettingsServiceTest : public InProcessBrowserTest {
   void SetProxyConfigForNetworkService(
       const std::string& service_path,
       const base::DictionaryValue* proxy_config) {
-    ProxyConfigDictionary proxy_config_dict(proxy_config);
+    ProxyConfigDictionary proxy_config_dict(proxy_config->CreateDeepCopy());
     const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
                                                 ->network_state_handler()
                                                 ->GetNetworkState(service_path);
@@ -509,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoSourcesTest) {
   std::unique_ptr<base::DictionaryValue> proxy_config(
       base::MakeUnique<base::DictionaryValue>());
   proxy_config->SetString("mode", ProxyPrefs::kAutoDetectProxyModeName);
-  ProxyConfigDictionary proxy_config_dict(proxy_config.get());
+  ProxyConfigDictionary proxy_config_dict(std::move(proxy_config));
   const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
                                               ->network_state_handler()
                                               ->DefaultNetwork();

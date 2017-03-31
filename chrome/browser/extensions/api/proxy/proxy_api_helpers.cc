@@ -307,7 +307,7 @@ bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
   return JoinUrlList(bypass_list, ",", out, error, bad_message);
 }
 
-base::DictionaryValue* CreateProxyConfigDict(
+std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
     ProxyPrefs::ProxyMode mode_enum,
     bool pac_mandatory,
     const std::string& pac_url,
@@ -315,7 +315,7 @@ base::DictionaryValue* CreateProxyConfigDict(
     const std::string& proxy_rules_string,
     const std::string& bypass_list,
     std::string* error) {
-  base::DictionaryValue* result_proxy_config = NULL;
+  std::unique_ptr<base::DictionaryValue> result_proxy_config;
   switch (mode_enum) {
     case ProxyPrefs::MODE_DIRECT:
       result_proxy_config = ProxyConfigDictionary::CreateDirect();

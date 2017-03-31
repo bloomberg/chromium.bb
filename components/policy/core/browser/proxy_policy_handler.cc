@@ -175,19 +175,18 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   switch (proxy_mode) {
     case ProxyPrefs::MODE_DIRECT:
       prefs->SetValue(proxy_config::prefs::kProxy,
-                      base::WrapUnique(ProxyConfigDictionary::CreateDirect()));
+                      ProxyConfigDictionary::CreateDirect());
       break;
     case ProxyPrefs::MODE_AUTO_DETECT:
-      prefs->SetValue(
-          proxy_config::prefs::kProxy,
-          base::WrapUnique(ProxyConfigDictionary::CreateAutoDetect()));
+      prefs->SetValue(proxy_config::prefs::kProxy,
+                      ProxyConfigDictionary::CreateAutoDetect());
       break;
     case ProxyPrefs::MODE_PAC_SCRIPT: {
       std::string pac_url_string;
       if (pac_url && pac_url->GetAsString(&pac_url_string)) {
-        prefs->SetValue(proxy_config::prefs::kProxy,
-                        base::WrapUnique(ProxyConfigDictionary::CreatePacScript(
-                            pac_url_string, false)));
+        prefs->SetValue(
+            proxy_config::prefs::kProxy,
+            ProxyConfigDictionary::CreatePacScript(pac_url_string, false));
       } else {
         NOTREACHED();
       }
@@ -199,16 +198,15 @@ void ProxyPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       if (server->GetAsString(&proxy_server)) {
         if (bypass_list)
           bypass_list->GetAsString(&bypass_list_string);
-        prefs->SetValue(
-            proxy_config::prefs::kProxy,
-            base::WrapUnique(ProxyConfigDictionary::CreateFixedServers(
-                proxy_server, bypass_list_string)));
+        prefs->SetValue(proxy_config::prefs::kProxy,
+                        ProxyConfigDictionary::CreateFixedServers(
+                            proxy_server, bypass_list_string));
       }
       break;
     }
     case ProxyPrefs::MODE_SYSTEM:
       prefs->SetValue(proxy_config::prefs::kProxy,
-                      base::WrapUnique(ProxyConfigDictionary::CreateSystem()));
+                      ProxyConfigDictionary::CreateSystem());
       break;
     case ProxyPrefs::kModeCount:
       NOTREACHED();

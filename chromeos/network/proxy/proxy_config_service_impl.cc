@@ -193,7 +193,8 @@ ProxyConfigServiceImpl::GetActiveProxyConfigDictionary(
     bool value_exists = pref->GetValue()->GetAsDictionary(&proxy_config_value);
     DCHECK(value_exists);
 
-    return base::MakeUnique<ProxyConfigDictionary>(proxy_config_value);
+    return base::MakeUnique<ProxyConfigDictionary>(
+        proxy_config_value->CreateDeepCopy());
   }
 
   const NetworkState* network =

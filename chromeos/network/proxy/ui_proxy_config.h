@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_H_
 #define CHROMEOS_NETWORK_PROXY_UI_PROXY_CONFIG_H_
 
+#include <memory>
 #include <string>
 
 #include "chromeos/chromeos_export.h"
@@ -74,7 +75,7 @@ struct CHROMEOS_EXPORT UIProxyConfig {
 
   // Converts |this| to Dictionary of ProxyConfigDictionary format (which
   // is the same format used by prefs).
-  base::DictionaryValue* ToPrefProxyConfig() const;
+  std::unique_ptr<base::DictionaryValue> ToPrefProxyConfig() const;
 
   // Map |scheme| (one of "http", "https", "ftp" or "socks") to the correct
   // ManualProxy.  Returns NULL if scheme is invalid.

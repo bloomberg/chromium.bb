@@ -7,6 +7,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PROXY_PROXY_API_HELPERS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PROXY_PROXY_API_HELPERS_H_
 
+#include <memory>
 #include <string>
 
 #include "components/proxy_config/proxy_prefs.h"
@@ -78,7 +79,7 @@ bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
 // Creates and returns a ProxyConfig dictionary (as defined in the extension
 // API) from the given parameters. Ownership is passed to the caller.
 // Depending on the value of |mode_enum|, several of the strings may be empty.
-base::DictionaryValue* CreateProxyConfigDict(
+std::unique_ptr<base::DictionaryValue> CreateProxyConfigDict(
     ProxyPrefs::ProxyMode mode_enum,
     bool pac_mandatory,
     const std::string& pac_url,

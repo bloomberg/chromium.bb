@@ -225,7 +225,8 @@ TEST(ONCUtils, ProxyConfigToOncProxySettings) {
     test_case->GetDictionary("ONC_ProxySettings", &onc_proxy_settings);
 
     std::unique_ptr<base::DictionaryValue> actual_proxy_settings =
-        ConvertProxyConfigToOncProxySettings(*shill_proxy_config);
+        ConvertProxyConfigToOncProxySettings(
+            shill_proxy_config->CreateDeepCopy());
     EXPECT_TRUE(
         test_utils::Equals(onc_proxy_settings, actual_proxy_settings.get()));
   }

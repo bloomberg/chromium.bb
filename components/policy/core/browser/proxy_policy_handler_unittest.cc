@@ -48,7 +48,7 @@ class ProxyPolicyHandlerTest
     ASSERT_TRUE(store_->GetValue(proxy_config::prefs::kProxy, &value));
     ASSERT_EQ(base::Value::Type::DICTIONARY, value->GetType());
     ProxyConfigDictionary dict(
-        static_cast<const base::DictionaryValue*>(value));
+        static_cast<const base::DictionaryValue*>(value)->CreateDeepCopy());
     std::string s;
     if (expected_proxy_server.empty()) {
       EXPECT_FALSE(dict.GetProxyServer(&s));

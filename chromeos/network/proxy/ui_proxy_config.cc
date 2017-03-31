@@ -101,7 +101,8 @@ bool UIProxyConfig::FromNetProxyConfig(const net::ProxyConfig& net_config) {
   return false;
 }
 
-base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
+std::unique_ptr<base::DictionaryValue> UIProxyConfig::ToPrefProxyConfig()
+    const {
   switch (mode) {
     case MODE_DIRECT: {
       return ProxyConfigDictionary::CreateDirect();
@@ -137,7 +138,7 @@ base::DictionaryValue* UIProxyConfig::ToPrefProxyConfig() const {
       break;
   }
   NOTREACHED() << "Unrecognized proxy config mode for preference";
-  return NULL;
+  return nullptr;
 }
 
 UIProxyConfig::ManualProxy* UIProxyConfig::MapSchemeToProxy(

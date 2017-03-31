@@ -31,8 +31,7 @@ class ProxyServer;
 // See proxy_config_dictionary.cc for the structure of the respective strings.
 class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
  public:
-  // Creates a deep copy of |dict| and leaves ownership to caller.
-  explicit ProxyConfigDictionary(const base::DictionaryValue* dict);
+  explicit ProxyConfigDictionary(std::unique_ptr<base::DictionaryValue> dict);
   ~ProxyConfigDictionary();
 
   bool GetMode(ProxyPrefs::ProxyMode* out) const;
@@ -44,14 +43,15 @@ class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
 
   const base::DictionaryValue& GetDictionary() const;
 
-  static base::DictionaryValue* CreateDirect();
-  static base::DictionaryValue* CreateAutoDetect();
-  static base::DictionaryValue* CreatePacScript(const std::string& pac_url,
-                                                bool pac_mandatory);
-  static base::DictionaryValue* CreateFixedServers(
+  static std::unique_ptr<base::DictionaryValue> CreateDirect();
+  static std::unique_ptr<base::DictionaryValue> CreateAutoDetect();
+  static std::unique_ptr<base::DictionaryValue> CreatePacScript(
+      const std::string& pac_url,
+      bool pac_mandatory);
+  static std::unique_ptr<base::DictionaryValue> CreateFixedServers(
       const std::string& proxy_server,
       const std::string& bypass_list);
-  static base::DictionaryValue* CreateSystem();
+  static std::unique_ptr<base::DictionaryValue> CreateSystem();
 
   // Encodes the proxy server as "<url-scheme>=<proxy-scheme>://<proxy>".
   // Used to generate the |proxy_server| arg for CreateFixedServers().
@@ -60,7 +60,7 @@ class PROXY_CONFIG_EXPORT ProxyConfigDictionary {
                                          std::string* spec);
 
  private:
-  static base::DictionaryValue* CreateDictionary(
+  static std::unique_ptr<base::DictionaryValue> CreateDictionary(
       ProxyPrefs::ProxyMode mode,
       const std::string& pac_url,
       bool pac_mandatory,

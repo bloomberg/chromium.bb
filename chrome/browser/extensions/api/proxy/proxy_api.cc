@@ -133,9 +133,10 @@ base::Value* ProxyPrefTransformer::ExtensionToBrowserPref(
     return NULL;
   }
 
-  return helpers::CreateProxyConfigDict(
-      mode_enum, pac_mandatory, pac_url, pac_data, proxy_rules_string,
-      bypass_list, error);
+  return helpers::CreateProxyConfigDict(mode_enum, pac_mandatory, pac_url,
+                                        pac_data, proxy_rules_string,
+                                        bypass_list, error)
+      .release();
 }
 
 base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
@@ -145,7 +146,8 @@ base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
   // This is a dictionary wrapper that exposes the proxy configuration stored in
   // the browser preferences.
   ProxyConfigDictionary config(
-      static_cast<const base::DictionaryValue*>(browser_pref));
+      static_cast<const base::DictionaryValue*>(browser_pref)
+          ->CreateDeepCopy());
 
   ProxyPrefs::ProxyMode mode;
   if (!config.GetMode(&mode)) {
