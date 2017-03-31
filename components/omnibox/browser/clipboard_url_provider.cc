@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/clipboard_url_provider.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -50,6 +51,8 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
         client_, input, input.current_url(), history_url_provider_, -1);
     matches_.push_back(verbatim_match);
   }
+  UMA_HISTOGRAM_BOOLEAN("Omnibox.ClipboardSuggestionShownWithCurrentURL",
+                        !matches_.empty());
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
   AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
