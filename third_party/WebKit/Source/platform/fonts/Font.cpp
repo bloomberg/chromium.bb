@@ -296,10 +296,6 @@ FloatRect Font::selectionRectForText(const TextRun& run,
                                      bool accountForGlyphBounds) const {
   to = (to == -1 ? run.length() : to);
 
-  TextRunPaintInfo runInfo(run);
-  runInfo.from = from;
-  runInfo.to = to;
-
   FontCachePurgePreventer purgePreventer;
 
   CachingWordShaper shaper(*this);
