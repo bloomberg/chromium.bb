@@ -209,12 +209,26 @@ D3D11_VIDEO_PROCESSOR_COLOR_SPACE ColorSpaceWin::GetD3D11ColorSpace(
   } else {
     ret.Nominal_Range = D3D11_VIDEO_PROCESSOR_NOMINAL_RANGE_16_235;
   }
-  switch (color_space.transfer_) {
-    case gfx::ColorSpace::TransferID::BT709:
-    case gfx::ColorSpace::TransferID::SMPTE170M:
-      ret.YCbCr_Matrix = 1;
 
-    default:
+  switch (color_space.matrix_) {
+    case gfx::ColorSpace::MatrixID::BT709:
+      ret.YCbCr_Matrix = 1;
+      break;
+
+    case gfx::ColorSpace::MatrixID::BT470BG:
+    case gfx::ColorSpace::MatrixID::SMPTE170M:
+      ret.YCbCr_Matrix = 0;
+      break;
+
+    case gfx::ColorSpace::MatrixID::SMPTE240M:
+    case gfx::ColorSpace::MatrixID::RGB:
+    case gfx::ColorSpace::MatrixID::FCC:
+    case gfx::ColorSpace::MatrixID::YCOCG:
+    case gfx::ColorSpace::MatrixID::BT2020_NCL:
+    case gfx::ColorSpace::MatrixID::BT2020_CL:
+    case gfx::ColorSpace::MatrixID::YDZDX:
+    case gfx::ColorSpace::MatrixID::INVALID:
+      // Not handled
       break;
   }
   return ret;
