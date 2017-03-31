@@ -671,7 +671,8 @@
     },
     'memory_coordinator': {
       'filepath': 'base/memory/memory_|' \
-                  'content/browser/memory/'
+                  'content/browser/memory/|' \
+                  'content/child/memory/'
     },
     'message_loop': {
       'filepath': 'base/message_'
