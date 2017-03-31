@@ -72,8 +72,8 @@ BUILDERS = {
         'specifiers': ['Mac10.12', 'Release']
     },
     'WebKit Android (Nexus4)': {
-        'port_name': 'android',
-        'specifiers': ['Android', 'Release']
+        'port_name': 'android-kitkat',
+        'specifiers': ['KitKat', 'Release']
     },
     'linux_trusty_blink_rel': {
         'port_name': 'linux-trusty',
@@ -116,8 +116,8 @@ BUILDERS = {
         'is_try_builder': True,
     },
     'android_blink_rel': {
-        'port_name': 'android',
-        'specifiers': ['Android', 'Release'],
+        'port_name': 'android-kitkat',
+        'specifiers': ['KitKat', 'Release'],
         'is_try_builder': True,
     },
 }
