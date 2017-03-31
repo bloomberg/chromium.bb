@@ -162,6 +162,28 @@ cr.define('extensions', function() {
       chrome.developerPrivate.setShortcutHandlingSuspended(isCapturing);
     },
 
+    /**
+     * Attempts to load an unpacked extension, optionally as another attempt at
+     * a previously-specified load.
+     * @param {string=} opt_retryGuid
+     * @private
+     */
+    loadUnpackedHelper_: function(opt_retryGuid) {
+      chrome.developerPrivate.loadUnpacked(
+          {failQuietly: true, populateError: true, retryGuid: opt_retryGuid},
+          (loadError) => {
+        if (chrome.runtime.lastError &&
+            chrome.runtime.lastError.message !=
+                'File selection was canceled.') {
+          throw new Error(chrome.runtime.lastError.message);
+        }
+        if (loadError) {
+          this.manager_.loadError.loadError = loadError;
+          this.manager_.loadError.show();
+        }
+      });
+    },
+
     /** @override */
     deleteItem: function(id) {
       if (this.isDeleting_)
@@ -253,24 +275,12 @@ cr.define('extensions', function() {
 
     /** @override */
     loadUnpacked: function() {
-      chrome.developerPrivate.loadUnpacked(
-          {failQuietly: true, populateError: true},
-          (loadError) => {
-        if (chrome.runtime.lastError &&
-            chrome.runtime.lastError.message !=
-                'File selection was canceled.') {
-          throw new Error(chrome.runtime.lastError.message);
-        }
-        if (loadError) {
-          this.manager_.loadError.set('loadError', loadError);
-          this.manager_.loadError.show();
-        }
-      });
+      this.loadUnpackedHelper_();
     },
 
     /** @override */
-    retryLoadUnpacked: function() {
-      // TODO(devlin): Implement this.
+    retryLoadUnpacked: function(retryGuid) {
+      this.loadUnpackedHelper_(retryGuid);
     },
 
     /** @override */

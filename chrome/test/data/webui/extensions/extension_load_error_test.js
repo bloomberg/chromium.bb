@@ -32,11 +32,20 @@ cr.define('extension_load_error_tests', function() {
       /** @type {MockDelegate} */
       var mockDelegate;
 
+      var fakeGuid = 'uniqueId';
+
+      var stubLoadError = {
+        error: 'error',
+        path: 'some/path/',
+        retryGuid: fakeGuid,
+      };
+
       setup(function() {
         PolymerTest.clearBody();
         mockDelegate = new MockDelegate();
         loadError = new extensions.LoadError();
         loadError.delegate = mockDelegate;
+        loadError.loadError = stubLoadError;
         document.body.appendChild(loadError);
       });
 
@@ -52,7 +61,7 @@ cr.define('extension_load_error_tests', function() {
         expectTrue(isDialogVisible());
 
         mockDelegate.testClickingCalls(
-            loadError.$$('#retry'), 'retryLoadUnpacked', []);
+            loadError.$$('#retry'), 'retryLoadUnpacked', [fakeGuid]);
         expectFalse(isDialogVisible());
 
         loadError.show();
@@ -62,7 +71,7 @@ cr.define('extension_load_error_tests', function() {
 
       test(assert(TestNames.CodeSection), function() {
         expectTrue(loadError.$.code.isEmpty());
-        var loadErrorProperties = {
+        var loadErrorWithSource = {
           error: 'Some error',
           path: '/some/path',
           source: {
@@ -72,7 +81,7 @@ cr.define('extension_load_error_tests', function() {
           },
         };
 
-        loadError.set('loadError', loadErrorProperties);
+        loadError.loadError = loadErrorWithSource;
         expectFalse(loadError.$.code.isEmpty());
       });
     });

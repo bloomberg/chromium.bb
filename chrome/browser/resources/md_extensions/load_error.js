@@ -9,7 +9,10 @@ cr.define('extensions', function() {
   function LoadErrorDelegate() {}
 
   LoadErrorDelegate.prototype = {
-    /** Attempts to load the previously-attempted unpacked extension. */
+    /**
+     * Attempts to load the previously-attempted unpacked extension.
+     * @param {string} retryId
+     */
     retryLoadUnpacked: assertNotReached,
   };
 
@@ -37,7 +40,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onRetryTap_: function() {
-      this.delegate.retryLoadUnpacked();
+      this.delegate.retryLoadUnpacked(this.loadError.retryGuid);
       this.close();
     },
 
