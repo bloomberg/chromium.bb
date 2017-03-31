@@ -628,7 +628,15 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
   add_proto qw/int od_dir_find8/, "const od_dering_in *img, int stride, int32_t *var, int coeff_shift";
   add_proto qw/int od_filter_dering_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
   add_proto qw/int od_filter_dering_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
-  # VS compiling for 32 bit targets does not support vector types in
+
+  add_proto qw/void copy_8x8_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_4x4_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_8x8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_4x4_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
+  add_proto qw/void copy_nxm_8bit_to_16bit/, "uint16_t *dst, int dstride, const uint8_t *src, int sstride, int n, int m";
+  add_proto qw/void copy_nxm_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride, int n, int m";
+
+# VS compiling for 32 bit targets does not support vector types in
   # structs as arguments, which makes the v256 type of the intrinsics
   # hard to support, so optimizations for this target are disabled.
   if ($opts{config} !~ /libs-x86-win32-vs.*/) {
@@ -639,6 +647,13 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
     specialize qw/od_dir_find8 sse2 ssse3 sse4_1 neon/;
     specialize qw/od_filter_dering_direction_4x4 sse2 ssse3 sse4_1 neon/;
     specialize qw/od_filter_dering_direction_8x8 sse2 ssse3 sse4_1 neon/;
+
+    specialize qw/copy_8x8_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_4x4_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_8x8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_4x4_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_nxm_8bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_nxm_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
   }
 }
 

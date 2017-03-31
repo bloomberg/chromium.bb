@@ -366,3 +366,71 @@ int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
   }
   return (int)((v128_dotp_s16(total_abs, v128_dup_16(1)) + 8) >> 4);
 }
+
+void SIMD_FUNC(copy_8x8_16bit_to_8bit)(uint8_t *dst, int dstride,
+                                       const uint16_t *src, int sstride) {
+  int i;
+  for (i = 0; i < 8; i++) {
+    v128 row = v128_load_unaligned(&src[i * sstride]);
+    row = v128_pack_s16_u8(row, row);
+    v64_store_unaligned(&dst[i * dstride], v128_low_v64(row));
+  }
+}
+
+void SIMD_FUNC(copy_4x4_16bit_to_8bit)(uint8_t *dst, int dstride,
+                                       const uint16_t *src, int sstride) {
+  int i;
+  for (i = 0; i < 4; i++) {
+    v128 row = v128_load_unaligned(&src[i * sstride]);
+    row = v128_pack_s16_u8(row, row);
+    u32_store_unaligned(&dst[i * dstride], v128_low_u32(row));
+  }
+}
+
+void SIMD_FUNC(copy_8x8_16bit_to_16bit)(uint16_t *dst, int dstride,
+                                        const uint16_t *src, int sstride) {
+  int i;
+  for (i = 0; i < 8; i++) {
+    v128 row = v128_load_unaligned(&src[i * sstride]);
+    v128_store_unaligned(&dst[i * dstride], row);
+  }
+}
+
+void SIMD_FUNC(copy_4x4_16bit_to_16bit)(uint16_t *dst, int dstride,
+                                        const uint16_t *src, int sstride) {
+  int i;
+  for (i = 0; i < 4; i++) {
+    v64 row = v64_load_unaligned(&src[i * sstride]);
+    v64_store_unaligned(&dst[i * dstride], row);
+  }
+}
+
+void SIMD_FUNC(copy_nxm_8bit_to_16bit)(uint16_t *dst, int dstride,
+                                       const uint8_t *src, int sstride, int n,
+                                       int m) {
+  int i, j;
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < (n & ~0x7); j += 8) {
+      v64 row = v64_load_unaligned(&src[i * sstride + j]);
+      v128_store_unaligned(&dst[i * dstride + j], v128_unpack_u8_s16(row));
+    }
+    for (; j < n; j++) {
+      dst[i * dstride + j] = src[i * sstride + j];
+    }
+  }
+}
+
+void SIMD_FUNC(copy_nxm_16bit_to_16bit)(uint16_t *dst, int dstride,
+                                        const uint16_t *src, int sstride, int n,
+                                        int m) {
+  int i, j;
+  for (i = 0; i < m; i++) {
+    for (j = 0; j < (n & ~0x7); j += 8) {
+      v128 row = v128_load_unaligned(&src[i * sstride + j]);
+      v128_store_unaligned(&dst[i * dstride + j], row);
+    }
+    for (; j < n; j++) {
+      dst[i * dstride + j] = src[i * sstride + j];
+    }
+  }
+}
