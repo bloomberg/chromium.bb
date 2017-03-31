@@ -40,6 +40,9 @@ namespace content {
 
 namespace {
 
+// Counter used for identifying a DeviceRequest to start a capture device.
+static int g_device_start_id = 0;
+
 static const int kInfiniteRatio = 99999;
 
 #define UMA_HISTOGRAM_ASPECT_RATIO(name, width, height) \
@@ -160,8 +163,17 @@ VideoCaptureController::BufferContext::CloneHandle() {
   return buffer_handle_->Clone();
 }
 
-VideoCaptureController::VideoCaptureController()
-    : consumer_feedback_observer_(nullptr),
+VideoCaptureController::VideoCaptureController(
+    const std::string& device_id,
+    MediaStreamType stream_type,
+    const media::VideoCaptureParams& params,
+    std::unique_ptr<BuildableVideoCaptureDevice> buildable_device)
+    : serial_id_(g_device_start_id++),
+      device_id_(device_id),
+      stream_type_(stream_type),
+      parameters_(params),
+      buildable_device_(std::move(buildable_device)),
+      consumer_feedback_observer_(nullptr),
       state_(VIDEO_CAPTURE_STATE_STARTING),
       has_received_frames_(false),
       weak_ptr_factory_(this) {
@@ -481,6 +493,57 @@ void VideoCaptureController::OnStarted() {
 
 void VideoCaptureController::OnStartedUsingGpuDecode() {
   PerformForClientsWithOpenSession(base::Bind(&CallOnStartedUsingGpuDecode));
+}
+
+void VideoCaptureController::CreateAndStartDeviceAsync(
+    const media::VideoCaptureParams& params,
+    BuildableVideoCaptureDevice::Callbacks* callbacks,
+    base::OnceClosure done_cb) {
+  buildable_device_->CreateAndStartDeviceAsync(this, params, callbacks,
+                                               std::move(done_cb));
+}
+
+void VideoCaptureController::ReleaseDeviceAsync(base::OnceClosure done_cb) {
+  buildable_device_->ReleaseDeviceAsync(this, std::move(done_cb));
+}
+
+bool VideoCaptureController::IsDeviceAlive() const {
+  return buildable_device_->IsDeviceAlive();
+}
+
+void VideoCaptureController::GetPhotoCapabilities(
+    media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const {
+  buildable_device_->GetPhotoCapabilities(std::move(callback));
+}
+
+void VideoCaptureController::SetPhotoOptions(
+    media::mojom::PhotoSettingsPtr settings,
+    media::VideoCaptureDevice::SetPhotoOptionsCallback callback) {
+  buildable_device_->SetPhotoOptions(std::move(settings), std::move(callback));
+}
+
+void VideoCaptureController::TakePhoto(
+    media::VideoCaptureDevice::TakePhotoCallback callback) {
+  buildable_device_->TakePhoto(std::move(callback));
+}
+
+void VideoCaptureController::MaybeSuspend() {
+  buildable_device_->MaybeSuspendDevice();
+}
+
+void VideoCaptureController::Resume() {
+  buildable_device_->ResumeDevice();
+}
+
+void VideoCaptureController::RequestRefreshFrame() {
+  buildable_device_->RequestRefreshFrame();
+}
+
+void VideoCaptureController::SetDesktopCaptureWindowIdAsync(
+    gfx::NativeViewId window_id,
+    base::OnceClosure done_cb) {
+  buildable_device_->SetDesktopCaptureWindowIdAsync(window_id,
+                                                    std::move(done_cb));
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(

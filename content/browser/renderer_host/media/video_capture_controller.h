@@ -13,9 +13,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "content/browser/renderer_host/media/buildable_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
+#include "content/public/common/media_stream_request.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
 
@@ -23,10 +25,23 @@ namespace content {
 
 // Implementation of media::VideoFrameReceiver that distributes received frames
 // to potentially multiple connected clients.
-class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
+// A call to CreateAndStartDeviceAsync() asynchronously brings up the device. If
+// CreateAndStartDeviceAsync() has been called, ReleaseDeviceAsync() must be
+// called before releasing the instance.
+// Instances must be RefCountedThreadSafe, because an owner
+// (VideoCaptureManager) wants to be able to release its reference during an
+// (asynchronously executing) run of CreateAndStartDeviceAsync(). To this end,
+// the owner passes in the shared ownership as part of |context_reference| into
+// CreateAndStartDeviceAsync().
+class CONTENT_EXPORT VideoCaptureController
+    : public media::VideoFrameReceiver,
+      public base::RefCountedThreadSafe<VideoCaptureController> {
  public:
-  VideoCaptureController();
-  ~VideoCaptureController() override;
+  VideoCaptureController(
+      const std::string& device_id,
+      MediaStreamType stream_type,
+      const media::VideoCaptureParams& params,
+      std::unique_ptr<BuildableVideoCaptureDevice> buildable_device);
 
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
@@ -104,7 +119,30 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
 
+  void CreateAndStartDeviceAsync(
+      const media::VideoCaptureParams& params,
+      BuildableVideoCaptureDevice::Callbacks* callbacks,
+      base::OnceClosure done_cb);
+  void ReleaseDeviceAsync(base::OnceClosure done_cb);
+  bool IsDeviceAlive() const;
+  void GetPhotoCapabilities(
+      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const;
+  void SetPhotoOptions(
+      media::mojom::PhotoSettingsPtr settings,
+      media::VideoCaptureDevice::SetPhotoOptionsCallback callback);
+  void TakePhoto(media::VideoCaptureDevice::TakePhotoCallback callback);
+  void MaybeSuspend();
+  void Resume();
+  void RequestRefreshFrame();
+  void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
+                                      base::OnceClosure done_cb);
+  int serial_id() const { return serial_id_; }
+  const std::string& device_id() const { return device_id_; }
+  MediaStreamType stream_type() const { return stream_type_; }
+  const media::VideoCaptureParams& parameters() const { return parameters_; }
+
  private:
+  friend class base::RefCountedThreadSafe<VideoCaptureController>;
   struct ControllerClient;
   typedef std::list<std::unique_ptr<ControllerClient>> ControllerClients;
 
@@ -153,6 +191,8 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
         buffer_read_permission_;
   };
 
+  ~VideoCaptureController() override;
+
   // Find a client of |id| and |handler| in |clients|.
   ControllerClient* FindClient(VideoCaptureControllerID id,
                                VideoCaptureControllerEventHandler* handler,
@@ -177,6 +217,12 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
       base::Callback<void(VideoCaptureControllerEventHandler* client,
                           VideoCaptureControllerID id)>;
   void PerformForClientsWithOpenSession(EventHandlerAction action);
+
+  const int serial_id_;
+  const std::string device_id_;
+  const MediaStreamType stream_type_;
+  const media::VideoCaptureParams parameters_;
+  std::unique_ptr<BuildableVideoCaptureDevice> buildable_device_;
 
   std::unique_ptr<media::VideoFrameConsumerFeedbackObserver>
       consumer_feedback_observer_;

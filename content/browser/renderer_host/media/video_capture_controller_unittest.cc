@@ -121,6 +121,31 @@ class MockConsumerFeedbackObserver
                void(int frame_feedback_id, double utilization));
 };
 
+class MockBuildableVideoCaptureDevice : public BuildableVideoCaptureDevice {
+ public:
+  void CreateAndStartDeviceAsync(
+      VideoCaptureController* controller,
+      const media::VideoCaptureParams& params,
+      BuildableVideoCaptureDevice::Callbacks* callbacks,
+      base::OnceClosure done_cb) override {}
+  void ReleaseDeviceAsync(VideoCaptureController* controller,
+                          base::OnceClosure done_cb) override {}
+  bool IsDeviceAlive() const override { return false; }
+  void GetPhotoCapabilities(
+      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback)
+      const override {}
+  void SetPhotoOptions(
+      media::mojom::PhotoSettingsPtr settings,
+      media::VideoCaptureDevice::SetPhotoOptionsCallback callback) override {}
+  void TakePhoto(
+      media::VideoCaptureDevice::TakePhotoCallback callback) override {}
+  void MaybeSuspendDevice() override {}
+  void ResumeDevice() override {}
+  void RequestRefreshFrame() override {}
+  void SetDesktopCaptureWindowIdAsync(gfx::NativeViewId window_id,
+                                      base::OnceClosure done_cb) override {}
+};
+
 // Test fixture for testing a unit consisting of an instance of
 // VideoCaptureController connected to an instance of VideoCaptureDeviceClient,
 // an instance of VideoCaptureBufferPoolImpl, as well as related threading glue
@@ -139,7 +164,14 @@ class VideoCaptureControllerTest
   static const int kPoolSize = 3;
 
   void SetUp() override {
-    controller_.reset(new VideoCaptureController());
+    const std::string arbitrary_device_id = "arbitrary_device_id";
+    const MediaStreamType arbitrary_stream_type =
+        content::MEDIA_DEVICE_VIDEO_CAPTURE;
+    const media::VideoCaptureParams arbitrary_params;
+    auto buildable_device = base::MakeUnique<MockBuildableVideoCaptureDevice>();
+    controller_ = new VideoCaptureController(
+        arbitrary_device_id, arbitrary_stream_type, arbitrary_params,
+        std::move(buildable_device));
     InitializeNewDeviceClientAndBufferPoolInstances();
     auto consumer_feedback_observer =
         base::MakeUnique<MockConsumerFeedbackObserver>();
@@ -186,7 +218,7 @@ class VideoCaptureControllerTest
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
   std::unique_ptr<MockVideoCaptureControllerEventHandler> client_a_;
   std::unique_ptr<MockVideoCaptureControllerEventHandler> client_b_;
-  std::unique_ptr<VideoCaptureController> controller_;
+  scoped_refptr<VideoCaptureController> controller_;
   std::unique_ptr<media::VideoCaptureDevice::Client> device_client_;
   MockConsumerFeedbackObserver* mock_consumer_feedback_observer_;
   const float arbitrary_frame_rate_ = 10.0f;
