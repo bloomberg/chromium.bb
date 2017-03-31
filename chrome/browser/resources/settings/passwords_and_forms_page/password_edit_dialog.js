@@ -97,5 +97,14 @@ Polymer({
   onActionButtonTap_: function() {
     this.close();
   },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onReadonlyInputTap_: function(event) {
+    /** @type {!PaperInputElement} */ (Polymer.dom(event).localTarget)
+        .inputElement.select();
+  }
 });
 })();
