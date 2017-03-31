@@ -13,17 +13,25 @@ set(AOM_BUILD_CMAKE_TOOLCHAINS_ARMV7_LINUX_GCC_CMAKE_ 1)
 
 set(CMAKE_SYSTEM_NAME "Linux")
 
-# TODO(tomfinegan): Allow control of compiler prefix (aka $CROSS).
-set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)
-set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
-set(AS_EXECUTABLE arm-linux-gnueabihf-as)
+if ("${CROSS}" STREQUAL "")
+  # Default the cross compiler prefix to something known to work.
+  set(CROSS arm-linux-gnueabihf-)
+endif ()
 
-# TODO(tomfinegan): Handle soft float.
-set(CMAKE_C_COMPILER_ARG1 "-march=armv7-a -mfloat-abi=hard -mfpu=neon")
-set(CMAKE_CXX_COMPILER_ARG1 "-march=armv7-a -mfloat-abi=hard -mfpu=neon")
+if (NOT ${CROSS} MATCHES hf-$)
+  set(AOM_EXTRA_TOOLCHAIN_FLAGS "-mfloat-abi=softfp")
+endif ()
+
+set(CMAKE_C_COMPILER ${CROSS}gcc)
+set(CMAKE_CXX_COMPILER ${CROSS}g++)
+set(AS_EXECUTABLE ${CROSS}as)
+set(CMAKE_C_COMPILER_ARG1
+    "-march=armv7-a -mfpu=neon ${AOM_EXTRA_TOOLCHAIN_FLAGS}")
+set(CMAKE_CXX_COMPILER_ARG1
+    "-march=armv7-a -mfpu=neon ${AOM_EXTRA_TOOLCHAIN_FLAGS}")
 set(AOM_AS_FLAGS
-    --defsym ARCHITECTURE=7 -march=armv7-a -mfloat-abi=hard -mfpu=neon)
-
+    --defsym ARCHITECTURE=7 -march=armv7-a -mfpu=neon
+    ${AOM_EXTRA_TOOLCHAIN_FLAGS})
 set(CMAKE_SYSTEM_PROCESSOR "armv7")
 
 # No intrinsics flag required for armv7-linux-gcc.

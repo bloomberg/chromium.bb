@@ -13,10 +13,14 @@ set(AOM_BUILD_CMAKE_TOOLCHAINS_ARM64_LINUX_GCC_CMAKE_ 1)
 
 set(CMAKE_SYSTEM_NAME "Linux")
 
-# TODO(tomfinegan): Allow control of compiler prefix (aka $CROSS).
-set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
-set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
-set(AS_EXECUTABLE arm-linux-gnueabihf-as)
+if ("${CROSS}" STREQUAL "")
+  # Default the cross compiler prefix to something known to work.
+  set(CROSS aarch64-linux-gnu-)
+endif ()
+
+set(CMAKE_C_COMPILER ${CROSS}gcc)
+set(CMAKE_CXX_COMPILER ${CROSS}g++)
+set(AS_EXECUTABLE ${CROSS}as)
 set(CMAKE_C_COMPILER_ARG1 "-march=armv8-a")
 set(CMAKE_CXX_COMPILER_ARG1 "-march=armv8-a")
 set(AOM_AS_FLAGS "-march=armv8-a")
