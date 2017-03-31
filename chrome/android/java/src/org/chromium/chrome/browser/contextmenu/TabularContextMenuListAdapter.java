@@ -72,7 +72,6 @@ class TabularContextMenuListAdapter extends BaseAdapter {
         Drawable icon = menuItem.getDrawableAndDescription(mContext);
         viewHolder.mIcon.setImageDrawable(icon);
         viewHolder.mIcon.setVisibility(icon != null ? View.VISIBLE : View.INVISIBLE);
-
         return convertView;
     }
 

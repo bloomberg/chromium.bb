@@ -113,7 +113,7 @@ public class TabularContextMenuUiTest extends ChromeActivityTestCaseBase<ChromeA
             @Override
             public View call() {
                 return dialog.createContextMenuPageUi(
-                        getActivity(), new MockMenuParams(expectedUrl), item, item.size());
+                        getActivity(), new MockMenuParams(expectedUrl), item, false, item.size());
             }
         });
 
@@ -132,7 +132,7 @@ public class TabularContextMenuUiTest extends ChromeActivityTestCaseBase<ChromeA
             @Override
             public View call() {
                 return dialog.createContextMenuPageUi(
-                        getActivity(), new MockMenuParams(""), item, item.size());
+                        getActivity(), new MockMenuParams(""), item, false, item.size());
             }
         });
 
@@ -150,8 +150,8 @@ public class TabularContextMenuUiTest extends ChromeActivityTestCaseBase<ChromeA
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createContextMenuPageUi(
-                        getActivity(), new MockMenuParams("http://google.com"), item, item.size());
+                return dialog.createContextMenuPageUi(getActivity(),
+                        new MockMenuParams("http://google.com"), item, false, item.size());
             }
         });
 

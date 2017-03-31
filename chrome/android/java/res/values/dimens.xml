@@ -444,4 +444,8 @@
     <dimen name="list_item_corner_radius">3dp</dimen>
     <dimen name="list_item_lateral_padding">1dp</dimen>
     <dimen name="history_default_text_margin">16dp</dimen>
+
+    <!-- Context Menu Dimensions -->
+    <dimen name="context_menu_header_image_min_size">56dp</dimen>
+    <dimen name="context_menu_header_image_max_size">56dp</dimen>
 </resources>

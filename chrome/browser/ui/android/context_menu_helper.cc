@@ -188,6 +188,52 @@ void ContextMenuHelper::OnShareImage(
                                               j_bytes);
 }
 
+// TODO(tedchoc): Unify RetrieveHeaderThumbnail and ShareImage.
+void ContextMenuHelper::RetrieveHeaderThumbnail(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint j_max_size_px) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+
+  if (!render_frame_host)
+    return;
+
+  chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(&thumbnail_capturer);
+  // Bind the InterfacePtr into the callback so that it's kept alive until
+  // there's either a connection error or a response.
+  auto* thumbnail_capturer_proxy = thumbnail_capturer.get();
+  thumbnail_capturer_proxy->RequestThumbnailForContextNode(
+      0, gfx::Size(j_max_size_px, j_max_size_px),
+      base::Bind(&ContextMenuHelper::OnHeaderThumbnailReceived,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&thumbnail_capturer)));
+}
+
+void ContextMenuHelper::OnHeaderThumbnailReceived(
+    chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+    const std::vector<uint8_t>& thumbnail_data,
+    const gfx::Size& original_size) {
+  content::ContentViewCore* content_view_core =
+      content::ContentViewCore::FromWebContents(web_contents_);
+  if (!content_view_core)
+    return;
+
+  base::android::ScopedJavaLocalRef<jobject> jwindow_android(
+      content_view_core->GetWindowAndroid()->GetJavaObject());
+
+  if (jwindow_android.is_null())
+    return;
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jbyteArray> j_bytes =
+      base::android::ToJavaByteArray(env, thumbnail_data);
+
+  Java_ContextMenuHelper_onHeaderThumbnailReceived(env, java_obj_,
+                                                   jwindow_android, j_bytes);
+}
+
 bool RegisterContextMenuHelper(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

@@ -7,6 +7,12 @@ package org.chromium.chrome.browser.contextmenu;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Shader;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -17,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -35,6 +42,7 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
     private Dialog mDialog;
     private Callback<Integer> mCallback;
     private int mMenuItemHeight;
+    private ImageView mHeaderImageView;
 
     @Override
     public void displayMenu(Context context, ContextMenuParams params,
@@ -83,15 +91,24 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
      * @param context Used to get the resources of an item.
      * @param params used to create the header text.
      * @param items A set of Items to display in a context menu. Filtered based off the type.
-     * @return Returns a filled LinearLayout with all the context menu items
+     * @param isImage Whether or not the view should have an image layout or not.
+     * @param maxCount The maximum amount of {@link ContextMenuItem}s that could exist in this view
+     *                 or any other views calculated in the context menu. Used to estimate the size
+     *                 of the list.
+     * @return Returns a filled LinearLayout with all the context menu items.
      */
     @VisibleForTesting
-    ViewGroup createContextMenuPageUi(
-            Context context, ContextMenuParams params, List<ContextMenuItem> items, int maxCount) {
+    ViewGroup createContextMenuPageUi(Context context, ContextMenuParams params,
+            List<ContextMenuItem> items, boolean isImage, int maxCount) {
         ViewGroup baseLayout = (ViewGroup) LayoutInflater.from(context).inflate(
                 R.layout.tabular_context_menu_page, null);
         ListView listView = (ListView) baseLayout.findViewById(R.id.selectable_items);
-        displayHeaderIfVisibleItems(params, baseLayout);
+
+        if (isImage) {
+            displayImageHeader(baseLayout, params, context.getResources());
+        } else {
+            displayHeaderIfVisibleItems(params, baseLayout);
+        }
 
         // Set the list adapter and get the height to display it appropriately in a dialog.
         TabularContextMenuListAdapter listAdapter =
@@ -110,6 +127,7 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         final TextView headerTextView =
                 (TextView) baseLayout.findViewById(R.id.context_header_text);
         if (TextUtils.isEmpty(headerText)) {
+            baseLayout.findViewById(R.id.context_header_layout).setVisibility(View.GONE);
             headerTextView.setVisibility(View.GONE);
             baseLayout.findViewById(R.id.context_divider).setVisibility(View.GONE);
             return;
@@ -128,6 +146,41 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
                 }
             }
         });
+    }
+
+    private void displayImageHeader(
+            ViewGroup baseLayout, ContextMenuParams params, Resources resources) {
+        displayHeaderIfVisibleItems(params, baseLayout);
+        // #displayHeaderIfVisibleItems() sets these two views to GONE if the header text is
+        // empty but they should still be visible because we have an image to display.
+        baseLayout.findViewById(R.id.context_header_layout).setVisibility(View.VISIBLE);
+        baseLayout.findViewById(R.id.context_divider).setVisibility(View.VISIBLE);
+
+        mHeaderImageView = (ImageView) baseLayout.findViewById(R.id.context_header_image);
+        TextView headerTextView = (TextView) baseLayout.findViewById(R.id.context_header_text);
+        // We'd prefer the header text is the title text instead of the link text for images.
+        String headerText = params.getTitleText();
+        if (!TextUtils.isEmpty(headerText)) {
+            headerTextView.setText(headerText);
+        }
+        setBackgroundForImageView(mHeaderImageView, resources);
+    }
+
+    /**
+     * This creates a checkerboard style background displayed before the image is shown.
+     */
+    private void setBackgroundForImageView(ImageView imageView, Resources resources) {
+        Drawable drawable =
+                ApiCompatibilityUtils.getDrawable(resources, R.drawable.checkerboard_background);
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        BitmapDrawable bm = new BitmapDrawable(resources, bitmap);
+        bm.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+        imageView.setVisibility(View.VISIBLE);
+        imageView.setBackground(bm);
     }
 
     /**
@@ -172,8 +225,11 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         }
         for (int i = 0; i < itemGroups.size(); i++) {
             Pair<Integer, List<ContextMenuItem>> itemGroup = itemGroups.get(i);
+            // TODO(tedchoc): Pass the ContextMenuGroup identifier to determine if it's an image.
+            boolean isImageTab = itemGroup.first == R.string.contextmenu_image_title;
             viewGroups.add(new Pair<>(context.getString(itemGroup.first),
-                    createContextMenuPageUi(context, params, itemGroup.second, maxCount)));
+                    createContextMenuPageUi(
+                            context, params, itemGroup.second, isImageTab, maxCount)));
         }
         TabularContextMenuViewPager pager =
                 (TabularContextMenuViewPager) view.findViewById(R.id.custom_pager);
@@ -186,6 +242,16 @@ public class TabularContextMenuUi implements ContextMenuUi, AdapterView.OnItemCl
         tabLayout.setupWithViewPager((ViewPager) view.findViewById(R.id.custom_pager));
 
         return view;
+    }
+
+    /**
+     * When an thumbnail is retrieved for the header of an image, this will set the header to
+     * that particular bitmap.
+     */
+    public void onImageThumbnailRetrieved(Bitmap bitmap) {
+        if (mHeaderImageView != null) {
+            mHeaderImageView.setImageBitmap(bitmap);
+        }
     }
 
     @Override

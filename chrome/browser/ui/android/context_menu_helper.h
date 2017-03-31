@@ -45,6 +45,10 @@ class ContextMenuHelper
                       const base::android::JavaParamRef<jobject>& obj);
   void ShareImage(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
+  void RetrieveHeaderThumbnail(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj,
+                               jint j_max_size_px);
+
  private:
   explicit ContextMenuHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ContextMenuHelper>;
@@ -55,6 +59,11 @@ class ContextMenuHelper
   void OnShareImage(chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
                     const std::vector<uint8_t>& thumbnail_data,
                     const gfx::Size& original_size);
+
+  void OnHeaderThumbnailReceived(
+      chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+      const std::vector<uint8_t>& thumbnail_data,
+      const gfx::Size& original_size);
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   content::WebContents* web_contents_;
