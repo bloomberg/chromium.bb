@@ -96,6 +96,12 @@ GPERF_TEMPLATE = """
 #pragma warning(disable : 4302 4311)
 #endif
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+// TODO(thakis): Remove once we use a gperf that no longer produces "register".
+#pragma clang diagnostic ignored "-Wdeprecated-register"
+#endif
+
 namespace blink {
 static const char propertyNameStringsPool[] = {
 %(property_name_strings)s
@@ -122,55 +128,59 @@ struct Property;
 %%%%
 %(property_to_enum_map)s
 %%%%
-const Property* findProperty(register const char* str, register unsigned int len)
-{
-    return %(class_name)sHash::findPropertyImpl(str, len);
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
+const Property* findProperty(const char* str, unsigned int len) {
+  return %(class_name)sHash::findPropertyImpl(str, len);
 }
 
-const char* getPropertyName(CSSPropertyID id)
-{
-    DCHECK(isCSSPropertyIDWithName(id));
-    int index = id - firstCSSProperty;
-    return propertyNameStringsPool + propertyNameStringsOffsets[index];
+const char* getPropertyName(CSSPropertyID id) {
+  DCHECK(isCSSPropertyIDWithName(id));
+  int index = id - firstCSSProperty;
+  return propertyNameStringsPool + propertyNameStringsOffsets[index];
 }
 
-const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
-{
-    DCHECK(isCSSPropertyIDWithName(id));
-    int index = id - firstCSSProperty;
-    static AtomicString* propertyStrings = new AtomicString[lastUnresolvedCSSProperty]; // Intentionally never destroyed.
-    AtomicString& propertyString = propertyStrings[index];
-    if (propertyString.isNull())
-        propertyString = AtomicString(propertyNameStringsPool + propertyNameStringsOffsets[index]);
-    return propertyString;
+const AtomicString& getPropertyNameAtomicString(CSSPropertyID id) {
+  DCHECK(isCSSPropertyIDWithName(id));
+  int index = id - firstCSSProperty;
+  static AtomicString* propertyStrings =
+      new AtomicString[lastUnresolvedCSSProperty]; // Leaked.
+  AtomicString& propertyString = propertyStrings[index];
+  if (propertyString.isNull()) {
+    propertyString = AtomicString(propertyNameStringsPool +
+                     propertyNameStringsOffsets[index]);
+  }
+  return propertyString;
 }
 
-String getPropertyNameString(CSSPropertyID id)
-{
-    // We share the StringImpl with the AtomicStrings.
-    return getPropertyNameAtomicString(id).getString();
+String getPropertyNameString(CSSPropertyID id) {
+  // We share the StringImpl with the AtomicStrings.
+  return getPropertyNameAtomicString(id).getString();
 }
 
-String getJSPropertyName(CSSPropertyID id)
-{
-    char result[maxCSSPropertyNameLength + 1];
-    const char* cssPropertyName = getPropertyName(id);
-    const char* propertyNamePointer = cssPropertyName;
-    if (!propertyNamePointer)
-        return emptyString;
+String getJSPropertyName(CSSPropertyID id) {
+  char result[maxCSSPropertyNameLength + 1];
+  const char* cssPropertyName = getPropertyName(id);
+  const char* propertyNamePointer = cssPropertyName;
+  if (!propertyNamePointer)
+    return emptyString;
 
-    char* resultPointer = result;
-    while (char character = *propertyNamePointer++) {
-        if (character == '-') {
-            char nextCharacter = *propertyNamePointer++;
-            if (!nextCharacter)
-                break;
-            character = (propertyNamePointer - 2 != cssPropertyName) ? toASCIIUpper(nextCharacter) : nextCharacter;
-        }
-        *resultPointer++ = character;
+  char* resultPointer = result;
+  while (char character = *propertyNamePointer++) {
+    if (character == '-') {
+      char nextCharacter = *propertyNamePointer++;
+      if (!nextCharacter)
+        break;
+      character = (propertyNamePointer - 2 != cssPropertyName)
+                      ? toASCIIUpper(nextCharacter) : nextCharacter;
     }
-    *resultPointer = '\\0';
-    return String(result);
+    *resultPointer++ = character;
+  }
+  *resultPointer = '\\0';
+  return String(result);
 }
 
 CSSPropertyID cssPropertyID(const String& string)
