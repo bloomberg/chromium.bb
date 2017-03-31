@@ -2294,13 +2294,6 @@ const char kEnableNtpSaveToOfflineDescription[] =
     "If enabled, the Snippets context menu (see #enable-ntp-snippets) will "
     "contain the option to save linked page for offline viewing.";
 
-const char kEnableNtpOfflineBadgeName[] =
-    "Show offline badge for offline available snippets on the ntp.";
-
-const char kEnableNtpOfflineBadgeDescription[] =
-    "If enabled, Snippets that are available offline will have an offline "
-    "badge.";
-
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 

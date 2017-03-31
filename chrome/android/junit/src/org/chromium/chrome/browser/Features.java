@@ -28,7 +28,7 @@ import java.util.Map;
  *    &#64;Rule
  *    public Features.Processor processor = new Features.Processor();
  *
- *    &#64;Features(&#64;Features.Register(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE))
+ *    &#64;Features(&#64;Features.Register(ChromeFeatureList.CHROME_HOME))
  *    public void testFoo() { ... }
  * }
  * </pre>

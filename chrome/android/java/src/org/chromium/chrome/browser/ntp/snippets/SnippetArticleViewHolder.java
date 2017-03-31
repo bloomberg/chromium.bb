@@ -356,7 +356,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     /** Updates the visibility of the card's offline badge by checking the bound article's info. */
     private void refreshOfflineBadgeVisibility() {
-        if (!SnippetsConfig.isOfflineBadgeEnabled()) return;
         boolean visible = mArticle.getOfflinePageOfflineId() != null || mArticle.isAssetDownload();
         if (visible == (mOfflineBadge.getVisibility() == View.VISIBLE)) return;
         mOfflineBadge.setVisibility(visible ? View.VISIBLE : View.GONE);

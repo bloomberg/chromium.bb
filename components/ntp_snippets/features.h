@@ -30,9 +30,6 @@ extern const base::Feature kForeignSessionsSuggestionsFeature;
 // context menu.
 extern const base::Feature kSaveToOfflineFeature;
 
-// Feature to allow offline badges to appear on snippets.
-extern const base::Feature kOfflineBadgeFeature;
-
 // Feature to allow UI as specified here: https://crbug.com/660837.
 extern const base::Feature kIncreasedVisibility;
 

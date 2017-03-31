@@ -16,10 +16,6 @@ public final class SnippetsConfig {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_SAVE_TO_OFFLINE);
     }
 
-    public static boolean isOfflineBadgeEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_OFFLINE_BADGE);
-    }
-
     /** https://crbug.com/660837 */
     public static boolean isIncreasedCardVisibilityEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS_INCREASED_VISIBILITY);

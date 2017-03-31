@@ -74,7 +74,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kWebVRCardboardSupport,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
-    &ntp_snippets::kOfflineBadgeFeature,
     &ntp_snippets::kPublisherFaviconsFromNewServerFeature,
     &ntp_snippets::kSaveToOfflineFeature,
     &offline_pages::kBackgroundLoaderForDownloadsFeature,

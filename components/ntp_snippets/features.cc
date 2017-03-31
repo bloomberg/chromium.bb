@@ -25,9 +25,6 @@ const base::Feature kRecentOfflineTabSuggestionsFeature{
 const base::Feature kSaveToOfflineFeature{"NTPSaveToOffline",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kOfflineBadgeFeature{"NTPOfflineBadge",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kIncreasedVisibility{"NTPSnippetsIncreasedVisibility",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 

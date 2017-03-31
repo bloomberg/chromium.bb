@@ -2492,13 +2492,6 @@ extern const char kEnableNtpSaveToOfflineName[];
 // page.
 extern const char kEnableNtpSaveToOfflineDescription[];
 
-// Name for the flag to enable offline badges for snippets on the New Tab page.
-extern const char kEnableNtpOfflineBadgeName[];
-
-// Description for the flag to enable offline badges for snippets on the New Tab
-// page.
-extern const char kEnableNtpOfflineBadgeDescription[];
-
 // Name for the flag to enable asset downloads suggestions (e.g. books,
 // pictures, audio) on the New Tab page.
 extern const char kEnableNtpAssetDownloadSuggestionsName[];

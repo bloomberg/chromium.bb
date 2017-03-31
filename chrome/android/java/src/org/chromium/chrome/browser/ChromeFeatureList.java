@@ -146,7 +146,6 @@ public abstract class ChromeFeatureList {
     public static final String NTP_SHOW_GOOGLE_G_IN_OMNIBOX = "NTPShowGoogleGInOmnibox";
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String NTP_SNIPPETS_SAVE_TO_OFFLINE = "NTPSaveToOffline";
-    public static final String NTP_SNIPPETS_OFFLINE_BADGE = "NTPOfflineBadge";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String VR_SHELL = "VrShell";
