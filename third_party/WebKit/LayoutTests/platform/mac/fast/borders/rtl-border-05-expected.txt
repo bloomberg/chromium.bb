@@ -35,11 +35,12 @@ layer at (0,0) size 800x566
           LayoutText {#text} at (17,7) size 183x50
             text run at (17,7) width 36 RTL: " \x{5DC}\x{5DE}\x{5D4}"
             text run at (52,7) width 148: "aaa bbb ccc ddd eee fff"
-            text run at (17,39) width 17: "gg"
+            text run at (21,39) width 17: "gg"
             text run at (122,39) width 78 RTL: "\x{5E2}\x{5E9}\x{5D9}\x{5EA}\x{5D9} \x{5D6}\x{5D0}\x{5EA} "
-          LayoutInline {SPAN} at (0,0) size 167x53 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
-            LayoutText {#text} at (33,39) size 45x18
-              text run at (33,39) width 45: " dgnjk "
+          LayoutInline {SPAN} at (0,0) size 183x53 [border: (1px solid #0000FF) (10px solid #FFA500) (1px solid #0000FF) (10px solid #008000)]
+            LayoutText {#text} at (17,39) size 61x18
+              text run at (17,39) width 5 RTL: " "
+              text run at (37,39) width 41: " dgnjk"
             LayoutBlockFlow {IMG} at (141.56,64) size 22x34 [border: (1px solid #0000FF)]
             LayoutText {#text} at (137,72) size 63x18
               text run at (137,72) width 5 RTL: " "

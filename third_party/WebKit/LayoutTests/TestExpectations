@@ -1330,7 +1330,6 @@ crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html 
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
-crbug.com/660178 [ Mac ] fast/borders/rtl-border-05.html [ NeedsRebaseline ]
 crbug.com/700795 [ Mac ] inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 
 # Flaky on Win10 and Win7
