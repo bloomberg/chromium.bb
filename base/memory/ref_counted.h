@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_collision_warner.h"
 #include "build/build_config.h"
 
@@ -28,7 +29,11 @@ class BASE_EXPORT RefCountedBase {
   bool HasOneRef() const { return ref_count_ == 1; }
 
  protected:
-  RefCountedBase() {}
+  RefCountedBase() {
+#if DCHECK_IS_ON()
+    sequence_checker_.DetachFromSequence();
+#endif
+  }
 
   ~RefCountedBase() {
 #if DCHECK_IS_ON()
@@ -43,6 +48,9 @@ class BASE_EXPORT RefCountedBase {
     // DFAKE_SCOPED_LOCK_THREAD_LOCKED(add_release_);
 #if DCHECK_IS_ON()
     DCHECK(!in_dtor_);
+    if (ref_count_ >= 1) {
+      DCHECK(CalledOnValidSequence());
+    }
 #endif
 
     ++ref_count_;
@@ -61,15 +69,26 @@ class BASE_EXPORT RefCountedBase {
     DCHECK(!in_dtor_);
     if (ref_count_ == 0)
       in_dtor_ = true;
+
+    if (ref_count_ >= 1)
+      DCHECK(CalledOnValidSequence());
+    if (ref_count_ == 1)
+      sequence_checker_.DetachFromSequence();
 #endif
 
     return ref_count_ == 0;
   }
 
  private:
+#if DCHECK_IS_ON()
+  bool CalledOnValidSequence() const;
+#endif
+
   mutable size_t ref_count_ = 0;
+
 #if DCHECK_IS_ON()
   mutable bool in_dtor_ = false;
+  mutable SequenceChecker sequence_checker_;
 #endif
 
   DFAKE_MUTEX(add_release_);
@@ -101,6 +120,27 @@ class BASE_EXPORT RefCountedThreadSafeBase {
 
 }  // namespace subtle
 
+// ScopedAllowCrossThreadRefCountAccess disables the check documented on
+// RefCounted below for rare pre-existing use cases where thread-safety was
+// guaranteed through other means (e.g. explicit sequencing of calls across
+// execution sequences when bouncing between threads in order). New callers
+// should refrain from using this (callsites handling thread-safety through
+// locks should use RefCountedThreadSafe per the overhead of its atomics being
+// negligible compared to locks anyways and callsites doing explicit sequencing
+// should properly std::move() the ref to avoid hitting this check).
+// TODO(tzik): Cleanup existing use cases and remove
+// ScopedAllowCrossThreadRefCountAccess.
+class BASE_EXPORT ScopedAllowCrossThreadRefCountAccess final {
+ public:
+#if DCHECK_IS_ON()
+  ScopedAllowCrossThreadRefCountAccess();
+  ~ScopedAllowCrossThreadRefCountAccess();
+#else
+  ScopedAllowCrossThreadRefCountAccess() {}
+  ~ScopedAllowCrossThreadRefCountAccess() {}
+#endif
+};
+
 //
 // A base class for reference counted classes.  Otherwise, known as a cheap
 // knock-off of WebKit's RefCounted<T> class.  To use this, just extend your
@@ -115,6 +155,12 @@ class BASE_EXPORT RefCountedThreadSafeBase {
 //
 // You should always make your destructor non-public, to avoid any code deleting
 // the object accidently while there are references to it.
+//
+// The ref count manipulation to RefCounted is NOT thread safe and has DCHECKs
+// to trap unsafe cross thread usage. A subclass instance of RefCounted can be
+// passed to another execution sequence only when its ref count is 1. If the ref
+// count is more than 1, the RefCounted class verifies the ref updates are made
+// on the same execution sequence as the previous ones.
 template <class T>
 class RefCounted : public subtle::RefCountedBase {
  public:

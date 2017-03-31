@@ -22,6 +22,10 @@ GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
 void GpuDataManagerImpl::InitializeForTesting(
     const std::string& gpu_blacklist_json, const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
+  // Relax the cross-thread access restriction to non-thread-safe RefCount.
+  // See the comment in Initialize().
+  base::ScopedAllowCrossThreadRefCountAccess
+      allow_cross_thread_ref_count_access;
   private_->InitializeForTesting(gpu_blacklist_json, gpu_info);
 }
 
@@ -146,11 +150,20 @@ void GpuDataManagerImpl::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 
 void GpuDataManagerImpl::Initialize() {
   base::AutoLock auto_lock(lock_);
+  // Relax the cross-thread access restriction to non-thread-safe RefCount.
+  // GpuDataManagerImplPrivate has GpuControlLists, which touches
+  // non-thread-safe GpuControlListEntry RefCount in the lock.
+  base::ScopedAllowCrossThreadRefCountAccess
+      allow_cross_thread_ref_count_access;
   private_->Initialize();
 }
 
 void GpuDataManagerImpl::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
+  // Relax the cross-thread access restriction to non-thread-safe RefCount.
+  // See the comment in Initialize().
+  base::ScopedAllowCrossThreadRefCountAccess
+      allow_cross_thread_ref_count_access;
   private_->UpdateGpuInfo(gpu_info);
 }
 
@@ -256,6 +269,10 @@ size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
 bool GpuDataManagerImpl::UpdateActiveGpu(uint32_t vendor_id,
                                          uint32_t device_id) {
   base::AutoLock auto_lock(lock_);
+  // Relax the cross-thread access restriction to non-thread-safe RefCount.
+  // See the comment in Initialize().
+  base::ScopedAllowCrossThreadRefCountAccess
+      allow_cross_thread_ref_count_access;
   return private_->UpdateActiveGpu(vendor_id, device_id);
 }
 
