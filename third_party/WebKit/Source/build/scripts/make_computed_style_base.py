@@ -11,7 +11,8 @@ import template_expander
 import make_style_builder
 
 from name_utilities import (
-    enum_for_css_keyword, enum_type_name, enum_value_name, class_member_name, method_name
+    enum_for_css_keyword, enum_type_name, enum_value_name, class_member_name, method_name,
+    join_name
 )
 
 
@@ -118,14 +119,14 @@ class Field(object):
             self.is_independent = kwargs.pop('independent')
             assert self.is_inherited or not self.is_independent, 'Only inherited fields can be independent'
 
-            self.is_inherited_method_name = method_name(name_for_methods + 'IsInherited')
+            self.is_inherited_method_name = method_name(join_name(name_for_methods, 'is inherited'))
 
         # Method names
         getter_prefix = 'Get' if name_for_methods == self.type_name else ''
-        self.getter_method_name = method_name(getter_prefix + name_for_methods)
-        self.setter_method_name = method_name('Set' + name_for_methods)
-        self.initial_method_name = method_name('Initial' + name_for_methods)
-        self.resetter_method_name = method_name('Reset' + name_for_methods)
+        self.getter_method_name = method_name(join_name(getter_prefix, name_for_methods))
+        self.setter_method_name = method_name(join_name('set', name_for_methods))
+        self.initial_method_name = method_name(join_name('initial', name_for_methods))
+        self.resetter_method_name = method_name(join_name('reset', name_for_methods))
 
         # If the size of the field is not None, it means it is a bit field
         self.is_bit_field = self.size is not None
@@ -218,7 +219,7 @@ def _create_inherited_flag_field(property_):
     """
     return Field(
         'inherited_flag',
-        property_['name_for_methods'] + 'IsInherited',
+        join_name(property_['name_for_methods'], 'is inherited'),
         property_name=property_['name'],
         type_name='bool',
         field_template='flag',

@@ -153,3 +153,11 @@ def class_member_name(name):
 
 def method_name(name):
     return lower_camel_case(name)
+
+
+def join_name(*names):
+    """Given a list of names, join them into a single space-separated name."""
+    result = []
+    for name in names:
+        result.extend(split_name(name))
+    return ' '.join(result)
