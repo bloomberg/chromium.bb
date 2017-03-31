@@ -127,8 +127,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     // The resource ID for Assist menu item.
     private int mAssistMenuItemId;
 
-    // This variable is set to true when the classification request is in progress.
-    private boolean mPendingClassificationRequest;
+    // This variable is set to true when showActionMode() is postponed till classification result
+    // arrives or till the selection is adjusted based on the classification result.
+    private boolean mPendingShowActionMode;
 
     /**
      * Create {@link SelectionPopupController} instance.
@@ -217,6 +218,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * <p> If the action mode cannot be created the selection is cleared.
      */
     public void showActionModeOrClearOnFailure() {
+        mPendingShowActionMode = false;
+
         if (!isActionModeSupported()) return;
 
         // Just refresh the view if action mode already exists.
@@ -317,7 +320,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      */
     @Override
     public void finishActionMode() {
-        mPendingClassificationRequest = false;
+        mPendingShowActionMode = false;
         mHidden = false;
         if (mView != null) mView.removeCallbacks(mRepeatingHideRunnable);
 
@@ -808,18 +811,22 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 mSelectionRect.set(left, top, right, bottom);
                 mHasSelection = true;
                 mUnselectAllOnDismiss = true;
-                if (mSelectionClient != null && mSelectionClient.sendsSelectionPopupUpdates()) {
+                if (mSelectionClient == null || !mSelectionClient.sendsSelectionPopupUpdates()) {
+                    showActionModeOrClearOnFailure();
+                } else {
                     // Rely on |mSelectionClient| sending a classification request and the request
                     // always calling onClassified() callback.
-                    mPendingClassificationRequest = true;
-                } else {
-                    showActionModeOrClearOnFailure();
+                    mPendingShowActionMode = true;
                 }
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_MOVED:
                 mSelectionRect.set(left, top, right, bottom);
-                invalidateContentRect();
+                if (mPendingShowActionMode) {
+                    showActionModeOrClearOnFailure();
+                } else {
+                    invalidateContentRect();
+                }
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
@@ -834,13 +841,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                if (mSelectionClient != null && mSelectionClient.sendsSelectionPopupUpdates()) {
-                    // Rely on |mSelectionClient| sending a classification request and the request
-                    // always calling onClassified() callback.
-                    mPendingClassificationRequest = true;
-                } else {
+                if (mSelectionClient == null || !mSelectionClient.sendsSelectionPopupUpdates()) {
                     hideActionMode(false);
                 }
+                // Otherwise rely on |mSelectionClient| sending a classification request and the
+                // request always calling onClassified() callback.
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_SHOWN:
@@ -919,7 +924,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
         mClassificationResult = null;
 
-        assert !mPendingClassificationRequest;
+        assert !mPendingShowActionMode;
         assert !mHidden;
     }
 
@@ -972,13 +977,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private class ContextSelectionCallback implements ContextSelectionProvider.ResultCallback {
         @Override
         public void onClassified(ContextSelectionProvider.Result result) {
-            boolean pendingClassificationRequest = mPendingClassificationRequest;
-            mPendingClassificationRequest = false;
-
             // If the selection does not exist any more, discard |result|.
             if (!mHasSelection) {
                 assert !mHidden;
                 assert mClassificationResult == null;
+                mPendingShowActionMode = false;
                 return;
             }
 
@@ -988,15 +991,18 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             // Do not recreate the action mode if it has been cancelled (by ActionMode.finish())
             // and not recreated after that.
-            if (!pendingClassificationRequest && !isActionModeValid()) {
+            if (!mPendingShowActionMode && !isActionModeValid()) {
                 assert !mHidden;
                 return;
             }
 
             // Update the selection range if needed.
             if (!(result.startAdjust == 0 && result.endAdjust == 0)) {
-                // This call causes SELECTION_HANDLES_MOVED event
+                // This call causes SELECTION_HANDLES_MOVED event.
                 mWebContents.adjustSelectionByCharacterOffset(result.startAdjust, result.endAdjust);
+
+                // Remain pending until SELECTION_HANDLES_MOVED arrives.
+                if (mPendingShowActionMode) return;
             }
 
             // Rely on this method to clear |mHidden| and unhide the action mode.
