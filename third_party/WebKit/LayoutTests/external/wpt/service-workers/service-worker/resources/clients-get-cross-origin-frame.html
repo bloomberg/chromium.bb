@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
-<script src="../../resources/get-host-info.js"></script>
-<script src="test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="/common/get-host-info.sub.js"></script>
+<script src="test-helpers.sub.js"></script>
 <script>
 var host_info = get_host_info();
 var scope = 'blank.html?clients-get';
@@ -29,14 +29,7 @@ var wait_for_worker_promise = navigator.serviceWorker.getRegistration(scope)
         });
     });
 
-function send_result(result) {
-  window.parent.postMessage(
-      {result: result},
-      host_info['HTTP_ORIGIN']);
-}
-
 window.addEventListener('message', function(e) {
-  assert_equals(e.origin, host_info['HTTP_ORIGIN']);
   var cross_origin_client_ids = [];
   cross_origin_client_ids.push(e.data.clientId);
   wait_for_worker_promise
@@ -48,7 +41,9 @@ window.addEventListener('message', function(e) {
         var channel = new MessageChannel();
         channel.port1.onmessage = function(e) {
           registration.unregister();
-          send_result(e.data);
+          window.parent.postMessage(
+            { type: 'clientId', value: e.data }, host_info['HTTPS_ORIGIN']
+          );
         };
         iframe.contentWindow.navigator.serviceWorker.controller.postMessage(
             {port:channel.port2, clientIds: cross_origin_client_ids},

@@ -1,8 +1,13 @@
 <!DOCTYPE html>
+<!-- This is in chromium/ because the equivalent version available in Web
+  Platform Tests also asserts the presence of the Client's `type` attribute.
+  This less precise version (and its resources) should be maintained only to
+  preserve test coverage until the attribute is implemented. See
+  https://crbug.com/705685 -->
 <title>Service Worker: Clients.matchAll with includeUncontrolled</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../resources/test-helpers.js"></script>
 <script>
 var base_url = 'resources/blank.html'; // This is out-of-scope.
 var scope = base_url + '?clients-matchAll-includeUncontrolled';

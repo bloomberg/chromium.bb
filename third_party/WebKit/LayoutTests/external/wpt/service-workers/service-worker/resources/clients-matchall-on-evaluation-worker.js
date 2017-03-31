@@ -1,6 +1,6 @@
-importScripts('test-helpers.js');
+importScripts('test-helpers.sub.js');
 
-var page_url = normalizeURL('../clients-matchall-on-evaluation.html');
+var page_url = normalizeURL('../clients-matchall-on-evaluation.https.html');
 
 self.clients.matchAll({includeUncontrolled: true})
   .then(function(clients) {

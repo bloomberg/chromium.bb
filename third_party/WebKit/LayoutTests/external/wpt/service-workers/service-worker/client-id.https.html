@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <title>Service Worker: Client.id</title>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
-<script src="resources/test-helpers.js"></script>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.sub.js"></script>
 <script>
 var test;
 var scope = 'resources/blank.html?client-id';
@@ -30,26 +30,18 @@ async_test(function(t) {
               {port:channel.port2}, [channel.port2]);
         })
       .catch(unreached_rejection(t));
-  }, 'Client.id returns the client\'s UUID.');
-
-// A regex object for UUID(http://tools.ietf.org/html/rfc4122) validation.
-var pattern = new RegExp(['^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-',
-                           '9a-f]{3}-[0-9a-f]{12}$'].join(''), 'i');
-
-function validate_uuid(id) {
-  return !!id.match(pattern);
-}
+  }, 'Client.id returns the client\'s ID.');
 
 function on_message(e) {
   // The result of two sequential clients.matchAll() calls in the SW.
   // 1st matchAll() results in e.data[0], e.data[1].
   // 2nd matchAll() results in e.data[2], e.data[3].
   assert_equals(e.data.length, 4);
-  // All should be valid UUIDs.
-  assert_true(validate_uuid(e.data[0]));
-  assert_true(validate_uuid(e.data[1]));
-  assert_true(validate_uuid(e.data[2]));
-  assert_true(validate_uuid(e.data[3]));
+  // All should be string values.
+  assert_equals(typeof e.data[0], 'string');
+  assert_equals(typeof e.data[1], 'string');
+  assert_equals(typeof e.data[2], 'string');
+  assert_equals(typeof e.data[3], 'string');
   // Different clients should have different ids.
   assert_not_equals(e.data[0], e.data[1]);
   assert_not_equals(e.data[2], e.data[3]);
