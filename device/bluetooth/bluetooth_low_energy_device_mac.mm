@@ -176,13 +176,11 @@ void BluetoothLowEnergyDeviceMac::ConnectToServiceInsecurely(
 
 void BluetoothLowEnergyDeviceMac::CreateGattConnectionImpl() {
   if (!IsGattConnected()) {
-    VLOG(1) << *this << ": CreateGattConnection.";
     GetMacAdapter()->CreateGattConnection(this);
   }
 }
 
 void BluetoothLowEnergyDeviceMac::DisconnectGatt() {
-  VLOG(1) << *this << ": Disconnect.";
   GetMacAdapter()->DisconnectGatt(this);
 }
 

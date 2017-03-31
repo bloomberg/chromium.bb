@@ -651,12 +651,14 @@ BluetoothAdapterMac::RetrieveGattConnectedDevicesWithService(
 
 void BluetoothAdapterMac::CreateGattConnection(
     BluetoothLowEnergyDeviceMac* device_mac) {
+  VLOG(1) << *device_mac << ": Create gatt connection.";
   [low_energy_central_manager_ connectPeripheral:device_mac->peripheral_
                                          options:nil];
 }
 
 void BluetoothAdapterMac::DisconnectGatt(
     BluetoothLowEnergyDeviceMac* device_mac) {
+  VLOG(1) << *device_mac << ": Disconnect gatt.";
   [low_energy_central_manager_
       cancelPeripheralConnection:device_mac->peripheral_];
 }
