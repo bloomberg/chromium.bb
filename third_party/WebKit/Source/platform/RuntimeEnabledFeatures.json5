@@ -92,7 +92,7 @@
     },
     {
       name: "BackgroundFetch",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "BackgroundSync",
