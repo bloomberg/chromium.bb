@@ -3,3 +3,5 @@ rockot@chromium.org
 
 per-file *.gyp*=*
 per-file BUILD.gn=*
+
+# TEAM: device-dev@chromium.org

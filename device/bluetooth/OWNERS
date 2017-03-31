@@ -3,3 +3,6 @@ scheib@chromium.org
 
 per-file *.gyp*=*
 per-file BUILD.gn=*
+
+# TEAM: web-bluetooth@chromium.org
+# COMPONENT: IO>Bluetooth
