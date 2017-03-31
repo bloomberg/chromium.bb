@@ -36,6 +36,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/DictionaryOrString.h",
   "$bindings_modules_v8_output_dir/DoubleOrConstrainDoubleRange.cpp",
   "$bindings_modules_v8_output_dir/DoubleOrConstrainDoubleRange.h",
+  "$bindings_modules_v8_output_dir/Float32ArrayOrFloat64ArrayOrDOMMatrix.cpp",
+  "$bindings_modules_v8_output_dir/Float32ArrayOrFloat64ArrayOrDOMMatrix.h",
   "$bindings_modules_v8_output_dir/FormDataOrURLSearchParams.cpp",
   "$bindings_modules_v8_output_dir/FormDataOrURLSearchParams.h",
   "$bindings_modules_v8_output_dir/HTMLCanvasElementOrOffscreenCanvas.cpp",

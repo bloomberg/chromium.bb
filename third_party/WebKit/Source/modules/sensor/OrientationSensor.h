@@ -5,6 +5,7 @@
 #ifndef OrientationSensor_h
 #define OrientationSensor_h
 
+#include "bindings/modules/v8/Float32ArrayOrFloat64ArrayOrDOMMatrix.h"
 #include "core/dom/DOMTypedArray.h"
 #include "modules/sensor/Sensor.h"
 
@@ -15,7 +16,7 @@ class OrientationSensor : public Sensor {
 
  public:
   Vector<double> quaternion(bool& isNull);
-  void populateMatrix(DOMFloat32Array*, ExceptionState&);
+  void populateMatrix(Float32ArrayOrFloat64ArrayOrDOMMatrix&, ExceptionState&);
 
   bool isReadingDirty() const;
 
@@ -30,6 +31,8 @@ class OrientationSensor : public Sensor {
  private:
   // SensorProxy override.
   void onSensorReadingChanged() override;
+  template <typename Matrix>
+  void populateMatrixInternal(Matrix*, ExceptionState&);
 
   bool m_readingDirty;
 };
