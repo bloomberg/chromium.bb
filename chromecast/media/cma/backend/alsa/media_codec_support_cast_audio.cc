@@ -42,7 +42,7 @@ bool MediaCapabilitiesShlib::IsSupportedVideoConfig(VideoCodec codec,
 
 bool MediaCapabilitiesShlib::IsSupportedAudioConfig(const AudioConfig& config) {
   return config.codec == kCodecAAC || config.codec == kCodecMP3 ||
-         config.codec == kCodecPCM;
+         config.codec == kCodecPCM || config.codec == kCodecVorbis;
 }
 
 }  // namespace media
