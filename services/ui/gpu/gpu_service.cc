@@ -21,10 +21,12 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
@@ -88,8 +90,6 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
                        const gpu::GpuFeatureInfo& gpu_feature_info)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
-      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
-                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_info_(gpu_info),
@@ -112,11 +112,12 @@ GpuService::~GpuService() {
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
 
-  // Signal this event before destroying the child process.  That way all
-  // background threads can cleanup.
-  // For example, in the renderer the RenderThread instances will be able to
-  // notice shutdown before the render process begins waiting for them to exit.
-  shutdown_event_.Signal();
+  // Signal this event before destroying the child process. That way all
+  // background threads can cleanup. For example, in the renderer the
+  // RenderThread instances will be able to notice shutdown before the render
+  // process begins waiting for them to exit.
+  if (owned_shutdown_event_)
+    owned_shutdown_event_->Signal();
 }
 
 void GpuService::UpdateGPUInfoFromPreferences(
@@ -159,13 +160,20 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
     sync_point_manager_ = owned_sync_point_manager_.get();
   }
 
+  shutdown_event_ = shutdown_event;
+  if (!shutdown_event_) {
+    owned_shutdown_event_ = base::MakeUnique<base::WaitableEvent>(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    shutdown_event_ = owned_shutdown_event_.get();
+  }
+
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
       gpu_preferences_, this, watchdog_thread_.get(),
-      base::ThreadTaskRunnerHandle::Get().get(), io_runner_.get(),
-      shutdown_event ? shutdown_event : &shutdown_event_, sync_point_manager_,
+      base::ThreadTaskRunnerHandle::Get(), io_runner_, sync_point_manager_,
       gpu_memory_buffer_factory_, gpu_feature_info_,
       std::move(activity_flags)));
 
@@ -376,16 +384,16 @@ void GpuService::EstablishGpuChannel(
     return;
   }
 
-  const bool preempts = is_gpu_host;
-  const bool allow_view_command_buffers = is_gpu_host;
-  const bool allow_real_time_streams = is_gpu_host;
-  mojo::ScopedMessagePipeHandle channel_handle;
-  IPC::ChannelHandle handle = gpu_channel_manager_->EstablishChannel(
-      client_id, client_tracing_id, preempts, allow_view_command_buffers,
-      allow_real_time_streams);
-  channel_handle.reset(handle.mojo_handle);
+  gpu::GpuChannel* gpu_channel = gpu_channel_manager_->EstablishChannel(
+      client_id, client_tracing_id, is_gpu_host);
+
+  mojo::MessagePipe pipe;
+  gpu_channel->Init(base::MakeUnique<gpu::SyncChannelFilteredSender>(
+      pipe.handle0.release(), gpu_channel, io_runner_, shutdown_event_));
+
   media_gpu_channel_manager_->AddChannel(client_id);
-  callback.Run(std::move(channel_handle));
+
+  callback.Run(std::move(pipe.handle1));
 }
 
 void GpuService::CloseChannel(int32_t client_id) {

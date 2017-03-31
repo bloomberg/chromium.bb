@@ -29,10 +29,6 @@
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
 
-namespace base {
-class WaitableEvent;
-}
-
 namespace gl {
 class GLShareGroup;
 }
@@ -50,10 +46,6 @@ class ShaderTranslatorCache;
 }
 }
 
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace gpu {
 class GpuChannel;
 class GpuChannelManagerDelegate;
@@ -68,22 +60,19 @@ class GPU_EXPORT GpuChannelManager {
   GpuChannelManager(const GpuPreferences& gpu_preferences,
                     GpuChannelManagerDelegate* delegate,
                     GpuWatchdogThread* watchdog,
-                    base::SingleThreadTaskRunner* task_runner,
-                    base::SingleThreadTaskRunner* io_task_runner,
-                    base::WaitableEvent* shutdown_event,
+                    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                     SyncPointManager* sync_point_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                     const GpuFeatureInfo& gpu_feature_info,
                     GpuProcessActivityFlags activity_flags);
-  virtual ~GpuChannelManager();
+  ~GpuChannelManager();
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
 
-  IPC::ChannelHandle EstablishChannel(int client_id,
-                                      uint64_t client_tracing_id,
-                                      bool preempts,
-                                      bool allow_view_command_buffers,
-                                      bool allow_real_time_streams);
+  GpuChannel* EstablishChannel(int client_id,
+                               uint64_t client_tracing_id,
+                               bool is_gpu_host);
 
   void PopulateShaderCache(const std::string& shader);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -100,9 +89,7 @@ class GPU_EXPORT GpuChannelManager {
   void LoseAllContexts();
   void MaybeExitOnContextLost();
 
-  const GpuPreferences& gpu_preferences() const {
-    return gpu_preferences_;
-  }
+  const GpuPreferences& gpu_preferences() const { return gpu_preferences_; }
   const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds() const {
     return gpu_driver_bug_workarounds_;
   }
@@ -125,37 +112,13 @@ class GPU_EXPORT GpuChannelManager {
   void DidAccessGpu();
 #endif
 
-  bool is_exiting_for_lost_context() {
-    return exiting_for_lost_context_;
-  }
+  bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
 
   gles2::MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
   }
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
-
- protected:
-  virtual std::unique_ptr<GpuChannel> CreateGpuChannel(
-      int client_id,
-      uint64_t client_tracing_id,
-      bool preempts,
-      bool allow_view_command_buffers,
-      bool allow_real_time_streams);
-
-  SyncPointManager* sync_point_manager() const {
-    return sync_point_manager_;
-  }
-
-  PreemptionFlag* preemption_flag() const { return preemption_flag_.get(); }
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  // These objects manage channels to individual renderer processes. There is
-  // one channel for each renderer process that has connected to this GPU
-  // process.
-  std::unordered_map<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
 
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
@@ -166,14 +129,20 @@ class GPU_EXPORT GpuChannelManager {
   void DoWakeUpGpu();
 #endif
 
+  // These objects manage channels to individual renderer processes. There is
+  // one channel for each renderer process that has connected to this GPU
+  // process.
+  std::unordered_map<int32_t, std::unique_ptr<GpuChannel>> gpu_channels_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   const GpuPreferences gpu_preferences_;
   GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
 
   GpuChannelManagerDelegate* const delegate_;
 
   GpuWatchdogThread* watchdog_;
-
-  base::WaitableEvent* shutdown_event_;
 
   scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;

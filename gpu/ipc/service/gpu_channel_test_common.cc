@@ -5,154 +5,159 @@
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
+#include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ipc/ipc_test_sink.h"
+#include "ui/gl/init/gl_factory.h"
+#include "ui/gl/test/gl_surface_test_support.h"
 #include "url/gurl.h"
 
 namespace gpu {
 
-TestGpuChannelManagerDelegate::TestGpuChannelManagerDelegate() {}
+class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
+ public:
+  TestGpuChannelManagerDelegate() = default;
+  ~TestGpuChannelManagerDelegate() override = default;
 
-TestGpuChannelManagerDelegate::~TestGpuChannelManagerDelegate() {}
-
-void TestGpuChannelManagerDelegate::SetActiveURL(const GURL& url) {}
-
-void TestGpuChannelManagerDelegate::DidCreateOffscreenContext(
-    const GURL& active_url) {}
-
-void TestGpuChannelManagerDelegate::DidDestroyChannel(int client_id) {}
-
-void TestGpuChannelManagerDelegate::DidDestroyOffscreenContext(
-    const GURL& active_url) {}
-
-void TestGpuChannelManagerDelegate::DidLoseContext(
-    bool offscreen,
-    error::ContextLostReason reason,
-    const GURL& active_url) {}
-
-void TestGpuChannelManagerDelegate::StoreShaderToDisk(
-    int32_t client_id,
-    const std::string& key,
-    const std::string& shader) {}
-
+  // GpuChannelManagerDelegate implementation:
+  void SetActiveURL(const GURL& url) override {}
+  void DidCreateOffscreenContext(const GURL& active_url) override {}
+  void DidDestroyChannel(int client_id) override {}
+  void DidDestroyOffscreenContext(const GURL& active_url) override {}
+  void DidLoseContext(bool offscreen,
+                      error::ContextLostReason reason,
+                      const GURL& active_url) override {}
+  void StoreShaderToDisk(int32_t client_id,
+                         const std::string& key,
+                         const std::string& shader) override {}
 #if defined(OS_WIN)
-void TestGpuChannelManagerDelegate::SendAcceleratedSurfaceCreatedChildWindow(
-    SurfaceHandle parent_window,
-    SurfaceHandle child_window) {}
+  void SendAcceleratedSurfaceCreatedChildWindow(
+      SurfaceHandle parent_window,
+      SurfaceHandle child_window) override {}
 #endif
 
-TestGpuChannelManager::TestGpuChannelManager(
-    const GpuPreferences& gpu_preferences,
-    GpuChannelManagerDelegate* delegate,
-    base::SingleThreadTaskRunner* task_runner,
-    base::SingleThreadTaskRunner* io_task_runner,
-    SyncPointManager* sync_point_manager,
-    GpuMemoryBufferFactory* gpu_memory_buffer_factory)
-    : GpuChannelManager(gpu_preferences,
-                        delegate,
-                        nullptr,
-                        task_runner,
-                        io_task_runner,
-                        nullptr,
-                        sync_point_manager,
-                        gpu_memory_buffer_factory,
-                        GpuFeatureInfo(),
-                        GpuProcessActivityFlags()) {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestGpuChannelManagerDelegate);
+};
 
-TestGpuChannelManager::~TestGpuChannelManager() {
-  // Clear gpu channels here so that any IPC messages sent are handled using the
-  // overridden Send method.
-  gpu_channels_.clear();
-}
+class TestSinkFilteredSender : public FilteredSender {
+ public:
+  TestSinkFilteredSender() : sink_(base::MakeUnique<IPC::TestSink>()) {}
+  ~TestSinkFilteredSender() override = default;
 
-std::unique_ptr<GpuChannel> TestGpuChannelManager::CreateGpuChannel(
-    int client_id,
-    uint64_t client_tracing_id,
-    bool preempts,
-    bool allow_view_command_buffers,
-    bool allow_real_time_streams) {
-  return base::MakeUnique<TestGpuChannel>(
-      this, sync_point_manager(), share_group(), mailbox_manager(),
-      preempts ? preemption_flag() : nullptr,
-      preempts ? nullptr : preemption_flag(), task_runner_.get(),
-      io_task_runner_.get(), client_id, client_tracing_id,
-      allow_view_command_buffers, allow_real_time_streams);
-}
+  IPC::TestSink* sink() const { return sink_.get(); }
 
-TestGpuChannel::TestGpuChannel(GpuChannelManager* gpu_channel_manager,
-                               SyncPointManager* sync_point_manager,
-                               gl::GLShareGroup* share_group,
-                               gles2::MailboxManager* mailbox_manager,
-                               PreemptionFlag* preempting_flag,
-                               PreemptionFlag* preempted_flag,
-                               base::SingleThreadTaskRunner* task_runner,
-                               base::SingleThreadTaskRunner* io_task_runner,
-                               int client_id,
-                               uint64_t client_tracing_id,
-                               bool allow_view_command_buffers,
-                               bool allow_real_time_streams)
-    : GpuChannel(gpu_channel_manager,
-                 sync_point_manager,
-                 nullptr,
-                 share_group,
-                 mailbox_manager,
-                 preempting_flag,
-                 preempted_flag,
-                 task_runner,
-                 io_task_runner,
-                 client_id,
-                 client_tracing_id,
-                 allow_view_command_buffers,
-                 allow_real_time_streams) {}
+  bool Send(IPC::Message* msg) override { return sink_->Send(msg); }
 
-TestGpuChannel::~TestGpuChannel() {
-  // Call stubs here so that any IPC messages sent are handled using the
-  // overridden Send method.
-  stubs_.clear();
-}
+  void AddFilter(IPC::MessageFilter* filter) override {
+    // Needed to appease DCHECKs.
+    filter->OnFilterAdded(sink_.get());
+  }
 
-base::ProcessId TestGpuChannel::GetClientPID() const {
-  return base::kNullProcessId;
-}
+  void RemoveFilter(IPC::MessageFilter* filter) override {
+    filter->OnFilterRemoved();
+  }
 
-IPC::ChannelHandle TestGpuChannel::Init(base::WaitableEvent* shutdown_event) {
-  filter_->OnFilterAdded(&sink_);
-  mojo::MessagePipe pipe;
-  return pipe.handle0.release();
-}
+ private:
+  std::unique_ptr<IPC::TestSink> sink_;
 
-bool TestGpuChannel::Send(IPC::Message* msg) {
-  DCHECK(!msg->is_sync());
-  return sink_.Send(msg);
-}
+  DISALLOW_COPY_AND_ASSIGN(TestSinkFilteredSender);
+};
 
-// TODO(sunnyps): Use a mock memory buffer factory when necessary.
 GpuChannelTestCommon::GpuChannelTestCommon()
     : task_runner_(new base::TestSimpleTaskRunner),
       io_task_runner_(new base::TestSimpleTaskRunner),
       sync_point_manager_(new SyncPointManager()),
-      channel_manager_delegate_(new TestGpuChannelManagerDelegate()) {}
+      channel_manager_delegate_(new TestGpuChannelManagerDelegate()),
+      channel_manager_(
+          new GpuChannelManager(GpuPreferences(),
+                                channel_manager_delegate_.get(),
+                                nullptr /* watchdog */,
+                                task_runner_.get(),
+                                io_task_runner_.get(),
+                                sync_point_manager_.get(),
+                                nullptr /* gpu_memory_buffer_factory */,
+                                GpuFeatureInfo(),
+                                GpuProcessActivityFlags())) {
+  // We need GL bindings to actually initialize command buffers.
+  gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
+}
 
 GpuChannelTestCommon::~GpuChannelTestCommon() {
+  // Command buffers can post tasks and run GL in destruction so do this first.
+  channel_manager_ = nullptr;
+
   // Clear pending tasks to avoid refptr cycles that get flagged by ASAN.
   task_runner_->ClearPendingTasks();
   io_task_runner_->ClearPendingTasks();
+
+  gl::init::ShutdownGL();
 }
 
-void GpuChannelTestCommon::SetUp() {
-  channel_manager_.reset(new TestGpuChannelManager(
-      gpu_preferences_, channel_manager_delegate_.get(), task_runner_.get(),
-      io_task_runner_.get(), sync_point_manager_.get(), nullptr));
+GpuChannel* GpuChannelTestCommon::CreateChannel(int32_t client_id,
+                                                bool is_gpu_host) {
+  uint64_t kClientTracingId = 1;
+  GpuChannel* channel = channel_manager()->EstablishChannel(
+      client_id, kClientTracingId, is_gpu_host);
+  channel->Init(base::MakeUnique<TestSinkFilteredSender>());
+  base::ProcessId kProcessId = 1;
+  channel->OnChannelConnected(kProcessId);
+  return channel;
 }
 
-void GpuChannelTestCommon::TearDown() {
-  // Destroying channels causes tasks to run on the IO task runner.
-  channel_manager_ = nullptr;
+void GpuChannelTestCommon::HandleMessage(GpuChannel* channel,
+                                         IPC::Message* msg) {
+  IPC::TestSink* sink =
+      static_cast<TestSinkFilteredSender*>(channel->channel_for_testing())
+          ->sink();
+
+  // Some IPCs (such as GpuCommandBufferMsg_Initialize) will generate more
+  // delayed responses, drop those if they exist.
+  sink->ClearMessages();
+
+  // Needed to appease DCHECKs.
+  msg->set_unblock(false);
+
+  // Message filter gets message first on IO thread.
+  channel->filter()->OnMessageReceived(*msg);
+
+  // Run the HandleMessage task posted to the main thread.
+  task_runner()->RunPendingTasks();
+
+  // Replies are sent to the sink.
+  if (msg->is_sync()) {
+    const IPC::Message* reply_msg = sink->GetMessageAt(0);
+    ASSERT_TRUE(reply_msg);
+    EXPECT_TRUE(!reply_msg->is_reply_error());
+
+    EXPECT_TRUE(IPC::SyncMessage::IsMessageReplyTo(
+        *reply_msg, IPC::SyncMessage::GetMessageId(*msg)));
+
+    IPC::MessageReplyDeserializer* deserializer =
+        static_cast<IPC::SyncMessage*>(msg)->GetReplyDeserializer();
+    ASSERT_TRUE(deserializer);
+    deserializer->SerializeOutputParameters(*reply_msg);
+
+    delete deserializer;
+  }
+
+  sink->ClearMessages();
+
+  delete msg;
 }
 
+base::SharedMemoryHandle GpuChannelTestCommon::GetSharedHandle() {
+  base::SharedMemory shared_memory;
+  shared_memory.CreateAnonymous(10);
+  base::SharedMemoryHandle shmem_handle;
+  shared_memory.ShareToProcess(base::GetCurrentProcessHandle(), &shmem_handle);
+  return shmem_handle;
+}
 
 }  // namespace gpu

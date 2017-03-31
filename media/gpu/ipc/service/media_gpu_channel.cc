@@ -132,7 +132,7 @@ void MediaGpuChannel::OnCreateJpegDecoder(int32_t route_id,
   jpeg_decoder_->AddClient(
       route_id, base::Bind(&SendCreateJpegDecoderResult, base::Passed(&msg),
                            channel_->io_task_runner(), channel_->AsWeakPtr(),
-                           make_scoped_refptr(channel_->filter())));
+                           channel_->filter()));
 }
 
 void MediaGpuChannel::OnCreateVideoDecoder(

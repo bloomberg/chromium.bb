@@ -71,6 +71,32 @@ CommandBufferId GenerateCommandBufferId(int channel_id, int32_t route_id) {
 
 }  // anonymous namespace
 
+SyncChannelFilteredSender::SyncChannelFilteredSender(
+    IPC::ChannelHandle channel_handle,
+    IPC::Listener* listener,
+    scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+    base::WaitableEvent* shutdown_event)
+    : channel_(IPC::SyncChannel::Create(channel_handle,
+                                        IPC::Channel::MODE_SERVER,
+                                        listener,
+                                        ipc_task_runner,
+                                        false,
+                                        shutdown_event)) {}
+
+SyncChannelFilteredSender::~SyncChannelFilteredSender() = default;
+
+bool SyncChannelFilteredSender::Send(IPC::Message* msg) {
+  return channel_->Send(msg);
+}
+
+void SyncChannelFilteredSender::AddFilter(IPC::MessageFilter* filter) {
+  channel_->AddFilter(filter);
+}
+
+void SyncChannelFilteredSender::RemoveFilter(IPC::MessageFilter* filter) {
+  channel_->RemoveFilter(filter);
+}
+
 GpuChannelMessageQueue::GpuChannelMessageQueue(
     GpuChannel* channel,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -112,6 +138,9 @@ void GpuChannelMessageQueue::Destroy() {
   }
 
   sync_point_order_data_->Destroy();
+
+  if (preempting_flag_)
+    preempting_flag_->Reset();
 
   // Destroy timer on io thread.
   io_task_runner_->PostTask(
@@ -220,7 +249,8 @@ void GpuChannelMessageQueue::UpdatePreemptionState() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(preempting_flag_);
   base::AutoLock lock(channel_lock_);
-  UpdatePreemptionStateHelper();
+  if (channel_)
+    UpdatePreemptionStateHelper();
 }
 
 void GpuChannelMessageQueue::UpdatePreemptionStateHelper() {
@@ -529,19 +559,19 @@ FilteredSender::FilteredSender() = default;
 
 FilteredSender::~FilteredSender() = default;
 
-GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
-                       SyncPointManager* sync_point_manager,
-                       GpuWatchdogThread* watchdog,
-                       gl::GLShareGroup* share_group,
-                       gles2::MailboxManager* mailbox,
-                       PreemptionFlag* preempting_flag,
-                       PreemptionFlag* preempted_flag,
-                       base::SingleThreadTaskRunner* task_runner,
-                       base::SingleThreadTaskRunner* io_task_runner,
-                       int32_t client_id,
-                       uint64_t client_tracing_id,
-                       bool allow_view_command_buffers,
-                       bool allow_real_time_streams)
+GpuChannel::GpuChannel(
+    GpuChannelManager* gpu_channel_manager,
+    SyncPointManager* sync_point_manager,
+    GpuWatchdogThread* watchdog,
+    scoped_refptr<gl::GLShareGroup> share_group,
+    scoped_refptr<gles2::MailboxManager> mailbox_manager,
+    scoped_refptr<PreemptionFlag> preempting_flag,
+    scoped_refptr<PreemptionFlag> preempted_flag,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    int32_t client_id,
+    uint64_t client_tracing_id,
+    bool is_gpu_host)
     : gpu_channel_manager_(gpu_channel_manager),
       sync_point_manager_(sync_point_manager),
       preempting_flag_(preempting_flag),
@@ -551,10 +581,9 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       task_runner_(task_runner),
       io_task_runner_(io_task_runner),
       share_group_(share_group),
-      mailbox_manager_(mailbox),
+      mailbox_manager_(mailbox_manager),
       watchdog_(watchdog),
-      allow_view_command_buffers_(allow_view_command_buffers),
-      allow_real_time_streams_(allow_real_time_streams),
+      is_gpu_host_(is_gpu_host),
       weak_factory_(this) {
   DCHECK(gpu_channel_manager);
   DCHECK(client_id);
@@ -575,22 +604,12 @@ GpuChannel::~GpuChannel() {
 
   message_queue_->Destroy();
 
-  if (preempting_flag_.get())
-    preempting_flag_->Reset();
+  DCHECK(!preempting_flag_ || !preempting_flag_->IsSet());
 }
 
-IPC::ChannelHandle GpuChannel::Init(base::WaitableEvent* shutdown_event) {
-  DCHECK(shutdown_event);
-  DCHECK(!channel_);
-
-  mojo::MessagePipe pipe;
-  channel_ = IPC::SyncChannel::Create(pipe.handle0.release(),
-                                      IPC::Channel::MODE_SERVER, this,
-                                      io_task_runner_, false, shutdown_event);
-
+void GpuChannel::Init(std::unique_ptr<FilteredSender> channel) {
+  channel_ = std::move(channel);
   channel_->AddFilter(filter_.get());
-
-  return pipe.handle1.release();
 }
 
 void GpuChannel::SetUnhandledMessageListener(IPC::Listener* listener) {
@@ -741,10 +760,6 @@ void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
   HandleMessageHelper(msg);
 }
 
-void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
-  HandleMessageHelper(msg);
-}
-
 #if defined(OS_ANDROID)
 const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
   for (const auto& kv : stubs_) {
@@ -782,8 +797,7 @@ std::unique_ptr<GpuCommandBufferStub> GpuChannel::CreateCommandBuffer(
     const GPUCreateCommandBufferConfig& init_params,
     int32_t route_id,
     std::unique_ptr<base::SharedMemory> shared_state_shm) {
-  if (init_params.surface_handle != kNullSurfaceHandle &&
-      !allow_view_command_buffers_) {
+  if (init_params.surface_handle != kNullSurfaceHandle && !is_gpu_host_) {
     DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): attempt to create a "
                    "view context on a non-priviledged channel";
     return nullptr;
@@ -805,8 +819,7 @@ std::unique_ptr<GpuCommandBufferStub> GpuChannel::CreateCommandBuffer(
   }
 
   GpuStreamPriority stream_priority = init_params.stream_priority;
-  if (!allow_real_time_streams_ &&
-      stream_priority == GpuStreamPriority::REAL_TIME) {
+  if (stream_priority == GpuStreamPriority::REAL_TIME && !is_gpu_host_) {
     DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): real time stream "
                    "priority not allowed";
     return nullptr;

@@ -23,15 +23,10 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
   uint64_t kClientTracingId = 1;
 
   ASSERT_TRUE(channel_manager());
-
-  IPC::ChannelHandle channel_handle = channel_manager()->EstablishChannel(
-      kClientId, kClientTracingId, false /* preempts */,
-      false /* allow_view_command_buffers */,
-      false /* allow_real_time_streams */);
-  EXPECT_TRUE(channel_handle.is_mojo_channel_handle());
-
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
-  ASSERT_TRUE(channel);
+  GpuChannel* channel =
+      channel_manager()->EstablishChannel(kClientId, kClientTracingId, false);
+  EXPECT_TRUE(channel);
+  EXPECT_EQ(channel_manager()->LookupChannel(kClientId), channel);
 }
 
 }  // namespace gpu

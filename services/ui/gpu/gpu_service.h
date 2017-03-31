@@ -156,9 +156,6 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
-  // An event that will be signalled when we shutdown.
-  base::WaitableEvent shutdown_event_;
-
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
   gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
@@ -179,6 +176,11 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   // external sources.
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   gpu::SyncPointManager* sync_point_manager_ = nullptr;
+
+  // An event that will be signalled when we shutdown. On some platforms it
+  // comes from external sources.
+  std::unique_ptr<base::WaitableEvent> owned_shutdown_event_;
+  base::WaitableEvent* shutdown_event_ = nullptr;
 
   // Whether this is running in the same process as the gpu host.
   bool in_host_process_ = false;
