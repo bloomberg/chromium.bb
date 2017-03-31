@@ -32,10 +32,13 @@ using i18n::phonenumbers::PhoneNumberUtil;
 namespace desktop_ios_promotion {
 
 // Default Impression cap. for each entry point.
-const int kEntryPointImpressionCap[] = {2, 2, 5, 10};
+const int kEntryPointImpressionCap[] = {0, 2, 2, 5, 10};
 
 const char* kEntrypointHistogramPrefix[] = {
-    "SavePasswordsNewBubble", "BookmarksNewBubble", "BookmarksFootNote",
+    "",  // Padding as PromotionEntryPoints values starts from 1.
+    "SavePasswordsNewBubble",
+    "BookmarksNewBubble",
+    "BookmarksFootNote",
     "HistoryPage",
 };
 
@@ -45,23 +48,31 @@ const char* kPromotionEntryPointNames[] = {
     "", "SavePasswordsBubblePromotion", "BookmarksBubblePromotion",
     "BookmarksFootnotePromotion", "HistoryPagePromotion"};
 
-// Text used on the promotion body, the first dimension is the text version
-// specified by body_text_id Finch parameter, and the second dimension is for
-// specifying if the phone number is available or not.
-// TODO(crbug.com/676655): Add another dimension for entry points when needed.
-const int kBodyTextId[2][2] = {
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER},
-    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2,
-     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER_V2}};
+// Text used on the promotion bubble body when the phone number is present,
+// this array is indexed by the text version specified by body_text_id Finch
+// parameter.
+const int kBubbleBodyTextNoPhoneNumberId[2] = {
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT,
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_V2};
 
-// Text used on the promotion title, This array is indexed by the text version
-// specified by title_text_id Finch parameter.
-// TODO(crbug.com/676655): Add another dimension for entry points when needed.
-const int kTitleTextId[3] = {
-    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
-    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
-    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3};
+// Text used on the promotion bubble body when the phone number is not present,
+// this array is indexed by the text version specified by body_text_id Finch
+// parameter.
+const int kBubbleBodyTextWithPhoneNumberId[2] = {
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER,
+    IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TEXT_WITH_PHONE_NUMBER_V2};
+
+// Text used on the promotion bubble title, The first dimension is the entry
+// point, and the second is the text version specified by title_text_id Finch
+// parameter.
+const int kBubbleTitleTextId[3][3] = {
+    {0, 0, 0},  // Padding as PromotionEntryPoints values starts from 1.
+    {IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+     IDS_PASSWORD_MANAGER_DESKTOP_TO_IOS_PROMO_TITLE_V3},
+    {IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE,
+     IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE_V2,
+     IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE_V3}};
 
 bool IsEligibleForIOSPromotion(
     PrefService* prefs,
@@ -125,8 +136,9 @@ base::string16 GetPromoText(
     const std::string& phone_number) {
   int text_id_from_finch = base::GetFieldTrialParamByFeatureAsInt(
       features::kDesktopIOSPromotion, "body_text_id", 0);
-  int body_text_i10_id = kBodyTextId[text_id_from_finch][!phone_number.empty()];
+  int body_text_i10_id = kBubbleBodyTextWithPhoneNumberId[text_id_from_finch];
   if (phone_number.empty()) {
+    body_text_i10_id = kBubbleBodyTextNoPhoneNumberId[text_id_from_finch];
     return l10n_util::GetStringUTF16(body_text_i10_id)
         .append(base::string16(13, ' '));
   }
@@ -138,7 +150,8 @@ base::string16 GetPromoTitle(
     desktop_ios_promotion::PromotionEntryPoint entry_point) {
   int text_id_from_finch = base::GetFieldTrialParamByFeatureAsInt(
       features::kDesktopIOSPromotion, "title_text_id", 0);
-  return l10n_util::GetStringUTF16(kTitleTextId[text_id_from_finch]);
+  return l10n_util::GetStringUTF16(
+      kBubbleTitleTextId[static_cast<int>(entry_point)][text_id_from_finch]);
 }
 
 std::string GetSMSID() {

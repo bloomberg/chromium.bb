@@ -20,6 +20,8 @@
 
 class Profile;
 
+class DesktopIOSPromotionBubbleView;
+
 namespace bookmarks {
 class BookmarkBubbleObserver;
 }
@@ -60,6 +62,8 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // views::WidgetDelegate:
   void WindowClosing() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  gfx::ImageSkia GetWindowIcon() override;
+  bool ShouldShowWindowIcon() const override;
 
  protected:
   // views::BubbleDialogDelegateView method.
@@ -68,6 +72,7 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
 
  private:
   friend class BookmarkBubbleViewTest;
+  friend class BookmarkBubbleViewBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoSignedIn);
   FRIEND_TEST_ALL_PREFIXES(BookmarkBubbleViewTest, SyncPromoNotSignedIn);
 
@@ -106,6 +111,11 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // Sets the title and parent of the node.
   void ApplyEdits();
 
+#if defined(OS_WIN)
+  // Shows the iOS promotion.
+  void ShowIOSPromotion();
+#endif
+
   // The bookmark bubble, if we're showing one.
   static BookmarkBubbleView* bookmark_bubble_;
 
@@ -142,11 +152,21 @@ class BookmarkBubbleView : public LocationBarBubbleDelegateView,
   // the current parent.
   views::Combobox* parent_combobox_;
 
+  // Bookmark details view, contains the details of the bookmark with controls
+  // to edit it.
+  std::unique_ptr<View> bookmark_details_view_;
+
+  // iOS promotion view.
+  DesktopIOSPromotionBubbleView* ios_promo_view_;
+
   // When the destructor is invoked should the bookmark be removed?
   bool remove_bookmark_;
 
   // When the destructor is invoked should edits be applied?
   bool apply_edits_;
+
+  // Whether the Windows to iOS promotion is shown to the user.
+  bool is_showing_ios_promotion_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleView);
 };

@@ -16,19 +16,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/grid_layout.h"
 
-namespace {
-
-int GetDesiredBubbleMaxWidth(
-    desktop_ios_promotion::PromotionEntryPoint entry_point) {
-  if (entry_point ==
-      desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE) {
-    return ManagePasswordsBubbleView::kDesiredBubbleWidth;
-  }
-  return 0;
-}
-
-}  // namespace
-
 DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
     Profile* profile,
     desktop_ios_promotion::PromotionEntryPoint entry_point)
@@ -38,8 +25,7 @@ DesktopIOSPromotionBubbleView::DesktopIOSPromotionBubbleView(
           base::MakeUnique<DesktopIOSPromotionController>(profile,
                                                           this,
                                                           entry_point)) {
-  int bubble_width =
-      ::GetDesiredBubbleMaxWidth(promotion_controller_->entry_point());
+  int bubble_width = ManagePasswordsBubbleView::kDesiredBubbleWidth;
   views::GridLayout* layout = new views::GridLayout(this);
   layout->set_minimum_size(gfx::Size(bubble_width, 0));
   SetLayoutManager(layout);

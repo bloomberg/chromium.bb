@@ -197,6 +197,20 @@
   </message>
   <!-- End of Bookmarks Sync Promo strings. -->
 
+  <!-- Begin of Desktop to iOS Promo strings. -->
+  <if expr="is_win">
+    <message name="IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE" desc="Title for Chrome iOS promotion appearing in the bookmark bubble after a bookmark is saved.">
+      Sync this bookmark to your iPhone
+    </message>
+    <message name="IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE_V2" desc="Title for Chrome iOS promotion appearing in the bookmark bubble after a bookmark is saved.">
+      Get this bookmark on your iPhone
+    </message>
+    <message name="IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE_V3" desc="Title for Chrome iOS promotion appearing in the bookmark bubble after a bookmark is saved.">
+      Share this bookmark with your iPhone
+    </message>
+  </if>
+  <!-- End of Desktop to iOS Promo strings. -->
+
   <!-- Begin of Bookmark Editor strings. -->
   <message name="IDS_BOOKMARK_EDITOR_NAME_LABEL" desc="Label shown before the title/name of the URL.">
     Name:
