@@ -1125,11 +1125,13 @@
     ],
 
     'clang_tot_shared_release_use_lld': [
-      'clang_tot', 'shared', 'release', 'use_lld',
+      # TODO(crbug.com/706492): Enable symbols when LLD makes PDBs.
+      'clang_tot', 'no_symbols', 'shared', 'release', 'use_lld',
     ],
 
     'clang_tot_official_static_use_lld_x86': [
-      'clang_tot', 'official', 'static', 'release', 'use_lld', 'x86',
+      # TODO(crbug.com/706492): Enable symbols when LLD makes PDBs.
+      'clang_tot', 'no_symbols', 'official', 'static', 'release', 'use_lld', 'x86',
     ],
 
     'clang_tot_minimal_symbols_shared_release': [
