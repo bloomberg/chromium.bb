@@ -1039,6 +1039,11 @@ config("default_warnings") {
     # TODO(thakis): Remove, http://crbug.com/263960
     if (is_clang) {
       cflags_cc += [ "-Wno-reserved-user-defined-literal" ]
+
+      # TODO(thakis): Enable this, crbug.com/507717
+      if (!is_nacl) {
+        cflags += [ "-Wno-shift-negative-value" ]
+      }
     } else {
       cflags_cc += [ "-Wno-literal-suffix" ]
     }
@@ -1072,17 +1077,6 @@ config("default_warnings") {
       # TODO(hans): Get this cleaned up, http://crbug.com/428099
       "-Wno-inconsistent-missing-override",
     ]
-
-    # Chrome's hermetic Clang compiler, NaCl's Clang compiler and Xcode's Clang
-    # compiler will almost always have different versions. Certain flags may not
-    # be recognized by one version or the other.
-    if (!is_nacl) {
-      # Flags NaCl (Clang 3.7) does not recognize.
-      cflags += [
-        # TODO(thakis): Enable this, crbug.com/507717
-        "-Wno-shift-negative-value",
-      ]
-    }
 
     # use_xcode_clang only refers to the iOS toolchain, host binaries use
     # chromium's clang always.

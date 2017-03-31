@@ -146,6 +146,11 @@ source_set("sandbox_linux_unittests_sources") {
       "seccomp-bpf/trap_unittest.cc",
     ]
     deps += [ ":bpf_dsl_golden" ]
+
+    # syscall_parameters_restrictions_unittests.cc uses MAKE_PROCESS_CPUCLOCK,
+    # which shifts signed ints around, which has undefined behavior.
+    # TODO(thakis): Fix that in LSS, then remove this flag here.
+    cflags = [ "-Wno-shift-negative-value" ]
   }
   if (compile_credentials) {
     sources += [
