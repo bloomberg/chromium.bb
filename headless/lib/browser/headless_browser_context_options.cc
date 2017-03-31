@@ -42,7 +42,7 @@ const std::string& HeadlessBrowserContextOptions::product_name_and_version()
 }
 
 const std::string& HeadlessBrowserContextOptions::user_agent() const {
-  return ReturnOverriddenValue(user_agent_, browser_options_->user_agent);
+  return browser_options_->user_agent;
 }
 
 const net::HostPortPair& HeadlessBrowserContextOptions::proxy_server() const {

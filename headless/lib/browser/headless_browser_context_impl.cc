@@ -317,12 +317,6 @@ HeadlessBrowserContext::Builder::SetProtocolHandlers(
   return *this;
 }
 
-HeadlessBrowserContext::Builder& HeadlessBrowserContext::Builder::SetUserAgent(
-    const std::string& user_agent) {
-  options_->user_agent_ = user_agent;
-  return *this;
-}
-
 HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::SetProductNameAndVersion(
     const std::string& product_name_and_version) {
