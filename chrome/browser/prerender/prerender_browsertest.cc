@@ -1033,9 +1033,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
           GetPrerenderManager());
   PrerenderTestURL("/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
   EXPECT_EQ(1, GetPrerenderDomContentLoadedEventCountForLinkNumber(0));
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrerenderNotSwappedInPLT", 1);
 
   ChannelDestructionWatcher channel_close_watcher;
   channel_close_watcher.WatchChannel(
@@ -1044,7 +1041,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPage) {
   channel_close_watcher.WaitForChannelClose();
   fcp_waiter->Wait();
 
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
   histogram_tester().ExpectTotalCount(
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
   histogram_tester().ExpectTotalCount(
@@ -1110,14 +1106,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageCrossDomain) {
           GetPrerenderManager());
   PrerenderTestURL(GetCrossDomainTestUrl("prerender/prerender_page.html"),
                    FINAL_STATUS_USED, 1);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.webcross_PrerenderNotSwappedInPLT", 1);
 
   NavigateToDestURL();
   fcp_waiter->Wait();
 
-  histogram_tester().ExpectTotalCount("Prerender.webcross_PerceivedPLT", 1);
   histogram_tester().ExpectTotalCount(
       "Prerender.webcross_PrefetchTTFCP.Warm.Cacheable.Visible", 1);
 }
@@ -1493,8 +1485,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("/prerender/prerender_page.html");
 }
 
-// Checks that we get the right PPLT histograms for client redirect prerenders
-// and navigations when the referring page is Google.
+// Checks that the PrefetchTTFCP histogram is recorded across the client
+// redirect when the referring page is Google.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderLocationReplaceGWSHistograms) {
   DisableJavascriptCalls();
@@ -1522,35 +1514,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_TRUE(DidPrerenderPass(prerender->contents()->prerender_contents()));
   EXPECT_EQ(1, prerender->number_of_loads());
 
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  // Although there is a client redirect, it is dropped from histograms because
-  // it is a Google URL. The target page itself does not load until after the
-  // swap.
-  histogram_tester().ExpectTotalCount("Prerender.gws_PrerenderNotSwappedInPLT",
-                                      0);
-
   GURL navigate_url = embedded_test_server()->GetURL(
       "/prerender/prerender_location_replace.html?" +
       net::EscapeQueryParamValue(dest_url.spec(), false) + "#navigate");
   navigate_url = navigate_url.ReplaceComponents(replacements);
 
-  NavigationOrSwapObserver swap_observer(
-      current_browser()->tab_strip_model(),
-      GetActiveWebContents(), 2);
+  // Open the URL and wait for the FCP.
+  test_utils::FirstContentfulPaintManagerWaiter* fcp_waiter =
+      test_utils::FirstContentfulPaintManagerWaiter::Create(
+          GetPrerenderManager());
   current_browser()->OpenURL(OpenURLParams(navigate_url, Referrer(),
                                            WindowOpenDisposition::CURRENT_TAB,
                                            ui::PAGE_TRANSITION_TYPED, false));
-  swap_observer.Wait();
+  fcp_waiter->Wait();
 
-  EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
-
-  histogram_tester().ExpectTotalCount("Prerender.gws_PrerenderNotSwappedInPLT",
-                                      0);
-  histogram_tester().ExpectTotalCount("Prerender.gws_PerceivedPLT", 1);
-
-  // The client redirect does /not/ count as a miss because it's a Google URL.
-  histogram_tester().ExpectTotalCount("Prerender.PerceivedPLTFirstAfterMiss",
-                                      0);
+  // The client redirect changes the PageLoadExtraInfo.start_url and hence the
+  // past navigation cannot be found for the histogram to be recorded as
+  // PrefetchTTFCP.Warm.
+  histogram_tester().ExpectTotalCount(
+      "Prerender.gws_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
 }
 
 // Checks that client-issued redirects work with prerendering.
@@ -3019,9 +3001,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
   EXPECT_EQ(1, GetPrerenderDomContentLoadedEventCountForLinkNumber(0));
   EXPECT_TRUE(DidPrerenderPass(prerender->contents()->prerender_contents()));
   EXPECT_EQ(0, prerender->number_of_loads());
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrerenderNotSwappedInPLT", 0);
 
   // Swap.
   NavigationOrSwapObserver swap_observer(current_browser()->tab_strip_model(),
@@ -3036,10 +3015,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredImage) {
 
   // Now check DidDisplayPass.
   EXPECT_TRUE(DidDisplayPass(GetActiveWebContents()));
-
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrerenderNotSwappedInPLT", 0);
-  histogram_tester().ExpectTotalCount("Prerender.websame_PerceivedPLT", 1);
 }
 
 // Checks that a deferred redirect to an image is not loaded until the
@@ -3207,12 +3182,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPing) {
   OpenDestURLViaClickPing(kPingURL);
 
   ping_counter.WaitForCount(1);
-}
-
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPPLTNormalNavigation) {
-  GURL url = embedded_test_server()->GetURL("/prerender/prerender_page.html");
-  ui_test_utils::NavigateToURL(current_browser(), url);
-  histogram_tester().ExpectTotalCount("Prerender.none_PerceivedPLT", 1);
 }
 
 // Checks that a prerender which calls window.close() on itself is aborted.

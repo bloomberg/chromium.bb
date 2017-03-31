@@ -526,35 +526,6 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
   PostCleanupTask();
 }
 
-void PrerenderManager::RecordPageLoadTimeNotSwappedIn(
-    Origin origin,
-    base::TimeDelta page_load_time,
-    const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  histograms_->RecordPageLoadTimeNotSwappedIn(origin, page_load_time, url);
-}
-
-void PrerenderManager::RecordPerceivedPageLoadTime(
-    Origin origin,
-    NavigationType navigation_type,
-    base::TimeDelta perceived_page_load_time,
-    double fraction_plt_elapsed_at_swap_in,
-    const GURL& url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (GetPredictionStatusForOrigin(origin)
-      != NetworkPredictionStatus::ENABLED) {
-    return;
-  }
-
-  histograms_->RecordPerceivedPageLoadTime(
-      origin, perceived_page_load_time, navigation_type, url);
-
-  if (navigation_type == NAVIGATION_TYPE_PRERENDERED) {
-    histograms_->RecordPercentLoadDoneAtSwapin(
-        origin, fraction_plt_elapsed_at_swap_in);
-  }
-}
-
 void PrerenderManager::RecordPrefetchResponseReceived(Origin origin,
                                                       bool is_main_resource,
                                                       bool is_redirect,
@@ -941,10 +912,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   GURL url = url_arg;
   GURL alias_url;
-
-  // From here on, we will record a FinalStatus so we need to register with the
-  // histogram tracking.
-  histograms_->RecordPrerender();
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies) &&
       origin != ORIGIN_OFFLINE) {

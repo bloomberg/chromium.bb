@@ -36,12 +36,6 @@ int GetResourceType(bool is_main_resource, bool is_redirect, bool is_no_store) {
          (is_main_resource * MAIN_RESOURCE);
 }
 
-// Time window for which we will record windowed PLTs from the last observed
-// link rel=prefetch tag. This is not intended to be the same as the prerender
-// ttl, it's just intended to be a window during which a prerender has likely
-// affected performance.
-const int kWindowDurationSeconds = 30;
-
 std::string ComposeHistogramName(const std::string& prefix_type,
                                  const std::string& name) {
   if (prefix_type.empty())
@@ -127,32 +121,13 @@ const char* FirstContentfulPaintHiddenName(bool was_hidden) {
     }                                                                         \
   } while (0)
 
-PrerenderHistograms::PrerenderHistograms()
-    : seen_any_pageload_(true), seen_pageload_started_after_prerender_(true) {}
-
-void PrerenderHistograms::RecordPrerender() {
-  // If we observe multiple tags within the 30 second window, we will still
-  // reset the window to begin at the most recent occurrence, so that we will
-  // always be in a window in the 30 seconds from each occurrence.
-  last_prerender_seen_time_ = GetCurrentTimeTicks();
-  seen_any_pageload_ = false;
-  seen_pageload_started_after_prerender_ = false;
-}
+PrerenderHistograms::PrerenderHistograms() {}
 
 void PrerenderHistograms::RecordPrerenderStarted(Origin origin) const {
   if (OriginIsOmnibox(origin)) {
     UMA_HISTOGRAM_ENUMERATION(
         "Prerender.OmniboxPrerenderCount", 1, 2);
   }
-}
-
-void PrerenderHistograms::RecordConcurrency(size_t prerender_count) const {
-  static const size_t kMaxRecordableConcurrency = 20;
-  DCHECK_GE(kMaxRecordableConcurrency, Config().max_link_concurrency);
-  UMA_HISTOGRAM_ENUMERATION(
-      base::StringPrintf("Prerender.PrerenderCountOf%" PRIuS "Max",
-                         kMaxRecordableConcurrency),
-      prerender_count, kMaxRecordableConcurrency + 1);
 }
 
 void PrerenderHistograms::RecordUsedPrerender(Origin origin) const {
@@ -170,108 +145,13 @@ void PrerenderHistograms::RecordTimeSinceLastRecentVisit(
       UMA_HISTOGRAM_TIMES(name, delta));
 }
 
-base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {
-  return base::TimeTicks::Now();
-}
-
-// Helper macro for histograms.
-#define RECORD_PLT(tag, perceived_page_load_time) \
-  PREFIXED_HISTOGRAM( \
-      tag, origin, \
-      UMA_HISTOGRAM_CUSTOM_TIMES( \
-        name, \
-        perceived_page_load_time, \
-        base::TimeDelta::FromMilliseconds(10), \
-        base::TimeDelta::FromSeconds(60), \
-        100))
-
-// Summary of all histograms Perceived PLT histograms:
-// (all prefixed PerceivedPLT)
-// PerceivedPLT -- Perceived Pageloadtimes (PPLT) for all pages in the group.
-// ...Windowed -- PPLT for pages in the 30s after a prerender is created.
-// ...FirstAfterMiss -- First page to finish loading after a prerender, which
-// is different from the page that was prerendered.
-// ...FirstAfterMissNonOverlapping -- Same as FirstAfterMiss, but only
-// triggering for the first page to finish after the prerender that also started
-// after the prerender started.
-// ...FirstAfterMissBoth -- pages meeting
-// FirstAfterMiss AND FirstAfterMissNonOverlapping
-// ...FirstAfterMissAnyOnly -- pages meeting
-// FirstAfterMiss but NOT FirstAfterMissNonOverlapping
-// ..FirstAfterMissNonOverlappingOnly -- pages meeting
-// FirstAfterMissNonOverlapping but NOT FirstAfterMiss
-
-void PrerenderHistograms::RecordPerceivedPageLoadTime(
-    Origin origin,
-    base::TimeDelta perceived_page_load_time,
-    NavigationType navigation_type,
-    const GURL& url) {
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return;
-  bool within_window = WithinWindow();
-  bool is_google_url =
-      google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS);
-  RECORD_PLT("PerceivedPLT", perceived_page_load_time);
-  if (within_window)
-    RECORD_PLT("PerceivedPLTWindowed", perceived_page_load_time);
-  if (navigation_type != NAVIGATION_TYPE_NORMAL) {
-    DCHECK(navigation_type == NAVIGATION_TYPE_PRERENDERED);
-    seen_any_pageload_ = true;
-    seen_pageload_started_after_prerender_ = true;
-  } else if (within_window) {
-    if (!is_google_url) {
-      bool recorded_any = false;
-      bool recorded_non_overlapping = false;
-      if (!seen_any_pageload_) {
-        seen_any_pageload_ = true;
-        RECORD_PLT("PerceivedPLTFirstAfterMiss", perceived_page_load_time);
-        recorded_any = true;
-      }
-      if (!seen_pageload_started_after_prerender_ &&
-          perceived_page_load_time <= GetTimeSinceLastPrerender()) {
-        seen_pageload_started_after_prerender_ = true;
-        RECORD_PLT("PerceivedPLTFirstAfterMissNonOverlapping",
-                   perceived_page_load_time);
-        recorded_non_overlapping = true;
-      }
-      if (recorded_any || recorded_non_overlapping) {
-        if (recorded_any && recorded_non_overlapping) {
-          RECORD_PLT("PerceivedPLTFirstAfterMissBoth",
-                     perceived_page_load_time);
-        } else if (recorded_any) {
-          RECORD_PLT("PerceivedPLTFirstAfterMissAnyOnly",
-                     perceived_page_load_time);
-        } else if (recorded_non_overlapping) {
-          RECORD_PLT("PerceivedPLTFirstAfterMissNonOverlappingOnly",
-                     perceived_page_load_time);
-        }
-      }
-    }
-  }
-}
-
 void PrerenderHistograms::RecordPerceivedFirstContentfulPaintStatus(
     Origin origin,
     bool successful,
-    bool was_hidden) {
+    bool was_hidden) const {
   base::UmaHistogramBoolean(GetHistogramName(origin, "PerceivedTTFCPRecorded") +
                                 FirstContentfulPaintHiddenName(was_hidden),
                             successful);
-}
-
-void PrerenderHistograms::RecordPageLoadTimeNotSwappedIn(
-    Origin origin,
-    base::TimeDelta page_load_time,
-    const GURL& url) const {
-  // If the URL to be prerendered is not a http[s] URL, or is a Google URL,
-  // do not record.
-  if (!url.SchemeIsHTTPOrHTTPS() ||
-      google_util::IsGoogleDomainUrl(url, google_util::DISALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS)) {
-    return;
-  }
-  RECORD_PLT("PrerenderNotSwappedInPLT", page_load_time);
 }
 
 void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(Origin origin,
@@ -283,17 +163,6 @@ void PrerenderHistograms::RecordPercentLoadDoneAtSwapin(Origin origin,
     return;
   PREFIXED_HISTOGRAM("PercentLoadDoneAtSwapin",
                      origin, UMA_HISTOGRAM_PERCENTAGE(name, percentage));
-}
-
-base::TimeDelta PrerenderHistograms::GetTimeSinceLastPrerender() const {
-  return base::TimeTicks::Now() - last_prerender_seen_time_;
-}
-
-bool PrerenderHistograms::WithinWindow() const {
-  if (last_prerender_seen_time_.is_null())
-    return false;
-  return GetTimeSinceLastPrerender() <=
-      base::TimeDelta::FromSeconds(kWindowDurationSeconds);
 }
 
 void PrerenderHistograms::RecordTimeUntilUsed(
@@ -410,7 +279,7 @@ void PrerenderHistograms::RecordPrefetchFirstContentfulPaintTime(
     bool is_no_store,
     bool was_hidden,
     base::TimeDelta time,
-    base::TimeDelta prefetch_age) {
+    base::TimeDelta prefetch_age) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!prefetch_age.is_zero()) {
