@@ -1041,6 +1041,19 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
                           'Regressions: Unexpected missing results (1)\n'
                           '  failures/unexpected/missing_image.html [ Missing ]\n\n'))
 
+    def test_image_first_flag_initialized_from_file(self):
+        host = MockHost()
+        image_first_tests_filename = test.LAYOUT_TEST_DIR + '/ImageFirstTests'
+        image_first_folder1 = 'fooFolder1'
+        image_first_folder2 = 'fooFolder2'
+        host.filesystem.write_text_file(image_first_tests_filename, '%s\n%s' % (image_first_folder1, image_first_folder2))
+
+        options, args = parse_args()
+        port_obj = host.port_factory.get(options.platform, options)
+
+        run_webkit_tests.run(port_obj, options, args, StringIO.StringIO(), StringIO.StringIO())
+        self.assertListEqual(options.image_first_tests, [image_first_folder1, image_first_folder2])
+
 
 class EndToEndTest(unittest.TestCase):
 

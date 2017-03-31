@@ -555,6 +555,12 @@ def _set_up_derived_options(port, options, args):
     if not options.seed:
         options.seed = port.host.time()
 
+    if not options.image_first_tests:
+        image_first_tests_path = port.host.filesystem.join(port.layout_tests_dir(), 'ImageFirstTests')
+        if port.host.filesystem.exists(image_first_tests_path):
+            contents = port.host.filesystem.read_text_file(image_first_tests_path)
+            options.image_first_tests.extend(line for line in contents.splitlines(False) if line)
+
 
 def _run_tests(port, options, args, printer):
     _set_up_derived_options(port, options, args)
