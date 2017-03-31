@@ -140,24 +140,3 @@ class TestCopierTest(LoggingTestCase):
             'WARNING: Skipping: /blink/w3c/dir1/my-ref-test.html\n',
             'WARNING:   Reason: Ref file "/blink/w3c/dir1/not-here.html" was not found.\n'
         ])
-
-    def test_should_try_to_convert_positive_cases(self):
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.css', 'LayoutTests/external/wpt/css/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.htm', 'LayoutTests/external/wpt/css/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.html', 'LayoutTests/external/wpt/css/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.xht', 'LayoutTests/external/wpt/css/x'))
-        self.assertTrue(TestCopier.should_try_to_convert({}, 'foo.xhtml', 'LayoutTests/external/wpt/css/x'))
-
-    def test_should_not_try_to_convert_js_test(self):
-        self.assertFalse(TestCopier.should_try_to_convert({'is_jstest': True}, 'foo.html', 'LayoutTests/external/wpt/css/x'))
-
-    def test_should_not_try_to_convert_test_in_wpt(self):
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.html', 'LayoutTests/external/wpt/foo'))
-
-    def test_should_not_try_to_convert_other_file_types(self):
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.bar', 'LayoutTests/external/wpt/css/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.js', 'LayoutTests/external/wpt/css/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.md', 'LayoutTests/external/wpt/css/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.png', 'LayoutTests/external/wpt/css/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.svg', 'LayoutTests/external/wpt/css/x'))
-        self.assertFalse(TestCopier.should_try_to_convert({}, 'foo.svgz', 'LayoutTests/external/wpt/css/x'))

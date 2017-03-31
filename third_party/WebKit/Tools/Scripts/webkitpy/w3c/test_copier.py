@@ -33,12 +33,10 @@ a local W3C repository source directory into a destination directory.
 
 import logging
 import mimetypes
-import re
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.w3c.test_parser import TestParser
-from webkitpy.w3c.test_converter import convert_for_webkit
 
 _log = logging.getLogger(__name__)
 
@@ -271,8 +269,6 @@ class TestCopier(object):
             _log.error('%s not found. Possible error in the test.', source_path)
             return None
 
-        reference_support_info = file_to_copy.get('reference_support_info') or None
-
         if not self.filesystem.exists(self.filesystem.dirname(dest_path)):
             if not self.import_in_place:
                 self.filesystem.maybe_make_directory(self.filesystem.dirname(dest_path))
@@ -283,35 +279,9 @@ class TestCopier(object):
         # there's no harm in copying the identical thing.
         _log.debug('  copying %s', relpath)
 
-        if self.should_try_to_convert(file_to_copy, source_path, dest_dir):
-            converted_file = convert_for_webkit(
-                dest_dir, filename=source_path,
-                reference_support_info=reference_support_info,
-                host=self.host)
-            for prefixed_property in converted_file[0]:
-                self._prefixed_properties.setdefault(prefixed_property, 0)
-                self._prefixed_properties[prefixed_property] += 1
-
-            self.filesystem.write_text_file(dest_path, converted_file[1])
-        else:
-            if not self.import_in_place:
-                self.filesystem.copyfile(source_path, dest_path)
-                if self.filesystem.read_binary_file(source_path)[:2] == '#!':
-                    self.filesystem.make_executable(dest_path)
+        if not self.import_in_place:
+            self.filesystem.copyfile(source_path, dest_path)
+            if self.filesystem.read_binary_file(source_path)[:2] == '#!':
+                self.filesystem.make_executable(dest_path)
 
         return dest_path.replace(self._webkit_root, '')
-
-    @staticmethod
-    def should_try_to_convert(file_to_copy, source_path, dest_dir):
-        """Checks whether we should try to modify the file when importing."""
-        if file_to_copy.get('is_jstest', False):
-            return False
-
-        # Conversion is not necessary for any tests in wpt now; see http://crbug.com/654081.
-        # Note, we want to move away from converting files, see http://crbug.com/663773.
-        if not re.search(r'[/\\]external[/\\]wpt[/\\]css[/\\]', dest_dir):
-            return False
-
-        # Only HTML, XHTML and CSS files should be converted.
-        mimetype, _ = mimetypes.guess_type(source_path)
-        return mimetype in ('text/html', 'application/xhtml+xml', 'text/css')
