@@ -265,6 +265,9 @@ void SelectFaviconFrameIndices(const std::vector<gfx::Size>& frame_pixel_sizes,
   GetCandidateIndicesWithBestScores(
       frame_pixel_sizes, desired_sizes, match_score, &results);
 
+  if (!best_indices)
+    return;
+
   std::set<size_t> already_added;
   for (size_t i = 0; i < results.size(); ++i) {
     size_t index = results[i].index;

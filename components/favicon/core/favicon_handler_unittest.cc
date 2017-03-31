@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
@@ -888,45 +889,32 @@ TEST_F(FaviconHandlerTest, FaviconInvalidURL) {
 }
 
 TEST_F(FaviconHandlerTest, TestSortFavicon) {
+  // Names represent the bitmap sizes per icon.
+  const GURL kIconURL1_17("http://www.google.com/a");
+  const GURL kIconURL1024_512("http://www.google.com/b");
+  const GURL kIconURL16_14("http://www.google.com/c");
+  const GURL kIconURLWithoutSize1("http://www.google.com/d");
+  const GURL kIconURLWithoutSize2("http://www.google.com/e");
+
   const std::vector<favicon::FaviconURL> kSourceIconURLs{
-      FaviconURL(GURL("http://www.google.com/a"), FAVICON,
-                 {gfx::Size(1, 1), gfx::Size(17, 17)}),
-      FaviconURL(GURL("http://www.google.com/b"), FAVICON,
+      FaviconURL(kIconURL1_17, FAVICON, {gfx::Size(1, 1), gfx::Size(17, 17)}),
+      FaviconURL(kIconURL1024_512, FAVICON,
                  {gfx::Size(1024, 1024), gfx::Size(512, 512)}),
-      FaviconURL(GURL("http://www.google.com/c"), FAVICON,
+      FaviconURL(kIconURL16_14, FAVICON,
                  {gfx::Size(16, 16), gfx::Size(14, 14)}),
-      FaviconURL(GURL("http://www.google.com/d"), FAVICON, kEmptySizes),
-      FaviconURL(GURL("http://www.google.com/e"), FAVICON, kEmptySizes)};
+      FaviconURL(kIconURLWithoutSize1, FAVICON, kEmptySizes),
+      FaviconURL(kIconURLWithoutSize2, FAVICON, kEmptySizes)};
 
   std::unique_ptr<FaviconHandler> handler = RunHandlerWithCandidates(
       FaviconDriverObserver::NON_TOUCH_LARGEST, kSourceIconURLs);
 
-  struct ExpectedResult {
-    // The favicon's index in kSourceIconURLs.
-    size_t favicon_index;
-    // Width of largest bitmap.
-    int width;
-  } results[] = {
-      // First is icon2, though its size larger than maximal.
-      {1, 1024},
-      // Second is icon1
-      // The 17x17 is largest.
-      {0, 17},
-      // Third is icon3.
-      // The 16x16 is largest.
-      {2, 16},
-      // The rest of bitmaps come in order, there is no "sizes" attribute.
-      {3, -1},
-      {4, -1},
-  };
-  const std::vector<FaviconURL>& icons = handler->image_urls();
-  ASSERT_EQ(5u, icons.size());
-  for (size_t i = 0; i < icons.size(); ++i) {
-    EXPECT_EQ(kSourceIconURLs[results[i].favicon_index].icon_url,
-              icons[i].icon_url);
-    if (results[i].width != -1)
-      EXPECT_EQ(results[i].width, icons[i].icon_sizes[0].width());
-  }
+  EXPECT_THAT(
+      handler->GetIconURLs(),
+      ElementsAre(
+          // The 512x512 bitmap is the best match for the desired size.
+          kIconURL1024_512, kIconURL1_17, kIconURL16_14,
+          // The rest of bitmaps come in order, there is no "sizes" attribute.
+          kIconURLWithoutSize1, kIconURLWithoutSize2));
 }
 
 TEST_F(FaviconHandlerTest, TestDownloadLargestFavicon) {
@@ -979,7 +967,8 @@ TEST_F(FaviconHandlerTest, TestSelectLargestFavicon) {
 }
 
 TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
-  const int kMaximalSize = FaviconHandler::GetMaximalIconSize(FAVICON);
+  const int kMaximalSize = FaviconHandler::GetMaximalIconSize(
+      FaviconDriverObserver::NON_TOUCH_LARGEST);
 
   const GURL kIconURL1("http://www.google.com/b");
   const GURL kIconURL2("http://www.google.com/c");
@@ -992,10 +981,10 @@ TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
   delegate_.fake_downloader().AddWithOriginalSizes(
       kIconURL2, IntVector{kMaximalSize}, IntVector{kOriginalSize2});
 
-  // Verify the largest bitmap was selected although it was scaled down to
-  // maximal size and smaller than |kIconURL1| now.
+  // Verify the best bitmap was selected (although smaller than |kIconURL2|)
+  // and that it was scaled down to |kMaximalSize|.
   EXPECT_CALL(delegate_,
-              OnFaviconUpdated(_, _, kIconURL2, _,
+              OnFaviconUpdated(_, _, kIconURL1, _,
                                ImageSizeIs(kMaximalSize, kMaximalSize)));
 
   RunHandlerWithCandidates(
@@ -1005,7 +994,7 @@ TEST_F(FaviconHandlerTest, TestFaviconWasScaledAfterDownload) {
        FaviconURL(kIconURL2, FAVICON,
                   SizeVector{gfx::Size(kOriginalSize2, kOriginalSize2)})});
 
-  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL2));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kIconURL1));
 }
 
 // Test that if several icons are downloaded because the icons are smaller than

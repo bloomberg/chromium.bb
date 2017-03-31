@@ -130,33 +130,44 @@ class FaviconHandler {
                           const std::vector<favicon::FaviconURL>& candidates);
 
   // For testing.
-  const std::vector<favicon::FaviconURL>& image_urls() const {
-    return image_urls_;
-  }
+  const std::vector<GURL> GetIconURLs() const;
 
   // Returns whether the handler is waiting for a download to complete or for
   // data from the FaviconService. Reserved for testing.
   bool HasPendingTasksForTest();
 
-  // Get the maximal icon size in pixels for a icon of type |icon_type| for the
-  // current platform.
-  static int GetMaximalIconSize(favicon_base::IconType icon_type);
+  // Get the maximal icon size in pixels for a handler of type |handler_type|.
+  static int GetMaximalIconSize(
+      FaviconDriverObserver::NotificationIconType handler_type);
 
  private:
   // Used to track a candidate for the favicon.
   struct FaviconCandidate {
-    FaviconCandidate();
-    ~FaviconCandidate();
+    // Builds a scored candidate by selecting the best bitmap sizes.
+    static FaviconCandidate FromFaviconURL(
+        const favicon::FaviconURL& favicon_url,
+        const std::vector<int>& desired_pixel_sizes);
 
-    FaviconCandidate(const GURL& image_url,
-                     const gfx::Image& image,
-                     float score,
-                     favicon_base::IconType icon_type);
+    friend bool operator==(const FaviconCandidate& lhs,
+                           const FaviconCandidate& rhs) {
+      return lhs.icon_url == rhs.icon_url && lhs.icon_type == rhs.icon_type &&
+             lhs.score == rhs.score;
+    }
 
-    GURL image_url;
+    // Compare function used for std::stable_sort to sort in descending order.
+    static bool CompareScore(const FaviconCandidate& lhs,
+                             const FaviconCandidate& rhs) {
+      return lhs.score > rhs.score;
+    }
+
+    GURL icon_url;
+    favicon_base::IconType icon_type = favicon_base::INVALID_ICON;
+    float score = 0;
+  };
+
+  struct DownloadedFavicon {
+    FaviconCandidate candidate;
     gfx::Image image;
-    float score;
-    favicon_base::IconType icon_type;
   };
 
   // Returns the bit mask of favicon_base::IconType based on the handler's type.
@@ -197,11 +208,9 @@ class FaviconHandler {
 
   bool ShouldSaveFavicon();
 
-  // Updates |favicon_candidate_| and returns true if it is an exact match.
-  bool UpdateFaviconCandidate(const GURL& image_url,
-                              const gfx::Image& image,
-                              float score,
-                              favicon_base::IconType icon_type);
+  // Updates |best_favicon_| and returns true if it was considered a satisfying
+  // image (e.g. exact size match).
+  bool UpdateFaviconCandidate(const DownloadedFavicon& downloaded_favicon);
 
   // Sets the image data for the favicon.
   void SetFavicon(const GURL& icon_url,
@@ -221,9 +230,9 @@ class FaviconHandler {
                             const gfx::Image& image);
 
   // Return the current candidate if any.
-  favicon::FaviconURL* current_candidate() {
-    return current_candidate_index_ < image_urls_.size()
-               ? &image_urls_[current_candidate_index_]
+  const FaviconCandidate* current_candidate() const {
+    return current_candidate_index_ < candidates_.size()
+               ? &candidates_[current_candidate_index_]
                : nullptr;
   }
 
@@ -267,7 +276,7 @@ class FaviconHandler {
   const bool download_largest_icon_;
 
   // The prioritized favicon candidates from the page back from the renderer.
-  std::vector<favicon::FaviconURL> image_urls_;
+  std::vector<FaviconCandidate> candidates_;
 
   // The icon URL and the icon type of the favicon in the most recent
   // FaviconDriver::OnFaviconAvailable() notification.
@@ -286,10 +295,10 @@ class FaviconHandler {
   size_t current_candidate_index_;
 
   // Best image we've seen so far.  As images are downloaded from the page they
-  // are stored here. When there is an exact match, or no more images are
-  // available the favicon service and the current page are updated (assuming
-  // the image is for a favicon).
-  FaviconCandidate best_favicon_candidate_;
+  // are stored here. When a satisfying icon is found (as defined in
+  // UpdateFaviconCandidate()), the favicon service and the delegate are
+  // notified.
+  DownloadedFavicon best_favicon_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconHandler);
 };
