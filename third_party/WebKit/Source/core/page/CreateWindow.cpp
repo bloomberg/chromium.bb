@@ -50,11 +50,11 @@ static Frame* reuseExistingWindow(LocalFrame& activeFrame,
                                   LocalFrame& lookupFrame,
                                   const AtomicString& frameName,
                                   NavigationPolicy policy) {
-  if (!frameName.isEmpty() && frameName != "_blank" &&
+  if (!frameName.isEmpty() && !equalIgnoringASCIICase(frameName, "_blank") &&
       policy == NavigationPolicyIgnore) {
     if (Frame* frame =
             lookupFrame.findFrameForNavigation(frameName, activeFrame)) {
-      if (frameName != "_self") {
+      if (!equalIgnoringASCIICase(frameName, "_self")) {
         if (Page* page = frame->page()) {
           if (page == activeFrame.page())
             page->focusController().setFocusedFrame(frame);
@@ -85,7 +85,7 @@ static Frame* createNewWindow(LocalFrame& openerFrame,
   ASSERT(page->mainFrame());
   LocalFrame& frame = *toLocalFrame(page->mainFrame());
 
-  if (request.frameName() != "_blank")
+  if (!equalIgnoringASCIICase(request.frameName(), "_blank"))
     frame.tree().setName(request.frameName());
 
   page->chromeClient().setWindowFeatures(features);

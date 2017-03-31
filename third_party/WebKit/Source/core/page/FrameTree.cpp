@@ -132,18 +132,19 @@ unsigned FrameTree::childCount() const {
 }
 
 Frame* FrameTree::find(const AtomicString& name) const {
-  if (name == "_self" || name == "_current" || name.isEmpty())
+  if (equalIgnoringASCIICase(name, "_self") ||
+      equalIgnoringASCIICase(name, "_current") || name.isEmpty())
     return m_thisFrame;
 
-  if (name == "_top")
+  if (equalIgnoringASCIICase(name, "_top"))
     return top();
 
-  if (name == "_parent")
+  if (equalIgnoringASCIICase(name, "_parent"))
     return parent() ? parent() : m_thisFrame.get();
 
   // Since "_blank" should never be any frame's name, the following just amounts
   // to an optimization.
-  if (name == "_blank")
+  if (equalIgnoringASCIICase(name, "_blank"))
     return nullptr;
 
   // Search subtree starting with this frame first.

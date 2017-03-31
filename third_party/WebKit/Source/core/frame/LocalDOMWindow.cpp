@@ -1591,9 +1591,9 @@ DOMWindow* LocalDOMWindow::open(const String& urlString,
   // Get the target frame for the special cases of _top and _parent.
   // In those cases, we schedule a location change right now and return early.
   Frame* targetFrame = nullptr;
-  if (frameName == "_top") {
+  if (equalIgnoringASCIICase(frameName, "_top")) {
     targetFrame = frame()->tree().top();
-  } else if (frameName == "_parent") {
+  } else if (equalIgnoringASCIICase(frameName, "_parent")) {
     if (Frame* parent = frame()->tree().parent())
       targetFrame = parent;
     else
