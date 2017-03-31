@@ -60,6 +60,8 @@ define('media_router_bindings', [
         return mediaRouterMojom.MediaSink.IconType.GENERIC;
       case 'hangout':
         return mediaRouterMojom.MediaSink.IconType.HANGOUT;
+      case 'meeting':
+        return mediaRouterMojom.MediaSink.IconType.MEETING;
       default:
         console.error('Unknown sink icon type : ' + type);
         return mediaRouterMojom.MediaSink.IconType.GENERIC;
@@ -877,15 +879,24 @@ define('media_router_bindings', [
    */
   MediaRouteProvider.prototype.searchSinks = function(
       sinkId, sourceUrn, searchCriteria) {
-    // TODO(btolsch): Remove this check when we no longer expect old extensions
-    // to be missing this API.
-    if (!this.handlers_.searchSinks) {
-      return Promise.resolve({'sink_id': ''});
-    }
     this.handlers_.onBeforeInvokeHandler();
-    return Promise.resolve({
-      'sink_id': this.handlers_.searchSinks(sinkId, sourceUrn, searchCriteria)
-    });
+    const searchSinksResponse =
+        this.handlers_.searchSinks(sinkId, sourceUrn, searchCriteria);
+
+    if ('string' == typeof searchSinksResponse) {
+        // TODO (zijiang): Remove this check when M59 is stable and the
+        // extension is always returning a promise.
+        return Promise.resolve({
+          'sink_id': sink_id
+        });
+    }
+    return searchSinksResponse.then(
+        sink_id => {
+          return { 'sink_id': sink_id };
+        },
+        () => {
+          return { 'sink_id': '' };
+        });
   };
 
 

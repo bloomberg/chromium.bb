@@ -29,6 +29,7 @@ class MediaSink {
     CAST,
     CAST_AUDIO_GROUP,
     CAST_AUDIO,
+    MEETING,
     HANGOUT,
     GENERIC
   };

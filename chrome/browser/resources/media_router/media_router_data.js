@@ -83,8 +83,9 @@ media_router.SinkIconType = {
   CAST: 0,
   CAST_AUDIO_GROUP: 1,
   CAST_AUDIO: 2,
-  HANGOUT: 3,
-  GENERIC: 4,
+  MEETING: 3,
+  HANGOUT: 4,
+  GENERIC: 5,
 };
 
 /**

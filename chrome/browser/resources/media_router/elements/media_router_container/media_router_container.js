@@ -896,6 +896,8 @@ Polymer({
         return 'media-router:tv';
       case media_router.SinkIconType.HANGOUT:
         return 'media-router:hangout';
+      case media_router.SinkIconType.MEETING:
+        return 'media-router:meeting';
       default:
         return 'media-router:tv';
     }

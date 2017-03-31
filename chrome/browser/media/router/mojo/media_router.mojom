@@ -15,8 +15,9 @@ struct MediaSink {
     CAST,
     CAST_AUDIO,
     CAST_AUDIO_GROUP,
-    GENERIC,
-    HANGOUT
+    MEETING,
+    HANGOUT,
+    GENERIC
   };
 
   // The sink identifier, e.g. "rs71w7mFzYLFlabir_qO4NHl6SUc."
