@@ -197,7 +197,8 @@ SquareInkDropRipple::SquareInkDropRipple(const gfx::Size& large_size,
       circle_layer_delegate_(new CircleLayerDelegate(
           color,
           std::min(large_size_.width(), large_size_.height()) / 2)),
-      rect_layer_delegate_(new RectangleLayerDelegate(color, large_size_)),
+      rect_layer_delegate_(
+          new RectangleLayerDelegate(color, gfx::SizeF(large_size_))),
       root_layer_(ui::LAYER_NOT_DRAWN) {
   root_layer_.set_name("SquareInkDropRipple:ROOT_LAYER");
 

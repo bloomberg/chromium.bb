@@ -180,7 +180,7 @@ InkDropHostView::CreateDefaultInkDropHighlight(const gfx::PointF& center_point,
                                                const gfx::Size& size) const {
   std::unique_ptr<InkDropHighlight> highlight(new InkDropHighlight(
       size, kInkDropSmallCornerRadius, center_point, GetInkDropBaseColor()));
-  highlight->set_explode_size(CalculateLargeInkDropSize(size));
+  highlight->set_explode_size(gfx::SizeF(CalculateLargeInkDropSize(size)));
   return highlight;
 }
 

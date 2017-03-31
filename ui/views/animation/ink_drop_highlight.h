@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/views_export.h"
 
@@ -43,17 +44,25 @@ class VIEWS_EXPORT InkDropHighlight {
 
   // Creates a highlight that paints a partially transparent roundrect with
   // color |color|.
+  InkDropHighlight(const gfx::SizeF& size,
+                   int corner_radius,
+                   const gfx::PointF& center_point,
+                   SkColor color);
+
+  // Deprecated version of the above that takes a Size instead of SizeF.
+  // TODO(estade): remove. See crbug.com/706228
   InkDropHighlight(const gfx::Size& size,
                    int corner_radius,
                    const gfx::PointF& center_point,
                    SkColor color);
+
   virtual ~InkDropHighlight();
 
   void set_observer(InkDropHighlightObserver* observer) {
     observer_ = observer;
   }
 
-  void set_explode_size(const gfx::Size& size) { explode_size_ = size; }
+  void set_explode_size(const gfx::SizeF& size) { explode_size_ = size; }
 
   void set_visible_opacity(float visible_opacity) {
     visible_opacity_ = visible_opacity;
@@ -87,11 +96,11 @@ class VIEWS_EXPORT InkDropHighlight {
   // |duration|.
   void AnimateFade(AnimationType animation_type,
                    const base::TimeDelta& duration,
-                   const gfx::Size& initial_size,
-                   const gfx::Size& target_size);
+                   const gfx::SizeF& initial_size,
+                   const gfx::SizeF& target_size);
 
   // Calculates the Transform to apply to |layer_| for the given |size|.
-  gfx::Transform CalculateTransform(const gfx::Size& size) const;
+  gfx::Transform CalculateTransform(const gfx::SizeF& size) const;
 
   // The callback that will be invoked when a fade in/out animation is started.
   void AnimationStartedCallback(
@@ -104,11 +113,11 @@ class VIEWS_EXPORT InkDropHighlight {
       const ui::CallbackLayerAnimationObserver& observer);
 
   // The size of the highlight shape when fully faded in.
-  gfx::Size size_;
+  gfx::SizeF size_;
 
   // The target size of the highlight shape when it expands during a fade out
   // animation.
-  gfx::Size explode_size_;
+  gfx::SizeF explode_size_;
 
   // The center point of the highlight shape in the parent Layer's coordinate
   // space.

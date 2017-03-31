@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_delegate.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/views_export.h"
@@ -23,7 +23,7 @@ class VIEWS_EXPORT BasePaintedLayerDelegate : public ui::LayerDelegate {
   ~BasePaintedLayerDelegate() override;
 
   // Defines the bounds of the layer that the delegate will paint into.
-  virtual gfx::Rect GetPaintedBounds() const = 0;
+  virtual gfx::RectF GetPaintedBounds() const = 0;
 
   // Defines how to place the layer by providing an offset from the origin of
   // the parent to the visual center of the layer.
@@ -55,7 +55,7 @@ class VIEWS_EXPORT CircleLayerDelegate : public BasePaintedLayerDelegate {
   int radius() const { return radius_; }
 
   // BasePaintedLayerDelegate:
-  gfx::Rect GetPaintedBounds() const override;
+  gfx::RectF GetPaintedBounds() const override;
   void OnPaintLayer(const ui::PaintContext& context) override;
 
  private:
@@ -69,18 +69,18 @@ class VIEWS_EXPORT CircleLayerDelegate : public BasePaintedLayerDelegate {
 // size.
 class VIEWS_EXPORT RectangleLayerDelegate : public BasePaintedLayerDelegate {
  public:
-  RectangleLayerDelegate(SkColor color, gfx::Size size);
+  RectangleLayerDelegate(SkColor color, gfx::SizeF size);
   ~RectangleLayerDelegate() override;
 
-  const gfx::Size& size() const { return size_; }
+  const gfx::SizeF& size() const { return size_; }
 
   // BasePaintedLayerDelegate:
-  gfx::Rect GetPaintedBounds() const override;
+  gfx::RectF GetPaintedBounds() const override;
   void OnPaintLayer(const ui::PaintContext& context) override;
 
  private:
   // The size of the rectangle.
-  gfx::Size size_;
+  gfx::SizeF size_;
 
   DISALLOW_COPY_AND_ASSIGN(RectangleLayerDelegate);
 };
@@ -91,19 +91,19 @@ class VIEWS_EXPORT RoundedRectangleLayerDelegate
     : public BasePaintedLayerDelegate {
  public:
   RoundedRectangleLayerDelegate(SkColor color,
-                                const gfx::Size& size,
+                                const gfx::SizeF& size,
                                 int corner_radius);
   ~RoundedRectangleLayerDelegate() override;
 
-  const gfx::Size& size() const { return size_; }
+  const gfx::SizeF& size() const { return size_; }
 
   // BasePaintedLayerDelegate:
-  gfx::Rect GetPaintedBounds() const override;
+  gfx::RectF GetPaintedBounds() const override;
   void OnPaintLayer(const ui::PaintContext& context) override;
 
  private:
   // The size of the rectangle.
-  gfx::Size size_;
+  gfx::SizeF size_;
 
   // The radius of the corners.
   int corner_radius_;
@@ -122,7 +122,7 @@ class VIEWS_EXPORT BorderShadowLayerDelegate : public BasePaintedLayerDelegate {
   ~BorderShadowLayerDelegate() override;
 
   // BasePaintedLayerDelegate:
-  gfx::Rect GetPaintedBounds() const override;
+  gfx::RectF GetPaintedBounds() const override;
   gfx::Vector2dF GetCenteringOffset() const override;
   void OnPaintLayer(const ui::PaintContext& context) override;
 

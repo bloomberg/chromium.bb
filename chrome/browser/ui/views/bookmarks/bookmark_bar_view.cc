@@ -166,15 +166,13 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
+constexpr int kInkDropVerticalInsetPx = 1;
+
 // Ink drop ripple/highlight for bookmark buttons should be inset 1px vertically
 // so that they do not touch the bookmark bar borders.
-constexpr gfx::Insets kInkDropInsets(1, 0);
-
-gfx::Rect CalculateInkDropBounds(const gfx::Size& size) {
-  gfx::Rect ink_drop_bounds(size);
-  ink_drop_bounds.Inset(kInkDropInsets);
-  return ink_drop_bounds;
-}
+// TODO(estade): currently this is used as DIP rather than pixels. This should
+// be fixed: see crbug.com/706228
+constexpr gfx::Insets kInkDropInsets(kInkDropVerticalInsetPx, 0);
 
 // BookmarkButtonBase -----------------------------------------------
 
@@ -236,10 +234,13 @@ class BookmarkButtonBase : public views::LabelButton {
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    const gfx::Rect bounds = CalculateInkDropBounds(size());
+    gfx::RectF bounds((gfx::Rect(size())));
+    bounds.Inset(gfx::InsetsF(
+        kInkDropVerticalInsetPx /
+            GetWidget()->GetLayer()->GetCompositor()->device_scale_factor(),
+        0));
     return base::MakeUnique<views::InkDropHighlight>(
-        bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
-        GetInkDropBaseColor());
+        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
   }
 
   SkColor GetInkDropBaseColor() const override {
@@ -358,10 +359,13 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    const gfx::Rect bounds = CalculateInkDropBounds(size());
+    gfx::RectF bounds((gfx::Rect(size())));
+    bounds.Inset(gfx::InsetsF(
+        kInkDropVerticalInsetPx /
+            GetWidget()->GetLayer()->GetCompositor()->device_scale_factor(),
+        0));
     return base::MakeUnique<views::InkDropHighlight>(
-        bounds.size(), 0, gfx::RectF(bounds).CenterPoint(),
-        GetInkDropBaseColor());
+        bounds.size(), 0, bounds.CenterPoint(), GetInkDropBaseColor());
   }
 
   SkColor GetInkDropBaseColor() const override {
