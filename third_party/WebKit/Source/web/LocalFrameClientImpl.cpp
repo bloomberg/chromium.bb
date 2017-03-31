@@ -392,7 +392,7 @@ void LocalFrameClientImpl::dispatchDidLoadResourceFromMemoryCache(
 
 void LocalFrameClientImpl::dispatchDidHandleOnloadEvents() {
   if (m_webFrame->client())
-    m_webFrame->client()->didHandleOnloadEvents(m_webFrame);
+    m_webFrame->client()->didHandleOnloadEvents();
 }
 
 void LocalFrameClientImpl::

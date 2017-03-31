@@ -77,7 +77,7 @@ class WebFrameTestClient : public blink::WebFrameClient {
   void didChangeIcon(blink::WebLocalFrame* frame,
                      blink::WebIconURL::Type icon_type) override;
   void didFinishDocumentLoad(blink::WebLocalFrame* frame) override;
-  void didHandleOnloadEvents(blink::WebLocalFrame* frame) override;
+  void didHandleOnloadEvents() override;
   void didFailLoad(blink::WebLocalFrame* frame,
                    const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;

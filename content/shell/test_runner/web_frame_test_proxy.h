@@ -145,9 +145,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::didFinishDocumentLoad(frame);
   }
 
-  void didHandleOnloadEvents(blink::WebLocalFrame* frame) override {
-    test_client()->didHandleOnloadEvents(frame);
-    Base::didHandleOnloadEvents(frame);
+  void didHandleOnloadEvents() override {
+    test_client()->didHandleOnloadEvents();
+    Base::didHandleOnloadEvents();
   }
 
   void didFailLoad(blink::WebLocalFrame* frame,

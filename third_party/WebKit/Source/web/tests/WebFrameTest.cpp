@@ -10143,9 +10143,7 @@ class CallbackOrderingWebFrameClient
   void didFinishDocumentLoad(WebLocalFrame*) override {
     EXPECT_EQ(3, m_callbackCount++);
   }
-  void didHandleOnloadEvents(WebLocalFrame*) override {
-    EXPECT_EQ(4, m_callbackCount++);
-  }
+  void didHandleOnloadEvents() override { EXPECT_EQ(4, m_callbackCount++); }
   void didFinishLoad(WebLocalFrame*) override {
     EXPECT_EQ(5, m_callbackCount++);
   }
@@ -11390,7 +11388,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       m_didCallDidFinishDocumentLoad = true;
     }
 
-    void didHandleOnloadEvents(WebLocalFrame*) override {
+    void didHandleOnloadEvents() override {
       // TODO(dcheng): Investigate not calling this as well during frame detach.
       m_didCallDidHandleOnloadEvents = true;
     }

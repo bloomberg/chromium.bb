@@ -3954,16 +3954,15 @@ void RenderFrameImpl::runScriptsAtDocumentIdle(blink::WebLocalFrame* frame) {
   // ContentClient might have deleted |frame| and |this| by now!
 }
 
-void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
-  if (!frame->parent()) {
+void RenderFrameImpl::didHandleOnloadEvents() {
+  if (!frame_->parent()) {
     FrameMsg_UILoadMetricsReportType::Value report_type =
         static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-            frame->dataSource()->getRequest().inputPerfMetricReportPolicy());
+            frame_->dataSource()->getRequest().inputPerfMetricReportPolicy());
     base::TimeTicks ui_timestamp =
         base::TimeTicks() +
         base::TimeDelta::FromSecondsD(
-            frame->dataSource()->getRequest().uiStartTime());
+            frame_->dataSource()->getRequest().uiStartTime());
 
     Send(new FrameHostMsg_DocumentOnLoadCompleted(
         routing_id_, report_type, ui_timestamp));

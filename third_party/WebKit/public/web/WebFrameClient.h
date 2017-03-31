@@ -406,7 +406,7 @@ class BLINK_EXPORT WebFrameClient {
   virtual void runScriptsAtDocumentIdle(WebLocalFrame*) {}
 
   // The 'load' event was dispatched.
-  virtual void didHandleOnloadEvents(WebLocalFrame*) {}
+  virtual void didHandleOnloadEvents() {}
 
   // The frame's document or one of its subresources failed to load. The
   // WebHistoryCommitType is the commit type that would have been used had the
