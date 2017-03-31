@@ -36,11 +36,10 @@ namespace net {
 class CookieOptions;
 }
 
-// TODO(msramek): Subresource filter and media currently are storing their state
-// in TabSpecificContentSettings: |microphone_camera_state_| and
-// |subresource_filter_enabled_| without being tied either to a single content
-// setting or to any content setting. This state is not ideal, potential
-// solution is to save this information via content::WebContentsUserData
+// TODO(msramek): Media is storing their state in TabSpecificContentSettings:
+// |microphone_camera_state_| without being tied to a single content setting.
+// This state is not ideal, potential solution is to save this information via
+// content::WebContentsUserData
 
 // This class manages state about permissions, content settings, cookies and
 // site data for a specific WebContents. It tracks which content was accessed
@@ -189,30 +188,14 @@ class TabSpecificContentSettings
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 
-  // Changes |subresource_filter_enabled_| entry for the Safe Browsing
-  // Subresource Filter.
-  void SetSubresourceBlocked(bool enabled);
-
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
 
-  // Returns true if Safe Browsing Subresource Filter is active for the page.
-  // TODO(melandory): revisit this method if/once content setting will be added.
-  bool IsSubresourceBlocked() const;
-
   // Returns true if content blockage was indicated to the user.
   bool IsBlockageIndicated(ContentSettingsType content_type) const;
 
-  // Returns true if the activation of the Safe Browsing Subresource Filter was
-  // indicated to the user.
-  bool IsSubresourceBlockageIndicated() const;
-
   void SetBlockageHasBeenIndicated(ContentSettingsType content_type);
-
-  // Changes |subresource_filter_blockage_indicated_| in order to mark that
-  // Safe Browsing Subresource Filter was activated.
-  void SetSubresourceBlockageIndicated();
 
   // Returns whether a particular kind of content has been allowed. Currently
   // only tracks cookies.
@@ -478,10 +461,6 @@ class TabSpecificContentSettings
   // request is requesting certain specific devices.
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
-
-  // Manages information about Subresource filtering activation.
-  bool subresource_filter_enabled_;
-  bool subresource_filter_blockage_indicated_;
 
   // Holds the previous committed url during a navigation.
   GURL previous_url_;

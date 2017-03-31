@@ -14,6 +14,7 @@
 #include "chrome/browser/subresource_filter/subresource_filter_content_settings_observer_factory.h"
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
@@ -31,25 +32,23 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
   if (shown_for_navigation_ && visibility)
     return;
 
-  // |visibility| is false when a new navigation starts.
-  if (visibility)
-    LogAction(kActionUIShown);
-  else
-    LogAction(kActionNavigationStarted);
-
   shown_for_navigation_ = visibility;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
-  content_settings->SetSubresourceBlocked(visibility);
-#if defined(OS_ANDROID)
+
+  // |visibility| is false when a new navigation starts.
   if (visibility) {
+    content_settings->OnContentBlocked(
+        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+    LogAction(kActionUIShown);
+#if defined(OS_ANDROID)
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents_);
-
     SubresourceFilterInfobarDelegate::Create(infobar_service);
-    content_settings->SetSubresourceBlockageIndicated();
-  }
 #endif
+  } else {
+    LogAction(kActionNavigationStarted);
+  }
 }
 
 bool ChromeSubresourceFilterClient::IsWhitelistedByContentSettings(

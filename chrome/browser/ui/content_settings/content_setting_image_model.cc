@@ -426,9 +426,10 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-
-  if (!content_settings || !content_settings->IsSubresourceBlocked())
+  if (!content_settings || !content_settings->IsContentBlocked(
+                               CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)) {
     return;
+  }
 
   set_icon(kSubresourceFilterActiveIcon, kBlockedBadgeIcon);
   set_explanatory_string_id(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE);
@@ -452,8 +453,8 @@ bool ContentSettingSubresourceFilterImageModel::ShouldRunAnimation(
     return false;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-  return content_settings &&
-         !content_settings->IsSubresourceBlockageIndicated();
+  return content_settings && !content_settings->IsBlockageIndicated(
+                                 CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
 }
 
 void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
@@ -462,8 +463,10 @@ void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
     return;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-  if (content_settings)
-    content_settings->SetSubresourceBlockageIndicated();
+  if (content_settings) {
+    content_settings->SetBlockageHasBeenIndicated(
+        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+  }
 }
 
 // Protocol handlers -----------------------------------------------------------
