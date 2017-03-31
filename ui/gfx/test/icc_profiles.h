@@ -17,4 +17,7 @@ ICCProfile ICCProfileForTestingNoAnalyticTrFn();
 // A profile that is A2B only.
 ICCProfile ICCProfileForTestingA2BOnly();
 
+// A profile that with an approxmation that shoots above 1.
+ICCProfile ICCProfileForTestingOvershoot();
+
 }  // namespace gfx

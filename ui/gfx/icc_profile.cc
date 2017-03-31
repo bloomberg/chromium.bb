@@ -22,6 +22,7 @@ const uint64_t ICCProfile::test_id_generic_rgb_ = 3;
 const uint64_t ICCProfile::test_id_srgb_ = 4;
 const uint64_t ICCProfile::test_id_no_analytic_tr_fn_ = 5;
 const uint64_t ICCProfile::test_id_a2b_only_ = 6;
+const uint64_t ICCProfile::test_id_overshoot_ = 7;
 
 namespace {
 
@@ -206,7 +207,7 @@ void ICCProfile::ComputeColorSpaceAndCache() {
         bool got_approximate_fn =
             SkApproximateTransferFn(sk_icc, &fn_max_error, &fn);
         if (got_approximate_fn) {
-          float kMaxError = 3.f / 256.f;
+          float kMaxError = 2.f / 256.f;
           if (fn_max_error < kMaxError) {
             parametric_color_space_is_accurate = true;
           } else {

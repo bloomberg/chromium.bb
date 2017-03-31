@@ -82,12 +82,14 @@ class GFX_EXPORT ICCProfile {
   friend ICCProfile ICCProfileForTestingSRGB();
   friend ICCProfile ICCProfileForTestingNoAnalyticTrFn();
   friend ICCProfile ICCProfileForTestingA2BOnly();
+  friend ICCProfile ICCProfileForTestingOvershoot();
   static const uint64_t test_id_adobe_rgb_;
   static const uint64_t test_id_color_spin_;
   static const uint64_t test_id_generic_rgb_;
   static const uint64_t test_id_srgb_;
   static const uint64_t test_id_no_analytic_tr_fn_;
   static const uint64_t test_id_a2b_only_;
+  static const uint64_t test_id_overshoot_;
 
   // Populate |icc_profile| with the ICCProfile corresponding to id |id|. Return
   // false if |id| is not in the cache.

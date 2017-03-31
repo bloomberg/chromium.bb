@@ -67,18 +67,32 @@ TEST(ICCProfile, Equality) {
 TEST(ICCProfile, ParametricVersusExact) {
   // This ICC profile has three transfer functions that differ enough that the
   // parametric color space is considered inaccurate.
-  ICCProfile inaccurate = ICCProfileForTestingNoAnalyticTrFn();
-  EXPECT_NE(inaccurate.GetColorSpace(), inaccurate.GetParametricColorSpace());
+  ICCProfile multi_tr_fn = ICCProfileForTestingNoAnalyticTrFn();
+  EXPECT_NE(multi_tr_fn.GetColorSpace(), multi_tr_fn.GetParametricColorSpace());
 
-  ICCProfile inaccurate_color_space;
+  ICCProfile multi_tr_fn_color_space;
   EXPECT_TRUE(
-      inaccurate.GetColorSpace().GetICCProfile(&inaccurate_color_space));
-  EXPECT_EQ(inaccurate_color_space, inaccurate);
+      multi_tr_fn.GetColorSpace().GetICCProfile(&multi_tr_fn_color_space));
+  EXPECT_EQ(multi_tr_fn_color_space, multi_tr_fn);
 
-  ICCProfile inaccurate_parametric_color_space;
-  EXPECT_TRUE(inaccurate.GetParametricColorSpace().GetICCProfile(
-      &inaccurate_parametric_color_space));
-  EXPECT_NE(inaccurate_parametric_color_space, inaccurate);
+  ICCProfile multi_tr_fn_parametric_color_space;
+  EXPECT_TRUE(multi_tr_fn.GetParametricColorSpace().GetICCProfile(
+      &multi_tr_fn_parametric_color_space));
+  EXPECT_NE(multi_tr_fn_parametric_color_space, multi_tr_fn);
+
+  // This ICC profile has a transfer function with T(1) that is greater than 1
+  // in the approximation, but is still close enough to be considered accurate.
+  ICCProfile overshoot = ICCProfileForTestingOvershoot();
+  EXPECT_EQ(overshoot.GetColorSpace(), overshoot.GetParametricColorSpace());
+
+  ICCProfile overshoot_color_space;
+  EXPECT_TRUE(overshoot.GetColorSpace().GetICCProfile(&overshoot_color_space));
+  EXPECT_EQ(overshoot_color_space, overshoot);
+
+  ICCProfile overshoot_parametric_color_space;
+  EXPECT_TRUE(overshoot.GetParametricColorSpace().GetICCProfile(
+      &overshoot_parametric_color_space));
+  EXPECT_EQ(overshoot_parametric_color_space, overshoot);
 
   // This ICC profile is precisely represented by the parametric color space.
   ICCProfile accurate = ICCProfileForTestingAdobeRGB();

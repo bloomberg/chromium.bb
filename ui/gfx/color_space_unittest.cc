@@ -109,8 +109,8 @@ TEST_P(ColorSpaceTableTest, ApproximateTransferFn) {
 
   for (size_t i = 0; i < x.size(); ++i) {
     float fn_approx_of_x = SkTransferFnEval(fn_approx, x[i]);
-    EXPECT_NEAR(t[i], fn_approx_of_x, 2.f / 256.f);
-    if (std::abs(t[i] - fn_approx_of_x) > 2.f / 256.f)
+    EXPECT_NEAR(t[i], fn_approx_of_x, 3.f / 256.f);
+    if (std::abs(t[i] - fn_approx_of_x) > 3.f / 256.f)
       break;
   }
 }
