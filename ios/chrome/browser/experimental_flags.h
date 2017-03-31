@@ -101,6 +101,9 @@ bool UseOnlyLocalHeuristicsForPasswordGeneration();
 // Whether the Suggestions UI is enabled.
 bool IsSuggestionsUIEnabled();
 
+// Wether Sign-in promo is enabled.
+bool IsSigninPromoEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
