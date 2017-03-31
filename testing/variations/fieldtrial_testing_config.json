@@ -132,10 +132,9 @@
             ],
             "experiments": [
                 {
-                    "name": "LastUsedDateAndExpDate_IncreaseDropdownItemHeight_Experiment",
+                    "name": "LastUsedDate_IncreaseDropdownItemHeight_Experiment",
                     "params": {
-                        "dropdown_item_height": "56",
-                        "show_expiration_date": "true"
+                        "dropdown_item_height": "56"
                     },
                     "enable_features": [
                         "AutofillCreditCardLastUsedDateDisplay",
