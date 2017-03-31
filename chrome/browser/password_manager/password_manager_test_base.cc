@@ -59,7 +59,7 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
   explicit CustomManagePasswordsUIController(
       content::WebContents* web_contents);
 
-  void WaitForAccountChooser();
+  void WaitForState(password_manager::ui::State target_state);
 
  private:
   // PasswordsClientUIDelegate:
@@ -67,16 +67,27 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
       std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
       const GURL& origin,
       const ManagePasswordsState::CredentialsCallback& callback) override;
+  void OnPasswordAutofilled(
+      const std::map<base::string16, const autofill::PasswordForm*>&
+          password_form_map,
+      const GURL& origin,
+      const std::vector<const autofill::PasswordForm*>* federated_matches)
+      override;
 
-  // The loop to be stopped when the account chooser pops up.
-  base::RunLoop* account_chooser_loop_ = nullptr;
+  // The loop to be stopped when the target state is observed.
+  base::RunLoop* run_loop_;
+
+  // The state CustomManagePasswordsUIController is currently waiting for.
+  password_manager::ui::State target_state_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomManagePasswordsUIController);
 };
 
 CustomManagePasswordsUIController::CustomManagePasswordsUIController(
     content::WebContents* web_contents)
-    : ManagePasswordsUIController(web_contents) {
+    : ManagePasswordsUIController(web_contents),
+      run_loop_(nullptr),
+      target_state_(password_manager::ui::INACTIVE_STATE) {
   // Attach CustomManagePasswordsUIController to |web_contents| so the default
   // ManagePasswordsUIController isn't created.
   // Do not silently replace an existing ManagePasswordsUIController because it
@@ -85,22 +96,39 @@ CustomManagePasswordsUIController::CustomManagePasswordsUIController(
   web_contents->SetUserData(UserDataKey(), this);
 }
 
-void CustomManagePasswordsUIController::WaitForAccountChooser() {
-  base::RunLoop account_chooser_loop;
-  account_chooser_loop_ = &account_chooser_loop;
-  account_chooser_loop_->Run();
+void CustomManagePasswordsUIController::WaitForState(
+    password_manager::ui::State target_state) {
+  base::RunLoop run_loop;
+  target_state_ = target_state;
+  run_loop_ = &run_loop;
+  run_loop_->Run();
 }
 
 bool CustomManagePasswordsUIController::OnChooseCredentials(
     std::vector<std::unique_ptr<autofill::PasswordForm>> local_credentials,
     const GURL& origin,
     const ManagePasswordsState::CredentialsCallback& callback) {
-  if (account_chooser_loop_) {
-    account_chooser_loop_->Quit();
-    account_chooser_loop_ = nullptr;
+  if (target_state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
+    run_loop_->Quit();
+    run_loop_ = nullptr;
+    target_state_ = password_manager::ui::INACTIVE_STATE;
   }
   return ManagePasswordsUIController::OnChooseCredentials(
       std::move(local_credentials), origin, callback);
+}
+
+void CustomManagePasswordsUIController::OnPasswordAutofilled(
+    const std::map<base::string16, const autofill::PasswordForm*>&
+        password_form_map,
+    const GURL& origin,
+    const std::vector<const autofill::PasswordForm*>* federated_matches) {
+  if (target_state_ == password_manager::ui::MANAGE_STATE) {
+    run_loop_->Quit();
+    run_loop_ = nullptr;
+    target_state_ = password_manager::ui::INACTIVE_STATE;
+  }
+  return ManagePasswordsUIController::OnPasswordAutofilled(
+      password_form_map, origin, federated_matches);
 }
 
 void AddHSTSHostImpl(
@@ -192,7 +220,16 @@ void BubbleObserver::WaitForAccountChooser() const {
     return;
   CustomManagePasswordsUIController* controller =
       static_cast<CustomManagePasswordsUIController*>(passwords_ui_controller_);
-  controller->WaitForAccountChooser();
+  controller->WaitForState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
+}
+
+void BubbleObserver::WaitForManagementState() const {
+  if (passwords_ui_controller_->GetState() ==
+      password_manager::ui::MANAGE_STATE)
+    return;
+  CustomManagePasswordsUIController* controller =
+      static_cast<CustomManagePasswordsUIController*>(passwords_ui_controller_);
+  controller->WaitForState(password_manager::ui::MANAGE_STATE);
 }
 
 PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase()

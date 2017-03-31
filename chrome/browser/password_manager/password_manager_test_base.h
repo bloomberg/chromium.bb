@@ -88,6 +88,12 @@ class BubbleObserver {
   // PasswordManagerBrowserTestBase.
   void WaitForAccountChooser() const;
 
+  // Returns once the UI controller is in the management state due to matching
+  // credentials autofilled.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  void WaitForManagementState() const;
+
  private:
   ManagePasswordsUIController* const passwords_ui_controller_;
 

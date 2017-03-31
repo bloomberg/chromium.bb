@@ -358,26 +358,42 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
 }
 
-// Flaky: crbug.com/301547, observed on win and mac. Probably happens on all
-// platforms.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       DISABLED_PromptForDynamicForm) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, PromptForDynamicForm) {
+  // Adding a form is a workaround explained later.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("unused_username");
+  signin_form.password_value = base::ASCIIToUTF16("unused_password");
+  password_store->AddLogin(signin_form);
+
+  // Show the dynamic form.
   NavigateToFile("/password/dynamic_password_form.html");
+  ASSERT_TRUE(content::ExecuteScript(
+      RenderViewHost(),
+      "document.getElementById('create_form_button').click();"));
+
+  // Blink has a timer for 0.3 seconds before it updates the browser with the
+  // new dynamic form. We wait for the form being detected by observing the UI
+  // state. The state changes due to the matching credential saved above. Later
+  // the form submission is definitely noticed by the browser.
+  BubbleObserver(WebContents()).WaitForManagementState();
 
   // Fill the dynamic password form and submit.
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
   std::string fill_and_submit =
-      "document.getElementById('create_form_button').click();"
-      "window.setTimeout(function() {"
-      "  document.dynamic_form.username.value = 'tempro';"
-      "  document.dynamic_form.password.value = 'random';"
-      "  document.dynamic_form.submit();"
-      "}, 0)";
+      "document.dynamic_form.username.value = 'tempro';"
+      "document.dynamic_form.password.value = 'random';"
+      "document.dynamic_form.submit()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
+
+  EXPECT_TRUE(BubbleObserver(WebContents()).IsShowingSavePrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoPromptForNavigation) {
