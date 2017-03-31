@@ -78,10 +78,6 @@ class CORE_EXPORT SelectorQuery {
                               ContainerNode& rootNode,
                               typename SelectorQueryTrait::OutputType&) const;
   template <typename SelectorQueryTrait>
-  bool selectorListMatches(ContainerNode& rootNode,
-                           Element&,
-                           typename SelectorQueryTrait::OutputType&) const;
-  template <typename SelectorQueryTrait>
   void executeSlow(ContainerNode& rootNode,
                    typename SelectorQueryTrait::OutputType&) const;
   template <typename SelectorQueryTrait>
@@ -91,6 +87,8 @@ class CORE_EXPORT SelectorQuery {
   template <typename SelectorQueryTrait>
   void execute(ContainerNode& rootNode,
                typename SelectorQueryTrait::OutputType&) const;
+
+  bool selectorListMatches(ContainerNode& rootNode, Element&) const;
 
   CSSSelectorList m_selectorList;
   // Contains the list of CSSSelector's to match, but without ones that could

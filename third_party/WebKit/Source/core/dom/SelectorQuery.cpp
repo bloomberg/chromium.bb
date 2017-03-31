@@ -121,13 +121,7 @@ inline bool selectorMatches(const CSSSelector& selector,
 bool SelectorQuery::matches(Element& targetElement) const {
   if (m_needsUpdatedDistribution)
     targetElement.updateDistribution();
-
-  for (const auto& selector : m_selectors) {
-    if (selectorMatches(*selector, targetElement, targetElement))
-      return true;
-  }
-
-  return false;
+  return selectorListMatches(targetElement, targetElement);
 }
 
 Element* SelectorQuery::closest(Element& targetElement) const {
@@ -138,10 +132,8 @@ Element* SelectorQuery::closest(Element& targetElement) const {
 
   for (Element* currentElement = &targetElement; currentElement;
        currentElement = currentElement->parentElement()) {
-    for (const auto& selector : m_selectors) {
-      if (selectorMatches(*selector, *currentElement, targetElement))
-        return currentElement;
-    }
+    if (selectorListMatches(targetElement, *currentElement))
+      return currentElement;
   }
   return nullptr;
 }
@@ -323,16 +315,11 @@ void SelectorQuery::executeForTraverseRoot(
   }
 }
 
-template <typename SelectorQueryTrait>
-bool SelectorQuery::selectorListMatches(
-    ContainerNode& rootNode,
-    Element& element,
-    typename SelectorQueryTrait::OutputType& output) const {
+bool SelectorQuery::selectorListMatches(ContainerNode& rootNode,
+                                        Element& element) const {
   for (const auto& selector : m_selectors) {
-    if (selectorMatches(*selector, element, rootNode)) {
-      SelectorQueryTrait::appendElement(output, element);
+    if (selectorMatches(*selector, element, rootNode))
       return true;
-    }
   }
   return false;
 }
@@ -342,8 +329,10 @@ void SelectorQuery::executeSlow(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
-    if (selectorListMatches<SelectorQueryTrait>(rootNode, element, output) &&
-        SelectorQueryTrait::shouldOnlyMatchFirstElement)
+    if (!selectorListMatches(rootNode, element))
+      continue;
+    SelectorQueryTrait::appendElement(output, element);
+    if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
       return;
   }
 }
@@ -401,8 +390,10 @@ void SelectorQuery::executeSlowTraversingShadowTree(
     if (!node->isElementNode())
       continue;
     Element* element = toElement(node);
-    if (selectorListMatches<SelectorQueryTrait>(rootNode, *element, output) &&
-        SelectorQueryTrait::shouldOnlyMatchFirstElement)
+    if (!selectorListMatches(rootNode, *element))
+      continue;
+    SelectorQueryTrait::appendElement(output, *element);
+    if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
       return;
   }
 }
