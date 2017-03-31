@@ -767,9 +767,11 @@ TEST_P(ContentSubresourceFilterDriverFactoryActivationScopeTest,
       test_data.activation_scope,
       kActivationListSocialEngineeringAdsInterstitial);
 
-  const char* unsupported_urls[] = {
-      "data:text/html,<p>Hello", "ftp://example.com/", "chrome://settings",
-      "chrome-extension://some-extension", "file:///var/www/index.html"};
+  // data URLs are also not supported, but not listed here, as it's not possible
+  // for a page to redirect to them after https://crbug.com/594215 is fixed.
+  const char* unsupported_urls[] = {"ftp://example.com/", "chrome://settings",
+                                    "chrome-extension://some-extension",
+                                    "file:///var/www/index.html"};
   const char* supported_urls[] = {"http://example.test",
                                   "https://example.test"};
   for (auto* url : unsupported_urls) {

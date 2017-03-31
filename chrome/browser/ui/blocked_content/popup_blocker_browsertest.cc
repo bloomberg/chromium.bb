@@ -176,7 +176,8 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
   WebContents* RunCheckTest(Browser* browser,
                             const std::string& test_name,
                             WhatToExpect what_to_expect,
-                            ShouldCheckTitle check_title) {
+                            ShouldCheckTitle check_title,
+                            const base::string16& expected_title) {
     GURL url(embedded_test_server()->GetURL(test_name));
 
     CountRenderViewHosts counter;
@@ -229,12 +230,19 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 
     if (check_title == CheckTitle) {
       // Check that the check passed.
-      base::string16 expected_title(base::ASCIIToUTF16("PASS"));
       content::TitleWatcher title_watcher(web_contents, expected_title);
       EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
     }
 
     return web_contents;
+  }
+
+  WebContents* RunCheckTest(Browser* browser,
+                            const std::string& test_name,
+                            WhatToExpect what_to_expect,
+                            ShouldCheckTitle check_title) {
+    return RunCheckTest(browser, test_name, what_to_expect, check_title,
+                        base::ASCIIToUTF16("PASS"));
   }
 
  private:
@@ -368,7 +376,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ui_test_utils::HistoryEnumerator history(browser()->profile());
   std::vector<GURL>& history_urls = history.urls();
   ASSERT_EQ(2u, history_urls.size());
-  ASSERT_EQ(GURL(search_string), history_urls[0]);
+  ASSERT_EQ(embedded_test_server()->GetURL("/popup_blocker/popup-success.html"),
+            history_urls[0]);
   ASSERT_EQ(url, history_urls[1]);
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
@@ -470,11 +479,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
-  RunCheckTest(
-      browser(),
-      "/popup_blocker/popup-fake-click-on-anchor3.html",
-      ExpectPopup,
-      CheckTitle);
+  RunCheckTest(browser(), "/popup_blocker/popup-fake-click-on-anchor3.html",
+               ExpectPopup, CheckTitle, base::ASCIIToUTF16("Popup Success!"));
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {

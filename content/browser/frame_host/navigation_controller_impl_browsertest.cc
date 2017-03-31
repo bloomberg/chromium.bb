@@ -507,21 +507,25 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   NavigationController& controller =
       shell()->web_contents()->GetController();
 
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page1")));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/simple_page.html")));
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(1, RendererHistoryLength(shell()));
 
-  EXPECT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page1a")));
+  EXPECT_TRUE(RendererLocationReplace(
+      shell(), embedded_test_server()->GetURL("/title1.html")));
   EXPECT_EQ(1, controller.GetEntryCount());
   EXPECT_EQ(1, RendererHistoryLength(shell()));
 
   // Now create two more entries and go back, to test replacing an entry without
   // pruning the forward history.
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page2")));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
   EXPECT_EQ(2, controller.GetEntryCount());
   EXPECT_EQ(2, RendererHistoryLength(shell()));
 
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page3")));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title3.html")));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(3, RendererHistoryLength(shell()));
 
@@ -531,7 +535,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_TRUE(controller.CanGoForward());
 
-  EXPECT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page1b")));
+  EXPECT_TRUE(RendererLocationReplace(
+      shell(), embedded_test_server()->GetURL("/simple_page.html?page1b")));
   EXPECT_EQ(3, controller.GetEntryCount());
   EXPECT_EQ(3, RendererHistoryLength(shell()));
   EXPECT_TRUE(controller.CanGoForward());
@@ -6278,18 +6283,23 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        InPageNavigationDoesNotClearFavicon) {
   // Load a page and fake a favicon for it.
   NavigationController& controller = shell()->web_contents()->GetController();
-  ASSERT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page1")));
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/simple_page.html")));
   content::NavigationEntry* entry = controller.GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   content::FaviconStatus& favicon_status = entry->GetFavicon();
   favicon_status.valid = true;
 
-  ASSERT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page1#")));
+  ASSERT_TRUE(RendererLocationReplace(
+      shell(), embedded_test_server()->GetURL(
+                   "/simple_page.html#same-document-navigation")));
   entry = controller.GetLastCommittedEntry();
   content::FaviconStatus& favicon_status2 = entry->GetFavicon();
   EXPECT_TRUE(favicon_status2.valid);
 
-  ASSERT_TRUE(RendererLocationReplace(shell(), GURL("data:text/html,page2")));
+  ASSERT_TRUE(RendererLocationReplace(
+      shell(),
+      embedded_test_server()->GetURL("/simple_page.html?new-navigation")));
   entry = controller.GetLastCommittedEntry();
   content::FaviconStatus& favicon_status3 = entry->GetFavicon();
   EXPECT_FALSE(favicon_status3.valid);

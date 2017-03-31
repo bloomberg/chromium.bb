@@ -3,8 +3,7 @@
 <title>Popup created using window.open</title>
 <script>
 function popup() {
-  window.open("data:text/html,<title>Popup Success!</title>" +
-  "you should not see this message if popup blocker is enabled",
+  window.open("popup-success.html",
   "_blank", "menubar=1, resizable=1, width=350, height=250");
 }
 

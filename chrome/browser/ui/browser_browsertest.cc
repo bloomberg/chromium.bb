@@ -623,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
   // Start a navigation to trigger the beforeunload dialog.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("window.location.href = 'data:text/html,foo'"));
+      ASCIIToUTF16("window.location.href = 'about:blank'"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
@@ -646,11 +646,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
 // Make sure that dialogs opened by subframes are closed when the process dies.
 // See http://crbug.com/366510.
 IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsSubframeDialogs) {
-  // Navigate to an iframe that opens an alert dialog.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html, <html><body></body></html>"));
+
+  // Create an iframe that opens an alert dialog.
   contents->GetMainFrame()->ExecuteJavaScriptForTests(
-      ASCIIToUTF16("window.location.href = 'data:text/html,"
-                   "<iframe srcdoc=\"<script>alert(1)</script>\">'"));
+      ASCIIToUTF16("f = document.createElement('iframe');"
+                   "f.srcdoc = '<script>alert(1)</script>';"
+                   "document.body.appendChild(f);"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
   AppModalDialogQueue* dialog_queue = AppModalDialogQueue::GetInstance();
