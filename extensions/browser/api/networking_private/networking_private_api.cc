@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/networking_private/networking_cast_private_delegate.h"
@@ -28,6 +29,18 @@ const int kDefaultNetworkListLimit = 1000;
 
 const char kPrivateOnlyError[] = "Requires networkingPrivate API access.";
 
+const char* const kPrivatePropertiesForSet[] = {
+    "ProxySettings", "StaticIPConfig", "VPN.Host",          "VPN.IPsec",
+    "VPN.L2TP",      "VPN.OpenVPN",    "VPN.ThirdPartyVPN",
+};
+
+const char* const kPrivatePropertiesForGet[] = {
+    "Cellular.ESN", "Cellular.ICCID", "Cellular.IMEI", "Cellular.IMSI",
+    "Cellular.MDN", "Cellular.MEID",  "Cellular.MIN",  "Ethernet.EAP",
+    "VPN.IPsec",    "VPN.L2TP",       "VPN.OpenVPN",   "WiFi.EAP",
+    "WiMax.EAP",
+};
+
 NetworkingPrivateDelegate* GetDelegate(
     content::BrowserContext* browser_context) {
   return NetworkingPrivateDelegateFactory::GetForBrowserContext(
@@ -41,6 +54,42 @@ bool HasPrivateNetworkingAccess(const Extension* extension,
       ->IsAvailable("networkingPrivate", extension, context, source_url,
                     CheckAliasStatus::NOT_ALLOWED)
       .is_available();
+}
+
+// Indicates which filter should be used - filter for properties allowed to
+// be returned by getProperties methods, or the filter for properties settable
+// by setProperties/createNetwork methods.
+enum class PropertiesType { GET, SET };
+
+// Filters out all properties that are not allowed for the extension in the
+// provided context.
+// Returns list of removed keys.
+std::vector<std::string> FilterProperties(base::DictionaryValue* properties,
+                                          PropertiesType type,
+                                          const Extension* extension,
+                                          Feature::Context context,
+                                          const GURL& source_url) {
+  if (HasPrivateNetworkingAccess(extension, context, source_url))
+    return std::vector<std::string>();
+
+  const char* const* filter = nullptr;
+  size_t filter_size = 0;
+  if (type == PropertiesType::GET) {
+    filter = kPrivatePropertiesForGet;
+    filter_size = arraysize(kPrivatePropertiesForGet);
+  } else {
+    filter = kPrivatePropertiesForSet;
+    filter_size = arraysize(kPrivatePropertiesForSet);
+  }
+
+  std::vector<std::string> removed_properties;
+  for (size_t i = 0; i < filter_size; ++i) {
+    base::Value property;
+    if (properties->Remove(filter[i], nullptr)) {
+      removed_properties.push_back(filter[i]);
+    }
+  }
+  return removed_properties;
 }
 
 bool CanChangeSharedConfig(const Extension* extension,
@@ -61,6 +110,12 @@ std::unique_ptr<NetworkingCastPrivateDelegate::Credentials> AsCastCredentials(
           : std::vector<std::string>(),
       properties.signed_data, properties.device_ssid, properties.device_serial,
       properties.device_bssid, properties.public_key, properties.nonce);
+}
+
+std::string InvalidPropertiesError(const std::vector<std::string>& properties) {
+  DCHECK(!properties.empty());
+  return "Error.PropertiesNotAllowed: [" + base::JoinString(properties, ", ") +
+         "]";
 }
 
 }  // namespace
@@ -107,6 +162,8 @@ NetworkingPrivateGetPropertiesFunction::Run() {
 
 void NetworkingPrivateGetPropertiesFunction::Success(
     std::unique_ptr<base::DictionaryValue> result) {
+  FilterProperties(result.get(), PropertiesType::GET, extension(),
+                   source_context_type(), source_url());
   Respond(OneArgument(std::move(result)));
 }
 
@@ -142,6 +199,8 @@ NetworkingPrivateGetManagedPropertiesFunction::Run() {
 
 void NetworkingPrivateGetManagedPropertiesFunction::Success(
     std::unique_ptr<base::DictionaryValue> result) {
+  FilterProperties(result.get(), PropertiesType::GET, extension(),
+                   source_context_type(), source_url());
   Respond(OneArgument(std::move(result)));
 }
 
@@ -196,6 +255,12 @@ NetworkingPrivateSetPropertiesFunction::Run() {
   std::unique_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());
 
+  std::vector<std::string> not_allowed_properties =
+      FilterProperties(properties_dict.get(), PropertiesType::SET, extension(),
+                       source_context_type(), source_url());
+  if (!not_allowed_properties.empty())
+    return RespondNow(Error(InvalidPropertiesError(not_allowed_properties)));
+
   GetDelegate(browser_context())
       ->SetProperties(
           params->network_guid, std::move(properties_dict),
@@ -236,6 +301,12 @@ NetworkingPrivateCreateNetworkFunction::Run() {
 
   std::unique_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());
+
+  std::vector<std::string> not_allowed_properties =
+      FilterProperties(properties_dict.get(), PropertiesType::SET, extension(),
+                       source_context_type(), source_url());
+  if (!not_allowed_properties.empty())
+    return RespondNow(Error(InvalidPropertiesError(not_allowed_properties)));
 
   GetDelegate(browser_context())
       ->CreateNetwork(

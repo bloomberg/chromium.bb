@@ -536,6 +536,13 @@ var availableTests = [
               Country: 'us',
               Name: 'Cellular1_Provider'
             },
+            ESN: "test_esn",
+            ICCID: "test_iccid",
+            IMEI: "test_imei",
+            MDN: "test_mdn",
+            MEID: "test_meid",
+            MIN: "test_min",
+            ModelID:"test_model_id",
             NetworkTechnology: 'GSM',
             RoamingState: 'Home',
             SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3}

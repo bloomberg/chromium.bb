@@ -264,6 +264,21 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     device_test_->SetDeviceProperty(kCellularDevicePath,
                                     shill::kTechnologyFamilyProperty,
                                     base::Value(shill::kNetworkTechnologyGsm));
+    device_test_->SetDeviceProperty(kCellularDevicePath, shill::kMeidProperty,
+                                    base::Value("test_meid"));
+    device_test_->SetDeviceProperty(kCellularDevicePath, shill::kImeiProperty,
+                                    base::Value("test_imei"));
+    device_test_->SetDeviceProperty(kCellularDevicePath, shill::kIccidProperty,
+                                    base::Value("test_iccid"));
+    device_test_->SetDeviceProperty(kCellularDevicePath, shill::kEsnProperty,
+                                    base::Value("test_esn"));
+    device_test_->SetDeviceProperty(kCellularDevicePath, shill::kMdnProperty,
+                                    base::Value("test_mdn"));
+    device_test_->SetDeviceProperty(kCellularDevicePath, shill::kMinProperty,
+                                    base::Value("test_min"));
+    device_test_->SetDeviceProperty(kCellularDevicePath,
+                                    shill::kModelIDProperty,
+                                    base::Value("test_model_id"));
     device_test_->SetSimLocked(kCellularDevicePath, false);
 
     // Add the Cellular Service.
@@ -840,6 +855,7 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetGlobalPolicy) {
 // using API methods and event does not cause access exceptions (due to
 // missing permissions).
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, Alias) {
+  SetupCellular();
   EXPECT_TRUE(RunPlatformAppTest("networking_private/alias")) << message_;
 }
 

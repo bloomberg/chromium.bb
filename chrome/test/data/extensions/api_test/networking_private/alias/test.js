@@ -25,6 +25,35 @@ chrome.test.runTests([
             chrome.test.assertEq('User', result.Source);
           }));
     },
+    function getCellularProperties() {
+      chrome.networking.onc.getProperties(
+          'stub_cellular1_guid',
+          chrome.test.callbackPass(function(result) {
+            chrome.test.assertEq({
+              Cellular: {
+                ActivationState: 'NotActivated',
+                AllowRoaming: false,
+                AutoConnect: true,
+                Carrier: 'Cellular1_Carrier',
+                Family: 'GSM',
+                HomeProvider: {
+                  Code: '000000',
+                  Country: 'us',
+                  Name: 'Cellular1_Provider'
+                },
+                ModelID:"test_model_id",
+                NetworkTechnology: 'GSM',
+                RoamingState: 'Home',
+                SIMLockStatus: {LockEnabled: true, LockType: '', RetriesLeft: 3}
+              },
+              ConnectionState: 'NotConnected',
+              GUID: 'stub_cellular1_guid',
+              Name: 'cellular1',
+              Source: 'User',
+              Type: 'Cellular',
+            }, result);
+          }));
+    },
     function changeConnectionStateAndWaitForNetworksChanged() {
       chrome.test.listenOnce(
           chrome.networking.onc.onNetworksChanged,
