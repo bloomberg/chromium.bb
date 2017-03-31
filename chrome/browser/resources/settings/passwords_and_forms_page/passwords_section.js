@@ -216,6 +216,13 @@ Polymer({
   },
 
   /**
+   * The element to return focus to, when the currently active dialog is
+   * closed.
+   * @private {?HTMLElement}
+   */
+  activeDialogAnchor_: null,
+
+  /**
    * @type {PasswordManager}
    * @private
    */
@@ -298,6 +305,8 @@ Polymer({
   /** @private */
   onPasswordEditDialogClosed_: function() {
     this.showPasswordEditDialog_ = false;
+    this.activeDialogAnchor_.focus();
+    this.activeDialogAnchor_ = null;
   },
 
   /**
@@ -361,13 +370,14 @@ Polymer({
    */
   onPasswordMenuTap_: function(e) {
     var menu = /** @type {!CrActionMenuElement} */(this.$.menu);
-    var target = /** @type {!Element} */(Polymer.dom(e).localTarget);
+    var target = /** @type {!HTMLElement} */(Polymer.dom(e).localTarget);
     var passwordUiEntryEvent = /** @type {!PasswordUiEntryEvent} */(e);
 
     this.activePassword =
         /** @type {!chrome.passwordsPrivate.PasswordUiEntry} */ (
             passwordUiEntryEvent.model.item);
     menu.showAt(target);
+    this.activeDialogAnchor_ = target;
   },
 
   /**

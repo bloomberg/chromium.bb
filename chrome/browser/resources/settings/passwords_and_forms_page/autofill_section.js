@@ -191,6 +191,13 @@ AutofillManagerImpl.prototype = {
     },
 
     /**
+     * The element to return focus to, when the currently active dialog is
+     * closed.
+     * @private {?HTMLElement}
+     */
+    activeDialogAnchor_: null,
+
+    /**
      * @type {AutofillManager}
      * @private
      */
@@ -277,6 +284,7 @@ AutofillManagerImpl.prototype = {
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
       /** @type {!CrActionMenuElement} */ (
           this.$.addressSharedMenu).showAt(dotsButton);
+      this.activeDialogAnchor_ = dotsButton;
     },
 
     /**
@@ -288,11 +296,14 @@ AutofillManagerImpl.prototype = {
       e.preventDefault();
       this.activeAddress = {};
       this.showAddressDialog_ = true;
+      this.activeDialogAnchor_ = this.$.addAddress;
     },
 
     /** @private */
     onAddressDialogClosed_: function() {
       this.showAddressDialog_ = false;
+      this.activeDialogAnchor_.focus();
+      this.activeDialogAnchor_ = null;
     },
 
     /**
@@ -341,6 +352,7 @@ AutofillManagerImpl.prototype = {
       var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
       /** @type {!CrActionMenuElement} */ (
           this.$.creditCardSharedMenu).showAt(dotsButton);
+      this.activeDialogAnchor_ = dotsButton;
     },
 
     /**
@@ -357,11 +369,14 @@ AutofillManagerImpl.prototype = {
         expirationYear: date.getFullYear().toString(),
       };
       this.showCreditCardDialog_ = true;
+      this.activeDialogAnchor_ = this.$.addCreditCard;
     },
 
     /** @private */
     onCreditCardDialogClosed_: function() {
       this.showCreditCardDialog_ = false;
+      this.activeDialogAnchor_.focus();
+      this.activeDialogAnchor_ = null;
     },
 
     /**

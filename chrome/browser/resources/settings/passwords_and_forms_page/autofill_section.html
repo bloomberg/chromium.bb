@@ -75,7 +75,8 @@
     </template>
     <div class="settings-box continuation">
       <h2 class="start">$i18n{addresses}</h2>
-      <paper-button class="secondary-button header-aligned-button"
+      <paper-button id="addAddress"
+          class="secondary-button header-aligned-button"
           on-tap="onAddAddressTap_">
         $i18n{add}
       </paper-button>
@@ -127,7 +128,8 @@
     </template>
     <div class="settings-box first">
       <h2 class="start">$i18n{creditCards}</h2>
-      <paper-button class="secondary-button header-aligned-button"
+      <paper-button id="addCreditCard"
+          class="secondary-button header-aligned-button"
           on-tap="onAddCreditCardTap_">
         $i18n{add}
       </paper-button>
