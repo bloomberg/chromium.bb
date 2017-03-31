@@ -6825,4 +6825,28 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, StopDuringLoad) {
   ASSERT_EQ(controller.GetPendingEntry(), nullptr);
 }
 
+// Verify that session history navigations (back/forward) correctly hit the
+// cache instead of going to the server. The test loads a page with no-cache
+// header, stops the server, and goes back expecting successful navigation.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       HistoryNavigationUsesCache) {
+  GURL no_cache_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_no_cache_header.html"));
+  GURL regular_url(embedded_test_server()->GetURL("/title2.html"));
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+
+  EXPECT_TRUE(NavigateToURL(shell(), no_cache_url));
+  EXPECT_TRUE(NavigateToURL(shell(), regular_url));
+  EXPECT_EQ(2, controller.GetEntryCount());
+
+  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+
+  TestNavigationObserver back_observer(shell()->web_contents());
+  controller.GoBack();
+  back_observer.Wait();
+
+  EXPECT_TRUE(back_observer.last_navigation_succeeded());
+}
+
 }  // namespace content

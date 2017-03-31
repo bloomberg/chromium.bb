@@ -88,6 +88,8 @@ void UpdateLoadFlagsWithCacheFlags(
       if (is_post) {
         *load_flags |=
             net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+      } else {
+        *load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
       }
       break;
   }
