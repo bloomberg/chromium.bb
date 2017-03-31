@@ -3550,10 +3550,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebDataSource* data_source,
       navigation_start));
 }
 
-void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
-    blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
-
+void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad() {
   // TODO(creis): Determine if this can be removed or if we need to clear any
   // local state here to fix https://crbug.com/671276.
 }

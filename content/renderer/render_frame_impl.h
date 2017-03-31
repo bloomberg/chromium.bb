@@ -558,8 +558,7 @@ class CONTENT_EXPORT RenderFrameImpl
                            blink::WebDataSource* datasource) override;
   void didStartProvisionalLoad(blink::WebDataSource* data_source,
                                blink::WebURLRequest& request) override;
-  void didReceiveServerRedirectForProvisionalLoad(
-      blink::WebLocalFrame* frame) override;
+  void didReceiveServerRedirectForProvisionalLoad() override;
   void didFailProvisionalLoad(blink::WebLocalFrame* frame,
                               const blink::WebURLError& error,
                               blink::WebHistoryCommitType commit_type) override;

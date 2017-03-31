@@ -398,8 +398,7 @@ void LocalFrameClientImpl::dispatchDidHandleOnloadEvents() {
 void LocalFrameClientImpl::
     dispatchDidReceiveServerRedirectForProvisionalLoad() {
   if (m_webFrame->client()) {
-    m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad(
-        m_webFrame);
+    m_webFrame->client()->didReceiveServerRedirectForProvisionalLoad();
   }
 }
 

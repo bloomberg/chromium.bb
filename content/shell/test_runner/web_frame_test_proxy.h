@@ -102,10 +102,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::didStartProvisionalLoad(data_source, request);
   }
 
-  void didReceiveServerRedirectForProvisionalLoad(
-      blink::WebLocalFrame* frame) override {
-    test_client()->didReceiveServerRedirectForProvisionalLoad(frame);
-    Base::didReceiveServerRedirectForProvisionalLoad(frame);
+  void didReceiveServerRedirectForProvisionalLoad() override {
+    test_client()->didReceiveServerRedirectForProvisionalLoad();
+    Base::didReceiveServerRedirectForProvisionalLoad();
   }
 
   void didFailProvisionalLoad(
