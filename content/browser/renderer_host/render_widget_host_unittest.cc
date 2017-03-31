@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/edit_command.h"
@@ -356,6 +357,30 @@ class TestView : public TestRenderWidgetHostView {
   DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
+// MockRenderViewHostDelegateView ------------------------------------------
+class MockRenderViewHostDelegateView : public RenderViewHostDelegateView {
+ public:
+  MockRenderViewHostDelegateView() = default;
+  ~MockRenderViewHostDelegateView() override = default;
+
+  int start_dragging_count() const { return start_dragging_count_; }
+
+  // RenderViewHostDelegateView:
+  void StartDragging(const DropData& drop_data,
+                     blink::WebDragOperationsMask allowed_ops,
+                     const gfx::ImageSkia& image,
+                     const gfx::Vector2d& image_offset,
+                     const DragEventSourceInfo& event_info,
+                     RenderWidgetHostImpl* source_rwh) override {
+    ++start_dragging_count_;
+  }
+
+ private:
+  int start_dragging_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(MockRenderViewHostDelegateView);
+};
+
 // MockRenderWidgetHostDelegate --------------------------------------------
 
 class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
@@ -369,7 +394,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
         unhandled_keyboard_event_type_(WebInputEvent::Undefined),
         handle_wheel_event_(false),
         handle_wheel_event_called_(false),
-        unresponsive_timer_fired_(false) {}
+        unresponsive_timer_fired_(false),
+        render_view_host_delegate_view_(new MockRenderViewHostDelegateView()) {}
   ~MockRenderWidgetHostDelegate() override {}
 
   // Tests that make sure we ignore keyboard event acknowledgments to events we
@@ -406,6 +432,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 
   bool unresponsive_timer_fired() const { return unresponsive_timer_fired_; }
 
+  MockRenderViewHostDelegateView* mock_delegate_view() {
+    return render_view_host_delegate_view_.get();
+  }
+
   void SetScreenInfo(const ScreenInfo& screen_info) {
     screen_info_ = screen_info;
   }
@@ -413,6 +443,10 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   // RenderWidgetHostDelegate overrides.
   void GetScreenInfo(ScreenInfo* screen_info) override {
     *screen_info = screen_info_;
+  }
+
+  RenderViewHostDelegateView* GetDelegateView() override {
+    return mock_delegate_view();
   }
 
  protected:
@@ -461,6 +495,9 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
   bool unresponsive_timer_fired_;
 
   ScreenInfo screen_info_;
+
+  std::unique_ptr<MockRenderViewHostDelegateView>
+      render_view_host_delegate_view_;
 };
 
 // RenderWidgetHostTest --------------------------------------------------------
@@ -1818,6 +1855,30 @@ TEST_F(RenderWidgetHostTest, ResizeParams) {
   host_->GetResizeParams(&resize_params);
   EXPECT_EQ(bounds.size(), resize_params.new_size);
   EXPECT_EQ(physical_backing_size, resize_params.physical_backing_size);
+}
+
+// Make sure no dragging occurs after renderer exited. See crbug.com/704832.
+TEST_F(RenderWidgetHostTest, RendererExitedNoDrag) {
+  host_->SetView(new TestView(host_.get()));
+
+  EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 0);
+
+  GURL http_url = GURL("http://www.domain.com/index.html");
+  DropData drop_data;
+  drop_data.url = http_url;
+  drop_data.html_base_url = http_url;
+  blink::WebDragOperationsMask drag_operation = blink::WebDragOperationEvery;
+  DragEventSourceInfo event_info;
+  host_->OnStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
+                         event_info);
+  EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 1);
+
+  // Simulate that renderer exited due navigation to the next page.
+  host_->RendererExited(base::TERMINATION_STATUS_NORMAL_TERMINATION, 0);
+  EXPECT_FALSE(host_->GetView());
+  host_->OnStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
+                         event_info);
+  EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 1);
 }
 
 class RenderWidgetHostInitialSizeTest : public RenderWidgetHostTest {

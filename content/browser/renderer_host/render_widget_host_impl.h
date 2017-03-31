@@ -600,6 +600,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeHangMonitorTimeout);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartHangMonitorTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
