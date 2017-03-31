@@ -808,8 +808,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
-  if (content::IsBrowserSideNavigationEnabled())
-    return; // TODO(jam): investigate
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Get NavigationController for tab 1.
@@ -835,14 +833,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
   {
     // Open different auth urls in each tab.
     WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
-    WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_1->OpenURL(OpenURLParams(
         embedded_test_server()->GetURL("/auth-basic/1"), content::Referrer(),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter_1.Wait();
+
+    WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_2->OpenURL(OpenURLParams(
         embedded_test_server()->GetURL("/auth-basic/2"), content::Referrer(),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
-    auth_needed_waiter_1.Wait();
     auth_needed_waiter_2.Wait();
 
     ASSERT_EQ(2U, observer.handlers().size());
@@ -865,8 +864,6 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
-  if (content::IsBrowserSideNavigationEnabled())
-    return; // TODO(jam): investigate
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Get NavigationController for tab 1.
@@ -892,14 +889,15 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
   {
     // Open different auth urls in each tab.
     WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
-    WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_1->OpenURL(OpenURLParams(
         embedded_test_server()->GetURL("/auth-basic/1"), content::Referrer(),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+    auth_needed_waiter_1.Wait();
+
+    WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
     contents_2->OpenURL(OpenURLParams(
         embedded_test_server()->GetURL("/auth-basic/2"), content::Referrer(),
         WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
-    auth_needed_waiter_1.Wait();
     auth_needed_waiter_2.Wait();
 
     ASSERT_EQ(2U, observer.handlers().size());
