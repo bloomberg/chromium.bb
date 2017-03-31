@@ -43,8 +43,7 @@ class ScriptWrappable;
   X(SameObject, NotificationData)                     \
   X(SameObject, NotificationVibrate)                  \
   X(SameObject, PerformanceLongTaskTimingAttribution) \
-  X(V8NodeFilterCondition, Filter)                    \
-  X(Window, DocumentCachedAccessor)
+  X(V8NodeFilterCondition, Filter)
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
@@ -62,16 +61,14 @@ class ScriptWrappable;
 //
 // Usage 1) Fast path to use a pre-registered symbol.
 //   auto private = V8PrivateProperty::getMessageEventCachedData(isolate);
-//   v8::Local<v8::Context> context = ...;
 //   v8::Local<v8::Object> object = ...;
-//   v8::Local<v8::Value> value = private.get(context, object);
+//   v8::Local<v8::Value> value = private.getOrUndefined(object);
 //   value = ...;
-//   private.set(context, object, value);
+//   private.set(object, value);
 //
 // Usage 2) Slow path to create a global private symbol.
 //   const char symbolName[] = "Interface#PrivateKeyName";
-//   auto private = V8PrivateProperty::createSymbol(isolate, symbolName,
-//                                                  sizeof symbolName);
+//   auto private = V8PrivateProperty::createSymbol(isolate, symbolName);
 //   ...
 class CORE_EXPORT V8PrivateProperty {
   USING_FAST_MALLOC(V8PrivateProperty);
@@ -136,38 +133,64 @@ class CORE_EXPORT V8PrivateProperty {
     return WTF::wrapUnique(new V8PrivateProperty());
   }
 
-#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)             \
-  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */               \
-                                                InterfaceName, KeyName)(      \
-      v8::Isolate * isolate) {                                                \
-    V8PrivateProperty* privateProp =                                          \
-        V8PerIsolateData::from(isolate)->privateProperty();                   \
-    v8::Eternal<v8::Private>& propertyHandle =                                \
-        privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName); \
-    if (UNLIKELY(propertyHandle.IsEmpty())) {                                 \
-      static constexpr char kSymbolName[] =                                   \
-          V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, KeyName);          \
-      propertyHandle.Set(isolate, createV8Private(isolate, kSymbolName,       \
-                                                  sizeof(kSymbolName)));      \
-    }                                                                         \
-    return Symbol(isolate, propertyHandle.Get(isolate));                      \
+#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \
+  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */                \
+                                                InterfaceName, KeyName)(       \
+      v8::Isolate * isolate) {                                                 \
+    V8PrivateProperty* privateProp =                                           \
+        V8PerIsolateData::from(isolate)->privateProperty();                    \
+    v8::Eternal<v8::Private>& propertyHandle =                                 \
+        privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName);  \
+    if (UNLIKELY(propertyHandle.IsEmpty())) {                                  \
+      propertyHandle.Set(                                                      \
+          isolate, createV8Private(isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING( \
+                                                InterfaceName, KeyName)));     \
+    }                                                                          \
+    return Symbol(isolate, propertyHandle.Get(isolate));                       \
   }
 
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
 #undef V8_PRIVATE_PROPERTY_DEFINE_GETTER
 
+  // TODO(peria): Do not use this specialized hack. See a TODO comment
+  // on m_symbolWindowDocumentCachedAccessor.
+  static Symbol getWindowDocumentCachedAccessor(v8::Isolate* isolate) {
+    V8PrivateProperty* privateProp =
+        V8PerIsolateData::from(isolate)->privateProperty();
+    if (UNLIKELY(privateProp->m_symbolWindowDocumentCachedAccessor.isEmpty())) {
+      privateProp->m_symbolWindowDocumentCachedAccessor.set(
+          isolate, createCachedV8Private(
+                       isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING(
+                                    "Window", "DocumentCachedAccessor")));
+    }
+    return Symbol(
+        isolate,
+        privateProp->m_symbolWindowDocumentCachedAccessor.newLocal(isolate));
+  }
+
+  static Symbol createSymbol(v8::Isolate* isolate, const char* symbol) {
+    return Symbol(isolate, createCachedV8Private(isolate, symbol));
+  }
+
  private:
   V8PrivateProperty() {}
 
   static v8::Local<v8::Private> createV8Private(v8::Isolate*,
-                                                const char* symbol,
-                                                size_t length);
+                                                const char* symbol);
+  static v8::Local<v8::Private> createCachedV8Private(v8::Isolate*,
+                                                      const char* symbol);
 
 #define V8_PRIVATE_PROPERTY_DECLARE_MEMBER(InterfaceName, KeyName) \
   v8::Eternal<v8::Private> V8_PRIVATE_PROPERTY_MEMBER_NAME(        \
       InterfaceName, KeyName);  // NOLINT(readability/naming/underscores)
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DECLARE_MEMBER)
 #undef V8_PRIVATE_PROPERTY_DECLARE_MEMBER
+
+  // TODO(peria): Do not use this specialized hack for
+  // Window#DocumentCachedAccessor. This is required to put v8::Private key in
+  // a snapshot, and it cannot be a v8::Eternal<> due to V8 serializer's
+  // requirement.
+  ScopedPersistent<v8::Private> m_symbolWindowDocumentCachedAccessor;
 };
 
 }  // namespace blink

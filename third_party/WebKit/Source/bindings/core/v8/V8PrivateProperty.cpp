@@ -18,14 +18,15 @@ v8::Local<v8::Value> V8PrivateProperty::Symbol::getFromMainWorld(
 }
 
 v8::Local<v8::Private> V8PrivateProperty::createV8Private(v8::Isolate* isolate,
-                                                          const char* symbol,
-                                                          size_t length) {
-  v8::Local<v8::String> str =
-      v8::String::NewFromOneByte(
-          isolate, reinterpret_cast<const uint8_t*>(symbol),
-          v8::NewStringType::kNormal, static_cast<int>(length))
-          .ToLocalChecked();
-  return v8::Private::New(isolate, str);
+                                                          const char* symbol) {
+  return v8::Private::New(isolate, v8String(isolate, symbol));
+}
+
+v8::Local<v8::Private> V8PrivateProperty::createCachedV8Private(
+    v8::Isolate* isolate,
+    const char* symbol) {
+  // Use ForApi() to get the same Private symbol which is not cached in Chrome.
+  return v8::Private::ForApi(isolate, v8String(isolate, symbol));
 }
 
 }  // namespace blink
