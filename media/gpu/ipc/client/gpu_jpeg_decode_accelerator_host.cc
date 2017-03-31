@@ -31,15 +31,23 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
            const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
       : client_(client),
         io_task_runner_(io_task_runner),
-        weak_factory_for_io_(this) {
+        weak_factory_for_io_(
+            base::MakeUnique<base::WeakPtrFactory<Receiver>>(this)),
+        weak_ptr_for_io_(weak_factory_for_io_->GetWeakPtr()) {
     DCHECK(CalledOnValidThread());
   }
 
-  ~Receiver() override { DCHECK(CalledOnValidThread()); }
+  ~Receiver() override {
+    DCHECK(CalledOnValidThread());
+    // If |io_task_runner_| no longer accepts tasks, |weak_factory_for_io_|
+    // will leak. This is acceptable, because that should only happen on
+    // Browser shutdown.
+    io_task_runner_->DeleteSoon(FROM_HERE, weak_factory_for_io_.release());
+  }
 
-  void InvalidateWeakPtr(base::WaitableEvent* event) {
+  void InvalidateWeakPtrOnIOThread(base::WaitableEvent* event) {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
-    weak_factory_for_io_.InvalidateWeakPtrs();
+    weak_factory_for_io_->InvalidateWeakPtrs();
     event->Signal();
   }
 
@@ -62,9 +70,7 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
     return handled;
   }
 
-  base::WeakPtr<IPC::Listener> AsWeakPtrForIO() {
-    return weak_factory_for_io_.GetWeakPtr();
-  }
+  base::WeakPtr<IPC::Listener> AsWeakPtrForIO() { return weak_ptr_for_io_; }
 
  private:
   void OnDecodeAck(int32_t bitstream_buffer_id, Error error) {
@@ -91,7 +97,8 @@ class GpuJpegDecodeAcceleratorHost::Receiver : public IPC::Listener,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Weak pointers will be invalidated on IO thread.
-  base::WeakPtrFactory<Receiver> weak_factory_for_io_;
+  std::unique_ptr<base::WeakPtrFactory<Receiver>> weak_factory_for_io_;
+  base::WeakPtr<Receiver> weak_ptr_for_io_;
 
   DISALLOW_COPY_AND_ASSIGN(Receiver);
 };
@@ -118,8 +125,10 @@ GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
     // routed to |receiver_| on IO thread.
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
+    // Use of Unretained() is safe, because if the task executes, we block
+    // until it is finished by waiting on |event| below.
     bool task_expected_to_run = io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Receiver::InvalidateWeakPtr,
+        FROM_HERE, base::Bind(&Receiver::InvalidateWeakPtrOnIOThread,
                               base::Unretained(receiver_.get()),
                               base::Unretained(&event)));
     // If the current call is happening during the browser shutdown, the
