@@ -18,11 +18,7 @@
 
 #define OD_DERING_SIZE_LOG2 (3)
 
-#if CONFIG_CB4X4
-#define OD_DERING_NBLOCKS (OD_BSIZE_MAX / 4)
-#else
 #define OD_DERING_NBLOCKS (OD_BSIZE_MAX / 8)
-#endif
 
 /* We need to buffer three vertical lines. */
 #define OD_FILT_VBORDER (3)

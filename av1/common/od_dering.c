@@ -221,23 +221,20 @@ void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                 dering_list *dlist, int dering_count,
                                 BLOCK_SIZE bsize) {
   int bi, bx, by;
-  const int mi_size_l2 = (bsize == BLOCK_8X8) ? MI_SIZE_LOG2 : MI_SIZE_LOG2 - 1;
 
   if (bsize == BLOCK_8X8) {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
-      copy_8x8_16bit_to_16bit(
-          &dst[(by << mi_size_l2) * dstride + (bx << mi_size_l2)], dstride,
-          &src[bi << (2 * 3)], 8);
+      copy_8x8_16bit_to_16bit(&dst[(by << 3) * dstride + (bx << 3)], dstride,
+                              &src[bi << (2 * 3)], 8);
     }
   } else {
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
-      copy_4x4_16bit_to_16bit(
-          &dst[(by << mi_size_l2) * dstride + (bx << mi_size_l2)], dstride,
-          &src[bi << (2 * 2)], 4);
+      copy_4x4_16bit_to_16bit(&dst[(by << 2) * dstride + (bx << 2)], dstride,
+                              &src[bi << (2 * 2)], 4);
     }
   }
 }
@@ -304,7 +301,6 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
   };
 
   int threshold = (pli ? level_table_uv : level_table)[level] << coeff_shift;
-  const int mi_size_l2 = xdec ? MI_SIZE_LOG2 - 1 : MI_SIZE_LOG2;
   od_filter_dering_direction_func filter_dering_direction[OD_DERINGSIZES] = {
     od_filter_dering_direction_4x4, od_filter_dering_direction_8x8
   };
@@ -316,7 +312,7 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
           by = dlist[bi].by;
           bx = dlist[bi].bx;
           dir[by][bx] =
-              od_dir_find8(&in[MI_SIZE * by * OD_FILT_BSTRIDE + MI_SIZE * bx],
+              od_dir_find8(&in[8 * by * OD_FILT_BSTRIDE + 8 * bx],
                            OD_FILT_BSTRIDE, &var[by][bx], coeff_shift);
         }
         if (dirinit) *dirinit = 1;
@@ -334,7 +330,7 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
            get removed by the directional filtering. */
         (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
             &y[bi << 2 * bsize], 1 << bsize,
-            &in[(by * OD_FILT_BSTRIDE << mi_size_l2) + (bx << mi_size_l2)],
+            &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)],
             od_adjust_thresh(threshold, var[by][bx]), dir[by][bx]);
       }
     } else {
@@ -343,8 +339,8 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
         bx = dlist[bi].bx;
         (filter_dering_direction[bsize - OD_LOG_BSIZE0])(
             &y[bi << 2 * bsize], 1 << bsize,
-            &in[(by * OD_FILT_BSTRIDE << mi_size_l2) + (bx << mi_size_l2)],
-            threshold, dir[by][bx]);
+            &in[(by * OD_FILT_BSTRIDE << bsize) + (bx << bsize)], threshold,
+            dir[by][bx]);
       }
     }
   }
@@ -356,8 +352,8 @@ void od_dering(uint8_t *dst, int dstride, uint16_t *y, uint16_t *in, int xdec,
     for (bi = 0; bi < dering_count; bi++) {
       by = dlist[bi].by;
       bx = dlist[bi].bx;
-      int py = by << mi_size_l2;
-      int px = bx << mi_size_l2;
+      int py = by << bsize;
+      int px = bx << bsize;
 
       if (!dst || hbd) {
         // 16 bit destination if high bitdepth or 8 bit destination not given
