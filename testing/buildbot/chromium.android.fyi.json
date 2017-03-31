@@ -233,6 +233,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -247,6 +248,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -260,6 +262,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -273,6 +276,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -286,6 +290,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -299,6 +304,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -312,6 +318,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -328,6 +335,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -345,6 +353,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -359,6 +368,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -372,6 +382,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -385,6 +396,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -401,6 +413,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -415,6 +428,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -428,6 +442,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -441,6 +456,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -454,6 +470,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -467,6 +484,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -480,6 +498,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -493,6 +512,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -506,6 +526,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -519,6 +540,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -532,6 +554,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -545,6 +568,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -558,6 +582,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -571,6 +596,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -584,6 +610,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -597,6 +624,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -610,6 +638,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
@@ -623,6 +652,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "android_devices": "1",
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
