@@ -16,6 +16,7 @@ group("select_to_speak") {
     ":select_to_speak_copied_files",
     ":select_to_speak_guest_manifest",
     ":select_to_speak_manifest",
+    "//chrome/browser/resources/chromeos/select_to_speak/strings:select_to_speak_strings",
   ]
 }
 
