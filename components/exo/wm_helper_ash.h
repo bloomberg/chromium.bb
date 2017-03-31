@@ -30,7 +30,7 @@ class WMHelperAsh : public WMHelper,
   WMHelperAsh();
   ~WMHelperAsh() override;
 
-  // Overriden from WMHelper:
+  // Overridden from WMHelper:
   const display::ManagedDisplayInfo GetDisplayInfo(
       int64_t display_id) const override;
   aura::Window* GetContainer(int container_id) override;
@@ -46,17 +46,17 @@ class WMHelperAsh : public WMHelper,
   bool IsSpokenFeedbackEnabled() const override;
   void PlayEarcon(int sound_key) const override;
 
-  // Overriden from aura::client::ActivationChangeObserver:
+  // Overridden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(
       aura::client::ActivationChangeObserver::ActivationReason reason,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
-  // Overriden from aura::client::FocusChangeObserver:
+  // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 
-  // Overriden from aura::client::CursorClientObserver:
+  // Overridden from aura::client::CursorClientObserver:
   void OnCursorVisibilityChanged(bool is_visible) override;
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
 
@@ -64,15 +64,15 @@ class WMHelperAsh : public WMHelper,
   void OnAccessibilityModeChanged(
       ash::AccessibilityNotificationVisibility notify) override;
 
-  // Overriden from ash::ShellObserver:
+  // Overridden from ash::ShellObserver:
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnding() override;
   void OnMaximizeModeEnded() override;
 
-  // Overriden from ash::WmDisplayObserver:
+  // Overridden from ash::WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
-  // Overriden from ui::InputDeviceEventObserver:
+  // Overridden from ui::InputDeviceEventObserver:
   void OnKeyboardDeviceConfigurationChanged() override;
 
  private:

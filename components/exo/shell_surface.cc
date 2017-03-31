@@ -1309,7 +1309,8 @@ void ShellSurface::AttemptToStartDrag(int component) {
     // eventually call LockCursor() and prevent the cursor from changing.
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(window->GetRootWindow());
-    DCHECK(cursor_client);
+    if (!cursor_client)
+      return;
 
     switch (component) {
       case HTCAPTION:

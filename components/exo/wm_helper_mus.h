@@ -28,7 +28,7 @@ class WMHelperMus : public WMHelper,
   WMHelperMus();
   ~WMHelperMus() override;
 
-  // Overriden from WMHelper:
+  // Overridden from WMHelper:
   const display::ManagedDisplayInfo GetDisplayInfo(
       int64_t display_id) const override;
   aura::Window* GetContainer(int container_id) override;
@@ -44,15 +44,15 @@ class WMHelperMus : public WMHelper,
   bool IsSpokenFeedbackEnabled() const override;
   void PlayEarcon(int sound_key) const override;
 
-  // Overriden from aura::FocusSynchronizerObserver:
+  // Overridden from aura::FocusSynchronizerObserver:
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
                                   aura::Window* focus_client_root) override;
 
-  // Overriden from ui::client::FocusChangeObserver:
+  // Overridden from ui::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 
-  // Overriden from ui::InputDeviceEventObserver:
+  // Overridden from ui::InputDeviceEventObserver:
   void OnKeyboardDeviceConfigurationChanged() override;
 
  private:
