@@ -156,19 +156,7 @@ cc::CompositorFrame CreateDelegatedFrame(float scale_factor,
   return frame;
 }
 
-// http://crbug.com/696919
-#if defined(OS_WIN)
-#define MAYBE_VisibilityTest DISABLED_VisibilityTest
-#define MAYBE_SwapCompositorFrame DISABLED_SwapCompositorFrame
-#define MAYBE_FrameEvictionKeepsLocalSurfaceId \
-  DISABLED_FrameEvictionKeepsLocalSurfaceId
-#else
-#define MAYBE_VisibilityTest VisibilityTest
-#define MAYBE_SwapCompositorFrame SwapCompositorFrame
-#define MAYBE_FrameEvictionKeepsLocalSurfaceId FrameEvictionKeepsLocalSurfaceId
-#endif
-
-TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_VisibilityTest) {
+TEST_F(RenderWidgetHostViewChildFrameTest, VisibilityTest) {
   view_->Show();
   ASSERT_TRUE(view_->IsShowing());
 
@@ -178,7 +166,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_VisibilityTest) {
 
 // Verify that SubmitCompositorFrame behavior is correct when a delegated
 // frame is received from a renderer process.
-TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_SwapCompositorFrame) {
+TEST_F(RenderWidgetHostViewChildFrameTest, SwapCompositorFrame) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
