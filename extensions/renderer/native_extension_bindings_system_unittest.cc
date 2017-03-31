@@ -118,7 +118,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   }
 
   void MockSendRequestIPC(ScriptContext* context,
-                          const ExtensionHostMsg_Request_Params& params) {
+                          const ExtensionHostMsg_Request_Params& params,
+                          binding::RequestThread thread) {
     last_params_.name = params.name;
     last_params_.arguments.Swap(params.arguments.CreateDeepCopy().get());
     last_params_.extension_id = params.extension_id;
@@ -508,7 +509,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestSendRequestHook) {
       "apiBridge.registerCustomHook((api) => {\n"
       "  api.apiFunctions.setHandleRequest('queryState',\n"
       "                                    (time, callback) => {\n"
-      "    bindingUtil.sendRequest('idle.queryState', [time, callback]);\n"
+      "    bindingUtil.sendRequest('idle.queryState', [time, callback],\n"
+      "                            undefined, undefined);\n"
       "  });\n"
       "});\n";
 

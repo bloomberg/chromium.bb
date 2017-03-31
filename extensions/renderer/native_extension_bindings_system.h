@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_bindings_system.h"
 #include "extensions/renderer/event_emitter.h"
 #include "extensions/renderer/extension_bindings_system.h"
@@ -30,7 +31,8 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
  public:
   using SendRequestIPCMethod =
       base::Callback<void(ScriptContext*,
-                          const ExtensionHostMsg_Request_Params&)>;
+                          const ExtensionHostMsg_Request_Params&,
+                          binding::RequestThread)>;
   using SendEventListenerIPCMethod =
       base::Callback<void(binding::EventListenersChanged,
                           ScriptContext*,

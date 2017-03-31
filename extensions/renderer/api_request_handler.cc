@@ -53,7 +53,8 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
                                     const std::string& method,
                                     std::unique_ptr<base::ListValue> arguments,
                                     v8::Local<v8::Function> callback,
-                                    v8::Local<v8::Function> custom_callback) {
+                                    v8::Local<v8::Function> custom_callback,
+                                    binding::RequestThread thread) {
   auto request = base::MakeUnique<Request>();
 
   if (!custom_callback.IsEmpty() || !callback.IsEmpty()) {
@@ -91,6 +92,7 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
       blink::WebUserGestureIndicator::isProcessingUserGestureThreadSafe();
   request->arguments = std::move(arguments);
   request->method_name = method;
+  request->thread = thread;
 
   int id = request->request_id;
   send_request_.Run(std::move(request), context);

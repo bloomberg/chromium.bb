@@ -20,6 +20,12 @@ enum class EventListenersChanged {
   NO_LISTENERS,   // The event had listeners, and now does not.
 };
 
+// The browser thread that the request should be sent to.
+enum class RequestThread {
+  UI,
+  IO,
+};
+
 // A callback to execute the given v8::Function with the provided context and
 // arguments.
 using RunJSFunction = base::Callback<void(v8::Local<v8::Function>,

@@ -20,7 +20,8 @@ binding.registerCustomHook(function(bindingsAPI) {
     setIcon(details, function(args) {
       sendRequest('browserAction.setIcon',
                   [args, callback],
-                  apiBridge ? undefined : this.definition.parameters);
+                  apiBridge ? undefined : this.definition.parameters,
+                  undefined);
     }.bind(this));
   });
 

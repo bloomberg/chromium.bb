@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/api_last_error.h"
 #include "third_party/WebKit/public/web/WebUserGestureToken.h"
 #include "v8/include/v8.h"
@@ -36,6 +37,7 @@ class APIRequestHandler {
     std::string method_name;
     bool has_callback = false;
     bool has_user_gesture = false;
+    binding::RequestThread thread = binding::RequestThread::UI;
     std::unique_ptr<base::ListValue> arguments;
 
    private:
@@ -62,7 +64,8 @@ class APIRequestHandler {
                    const std::string& method,
                    std::unique_ptr<base::ListValue> arguments,
                    v8::Local<v8::Function> callback,
-                   v8::Local<v8::Function> custom_callback);
+                   v8::Local<v8::Function> custom_callback,
+                   binding::RequestThread thread);
 
   // Responds to the request with the given |request_id|, calling the callback
   // with the given |response| arguments.

@@ -532,7 +532,8 @@ void APIBinding::HandleCall(const std::string& name,
   }
 
   request_handler_->StartRequest(context, name, std::move(converted_arguments),
-                                 callback, custom_callback);
+                                 callback, custom_callback,
+                                 binding::RequestThread::UI);
 }
 
 }  // namespace extensions

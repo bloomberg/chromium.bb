@@ -176,9 +176,9 @@ void ChromeSetting::HandleFunction(const std::string& method_name,
   }
 
   converted_arguments->Insert(0u, base::MakeUnique<base::Value>(pref_name_));
-  request_handler_->StartRequest(context, full_name,
-                                 std::move(converted_arguments), callback,
-                                 v8::Local<v8::Function>());
+  request_handler_->StartRequest(
+      context, full_name, std::move(converted_arguments), callback,
+      v8::Local<v8::Function>(), binding::RequestThread::UI);
 }
 
 }  // namespace extensions

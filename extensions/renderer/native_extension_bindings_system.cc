@@ -631,7 +631,7 @@ void NativeExtensionBindingsSystem::SendRequest(
   params.worker_thread_id = -1;
   params.service_worker_version_id = kInvalidServiceWorkerVersionId;
 
-  send_request_ipc_.Run(script_context, params);
+  send_request_ipc_.Run(script_context, params, request->thread);
 }
 
 void NativeExtensionBindingsSystem::OnEventListenerChanged(

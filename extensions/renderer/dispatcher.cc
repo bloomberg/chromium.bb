@@ -188,12 +188,21 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
 // Handler for sending IPCs with native extension bindings. Only used for
 // the main thread.
 void SendRequestIPC(ScriptContext* context,
-                    const ExtensionHostMsg_Request_Params& params) {
+                    const ExtensionHostMsg_Request_Params& params,
+                    binding::RequestThread thread) {
   content::RenderFrame* frame = context->GetRenderFrame();
   if (!frame)
     return;
-  // TODO(devlin): Handle IO-thread messages.
-  frame->Send(new ExtensionHostMsg_Request(frame->GetRoutingID(), params));
+
+  switch (thread) {
+    case binding::RequestThread::UI:
+      frame->Send(new ExtensionHostMsg_Request(frame->GetRoutingID(), params));
+      break;
+    case binding::RequestThread::IO:
+      frame->Send(new ExtensionHostMsg_RequestForIOThread(frame->GetRoutingID(),
+                                                          params));
+      break;
+  }
 }
 
 // Sends a notification to the browser that an event either has or no longer has

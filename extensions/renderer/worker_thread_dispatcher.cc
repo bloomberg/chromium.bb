@@ -47,7 +47,8 @@ ServiceWorkerData* GetServiceWorkerData() {
 
 // Handler for sending IPCs with native extension bindings.
 void SendRequestIPC(ScriptContext* context,
-                    const ExtensionHostMsg_Request_Params& params) {
+                    const ExtensionHostMsg_Request_Params& params,
+                    binding::RequestThread thread) {
   // TODO(devlin): This won't handle incrementing/decrementing service worker
   // lifetime.
   WorkerThreadDispatcher::Get()->Send(

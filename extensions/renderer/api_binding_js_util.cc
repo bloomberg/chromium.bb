@@ -10,6 +10,7 @@
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/api_type_reference_map.h"
 #include "gin/converter.h"
+#include "gin/dictionary.h"
 #include "gin/object_template_builder.h"
 
 namespace extensions {
@@ -45,7 +46,9 @@ gin::ObjectTemplateBuilder APIBindingJSUtil::GetObjectTemplateBuilder(
 void APIBindingJSUtil::SendRequest(
     gin::Arguments* arguments,
     const std::string& name,
-    const std::vector<v8::Local<v8::Value>>& request_args) {
+    const std::vector<v8::Local<v8::Value>>& request_args,
+    v8::Local<v8::Value> schemas_unused,
+    v8::Local<v8::Value> options) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Object> holder;
@@ -55,6 +58,27 @@ void APIBindingJSUtil::SendRequest(
   const APISignature* signature = type_refs_->GetAPIMethodSignature(name);
   DCHECK(signature);
 
+  binding::RequestThread thread = binding::RequestThread::UI;
+  v8::Local<v8::Function> custom_callback;
+  if (!options.IsEmpty() && !options->IsUndefined() && !options->IsNull()) {
+    if (!options->IsObject()) {
+      NOTREACHED();
+      return;
+    }
+    v8::Local<v8::Object> options_obj = options.As<v8::Object>();
+    if (!options_obj->GetPrototype()->IsNull()) {
+      NOTREACHED();
+      return;
+    }
+    gin::Dictionary options_dict(isolate, options_obj);
+    // NOTE: We don't throw any errors here if forIOThread or customCallback are
+    // of invalid types. We could, if we wanted to be a bit more verbose.
+    bool for_io_thread = false;
+    if (options_dict.Get("forIOThread", &for_io_thread) && for_io_thread)
+      thread = binding::RequestThread::IO;
+    options_dict.Get("customCallback", &custom_callback);
+  }
+
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;
   std::string error;
@@ -62,11 +86,8 @@ void APIBindingJSUtil::SendRequest(
                                         &converted_arguments, &callback,
                                         &error));
 
-  // TODO(devlin): The JS version of this allows callers to curry in
-  // arguments, including which thread the request should be for and an
-  // optional custom callback.
   request_handler_->StartRequest(context, name, std::move(converted_arguments),
-                                 callback, v8::Local<v8::Function>());
+                                 callback, custom_callback, thread);
 }
 
 void APIBindingJSUtil::RegisterEventArgumentMassager(

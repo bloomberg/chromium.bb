@@ -207,9 +207,9 @@ void DeclarativeEvent::HandleFunction(const std::string& signature_name,
     return;
   }
 
-  request_handler_->StartRequest(context, request_name,
-                                 std::move(converted_arguments), callback,
-                                 v8::Local<v8::Function>());
+  request_handler_->StartRequest(
+      context, request_name, std::move(converted_arguments), callback,
+      v8::Local<v8::Function>(), binding::RequestThread::UI);
 }
 
 }  // namespace extensions
