@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "ui/aura/env_observer.h"
+#include "ui/aura/mus/focus_synchronizer_observer.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/mus/mus_client_observer.h"
@@ -28,9 +28,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
     : public DesktopWindowTreeHost,
       public MusClientObserver,
       public WidgetObserver,
+      public aura::FocusSynchronizerObserver,
       public aura::WindowObserver,
-      public aura::WindowTreeHostMus,
-      public aura::EnvObserver {
+      public aura::WindowTreeHostMus {
  public:
   DesktopWindowTreeHostMus(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -131,6 +131,10 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // WidgetObserver:
   void OnWidgetActivationChanged(Widget* widget, bool active) override;
 
+  // aura::FocusSynchronizerObserver:
+  void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
+                                  aura::Window* focus_client_root) override;
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -140,11 +144,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   void ShowImpl() override;
   void HideImpl() override;
   void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) override;
-
-  // aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override;
-  void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
-                                  aura::Window* window) override;
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/env_observer.h"
+#include "ui/aura/mus/focus_synchronizer_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace aura {
@@ -22,7 +22,7 @@ namespace exo {
 // A helper class for accessing WindowManager related features.
 class WMHelperMus : public WMHelper,
                     public ui::InputDeviceEventObserver,
-                    public aura::EnvObserver,
+                    public aura::FocusSynchronizerObserver,
                     public aura::client::FocusChangeObserver {
  public:
   WMHelperMus();
@@ -44,10 +44,9 @@ class WMHelperMus : public WMHelper,
   bool IsSpokenFeedbackEnabled() const override;
   void PlayEarcon(int sound_key) const override;
 
-  // Overriden from aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override;
+  // Overriden from aura::FocusSynchronizerObserver:
   void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
-                                  aura::Window* window) override;
+                                  aura::Window* focus_client_root) override;
 
   // Overriden from ui::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,

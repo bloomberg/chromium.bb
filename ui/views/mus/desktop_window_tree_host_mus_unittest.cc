@@ -12,6 +12,7 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/capture_synchronizer.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
@@ -207,8 +208,10 @@ TEST_F(DesktopWindowTreeHostMusTest, ActivateBeforeShow) {
   aura::client::FocusClient* widget_focus_client =
       aura::client::GetFocusClient(widget1->GetNativeWindow());
   ASSERT_TRUE(widget_focus_client);
-  EXPECT_EQ(widget_focus_client,
-            aura::Env::GetInstance()->active_focus_client());
+  EXPECT_EQ(widget_focus_client, MusClient::Get()
+                                     ->window_tree_client()
+                                     ->focus_synchronizer()
+                                     ->active_focus_client());
 }
 
 TEST_F(DesktopWindowTreeHostMusTest, CursorClientDuringTearDown) {

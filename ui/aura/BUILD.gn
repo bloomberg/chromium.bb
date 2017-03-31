@@ -79,6 +79,7 @@ component("aura") {
     "mus/focus_synchronizer.cc",
     "mus/focus_synchronizer.h",
     "mus/focus_synchronizer_delegate.h",
+    "mus/focus_synchronizer_observer.h",
     "mus/in_flight_change.cc",
     "mus/in_flight_change.h",
     "mus/input_method_mus.cc",

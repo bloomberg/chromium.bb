@@ -12,6 +12,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/mus/capture_synchronizer.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -112,7 +113,6 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   // Tests assume they can set the mouse location on Env() and have it reflected
   // in tests.
   env_helper.SetAlwaysUseLastMouseLocation(true);
-  Env::GetInstance()->SetActiveFocusClient(focus_client_.get(), nullptr);
   Env::GetInstance()->set_context_factory(context_factory);
   Env::GetInstance()->set_context_factory_private(context_factory_private);
   // Unit tests generally don't want to query the system, rather use the state
@@ -141,8 +141,11 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
   // Ensure width != height so tests won't confuse them.
   host()->SetBoundsInPixels(gfx::Rect(host_size));
 
-  if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
+  if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT) {
+    window_tree_client_->focus_synchronizer()->SetActiveFocusClient(
+        focus_client_.get(), root_window());
     window_tree()->AckAllChanges();
+  }
 
   g_instance = this;
 }
@@ -159,7 +162,6 @@ void AuraTestHelper::TearDown() {
     display::Screen::SetScreenInstance(nullptr);
   test_screen_.reset();
 
-  Env::GetInstance()->SetActiveFocusClient(nullptr, nullptr);
   window_tree_client_setup_.reset();
   focus_client_.reset();
   capture_client_.reset();

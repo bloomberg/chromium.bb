@@ -14,8 +14,9 @@
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
-#include "ui/aura/env.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -193,8 +194,9 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       close_widget_factory_(this) {
-  aura::Env::GetInstance()->AddObserver(this);
   MusClient::Get()->AddObserver(this);
+  MusClient::Get()->window_tree_client()->focus_synchronizer()->AddObserver(
+      this);
   native_widget_delegate_->AsWidget()->AddObserver(this);
   desktop_native_widget_aura_->content_window()->AddObserver(this);
   // DesktopNativeWidgetAura registers the association between |content_window_|
@@ -214,7 +216,8 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   desktop_native_widget_aura_->content_window()->RemoveObserver(this);
   native_widget_delegate_->AsWidget()->RemoveObserver(this);
   MusClient::Get()->RemoveObserver(this);
-  aura::Env::GetInstance()->RemoveObserver(this);
+  MusClient::Get()->window_tree_client()->focus_synchronizer()->RemoveObserver(
+      this);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
 }
 
@@ -531,8 +534,10 @@ void DesktopWindowTreeHostMus::Activate() {
   // This should result in OnActiveFocusClientChanged() being called, which
   // triggers a call to DesktopNativeWidgetAura::HandleActivationChanged(),
   // which focuses the right window.
-  aura::Env::GetInstance()->SetActiveFocusClient(
-      aura::client::GetFocusClient(window()), window());
+  MusClient::Get()
+      ->window_tree_client()
+      ->focus_synchronizer()
+      ->SetActiveFocusClient(aura::client::GetFocusClient(window()), window());
   if (is_active_)
     window()->SetProperty(aura::client::kDrawAttentionKey, false);
 }
@@ -737,6 +742,16 @@ void DesktopWindowTreeHostMus::OnWidgetActivationChanged(Widget* widget,
   is_active_ = active;
 }
 
+void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
+    aura::client::FocusClient* focus_client,
+    aura::Window* focus_client_root) {
+  if (focus_client_root == this->window()) {
+    desktop_native_widget_aura_->HandleActivationChanged(true);
+  } else if (is_active_) {
+    desktop_native_widget_aura_->HandleActivationChanged(false);
+  }
+}
+
 void DesktopWindowTreeHostMus::OnWindowPropertyChanged(aura::Window* window,
                                                        const void* key,
                                                        intptr_t old) {
@@ -786,18 +801,6 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
   if (old_bounds_in_pixels.size() != final_bounds_in_pixels.size()) {
     SendClientAreaToServer();
     SendHitTestMaskToServer();
-  }
-}
-
-void DesktopWindowTreeHostMus::OnWindowInitialized(aura::Window* window) {}
-
-void DesktopWindowTreeHostMus::OnActiveFocusClientChanged(
-    aura::client::FocusClient* focus_client,
-    aura::Window* window) {
-  if (window == this->window()) {
-    desktop_native_widget_aura_->HandleActivationChanged(true);
-  } else if (is_active_) {
-    desktop_native_widget_aura_->HandleActivationChanged(false);
   }
 }
 

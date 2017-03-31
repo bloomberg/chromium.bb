@@ -6,8 +6,11 @@
 
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/focus_synchronizer.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/wm/public/activation_client.h"
 namespace exo {
 
@@ -15,16 +18,20 @@ namespace exo {
 // WMHelperMus, public:
 
 WMHelperMus::WMHelperMus() {
-  aura::Env* env = aura::Env::GetInstance();
-  SetActiveFocusClient(env->active_focus_client(),
-                       env->active_focus_client_root());
-  env->AddObserver(this);
+  aura::FocusSynchronizer* focus_synchronizer =
+      views::MusClient::Get()->window_tree_client()->focus_synchronizer();
+  SetActiveFocusClient(focus_synchronizer->active_focus_client(),
+                       focus_synchronizer->active_focus_client_root());
+  focus_synchronizer->AddObserver(this);
 }
 
 WMHelperMus::~WMHelperMus() {
   if (active_focus_client_)
     active_focus_client_->RemoveObserver(this);
-  aura::Env::GetInstance()->RemoveObserver(this);
+  views::MusClient::Get()
+      ->window_tree_client()
+      ->focus_synchronizer()
+      ->RemoveObserver(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -88,12 +95,10 @@ void WMHelperMus::PlayEarcon(int sound_key) const {
   NOTIMPLEMENTED();
 }
 
-void WMHelperMus::OnWindowInitialized(aura::Window* window) {}
-
 void WMHelperMus::OnActiveFocusClientChanged(
     aura::client::FocusClient* focus_client,
-    aura::Window* window) {
-  SetActiveFocusClient(focus_client, window);
+    aura::Window* focus_client_root) {
+  SetActiveFocusClient(focus_client, focus_client_root);
 }
 
 void WMHelperMus::OnWindowFocused(aura::Window* gained_focus,

@@ -120,6 +120,7 @@ class AURA_EXPORT WindowTreeClient
   CaptureSynchronizer* capture_synchronizer() {
     return capture_synchronizer_.get();
   }
+  FocusSynchronizer* focus_synchronizer() { return focus_synchronizer_.get(); }
 
   bool connected() const { return tree_ != nullptr; }
   ClientSpecificId client_id() const { return client_id_; }

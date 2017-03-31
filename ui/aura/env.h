@@ -22,11 +22,6 @@ class ContextFactoryPrivate;
 class PlatformEventSource;
 }
 namespace aura {
-
-namespace client {
-class FocusClient;
-}
-
 namespace test {
 class EnvTestHelper;
 }
@@ -104,17 +99,7 @@ class AURA_EXPORT Env : public ui::EventTarget,
   void SetWindowTreeClient(WindowTreeClient* window_tree_client);
   bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
 
-  // Sets the active FocusClient and the window the FocusClient is associated
-  // with. |window| is not necessarily the window that actually has focus.
-  // |window| may be null, which indicates all windows share a FocusClient.
-  void SetActiveFocusClient(client::FocusClient* focus_client,
-                            Window* focus_client_root);
-  client::FocusClient* active_focus_client() { return active_focus_client_; }
-  Window* active_focus_client_root() { return active_focus_client_root_; }
-
  private:
-  class ActiveFocusClientWindowObserver;
-
   friend class test::EnvTestHelper;
   friend class MusMouseLocationUpdater;
   friend class Window;
@@ -137,8 +122,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   // Invoked by WindowTreeHost when it is activated. Notifies observers.
   void NotifyHostActivated(WindowTreeHost* host);
-
-  void OnActiveFocusClientWindowDestroying();
 
   // Overridden from ui::EventTarget:
   bool CanAcceptEvent(const ui::Event& event) override;
@@ -175,11 +158,6 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   ui::ContextFactory* context_factory_;
   ui::ContextFactoryPrivate* context_factory_private_;
-
-  Window* active_focus_client_root_ = nullptr;
-  client::FocusClient* active_focus_client_ = nullptr;
-  std::unique_ptr<ActiveFocusClientWindowObserver>
-      active_focus_client_window_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(Env);
 };

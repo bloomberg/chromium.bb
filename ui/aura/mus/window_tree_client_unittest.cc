@@ -23,6 +23,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/capture_synchronizer.h"
+#include "ui/aura/mus/focus_synchronizer.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/mus/window_port_mus.h"
@@ -1073,11 +1074,19 @@ TEST_F(WindowTreeClientWmTest, SetFocusFailed) {
   Window child(nullptr);
   child.Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(&child);
+  // AuraTestHelper::SetUp sets the active focus client and focus client root,
+  // root_window() is assumed to have focus until we actually focus on a
+  // certain window.
+  EXPECT_EQ(WindowMus::Get(root_window()),
+            window_tree_client_impl()->focus_synchronizer()->focused_window());
   child.Focus();
   ASSERT_TRUE(child.HasFocus());
+  EXPECT_EQ(&child, client::GetFocusClient(&child)->GetFocusedWindow());
   ASSERT_TRUE(
       window_tree()->AckSingleChangeOfType(WindowTreeChangeType::FOCUS, false));
-  EXPECT_EQ(nullptr, client::GetFocusClient(&child)->GetFocusedWindow());
+  // If the change failed, we fall back to the revert_value which is the
+  // current focused_window.
+  EXPECT_EQ(root_window(), client::GetFocusClient(&child)->GetFocusedWindow());
 }
 
 // Simulates a focus change, and while the focus change is in flight the server

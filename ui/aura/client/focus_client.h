@@ -36,9 +36,6 @@ AURA_EXPORT void SetFocusClient(Window* root_window, FocusClient* client);
 AURA_EXPORT FocusClient* GetFocusClient(Window* window);
 AURA_EXPORT FocusClient* GetFocusClient(const Window* window);
 
-// The focus client is stored on the window using this property.
-AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
-
 }  // namespace clients
 }  // namespace aura
 

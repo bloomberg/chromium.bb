@@ -6,8 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/env.h"
 #include "ui/aura/mus/focus_synchronizer_delegate.h"
 #include "ui/aura/mus/window_mus.h"
 #include "ui/aura/window.h"
@@ -16,13 +16,18 @@ namespace aura {
 
 FocusSynchronizer::FocusSynchronizer(FocusSynchronizerDelegate* delegate,
                                      ui::mojom::WindowTree* window_tree)
-    : delegate_(delegate), window_tree_(window_tree) {
-  Env::GetInstance()->AddObserver(this);
-}
+    : delegate_(delegate), window_tree_(window_tree) {}
 
 FocusSynchronizer::~FocusSynchronizer() {
-  SetActiveFocusClient(nullptr);
-  Env::GetInstance()->RemoveObserver(this);
+  SetActiveFocusClientInternal(nullptr);
+}
+
+void FocusSynchronizer::AddObserver(FocusSynchronizerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FocusSynchronizer::RemoveObserver(FocusSynchronizerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void FocusSynchronizer::SetFocusFromServer(WindowMus* window) {
@@ -33,16 +38,15 @@ void FocusSynchronizer::SetFocusFromServer(WindowMus* window) {
   base::AutoReset<bool> focus_reset(&setting_focus_, true);
   base::AutoReset<WindowMus*> window_setting_focus_to_reset(
       &window_setting_focus_to_, window);
-  Env* env = Env::GetInstance();
   if (window) {
     Window* root = window->GetWindow()->GetRootWindow();
     // The client should provide a focus client for all roots.
     DCHECK(client::GetFocusClient(root));
-    if (env->active_focus_client_root() != root)
-      env->SetActiveFocusClient(client::GetFocusClient(root), root);
+    if (active_focus_client_root_ != root)
+      SetActiveFocusClient(client::GetFocusClient(root), root);
     window->GetWindow()->Focus();
-  } else if (env->active_focus_client()) {
-    env->active_focus_client()->FocusWindow(nullptr);
+  } else if (active_focus_client_) {
+    active_focus_client_->FocusWindow(nullptr);
   }
 }
 
@@ -50,7 +54,25 @@ void FocusSynchronizer::OnFocusedWindowDestroyed() {
   focused_window_ = nullptr;
 }
 
-void FocusSynchronizer::SetActiveFocusClient(
+void FocusSynchronizer::SetActiveFocusClient(client::FocusClient* focus_client,
+                                             Window* focus_client_root) {
+  if (focus_client_root == active_focus_client_root_) {
+    DCHECK_EQ(focus_client, active_focus_client_);
+    return;
+  }
+
+  if (active_focus_client_root_)
+    active_focus_client_root_->RemoveObserver(this);
+  active_focus_client_root_ = focus_client_root;
+  if (active_focus_client_root_)
+    active_focus_client_root_->AddObserver(this);
+
+  OnActiveFocusClientChanged(focus_client, focus_client_root);
+  for (FocusSynchronizerObserver& observer : observers_)
+    observer.OnActiveFocusClientChanged(focus_client, focus_client_root);
+}
+
+void FocusSynchronizer::SetActiveFocusClientInternal(
     client::FocusClient* focus_client) {
   if (focus_client == active_focus_client_)
     return;
@@ -69,6 +91,22 @@ void FocusSynchronizer::SetFocusedWindow(WindowMus* window) {
                          window ? window->server_id() : kInvalidServerId);
 }
 
+void FocusSynchronizer::OnActiveFocusClientChanged(
+    client::FocusClient* focus_client,
+    Window* focus_client_root) {
+  SetActiveFocusClientInternal(focus_client);
+  if (setting_focus_)
+    return;
+
+  if (focus_client) {
+    Window* focused_window = focus_client->GetFocusedWindow();
+    SetFocusedWindow(focused_window ? WindowMus::Get(focused_window)
+                                    : WindowMus::Get(focus_client_root));
+  } else {
+    SetFocusedWindow(nullptr);
+  }
+}
+
 void FocusSynchronizer::OnWindowFocused(Window* gained_focus,
                                         Window* lost_focus) {
   WindowMus* gained_focus_mus = WindowMus::Get(gained_focus);
@@ -79,22 +117,18 @@ void FocusSynchronizer::OnWindowFocused(Window* gained_focus,
   SetFocusedWindow(gained_focus_mus);
 }
 
-void FocusSynchronizer::OnWindowInitialized(Window* window) {}
+void FocusSynchronizer::OnWindowDestroying(Window* window) {
+  SetActiveFocusClient(nullptr, nullptr);
+}
 
-void FocusSynchronizer::OnActiveFocusClientChanged(
-    client::FocusClient* focus_client,
-    Window* window) {
-  SetActiveFocusClient(focus_client);
-  if (setting_focus_)
+void FocusSynchronizer::OnWindowPropertyChanged(Window* window,
+                                                const void* key,
+                                                intptr_t old) {
+  if (key != client::kFocusClientKey)
     return;
 
-  if (focus_client) {
-    Window* focused_window = focus_client->GetFocusedWindow();
-    SetFocusedWindow(focused_window ? WindowMus::Get(focused_window)
-                                    : WindowMus::Get(window));
-  } else {
-    SetFocusedWindow(nullptr);
-  }
+  // Assume if the focus client changes the window is being destroyed.
+  SetActiveFocusClient(nullptr, nullptr);
 }
 
 }  // namespace aura
