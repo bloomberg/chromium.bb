@@ -5621,7 +5621,7 @@ class AltSvcFrameTest : public SpdySessionTest {
 
 TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
   const char origin[] = "https://mail.example.org";
-  SpdyAltSvcIR altsvc_ir(0);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   altsvc_ir.add_altsvc(alternative_service_);
   altsvc_ir.set_origin(origin);
   AddSocketData(altsvc_ir);
@@ -5650,7 +5650,7 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrame) {
 
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnInsecureSession) {
   const char origin[] = "https://mail.example.org";
-  SpdyAltSvcIR altsvc_ir(0);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   altsvc_ir.add_altsvc(alternative_service_);
   altsvc_ir.set_origin(origin);
   AddSocketData(altsvc_ir);
@@ -5676,7 +5676,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnInsecureSession) {
 
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameForOriginNotCoveredByCert) {
   const char origin[] = "https://invalid.example.org";
-  SpdyAltSvcIR altsvc_ir(0);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   altsvc_ir.add_altsvc(alternative_service_);
   altsvc_ir.set_origin(origin);
   AddSocketData(altsvc_ir);
@@ -5703,7 +5703,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameForOriginNotCoveredByCert) {
 // An ALTSVC frame on stream 0 with empty origin MUST be ignored.
 // (RFC 7838 Section 4)
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithEmptyOriginOnStreamZero) {
-  SpdyAltSvcIR altsvc_ir(0);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 0);
   altsvc_ir.add_altsvc(alternative_service_);
   AddSocketData(altsvc_ir);
   AddSSLSocketData();
@@ -5725,7 +5725,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameWithEmptyOriginOnStreamZero) {
 // ignored.  (RFC 7838 Section 4)
 TEST_F(AltSvcFrameTest,
        DoNotProcessAltSvcFrameWithNonEmptyOriginOnNonZeroStream) {
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);
   altsvc_ir.set_origin("https://mail.example.org");
   AddSocketData(altsvc_ir);
@@ -5745,7 +5745,7 @@ TEST_F(AltSvcFrameTest,
 }
 
 TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);
 
   SpdySerializedFrame altsvc_frame(spdy_util_.SerializeFrame(altsvc_ir));
@@ -5799,7 +5799,7 @@ TEST_F(AltSvcFrameTest, ProcessAltSvcFrameOnActiveStream) {
 }
 
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnStreamWithInsecureOrigin) {
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);
 
   SpdySerializedFrame altsvc_frame(spdy_util_.SerializeFrame(altsvc_ir));
@@ -5850,7 +5850,7 @@ TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnStreamWithInsecureOrigin) {
 }
 
 TEST_F(AltSvcFrameTest, DoNotProcessAltSvcFrameOnNonExistentStream) {
-  SpdyAltSvcIR altsvc_ir(1);
+  SpdyAltSvcIR altsvc_ir(/* stream_id = */ 1);
   altsvc_ir.add_altsvc(alternative_service_);
   AddSocketData(altsvc_ir);
   AddSSLSocketData();
