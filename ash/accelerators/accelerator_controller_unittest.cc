@@ -1350,6 +1350,8 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
       {true, ui::VKEY_L, ui::EF_COMMAND_DOWN, LOCK_SCREEN},
       {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, NEXT_IME},
       {true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER},
+      {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
+       SHOW_IME_MENU_BUBBLE},
   };
 
   EXPECT_TRUE(IsMessageCenterEmpty());

@@ -133,7 +133,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SHOW_STYLUS_TOOLS},
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      SHOW_SYSTEM_TRAY_BUBBLE},
-    {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+    {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      SHOW_IME_MENU_BUBBLE},
     {true, ui::VKEY_1, ui::EF_ALT_DOWN, LAUNCH_APP_0},
     {true, ui::VKEY_2, ui::EF_ALT_DOWN, LAUNCH_APP_1},
@@ -194,7 +194,11 @@ const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 //    keyboard_overlay_data.js.
 const AcceleratorData kDeprecatedAccelerators[] = {
     {true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, LOCK_SCREEN},
-    {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER}};
+    {true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, SHOW_TASK_MANAGER},
+
+    // Deprecated in M59.
+    {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+     SHOW_IME_MENU_BUBBLE}};
 
 const size_t kDeprecatedAcceleratorsLength = arraysize(kDeprecatedAccelerators);
 
@@ -207,7 +211,10 @@ const DeprecatedAcceleratorData kDeprecatedAcceleratorsData[] = {
     },
     {SHOW_TASK_MANAGER, "Ash.Accelerators.Deprecated.ShowTaskManager",
      IDS_DEPRECATED_SHOW_TASK_MANAGER_MSG, IDS_SHORTCUT_TASK_MANAGER_OLD,
-     IDS_SHORTCUT_TASK_MANAGER_NEW, true}};
+     IDS_SHORTCUT_TASK_MANAGER_NEW, true},
+    {SHOW_IME_MENU_BUBBLE, "Ash.Accelerators.Deprecated.ShowImeMenuBubble",
+     IDS_DEPRECATED_SHOW_IME_BUBBLE_MSG, IDS_SHORTCUT_IME_BUBBLE_OLD,
+     IDS_SHORTCUT_IME_BUBBLE_NEW, true}};
 
 const size_t kDeprecatedAcceleratorsDataLength =
     arraysize(kDeprecatedAcceleratorsData);

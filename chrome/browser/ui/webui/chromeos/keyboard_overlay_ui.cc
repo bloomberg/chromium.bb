@@ -245,6 +245,7 @@ struct I18nContentToMessage {
     IDS_KEYBOARD_OVERLAY_SELECT_PREVIOUS_INPUT_METHOD },
   { "keyboardOverlaySelectWordAtATime",
     IDS_KEYBOARD_OVERLAY_SELECT_WORD_AT_A_TIME },
+  { "keyboardOverlayShowImeBubble", IDS_KEYBOARD_OVERLAY_SHOW_IME_BUBBLE },
   { "keyboardOverlayShowMessageCenter",
     IDS_KEYBOARD_OVERLAY_SHOW_MESSAGE_CENTER },
   { "keyboardOverlayShowStatusMenu", IDS_KEYBOARD_OVERLAY_SHOW_STATUS_MENU },
