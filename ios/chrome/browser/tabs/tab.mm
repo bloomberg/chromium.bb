@@ -68,6 +68,7 @@
 #import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate_impl.h"
 #include "ios/chrome/browser/pref_names.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
@@ -346,10 +347,6 @@ enum class RendererTerminationTabState {
 
 // Initialize the Native App Launcher controller.
 - (void)initNativeAppNavigationController;
-
-// Opens a link in an external app. Returns YES iff |url| is launched in an
-// external app.
-- (BOOL)openExternalURL:(const GURL&)url linkClicked:(BOOL)linkClicked;
 
 // Handles exportable files if possible.
 - (void)handleExportableFile:(net::HttpResponseHeaders*)headers;
@@ -1267,7 +1264,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 }
 
-- (BOOL)openExternalURL:(const GURL&)url linkClicked:(BOOL)linkClicked {
+- (BOOL)openExternalURL:(const GURL&)url
+              sourceURL:(const GURL&)sourceURL
+            linkClicked:(BOOL)linkClicked {
   if (!externalAppLauncher_.get())
     externalAppLauncher_.reset([[ExternalAppLauncher alloc] init]);
 
@@ -1314,6 +1313,15 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     // Ensure the UI reflects the current entry, not the just-discarded pending
     // entry.
     [parentTabModel_ notifyTabChanged:self];
+
+    if (sourceURL.is_valid()) {
+      ReadingListModel* model =
+          ReadingListModelFactory::GetForBrowserState(browserState_);
+      if (model && model->loaded()) {
+        model->SetReadStatus(sourceURL, true);
+      }
+    }
+
     return YES;
   }
   return NO;
@@ -1745,6 +1753,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   // Attempts to open external app without x-callback.
   if ([self openExternalURL:[metadata launchURLWithURL:url identity:identity]
+                  sourceURL:sourceURL
                 linkClicked:linkClicked]) {
     return YES;
   }

@@ -3054,6 +3054,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if (![self shouldOpenExternalURLForNavigationAction:action]) {
       return NO;
     }
+    web::NavigationItem* item = self.currentNavItem;
+    GURL sourceURL = item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
 
     // Stop load if navigation is believed to be happening on the main frame.
     if ([self isMainFrameNavigationAction:action])
@@ -3075,6 +3077,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
 
     if ([_delegate openExternalURL:requestURL
+                         sourceURL:sourceURL
                        linkClicked:isNavigationTypeLinkActivated]) {
       // Record the URL so that errors reported following the 'NO' reply can be
       // safely ignored.

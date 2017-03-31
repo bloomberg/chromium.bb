@@ -29,7 +29,10 @@ class GURL;
 // Called when an external app needs to be opened, it also passes |linkClicked|
 // to track if this call was a result of user action or not. Returns YES iff
 // |URL| is launched in an external app.
-- (BOOL)openExternalURL:(const GURL&)URL linkClicked:(BOOL)linkClicked;
+// |sourceURL| is the original URL that triggered the navigation to |URL|.
+- (BOOL)openExternalURL:(const GURL&)URL
+              sourceURL:(const GURL&)sourceURL
+            linkClicked:(BOOL)linkClicked;
 
 // This method is invoked whenever the system believes the URL is about to
 // change, or immediately after any unexpected change of the URL, prior to
