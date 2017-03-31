@@ -90,20 +90,24 @@ using signin_ui::CompletionCallback;
   isDismissing_ = NO;
 }
 
-- (void)signInWithCompletion:(CompletionCallback)completion
-              viewController:(UIViewController*)viewController {
+- (void)signInWithViewController:(UIViewController*)viewController
+                        identity:(ChromeIdentity*)identity
+                      completion:(signin_ui::CompletionCallback)completion {
   signin_metrics::LogSigninAccessPointStarted(signInAccessPoint_);
   completionCallback_.reset(completion, base::scoped_policy::RETAIN);
-  if (ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->HasIdentities()) {
+  ios::ChromeIdentityService* identityService =
+      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
+  if (identity) {
+    DCHECK(identityService->IsValidIdentity(identity));
+    DCHECK(!signinViewController_);
+    [self showSigninViewControllerWithIdentity:identity];
+  } else if (identityService->HasIdentities()) {
     DCHECK(!signinViewController_);
     [self showSigninViewControllerWithIdentity:nil];
   } else {
     identityInteractionManager_ =
-        ios::GetChromeBrowserProvider()
-            ->GetChromeIdentityService()
-            ->NewChromeIdentityInteractionManager(browserState_, self);
+        identityService->NewChromeIdentityInteractionManager(browserState_,
+                                                             self);
     if (!identityInteractionManager_) {
       // Abort sign-in if the ChromeIdentityInteractionManager returned is
       // nil (this can happen when the iOS internal provider is not used).

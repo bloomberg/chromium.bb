@@ -2098,8 +2098,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
       break;
     case AUTHENTICATION_OPERATION_SIGNIN:
       [_signinInteractionController
-          signInWithCompletion:completion
-                viewController:self.mainViewController];
+          signInWithViewController:self.mainViewController
+                          identity:nil
+                        completion:completion];
       break;
   }
 }
