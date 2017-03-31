@@ -136,9 +136,6 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         /** @return Whether voice search is enabled and the microphone should be shown. */
         boolean isVoiceSearchEnabled();
 
-        /** @return Whether the omnibox 'Search or type URL' text should be shown. */
-        boolean isFakeOmniboxTextEnabledTablet();
-
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
          * @param beginVoiceSearch Whether to begin a voice search.
@@ -321,7 +318,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
         }
 
         String hintText = getResources().getString(R.string.search_or_type_url);
-        if (!DeviceFormFactor.isTablet(getContext()) || mManager.isFakeOmniboxTextEnabledTablet()) {
+        if (!DeviceFormFactor.isTablet(getContext())) {
             searchBoxTextView.setHint(hintText);
         } else {
             searchBoxTextView.setContentDescription(hintText);

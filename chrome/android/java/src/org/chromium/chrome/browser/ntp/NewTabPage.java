@@ -193,11 +193,6 @@ public class NewTabPage
             return mFakeboxDelegate != null && mFakeboxDelegate.isVoiceSearchEnabled();
         }
 
-        @Override
-        public boolean isFakeOmniboxTextEnabledTablet() {
-            return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_FAKE_OMNIBOX_TEXT);
-        }
-
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private boolean switchToExistingTab(String url) {
             String matchPattern = CommandLine.getInstance().getSwitchValue(

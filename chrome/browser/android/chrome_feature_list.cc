@@ -60,7 +60,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNoCreditCardAbort,
     &kNTPCondensedLayoutFeature,
     &kNTPCondensedTileLayoutFeature,
-    &kNTPFakeOmniboxTextFeature,
     &kNTPLaunchAfterInactivity,
     &kNTPOfflinePagesFeature,
     &NTPShowGoogleGInOmniboxFeature,
@@ -155,9 +154,6 @@ const base::Feature kNTPCondensedLayoutFeature{
 
 const base::Feature kNTPCondensedTileLayoutFeature{
     "NTPCondensedTileLayout", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPFakeOmniboxTextFeature{
-    "NTPFakeOmniboxText", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
