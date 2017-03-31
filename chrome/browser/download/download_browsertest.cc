@@ -3437,7 +3437,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   ASSERT_TRUE(updated_downloads.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
+// Test is flaky Linux. crbug.com/705224
+#if defined(OS_LINUX)
+#define MAYBE_FeedbackServiceKeepDownload DISABLED_FeedbackServiceKeepDownload
+#else
+#define MAYBE_FeedbackServiceKeepDownload FeedbackServiceKeepDownload
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_FeedbackServiceKeepDownload) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   safe_browsing::SetExtendedReportingPref(prefs, true);
@@ -3484,21 +3490,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
   // Begin feedback and check that file is still there.
   download_protection_service->feedback_service()->BeginFeedbackForDownload(
       downloads[0], DownloadCommands::KEEP);
-  std::unique_ptr<DownloadTestObserverNotInProgress> completion_observer(
-      new DownloadTestObserverNotInProgress(
-          DownloadManagerForBrowser(browser()), 1));
-
-  // Make sure download is finished before starting evaluation.
-  if (!completion_observer->IsFinished()) {
-    completion_observer->StartObserving();
-    completion_observer->WaitForFinished();
-  }
 
   std::vector<DownloadItem*> updated_downloads;
   GetDownloads(browser(), &updated_downloads);
   ASSERT_EQ(std::size_t(1), updated_downloads.size());
   ASSERT_FALSE(updated_downloads[0]->IsDangerous());
-  ASSERT_TRUE(PathExists(updated_downloads[0]->GetTargetFilePath()));
+  ASSERT_TRUE(PathExists(updated_downloads[0]->GetFullPath()));
   updated_downloads[0]->Cancel(true);
 }
 
