@@ -219,6 +219,7 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
     PrefService* local_state_prefs,
     std::unique_ptr<base::Clock> clock)
     : persistent_scheduler_(persistent_scheduler),
+      provider_(nullptr),
       background_fetch_in_progress_(false),
       user_classifier_(user_classifier),
       request_throttler_rare_ntp_user_(
