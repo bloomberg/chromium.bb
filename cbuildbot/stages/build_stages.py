@@ -414,6 +414,27 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       event_file = None
       event_file_in_chroot = None
 
+    # Set up goma. Use goma iff chrome needs to be built.
+    chroot_args = []
+    if self._run.options.managed_chrome:
+      if self._run.options.goma_dir:
+        # Mount goma directory into chroot.
+        chroot_args.extend(['--goma_dir', self._run.options.goma_dir])
+        # Set GOMA_DIR for portage. The path is one in the chroot.
+        self._portage_extra_env['GOMA_DIR'] = os.path.join(
+            '/home', os.environ.get('USER'), 'goma')
+
+        # Set USE flag so that chrome is built with goma.
+        useflags = self._portage_extra_env.get('USE', '').split()
+        useflags.append('goma')
+        self._portage_extra_env['USE'] = ' '.join(useflags)
+
+      if self._run.options.goma_client_json:
+        chroot_args.extend([
+            '--goma_client_json', self._run.options.goma_client_json])
+        # Set env var. The path is one in the chroot.
+        self._portage_extra_env['GOMA_SERVICE_ACCOUNT_JSON_FILE'] = (
+            '/creds/service_accounts/service-account-goma-client.json')
 
     commands.Build(self._build_root,
                    self._current_board,
@@ -425,8 +446,11 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    chrome_root=self._run.options.chrome_root,
                    noworkon=noworkon,
                    noretry=self._run.config.nobuildretry,
+                   chroot_args=chroot_args,
                    extra_env=self._portage_extra_env,
-                   event_file=event_file_in_chroot,)
+                   event_file=event_file_in_chroot,
+                   run_goma=bool(self._run.options.managed_chrome and
+                                 self._run.options.goma_dir))
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
