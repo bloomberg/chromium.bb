@@ -62,13 +62,13 @@ std::string URLDatabase::GURLToDatabaseURL(const GURL& gurl) {
 // kURLRowFields.
 void URLDatabase::FillURLRow(sql::Statement& s, URLRow* i) {
   DCHECK(i);
-  i->id_ = s.ColumnInt64(0);
-  i->url_ = GURL(s.ColumnString(1));
-  i->title_ = s.ColumnString16(2);
-  i->visit_count_ = s.ColumnInt(3);
-  i->typed_count_ = s.ColumnInt(4);
-  i->last_visit_ = base::Time::FromInternalValue(s.ColumnInt64(5));
-  i->hidden_ = s.ColumnInt(6) != 0;
+  i->set_id(s.ColumnInt64(0));
+  i->set_url(GURL(s.ColumnString(1)));
+  i->set_title(s.ColumnString16(2));
+  i->set_visit_count(s.ColumnInt(3));
+  i->set_typed_count(s.ColumnInt(4));
+  i->set_last_visit(base::Time::FromInternalValue(s.ColumnInt64(5)));
+  i->set_hidden(s.ColumnInt(6) != 0);
 }
 
 bool URLDatabase::GetURLRow(URLID url_id, URLRow* info) {

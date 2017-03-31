@@ -210,8 +210,15 @@ Snippet::Snippet() {
 
 Snippet::Snippet(const Snippet& other) = default;
 
+// TODO(bug 706963) this should be implemented as "= default" when Android
+// toolchain is updated.
+Snippet::Snippet(Snippet&& other) noexcept
+    : text_(std::move(other.text_)), matches_(std::move(other.matches_)) {}
+
 Snippet::~Snippet() {
 }
+
+Snippet& Snippet::operator=(const Snippet&) = default;
 
 void Snippet::ComputeSnippet(const MatchPositions& match_positions,
                              const std::string& document) {

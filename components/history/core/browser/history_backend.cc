@@ -788,7 +788,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
       NOTREACHED() << "Adding URL failed.";
       return std::make_pair(0, 0);
     }
-    url_info.id_ = url_id;
+    url_info.set_id(url_id);
   }
 
   // Add the visit with the time to the database.

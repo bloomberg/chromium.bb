@@ -48,7 +48,10 @@ class Snippet {
 
   Snippet();
   Snippet(const Snippet& other);
+  Snippet(Snippet&& other) noexcept;
   ~Snippet();
+
+  Snippet& operator=(const Snippet&);
 
   // Given |matches|, the match positions within |document|, compute the snippet
   // for the document.

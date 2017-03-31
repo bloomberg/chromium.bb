@@ -14,26 +14,18 @@ namespace history {
 
 // VisitRow --------------------------------------------------------------------
 
-VisitRow::VisitRow()
-    : visit_id(0),
-      url_id(0),
-      referring_visit(0),
-      transition(ui::PAGE_TRANSITION_LINK),
-      segment_id(0) {
-}
+VisitRow::VisitRow() {}
 
 VisitRow::VisitRow(URLID arg_url_id,
                    base::Time arg_visit_time,
                    VisitID arg_referring_visit,
                    ui::PageTransition arg_transition,
                    SegmentID arg_segment_id)
-    : visit_id(0),
-      url_id(arg_url_id),
+    : url_id(arg_url_id),
       visit_time(arg_visit_time),
       referring_visit(arg_referring_visit),
       transition(arg_transition),
-      segment_id(arg_segment_id) {
-}
+      segment_id(arg_segment_id) {}
 
 VisitRow::~VisitRow() {
 }
@@ -99,9 +91,8 @@ void QueryResults::DeleteRange(size_t begin, size_t end) {
   results_.erase(results_.begin() + begin, results_.begin() + end + 1);
 
   // Delete the indicies referencing the deleted entries.
-  for (std::set<GURL>::const_iterator url = urls_modified.begin();
-       url != urls_modified.end(); ++url) {
-    URLToResultIndices::iterator found = url_to_results_.find(*url);
+  for (const auto& url : urls_modified) {
+    URLToResultIndices::iterator found = url_to_results_.find(url);
     if (found == url_to_results_.end()) {
       NOTREACHED();
       continue;
@@ -154,10 +145,7 @@ void QueryResults::AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta) {
 
 // QueryOptions ----------------------------------------------------------------
 
-QueryOptions::QueryOptions()
-    : max_count(0),
-      duplicate_policy(QueryOptions::REMOVE_ALL_DUPLICATES),
-      matching_algorithm(query_parser::MatchingAlgorithm::DEFAULT) {}
+QueryOptions::QueryOptions() {}
 
 void QueryOptions::SetRecentDayRange(int days_ago) {
   end_time = base::Time::Now();
@@ -179,8 +167,7 @@ int QueryOptions::EffectiveMaxCount() const {
 
 // QueryURLResult -------------------------------------------------------------
 
-QueryURLResult::QueryURLResult() : success(false) {
-}
+QueryURLResult::QueryURLResult() {}
 
 QueryURLResult::~QueryURLResult() {
 }
@@ -190,26 +177,27 @@ QueryURLResult::~QueryURLResult() {
 MostVisitedURL::MostVisitedURL() {}
 
 MostVisitedURL::MostVisitedURL(const GURL& url,
-                               const base::string16& title)
-    : url(url),
-      title(title) {
-}
-
-MostVisitedURL::MostVisitedURL(const GURL& url,
                                const base::string16& title,
-                               const base::Time& last_forced_time)
-    : url(url),
-      title(title),
-      last_forced_time(last_forced_time) {
-}
+                               base::Time last_forced_time)
+    : url(url), title(title), last_forced_time(last_forced_time) {}
 
 MostVisitedURL::MostVisitedURL(const MostVisitedURL& other) = default;
 
+// TODO(bug 706963) this should be implemented as "= default" when Android
+// toolchain is updated.
+MostVisitedURL::MostVisitedURL(MostVisitedURL&& other) noexcept
+    : url(std::move(other.url)),
+      title(std::move(other.title)),
+      last_forced_time(other.last_forced_time),
+      redirects(std::move(other.redirects)) {}
+
 MostVisitedURL::~MostVisitedURL() {}
+
+MostVisitedURL& MostVisitedURL::operator=(const MostVisitedURL&) = default;
 
 // FilteredURL -----------------------------------------------------------------
 
-FilteredURL::FilteredURL() : score(0.0) {}
+FilteredURL::FilteredURL() {}
 
 FilteredURL::FilteredURL(const PageUsageData& page_data)
     : url(page_data.GetURL()),
@@ -217,15 +205,13 @@ FilteredURL::FilteredURL(const PageUsageData& page_data)
       score(page_data.GetScore()) {
 }
 
+FilteredURL::FilteredURL(FilteredURL&& other) noexcept = default;
+
 FilteredURL::~FilteredURL() {}
 
 // FilteredURL::ExtendedInfo ---------------------------------------------------
 
-FilteredURL::ExtendedInfo::ExtendedInfo()
-    : total_visits(0),
-      visits(0),
-      duration_opened(0) {
-}
+FilteredURL::ExtendedInfo::ExtendedInfo() = default;
 
 // Images ---------------------------------------------------------------------
 
@@ -299,31 +285,27 @@ MostVisitedThumbnails::~MostVisitedThumbnails() {}
 
 // IconMapping ----------------------------------------------------------------
 
-IconMapping::IconMapping()
-    : mapping_id(0), icon_id(0), icon_type(favicon_base::INVALID_ICON) {}
+IconMapping::IconMapping() {}
+IconMapping::IconMapping(const IconMapping&) = default;
+IconMapping::IconMapping(IconMapping&&) noexcept = default;
 
 IconMapping::~IconMapping() {}
 
+IconMapping& IconMapping::operator=(const IconMapping&) = default;
+
 // FaviconBitmapIDSize ---------------------------------------------------------
 
-FaviconBitmapIDSize::FaviconBitmapIDSize()
-    : bitmap_id(0) {
-}
+FaviconBitmapIDSize::FaviconBitmapIDSize() {}
 
-FaviconBitmapIDSize::~FaviconBitmapIDSize() {
-}
+FaviconBitmapIDSize::~FaviconBitmapIDSize() {}
 
 // FaviconBitmap --------------------------------------------------------------
 
-FaviconBitmap::FaviconBitmap()
-    : bitmap_id(0),
-      icon_id(0) {
-}
+FaviconBitmap::FaviconBitmap() {}
 
 FaviconBitmap::FaviconBitmap(const FaviconBitmap& other) = default;
 
-FaviconBitmap::~FaviconBitmap() {
-}
+FaviconBitmap::~FaviconBitmap() {}
 
 // ExpireHistoryArgs ----------------------------------------------------------
 

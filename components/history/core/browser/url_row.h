@@ -18,16 +18,6 @@ typedef int64_t URLID;
 
 // Holds all information globally associated with one URL (one row in the
 // URL table).
-//
-// This keeps track of dirty bits, which are currently unused:
-//
-// TODO(brettw) the dirty bits are broken in a number of respects. First, the
-// database will want to update them on a const object, so they need to be
-// mutable.
-//
-// Second, there is a problem copying. If you make a copy of this structure
-// (as we allow since we put this into vectors in various places) then the
-// dirty bits will not be in sync for these copies.
 class URLRow {
  public:
   URLRow();
@@ -39,6 +29,7 @@ class URLRow {
   URLRow(const GURL& url, URLID id);
 
   URLRow(const URLRow& other);
+  URLRow(URLRow&&) noexcept;
 
   virtual ~URLRow();
   URLRow& operator=(const URLRow& other);
@@ -51,6 +42,7 @@ class URLRow {
   // row.
   void set_id(URLID id) { id_ = id; }
 
+  void set_url(const GURL& url) { url_ = url; }
   const GURL& url() const { return url_; }
 
   const base::string16& title() const {
@@ -121,19 +113,10 @@ class URLRow {
   void Swap(URLRow* other);
 
  private:
-  // This class writes directly into this structure and clears our dirty bits
-  // when reading out of the DB.
-  friend class URLDatabase;
-  friend class HistoryBackend;
-
-  // Initializes all values that need initialization to their defaults.
-  // This excludes objects which autoinitialize such as strings.
-  void Initialize();
-
   // The row ID of this URL from the history database. This is immutable except
   // when retrieving the row from the database or when determining if the URL
   // referenced by the URLRow already exists in the database.
-  URLID id_;
+  URLID id_ = 0;
 
   // The URL of this row. Immutable except for the database which sets it
   // when it pulls them out. If clients want to change it, they must use
@@ -143,10 +126,10 @@ class URLRow {
   base::string16 title_;
 
   // Total number of times this URL has been visited.
-  int visit_count_;
+  int visit_count_ = 0;
 
   // Number of times this URL has been manually entered in the URL bar.
-  int typed_count_;
+  int typed_count_ = 0;
 
   // The date of the last visit of this URL, which saves us from having to
   // loop up in the visit table for things like autocomplete and expiration.
@@ -154,7 +137,7 @@ class URLRow {
 
   // Indicates this entry should now be shown in typical UI or queries, this
   // is usually for subframes.
-  bool hidden_;
+  bool hidden_ = false;
 
   // We support the implicit copy constuctor and operator=.
 };
@@ -165,13 +148,12 @@ class URLResult : public URLRow {
  public:
   URLResult();
   URLResult(const GURL& url, base::Time visit_time);
-  // Constructor that create a URLResult from the specified URL and title match
-  // positions from title_matches.
-  URLResult(const GURL& url,
-            const query_parser::Snippet::MatchPositions& title_matches);
-  explicit URLResult(const URLRow& url_row);
+  URLResult(const URLRow& url_row);
   URLResult(const URLResult& other);
+  URLResult(URLResult&&) noexcept;
   ~URLResult() override;
+
+  URLResult& operator=(const URLResult&);
 
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }
@@ -205,7 +187,7 @@ class URLResult : public URLRow {
   query_parser::Snippet::MatchPositions title_match_positions_;
 
   // Whether a managed user was blocked when attempting to visit this URL.
-  bool blocked_visit_;
+  bool blocked_visit_ = false;
 
   // We support the implicit copy constructor and operator=.
 };
