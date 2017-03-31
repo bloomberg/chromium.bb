@@ -25,12 +25,15 @@ run_jsbundler("switch_access_copied_files") {
   mode = "copy"
   dest_dir = switch_access_dir
   sources = [
+    "auto_scan_manager.js",
     "background.js",
+    "keyboard_handler.js",
     "options.css",
     "options.html",
     "options.js",
     "prefs.js",
     "switch_access.js",
+    "tree_walker.js",
   ]
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",

@@ -5,11 +5,25 @@
 {
   'targets': [
     {
+      'target_name': 'auto_scan_manager',
+      'dependencies': [
+        'switch_access_interface',
+        'prefs',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'background',
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
-        'prefs',
         'switch_access',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'keyboard_handler',
+      'dependencies': [
+        'switch_access_interface',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -37,8 +51,25 @@
         '<(EXTERNS_GYP):automation',
         '<(EXTERNS_GYP):chrome_extensions',
         'prefs',
+        'auto_scan_manager',
+        'keyboard_handler',
+        'tree_walker',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'switch_access_interface',
+      'dependencies': [
+        'prefs',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'tree_walker',
+      'dependencies': [
+        '<(EXTERNS_GYP):automation',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    }
   ],
 }

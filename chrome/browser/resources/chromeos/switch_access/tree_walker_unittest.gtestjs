@@ -3,23 +3,20 @@
 // found in the LICENSE file.
 
 /**
- * Test fixture for switch_access.js.
+ * Test fixture for tree_walker.js.
  * @constructor
  * @extends {testing.Test}
  */
-function SwitchAccessUnitTest () {
+function AutomationTreeWalkerUnitTest () {
   testing.Test.call(this);
 };
 
-SwitchAccessUnitTest.prototype = {
+AutomationTreeWalkerUnitTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
   extraLibraries: [
-    'test_support.js',
-    'prefs.js',
-    'switch_access.js',
-    'testable_switch_access.js',
+    'tree_walker.js',
   ],
 
   getSampleTree: function() {
@@ -78,9 +75,9 @@ SwitchAccessUnitTest.prototype = {
   }
 };
 
-TEST_F('SwitchAccessUnitTest', 'GetNextNode', function() {
+TEST_F('AutomationTreeWalkerUnitTest', 'GetNextNode', function() {
   let tree = this.getSampleTree();
-  let tsa = new TestableSwitchAccess();
+  let treeWalker = new AutomationTreeWalker();
 
   let order =
       [tree.root, tree.middle1, tree.leaf1, tree.leaf2, tree.leaf3,
@@ -88,14 +85,14 @@ TEST_F('SwitchAccessUnitTest', 'GetNextNode', function() {
   let node = tree.root;
   for (let i = 0; i < order.length; i++) {
     assertEquals(order[i], node);
-    node = tsa.getNextNode(node);
+    node = treeWalker.getNextNode_(node);
   }
-  assertEquals(null, node);
+  assertEquals(undefined, node);
 });
 
-TEST_F('SwitchAccessUnitTest', 'GetPreviousNode', function() {
+TEST_F('AutomationTreeWalkerUnitTest', 'GetPreviousNode', function() {
   let tree = this.getSampleTree();
-  let tsa = new TestableSwitchAccess();
+  let treeWalker = new AutomationTreeWalker();
 
   let order =
       [tree.leaf5, tree.leaf4, tree.middle2, tree.leaf3, tree.leaf2,
@@ -103,34 +100,34 @@ TEST_F('SwitchAccessUnitTest', 'GetPreviousNode', function() {
   let node = tree.leaf5;
   for (let i = 0; i < order.length; i++) {
     assertEquals(order[i], node);
-    node = tsa.getPreviousNode(node);
+    node = treeWalker.getPreviousNode_(node);
   }
-  assertEquals(null, node);
+  assertEquals(undefined, node);
 });
 
-TEST_F('SwitchAccessUnitTest', 'GetYoungestDescendant', function() {
+TEST_F('AutomationTreeWalkerUnitTest', 'GetYoungestDescendant', function() {
   let tree = this.getSampleTree();
-  let tsa = new TestableSwitchAccess();
+  let treeWalker = new AutomationTreeWalker();
 
-  assertEquals(tree.leaf5, tsa.getYoungestDescendant(tree.root));
-  assertEquals(tree.leaf3, tsa.getYoungestDescendant(tree.middle1));
-  assertEquals(tree.leaf5, tsa.getYoungestDescendant(tree.middle2));
-  assertEquals(null, tsa.getYoungestDescendant(tree.leaf1));
-  assertEquals(null, tsa.getYoungestDescendant(tree.leaf2));
-  assertEquals(null, tsa.getYoungestDescendant(tree.leaf3));
-  assertEquals(null, tsa.getYoungestDescendant(tree.leaf4));
-  assertEquals(null, tsa.getYoungestDescendant(tree.leaf5));
+  assertEquals(tree.leaf5, treeWalker.getYoungestDescendant_(tree.root));
+  assertEquals(tree.leaf3, treeWalker.getYoungestDescendant_(tree.middle1));
+  assertEquals(tree.leaf5, treeWalker.getYoungestDescendant_(tree.middle2));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf1));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf2));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf3));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf4));
+  assertEquals(undefined, treeWalker.getYoungestDescendant_(tree.leaf5));
 });
 
-TEST_F('SwitchAccessUnitTest', 'IsInteresting', function() {
+TEST_F('AutomationTreeWalkerUnitTest', 'IsInteresting', function() {
   let node1 = {};
   let node2 = {state: {}};
   let node3 = {state: {focusable: false}};
   let node4 = {state: {focusable: true}};
-  let tsa = new TestableSwitchAccess();
+  let treeWalker = new AutomationTreeWalker();
 
-  assertTrue(tsa.isInteresting(node1) === undefined);
-  assertTrue(tsa.isInteresting(node2) === undefined);
-  assertFalse(tsa.isInteresting(node3));
-  assertTrue(tsa.isInteresting(node4));
+  assertTrue(treeWalker.isInteresting_(node1) === undefined);
+  assertTrue(treeWalker.isInteresting_(node2) === undefined);
+  assertFalse(treeWalker.isInteresting_(node3));
+  assertTrue(treeWalker.isInteresting_(node4));
 });

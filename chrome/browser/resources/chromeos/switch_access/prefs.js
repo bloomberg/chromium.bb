@@ -7,13 +7,14 @@
  *
  * @constructor
  */
-let SwitchAccessPrefs = function() {
+function SwitchAccessPrefs() {
   /**
    * User preferences, initially set to the default preference values.
    *
    * @private
    */
   this.prefs_ = Object.assign({}, this.DEFAULT_PREFS);
+
   this.loadPrefs_();
   chrome.storage.onChanged.addListener(this.handleStorageChange_.bind(this));
 };
@@ -21,45 +22,54 @@ let SwitchAccessPrefs = function() {
 SwitchAccessPrefs.prototype = {
   /**
    * Asynchronously load the current preferences from chrome.storage.sync and
-   * store them in this.prefs_.
+   * store them in this.prefs_, if this.prefs_ is not already set to that value.
+   * If this.prefs_ changes, fire a prefsUpdate event.
    *
    * @private
    */
   loadPrefs_: function() {
     let defaultKeys = Object.keys(this.DEFAULT_PREFS);
     chrome.storage.sync.get(defaultKeys, function(loadedPrefs) {
-      let loadedKeys = Object.keys(loadedPrefs);
-      if (loadedKeys.length > 0) {
-        for (let key of loadedKeys) {
+      let updatedPrefs = {};
+      for (let key of Object.keys(loadedPrefs)) {
+        if (this.prefs_[key] !== loadedPrefs[key]) {
           this.prefs_[key] = loadedPrefs[key];
+          updatedPrefs[key] = loadedPrefs[key];
         }
-        let event = new CustomEvent('prefsUpdate', {'detail': loadedPrefs});
+      }
+      if (Object.keys(updatedPrefs).length > 0) {
+        let event = new CustomEvent('prefsUpdate', {'detail': updatedPrefs});
         document.dispatchEvent(event);
       }
     }.bind(this));
   },
 
   /**
-   * Store any changes to chrome.storage.sync in this.prefs_.
+   * Store any changes from chrome.storage.sync to this.prefs_, if this.prefs_
+   * is not already set to that value. If this.prefs_ changes, fire a
+   * prefsUpdate event.
    *
-   * @param {!Object} changes
+   * @param {!Object} storageChanges
    * @param {string} areaName
    * @private
    */
-  handleStorageChange_: function(changes, areaName) {
-    for (let key of Object.keys(changes)) {
-      // If pref change happened on same device, prefs will already be updated,
-      // so this will have no effect.
-      this.prefs_[key] = changes[key].newValue;
-      changes[key] = changes[key].newValue;
+  handleStorageChange_: function(storageChanges, areaName) {
+    let updatedPrefs = {};
+    for (let key of Object.keys(storageChanges)) {
+      if (this.prefs_[key] !== storageChanges[key].newValue) {
+        this.prefs_[key] = storageChanges[key].newValue;
+        updatedPrefs[key] = storageChanges[key].newValue;
+      }
     }
-
-    let event = new CustomEvent('prefsUpdate', {'detail': changes});
-    document.dispatchEvent(event);
+    if (Object.keys(updatedPrefs).length > 0) {
+      let event = new CustomEvent('prefsUpdate', {'detail': updatedPrefs});
+      document.dispatchEvent(event);
+    }
   },
 
   /**
-   * Set the value of the preference |key| to |value|.
+   * Set the value of the preference |key| to |value| in chrome.storage.sync.
+   * this.prefs_ is not set until handleStorageChange_.
    *
    * @param {string} key
    * @param {boolean|string|number} value
@@ -68,14 +78,51 @@ SwitchAccessPrefs.prototype = {
     let pref = {};
     pref[key] = value;
     chrome.storage.sync.set(pref);
-    this.prefs_[key] = value;
   },
 
   /**
-   * Get all user preferences.
+   * Get the value of type 'boolean' of the preference |key|. Will throw a type
+   * error if the value of |key| is not 'boolean'.
+   *
+   * @param  {string} key
+   * @return {boolean}
    */
-  getPrefs: function() {
-    return Object.assign({}, this.prefs_);
+  getBooleanPref: function(key) {
+    let value = this.prefs_[key];
+    if (typeof value === 'boolean')
+      return value;
+    else
+      throw new TypeError('No value of boolean type for key \'' + key + '\'');
+  },
+
+  /**
+   * Get the value of type 'number' of the preference |key|. Will throw a type
+   * error if the value of |key| is not 'number'.
+   *
+   * @param  {string} key
+   * @return {number}
+   */
+  getNumberPref: function(key) {
+    let value = this.prefs_[key];
+    if (typeof value === 'number')
+      return value;
+    else
+      throw new TypeError('No value of number type for key \'' + key + '\'');
+  },
+
+  /**
+   * Get the value of type 'string' of the preference |key|. Will throw a type
+   * error if the value of |key| is not 'string'.
+   *
+   * @param  {string} key
+   * @return {string}
+   */
+  getStringPref: function(key) {
+    let value = this.prefs_[key];
+    if (typeof value === 'string')
+      return value;
+    else
+      throw new TypeError('No value of string type for key \'' + key + '\'');
   },
 
   /**
@@ -86,6 +133,6 @@ SwitchAccessPrefs.prototype = {
    */
   DEFAULT_PREFS: {
     'enableAutoScan': false,
-    'autoScanTime': .75
+    'autoScanTime': 800
   }
 };

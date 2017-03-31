@@ -17,7 +17,7 @@ let $ = function(id) {
  *
  * @constructor
  */
-let SwitchAccessOptions = function() {
+function SwitchAccessOptions() {
   let background = chrome.extension.getBackgroundPage();
 
   /**
@@ -41,9 +41,10 @@ SwitchAccessOptions.prototype = {
    * @private
    */
   init_: function() {
-    let prefs = this.switchAccessPrefs_.getPrefs();
-    $('enableAutoScan').checked = prefs['enableAutoScan'];
-    $('autoScanTime').value = prefs['autoScanTime'];
+    $('enableAutoScan').checked =
+        this.switchAccessPrefs_.getBooleanPref('enableAutoScan');
+    $('autoScanTime').value =
+        this.switchAccessPrefs_.getNumberPref('autoScanTime') / 1000;
   },
 
   /**
@@ -53,14 +54,36 @@ SwitchAccessOptions.prototype = {
    * @private
    */
   handleInputChange_: function(event) {
-    switch (event.target.id) {
+    let input = event.target;
+    switch (input.id) {
       case 'enableAutoScan':
-        this.switchAccessPrefs_.setPref(event.target.id, event.target.checked);
+        this.switchAccessPrefs_.setPref(input.id, input.checked);
         break;
       case 'autoScanTime':
-        this.switchAccessPrefs_.setPref(event.target.id, event.target.value);
+        let oldVal = this.switchAccessPrefs_.getNumberPref(input.id);
+        let val = Number(input.value) * 1000;
+        let min = Number(input.min) * 1000;
+        if (this.isValidInput_(val, oldVal, min)) {
+          input.value = Number(input.value);
+          this.switchAccessPrefs_.setPref(input.id, val);
+        } else {
+          input.value = oldVal;
+        }
         break;
     }
+  },
+
+  /**
+   * Return true if the input is a valid autoScanTime input. Otherwise, return
+   * false.
+   *
+   * @param {number} value
+   * @param {number} oldValue
+   * @param {number} min
+   * @return {boolean}
+   */
+  isValidInput_: function(value, oldValue, min) {
+    return (value !== oldValue) && (value >= min);
   },
 
   /**
@@ -77,7 +100,7 @@ SwitchAccessOptions.prototype = {
           $(key).checked = updatedPrefs[key];
           break;
         case 'autoScanTime':
-          $(key).value = updatedPrefs[key];
+          $(key).value = updatedPrefs[key] / 1000;
           break;
       }
     }

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-let AutomationNode = chrome.automation.AutomationNode;
-
-let debuggingEnabled = true;
-
 /**
+ * Class to manage SwitchAccess and interact with other controllers.
+ *
  * @constructor
+ * @implements {SwitchAccessInterface}
  */
-let SwitchAccess = function() {
+function SwitchAccess() {
   console.log('Switch access is enabled');
 
   /**
@@ -20,16 +19,37 @@ let SwitchAccess = function() {
   this.switchAccessPrefs = null;
 
   /**
+   * Handles changes to auto-scan.
+   *
+   * @private {AutoScanManager}
+   */
+  this.autoScanManager_ = null;
+
+  /**
+   * Handles keyboard input.
+   *
+   * @private {KeyboardHandler}
+   */
+  this.keyboardHandler_ = null;
+
+  /**
+   * Moves to the appropriate node in the accessibility tree.
+   *
+   * @private {AutomationTreeWalker}
+   */
+  this.treeWalker_ = null;
+
+  /**
    * Currently selected node.
    *
-   * @private {AutomationNode}
+   * @private {chrome.automation.AutomationNode}
    */
   this.node_ = null;
 
   /**
    * Root node (i.e., the desktop).
    *
-   * @private {AutomationNode}
+   * @private {chrome.automation.AutomationNode}
    */
   this.root_ = null;
 
@@ -38,229 +58,55 @@ let SwitchAccess = function() {
 
 SwitchAccess.prototype = {
   /**
-   * Set this.node_ and this.root_ to the desktop node, and set up preferences
-   * and event listeners.
+   * Set this.node_ and this.root_ to the desktop node, and set up preferences,
+   * controllers, and event listeners.
    *
    * @private
    */
   init_: function() {
     this.switchAccessPrefs = new SwitchAccessPrefs();
+    this.autoScanManager_ = new AutoScanManager(this);
+    this.keyboardHandler_ = new KeyboardHandler(this);
+    this.treeWalker_ = new AutomationTreeWalker();
 
     chrome.automation.getDesktop(function(desktop) {
       this.node_ = desktop;
       this.root_ = desktop;
       console.log('AutomationNode for desktop is loaded');
       this.printNode_(this.node_);
-
-      document.addEventListener('keyup', function(event) {
-        switch (event.key) {
-          case '1':
-            console.log('1 = go to previous element');
-            this.moveToPrevious_();
-            break;
-          case '2':
-            console.log('2 = go to next element');
-            this.moveToNext_();
-            break;
-          case '3':
-            console.log('3 = do default on element');
-            this.doDefault_();
-            break;
-          case '4':
-            this.showOptionsPage_();
-            break;
-        }
-        if (debuggingEnabled) {
-          switch (event.key) {
-            case '6':
-              console.log('6 = go to previous element (debug mode)');
-              this.debugMoveToPrevious_();
-              break;
-            case '7':
-              console.log('7 = go to next element (debug mode)');
-              this.debugMoveToNext_();
-              break;
-            case '8':
-              console.log('8 = go to child element (debug mode)');
-              this.debugMoveToFirstChild_();
-              break;
-            case '9':
-              console.log('9 = go to parent element (debug mode)');
-              this.debugMoveToParent_();
-              break;
-          }
-        }
-        if (this.node_)
-          chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
-      }.bind(this));
     }.bind(this));
 
-    document.addEventListener('prefsUpdate', this.handlePrefsUpdate_);
+    document.addEventListener(
+        'prefsUpdate', this.handlePrefsUpdate_.bind(this));
   },
 
   /**
-   * Set this.node_ to the previous interesting node. If no interesting node
-   * comes before this.node_, set this.node_ to the last interesting node.
+   * Set this.node_ to the next/previous interesting node. If no interesting
+   * node is found, set this.node_ to the first/last interesting node. If
+   * |doNext| is true, will search for next node. Otherwise, will search for
+   * previous node.
    *
-   * @private
+   * @param {boolean} doNext
+   * @override
    */
-  moveToPrevious_: function() {
-    if (this.node_) {
-      let prev = this.getPreviousNode_(this.node_);
-      while (prev && !this.isInteresting_(prev)) {
-        prev = this.getPreviousNode_(prev);
-      }
-      if (prev) {
-        this.node_ = prev;
-        this.printNode_(this.node_);
-        return;
-      }
+  moveToNode: function(doNext) {
+    let node = this.treeWalker_.moveToNode(this.node_, this.root_, doNext);
+    if (node) {
+      this.node_ = node;
+      this.printNode_(this.node_);
+      chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
     }
-
-    if (this.root_) {
-      console.log('Reached the first interesting node. Restarting with last.')
-      let prev = this.getYoungestDescendant_(this.root_);
-      while (prev && !this.isInteresting_(prev)) {
-        prev = this.getPreviousNode_(prev);
-      }
-      if (prev) {
-        this.node_ = prev;
-        this.printNode_(this.node_);
-        return;
-      }
-    }
-
-    console.log('Found no interesting nodes to visit.')
   },
-
-  /**
-   * Set this.node_ to the next interesting node. If no interesting node comes
-   * after this.node_, set this.node_ to the first interesting node.
-   *
-   * @private
-   */
-  moveToNext_: function() {
-    if (this.node_) {
-      let next = this.getNextNode_(this.node_);
-      while (next && !this.isInteresting_(next))
-        next = this.getNextNode_(next);
-      if (next) {
-        this.node_ = next;
-        this.printNode_(this.node_);
-        return;
-      }
-    }
-
-    if (this.root_) {
-      console.log('Reached the last interesting node. Restarting with first.');
-      let next = this.root_.firstChild;
-      while (next && !this.isInteresting_(next))
-        next = this.getNextNode_(next);
-      if (next) {
-        this.node_ = next;
-        this.printNode_(this.node_);
-        return;
-      }
-    }
-
-    console.log('Found no interesting nodes to visit.');
-  },
-
-  /**
-   * Given a flat list of nodes in pre-order, get the node that comes after
-   * |node|.
-   *
-   * @param {!AutomationNode} node
-   * @return {AutomationNode}
-   * @private
-   */
-  getNextNode_: function(node) {
-    // Check for child.
-    let child = node.firstChild;
-    if (child)
-      return child;
-
-    // No child. Check for right-sibling.
-    let sibling = node.nextSibling;
-    if (sibling)
-      return sibling;
-
-    // No right-sibling. Get right-sibling of closest ancestor.
-    let ancestor = node.parent;
-    while (ancestor) {
-      let aunt = ancestor.nextSibling;
-      if (aunt)
-        return aunt;
-      ancestor = ancestor.parent;
-    }
-
-    // No node found after |node|, so return null.
-    return null;
-  },
-
-  /**
-   * Given a flat list of nodes in pre-order, get the node that comes before
-   * |node|.
-   *
-   * @param {!AutomationNode} node
-   * @return {AutomationNode}
-   * @private
-   */
-  getPreviousNode_: function(node) {
-    // Check for left-sibling. Return its youngest descendant if it has one.
-    // Otherwise, return the sibling.
-    let sibling = node.previousSibling;
-    if (sibling) {
-      let descendant = this.getYoungestDescendant_(sibling);
-      if (descendant)
-        return descendant;
-      return sibling;
-    }
-
-    // No left-sibling. Check for parent.
-    let parent = node.parent;
-    if (parent)
-      return parent;
-
-    // No node found before |node|, so return null.
-    return null;
-  },
-
-  /**
-   * Get the youngest descendant of |node| if it has one.
-   *
-   * @param {!AutomationNode} node
-   * @return {AutomationNode}
-   * @private
-   */
-  getYoungestDescendant_: function(node) {
-    if (!node.lastChild)
-      return null;
-
-    while (node.lastChild)
-      node = node.lastChild;
-
-    return node;
-  },
-
-  /**
-   * Returns true if |node| is interesting.
-   *
-   * @param {!AutomationNode} node
-   * @return {boolean}
-   * @private
-   */
-  isInteresting_: function(node) {
-    return node.state && node.state.focusable;
-  },
-
 
   /**
    * Perform the default action on the currently selected node.
    *
-   * @private
+   * @override
    */
-  doDefault_: function() {
+  doDefault: function() {
+    if (!this.node_)
+      return;
+
     let state = this.node_.state;
     if (state && state.focusable)
       console.log('Node was focusable, doing default on it')
@@ -275,11 +121,22 @@ SwitchAccess.prototype = {
   /**
    * Open the options page in a new tab.
    *
-   * @private
+   * @override
    */
-  showOptionsPage_: function() {
+  showOptionsPage: function() {
     let optionsPage = {url: 'options.html'};
     chrome.tabs.create(optionsPage);
+  },
+
+  /**
+   * Perform actions as the result of actions by the user. Currently, restarts
+   * auto-scan if it is enabled.
+   *
+   * @override
+   */
+  performedUserAction: function() {
+    if (this.autoScanManager_.isRunning())
+      this.autoScanManager_.restart();
   },
 
   /**
@@ -293,11 +150,10 @@ SwitchAccess.prototype = {
     for (let key of Object.keys(updatedPrefs)) {
       switch (key) {
         case 'enableAutoScan':
-          console.log('Auto-scan enabled set to: ' + updatedPrefs[key]);
+          this.autoScanManager_.setEnabled(updatedPrefs[key]);
           break;
         case 'autoScanTime':
-          console.log(
-              'Auto-scan time set to: ' + updatedPrefs[key] + " seconds");
+          this.autoScanManager_.setScanTime(updatedPrefs[key]);
           break;
       }
     }
@@ -308,7 +164,7 @@ SwitchAccess.prototype = {
   /**
    * Print out details about a node.
    *
-   * @param {AutomationNode} node
+   * @param {chrome.automation.AutomationNode} node
    * @private
    */
   printNode_: function(node) {
@@ -332,66 +188,58 @@ SwitchAccess.prototype = {
   },
 
   /**
-   * Move to the previous sibling of this.node_ if it has one.
+   * Move to the next sibling of this.node_ if it has one.
    *
-   * @private
+   * @override
    */
-  debugMoveToPrevious_: function() {
-    let previous = this.node_.previousSibling;
-    if (previous) {
-      this.node_ = previous;
+  debugMoveToNext: function() {
+    let next = this.treeWalker_.debugMoveToNext(this.node_);
+    if (next) {
+      this.node_ = next;
       this.printNode_(this.node_);
-    } else {
-      console.log('Node is first of siblings');
-      console.log('\n');
+      chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
     }
   },
 
   /**
-   * Move to the next sibling of this.node_ if it has one.
+   * Move to the previous sibling of this.node_ if it has one.
    *
-   * @private
+   * @override
    */
-  debugMoveToNext_: function() {
-    let next = this.node_.nextSibling;
-    if (next) {
-      this.node_ = next;
+  debugMoveToPrevious: function() {
+    let prev = this.treeWalker_.debugMoveToPrevious(this.node_);
+    if (prev) {
+      this.node_ = prev;
       this.printNode_(this.node_);
-    } else {
-      console.log('Node is last of siblings');
-      console.log('\n');
+      chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
     }
   },
 
   /**
    * Move to the first child of this.node_ if it has one.
    *
-   * @private
+   * @override
    */
-  debugMoveToFirstChild_: function() {
-    let child = this.node_.firstChild;
+  debugMoveToFirstChild: function() {
+    let child = this.treeWalker_.debugMoveToFirstChild(this.node_);
     if (child) {
       this.node_ = child;
       this.printNode_(this.node_);
-    } else {
-      console.log('Node has no children');
-      console.log('\n');
+      chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
     }
   },
 
   /**
    * Move to the parent of this.node_ if it has one.
    *
-   * @private
+   * @override
    */
-  debugMoveToParent_: function() {
-    let parent = this.node_.parent;
+  debugMoveToParent: function() {
+    let parent = this.treeWalker_.debugMoveToParent(this.node_);
     if (parent) {
       this.node_ = parent;
       this.printNode_(this.node_);
-    } else {
-      console.log('Node has no parent');
-      console.log('\n');
+      chrome.accessibilityPrivate.setFocusRing([this.node_.location]);
     }
   }
 };
