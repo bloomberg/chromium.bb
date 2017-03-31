@@ -207,7 +207,7 @@ class TraceTrait {
     static_assert(!NeedsAdjustAndMark<T>::value,
                   "wrapper tracing is not supported within mixins");
 #if DCHECK_IS_ON()
-    HeapObjectHeader::fromPayload(t)->checkHeader();
+    HeapObjectHeader::checkFromPayload(t);
 #endif
     return reinterpret_cast<const T*>(t);
   }
@@ -509,7 +509,6 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections,
     T* array = reinterpret_cast<T*>(self);
     blink::HeapObjectHeader* header =
         blink::HeapObjectHeader::fromPayload(self);
-    header->checkHeader();
     // Use the payload size as recorded by the heap to determine how many
     // elements to trace.
     size_t length = header->payloadSize() / sizeof(T);
@@ -557,7 +556,6 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections,
     Value* array = reinterpret_cast<Value*>(self);
     blink::HeapObjectHeader* header =
         blink::HeapObjectHeader::fromPayload(self);
-    header->checkHeader();
     // Use the payload size as recorded by the heap to determine how many
     // elements to trace.
     size_t length = header->payloadSize() / sizeof(Value);
@@ -611,7 +609,6 @@ struct TraceInCollectionTrait<
     Node** array = reinterpret_cast<Node**>(self);
     blink::HeapObjectHeader* header =
         blink::HeapObjectHeader::fromPayload(self);
-    header->checkHeader();
     size_t length = header->payloadSize() / sizeof(Node*);
     for (size_t i = 0; i < length; ++i) {
       if (!HashTableHelper<Node*, typename Table::ExtractorType,

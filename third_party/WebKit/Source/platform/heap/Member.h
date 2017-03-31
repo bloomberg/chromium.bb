@@ -156,7 +156,7 @@ class MemberBase {
     // So we currently only try to implement the check for (a), but do
     // not insist that T's definition is in scope.
     if (IsFullyDefined<T>::value && !IsGarbageCollectedMixin<T>::value)
-      HeapObjectHeader::fromPayload(m_raw)->checkHeader();
+      HeapObjectHeader::checkFromPayload(m_raw);
 #endif
 #endif
   }

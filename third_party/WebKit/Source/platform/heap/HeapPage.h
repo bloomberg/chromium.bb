@@ -195,26 +195,31 @@ class PLATFORM_EXPORT HeapObjectHeader {
         (gcInfoIndex == gcInfoIndexForFreeListHeader ? headerFreedBitMask : 0));
   }
 
-  NO_SANITIZE_ADDRESS
-  bool isFree() const { return m_encoded & headerFreedBitMask; }
-  NO_SANITIZE_ADDRESS
-  bool isPromptlyFreed() const {
+  NO_SANITIZE_ADDRESS bool isFree() const {
+    return m_encoded & headerFreedBitMask;
+  }
+
+  NO_SANITIZE_ADDRESS bool isPromptlyFreed() const {
     return (m_encoded & headerPromptlyFreedBitMask) ==
            headerPromptlyFreedBitMask;
   }
-  NO_SANITIZE_ADDRESS
-  void markPromptlyFreed() { m_encoded |= headerPromptlyFreedBitMask; }
+
+  NO_SANITIZE_ADDRESS void markPromptlyFreed() {
+    m_encoded |= headerPromptlyFreedBitMask;
+  }
+
   size_t size() const;
 
-  NO_SANITIZE_ADDRESS
-  size_t gcInfoIndex() const {
+  NO_SANITIZE_ADDRESS size_t gcInfoIndex() const {
     return (m_encoded & headerGCInfoIndexMask) >> headerGCInfoIndexShift;
   }
-  NO_SANITIZE_ADDRESS
-  void setSize(size_t size) {
+
+  NO_SANITIZE_ADDRESS void setSize(size_t size) {
     ASSERT(size < nonLargeObjectPageSizeMax);
+    checkHeader();
     m_encoded = static_cast<uint32_t>(size) | (m_encoded & ~headerSizeMask);
   }
+
   bool isWrapperHeaderMarked() const;
   void markWrapperHeader();
   void unmarkWrapperHeader();
@@ -226,23 +231,27 @@ class PLATFORM_EXPORT HeapObjectHeader {
   size_t payloadSize();
   Address payloadEnd();
 
-  // TODO(633030): Make |checkHeader| and |zapMagic| private. This class should
-  // manage its integrity on its own, without requiring outside callers to
-  // explicitly check.
-  void checkHeader() const;
+  void finalize(Address, size_t);
+  static HeapObjectHeader* fromPayload(const void*);
 
+  // Some callers formerly called |fromPayload| only for its side-effect of
+  // calling |checkHeader| (which is now private). This function does that, but
+  // its explanatory name makes the intention at the call sites easier to
+  // understand, and is public.
+  static void checkFromPayload(const void*);
+
+  static const uint32_t zappedMagic = 0xDEAD4321;
+
+ protected:
 #if DCHECK_IS_ON() && CPU(64BIT)
   // Zap |m_magic| with a new magic number that means there was once an object
   // allocated here, but it was freed because nobody marked it during GC.
   void zapMagic();
 #endif
 
-  void finalize(Address, size_t);
-  static HeapObjectHeader* fromPayload(const void*);
-
-  static const uint32_t zappedMagic = 0xDEAD4321;
-
  private:
+  void checkHeader() const;
+
 #if CPU(64BIT)
   // Returns a random value.
   //
@@ -254,7 +263,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
   // arbitrary infoleak bug (used twice).
   uint32_t getMagic() const;
   uint32_t m_magic;
-#endif
+#endif  // CPU(64BIT)
 
   uint32_t m_encoded;
 };
@@ -840,8 +849,8 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
 
 NO_SANITIZE_ADDRESS inline void HeapObjectHeader::checkHeader() const {
 #if CPU(64BIT)
-  const bool good = getMagic() == m_magic;
-  DCHECK(good);
+  const bool goodMagic = getMagic() == m_magic;
+  DCHECK(goodMagic);
 #endif
 }
 
@@ -854,6 +863,7 @@ inline Address HeapObjectHeader::payloadEnd() {
 }
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::payloadSize() {
+  checkHeader();
   size_t size = m_encoded & headerSizeMask;
   if (UNLIKELY(size == largeObjectSizeInHeader)) {
     ASSERT(pageFromObject(this)->isLargeObjectPage());
@@ -869,6 +879,10 @@ inline HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload) {
       reinterpret_cast<HeapObjectHeader*>(addr - sizeof(HeapObjectHeader));
   header->checkHeader();
   return header;
+}
+
+inline void HeapObjectHeader::checkFromPayload(const void* payload) {
+  (void)fromPayload(payload);
 }
 
 #if CPU(64BIT)

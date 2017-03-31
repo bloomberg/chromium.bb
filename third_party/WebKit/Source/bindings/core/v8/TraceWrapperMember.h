@@ -27,7 +27,7 @@ class TraceWrapperMember : public Member<T> {
   TraceWrapperMember(void* parent, T* raw) : Member<T>(raw), m_parent(parent) {
 #if DCHECK_IS_ON()
     if (m_parent) {
-      HeapObjectHeader::fromPayload(m_parent)->checkHeader();
+      HeapObjectHeader::checkFromPayload(m_parent);
     }
 #endif
     // We don't require a write barrier here as TraceWrapperMember is used for
