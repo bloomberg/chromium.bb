@@ -707,9 +707,9 @@ void SystemTray::ActivateBubble() {
 }
 
 bool SystemTray::PerformAction(const ui::Event& event) {
-  // If we're already showing the default view, hide it; otherwise, show it
-  // (and hide any popup that's currently shown).
-  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+  // If we're already showing the menu, hide it; otherwise, show it (and hide
+  // any popup that's currently shown).
+  if (HasSystemBubble()) {
     system_bubble_->bubble()->Close();
   } else {
     ShowDefaultView(BUBBLE_CREATE_NEW);
