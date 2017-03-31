@@ -62,15 +62,15 @@ namespace blink {
 
 class RangeUpdateScope {
   STACK_ALLOCATED();
-  RangeUpdateScope(Range* range) {
+  explicit RangeUpdateScope(Range* range) {
     DCHECK(range);
     if (++s_scopeCount == 1) {
       m_range = range;
       m_oldDocument = range->ownerDocument();
 #if DCHECK_IS_ON()
-      s_range = range;
+      s_currentRange = range;
     } else {
-      DCHECK_EQ(s_range, range);
+      DCHECK_EQ(s_currentRange, range);
 #endif
     }
   }
@@ -82,7 +82,7 @@ class RangeUpdateScope {
     m_range->removeFromSelectionIfInDifferentRoot(*m_oldDocument);
     m_range->updateSelectionIfAddedToSelection();
 #if DCHECK_IS_ON()
-    s_range = nullptr;
+    s_currentRange = nullptr;
 #endif
   }
 
@@ -90,9 +90,10 @@ class RangeUpdateScope {
   static int s_scopeCount;
 #if DCHECK_IS_ON()
   // This raw pointer is safe because
-  //  - s_range has a valid pointer only if RangeUpdateScope instance is live.
+  //  - s_currentRange has a valid pointer only if RangeUpdateScope instance is
+  //  live.
   //  - RangeUpdateScope is used only in Range member functions.
-  static Range* s_range;
+  static Range* s_currentRange;
 #endif
   Member<Range> m_range;
   Member<Document> m_oldDocument;
@@ -102,7 +103,7 @@ class RangeUpdateScope {
 
 int RangeUpdateScope::s_scopeCount = 0;
 #if DCHECK_IS_ON()
-Range* RangeUpdateScope::s_range;
+Range* RangeUpdateScope::s_currentRange;
 #endif
 
 inline Range::Range(Document& ownerDocument)
