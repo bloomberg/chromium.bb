@@ -98,8 +98,9 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   // profile implementations.
   virtual void RemoveV1AppFromShelf(Browser* browser);
 
-  // Check if V1 application is currently in the shelf.
+  // Check if a V1 application is currently in the shelf by browser or app id.
   bool IsV1AppInShelf(Browser* browser);
+  bool IsV1AppInShelfWithAppId(const std::string& app_id);
 
  private:
   class LocalWebContentsObserver;

@@ -100,14 +100,10 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Returns true if the item identified by |id| is pinned.
   virtual bool IsPinned(ash::ShelfID id) = 0;
 
-  // If there is no item in the shelf for application |app_id|, one is created.
-  // The (existing or created) shelf items get then locked against a user's
-  // un-pinning removal. Used for V1 apps opened as windows that aren't pinned.
-  virtual void LockV1AppWithID(const std::string& app_id) = 0;
-
-  // A previously locked shelf item of type |app_id| gets unlocked. If the
-  // lock count reaches 0 and the item is not pinned it will go away.
-  virtual void UnlockV1AppWithID(const std::string& app_id) = 0;
+  // Set the shelf item status for the V1 application with the given |app_id|.
+  // Adds or removes an item as needed to respect the running and pinned state.
+  virtual void SetV1AppStatus(const std::string& app_id,
+                              ash::ShelfItemStatus status) = 0;
 
   // Requests that the shelf item controller specified by |id| open a new
   // instance of the app.  |event_flags| holds the flags of the event which

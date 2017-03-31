@@ -454,16 +454,13 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   // Creates a running platform V2 app (not pinned) of type |app_id|.
   virtual void CreateRunningV2App(const std::string& app_id) {
     DCHECK(!test_controller_);
-    ash::ShelfID id =
-        launcher_controller_->CreateAppShortcutLauncherItemWithType(
-            ash::AppLaunchId(app_id), model_->item_count(), ash::TYPE_APP);
-    DCHECK(id);
     // Change the created launcher controller into a V2 app controller.
     test_controller_ = new TestV2AppLauncherItemController(app_id,
         launcher_controller_.get());
-    launcher_controller_->SetItemController(id, test_controller_);
+    ash::ShelfID id = launcher_controller_->InsertAppLauncherItem(
+        test_controller_, ash::STATUS_RUNNING, model_->item_count(),
+        ash::TYPE_APP);
     DCHECK(launcher_controller_->IsPlatformApp(id));
-    launcher_controller_->SetItemStatus(id, ash::STATUS_RUNNING);
   }
 
   // Sets the stage for a multi user test.
@@ -1317,7 +1314,7 @@ INSTANTIATE_TEST_CASE_P(,
 
 TEST_F(ChromeLauncherControllerImplTest, DefaultApps) {
   InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
@@ -1502,7 +1499,7 @@ TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsReverseOrder) {
   InsertAddPinChange(&sync_list, 2, extension3_->id());
   SendPinChanges(sync_list, true);
 
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
@@ -1540,7 +1537,7 @@ TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsRandomOrder) {
   InsertAddPinChange(&sync_list, 2, extension3_->id());
   SendPinChanges(sync_list, true);
 
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
@@ -1579,7 +1576,7 @@ TEST_F(ChromeLauncherControllerImplTest,
   InsertAddPinChange(&sync_list, 3, extension3_->id());
   SendPinChanges(sync_list, true);
 
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
@@ -1663,168 +1660,183 @@ TEST_F(ChromeLauncherControllerImplTest, RestoreDefaultAppsResyncOrder) {
   EXPECT_EQ("AppList, Chrome, App3", GetPinnedAppStatus());
 }
 
-// Check that simple locking of an application will 'create' a launcher item.
-TEST_F(ChromeLauncherControllerImplTest, CheckLockApps) {
+// Test the V1 app interaction flow: run it, activate it, close it.
+TEST_F(ChromeLauncherControllerImplTest, V1AppRunActivateClose) {
   InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension2_->id()));
 
-  launcher_controller_->LockV1AppWithID(extension1_->id());
-
+  // Reporting that the app is running should create a new shelf item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension2_->id()));
-
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
-
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension2_->id()));
-}
-
-// Check that multiple locks of an application will be properly handled.
-TEST_F(ChromeLauncherControllerImplTest, CheckMultiLockApps) {
-  InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  for (int i = 0; i < 2; i++) {
-    launcher_controller_->LockV1AppWithID(extension1_->id());
-
-    EXPECT_EQ(3, model_->item_count());
-    EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
-    EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-    EXPECT_NE(ash::kInvalidShelfID,
-              launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-  }
-
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
-
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
+  // Reporting an active status should just update the existing item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_ACTIVE);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->items()[2].status);
 
+  // Reporting that the app is closed should remove its shelf item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+
+  // Reporting that the app is closed again should have no effect.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
+  EXPECT_EQ(2, model_->item_count());
 }
 
-// Check that already pinned items are not effected by locks.
-TEST_F(ChromeLauncherControllerImplTest, CheckAlreadyPinnedLockApps) {
+// Test the V1 app interaction flow: pin it, run it, close it, unpin it.
+TEST_F(ChromeLauncherControllerImplTest, V1AppPinRunCloseUnpin) {
   InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
+  // Pinning the app should create a new shelf item.
   launcher_controller_->PinAppWithID(extension1_->id());
-
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
-  launcher_controller_->LockV1AppWithID(extension1_->id());
-
+  // Reporting that the app is running should just update the existing item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
-
+  // Reporting that the app is closed should just update the existing item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
+  // Unpinning the app should remove its shelf item.
   launcher_controller_->UnpinAppWithID(extension1_->id());
-
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 }
 
-// Check that already pinned items which get locked stay after unpinning.
-TEST_F(ChromeLauncherControllerImplTest, CheckPinnedAppsStayAfterUnlock) {
+// Test the V1 app interaction flow: run it, pin it, close it, unpin it.
+TEST_F(ChromeLauncherControllerImplTest, V1AppRunPinCloseUnpin) {
   InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
-  launcher_controller_->PinAppWithID(extension1_->id());
-
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  launcher_controller_->LockV1AppWithID(extension1_->id());
-
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  launcher_controller_->UnpinAppWithID(extension1_->id());
-
+  // Reporting that the app is running should create a new shelf item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
   EXPECT_EQ(3, model_->item_count());
   EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
+  // Pinning the app should just update the existing item.
+  launcher_controller_->PinAppWithID(extension1_->id());
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_NE(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 
+  // Reporting that the app is closed should just update the existing item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_NE(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+
+  // Unpinning the app should remove its shelf item.
+  launcher_controller_->UnpinAppWithID(extension1_->id());
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(extension1_->id()));
 }
 
-// Check that running applications wich are not pinned get properly restored
-// upon user change.
-TEST_F(ChromeLauncherControllerImplTest, CheckRunningAppOrder) {
+// Test the V1 app interaction flow: pin it, run it, unpin it, close it.
+TEST_F(ChromeLauncherControllerImplTest, V1AppPinRunUnpinClose) {
   InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_EQ(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+
+  // Pinning the app should create a new shelf item.
+  launcher_controller_->PinAppWithID(extension1_->id());
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[2].status);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_NE(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+
+  // Reporting that the app is running should just update the existing item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_NE(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+
+  // Unpinning the app should just update the existing item.
+  launcher_controller_->UnpinAppWithID(extension1_->id());
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
+  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[2].status);
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_NE(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+
+  // Reporting that the app is closed should remove its shelf item.
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_EQ(ash::kInvalidShelfID,
+            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
+}
+
+// Ensure unpinned V1 app ordering is properly restored after user changes.
+TEST_F(ChromeLauncherControllerImplTest, CheckRunningV1AppOrder) {
+  InitLauncherController();
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
 
   // Add a few running applications.
-  launcher_controller_->LockV1AppWithID(extension1_->id());
-  launcher_controller_->LockV1AppWithID(extension2_->id());
-  launcher_controller_->LockV1AppWithID(extension3_->id());
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_RUNNING);
+  launcher_controller_->SetV1AppStatus(extension2_->id(), ash::STATUS_RUNNING);
+  launcher_controller_->SetV1AppStatus(extension3_->id(), ash::STATUS_RUNNING);
   EXPECT_EQ(5, model_->item_count());
   // Note that this not only checks the order of applications but also the
   // running type.
@@ -1851,16 +1863,16 @@ TEST_F(ChromeLauncherControllerImplTest, CheckRunningAppOrder) {
   // Switch again some items and even delete one - making sure that the missing
   // item gets properly handled.
   model_->Move(3, 4);
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
+  launcher_controller_->SetV1AppStatus(extension1_->id(), ash::STATUS_CLOSED);
   EXPECT_EQ("AppList, Chrome, app3, app2", GetPinnedAppStatus());
   RestoreUnpinnedRunningApplicationOrder(current_account_id);
   EXPECT_EQ("AppList, Chrome, app2, app3", GetPinnedAppStatus());
 
   // Check that removing more items does not crash and changes nothing.
-  launcher_controller_->UnlockV1AppWithID(extension2_->id());
+  launcher_controller_->SetV1AppStatus(extension2_->id(), ash::STATUS_CLOSED);
   RestoreUnpinnedRunningApplicationOrder(current_account_id);
   EXPECT_EQ("AppList, Chrome, app3", GetPinnedAppStatus());
-  launcher_controller_->UnlockV1AppWithID(extension3_->id());
+  launcher_controller_->SetV1AppStatus(extension3_->id(), ash::STATUS_CLOSED);
   RestoreUnpinnedRunningApplicationOrder(current_account_id);
   EXPECT_EQ("AppList, Chrome", GetPinnedAppStatus());
 }
@@ -2474,52 +2486,10 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest,
   EXPECT_TRUE(manager->IsWindowOnDesktopOfUser(window, current_user));
 }
 
-// Check that lock -> pin -> unlock -> unpin does properly transition.
-TEST_F(ChromeLauncherControllerImplTest, CheckLockPinUnlockUnpin) {
-  InitLauncherController();
-  // Model should only contain the browser shortcut and app list items.
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  launcher_controller_->LockV1AppWithID(extension1_->id());
-
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_APP, model_->items()[2].type);
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  launcher_controller_->PinAppWithID(extension1_->id());
-
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  launcher_controller_->UnlockV1AppWithID(extension1_->id());
-
-  EXPECT_EQ(3, model_->item_count());
-  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[2].type);
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_NE(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-
-  launcher_controller_->UnpinAppWithID(extension1_->id());
-
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
-  EXPECT_EQ(ash::kInvalidShelfID,
-            launcher_controller_->GetShelfIDForAppID(extension1_->id()));
-}
-
-// Check that a locked (windowed V1 application) will be properly converted
-// between locked and pinned when the order gets changed through a profile /
-// policy change.
+// Check that a running windowed V1 application will be properly pinned and
+// unpinned when the order gets changed through a profile / policy change.
 TEST_F(ChromeLauncherControllerImplTest,
-       RestoreDefaultAndLockedAppsResyncOrder) {
+       RestoreDefaultAndRunningV1AppsResyncOrder) {
   InitLauncherController();
 
   syncer::SyncChangeList sync_list;
@@ -2534,14 +2504,13 @@ TEST_F(ChromeLauncherControllerImplTest,
   // No new app icon will be generated.
   EXPECT_EQ("AppList, Chrome, App1", GetPinnedAppStatus());
 
-  // Add the app as locked app which will add it (un-pinned).
-  launcher_controller_->LockV1AppWithID(extension2_->id());
+  // Set the app status as running, which will add an unpinned item.
+  launcher_controller_->SetV1AppStatus(extension2_->id(), ash::STATUS_RUNNING);
   EXPECT_EQ("AppList, Chrome, App1, app2", GetPinnedAppStatus());
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ("AppList, Chrome, App1, App3, app2", GetPinnedAppStatus());
 
-  // Now request to pin all items which should convert the locked item into a
-  // pinned item.
+  // Now request to pin all items, which will pin the running unpinned items.
   syncer::SyncChangeList sync_list1;
   InsertAddPinChange(&sync_list1, 0, extension3_->id());
   InsertAddPinChange(&sync_list1, 1, extension2_->id());
@@ -2549,11 +2518,9 @@ TEST_F(ChromeLauncherControllerImplTest,
   SendPinChanges(sync_list1, true);
   EXPECT_EQ("AppList, Chrome, App3, App2, App1", GetPinnedAppStatus());
 
-  // Going back to a status where there is no requirement for app 2 to be pinned
-  // should convert it back to locked but not pinned and state. The position
-  // is determined by the |ShelfModel|'s weight system and since running
-  // applications are not allowed to be mixed with shortcuts, it should show up
-  // at the end of the list.
+  // Removing the requirement for app 2 to be pinned should convert it back to
+  // running but not pinned. It should move towards the end of the shelf, after
+  // the pinned items, as determined by the |ShelfModel|'s weight system.
   syncer::SyncChangeList sync_list2;
   InsertAddPinChange(&sync_list2, 0, extension3_->id());
   InsertAddPinChange(&sync_list2, 1, extension1_->id());
@@ -2565,9 +2532,8 @@ TEST_F(ChromeLauncherControllerImplTest,
   EXPECT_EQ("AppList, Chrome, App3, app2", GetPinnedAppStatus());
 }
 
-// Check that a running and not pinned V2 application will be properly converted
-// between locked and pinned when the order gets changed through a profile /
-// policy change.
+// Check that a running unpinned V2 application will be properly pinned and
+// unpinned when the order gets changed through a profile / policy change.
 TEST_F(ChromeLauncherControllerImplTest,
        RestoreDefaultAndRunningV2AppsResyncOrder) {
   InitLauncherController();
@@ -2587,8 +2553,7 @@ TEST_F(ChromeLauncherControllerImplTest,
   extension_service_->AddExtension(extension3_.get());
   EXPECT_EQ("AppList, Chrome, App1, App3, *platform_app", GetPinnedAppStatus());
 
-  // Now request to pin all items which should convert the locked item into a
-  // pinned item.
+  // Now request to pin all items, which should pin the running unpinned item.
   syncer::SyncChangeList sync_list1;
   InsertAddPinChange(&sync_list1, 0, extension3_->id());
   InsertAddPinChange(&sync_list1, 1, extension_platform_app_->id());
@@ -2596,10 +2561,9 @@ TEST_F(ChromeLauncherControllerImplTest,
   SendPinChanges(sync_list1, true);
   EXPECT_EQ("AppList, Chrome, App3, *Platform_App, App1", GetPinnedAppStatus());
 
-  // Going back to a status where there is no requirement for the V2 app to be
-  // pinned should convert it back to running V2 app. Since the position is
-  // determined by the |ShelfModel|'s weight system, it will be after last
-  // pinned item.
+  // Removing the requirement for app 2 to be pinned should convert it back to
+  // running but not pinned. It should move towards the end of the shelf, after
+  // the pinned items, as determined by the |ShelfModel|'s weight system.
   syncer::SyncChangeList sync_list2;
   InsertAddPinChange(&sync_list2, 0, extension3_->id());
   InsertAddPinChange(&sync_list2, 1, extension1_->id());
@@ -3016,7 +2980,7 @@ TEST_F(ChromeLauncherControllerImplTest, V1AppMenuGeneration) {
 
   InitLauncherControllerWithBrowser();
 
-  // Model should only contain the browser shortcut and app list items.
+  // The model should only contain the browser shortcut and app list items.
   EXPECT_EQ(2, model_->item_count());
   EXPECT_FALSE(launcher_controller_->IsAppPinned(extension3_->id()));
 

@@ -25,8 +25,8 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
                          LauncherItemController* controller) override;
   void CloseLauncherItem(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
-  void LockV1AppWithID(const std::string& app_id) override;
-  void UnlockV1AppWithID(const std::string& app_id) override;
+  void SetV1AppStatus(const std::string& app_id,
+                      ash::ShelfItemStatus status) override;
   void Launch(ash::ShelfID id, int event_flags) override;
   void Close(ash::ShelfID id) override;
   bool IsOpen(ash::ShelfID id) override;

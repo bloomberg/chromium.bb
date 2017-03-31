@@ -58,11 +58,8 @@ bool ChromeLauncherControllerMus::IsPinned(ash::ShelfID id) {
   return false;
 }
 
-void ChromeLauncherControllerMus::LockV1AppWithID(const std::string& app_id) {
-  NOTIMPLEMENTED();
-}
-
-void ChromeLauncherControllerMus::UnlockV1AppWithID(const std::string& app_id) {
+void ChromeLauncherControllerMus::SetV1AppStatus(const std::string& app_id,
+                                                 ash::ShelfItemStatus status) {
   NOTIMPLEMENTED();
 }
 

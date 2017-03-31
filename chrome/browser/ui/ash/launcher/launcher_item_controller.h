@@ -36,14 +36,6 @@ class LauncherItemController : public ash::mojom::ShelfItemDelegate {
     return launcher_controller_;
   }
 
-  // Lock this item to the launcher without being pinned (windowed v1 apps).
-  void lock() { locked_++; }
-  void unlock() {
-    DCHECK(locked_);
-    locked_--;
-  }
-  bool locked() const { return locked_ > 0; }
-
   bool image_set_by_controller() const { return image_set_by_controller_; }
   void set_image_set_by_controller(bool image_set_by_controller) {
     image_set_by_controller_ = image_set_by_controller;
@@ -67,11 +59,6 @@ class LauncherItemController : public ash::mojom::ShelfItemDelegate {
   ash::ShelfID shelf_id_;
 
   ChromeLauncherController* launcher_controller_;
-
-  // The lock counter which tells the launcher if the item can be removed from
-  // the launcher (0) or not (>0). It is being used for windowed V1
-  // applications.
-  int locked_;
 
   // Set to true if the launcher item image has been set by the controller.
   bool image_set_by_controller_;

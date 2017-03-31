@@ -13,7 +13,6 @@ LauncherItemController::LauncherItemController(
     : app_launch_id_(app_launch_id),
       shelf_id_(0),
       launcher_controller_(launcher_controller),
-      locked_(0),
       image_set_by_controller_(false) {}
 
 LauncherItemController::~LauncherItemController() {}

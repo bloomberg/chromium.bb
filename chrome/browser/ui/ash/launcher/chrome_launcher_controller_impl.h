@@ -70,8 +70,8 @@ class ChromeLauncherControllerImpl
                          LauncherItemController* controller) override;
   void CloseLauncherItem(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
-  void LockV1AppWithID(const std::string& app_id) override;
-  void UnlockV1AppWithID(const std::string& app_id) override;
+  void SetV1AppStatus(const std::string& app_id,
+                      ash::ShelfItemStatus status) override;
   void Launch(ash::ShelfID id, int event_flags) override;
   void Close(ash::ShelfID id) override;
   bool IsOpen(ash::ShelfID id) override;
@@ -148,7 +148,6 @@ class ChromeLauncherControllerImpl
   void OnInit() override;
 
   // Creates a new app shortcut item and controller on the shelf at |index|.
-  // Use kInsertItemAtEnd to add a shortcut as the last item.
   ash::ShelfID CreateAppShortcutLauncherItem(
       const ash::AppLaunchId& app_launch_id,
       int index);
@@ -168,13 +167,6 @@ class ChromeLauncherControllerImpl
   // remember the order of closed applications since it is only temporary.
   void RememberUnpinnedRunningApplicationOrder();
   void RestoreUnpinnedRunningApplicationOrder(const std::string& user_id);
-
-  // Creates a new app shortcut item and controller on the shelf at |index|.
-  // Use kInsertItemAtEnd to add a shortcut as the last item.
-  ash::ShelfID CreateAppShortcutLauncherItemWithType(
-      const ash::AppLaunchId& app_launch_id,
-      int index,
-      ash::ShelfItemType shelf_item_type);
 
   // Invoked when the associated browser or app is closed.
   void LauncherItemClosed(ash::ShelfID id);
