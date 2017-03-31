@@ -17,6 +17,15 @@ The scheduler exposes an API at `public/platform/scheduler`.
 The following is a collection of scheduling-related documentation about the
 Blink Scheduler as well as other schedulers in Chrome.
 
+
+## 2017
+* [Improved load time scheduling](https://docs.google.com/document/d/1q5uPIKyUP0X7KaQRyxWXmIzMvKF3fx1j6QPCWhjI82o/edit)
+* [Wake-up based throttling](https://docs.google.com/document/d/1A87Ci3_USDyQEdlmXTO1spQxUcR_ML5zqiCsaow4NGM/edit)
+* [Background tabs & offscreen frames](https://docs.google.com/document/d/18_sX-KGRaHcV3xe5Xk_l6NNwXoxm-23IOepgMx4OlE4/edit)
+* [BeginFrame sequence numbers + acknowledgements](https://docs.google.com/document/d/1nxaunQ0cYWxhtS6Zzfwa99nae74F7gxanbuT5JRpI6Y/edit)
+* [Background tab use cases](https://docs.google.com/document/d/16-QGneIkYNbNleoXbdD-mRMYdZAG2JIjMcTVxSC3ZWc/edit)
+* [Activity traits](https://docs.google.com/document/d/1BaJpx08vbPz_1LCj9tehnatZNqh1eLPeE9xoUnWdlW4/edit#heading=h.nwhgpfhlxswr)
+
 ## 2016
 
 * [Time-based renderer task throttling](https://drive.google.com/open?id=1vCUeGfr2xzZ67SFt2yZjNeaIcXGp2Td6KHN7bI02ySo)
