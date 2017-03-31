@@ -4,8 +4,9 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_view_controller.h"
 
+#include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
 
@@ -22,7 +23,6 @@
 @implementation TabCollectionViewController
 @synthesize tabs = _tabs;
 @synthesize dataSource = _dataSource;
-@synthesize tabCommandHandler = _tabCommandHandler;
 
 #pragma mark - UIViewController
 
@@ -56,10 +56,22 @@
 #pragma mark - Required subclass override
 
 - (UICollectionViewLayout*)collectionViewLayout {
-  [NSException
-       raise:NSInternalInconsistencyException
-      format:@"You must override %@ in a subclass", NSStringFromSelector(_cmd)];
+  NOTREACHED() << "You must override "
+               << base::SysNSStringToUTF8(NSStringFromSelector(_cmd))
+               << " in a subclass.";
   return nil;
+}
+
+- (void)showTabAtIndex:(int)index {
+  NOTREACHED() << "You must override "
+               << base::SysNSStringToUTF8(NSStringFromSelector(_cmd))
+               << " in a subclass.";
+}
+
+- (void)closeTabAtIndex:(int)index {
+  NOTREACHED() << "You must override "
+               << base::SysNSStringToUTF8(NSStringFromSelector(_cmd))
+               << " in a subclass.";
 }
 
 #pragma mark - UICollectionViewDataSource methods
@@ -111,14 +123,14 @@
   NSInteger item = [[self.tabs indexPathForCell:cell] item];
   DCHECK_LE(item, INT_MAX);
   int index = static_cast<int>(item);
-  [self.tabCommandHandler showTabAtIndex:index];
+  [self showTabAtIndex:index];
 }
 
 - (void)deleteButtonPressedForCell:(UICollectionViewCell*)cell {
   NSInteger item = [[self.tabs indexPathForCell:cell] item];
   DCHECK_LE(item, INT_MAX);
   int index = static_cast<int>(item);
-  [self.tabCommandHandler closeTabAtIndex:index];
+  [self closeTabAtIndex:index];
 }
 
 #pragma mark - TabCollectionConsumer methods

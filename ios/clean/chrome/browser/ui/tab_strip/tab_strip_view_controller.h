@@ -7,9 +7,13 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_view_controller.h"
 
+@protocol TabStripCommands;
+
 // Controller for a scrolling view displaying square cells that represent
 // the user's open tabs.
 @interface TabStripViewController : TabCollectionViewController
+// Dispatcher to handle commands to open/close tabs.
+@property(nonatomic, weak) id<TabStripCommands> dispatcher;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_STRIP_TAB_STRIP_VIEW_CONTROLLER_H_

@@ -5,12 +5,10 @@
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_collection_view_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_panel_overlay_view.h"
 #import "ios/clean/chrome/browser/ui/actions/settings_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_tab_cell.h"
@@ -29,8 +27,7 @@
 @end
 
 @implementation TabGridViewController
-@synthesize settingsCommandHandler = _settingsCommandHandler;
-@synthesize tabGridCommandHandler = _tabGridCommandHandler;
+@synthesize dispatcher = _dispatcher;
 @synthesize noTabsOverlay = _noTabsOverlay;
 @synthesize toolbar = _toolbar;
 @synthesize floatingNewTabButton = _floatingNewTabButton;
@@ -39,6 +36,14 @@
 
 - (UICollectionViewLayout*)collectionViewLayout {
   return [[TabGridCollectionViewLayout alloc] init];
+}
+
+- (void)showTabAtIndex:(int)index {
+  [self.dispatcher showTabGridTabAtIndex:index];
+}
+
+- (void)closeTabAtIndex:(int)index {
+  [self.dispatcher closeTabGridTabAtIndex:index];
 }
 
 #pragma mark - View lifecyle
@@ -82,17 +87,17 @@
 #pragma mark - SettingsActions
 
 - (void)showSettings:(id)sender {
-  [self.settingsCommandHandler showSettings];
+  [self.dispatcher showSettings];
 }
 
 #pragma mark - TabGridActions
 
 - (void)showTabGrid:(id)sender {
-  [self.tabGridCommandHandler showTabGrid];
+  [self.dispatcher showTabGrid];
 }
 
 - (void)createNewTab:(id)sender {
-  [self.tabCommandHandler createAndShowNewTab];
+  [self.dispatcher createAndShowNewTabInTabGrid];
 }
 
 #pragma mark - ZoomTransitionDelegate methods

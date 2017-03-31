@@ -27,7 +27,7 @@
   showcase_utils::Open(@"TabGridViewController");
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Tab 0_button")]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_text(@"TabCommands")]
+  [[EarlGrey selectElementWithMatcher:grey_text(@"TabGridCommands")]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]

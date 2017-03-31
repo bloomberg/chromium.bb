@@ -5,8 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_TOOLBAR_COMMANDS_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_TOOLBAR_COMMANDS_H_
 
-// Command protocol for commands relating to the toolbar UI.
-// (Commands are for communicating into or within the coordinator layer).
+// Commands relating to the toolbar UI.
 @protocol ToolbarCommands
 // Shows the tools menu.
 - (void)showToolsMenu;

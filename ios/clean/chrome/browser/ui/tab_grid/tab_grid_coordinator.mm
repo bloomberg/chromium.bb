@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/clean/chrome/browser/ui/commands/settings_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
@@ -29,7 +28,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()<SettingsCommands, TabCommands, TabGridCommands>
+@interface TabGridCoordinator ()<SettingsCommands, TabGridCommands>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
@@ -65,11 +64,24 @@
   self.mediator = [[TabGridMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
 
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  // SettingsCommands
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(showSettings)];
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(closeSettings)];
+  // TabGridCommands
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(showTabGridTabAtIndex:)];
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(closeTabGridTabAtIndex:)];
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(createAndShowNewTabInTabGrid)];
+  [dispatcher startDispatchingToTarget:self forSelector:@selector(showTabGrid)];
+
   self.viewController = [[TabGridViewController alloc] init];
   self.viewController.dataSource = self.mediator;
-  self.viewController.settingsCommandHandler = self;
-  self.viewController.tabCommandHandler = self;
-  self.viewController.tabGridCommandHandler = self;
+  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
 
   self.mediator.consumer = self.viewController;
 
@@ -82,9 +94,14 @@
   [super start];
 }
 
-#pragma mark - TabCommands
+- (void)stop {
+  [super stop];
+  [self.browser->dispatcher() stopDispatchingToTarget:self];
+}
 
-- (void)showTabAtIndex:(int)index {
+#pragma mark - TabGridCommands
+
+- (void)showTabGridTabAtIndex:(int)index {
   self.webStateList.ActivateWebStateAt(index);
   // PLACEHOLDER: The tab coordinator should be able to get the active webState
   // on its own.
@@ -96,22 +113,20 @@
   [tabCoordinator start];
 }
 
-- (void)closeTabAtIndex:(int)index {
+- (void)closeTabGridTabAtIndex:(int)index {
   std::unique_ptr<web::WebState> closedWebState(
       self.webStateList.DetachWebStateAt(index));
 }
 
-- (void)createAndShowNewTab {
+- (void)createAndShowNewTabInTabGrid {
   web::WebState::CreateParams webStateCreateParams(
       self.browser->browser_state());
   std::unique_ptr<web::WebState> webState =
       web::WebState::Create(webStateCreateParams);
   self.webStateList.InsertWebState(self.webStateList.count(),
                                    webState.release());
-  [self showTabAtIndex:self.webStateList.count() - 1];
+  [self showTabGridTabAtIndex:self.webStateList.count() - 1];
 }
-
-#pragma mark - TabGridCommands
 
 - (void)showTabGrid {
   // This object should only ever have at most one child.
@@ -155,7 +170,7 @@
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   activeWebState->GetNavigationManager()->LoadURLWithParams(params);
   if (!self.children.count) {
-    [self showTabAtIndex:self.webStateList.active_index()];
+    [self showTabGridTabAtIndex:self.webStateList.active_index()];
   }
 }
 

@@ -4,6 +4,8 @@
 
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_view_controller.h"
 
+#import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -14,6 +16,7 @@ CGFloat kSpacing = 10.0f;
 }
 
 @implementation TabStripViewController
+@synthesize dispatcher = _dispatcher;
 
 - (UICollectionViewLayout*)collectionViewLayout {
   UICollectionViewFlowLayout* layout =
@@ -24,6 +27,14 @@ CGFloat kSpacing = 10.0f;
       UIEdgeInsetsMake(kSpacing, kSpacing, kSpacing, kSpacing);
   layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
   return layout;
+}
+
+- (void)showTabAtIndex:(int)index {
+  [self.dispatcher showTabStripTabAtIndex:index];
+}
+
+- (void)closeTabAtIndex:(int)index {
+  [self.dispatcher closeTabStripTabAtIndex:index];
 }
 
 @end

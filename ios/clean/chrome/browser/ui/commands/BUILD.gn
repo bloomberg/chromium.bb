@@ -6,8 +6,8 @@ source_set("commands") {
   sources = [
     "navigation_commands.h",
     "settings_commands.h",
-    "tab_commands.h",
     "tab_grid_commands.h",
+    "tab_strip_commands.h",
     "toolbar_commands.h",
   ]
   deps = [

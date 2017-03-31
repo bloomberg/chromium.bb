@@ -4,17 +4,20 @@
 
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_coordinator.h"
 
+#import "ios/clean/chrome/browser/ui/commands/tab_strip_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_strip/tab_strip_view_controller.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
+#import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
+#include "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface TabStripCoordinator ()
+@interface TabStripCoordinator ()<TabStripCommands>
 @property(nonatomic, strong) TabStripViewController* viewController;
 @property(nonatomic, strong) TabCollectionMediator* mediator;
 @property(nonatomic, readonly) WebStateList& webStateList;
@@ -33,16 +36,39 @@
 #pragma mark - BrowserCoordinator
 
 - (void)start {
+  CommandDispatcher* dispatcher = self.browser->dispatcher();
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(showTabStripTabAtIndex:)];
+  [dispatcher startDispatchingToTarget:self
+                           forSelector:@selector(closeTabStripTabAtIndex:)];
+
   self.viewController = [[TabStripViewController alloc] init];
   self.mediator = [[TabCollectionMediator alloc] init];
   self.mediator.webStateList = &self.webStateList;
   self.mediator.consumer = self.viewController;
   self.viewController.dataSource = self.mediator;
+  self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
 
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
   [super start];
+}
+
+- (void)stop {
+  [super stop];
+  [self.browser->dispatcher() stopDispatchingToTarget:self];
+}
+
+#pragma mark - TabStripCommands
+
+- (void)showTabStripTabAtIndex:(int)index {
+  self.webStateList.ActivateWebStateAt(index);
+}
+
+- (void)closeTabStripTabAtIndex:(int)index {
+  std::unique_ptr<web::WebState> closedWebState(
+      self.webStateList.DetachWebStateAt(index));
 }
 
 @end

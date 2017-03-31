@@ -5,9 +5,7 @@
 #ifndef IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_NAVIGATION_COMMANDS_H_
 #define IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_NAVIGATION_COMMANDS_H_
 
-// Target/Action methods relating to web page navigation.
-// (Actions should only be used to communicate into or between the View
-// Controller layer).
+// Commands relating to web page navigation.
 @protocol NavigationCommands
 @optional
 // Goes back to the previous visited page.

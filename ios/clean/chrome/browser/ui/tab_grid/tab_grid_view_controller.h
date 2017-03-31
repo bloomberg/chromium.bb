@@ -13,11 +13,11 @@
 @protocol SettingsCommands;
 @protocol TabGridCommands;
 
+// View controller with a grid of tabs.
 @interface TabGridViewController
     : TabCollectionViewController<TabGridConsumer, ZoomTransitionDelegate>
-// Command handlers.
-@property(nonatomic, weak) id<SettingsCommands> settingsCommandHandler;
-@property(nonatomic, weak) id<TabGridCommands> tabGridCommandHandler;
+// Dispatcher to handle commands.
+@property(nonatomic, weak) id<SettingsCommands, TabGridCommands> dispatcher;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_GRID_TAB_GRID_VIEW_CONTROLLER_H_

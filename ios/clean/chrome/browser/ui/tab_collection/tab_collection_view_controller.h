@@ -9,7 +9,6 @@
 
 #import "ios/clean/chrome/browser/ui/tab_collection/tab_collection_consumer.h"
 
-@protocol TabCommands;
 @protocol TabCollectionDataSource;
 
 // Controller for a scrolling view displaying square cells that represent
@@ -19,8 +18,6 @@
 @property(nonatomic, weak, readonly) UICollectionView* tabs;
 // Data source for the tabs to be displayed.
 @property(nonatomic, weak) id<TabCollectionDataSource> dataSource;
-// Command handler to show, close, or create tabs.
-@property(nonatomic, weak) id<TabCommands> tabCommandHandler;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TAB_COLLECTION_TAB_COLLECTION_VIEW_CONTROLLER_H_
