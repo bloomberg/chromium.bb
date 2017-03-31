@@ -5,13 +5,21 @@
 #ifndef HEADLESS_LIB_BROWSER_HEADLESS_WINDOW_TREE_HOST_H_
 #define HEADLESS_LIB_BROWSER_HEADLESS_WINDOW_TREE_HOST_H_
 
+#if defined(USE_AURA)
+
 #include <memory>
 
 #include "base/macros.h"
-#include "headless/lib/browser/headless_window_parenting_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace aura {
+namespace client {
+class FocusClient;
+class WindowParentingClient;
+}
+}
 
 namespace headless {
 
@@ -44,11 +52,16 @@ class HeadlessWindowTreeHost : public aura::WindowTreeHost,
 
  private:
   gfx::Rect bounds_;
+  std::unique_ptr<aura::client::FocusClient> focus_client_;
   std::unique_ptr<aura::client::WindowParentingClient> window_parenting_client_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWindowTreeHost);
 };
 
 }  // namespace headless
+
+#else   // defined(USE_AURA)
+class HeadlessWindowTreeHost {};
+#endif  // defined(USE_AURA)
 
 #endif  // HEADLESS_LIB_BROWSER_HEADLESS_WINDOW_TREE_HOST_H_

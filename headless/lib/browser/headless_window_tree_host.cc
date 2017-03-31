@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "headless/lib/browser/headless_window_tree_host.h"
-#include "ui/aura/window.h"
 
+#include "headless/lib/browser/headless_focus_client.h"
+#include "headless/lib/browser/headless_window_parenting_client.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/icc_profile.h"
 
 namespace headless {
@@ -13,6 +15,9 @@ HeadlessWindowTreeHost::HeadlessWindowTreeHost(const gfx::Rect& bounds)
     : bounds_(bounds) {
   CreateCompositor();
   OnAcceleratedWidgetAvailable();
+
+  focus_client_.reset(new HeadlessFocusClient());
+  aura::client::SetFocusClient(window(), focus_client_.get());
 }
 
 HeadlessWindowTreeHost::~HeadlessWindowTreeHost() {
