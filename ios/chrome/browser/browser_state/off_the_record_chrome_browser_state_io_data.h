@@ -25,8 +25,6 @@ namespace net {
 class CookieStore;
 class HttpNetworkSession;
 class HttpTransactionFactory;
-class SdchManager;
-class SdchOwner;
 class URLRequestContext;
 }  // namespace net
 
@@ -114,9 +112,6 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
   // Server bound certificates and cookies are persisted to the disk on iOS.
   base::FilePath cookie_path_;
   base::FilePath channel_id_path_;
-
-  mutable std::unique_ptr<net::SdchManager> sdch_manager_;
-  mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordChromeBrowserStateIOData);
 };

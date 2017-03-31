@@ -174,7 +174,7 @@ function checkViewsAfterLogLoaded() {
     http2: true,
     quic: true,
     'alt-svc': true,
-    sdch: true,
+    sdch: false,
     httpCache: true,
     modules: true,
     hsts: false,

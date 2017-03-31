@@ -15,8 +15,6 @@
 #include "components/prefs/pref_store.h"
 #include "content/public/browser/cookie_store_factory.h"
 
-class JsonPrefStore;
-
 namespace chrome_browser_net {
 class Predictor;
 }  // namespace chrome_browser_net
@@ -28,7 +26,6 @@ class DomainReliabilityMonitor;
 namespace net {
 class CookieStore;
 class HttpServerPropertiesManager;
-class SdchOwner;
 }  // namespace net
 
 namespace storage {
@@ -203,8 +200,6 @@ class ProfileImplIOData : public ProfileIOData {
   // Lazy initialization params.
   mutable std::unique_ptr<LazyParams> lazy_params_;
 
-  mutable scoped_refptr<JsonPrefStore> network_json_store_;
-
   // Owned by URLRequestContextStorage, reference here to can be shut down on
   // the UI thread.
   net::HttpServerPropertiesManager* http_server_properties_manager_;
@@ -220,8 +215,6 @@ class ProfileImplIOData : public ProfileIOData {
   // Owned by ChromeNetworkDelegate (which is owned by |network_delegate_|).
   mutable domain_reliability::DomainReliabilityMonitor*
       domain_reliability_monitor_;
-
-  mutable std::unique_ptr<net::SdchOwner> sdch_policy_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

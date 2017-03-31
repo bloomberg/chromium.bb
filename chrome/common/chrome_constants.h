@@ -55,7 +55,6 @@ extern const base::FilePath::CharType kGCMStoreDirname[];
 extern const base::FilePath::CharType kLocalStateFilename[];
 extern const base::FilePath::CharType kLocalStorePoolName[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
-extern const base::FilePath::CharType kNetworkPersistentStateFilename[];
 extern const base::FilePath::CharType kOfflinePageArchivesDirname[];
 extern const base::FilePath::CharType kOfflinePageMetadataDirname[];
 extern const base::FilePath::CharType kOfflinePageRequestQueueDirname[];

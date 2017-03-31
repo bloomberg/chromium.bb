@@ -30,11 +30,9 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
-#include "net/base/sdch_manager.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/sdch/sdch_owner.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context_storage.h"
@@ -255,11 +253,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
       std::move(main_job_factory), std::move(request_interceptors),
       std::move(profile_params->protocol_handler_interceptor),
       main_context->network_delegate(), main_context->host_resolver()));
-
-  // Setup SDCH for this profile.
-  main_context_storage->set_sdch_manager(base::MakeUnique<net::SdchManager>());
-  sdch_policy_.reset(
-      new net::SdchOwner(main_context->sdch_manager(), main_context));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   InitializeExtensionsRequestContext(profile_params);

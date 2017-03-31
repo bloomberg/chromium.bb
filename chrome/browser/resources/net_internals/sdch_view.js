@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(rdsmith) Note that SDCH has been disabled in Chrome as of M59.
+// This code is being retained for examining dumps generated before that
+// milestone.  It's probably fine to remove it in M64 or later.
+
 /**
  * This view displays information related to SDCH.
  *

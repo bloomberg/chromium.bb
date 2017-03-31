@@ -174,48 +174,4 @@ LoadPageWithDecodeErrorTask.prototype = {
   }
 };
 
-/**
- * Load a page, which results in downloading a SDCH dictionary. Make sure its
- * data is displayed.
- */
-TEST_F('NetInternalsTest', 'netInternalsSdchViewFetchDictionary', function() {
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/sdch/page.html')));
-  taskQueue.addTask(new LoadSdchDictionaryTask());
-  taskQueue.run();
-});
-
-/**
- * Load a page, get the dictionary for it, and get decoding error to see
- * the blacklist in action.
- */
-TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistMeta', function() {
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/sdch/page.html')));
-  taskQueue.addTask(new LoadSdchDictionaryTask());
-  taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/sdch/non-html')));
-  taskQueue.addTask(
-      new LoadPageWithDecodeErrorTask('META_REFRESH_UNSUPPORTED'));
-  taskQueue.run();
-});
-
-/**
- * Load a page, which is said to be SDCH-encoded, though we don't expect it.
- */
-TEST_F('NetInternalsTest', 'netInternalsSdchViewBlacklistNonSdch', function() {
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask(
-          BASE_PATH + encodeURI('/sdch/non-sdch.html')));
-  taskQueue.addTask(
-      new LoadPageWithDecodeErrorTask('PASSING_THROUGH_NON_SDCH'));
-  taskQueue.run();
-});
-
 })();  // Anonymous namespace
