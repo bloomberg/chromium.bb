@@ -27,6 +27,10 @@
 #include "base/process/port_provider_mac.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
+
 namespace base {
 
 #if defined(OS_WIN)
@@ -216,7 +220,11 @@ class BASE_EXPORT ProcessMetrics {
   int CalculateIdleWakeupsPerSecond(uint64_t absolute_idle_wakeups);
 #endif
 
+#if defined(OS_WIN)
+  win::ScopedHandle process_;
+#else
   ProcessHandle process_;
+#endif
 
   int processor_count_;
 
