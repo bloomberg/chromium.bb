@@ -2287,13 +2287,6 @@ const char kEnableNtpRecentOfflineTabSuggestionsDescription[] =
     "#enable-ntp-snippets) will contain pages that were captured offline "
     "during browsing (see #offlining-recent-pages)";
 
-const char kEnableNtpSaveToOfflineName[] =
-    "Show option to save to offline in Snippets context menu.";
-
-const char kEnableNtpSaveToOfflineDescription[] =
-    "If enabled, the Snippets context menu (see #enable-ntp-snippets) will "
-    "contain the option to save linked page for offline viewing.";
-
 const char kEnableNtpAssetDownloadSuggestionsName[] =
     "Show asset downloads on the New Tab page";
 

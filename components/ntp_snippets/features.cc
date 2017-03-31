@@ -22,9 +22,6 @@ const base::Feature kBookmarkSuggestionsFeature{
 const base::Feature kRecentOfflineTabSuggestionsFeature{
     "NTPOfflinePageSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSaveToOfflineFeature{"NTPSaveToOffline",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kIncreasedVisibility{"NTPSnippetsIncreasedVisibility",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 

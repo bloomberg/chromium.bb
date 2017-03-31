@@ -2485,13 +2485,6 @@ extern const char kEnableNtpRecentOfflineTabSuggestionsName[];
 // the New Tab page.
 extern const char kEnableNtpRecentOfflineTabSuggestionsDescription[];
 
-// Name for the flag to enable offline page suggestions on the New Tab page.
-extern const char kEnableNtpSaveToOfflineName[];
-
-// Description for the flag to enable offline page suggestions on the New Tab
-// page.
-extern const char kEnableNtpSaveToOfflineDescription[];
-
 // Name for the flag to enable asset downloads suggestions (e.g. books,
 // pictures, audio) on the New Tab page.
 extern const char kEnableNtpAssetDownloadSuggestionsName[];

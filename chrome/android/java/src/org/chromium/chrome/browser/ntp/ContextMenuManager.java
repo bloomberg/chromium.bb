@@ -14,7 +14,6 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
@@ -146,7 +145,6 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
             case ID_OPEN_IN_INCOGNITO_TAB:
                 return mNavigationDelegate.isOpenInIncognitoEnabled();
             case ID_SAVE_FOR_OFFLINE: {
-                if (!SnippetsConfig.isSaveToOfflineEnabled()) return false;
                 String itemUrl = delegate.getUrl();
                 return itemUrl != null && OfflinePageBridge.canSavePage(itemUrl);
             }
