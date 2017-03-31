@@ -289,20 +289,24 @@ void ArcNotificationItem::ToggleExpansion() {
 // to -2 and 0 respectively to adjust the value with keeping the order among
 // _LOW, _DEFAULT and _HIGH.
 // static
-int ArcNotificationItem::ConvertAndroidPriority(int android_priority) {
+// TODO(yoshiki): rewrite this conversion as typemap
+int ArcNotificationItem::ConvertAndroidPriority(
+    mojom::ArcNotificationPriority android_priority) {
   switch (android_priority) {
-    case -2:  // PRIORITY_MIN
-    case -1:  // PRIORITY_LOW
-      return -2;
-    case 0:  // PRIORITY_DEFAULT
-      return -1;
-    case 1:  // PRIORITY_HIGH
-      return 0;
-    case 2:  // PRIORITY_MAX
-      return 2;
+    case mojom::ArcNotificationPriority::MIN:
+    case mojom::ArcNotificationPriority::LOW:
+      return message_center::MIN_PRIORITY;
+    case mojom::ArcNotificationPriority::DEFAULT:
+      return message_center::LOW_PRIORITY;
+    case mojom::ArcNotificationPriority::HIGH:
+      return message_center::DEFAULT_PRIORITY;
+    case mojom::ArcNotificationPriority::MAX:
+      return message_center::MAX_PRIORITY;
+
+    // fall-through
     default:
       NOTREACHED() << "Invalid Priority: " << android_priority;
-      return 0;
+      return message_center::DEFAULT_PRIORITY;
   }
 }
 
