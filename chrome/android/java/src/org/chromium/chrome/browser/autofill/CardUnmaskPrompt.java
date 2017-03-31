@@ -297,6 +297,9 @@ public class CardUnmaskPrompt
         mDialog.setTitle(title);
         mInstructions.setText(instructions);
         mShouldRequestExpirationDate = shouldRequestExpirationDate;
+        if (mShouldRequestExpirationDate && (mThisYear == -1 || mThisMonth == -1)) {
+            new CalendarTask().execute();
+        }
         showExpirationDateInputsInputs();
     }
 
