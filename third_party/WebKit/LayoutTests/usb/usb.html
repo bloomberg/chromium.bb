@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
 <script src="resources/fake-devices.js"></script>
 <script src="resources/usb-helpers.js"></script>
-<script src="resources/webusb-test.js"></script>
 <script>
 'use strict';
 
@@ -20,17 +20,17 @@ function connectionEventPromise(eventType) {
   });
 }
 
-usb_test(() => {
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
 
   return navigator.usb.getDevices().then(devices => {
     assert_equals(devices.length, 1);
-    assertDeviceInfoEquals(devices[0], fakeDeviceInit);
+    usb.assertDeviceInfoEquals(devices[0], usb.fakeDevices[0]);
   });
 }, 'getDevices returns devices exposed by the DeviceManager service');
 
-usb_test(() => {
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
 
   return navigator.usb.getDevices().then(devicesFirstTime => {
     assert_equals(devicesFirstTime.length, 1);
@@ -40,7 +40,7 @@ usb_test(() => {
   });
 }, 'getDevices returns the same objects for each USB device');
 
-usb_test(() => {
+usb_test(usb => {
   return navigator.usb.requestDevice({ filters: [] })
     .then(device => {
       assert_unreachable('requestDevice should reject without a user gesture');
@@ -50,7 +50,8 @@ usb_test(() => {
     });
 }, 'requestDevice rejects when called without a user gesture');
 
-usb_test(() => {
+usb_test(usb => {
+  usb.mockChooserService.setChosenDevice(null);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
       assert_unreachable('requestDevice should reject when no device selected');
@@ -61,21 +62,19 @@ usb_test(() => {
   );
 }, 'requestDevice rejects when no device is chosen');
 
-usb_test(() => {
-  let guid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
-  navigator.usb.test.chosenDevice = guid;
-
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  usb.mockChooserService.setChosenDevice(usb.fakeDevices[0]);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
     .then(device => {
-      assertDeviceInfoEquals(device, fakeDeviceInit);
+      usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
     })
   );
 }, 'requestDevice returns the device chosen by the user');
 
-usb_test(() => {
-  let guid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
-  navigator.usb.test.chosenDevice = guid;
-
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  usb.mockChooserService.setChosenDevice(usb.fakeDevices[0]);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
       .then(device => navigator.usb.getDevices().then(devices => {
         assert_equals(devices.length, 1);
@@ -84,40 +83,51 @@ usb_test(() => {
   );
 }, 'getDevices returns the same object as requestDevice');
 
-usb_test(() => {
+usb_test(usb => {
   const expectedFilters = [
     { vendorId: 1234, classCode: 0xFF, serialNumber: "123ABC" },
     { vendorId: 5678, productId: 0xF00F }
   ];
-
+  usb.mockChooserService.setChosenDevice(null);
   return callWithKeyDown(() => navigator.usb.requestDevice({ filters: expectedFilters })
     .then(device => {
       assert_unreachable('requestDevice should reject because no device selected');
     })
     .catch(error => {
       assert_equals(error.code, DOMException.NOT_FOUND_ERR);
-      let actualFilters = navigator.usb.test.lastFilters;
+      let actualFilters = usb.mockChooserService.getLastFilters();
       assert_equals(actualFilters.length, expectedFilters.length);
-      for (var i = 0; i < actualFilters.length; ++i)
-        assert_object_equals(actualFilters[i], expectedFilters[i]);
+      assert_true(actualFilters[0].has_vendor_id);
+      assert_equals(actualFilters[0].vendor_id, expectedFilters[0].vendorId);
+      assert_false(actualFilters[0].has_product_id);
+      assert_true(actualFilters[0].has_class_code, expectedFilters[0].classCode);
+      assert_false(actualFilters[0].has_subclass_code);
+      assert_false(actualFilters[0].has_protocol_code);
+      assert_equals(actualFilters[0].serial_number, expectedFilters[0].serialNumber);
+      assert_true(actualFilters[1].has_vendor_id);
+      assert_equals(actualFilters[1].vendor_id, expectedFilters[1].vendorId);
+      assert_true(actualFilters[1].has_product_id);
+      assert_equals(actualFilters[1].product_id, expectedFilters[1].productId);
+      assert_false(actualFilters[1].has_class_code);
+      assert_false(actualFilters[1].has_subclass_code);
+      assert_false(actualFilters[1].has_protocol_code);
+      assert_equals(actualFilters[1].serial_number, null);
     })
   );
 }, 'filters are sent correctly');
 
-usb_test(() => {
+usb_test(usb => {
   let promise = connectionEventPromise('connect');
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return promise.then(device => {
-    assertDeviceInfoEquals(device, fakeDeviceInit);
+    usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
     return device.open().then(() => device.close());
   });
 }, 'onconnect event is trigged by adding a device');
 
 usb_test(usb => {
   let promise = connectionEventPromise('connect');
-  navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return promise
       .then(device => navigator.usb.getDevices().then(devices => {
         assert_equals(devices.length, 1);
@@ -127,13 +137,12 @@ usb_test(usb => {
 
 usb_test(usb => {
   let deviceAdded = connectionEventPromise('connect');
-  let guid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
-
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return deviceAdded.then(device => {
     let deviceRemoved = connectionEventPromise('disconnect');
-    navigator.usb.test.removeFakeDevice(guid);
+    usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
     return deviceRemoved.then(removedDevice => {
-      assertDeviceInfoEquals(removedDevice, fakeDeviceInit);
+      usb.assertDeviceInfoEquals(removedDevice, usb.fakeDevices[0]);
       assert_equals(removedDevice, device);
       return removedDevice.open().then(() => {
         assert_unreachable('should not be able to open a disconnected device');
