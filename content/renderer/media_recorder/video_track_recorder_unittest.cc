@@ -225,29 +225,6 @@ TEST_P(VideoTrackRecorderTest, VideoEncoding) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-// Inserts a frame which has different coded size than the visible rect and
-// expects encode to be completed without raising any sanitizer flags.
-TEST_P(VideoTrackRecorderTest, EncodeFrameWithPaddedCodedSize) {
-  InitializeRecorder(testing::get<0>(GetParam()));
-
-  const gfx::Size& frame_size = testing::get<1>(GetParam());
-  const size_t kCodedSizePadding = 16;
-  const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
-      media::PIXEL_FORMAT_I420,
-      gfx::Size(frame_size.width() + kCodedSizePadding, frame_size.height()),
-      gfx::Rect(frame_size), frame_size, base::TimeDelta());
-
-  base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
-  EXPECT_CALL(*this, DoOnEncodedVideo(_, _, _, _, true))
-      .Times(1)
-      .WillOnce(RunClosure(quit_closure));
-  Encode(video_frame, base::TimeTicks::Now());
-  run_loop.Run();
-
-  Mock::VerifyAndClearExpectations(this);
-}
-
 // Inserts an opaque frame followed by two transparent frames and expects the
 // newly introduced transparent frame to force keyframe output.
 TEST_F(VideoTrackRecorderTest, ForceKeyframeOnAlphaSwitch) {
