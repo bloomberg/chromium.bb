@@ -387,18 +387,31 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
 #if defined(USE_ASH)
 const FeatureEntry::Choice kAshShelfColorChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kAshShelfColorLightVibrant,
-     ash::switches::kAshShelfColor, ash::switches::kAshShelfColorLightVibrant},
-    {flag_descriptions::kAshShelfColorNormalVibrant,
-     ash::switches::kAshShelfColor, ash::switches::kAshShelfColorNormalVibrant},
-    {flag_descriptions::kAshShelfColorDarkVibrant,
-     ash::switches::kAshShelfColor, ash::switches::kAshShelfColorDarkVibrant},
-    {flag_descriptions::kAshShelfColorLightMuted, ash::switches::kAshShelfColor,
-     ash::switches::kAshShelfColorLightMuted},
-    {flag_descriptions::kAshShelfColorNormalMuted,
-     ash::switches::kAshShelfColor, ash::switches::kAshShelfColorNormalMuted},
-    {flag_descriptions::kAshShelfColorDarkMuted, ash::switches::kAshShelfColor,
-     ash::switches::kAshShelfColorDarkMuted},
+    {flags_ui::kGenericExperimentChoiceEnabled, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorEnabled},
+    {flags_ui::kGenericExperimentChoiceDisabled, ash::switches::kAshShelfColor,
+     ash::switches::kAshShelfColorDisabled}};
+
+const FeatureEntry::Choice kAshShelfColorSchemeChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kAshShelfColorSchemeLightVibrant,
+     ash::switches::kAshShelfColorScheme,
+     ash::switches::kAshShelfColorSchemeLightVibrant},
+    {flag_descriptions::kAshShelfColorSchemeNormalVibrant,
+     ash::switches::kAshShelfColorScheme,
+     ash::switches::kAshShelfColorSchemeNormalVibrant},
+    {flag_descriptions::kAshShelfColorSchemeDarkVibrant,
+     ash::switches::kAshShelfColorScheme,
+     ash::switches::kAshShelfColorSchemeDarkVibrant},
+    {flag_descriptions::kAshShelfColorSchemeLightMuted,
+     ash::switches::kAshShelfColorScheme,
+     ash::switches::kAshShelfColorSchemeLightMuted},
+    {flag_descriptions::kAshShelfColorSchemeNormalMuted,
+     ash::switches::kAshShelfColorScheme,
+     ash::switches::kAshShelfColorSchemeNormalMuted},
+    {flag_descriptions::kAshShelfColorSchemeDarkMuted,
+     ash::switches::kAshShelfColorScheme,
+     ash::switches::kAshShelfColorSchemeDarkMuted},
 };
 #endif  // USE_ASH
 
@@ -1132,6 +1145,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"ash-shelf-color", flag_descriptions::kAshShelfColor,
      flag_descriptions::kAshShelfColorDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kAshShelfColorChoices)},
+    {"ash-shelf-color-scheme", flag_descriptions::kAshShelfColorScheme,
+     flag_descriptions::kAshShelfColorSchemeDescription, kOsCrOS,
+     MULTI_VALUE_TYPE(kAshShelfColorSchemeChoices)},
 #endif  // USE_ASH
 #if defined(OS_CHROMEOS)
     {"material-design-ink-drop-animation-speed",

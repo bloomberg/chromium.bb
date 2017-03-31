@@ -687,22 +687,29 @@ const char kImportantSitesInCbdDescription[] =
 
 #if defined(USE_ASH)
 
-const char kAshShelfColor[] = "Shelf Color in Chrome OS system UI";
+const char kAshShelfColor[] = "Shelf color in Chrome OS system UI";
 
 const char kAshShelfColorDescription[] =
-    "Specify the Shelf Color scheme in Chrome OS system UI";
+    "Enables/disables the shelf color to be a derived from the wallpaper. The "
+    "--ash-shelf-color-scheme flag defines how that color is derived.";
 
-const char kAshShelfColorLightVibrant[] = "Light & Vibrant";
+const char kAshShelfColorScheme[] = "Shelf color scheme in Chrome OS System UI";
 
-const char kAshShelfColorNormalVibrant[] = "Normal & Vibrant";
+const char kAshShelfColorSchemeDescription[] =
+    "Specify how the color is derived from the wallpaper. This flag is only "
+    "used when the --ash-shelf-color flag is enabled. Defaults to Dark & Muted";
 
-const char kAshShelfColorDarkVibrant[] = "Dark & Vibrant";
+const char kAshShelfColorSchemeLightVibrant[] = "Light & Vibrant";
 
-const char kAshShelfColorLightMuted[] = "Light & Muted";
+const char kAshShelfColorSchemeNormalVibrant[] = "Normal & Vibrant";
 
-const char kAshShelfColorNormalMuted[] = "Normal & Muted";
+const char kAshShelfColorSchemeDarkVibrant[] = "Dark & Vibrant";
 
-const char kAshShelfColorDarkMuted[] = "Dark & Muted";
+const char kAshShelfColorSchemeLightMuted[] = "Light & Muted";
+
+const char kAshShelfColorSchemeNormalMuted[] = "Normal & Muted";
+
+const char kAshShelfColorSchemeDarkMuted[] = "Dark & Muted";
 
 const char kAshMaximizeModeWindowBackdropName[] =
     "Window backdrops in TouchView";

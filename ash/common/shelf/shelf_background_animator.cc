@@ -216,7 +216,7 @@ void ShelfBackgroundAnimator::GetTargetValues(
   SkColor target_color = wallpaper_controller_
                              ? wallpaper_controller_->prominent_color()
                              : kShelfDefaultBaseColor;
-  if (target_color == SK_ColorTRANSPARENT) {
+  if (target_color == WallpaperController::kInvalidColor) {
     target_color = kShelfDefaultBaseColor;
   } else {
     int darkening_alpha = 0;

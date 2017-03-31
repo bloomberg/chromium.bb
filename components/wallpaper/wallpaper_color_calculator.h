@@ -10,7 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "components/wallpaper/wallpaper_color_calculator_observer.h"
 #include "components/wallpaper/wallpaper_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_analysis.h"

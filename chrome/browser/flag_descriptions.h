@@ -748,23 +748,31 @@ extern const char kAshShelfColor[];
 // system UI.
 extern const char kAshShelfColorDescription[];
 
-// A shelf coloring style to be used by Chrome OS UI.
-extern const char kAshShelfColorLightVibrant[];
+// Title of the flag which specifies the shelf coloring scheme in Chrome OS
+// system UI.
+extern const char kAshShelfColorScheme[];
 
-// A shelf coloring style to be used by Chrome OS UI.
-extern const char kAshShelfColorNormalVibrant[];
+// Description of the flag which specifies the shelf coloring scheme in Chrome
+// OS system UI.
+extern const char kAshShelfColorSchemeDescription[];
 
-// A shelf coloring style to be used by Chrome OS UI.
-extern const char kAshShelfColorDarkVibrant[];
+// A shelf coloring scheme to be used by Chrome OS UI.
+extern const char kAshShelfColorSchemeLightVibrant[];
 
-// A shelf coloring style to be used by Chrome OS UI.
-extern const char kAshShelfColorLightMuted[];
+// A shelf coloring scheme to be used by Chrome OS UI.
+extern const char kAshShelfColorSchemeNormalVibrant[];
 
-// A shelf coloring style to be used by Chrome OS UI.
-extern const char kAshShelfColorNormalMuted[];
+// A shelf coloring scheme to be used by Chrome OS UI.
+extern const char kAshShelfColorSchemeDarkVibrant[];
 
-// A shelf coloring style to be used by Chrome OS UI.
-extern const char kAshShelfColorDarkMuted[];
+// A shelf coloring scheme to be used by Chrome OS UI.
+extern const char kAshShelfColorSchemeLightMuted[];
+
+// A shelf coloring scheme to be used by Chrome OS UI.
+extern const char kAshShelfColorSchemeNormalMuted[];
+
+// A shelf coloring scheme to be used by Chrome OS UI.
+extern const char kAshShelfColorSchemeDarkMuted[];
 
 // Title for the flag which can be used for window backdrops in TouchView.
 extern const char kAshMaximizeModeWindowBackdropName[];

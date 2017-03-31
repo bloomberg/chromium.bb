@@ -7,6 +7,9 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "ash/common/ash_switches.h"
+#include "ash/common/session/session_controller.h"
+#include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/wallpaper/wallpaper_view.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm_shell.h"
@@ -16,6 +19,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_wallpaper_delegate.h"
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +35,8 @@ using wallpaper::WALLPAPER_LAYOUT_CENTER;
 using wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED;
 using wallpaper::WALLPAPER_LAYOUT_STRETCH;
 using wallpaper::WALLPAPER_LAYOUT_TILE;
+
+using session_manager::SessionState;
 
 namespace ash {
 namespace {
@@ -191,6 +197,30 @@ class WallpaperControllerTest : public test::AshTestBase {
     EXPECT_TRUE(controller);
     ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
   }
+
+  // Convenience function to ensure ShouldCalculateColors() returns true.
+  void EnableShelfColoring() {
+    const gfx::ImageSkia kImage = CreateImage(10, 10, kCustomWallpaperColor);
+    controller_->SetWallpaperImage(kImage, WALLPAPER_LAYOUT_STRETCH);
+    AddCommandLineSwitch(switches::kAshShelfColorEnabled);
+    SetSessionState(SessionState::ACTIVE);
+
+    EXPECT_TRUE(ShouldCalculateColors());
+  }
+
+  // Convenience function to set the SessionState.
+  void SetSessionState(SessionState session_state) {
+    GetSessionControllerClient()->SetSessionState(session_state);
+  }
+
+  // Convenience function to modify the kAshShelfColor command line value.
+  void AddCommandLineSwitch(const std::string& value_string) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAshShelfColor, value_string);
+  }
+
+  // Wrapper for private ShouldCalculateColors()
+  bool ShouldCalculateColors() { return controller_->ShouldCalculateColors(); }
 
   WallpaperController* controller_;  // Not owned.
 
@@ -473,6 +503,39 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
         wallpaper_view(), low_dsf, low_resolution.width(),
         low_resolution.height(), kCustomWallpaperColor);
   }
+}
+
+TEST_F(WallpaperControllerTest, ShouldCalculateColorsBasedOnImage) {
+  EnableShelfColoring();
+  EXPECT_TRUE(ShouldCalculateColors());
+
+  controller_->CreateEmptyWallpaper();
+  EXPECT_FALSE(ShouldCalculateColors());
+}
+
+TEST_F(WallpaperControllerTest, ShouldCalculateColorsBasedOnSessionState) {
+  EnableShelfColoring();
+
+  SetSessionState(SessionState::UNKNOWN);
+  EXPECT_FALSE(ShouldCalculateColors());
+
+  SetSessionState(SessionState::OOBE);
+  EXPECT_FALSE(ShouldCalculateColors());
+
+  SetSessionState(SessionState::LOGIN_PRIMARY);
+  EXPECT_FALSE(ShouldCalculateColors());
+
+  SetSessionState(SessionState::LOGGED_IN_NOT_ACTIVE);
+  EXPECT_FALSE(ShouldCalculateColors());
+
+  SetSessionState(SessionState::ACTIVE);
+  EXPECT_TRUE(ShouldCalculateColors());
+
+  SetSessionState(SessionState::LOCKED);
+  EXPECT_FALSE(ShouldCalculateColors());
+
+  SetSessionState(SessionState::LOGIN_SECONDARY);
+  EXPECT_FALSE(ShouldCalculateColors());
 }
 
 }  // namespace ash

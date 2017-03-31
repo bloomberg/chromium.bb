@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/session/session_state_observer.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm_display_observer.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
@@ -41,9 +42,14 @@ class ASH_EXPORT WallpaperController
       public WmDisplayObserver,
       public ShellObserver,
       public wallpaper::WallpaperResizerObserver,
-      public wallpaper::WallpaperColorCalculatorObserver {
+      public wallpaper::WallpaperColorCalculatorObserver,
+      public SessionStateObserver {
  public:
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
+
+  // The value assigned to |prominent_color_| if extraction fails or the feature
+  // is disabled (e.g. command line, lock/login screens).
+  static constexpr SkColor kInvalidColor = SK_ColorTRANSPARENT;
 
   explicit WallpaperController(
       const scoped_refptr<base::TaskRunner>& task_runner);
@@ -91,6 +97,9 @@ class ASH_EXPORT WallpaperController
   // ShellObserver:
   void OnRootWindowAdded(WmWindow* root_window) override;
 
+  // SessionStateObserver:
+  void SessionStateChanged(session_manager::SessionState state) override;
+
   // Returns the maximum size of all displays combined in native
   // resolutions.  Note that this isn't the bounds of the display who
   // has maximum resolutions. Instead, this returns the size of the
@@ -123,11 +132,7 @@ class ASH_EXPORT WallpaperController
   void OnColorCalculationComplete() override;
 
  private:
-  // Returns true if the shelf should be colored based on the wallpaper's
-  // prominent color. |luma| and |saturation| are output parameters.
-  static bool GetProminentColorProfile(
-      color_utils::LumaRange* luma,
-      color_utils::SaturationRange* saturation);
+  friend class WallpaperControllerTest;
 
   // Creates a WallpaperWidgetController for |root_window|.
   void InstallDesktopController(WmWindow* root_window);
@@ -149,9 +154,16 @@ class ASH_EXPORT WallpaperController
   // Sets |prominent_color_| and notifies the observers if there is a change.
   void SetProminentColor(SkColor color);
 
-  // If enabled, will initiates an asynchronous task to extract colors from the
-  // wallpaper. If an existing calculation is in progress it is destroyed.
+  // Calculates a prominent color based on the wallpaper image and notifies
+  // |observers_| of the value, either synchronously or asynchronously. In some
+  // cases the wallpaper image will not actually be processed (e.g. user isn't
+  // logged in, feature isn't enabled).
+  // If an existing calculation is in progress it is destroyed.
   void CalculateWallpaperColors();
+
+  // Returns false when the color extraction algorithm shouldn't be run based on
+  // system state (e.g. wallpaper image, SessionState, etc.).
+  bool ShouldCalculateColors() const;
 
   bool locked_;
 
@@ -171,7 +183,7 @@ class ASH_EXPORT WallpaperController
   std::unique_ptr<wallpaper::WallpaperColorCalculator> color_calculator_;
 
   // The prominent color extracted from the current wallpaper.
-  // SK_ColorTRANSPARENT is used by default or if extracting colors fails.
+  // kInvalidColor is used by default or if extracting colors fails.
   SkColor prominent_color_;
 
   gfx::Size current_max_display_size_;

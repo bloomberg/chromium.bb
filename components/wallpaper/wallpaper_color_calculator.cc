@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "components/wallpaper/wallpaper_color_calculator_observer.h"
 
 namespace wallpaper {
 
