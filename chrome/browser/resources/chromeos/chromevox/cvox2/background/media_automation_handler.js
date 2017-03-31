@@ -77,7 +77,8 @@ MediaAutomationHandler.prototype = {
    */
   onMediaStartedPlaying: function(evt) {
     this.mediaRoots_.add(evt.target);
-    if (cvox.ChromeVox.tts.isSpeaking())
+    var audioStrategy = localStorage['audioStrategy'];
+    if (cvox.ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck')
       this.update_({start: true});
   },
 
