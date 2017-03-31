@@ -24,8 +24,9 @@ class V8ServiceWorkerMessageEventInternal {
 template <typename EventType, typename DictType>
 void V8ServiceWorkerMessageEventInternal::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
   ExceptionState exceptionState(
-      info.GetIsolate(), ExceptionState::ConstructionContext,
+      isolate, ExceptionState::ConstructionContext,
       V8TypeOf<EventType>::Type::wrapperTypeInfo.interfaceName);
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.throwTypeError(
@@ -44,7 +45,7 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(
           "parameter 2 ('eventInitDict') is not an object.");
       return;
     }
-    V8TypeOf<DictType>::Type::toImpl(info.GetIsolate(), info[1], eventInitDict,
+    V8TypeOf<DictType>::Type::toImpl(isolate, info[1], eventInitDict,
                                      exceptionState);
     if (exceptionState.hadException())
       return;
@@ -53,18 +54,18 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(
   EventType* impl = EventType::create(type, eventInitDict);
   v8::Local<v8::Object> wrapper = info.Holder();
   wrapper = impl->associateWithWrapper(
-      info.GetIsolate(), &V8TypeOf<EventType>::Type::wrapperTypeInfo, wrapper);
+      isolate, &V8TypeOf<EventType>::Type::wrapperTypeInfo, wrapper);
 
   // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
   // |data| as a private value to avoid cyclic references.
   if (eventInitDict.hasData()) {
     v8::Local<v8::Value> v8Data = eventInitDict.data().v8Value();
-    V8PrivateProperty::getMessageEventCachedData(info.GetIsolate())
-        .set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Data);
-    if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld())
+    V8PrivateProperty::getMessageEventCachedData(isolate).set(wrapper, v8Data);
+    if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
       impl->setSerializedData(
-          SerializedScriptValue::serializeAndSwallowExceptions(
-              info.GetIsolate(), v8Data));
+          SerializedScriptValue::serializeAndSwallowExceptions(isolate,
+                                                               v8Data));
+    }
   }
   v8SetReturnValue(info, wrapper);
 }
@@ -74,11 +75,9 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   EventType* event = V8TypeOf<EventType>::Type::toImpl(info.Holder());
   v8::Isolate* isolate = info.GetIsolate();
-  ScriptState* scriptState = ScriptState::current(isolate);
   auto privateCachedData =
       V8PrivateProperty::getMessageEventCachedData(isolate);
-  v8::Local<v8::Value> result =
-      privateCachedData.get(scriptState->context(), info.Holder());
+  v8::Local<v8::Value> result = privateCachedData.getOrEmpty(info.Holder());
   if (!result.IsEmpty()) {
     v8SetReturnValue(info, result);
     return;
@@ -92,7 +91,7 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(
     data = serializedValue->deserialize(isolate, options);
   } else if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
     v8::Local<v8::Value> mainWorldData =
-        privateCachedData.getFromMainWorld(scriptState, event);
+        privateCachedData.getFromMainWorld(event);
     if (!mainWorldData.IsEmpty()) {
       // TODO(bashi): Enter the main world's ScriptState::Scope while
       // serializing the main world's value.
@@ -104,7 +103,7 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(
   }
   if (data.IsEmpty())
     data = v8::Null(isolate);
-  privateCachedData.set(scriptState->context(), info.Holder(), data);
+  privateCachedData.set(info.Holder(), data);
   v8SetReturnValue(info, data);
 }
 

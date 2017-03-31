@@ -17,7 +17,6 @@
 
 namespace blink {
 
-class ScriptState;
 class ScriptWrappable;
 
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
@@ -88,35 +87,28 @@ class CORE_EXPORT V8PrivateProperty {
     STACK_ALLOCATED();
 
    public:
-    bool hasValue(v8::Local<v8::Context> context,
-                  v8::Local<v8::Object> object) const {
-      return v8CallBoolean(object->HasPrivate(context, m_privateSymbol));
+    bool hasValue(v8::Local<v8::Object> object) const {
+      return object->HasPrivate(context(), m_privateSymbol).ToChecked();
     }
 
     // Returns the value of the private property if set, or undefined.
-    v8::Local<v8::Value> getOrUndefined(v8::Local<v8::Context> context,
-                                        v8::Local<v8::Object> object) const {
-      return object->GetPrivate(context, m_privateSymbol).ToLocalChecked();
+    v8::Local<v8::Value> getOrUndefined(v8::Local<v8::Object> object) const {
+      return object->GetPrivate(context(), m_privateSymbol).ToLocalChecked();
     }
 
+    // TODO(peria): Remove this method, and use getOrUndefined() instead.
     // Returns the value of the private property if set, or an empty handle.
-    v8::Local<v8::Value> get(v8::Local<v8::Context> context,
-                             v8::Local<v8::Object> object) const {
-      if (!v8CallBoolean(object->HasPrivate(context, m_privateSymbol)))
-        return v8::Local<v8::Value>();
-      v8::Local<v8::Value> value;
-      if (v8Call(object->GetPrivate(context, m_privateSymbol), value))
-        return value;
+    v8::Local<v8::Value> getOrEmpty(v8::Local<v8::Object> object) const {
+      if (hasValue(object))
+        return getOrUndefined(object);
       return v8::Local<v8::Value>();
     }
 
-    bool set(v8::Local<v8::Context> context,
-             v8::Local<v8::Object> object,
-             v8::Local<v8::Value> value) const {
-      return v8CallBoolean(object->SetPrivate(context, m_privateSymbol, value));
+    bool set(v8::Local<v8::Object> object, v8::Local<v8::Value> value) const {
+      return object->SetPrivate(context(), m_privateSymbol, value).ToChecked();
     }
 
-    v8::Local<v8::Private> getPrivate() { return m_privateSymbol; }
+    v8::Local<v8::Private> getPrivate() const { return m_privateSymbol; }
 
    private:
     friend class V8PrivateProperty;
@@ -125,42 +117,42 @@ class CORE_EXPORT V8PrivateProperty {
     friend class V8CustomEvent;
     friend class V8ServiceWorkerMessageEventInternal;
 
-    explicit Symbol(v8::Local<v8::Private> privateSymbol)
-        : m_privateSymbol(privateSymbol) {}
+    Symbol(v8::Isolate* isolate, v8::Local<v8::Private> privateSymbol)
+        : m_privateSymbol(privateSymbol), m_isolate(isolate) {}
+
+    // To get/set private property, we should use the current context.
+    v8::Local<v8::Context> context() const {
+      return m_isolate->GetCurrentContext();
+    }
 
     // Only friend classes are allowed to use this API.
-    v8::Local<v8::Value> getFromMainWorld(ScriptState*, ScriptWrappable*);
+    v8::Local<v8::Value> getFromMainWorld(ScriptWrappable*);
 
     v8::Local<v8::Private> m_privateSymbol;
+    v8::Isolate* m_isolate;
   };
 
   static std::unique_ptr<V8PrivateProperty> create() {
     return WTF::wrapUnique(new V8PrivateProperty());
   }
 
-#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \
-  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, KeyName)(       \
-      v8::Isolate * isolate) /* NOLINT(readability/naming/underscores) */      \
-  {                                                                            \
-    V8PrivateProperty* privateProp =                                           \
-        V8PerIsolateData::from(isolate)->privateProperty();                    \
-    if (UNLIKELY(privateProp                                                   \
-                     ->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName) \
-                     .IsEmpty())) {                                            \
-      privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName)     \
-          .Set(                                                                \
-              isolate,                                                         \
-              createV8Private(                                                 \
-                  isolate,                                                     \
-                  V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, KeyName),   \
-                  sizeof V8_PRIVATE_PROPERTY_SYMBOL_STRING(                    \
-                      InterfaceName,                                           \
-                      KeyName))); /* NOLINT(readability/naming/underscores) */ \
-    }                                                                          \
-    return Symbol(                                                             \
-        privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName)   \
-            .Get(isolate));                                                    \
+#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)             \
+  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */               \
+                                                InterfaceName, KeyName)(      \
+      v8::Isolate * isolate) {                                                \
+    V8PrivateProperty* privateProp =                                          \
+        V8PerIsolateData::from(isolate)->privateProperty();                   \
+    v8::Eternal<v8::Private>& propertyHandle =                                \
+        privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName); \
+    if (UNLIKELY(propertyHandle.IsEmpty())) {                                 \
+      static constexpr char kSymbolName[] =                                   \
+          V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, KeyName);          \
+      propertyHandle.Set(isolate, createV8Private(isolate, kSymbolName,       \
+                                                  sizeof(kSymbolName)));      \
+    }                                                                         \
+    return Symbol(isolate, propertyHandle.Get(isolate));                      \
   }
+
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
 #undef V8_PRIVATE_PROPERTY_DEFINE_GETTER
 

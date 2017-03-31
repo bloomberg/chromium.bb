@@ -269,15 +269,13 @@ v8::Local<v8::Object> MessageEvent::associateWithWrapper(
       break;
     case MessageEvent::DataTypeString:
       V8PrivateProperty::getMessageEventCachedData(isolate).set(
-          isolate->GetCurrentContext(), wrapper,
-          v8String(isolate, dataAsString()));
+          wrapper, v8String(isolate, dataAsString()));
       break;
     case MessageEvent::DataTypeBlob:
       break;
     case MessageEvent::DataTypeArrayBuffer:
       V8PrivateProperty::getMessageEventCachedData(isolate).set(
-          isolate->GetCurrentContext(), wrapper,
-          ToV8(dataAsArrayBuffer(), wrapper, isolate));
+          wrapper, ToV8(dataAsArrayBuffer(), wrapper, isolate));
       break;
   }
 

@@ -95,7 +95,7 @@ static void keepAlive(v8::Local<v8::Object>& object,
     return;
 
   v8::Isolate* isolate = scriptState->isolate();
-  symbolGetter(isolate).set(scriptState->context(), object, value);
+  symbolGetter(isolate).set(object, value);
   persistent.set(isolate, value);
   persistent.setPhantom();
 }

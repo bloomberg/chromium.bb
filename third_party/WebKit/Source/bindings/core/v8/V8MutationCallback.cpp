@@ -42,7 +42,7 @@ V8MutationCallback::V8MutationCallback(v8::Local<v8::Function> callback,
     : m_callback(scriptState->isolate(), this, callback),
       m_scriptState(scriptState) {
   V8PrivateProperty::getMutationObserverCallback(scriptState->isolate())
-      .set(scriptState->context(), owner, callback);
+      .set(owner, callback);
 }
 
 V8MutationCallback::~V8MutationCallback() {}

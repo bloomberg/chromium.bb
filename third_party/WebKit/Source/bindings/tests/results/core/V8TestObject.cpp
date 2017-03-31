@@ -3429,7 +3429,7 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   //   X(SameObject, TestObjectSaveSameObjectAttribute)
   auto privateSameObject = V8PrivateProperty::getSameObjectTestObjectSaveSameObjectAttribute(info.GetIsolate());
   {
-    v8::Local<v8::Value> v8Value = privateSameObject.get(info.GetIsolate()->GetCurrentContext(), holder);
+    v8::Local<v8::Value> v8Value = privateSameObject.getOrEmpty(holder);
     if (!v8Value.IsEmpty()) {
       v8SetReturnValue(info, v8Value);
       return;
@@ -3450,7 +3450,7 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   v8SetReturnValue(info, v8Value);
 
   // [SaveSameObject]
-  privateSameObject.set(info.GetIsolate()->GetCurrentContext(), holder, info.GetReturnValue().Get());
+  privateSameObject.set(holder, info.GetReturnValue().Get());
 }
 
 static void unscopableLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

@@ -15,8 +15,9 @@ namespace blink {
 
 void V8IDBObserver::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(
-      info.GetIsolate(), ExceptionState::ConstructionContext, "IDBObserver");
+  v8::Isolate* isolate = info.GetIsolate();
+  ExceptionState exceptionState(isolate, ExceptionState::ConstructionContext,
+                                "IDBObserver");
 
   if (UNLIKELY(info.Length() < 1)) {
     exceptionState.throwTypeError(
@@ -51,11 +52,9 @@ void V8IDBObserver::constructorCustom(
   DCHECK(observer);
   // TODO(bashi): Don't set private property (and remove this custom
   // constructor) when we can trace correctly.
-  V8PrivateProperty::getIDBObserverCallback(info.GetIsolate())
-      .set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Callback);
-  v8SetReturnValue(info,
-                   V8DOMWrapper::associateObjectWithWrapper(
-                       info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
+  V8PrivateProperty::getIDBObserverCallback(isolate).set(wrapper, v8Callback);
+  v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(
+                             isolate, observer, &wrapperTypeInfo, wrapper));
 }
 
 }  // namespace blink

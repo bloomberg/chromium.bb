@@ -50,7 +50,7 @@ static void storeDetail(ScriptState* scriptState,
                         v8::Local<v8::Value> detail) {
   auto privateDetail =
       V8PrivateProperty::getCustomEventDetail(scriptState->isolate());
-  privateDetail.set(scriptState->context(), wrapper, detail);
+  privateDetail.set(wrapper, detail);
 
   // When a custom event is created in an isolated world, serialize
   // |detail| and store it in |impl| so that we can clone |detail|
@@ -124,8 +124,7 @@ void V8CustomEvent::detailAttributeGetterCustom(
   ScriptState* scriptState = ScriptState::current(isolate);
 
   auto privateDetail = V8PrivateProperty::getCustomEventDetail(isolate);
-  v8::Local<v8::Value> detail =
-      privateDetail.get(scriptState->context(), info.Holder());
+  v8::Local<v8::Value> detail = privateDetail.getOrEmpty(info.Holder());
   if (!detail.IsEmpty()) {
     v8SetReturnValue(info, detail);
     return;
@@ -136,7 +135,7 @@ void V8CustomEvent::detailAttributeGetterCustom(
     detail = serializedValue->deserialize(isolate);
   } else if (scriptState->world().isIsolatedWorld()) {
     v8::Local<v8::Value> mainWorldDetail =
-        privateDetail.getFromMainWorld(scriptState, event);
+        privateDetail.getFromMainWorld(event);
     if (!mainWorldDetail.IsEmpty()) {
       event->setSerializedDetail(
           SerializedScriptValue::serializeAndSwallowExceptions(
@@ -149,7 +148,7 @@ void V8CustomEvent::detailAttributeGetterCustom(
   // value is null.
   if (detail.IsEmpty())
     detail = v8::Null(isolate);
-  privateDetail.set(scriptState->context(), info.Holder(), detail);
+  privateDetail.set(info.Holder(), detail);
   v8SetReturnValue(info, detail);
 }
 

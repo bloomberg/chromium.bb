@@ -67,8 +67,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(
   if (!jsEvent->ToObject(scriptState->context()).ToLocal(&eventObject))
     return v8::Null(isolate());
   auto privateError = V8PrivateProperty::getErrorEventError(isolate());
-  v8::Local<v8::Value> error =
-      privateError.getOrUndefined(scriptState->context(), eventObject);
+  v8::Local<v8::Value> error = privateError.getOrUndefined(eventObject);
   if (error->IsUndefined())
     error = v8::Null(isolate());
 
@@ -110,7 +109,7 @@ void V8ErrorHandler::storeExceptionOnErrorEventWrapper(
   DCHECK(wrappedEvent->IsObject());
   auto privateError =
       V8PrivateProperty::getErrorEventError(scriptState->isolate());
-  privateError.set(scriptState->context(), wrappedEvent.As<v8::Object>(), data);
+  privateError.set(wrappedEvent.As<v8::Object>(), data);
 }
 
 // static
@@ -126,8 +125,8 @@ v8::Local<v8::Value> V8ErrorHandler::loadExceptionFromErrorEventWrapper(
   DCHECK(wrappedEvent->IsObject());
   auto privateError =
       V8PrivateProperty::getErrorEventError(scriptState->isolate());
-  v8::Local<v8::Value> error = privateError.getOrUndefined(
-      scriptState->context(), wrappedEvent.As<v8::Object>());
+  v8::Local<v8::Value> error =
+      privateError.getOrUndefined(wrappedEvent.As<v8::Object>());
   if (error->IsUndefined())
     return v8::Local<v8::Value>();
   return error;

@@ -19,7 +19,7 @@ V8IntersectionObserverCallback::V8IntersectionObserverCallback(
     ScriptState* scriptState)
     : m_callback(scriptState->isolate(), callback), m_scriptState(scriptState) {
   V8PrivateProperty::getIntersectionObserverCallback(scriptState->isolate())
-      .set(scriptState->context(), owner, callback);
+      .set(owner, callback);
   m_callback.setPhantom();
 }
 

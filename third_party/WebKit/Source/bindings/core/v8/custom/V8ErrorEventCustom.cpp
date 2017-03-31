@@ -38,23 +38,21 @@ namespace blink {
 void V8ErrorEvent::errorAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   auto privateError = V8PrivateProperty::getErrorEventError(isolate);
-  v8::Local<v8::Value> cachedError =
-      privateError.getOrUndefined(context, info.Holder());
+  v8::Local<v8::Value> cachedError = privateError.getOrUndefined(info.Holder());
   if (!cachedError->IsUndefined()) {
     v8SetReturnValue(info, cachedError);
     return;
   }
 
   ErrorEvent* event = V8ErrorEvent::toImpl(info.Holder());
-  ScriptState* scriptState = ScriptState::from(context);
+  ScriptState* scriptState = ScriptState::from(isolate->GetCurrentContext());
   ScriptValue error = event->error(scriptState);
   v8::Local<v8::Value> errorValue =
       error.isEmpty() ? v8::Local<v8::Value>(v8::Null(isolate))
                       : error.v8Value();
-  privateError.set(context, info.Holder(), errorValue);
+  privateError.set(info.Holder(), errorValue);
   v8SetReturnValue(info, errorValue);
 }
 

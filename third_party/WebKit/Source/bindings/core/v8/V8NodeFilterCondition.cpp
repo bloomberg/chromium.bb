@@ -49,7 +49,7 @@ V8NodeFilterCondition::V8NodeFilterCondition(v8::Local<v8::Value> filter,
   // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
   if (!filter.IsEmpty() && filter->IsObject()) {
     V8PrivateProperty::getV8NodeFilterConditionFilter(scriptState->isolate())
-        .set(scriptState->context(), owner, filter);
+        .set(owner, filter);
     m_filter.set(scriptState->isolate(), filter);
     m_filter.setPhantom();
   }

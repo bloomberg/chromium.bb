@@ -19,12 +19,13 @@ namespace blink {
 
 void V8PerformanceObserver::constructorCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+
   if (UNLIKELY(info.Length() < 1)) {
     V8ThrowException::throwTypeError(
-        info.GetIsolate(),
-        ExceptionMessages::failedToConstruct(
-            "PerformanceObserver",
-            ExceptionMessages::notEnoughArguments(1, info.Length())));
+        isolate, ExceptionMessages::failedToConstruct(
+                     "PerformanceObserver",
+                     ExceptionMessages::notEnoughArguments(1, info.Length())));
     return;
   }
 
@@ -34,9 +35,8 @@ void V8PerformanceObserver::constructorCustom(
   LocalDOMWindow* window = toLocalDOMWindow(wrapper->CreationContext());
   if (!window) {
     V8ThrowException::throwTypeError(
-        info.GetIsolate(),
-        ExceptionMessages::failedToConstruct(
-            "PerformanceObserver", "No 'window' in current context."));
+        isolate, ExceptionMessages::failedToConstruct(
+                     "PerformanceObserver", "No 'window' in current context."));
     return;
   }
   performance = DOMWindowPerformance::performance(*window);
@@ -44,7 +44,7 @@ void V8PerformanceObserver::constructorCustom(
 
   if (info.Length() <= 0 || !info[0]->IsFunction()) {
     V8ThrowException::throwTypeError(
-        info.GetIsolate(),
+        isolate,
         ExceptionMessages::failedToConstruct(
             "PerformanceObserver",
             "The callback provided as parameter 1 is not a function."));
@@ -56,15 +56,14 @@ void V8PerformanceObserver::constructorCustom(
       PerformanceObserverCallback::create(scriptState, v8Callback);
 
   PerformanceObserver* observer = PerformanceObserver::create(
-      currentExecutionContext(info.GetIsolate()), performance, callback);
+      currentExecutionContext(isolate), performance, callback);
 
   // TODO(bashi): Don't set private property (and remove this custom
   // constructor) when we can trace correctly. See crbug.com/468240.
-  V8PrivateProperty::getPerformanceObserverCallback(info.GetIsolate())
-      .set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Callback);
-  v8SetReturnValue(info,
-                   V8DOMWrapper::associateObjectWithWrapper(
-                       info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
+  V8PrivateProperty::getPerformanceObserverCallback(isolate).set(wrapper,
+                                                                 v8Callback);
+  v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(
+                             isolate, observer, &wrapperTypeInfo, wrapper));
 }
 
 }  // namespace blink

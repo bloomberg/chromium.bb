@@ -97,7 +97,7 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(
       .ToChecked();
 
   auto privateError = V8PrivateProperty::getDOMExceptionError(isolate);
-  privateError.set(isolate->GetCurrentContext(), exceptionObj, error);
+  privateError.set(exceptionObj, error);
 
   return exceptionObj;
 }

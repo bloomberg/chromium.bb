@@ -255,7 +255,7 @@ void LocalWindowProxy::updateDocumentProperty() {
   DCHECK(documentWrapper->IsObject());
   // Update the cached accessor for window.document.
   CHECK(V8PrivateProperty::getWindowDocumentCachedAccessor(isolate()).set(
-      context, context->Global(), documentWrapper));
+      context->Global(), documentWrapper));
 }
 
 void LocalWindowProxy::updateActivityLogger() {

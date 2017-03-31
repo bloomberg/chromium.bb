@@ -232,8 +232,8 @@ static void promiseRejectHandler(v8::PromiseRejectMessage data,
     // DOMException).
     ASSERT(exception->IsObject());
     auto privateError = V8PrivateProperty::getDOMExceptionError(isolate);
-    v8::Local<v8::Value> error = privateError.getOrUndefined(
-        scriptState->context(), exception.As<v8::Object>());
+    v8::Local<v8::Value> error =
+        privateError.getOrUndefined(exception.As<v8::Object>());
     if (!error->IsUndefined())
       exception = error;
   }
