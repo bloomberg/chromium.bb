@@ -213,10 +213,15 @@ class DraggedNodeImageBuilder {
                             PaintLayerUncachedClipRects;
     PaintRecordBuilder builder(deviceSpaceBounds(boundingBox, *m_localFrame));
     PaintLayerPainter(*layer).paint(builder.context(), paintingInfo, flags);
+    PropertyTreeState borderBoxProperties = PropertyTreeState::root();
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+      borderBoxProperties =
+          *layer->layoutObject().paintProperties()->localBorderBoxProperties();
+    }
     return createDragImage(
         *m_localFrame, 1.0f,
         LayoutObject::shouldRespectImageOrientation(draggedLayoutObject),
-        boundingBox, builder.endRecording());
+        boundingBox, builder.endRecording(borderBoxProperties));
   }
 
  private:

@@ -11,6 +11,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/PaintRecord.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Noncopyable.h"
 
@@ -50,7 +51,9 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   // Returns a PaintRecord capturing all drawing performed on the builder's
   // context since construction. If SPv2 is on, flattens all paint chunks
   // into PropertyTreeState::root() space.
-  sk_sp<PaintRecord> endRecording();
+  // In SPv2 mode, replays into the ancestor state given by |replayState|.
+  sk_sp<PaintRecord> endRecording(
+      const PropertyTreeState& replayState = PropertyTreeState::root());
 
   // DisplayItemClient methods
   String debugName() const final { return "PaintRecordBuilder"; }

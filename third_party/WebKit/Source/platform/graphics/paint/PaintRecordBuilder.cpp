@@ -51,10 +51,12 @@ PaintRecordBuilder::~PaintRecordBuilder() {
 #endif
 }
 
-sk_sp<PaintRecord> PaintRecordBuilder::endRecording() {
+sk_sp<PaintRecord> PaintRecordBuilder::endRecording(
+    const PropertyTreeState& propertyTreeState) {
   m_context->beginRecording(m_bounds);
   m_paintController->commitNewDisplayItems();
-  m_paintController->paintArtifact().replay(m_bounds, *m_context);
+  m_paintController->paintArtifact().replay(m_bounds, *m_context,
+                                            propertyTreeState);
   return m_context->endRecording();
 }
 

@@ -85,7 +85,8 @@ size_t PaintArtifact::approximateUnsharedMemoryUsage() const {
 }
 
 void PaintArtifact::replay(const FloatRect& bounds,
-                           GraphicsContext& graphicsContext) const {
+                           GraphicsContext& graphicsContext,
+                           const PropertyTreeState& replayState) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     for (const DisplayItem& displayItem : m_displayItemList)
@@ -100,9 +101,9 @@ void PaintArtifact::replay(const FloatRect& bounds,
     for (const auto& chunk : paintChunks())
       pointerPaintChunks.push_back(&chunk);
     scoped_refptr<cc::DisplayItemList> displayItemList =
-        PaintChunksToCcLayer::convert(
-            pointerPaintChunks, PropertyTreeState::root(), gfx::Vector2dF(),
-            getDisplayItemList(), *geometryMapper);
+        PaintChunksToCcLayer::convert(pointerPaintChunks, replayState,
+                                      gfx::Vector2dF(), getDisplayItemList(),
+                                      *geometryMapper);
     graphicsContext.canvas()->drawDisplayItemList(displayItemList);
   }
 }
