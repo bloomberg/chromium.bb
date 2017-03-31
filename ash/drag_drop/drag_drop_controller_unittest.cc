@@ -783,7 +783,6 @@ TEST_F(DragDropControllerTest, CaptureLostCancelsDragDrop) {
   ASSERT_TRUE(capture_window);
   EXPECT_EQ("0x0", capture_window->bounds().size().ToString());
   EXPECT_EQ(NULL, capture_window->GetEventHandlerForPoint(gfx::Point()));
-  EXPECT_EQ(NULL, capture_window->GetTopWindowContainingPoint(gfx::Point()));
 
   aura::client::GetCaptureClient(widget->GetNativeView()->GetRootWindow())
       ->SetCapture(NULL);

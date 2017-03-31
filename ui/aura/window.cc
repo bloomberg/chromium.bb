@@ -497,10 +497,6 @@ Window* Window::GetEventHandlerForPoint(const gfx::Point& local_point) {
   return GetWindowForPoint(local_point, true, true);
 }
 
-Window* Window::GetTopWindowContainingPoint(const gfx::Point& local_point) {
-  return GetWindowForPoint(local_point, false, false);
-}
-
 Window* Window::GetToplevelWindow() {
   // TODO: this may need to call to the WindowPort. For mus this may need to
   // return for any top level.

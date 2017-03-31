@@ -66,7 +66,7 @@ gfx::NativeWindow ScreenMus::GetWindowAtScreenPoint(const gfx::Point& point) {
   if (position_client)
     position_client->ConvertPointFromScreen(root_window, &local_point);
 
-  return root_window->GetTopWindowContainingPoint(local_point);
+  return root_window->GetEventHandlerForPoint(local_point);
 }
 
 }  // namespace ash

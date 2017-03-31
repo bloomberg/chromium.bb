@@ -300,7 +300,7 @@ aura::Window* MusClient::GetWindowAtScreenPoint(const gfx::Point& point) {
     gfx::Point relative_point(point);
     window_tree_host->ConvertScreenInPixelsToDIP(&relative_point);
     if (gfx::Rect(root->bounds().size()).Contains(relative_point))
-      return root->GetTopWindowContainingPoint(relative_point);
+      return root->GetEventHandlerForPoint(relative_point);
   }
   return nullptr;
 }

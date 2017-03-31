@@ -263,9 +263,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // purposes of event targeting.
   Window* GetEventHandlerForPoint(const gfx::Point& local_point);
 
-  // Returns the topmost Window with a delegate containing |local_point|.
-  Window* GetTopWindowContainingPoint(const gfx::Point& local_point);
-
   // Returns this window's toplevel window (the highest-up-the-tree ancestor
   // that has a delegate set).  The toplevel window may be |this|.
   Window* GetToplevelWindow();

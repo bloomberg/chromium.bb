@@ -90,8 +90,8 @@ gfx::Point ScreenAsh::GetCursorScreenPoint() {
 }
 
 bool ScreenAsh::IsWindowUnderCursor(gfx::NativeWindow window) {
-  return GetWindowAtScreenPoint(
-             display::Screen::GetScreen()->GetCursorScreenPoint()) == window;
+  return window->Contains(GetWindowAtScreenPoint(
+      display::Screen::GetScreen()->GetCursorScreenPoint()));
 }
 
 gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {
@@ -104,7 +104,7 @@ gfx::NativeWindow ScreenAsh::GetWindowAtScreenPoint(const gfx::Point& point) {
   if (position_client)
     position_client->ConvertPointFromScreen(root_window, &local_point);
 
-  return root_window->GetTopWindowContainingPoint(local_point);
+  return root_window->GetEventHandlerForPoint(local_point);
 }
 
 int ScreenAsh::GetNumDisplays() const {

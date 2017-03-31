@@ -153,7 +153,7 @@ bool TestScreen::IsWindowUnderCursor(gfx::NativeWindow window) {
 gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   if (!host_ || !host_->window())
     return nullptr;
-  return host_->window()->GetTopWindowContainingPoint(point);
+  return host_->window()->GetEventHandlerForPoint(point);
 }
 
 display::Display TestScreen::GetDisplayNearestWindow(
