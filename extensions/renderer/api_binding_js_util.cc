@@ -51,9 +51,7 @@ void APIBindingJSUtil::SendRequest(
     v8::Local<v8::Value> options) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
   const APISignature* signature = type_refs_->GetAPIMethodSignature(name);
   DCHECK(signature);
@@ -96,9 +94,7 @@ void APIBindingJSUtil::RegisterEventArgumentMassager(
     v8::Local<v8::Function> massager) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
   event_handler_->RegisterArgumentMassager(context, event_name, massager);
 }
@@ -109,9 +105,7 @@ void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
                                          bool supports_filters) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
   std::string event_name;
   if (!v8_event_name->IsUndefined()) {
@@ -140,42 +134,32 @@ void APIBindingJSUtil::InvalidateEvent(gin::Arguments* arguments,
                                        v8::Local<v8::Object> event) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
-  event_handler_->InvalidateCustomEvent(context, event);
+  event_handler_->InvalidateCustomEvent(arguments->GetHolderCreationContext(),
+                                        event);
 }
 
 void APIBindingJSUtil::SetLastError(gin::Arguments* arguments,
                                     const std::string& error) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
-
-  request_handler_->last_error()->SetError(context, error);
+  request_handler_->last_error()->SetError(
+      arguments->GetHolderCreationContext(), error);
 }
 
 void APIBindingJSUtil::ClearLastError(gin::Arguments* arguments) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
-
   bool report_if_unchecked = false;
-  request_handler_->last_error()->ClearError(context, report_if_unchecked);
+  request_handler_->last_error()->ClearError(
+      arguments->GetHolderCreationContext(), report_if_unchecked);
 }
 
 void APIBindingJSUtil::HasLastError(gin::Arguments* arguments) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
 
-  bool has_last_error = request_handler_->last_error()->HasError(context);
+  bool has_last_error = request_handler_->last_error()->HasError(
+      arguments->GetHolderCreationContext());
   arguments->Return(has_last_error);
 }
 
@@ -185,9 +169,7 @@ void APIBindingJSUtil::RunCallbackWithLastError(
     v8::Local<v8::Function> callback) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
   request_handler_->last_error()->SetError(context, error);
   run_js_.Run(callback, context, 0, nullptr);

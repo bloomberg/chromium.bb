@@ -180,9 +180,7 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
                                      gin::Arguments* arguments) {
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  v8::Local<v8::Context> context = holder->CreationContext();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
 
   std::vector<v8::Local<v8::Value>> argument_list;
   if (arguments->Length() > 0) {

@@ -89,10 +89,7 @@ void EventEmitter::AddListener(gin::Arguments* arguments) {
     return;
   }
 
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  CHECK(!holder.IsEmpty());
-  v8::Local<v8::Context> context = holder->CreationContext();
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
   if (!gin::PerContextData::From(context))
     return;
 
@@ -113,11 +110,7 @@ void EventEmitter::RemoveListener(gin::Arguments* arguments) {
   if (!arguments->GetNext(&listener))
     return;
 
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  CHECK(!holder.IsEmpty());
-  v8::Local<v8::Context> context = holder->CreationContext();
-  listeners_->RemoveListener(listener, context);
+  listeners_->RemoveListener(listener, arguments->GetHolderCreationContext());
 }
 
 bool EventEmitter::HasListener(v8::Local<v8::Function> listener) {
