@@ -4,7 +4,7 @@
 
 import("//third_party/WebKit/Source/core/core.gni")
 
-blink_core_sources("svg") {
+blink_core_sources("svg_layout") {
   sources = [
     "LayoutSVGBlock.cpp",
     "LayoutSVGBlock.h",

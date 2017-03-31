@@ -120,7 +120,7 @@ blink_core_sources("rendering") {
   ]
 }
 
-blink_core_sources("svg") {
+blink_core_sources("svg_style") {
   sources = [
     "SVGComputedStyle.cpp",
     "SVGComputedStyle.h",
