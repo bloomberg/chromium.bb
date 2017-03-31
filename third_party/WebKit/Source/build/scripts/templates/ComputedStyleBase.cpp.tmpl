@@ -7,7 +7,10 @@
 namespace blink {
 
 struct SameSizeAsComputedStyleBase {
-  unsigned m_bitfields[{{expected_total_field_bytes}}];
+  {% for field in fields|rejectattr("is_bit_field") %}
+  {{field.type_name}} {{field.name}}};
+  {% endfor %}
+  unsigned m_bit_fields[{{expected_bit_field_bytes}}];
 };
 // If this fails, the packing algorithm in make_computed_style_base.py has
 // failed to produce the optimal packed size. To fix, update the algorithm to

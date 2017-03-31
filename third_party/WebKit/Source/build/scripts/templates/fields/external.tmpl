@@ -1,0 +1,8 @@
+{% import 'fields/base.tmpl' as base %}
+{% from 'fields/field.tmpl' import decode %}
+{% macro decl_methods(field) %}
+{{base.decl_methods(field)}}
+void {{field.setter_method_name}}({{field.type_name}}&& v) {
+  {{field.name}} = std::move({{decode(field, "v")}});
+}
+{% endmacro %}

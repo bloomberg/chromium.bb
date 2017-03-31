@@ -1,8 +1,9 @@
+{% from 'fields/field.tmpl' import encode %}
 {% macro decl_methods(field) %}
 bool {{field.getter_method_name}}() const {
   return {{field.name}};
 }
 void {{field.setter_method_name}}() {
-  {{field.name}} = static_cast<unsigned>(true);
+  {{field.name}} = {{encode(field, "true")}};
 }
 {% endmacro %}

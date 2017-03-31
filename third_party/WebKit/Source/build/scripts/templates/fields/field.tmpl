@@ -1,0 +1,23 @@
+{% macro encode(field, value) %}
+{% if field.is_bit_field -%}
+static_cast<unsigned>({{value}})
+{%- else -%}
+{{value}}
+{%- endif %}
+{% endmacro %}
+
+{% macro decode(field, value) %}
+{% if field.is_bit_field -%}
+static_cast<{{field.type_name}}>({{value}})
+{%- else -%}
+{{value}}
+{%- endif %}
+{% endmacro %}
+
+{% macro return_type(field) %}
+{% if field.is_bit_field -%}
+{{field.type_name}}
+{%- else -%}
+const {{field.type_name}}&
+{%- endif %}
+{% endmacro %}

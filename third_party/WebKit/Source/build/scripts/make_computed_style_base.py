@@ -19,35 +19,35 @@ from name_utilities import (
 # TODO(shend): Put this into its own JSON5 file.
 NONPROPERTIES = [
     {'name': 'IsLink', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
-    {'name': 'OriginalDisplay', 'field_template': 'keyword', 'initial_keyword': 'inline',
+     'inherited': False, 'independent': False, 'default_value': False},
+    {'name': 'OriginalDisplay', 'field_template': 'keyword', 'default_value': 'inline',
      'type_name': 'EDisplay', 'inherited': False, 'independent': False,
      'keywords': [
          "inline", "block", "list-item", "inline-block", "table", "inline-table", "table-row-group", "table-header-group",
          "table-footer-group", "table-row", "table-column-group", "table-column", "table-cell", "table-caption", "-webkit-box",
          "-webkit-inline-box", "flex", "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
      ]},
-    {'name': 'InsideLink', 'field_template': 'keyword', 'initial_keyword': 'not-inside-link',
+    {'name': 'InsideLink', 'field_template': 'keyword', 'default_value': 'not-inside-link',
      'keywords': ['not-inside-link', 'inside-unvisited-link', 'inside-visited-link'],
      'inherited': True, 'independent': False},
     # Style can not be shared.
     {'name': 'Unique', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     # Whether this style is affected by these pseudo-classes.
     {'name': 'AffectedByFocus', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     {'name': 'AffectedByHover', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     {'name': 'AffectedByActive', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     {'name': 'AffectedByDrag', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     # A non-inherited property references a variable or @apply is used
     {'name': 'HasVariableReferenceFromNonInheritedProperty', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     # Explicitly inherits a non-inherited property
     {'name': 'HasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag',
-     'inherited': False, 'independent': False},
+     'inherited': False, 'independent': False, 'default_value': False},
     # These properties only have generated storage, and their methods are handwritten in ComputedStyle.
     # TODO(shend): Remove these fields and delete the 'storage_only' template.
     {'name': 'EmptyState', 'field_template': 'storage_only', 'size': 1, 'default_value': 'false',
@@ -127,6 +127,9 @@ class Field(object):
         self.initial_method_name = method_name('Initial' + name_for_methods)
         self.resetter_method_name = method_name('Reset' + name_for_methods)
 
+        # If the size of the field is not None, it means it is a bit field
+        self.is_bit_field = self.size is not None
+
         assert len(kwargs) == 0, 'Unexpected arguments provided to Field: ' + str(kwargs)
 
 
@@ -172,18 +175,23 @@ def _create_field(field_role, property_):
 
     name_for_methods = property_['name_for_methods']
 
+    assert property_['default_value'] is not None, \
+        ('MakeComputedStyleBase requires an default value for all fields, none specified '
+         'for property ' + property_['name'])
+
     if property_['field_template'] == 'keyword':
-        assert property_['initial_keyword'] is not None, \
-            ('MakeComputedStyleBase requires an initial keyword for keyword fields, none specified '
-             'for property ' + property_['name'])
         type_name = property_['type_name']
-        default_value = type_name + '::' + enum_value_name(property_['initial_keyword'])
+        default_value = type_name + '::' + enum_value_name(property_['default_value'])
         size = int(math.ceil(math.log(len(property_['keywords']), 2)))
     elif property_['field_template'] == 'storage_only':
         # 'storage_only' fields need to specify a size, type_name and default_value
         type_name = property_['type_name']
         default_value = property_['default_value']
         size = property_['size']
+    elif property_['field_template'] == 'external':
+        type_name = property_['type_name']
+        default_value = property_['default_value']
+        size = None
     else:
         assert property_['field_template'] in ('flag', 'monotonic_flag')
         type_name = 'bool'
@@ -249,7 +257,7 @@ def _pack_fields(fields):
     # ensure ComputedStyleBase results in the expected size. If that
     # static_assert fails, this code is falling into the small number of
     # cases that are suboptimal, and may need to be rethought.
-    # For more details on packing bitfields to reduce padding, see:
+    # For more details on packing bit fields to reduce padding, see:
     # http://www.catb.org/esr/structure-packing/#_bitfields
     field_buckets = []
     # Consider fields in descending order of size to reduce fragmentation
@@ -301,31 +309,37 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         all_fields = (_create_fields('property', property_values) +
                       _create_fields('nonproperty', NONPROPERTIES))
 
-        # Group fields into buckets
-        field_buckets = _pack_fields(all_fields)
+        # Separate the normal fields from the bit fields
+        bit_fields = [field for field in all_fields if field.is_bit_field]
+        normal_fields = [field for field in all_fields if not field.is_bit_field]
+
+        # Pack bit fields into buckets
+        field_buckets = _pack_fields(bit_fields)
 
         # The expected size of ComputedStyleBase is equivalent to as many words
         # as the total number of buckets.
-        self._expected_total_field_bytes = len(field_buckets)
+        self._expected_bit_field_bytes = len(field_buckets)
 
         # The most optimal size of ComputedStyleBase is the total sum of all the
         # field sizes, rounded up to the nearest word. If this produces the
         # incorrect value, either the packing algorithm is not optimal or there
         # is no way to pack the fields such that excess padding space is not
         # added.
-        # If this fails, increase padding_bytes by 1, but be aware that
+        # If this fails, increase extra_padding_bytes by 1, but be aware that
         # this also increases ComputedStyleBase by 1 word.
-        # We should be able to bring padding_bytes back to 0 from time to
+        # We should be able to bring extra_padding_bytes back to 0 from time to
         # time.
-        padding_bytes = 0
-        optimal_total_field_bytes = int(math.ceil(sum(f.size for f in all_fields) / 32.0))
-        real_total_field_bytes = optimal_total_field_bytes + padding_bytes
-        assert self._expected_total_field_bytes == real_total_field_bytes, \
+        extra_padding_bytes = 0
+        optimal_bit_field_bytes = int(math.ceil(sum(f.size for f in bit_fields) / 32.0))
+        real_bit_field_bytes = optimal_bit_field_bytes + extra_padding_bytes
+        assert self._expected_bit_field_bytes == real_bit_field_bytes, \
             ('The field packing algorithm produced %s bytes, optimal is %s bytes' %
-             (self._expected_total_field_bytes, real_total_field_bytes))
+             (self._expected_bit_field_bytes, real_bit_field_bytes))
+
+        # Normal fields go first, then the bit fields.
+        self._fields = list(normal_fields)
 
         # Order the fields so fields in each bucket are adjacent.
-        self._fields = []
         for bucket in field_buckets:
             for field in bucket:
                 self._fields.append(field)
@@ -340,7 +354,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'enums': self._generated_enums,
             'include_paths': self._include_paths,
             'fields': self._fields,
-            'expected_total_field_bytes': self._expected_total_field_bytes,
         }
 
     @template_expander.use_jinja('ComputedStyleBase.cpp.tmpl')
@@ -349,7 +362,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'properties': self._properties,
             'enums': self._generated_enums,
             'fields': self._fields,
-            'expected_total_field_bytes': self._expected_total_field_bytes,
+            'expected_bit_field_bytes': self._expected_bit_field_bytes,
         }
 
     @template_expander.use_jinja('ComputedStyleBaseConstants.h.tmpl')
@@ -358,7 +371,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'properties': self._properties,
             'enums': self._generated_enums,
             'fields': self._fields,
-            'expected_total_field_bytes': self._expected_total_field_bytes,
         }
 
     @template_expander.use_jinja('CSSValueIDMappingsGenerated.h.tmpl')
@@ -368,7 +380,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         for property_ in self._properties.values():
             if property_['field_template'] == 'keyword':
                 mappings[property_['type_name']] = {
-                    'default_value': enum_value_name(property_['initial_keyword']),
+                    'default_value': enum_value_name(property_['default_value']),
                     'mapping': [(enum_value_name(k), enum_for_css_keyword(k)) for k in property_['keywords']],
                 }
 

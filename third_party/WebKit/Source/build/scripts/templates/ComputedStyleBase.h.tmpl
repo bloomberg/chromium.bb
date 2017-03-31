@@ -17,8 +17,14 @@
 {% import 'fields/flag.tmpl' as flag %}
 {% import 'fields/monotonic_flag.tmpl' as monotonic_flag %}
 {% import 'fields/storage_only.tmpl' as storage_only %}
+{% import 'fields/external.tmpl' as external %}
+{% from 'fields/field.tmpl' import encode %}
 {% set field_templates = {
-     'keyword': keyword, 'flag': flag, 'monotonic_flag': monotonic_flag, 'storage_only': storage_only
+     'keyword': keyword,
+     'flag': flag,
+     'monotonic_flag': monotonic_flag,
+     'storage_only': storage_only, 
+     'external': external
    } %}
 
 namespace blink {
@@ -83,7 +89,7 @@ class CORE_EXPORT ComputedStyleBase {
   // can instantiate this class.
   ALWAYS_INLINE ComputedStyleBase() :
   {% for field in fields %}
-      {{field.name}}(static_cast<unsigned>({{field.default_value}})){{print_if(not loop.last, ',')}}
+      {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
   {% endfor %}
   {}
 
@@ -91,7 +97,11 @@ class CORE_EXPORT ComputedStyleBase {
 
   // Storage.
   {% for field in fields %}
+  {% if field.is_bit_field %}
   unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
+  {% else %}
+  {{field.type_name}} {{field.name}};
+  {% endif %}
   {% endfor %}
 };
 

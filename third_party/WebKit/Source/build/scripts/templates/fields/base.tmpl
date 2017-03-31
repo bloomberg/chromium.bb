@@ -1,15 +1,16 @@
+{% from 'fields/field.tmpl' import encode, decode, return_type %}
 {% macro decl_methods(field) -%}
-inline static {{field.type_name}} {{field.initial_method_name}}() {
+inline static {{return_type(field)}} {{field.initial_method_name}}() {
   return {{field.default_value}};
 }
-{{field.type_name}} {{field.getter_method_name}}() const {
-  return static_cast<{{field.type_name}}>({{field.name}});
+{{return_type(field)}} {{field.getter_method_name}}() const {
+  return {{decode(field, field.name)}};
 }
 void {{field.setter_method_name}}({{field.type_name}} v) {
-  {{field.name}} = static_cast<unsigned>(v);
+  {{field.name}} = {{encode(field, "v")}};
 }
 inline void {{field.resetter_method_name}}() {
-  {{field.name}} = static_cast<unsigned>({{field.default_value}});
+  {{field.name}} = {{encode(field, field.default_value)}};
 }
 {%- endmacro %}
 
