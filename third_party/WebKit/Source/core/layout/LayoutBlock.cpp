@@ -476,10 +476,7 @@ DISABLE_CFI_PERF
 void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool) {
   m_overflow.reset();
 
-  // Add overflow from children.
   addOverflowFromChildren();
-
-  // Add in the overflow from positioned objects.
   addOverflowFromPositionedObjects();
 
   if (hasOverflowClip()) {
@@ -517,8 +514,19 @@ void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool) {
 void LayoutBlock::addOverflowFromBlockChildren() {
   for (LayoutBox* child = firstChildBox(); child;
        child = child->nextSiblingBox()) {
-    if (!child->isFloatingOrOutOfFlowPositioned() && !child->isColumnSpanAll())
-      addOverflowFromChild(child);
+    if (child->isFloatingOrOutOfFlowPositioned() || child->isColumnSpanAll())
+      continue;
+
+    // If the child contains inline with outline and continuation, its
+    // visual overflow computed during its layout might be inaccurate because
+    // the layout of continuations might not be up-to-date at that time.
+    // Re-add overflow from inline children to ensure its overflow covers
+    // the outline which may enclose continuations.
+    if (child->isLayoutBlockFlow() &&
+        toLayoutBlockFlow(child)->containsInlineWithOutlineAndContinuation())
+      toLayoutBlockFlow(child)->addOverflowFromInlineChildren();
+
+    addOverflowFromChild(child);
   }
 }
 
