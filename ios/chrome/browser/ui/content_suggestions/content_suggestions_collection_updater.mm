@@ -150,10 +150,13 @@ SectionIdentifier SectionIdentifierForInfo(
 
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
-  if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
-      [model itemsInSectionWithIdentifier:sectionIdentifier].count > 0) {
-    // Do not dismiss the presented items.
-    return;
+  if ([model hasSectionForSectionIdentifier:sectionIdentifier]) {
+    NSArray<CSCollectionViewItem*>* items =
+        [model itemsInSectionWithIdentifier:sectionIdentifier];
+    if (items.count > 0 && items[0].type != ItemTypeEmpty) {
+      // Do not dismiss the presented items.
+      return;
+    }
   }
 
   [self.collectionViewController
@@ -236,6 +239,18 @@ SectionIdentifier SectionIdentifierForInfo(
     NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
     CSCollectionViewModel* model =
         self.collectionViewController.collectionViewModel;
+
+    if (![model hasSectionForSectionIdentifier:sectionIdentifier])
+      return [NSArray array];
+
+    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+    NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:section];
+
+    if (suggestion.type != ContentSuggestionTypeEmpty &&
+        [model hasItemAtIndexPath:indexPath] &&
+        [model itemAtIndexPath:indexPath].type == ItemTypeEmpty) {
+      [self.collectionViewController dismissEntryAtIndexPath:indexPath];
+    }
 
     switch (suggestion.type) {
       case ContentSuggestionTypeEmpty: {
