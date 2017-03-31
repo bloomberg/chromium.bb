@@ -19,10 +19,6 @@ class ChromeProxyResolutionServiceProviderDelegate
 
   // ProxyResolutionServiceProvider::Delegate:
   scoped_refptr<net::URLRequestContextGetter> GetRequestContext() override;
-  int ResolveProxy(net::ProxyService* proxy_service,
-                   const GURL& url,
-                   net::ProxyInfo* results,
-                   const net::CompletionCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeProxyResolutionServiceProviderDelegate);

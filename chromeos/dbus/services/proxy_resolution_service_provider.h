@@ -16,8 +16,6 @@
 #include "dbus/exported_object.h"
 #include "net/base/completion_callback.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -27,8 +25,6 @@ class MethodCall;
 }
 
 namespace net {
-class ProxyInfo;
-class ProxyService;
 class URLRequestContextGetter;
 }
 
@@ -82,13 +78,6 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     // Returns the request context used to perform proxy resolution.
     // Always called on UI thread.
     virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
-
-    // Thin wrapper around net::ProxyService::ResolveProxy() to make testing
-    // easier.
-    virtual int ResolveProxy(net::ProxyService* proxy_service,
-                             const GURL& url,
-                             net::ProxyInfo* results,
-                             const net::CompletionCallback& callback) = 0;
   };
 
   explicit ProxyResolutionServiceProvider(std::unique_ptr<Delegate> delegate);
