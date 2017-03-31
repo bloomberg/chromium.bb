@@ -562,8 +562,8 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   std::unique_ptr<MessageChannel> channel_ptr =
       base::MakeUnique<MessageChannel>();
   MessageChannel* channel = channel_ptr.get();
-  channel->opener.reset(opener.release());
-  channel->receiver.reset(params->receiver.release());
+  channel->opener = std::move(opener);
+  channel->receiver = std::move(params->receiver);
   AddChannel(std::move(channel_ptr), params->receiver_port_id);
 
   int guest_process_id = content::ChildProcessHost::kInvalidUniqueID;

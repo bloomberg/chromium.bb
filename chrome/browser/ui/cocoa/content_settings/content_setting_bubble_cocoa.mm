@@ -285,7 +285,7 @@ const ContentTypeToNibPath kNibPaths[] = {
   if ((self = [super initWithWindowNibPath:nibPath
                               parentWindow:parentWindow
                                 anchoredAt:anchoredAt])) {
-    contentSettingBubbleModel_.reset(model.release());
+    contentSettingBubbleModel_ = std::move(model);
     decoration_ = decoration;
     [self showWindow:nil];
   }

@@ -720,7 +720,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
   NavigationMap::iterator nav_it =
       inflight_navigations_.find(response.navigation_id);
   if (nav_it != inflight_navigations_.end()) {
-    summary.reset(nav_it->second.release());
+    summary = std::move(nav_it->second);
     inflight_navigations_.erase(nav_it);
   }
 

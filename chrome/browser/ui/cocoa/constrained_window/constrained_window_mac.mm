@@ -59,7 +59,7 @@ ConstrainedWindowMac::~ConstrainedWindowMac() {
 
 void ConstrainedWindowMac::ShowWebContentsModalDialog() {
   std::unique_ptr<SingleWebContentsDialogManagerCocoa> dialog_manager;
-  dialog_manager.reset(native_manager_.release());
+  dialog_manager = std::move(native_manager_);
   GetDialogManager()->ShowDialogWithManager(
       [sheet_.get() sheetWindow], std::move(dialog_manager));
 }

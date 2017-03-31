@@ -22,7 +22,7 @@ namespace {
 
 void SettingsReply(std::unique_ptr<base::DictionaryValue>* out,
                    std::unique_ptr<base::DictionaryValue> reply) {
-  out->reset(reply.release());
+  *out = std::move(reply);
 }
 
 std::unique_ptr<base::DictionaryValue> GetSettingsSynchronous(
