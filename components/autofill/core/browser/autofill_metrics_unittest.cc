@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <map>
 #include <memory>
 #include <vector>
 
@@ -54,6 +53,7 @@ using base::Bucket;
 using base::TimeTicks;
 using rappor::TestRapporServiceImpl;
 using ::testing::ElementsAre;
+using ::testing::UnorderedElementsAre;
 
 namespace autofill {
 namespace {
@@ -766,7 +766,7 @@ TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
   std::unique_ptr<TestFormStructure> form_structure =
       base::MakeUnique<TestFormStructure>(form);
   TestFormStructure* form_structure_ptr = form_structure.get();
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   autofill_manager_->form_structures()->push_back(std::move(form_structure));
 
   AutofillQueryResponseContents response;
@@ -1434,6 +1434,8 @@ TEST_F(AutofillMetricsTest, NumberOfEditedAutofilledFields_NoSubmission) {
 
 // Verify that we correctly log metrics regarding developer engagement.
 TEST_F(AutofillMetricsTest, DeveloperEngagement) {
+  ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+
   // Start with a non-fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");
@@ -1454,21 +1456,28 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
     autofill_manager_->Reset();
     histogram_tester.ExpectTotalCount("Autofill.DeveloperEngagement", 0);
+
+    // UKM must not be logged unless enabled.
+    EXPECT_EQ(0U, ukm_service->sources_count());
+    EXPECT_EQ(0U, ukm_service->entries_count());
   }
 
   // Add another field to the form, so that it becomes fillable.
   test::CreateTestFormField("Phone", "phone", "", "text", &field);
   forms.back().fields.push_back(field);
 
-  // Expect only the "form parsed" metric to be logged; no metrics about
-  // author-specified field type hints.
+  // Expect the "form parsed without hints" metric to be logged.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
     autofill_manager_->Reset();
-    histogram_tester.ExpectUniqueSample("Autofill.DeveloperEngagement",
-                                        AutofillMetrics::FILLABLE_FORM_PARSED,
-                                        1);
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.DeveloperEngagement",
+        AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS, 1);
+
+    // UKM must not be logged unless enabled.
+    EXPECT_EQ(0U, ukm_service->sources_count());
+    EXPECT_EQ(0U, ukm_service->entries_count());
   }
 
   // Add some fields with an author-specified field type to the form.
@@ -1486,18 +1495,19 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   field.autocomplete_attribute = "address-line1";
   forms.back().fields.push_back(field);
 
-  // Expect both the "form parsed" metric and the author-specified field type
-  // hints metric to be logged.
+  // Expect the "form parsed with field type hints" metric to be logged.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
     autofill_manager_->Reset();
-    histogram_tester.ExpectBucketCount("Autofill.DeveloperEngagement",
-                                       AutofillMetrics::FILLABLE_FORM_PARSED,
-                                       1);
     histogram_tester.ExpectBucketCount(
         "Autofill.DeveloperEngagement",
-        AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS, 1);
+        AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS, 1);
+
+    // UKM must not be logged unless enabled.
+    EXPECT_EQ(0U, ukm_service->sources_count());
+    EXPECT_EQ(0U, ukm_service->entries_count());
+
     histogram_tester.ExpectBucketCount(
         "Autofill.DeveloperEngagement",
         AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT, 0);
@@ -1508,21 +1518,145 @@ TEST_F(AutofillMetricsTest, DeveloperEngagement) {
   field.autocomplete_attribute = "upi-vpa";
   forms.back().fields.push_back(field);
 
-  // Expect the "form parsed" metric, the "author-specified field type
-  // hints" metric, and the "author-specified upi-vpa type" metric to be logged.
+  // Expect the "form parsed with type hints" metric, and the
+  // "author-specified upi-vpa type" metric to be logged.
   {
     base::HistogramTester histogram_tester;
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
     autofill_manager_->Reset();
-    histogram_tester.ExpectBucketCount("Autofill.DeveloperEngagement",
-                                       AutofillMetrics::FILLABLE_FORM_PARSED,
-                                       1);
     histogram_tester.ExpectBucketCount(
         "Autofill.DeveloperEngagement",
-        AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS, 1);
+        AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS, 1);
     histogram_tester.ExpectBucketCount(
         "Autofill.DeveloperEngagement",
         AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT, 1);
+  }
+}
+
+// Verify that we correctly log UKM for form parsed without type hints regarding
+// developer engagement.
+TEST_F(AutofillMetricsTest,
+       UkmDeveloperEngagement_LogFillableFormParsedWithoutTypeHints) {
+  EnableUkmLogging();
+  ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+
+  // Start with a non-fillable form.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Ensure no metrics are logged when loading a non-fillable form.
+  {
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    autofill_manager_->Reset();
+
+    EXPECT_EQ(0U, ukm_service->sources_count());
+    EXPECT_EQ(0U, ukm_service->entries_count());
+  }
+
+  // Add another field to the form, so that it becomes fillable.
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  forms.back().fields.push_back(field);
+
+  // Expect the "form parsed without field type hints" metric to be logged.
+  {
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    autofill_manager_->Reset();
+
+    ASSERT_EQ(1U, ukm_service->sources_count());
+    const ukm::UkmSource* source =
+        ukm_service->GetSourceForUrl(form.origin.spec().c_str());
+    ASSERT_NE(nullptr, source);
+
+    ASSERT_EQ(1U, ukm_service->entries_count());
+    const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+    EXPECT_EQ(source->id(), entry->source_id());
+
+    ukm::Entry entry_proto;
+    entry->PopulateProto(&entry_proto);
+    EXPECT_EQ(source->id(), entry_proto.source_id());
+    EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
+              entry_proto.event_hash());
+    const ukm::Entry_Metric* metric = FindMetric(
+        internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
+    ASSERT_NE(nullptr, metric);
+    EXPECT_EQ(AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS,
+              metric->value());
+  }
+}
+
+// Verify that we correctly log UKM for form parsed with type hints regarding
+// developer engagement.
+TEST_F(AutofillMetricsTest,
+       UkmDeveloperEngagement_LogFillableFormParsedWithTypeHints) {
+  EnableUkmLogging();
+  ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Add another field to the form, so that it becomes fillable.
+  test::CreateTestFormField("Phone", "phone", "", "text", &field);
+  forms.back().fields.push_back(field);
+
+  // Add some fields with an author-specified field type to the form.
+  // We need to add at least three fields, because a form must have at least
+  // three fillable fields to be considered to be autofillable; and if at least
+  // one field specifies an explicit type hint, we don't apply any of our usual
+  // local heuristics to detect field types in the rest of the form.
+  test::CreateTestFormField("", "", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  forms.back().fields.push_back(field);
+  test::CreateTestFormField("", "", "", "text", &field);
+  field.autocomplete_attribute = "email";
+  forms.back().fields.push_back(field);
+  test::CreateTestFormField("", "", "", "text", &field);
+  field.autocomplete_attribute = "address-line1";
+  forms.back().fields.push_back(field);
+
+  // Expect the "form parsed with field type hints" metric to be logged.
+  {
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    autofill_manager_->Reset();
+
+    ASSERT_EQ(1U, ukm_service->sources_count());
+    const ukm::UkmSource* source =
+        ukm_service->GetSourceForUrl(form.origin.spec().c_str());
+    ASSERT_NE(nullptr, source);
+
+    ASSERT_EQ(1U, ukm_service->entries_count());
+    const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+    EXPECT_EQ(source->id(), entry->source_id());
+
+    ukm::Entry entry_proto;
+    entry->PopulateProto(&entry_proto);
+    EXPECT_EQ(source->id(), entry_proto.source_id());
+    EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
+              entry_proto.event_hash());
+    const ukm::Entry_Metric* metric = FindMetric(
+        internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
+    ASSERT_NE(nullptr, metric);
+    EXPECT_EQ(AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS,
+              metric->value());
   }
 }
 
@@ -4391,15 +4525,14 @@ TEST_F(AutofillMetricsTest,
   }
 }
 
-// Tests that logging a UKM works as expected.
+// Tests that logging CardUploadDecision UKM works as expected.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
   EnableUkmLogging();
   ukm::UkmServiceTestingHarness ukm_service_test_harness;
   GURL url("https://www.google.com");
   int upload_decision = 1;
-  std::map<std::string, int> metrics;
-  metrics.insert(std::make_pair(internal::kUKMCardUploadDecisionMetricName,
-                                upload_decision));
+  std::map<std::string, int> metrics = {
+      {internal::kUKMCardUploadDecisionMetricName, upload_decision}};
 
   EXPECT_TRUE(AutofillMetrics::LogUkm(
       ukm_service_test_harness.test_ukm_service(), url,
@@ -4414,11 +4547,11 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
       ukm_service->GetSourceForUrl(url.spec().c_str());
   EXPECT_EQ(url.spec(), source->url().spec());
 
-  EXPECT_EQ(1U, ukm_service->entries_count());
+  ASSERT_EQ(1U, ukm_service->entries_count());
   const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
   EXPECT_EQ(source->id(), entry->source_id());
 
-  // Make sure that an card upload decision entry was logged.
+  // Make sure that a card upload decision entry was logged.
   ukm::Entry entry_proto;
   entry->PopulateProto(&entry_proto);
   EXPECT_EQ(source->id(), entry_proto.source_id());
@@ -4433,13 +4566,53 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
   EXPECT_EQ(upload_decision, metric->value());
 }
 
+// Tests that logging DeveloperEngagement UKM works as expected.
+TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
+  EnableUkmLogging();
+  ukm::UkmServiceTestingHarness ukm_service_test_harness;
+  GURL url("https://www.google.com");
+  int form_structure_metric = 1;
+  std::map<std::string, int> metrics = {
+      {internal::kUKMDeveloperEngagementMetricName, form_structure_metric}};
+
+  EXPECT_TRUE(AutofillMetrics::LogUkm(
+      ukm_service_test_harness.test_ukm_service(), url,
+      internal::kUKMDeveloperEngagementEntryName, metrics));
+
+  // Make sure that the UKM was logged correctly.
+  ukm::TestUkmService* ukm_service =
+      ukm_service_test_harness.test_ukm_service();
+
+  ASSERT_EQ(1U, ukm_service->sources_count());
+  const ukm::UkmSource* source =
+      ukm_service->GetSourceForUrl(url.spec().c_str());
+  EXPECT_EQ(url.spec(), source->url().spec());
+
+  ASSERT_EQ(1U, ukm_service->entries_count());
+  const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+  EXPECT_EQ(source->id(), entry->source_id());
+
+  // Make sure that a developer engagement entry was logged.
+  ukm::Entry entry_proto;
+  entry->PopulateProto(&entry_proto);
+  EXPECT_EQ(source->id(), entry_proto.source_id());
+  EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
+            entry_proto.event_hash());
+  EXPECT_EQ(1, entry_proto.metrics_size());
+
+  // Make sure that the correct developer engagement metric was logged.
+  const ukm::Entry_Metric* metric = FindMetric(
+      internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
+  ASSERT_NE(nullptr, metric);
+  EXPECT_EQ(form_structure_metric, metric->value());
+}
+
 // Tests that no UKM is logged when the URL is not valid.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_InvalidUrl) {
   EnableUkmLogging();
   ukm::UkmServiceTestingHarness ukm_service_test_harness;
   GURL url("");
-  std::map<std::string, int> metrics;
-  metrics.insert(std::make_pair("metric", 1));
+  std::map<std::string, int> metrics = {{"metric", 1}};
 
   EXPECT_FALSE(AutofillMetrics::LogUkm(
       ukm_service_test_harness.test_ukm_service(), url, "test_ukm", metrics));
@@ -4463,8 +4636,7 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
   EnableUkmLogging();
   ukm::UkmServiceTestingHarness ukm_service_test_harness;
   GURL url("https://www.google.com");
-  std::map<std::string, int> metrics;
-  metrics.insert(std::make_pair("metric", 1));
+  std::map<std::string, int> metrics = {{"metric", 1}};
 
   EXPECT_FALSE(AutofillMetrics::LogUkm(nullptr, url, "test_ukm", metrics));
   ASSERT_EQ(0U, ukm_service_test_harness.test_ukm_service()->sources_count());
@@ -4474,8 +4646,7 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_FeatureDisabled) {
   ukm::UkmServiceTestingHarness ukm_service_test_harness;
   GURL url("https://www.google.com");
-  std::map<std::string, int> metrics;
-  metrics.insert(std::make_pair("metric", 1));
+  std::map<std::string, int> metrics = {{"metric", 1}};
 
   EXPECT_FALSE(AutofillMetrics::LogUkm(
       ukm_service_test_harness.test_ukm_service(), url, "test_ukm", metrics));

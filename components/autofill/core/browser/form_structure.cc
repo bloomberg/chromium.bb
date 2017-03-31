@@ -36,6 +36,7 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/ukm/ukm_service.h"
 
 namespace autofill {
 namespace {
@@ -336,7 +337,7 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes() {
+void FormStructure::DetermineHeuristicTypes(ukm::UkmService* ukm_service) {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
 
   // First, try to detect field types based on each field's |autocomplete|
@@ -362,12 +363,13 @@ void FormStructure::DetermineHeuristicTypes() {
   IdentifySections(has_author_specified_sections_);
 
   if (IsAutofillable()) {
-    AutofillMetrics::LogDeveloperEngagementMetric(
-        AutofillMetrics::FILLABLE_FORM_PARSED);
-    if (has_author_specified_types_) {
-      AutofillMetrics::LogDeveloperEngagementMetric(
-          AutofillMetrics::FILLABLE_FORM_CONTAINS_TYPE_HINTS);
-    }
+    const auto metric =
+        has_author_specified_types_
+            ? AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS
+            : AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS;
+    AutofillMetrics::LogDeveloperEngagementMetric(metric);
+    AutofillMetrics::LogDeveloperEngagementUkm(ukm_service, source_url(),
+                                               metric);
   }
 
   if (has_author_specified_upi_vpa_hint_) {

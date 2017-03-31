@@ -20,6 +20,8 @@
 namespace internal {
 const char kUKMCardUploadDecisionEntryName[] = "Autofill.CardUploadDecision";
 const char kUKMCardUploadDecisionMetricName[] = "UploadDecision";
+const char kUKMDeveloperEngagementEntryName[] = "Autofill.DeveloperEngagement";
+const char kUKMDeveloperEngagementMetricName[] = "DeveloperEngagement";
 }  // namespace internal
 
 namespace autofill {
@@ -704,11 +706,21 @@ void AutofillMetrics::LogCardUploadDecisionUkm(
   if (upload_decision >= AutofillMetrics::NUM_CARD_UPLOAD_DECISION_METRICS)
     return;
 
-  // Set up as a map because the follow-up CL will add more metrics.
-  std::map<std::string, int> metrics = {
+  const std::map<std::string, int> metrics = {
       {internal::kUKMCardUploadDecisionMetricName,
        static_cast<int>(upload_decision)}};
   LogUkm(ukm_service, url, internal::kUKMCardUploadDecisionEntryName, metrics);
+}
+
+// static
+void AutofillMetrics::LogDeveloperEngagementUkm(
+    ukm::UkmService* ukm_service,
+    const GURL& url,
+    AutofillMetrics::DeveloperEngagementMetric metric) {
+  const std::map<std::string, int> form_structure_metrics = {
+      {internal::kUKMDeveloperEngagementMetricName, static_cast<int>(metric)}};
+  LogUkm(ukm_service, url, internal::kUKMDeveloperEngagementEntryName,
+         form_structure_metrics);
 }
 
 // static

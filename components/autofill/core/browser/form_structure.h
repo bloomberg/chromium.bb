@@ -37,6 +37,10 @@ namespace rappor {
 class RapporServiceImpl;
 }
 
+namespace ukm {
+class UkmService;
+}
+
 namespace autofill {
 
 struct FormData;
@@ -50,8 +54,9 @@ class FormStructure {
   virtual ~FormStructure();
 
   // Runs several heuristics against the form fields to determine their possible
-  // types.
-  void DetermineHeuristicTypes();
+  // types. If |ukm_service| is specified, logs UKM for the form structure
+  // corresponding to |source_url_|.
+  void DetermineHeuristicTypes(ukm::UkmService* ukm_service);
 
   // Encodes the proto |upload| request from this FormStructure.
   // In some cases, a |login_form_signature| is included as part of the upload.

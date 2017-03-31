@@ -1029,8 +1029,7 @@ class AutofillManagerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUkmLogging);
   }
 
-  void ExpectUniqueCardUploadDecisionUkm(
-      AutofillMetrics::CardUploadDecisionMetric upload_decision) {
+  void ExpectUniqueFillableFormParsedUkm() {
     ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
 
     // Check that one source is logged.
@@ -1046,16 +1045,63 @@ class AutofillManagerTest : public testing::Test {
     entry->PopulateProto(&entry_proto);
     EXPECT_EQ(source->id(), entry_proto.source_id());
 
-    // Check if there is an entry for card upload decisions.
-    EXPECT_EQ(base::HashMetricName(internal::kUKMCardUploadDecisionEntryName),
+    // Check if there is an entry for developer engagement decision.
+    EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
               entry_proto.event_hash());
     EXPECT_EQ(1, entry_proto.metrics_size());
 
-    // Check that the expected upload decision is logged.
+    // Check that the expected developer engagement metric is logged.
     const ukm::Entry_Metric* metric = FindMetric(
-        internal::kUKMCardUploadDecisionMetricName, entry_proto.metrics());
+        internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
     ASSERT_NE(nullptr, metric);
-    EXPECT_EQ(static_cast<int>(upload_decision), metric->value());
+    EXPECT_EQ(static_cast<int>(
+                  AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS),
+              metric->value());
+  }
+
+  void ExpectCardUploadDecisionUkm(
+      AutofillMetrics::CardUploadDecisionMetric upload_decision) {
+    ExpectMetric(internal::kUKMCardUploadDecisionMetricName,
+                 internal::kUKMCardUploadDecisionEntryName,
+                 static_cast<int>(upload_decision),
+                 1 /* expected_num_matching_entries */);
+  }
+
+  void ExpectFillableFormParsedUkm(int num_fillable_forms_parsed) {
+    ExpectMetric(internal::kUKMDeveloperEngagementMetricName,
+                 internal::kUKMDeveloperEngagementEntryName,
+                 static_cast<int>(
+                     AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS),
+                 num_fillable_forms_parsed);
+  }
+
+  void ExpectMetric(const char* metric_name,
+                    const char* entry_name,
+                    int metric_value,
+                    int expected_num_matching_entries) {
+    ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+
+    int num_matching_entries = 0;
+    for (size_t i = 0; i < ukm_service->entries_count(); ++i) {
+      const ukm::UkmEntry* entry = ukm_service->GetEntry(i);
+
+      ukm::Entry entry_proto;
+      entry->PopulateProto(&entry_proto);
+      EXPECT_EQ(entry->source_id(), entry_proto.source_id());
+
+      // Check if there is an entry for |entry_name|.
+      if (entry_proto.event_hash() == base::HashMetricName(entry_name)) {
+        EXPECT_EQ(1, entry_proto.metrics_size());
+
+        // Check that the expected |metric_value| is logged.
+        const ukm::Entry_Metric* metric =
+            FindMetric(metric_name, entry_proto.metrics());
+        ASSERT_NE(nullptr, metric);
+        EXPECT_EQ(metric_value, metric->value());
+        ++num_matching_entries;
+      }
+    }
+    EXPECT_EQ(expected_num_matching_entries, num_matching_entries);
   }
 
  protected:
@@ -3456,7 +3502,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
 
   // Similarly, a second form.
@@ -3476,7 +3522,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   form2.fields.push_back(field);
 
   TestFormStructure* form_structure2 = new TestFormStructure(form2);
-  form_structure2->DetermineHeuristicTypes();
+  form_structure2->DetermineHeuristicTypes(nullptr /* ukm_service */);
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure2));
 
   AutofillQueryResponseContents response;
@@ -3529,7 +3575,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   autofill_manager_->AddSeenForm(base::WrapUnique(form_structure));
 
   AutofillQueryResponseContents response;
@@ -3567,7 +3613,7 @@ TEST_F(AutofillManagerTest, FormSubmittedServerTypes) {
   // Simulate having seen this form on page load.
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
 
   // Clear the heuristic types, and instead set the appropriate server types.
   std::vector<ServerFieldType> heuristic_types, server_types;
@@ -4537,6 +4583,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   FormData address_form;
   test::CreateTestAddressFormData(&address_form);
   FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
   ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
   FormSubmitted(address_form);
 
@@ -4544,6 +4592,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   FormData credit_card_form;
   CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
+  ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
   // Edit the data, and submit.
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
@@ -4561,7 +4610,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   histogram_tester.ExpectUniqueSample("Autofill.CardUploadDecisionExpanded",
                                       AutofillMetrics::UPLOAD_OFFERED, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4621,6 +4670,8 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
   FormData address_form;
   test::CreateTestAddressFormData(&address_form);
   FormsSeen(std::vector<FormData>(1, address_form));
+  ExpectUniqueFillableFormParsedUkm();
+
   ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
   FormSubmitted(address_form);
 
@@ -4628,6 +4679,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
   FormData credit_card_form;
   CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
+  ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
   // Edit the data, and submit.
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
@@ -4648,7 +4700,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcUnavailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4704,7 +4756,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_CvcInvalidLength) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4782,7 +4834,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_MultipleCvcFields) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_OFFERED, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -4822,8 +4874,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoProfileAvailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ADDRESS);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4876,7 +4927,7 @@ TEST_F(AutofillManagerTest,
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_CVC);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4932,8 +4983,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoNameAvailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_NAME);
 
   rappor::TestRapporServiceImpl* rappor_service =
       autofill_client_.test_rappor_service();
@@ -4966,6 +5016,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
   address_forms.push_back(address_form1);
   address_forms.push_back(address_form2);
   FormsSeen(address_forms);
+  ExpectFillableFormParsedUkm(2 /* num_fillable_forms_parsed */);
 
   ManuallyFillAddressForm("Flo", "Master", "77401-8294", "US", &address_form1);
   FormSubmitted(address_form1);
@@ -4977,6 +5028,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
   FormData credit_card_form;
   CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
+  ExpectFillableFormParsedUkm(3 /* num_fillable_forms_parsed */);
 
   // Edit the data, but don't include a name, and submit.
   credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
@@ -4997,7 +5049,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesConflict) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(
+  ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_ZIPS);
 }
 
@@ -5052,7 +5104,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_ZipCodesHavePrefixMatch) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_OFFERED, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5105,8 +5157,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NoZipCodeAvailable) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(
-      AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_NOT_OFFERED_NO_ZIP_CODE);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5163,7 +5214,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesMatchLoosely) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_OFFERED, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
+  ExpectCardUploadDecisionUkm(AutofillMetrics::UPLOAD_OFFERED);
 }
 
 // TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
@@ -5217,7 +5268,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_NamesHaveToMatch) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(
+  ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_CONFLICTING_NAMES);
 
   rappor::TestRapporServiceImpl* rappor_service =
@@ -5278,7 +5329,7 @@ TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard_UploadDetailsFails) {
       "Autofill.CardUploadDecisionExpanded",
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED, 1);
   // Verify that the correct UKM was logged.
-  ExpectUniqueCardUploadDecisionUkm(
+  ExpectCardUploadDecisionUkm(
       AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
 }
 
@@ -5771,7 +5822,7 @@ TEST_F(AutofillManagerTest, DisplaySuggestionsForUpdatedServerTypedForm) {
   form.fields.push_back(field);
 
   auto form_structure = base::MakeUnique<TestFormStructure>(form);
-  form_structure->DetermineHeuristicTypes();
+  form_structure->DetermineHeuristicTypes(nullptr /* ukm_service */);
   // Make sure the form can not be autofilled now.
   ASSERT_EQ(0u, form_structure->autofill_count());
   for (size_t idx = 0; idx < form_structure->field_count(); ++idx) {

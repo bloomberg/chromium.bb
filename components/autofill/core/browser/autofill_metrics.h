@@ -27,6 +27,8 @@ namespace internal {
 // Name constants are exposed here so they can be referenced from tests.
 extern const char kUKMCardUploadDecisionEntryName[];
 extern const char kUKMCardUploadDecisionMetricName[];
+extern const char kUKMDeveloperEngagementEntryName[];
+extern const char kUKMDeveloperEngagementMetricName[];
 }  // namespace internal
 
 namespace autofill {
@@ -84,12 +86,13 @@ class AutofillMetrics {
   };
 
   enum DeveloperEngagementMetric {
-    // Parsed a form that is potentially autofillable.
-    FILLABLE_FORM_PARSED = 0,
+    // Parsed a form that is potentially autofillable and does not contain any
+    // web developer-specified field type hint.
+    FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS = 0,
     // Parsed a form that is potentially autofillable and contains at least one
     // web developer-specified field type hint, a la
     // http://is.gd/whatwg_autocomplete
-    FILLABLE_FORM_CONTAINS_TYPE_HINTS,
+    FILLABLE_FORM_PARSED_WITH_TYPE_HINTS,
     // Parsed a form that is potentially autofillable and contains at least one
     // UPI Virtual Payment Address hint (upi-vpa)
     FORM_CONTAINS_UPI_VPA_HINT,
@@ -699,6 +702,13 @@ class AutofillMetrics {
       ukm::UkmService* ukm_service,
       const GURL& url,
       AutofillMetrics::CardUploadDecisionMetric upload_decision);
+
+  // Logs the developer engagement ukm for the specified |url| and autofill
+  // fields in the form structure.
+  static void LogDeveloperEngagementUkm(
+      ukm::UkmService* ukm_service,
+      const GURL& url,
+      AutofillMetrics::DeveloperEngagementMetric metric);
 
   // Logs the the |ukm_entry_name| with the specified |url| and the specified
   // |metrics|. Returns whether the ukm was sucessfully logged.

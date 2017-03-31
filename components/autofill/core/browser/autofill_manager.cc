@@ -1925,7 +1925,7 @@ bool AutofillManager::ParseForm(const FormData& form,
   // as long as receivers don't take ownership.
   form_structures_.push_back(std::move(form_structure));
   *parsed_form_structure = form_structures_.back().get();
-  (*parsed_form_structure)->DetermineHeuristicTypes();
+  (*parsed_form_structure)->DetermineHeuristicTypes(client_->GetUkmService());
   return true;
 }
 
