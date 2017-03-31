@@ -1179,7 +1179,8 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   // If we've just completed a flush don't reset the codec yet. Instead defer
   // until the next decode call. This prevents us from unbacking frames that
   // might be out for display at end of stream.
-  codec_needs_reset_ = drain_type_ == DRAIN_FOR_FLUSH;
+  codec_needs_reset_ =
+      (drain_type_ == DRAIN_FOR_FLUSH) || (drain_type_ == DRAIN_FOR_RESET);
   if (codec_needs_reset_)
     return;
 
