@@ -482,7 +482,7 @@ InspectorTest.checkArrayIsSorted = function(contents, sortType, sortOrder)
     function parseSize(size)
     {
         // Remove thousands separator.
-        return parseInt(size.replace(/[\u2009,]/g, ""), 10);
+        return parseInt(size.replace(/[\xa0,]/g, ""), 10);
     }
     var extractor = {
         text: function (data) { data; },
