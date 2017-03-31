@@ -26,6 +26,7 @@
 #define LineInfo_h
 
 #include "core/layout/line/LineWidth.h"
+#include "core/style/ComputedStyleConstants.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -39,7 +40,8 @@ class LineInfo {
         m_isLastLine(false),
         m_isEmpty(true),
         m_previousLineBrokeCleanly(true),
-        m_runsFromLeadingWhitespace(0) {}
+        m_runsFromLeadingWhitespace(0),
+        m_textAlign(ETextAlign::kLeft) {}
 
   bool isFirstLine() const { return m_isFirstLine; }
   bool isLastLine() const { return m_isLastLine; }
@@ -59,12 +61,16 @@ class LineInfo {
     m_previousLineBrokeCleanly = previousLineBrokeCleanly;
   }
 
+  ETextAlign textAlign() const { return m_textAlign; }
+  void setTextAlign(ETextAlign textAlign) { m_textAlign = textAlign; }
+
  private:
   bool m_isFirstLine;
   bool m_isLastLine;
   bool m_isEmpty;
   bool m_previousLineBrokeCleanly;
   unsigned m_runsFromLeadingWhitespace;
+  ETextAlign m_textAlign;
 };
 
 }  // namespace blink

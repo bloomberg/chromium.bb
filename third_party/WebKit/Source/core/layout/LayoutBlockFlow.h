@@ -891,7 +891,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   BidiRun* computeInlineDirectionPositionsForSegment(
       RootInlineBox*,
       const LineInfo&,
-      ETextAlign,
       LayoutUnit& logicalLeft,
       LayoutUnit& availableLogicalWidth,
       BidiRun* firstRun,

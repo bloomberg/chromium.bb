@@ -383,6 +383,27 @@ ETextAlign LayoutBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const {
   return alignment;
 }
 
+static bool textAlignmentNeedsTrailingSpace(ETextAlign textAlign,
+                                            const ComputedStyle& style) {
+  switch (textAlign) {
+    case ETextAlign::kLeft:
+    case ETextAlign::kWebkitLeft:
+      return false;
+    case ETextAlign::kRight:
+    case ETextAlign::kWebkitRight:
+    case ETextAlign::kCenter:
+    case ETextAlign::kWebkitCenter:
+    case ETextAlign::kJustify:
+      return style.collapseWhiteSpace();
+    case ETextAlign::kStart:
+      return style.collapseWhiteSpace() && !style.isLeftToRightDirection();
+    case ETextAlign::kEnd:
+      return style.collapseWhiteSpace() && style.isLeftToRightDirection();
+  }
+  NOTREACHED();
+  return false;
+}
+
 static void updateLogicalWidthForLeftAlignedBlock(
     bool isLeftToRightDirection,
     BidiRun* trailingSpaceRun,
@@ -755,8 +776,6 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
     GlyphOverflowAndFallbackFontsMap& textBoxDataMap,
     VerticalPositionCache& verticalPositionCache,
     const WordMeasurements& wordMeasurements) {
-  ETextAlign textAlign =
-      textAlignmentForLine(!reachedEnd && !lineBox->endsWithBreak());
 
   // CSS 2.1: "'Text-indent' only affects a line if it is the first formatted
   // line of an element. For example, the first line of an anonymous block
@@ -787,8 +806,8 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
   }
 
   computeInlineDirectionPositionsForSegment(
-      lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth,
-      firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache,
+      lineBox, lineInfo, lineLogicalLeft, availableLogicalWidth, firstRun,
+      trailingSpaceRun, textBoxDataMap, verticalPositionCache,
       wordMeasurements);
   // The widths of all runs are now known. We can now place every inline box
   // (and compute accurate widths for the inline flow boxes).
@@ -799,7 +818,6 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(
 BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(
     RootInlineBox* lineBox,
     const LineInfo& lineInfo,
-    ETextAlign textAlign,
     LayoutUnit& logicalLeft,
     LayoutUnit& availableLogicalWidth,
     BidiRun* firstRun,
@@ -812,6 +830,7 @@ BidiRun* LayoutBlockFlow::computeInlineDirectionPositionsForSegment(
   bool isAfterExpansion = true;
   ExpansionOpportunities expansions;
   LayoutObject* previousObject = nullptr;
+  ETextAlign textAlign = lineInfo.textAlign();
   TextJustify textJustify = style()->getTextJustify();
 
   BidiRun* r = firstRun;
@@ -1163,6 +1182,14 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
         resolver.setStatus(
             BidiStatus(direction, isOverride(styleToUse.getUnicodeBidi())));
       }
+
+      ETextAlign textAlign = textAlignmentForLine(
+          !endOfLine.atEnd() &&
+          !layoutState.lineInfo().previousLineBrokeCleanly());
+      layoutState.lineInfo().setTextAlign(textAlign);
+      resolver.setNeedsTrailingSpace(
+          textAlignmentNeedsTrailingSpace(textAlign, styleToUse));
+
       // FIXME: This ownership is reversed. We should own the BidiRunList and
       // pass it to createBidiRunsForLine.
       BidiRunList<BidiRun>& bidiRuns = resolver.runs();

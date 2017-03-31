@@ -221,7 +221,8 @@ class BidiResolver final {
         m_reachedEndOfLine(false),
         m_emptyRun(true),
         m_nestedIsolateCount(0),
-        m_trailingSpaceRun(0) {}
+        m_trailingSpaceRun(0),
+        m_needsTrailingSpace(false) {}
 
 #if DCHECK_IS_ON()
   ~BidiResolver();
@@ -311,6 +312,7 @@ class BidiResolver final {
 
   Iterator endOfLine() const { return m_endOfLine; }
 
+  void setNeedsTrailingSpace(bool value) { m_needsTrailingSpace = value; }
   Run* trailingSpaceRun() const { return m_trailingSpaceRun; }
 
  protected:
@@ -352,6 +354,7 @@ class BidiResolver final {
   unsigned m_nestedIsolateCount;
   Vector<IsolatedRun> m_isolatedRuns;
   Run* m_trailingSpaceRun;
+  bool m_needsTrailingSpace;
   TextDirection m_paragraphDirectionality;
 
  private:
@@ -365,10 +368,10 @@ class BidiResolver final {
   void updateStatusLastFromCurrentDirection(WTF::Unicode::CharDirection);
   void reorderRunsFromLevels(BidiRunList<Run>&) const;
 
-  bool needsToApplyL1Rule(BidiRunList<Run>&) { return false; }
+  bool needsTrailingSpace(BidiRunList<Run>&) { return m_needsTrailingSpace; }
   int findFirstTrailingSpaceAtRun(Run*) { return 0; }
   // http://www.unicode.org/reports/tr9/#L1
-  void applyL1Rule(BidiRunList<Run>&);
+  void computeTrailingSpace(BidiRunList<Run>&);
 
   TextDirection determineDirectionalityInternal(bool breakOnParagraph,
                                                 bool* hasStrongDirectionality);
@@ -542,11 +545,9 @@ void BidiResolver<Iterator, Run, IsolatedRun>::raiseExplicitEmbeddingLevel(
 }
 
 template <class Iterator, class Run, class IsolatedRun>
-void BidiResolver<Iterator, Run, IsolatedRun>::applyL1Rule(
+void BidiResolver<Iterator, Run, IsolatedRun>::computeTrailingSpace(
     BidiRunList<Run>& runs) {
   ASSERT(runs.runCount());
-  if (!needsToApplyL1Rule(runs))
-    return;
 
   Run* trailingSpaceRun = runs.logicallyLastRun();
 
@@ -575,6 +576,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::applyL1Rule(
     return;
   }
 
+  // Apply L1 rule.
   if (m_paragraphDirectionality == TextDirection::kLtr) {
     runs.moveRunToEnd(trailingSpaceRun);
     trailingSpaceRun->m_level = 0;
@@ -1203,8 +1205,9 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(
   m_endOfRunAtEndOfLine = Iterator();
   m_endOfLine = Iterator();
 
-  if (!hardLineBreak && m_runs.runCount())
-    applyL1Rule(m_runs);
+  if (!hardLineBreak && m_runs.runCount() && needsTrailingSpace(m_runs)) {
+    computeTrailingSpace(m_runs);
+  }
 }
 
 template <class Iterator, class Run, class IsolatedRun>

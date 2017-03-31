@@ -604,13 +604,14 @@ inline BidiRun* InlineBidiResolver::addTrailingRun(
 }
 
 template <>
-inline bool InlineBidiResolver::needsToApplyL1Rule(BidiRunList<BidiRun>& runs) {
-  if (!runs.logicallyLastRun()
-           ->m_lineLayoutItem.style()
-           ->breakOnlyAfterWhiteSpace() ||
-      !runs.logicallyLastRun()->m_lineLayoutItem.style()->autoWrap())
-    return false;
-  return true;
+inline bool InlineBidiResolver::needsTrailingSpace(BidiRunList<BidiRun>& runs) {
+  if (m_needsTrailingSpace)
+    return true;
+  const ComputedStyle& style =
+      runs.logicallyLastRun()->m_lineLayoutItem.styleRef();
+  if (style.breakOnlyAfterWhiteSpace() && style.autoWrap())
+    return true;
+  return false;
 }
 
 static inline bool isIsolatedInline(LineLayoutItem object) {
