@@ -48,6 +48,8 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
     return new CSSComputedStyleDeclaration(node, allowVisitedStyle,
                                            pseudoElementName);
   }
+
+  static const Vector<CSSPropertyID>& computableProperties();
   ~CSSComputedStyleDeclaration() override;
 
   String getPropertyValue(CSSPropertyID) const;

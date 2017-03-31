@@ -18,7 +18,10 @@ test(function() {
 test(function() {
   var properties = computedStyleMap.getProperties();
   assert_equals(properties.length, computedStyle.length);
-}, "Computed StyleMap.getProperties returns the same number of properties as ComputedStyle");
+  for (var i = 0; i < computedStyle.length; ++i) {
+    assert_equals(properties[i], computedStyle[i]);
+  }
+}, "Computed StyleMap.getProperties returns the same list of property names as ComputedStyle");
 
 test(function() {
   testElement.style.border = '1px solid #00ff00';

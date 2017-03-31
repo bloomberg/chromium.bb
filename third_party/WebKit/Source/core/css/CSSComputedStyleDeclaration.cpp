@@ -177,16 +177,6 @@ const CSSPropertyID computedPropertyArray[] = {
     CSSPropertyScrollSnapDestination, CSSPropertyTranslate, CSSPropertyRotate,
     CSSPropertyScale, CSSPropertyCaretColor};
 
-const Vector<CSSPropertyID>& computableProperties() {
-  DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
-  if (properties.isEmpty()) {
-    CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(
-        computedPropertyArray, WTF_ARRAY_LENGTH(computedPropertyArray),
-        properties);
-  }
-  return properties;
-}
-
 CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize) {
   DCHECK_NE(keywordSize, 0);
   DCHECK_LE(keywordSize, 8);
@@ -276,6 +266,17 @@ bool isLayoutDependent(CSSPropertyID propertyID,
 }
 
 }  // namespace
+
+const Vector<CSSPropertyID>&
+CSSComputedStyleDeclaration::computableProperties() {
+  DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+  if (properties.isEmpty()) {
+    CSSPropertyMetadata::filterEnabledCSSPropertiesIntoVector(
+        computedPropertyArray, WTF_ARRAY_LENGTH(computedPropertyArray),
+        properties);
+  }
+  return properties;
+}
 
 CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
     Node* n,
