@@ -151,6 +151,7 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   // Return the first created tab with a custom ManagePasswordsUIController.
   content::WebContents* WebContents();
   content::RenderViewHost* RenderViewHost();
+  content::RenderFrameHost* RenderFrameHost();
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
   net::MockCertVerifier& mock_cert_verifier() { return mock_cert_verifier_; }
 

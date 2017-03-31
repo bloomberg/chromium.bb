@@ -125,6 +125,7 @@ class InterstitialObserver : public content::WebContentsObserver {
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& original_script,
+                         bool user_gesture,
                          std::unique_ptr<base::Value>* result)
     WARN_UNUSED_RESULT;
 
@@ -133,6 +134,7 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
 // evaluation of the script in |result|.  Returns true on success.
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& original_script,
+                         bool user_gesture,
                          std::unique_ptr<base::Value>* result) {
   // TODO(jcampan): we should make the domAutomationController not require an
   //                automation id.
@@ -141,8 +143,12 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(
       WebContents::FromRenderFrameHost(render_frame_host));
-  render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
-      base::UTF8ToUTF16(script));
+  if (user_gesture) {
+    render_frame_host->ExecuteJavaScriptWithUserGestureForTests(
+        base::UTF8ToUTF16(script));
+  } else {
+    render_frame_host->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
+  }
   std::string json;
   if (!dom_message_queue.WaitForMessage(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMMessageQueue.";
@@ -788,14 +794,22 @@ bool ExecuteScript(const ToRenderFrameHost& adapter,
                    const std::string& script) {
   std::string new_script =
       script + ";window.domAutomationController.send(0);";
-  return ExecuteScriptHelper(adapter.render_frame_host(), new_script, NULL);
+  return ExecuteScriptHelper(adapter.render_frame_host(), new_script, true,
+                             nullptr);
+}
+
+bool ExecuteScriptWithoutUserGesture(const ToRenderFrameHost& adapter,
+                                     const std::string& script) {
+  std::string new_script = script + ";window.domAutomationController.send(0);";
+  return ExecuteScriptHelper(adapter.render_frame_host(), new_script, false,
+                             nullptr);
 }
 
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script, double* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
       !value.get()) {
     return false;
   }
@@ -807,7 +821,7 @@ bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
                                 const std::string& script, int* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
       !value.get()) {
     return false;
   }
@@ -819,7 +833,7 @@ bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
       !value.get()) {
     return false;
   }
@@ -848,12 +862,56 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    std::string* result) {
   DCHECK(result);
   std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, true, &value) ||
       !value.get()) {
     return false;
   }
 
   return value->GetAsString(result);
+}
+
+bool ExecuteScriptWithoutUserGestureAndExtractDouble(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    double* result) {
+  DCHECK(result);
+  std::unique_ptr<base::Value> value;
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
+                             &value) &&
+         value && value->GetAsDouble(result);
+}
+
+bool ExecuteScriptWithoutUserGestureAndExtractInt(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    int* result) {
+  DCHECK(result);
+  std::unique_ptr<base::Value> value;
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
+                             &value) &&
+         value && value->GetAsInteger(result);
+}
+
+bool ExecuteScriptWithoutUserGestureAndExtractBool(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    bool* result) {
+  DCHECK(result);
+  std::unique_ptr<base::Value> value;
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
+                             &value) &&
+         value && value->GetAsBoolean(result);
+}
+
+bool ExecuteScriptWithoutUserGestureAndExtractString(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    std::string* result) {
+  DCHECK(result);
+  std::unique_ptr<base::Value> value;
+  return ExecuteScriptHelper(adapter.render_frame_host(), script, false,
+                             &value) &&
+         value && value->GetAsString(result);
 }
 
 namespace {
@@ -1322,6 +1380,7 @@ void DOMMessageQueue::Observe(int type,
 }
 
 void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
+  VLOG(0) << "DOMMessageQueue::RenderProcessGone " << status;
   switch (status) {
     case base::TERMINATION_STATUS_NORMAL_TERMINATION:
     case base::TERMINATION_STATUS_STILL_RUNNING:

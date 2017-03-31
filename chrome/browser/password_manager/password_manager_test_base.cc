@@ -25,7 +25,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -274,6 +273,10 @@ content::RenderViewHost* PasswordManagerBrowserTestBase::RenderViewHost() {
   return WebContents()->GetRenderViewHost();
 }
 
+content::RenderFrameHost* PasswordManagerBrowserTestBase::RenderFrameHost() {
+  return WebContents()->GetMainFrame();
+}
+
 void PasswordManagerBrowserTestBase::NavigateToFile(const std::string& path) {
   ASSERT_EQ(web_contents_,
             browser()->tab_strip_model()->GetActiveWebContents());
@@ -297,12 +300,11 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
   NavigateToFile(filename);
 
   NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submission_script));
+  ASSERT_TRUE(content::ExecuteScript(RenderFrameHost(), submission_script));
   observer.Wait();
+  WaitForPasswordStore();
 
-  prompt_observer->AcceptSavePrompt();
+  BubbleObserver(WebContents()).AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
   // the password.
@@ -374,8 +376,8 @@ void PasswordManagerBrowserTestBase::WaitForElementValue(
           element_id.c_str(), element_id.c_str(), RETURN_CODE_NO_ELEMENT,
           RETURN_CODE_OK, RETURN_CODE_WRONG_VALUE);
   int return_value = RETURN_CODE_INVALID;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(RenderViewHost(), script,
-                                                  &return_value));
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
+      RenderFrameHost(), script, &return_value));
   EXPECT_EQ(RETURN_CODE_OK, return_value)
       << "element_id = " << element_id
       << ", expected_value = " << expected_value;
@@ -411,8 +413,8 @@ void PasswordManagerBrowserTestBase::CheckElementValue(
       iframe_id.c_str(), iframe_id.c_str(), element_id.c_str(),
       element_id.c_str());
   std::string return_value;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      RenderViewHost(), value_get_script, &return_value));
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
+      RenderFrameHost(), value_get_script, &return_value));
   EXPECT_EQ(expected_value, return_value) << "element_id = " << element_id;
 }
 

@@ -195,17 +195,24 @@ RenderFrameHost* ConvertToRenderFrameHost(RenderViewHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
 RenderFrameHost* ConvertToRenderFrameHost(WebContents* web_contents);
 
-// Executes the passed |script| in the specified frame. The |script| should not
-// invoke domAutomationController.send(); otherwise, your test will hang or be
-// flaky. If you want to extract a result, use one of the below functions.
-// Returns true on success.
+// Executes the passed |script| in the specified frame with the user gesture.
+// The |script| should not invoke domAutomationController.send(); otherwise,
+// your test will hang or be flaky. If you want to extract a result, use one of
+// the below functions. Returns true on success.
 bool ExecuteScript(const ToRenderFrameHost& adapter,
                    const std::string& script) WARN_UNUSED_RESULT;
 
-// The following methods executes the passed |script| in the specified frame and
-// sets |result| to the value passed to "window.domAutomationController.send" by
-// the executed script. They return true on success, false if the script
-// execution failed or did not evaluate to the expected type.
+// Same as content::ExecuteScript but doesn't send a user gesture to the
+// renderer.
+bool ExecuteScriptWithoutUserGesture(const ToRenderFrameHost& adapter,
+                                     const std::string& script)
+    WARN_UNUSED_RESULT;
+
+// The following methods execute the passed |script| in the specified frame with
+// the user gesture and set |result| to the value passed to
+// "window.domAutomationController.send" by the executed script. They return
+// true on success, false if the script execution failed or did not evaluate to
+// the expected type.
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    double* result) WARN_UNUSED_RESULT;
@@ -218,6 +225,24 @@ bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
 bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
+
+// Same as above but the script executed without user gesture.
+bool ExecuteScriptWithoutUserGestureAndExtractDouble(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    double* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptWithoutUserGestureAndExtractInt(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    int* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptWithoutUserGestureAndExtractBool(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    bool* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptWithoutUserGestureAndExtractString(
+    const ToRenderFrameHost& adapter,
+    const std::string& script,
+    std::string* result) WARN_UNUSED_RESULT;
 
 // This function behaves similarly to ExecuteScriptAndExtractBool but runs the
 // the script in the specified isolated world.
