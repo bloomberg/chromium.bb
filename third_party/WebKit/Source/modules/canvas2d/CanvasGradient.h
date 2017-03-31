@@ -57,6 +57,8 @@ class MODULES_EXPORT CanvasGradient final
 
   void addColorStop(float value, const String& color, ExceptionState&);
 
+  bool isZeroSize() const { return m_isZeroSize; }
+
   DEFINE_INLINE_TRACE() {}
 
  private:
@@ -67,6 +69,7 @@ class MODULES_EXPORT CanvasGradient final
                  float r1);
 
   RefPtr<Gradient> m_gradient;
+  const bool m_isZeroSize;
 };
 
 }  // namespace blink

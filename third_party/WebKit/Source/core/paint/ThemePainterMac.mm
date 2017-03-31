@@ -385,9 +385,9 @@ bool ThemePainterMac::paintSliderTrack(const LayoutObject& o,
   paintInfo.context.restore();
 
   RefPtr<Gradient> borderGradient =
-      Gradient::create(fillBounds.minXMinYCorner(),
-                       isVerticalSlider ? fillBounds.maxXMinYCorner()
-                                        : fillBounds.minXMaxYCorner());
+      Gradient::createLinear(fillBounds.minXMinYCorner(),
+                             isVerticalSlider ? fillBounds.maxXMinYCorner()
+                                              : fillBounds.minXMaxYCorner());
   borderGradient->addColorStop(0.0, borderGradientTopColor);
   borderGradient->addColorStop(1.0, borderGradientBottomColor);
 
@@ -464,8 +464,8 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o,
   paintInfo.context.setDrawLooper(nullptr);
 
   IntRect fillBounds = enclosedIntRect(unzoomedRect);
-  RefPtr<Gradient> fillGradient = Gradient::create(fillBounds.minXMinYCorner(),
-                                                   fillBounds.minXMaxYCorner());
+  RefPtr<Gradient> fillGradient = Gradient::createLinear(
+      fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());
   fillGradient->addColorStop(0.0, fillGradientTopColor);
   fillGradient->addColorStop(0.52, fillGradientUpperMiddleColor);
   fillGradient->addColorStop(0.52, fillGradientLowerMiddleColor);
@@ -474,7 +474,7 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o,
   fillGradient->applyToFlags(fillFlags, SkMatrix::I());
   paintInfo.context.drawOval(borderBounds, fillFlags);
 
-  RefPtr<Gradient> borderGradient = Gradient::create(
+  RefPtr<Gradient> borderGradient = Gradient::createLinear(
       fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());
   borderGradient->addColorStop(0.0, borderGradientTopColor);
   borderGradient->addColorStop(1.0, borderGradientBottomColor);

@@ -34,13 +34,14 @@
 namespace blink {
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0, const FloatPoint& p1)
-    : m_gradient(Gradient::create(p0, p1)) {}
+    : m_gradient(Gradient::createLinear(p0, p1)), m_isZeroSize(p0 == p1) {}
 
 CanvasGradient::CanvasGradient(const FloatPoint& p0,
                                float r0,
                                const FloatPoint& p1,
                                float r1)
-    : m_gradient(Gradient::create(p0, r0, p1, r1)) {}
+    : m_gradient(Gradient::createRadial(p0, r0, p1, r1)),
+      m_isZeroSize(p0 == p1 && r0 == r1) {}
 
 void CanvasGradient::addColorStop(float value,
                                   const String& colorString,

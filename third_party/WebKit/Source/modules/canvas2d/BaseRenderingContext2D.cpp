@@ -1848,16 +1848,21 @@ void BaseRenderingContext2D::trackDrawCall(DrawCallType callType,
 
     CanvasGradient* gradient = canvasStyle->getCanvasGradient();
     if (gradient) {
-      if (gradient->getGradient()->isRadial()) {
-        m_usageCounters.numRadialGradients++;
-        m_usageCounters.boundingBoxAreaFillType
-            [BaseRenderingContext2D::RadialGradientFillType] +=
-            boundingRectArea;
-      } else {
-        m_usageCounters.numLinearGradients++;
-        m_usageCounters.boundingBoxAreaFillType
-            [BaseRenderingContext2D::LinearGradientFillType] +=
-            boundingRectArea;
+      switch (gradient->getGradient()->getType()) {
+        case Gradient::Type::Linear:
+          m_usageCounters.numLinearGradients++;
+          m_usageCounters.boundingBoxAreaFillType
+              [BaseRenderingContext2D::LinearGradientFillType] +=
+              boundingRectArea;
+          break;
+        case Gradient::Type::Radial:
+          m_usageCounters.numRadialGradients++;
+          m_usageCounters.boundingBoxAreaFillType
+              [BaseRenderingContext2D::RadialGradientFillType] +=
+              boundingRectArea;
+          break;
+        default:
+          NOTREACHED();
       }
     } else if (canvasStyle->getCanvasPattern()) {
       m_usageCounters.numPatterns++;

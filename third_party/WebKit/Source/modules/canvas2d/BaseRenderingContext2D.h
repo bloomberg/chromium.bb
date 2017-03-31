@@ -396,7 +396,7 @@ bool BaseRenderingContext2D::draw(
   CanvasStyle* style = state().style(paintType);
   if (style) {
     CanvasGradient* gradient = style->getCanvasGradient();
-    if (gradient && gradient->getGradient()->isZeroSize())
+    if (gradient && gradient->isZeroSize())
       return false;
   }
 

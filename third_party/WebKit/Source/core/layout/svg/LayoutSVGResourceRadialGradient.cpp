@@ -65,7 +65,7 @@ float LayoutSVGResourceRadialGradient::focalRadius(
 
 PassRefPtr<Gradient> LayoutSVGResourceRadialGradient::buildGradient() const {
   const RadialGradientAttributes& attributes = this->attributes();
-  RefPtr<Gradient> gradient = Gradient::create(
+  RefPtr<Gradient> gradient = Gradient::createRadial(
       focalPoint(attributes), focalRadius(attributes), centerPoint(attributes),
       radius(attributes), 1,
       platformSpreadMethodFromSVGType(attributes.spreadMethod()),

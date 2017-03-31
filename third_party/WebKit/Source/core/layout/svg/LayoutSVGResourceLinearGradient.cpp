@@ -52,7 +52,7 @@ FloatPoint LayoutSVGResourceLinearGradient::endPoint(
 
 PassRefPtr<Gradient> LayoutSVGResourceLinearGradient::buildGradient() const {
   const LinearGradientAttributes& attributes = this->attributes();
-  RefPtr<Gradient> gradient = Gradient::create(
+  RefPtr<Gradient> gradient = Gradient::createLinear(
       startPoint(attributes), endPoint(attributes),
       platformSpreadMethodFromSVGType(attributes.spreadMethod()),
       Gradient::ColorInterpolation::Unpremultiplied);

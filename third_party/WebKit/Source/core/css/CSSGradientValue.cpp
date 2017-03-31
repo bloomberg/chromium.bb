@@ -910,8 +910,8 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(
   addStops(desc, conversionData, object);
 
   RefPtr<Gradient> gradient =
-      Gradient::create(desc.p0, desc.p1, desc.spreadMethod,
-                       Gradient::ColorInterpolation::Premultiplied);
+      Gradient::createLinear(desc.p0, desc.p1, desc.spreadMethod,
+                             Gradient::ColorInterpolation::Premultiplied);
 
   // Now add the stops.
   gradient->addColorStops(desc.stops);
@@ -1266,7 +1266,7 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(
                     m_repeating ? SpreadMethodRepeat : SpreadMethodPad);
   addStops(desc, conversionData, object);
 
-  RefPtr<Gradient> gradient = Gradient::create(
+  RefPtr<Gradient> gradient = Gradient::createRadial(
       desc.p0, desc.r0, desc.p1, desc.r1,
       isDegenerate ? 1 : secondRadius.aspectRatio(), desc.spreadMethod,
       Gradient::ColorInterpolation::Premultiplied);
@@ -1369,7 +1369,7 @@ PassRefPtr<Gradient> CSSConicGradientValue::createGradient(
   DCHECK(!size.isEmpty());
 
   // TODO(fmalita): implement
-  return Gradient::create(FloatPoint(), FloatPoint());
+  return Gradient::createLinear(FloatPoint(), FloatPoint());
 }
 
 bool CSSConicGradientValue::equals(const CSSConicGradientValue& other) const {

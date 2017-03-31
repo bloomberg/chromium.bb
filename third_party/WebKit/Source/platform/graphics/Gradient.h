@@ -30,7 +30,6 @@
 #define Gradient_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/paint/PaintFlags.h"
@@ -42,37 +41,41 @@
 #include "wtf/Vector.h"
 
 class SkMatrix;
+class SkShader;
 
 namespace blink {
+
+class FloatPoint;
 
 class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   WTF_MAKE_NONCOPYABLE(Gradient);
 
  public:
+  enum class Type { Linear, Radial };
+
   enum class ColorInterpolation {
     Premultiplied,
     Unpremultiplied,
   };
 
-  static PassRefPtr<Gradient> create(
+  static PassRefPtr<Gradient> createLinear(
       const FloatPoint& p0,
       const FloatPoint& p1,
-      GradientSpreadMethod spreadMethod = SpreadMethodPad,
-      ColorInterpolation interpolation = ColorInterpolation::Unpremultiplied) {
-    return adoptRef(new Gradient(p0, p1, spreadMethod, interpolation));
-  }
-  static PassRefPtr<Gradient> create(
+      GradientSpreadMethod = SpreadMethodPad,
+      ColorInterpolation = ColorInterpolation::Unpremultiplied);
+
+  static PassRefPtr<Gradient> createRadial(
       const FloatPoint& p0,
       float r0,
       const FloatPoint& p1,
       float r1,
       float aspectRatio = 1,
-      GradientSpreadMethod spreadMethod = SpreadMethodPad,
-      ColorInterpolation interpolation = ColorInterpolation::Unpremultiplied) {
-    return adoptRef(
-        new Gradient(p0, r0, p1, r1, aspectRatio, spreadMethod, interpolation));
-  }
-  ~Gradient();
+      GradientSpreadMethod = SpreadMethodPad,
+      ColorInterpolation = ColorInterpolation::Unpremultiplied);
+
+  virtual ~Gradient();
+
+  Type getType() const { return m_type; }
 
   struct ColorStop {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -87,49 +90,31 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   }
   void addColorStops(const Vector<Gradient::ColorStop>&);
 
-  bool isRadial() const { return m_radial; }
-  bool isZeroSize() const {
-    return m_p0.x() == m_p1.x() && m_p0.y() == m_p1.y() &&
-           (!m_radial || m_r0 == m_r1);
-  }
-
-  const FloatPoint& p0() const { return m_p0; }
-  const FloatPoint& p1() const { return m_p1; }
-
-  float startRadius() const { return m_r0; }
-  float endRadius() const { return m_r1; }
-
   void applyToFlags(PaintFlags&, const SkMatrix& localMatrix);
 
-  GradientSpreadMethod spreadMethod() const { return m_spreadMethod; }
+ protected:
+  Gradient(Type, GradientSpreadMethod, ColorInterpolation);
+
+  using ColorBuffer = Vector<SkColor, 8>;
+  using OffsetBuffer = Vector<SkScalar, 8>;
+  virtual sk_sp<SkShader> createShader(const ColorBuffer&,
+                                       const OffsetBuffer&,
+                                       SkShader::TileMode,
+                                       uint32_t flags,
+                                       const SkMatrix&) const = 0;
 
  private:
-  Gradient(const FloatPoint& p0,
-           const FloatPoint& p1,
-           GradientSpreadMethod,
-           ColorInterpolation);
-  Gradient(const FloatPoint& p0,
-           float r0,
-           const FloatPoint& p1,
-           float r1,
-           float aspectRatio,
-           GradientSpreadMethod,
-           ColorInterpolation);
-
-  sk_sp<PaintShader> createShader(const SkMatrix& localMatrix);
+  sk_sp<PaintShader> createShaderInternal(const SkMatrix& localMatrix);
 
   void sortStopsIfNecessary();
+  void fillSkiaStops(ColorBuffer&, OffsetBuffer&) const;
 
-  FloatPoint m_p0;
-  FloatPoint m_p1;
-  float m_r0;
-  float m_r1;
-  float m_aspectRatio;  // For elliptical gradient, width / height.
+  const Type m_type;
+  const GradientSpreadMethod m_spreadMethod;
+  const ColorInterpolation m_colorInterpolation;
+
   Vector<ColorStop, 2> m_stops;
-  bool m_radial;
   bool m_stopsSorted;
-  GradientSpreadMethod m_spreadMethod;
-  ColorInterpolation m_colorInterpolation;
 
   mutable sk_sp<PaintShader> m_cachedShader;
 };

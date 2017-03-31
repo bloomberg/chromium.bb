@@ -254,7 +254,8 @@ static void paintSliderRangeHighlight(const IntRect& rect,
   FloatPoint sliderTopLeft = highlightRect.location();
   FloatPoint sliderBottomLeft = sliderTopLeft;
   sliderBottomLeft.move(0, highlightRect.height());
-  RefPtr<Gradient> gradient = Gradient::create(sliderTopLeft, sliderBottomLeft);
+  RefPtr<Gradient> gradient =
+      Gradient::createLinear(sliderTopLeft, sliderBottomLeft);
   gradient->addColorStop(0.0, startColor);
   gradient->addColorStop(1.0, endColor);
 
