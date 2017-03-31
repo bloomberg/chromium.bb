@@ -364,10 +364,6 @@ void ax_platform_node_auralinux_detach(
 
 G_END_DECLS
 
-//
-// AXPlatformNodeAuraLinux implementation.
-//
-
 namespace ui {
 
 // static
@@ -376,6 +372,16 @@ AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
   node->Init(delegate);
   return node;
 }
+
+// static
+AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
+    gfx::NativeViewAccessible accessible) {
+  return AtkObjectToAXPlatformNodeAuraLinux(accessible);
+}
+
+//
+// AXPlatformNodeAuraLinux implementation.
+//
 
 // static
 AXPlatformNode* AXPlatformNodeAuraLinux::application_ = nullptr;

@@ -39,10 +39,7 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
 }  // namespace ui
 
 AX_EXPORT
-@interface AXPlatformNodeCocoa : NSObject {
- @private
-  ui::AXPlatformNodeBase* node_;  // Weak. Retains us.
-}
+@interface AXPlatformNodeCocoa : NSObject
 
 + (NSString*)nativeRoleFromAXRole:(ui::AXRole)role;
 + (NSString*)nativeSubroleFromAXRole:(ui::AXRole)role;
@@ -52,6 +49,7 @@ AX_EXPORT
 - (void)detach;
 
 @property(nonatomic, readonly) NSRect boundsInScreen;
+@property(nonatomic, readonly) ui::AXPlatformNodeBase* node;
 
 @end
 

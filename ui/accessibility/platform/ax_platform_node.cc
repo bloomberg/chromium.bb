@@ -21,17 +21,6 @@ base::LazyInstance<UniqueIdMap>::DestructorAtExit g_unique_id_map =
     LAZY_INSTANCE_INITIALIZER;
 }
 
-#if !defined(OS_WIN)
-// This is the default implementation for platforms where native views
-// accessibility is unsupported or unfinished.
-//
-// static
-AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
-    gfx::NativeViewAccessible accessible) {
-  return nullptr;
-}
-#endif
-
 AXPlatformNode::AXPlatformNode() : unique_id_(GetNextAXPlatformNodeUniqueId()) {
   g_unique_id_map.Get()[unique_id_] = this;
 }

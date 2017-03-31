@@ -12,6 +12,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
@@ -230,7 +231,11 @@ void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
 - (NSString*)getStringAttribute:(ui::AXStringAttribute)attribute;
 @end
 
-@implementation AXPlatformNodeCocoa
+@implementation AXPlatformNodeCocoa {
+  ui::AXPlatformNodeBase* node_;  // Weak. Retains us.
+}
+
+@synthesize node = node_;
 
 // A mapping of AX roles to native roles.
 + (NSString*)nativeRoleFromAXRole:(ui::AXRole)role {
@@ -648,6 +653,14 @@ AXPlatformNode* AXPlatformNode::Create(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase* node = new AXPlatformNodeMac();
   node->Init(delegate);
   return node;
+}
+
+// static
+AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
+    gfx::NativeViewAccessible accessible) {
+  if ([accessible isKindOfClass:[AXPlatformNodeCocoa class]])
+    return [accessible node];
+  return nullptr;
 }
 
 AXPlatformNodeMac::AXPlatformNodeMac() {
