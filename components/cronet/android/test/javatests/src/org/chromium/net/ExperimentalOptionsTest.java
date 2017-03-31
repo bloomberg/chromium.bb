@@ -26,7 +26,6 @@ public class ExperimentalOptionsTest extends CronetTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.loadLibrary("cronet_tests");
         mBuilder = new ExperimentalCronetEngine.Builder(getContext());
         CronetTestUtil.setMockCertVerifierForTesting(
                 mBuilder, QuicTestServer.createMockCertVerifier());
@@ -37,7 +36,7 @@ public class ExperimentalOptionsTest extends CronetTestBase {
     @Override
     protected void tearDown() throws Exception {
         assertTrue(Http2TestServer.shutdownHttp2TestServer());
-        if (mTestFramework.mCronetEngine != null) {
+        if (mTestFramework != null && mTestFramework.mCronetEngine != null) {
             mTestFramework.mCronetEngine.shutdown();
         }
         super.tearDown();
