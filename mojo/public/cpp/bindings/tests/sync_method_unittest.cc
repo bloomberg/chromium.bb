@@ -202,6 +202,60 @@ struct ImplTraits<TestSyncMaster> {
 };
 
 template <typename Interface>
+using ImplTypeFor = typename ImplTraits<Interface>::Type;
+
+// A wrapper for either an InterfacePtr or scoped_refptr<ThreadSafeInterfacePtr>
+// that exposes the InterfacePtr interface.
+template <typename Interface>
+class PtrWrapper {
+ public:
+  explicit PtrWrapper(InterfacePtr<Interface> ptr) : ptr_(std::move(ptr)) {}
+
+  explicit PtrWrapper(
+      scoped_refptr<ThreadSafeInterfacePtr<Interface>> thread_safe_ptr)
+      : thread_safe_ptr_(thread_safe_ptr) {}
+
+  PtrWrapper(PtrWrapper&& other) = default;
+
+  Interface* operator->() {
+    return thread_safe_ptr_ ? thread_safe_ptr_->get() : ptr_.get();
+  }
+
+  void set_connection_error_handler(const base::Closure& error_handler) {
+    DCHECK(!thread_safe_ptr_);
+    ptr_.set_connection_error_handler(error_handler);
+  }
+
+  void reset() {
+    ptr_ = nullptr;
+    thread_safe_ptr_ = nullptr;
+  }
+
+ private:
+  InterfacePtr<Interface> ptr_;
+  scoped_refptr<ThreadSafeInterfacePtr<Interface>> thread_safe_ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(PtrWrapper);
+};
+
+// The type parameter for SyncMethodCommonTests for varying the Interface and
+// whether to use InterfacePtr or ThreadSafeInterfacePtr.
+template <typename InterfaceT, bool use_thread_safe_ptr>
+struct TestParams {
+  using Interface = InterfaceT;
+  static const bool kIsThreadSafeInterfacePtrTest = use_thread_safe_ptr;
+
+  static PtrWrapper<InterfaceT> Wrap(InterfacePtr<Interface> ptr) {
+    if (kIsThreadSafeInterfacePtrTest) {
+      return PtrWrapper<Interface>(
+          ThreadSafeInterfacePtr<Interface>::Create(std::move(ptr)));
+    } else {
+      return PtrWrapper<Interface>(std::move(ptr));
+    }
+  }
+};
+
+template <typename Interface>
 class TestSyncServiceThread {
  public:
   TestSyncServiceThread()
@@ -211,7 +265,7 @@ class TestSyncServiceThread {
 
   void SetUp(InterfaceRequest<Interface> request) {
     CHECK(thread_.task_runner()->BelongsToCurrentThread());
-    impl_.reset(new typename ImplTraits<Interface>::Type(std::move(request)));
+    impl_.reset(new ImplTypeFor<Interface>(std::move(request)));
     impl_->set_ping_handler(
         [this](const typename Interface::PingCallback& callback) {
           {
@@ -236,7 +290,7 @@ class TestSyncServiceThread {
  private:
   base::Thread thread_;
 
-  std::unique_ptr<typename ImplTraits<Interface>::Type> impl_;
+  std::unique_ptr<ImplTypeFor<Interface>> impl_;
 
   mutable base::Lock lock_;
   bool ping_called_;
@@ -334,12 +388,20 @@ TestSync::AsyncEchoCallback BindAsyncEchoCallback(Func func) {
 
 // TestSync (without associated interfaces) and TestSyncMaster (with associated
 // interfaces) exercise MultiplexRouter with different configurations.
-using InterfaceTypes = testing::Types<TestSync, TestSyncMaster>;
+// Each test is run once with an InterfacePtr and once with a
+// ThreadSafeInterfacePtr to ensure that they behave the same with respect to
+// sync calls.
+using InterfaceTypes = testing::Types<TestParams<TestSync, true>,
+                                      TestParams<TestSync, false>,
+                                      TestParams<TestSyncMaster, true>,
+                                      TestParams<TestSyncMaster, false>>;
 TYPED_TEST_CASE(SyncMethodCommonTest, InterfaceTypes);
 
 TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   base::RunLoop run_loop;
   ptr->Echo(123, base::Bind(&ExpectValueAndRunClosure, 123,
@@ -348,13 +410,16 @@ TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
 }
 
 TYPED_TEST(SyncMethodCommonTest, BasicSyncCalls) {
-  InterfacePtr<TypeParam> ptr;
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  InterfaceRequest<Interface> request = MakeRequest(&interface_ptr);
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
-  TestSyncServiceThread<TypeParam> service_thread;
+  TestSyncServiceThread<Interface> service_thread;
   service_thread.thread()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&TestSyncServiceThread<TypeParam>::SetUp,
-                            base::Unretained(&service_thread),
-                            base::Passed(MakeRequest(&ptr))));
+      FROM_HERE,
+      base::Bind(&TestSyncServiceThread<Interface>::SetUp,
+                 base::Unretained(&service_thread), base::Passed(&request)));
   ASSERT_TRUE(ptr->Ping());
   ASSERT_TRUE(service_thread.ping_called());
 
@@ -364,8 +429,9 @@ TYPED_TEST(SyncMethodCommonTest, BasicSyncCalls) {
 
   base::RunLoop run_loop;
   service_thread.thread()->task_runner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&TestSyncServiceThread<TypeParam>::TearDown,
-                            base::Unretained(&service_thread)),
+      FROM_HERE,
+      base::Bind(&TestSyncServiceThread<Interface>::TearDown,
+                 base::Unretained(&service_thread)),
       run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -374,9 +440,11 @@ TYPED_TEST(SyncMethodCommonTest, ReenteredBySyncMethodBinding) {
   // Test that an interface pointer waiting for a sync call response can be
   // reentered by a binding serving sync methods on the same thread.
 
-  InterfacePtr<TypeParam> ptr;
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
   // The binding lives on the same thread as the interface pointer.
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
   int32_t output_value = -1;
   ASSERT_TRUE(ptr->Echo(42, &output_value));
   EXPECT_EQ(42, output_value);
@@ -386,8 +454,10 @@ TYPED_TEST(SyncMethodCommonTest, InterfacePtrDestroyedDuringSyncCall) {
   // Test that it won't result in crash or hang if an interface pointer is
   // destroyed while it is waiting for a sync call response.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
   impl.set_ping_handler([&ptr](const TestSync::PingCallback& callback) {
     ptr.reset();
     callback.Run();
@@ -400,8 +470,10 @@ TYPED_TEST(SyncMethodCommonTest, BindingDestroyedDuringSyncCall) {
   // closed (and therefore the message pipe handle is closed) while the
   // corresponding interface pointer is waiting for a sync call response.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
   impl.set_ping_handler([&impl](const TestSync::PingCallback& callback) {
     impl.binding()->Close();
     callback.Run();
@@ -413,8 +485,10 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithInOrderResponses) {
   // Test that we can call a sync method on an interface ptr, while there is
   // already a sync call ongoing. The responses arrive in order.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   // The same variable is used to store the output of the two sync calls, in
   // order to test that responses are handled in the correct order.
@@ -439,8 +513,10 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithOutOfOrderResponses) {
   // Test that we can call a sync method on an interface ptr, while there is
   // already a sync call ongoing. The responses arrive out of order.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   // The same variable is used to store the output of the two sync calls, in
   // order to test that responses are handled in the correct order.
@@ -465,8 +541,10 @@ TYPED_TEST(SyncMethodCommonTest, AsyncResponseQueuedDuringSyncCall) {
   // Test that while an interface pointer is waiting for the response to a sync
   // call, async responses are queued until the sync call completes.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   int32_t async_echo_request_value = -1;
   TestSync::AsyncEchoCallback async_echo_request_callback;
@@ -521,8 +599,10 @@ TYPED_TEST(SyncMethodCommonTest, AsyncRequestQueuedDuringSyncCall) {
   // call, async requests for a binding running on the same thread are queued
   // until the sync call completes.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> interface_ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&interface_ptr));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   bool async_echo_request_dispatched = false;
   impl.set_async_echo_handler([&async_echo_request_dispatched](
@@ -572,8 +652,14 @@ TYPED_TEST(SyncMethodCommonTest,
   // before the queued messages are processed, the connection error
   // notification is delayed until all the queued messages are processed.
 
-  InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
+  // ThreadSafeInterfacePtr doesn't guarantee that messages are delivered before
+  // error notifications, so skip it for this test.
+  if (TypeParam::kIsThreadSafeInterfacePtrTest)
+    return;
+
+  using Interface = typename TypeParam::Interface;
+  InterfacePtr<Interface> ptr;
+  ImplTypeFor<Interface> impl(MakeRequest(&ptr));
 
   int32_t async_echo_request_value = -1;
   TestSync::AsyncEchoCallback async_echo_request_callback;
@@ -648,14 +734,15 @@ TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
   // the sync call to return false, and run the connection error handler
   // asynchronously.
 
+  using Interface = typename TypeParam::Interface;
   MessagePipe pipe;
 
-  InterfacePtr<TypeParam> ptr;
-  ptr.Bind(InterfacePtrInfo<TypeParam>(std::move(pipe.handle0), 0u));
+  InterfacePtr<Interface> interface_ptr;
+  interface_ptr.Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u));
+  auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
   MessagePipeHandle raw_binding_handle = pipe.handle1.get();
-  typename ImplTraits<TypeParam>::Type impl(
-      MakeRequest<TypeParam>(std::move(pipe.handle1)));
+  ImplTypeFor<Interface> impl(MakeRequest<Interface>(std::move(pipe.handle1)));
 
   impl.set_echo_handler([&raw_binding_handle](
       int32_t value, const TestSync::EchoCallback& callback) {
@@ -670,17 +757,22 @@ TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
 
   bool connection_error_dispatched = false;
   base::RunLoop run_loop;
-  ptr.set_connection_error_handler(
-      base::Bind(&SetFlagAndRunClosure, &connection_error_dispatched,
-                 run_loop.QuitClosure()));
+  // ThreadSafeInterfacePtr doesn't support setting connection error handlers.
+  if (!TypeParam::kIsThreadSafeInterfacePtrTest) {
+    ptr.set_connection_error_handler(base::Bind(&SetFlagAndRunClosure,
+                                                &connection_error_dispatched,
+                                                run_loop.QuitClosure()));
+  }
 
   int32_t result_value = -1;
   ASSERT_FALSE(ptr->Echo(456, &result_value));
   EXPECT_EQ(-1, result_value);
   ASSERT_FALSE(connection_error_dispatched);
 
-  run_loop.Run();
-  ASSERT_TRUE(connection_error_dispatched);
+  if (!TypeParam::kIsThreadSafeInterfacePtrTest) {
+    run_loop.Run();
+    ASSERT_TRUE(connection_error_dispatched);
+  }
 }
 
 TEST_F(SyncMethodAssociatedTest, ReenteredBySyncMethodAssoBindingOfSameRouter) {
