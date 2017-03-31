@@ -203,9 +203,9 @@ public class LocationBarPhone extends LocationBarLayout {
                 mKeyboardResizeModeTask = null;
             }
             if (windowDelegate.getWindowSoftInputMode()
-                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN) {
+                    != WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING) {
                 windowDelegate.setWindowSoftInputMode(
-                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
             }
             UiUtils.showKeyboard(mUrlBar);
             // As the position of the navigation icon has changed, ensure the suggestions are
