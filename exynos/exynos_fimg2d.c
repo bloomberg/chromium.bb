@@ -293,20 +293,6 @@ static void g2d_set_direction(struct g2d_context *ctx,
 }
 
 /*
- * g2d_reset - reset fimg2d hardware.
- *
- * @ctx: a pointer to g2d_context structure.
- *
- */
-static void g2d_reset(struct g2d_context *ctx)
-{
-	ctx->cmd_nr = 0;
-	ctx->cmd_buf_nr = 0;
-
-	g2d_add_cmd(ctx, SOFT_RESET_REG, 0x01);
-}
-
-/*
  * g2d_flush - submit all commands and values in user side command buffer
  *		to command queue aware of fimg2d dma.
  *
