@@ -209,8 +209,7 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
                                                  Profile* profile)
     : BrowserMessageFilter(ChromeMsgStart),
       context_(render_process_id, profile),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
           base::Bind(&PluginInfoMessageFilter::ShutdownOnUIThread,
@@ -238,9 +237,6 @@ bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PluginInfoMessageFilter::OnDestruct() const {
-  const_cast<PluginInfoMessageFilter*>(this)->
-      weak_ptr_factory_.InvalidateWeakPtrs();
-
   // Destroy on the UI thread because we contain a |PrefMember|.
   content::BrowserThread::DeleteOnUIThread::Destruct(this);
 }
@@ -262,10 +258,8 @@ void PluginInfoMessageFilter::OnGetPluginInfo(
     IPC::Message* reply_msg) {
   GetPluginInfo_Params params = {render_frame_id, url, main_frame_origin,
                                  mime_type};
-  PluginService::GetInstance()->GetPlugins(
-      base::Bind(&PluginInfoMessageFilter::PluginsLoaded,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 params, reply_msg));
+  PluginService::GetInstance()->GetPlugins(base::Bind(
+      &PluginInfoMessageFilter::PluginsLoaded, this, params, reply_msg));
 }
 
 void PluginInfoMessageFilter::PluginsLoaded(

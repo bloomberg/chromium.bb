@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -155,7 +154,6 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
       shutdown_notifier_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  base::WeakPtrFactory<PluginInfoMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInfoMessageFilter);
 };
