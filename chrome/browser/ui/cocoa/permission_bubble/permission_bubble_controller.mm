@@ -282,9 +282,10 @@ const NSInteger kFullscreenLeftOffset = 40;
 }
 
 - (void)showWindow:(id)sender {
-  if ([self hasVisibleLocationBar]) {
-    decoration_ = [[self.parentWindow windowController] locationBarBridge]
-                      ->GetPageInfoDecoration();
+  LocationBarViewMac* bridge =
+      [[self.parentWindow windowController] locationBarBridge];
+  if ([self hasVisibleLocationBar] && bridge) {
+    decoration_ = bridge->GetPageInfoDecoration();
     decoration_->SetActive(true);
   }
 
