@@ -9,42 +9,42 @@
   <release seq="1">
     <includes>
       <!-- Source/core/css/html.css processed through minimize_css.py -->
-      <include name="IDR_UASTYLE_HTML_CSS" file="${html_min_css}" type="BINDATA"/>
-      <include name="IDR_UASTYLE_QUIRKS_CSS" file="../Source/core/css/quirks.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_VIEW_SOURCE_CSS" file="../Source/core/css/view-source.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS" file="../Source/core/css/themeChromiumAndroid.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_FULLSCREEN_ANDROID_CSS" file="../Source/core/css/fullscreenAndroid.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS" file="../Source/core/css/mediaControlsAndroid.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS" file="../Source/core/css/themeChromiumLinux.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_HTML_CSS" file="${html_min_css}" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_QUIRKS_CSS" file="../Source/core/css/quirks.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_VIEW_SOURCE_CSS" file="../Source/core/css/view-source.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS" file="../Source/core/css/themeChromiumAndroid.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_FULLSCREEN_ANDROID_CSS" file="../Source/core/css/fullscreenAndroid.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS" file="../Source/core/css/mediaControlsAndroid.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS" file="../Source/core/css/themeChromiumLinux.css" type="BINDATA" compress="gzip"/>
       <if expr="is_macosx">
-        <include name="IDR_UASTYLE_THEME_MAC_CSS" file="../Source/core/css/themeMac.css" type="BINDATA"/>
+        <include name="IDR_UASTYLE_THEME_MAC_CSS" file="../Source/core/css/themeMac.css" type="BINDATA" compress="gzip"/>
       </if>
-      <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../Source/core/css/themeInputMultipleFields.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../Source/core/css/themeWin.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../Source/core/css/themeWinQuirks.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_SVG_CSS" file="../Source/core/css/svg.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_MATHML_CSS" file="../Source/core/css/mathml.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_MEDIA_CONTROLS_CSS" file="../Source/core/css/mediaControls.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../Source/core/css/fullscreen.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../Source/core/css/xhtmlmp.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../Source/core/css/viewportAndroid.css" type="BINDATA"/>
-      <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../Source/core/css/viewportTelevision.css" type="BINDATA"/>
+      <include name="IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS" file="../Source/core/css/themeInputMultipleFields.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_THEME_WIN_CSS" file="../Source/core/css/themeWin.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_THEME_WIN_QUIRKS_CSS" file="../Source/core/css/themeWinQuirks.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_SVG_CSS" file="../Source/core/css/svg.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_MATHML_CSS" file="../Source/core/css/mathml.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_MEDIA_CONTROLS_CSS" file="../Source/core/css/mediaControls.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../Source/core/css/fullscreen.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../Source/core/css/xhtmlmp.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../Source/core/css/viewportAndroid.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../Source/core/css/viewportTelevision.css" type="BINDATA" compress="gzip"/>
 
-      <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA"/>
-      <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../Source/core/xml/DocumentXMLTreeViewer.css" type="BINDATA"/>
-      <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA"/>
+      <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA" compress="gzip"/>
+      <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../Source/core/xml/DocumentXMLTreeViewer.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA" compress="gzip"/>
       <if expr="not is_android">
-        <include name="IDR_PICKER_COMMON_JS" file="../Source/web/resources/pickerCommon.js" type="BINDATA"/>
-        <include name="IDR_PICKER_COMMON_CSS" file="../Source/web/resources/pickerCommon.css" type="BINDATA"/>
-        <include name="IDR_CALENDAR_PICKER_CSS" file="../Source/web/resources/calendarPicker.css" type="BINDATA"/>
-        <include name="IDR_CALENDAR_PICKER_JS" file="../Source/web/resources/calendarPicker.js" type="BINDATA"/>
-        <include name="IDR_PICKER_BUTTON_CSS" file="../Source/web/resources/pickerButton.css" type="BINDATA"/>
-        <include name="IDR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/suggestionPicker.css" type="BINDATA"/>
-        <include name="IDR_SUGGESTION_PICKER_JS" file="../Source/web/resources/suggestionPicker.js" type="BINDATA"/>
-        <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/colorSuggestionPicker.css" type="BINDATA"/>
-        <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../Source/web/resources/colorSuggestionPicker.js" type="BINDATA"/>
-        <include name="IDR_LIST_PICKER_CSS" file="../Source/web/resources/listPicker.css" type="BINDATA"/>
-        <include name="IDR_LIST_PICKER_JS" file="../Source/web/resources/listPicker.js" type="BINDATA"/>
+        <include name="IDR_PICKER_COMMON_JS" file="../Source/web/resources/pickerCommon.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_PICKER_COMMON_CSS" file="../Source/web/resources/pickerCommon.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_CALENDAR_PICKER_CSS" file="../Source/web/resources/calendarPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_CALENDAR_PICKER_JS" file="../Source/web/resources/calendarPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_PICKER_BUTTON_CSS" file="../Source/web/resources/pickerButton.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/suggestionPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_SUGGESTION_PICKER_JS" file="../Source/web/resources/suggestionPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/colorSuggestionPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../Source/web/resources/colorSuggestionPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_LIST_PICKER_CSS" file="../Source/web/resources/listPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_LIST_PICKER_JS" file="../Source/web/resources/listPicker.js" type="BINDATA" compress="gzip"/>
       </if>
       <if expr="use_concatenated_impulse_responses">
         <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.flac" type="BINDATA"/>
