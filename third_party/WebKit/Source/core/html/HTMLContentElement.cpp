@@ -33,6 +33,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ElementShadowV0.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/UseCounter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -50,7 +51,9 @@ inline HTMLContentElement::HTMLContentElement(Document& document,
     : InsertionPoint(contentTag, document),
       m_shouldParseSelect(false),
       m_isValidSelector(true),
-      m_filter(filter) {}
+      m_filter(filter) {
+  UseCounter::count(document, UseCounter::HTMLContentElement);
+}
 
 HTMLContentElement::~HTMLContentElement() {}
 

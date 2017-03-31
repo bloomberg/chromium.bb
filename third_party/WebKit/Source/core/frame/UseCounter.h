@@ -1513,6 +1513,9 @@ class CORE_EXPORT UseCounter {
     WebBluetoothRemoteServerGetPrimaryServices = 1893,
     WebBluetoothRemoteServiceGetCharacteristic = 1894,
     WebBluetoothRemoteServiceGetCharacteristics = 1895,
+    HTMLContentElement = 1896,
+    HTMLShadowElement = 1897,
+    HTMLSlotElement = 1898,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

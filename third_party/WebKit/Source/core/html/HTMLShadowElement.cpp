@@ -33,6 +33,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 
 namespace blink {
@@ -40,7 +41,9 @@ namespace blink {
 class Document;
 
 inline HTMLShadowElement::HTMLShadowElement(Document& document)
-    : InsertionPoint(HTMLNames::shadowTag, document) {}
+    : InsertionPoint(HTMLNames::shadowTag, document) {
+  UseCounter::count(document, UseCounter::HTMLShadowElement);
+}
 
 DEFINE_NODE_FACTORY(HTMLShadowElement)
 

@@ -39,6 +39,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/SlotAssignment.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/AssignedNodesOptions.h"
 #include "core/probe/CoreProbes.h"
 
@@ -48,6 +49,7 @@ using namespace HTMLNames;
 
 inline HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(slotTag, document) {
+  UseCounter::count(document, UseCounter::HTMLSlotElement);
   setHasCustomStyleCallbacks();
 }
 
