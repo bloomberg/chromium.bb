@@ -556,7 +556,7 @@ if (is_win) {
   }
 
   compiled_action("chrome_app_strings") {
-    tool = "//chrome/tools/mac_helpers:infoplist_strings_tool"
+    tool = "//chrome/tools/build/mac:infoplist_strings_tool"
 
     inputs = [
       chrome_version_file,
