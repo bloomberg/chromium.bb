@@ -27,12 +27,6 @@ Polymer({
       type: Object,
       notify: true,
     },
-
-    /** @private */
-    isGuest_: {
-      type: Boolean,
-      value: function() { return loadTimeData.getBoolean('isGuest'); }
-    },
   },
 
 // <if expr="chromeos">

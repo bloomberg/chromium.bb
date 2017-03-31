@@ -62,6 +62,12 @@ Polymer({
         return loadTimeData.getBoolean('enableAdjustableLargeCursor');
       },
     },
+
+    /** @private */
+    isGuest_: {
+      type: Boolean,
+      value: function() { return loadTimeData.getBoolean('isGuest'); }
+    },
   },
 
   /** @private */
