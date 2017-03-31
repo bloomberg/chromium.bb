@@ -34,40 +34,13 @@ static const size_t kRenderQuantumFrames = 128;
 // This is a typical sample rate.
 static const float kTestingSampleRate = 44100;
 
-// A null WorkerReportingProxy, supplied when creating AudioWorkletThreads.
-class TestAudioWorkletReportingProxy : public WorkerReportingProxy {
- public:
-  static std::unique_ptr<TestAudioWorkletReportingProxy> create() {
-    return WTF::wrapUnique(new TestAudioWorkletReportingProxy());
-  }
-
-  // (Empty) WorkerReportingProxy implementation:
-  void countFeature(UseCounter::Feature) override {}
-  void countDeprecation(UseCounter::Feature) override {}
-  void reportException(const String& errorMessage,
-                       std::unique_ptr<SourceLocation>,
-                       int exceptionId) override {}
-  void reportConsoleMessage(MessageSource,
-                            MessageLevel,
-                            const String& message,
-                            SourceLocation*) override {}
-  void postMessageToPageInspector(const String&) override {}
-  void didEvaluateWorkerScript(bool success) override {}
-  void didCloseWorkerGlobalScope() override {}
-  void willDestroyWorkerGlobalScope() override {}
-  void didTerminateWorkerThread() override {}
-
- private:
-  TestAudioWorkletReportingProxy() {}
-};
-
 }  // namespace
 
 class AudioWorkletGlobalScopeTest : public ::testing::Test {
  public:
   void SetUp() override {
     AudioWorkletThread::createSharedBackingThreadForTest();
-    m_reportingProxy = TestAudioWorkletReportingProxy::create();
+    m_reportingProxy = WTF::makeUnique<WorkerReportingProxy>();
     m_securityOrigin =
         SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
   }

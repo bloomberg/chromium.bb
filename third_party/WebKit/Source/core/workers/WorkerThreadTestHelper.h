@@ -57,51 +57,6 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
   }
 };
 
-class MockWorkerReportingProxy : public WorkerReportingProxy {
- public:
-  MockWorkerReportingProxy() {}
-  ~MockWorkerReportingProxy() override {}
-
-  MOCK_METHOD1(countFeature, void(UseCounter::Feature));
-  MOCK_METHOD1(countDeprecation, void(UseCounter::Feature));
-  MOCK_METHOD3(reportExceptionMock,
-               void(const String& errorMessage,
-                    SourceLocation*,
-                    int exceptionId));
-  MOCK_METHOD4(reportConsoleMessage,
-               void(MessageSource,
-                    MessageLevel,
-                    const String& message,
-                    SourceLocation*));
-  MOCK_METHOD1(postMessageToPageInspector, void(const String&));
-
-  MOCK_METHOD1(didCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
-  MOCK_METHOD0(didInitializeWorkerContext, void());
-  MOCK_METHOD2(willEvaluateWorkerScriptMock,
-               void(size_t scriptSize, size_t cachedMetadataSize));
-  MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
-  MOCK_METHOD0(didCloseWorkerGlobalScope, void());
-  MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
-  MOCK_METHOD0(didTerminateWorkerThread, void());
-
-  void reportException(const String& errorMessage,
-                       std::unique_ptr<SourceLocation> location,
-                       int exceptionId) {
-    reportExceptionMock(errorMessage, location.get(), exceptionId);
-  }
-
-  void willEvaluateWorkerScript(size_t scriptSize,
-                                size_t cachedMetadataSize) override {
-    m_scriptEvaluationEvent.signal();
-    willEvaluateWorkerScriptMock(scriptSize, cachedMetadataSize);
-  }
-
-  void waitUntilScriptEvaluation() { m_scriptEvaluationEvent.wait(); }
-
- private:
-  WaitableEvent m_scriptEvaluationEvent;
-};
-
 class MockWorkerThreadLifecycleObserver final
     : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>,
       public WorkerThreadLifecycleObserver {

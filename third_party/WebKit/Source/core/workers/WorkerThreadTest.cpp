@@ -4,16 +4,16 @@
 
 #include "core/workers/WorkerThread.h"
 
+#include <memory>
+#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 using testing::_;
-using testing::AnyNumber;
 using testing::AtMost;
 
 namespace blink {
@@ -21,6 +21,32 @@ namespace blink {
 using ExitCode = WorkerThread::ExitCode;
 
 namespace {
+
+class MockWorkerReportingProxy final : public WorkerReportingProxy {
+ public:
+  MockWorkerReportingProxy() = default;
+  ~MockWorkerReportingProxy() override = default;
+
+  MOCK_METHOD1(didCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
+  MOCK_METHOD0(didInitializeWorkerContext, void());
+  MOCK_METHOD2(willEvaluateWorkerScriptMock,
+               void(size_t scriptSize, size_t cachedMetadataSize));
+  MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
+  MOCK_METHOD0(didCloseWorkerGlobalScope, void());
+  MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
+  MOCK_METHOD0(didTerminateWorkerThread, void());
+
+  void willEvaluateWorkerScript(size_t scriptSize,
+                                size_t cachedMetadataSize) override {
+    m_scriptEvaluationEvent.signal();
+    willEvaluateWorkerScriptMock(scriptSize, cachedMetadataSize);
+  }
+
+  void waitUntilScriptEvaluation() { m_scriptEvaluationEvent.wait(); }
+
+ private:
+  WaitableEvent m_scriptEvaluationEvent;
+};
 
 // Used as a debugger task. Waits for a signal from the main thread.
 void waitForSignalTask(WorkerThread* workerThread,
@@ -85,7 +111,6 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(1);
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(true)).Times(1);
-    EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
     EXPECT_CALL(*m_lifecycleObserver, contextDestroyed(_)).Times(1);
@@ -97,7 +122,6 @@ class WorkerThreadTest : public ::testing::Test {
         .Times(AtMost(1));
     EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _))
         .Times(AtMost(1));
-    EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope())
         .Times(AtMost(1));
@@ -109,7 +133,6 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(1);
-    EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(false)).Times(1);
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
@@ -263,7 +286,6 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
   EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
   EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
-  EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
   EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
   EXPECT_CALL(*m_lifecycleObserver, contextDestroyed(_)).Times(1);
 

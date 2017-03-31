@@ -11,6 +11,7 @@
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/WaitableEvent.h"
 #include "platform/geometry/IntSize.h"
@@ -237,15 +238,14 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   }
 
   void onSetUp() override {
-    m_mockWorkerReportingProxy = WTF::makeUnique<MockWorkerReportingProxy>();
+    m_reportingProxy = WTF::makeUnique<WorkerReportingProxy>();
     m_securityOrigin = document().getSecurityOrigin();
     m_parentFrameTaskRunners =
         ParentFrameTaskRunners::create(&m_dummyPageHolder->frame());
-    m_workerThread = WTF::wrapUnique(
-        new WorkerThreadForTest(this, *m_mockWorkerReportingProxy));
+    m_workerThread =
+        WTF::wrapUnique(new WorkerThreadForTest(this, *m_reportingProxy));
     m_loadingContext = ThreadableLoadingContext::create(document());
 
-    expectWorkerLifetimeReportingCalls();
     m_workerThread->startWithSourceCode(m_securityOrigin.get(),
                                         "//fake source code",
                                         m_parentFrameTaskRunners.get());
@@ -275,17 +275,6 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
 
  private:
   Document& document() { return m_dummyPageHolder->document(); }
-
-  void expectWorkerLifetimeReportingCalls() {
-    EXPECT_CALL(*m_mockWorkerReportingProxy, didCreateWorkerGlobalScope(_))
-        .Times(1);
-    EXPECT_CALL(*m_mockWorkerReportingProxy, didEvaluateWorkerScript(true))
-        .Times(1);
-    EXPECT_CALL(*m_mockWorkerReportingProxy, willDestroyWorkerGlobalScope())
-        .Times(1);
-    EXPECT_CALL(*m_mockWorkerReportingProxy, didTerminateWorkerThread())
-        .Times(1);
-  }
 
   void workerCreateLoader(ThreadableLoaderClient* client,
                           WaitableEvent* event,
@@ -349,7 +338,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   }
 
   RefPtr<SecurityOrigin> m_securityOrigin;
-  std::unique_ptr<MockWorkerReportingProxy> m_mockWorkerReportingProxy;
+  std::unique_ptr<WorkerReportingProxy> m_reportingProxy;
   std::unique_ptr<WorkerThreadForTest> m_workerThread;
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;

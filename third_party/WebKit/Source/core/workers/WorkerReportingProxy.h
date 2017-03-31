@@ -48,16 +48,16 @@ class CORE_EXPORT WorkerReportingProxy {
  public:
   virtual ~WorkerReportingProxy() {}
 
-  virtual void countFeature(UseCounter::Feature) = 0;
-  virtual void countDeprecation(UseCounter::Feature) = 0;
+  virtual void countFeature(UseCounter::Feature) {}
+  virtual void countDeprecation(UseCounter::Feature) {}
   virtual void reportException(const String& errorMessage,
                                std::unique_ptr<SourceLocation>,
-                               int exceptionId) = 0;
+                               int exceptionId) {}
   virtual void reportConsoleMessage(MessageSource,
                                     MessageLevel,
                                     const String& message,
-                                    SourceLocation*) = 0;
-  virtual void postMessageToPageInspector(const String&) = 0;
+                                    SourceLocation*) {}
+  virtual void postMessageToPageInspector(const String&) {}
 
   // Invoked when the new WorkerGlobalScope is created. This is called after
   // didLoadWorkerScript().
@@ -79,19 +79,19 @@ class CORE_EXPORT WorkerReportingProxy {
 
   // Invoked when the worker script is evaluated. |success| is true if the
   // evaluation completed with no uncaught exception.
-  virtual void didEvaluateWorkerScript(bool success) = 0;
+  virtual void didEvaluateWorkerScript(bool success) {}
 
   // Invoked when close() is invoked on the worker context.
-  virtual void didCloseWorkerGlobalScope() = 0;
+  virtual void didCloseWorkerGlobalScope() {}
 
   // Invoked when the thread is about to be stopped and WorkerGlobalScope
   // is to be destructed. When this is called, it is guaranteed that
   // WorkerGlobalScope is still alive.
-  virtual void willDestroyWorkerGlobalScope() = 0;
+  virtual void willDestroyWorkerGlobalScope() {}
 
   // Invoked when the thread is stopped and WorkerGlobalScope is being
   // destructed. This is the last method that is called on this interface.
-  virtual void didTerminateWorkerThread() = 0;
+  virtual void didTerminateWorkerThread() {}
 };
 
 }  // namespace blink
