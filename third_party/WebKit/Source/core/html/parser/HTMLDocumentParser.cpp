@@ -883,6 +883,10 @@ void HTMLDocumentParser::append(const String& inputSource) {
   const SegmentedString source(inputSource);
 
   if (document()->isPrefetchOnly()) {
+    // Do not prefetch if there is an appcache.
+    if (document()->loader()->response().appCacheID() != 0)
+      return;
+
     if (!m_preloadScanner)
       m_preloadScanner = createPreloadScanner();
 

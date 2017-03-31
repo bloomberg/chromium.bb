@@ -5,8 +5,10 @@
 #include "base/command_line.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -40,6 +42,8 @@ namespace prerender {
 
 // These URLs used for test resources must be relative with the exception of
 // |kPrefetchLoaderPath|.
+const char kPrefetchAppcache[] = "prerender/prefetch_appcache.html";
+const char kPrefetchAppcacheManifest[] = "prerender/appcache.manifest";
 const char kPrefetchImagePage[] = "prerender/prefetch_image.html";
 const char kPrefetchJpeg[] = "prerender/image.jpeg";
 const char kPrefetchLoaderPath[] = "/prerender/prefetch_loader.html";
@@ -87,6 +91,15 @@ class NoStatePrefetchBrowserTest
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&prerender::test_utils::CreateCountingInterceptorOnIO, url,
                    url_file, counter->AsWeakPtr()));
+  }
+
+  base::SimpleTestTickClock* OverridePrerenderManagerTimeTicks() {
+    auto clock = base::MakeUnique<base::SimpleTestTickClock>();
+    auto* clock_ptr = clock.get();
+    // The default zero time causes the prerender manager to do strange things.
+    clock->Advance(base::TimeDelta::FromSeconds(1));
+    GetPrerenderManager()->SetTickClockForTesting(std::move(clock));
+    return clock_ptr;
   }
 
  protected:
@@ -185,15 +198,10 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchHistograms) {
 IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchImage) {
   RequestCounter image_counter;
   CountRequestFor(kPrefetchJpeg, &image_counter);
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_IMAGE_URL", MakeAbsolute(kPrefetchJpeg)));
-  std::string main_page_path;
-  net::test_server::GetFilePathWithReplacements(
-      kPrefetchImagePage, replacement_text, &main_page_path);
-  // Note CountRequestFor cannot be used on the main page as the test server
-  // must handling the image url replacement.
-  PrefetchFromFile(main_page_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  GURL main_page_url =
+      GetURLWithReplacement(kPrefetchImagePage, "REPLACE_WITH_IMAGE_URL",
+                            MakeAbsolute(kPrefetchJpeg));
+  PrefetchFromURL(main_page_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   image_counter.WaitForCount(1);
 }
 
@@ -405,17 +413,13 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, SSLSubresourceError) {
   https_server.ServeFilesFromSourceDirectory("chrome/test/data");
   ASSERT_TRUE(https_server.Start());
   GURL https_url = https_server.GetURL("/prerender/image.jpeg");
-  base::StringPairs replacement_text;
-  replacement_text.push_back(
-      std::make_pair("REPLACE_WITH_IMAGE_URL", https_url.spec()));
-  std::string main_page_path;
-  net::test_server::GetFilePathWithReplacements(
-      kPrefetchImagePage, replacement_text, &main_page_path);
+  GURL main_page_url = GetURLWithReplacement(
+      kPrefetchImagePage, "REPLACE_WITH_IMAGE_URL", https_url.spec());
   RequestCounter script_counter;
   CountRequestFor(kPrefetchScript, &script_counter);
 
   std::unique_ptr<TestPrerender> prerender =
-      PrefetchFromFile(main_page_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+      PrefetchFromURL(main_page_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   // Checks that the presumed failure of the image load didn't affect the script
   // fetch. This assumes waiting for the script load is enough to see any error
   // from the image load.
@@ -601,6 +605,92 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServiceWorkerIntercept) {
   CountRequestFor(kPrefetchPng, &image_counter);
   PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   image_counter.WaitForCount(1);
+}
+
+// Checks that prefetching happens if an appcache is mentioned in the html tag
+// but is uninitialized.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheHtmlUninitialized) {
+  RequestCounter image_counter;
+  CountRequestFor(kPrefetchPng, &image_counter);
+  PrefetchFromFile(kPrefetchAppcache, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  image_counter.WaitForCount(1);
+}
+
+// Checks that prefetching does not if an initialized appcache is mentioned in
+// the html tag.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheHtmlInitialized) {
+  base::TimeTicks current_time = GetPrerenderManager()->GetCurrentTimeTicks();
+  auto* clock = OverridePrerenderManagerTimeTicks();
+  // Some navigations have already occurred in test setup. In order to track
+  // duplicate prefetches correctly the test clock needs to be beyond those
+  // navigations.
+  clock->SetNowTicks(current_time);
+  clock->Advance(base::TimeDelta::FromSeconds(600));
+
+  // Fill manifest with the image url. The main resource will be cached
+  // implicitly.
+  GURL image_url = src_server()->GetURL(MakeAbsolute(kPrefetchPng));
+  GURL manifest_url = GetURLWithReplacement(
+      kPrefetchAppcacheManifest, "REPLACE_WITH_URL", image_url.spec());
+  GURL appcache_page_url = GetURLWithReplacement(
+      kPrefetchAppcache, "REPLACE_WITH_MANIFEST", manifest_url.spec());
+
+  // Load the page into the appcache.
+  ui_test_utils::NavigateToURL(current_browser(), appcache_page_url);
+
+  // If a page is prefetch shortly after being loading, the prefetch is
+  // canceled. Advancing the clock prevents the cancelation.
+  clock->Advance(base::TimeDelta::FromSeconds(6000));
+
+  RequestCounter script_counter;
+  CountRequestFor(kPrefetchScript, &script_counter);
+  // While the prefetch stops when it sees the AppCache manifest, from the point
+  // of view of the prerender manager the prefetch stops normally.
+  PrefetchFromURL(appcache_page_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // The prefetch should have been canceled before the script in
+  // kPrefetchAppcache is loaded (note the script is not mentioned in the
+  // manifest).
+  script_counter.WaitForCount(0);
+}
+
+// If a page has been cached by another AppCache, the prefetch should be
+// canceled.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, AppCacheRegistered) {
+  base::TimeTicks current_time = GetPrerenderManager()->GetCurrentTimeTicks();
+  auto* clock = OverridePrerenderManagerTimeTicks();
+  // Some navigations have already occurred in test setup. In order to track
+  // duplicate prefetches correctly the test clock needs to be beyond those
+  // navigations.
+  clock->SetNowTicks(current_time);
+  clock->Advance(base::TimeDelta::FromSeconds(600));
+
+  // Fill manifest with kPrefetchPage so that it is cached without explicitly
+  // listing a manifest.
+  GURL prefetch_page_url = src_server()->GetURL(MakeAbsolute(kPrefetchPage));
+  GURL manifest_url = GetURLWithReplacement(
+      kPrefetchAppcacheManifest, "REPLACE_WITH_URL", prefetch_page_url.spec());
+
+  GURL appcache_page_url = GetURLWithReplacement(
+      kPrefetchAppcache, "REPLACE_WITH_MANIFEST", manifest_url.spec());
+
+  // Load the page into the appcache.
+  ui_test_utils::NavigateToURL(current_browser(), appcache_page_url);
+  // Load the prefetch page so it can be cached.
+  ui_test_utils::NavigateToURL(current_browser(), prefetch_page_url);
+
+  // If a page is prefetch shortly after being loading, the prefetch is
+  // canceled. Advancing the clock prevents the cancelation.
+  clock->Advance(base::TimeDelta::FromSeconds(6000));
+
+  RequestCounter page_counter;
+  CountRequestFor(kPrefetchPage, &page_counter);
+  RequestCounter script_counter;
+  CountRequestFor(kPrefetchScript, &script_counter);
+  PrefetchFromURL(prefetch_page_url, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  // Neither the page nor the script should be prefetched.
+  script_counter.WaitForCount(0);
+  page_counter.WaitForCount(0);
 }
 
 }  // namespace prerender
