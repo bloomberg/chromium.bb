@@ -5481,7 +5481,7 @@ static void av1_default_coef_cdfs(FRAME_CONTEXT *fc) {
                    default_coef_head_cdf_32x32[i][j][k][l]);
 #if CONFIG_TX64X64
           av1_copy(fc->coef_head_cdfs[TX_64X64][i][j][k][l],
-                   default_coef_head_cdf_64x64[i][j][k][l]);
+                   default_coef_head_cdf_32x32[i][j][k][l]);
 #endif
         }
 }

@@ -855,7 +855,7 @@ static INLINE void write_coeff_extra(const aom_prob *pb, int value,
 }
 #endif
 
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_NEW_TOKENSET && !CONFIG_LV_MAP
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx_size,

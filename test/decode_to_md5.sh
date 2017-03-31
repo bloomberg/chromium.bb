@@ -50,7 +50,7 @@ decode_to_md5() {
 
 decode_to_md5_av1() {
   # expected MD5 sum for the last frame.
-  local expected_md5="2da13fe8dcd86d86b4bd8d4147f3dce6"
+  local expected_md5="26d3ef1d60754a1f6acb603c3763efbe"
   local file="${AV1_IVF_FILE}"
 
   if [ "$(av1_decode_available)" = "yes" ]; then
