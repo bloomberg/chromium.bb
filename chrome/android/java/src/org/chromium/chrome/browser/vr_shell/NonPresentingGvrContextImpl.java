@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.app.Activity;
+import android.os.StrictMode;
 
 import com.google.vr.ndk.base.GvrLayout;
 
@@ -15,7 +16,13 @@ public class NonPresentingGvrContextImpl implements NonPresentingGvrContext {
     private GvrLayout mGvrLayout;
 
     public NonPresentingGvrContextImpl(Activity activity) {
-        mGvrLayout = new GvrLayout(activity);
+        // Creating the GvrLayout can sometimes create the Daydream config file.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+        try {
+            mGvrLayout = new GvrLayout(activity);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     @Override

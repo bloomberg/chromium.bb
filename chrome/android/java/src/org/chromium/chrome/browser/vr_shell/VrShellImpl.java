@@ -464,8 +464,8 @@ public class VrShellImpl
     public void onResume() {
         super.onResume();
         if (mNativeVrShell != 0) {
-            // Refreshing the viewer profile accesses disk, so we need to temporarily allow disk
-            // reads. The GVR team promises this will be fixed when they launch.
+            // Refreshing the viewer profile may accesses disk under some circumstances outside of
+            // our control.
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
             try {
                 nativeOnResume(mNativeVrShell);
