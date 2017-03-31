@@ -287,7 +287,7 @@ int SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
     v64_store_aligned(&y[i * ystride], v128_low_v64(res));
     v64_store_aligned(&y[(i + 1) * ystride], v128_high_v64(res));
   }
-  return (v128_dotp_s16(total_abs, v128_dup_16(1)) + 2) >> 2;
+  return (int)((v128_dotp_s16(total_abs, v128_dup_16(1)) + 2) >> 2);
 }
 
 int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
@@ -364,5 +364,5 @@ int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
     res = v128_add_16(row, res);
     v128_store_unaligned(&y[i * ystride], res);
   }
-  return (v128_dotp_s16(total_abs, v128_dup_16(1)) + 8) >> 4;
+  return (int)((v128_dotp_s16(total_abs, v128_dup_16(1)) + 8) >> 4);
 }
