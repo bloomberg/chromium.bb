@@ -162,9 +162,9 @@ Status PrepareCommandLine(uint16_t port,
     return Status(kUnknownError,
                   "cannot create temp dir for unpacking extensions");
   }
-  status = internal::ProcessExtensions(capabilities.extensions,
-                                       extension_dir->GetPath(), true,
-                                       &switches, extension_bg_pages);
+  status = internal::ProcessExtensions(
+      capabilities.extensions, extension_dir->GetPath(),
+      capabilities.use_automation_extension, &switches, extension_bg_pages);
   if (status.IsError())
     return status;
   switches.AppendToCommandLine(&command);

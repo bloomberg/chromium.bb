@@ -474,6 +474,8 @@ Status ParseChromeOptions(
         base::Bind(&ParseString, &capabilities->minidump_path);
     parser_map["mobileEmulation"] = base::Bind(&ParseMobileEmulation);
     parser_map["prefs"] = base::Bind(&ParseDict, &capabilities->prefs);
+    parser_map["useAutomationExtension"] =
+        base::Bind(&ParseBoolean, &capabilities->use_automation_extension);
   }
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
@@ -614,7 +616,8 @@ Capabilities::Capabilities()
       detach(false),
       force_devtools_screenshot(true),
       page_load_strategy(PageLoadStrategy::kNormal),
-      network_emulation_enabled(false) {}
+      network_emulation_enabled(false),
+      use_automation_extension(true) {}
 
 Capabilities::~Capabilities() {}
 

@@ -1831,6 +1831,13 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     driver.SwitchToFrame('iframe')
     self.assertEqual('two', driver.ExecuteScript("return window['iframe_var']"))
 
+  def testDontUseAutomationExtension(self):
+    driver = self.CreateDriver(
+        experimental_options={'useAutomationExtension': False})
+    driver.Load('chrome:version')
+    command_line = driver.FindElement('id', 'command_line').GetText()
+    self.assertNotIn('load-extension', command_line)
+
 
 class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.logPath."""

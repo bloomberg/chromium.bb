@@ -155,6 +155,8 @@ struct Capabilities {
   Switches switches;
 
   std::set<WebViewInfo::Type> window_types;
+
+  bool use_automation_extension;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
