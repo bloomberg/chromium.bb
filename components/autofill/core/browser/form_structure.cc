@@ -375,6 +375,8 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmService* ukm_service) {
   if (has_author_specified_upi_vpa_hint_) {
     AutofillMetrics::LogDeveloperEngagementMetric(
         AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
+    AutofillMetrics::LogDeveloperEngagementUkm(
+        ukm_service, source_url(), AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
   }
 
   AutofillMetrics::LogDetermineHeuristicTypesTiming(

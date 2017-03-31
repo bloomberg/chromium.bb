@@ -1660,6 +1660,54 @@ TEST_F(AutofillMetricsTest,
   }
 }
 
+// Verify that we correctly log UKM for form parsed with type hints regarding
+// developer engagement.
+TEST_F(AutofillMetricsTest, UkmDeveloperEngagement_LogUpiVpaTypeHint) {
+  EnableUkmLogging();
+  ukm::TestUkmService* ukm_service = autofill_client_.GetTestUkmService();
+
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("Name", "name", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Email", "email", "", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("Payment", "payment", "", "text", &field);
+  field.autocomplete_attribute = "upi-vpa";
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+
+  // Expect the "upi-vpa hint" metric to be logged.
+  {
+    autofill_manager_->OnFormsSeen(forms, TimeTicks());
+    autofill_manager_->Reset();
+
+    ASSERT_EQ(1U, ukm_service->sources_count());
+    const ukm::UkmSource* source =
+        ukm_service->GetSourceForUrl(form.origin.spec().c_str());
+    ASSERT_NE(nullptr, source);
+
+    ASSERT_EQ(1U, ukm_service->entries_count());
+    const ukm::UkmEntry* entry = ukm_service->GetEntry(0);
+    EXPECT_EQ(source->id(), entry->source_id());
+
+    ukm::Entry entry_proto;
+    entry->PopulateProto(&entry_proto);
+    EXPECT_EQ(source->id(), entry_proto.source_id());
+    EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
+              entry_proto.event_hash());
+    const ukm::Entry_Metric* metric = FindMetric(
+        internal::kUKMDeveloperEngagementMetricName, entry_proto.metrics());
+    ASSERT_NE(nullptr, metric);
+    EXPECT_EQ(AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT, metric->value());
+  }
+}
+
 // Test that the profile count is logged correctly.
 TEST_F(AutofillMetricsTest, StoredProfileCount) {
   // The metric should be logged when the profiles are first loaded.
