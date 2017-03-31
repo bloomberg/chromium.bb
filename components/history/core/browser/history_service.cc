@@ -633,7 +633,7 @@ void HistoryService::SetLastResortFavicons(
     return;
 
   PostTaskAndReplyWithResult(
-      FROM_HERE,
+      backend_task_runner_.get(), FROM_HERE,
       base::Bind(&HistoryBackend::SetLastResortFavicons, history_backend_,
                  page_url, icon_type, icon_url, bitmaps),
       callback);
