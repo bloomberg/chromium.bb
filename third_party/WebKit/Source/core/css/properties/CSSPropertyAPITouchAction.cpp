@@ -19,19 +19,12 @@ static bool consumePan(CSSParserTokenRange& range,
   CSSValueID id = range.peek().id();
   if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) &&
       !panX) {
-    if (id != CSSValuePanX &&
-        !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
-      return false;
     panX = CSSPropertyParserHelpers::consumeIdent(range);
   } else if ((id == CSSValuePanY || id == CSSValuePanDown ||
               id == CSSValuePanUp) &&
              !panY) {
-    if (id != CSSValuePanY &&
-        !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
-      return false;
     panY = CSSPropertyParserHelpers::consumeIdent(range);
-  } else if (id == CSSValuePinchZoom && !pinchZoom &&
-             RuntimeEnabledFeatures::cssTouchActionPinchZoomEnabled()) {
+  } else if (id == CSSValuePinchZoom && !pinchZoom) {
     pinchZoom = CSSPropertyParserHelpers::consumeIdent(range);
   } else {
     return false;

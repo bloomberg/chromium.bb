@@ -292,14 +292,6 @@
       status: "stable",
     },
     {
-      name: "CSSTouchActionPanDirections",
-      status: "stable",
-    },
-    {
-      name: "CSSTouchActionPinchZoom",
-      status: "stable",
-    },
-    {
       name: "CSSTypedOM",
       status: "experimental",
     },
