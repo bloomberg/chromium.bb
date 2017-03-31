@@ -604,6 +604,10 @@
     'libvpx': {
       'filepath': 'third_party/libvpx'
     },
+    'libxml_xslt': {
+      'filepath': 'third_party/libxml/' \
+                  '|third_party/libxslt/',
+    },
     'linux_fonts': {
       'filepath': 'ui/gfx/font_render_params_.*|'\
                   'ui/gfx/platform_font_linux.*|'\
@@ -1527,6 +1531,9 @@
     'blink_wtf': {
       'filepath': 'third_party/WebKit/Source/wtf',
     },
+    'blink_xml': {
+      'filepath': 'third_party/WebKit/Source/core/xml/'
+    },
     'blink_xmlhttprequest': {
       'filepath': 'third_party/WebKit/Source/core/xmlhttprequest/'
     },
@@ -1535,11 +1542,6 @@
                   '|content/shell/(common|browser|renderer)/layout_test/' \
                   '|content/test/layouttest_support.cc' \
                   '|content/public/test/layouttest_support.h' \
-    },
-    'xml': {
-      'filepath': 'third_party/WebKit/Source/core/xml/' \
-                  '|third_party/libxml/' \
-                  '|third_party/libxslt/',
     },
   },
 
@@ -1828,6 +1830,7 @@
                       'shimazu+worker@chromium.org'],
     'blink_wtf': ['blink-reviews-wtf@chromium.org',
                   'mikhail.pozdnyakov@intel.com'],
+    'blink_xml': ['dominicc+watchlist@chromium.org'],
     'blink_xmlhttprequest': ['tyoshino+watch@chromium.org'],
     'bookmarks': ['tfarina@chromium.org'],
     'bottombar': ['donnd+watch@chromium.org',
@@ -2018,6 +2021,8 @@
                'johannkoenig@chromium.org',
                'jzern@chromium.org',
                'tomfinegan@chromium.org'],
+    'libxml_xslt': ['ail@google.com',
+                    'dominicc+watchlist@chromium.org'],
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
@@ -2225,7 +2230,6 @@
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
-    'xml': ['dominicc+watchlist@chromium.org'],
     'zoom': ['wjmaclean@chromium.org'],
   },
 }
