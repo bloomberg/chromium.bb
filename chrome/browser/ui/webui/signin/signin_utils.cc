@@ -65,20 +65,20 @@ Browser* GetDesktopBrowser(content::WebUI* web_ui) {
   return browser;
 }
 
-void SetInitializedModalHeight(content::WebUI* web_ui,
+void SetInitializedModalHeight(Browser* browser,
+                               content::WebUI* web_ui,
                                const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   NOTREACHED();
 #else
+  if (!browser)
+    return;
+
   double height;
   const bool success = args->GetDouble(0, &height);
   DCHECK(success);
-
-  Browser* browser = GetDesktopBrowser(web_ui);
-  if (browser) {
-    browser->signin_view_controller()->SetModalSigninHeight(
-        static_cast<int>(height));
-  }
+  browser->signin_view_controller()->SetModalSigninHeight(
+      static_cast<int>(height));
 #endif
 }
 

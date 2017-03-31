@@ -34,7 +34,9 @@ const double kDefaultDialogHeight = 350.0;
 
 class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
  public:
-  explicit TestingSyncConfirmationHandler(content::WebUI* web_ui) {
+  explicit TestingSyncConfirmationHandler(Browser* browser,
+                                          content::WebUI* web_ui)
+      : SyncConfirmationHandler(browser) {
     set_web_ui(web_ui);
   }
 
@@ -55,10 +57,11 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     web_ui()->set_web_contents(
         browser()->tab_strip_model()->GetActiveWebContents());
 
-    auto handler = base::MakeUnique<TestingSyncConfirmationHandler>(web_ui());
+    auto handler =
+        base::MakeUnique<TestingSyncConfirmationHandler>(browser(), web_ui());
     handler_ = handler.get();
-    sync_confirmation_ui_.reset(
-        new SyncConfirmationUI(web_ui(), std::move(handler)));
+    sync_confirmation_ui_.reset(new SyncConfirmationUI(web_ui()));
+    web_ui()->AddMessageHandler(std::move(handler));
 
     // This dialog assumes the signin flow was completed, which kicks off the
     // SigninManager.
