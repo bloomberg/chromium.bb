@@ -389,7 +389,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mPaused) {
             // We can't enter VR before the application resumes, or we encounter bizarre crashes
             // related to gpu surfaces. Set this flag to enter VR on the next resume.
-            setWindowModeForVr();
             mEnteringVr = true;
         } else {
             enterVR();
@@ -401,7 +400,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mNativeVrShellDelegate == 0) return;
         if (mInVr) return;
         if (!isWindowModeCorrectForVr()) {
-            setWindowModeForVr();
+            setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
@@ -412,14 +411,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         }
         mEnteringVr = false;
         if (!createVrShell()) {
-            if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
-            mRestoreOrientation = null;
-            clearVrModeWindowFlags();
+            restoreWindowMode();
             setEnterVRResult(false);
             return;
         }
         mVrClassesWrapper.setVrModeEnabled(mActivity, true);
         mInVr = true;
+        // Lock orientation to landscape after enter VR.
+        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         addVrViews();
         mVrShell.initializeNative(mActivity.getActivityTab(), mRequestedWebVR);
@@ -435,7 +434,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
     @Override
     public void onSystemUiVisibilityChange(int visibility) {
-        if (mInVr && !isWindowModeCorrectForVr()) setWindowModeForVr();
+        if (mInVr && !isWindowModeCorrectForVr()) {
+            setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
     }
 
     private boolean isWindowModeCorrectForVr() {
@@ -444,12 +445,18 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         return flags == VR_SYSTEM_UI_FLAGS && orientation == Configuration.ORIENTATION_LANDSCAPE;
     }
 
-    private void setWindowModeForVr() {
+    private void setWindowModeForVr(int requestedOrientation) {
         if (mRestoreOrientation == null) {
             mRestoreOrientation = mActivity.getRequestedOrientation();
         }
-        mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        mActivity.setRequestedOrientation(requestedOrientation);
         setupVrModeWindowFlags();
+    }
+
+    private void restoreWindowMode() {
+        if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
+        mRestoreOrientation = null;
+        clearVrModeWindowFlags();
     }
 
     private void setEnterVRResult(boolean success) {
@@ -529,7 +536,12 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             // due to the lack of support for unexported activities.
             enterVR();
         } else {
+            // LANDSCAPE orientation is needed before we can safely enter VR. DON can make sure that
+            // the device is at LANDSCAPE orientation once it is finished. So here we use SENSOR to
+            // avoid forcing LANDSCAPE orientation in order to have a smoother transition.
+            setWindowModeForVr(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
             if (!mVrDaydreamApi.launchInVr(getEnterVRPendingIntent(mVrDaydreamApi, mActivity))) {
+                restoreWindowMode();
                 return ENTER_VR_CANCELLED;
             }
         }
@@ -568,6 +580,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             // If this is still set, it means the user backed out of the DON flow, and we won't be
             // receiving an intent from daydream.
             nativeSetPresentResult(mNativeVrShellDelegate, false);
+            restoreWindowMode();
             mRequestedWebVR = false;
         }
 
@@ -679,11 +692,9 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
             mVrClassesWrapper.setVrModeEnabled(mActivity, false);
             mLastVRExit = SystemClock.uptimeMillis();
         }
-        if (mRestoreOrientation != null) mActivity.setRequestedOrientation(mRestoreOrientation);
-        mRestoreOrientation = null;
+        restoreWindowMode();
         mVrShell.pause();
         removeVrViews();
-        clearVrModeWindowFlags();
         destroyVrShell();
         mActivity.getFullscreenManager().setPositionsForTabToNonFullscreen();
     }
