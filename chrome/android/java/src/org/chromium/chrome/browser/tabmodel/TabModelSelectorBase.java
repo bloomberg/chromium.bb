@@ -8,7 +8,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,12 +53,6 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
             @Override
             public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 notifyChanged();
-
-                Tab oldTab = getTabById(lastId);
-                if (tab.getId() != lastId) {
-                    WebContents oldWebContents = (oldTab == null) ? null : oldTab.getWebContents();
-                    nativeOnActiveTabChanged(oldWebContents, tab.getWebContents());
-                }
             }
 
             @Override
@@ -249,6 +242,4 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
             listener.onNewTabCreated(tab);
         }
     }
-
-    static native void nativeOnActiveTabChanged(WebContents oldContents, WebContents newContents);
 }

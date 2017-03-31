@@ -82,7 +82,12 @@ PermissionRequestManager::PermissionRequestManager(
       main_frame_has_fully_loaded_(false),
       persist_(true),
       auto_response_for_test_(NONE),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+#if defined(OS_ANDROID)
+  view_ = view_factory_.Run(web_contents);
+  view_->SetDelegate(this);
+#endif
+}
 
 PermissionRequestManager::~PermissionRequestManager() {
   if (view_ != NULL)
@@ -224,6 +229,11 @@ void PermissionRequestManager::CancelRequest(PermissionRequest* request) {
 }
 
 void PermissionRequestManager::HideBubble() {
+#if defined(ANDROID)
+  // The infobar system manages infobar lifetime and visibility so don't delete
+  // the PermissionPromptAndroid.
+  NOTREACHED();
+#else
   // Disengage from the existing view if there is one.
   if (!view_)
     return;
@@ -231,6 +241,7 @@ void PermissionRequestManager::HideBubble() {
   view_->SetDelegate(nullptr);
   view_->Hide();
   view_.reset();
+#endif
 }
 
 void PermissionRequestManager::DisplayPendingRequests() {
