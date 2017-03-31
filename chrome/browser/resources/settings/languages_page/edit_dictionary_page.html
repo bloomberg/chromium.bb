@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -19,11 +20,6 @@
 
       #newWord {
         width: var(--paper-input-max-width);
-      }
-
-      iron-list {
-        /* TODO(michaelpg): Size to fit the viewport. */
-        height: 300px;
       }
 
       iron-list .word {
@@ -50,7 +46,8 @@
       <h2>$i18n{customDictionaryWords}</h2>
       <div class="list-frame">
         <template is="dom-if" if="[[hasWords_(words_.length)]]">
-          <iron-list id="list" items="{{words_}}">
+          <iron-list id="list" items="{{words_}}"
+              scroll-target="[[subpageScrollTarget]]">
             <template>
               <div class="list-item">
                 <div class="word text-elide">[[item]]</div>

@@ -9,9 +9,20 @@
 Polymer({
   is: 'settings-edit-dictionary-page',
 
+  behaviors: [settings.GlobalScrollTargetBehavior],
+
   properties: {
     /** @private {string} */
     newWordValue_: String,
+
+    /**
+     * Needed by GlobalScrollTargetBehavior.
+     * @override
+     */
+    subpageRoute: {
+      type: Object,
+      value: settings.Route.EDIT_DICTIONARY,
+    },
 
     /** @private {!Array<string>} */
     words_: {
