@@ -150,7 +150,8 @@ TEST_F(ExternalProviderImplChromeOSTest, SyncDisabled) {
 
 // User signed in, sync service started, install app when sync is disabled by
 // policy.
-TEST_F(ExternalProviderImplChromeOSTest, PolicyDisabled) {
+// flaky: crbug.com/706506
+TEST_F(ExternalProviderImplChromeOSTest, DISABLED_PolicyDisabled) {
   InitServiceWithExternalProviders(true);
 
   // Log user in, start sync.
