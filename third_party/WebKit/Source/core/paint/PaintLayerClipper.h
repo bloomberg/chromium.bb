@@ -216,14 +216,18 @@ class CORE_EXPORT PaintLayerClipper {
   ALWAYS_INLINE bool shouldRespectOverflowClip(const ClipRectsContext&) const;
 
   // Returned clip rect in |output| is in the space of the context's rootLayer.
-  ALWAYS_INLINE void calculateClipRectWithGeometryMapper(
+  ALWAYS_INLINE void calculateBackgroundClipRectWithGeometryMapper(
       const ClipRectsContext&,
-      bool isForeground,
       ClipRect& output) const;
-  // Mutates the given rect into a rect in the space of the context's
-  // rootLayer.
-  ALWAYS_INLINE void mapLocalToRootWithGeometryMapper(const ClipRectsContext&,
-                                                      LayoutRect&) const;
+  ALWAYS_INLINE void calculateForegroundClipRectWithGeometryMapper(
+      const ClipRectsContext&,
+      ClipRect& output) const;
+
+  ALWAYS_INLINE void initializeCommonClipRectState(
+      const ClipRectsContext&,
+      PropertyTreeState& descendantPropertyTreeState,
+      PropertyTreeState& ancestorPropertyTreeState) const;
+
   // Same as calculateRects, but using GeometryMapper.
   ALWAYS_INLINE void calculateRectsWithGeometryMapper(
       const ClipRectsContext&,
@@ -233,9 +237,9 @@ class CORE_EXPORT PaintLayerClipper {
       ClipRect& foregroundRect,
       const LayoutPoint* offsetFromRoot = 0) const;
 
-  void ALWAYS_INLINE
-  applyOverflowClipToBackgroundRectWithGeometryMapper(const ClipRectsContext&,
-                                                      ClipRect&) const;
+  // Returns the visual rect of m_layer in local space. This includes
+  // filter effects.
+  ALWAYS_INLINE LayoutRect localVisualRect() const;
 
   const PaintLayer& m_layer;
   GeometryMapper* m_geometryMapper;

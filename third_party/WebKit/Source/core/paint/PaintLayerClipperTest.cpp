@@ -482,4 +482,32 @@ TEST_P(PaintLayerClipperTest, CSSClip) {
   EXPECT_EQ(LayoutRect(0, 0, 50, 100), foregroundRect.rect());
 }
 
+TEST_P(PaintLayerClipperTest, Filter) {
+  setBodyInnerHTML(
+      "<style>"
+      "  * { margin: 0 }"
+      "  #target { "
+      "    filter: drop-shadow(0 3px 4px #333); overflow: hidden;"
+      "    width: 100px; height: 200px;"
+      "  }"
+      "</style>"
+      "<div id='target'></div>");
+
+  PaintLayer* target =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  ClipRectsContext context(target, UncachedClipRects);
+  PaintLayer::GeometryMapperOption option = PaintLayer::DoNotUseGeometryMapper;
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    option = PaintLayer::UseGeometryMapper;
+  LayoutRect infiniteRect(LayoutRect::infiniteIntRect());
+  LayoutRect layerBounds(infiniteRect);
+  ClipRect backgroundRect(infiniteRect);
+  ClipRect foregroundRect(infiniteRect);
+  target->clipper(option).calculateRects(context, infiniteRect, layerBounds,
+                                         backgroundRect, foregroundRect);
+
+  EXPECT_EQ(LayoutRect(-12, -9, 124, 224), backgroundRect.rect());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 200), foregroundRect.rect());
+}
+
 }  // namespace blink
