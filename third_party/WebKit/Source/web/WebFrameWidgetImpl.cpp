@@ -30,6 +30,8 @@
 
 #include "web/WebFrameWidgetImpl.h"
 
+#include <memory>
+
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
@@ -52,6 +54,7 @@
 #include "platform/KeyboardCodes.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/animation/CompositorAnimationHost.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebPlugin.h"
@@ -73,7 +76,6 @@
 #include "web/WebViewFrameWidget.h"
 #include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -113,7 +115,10 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
       m_isAcceleratedCompositingActive(false),
       m_layerTreeViewClosed(false),
       m_suppressNextKeypressEvent(false),
-      m_isTransparent(false),
+      m_backgroundColorOverrideEnabled(false),
+      m_backgroundColorOverride(Color::transparent),
+      m_baseBackgroundColorOverrideEnabled(false),
+      m_baseBackgroundColorOverride(Color::transparent),
       m_imeAcceptEvents(true),
       m_selfKeepAlive(this) {
   DCHECK(m_localRoot->frame()->isLocalRoot());
@@ -121,7 +126,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
   m_localRoot->setFrameWidget(this);
 
   if (localRoot->parent())
-    setIsTransparent(true);
+    setBackgroundColorOverride(Color::transparent);
 }
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() {}
@@ -268,7 +273,8 @@ void WebFrameWidgetImpl::updateLayerTreeBackgroundColor() {
   if (!m_layerTreeView)
     return;
 
-  m_layerTreeView->setBackgroundColor(backgroundColor());
+  WebColor color = backgroundColor();
+  m_layerTreeView->setBackgroundColor(color);
 }
 
 void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor() {
@@ -279,15 +285,26 @@ void WebFrameWidgetImpl::updateLayerTreeDeviceScaleFactor() {
   m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
 }
 
-void WebFrameWidgetImpl::setIsTransparent(bool isTransparent) {
-  m_isTransparent = isTransparent;
-
-  if (m_layerTreeView)
-    m_layerTreeView->setHasTransparentBackground(isTransparent);
+void WebFrameWidgetImpl::setBackgroundColorOverride(WebColor color) {
+  m_backgroundColorOverrideEnabled = true;
+  m_backgroundColorOverride = color;
+  updateLayerTreeBackgroundColor();
 }
 
-bool WebFrameWidgetImpl::isTransparent() const {
-  return m_isTransparent;
+void WebFrameWidgetImpl::clearBackgroundColorOverride() {
+  m_backgroundColorOverrideEnabled = false;
+  updateLayerTreeBackgroundColor();
+}
+
+void WebFrameWidgetImpl::setBaseBackgroundColorOverride(WebColor color) {
+  m_baseBackgroundColorOverrideEnabled = true;
+  m_baseBackgroundColorOverride = color;
+  updateBaseBackgroundColor();
+}
+
+void WebFrameWidgetImpl::clearBaseBackgroundColorOverride() {
+  m_baseBackgroundColorOverrideEnabled = false;
+  updateBaseBackgroundColor();
 }
 
 void WebFrameWidgetImpl::layoutAndPaintAsync(
@@ -403,13 +420,21 @@ bool WebFrameWidgetImpl::hasTouchEventHandlersAt(const WebPoint& point) {
   return true;
 }
 
+Color WebFrameWidgetImpl::baseBackgroundColor() const {
+  return m_baseBackgroundColorOverrideEnabled ? m_baseBackgroundColorOverride
+                                              : m_baseBackgroundColor;
+}
+
 void WebFrameWidgetImpl::setBaseBackgroundColor(WebColor color) {
   if (m_baseBackgroundColor == color)
     return;
 
   m_baseBackgroundColor = color;
+  updateBaseBackgroundColor();
+}
 
-  m_localRoot->frameView()->setBaseBackgroundColor(color);
+void WebFrameWidgetImpl::updateBaseBackgroundColor() {
+  m_localRoot->frameView()->setBaseBackgroundColor(baseBackgroundColor());
 }
 
 WebInputMethodControllerImpl*
@@ -533,8 +558,8 @@ WebRange WebFrameWidgetImpl::compositionRange() {
 }
 
 WebColor WebFrameWidgetImpl::backgroundColor() const {
-  if (isTransparent())
-    return Color::transparent;
+  if (m_backgroundColorOverrideEnabled)
+    return m_backgroundColorOverride;
   if (!m_localRoot->frameView())
     return m_baseBackgroundColor;
   FrameView* view = m_localRoot->frameView();
@@ -1026,7 +1051,6 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active) {
     m_layerTreeView->setVisible(page()->isPageVisible());
     updateLayerTreeDeviceScaleFactor();
     updateLayerTreeBackgroundColor();
-    m_layerTreeView->setHasTransparentBackground(isTransparent());
     updateLayerTreeViewport();
     m_isAcceleratedCompositingActive = true;
   }

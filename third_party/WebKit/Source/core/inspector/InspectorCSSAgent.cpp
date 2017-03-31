@@ -2235,7 +2235,7 @@ Response InspectorCSSAgent::getBackgroundColors(
   Document& document = element->document();
   bool isMainFrame = document.isInMainFrame();
   bool foundOpaqueColor = false;
-  if (isMainFrame && !view->isTransparent()) {
+  if (isMainFrame) {
     // Start with the "default" page color (typically white).
     Color baseBackgroundColor = view->baseBackgroundColor();
     colors.push_back(view->baseBackgroundColor());

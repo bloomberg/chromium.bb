@@ -163,6 +163,7 @@
 #include "platform/WebFrameScheduler.h"
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/fonts/FontCache.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -1714,12 +1715,11 @@ void WebLocalFrameImpl::createFrameView() {
   IntSize initialSize = (isMainFrame || !frameWidget())
                             ? webView->mainFrameSize()
                             : (IntSize)frameWidget()->size();
-  bool isTransparent = !isMainFrame && parent()->isWebRemoteFrame()
-                           ? true
-                           : webView->isTransparent();
+  Color baseBackgroundColor = webView->baseBackgroundColor();
+  if (!isMainFrame && parent()->isWebRemoteFrame())
+    baseBackgroundColor = Color::transparent;
 
-  frame()->createView(initialSize, webView->baseBackgroundColor(),
-                      isTransparent);
+  frame()->createView(initialSize, baseBackgroundColor);
   if (isMainFrame) {
     frame()->view()->setInitialViewportSize(
         webView->pageScaleConstraintsSet().initialViewportSize());

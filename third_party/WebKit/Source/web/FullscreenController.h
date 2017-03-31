@@ -31,9 +31,11 @@
 #ifndef FullscreenController_h
 #define FullscreenController_h
 
+#include <memory>
+
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntSize.h"
-#include <memory>
+#include "platform/graphics/Color.h"
 
 namespace blink {
 
@@ -71,6 +73,7 @@ class FullscreenController {
 
  private:
   void updatePageScaleConstraints(bool removeConstraints);
+  void restoreBackgroundColorOverride();
 
   WebViewImpl* m_webViewImpl;
 
@@ -94,6 +97,8 @@ class FullscreenController {
   float m_initialPageScaleFactor = 0.0f;
   IntSize m_initialScrollOffset;
   FloatPoint m_initialVisualViewportOffset;
+  bool m_initialBackgroundColorOverrideEnabled = false;
+  RGBA32 m_initialBackgroundColorOverride = Color::transparent;
 };
 
 }  // namespace blink

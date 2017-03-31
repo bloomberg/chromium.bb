@@ -71,9 +71,6 @@ class WebLayerTreeView {
   // Sets the background color for the viewport.
   virtual void setBackgroundColor(WebColor) {}
 
-  // Sets the background transparency for the viewport. The default is 'false'.
-  virtual void setHasTransparentBackground(bool) {}
-
   // Sets whether this view is visible. In threaded mode, a view that is not
   // visible will not composite or trigger updateAnimations() or layout() calls
   // until it becomes visible.

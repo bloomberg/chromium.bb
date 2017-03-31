@@ -47,7 +47,6 @@ class WebLayerTreeViewImplForTesting
   WebSize getViewportSize() const override;
   void setDeviceScaleFactor(float) override;
   void setBackgroundColor(blink::WebColor) override;
-  void setHasTransparentBackground(bool) override;
   void setVisible(bool) override;
   void setPageScaleFactorAndLimits(float pageScaleFactor,
                                    float minimum,

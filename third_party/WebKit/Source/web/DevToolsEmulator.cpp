@@ -244,7 +244,7 @@ void DevToolsEmulator::disableDeviceEmulation() {
 
   memoryCache()->evictResources();
   m_deviceMetricsEnabled = false;
-  m_webViewImpl->setBackgroundColorOverride(Color::transparent);
+  m_webViewImpl->clearBackgroundColorOverride();
   m_webViewImpl->page()->settings().setDeviceScaleAdjustment(
       m_embedderDeviceScaleAdjustment);
   disableMobileEmulation();

@@ -434,12 +434,12 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
   frame->document()->shutdown();
 
   // Creating a new frame view with the background color having 0 alpha.
-  frame->createView(IntSize(1024, 768), Color::transparent, true);
+  frame->createView(IntSize(1024, 768), Color::transparent);
   EXPECT_EQ(kTransparent, frame->view()->baseBackgroundColor());
   frame->view()->dispose();
 
   const Color transparentRed(100, 0, 0, 0);
-  frame->createView(IntSize(1024, 768), transparentRed, true);
+  frame->createView(IntSize(1024, 768), transparentRed);
   EXPECT_EQ(transparentRed, frame->view()->baseBackgroundColor());
   frame->view()->dispose();
 }

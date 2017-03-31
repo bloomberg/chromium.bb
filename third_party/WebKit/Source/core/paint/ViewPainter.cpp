@@ -86,7 +86,8 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
   const Document& document = m_layoutView.document();
   const FrameView& frameView = *m_layoutView.frameView();
   bool isMainFrame = document.isInMainFrame();
-  bool paintsBaseBackground = isMainFrame && !frameView.isTransparent();
+  bool paintsBaseBackground =
+      isMainFrame && (frameView.baseBackgroundColor().alpha() > 0);
   bool shouldClearCanvas =
       paintsBaseBackground &&
       (document.settings() &&

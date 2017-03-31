@@ -114,8 +114,10 @@ class WebFrameWidgetImpl final
   // WebFrameWidget implementation.
   WebLocalFrameImpl* localRoot() const override { return m_localRoot; }
   void setVisibilityState(WebPageVisibilityState) override;
-  bool isTransparent() const override;
-  void setIsTransparent(bool) override;
+  void setBackgroundColorOverride(WebColor) override;
+  void clearBackgroundColorOverride() override;
+  void setBaseBackgroundColorOverride(WebColor) override;
+  void clearBaseBackgroundColorOverride() override;
   void setBaseBackgroundColor(WebColor) override;
   WebInputMethodControllerImpl* getActiveWebInputMethodController()
       const override;
@@ -151,7 +153,7 @@ class WebFrameWidgetImpl final
   WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
   GraphicsLayer* rootGraphicsLayer() const { return m_rootGraphicsLayer; };
 
-  Color baseBackgroundColor() const { return m_baseBackgroundColor; }
+  Color baseBackgroundColor() const;
 
   DECLARE_TRACE();
 
@@ -169,6 +171,7 @@ class WebFrameWidgetImpl final
   void updateLayerTreeViewport();
   void updateLayerTreeBackgroundColor();
   void updateLayerTreeDeviceScaleFactor();
+  void updateBaseBackgroundColor();
 
   // PageWidgetEventHandler functions
   void handleMouseLeave(LocalFrame&, const WebMouseEvent&) override;
@@ -221,8 +224,10 @@ class WebFrameWidgetImpl final
 
   bool m_suppressNextKeypressEvent;
 
-  // Whether the WebFrameWidget is rendering transparently.
-  bool m_isTransparent;
+  bool m_backgroundColorOverrideEnabled;
+  WebColor m_backgroundColorOverride;
+  bool m_baseBackgroundColorOverrideEnabled;
+  WebColor m_baseBackgroundColorOverride;
 
   // TODO(ekaramad): Can we remove this and make sure IME events are not called
   // when there is no page focus?

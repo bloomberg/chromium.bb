@@ -290,12 +290,16 @@ class WEB_EXPORT WebViewImpl final
   void setBaseBackgroundColorOverride(WebColor);
   void clearBaseBackgroundColorOverride();
   void setBackgroundColorOverride(WebColor);
+  void clearBackgroundColorOverride();
   void setZoomFactorOverride(float);
   void setCompositorDeviceScaleFactorOverride(float);
   void setDeviceEmulationTransform(const TransformationMatrix&);
   TransformationMatrix getDeviceEmulationTransformForTesting() const;
 
   Color baseBackgroundColor() const;
+  bool backgroundColorOverrideEnabled() const {
+    return m_backgroundColorOverrideEnabled;
+  }
   WebColor backgroundColorOverride() const { return m_backgroundColorOverride; }
 
   Frame* focusedCoreFrame() const;
@@ -496,9 +500,6 @@ class WEB_EXPORT WebViewImpl final
 
   FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
 
-  bool isTransparent() const;
-  void setIsTransparent(bool value);
-
   double lastFrameTimeMonotonic() const { return m_lastFrameTimeMonotonic; }
 
   ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
@@ -679,9 +680,6 @@ class WEB_EXPORT WebViewImpl final
   Persistent<DevToolsEmulator> m_devToolsEmulator;
   std::unique_ptr<PageOverlay> m_pageColorOverlay;
 
-  // Whether the webview is rendering transparently.
-  bool m_isTransparent;
-
   // Whether the user can press tab to focus links.
   bool m_tabsToLinks;
 
@@ -711,6 +709,7 @@ class WEB_EXPORT WebViewImpl final
   WebColor m_baseBackgroundColor;
   bool m_baseBackgroundColorOverrideEnabled;
   WebColor m_baseBackgroundColorOverride;
+  bool m_backgroundColorOverrideEnabled;
   WebColor m_backgroundColorOverride;
   float m_zoomFactorOverride;
 

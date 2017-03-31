@@ -165,6 +165,7 @@
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
@@ -2251,10 +2252,16 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
-  if (frame_widget_)
-    frame_widget_->setIsTransparent(!opaque);
-  if (compositor_)
-    compositor_->setHasTransparentBackground(!opaque);
+  if (!frame_widget_)
+    return;
+
+  if (opaque) {
+    frame_widget_->clearBaseBackgroundColorOverride();
+    frame_widget_->clearBackgroundColorOverride();
+  } else {
+    frame_widget_->setBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
+    frame_widget_->setBackgroundColorOverride(SK_ColorTRANSPARENT);
+  }
 }
 
 void RenderViewImpl::OnSetActive(bool active) {

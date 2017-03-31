@@ -316,7 +316,6 @@ bool WebPagePopupImpl::initializePage() {
   frame->init();
   frame->view()->setParentVisible(true);
   frame->view()->setSelfVisible(true);
-  frame->view()->setTransparent(false);
   if (AXObjectCache* cache =
           m_popupClient->ownerElement().document().existingAXObjectCache())
     cache->childrenChanged(&m_popupClient->ownerElement());

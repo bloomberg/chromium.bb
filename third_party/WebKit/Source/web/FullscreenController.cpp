@@ -152,6 +152,9 @@ void FullscreenController::enterFullscreen(LocalFrame& frame) {
                                 ? m_webViewImpl->mainFrame()->getScrollOffset()
                                 : WebSize();
     m_initialVisualViewportOffset = m_webViewImpl->visualViewportOffset();
+    m_initialBackgroundColorOverrideEnabled =
+        m_webViewImpl->backgroundColorOverrideEnabled();
+    m_initialBackgroundColorOverride = m_webViewImpl->backgroundColorOverride();
   }
 
   // If already entering fullscreen, just wait.
@@ -182,6 +185,10 @@ void FullscreenController::fullscreenElementChanged(Element* fromElement,
                                                     Element* toElement) {
   DCHECK_NE(fromElement, toElement);
 
+  // We only override the WebView's background color for overlay fullscreen
+  // video elements, so have to restore the override when the element changes.
+  restoreBackgroundColorOverride();
+
   if (toElement) {
     DCHECK(Fullscreen::isCurrentFullScreenElement(*toElement));
 
@@ -191,10 +198,8 @@ void FullscreenController::fullscreenElementChanged(Element* fromElement,
 
       // If the video uses overlay fullscreen mode, make the background
       // transparent.
-      if (videoElement.usesOverlayFullscreenVideo() &&
-          m_webViewImpl->layerTreeView()) {
-        m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
-      }
+      if (videoElement.usesOverlayFullscreenVideo())
+        m_webViewImpl->setBackgroundColorOverride(Color::transparent);
     }
   }
 
@@ -202,14 +207,22 @@ void FullscreenController::fullscreenElementChanged(Element* fromElement,
     DCHECK(!Fullscreen::isCurrentFullScreenElement(*fromElement));
 
     if (isHTMLVideoElement(*fromElement)) {
-      // If the video used overlay fullscreen mode, restore the transparency.
-      if (m_webViewImpl->layerTreeView()) {
-        m_webViewImpl->layerTreeView()->setHasTransparentBackground(
-            m_webViewImpl->isTransparent());
-      }
-
       HTMLVideoElement& videoElement = toHTMLVideoElement(*fromElement);
       videoElement.didExitFullscreen();
+    }
+  }
+}
+
+void FullscreenController::restoreBackgroundColorOverride() {
+  if (m_webViewImpl->backgroundColorOverrideEnabled() !=
+          m_initialBackgroundColorOverrideEnabled ||
+      m_webViewImpl->backgroundColorOverride() !=
+          m_initialBackgroundColorOverride) {
+    if (m_initialBackgroundColorOverrideEnabled) {
+      m_webViewImpl->setBackgroundColorOverride(
+          m_initialBackgroundColorOverride);
+    } else {
+      m_webViewImpl->clearBackgroundColorOverride();
     }
   }
 }
@@ -245,6 +258,8 @@ void FullscreenController::didUpdateLayout() {
   if (m_webViewImpl->mainFrame()->isWebLocalFrame())
     m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_initialScrollOffset));
   m_webViewImpl->setVisualViewportOffset(m_initialVisualViewportOffset);
+  // Background color override was already restored when
+  // fullscreenElementChanged([..], nullptr) was called while exiting.
 
   m_state = State::Initial;
 }

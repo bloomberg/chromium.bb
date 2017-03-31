@@ -174,7 +174,6 @@ FrameView::FrameView(LocalFrame& frame)
           TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
           this,
           &FrameView::updatePluginsTimerFired),
-      m_isTransparent(false),
       m_baseBackgroundColor(Color::white),
       m_mediaType(MediaTypeNames::screen),
       m_safeToPropagateScrollToParent(true),
@@ -2333,20 +2332,8 @@ void FrameView::setNeedsLayout() {
   layoutViewItem.setNeedsLayout(LayoutInvalidationReason::Unknown);
 }
 
-bool FrameView::isTransparent() const {
-  return m_isTransparent;
-}
-
-void FrameView::setTransparent(bool isTransparent) {
-  m_isTransparent = isTransparent;
-  DisableCompositingQueryAsserts disabler;
-  if (!layoutViewItem().isNull() &&
-      layoutViewItem().layer()->hasCompositedLayerMapping())
-    layoutViewItem().layer()->compositedLayerMapping()->updateContentsOpaque();
-}
-
 bool FrameView::hasOpaqueBackground() const {
-  return !m_isTransparent && !m_baseBackgroundColor.hasAlpha();
+  return !m_baseBackgroundColor.hasAlpha();
 }
 
 Color FrameView::baseBackgroundColor() const {
@@ -2370,13 +2357,11 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor) {
     page()->animator().scheduleVisualUpdate(m_frame.get());
 }
 
-void FrameView::updateBackgroundRecursively(const Color& backgroundColor,
-                                            bool transparent) {
-  forAllNonThrottledFrameViews(
-      [backgroundColor, transparent](FrameView& frameView) {
-        frameView.setTransparent(transparent);
-        frameView.setBaseBackgroundColor(backgroundColor);
-      });
+void FrameView::updateBaseBackgroundColorRecursively(
+    const Color& baseBackgroundColor) {
+  forAllNonThrottledFrameViews([baseBackgroundColor](FrameView& frameView) {
+    frameView.setBaseBackgroundColor(baseBackgroundColor);
+  });
 }
 
 void FrameView::scrollToFragmentAnchor() {

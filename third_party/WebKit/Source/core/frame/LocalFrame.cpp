@@ -288,7 +288,6 @@ void LocalFrame::setView(FrameView* view) {
 
 void LocalFrame::createView(const IntSize& viewportSize,
                             const Color& backgroundColor,
-                            bool transparent,
                             ScrollbarMode horizontalScrollbarMode,
                             bool horizontalLock,
                             ScrollbarMode verticalScrollbarMode,
@@ -318,7 +317,7 @@ void LocalFrame::createView(const IntSize& viewportSize,
 
   setView(frameView);
 
-  frameView->updateBackgroundRecursively(backgroundColor, transparent);
+  frameView->updateBaseBackgroundColorRecursively(backgroundColor);
 
   if (isLocalRoot)
     frameView->setParentVisible(true);

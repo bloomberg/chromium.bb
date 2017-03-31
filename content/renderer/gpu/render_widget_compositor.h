@@ -127,7 +127,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
       const blink::WebFloatPoint& point) const;
   void setDeviceScaleFactor(float device_scale) override;
   void setBackgroundColor(blink::WebColor color) override;
-  void setHasTransparentBackground(bool transparent) override;
   void setVisible(bool visible) override;
   void setPageScaleFactorAndLimits(float page_scale_factor,
                                    float minimum,

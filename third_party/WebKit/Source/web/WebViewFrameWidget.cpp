@@ -181,12 +181,20 @@ void WebViewFrameWidget::setVisibilityState(
   return m_webView->setVisibilityState(visibilityState, false);
 }
 
-void WebViewFrameWidget::setIsTransparent(bool isTransparent) {
-  m_webView->setIsTransparent(isTransparent);
+void WebViewFrameWidget::setBackgroundColorOverride(WebColor color) {
+  m_webView->setBackgroundColorOverride(color);
 }
 
-bool WebViewFrameWidget::isTransparent() const {
-  return m_webView->isTransparent();
+void WebViewFrameWidget::clearBackgroundColorOverride() {
+  return m_webView->clearBackgroundColorOverride();
+}
+
+void WebViewFrameWidget::setBaseBackgroundColorOverride(WebColor color) {
+  m_webView->setBaseBackgroundColorOverride(color);
+}
+
+void WebViewFrameWidget::clearBaseBackgroundColorOverride() {
+  return m_webView->clearBaseBackgroundColorOverride();
 }
 
 void WebViewFrameWidget::setBaseBackgroundColor(WebColor color) {

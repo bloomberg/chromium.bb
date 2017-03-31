@@ -359,7 +359,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_suppressNextKeypressEvent(false),
       m_imeAcceptEvents(true),
       m_devToolsEmulator(nullptr),
-      m_isTransparent(false),
       m_tabsToLinks(false),
       m_layerTreeView(nullptr),
       m_rootLayer(nullptr),
@@ -372,6 +371,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_baseBackgroundColor(Color::white),
       m_baseBackgroundColorOverrideEnabled(false),
       m_baseBackgroundColorOverride(Color::transparent),
+      m_backgroundColorOverrideEnabled(false),
       m_backgroundColorOverride(Color::transparent),
       m_zoomFactorOverride(0),
       m_userGestureObserved(false),
@@ -2439,8 +2439,8 @@ bool WebViewImpl::isSelectionAnchorFirst() const {
 }
 
 WebColor WebViewImpl::backgroundColor() const {
-  if (isTransparent())
-    return Color::transparent;
+  if (m_backgroundColorOverrideEnabled)
+    return m_backgroundColorOverride;
   if (!m_page)
     return baseBackgroundColor().rgb();
   if (!m_page->mainFrame())
@@ -2448,6 +2448,8 @@ WebColor WebViewImpl::backgroundColor() const {
   if (!m_page->mainFrame()->isLocalFrame())
     return baseBackgroundColor().rgb();
   FrameView* view = m_page->deprecatedLocalMainFrame()->view();
+  if (!view)
+    return baseBackgroundColor().rgb();
   return view->documentBackgroundColor().rgb();
 }
 
@@ -3510,26 +3512,6 @@ void WebViewImpl::hidePopups() {
   cancelPagePopup();
 }
 
-void WebViewImpl::setIsTransparent(bool isTransparent) {
-  // Set any existing frames to be transparent.
-  Frame* frame = m_page->mainFrame();
-  while (frame) {
-    if (frame->isLocalFrame())
-      toLocalFrame(frame)->view()->setTransparent(isTransparent);
-    frame = frame->tree().traverseNext();
-  }
-
-  // Future frames check this to know whether to be transparent.
-  m_isTransparent = isTransparent;
-
-  if (m_layerTreeView)
-    m_layerTreeView->setHasTransparentBackground(this->isTransparent());
-}
-
-bool WebViewImpl::isTransparent() const {
-  return m_isTransparent;
-}
-
 WebInputMethodControllerImpl* WebViewImpl::getActiveWebInputMethodController()
     const {
   return WebInputMethodControllerImpl::fromFrame(focusedLocalFrameInWidget());
@@ -3577,8 +3559,11 @@ void WebViewImpl::clearBaseBackgroundColorOverride() {
 
 void WebViewImpl::updateBaseBackgroundColor() {
   Color color = baseBackgroundColor();
-  if (m_page->mainFrame() && m_page->mainFrame()->isLocalFrame())
-    m_page->deprecatedLocalMainFrame()->view()->setBaseBackgroundColor(color);
+  if (m_page->mainFrame() && m_page->mainFrame()->isLocalFrame()) {
+    FrameView* view = m_page->deprecatedLocalMainFrame()->view();
+    view->setBaseBackgroundColor(color);
+    view->updateBaseBackgroundColorRecursively(color);
+  }
 }
 
 void WebViewImpl::setIsActive(bool active) {
@@ -3704,7 +3689,13 @@ bool WebViewImpl::useExternalPopupMenus() {
 }
 
 void WebViewImpl::setBackgroundColorOverride(WebColor color) {
+  m_backgroundColorOverrideEnabled = true;
   m_backgroundColorOverride = color;
+  updateLayerTreeBackgroundColor();
+}
+
+void WebViewImpl::clearBackgroundColorOverride() {
+  m_backgroundColorOverrideEnabled = false;
   updateLayerTreeBackgroundColor();
 }
 
@@ -4028,10 +4019,7 @@ void WebViewImpl::updateLayerTreeViewport() {
 void WebViewImpl::updateLayerTreeBackgroundColor() {
   if (!m_layerTreeView)
     return;
-
-  m_layerTreeView->setBackgroundColor(alphaChannel(m_backgroundColorOverride)
-                                          ? m_backgroundColorOverride
-                                          : backgroundColor());
+  m_layerTreeView->setBackgroundColor(backgroundColor());
 }
 
 void WebViewImpl::updateLayerTreeDeviceScaleFactor() {

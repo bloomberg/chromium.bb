@@ -8173,8 +8173,8 @@ namespace {
 
 class TestFullscreenWebLayerTreeView : public WebLayerTreeView {
  public:
-  void setHasTransparentBackground(bool value) override {
-    hasTransparentBackground = value;
+  void setBackgroundColor(blink::WebColor color) override {
+    hasTransparentBackground = SkColorGetA(color) < SK_AlphaOPAQUE;
   }
   bool hasTransparentBackground = false;
 };
@@ -11561,6 +11561,25 @@ TEST_F(WebFrameTest, ContextMenuData) {
   // TODO(amaralp): Empty contenteditable should not have select all enabled.
   EXPECT_TRUE(testSelectAll("<div contenteditable></div>"));
   EXPECT_TRUE(testSelectAll("<div contenteditable>nonempty</div>"));
+}
+
+TEST_F(WebFrameTest, LocalFrameWithRemoteParentIsTransparent) {
+  FrameTestHelpers::TestWebViewClient viewClient;
+  FrameTestHelpers::TestWebRemoteFrameClient remoteClient;
+  WebView* view = WebView::create(&viewClient, WebPageVisibilityStateVisible);
+  view->settings()->setJavaScriptEnabled(true);
+  view->setMainFrame(remoteClient.frame());
+  WebRemoteFrame* root = view->mainFrame()->toWebRemoteFrame();
+  root->setReplicatedOrigin(SecurityOrigin::createUnique());
+
+  WebLocalFrameImpl* localFrame = FrameTestHelpers::createLocalChild(root);
+  FrameTestHelpers::loadFrame(localFrame, "data:text/html,some page");
+
+  // Local frame with remote parent should have transparent baseBackgroundColor.
+  Color color = localFrame->frameView()->baseBackgroundColor();
+  EXPECT_EQ(Color::transparent, color);
+
+  view->close();
 }
 
 }  // namespace blink

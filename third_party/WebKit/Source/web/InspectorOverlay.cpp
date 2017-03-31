@@ -50,6 +50,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "public/platform/Platform.h"
@@ -550,7 +551,7 @@ Page* InspectorOverlay::overlayPage() {
   frame->init();
   FrameLoader& loader = frame->loader();
   frame->view()->setCanHaveScrollbars(false);
-  frame->view()->setTransparent(true);
+  frame->view()->setBaseBackgroundColor(Color::transparent);
 
   const WebData& overlayPageHTMLResource =
       Platform::current()->loadResource("InspectorOverlayPage.html");

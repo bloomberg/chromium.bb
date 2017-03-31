@@ -60,10 +60,13 @@ class WebFrameWidget : public WebWidget {
   // directive, so that it knows whether it needs to draw or not.
   virtual void setVisibilityState(WebPageVisibilityState visibilityState) {}
 
-  // Makes the WebFrameWidget transparent.  This is useful if you want to have
-  // some custom background rendered behind it.
-  virtual bool isTransparent() const = 0;
-  virtual void setIsTransparent(bool) = 0;
+  // Overrides the WebFrameWidget's background and base background color. You
+  // can use this to enforce a transparent background, which is useful if you
+  // want to have some custom background rendered behind the widget.
+  virtual void setBackgroundColorOverride(WebColor) = 0;
+  virtual void clearBackgroundColorOverride() = 0;
+  virtual void setBaseBackgroundColorOverride(WebColor) = 0;
+  virtual void clearBaseBackgroundColorOverride() = 0;
 
   // Sets the base color used for this WebFrameWidget's background. This is in
   // effect the default background color used for pages with no

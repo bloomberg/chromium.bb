@@ -99,7 +99,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void setView(FrameView*);
   void createView(const IntSize&,
                   const Color&,
-                  bool,
                   ScrollbarMode = ScrollbarAuto,
                   bool horizontalLock = false,
                   ScrollbarMode = ScrollbarAuto,

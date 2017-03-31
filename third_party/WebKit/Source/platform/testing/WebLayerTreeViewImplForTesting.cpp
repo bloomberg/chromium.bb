@@ -92,11 +92,8 @@ void WebLayerTreeViewImplForTesting::setDeviceScaleFactor(
 
 void WebLayerTreeViewImplForTesting::setBackgroundColor(WebColor color) {
   m_layerTreeHost->set_background_color(color);
-}
-
-void WebLayerTreeViewImplForTesting::setHasTransparentBackground(
-    bool transparent) {
-  m_layerTreeHost->set_has_transparent_background(transparent);
+  m_layerTreeHost->set_has_transparent_background(SkColorGetA(color) <
+                                                  SK_AlphaOPAQUE);
 }
 
 void WebLayerTreeViewImplForTesting::setVisible(bool visible) {

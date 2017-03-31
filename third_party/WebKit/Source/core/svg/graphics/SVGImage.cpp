@@ -51,6 +51,7 @@
 #include "platform/LengthFunctions.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
@@ -668,7 +669,7 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
     // thus never see scrollbars.
     frame->view()->setCanHaveScrollbars(false);
     // SVG Images are transparent.
-    frame->view()->setTransparent(true);
+    frame->view()->setBaseBackgroundColor(Color::transparent);
 
     m_page = page;
 

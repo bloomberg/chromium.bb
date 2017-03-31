@@ -190,16 +190,12 @@ class CORE_EXPORT FrameView final
 
   void clear();
 
-  bool isTransparent() const;
-  void setTransparent(bool isTransparent);
-
-  // True if the FrameView is not transparent, and the base background color is
-  // opaque.
+  // True if the FrameView's base background color is completely opaque.
   bool hasOpaqueBackground() const;
 
   Color baseBackgroundColor() const;
   void setBaseBackgroundColor(const Color&);
-  void updateBackgroundRecursively(const Color&, bool);
+  void updateBaseBackgroundColorRecursively(const Color&);
 
   void adjustViewSize();
   void adjustViewSizeAndLayout();
@@ -1084,7 +1080,6 @@ class CORE_EXPORT FrameView final
   TaskRunnerTimer<FrameView> m_updatePluginsTimer;
 
   bool m_firstLayout;
-  bool m_isTransparent;
   Color m_baseBackgroundColor;
   IntSize m_lastViewportSize;
   float m_lastZoomFactor;
