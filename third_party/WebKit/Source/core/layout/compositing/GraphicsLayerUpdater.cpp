@@ -54,17 +54,25 @@ class GraphicsLayerUpdater::UpdateContext {
   }
 
   const PaintLayer* compositingContainer(const PaintLayer& layer) const {
-    if (layer.stackingNode()->isStacked())
-      return m_compositingStackingContext;
+    const PaintLayer* compositingContainer;
+    if (layer.stackingNode()->isStacked()) {
+      compositingContainer = m_compositingStackingContext;
+    } else if ((layer.parent() &&
+                !layer.parent()->layoutObject().isLayoutBlock()) ||
+               layer.layoutObject().isColumnSpanAll()) {
+      // In these cases, compositingContainer may escape the normal layer
+      // hierarchy. Use the slow path to ensure correct result.
+      // See PaintLayer::containingLayer() for details.
+      compositingContainer =
+          layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
+    } else {
+      compositingContainer = m_compositingAncestor;
+    }
 
-    // TODO(wangxianzhu, chrishtr): This is incorrect if m_compositingAncestor
-    // is inline and there is any non-layer floating object between layer and
-    // m_compositingAncestor. Should use the logic in PaintLayer::
-    // containingLayer().
-    if (layer.layoutObject().isFloatingWithNonContainingBlockParent())
-      return layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
-
-    return m_compositingAncestor;
+    // We should always get the same result as the slow path.
+    DCHECK_EQ(compositingContainer,
+              layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
+    return compositingContainer;
   }
 
   const PaintLayer* compositingStackingContext() const {
@@ -98,15 +106,9 @@ void GraphicsLayerUpdater::updateRecursive(
     CompositedLayerMapping* mapping = layer.compositedLayerMapping();
 
     if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
-      const PaintLayer* compositingContainer =
-          context.compositingContainer(layer);
-      DCHECK_EQ(compositingContainer,
-                layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
-
       if (mapping->updateGraphicsLayerConfiguration())
         m_needsRebuildTree = true;
-
-      mapping->updateGraphicsLayerGeometry(compositingContainer,
+      mapping->updateGraphicsLayerGeometry(context.compositingContainer(layer),
                                            context.compositingStackingContext(),
                                            layersNeedingPaintInvalidation);
       if (PaintLayerScrollableArea* scrollableArea = layer.getScrollableArea())
