@@ -1,32 +1,32 @@
 This is a testharness.js-based test.
-Found 331 tests; 238 PASS, 93 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 331 tests; 304 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
-FAIL animationevent should be an alias for AnimationEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('animationevent') is invalid.
-FAIL createEvent('animationevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL ANIMATIONEVENT should be an alias for AnimationEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('ANIMATIONEVENT') is invalid.
-FAIL createEvent('ANIMATIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS animationevent should be an alias for AnimationEvent. 
+PASS createEvent('animationevent') should be initialized correctly. 
+PASS ANIMATIONEVENT should be an alias for AnimationEvent. 
+PASS createEvent('ANIMATIONEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "AnimationEvents" 
 PASS BeforeUnloadEvent should be an alias for BeforeUnloadEvent. 
 PASS createEvent('BeforeUnloadEvent') should be initialized correctly. 
-FAIL beforeunloadevent should be an alias for BeforeUnloadEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('beforeunloadevent') is invalid.
-FAIL createEvent('beforeunloadevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL BEFOREUNLOADEVENT should be an alias for BeforeUnloadEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('BEFOREUNLOADEVENT') is invalid.
-FAIL createEvent('BEFOREUNLOADEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS beforeunloadevent should be an alias for BeforeUnloadEvent. 
+PASS createEvent('beforeunloadevent') should be initialized correctly. 
+PASS BEFOREUNLOADEVENT should be an alias for BeforeUnloadEvent. 
+PASS createEvent('BEFOREUNLOADEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "BeforeUnloadEvents" 
 PASS CloseEvent should be an alias for CloseEvent. 
 FAIL createEvent('CloseEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
-FAIL closeevent should be an alias for CloseEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('closeevent') is invalid.
-FAIL createEvent('closeevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL CLOSEEVENT should be an alias for CloseEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('CLOSEEVENT') is invalid.
-FAIL createEvent('CLOSEEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS closeevent should be an alias for CloseEvent. 
+FAIL createEvent('closeevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS CLOSEEVENT should be an alias for CloseEvent. 
+FAIL createEvent('CLOSEEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "CloseEvents" 
 PASS CompositionEvent should be an alias for CompositionEvent. 
 PASS createEvent('CompositionEvent') should be initialized correctly. 
-FAIL compositionevent should be an alias for CompositionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('compositionevent') is invalid.
-FAIL createEvent('compositionevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL COMPOSITIONEVENT should be an alias for CompositionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('COMPOSITIONEVENT') is invalid.
-FAIL createEvent('COMPOSITIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS compositionevent should be an alias for CompositionEvent. 
+PASS createEvent('compositionevent') should be initialized correctly. 
+PASS COMPOSITIONEVENT should be an alias for CompositionEvent. 
+PASS createEvent('COMPOSITIONEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "CompositionEvents" 
 PASS CustomEvent should be an alias for CustomEvent. 
 PASS createEvent('CustomEvent') should be initialized correctly. 
@@ -37,31 +37,31 @@ PASS createEvent('CUSTOMEVENT') should be initialized correctly.
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "CustomEvents" 
 PASS DeviceMotionEvent should be an alias for DeviceMotionEvent. 
 FAIL createEvent('DeviceMotionEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
-FAIL devicemotionevent should be an alias for DeviceMotionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('devicemotionevent') is invalid.
-FAIL createEvent('devicemotionevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL DEVICEMOTIONEVENT should be an alias for DeviceMotionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('DEVICEMOTIONEVENT') is invalid.
-FAIL createEvent('DEVICEMOTIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS devicemotionevent should be an alias for DeviceMotionEvent. 
+FAIL createEvent('devicemotionevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS DEVICEMOTIONEVENT should be an alias for DeviceMotionEvent. 
+FAIL createEvent('DEVICEMOTIONEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "DeviceMotionEvents" 
 PASS DeviceOrientationEvent should be an alias for DeviceOrientationEvent. 
 FAIL createEvent('DeviceOrientationEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
-FAIL deviceorientationevent should be an alias for DeviceOrientationEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('deviceorientationevent') is invalid.
-FAIL createEvent('deviceorientationevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL DEVICEORIENTATIONEVENT should be an alias for DeviceOrientationEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('DEVICEORIENTATIONEVENT') is invalid.
-FAIL createEvent('DEVICEORIENTATIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS deviceorientationevent should be an alias for DeviceOrientationEvent. 
+FAIL createEvent('deviceorientationevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS DEVICEORIENTATIONEVENT should be an alias for DeviceOrientationEvent. 
+FAIL createEvent('DEVICEORIENTATIONEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "DeviceOrientationEvents" 
 PASS DragEvent should be an alias for DragEvent. 
 PASS createEvent('DragEvent') should be initialized correctly. 
-FAIL dragevent should be an alias for DragEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('dragevent') is invalid.
-FAIL createEvent('dragevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL DRAGEVENT should be an alias for DragEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('DRAGEVENT') is invalid.
-FAIL createEvent('DRAGEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS dragevent should be an alias for DragEvent. 
+PASS createEvent('dragevent') should be initialized correctly. 
+PASS DRAGEVENT should be an alias for DragEvent. 
+PASS createEvent('DRAGEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "DragEvents" 
 PASS ErrorEvent should be an alias for ErrorEvent. 
 PASS createEvent('ErrorEvent') should be initialized correctly. 
-FAIL errorevent should be an alias for ErrorEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('errorevent') is invalid.
-FAIL createEvent('errorevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL ERROREVENT should be an alias for ErrorEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('ERROREVENT') is invalid.
-FAIL createEvent('ERROREVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS errorevent should be an alias for ErrorEvent. 
+PASS createEvent('errorevent') should be initialized correctly. 
+PASS ERROREVENT should be an alias for ErrorEvent. 
+PASS createEvent('ERROREVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "ErrorEvents" 
 PASS Event should be an alias for Event. 
 PASS createEvent('Event') should be initialized correctly. 
@@ -77,17 +77,17 @@ PASS EVENTS should be an alias for Event.
 PASS createEvent('EVENTS') should be initialized correctly. 
 PASS FocusEvent should be an alias for FocusEvent. 
 PASS createEvent('FocusEvent') should be initialized correctly. 
-FAIL focusevent should be an alias for FocusEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('focusevent') is invalid.
-FAIL createEvent('focusevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL FOCUSEVENT should be an alias for FocusEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('FOCUSEVENT') is invalid.
-FAIL createEvent('FOCUSEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS focusevent should be an alias for FocusEvent. 
+PASS createEvent('focusevent') should be initialized correctly. 
+PASS FOCUSEVENT should be an alias for FocusEvent. 
+PASS createEvent('FOCUSEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "FocusEvents" 
 PASS HashChangeEvent should be an alias for HashChangeEvent. 
 PASS createEvent('HashChangeEvent') should be initialized correctly. 
-FAIL hashchangeevent should be an alias for HashChangeEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('hashchangeevent') is invalid.
-FAIL createEvent('hashchangeevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL HASHCHANGEEVENT should be an alias for HashChangeEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('HASHCHANGEEVENT') is invalid.
-FAIL createEvent('HASHCHANGEEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS hashchangeevent should be an alias for HashChangeEvent. 
+PASS createEvent('hashchangeevent') should be initialized correctly. 
+PASS HASHCHANGEEVENT should be an alias for HashChangeEvent. 
+PASS createEvent('HASHCHANGEEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "HashChangeEvents" 
 PASS HTMLEvents should be an alias for Event. 
 PASS createEvent('HTMLEvents') should be initialized correctly. 
@@ -97,10 +97,10 @@ PASS HTMLEVENTS should be an alias for Event.
 PASS createEvent('HTMLEVENTS') should be initialized correctly. 
 PASS IDBVersionChangeEvent should be an alias for IDBVersionChangeEvent. 
 FAIL createEvent('IDBVersionChangeEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
-FAIL idbversionchangeevent should be an alias for IDBVersionChangeEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('idbversionchangeevent') is invalid.
-FAIL createEvent('idbversionchangeevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL IDBVERSIONCHANGEEVENT should be an alias for IDBVersionChangeEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('IDBVERSIONCHANGEEVENT') is invalid.
-FAIL createEvent('IDBVERSIONCHANGEEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS idbversionchangeevent should be an alias for IDBVersionChangeEvent. 
+FAIL createEvent('idbversionchangeevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS IDBVERSIONCHANGEEVENT should be an alias for IDBVersionChangeEvent. 
+FAIL createEvent('IDBVERSIONCHANGEEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "IDBVersionChangeEvents" 
 PASS KeyboardEvent should be an alias for KeyboardEvent. 
 PASS createEvent('KeyboardEvent') should be initialized correctly. 
@@ -132,37 +132,37 @@ PASS MOUSEEVENTS should be an alias for MouseEvent.
 PASS createEvent('MOUSEEVENTS') should be initialized correctly. 
 PASS PageTransitionEvent should be an alias for PageTransitionEvent. 
 PASS createEvent('PageTransitionEvent') should be initialized correctly. 
-FAIL pagetransitionevent should be an alias for PageTransitionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('pagetransitionevent') is invalid.
-FAIL createEvent('pagetransitionevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL PAGETRANSITIONEVENT should be an alias for PageTransitionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('PAGETRANSITIONEVENT') is invalid.
-FAIL createEvent('PAGETRANSITIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS pagetransitionevent should be an alias for PageTransitionEvent. 
+PASS createEvent('pagetransitionevent') should be initialized correctly. 
+PASS PAGETRANSITIONEVENT should be an alias for PageTransitionEvent. 
+PASS createEvent('PAGETRANSITIONEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "PageTransitionEvents" 
 PASS PopStateEvent should be an alias for PopStateEvent. 
 PASS createEvent('PopStateEvent') should be initialized correctly. 
-FAIL popstateevent should be an alias for PopStateEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('popstateevent') is invalid.
-FAIL createEvent('popstateevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL POPSTATEEVENT should be an alias for PopStateEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('POPSTATEEVENT') is invalid.
-FAIL createEvent('POPSTATEEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS popstateevent should be an alias for PopStateEvent. 
+PASS createEvent('popstateevent') should be initialized correctly. 
+PASS POPSTATEEVENT should be an alias for PopStateEvent. 
+PASS createEvent('POPSTATEEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "PopStateEvents" 
 PASS StorageEvent should be an alias for StorageEvent. 
 FAIL createEvent('StorageEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
-FAIL storageevent should be an alias for StorageEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('storageevent') is invalid.
-FAIL createEvent('storageevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL STORAGEEVENT should be an alias for StorageEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('STORAGEEVENT') is invalid.
-FAIL createEvent('STORAGEEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS storageevent should be an alias for StorageEvent. 
+FAIL createEvent('storageevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS STORAGEEVENT should be an alias for StorageEvent. 
+FAIL createEvent('STORAGEEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "StorageEvents" 
 PASS SVGEvents should be an alias for Event. 
 PASS createEvent('SVGEvents') should be initialized correctly. 
-FAIL svgevents should be an alias for Event. Failed to execute 'createEvent' on 'Document': The provided event type ('svgevents') is invalid.
-FAIL createEvent('svgevents') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL SVGEVENTS should be an alias for Event. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGEVENTS') is invalid.
-FAIL createEvent('SVGEVENTS') should be initialized correctly. Cannot read property 'type' of undefined
+PASS svgevents should be an alias for Event. 
+PASS createEvent('svgevents') should be initialized correctly. 
+PASS SVGEVENTS should be an alias for Event. 
+PASS createEvent('SVGEVENTS') should be initialized correctly. 
 FAIL TextEvent should be an alias for CompositionEvent. assert_equals: expected object "[object CompositionEvent]" but got object "[object TextEvent]"
 PASS createEvent('TextEvent') should be initialized correctly. 
-FAIL textevent should be an alias for CompositionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('textevent') is invalid.
-FAIL createEvent('textevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL TEXTEVENT should be an alias for CompositionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('TEXTEVENT') is invalid.
-FAIL createEvent('TEXTEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+FAIL textevent should be an alias for CompositionEvent. assert_equals: expected object "[object CompositionEvent]" but got object "[object TextEvent]"
+PASS createEvent('textevent') should be initialized correctly. 
+FAIL TEXTEVENT should be an alias for CompositionEvent. assert_equals: expected object "[object CompositionEvent]" but got object "[object TextEvent]"
+PASS createEvent('TEXTEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "TextEvents" 
 PASS TouchEvent should be an alias for TouchEvent. 
 PASS createEvent('TouchEvent') should be initialized correctly. 
@@ -173,17 +173,17 @@ PASS createEvent('TOUCHEVENT') should be initialized correctly.
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "TouchEvents" 
 PASS TrackEvent should be an alias for TrackEvent. 
 PASS createEvent('TrackEvent') should be initialized correctly. 
-FAIL trackevent should be an alias for TrackEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('trackevent') is invalid.
-FAIL createEvent('trackevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL TRACKEVENT should be an alias for TrackEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('TRACKEVENT') is invalid.
-FAIL createEvent('TRACKEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS trackevent should be an alias for TrackEvent. 
+PASS createEvent('trackevent') should be initialized correctly. 
+PASS TRACKEVENT should be an alias for TrackEvent. 
+PASS createEvent('TRACKEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "TrackEvents" 
 PASS TransitionEvent should be an alias for TransitionEvent. 
 PASS createEvent('TransitionEvent') should be initialized correctly. 
-FAIL transitionevent should be an alias for TransitionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('transitionevent') is invalid.
-FAIL createEvent('transitionevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL TRANSITIONEVENT should be an alias for TransitionEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('TRANSITIONEVENT') is invalid.
-FAIL createEvent('TRANSITIONEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS transitionevent should be an alias for TransitionEvent. 
+PASS createEvent('transitionevent') should be initialized correctly. 
+PASS TRANSITIONEVENT should be an alias for TransitionEvent. 
+PASS createEvent('TRANSITIONEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "TransitionEvents" 
 PASS UIEvent should be an alias for UIEvent. 
 PASS createEvent('UIEvent') should be initialized correctly. 
@@ -199,17 +199,17 @@ PASS UIEVENTS should be an alias for UIEvent.
 PASS createEvent('UIEVENTS') should be initialized correctly. 
 PASS WebGLContextEvent should be an alias for WebGLContextEvent. 
 FAIL createEvent('WebGLContextEvent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
-FAIL webglcontextevent should be an alias for WebGLContextEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('webglcontextevent') is invalid.
-FAIL createEvent('webglcontextevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL WEBGLCONTEXTEVENT should be an alias for WebGLContextEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('WEBGLCONTEXTEVENT') is invalid.
-FAIL createEvent('WEBGLCONTEXTEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS webglcontextevent should be an alias for WebGLContextEvent. 
+FAIL createEvent('webglcontextevent') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
+PASS WEBGLCONTEXTEVENT should be an alias for WebGLContextEvent. 
+FAIL createEvent('WEBGLCONTEXTEVENT') should be initialized correctly. assert_equals: isTrusted should be initialized to false expected (boolean) false but got (undefined) undefined
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "WebGLContextEvents" 
 PASS WheelEvent should be an alias for WheelEvent. 
 PASS createEvent('WheelEvent') should be initialized correctly. 
-FAIL wheelevent should be an alias for WheelEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('wheelevent') is invalid.
-FAIL createEvent('wheelevent') should be initialized correctly. Cannot read property 'type' of undefined
-FAIL WHEELEVENT should be an alias for WheelEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('WHEELEVENT') is invalid.
-FAIL createEvent('WHEELEVENT') should be initialized correctly. Cannot read property 'type' of undefined
+PASS wheelevent should be an alias for WheelEvent. 
+PASS createEvent('wheelevent') should be initialized correctly. 
+PASS WHEELEVENT should be an alias for WheelEvent. 
+PASS createEvent('WHEELEVENT') should be initialized correctly. 
 PASS Should throw NOT_SUPPORTED_ERR for pluralized legacy event interface "WheelEvents" 
 PASS Should throw NOT_SUPPORTED_ERR for unrecognized arguments 
 PASS Should throw NOT_SUPPORTED_ERR for non-legacy event interface "AnimationPlaybackEvent" 

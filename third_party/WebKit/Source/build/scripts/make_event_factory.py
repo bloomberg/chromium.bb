@@ -63,13 +63,13 @@ def create_event_whitelist(name):
             or name == 'TouchEvent')
 
 
-# All events on the following whitelist are matched case-sensitively
+# All events on the following whitelist are matched case-insensitively
 # in createEvent and are measured using UseCounter.
 #
 # TODO(foolip): All events on this list should either be added to the spec and
 # moved to the above whitelist (causing them to be matched case-insensitively)
 # or be deprecated/removed. https://crbug.com/569690
-def create_event_legacy_whitelist(name):
+def create_event_measure_whitelist(name):
     return (name == 'AnimationEvent'
             or name == 'BeforeUnloadEvent'
             or name == 'CloseEvent'
@@ -117,7 +117,7 @@ class EventFactoryWriter(json5_generator.Writer):
         'lower_first': name_utilities.lower_first,
         'script_name': name_utilities.script_name,
         'create_event_whitelist': create_event_whitelist,
-        'create_event_legacy_whitelist': create_event_legacy_whitelist,
+        'create_event_measure_whitelist': create_event_measure_whitelist,
         'measure_name': measure_name,
     }
 
