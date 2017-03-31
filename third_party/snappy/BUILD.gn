@@ -43,6 +43,14 @@ static_library("snappy") {
     "src/snappy.h",
   ]
 
+  if (is_win) {
+    sources += [ "win32/snappy-stubs-public.h" ]
+  } else if (is_mac) {
+    sources += [ "mac/snappy-stubs-public.h" ]
+  } else {
+    sources += [ "linux/snappy-stubs-public.h" ]
+  }
+
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [
     "//build/config/compiler:no_chromium_code",

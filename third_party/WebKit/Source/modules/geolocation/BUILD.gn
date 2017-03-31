@@ -7,9 +7,11 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 blink_modules_sources("geolocation") {
   sources = [
     "Coordinates.cpp",
+    "Coordinates.h",
     "GeoNotifier.cpp",
     "GeoNotifier.h",
     "Geolocation.cpp",
+    "Geolocation.h",
     "GeolocationError.h",
     "GeolocationWatchers.cpp",
     "GeolocationWatchers.h",

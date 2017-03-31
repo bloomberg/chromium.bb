@@ -35,6 +35,8 @@ component("freetype") {
   }
 
   sources = [
+    "include/freetype-custom-config/ftmodule.h",
+    "include/freetype-custom-config/ftoption.h",
     "src/src/autofit/autofit.c",
     "src/src/base/ftbase.c",
     "src/src/base/ftbbox.c",

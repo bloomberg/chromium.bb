@@ -7,6 +7,7 @@ import("//third_party/WebKit/Source/core/core.gni")
 blink_core_sources("loader") {
   sources = [
     "CookieJar.cpp",
+    "CookieJar.h",
     "DocumentLoadTiming.cpp",
     "DocumentLoadTiming.h",
     "DocumentLoader.cpp",
@@ -58,6 +59,7 @@ blink_core_sources("loader") {
     "TextTrackLoader.cpp",
     "TextTrackLoader.h",
     "ThreadableLoader.cpp",
+    "ThreadableLoader.h",
     "ThreadableLoaderClient.h",
     "ThreadableLoadingContext.cpp",
     "ThreadableLoadingContext.h",

@@ -6,6 +6,7 @@ component("color") {
   output_name = "gfx_ipc_color"
 
   sources = [
+    "gfx_ipc_color_export.h",
     "gfx_param_traits.cc",
     "gfx_param_traits.h",
     "gfx_param_traits_macros.h",

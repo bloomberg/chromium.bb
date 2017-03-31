@@ -6,6 +6,7 @@ component("skia") {
   output_name = "gfx_ipc_skia"
 
   sources = [
+    "gfx_skia_ipc_export.h",
     "gfx_skia_param_traits.cc",
     "gfx_skia_param_traits.h",
   ]

@@ -17,7 +17,7 @@ static_library("discovery") {
   ]
   sources = [
     "dial/device_description_fetcher.cc",
-    "dial/device_description_fetcher.h ",
+    "dial/device_description_fetcher.h",
     "dial/dial_device_data.cc",
     "dial/dial_device_data.h",
     "dial/dial_registry.cc",

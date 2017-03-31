@@ -14,7 +14,9 @@ static_library("ppapi_stub_lib") {
     "plugin_main_irt.c",
     "ppapi_plugin_main.c",
     "ppapi_plugin_start.c",
+    "ppapi_start.h",
     "thread_creator.c",
+    "thread_creator.h",
   ]
   configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
   configs += [ "//build/config/gcc:symbol_visibility_default" ]

@@ -372,6 +372,7 @@ test("gpu_unittests") {
 test("gpu_perftests") {
   sources = [
     "perftests/measurements.cc",
+    "perftests/measurements.h",
     "perftests/run_all_tests.cc",
     "perftests/texture_upload_perftest.cc",
   ]

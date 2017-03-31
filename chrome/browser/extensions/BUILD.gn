@@ -633,6 +633,7 @@ static_library("extensions") {
     "extension_uninstall_dialog.h",
     "extension_util.cc",
     "extension_util.h",
+    "extension_view.h",
     "extension_view_host.cc",
     "extension_view_host.h",
     "extension_view_host_factory.cc",

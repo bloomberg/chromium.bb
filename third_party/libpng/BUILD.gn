@@ -39,6 +39,7 @@ source_set("libpng_sources") {
     "png.c",
     "png.h",
     "pngconf.h",
+    "pngdebug.h",
     "pngerror.c",
     "pngget.c",
     "pnginfo.h",

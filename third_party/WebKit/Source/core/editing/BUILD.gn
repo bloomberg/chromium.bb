@@ -28,6 +28,7 @@ blink_core_sources("editing") {
     "EditingUtilities.cpp",
     "EditingUtilities.h",
     "Editor.cpp",
+    "Editor.h",
     "EditorKeyBindings.cpp",
     "EphemeralRange.cpp",
     "EphemeralRange.h",

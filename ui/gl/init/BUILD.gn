@@ -13,6 +13,7 @@ component("init") {
 
   sources = [
     "gl_factory.cc",
+    "gl_factory.h",
     "gl_init_export.h",
     "gl_initializer.h",
   ]

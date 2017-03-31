@@ -958,6 +958,7 @@ if (!is_android) {
   test("khronos_glcts_test") {
     sources = [
       "khronos_glcts_test.cc",
+      "khronos_glcts_test.h",
     ]
 
     deps = [

@@ -55,6 +55,7 @@ source_set("internal") {
 
   sources = [
     "client_compositor_frame_sink.cc",
+    "client_compositor_frame_sink.h",
     "property_type_converters.cc",
     "raster_thread_helper.cc",
   ]

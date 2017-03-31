@@ -31,6 +31,7 @@ target(link_target_type, "renderer_sources") {
   sources = [
     "android_content_detection_prefixes.cc",
     "android_content_detection_prefixes.h",
+    "associated_resource_fetcher.h",
     "browser_plugin_delegate.cc",
     "browser_plugin_delegate.h",
     "chrome_object_extensions_utils.cc",
@@ -44,6 +45,7 @@ target(link_target_type, "renderer_sources") {
     "navigation_state.h",
     "pepper_plugin_instance.h",
     "platform_event_observer.h",
+    "plugin_instance_throttler.h",
     "render_accessibility.h",
     "render_frame.h",
     "render_frame_observer.cc",
