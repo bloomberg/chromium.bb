@@ -220,9 +220,11 @@ void JobObserver::ExpectJobResult(const std::string& extension_id,
 JobObserver::JobObserver() {
   EXPECT_TRUE(
       content::BrowserThread::GetCurrentThreadIdentifier(&creation_thread_));
+  ContentVerifyJob::SetObserverForTests(this);
 }
 
 JobObserver::~JobObserver() {
+  ContentVerifyJob::SetObserverForTests(nullptr);
 }
 
 bool JobObserver::WaitForExpectedJobs() {
@@ -293,9 +295,11 @@ class VerifierObserver : public ContentVerifier::TestObserver {
 };
 
 VerifierObserver::VerifierObserver() {
+  ContentVerifier::SetObserverForTests(this);
 }
 
 VerifierObserver::~VerifierObserver() {
+  ContentVerifier::SetObserverForTests(nullptr);
 }
 
 void VerifierObserver::WaitForFetchComplete(const std::string& extension_id) {
@@ -446,6 +450,19 @@ class ForceInstallProvider : public ManagementPolicy::Provider {
   DISALLOW_COPY_AND_ASSIGN(ForceInstallProvider);
 };
 
+class ScopedContentVerifyJobDelegateOverride {
+ public:
+  explicit ScopedContentVerifyJobDelegateOverride(JobDelegate* delegate) {
+    ContentVerifyJob::SetDelegateForTests(delegate);
+  }
+  ~ScopedContentVerifyJobDelegateOverride() {
+    ContentVerifyJob::SetDelegateForTests(nullptr);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedContentVerifyJobDelegateOverride);
+};
+
 }  // namespace
 
 class ContentVerifierTest : public ExtensionBrowserTest {
@@ -460,23 +477,14 @@ class ContentVerifierTest : public ExtensionBrowserTest {
         switches::kExtensionContentVerificationEnforce);
   }
 
-  void SetUpOnMainThread() override {
-    ExtensionBrowserTest::SetUpOnMainThread();
-  }
-
-  void TearDownOnMainThread() override {
-    ContentVerifier::SetObserverForTests(NULL);
-    ContentVerifyJob::SetDelegateForTests(NULL);
-    ContentVerifyJob::SetObserverForTests(NULL);
-    ExtensionBrowserTest::TearDownOnMainThread();
-  }
-
   virtual void OpenPageAndWaitForUnload() {
-    ContentVerifyJob::SetDelegateForTests(&delegate_);
+    ScopedContentVerifyJobDelegateOverride scoped_delegate(&delegate_);
     std::string id = "npnbmohejbjohgpjnmjagbafnjhkmgko";
     delegate_.set_id(id);
-    unload_observer_.reset(
-        new RegistryObserver(ExtensionRegistry::Get(profile())));
+
+    // |unload_observer| needs to destroy before the ExtensionRegistry gets
+    // deleted, which happens before TearDownOnMainThread is called.
+    RegistryObserver unload_observer(ExtensionRegistry::Get(profile()));
     const Extension* extension = InstallExtensionFromWebstore(
         test_data_dir_.AppendASCII("content_verifier/v1.crx"), 1);
     ASSERT_TRUE(extension);
@@ -490,19 +498,14 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     AddTabAtIndexToBrowser(browser(), 1, page_url_, ui::PAGE_TRANSITION_LINK,
                            false);
 
-    EXPECT_TRUE(unload_observer_->WaitForUnload(id));
+    EXPECT_TRUE(unload_observer.WaitForUnload(id));
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
     int reasons = prefs->GetDisableReasons(id);
     EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
-
-    // This needs to happen before the ExtensionRegistry gets deleted, which
-    // happens before TearDownOnMainThread is called.
-    unload_observer_.reset();
   }
 
  protected:
   JobDelegate delegate_;
-  std::unique_ptr<RegistryObserver> unload_observer_;
   GURL page_url_;
 };
 
@@ -536,7 +539,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, FailOnDone) {
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   JobObserver job_observer;
-  ContentVerifyJob::SetObserverForTests(&job_observer);
   std::string id = "hoipipabpcoomfapcecilckodldhmpgl";
 
   job_observer.ExpectJobResult(
@@ -559,7 +561,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
                                JobObserver::Result::SUCCESS);
 
   VerifierObserver verifier_observer;
-  ContentVerifier::SetObserverForTests(&verifier_observer);
 
   // Install a test extension we copied from the webstore that has actual
   // signatures, and contains paths with a leading "./" in various places.
@@ -581,13 +582,10 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   EnableExtension(id);
 
   EXPECT_TRUE(job_observer.WaitForExpectedJobs());
-
-  ContentVerifyJob::SetObserverForTests(NULL);
 }
 
 IN_PROC_BROWSER_TEST_F(ContentVerifierTest, ContentScripts) {
   VerifierObserver verifier_observer;
-  ContentVerifier::SetObserverForTests(&verifier_observer);
 
   // Install an extension with content scripts. The initial read of the content
   // scripts will fail verification because they are read before the content
@@ -610,7 +608,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, ContentScripts) {
   // set up our job observer, and re-enable, expecting a success this time.
   DisableExtension(id);
   JobObserver job_observer;
-  ContentVerifyJob::SetObserverForTests(&job_observer);
   job_observer.ExpectJobResult(id,
                                base::FilePath(FILE_PATH_LITERAL("script.js")),
                                JobObserver::Result::SUCCESS);
@@ -629,8 +626,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, ContentScripts) {
                                JobObserver::Result::FAILURE);
   EnableExtension(id);
   EXPECT_TRUE(job_observer.WaitForExpectedJobs());
-
-  ContentVerifyJob::SetObserverForTests(NULL);
 }
 
 // Tests the case of a corrupt extension that is force-installed by policy and
