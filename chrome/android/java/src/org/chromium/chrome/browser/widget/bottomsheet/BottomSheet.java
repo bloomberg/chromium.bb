@@ -81,6 +81,9 @@ public class BottomSheet
     /** The minimum y/x ratio that a scroll must have to be considered vertical. */
     private static final float MIN_VERTICAL_SCROLL_SLOPE = 2.0f;
 
+    /** The height ratio for the sheet in the SHEET_STATE_HALF state. */
+    private static final float HALF_HEIGHT_RATIO = 0.55f;
+
     /**
      * Information about the different scroll states of the sheet. Order is important for these,
      * they go from smallest to largest.
@@ -100,9 +103,6 @@ public class BottomSheet
 
     /** The distance from the top the sheet should be when fully expanded. */
     private final float mFullHeightDistanceFromTop;
-
-    /** The distance from the bottom the sheet should be when half expanded. */
-    private final float mHalfHeightDistanceFromBottom;
 
     /** The minimum distance between half and full states to allow the half state. */
     private final float mMinHalfFullDistance;
@@ -298,9 +298,6 @@ public class BottomSheet
 
         mFullHeightDistanceFromTop =
                 getResources().getDimensionPixelSize(R.dimen.chrome_home_full_height_from_top);
-
-        mHalfHeightDistanceFromBottom =
-                getResources().getDimensionPixelSize(R.dimen.chrome_home_half_height_from_bottom);
 
         mMinHalfFullDistance =
                 getResources().getDimensionPixelSize(R.dimen.chrome_home_min_full_half_distance);
@@ -651,7 +648,7 @@ public class BottomSheet
         // inflated. The other views are a specific DP distance from the top and bottom and are
         // also updated.
         mStateRatios[0] = mToolbarHeight / mContainerHeight;
-        mStateRatios[1] = mHalfHeightDistanceFromBottom / mContainerHeight;
+        mStateRatios[1] = HALF_HEIGHT_RATIO;
         mStateRatios[2] = (mContainerHeight - mFullHeightDistanceFromTop) / mContainerHeight;
 
         // Compute the height that the content section of the bottom sheet.
