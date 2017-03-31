@@ -8,7 +8,7 @@ import android.os.IBinder;
 
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.common.IChildProcessService;
+import org.chromium.base.process_launcher.IChildProcessService;
 
 import javax.annotation.Nullable;
 

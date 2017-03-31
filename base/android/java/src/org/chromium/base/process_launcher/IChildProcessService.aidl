@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.common;
+package org.chromium.base.process_launcher;
 
-import android.view.Surface;
 import android.os.Bundle;
 
 interface IChildProcessService {

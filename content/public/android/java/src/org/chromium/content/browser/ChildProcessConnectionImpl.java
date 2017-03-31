@@ -22,7 +22,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.common.IChildProcessService;
+import org.chromium.base.process_launcher.IChildProcessService;
 
 import java.io.IOException;
 

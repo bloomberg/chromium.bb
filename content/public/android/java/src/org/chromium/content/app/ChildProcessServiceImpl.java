@@ -32,9 +32,9 @@ import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
+import org.chromium.base.process_launcher.IChildProcessService;
 import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content.common.IChildProcessService;
 import org.chromium.content.common.IGpuProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 

@@ -9,7 +9,6 @@ android_aidl("common_aidl") {
   interface_file = "java/src/org/chromium/content/common/common.aidl"
   import_include = [ "java/src" ]
   sources = [
-    "java/src/org/chromium/content/common/IChildProcessService.aidl",
     "java/src/org/chromium/content/common/IGpuProcessCallback.aidl",
   ]
 }

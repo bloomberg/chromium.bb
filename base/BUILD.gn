@@ -2461,6 +2461,7 @@ if (is_android) {
     srcjar_deps = [
       ":base_android_java_enums_srcjar",
       ":base_build_config_gen",
+      ":base_java_aidl",
       ":base_native_libraries_gen",
     ]
 
@@ -2551,6 +2552,14 @@ if (is_android) {
       "*/NativeLibraries##*.class",
     ]
   }
+
+  android_aidl("base_java_aidl") {
+    import_include = [ "android/java/src" ]
+    sources = [
+        "android/java/src/org/chromium/base/process_launcher/IChildProcessService.aidl",
+    ]
+}
+
 
   android_library("base_javatests") {
     testonly = true
