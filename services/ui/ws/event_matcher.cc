@@ -76,7 +76,9 @@ EventMatcher::~EventMatcher() {}
 bool EventMatcher::MatchesEvent(const ui::Event& event) const {
   if ((fields_to_match_ & TYPE) && event.type() != event_type_)
     return false;
-  int flags = event.flags() & ~ignore_event_flags_;
+  // Synthetic flags should never be matched against.
+  constexpr int kSyntheticFlags = EF_IS_SYNTHESIZED | EF_IS_REPEAT;
+  int flags = event.flags() & ~(ignore_event_flags_ | kSyntheticFlags);
   if ((fields_to_match_ & FLAGS) && flags != event_flags_)
     return false;
   if (fields_to_match_ & KEYBOARD_CODE) {
