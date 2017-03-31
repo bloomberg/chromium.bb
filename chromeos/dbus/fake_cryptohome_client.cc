@@ -32,6 +32,10 @@ namespace {
 constexpr char kTwentyBytesNonce[] = "+addtwentybytesnonce";
 // A symbolic signature.
 constexpr char kSignature[] = "signed";
+// Interval to update the progress of MigrateToDircrypto in milliseconds.
+constexpr int kDircryptoMigrationUpdateIntervalMs = 200;
+// The number of updates the MigrateToDircrypto will send before it completes.
+constexpr uint64_t kDircryptoMigrationMaxProgress = 15;
 }  // namespace
 
 FakeCryptohomeClient::FakeCryptohomeClient()
@@ -66,7 +70,9 @@ void FakeCryptohomeClient::SetLowDiskSpaceHandler(
     const LowDiskSpaceHandler& handler) {}
 
 void FakeCryptohomeClient::SetDircryptoMigrationProgressHandler(
-    const DircryptoMigrationProgessHandler& handler) {}
+    const DircryptoMigrationProgessHandler& handler) {
+  dircrypto_migration_progress_handler_ = handler;
+}
 
 void FakeCryptohomeClient::WaitForServiceToBeAvailable(
     const WaitForServiceToBeAvailableCallback& callback) {
@@ -589,6 +595,11 @@ void FakeCryptohomeClient::MigrateToDircrypto(
     const VoidDBusMethodCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
+  dircrypto_migration_progress_ = 0;
+  dircrypto_migration_progress_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(kDircryptoMigrationUpdateIntervalMs),
+      this, &FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated);
 }
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
@@ -653,6 +664,29 @@ void FakeCryptohomeClient::ReturnAsyncMethodDataInternal(
                               true, data));
   }
   ++async_call_id_;
+}
+
+void FakeCryptohomeClient::OnDircryptoMigrationProgressUpdated() {
+  dircrypto_migration_progress_++;
+
+  if (dircrypto_migration_progress_ >= kDircryptoMigrationMaxProgress) {
+    if (!dircrypto_migration_progress_handler_.is_null()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(dircrypto_migration_progress_handler_,
+                                cryptohome::DIRCRYPTO_MIGRATION_SUCCESS,
+                                dircrypto_migration_progress_,
+                                kDircryptoMigrationMaxProgress));
+    }
+    dircrypto_migration_progress_timer_.Stop();
+    return;
+  }
+  if (!dircrypto_migration_progress_handler_.is_null()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(dircrypto_migration_progress_handler_,
+                              cryptohome::DIRCRYPTO_MIGRATION_IN_PROGRESS,
+                              dircrypto_migration_progress_,
+                              kDircryptoMigrationMaxProgress));
+  }
 }
 
 }  // namespace chromeos

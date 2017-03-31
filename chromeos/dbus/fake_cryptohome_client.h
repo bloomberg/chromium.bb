@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chromeos/dbus/cryptohome_client.h"
 
 namespace chromeos {
@@ -240,6 +241,10 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void ReturnAsyncMethodDataInternal(const AsyncMethodCallback& callback,
                                      const std::string& data);
 
+  // This method is used to implement MigrateToDircrypto with simulated progress
+  // updates.
+  void OnDircryptoMigrationProgressUpdated();
+
   bool service_is_available_;
   int async_call_id_;
   AsyncCallStatusHandler async_call_status_handler_;
@@ -254,6 +259,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // associated data blob. Used to implement InstallAttributesSet and -Get.
   std::map<std::string, std::vector<uint8_t>> install_attrs_;
   bool locked_;
+
+  DircryptoMigrationProgessHandler dircrypto_migration_progress_handler_;
+  base::RepeatingTimer dircrypto_migration_progress_timer_;
+  uint64_t dircrypto_migration_progress_;
+
   base::WeakPtrFactory<FakeCryptohomeClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCryptohomeClient);

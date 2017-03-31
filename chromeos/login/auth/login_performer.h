@@ -91,7 +91,7 @@ class CHROMEOS_EXPORT LoginPerformer : public AuthStatusConsumer {
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
   void OnPasswordChangeDetected() override;
-  void OnOldEncryptionDetected() override;
+  void OnOldEncryptionDetected(const UserContext& user_context) override;
 
   // Migrates cryptohome using |old_password| specified.
   void RecoverEncryptedData(const std::string& old_password);

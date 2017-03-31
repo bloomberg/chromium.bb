@@ -107,11 +107,11 @@ void LoginPerformer::OnPasswordChangeDetected() {
   }
 }
 
-void LoginPerformer::OnOldEncryptionDetected() {
+void LoginPerformer::OnOldEncryptionDetected(const UserContext& user_context) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   if (delegate_)
-    delegate_->OnOldEncryptionDetected();
+    delegate_->OnOldEncryptionDetected(user_context);
   else
     NOTREACHED();
 }

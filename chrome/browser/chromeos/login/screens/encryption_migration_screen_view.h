@@ -9,6 +9,8 @@
 
 namespace chromeos {
 
+class UserContext;
+
 class EncryptionMigrationScreenView {
  public:
   class Delegate {
@@ -31,6 +33,7 @@ class EncryptionMigrationScreenView {
   virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
+  virtual void SetUserContext(const UserContext& user_context) = 0;
 };
 
 }  // namespace chromeos

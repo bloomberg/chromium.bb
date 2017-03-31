@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/bootstrap_user_flow.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_token_initializer.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
@@ -597,8 +598,15 @@ void ExistingUserController::ShowKioskAutolaunchScreen() {
   host_->StartWizard(OobeScreen::SCREEN_KIOSK_AUTOLAUNCH);
 }
 
-void ExistingUserController::ShowEncryptionMigrationScreen() {
+void ExistingUserController::ShowEncryptionMigrationScreen(
+    const UserContext& user_context) {
   host_->StartWizard(OobeScreen::SCREEN_ENCRYPTION_MIGRATION);
+
+  EncryptionMigrationScreen* migration_screen =
+      static_cast<EncryptionMigrationScreen*>(
+          host_->GetWizardController()->current_screen());
+  DCHECK(migration_screen);
+  migration_screen->SetUserContext(user_context);
 }
 
 void ExistingUserController::ShowTPMError() {
@@ -829,8 +837,9 @@ void ExistingUserController::OnPasswordChangeDetected() {
   ShowPasswordChangedDialog();
 }
 
-void ExistingUserController::OnOldEncryptionDetected() {
-  ShowEncryptionMigrationScreen();
+void ExistingUserController::OnOldEncryptionDetected(
+    const UserContext& user_context) {
+  ShowEncryptionMigrationScreen(user_context);
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {

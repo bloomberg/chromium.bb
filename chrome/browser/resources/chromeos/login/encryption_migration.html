@@ -1,0 +1,75 @@
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="chrome://oobe/custom_elements.html">
+
+<dom-module id="encryption-migration">
+  <template>
+    <link rel="stylesheet" href="encryption_migration.css">
+    <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <template is="dom-if" if="[[isInitial_(uiState)]]">
+      <oobe-dialog tabindex="0" has-buttons>
+        <div class="header">
+          <h1 class="title">Your file system needs upgrade</h1>
+          <div class="subtitle">
+            Your file system needs to be upgraded to use Android applications.
+            String TBD.
+          </div>
+        </div>
+        <div class="bottom-buttons flex layout horizontal">
+          <div class="flex"></div>
+          <oobe-text-button on-tap="onSkip_">Skip</oobe-text-button>
+          <oobe-text-button inverse on-tap="onUpgrade_">Upgrade
+          </oobe-text-button>
+        </div>
+      </oobe-dialog>
+    </template>
+    <template is="dom-if" if="[[isMigrating_(uiState)]]">
+      <oobe-dialog tabindex="0">
+        <div class="header">
+          <h1 class="title">Upgrading...</h1>
+          <div class="subtitle">Please do not shutdown. String TBD.</div>
+        </div>
+        <div class="footer flex layout vertical">
+          <paper-progress value="[[progress]]" max="1" step="0.001"
+              indeterminate="[[isProgressIndeterminate_(progress)]]">
+          </paper-progress>
+        </div>
+      </oobe-dialog>
+    </template>
+    <template is="dom-if" if="[[isMigrationSucceeded_(uiState)]]">
+      <oobe-dialog tabindex="0" has-buttons>
+        <div class="header">
+          <h1 class="title">Upgrade successfully finished</h1>
+          <div class="subtitle">
+            The system will restart automatically. String TBD.
+          </div>
+        </div>
+        <div class="bottom-buttons flex layout horizontal">
+          <div class="flex"></div>
+          <oobe-text-button inverse on-tap="onRestart_">Restart Now
+          </oobe-text-button>
+        </div>
+      </oobe-dialog>
+    </template>
+    <template is="dom-if" if="[[isMigrationFailed_(uiState)]]">
+      <oobe-dialog tabindex="0" has-buttons>
+        <div class="header">
+          <h1 class="title">Upgrade failed</h1>
+          <div class="subtitle">
+            The system encountered a problem during migration. String TBD.
+          </div>
+        </div>
+        <div class="bottom-buttons flex layout horizontal">
+          <div class="flex"></div>
+          <oobe-text-button inverse on-tap="onRestart_">Restart
+          </oobe-text-button>
+        </div>
+      </oobe-dialog>
+    </template>
+  </template>
+</dom-module>

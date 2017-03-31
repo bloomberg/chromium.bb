@@ -10,7 +10,8 @@ void AuthStatusConsumer::OnPasswordChangeDetected() {
   NOTREACHED();
 }
 
-void AuthStatusConsumer::OnOldEncryptionDetected() {
+void AuthStatusConsumer::OnOldEncryptionDetected(
+    const UserContext& user_context) {
   NOTREACHED();
 }
 

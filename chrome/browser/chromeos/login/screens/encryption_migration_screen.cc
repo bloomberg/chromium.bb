@@ -45,4 +45,10 @@ void EncryptionMigrationScreen::OnViewDestroyed(
     view_ = nullptr;
 }
 
+void EncryptionMigrationScreen::SetUserContext(
+    const UserContext& user_context) {
+  DCHECK(view_);
+  view_->SetUserContext(user_context);
+}
+
 }  // namespace chromeos

@@ -163,7 +163,7 @@ class ExistingUserController
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
   void OnPasswordChangeDetected() override;
-  void OnOldEncryptionDetected() override;
+  void OnOldEncryptionDetected(const UserContext& user_context) override;
   void WhiteListCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
   void SetAuthFlowOffline(bool offline) override;
@@ -208,7 +208,7 @@ class ExistingUserController
   void ShowKioskAutolaunchScreen();
 
   // Shows "filesystem encryption migration" screen.
-  void ShowEncryptionMigrationScreen();
+  void ShowEncryptionMigrationScreen(const UserContext& user_context);
 
   // Shows "critical TPM error" screen.
   void ShowTPMError();

@@ -661,7 +661,7 @@ void CryptohomeAuthenticator::OnPasswordChangeDetected() {
 void CryptohomeAuthenticator::OnOldEncryptionDetected() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   if (consumer_)
-    consumer_->OnOldEncryptionDetected();
+    consumer_->OnOldEncryptionDetected(current_state_->user_context);
 }
 
 void CryptohomeAuthenticator::OnAuthFailure(const AuthFailure& error) {

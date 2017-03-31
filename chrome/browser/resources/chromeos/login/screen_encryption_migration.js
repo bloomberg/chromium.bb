@@ -6,6 +6,8 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
     function() {
   return {
     EXTERNAL_API: [
+      'setUIState',
+      'setMigrationProgress',
     ],
 
     /**
@@ -15,6 +17,13 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
 
     /** @override */
     decorate: function() {
+      var encryptionMigration = $('encryption-migration-element');
+      encryptionMigration.addEventListener('upgrade', function() {
+        chrome.send('startMigration');
+      });
+      encryptionMigration.addEventListener('restart', function() {
+        chrome.send('requestRestart');
+      });
     },
 
     /**
@@ -27,6 +36,23 @@ login.createScreen('EncryptionMigrationScreen', 'encryption-migration',
       headerBar.showGuestButton = false;
       headerBar.showCreateSupervisedButton = false;
       headerBar.signinUIState = SIGNIN_UI_STATE.HIDDEN;
+    },
+
+    /**
+     * Updates the migration screen by specifying a state which corresponds to
+     * a sub step in the migration process.
+     * @param {number} state The UI state to identify a sub step in migration.
+     */
+    setUIState: function(state) {
+      $('encryption-migration-element').uiState = state;
+    },
+
+    /**
+     * Updates the migration progress.
+     * @param {number} progress The progress of migration in range [0, 1].
+     */
+    setMigrationProgress: function(progress) {
+      $('encryption-migration-element').progress = progress;
     },
   };
 });
