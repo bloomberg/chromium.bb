@@ -220,6 +220,19 @@ class ContentSuggestionsService : public KeyedService,
   // supports it).
   void ClearDismissedSuggestionsForDebugging(Category category);
 
+  // Enables or disables the remote suggestions service.
+  void SetRemoteSuggestionsServiceEnabled(bool enabled);
+
+  // Returns true if the remote suggestions service is enabled.
+  bool IsRemoteSuggestionsServiceEnabled() const;
+
+  // Returns true if the remote service is managed by an adminstrator's policy.
+  bool IsRemoteSuggestionsServiceManaged() const;
+
+  // Returns true if the remote service is managed by the guardian/parent of a
+  // child account.
+  bool IsRemoteSuggestionsServiceManagedByCustodian() const;
+
   // The reference to the RemoteSuggestionsProvider provider should
   // only be set by the factory and only used for debugging.
   // TODO(jkrcal) The way we deal with the circular dependency feels wrong.

@@ -155,6 +155,58 @@ static void OnSuggestionTargetVisited(JNIEnv* env,
       base::TimeDelta::FromMilliseconds(visit_time_ms));
 }
 
+static void SetRemoteSuggestionsServiceEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller,
+    jboolean enabled) {
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  if (!content_suggestions_service)
+    return;
+
+  content_suggestions_service->SetRemoteSuggestionsServiceEnabled(enabled);
+}
+
+static jboolean IsRemoteSuggestionsServiceEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller) {
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  if (!content_suggestions_service)
+    return false;
+
+  return content_suggestions_service->IsRemoteSuggestionsServiceEnabled();
+}
+
+// Returns true if the remote service is managed by an adminstrator's policy.
+static jboolean IsRemoteSuggestionsServiceManaged(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller) {
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  if (!content_suggestions_service)
+    return false;
+
+  return content_suggestions_service->IsRemoteSuggestionsServiceManaged();
+}
+
+// Returns true if the remote service is managed by a supervisor
+static jboolean IsRemoteSuggestionsServiceManagedByCustodian(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller) {
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  if (!content_suggestions_service)
+    return false;
+
+  return content_suggestions_service
+      ->IsRemoteSuggestionsServiceManagedByCustodian();
+}
+
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_bridge,
                                      const JavaParamRef<jobject>& j_profile)

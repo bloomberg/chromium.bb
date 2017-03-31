@@ -20,6 +20,7 @@ extern const base::Feature kAndroidPaymentAppsFilter;
 extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kChromeHomeFeature;
+extern const base::Feature kContentSuggestionsSettings;
 extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kContextualSearchUrlActions;
 extern const base::Feature kCustomContextMenu;

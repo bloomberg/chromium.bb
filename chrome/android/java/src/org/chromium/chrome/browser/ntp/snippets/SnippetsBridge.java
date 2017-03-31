@@ -88,6 +88,22 @@ public class SnippetsBridge
         nativeRemoteSuggestionsSchedulerOnFetchDue();
     }
 
+    public static void setRemoteSuggestionsServiceEnabled(boolean enabled) {
+        nativeSetRemoteSuggestionsServiceEnabled(enabled);
+    }
+
+    public static boolean isRemoteSuggestionsServiceEnabled() {
+        return nativeIsRemoteSuggestionsServiceEnabled();
+    }
+
+    public static boolean isRemoteSuggestionsServiceManaged() {
+        return nativeIsRemoteSuggestionsServiceManaged();
+    }
+
+    public static boolean isRemoteSuggestionsServiceManagedByCustodian() {
+        return nativeIsRemoteSuggestionsServiceManagedByCustodian();
+    }
+
     @Override
     public void fetchRemoteSuggestions() {
         nativeReloadSuggestions(mNativeSnippetsBridge);
@@ -337,6 +353,10 @@ public class SnippetsBridge
     private native void nativeReloadSuggestions(long nativeNTPSnippetsBridge);
     private static native void nativeRemoteSuggestionsSchedulerOnFetchDue();
     private static native void nativeRemoteSuggestionsSchedulerRescheduleFetching();
+    private static native void nativeSetRemoteSuggestionsServiceEnabled(boolean enabled);
+    private static native boolean nativeIsRemoteSuggestionsServiceEnabled();
+    private static native boolean nativeIsRemoteSuggestionsServiceManaged();
+    private static native boolean nativeIsRemoteSuggestionsServiceManagedByCustodian();
     private native int[] nativeGetCategories(long nativeNTPSnippetsBridge);
     private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge, int category);
     private native SuggestionsCategoryInfo nativeGetCategoryInfo(

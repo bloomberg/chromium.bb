@@ -262,6 +262,24 @@ void ContentSuggestionsService::ReloadSuggestions() {
   }
 }
 
+void ContentSuggestionsService::SetRemoteSuggestionsServiceEnabled(
+    bool enabled) {
+  pref_service_->SetBoolean(prefs::kEnableSnippets, enabled);
+}
+
+bool ContentSuggestionsService::IsRemoteSuggestionsServiceEnabled() const {
+  return pref_service_->GetBoolean(prefs::kEnableSnippets);
+}
+
+bool ContentSuggestionsService::IsRemoteSuggestionsServiceManaged() const {
+  return pref_service_->IsManagedPreference(prefs::kEnableSnippets);
+}
+
+bool ContentSuggestionsService::IsRemoteSuggestionsServiceManagedByCustodian()
+    const {
+  return pref_service_->IsPreferenceManagedByCustodian(prefs::kEnableSnippets);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 

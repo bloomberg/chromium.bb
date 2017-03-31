@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
@@ -39,6 +40,7 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
     public static final String PREF_HOMEPAGE = "homepage";
+    public static final String PREF_SUGGESTIONS = "suggestions";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
 
     public static final String ACCOUNT_PICKER_DIALOG_TAG = "account_picker_dialog_tag";
@@ -145,6 +147,13 @@ public class MainPreferences extends PreferenceFragment
                     HomepageManager.getInstance(getActivity()).getPrefHomepageEnabled());
         } else {
             getPreferenceScreen().removePreference(homepagePref);
+        }
+
+        Preference suggestionsPref = findPreference(PREF_SUGGESTIONS);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SETTINGS)) {
+            setOnOffSummary(suggestionsPref, SnippetsBridge.isRemoteSuggestionsServiceEnabled());
+        } else {
+            getPreferenceScreen().removePreference(suggestionsPref);
         }
 
         ChromeBasePreference dataReduction =

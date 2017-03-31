@@ -84,7 +84,7 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
     @Override
     public void navigateToHelpPage() {
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
-        // TODO(mastiz): Change this to LINK?
+        // TODO(dgn): Use the standard Help UI rather than a random link to online help?
         openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(NEW_TAB_URL_HELP, PageTransition.AUTO_BOOKMARK));
     }
