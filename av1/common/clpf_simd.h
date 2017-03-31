@@ -209,8 +209,9 @@ void SIMD_FUNC(aom_clpf_hblock)(uint8_t *dst, const uint16_t *src, int dstride,
 // strength + (abs(a - b) >> (dmp - log2(s)))))
 SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
                                unsigned int dmp) {
-  const v128 diff = v128_sub_16(v128_max_s16(a, b), v128_min_s16(a, b));
-  const v128 sign = v128_cmpeq_16(v128_min_s16(a, b), a);  // -(a <= b)
+  v128 diff = v128_sub_16(a, b);
+  const v128 sign = v128_shr_n_s16(diff, 15);
+  diff = v128_abs_s16(diff);
   const v128 zero = v128_zero();
   const v128 s = v128_max_s16(
       zero, v128_sub_16(v128_dup_16(strength),
