@@ -279,10 +279,19 @@ PointerEvent* PointerEventFactory::create(
 
       DCHECK_EQ(mouseEvent.pointerType, coalescedMouseEvent.pointerType);
       PointerEventInit coalescedEventInit = pointerEventInit;
+      coalescedEventInit.setCancelable(false);
+      coalescedEventInit.setBubbles(false);
       updateMousePointerEventInit(coalescedMouseEvent, view,
                                   &coalescedEventInit);
-      coalescedPointerEvents.push_back(
-          PointerEvent::create(pointerEventName, coalescedEventInit));
+      PointerEvent* event =
+          PointerEvent::create(pointerEventName, coalescedEventInit);
+      // Set the trusted flag for the coalesced events at the creation time
+      // as oppose to the normal events which is done at the dispatch time. This
+      // is because we don't want to go over all the coalesced events at every
+      // dispatch and add the implementation complexity while it has no sensible
+      // usecase at this time.
+      event->setTrusted(true);
+      coalescedPointerEvents.push_back(event);
     }
     pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
   }
@@ -330,10 +339,18 @@ PointerEvent* PointerEventFactory::create(
       DCHECK_EQ(touchPoint.id, coalescedTouchPoint.id);
       DCHECK_EQ(touchPoint.pointerType, coalescedTouchPoint.pointerType);
       PointerEventInit coalescedEventInit = pointerEventInit;
+      coalescedEventInit.setCancelable(false);
+      coalescedEventInit.setBubbles(false);
       updateTouchPointerEventInit(coalescedTouchPoint, targetFrame,
                                   &coalescedEventInit);
-      coalescedPointerEvents.push_back(
-          PointerEvent::create(type, coalescedEventInit));
+      PointerEvent* event = PointerEvent::create(type, coalescedEventInit);
+      // Set the trusted flag for the coalesced events at the creation time
+      // as oppose to the normal events which is done at the dispatch time. This
+      // is because we don't want to go over all the coalesced events at every
+      // dispatch and add the implementation complexity while it has no sensible
+      // usecase at this time.
+      event->setTrusted(true);
+      coalescedPointerEvents.push_back(event);
     }
     pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
   }
