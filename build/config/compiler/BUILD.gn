@@ -1035,18 +1035,9 @@ config("default_warnings") {
     ]
   }
 
-  if (is_chromeos) {
-    # TODO(thakis): Remove, http://crbug.com/263960
-    if (is_clang) {
-      cflags_cc += [ "-Wno-reserved-user-defined-literal" ]
-
-      # TODO(thakis): Enable this, crbug.com/507717
-      if (!is_nacl) {
-        cflags += [ "-Wno-shift-negative-value" ]
-      }
-    } else {
-      cflags_cc += [ "-Wno-literal-suffix" ]
-    }
+  if (is_chromeos && is_clang && !is_nacl) {
+    # TODO(thakis): Enable this, crbug.com/507717
+    cflags += [ "-Wno-shift-negative-value" ]
   }
 
   if (is_clang) {
