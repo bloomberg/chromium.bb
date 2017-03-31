@@ -114,7 +114,7 @@ class CORE_EXPORT V8PerIsolateData {
   static void enableIdleTasks(v8::Isolate*,
                               std::unique_ptr<gin::V8IdleTaskRunner>);
 
-  v8::Isolate* isolate() { return m_isolateHolder->isolate(); }
+  v8::Isolate* isolate() { return m_isolateHolder.isolate(); }
 
   StringCache* getStringCache() { return m_stringCache.get(); }
 
@@ -236,7 +236,7 @@ class CORE_EXPORT V8PerIsolateData {
                                                      v8::Local<v8::Value>,
                                                      V8FunctionTemplateMap&);
 
-  std::unique_ptr<gin::IsolateHolder> m_isolateHolder;
+  gin::IsolateHolder m_isolateHolder;
 
   // m_interfaceTemplateMapFor{,Non}MainWorld holds function templates for
   // the inerface objects.
