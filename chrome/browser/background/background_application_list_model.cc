@@ -33,6 +33,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util_collator.h"
@@ -151,29 +152,20 @@ BackgroundApplicationListModel::~BackgroundApplicationListModel() {
 
 BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
     : profile_(profile),
-      ready_(false) {
+      ready_(false),
+      extension_registry_observer_(this),
+      weak_ptr_factory_(this) {
   DCHECK(profile_);
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<Profile>(profile));
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
                  content::Source<Profile>(profile));
   registrar_.Add(this,
                  chrome::NOTIFICATION_BACKGROUND_CONTENTS_SERVICE_CHANGED,
                  content::Source<Profile>(profile));
-  ExtensionService* service = extensions::ExtensionSystem::Get(profile)->
-      extension_service();
-  if (service && service->is_ready()) {
-    Update();
-    ready_ = true;
-  }
+  extensions::ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE,
+      base::Bind(&BackgroundApplicationListModel::OnExtensionSystemReady,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundApplicationListModel::AddObserver(Observer* observer) {
@@ -196,7 +188,6 @@ void BackgroundApplicationListModel::AssociateApplicationData(
         base::MakeUnique<Application>(this, extension);
     application = application_ptr.get();
     applications_[extension->id()] = std::move(application_ptr);
-    Update();
     application->RequestIcon(extension_misc::EXTENSION_ICON_BITTY);
   }
 }
@@ -295,24 +286,12 @@ void BackgroundApplicationListModel::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED) {
-    Update();
-    ready_ = true;
-    return;
-  }
   ExtensionService* service = extensions::ExtensionSystem::Get(profile_)->
       extension_service();
   if (!service || !service->is_ready())
     return;
 
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      OnExtensionLoaded(content::Details<Extension>(details).ptr());
-      break;
-    case extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      OnExtensionUnloaded(
-          content::Details<UnloadedExtensionInfo>(details)->extension);
-      break;
     case extensions::NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED:
       OnExtensionPermissionsUpdated(
           content::Details<UpdatedExtensionPermissionsInfo>(details)->extension,
@@ -335,19 +314,43 @@ void BackgroundApplicationListModel::SendApplicationDataChangedNotifications(
 }
 
 void BackgroundApplicationListModel::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
     const Extension* extension) {
-  // We only care about extensions that are background applications
+  // We only care about extensions that are background applications.
   if (!IsBackgroundApp(*extension, profile_))
     return;
+  Update();
   AssociateApplicationData(extension);
 }
 
 void BackgroundApplicationListModel::OnExtensionUnloaded(
-    const Extension* extension) {
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
   if (!IsBackgroundApp(*extension, profile_))
     return;
   Update();
   DissociateApplicationData(extension);
+}
+
+void BackgroundApplicationListModel::OnExtensionSystemReady() {
+  // All initial extensions will be loaded when extension system ready. So we
+  // can get everything here.
+  Update();
+  for (const auto& extension : extensions_)
+    AssociateApplicationData(extension.get());
+
+  // If we register for extension loaded notifications in the ctor, we need to
+  // know that this object is constructed prior to the initialization process
+  // for the extension system, which isn't a guarantee. Thus, register here and
+  // associate all initial extensions.
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  ready_ = true;
+}
+
+void BackgroundApplicationListModel::OnShutdown(ExtensionRegistry* registry) {
+  DCHECK_EQ(ExtensionRegistry::Get(profile_), registry);
+  extension_registry_observer_.Remove(registry);
 }
 
 void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
@@ -358,7 +361,8 @@ void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
     switch (reason) {
       case UpdatedExtensionPermissionsInfo::ADDED:
         DCHECK(IsBackgroundApp(*extension, profile_));
-        OnExtensionLoaded(extension);
+        Update();
+        AssociateApplicationData(extension);
         break;
       case UpdatedExtensionPermissionsInfo::REMOVED:
         DCHECK(!IsBackgroundApp(*extension, profile_));

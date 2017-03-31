@@ -703,6 +703,10 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service->Init();
+  // ExtensionSystem::ready() is dispatched using PostTask to UI Thread. Wait
+  // until idle so that BackgroundApplicationListModel::OnExtensionSystemReady
+  // called.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*manager_, EnableLaunchOnStartup(true)).Times(Exactly(1));
   service->AddComponentExtension(component_extension.get());
@@ -736,7 +740,6 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BackgroundMenuGeneration) {
 
 TEST_F(BackgroundModeManagerWithExtensionsTest,
        BackgroundMenuGenerationMultipleProfile) {
-  TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
   scoped_refptr<extensions::Extension> component_extension(
     CreateExtension(
         extensions::Manifest::COMPONENT,
@@ -782,6 +785,7 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
   ExtensionService* service1 =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   service1->Init();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*manager_, EnableLaunchOnStartup(true)).Times(Exactly(1));
   service1->AddComponentExtension(component_extension.get());
@@ -790,6 +794,9 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
   service1->AddExtension(regular_extension_with_options.get());
   Mock::VerifyAndClearExpectations(manager_.get());
 
+  TestingProfile* profile2 = profile_manager_->CreateTestingProfile("p2");
+  manager_->RegisterProfile(profile2);
+
   static_cast<extensions::TestExtensionSystem*>(
       extensions::ExtensionSystem::Get(profile2))
       ->CreateExtensionService(base::CommandLine::ForCurrentProcess(),
@@ -797,12 +804,11 @@ TEST_F(BackgroundModeManagerWithExtensionsTest,
   ExtensionService* service2 =
       extensions::ExtensionSystem::Get(profile2)->extension_service();
   service2->Init();
+  base::RunLoop().RunUntilIdle();
 
   service2->AddComponentExtension(component_extension.get());
   service2->AddExtension(regular_extension.get());
   service2->AddExtension(regular_extension_with_options.get());
-
-  manager_->RegisterProfile(profile2);
 
   manager_->status_icon_ = new TestStatusIcon();
   manager_->UpdateStatusTrayIconContextMenu();
@@ -941,6 +947,7 @@ TEST_F(BackgroundModeManagerWithExtensionsTest, BalloonDisplay) {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   ASSERT_FALSE(service->is_ready());
   service->Init();
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(service->is_ready());
   manager_->status_icon_ = new TestStatusIcon();

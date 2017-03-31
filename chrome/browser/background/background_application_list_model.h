@@ -11,9 +11,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -22,10 +25,16 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace extensions {
+class ExtensionRegistry;
+}
+
 // Model for list of Background Applications associated with a Profile (i.e.
 // extensions with kBackgroundPermission set, or hosted apps with a
 // BackgroundContents).
-class BackgroundApplicationListModel : public content::NotificationObserver {
+class BackgroundApplicationListModel
+    : public content::NotificationObserver,
+      public extensions::ExtensionRegistryObserver {
  public:
   // Observer is informed of changes to the model.  Users of the
   // BackgroundApplicationListModel should anticipate that associated data,
@@ -119,6 +128,18 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
+
+  // Intended to be called when extension system is ready.
+  void OnExtensionSystemReady();
+
   // Notifies observers that some of the data associated with this background
   // application, e. g. the Icon, has changed.
   void SendApplicationDataChangedNotifications(
@@ -127,12 +148,6 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   // Notifies observers that at least one background application has been added
   // or removed.
   void SendApplicationListChangedNotifications();
-
-  // Invoked by Observe for NOTIFICATION_EXTENSION_LOADED_DEPRECATED.
-  void OnExtensionLoaded(const extensions::Extension* extension);
-
-  // Invoked by Observe for NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED.
-  void OnExtensionUnloaded(const extensions::Extension* extension);
 
   // Invoked by Observe for NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED.
   void OnExtensionPermissionsUpdated(
@@ -151,6 +166,13 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   Profile* profile_;
   content::NotificationRegistrar registrar_;
   bool ready_;
+
+  // Listens to extension load, unload notifications.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
+
+  base::WeakPtrFactory<BackgroundApplicationListModel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundApplicationListModel);
 };
