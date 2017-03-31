@@ -44,11 +44,11 @@ codesign_id="${3}"
 
 versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 
-# An .app bundle to be signed can be signed directly. Normally, signing a
-# framework bundle requires that each version within be signed individually.
-# http://developer.apple.com/mac/library/technotes/tn2007/tn2206.html#TNTAG13
-# In Chrome's case, the framework bundle is unversioned, so it too can be
-# signed directly. See copy_framework_unversioned.sh.
+# To sign an .app bundle that contains nested code, the nested components
+# themselves must be signed. Each of these components is signed below. Note
+# that unless a framework has multiple versions (which is discouraged), signing
+# the entire framework is equivalent to signing the Current version.
+# https://developer.apple.com/library/content/technotes/tn2206/_index.html#//apple_ref/doc/uid/DTS40007919-CH1-TNTAG13
 
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
 notification_service="${framework}/XPCServices/AlertNotificationService.xpc"
