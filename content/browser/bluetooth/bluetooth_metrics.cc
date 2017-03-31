@@ -52,12 +52,6 @@ namespace content {
 
 // General
 
-void RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction function) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.FunctionCall.Count",
-                            static_cast<int>(function),
-                            static_cast<int>(UMAWebBluetoothFunction::COUNT));
-}
-
 // requestDevice()
 
 void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome) {

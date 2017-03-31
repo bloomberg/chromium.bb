@@ -14,12 +14,12 @@
     readonly attribute UUID uuid;
     readonly attribute BluetoothCharacteristicProperties properties;
     readonly attribute DataView? value;
-    [RaisesException, CallWith=ScriptState] Promise<BluetoothRemoteGATTDescriptor> getDescriptor(BluetoothDescriptorUUID descriptor);
-    [RaisesException, CallWith=ScriptState] Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
-    [CallWith=ScriptState] Promise<DataView> readValue();
-    [CallWith=ScriptState] Promise<void> writeValue(BufferSource value);
-    [CallWith=ScriptState] Promise<BluetoothRemoteGATTCharacteristic> startNotifications();
-    [CallWith=ScriptState] Promise<BluetoothRemoteGATTCharacteristic> stopNotifications();
+    [RaisesException, CallWith=ScriptState, MeasureAs=WebBluetoothRemoteCharacteristicGetDescriptor] Promise<BluetoothRemoteGATTDescriptor> getDescriptor(BluetoothDescriptorUUID descriptor);
+    [RaisesException, CallWith=ScriptState, MeasureAs=WebBluetoothRemoteCharacteristicGetDescriptors] Promise<sequence<BluetoothRemoteGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
+    [CallWith=ScriptState, MeasureAs=WebBluetoothRemoteCharacteristicReadValue] Promise<DataView> readValue();
+    [CallWith=ScriptState, MeasureAs=WebBluetoothRemoteCharacteristicWriteValue] Promise<void> writeValue(BufferSource value);
+    [CallWith=ScriptState, MeasureAs=WebBluetoothRemoteCharacteristicStartNotifications] Promise<BluetoothRemoteGATTCharacteristic> startNotifications();
+    [CallWith=ScriptState, MeasureAs=WebBluetoothRemoteCharacteristicStopNotifications] Promise<BluetoothRemoteGATTCharacteristic> stopNotifications();
 
     // TODO(ortuno): Move this to CharacteristicEventHandlers.
     // http://crbug.com/537459

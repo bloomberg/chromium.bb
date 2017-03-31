@@ -1499,6 +1499,20 @@ class CORE_EXPORT UseCounter {
     V0CustomElementsConstruct = 1879,
     V8IDBObserver_Observe_Method = 1880,
     V8IDBObserver_Unobserve_Method = 1881,
+    WebBluetoothRemoteCharacteristicGetDescriptor = 1882,
+    WebBluetoothRemoteCharacteristicGetDescriptors = 1883,
+    WebBluetoothRemoteCharacteristicReadValue = 1884,
+    WebBluetoothRemoteCharacteristicWriteValue = 1885,
+    WebBluetoothRemoteCharacteristicStartNotifications = 1886,
+    WebBluetoothRemoteCharacteristicStopNotifications = 1887,
+    WebBluetoothRemoteDescriptorReadValue = 1888,
+    WebBluetoothRemoteDescriptorWriteValue = 1889,
+    WebBluetoothRemoteServerConnect = 1890,
+    WebBluetoothRemoteServerDisconnect = 1891,
+    WebBluetoothRemoteServerGetPrimaryService = 1892,
+    WebBluetoothRemoteServerGetPrimaryServices = 1893,
+    WebBluetoothRemoteServiceGetCharacteristic = 1894,
+    WebBluetoothRemoteServiceGetCharacteristics = 1895,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

@@ -292,7 +292,6 @@ void WebBluetoothServiceImpl::NotifyCharacteristicValueChanged(
 void WebBluetoothServiceImpl::RequestDevice(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
     const RequestDeviceCallback& callback) {
-  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
   RecordRequestDeviceOptions(options);
 
   if (!GetAdapter()) {
@@ -318,7 +317,6 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
     blink::mojom::WebBluetoothServerClientAssociatedPtrInfo client,
     const RemoteServerConnectCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
 
   const CacheQueryResult query_result = QueryCacheForDevice(device_id);
 
@@ -358,8 +356,6 @@ void WebBluetoothServiceImpl::RemoteServerConnect(
 void WebBluetoothServiceImpl::RemoteServerDisconnect(
     const WebBluetoothDeviceId& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
 
   if (connected_devices_->IsConnectedToDeviceWithId(device_id)) {
     DVLOG(1) << "Disconnecting device: " << device_id.str();
@@ -373,10 +369,6 @@ void WebBluetoothServiceImpl::RemoteServerGetPrimaryServices(
     const base::Optional<BluetoothUUID>& services_uuid,
     const RemoteServerGetPrimaryServicesCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE
-          ? UMAWebBluetoothFunction::GET_PRIMARY_SERVICE
-          : UMAWebBluetoothFunction::GET_PRIMARY_SERVICES);
   RecordGetPrimaryServicesServices(quantity, services_uuid);
 
   if (!allowed_devices().IsAllowedToAccessAtLeastOneService(device_id)) {
@@ -430,10 +422,6 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
     const RemoteServiceGetCharacteristicsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RecordWebBluetoothFunctionCall(
-      quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE
-          ? UMAWebBluetoothFunction::SERVICE_GET_CHARACTERISTIC
-          : UMAWebBluetoothFunction::SERVICE_GET_CHARACTERISTICS);
   RecordGetCharacteristicsCharacteristic(quantity, characteristics_uuid);
 
   if (characteristics_uuid &&
@@ -518,10 +506,6 @@ void WebBluetoothServiceImpl::RemoteCharacteristicGetDescriptors(
     const RemoteCharacteristicGetDescriptorsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RecordWebBluetoothFunctionCall(
-      quantity == blink::mojom::WebBluetoothGATTQueryQuantity::SINGLE
-          ? UMAWebBluetoothFunction::CHARACTERISTIC_GET_DESCRIPTOR
-          : UMAWebBluetoothFunction::CHARACTERISTIC_GET_DESCRIPTORS);
   RecordGetDescriptorsDescriptor(quantity, descriptors_uuid);
 
   if (descriptors_uuid &&
@@ -593,8 +577,6 @@ void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
     const std::string& characteristic_instance_id,
     const RemoteCharacteristicReadValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::CHARACTERISTIC_READ_VALUE);
 
   const CacheQueryResult query_result =
       QueryCacheForCharacteristic(characteristic_instance_id);
@@ -629,8 +611,6 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
     const std::vector<uint8_t>& value,
     const RemoteCharacteristicWriteValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::CHARACTERISTIC_WRITE_VALUE);
 
   // We perform the length check on the renderer side. So if we
   // get a value with length > 512, we can assume it's a hostile
@@ -673,8 +653,6 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(
     blink::mojom::WebBluetoothCharacteristicClientAssociatedPtrInfo client,
     const RemoteCharacteristicStartNotificationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::CHARACTERISTIC_START_NOTIFICATIONS);
 
   auto iter =
       characteristic_id_to_notify_session_.find(characteristic_instance_id);
@@ -724,8 +702,6 @@ void WebBluetoothServiceImpl::RemoteCharacteristicStopNotifications(
     const std::string& characteristic_instance_id,
     const RemoteCharacteristicStopNotificationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::CHARACTERISTIC_STOP_NOTIFICATIONS);
 
   const CacheQueryResult query_result =
       QueryCacheForCharacteristic(characteristic_instance_id);
@@ -751,8 +727,6 @@ void WebBluetoothServiceImpl::RemoteDescriptorReadValue(
     const std::string& descriptor_instance_id,
     const RemoteDescriptorReadValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::DESCRIPTOR_READ_VALUE);
 
   const CacheQueryResult query_result =
       QueryCacheForDescriptor(descriptor_instance_id);
@@ -787,8 +761,6 @@ void WebBluetoothServiceImpl::RemoteDescriptorWriteValue(
     const std::vector<uint8_t>& value,
     const RemoteDescriptorWriteValueCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(
-      UMAWebBluetoothFunction::DESCRIPTOR_WRITE_VALUE);
 
   // We perform the length check on the renderer side. So if we
   // get a value with length > 512, we can assume it's a hostile
