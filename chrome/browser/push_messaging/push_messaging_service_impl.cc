@@ -395,15 +395,16 @@ void PushMessagingServiceImpl::DidHandleMessage(
   // an iterator rather than by value, as the latter removes all entries.
   in_flight_message_deliveries_.erase(in_flight_iterator);
 
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  // Reset before running callbacks below, so tests can verify keep-alive reset.
+  if (in_flight_message_deliveries_.empty())
+    in_flight_keep_alive_.reset();
+#endif
+
   message_handled_closure.Run();
 
   if (push_messaging_service_observer_)
     push_messaging_service_observer_->OnMessageHandled();
-
-#if BUILDFLAG(ENABLE_BACKGROUND)
-  if (in_flight_message_deliveries_.empty())
-    in_flight_keep_alive_.reset();
-#endif
 }
 
 void PushMessagingServiceImpl::SetMessageCallbackForTesting(

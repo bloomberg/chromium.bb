@@ -1466,10 +1466,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-      new content::MessageLoopRunner;
-  notification_manager()->SetNotificationAddedCallback(
-      message_loop_runner->QuitClosure());
+  base::RunLoop run_loop;
+  base::Closure quit_barrier =
+      base::BarrierClosure(2 /* num_closures */, run_loop.QuitClosure());
+  push_service()->SetMessageCallbackForTesting(quit_barrier);
+  notification_manager()->SetNotificationAddedCallback(quit_barrier);
 
   gcm::IncomingMessage message;
   message.sender_id = GetTestApplicationServerKey();
@@ -1481,7 +1482,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("immediate:shownotification-without-waituntil", script_result);
 
-  message_loop_runner->Run();
+  run_loop.Run();
 
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
   ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
