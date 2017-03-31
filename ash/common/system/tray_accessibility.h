@@ -80,22 +80,34 @@ class AccessibilityDetailedView : public TrayDetailsView,
                                         bool highlight,
                                         bool checked,
                                         const gfx::VectorIcon& icon);
+  HoverHighlightView* AddScrollListItemWithoutIcon(const base::string16& text,
+                                                   bool checked);
 
-  views::View* spoken_feedback_view_;
-  views::View* high_contrast_view_;
-  views::View* screen_magnifier_view_;
-  views::View* large_cursor_view_;
-  views::CustomButton* help_view_;
-  views::CustomButton* settings_view_;
-  views::View* autoclick_view_;
-  views::View* virtual_keyboard_view_;
+  void AddSubHeader(const base::string16& header_text);
 
-  bool spoken_feedback_enabled_;
-  bool high_contrast_enabled_;
-  bool screen_magnifier_enabled_;
-  bool large_cursor_enabled_;
-  bool autoclick_enabled_;
-  bool virtual_keyboard_enabled_;
+  views::View* spoken_feedback_view_ = nullptr;
+  views::View* high_contrast_view_ = nullptr;
+  views::View* screen_magnifier_view_ = nullptr;
+  views::View* large_cursor_view_ = nullptr;
+  views::CustomButton* help_view_ = nullptr;
+  views::CustomButton* settings_view_ = nullptr;
+  views::View* autoclick_view_ = nullptr;
+  views::View* virtual_keyboard_view_ = nullptr;
+  views::View* mono_audio_view_ = nullptr;
+  views::View* caret_highlight_view_ = nullptr;
+  views::View* highlight_mouse_cursor_view_ = nullptr;
+  views::View* highlight_keyboard_focus_view_ = nullptr;
+
+  bool spoken_feedback_enabled_ = false;
+  bool high_contrast_enabled_ = false;
+  bool screen_magnifier_enabled_ = false;
+  bool large_cursor_enabled_ = false;
+  bool autoclick_enabled_ = false;
+  bool virtual_keyboard_enabled_ = false;
+  bool mono_audio_enabled_ = false;
+  bool caret_highlight_enabled_ = false;
+  bool highlight_mouse_cursor_enabled_ = false;
+  bool highlight_keyboard_focus_enabled_ = false;
   LoginStatus login_;
 
   friend class chromeos::TrayAccessibilityTest;

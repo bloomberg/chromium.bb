@@ -356,7 +356,10 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         pref_service->GetBoolean(prefs::kShouldAlwaysShowAccessibilityMenu) ||
         pref_service->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled) ||
         pref_service->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled) ||
-        pref_service->GetBoolean(prefs::kAccessibilityMonoAudioEnabled))
+        pref_service->GetBoolean(prefs::kAccessibilityMonoAudioEnabled) ||
+        pref_service->GetBoolean(prefs::kAccessibilityCaretHighlightEnabled) ||
+        pref_service->GetBoolean(prefs::kAccessibilityCursorHighlightEnabled) ||
+        pref_service->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled))
       return true;
   }
   return false;
@@ -826,6 +829,9 @@ void AccessibilityManager::UpdateCaretHighlightFromPref() {
     return;
   caret_highlight_enabled_ = enabled;
 
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
   UpdateAccessibilityHighlightingFromPrefs();
 }
 
@@ -854,6 +860,9 @@ void AccessibilityManager::UpdateCursorHighlightFromPref() {
     return;
   cursor_highlight_enabled_ = enabled;
 
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_CURSOR_HIGHLIGHT,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
   UpdateAccessibilityHighlightingFromPrefs();
 }
 
@@ -887,6 +896,9 @@ void AccessibilityManager::UpdateFocusHighlightFromPref() {
     return;
   focus_highlight_enabled_ = enabled;
 
+  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT,
+                                          enabled, ash::A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged(details);
   UpdateAccessibilityHighlightingFromPrefs();
 }
 

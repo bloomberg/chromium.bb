@@ -189,6 +189,37 @@ class TrayAccessibilityTest
     tray()->detailed_menu_->OnViewClicked(button);
   }
 
+  void ClickLargeMouseCursorOnDetailMenu() {
+    views::View* button = tray()->detailed_menu_->large_cursor_view_;
+    ASSERT_TRUE(button);
+    tray()->detailed_menu_->OnViewClicked(button);
+  }
+
+  void ClickMonoAudioOnDetailMenu() {
+    views::View* button = tray()->detailed_menu_->mono_audio_view_;
+    ASSERT_TRUE(button);
+    tray()->detailed_menu_->OnViewClicked(button);
+  }
+
+  void ClickCaretHighlightOnDetailMenu() {
+    views::View* button = tray()->detailed_menu_->caret_highlight_view_;
+    ASSERT_TRUE(button);
+    tray()->detailed_menu_->OnViewClicked(button);
+  }
+
+  void ClickHighlightMouseCursorOnDetailMenu() {
+    views::View* button = tray()->detailed_menu_->highlight_mouse_cursor_view_;
+    ASSERT_TRUE(button);
+    tray()->detailed_menu_->OnViewClicked(button);
+  }
+
+  void ClickHighlishtKeyboardFocusOnDetailMenu() {
+    views::View* button =
+        tray()->detailed_menu_->highlight_keyboard_focus_view_;
+    ASSERT_TRUE(button);
+    tray()->detailed_menu_->OnViewClicked(button);
+  }
+
   bool IsSpokenFeedbackEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->spoken_feedback_enabled_;
   }
@@ -213,6 +244,22 @@ class TrayAccessibilityTest
     return tray()->detailed_menu_->virtual_keyboard_enabled_;
   }
 
+  bool IsMonoAudioEnabledOnDetailMenu() const {
+    return tray()->detailed_menu_->mono_audio_enabled_;
+  }
+
+  bool IsCaretHighlightEnabledOnDetailMenu() const {
+    return tray()->detailed_menu_->caret_highlight_enabled_;
+  }
+
+  bool IsHighlightMouseCursorEnabledOnDetailMenu() const {
+    return tray()->detailed_menu_->highlight_mouse_cursor_enabled_;
+  }
+
+  bool IsHighlightKeyboardFocusEnabledOnDetailMenu() const {
+    return tray()->detailed_menu_->highlight_keyboard_focus_enabled_;
+  }
+
   bool IsSpokenFeedbackMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->spoken_feedback_view_;
   }
@@ -235,6 +282,22 @@ class TrayAccessibilityTest
 
   bool IsVirtualKeyboardMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->virtual_keyboard_view_;
+  }
+
+  bool IsMonoAudioMenuShownOnDetailMenu() const {
+    return tray()->detailed_menu_->mono_audio_view_;
+  }
+
+  bool IsCaretHighlightMenuShownOnDetailMenu() const {
+    return tray()->detailed_menu_->caret_highlight_view_;
+  }
+
+  bool IsHighlightMouseCursorMenuShownOnDetailMenu() const {
+    return tray()->detailed_menu_->highlight_mouse_cursor_view_;
+  }
+
+  bool IsHighlightKeyboardFocusMenuShownOnDetailMenu() const {
+    return tray()->detailed_menu_->highlight_keyboard_focus_view_;
   }
 
   // In material design we show the help button but theme it as disabled if
@@ -316,11 +379,47 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   SetMagnifierEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
+  // Toggling automatic clicks changes the visibility of the icon
+  AccessibilityManager::Get()->EnableAutoclick(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableAutoclick(false);
+  EXPECT_FALSE(IsTrayIconVisible());
+
   // Toggling the virtual keyboard setting changes the visibility of the a11y
   // icon.
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
+  EXPECT_FALSE(IsTrayIconVisible());
+
+  // Toggling the higlight large cursor changes the visibility of the icon
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_FALSE(IsTrayIconVisible());
+
+  // Toggling the mono audio changes the visibility of the icon
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_FALSE(IsTrayIconVisible());
+
+  // Toggling the caret highlight changes the visibility of the icon
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_FALSE(IsTrayIconVisible());
+
+  // Toggling the highlight mouse cursor changes the visibility of the icon
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_FALSE(IsTrayIconVisible());
+
+  // Toggling the highlight keyboard focus changes the visibility of the icon
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
   // Enabling all accessibility features.
@@ -333,6 +432,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableSpokenFeedback(
       false, ash::A11Y_NOTIFICATION_NONE);
   EXPECT_TRUE(IsTrayIconVisible());
@@ -341,6 +450,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   SetMagnifierEnabled(false);
   EXPECT_TRUE(IsTrayIconVisible());
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(IsTrayIconVisible());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_FALSE(IsTrayIconVisible());
 
   // Confirms that prefs::kShouldAlwaysShowAccessibilityMenu doesn't affect
@@ -395,6 +514,36 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_FALSE(CanCreateMenuItem());
 
+  // Toggling large mouse cursor changes the visibility of the menu.
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_FALSE(CanCreateMenuItem());
+
+  // Toggling mono audio changes the visibility of the menu.
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_FALSE(CanCreateMenuItem());
+
+  // Toggling caret highlight changes the visibility of the menu.
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_FALSE(CanCreateMenuItem());
+
+  // Toggling highlight mouse cursor changes the visibility of the menu.
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_FALSE(CanCreateMenuItem());
+
+  // Toggling highlight keyboard focus changes the visibility of the menu.
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
+  EXPECT_FALSE(CanCreateMenuItem());
+
   // Enabling all accessibility features.
   SetMagnifierEnabled(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -407,6 +556,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableAutoclick(false);
@@ -417,6 +576,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
   SetMagnifierEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_FALSE(CanCreateMenuItem());
 }
 
@@ -463,6 +632,36 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_TRUE(CanCreateMenuItem());
 
+  // The menu remains visibile regardless of toggling large mouse cursor.
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling mono audio.
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling caret highlight.
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling highlight mouse cursor.
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling highlight keyboard focus.
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
   // Enabling all accessibility features.
   SetMagnifierEnabled(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -475,6 +674,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableAutoclick(false);
@@ -485,6 +694,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
   SetMagnifierEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_TRUE(CanCreateMenuItem());
 
   SetShowAccessibilityOptionsInSystemTrayMenu(false);
@@ -525,6 +744,36 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_TRUE(CanCreateMenuItem());
 
+  // The menu remains visibile regardless of toggling large mouse cursor.
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling mono audio.
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling caret highlight.
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling highlight mouse cursor.
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
+  // The menu remains visibile regardless of toggling highlight keyboard focus.
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+
   // Enabling all accessibility features.
   SetMagnifierEnabled(true);
   EXPECT_TRUE(CanCreateMenuItem());
@@ -535,6 +784,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
   EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
   EXPECT_TRUE(CanCreateMenuItem());
   AccessibilityManager::Get()->EnableSpokenFeedback(
@@ -543,6 +802,16 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
   AccessibilityManager::Get()->EnableHighContrast(false);
   EXPECT_TRUE(CanCreateMenuItem());
   SetMagnifierEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableLargeCursor(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(CanCreateMenuItem());
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_TRUE(CanCreateMenuItem());
 
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
@@ -667,6 +936,61 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ClickDetailMenu) {
   EXPECT_TRUE(CreateDetailedMenu());
   ClickVirtualKeyboardOnDetailMenu();
   EXPECT_FALSE(AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
+
+  // Confirms that the check item toggles large mouse cursor.
+  EXPECT_FALSE(AccessibilityManager::Get()->IsLargeCursorEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickLargeMouseCursorOnDetailMenu();
+  EXPECT_TRUE(AccessibilityManager::Get()->IsLargeCursorEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickLargeMouseCursorOnDetailMenu();
+  EXPECT_FALSE(AccessibilityManager::Get()->IsLargeCursorEnabled());
+
+  // Confirms that the check item toggles mono audio.
+  EXPECT_FALSE(AccessibilityManager::Get()->IsMonoAudioEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickMonoAudioOnDetailMenu();
+  EXPECT_TRUE(AccessibilityManager::Get()->IsMonoAudioEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickMonoAudioOnDetailMenu();
+  EXPECT_FALSE(AccessibilityManager::Get()->IsMonoAudioEnabled());
+
+  // Confirms that the check item toggles caret highlight.
+  EXPECT_FALSE(AccessibilityManager::Get()->IsCaretHighlightEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickCaretHighlightOnDetailMenu();
+  EXPECT_TRUE(AccessibilityManager::Get()->IsCaretHighlightEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickCaretHighlightOnDetailMenu();
+  EXPECT_FALSE(AccessibilityManager::Get()->IsCaretHighlightEnabled());
+
+  // Confirms that the check item toggles highlight mouse cursor.
+  EXPECT_FALSE(AccessibilityManager::Get()->IsCursorHighlightEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickHighlightMouseCursorOnDetailMenu();
+  EXPECT_TRUE(AccessibilityManager::Get()->IsCursorHighlightEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickHighlightMouseCursorOnDetailMenu();
+  EXPECT_FALSE(AccessibilityManager::Get()->IsCursorHighlightEnabled());
+
+  // Confirms that the check item toggles highlight keyboard focus.
+  EXPECT_FALSE(AccessibilityManager::Get()->IsFocusHighlightEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickHighlishtKeyboardFocusOnDetailMenu();
+  EXPECT_TRUE(AccessibilityManager::Get()->IsFocusHighlightEnabled());
+
+  EXPECT_TRUE(CreateDetailedMenu());
+  ClickHighlishtKeyboardFocusOnDetailMenu();
+  EXPECT_FALSE(AccessibilityManager::Get()->IsFocusHighlightEnabled());
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
@@ -680,6 +1004,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling spoken feedback.
@@ -692,6 +1020,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling spoken feedback.
@@ -704,6 +1036,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling high contrast.
@@ -715,6 +1051,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling high contrast.
@@ -726,6 +1066,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling full screen magnifier.
@@ -737,6 +1081,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling screen magnifier.
@@ -748,6 +1096,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling large cursor.
@@ -759,6 +1111,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_TRUE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling large cursor.
@@ -770,6 +1126,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enable on-screen keyboard.
@@ -781,6 +1141,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disable on-screen keyboard.
@@ -792,6 +1156,130 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Enabling mono audio.
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Disabling mono audio.
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Enabling caret highlight.
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Disabling caret highlight.
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Enabling highlight mouse cursor.
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Disabling highlight mouse cursor.
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Enabling highlight keyboard focus.
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
+  CloseDetailMenu();
+
+  // Disabling highlight keyboard focus.
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
+  EXPECT_TRUE(CreateDetailedMenu());
+  EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
+  EXPECT_FALSE(IsScreenMagnifierEnabledOnDetailMenu());
+  EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Enabling all of the a11y features.
@@ -801,13 +1289,23 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   SetMagnifierEnabled(true);
   AccessibilityManager::Get()->EnableLargeCursor(true);
   AccessibilityManager::Get()->EnableVirtualKeyboard(true);
+  AccessibilityManager::Get()->EnableAutoclick(true);
+  AccessibilityManager::Get()->EnableMonoAudio(true);
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(true);
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(true);
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(true);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_TRUE(IsHighContrastEnabledOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierEnabledOnDetailMenu());
   EXPECT_TRUE(IsLargeCursorEnabledOnDetailMenu());
-  EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  // Focus highlighting can't be on when spoken feedback is on
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling all of the a11y features.
@@ -817,6 +1315,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   SetMagnifierEnabled(false);
   AccessibilityManager::Get()->EnableLargeCursor(false);
   AccessibilityManager::Get()->EnableVirtualKeyboard(false);
+  AccessibilityManager::Get()->EnableAutoclick(false);
+  AccessibilityManager::Get()->EnableMonoAudio(false);
+  AccessibilityManager::Get()->SetCaretHighlightEnabled(false);
+  AccessibilityManager::Get()->SetCursorHighlightEnabled(false);
+  AccessibilityManager::Get()->SetFocusHighlightEnabled(false);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_FALSE(IsSpokenFeedbackEnabledOnDetailMenu());
   EXPECT_FALSE(IsHighContrastEnabledOnDetailMenu());
@@ -824,10 +1327,11 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
-
-  // Autoclick is disabled on login screen.
-  SetLoginStatus(ash::LoginStatus::USER);
 
   // Enabling autoclick.
   AccessibilityManager::Get()->EnableAutoclick(true);
@@ -838,6 +1342,10 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_TRUE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 
   // Disabling autoclick.
@@ -849,20 +1357,30 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMarksOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorEnabledOnDetailMenu());
   EXPECT_FALSE(IsAutoclickEnabledOnDetailMenu());
   EXPECT_FALSE(IsVirtualKeyboardEnabledOnDetailMenu());
+  EXPECT_FALSE(IsMonoAudioEnabledOnDetailMenu());
+  EXPECT_FALSE(IsCaretHighlightEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightMouseCursorEnabledOnDetailMenu());
+  EXPECT_FALSE(IsHighlightKeyboardFocusEnabledOnDetailMenu());
   CloseDetailMenu();
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
+  // Except help & settings, others should be kept the same
+  // in LOGIN | NOT LOGIN | LOCKED. https://crbug.com/632107.
   SetLoginStatus(ash::LoginStatus::NOT_LOGGED_IN);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsAutoclickMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
   EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
   EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   CloseDetailMenu();
 
   SetLoginStatus(ash::LoginStatus::USER);
@@ -870,11 +1388,15 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHelpAvailableOnDetailMenu());
   EXPECT_TRUE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   CloseDetailMenu();
 
   SetLoginStatus(ash::LoginStatus::LOCKED);
@@ -882,11 +1404,15 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
   EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
   EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   CloseDetailMenu();
 
   session_manager::SessionManager::Get()->SetSessionState(
@@ -897,11 +1423,15 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());
   EXPECT_TRUE(IsHighContrastMenuShownOnDetailMenu());
   EXPECT_TRUE(IsScreenMagnifierMenuShownOnDetailMenu());
-  EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
   EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
   EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
+  EXPECT_TRUE(IsLargeCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsMonoAudioMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsCaretHighlightMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightMouseCursorMenuShownOnDetailMenu());
+  EXPECT_TRUE(IsHighlightKeyboardFocusMenuShownOnDetailMenu());
   CloseDetailMenu();
 }
 

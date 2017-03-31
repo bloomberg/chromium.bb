@@ -327,6 +327,21 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS" desc="The sub-header label for additional setting in accessibility menu of system tray.">
+        Additional settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off mono audio.">
+        Mono audio
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_CARET_HIGHLIGHT" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off caret highlight.">
+        Highlight text caret
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off highlight mouse cursor.">
+        Highlight mouse cursor
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS" desc="The label used in the additional settings of accessibility menu of the system tray to toggle on/off highlight keyboard focus.">
+        Highlight object with keyboard focus
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SETTINGS" desc="The label used in the accessibility menu of system tray to open accessibility setting page.">
         Accessibility settings
       </message>

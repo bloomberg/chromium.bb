@@ -32,6 +32,7 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -47,6 +48,10 @@ enum AccessibilityState {
   A11Y_AUTOCLICK = 1 << 4,
   A11Y_VIRTUAL_KEYBOARD = 1 << 5,
   A11Y_BRAILLE_DISPLAY_CONNECTED = 1 << 6,
+  A11Y_MONO_AUDIO = 1 << 7,
+  A11Y_CARET_HIGHLIGHT = 1 << 8,
+  A11Y_HIGHLIGHT_MOUSE_CURSOR = 1 << 9,
+  A11Y_HIGHLIGHT_KEYBOARD_FOCUS = 1 << 10,
 };
 
 uint32_t GetAccessibilityState() {
@@ -67,11 +72,33 @@ uint32_t GetAccessibilityState() {
     state |= A11Y_VIRTUAL_KEYBOARD;
   if (delegate->IsBrailleDisplayConnected())
     state |= A11Y_BRAILLE_DISPLAY_CONNECTED;
+  if (delegate->IsMonoAudioEnabled())
+    state |= A11Y_MONO_AUDIO;
+  if (delegate->IsCaretHighlightEnabled())
+    state |= A11Y_CARET_HIGHLIGHT;
+  if (delegate->IsCursorHighlightEnabled())
+    state |= A11Y_HIGHLIGHT_MOUSE_CURSOR;
+  if (delegate->IsFocusHighlightEnabled())
+    state |= A11Y_HIGHLIGHT_KEYBOARD_FOCUS;
   return state;
 }
 
 LoginStatus GetCurrentLoginStatus() {
   return Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
+}
+
+void UpdateCheckMark(HoverHighlightView* container, bool checked) {
+  if (checked) {
+    gfx::ImageSkia check_mark =
+        CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
+    container->AddRightIcon(check_mark, check_mark.width());
+    container->SetRightViewVisible(true);
+    container->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
+  } else {
+    container->SetAccessiblityState(
+        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
+  }
 }
 
 }  // namespace
@@ -139,20 +166,6 @@ views::Label* AccessibilityPopupView::CreateLabel(uint32_t enabled_state_bits) {
 AccessibilityDetailedView::AccessibilityDetailedView(SystemTrayItem* owner,
                                                      LoginStatus login)
     : TrayDetailsView(owner),
-      spoken_feedback_view_(nullptr),
-      high_contrast_view_(nullptr),
-      screen_magnifier_view_(nullptr),
-      large_cursor_view_(nullptr),
-      help_view_(nullptr),
-      settings_view_(nullptr),
-      autoclick_view_(nullptr),
-      virtual_keyboard_view_(nullptr),
-      spoken_feedback_enabled_(false),
-      high_contrast_enabled_(false),
-      screen_magnifier_enabled_(false),
-      large_cursor_enabled_(false),
-      autoclick_enabled_(false),
-      virtual_keyboard_enabled_(false),
       login_(login) {
   Reset();
   AppendAccessibilityList();
@@ -173,16 +186,6 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
                         spoken_feedback_enabled_, spoken_feedback_enabled_,
                         kSystemMenuAccessibilityChromevoxIcon);
 
-  // Large Cursor item is shown only in Login screen.
-  if (login_ == LoginStatus::NOT_LOGGED_IN) {
-    large_cursor_enabled_ = delegate->IsLargeCursorEnabled();
-    large_cursor_view_ =
-        AddScrollListItem(bundle.GetLocalizedString(
-                              IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
-                          large_cursor_enabled_, large_cursor_enabled_,
-                          kSystemMenuAccessibilityLargeCursorIcon);
-  }
-
   high_contrast_enabled_ = delegate->IsHighContrastEnabled();
   high_contrast_view_ = AddScrollListItem(
       bundle.GetLocalizedString(
@@ -196,14 +199,11 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
                         screen_magnifier_enabled_, screen_magnifier_enabled_,
                         kSystemMenuAccessibilityScreenMagnifierIcon);
 
-  // Don't show autoclick option at login screen.
-  if (login_ != LoginStatus::NOT_LOGGED_IN) {
-    autoclick_enabled_ = delegate->IsAutoclickEnabled();
-    autoclick_view_ = AddScrollListItem(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
-        autoclick_enabled_, autoclick_enabled_,
-        kSystemMenuAccessibilityAutoClickIcon);
-  }
+  autoclick_enabled_ = delegate->IsAutoclickEnabled();
+  autoclick_view_ = AddScrollListItem(
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_AUTOCLICK),
+      autoclick_enabled_, autoclick_enabled_,
+      kSystemMenuAccessibilityAutoClickIcon);
 
   virtual_keyboard_enabled_ = delegate->IsVirtualKeyboardEnabled();
   virtual_keyboard_view_ =
@@ -211,6 +211,44 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
                             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
                         virtual_keyboard_enabled_, virtual_keyboard_enabled_,
                         kSystemMenuKeyboardIcon);
+
+  scroll_content()->AddChildView(
+      TrayPopupUtils::CreateListSubHeaderSeparator());
+
+  AddSubHeader(l10n_util::GetStringUTF16(
+      IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS));
+
+  large_cursor_enabled_ = delegate->IsLargeCursorEnabled();
+  large_cursor_view_ = AddScrollListItemWithoutIcon(
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_LARGE_CURSOR),
+      large_cursor_enabled_);
+
+  mono_audio_enabled_ = delegate->IsMonoAudioEnabled();
+  mono_audio_view_ = AddScrollListItemWithoutIcon(
+      bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY_MONO_AUDIO),
+      mono_audio_enabled_);
+
+  caret_highlight_enabled_ = delegate->IsCaretHighlightEnabled();
+  caret_highlight_view_ = AddScrollListItemWithoutIcon(
+      bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_CARET_HIGHLIGHT),
+      caret_highlight_enabled_);
+
+  highlight_mouse_cursor_enabled_ = delegate->IsCursorHighlightEnabled();
+  highlight_mouse_cursor_view_ = AddScrollListItemWithoutIcon(
+      bundle.GetLocalizedString(
+          IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_MOUSE_CURSOR),
+      highlight_mouse_cursor_enabled_);
+
+  // Focus highlighting can't be on when spoken feedback is on because
+  // ChromeVox does its own focus highlighting.
+  if (!spoken_feedback_enabled_) {
+    highlight_keyboard_focus_enabled_ = delegate->IsFocusHighlightEnabled();
+    highlight_keyboard_focus_view_ = AddScrollListItemWithoutIcon(
+        bundle.GetLocalizedString(
+            IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGHLIGHT_KEYBOARD_FOCUS),
+        highlight_keyboard_focus_enabled_);
+  }
 }
 
 HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
@@ -225,20 +263,36 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
       image, text, highlight, image.width() + kMenuSeparatorVerticalPadding * 2,
       padding, padding);
 
-  if (checked) {
-    gfx::ImageSkia check_mark =
-        CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
-    container->AddRightIcon(check_mark, check_mark.width());
-    container->SetRightViewVisible(true);
-    container->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::CHECKED_CHECKBOX);
-  } else {
-    container->SetAccessiblityState(
-        HoverHighlightView::AccessibilityState::UNCHECKED_CHECKBOX);
-  }
+  UpdateCheckMark(container, checked);
 
   scroll_content()->AddChildView(container);
   return container;
+}
+
+HoverHighlightView* AccessibilityDetailedView::AddScrollListItemWithoutIcon(
+    const base::string16& text,
+    bool checked) {
+  HoverHighlightView* container = new HoverHighlightView(this);
+  container->AddLabelRowMd(text);
+
+  UpdateCheckMark(container, checked);
+
+  scroll_content()->AddChildView(container);
+  return container;
+}
+
+void AccessibilityDetailedView::AddSubHeader(
+    const base::string16& header_text) {
+  TriView* header = TrayPopupUtils::CreateSubHeaderRowView();
+  TrayPopupUtils::ConfigureAsStickyHeader(header);
+
+  views::Label* label = TrayPopupUtils::CreateDefaultLabel();
+  label->SetText(header_text);
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
+  style.SetupLabel(label);
+  header->AddView(TriView::Container::CENTER, label);
+
+  scroll_content()->AddChildView(header);
 }
 
 void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
@@ -275,6 +329,28 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
                       ? ash::UMA_STATUS_AREA_DISABLE_VIRTUAL_KEYBOARD
                       : ash::UMA_STATUS_AREA_ENABLE_VIRTUAL_KEYBOARD;
     delegate->SetVirtualKeyboardEnabled(!delegate->IsVirtualKeyboardEnabled());
+  } else if (caret_highlight_view_ && view == caret_highlight_view_) {
+    user_action = delegate->IsCaretHighlightEnabled()
+                      ? ash::UMA_STATUS_AREA_DISABLE_CARET_HIGHLIGHT
+                      : ash::UMA_STATUS_AREA_ENABLE_CARET_HIGHLIGHT;
+    delegate->SetCaretHighlightEnabled(!delegate->IsCaretHighlightEnabled());
+  } else if (mono_audio_view_ && view == mono_audio_view_) {
+    user_action = delegate->IsMonoAudioEnabled()
+                      ? ash::UMA_STATUS_AREA_DISABLE_MONO_AUDIO
+                      : ash::UMA_STATUS_AREA_ENABLE_MONO_AUDIO;
+    delegate->SetMonoAudioEnabled(!delegate->IsMonoAudioEnabled());
+  } else if (highlight_mouse_cursor_view_ &&
+             view == highlight_mouse_cursor_view_) {
+    user_action = delegate->IsCursorHighlightEnabled()
+                      ? ash::UMA_STATUS_AREA_DISABLE_HIGHLIGHT_MOUSE_CURSOR
+                      : ash::UMA_STATUS_AREA_ENABLE_HIGHLIGHT_MOUSE_CURSOR;
+    delegate->SetCursorHighlightEnabled(!delegate->IsCursorHighlightEnabled());
+  } else if (highlight_keyboard_focus_view_ &&
+             view == highlight_keyboard_focus_view_) {
+    user_action = delegate->IsFocusHighlightEnabled()
+                      ? ash::UMA_STATUS_AREA_DISABLE_HIGHLIGHT_KEYBOARD_FOCUS
+                      : ash::UMA_STATUS_AREA_ENABLE_HIGHLIGHT_KEYBOARD_FOCUS;
+    delegate->SetFocusHighlightEnabled(!delegate->IsFocusHighlightEnabled());
   } else {
     return;
   }

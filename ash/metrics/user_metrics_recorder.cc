@@ -381,14 +381,28 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_DISABLE_AUTO_CLICK:
       RecordAction(UserMetricsAction("StatusArea_AutoClickDisabled"));
       break;
+    case UMA_STATUS_AREA_DISABLE_CARET_HIGHLIGHT:
+      RecordAction(UserMetricsAction("StatusArea_CaretHighlightDisabled"));
+      break;
     case UMA_STATUS_AREA_DISABLE_HIGH_CONTRAST:
       RecordAction(UserMetricsAction("StatusArea_HighContrastDisabled"));
+      break;
+    case UMA_STATUS_AREA_DISABLE_HIGHLIGHT_KEYBOARD_FOCUS:
+      RecordAction(
+          UserMetricsAction("StatusArea_HighlightKeyboardFocusDisabled"));
+      break;
+    case UMA_STATUS_AREA_DISABLE_HIGHLIGHT_MOUSE_CURSOR:
+      RecordAction(
+          UserMetricsAction("StatusArea_HighlightMouseCursorDisabled"));
       break;
     case UMA_STATUS_AREA_DISABLE_LARGE_CURSOR:
       RecordAction(UserMetricsAction("StatusArea_LargeCursorDisabled"));
       break;
     case UMA_STATUS_AREA_DISABLE_MAGNIFIER:
       RecordAction(UserMetricsAction("StatusArea_MagnifierDisabled"));
+      break;
+    case UMA_STATUS_AREA_DISABLE_MONO_AUDIO:
+      RecordAction(UserMetricsAction("StatusArea_MonoAudioDisabled"));
       break;
     case UMA_STATUS_AREA_DISABLE_SPOKEN_FEEDBACK:
       RecordAction(UserMetricsAction("StatusArea_SpokenFeedbackDisabled"));
@@ -427,14 +441,27 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_ENABLE_AUTO_CLICK:
       RecordAction(UserMetricsAction("StatusArea_AutoClickEnabled"));
       break;
+    case UMA_STATUS_AREA_ENABLE_CARET_HIGHLIGHT:
+      RecordAction(UserMetricsAction("StatusArea_CaretHighlightEnabled"));
+      break;
     case UMA_STATUS_AREA_ENABLE_HIGH_CONTRAST:
       RecordAction(UserMetricsAction("StatusArea_HighContrastEnabled"));
+      break;
+    case UMA_STATUS_AREA_ENABLE_HIGHLIGHT_KEYBOARD_FOCUS:
+      RecordAction(
+          UserMetricsAction("StatusArea_HighlightKeyboardFocusEnabled"));
+      break;
+    case UMA_STATUS_AREA_ENABLE_HIGHLIGHT_MOUSE_CURSOR:
+      RecordAction(UserMetricsAction("StatusArea_HighlightMouseCursorEnabled"));
       break;
     case UMA_STATUS_AREA_ENABLE_LARGE_CURSOR:
       RecordAction(UserMetricsAction("StatusArea_LargeCursorEnabled"));
       break;
     case UMA_STATUS_AREA_ENABLE_MAGNIFIER:
       RecordAction(UserMetricsAction("StatusArea_MagnifierEnabled"));
+      break;
+    case UMA_STATUS_AREA_ENABLE_MONO_AUDIO:
+      RecordAction(UserMetricsAction("StatusArea_MonoAudioEnabled"));
       break;
     case UMA_STATUS_AREA_ENABLE_SPOKEN_FEEDBACK:
       RecordAction(UserMetricsAction("StatusArea_SpokenFeedbackEnabled"));
