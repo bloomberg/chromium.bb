@@ -374,7 +374,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     ShutdownSession();
     if (support_host_)
-      support_host_->ShowError(error, false);
+      support_host_->ShowError(error, true);
     return;
   }
 
@@ -808,7 +808,7 @@ void ArcSessionManager::OnAndroidManagementChecked(
     case policy::AndroidManagementClient::Result::ERROR:
       if (support_host_) {
         support_host_->ShowError(
-            ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR, false);
+            ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR, true);
       }
       UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
