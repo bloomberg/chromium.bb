@@ -4,41 +4,43 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.Intent;
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.test.UiThreadTest;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content.browser.test.NativeLibraryTestRule;
 
 /**
  * Tests whether the URL bar updates itself properly.
  */
-public class WebappUrlBarTest extends WebappActivityTestBase {
-    private static final String WEBAPP_URL = "http://originalwebsite.com";
-    private WebappUrlBar mUrlBar;
+@RunWith(BaseJUnit4ClassRunner.class)
+public class WebappUrlBarTest {
+    private Context mContext;
 
-    @Override
-    protected Intent createIntent() {
-        Intent intent = super.createIntent();
-        intent.putExtra(ShortcutHelper.EXTRA_URL, WEBAPP_URL);
-        return intent;
+    @Rule
+    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+
+    @Before
+    public void setUp() throws Exception {
+        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        startWebappActivity();
-        mUrlBar = getActivity().getUrlBarForTests();
-    }
-
-    @UiThreadTest
+    @Test
     @MediumTest
     @Feature({"Webapps"})
-    @RetryOnFailure
     public void testUrlDisplay() {
+        WebappUrlBar urlBar = new WebappUrlBar(mContext, null);
+
         final String scheme = "https://";
         final String host = "lorem.com";
         final String path = "/stuff/and/things.html";
@@ -54,15 +56,15 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
         for (int i : securityLevels) {
             // TODO(palmer): http://crbug.com/297249
             if (i == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT) continue;
-            mUrlBar.update(url, i);
+            urlBar.update(url, i);
 
-            int iconResource = mUrlBar.getCurrentIconResourceForTests();
+            int iconResource = urlBar.getCurrentIconResourceForTests();
             if (iconResource == 0) {
-                assertEquals(
-                        urlExpectedWhenIconNotShown, mUrlBar.getDisplayedUrlForTests().toString());
+                Assert.assertEquals(
+                        urlExpectedWhenIconNotShown, urlBar.getDisplayedUrlForTests().toString());
             } else {
-                assertEquals(
-                        urlExpectedWhenIconShown, mUrlBar.getDisplayedUrlForTests().toString());
+                Assert.assertEquals(
+                        urlExpectedWhenIconShown, urlBar.getDisplayedUrlForTests().toString());
             }
         }
     }
