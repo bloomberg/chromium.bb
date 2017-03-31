@@ -27,8 +27,7 @@ bool FrameOwnerProperties::operator==(const FrameOwnerProperties& other) const {
          allow_payment_request == other.allow_payment_request &&
          is_display_none == other.is_display_none &&
          required_csp == other.required_csp &&
-         std::equal(allowed_features.begin(), allowed_features.end(),
-                    other.allowed_features.begin());
+         allowed_features == other.allowed_features;
 }
 
 }  // namespace content
