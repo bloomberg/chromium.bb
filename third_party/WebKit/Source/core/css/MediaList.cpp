@@ -67,6 +67,11 @@ MediaQuerySet* MediaQuerySet::create(const String& mediaString) {
 
 bool MediaQuerySet::set(const String& mediaString) {
   MediaQuerySet* result = create(mediaString);
+#if DCHECK_IS_ON()
+  for (const auto& query : result->m_queries) {
+    DCHECK(query);
+  }
+#endif
   m_queries.swap(result->m_queries);
   return true;
 }
@@ -82,7 +87,7 @@ bool MediaQuerySet::add(const String& queryString) {
     return true;
 
   MediaQuery* newQuery = result->m_queries[0].release();
-  ASSERT(newQuery);
+  DCHECK(newQuery);
 
   // If comparing with any of the media queries in the collection of media
   // queries returns true terminate these steps.
@@ -107,7 +112,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove) {
     return true;
 
   MediaQuery* newQuery = result->m_queries[0].release();
-  ASSERT(newQuery);
+  DCHECK(newQuery);
 
   // Remove any media query from the collection of media queries for which
   // comparing with the media query returns true.
@@ -125,6 +130,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove) {
 }
 
 void MediaQuerySet::addMediaQuery(MediaQuery* mediaQuery) {
+  DCHECK(mediaQuery);
   m_queries.push_back(mediaQuery);
 }
 
@@ -203,7 +209,12 @@ void MediaList::appendMedium(const String& medium,
 }
 
 void MediaList::reattach(MediaQuerySet* mediaQueries) {
-  ASSERT(mediaQueries);
+  DCHECK(mediaQueries);
+#if DCHECK_IS_ON
+  for (const auto& query : mediaQueries->queryVector) {
+    DCHECK(query);
+  }
+#endif
   m_mediaQueries = mediaQueries;
 }
 
