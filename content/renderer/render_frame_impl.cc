@@ -4766,8 +4766,6 @@ void RenderFrameImpl::suddenTerminationDisablerChanged(
     case blink::WebFrameClient::UnloadHandler:
       Send(new FrameHostMsg_UnloadHandlersPresent(routing_id_, present));
       break;
-    default:
-      NOTREACHED();
   }
 }
 

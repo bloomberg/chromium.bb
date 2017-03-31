@@ -282,9 +282,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   content::WindowedNotificationObserver close_observer(
       content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::Source<content::WebContents>(shell()->web_contents()));
-  GURL url(
-      "data:text/html,<html><script>window.onbeforeunload=function(e)"
-      "{}</script></html>");
+  GURL url =
+      embedded_test_server()->GetURL("/page_with_empty_beforeunload.html");
   NavigateToURL(shell(), url);
   shell()->LoadURL(GURL("chrome://resources/css/tabs.css"));
   shell()->web_contents()->DispatchBeforeUnload();

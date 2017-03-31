@@ -1425,6 +1425,10 @@ void LocalDOMWindow::addedEventListener(
     addUnloadEventListener(this);
   } else if (eventType == EventTypeNames::beforeunload) {
     UseCounter::count(document(), UseCounter::DocumentBeforeUnloadRegistered);
+    // This is confusingly named. It doesn't actually add the listener. It
+    // just increments a count so that we know we have listeners registered
+    // for the purposes of determining if we can fast terminate the renderer
+    // process.
     addBeforeUnloadEventListener(this);
     if (frame() && !frame()->isMainFrame())
       UseCounter::count(document(), UseCounter::SubFrameBeforeUnloadRegistered);

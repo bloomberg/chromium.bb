@@ -433,7 +433,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns true if the frame or any of its descendents have an onunload
   // handler.
-  bool ShouldDispatchUnload();
+  bool HasUnloadHandler();
 
   // Update the frame's opener in the renderer process in response to the
   // opener being modified (e.g., with window.open or being set to null) in
