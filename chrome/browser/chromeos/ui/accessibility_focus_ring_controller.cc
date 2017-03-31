@@ -437,14 +437,13 @@ void AccessibilityFocusRingController::ComputeOpacity(
   float opacity;
   if (start_delta < fade_in_time) {
     opacity = start_delta.InSecondsF() / fade_in_time.InSecondsF();
-    if (opacity > 1.0)
-      opacity = 1.0;
   } else {
     opacity = 1.0 - (change_delta.InSecondsF() /
                      (fade_in_time + fade_out_time).InSecondsF());
-    if (opacity < 0.0)
-      opacity = 0.0;
   }
+
+  // Layer::SetOpacity will throw an error if we're not within 0...1.
+  opacity = std::min(std::max(opacity, 0.0f), 1.0f);
 
   animation_info->opacity = opacity;
 }
