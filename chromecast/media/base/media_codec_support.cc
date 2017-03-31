@@ -11,55 +11,6 @@
 
 namespace chromecast {
 namespace media {
-namespace {
-
-bool IsCodecSupported(const std::string& codec) {
-  // FLAC and Opus are supported via the default renderer if the CMA backend
-  // does not have explicit support.
-  if (codec == "opus" || codec == "flac")
-    return true;
-
-  MediaCodecSupportShlib::CodecSupport platform_support =
-      MediaCodecSupportShlib::IsSupported(codec);
-  if (platform_support == MediaCodecSupportShlib::kSupported)
-    return true;
-  else if (platform_support == MediaCodecSupportShlib::kNotSupported)
-    return false;
-
-  // MediaCodecSupportShlib::IsSupported() returns kDefault.
-  if (codec == "aac51") {
-    return MediaCapabilities::HdmiSinkSupportsPcmSurroundSound();
-  }
-  if (codec == "ac-3" || codec == "mp4a.a5" || codec == "mp4a.A5") {
-    return MediaCapabilities::HdmiSinkSupportsAC3();
-  }
-  if (codec == "ec-3" || codec == "mp4a.a6" || codec == "mp4a.A6") {
-    return MediaCapabilities::HdmiSinkSupportsEAC3();
-  }
-
-  // For Dolby Vision, getting kDefault from shared library indicates the
-  // platform has external dependency to stream Dolby Vision. It needs to check
-  // HDMI sink capability as well.
-  if (base::StartsWith(codec, "dva1.", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(codec, "dvav.", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(codec, "dvh1.", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(codec, "dvhe.", base::CompareCase::SENSITIVE)) {
-    return MediaCapabilities::HdmiSinkSupportsDolbyVision();
-  }
-
-  // This function is invoked from MimeUtil::AreSupportedCodecs to check if a
-  // given codec id is supported by Chromecast or not. So by default we should
-  // return true by default to indicate we have no reasons to believe this codec
-  // is unsupported. This will allow the rest of MimeUtil checks to proceed as
-  // usual.
-  return true;
-}
-
-}  // namespace
-
-::media::IsCodecSupportedCB GetIsCodecSupportedOnChromecastCB() {
-  return base::Bind(&IsCodecSupported);
-}
 
 AudioCodec ToCastAudioCodec(const ::media::AudioCodec codec) {
   switch (codec) {
