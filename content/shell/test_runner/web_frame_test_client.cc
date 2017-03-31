@@ -478,10 +478,9 @@ void WebFrameTestClient::didReceiveTitle(blink::WebLocalFrame* frame,
                             "'\n");
 }
 
-void WebFrameTestClient::didChangeIcon(blink::WebLocalFrame* frame,
-                                       blink::WebIconURL::Type icon_type) {
+void WebFrameTestClient::didChangeIcon(blink::WebIconURL::Type icon_type) {
   if (test_runner()->shouldDumpIconChanges()) {
-    PrintFrameDescription(delegate_, frame);
+    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
     delegate_->PrintMessage(std::string(" - didChangeIcons\n"));
   }
 }

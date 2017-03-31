@@ -3877,11 +3877,9 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
-void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
-                                    blink::WebIconURL::Type icon_type) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::didChangeIcon(blink::WebIconURL::Type icon_type) {
   // TODO(nasko): Investigate wheather implementation should move here.
-  render_view_->didChangeIcon(frame, icon_type);
+  render_view_->didChangeIcon(frame_, icon_type);
 }
 
 void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {

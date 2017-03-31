@@ -390,7 +390,7 @@ class BLINK_EXPORT WebFrameClient {
                                WebTextDirection direction) {}
 
   // The icon for the page have changed.
-  virtual void didChangeIcon(WebLocalFrame*, WebIconURL::Type) {}
+  virtual void didChangeIcon(WebIconURL::Type) {}
 
   // The frame's document finished loading.
   // This method may not execute JavaScript code.

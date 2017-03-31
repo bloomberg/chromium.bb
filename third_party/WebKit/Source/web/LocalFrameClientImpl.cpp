@@ -443,8 +443,7 @@ void LocalFrameClientImpl::dispatchDidReceiveTitle(const String& title) {
 
 void LocalFrameClientImpl::dispatchDidChangeIcons(IconType type) {
   if (m_webFrame->client()) {
-    m_webFrame->client()->didChangeIcon(m_webFrame,
-                                        static_cast<WebIconURL::Type>(type));
+    m_webFrame->client()->didChangeIcon(static_cast<WebIconURL::Type>(type));
   }
 }
 

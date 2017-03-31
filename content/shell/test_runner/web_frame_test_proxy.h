@@ -134,10 +134,9 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::didReceiveTitle(frame, title, direction);
   }
 
-  void didChangeIcon(blink::WebLocalFrame* frame,
-                     blink::WebIconURL::Type icon_type) override {
-    test_client()->didChangeIcon(frame, icon_type);
-    Base::didChangeIcon(frame, icon_type);
+  void didChangeIcon(blink::WebIconURL::Type icon_type) override {
+    test_client()->didChangeIcon(icon_type);
+    Base::didChangeIcon(icon_type);
   }
 
   void didFinishDocumentLoad(blink::WebLocalFrame* frame) override {
