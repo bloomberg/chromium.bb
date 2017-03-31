@@ -68,9 +68,6 @@ class TestCopierTest(LoggingTestCase):
                         {'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}
                     ],
                     'dirname': '/blink/w3c/dir',
-                    'jstests': 0,
-                    'reftests': 0,
-                    'total_tests': 0,
                 }
             ])
 
@@ -88,9 +85,6 @@ class TestCopierTest(LoggingTestCase):
                         {'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}
                     ],
                     'dirname': '/blink/w3c/dir',
-                    'jstests': 0,
-                    'reftests': 0,
-                    'total_tests': 0,
                 }
             ])
 
@@ -121,22 +115,5 @@ class TestCopierTest(LoggingTestCase):
                         {'src': '/blink/w3c/dir1/my-ref-test.html', 'dest': 'my-ref-test.html'}
                     ],
                     'dirname': '/blink/w3c/dir1',
-                    'jstests': 0,
-                    'reftests': 1,
-                    'total_tests': 1
                 }
             ])
-
-    def test_ref_test_without_ref_is_skipped(self):
-        host = MockHost()
-        host.filesystem = MockFileSystem(files={
-            '/blink/w3c/dir1/my-ref-test.html': '<html><head><link rel="match" href="not-here.html" /></head></html>',
-            '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
-        })
-        copier = TestCopier(host, FAKE_SOURCE_REPO_DIR)
-        copier.find_importable_tests()
-        self.assertEqual(copier.import_list, [])
-        self.assertLog([
-            'WARNING: Skipping: /blink/w3c/dir1/my-ref-test.html\n',
-            'WARNING:   Reason: Ref file "/blink/w3c/dir1/not-here.html" was not found.\n'
-        ])

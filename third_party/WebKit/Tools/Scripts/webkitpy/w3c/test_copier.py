@@ -36,7 +36,6 @@ import mimetypes
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
-from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
 
@@ -93,17 +92,10 @@ class TestCopier(object):
         for root, dirs, files in self.filesystem.walk(self.source_repo_path):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
             _log.debug('Scanning %s...', cur_dir)
-            total_tests = 0
-            reftests = 0
-            jstests = 0
 
             # Files in 'tools' are not for browser testing, so we skip them.
             # See: http://web-platform-tests.org/writing-tests/general-guidelines.html#tools
             dirs_to_skip = ('.git', 'test-plan', 'tools')
-
-            # We copy all files in 'support', including HTML without metadata.
-            # See: http://web-platform-tests.org/writing-tests/general-guidelines.html#support-files
-            dirs_to_include = ('resources', 'support')
 
             if dirs:
                 for name in dirs_to_skip:
@@ -147,43 +139,11 @@ class TestCopier(object):
                     _log.debug('  Reason: This file may cause Chromium presubmit to fail.')
                     continue
 
-                mimetype = mimetypes.guess_type(path_full)
-                if ('html' not in str(mimetype[0]) and
-                        'application/xhtml+xml' not in str(mimetype[0]) and
-                        'application/xml' not in str(mimetype[0])):
-                    copy_list.append({'src': path_full, 'dest': filename})
-                    continue
-
-                if self.filesystem.basename(root) in dirs_to_include:
-                    copy_list.append({'src': path_full, 'dest': filename})
-                    continue
-
-                test_parser = TestParser(path_full, self.host)
-                test_info = test_parser.analyze_test()
-                if test_info is None:
-                    copy_list.append({'src': path_full, 'dest': filename})
-                    continue
-
-                if 'reference' in test_info.keys():
-                    ref_path_full = test_info['reference']
-                    if not self.filesystem.exists(ref_path_full):
-                        _log.warning('Skipping: %s', path_full)
-                        _log.warning('  Reason: Ref file "%s" was not found.', ref_path_full)
-                        continue
-
-                    reftests += 1
-                    total_tests += 1
-                    copy_list.append({'src': test_info['test'], 'dest': filename})
-
-                elif 'jstest' in test_info.keys():
-                    jstests += 1
-                    total_tests += 1
-                    copy_list.append({'src': path_full, 'dest': filename, 'is_jstest': True})
+                copy_list.append({'src': path_full, 'dest': filename})
 
             if copy_list:
                 # Only add this directory to the list if there's something to import
-                self.import_list.append({'dirname': root, 'copy_list': copy_list,
-                                         'reftests': reftests, 'jstests': jstests, 'total_tests': total_tests})
+                self.import_list.append({'dirname': root, 'copy_list': copy_list})
 
     def find_paths_to_skip(self):
         paths_to_skip = set()
@@ -202,15 +162,7 @@ class TestCopier(object):
 
     def import_tests(self):
         """Reads |self.import_list|, and converts and copies files to their destination."""
-        total_imported_tests = 0
-        total_imported_reftests = 0
-        total_imported_jstests = 0
-
         for dir_to_copy in self.import_list:
-            total_imported_tests += dir_to_copy['total_tests']
-            total_imported_reftests += dir_to_copy['reftests']
-            total_imported_jstests += dir_to_copy['jstests']
-
             if not dir_to_copy['copy_list']:
                 continue
 
@@ -231,11 +183,6 @@ class TestCopier(object):
 
         _log.info('')
         _log.info('Import complete')
-        _log.info('')
-        _log.info('IMPORTED %d TOTAL TESTS', total_imported_tests)
-        _log.info('Imported %d reftests', total_imported_reftests)
-        _log.info('Imported %d JS tests', total_imported_jstests)
-        _log.info('Imported %d pixel/manual tests', total_imported_tests - total_imported_jstests - total_imported_reftests)
         _log.info('')
 
         if self._prefixed_properties:
