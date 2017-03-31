@@ -77,6 +77,17 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
 
   ~MediaFileValidatorTest() override {}
 
+  void TearDownOnMainThread() override {
+    // Release our ref to |file_system_context_| before the test framework winds
+    // down, otherwise releasing it in the destructor posts a destruction task
+    // to the FILE thread after it has been shutdown (which base/task_scheduler
+    // guards against in the RedirectNonUINonIOBrowserThreads experiment per the
+    // FILE thread's tasks being marked as shutdown blocking for legacy
+    // reasons).
+    file_system_context_ = nullptr;
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
   // Write |content| into |filename| in a test file system and try to move
   // it into a media file system.  The result is compared to |expected_result|.
   void MoveTest(const std::string& filename, const std::string& content,
