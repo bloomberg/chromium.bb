@@ -29,7 +29,16 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    showScrollBorders: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
+
+  /** @private {?IntersectionObserver} */
+  intersectionObserver_: null,
 
   /** @override */
   ready: function() {
@@ -39,6 +48,35 @@ Polymer({
       if (!this.ignorePopstate && this.open)
         this.cancel();
     }.bind(this));
+  },
+
+  /** @override */
+  attached: function() {
+    if (this.showScrollBorders) {
+      var bodyContainer = this.$$('.body-container');
+
+      var callback = function(entries) {
+        assert(entries.length == 1);
+        bodyContainer.classList.toggle(
+            'bottom-scrollable', entries[0].intersectionRatio == 0);
+      };
+
+      this.intersectionObserver_ = new IntersectionObserver(
+          callback,
+          /** @type {IntersectionObserverInit} */ ({
+            root: bodyContainer,
+            threshold: 0,
+          }));
+      this.intersectionObserver_.observe(this.$.bodyBottomMarker);
+    }
+  },
+
+  /** @override */
+  detached: function() {
+    if (this.intersectionObserver_) {
+      this.intersectionObserver_.disconnect();
+      this.intersectionObserver_ = null;
+    }
   },
 
   cancel: function() {

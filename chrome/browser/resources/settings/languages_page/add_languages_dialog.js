@@ -9,6 +9,10 @@
 Polymer({
   is: 'settings-add-languages-dialog',
 
+  behaviors: [
+    CrScrollableBehavior,
+  ],
+
   properties: {
     /** @type {!LanguagesModel|undefined} */
     languages: {
@@ -22,7 +26,9 @@ Polymer({
     /** @private {!Set<string>} */
     languagesToAdd_: {
       type: Object,
-      value: function() { return new Set(); },
+      value: function() {
+        return new Set();
+      },
     },
 
     /** @private */
@@ -78,11 +84,11 @@ Polymer({
    * @private
    */
   getDisplayText_: function(language) {
-     var displayText = language.displayName;
-     // If the native name is different, add it.
-     if (language.displayName != language.nativeDisplayName)
-       displayText += ' - ' + language.nativeDisplayName;
-     return displayText;
+    var displayText = language.displayName;
+    // If the native name is different, add it.
+    if (language.displayName != language.nativeDisplayName)
+      displayText += ' - ' + language.nativeDisplayName;
+    return displayText;
   },
 
   /**
