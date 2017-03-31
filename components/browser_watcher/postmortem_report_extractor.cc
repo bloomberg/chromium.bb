@@ -216,8 +216,13 @@ CollectionStatus Extract(const base::FilePath& stability_file,
   // Early exit if there is no data.
   std::vector<std::string> log_messages = global_analyzer->GetLogMessages();
   ActivityUserData::Snapshot global_data_snapshot =
-      global_analyzer->GetGlobalUserDataSnapshot();
-  ThreadActivityAnalyzer* thread_analyzer = global_analyzer->GetFirstAnalyzer();
+      global_analyzer->GetGlobalDataSnapshot();
+
+  // Extract data for only the first process.
+  // TODO(manzagop): Extend this to all processes.
+  int64_t pid = global_analyzer->GetFirstProcess();
+  ThreadActivityAnalyzer* thread_analyzer =
+      global_analyzer->GetFirstAnalyzer(pid);
   if (log_messages.empty() && global_data_snapshot.empty() &&
       !thread_analyzer) {
     return DEBUG_FILE_NO_DATA;
