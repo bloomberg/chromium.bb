@@ -91,7 +91,7 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
   pumpFrame();
-  EXPECT_TRUE(image().hasAnimations());
+  EXPECT_TRUE(image().maybeAnimated());
   EXPECT_TRUE(timer->isActive());
 
   // Fire the timer/trigger a frame update. Since the observer always returns
@@ -119,7 +119,7 @@ TEST_F(SVGImageTest, ResetAnimation) {
 
   // Simulate a draw. Cause a frame (timer) to be scheduled.
   pumpFrame();
-  EXPECT_TRUE(image().hasAnimations());
+  EXPECT_TRUE(image().maybeAnimated());
   EXPECT_TRUE(timer->isActive());
 
   // Reset the animation. This will suspend the timeline but not cancel the

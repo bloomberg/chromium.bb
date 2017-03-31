@@ -522,7 +522,7 @@ void SVGImage::resetAnimation() {
   scheduleTimelineRewind();
 }
 
-bool SVGImage::hasAnimations() const {
+bool SVGImage::maybeAnimated() {
   SVGSVGElement* rootElement = svgRootElement(m_page.get());
   if (!rootElement)
     return false;

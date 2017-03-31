@@ -73,6 +73,9 @@ class CORE_EXPORT SVGImage final : public Image {
   void startAnimation(CatchUpAnimation = CatchUp) override;
   void resetAnimation() override;
 
+  // Does the SVG image/document contain any animations?
+  bool maybeAnimated() override;
+
   // Advances an animated image. This will trigger an animation update for CSS
   // and advance the SMIL timeline by one frame.
   void advanceAnimationForTesting() override;
@@ -82,8 +85,6 @@ class CORE_EXPORT SVGImage final : public Image {
   static FloatPoint offsetForCurrentFrame(const FloatRect& dstRect,
                                           const FloatRect& srcRect);
 
-  // Does the SVG image/document contain any animations?
-  bool hasAnimations() const;
   // Service CSS and SMIL animations.
   void serviceAnimations(double monotonicAnimationStartTime);
 

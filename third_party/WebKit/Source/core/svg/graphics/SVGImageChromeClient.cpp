@@ -63,7 +63,7 @@ void SVGImageChromeClient::invalidateRect(const IntRect& r) {
 }
 
 void SVGImageChromeClient::suspendAnimation() {
-  if (m_image->hasAnimations()) {
+  if (m_image->maybeAnimated()) {
     m_timelineState = SuspendedWithAnimationPending;
   } else {
     // Preserve SuspendedWithAnimationPending if set.
@@ -95,7 +95,7 @@ void SVGImageChromeClient::scheduleAnimation(FrameViewBase*) {
   // animations. Checking for pending/active animations could be more
   // stringent.
   double fireTime = 0;
-  if (m_image->hasAnimations()) {
+  if (m_image->maybeAnimated()) {
     if (m_timelineState >= Suspended)
       return;
     fireTime = animationFrameDelay;
