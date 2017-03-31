@@ -240,6 +240,15 @@ SIMD_INLINE c_v64 c_v64_ssub_s16(c_v64 a, c_v64 b) {
   return t;
 }
 
+SIMD_INLINE c_v64 c_v64_ssub_u16(c_v64 a, c_v64 b) {
+  c_v64 t;
+  int c;
+  for (c = 0; c < 4; c++)
+    t.u16[c] =
+        (int32_t)a.u16[c] - (int32_t)b.u16[c] < 0 ? 0 : a.u16[c] - b.u16[c];
+  return t;
+}
+
 SIMD_INLINE c_v64 c_v64_sub_32(c_v64 a, c_v64 b) {
   c_v64 t;
   t.u32[0] = (uint32_t)((int64_t)a.u32[0] - b.u32[0]);

@@ -110,6 +110,10 @@ SIMD_INLINE v256 v256_ssub_s16(v256 a, v256 b) {
   return _mm256_subs_epi16(a, b);
 }
 
+SIMD_INLINE v256 v256_ssub_u16(v256 a, v256 b) {
+  return _mm256_subs_epu16(a, b);
+}
+
 SIMD_INLINE v256 v256_sub_32(v256 a, v256 b) { return _mm256_sub_epi32(a, b); }
 
 SIMD_INLINE v256 v256_abs_s16(v256 a) { return _mm256_abs_epi16(a); }

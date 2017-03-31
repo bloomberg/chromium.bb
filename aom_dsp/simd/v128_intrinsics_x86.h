@@ -108,6 +108,8 @@ SIMD_INLINE v128 v128_sub_16(v128 a, v128 b) { return _mm_sub_epi16(a, b); }
 
 SIMD_INLINE v128 v128_ssub_s16(v128 a, v128 b) { return _mm_subs_epi16(a, b); }
 
+SIMD_INLINE v128 v128_ssub_u16(v128 a, v128 b) { return _mm_subs_epu16(a, b); }
+
 SIMD_INLINE v128 v128_sub_32(v128 a, v128 b) { return _mm_sub_epi32(a, b); }
 
 SIMD_INLINE v128 v128_abs_s16(v128 a) {

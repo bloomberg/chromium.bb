@@ -126,6 +126,8 @@ SIMD_INLINE v64 v64_sub_16(v64 a, v64 b) { return _mm_sub_epi16(a, b); }
 
 SIMD_INLINE v64 v64_ssub_s16(v64 a, v64 b) { return _mm_subs_epi16(a, b); }
 
+SIMD_INLINE v64 v64_ssub_u16(v64 a, v64 b) { return _mm_subs_epu16(a, b); }
+
 SIMD_INLINE v64 v64_sub_32(v64 a, v64 b) { return _mm_sub_epi32(a, b); }
 
 SIMD_INLINE v64 v64_abs_s16(v64 a) {
