@@ -1300,7 +1300,18 @@ void WindowTreeClient::OnWindowSurfaceChanged(
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
-  window->SetPrimarySurfaceInfo(surface_info);
+  if (enable_surface_synchronization_) {
+    // If surface synchronization is enabled, and the parent is informed
+    // of a child's surface then that surface ID is guaranteed to be available
+    // in the display compositor so we set it as the fallback. If surface
+    // synchronization is enabled, the primary SurfaceInfo is created by the
+    // embedder, and the LocalSurfaceId is allocated by the embedder.
+    window->SetFallbackSurfaceInfo(surface_info);
+  } else {
+    // If surface synchronization is disabled, fallback SurfaceInfos are never
+    // used.
+    window->SetPrimarySurfaceInfo(surface_info);
+  }
 }
 
 void WindowTreeClient::OnDragDropStart(

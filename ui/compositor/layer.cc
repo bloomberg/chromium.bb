@@ -675,6 +675,17 @@ void Layer::SetShowPrimarySurface(
     mirror->dest()->SetShowPrimarySurface(surface_info, ref_factory);
 }
 
+void Layer::SetFallbackSurface(const cc::SurfaceInfo& surface_info) {
+  DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
+  DCHECK(surface_layer_);
+
+  // TODO(fsamuel): We should compute the gutter in the display compositor.
+  surface_layer_->SetFallbackSurfaceInfo(surface_info);
+
+  for (const auto& mirror : mirrors_)
+    mirror->dest()->SetFallbackSurface(surface_info);
+}
+
 void Layer::SetShowSolidColorContent() {
   DCHECK_EQ(type_, LAYER_SOLID_COLOR);
 

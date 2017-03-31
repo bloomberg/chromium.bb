@@ -72,4 +72,9 @@ void ClientSurfaceEmbedder::SetPrimarySurfaceInfo(
       surface_info, make_scoped_refptr(new StubSurfaceReferenceFactory));
 }
 
+void ClientSurfaceEmbedder::SetFallbackSurfaceInfo(
+    const cc::SurfaceInfo& surface_info) {
+  surface_layer_->SetFallbackSurface(surface_info);
+}
+
 }  // namespace aura

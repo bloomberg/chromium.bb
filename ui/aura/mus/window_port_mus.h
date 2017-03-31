@@ -228,6 +228,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   const cc::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size) override;
   void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) override;
+  void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
   void RemoveTransientChildFromServer(WindowMus* child) override;
@@ -258,7 +259,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
                          int64_t old_value,
                          std::unique_ptr<ui::PropertyData> data) override;
 
-  void UpdatePrimarySurfaceInfoInternal();
+  void UpdatePrimarySurfaceInfo();
+  void UpdateClientSurfaceEmbedder();
 
   WindowTreeClient* window_tree_client_;
 

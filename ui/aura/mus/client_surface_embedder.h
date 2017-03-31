@@ -30,6 +30,10 @@ class ClientSurfaceEmbedder {
   // on the provided |surface_info|.
   void SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info);
 
+  // Sets the fallback SurfaceInfo of the surface layer. The clip layer is not
+  // updated.
+  void SetFallbackSurfaceInfo(const cc::SurfaceInfo& surface_info);
+
  private:
   // The window which embeds the client.
   Window* window_;

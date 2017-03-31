@@ -15,8 +15,20 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/class_property.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 namespace aura {
+
+namespace {
+// Helper function to get the device_scale_factor() of the display::Display
+// nearest to |window|.
+float ScaleFactorForDisplay(Window* window) {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(window)
+      .device_scale_factor();
+}
+}  // namespace
 
 WindowPortMus::WindowMusChangeDataImpl::WindowMusChangeDataImpl() = default;
 
@@ -284,10 +296,9 @@ void WindowPortMus::SetFrameSinkIdFromServer(
     DCHECK_NE(WindowMusType::TOP_LEVEL_IN_WM, window_mus_type());
     DCHECK_NE(WindowMusType::EMBED_IN_OWNER, window_mus_type());
     base::ResetAndReturn(&pending_compositor_frame_sink_request_).Run();
+    return;
   }
-  // TODO(fsamuel): If the window type is TOP_LEVEL_IN_WM or EMBED_IN_OWNER then
-  // we should check if we have a cc::LocalSurfaeId ready as well. If we do,
-  // then we are ready to embed.
+  UpdatePrimarySurfaceInfo();
 }
 
 const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
@@ -298,17 +309,27 @@ const cc::LocalSurfaceId& WindowPortMus::GetOrAllocateLocalSurfaceId(
   local_surface_id_ = local_surface_id_allocator_.GenerateId();
   last_surface_size_ = surface_size;
 
-  // TODO(fsamuel): If surface synchronization is enabled and the FrameSinkId
-  // is available, then immediately embed the SurfaceId. The newly generated
-  // frame by the embedder will block in the display compositor until the
-  // child submits a corresponding CompositorFrame or a deadline hits.
+  // If surface synchronization is enabled and the FrameSinkId is available,
+  // then immediately embed the SurfaceId. The newly generated frame by the
+  // embedder will block in the display compositor until the child submits a
+  // corresponding CompositorFrame or a deadline hits.
+  if (window_tree_client_->enable_surface_synchronization_ &&
+      frame_sink_id_.is_valid()) {
+    UpdatePrimarySurfaceInfo();
+  }
 
   return local_surface_id_;
 }
 
 void WindowPortMus::SetPrimarySurfaceInfo(const cc::SurfaceInfo& surface_info) {
   primary_surface_info_ = surface_info;
-  UpdatePrimarySurfaceInfoInternal();
+  UpdateClientSurfaceEmbedder();
+}
+
+void WindowPortMus::SetFallbackSurfaceInfo(
+    const cc::SurfaceInfo& surface_info) {
+  DCHECK(client_surface_embedder_);
+  client_surface_embedder_->SetFallbackSurfaceInfo(surface_info);
 }
 
 void WindowPortMus::DestroyFromServer() {
@@ -457,7 +478,7 @@ void WindowPortMus::OnVisibilityChanged(bool visible) {
   if (!RemoveChangeByTypeAndData(ServerChangeType::VISIBLE, change_data))
     window_tree_client_->OnWindowMusSetVisible(this, visible);
   // We should only embed a client if its visible.
-  UpdatePrimarySurfaceInfoInternal();
+  UpdateClientSurfaceEmbedder();
 }
 
 void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
@@ -498,7 +519,23 @@ void WindowPortMus::OnPropertyChanged(const void* key,
                                                     std::move(data));
 }
 
-void WindowPortMus::UpdatePrimarySurfaceInfoInternal() {
+void WindowPortMus::UpdatePrimarySurfaceInfo() {
+  bool embeds_surface = window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM ||
+                        window_mus_type() == WindowMusType::EMBED_IN_OWNER;
+  if (!embeds_surface)
+    return;
+
+  if (!frame_sink_id_.is_valid() || !local_surface_id_.is_valid())
+    return;
+
+  primary_surface_info_ =
+      cc::SurfaceInfo(cc::SurfaceId(frame_sink_id_, local_surface_id_),
+                      ScaleFactorForDisplay(window_), last_surface_size_);
+
+  UpdateClientSurfaceEmbedder();
+}
+
+void WindowPortMus::UpdateClientSurfaceEmbedder() {
   if (!client_surface_embedder_ && primary_surface_info_.is_valid())
     client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(window_);
 
