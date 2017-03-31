@@ -299,6 +299,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
   latency_tracker_.SetDelegate(delegate_);
 
+  DCHECK(base::TaskScheduler::GetInstance())
+      << "Ref. Prerequisite section of post_task.h";
 #if defined(OS_WIN)
   // Update the display color profile cache so that it is likely to be up to
   // date when the renderer process requests the color profile.

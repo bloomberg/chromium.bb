@@ -10,6 +10,7 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -121,21 +122,24 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
        TestEditingCommandDelivery) {
   MockRenderWidgetHostDelegate delegate;
   TestBrowserContext browser_context;
-  MockRenderProcessHost process_host(&browser_context);
+  MockRenderProcessHostFactory process_host_factory;
+  RenderProcessHost* process_host =
+      process_host_factory.CreateRenderProcessHost(&browser_context, nullptr);
 
   // Populates |g_supported_scale_factors|.
   std::vector<ui::ScaleFactor> supported_factors;
   supported_factors.push_back(ui::SCALE_FACTOR_100P);
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
-  int32_t routing_id = process_host.GetNextRoutingID();
+  base::mac::ScopedNSAutoreleasePool pool;
+  base::MessageLoop message_loop;
+  base::test::ScopedTaskScheduler task_scheduler(&message_loop);
+
+  int32_t routing_id = process_host->GetNextRoutingID();
   RenderWidgetHostEditCommandCounter* render_widget =
-      new RenderWidgetHostEditCommandCounter(&delegate, &process_host,
+      new RenderWidgetHostEditCommandCounter(&delegate, process_host,
                                              routing_id);
 
-  base::mac::ScopedNSAutoreleasePool pool;
-
-  base::MessageLoop message_loop;
   ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 
   // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.

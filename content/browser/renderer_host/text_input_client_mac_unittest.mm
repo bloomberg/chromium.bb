@@ -9,7 +9,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -45,7 +47,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 class TextInputClientMacTest : public testing::Test {
  public:
   TextInputClientMacTest()
-      : browser_context_(),
+      : task_scheduler_(&message_loop_),
+        browser_context_(),
         process_factory_(),
         delegate_(),
         thread_("TextInputClientMacTestThread") {
@@ -53,6 +56,15 @@ class TextInputClientMacTest : public testing::Test {
         process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
     int32_t routing_id = rph->GetNextRoutingID();
     widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id, false));
+  }
+
+  void TearDown() override {
+    // |widget_| needs to be cleared before flushing the message loop, otherwise
+    // |widgets_|'s destructor calls MockRenderProcessHost::Cleanup, it
+    // schedules the MRPH deletion, and then MockRenderProcessHostFactory also
+    // deletes the MRPH before scheduled MRPH deletion is invoked.
+    widget_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Accessor for the TextInputClientMac instance.
@@ -83,6 +95,10 @@ class TextInputClientMacTest : public testing::Test {
   friend class ScopedTestingThread;
 
   base::MessageLoopForUI message_loop_;
+
+  // TaskScheduler is used by RenderWidgetHostImpl constructor.
+  base::test::ScopedTaskScheduler task_scheduler_;
+
   TestBrowserContext browser_context_;
 
   // Gets deleted when the last RWH in the "process" gets destroyed.

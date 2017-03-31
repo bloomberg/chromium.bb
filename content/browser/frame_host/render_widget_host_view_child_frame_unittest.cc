@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "build/build_config.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/surface.h"
@@ -73,7 +74,7 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
 
 class RenderWidgetHostViewChildFrameTest : public testing::Test {
  public:
-  RenderWidgetHostViewChildFrameTest() {}
+  RenderWidgetHostViewChildFrameTest() : task_scheduler_(&message_loop_) {}
 
   void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
@@ -125,6 +126,10 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
 
  protected:
   base::MessageLoopForUI message_loop_;
+
+  // TaskScheduler is used by RenderWidgetHostImpl constructor.
+  base::test::ScopedTaskScheduler task_scheduler_;
+
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
 
