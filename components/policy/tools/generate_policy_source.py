@@ -1257,6 +1257,12 @@ def _GetSupportedUserPolicies(policies):
                                not policy.is_device_only, policies)
 
 
+# Returns a list of supported device policies by filtering |policies|.
+def _GetSupportedDevicePolicies(policies):
+  return filter(lambda policy: policy.is_supported and
+                               policy.is_device_only, policies)
+
+
 # Returns the set of all policy.policy_protobuf_type strings from |policies|.
 def _GetProtobufTypes(policies):
   return set(policy.policy_protobuf_type for policy in policies)
@@ -1300,6 +1306,10 @@ def _WriteChromeOSPolicyConstantsHeader(policies, os, f, risk_tags):
     f.write('extern const char k' + policy.name + '[];\n')
   f.write('\n}  // namespace key\n\n')
 
+  # Device policy keys.
+  f.write('// NULL-terminated list of device policy registry key names.\n')
+  f.write('extern const char* kDevicePolicyKeys[];\n\n');
+
   # User policy proto pointers, one struct for each protobuf type.
   for protobuf_type in protobuf_types:
     _WriteChromeOSPolicyAccessHeader(f, protobuf_type)
@@ -1337,6 +1347,13 @@ def _WriteChromeOSPolicyConstantsSource(policies, os, f, risk_tags):
   for policy in policies:
     f.write('const char k{name}[] = "{name}";\n'.format(name=policy.name))
   f.write('\n}  // namespace key\n\n')
+
+  # Device policy keys.
+  supported_device_policies = _GetSupportedDevicePolicies(policies)
+  f.write('const char* kDevicePolicyKeys[] = {\n\n');
+  for policy in supported_device_policies:
+    f.write('  key::k%s,\n' % policy.name)
+  f.write('  nullptr};\n\n');
 
   # User policy proto pointers, one struct for each protobuf type.
   supported_user_policies = _GetSupportedUserPolicies(policies)
