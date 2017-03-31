@@ -20,6 +20,11 @@
         "id": "WindowState",
         "type": "string",
         "description": "The state of this browser window. Under some circumstances a Window may not be assigned state property, for example when querying closed windows from the $(ref:sessions) API.",
+        // WARNING: These values are written to logs. New enum values can be
+        // added, but existing enums must never be renumbered or deleted and
+        // reused. If something needs to be removed, make sure to remove the
+        // "TabsApi.RequestedWindowState" histogram as it will be no longer
+        // valid, and make sure to mark it as obsolete in histograms.xml.
         "enum": [{
           "name": "normal",
           "description": "Normal window state (i.e. not minimized, maximized, or fullscreen)."
