@@ -162,6 +162,19 @@ void ConvertEventLocationToDip(int64_t display_id, ui::LocatedEvent* event) {
   event->set_root_location(root_location);
 }
 
+// Create and return a MouseEvent or TouchEvent from |event| if |event| is a
+// PointerEvent, otherwise return the copy of |event|.
+std::unique_ptr<ui::Event> MapEvent(const ui::Event& event) {
+  if (event.IsMousePointerEvent()) {
+    if (event.type() == ui::ET_POINTER_WHEEL_CHANGED)
+      return base::MakeUnique<ui::MouseWheelEvent>(*event.AsPointerEvent());
+    return base::MakeUnique<ui::MouseEvent>(*event.AsPointerEvent());
+  }
+  if (event.IsTouchPointerEvent())
+    return base::MakeUnique<ui::TouchEvent>(*event.AsPointerEvent());
+  return ui::Event::Clone(event);
+}
+
 // Set the |target| to be the target window of this |event| and send it to
 // the EventSink.
 void DispatchEventToTarget(ui::Event* event, WindowMus* target) {
@@ -1238,21 +1251,9 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
   EventAckHandler ack_handler(CreateEventResultCallback(event_id));
   // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
   // ui::TouchEvent once we have proper support for pointer events.
-  if (event->IsMousePointerEvent()) {
-    if (event->type() == ui::ET_POINTER_WHEEL_CHANGED) {
-      ui::MouseWheelEvent mapped_event(*event->AsPointerEvent());
-      DispatchEventToTarget(&mapped_event, window);
-    } else {
-      ui::MouseEvent mapped_event(*event->AsPointerEvent());
-      DispatchEventToTarget(&mapped_event, window);
-    }
-  } else if (event->IsTouchPointerEvent()) {
-    ui::TouchEvent mapped_event(*event->AsPointerEvent());
-    DispatchEventToTarget(&mapped_event, window);
-  } else {
-    DispatchEventToTarget(event.get(), window);
-  }
-  ack_handler.set_handled(event->handled());
+  std::unique_ptr<ui::Event> mapped_event = MapEvent(*event.get());
+  DispatchEventToTarget(mapped_event.get(), window);
+  ack_handler.set_handled(mapped_event->handled());
 }
 
 void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,

@@ -764,6 +764,40 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   EXPECT_EQ(event_location_in_child, window_delegate.last_event_location());
 }
 
+TEST_F(WindowTreeClientClientTest, InputEventPointerEvent) {
+  InputEventBasicTestWindowDelegate window_delegate(window_tree());
+  WindowTreeHostMus window_tree_host(window_tree_client_impl(),
+                                     cc::FrameSinkId(1, 1));
+  Window* top_level = window_tree_host.window();
+  const gfx::Rect bounds(0, 0, 100, 100);
+  window_tree_host.SetBoundsInPixels(bounds);
+  window_tree_host.InitHost();
+  window_tree_host.Show();
+  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
+  Window child(&window_delegate);
+  child.Init(ui::LAYER_NOT_DRAWN);
+  top_level->AddChild(&child);
+  child.SetBounds(gfx::Rect(10, 10, 100, 100));
+  child.Show();
+  EXPECT_FALSE(window_delegate.got_move());
+  const gfx::Point event_location(2, 3);
+  const uint32_t event_id = 1;
+  window_delegate.set_event_id(event_id);
+  ui::PointerEvent pointer_event(
+      ui::ET_POINTER_MOVED, event_location, gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
+      base::TimeTicks());
+  window_tree_client()->OnWindowInputEvent(event_id, server_id(&child),
+                                           window_tree_host.display_id(),
+                                           ui::Event::Clone(pointer_event), 0);
+  EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(event_id));
+  EXPECT_TRUE(window_delegate.got_move());
+  EXPECT_EQ(event_location, window_delegate.last_event_location());
+}
+
 TEST_F(WindowTreeClientClientTest, InputEventFindTargetAndConversion) {
   WindowTreeHostMus window_tree_host(window_tree_client_impl(),
                                      cc::FrameSinkId(1, 1));
