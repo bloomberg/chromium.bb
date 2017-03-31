@@ -683,6 +683,22 @@ bool LayerTreeHostImpl::ScrollLayerTo(int layer_id,
   return true;
 }
 
+bool LayerTreeHostImpl::ScrollingShouldSwitchtoMainThread() {
+  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
+  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
+
+  if (!scroll_node)
+    return true;
+
+  for (; scroll_tree.parent(scroll_node);
+       scroll_node = scroll_tree.parent(scroll_node)) {
+    if (!!scroll_node->main_thread_scrolling_reasons)
+      return true;
+  }
+
+  return false;
+}
+
 void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promises_for_main_thread_scroll_update_.push_back(

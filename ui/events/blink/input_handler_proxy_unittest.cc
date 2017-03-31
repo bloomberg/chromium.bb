@@ -198,6 +198,8 @@ class MockInputHandler : public cc::InputHandler {
     return false;
   }
 
+  bool ScrollingShouldSwitchtoMainThread() override { return false; }
+
   void BindToClient(cc::InputHandlerClient* client) override {}
 
   void MouseDown() override {}

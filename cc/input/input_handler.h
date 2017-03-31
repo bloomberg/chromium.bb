@@ -216,6 +216,8 @@ class CC_EXPORT InputHandler {
                                        gfx::ScrollOffset* offset) = 0;
   virtual bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) = 0;
 
+  virtual bool ScrollingShouldSwitchtoMainThread() = 0;
+
  protected:
   InputHandler() {}
   virtual ~InputHandler() {}

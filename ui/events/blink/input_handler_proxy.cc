@@ -712,6 +712,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::FlingScrollByMouseWheel(
 
       cc::InputHandlerScrollResult scroll_result =
           input_handler_->ScrollBy(&scroll_state_update);
+
+      if (!scroll_result.did_scroll &&
+          input_handler_->ScrollingShouldSwitchtoMainThread()) {
+        gesture_scroll_on_impl_thread_ = false;
+        return DID_NOT_HANDLE;
+      }
+
       HandleOverscroll(gfx::Point(wheel_event.x, wheel_event.y), scroll_result,
                        false);
       if (scroll_result.did_scroll) {
@@ -886,6 +893,16 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   }
   cc::InputHandlerScrollResult scroll_result =
       input_handler_->ScrollBy(&scroll_state);
+
+  if (!scroll_result.did_scroll &&
+      input_handler_->ScrollingShouldSwitchtoMainThread() &&
+      gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad &&
+      touchpad_and_wheel_scroll_latching_enabled_) {
+    gesture_scroll_on_impl_thread_ = false;
+    if (!gesture_pinch_on_impl_thread_)
+      return DID_NOT_HANDLE;
+  }
+
   HandleOverscroll(scroll_point, scroll_result, true);
 
   if (scroll_elasticity_controller_)

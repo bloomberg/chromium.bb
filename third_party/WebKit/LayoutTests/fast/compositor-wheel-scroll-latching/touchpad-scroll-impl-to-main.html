@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+  body {
+    margin: 0px;
+    height: 1000px;
+    width: 1000px;
+  }
+  #div {
+    background-color: #84BE6A;
+    height: 500px;
+    width: 500px;
+    overflow: scroll;
+  }
+  #content {
+    height: 800px;
+    width: 800px;
+  }
+</style>
+
+<div id="div" style="will-change:transform; position:relative;">
+  <div id="content"> </div>
+</div>
+
+<script>
+var div = document.getElementById('div');
+var rect = div.getBoundingClientRect();
+const GESTURE_SOURCE_TYPE = 2; // MOUSE_INPUT from synthetic_gesture_params.h
+
+setup({ explicit_done: true });
+test(() => {
+    chrome.gpuBenchmarking.smoothScrollBy(500, switchFromImplToMain,
+                                 (rect.left + rect.right) / 2,
+                                 (rect.top + rect.bottom) / 2,
+                                 GESTURE_SOURCE_TYPE, "down", 4000);
+}, "Scroller should continue to scroll when MT takes over scroll handling.");
+
+function changeStyleToScrollOnMain() {
+  if(div.scrollTop > 150)
+    div.style = "border-radius:40px; position:fixed;";
+}
+div.addEventListener("scroll", changeStyleToScrollOnMain, {passive: true});
+
+function switchFromImplToMain() {
+  if (div.scrollTop == div.scrollHeight - div.clientHeight)
+    done();
+  else
+    requestAnimationFrame(switchFromImplToMain);
+}
+
+</script>

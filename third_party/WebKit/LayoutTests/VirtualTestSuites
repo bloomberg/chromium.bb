@@ -291,6 +291,13 @@
     "args": ["--enable-features=TouchpadAndWheelScrollLatching"]
   },
   {
+    "prefix": "wheelscrolllatching",
+    "base": "fast/compositor-wheel-scroll-latching",
+    "args": ["--enable-features=TouchpadAndWheelScrollLatching",
+             "--enable-threaded-compositing",
+             "--disable-smooth-scrolling"]
+  },
+  {
     "prefix": "mojo-loading",
     "base": "webexposed",
     "args": ["--enable-blink-features=LoadingWithMojo"]

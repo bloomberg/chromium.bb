@@ -200,6 +200,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool GetScrollOffsetForLayer(int layer_id,
                                gfx::ScrollOffset* offset) override;
   bool ScrollLayerTo(int layer_id, const gfx::ScrollOffset& offset) override;
+  bool ScrollingShouldSwitchtoMainThread() override;
 
   // BrowserControlsOffsetManagerClient implementation.
   float TopControlsHeight() const override;
