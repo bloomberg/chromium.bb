@@ -63,12 +63,14 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(
 
   sk_sp<SkTypeface> returnTypeface = m_baseTypeface;
 
-  // Maximum axis count is maximum value for the OpenType USHORT, which is a
-  // 16bit unsigned.  https://www.microsoft.com/typography/otspec/fvar.htm
-  // Variation settings coming from CSS can have duplicate assignments and the
-  // list can be longer than UINT16_MAX, but ignoring this for now, going with a
-  // reasonable upper limit and leaving the deduplication for TODO(drott),
-  // crbug.com/674878 second duplicate value should supersede first..
+  // Maximum axis count is maximum value for the OpenType USHORT,
+  // which is a 16bit unsigned.
+  // https://www.microsoft.com/typography/otspec/fvar.htm Variation
+  // settings coming from CSS can have duplicate assignments and the
+  // list can be longer than UINT16_MAX, but ignoring the length for
+  // now, going with a reasonable upper limit. Deduplication is
+  // handled by Skia with priority given to the last occuring
+  // assignment.
   if (variationSettings && variationSettings->size() < UINT16_MAX) {
 #if OS(WIN)
     sk_sp<SkFontMgr> fm(SkFontMgr_New_Custom_Empty());
