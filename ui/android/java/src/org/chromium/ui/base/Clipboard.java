@@ -9,24 +9,44 @@ import android.content.ClipboardManager;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android clipboard.
  */
 @JNINamespace("ui")
-public class Clipboard {
+public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener {
     private static Clipboard sInstance;
+
+    private static final String TAG = "Clipboard";
 
     // Necessary for coercing clipboard contents to text if they require
     // access to network resources, etceteras (e.g., URI in clipboard)
     private final Context mContext;
 
     private final ClipboardManager mClipboardManager;
+
+    // A message hasher that's used to hash clipboard contents so we can tell
+    // when a clipboard changes without storing the full contents.
+    private MessageDigest mMd5Hasher;
+    // The hash of the current clipboard.
+    // TODO(mpearson): unsuppress this warning once saving and restoring
+    // the hash from prefs is added.
+    @SuppressFBWarnings("URF_UNREAD_FIELD")
+    private byte[] mClipboardMd5;
+    // The time when the clipboard was last updated.  Set to 0 if unknown.
+    private long mClipboardChangeTime;
 
     /**
      * Get the singleton Clipboard instance (creating it if needed).
@@ -44,6 +64,20 @@ public class Clipboard {
         mClipboardManager =
                 (ClipboardManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CLIPBOARD_SERVICE);
+        mClipboardManager.addPrimaryClipChangedListener(this);
+        try {
+            mMd5Hasher = MessageDigest.getInstance("MD5");
+            mClipboardMd5 = weakMd5Hash();
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG,
+                    "Unable to construct MD5 MessageDigest: %s; assume "
+                            + "clipboard last update time is start of epoch.",
+                    e);
+            mMd5Hasher = null;
+            mClipboardMd5 = new byte[] {};
+        }
+        RecordHistogram.recordBooleanHistogram("Clipboard.ConstructedHasher", mMd5Hasher != null);
+        mClipboardChangeTime = 0;
     }
 
     /**
@@ -95,6 +129,21 @@ public class Clipboard {
     }
 
     /**
+     * Gets the time the clipboard content last changed.
+     *
+     * This is calculated according to the device's clock.  E.g., it continues
+     * increasing when the device is suspended.  Likewise, it can be in the
+     * future if the user's clock updated after this information was recorded.
+     *
+     * @return a Java long recording the last changed time in milliseconds since
+     * epoch, or 0 if the time could not be determined.
+     */
+    @CalledByNative
+    public long getClipboardContentChangeTimeInMillis() {
+        return mClipboardChangeTime;
+    }
+
+    /**
      * Emulates the behavior of the now-deprecated
      * {@link android.text.ClipboardManager#setText(CharSequence)}, setting the
      * clipboard's current primary clip to a plain-text clip that consists of
@@ -138,5 +187,38 @@ public class Clipboard {
             String text = mContext.getString(R.string.copy_to_clipboard_failure_message);
             Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * Updates mClipboardMd5 and mClipboardChangeTime when the clipboard updates.
+     *
+     * Implements OnPrimaryClipChangedListener to listen for clipboard updates.
+     */
+    @Override
+    public void onPrimaryClipChanged() {
+        if (mMd5Hasher == null) return;
+        RecordUserAction.record("MobileOmniboxClipboardChanged");
+        mClipboardMd5 = weakMd5Hash();
+        // Always update the clipboard change time even if the clipboard
+        // content hasn't changed.  This is because if the user put something
+        // in the clipboard recently (even if it was not necessary because it
+        // was already there), that content should be considered recent.
+        mClipboardChangeTime = System.currentTimeMillis();
+    }
+
+    /**
+     * Returns a weak hash of getCoercedText().
+     *
+     * @return a Java byte[] with the weak hash.
+     */
+    private byte[] weakMd5Hash() {
+        if (getCoercedText() == null) {
+            return new byte[] {};
+        }
+        // Compute a hash consisting of the first 4 bytes of the MD5 hash of
+        // getCoercedText().  This value is used to detect clipboard content
+        // change. Keeping only 4 bytes is a privacy requirement to introduce
+        // collision and allow deniability of having copied a given string.
+        return Arrays.copyOfRange(mMd5Hasher.digest(getCoercedText().getBytes()), 0, 4);
     }
 }

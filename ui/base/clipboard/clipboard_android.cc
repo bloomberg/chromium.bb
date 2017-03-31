@@ -4,6 +4,9 @@
 
 #include "ui/base/clipboard/clipboard_android.h"
 
+#include <algorithm>
+
+#include "base/android/context_utils.h"
 #include "base/android/jni_string.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
@@ -47,6 +50,7 @@ class ClipboardMap {
  public:
   ClipboardMap();
   std::string Get(const std::string& format);
+  int64_t GetLastClipboardChangeTimeInMillis();
   bool HasFormat(const std::string& format);
   void Set(const std::string& format, const std::string& data);
   void CommitToAndroidClipboard();
@@ -56,6 +60,8 @@ class ClipboardMap {
   void UpdateFromAndroidClipboard();
   std::map<std::string, std::string> map_;
   base::Lock lock_;
+
+  int64_t last_clipboard_change_time_ms_;
 
   // Java class and methods for the Android ClipboardManager.
   ScopedJavaGlobalRef<jobject> clipboard_manager_;
@@ -72,6 +78,12 @@ std::string ClipboardMap::Get(const std::string& format) {
   UpdateFromAndroidClipboard();
   std::map<std::string, std::string>::const_iterator it = map_.find(format);
   return it == map_.end() ? std::string() : it->second;
+}
+
+int64_t ClipboardMap::GetLastClipboardChangeTimeInMillis() {
+  base::AutoLock lock(lock_);
+  UpdateFromAndroidClipboard();
+  return last_clipboard_change_time_ms_;
 }
 
 bool ClipboardMap::HasFormat(const std::string& format) {
@@ -158,6 +170,9 @@ void ClipboardMap::UpdateFromAndroidClipboard() {
 
   AddMapEntry(env, &android_clipboard_state, kPlainTextFormat, jtext);
   AddMapEntry(env, &android_clipboard_state, kHTMLFormat, jhtml);
+  last_clipboard_change_time_ms_ =
+      Java_Clipboard_getClipboardContentChangeTimeInMillis(env,
+                                                           clipboard_manager_);
 
   if (!MapIsSubset(android_clipboard_state, map_))
     android_clipboard_state.swap(map_);
@@ -397,6 +412,12 @@ void ClipboardAndroid::ReadData(const Clipboard::FormatType& format,
                                 std::string* result) const {
   DCHECK(CalledOnValidThread());
   *result = g_map.Get().Get(format.ToString());
+}
+
+base::Time ClipboardAndroid::GetClipboardLastModifiedTime() const {
+  DCHECK(CalledOnValidThread());
+  return base::Time::FromJavaTime(
+      g_map.Get().GetLastClipboardChangeTimeInMillis());
 }
 
 // Main entry point used to write several values in the clipboard.

@@ -86,6 +86,10 @@ void Clipboard::DestroyClipboardForCurrentThread() {
     clipboard_map->erase(it);
 }
 
+base::Time Clipboard::GetClipboardLastModifiedTime() const {
+  return base::Time();
+}
+
 void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
   // Ignore writes with empty parameters.
   for (const auto& param : params) {

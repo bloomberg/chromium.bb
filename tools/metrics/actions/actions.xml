@@ -10103,10 +10103,14 @@ should be able to be added at any place in this file.
 <action name="MobileOmniboxClipboardChanged">
   <owner>jif@chromium.org</owner>
   <description>
-    Emitted when Chrome detects that the clipboard contains a new URL. This
-    occurs either when Chrome enters the foreground and notices that the content
-    of the clipboard changed, or when the clipboard changes while Chrome is in
-    the foreground.
+    Emitted when Chrome detects that the clipboard contains a new URL.
+
+    On iOS: this occurs either when Chrome enters the foreground and notices
+    that the content of the clipboard changed, or when the clipboard changes
+    while Chrome is in the foreground.
+
+    On Android: this occurs when Chrome starts up or when the clipboard changes
+    while Chrome is running (in the foreground or not).
   </description>
 </action>
 

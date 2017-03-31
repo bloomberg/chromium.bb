@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/base/clipboard/clipboard_types.h"
 #include "ui/base/ui_base_export.h"
@@ -203,6 +204,10 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // as a byte vector.
   virtual void ReadData(const FormatType& format,
                         std::string* result) const = 0;
+
+  // Returns an estimate of the time the clipboard was last updated.  If the
+  // time is unknown, returns Time::Time().
+  virtual base::Time GetClipboardLastModifiedTime() const;
 
   // Gets the FormatType corresponding to an arbitrary format string,
   // registering it with the system if needed. Due to Windows/Linux

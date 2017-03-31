@@ -45,6 +45,7 @@ class ClipboardAndroid : public Clipboard {
                       base::string16* result) const override;
   void ReadBookmark(base::string16* title, std::string* url) const override;
   void ReadData(const FormatType& format, std::string* result) const override;
+  base::Time GetClipboardLastModifiedTime() const override;
   void WriteObjects(ClipboardType type, const ObjectMap& objects) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
