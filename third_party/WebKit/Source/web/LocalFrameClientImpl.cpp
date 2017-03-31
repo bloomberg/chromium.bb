@@ -184,8 +184,7 @@ void LocalFrameClientImpl::runScriptsAtDocumentElementAvailable() {
 
 void LocalFrameClientImpl::runScriptsAtDocumentReady(bool documentIsEmpty) {
   if (m_webFrame->client()) {
-    m_webFrame->client()->runScriptsAtDocumentReady(m_webFrame,
-                                                    documentIsEmpty);
+    m_webFrame->client()->runScriptsAtDocumentReady(documentIsEmpty);
   }
   // The callback might have deleted the frame, do not use |this|!
 }

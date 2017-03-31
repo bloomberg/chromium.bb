@@ -3898,9 +3898,7 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
-void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
-                                                bool document_is_empty) {
-  DCHECK_EQ(frame_, frame);
+void RenderFrameImpl::runScriptsAtDocumentReady(bool document_is_empty) {
   base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
 
   MojoBindingsController* mojo_bindings_controller =
@@ -3913,7 +3911,7 @@ void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
 
   GetContentClient()->renderer()->RunScriptsAtDocumentEnd(this);
 
-  // ContentClient might have deleted |frame| and |this| by now!
+  // ContentClient might have deleted |frame_| and |this| by now!
   if (!weak_self.get())
     return;
 
@@ -3931,19 +3929,19 @@ void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
   // Display error page instead of a blank page, if appropriate.
   std::string error_domain = "http";
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDataSource(frame->dataSource());
+      InternalDocumentStateData::FromDataSource(frame_->dataSource());
   int http_status_code = internal_data->http_status_code();
   if (GetContentClient()->renderer()->HasErrorPage(http_status_code,
                                                    &error_domain)) {
     WebURLError error;
-    error.unreachableURL = frame->document().url();
+    error.unreachableURL = frame_->document().url();
     error.domain = WebString::fromUTF8(error_domain);
     error.reason = http_status_code;
     // This call may run scripts, e.g. via the beforeunload event.
-    LoadNavigationErrorPage(frame->dataSource()->getRequest(), error, true,
+    LoadNavigationErrorPage(frame_->dataSource()->getRequest(), error, true,
                             nullptr);
   }
-  // Do not use |this| or |frame| here without checking |weak_self|.
+  // Do not use |this| or |frame_| here without checking |weak_self|.
 }
 
 void RenderFrameImpl::runScriptsAtDocumentIdle(blink::WebLocalFrame* frame) {
