@@ -55,7 +55,10 @@ Polymer({
   onEditTap_: function(e) {
     e.preventDefault();
     this.$$('dialog[is=cr-action-menu]').close();
-    this.fire(settings.EDIT_STARTUP_URL_EVENT, this.model);
+    this.fire(settings.EDIT_STARTUP_URL_EVENT, {
+      model: this.model,
+      anchor: this.$$('#dots'),
+    });
   },
 
   /** @private */
