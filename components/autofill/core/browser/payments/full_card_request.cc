@@ -16,17 +16,17 @@
 namespace autofill {
 namespace payments {
 
-FullCardRequest::FullCardRequest(AutofillClient* autofill_client,
+FullCardRequest::FullCardRequest(RiskDataLoader* risk_data_loader,
                                  payments::PaymentsClient* payments_client,
                                  PersonalDataManager* personal_data_manager)
-    : autofill_client_(autofill_client),
+    : risk_data_loader_(risk_data_loader),
       payments_client_(payments_client),
       personal_data_manager_(personal_data_manager),
       result_delegate_(nullptr),
       ui_delegate_(nullptr),
       should_unmask_card_(false),
       weak_ptr_factory_(this) {
-  DCHECK(autofill_client_);
+  DCHECK(risk_data_loader_);
   DCHECK(payments_client_);
   DCHECK(personal_data_manager_);
 }
@@ -62,7 +62,7 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                                  weak_ptr_factory_.GetWeakPtr());
 
   if (should_unmask_card_) {
-    autofill_client_->LoadRiskData(
+    risk_data_loader_->LoadRiskData(
         base::Bind(&FullCardRequest::OnDidGetUnmaskRiskData,
                    weak_ptr_factory_.GetWeakPtr()));
   }

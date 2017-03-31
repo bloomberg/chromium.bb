@@ -48,7 +48,7 @@ class FullCardRequest : public CardUnmaskDelegate {
   };
 
   // The parameters should outlive the FullCardRequest.
-  FullCardRequest(AutofillClient* autofill_client,
+  FullCardRequest(RiskDataLoader* risk_data_loader,
                   payments::PaymentsClient* payments_client,
                   PersonalDataManager* personal_data_manager);
   ~FullCardRequest();
@@ -83,9 +83,8 @@ class FullCardRequest : public CardUnmaskDelegate {
   // Resets the state of the request.
   void Reset();
 
-  // Responsible for showing the UI that prompts the user for the CVC and/or the
-  // updated expiration date.
-  AutofillClient* const autofill_client_;
+  // Used to fetch risk data for this request.
+  RiskDataLoader* const risk_data_loader_;
 
   // Responsible for unmasking a masked server card.
   payments::PaymentsClient* const payments_client_;

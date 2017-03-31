@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
+#include "components/autofill/core/browser/risk_data_loader.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -57,7 +58,7 @@ struct Suggestion;
 // AutofillManager is used (e.g. a single tab), so when we say "for the client"
 // below, we mean "in the execution context the client is associated with" (e.g.
 // for the tab the AutofillManager is attached to).
-class AutofillClient {
+class AutofillClient : public RiskDataLoader {
  public:
   enum PaymentsRpcResult {
     // Empty result. Used for initializing variables and should generally
@@ -89,7 +90,7 @@ class AutofillClient {
 
   typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
 
-  virtual ~AutofillClient() {}
+  ~AutofillClient() override {}
 
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
@@ -138,10 +139,6 @@ class AutofillClient {
   // Will run |callback| on success.
   virtual void ConfirmCreditCardFillAssist(const CreditCard& card,
                                            const base::Closure& callback) = 0;
-
-  // Gathers risk data and provides it to |callback|.
-  virtual void LoadRiskData(
-      const base::Callback<void(const std::string&)>& callback) = 0;
 
   // Returns true if both the platform and the device support scanning credit
   // cards. Should be called before ScanCreditCard().

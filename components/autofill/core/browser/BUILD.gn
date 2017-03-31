@@ -113,6 +113,7 @@ static_library("browser") {
     "popup_item_ids.h",
     "region_combobox_model.cc",
     "region_combobox_model.h",
+    "risk_data_loader.h",
     "server_field_types_util.cc",
     "server_field_types_util.h",
     "state_names.cc",
