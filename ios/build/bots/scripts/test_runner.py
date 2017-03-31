@@ -365,10 +365,13 @@ class TestRunner(object):
         print '%s tests failed and will be retried.' % len(failed)
         print
         for i in xrange(self.retries):
-          for test in failed:
+          for test in failed.keys():
             print 'Retry #%s for %s.' % (i + 1, test)
             print
-            self._run(self.get_launch_command(test_filter=[test]))
+            result = self._run(self.get_launch_command(test_filter=[test]))
+            # If the test passed on retry, consider it flake instead of failure.
+            if test in result.passed_tests:
+              flaked[test] = failed.pop(test)
 
       # Build test_results.json.
       self.test_results['interrupted'] = result.crashed
