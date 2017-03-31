@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
 <script src="resources/fake-devices.js"></script>
 <script src="resources/usb-helpers.js"></script>
+<script src="resources/webusb-test.js"></script>
 <script>
 'use strict';
 
-usb_test(usb => {
-  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+usb_test(() => {
+  navigator.usb.test.addFakeDevice(fakeDeviceInit);
 
   return navigator.usb.getDevices().then(devices => {
     assert_equals(devices.length, 1);

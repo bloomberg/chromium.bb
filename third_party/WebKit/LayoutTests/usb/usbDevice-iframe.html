@@ -1,95 +1,88 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="../resources/mojo-helpers.js"></script>
 <script src="resources/fake-devices.js"></script>
 <script src="resources/usb-helpers.js"></script>
+<script src="resources/webusb-test.js"></script>
 <script>
 'use strict';
 
-function runIframeDisconnectTest(usb, onDeviceConnected) {
-  return new Promise((resolve, reject) => {
-    let mockDeviceManager = new usb.MockDeviceManager;
-    let opened = false;
-    let iframe = document.createElement('iframe');
+function runIframeDisconnectTest(onDeviceConnected) {
+  return navigator.usb.test.initialize().then(() => {
+    return new Promise((resolve, reject) => {
+      let opened = false;
+      let fakeDeviceGuid = null;
 
-    window.onmessage = messageEvent => {
-      if (messageEvent.data === 'Ready') {
-        mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
-      } else if (messageEvent.data === 'Success') {
-        opened = true;
-        onDeviceConnected(iframe);
-      } else {
-        reject(messageEvent.data);
-      }
-    };
+      let iframe = document.createElement('iframe');
+      iframe.src = 'resources/open-in-iframe.html';
+      iframe.onload = () => {
+        navigator.usb.test.attachToWindow(iframe.contentWindow).then(() => {
+          iframe.contentWindow.postMessage('Ready', '*');
+        });
+      };
 
-    mockDeviceManager.setDeviceCloseHandler(info => {
-      assert_equals(info, usb.fakeDevices[0]);
-      assert_true(opened);
-      resolve();
+      window.onmessage = messageEvent => {
+        if (messageEvent.data == 'Ready') {
+          fakeDeviceGuid = navigator.usb.test.addFakeDevice(fakeDeviceInit);
+        } else if (messageEvent.data == 'Success') {
+          opened = true;
+          onDeviceConnected(iframe);
+        } else {
+          reject(messageEvent.data);
+        }
+      };
+
+      navigator.usb.test.ondeviceclose = guid => {
+        assert_equals(guid, fakeDeviceGuid);
+        assert_true(opened);
+        resolve();
+      };
+
+      document.body.appendChild(iframe);
     });
-
-    iframe.src = 'resources/open-in-iframe.html';
-    iframe.onload = () => {
-      iframe.contentWindow.gin.define(
-          "Mojo Service Registry",
-          [ 'content/public/renderer/frame_interfaces' ],
-          (frameInterfaces) => {
-            frameInterfaces.addInterfaceOverrideForTesting(
-            usb.DeviceManager.name,
-            handle => { mockDeviceManager.bindingSet.addBinding(
-                mockDeviceManager, handle); });
-        iframe.contentWindow.postMessage('Ready', '*');
-      });
-    }
-    document.body.appendChild(iframe);
   });
 }
 
-usb_test(usb => {
-  return runIframeDisconnectTest(usb, iframe => {
+promise_test(() => {
+  return runIframeDisconnectTest(iframe => {
     document.body.removeChild(iframe);
   });
 }, 'detaching iframe disconnects device.');
 
-usb_test(usb => {
-  return runIframeDisconnectTest(usb, iframe => {
+promise_test(() => {
+  return runIframeDisconnectTest(iframe => {
     iframe.src = 'about:blank';
   });
 }, 'navigating iframe disconnects device.');
 
-usb_test(usb => {
-  return new Promise((resolve, reject) => {
-    let mockDeviceManager = new usb.MockDeviceManager;
-    let iframe = document.createElement('iframe');
+promise_test(() => {
+  return navigator.usb.test.initialize().then(() => {
+    return new Promise((resolve, reject) => {
+      let opened = false;
+      let fakeDeviceGuid = null;
 
-    window.onmessage = messageEvent => {
-      if (messageEvent.data === 'Ready') {
-        document.body.removeChild(iframe);
-        runGarbageCollection().then(() => {
-          mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
-          resolve();
+      let iframe = document.createElement('iframe');
+      iframe.src = 'resources/open-in-iframe.html';
+      iframe.onload = () => {
+        navigator.usb.test.attachToWindow(iframe.contentWindow).then(() => {
+          iframe.contentWindow.postMessage('Ready', '*');
         });
-      } else {
-        reject(messageEvent.data);
-      }
-    };
+      };
 
-    iframe.src = 'resources/open-in-iframe.html';
-    iframe.onload = () => {
-      iframe.contentWindow.gin.define(
-          "Mojo Service Registry",
-          [ 'content/public/renderer/frame_interfaces' ],
-          (frameInterfaces) => {
-            frameInterfaces.addInterfaceOverrideForTesting(
-            usb.DeviceManager.name,
-            handle => { mockDeviceManager.bindingSet.addBinding(
-                mockDeviceManager, handle); });
-        iframe.contentWindow.postMessage('Ready', '*');
-      });
-    }
-    document.body.appendChild(iframe);
+      window.onmessage = messageEvent => {
+        if (messageEvent.data == 'Ready') {
+          document.body.removeChild(iframe);
+          runGarbageCollection().then(() => {
+            navigator.usb.test.addFakeDevice(fakeDeviceInit);
+            resolve();
+          });
+        } else {
+          reject(messageEvent.data);
+        }
+      };
+
+      document.body.appendChild(iframe);
+    });
   });
 }, 'events are not delivered to detached frames');
 </script>
