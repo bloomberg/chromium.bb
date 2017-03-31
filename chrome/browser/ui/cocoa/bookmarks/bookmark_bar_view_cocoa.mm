@@ -84,6 +84,7 @@ static const CGFloat kTextFieldTrailingPadding = 5;
         [[NSView alloc] initWithFrame:NSMakeRect(0, 0, kInitialContainerWidth,
                                                  kInitialContainerHeight)]);
     [noItemContainer_ setAutoresizingMask:NSViewMaxXMargin];
+    [noItemContainer_ setAutoresizingMask:NSViewWidthSizable];
 
     noItemTextfield_.reset([[NSTextField alloc]
         initWithFrame:NSMakeRect(kInitialTextFieldXOrigin,
