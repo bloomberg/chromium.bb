@@ -41,7 +41,6 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
-#include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -451,7 +450,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_window_activity_started_(true),
       is_in_vr_(false),
       content_view_core_(nullptr),
-      ime_adapter_android_(nullptr),
+      ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       view_(this),
       gesture_provider_(ui::GetGestureProviderConfig(
@@ -497,7 +496,6 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   if (content_view_core_)
     content_view_core_->RemoveObserver(this);
   SetContentViewCore(NULL);
-  ime_adapter_android_ = nullptr;
   DCHECK(ack_callbacks_.empty());
   DCHECK(!delegated_frame_host_);
 }
@@ -705,6 +703,10 @@ void RenderWidgetHostViewAndroid::SetIsLoading(bool is_loading) {
   // is TabContentsDelegate.
 }
 
+long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
+  return reinterpret_cast<intptr_t>(&ime_adapter_android_);
+}
+
 // -----------------------------------------------------------------------------
 // TextInputManager::Observer implementations.
 void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
@@ -723,9 +725,10 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
     return;
 
   content_view_core_->UpdateImeAdapter(
-      static_cast<int>(state.type), state.flags, state.mode, state.value,
-      state.selection_start, state.selection_end, state.composition_start,
-      state.composition_end, state.show_ime_if_needed, state.reply_to_request);
+      GetNativeImeAdapter(), static_cast<int>(state.type), state.flags,
+      state.mode, state.value, state.selection_start, state.selection_end,
+      state.composition_start, state.composition_end, state.show_ime_if_needed,
+      state.reply_to_request);
 }
 
 void RenderWidgetHostViewAndroid::OnImeCompositionRangeChanged(
@@ -741,16 +744,14 @@ void RenderWidgetHostViewAndroid::OnImeCompositionRangeChanged(
   for (const gfx::Rect& rect : info->character_bounds)
     character_bounds.emplace_back(rect);
 
-  if (ime_adapter_android_)
-    ime_adapter_android_->SetCharacterBounds(character_bounds);
+  ime_adapter_android_.SetCharacterBounds(character_bounds);
 }
 
 void RenderWidgetHostViewAndroid::OnImeCancelComposition(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
   DCHECK_EQ(text_input_manager_, text_input_manager);
-  if (ime_adapter_android_)
-    ime_adapter_android_->CancelComposition();
+  ime_adapter_android_.CancelComposition();
 }
 
 void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
@@ -1003,8 +1004,7 @@ void RenderWidgetHostViewAndroid::SetMultiTouchZoomSupportEnabled(
 void RenderWidgetHostViewAndroid::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
-  if (ime_adapter_android_)
-    ime_adapter_android_->FocusedNodeChanged(is_editable_node);
+  ime_adapter_android_.FocusedNodeChanged(is_editable_node);
 }
 
 void RenderWidgetHostViewAndroid::RenderProcessGone(

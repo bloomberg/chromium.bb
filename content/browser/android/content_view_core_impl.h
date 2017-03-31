@@ -173,6 +173,8 @@ class ContentViewCoreImpl : public ContentViewCore,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean enabled);
 
+  long GetNativeImeAdapter(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
   void SetFocus(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 jboolean focused);
@@ -265,7 +267,9 @@ class ContentViewCoreImpl : public ContentViewCore,
                        bool is_mobile_optimized_hint,
                        const gfx::SelectionBound& selection_start);
 
-  void UpdateImeAdapter(int text_input_type,
+  void ForceUpdateImeAdapter(long native_ime_adapter);
+  void UpdateImeAdapter(long native_ime_adapter,
+                        int text_input_type,
                         int text_input_flags,
                         int text_input_mode,
                         const std::string& text,

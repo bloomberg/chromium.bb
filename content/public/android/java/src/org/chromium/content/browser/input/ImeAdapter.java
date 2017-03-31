@@ -29,7 +29,6 @@ import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.blink_public.web.WebTextInputMode;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.picker.InputDialogContainer;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ime.TextInputType;
 
 /**
@@ -119,17 +118,12 @@ public class ImeAdapter {
     private int mLastCompositionEnd;
     private boolean mRestartInputOnNextStateUpdate;
 
-    // True if ImeAdapter is connected to render process.
-    private boolean mIsConnected;
-
     /**
-     * @param webContents WebContents instance with which this ImeAdapter is associated.
      * @param wrapper InputMethodManagerWrapper that should receive all the call directed to
      *                InputMethodManager.
      * @param embedder The view that is used for callbacks from ImeAdapter.
      */
-    public ImeAdapter(WebContents webContents, InputMethodManagerWrapper wrapper,
-            ImeAdapterDelegate embedder) {
+    public ImeAdapter(InputMethodManagerWrapper wrapper, ImeAdapterDelegate embedder) {
         mInputMethodManagerWrapper = wrapper;
         mViewEmbedder = embedder;
         // Deep copy newConfig so that we can notice the difference.
@@ -163,19 +157,11 @@ public class ImeAdapter {
         } else {
             mCursorAnchorInfoController = null;
         }
-        mNativeImeAdapterAndroid = nativeInit(webContents);
     }
 
     private void createInputConnectionFactory() {
         if (mInputConnectionFactory != null) return;
         mInputConnectionFactory = new ThreadedInputConnectionFactory(mInputMethodManagerWrapper);
-    }
-
-    // Tells if the ImeAdapter in valid state (i.e. not in destroyed state), and is
-    // connected to render process. The former check guards against the call via
-    // ThreadedInputConnection from Android framework after ImeAdapter.destroy() is called.
-    private boolean isValid() {
-        return mNativeImeAdapterAndroid != 0 && mIsConnected;
     }
 
     /**
@@ -204,7 +190,7 @@ public class ImeAdapter {
                     false /* not an immediate request */, false /* disable monitoring */,
                     mViewEmbedder.getAttachedView());
         }
-        if (isValid()) {
+        if (mNativeImeAdapterAndroid != 0) {
             nativeRequestCursorUpdate(mNativeImeAdapterAndroid,
                     false /* not an immediate request */, false /* disable monitoring */);
         }
@@ -336,6 +322,27 @@ public class ImeAdapter {
                 && mTextInputType != TextInputType.CONTENT_EDITABLE;
         mInputConnection.updateStateOnUiThread(text, selectionStart, selectionEnd, compositionStart,
                 compositionEnd, singleLine, replyToRequest);
+    }
+
+    /**
+     * Attaches the imeAdapter to its native counterpart. This is needed to start forwarding
+     * keyboard events to WebKit.
+     * @param nativeImeAdapter The pointer to the native ImeAdapter object.
+     */
+    public void attach(long nativeImeAdapter) {
+        if (DEBUG_LOGS) Log.i(TAG, "attach");
+        if (mNativeImeAdapterAndroid == nativeImeAdapter) return;
+        if (mNativeImeAdapterAndroid != 0) {
+            nativeResetImeAdapter(mNativeImeAdapterAndroid);
+        }
+        if (nativeImeAdapter != 0) {
+            nativeAttachImeAdapter(nativeImeAdapter);
+        }
+        mNativeImeAdapterAndroid = nativeImeAdapter;
+        if (nativeImeAdapter != 0) {
+            createInputConnectionFactory();
+        }
+        resetAndHideKeyboard();
     }
 
     /**
@@ -478,16 +485,6 @@ public class ImeAdapter {
         hideKeyboard();
     }
 
-    @CalledByNative
-    private void destroy() {
-        resetAndHideKeyboard();
-        mNativeImeAdapterAndroid = 0;
-        mIsConnected = false;
-        if (mCursorAnchorInfoController != null) {
-            mCursorAnchorInfoController.focusedNodeChanged(false);
-        }
-    }
-
     /**
      * Update selection to input method manager.
      *
@@ -520,7 +517,7 @@ public class ImeAdapter {
     }
 
     boolean performEditorAction(int actionCode) {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         if (actionCode == EditorInfo.IME_ACTION_NEXT) {
             sendSyntheticKeyPress(KeyEvent.KEYCODE_TAB,
                     KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
@@ -552,7 +549,7 @@ public class ImeAdapter {
 
     boolean sendCompositionToNative(
             CharSequence text, int newCursorPosition, boolean isCommit, int unicodeFromKeyEvent) {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
 
         // One WebView app detects Enter in JS by looking at KeyDown (http://crbug/577967).
         if (TextUtils.equals(text, "\n")) {
@@ -580,13 +577,13 @@ public class ImeAdapter {
 
     @VisibleForTesting
     boolean finishComposingText() {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         nativeFinishComposingText(mNativeImeAdapterAndroid);
         return true;
     }
 
     boolean sendKeyEvent(KeyEvent event) {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
 
         int action = event.getAction();
         int type;
@@ -618,7 +615,7 @@ public class ImeAdapter {
      */
     boolean deleteSurroundingText(int beforeLength, int afterLength) {
         mViewEmbedder.onImeEvent();
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.RawKeyDown, 0,
                 SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
         nativeDeleteSurroundingText(mNativeImeAdapterAndroid, beforeLength, afterLength);
@@ -637,7 +634,7 @@ public class ImeAdapter {
      */
     boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
         mViewEmbedder.onImeEvent();
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         nativeSendKeyEvent(mNativeImeAdapterAndroid, null, WebInputEventType.RawKeyDown, 0,
                 SystemClock.uptimeMillis(), COMPOSITION_KEY_CODE, 0, false, 0);
         nativeDeleteSurroundingTextInCodePoints(
@@ -654,7 +651,7 @@ public class ImeAdapter {
      * @return Whether the native counterpart of ImeAdapter received the call.
      */
     boolean setEditableSelectionOffsets(int start, int end) {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         nativeSetEditableSelectionOffsets(mNativeImeAdapterAndroid, start, end);
         return true;
     }
@@ -666,7 +663,7 @@ public class ImeAdapter {
      * @return Whether the native counterpart of ImeAdapter received the call.
      */
     boolean setComposingRegion(int start, int end) {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         if (start <= end) {
             nativeSetComposingRegion(mNativeImeAdapterAndroid, start, end);
         } else {
@@ -693,7 +690,7 @@ public class ImeAdapter {
      * Send a request to the native counterpart to give the latest text input state update.
      */
     boolean requestTextInputStateUpdate() {
-        if (!isValid()) return false;
+        if (mNativeImeAdapterAndroid == 0) return false;
         // You won't get state update anyways.
         if (mInputConnection == null) return false;
         return nativeRequestTextInputStateUpdate(mNativeImeAdapterAndroid);
@@ -708,7 +705,7 @@ public class ImeAdapter {
         final boolean monitorRequest =
                 (cursorUpdateMode & InputConnection.CURSOR_UPDATE_MONITOR) != 0;
 
-        if (isValid()) {
+        if (mNativeImeAdapterAndroid != 0) {
             nativeRequestCursorUpdate(mNativeImeAdapterAndroid, immediateRequest, monitorRequest);
         }
         if (mCursorAnchorInfoController == null) return false;
@@ -773,14 +770,14 @@ public class ImeAdapter {
     }
 
     @CalledByNative
-    private void onConnectedToRenderProcess() {
-        if (DEBUG_LOGS) Log.i(TAG, "onConnectedToRenderProcess");
-        mIsConnected = true;
-        createInputConnectionFactory();
-        resetAndHideKeyboard();
+    private void detach() {
+        if (DEBUG_LOGS) Log.i(TAG, "detach");
+        mNativeImeAdapterAndroid = 0;
+        if (mCursorAnchorInfoController != null) {
+            mCursorAnchorInfoController.focusedNodeChanged(false);
+        }
     }
 
-    private native long nativeInit(WebContents webContents);
     private native boolean nativeSendKeyEvent(long nativeImeAdapterAndroid, KeyEvent event,
             int type, int modifiers, long timestampMs, int keyCode, int scanCode,
             boolean isSystemKey, int unicodeChar);
@@ -792,6 +789,7 @@ public class ImeAdapter {
     private native void nativeCommitText(
             long nativeImeAdapterAndroid, CharSequence text, String textStr, int newCursorPosition);
     private native void nativeFinishComposingText(long nativeImeAdapterAndroid);
+    private native void nativeAttachImeAdapter(long nativeImeAdapterAndroid);
     private native void nativeSetEditableSelectionOffsets(long nativeImeAdapterAndroid,
             int start, int end);
     private native void nativeSetComposingRegion(long nativeImeAdapterAndroid, int start, int end);
@@ -799,6 +797,7 @@ public class ImeAdapter {
             int before, int after);
     private native void nativeDeleteSurroundingTextInCodePoints(
             long nativeImeAdapterAndroid, int before, int after);
+    private native void nativeResetImeAdapter(long nativeImeAdapterAndroid);
     private native boolean nativeRequestTextInputStateUpdate(long nativeImeAdapterAndroid);
     private native void nativeRequestCursorUpdate(long nativeImeAdapterAndroid,
             boolean immediateRequest, boolean monitorRequest);
