@@ -417,7 +417,7 @@ exynos_handle_event(struct exynos_device *dev, struct exynos_event_context *ctx)
 
 	i = 0;
 	while (i < len) {
-		e = (struct drm_event *) &buffer[i];
+		e = (struct drm_event *)(buffer + i);
 		switch (e->type) {
 		case DRM_EVENT_VBLANK:
 			if (evctx->version < 1 ||
