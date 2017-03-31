@@ -171,12 +171,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       int uv_level, uv_clpf_strength;
       int nhb, nvb;
       int cstart = 0;
-#if 0  // TODO(stemidts/jmvalin): Handle tile borders correctly
-      BOUNDARY_TYPE boundary_type =
-          cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
-                              MAX_MIB_SIZE * sbc]
-              ->mbmi.boundary_info;
-#endif
       if (cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                               MAX_MIB_SIZE * sbc] == NULL) {
         dering_left = 0;
@@ -185,6 +179,19 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       if (!dering_left) cstart = -OD_FILT_HBORDER;
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
+      int tile_top, tile_left, tile_bottom, tile_right;
+      BOUNDARY_TYPE boundary_tl =
+          cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                              MAX_MIB_SIZE * sbc]
+              ->mbmi.boundary_info;
+      BOUNDARY_TYPE boundary_br =
+          cm->mi_grid_visible[(MAX_MIB_SIZE * sbr + nvb - 1) * cm->mi_stride +
+                              MAX_MIB_SIZE * sbc + nhb - 1]
+              ->mbmi.boundary_info;
+      tile_top = boundary_tl & TILE_ABOVE_BOUNDARY;
+      tile_left = boundary_tl & TILE_LEFT_BOUNDARY;
+      tile_bottom = boundary_br & TILE_BOTTOM_BOUNDARY;
+      tile_right = boundary_br & TILE_RIGHT_BOUNDARY;
       level = cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
                                                          cm->mi_stride +
                                                      MAX_MIB_SIZE * sbc]
@@ -364,6 +371,40 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             (nhb << mi_wide_l2[pli]));
 
         if (level == 0 && clpf_strength == 0) continue;
+        if (tile_top) {
+          for (r = 0; r < OD_FILT_VBORDER; r++) {
+            for (c = 0; c < (nhb << mi_wide_l2[pli]) + 2 * OD_FILT_HBORDER;
+                 c++) {
+              src[r * OD_FILT_BSTRIDE + c] = OD_DERING_VERY_LARGE;
+            }
+          }
+        }
+        if (tile_left) {
+          for (r = 0; r < (nvb << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER; r++) {
+            for (c = 0; c < OD_FILT_HBORDER; c++) {
+              src[r * OD_FILT_BSTRIDE + c] = OD_DERING_VERY_LARGE;
+            }
+          }
+        }
+        if (tile_bottom) {
+          for (r = (nvb << mi_high_l2[pli]);
+               r < (nvb << mi_high_l2[pli]) + OD_FILT_VBORDER; r++) {
+            for (c = 0; c < (nhb << mi_wide_l2[pli]) + 2 * OD_FILT_HBORDER;
+                 c++) {
+              src[(r + OD_FILT_VBORDER) * OD_FILT_BSTRIDE + c] =
+                  OD_DERING_VERY_LARGE;
+            }
+          }
+        }
+        if (tile_right) {
+          for (r = 0; r < (nvb << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER; r++) {
+            for (c = (nhb << mi_wide_l2[pli]);
+                 c < (nhb << mi_wide_l2[pli]) + OD_FILT_HBORDER; ++c) {
+              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
+                  OD_DERING_VERY_LARGE;
+            }
+          }
+        }
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           od_dering(
