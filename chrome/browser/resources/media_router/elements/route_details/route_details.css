@@ -2,7 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-
 #custom-controller {
   display: inline-block;
   height: 142px;
@@ -12,14 +11,12 @@
 #route-action-buttons {
   @apply(--layout-horizontal);
   @apply(--layout-end-justified);
-  margin: 0;
+  margin: 0 10px;
   padding: 0;
   white-space: nowrap;
 }
 
 .route-button {
-  -webkit-padding-end: 24px;
-  -webkit-padding-start: 0;
   background-color: white;
   line-height: 12px;
   margin: 12px 0;
