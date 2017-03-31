@@ -31,6 +31,7 @@
 
 #include <memory>
 #include "core/dom/Document.h"
+#include "core/dom/DocumentParser.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/events/Event.h"
 #include "core/frame/Deprecation.h"
@@ -157,6 +158,7 @@ DEFINE_TRACE(DocumentLoader) {
   visitor->trace(m_frame);
   visitor->trace(m_fetcher);
   visitor->trace(m_mainResource);
+  visitor->trace(m_historyItem);
   visitor->trace(m_writer);
   visitor->trace(m_subresourceFilter);
   visitor->trace(m_documentLoadTiming);
@@ -272,12 +274,43 @@ void DocumentLoader::didObserveLoadingBehavior(
   }
 }
 
+void DocumentLoader::markAsCommitted() {
+  DCHECK_LT(m_state, Committed);
+  m_state = Committed;
+}
+
+static HistoryCommitType loadTypeToCommitType(FrameLoadType type) {
+  switch (type) {
+    case FrameLoadTypeStandard:
+      return StandardCommit;
+    case FrameLoadTypeInitialInChildFrame:
+    case FrameLoadTypeInitialHistoryLoad:
+      return InitialCommitInChildFrame;
+    case FrameLoadTypeBackForward:
+      return BackForwardCommit;
+    default:
+      break;
+  }
+  return HistoryInertCommit;
+}
+
 void DocumentLoader::updateForSameDocumentNavigation(
     const KURL& newURL,
-    SameDocumentNavigationSource sameDocumentNavigationSource) {
+    SameDocumentNavigationSource sameDocumentNavigationSource,
+    PassRefPtr<SerializedScriptValue> data,
+    HistoryScrollRestorationType scrollRestorationType,
+    FrameLoadType type,
+    Document* initiatingDocument) {
+  if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
+      initiatingDocument &&
+      !initiatingDocument->frame()->hasReceivedUserGesture()) {
+    type = FrameLoadTypeReplaceCurrentItem;
+  }
+
   KURL oldURL = m_request.url();
   m_originalRequest.setURL(newURL);
   m_request.setURL(newURL);
+  setReplacesCurrentHistoryItem(type != FrameLoadTypeStandard);
   if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
     m_request.setHTTPMethod(HTTPNames::GET);
     m_request.setHTTPBody(nullptr);
@@ -286,16 +319,71 @@ void DocumentLoader::updateForSameDocumentNavigation(
   if (m_isClientRedirect)
     appendRedirect(oldURL);
   appendRedirect(newURL);
+
+  setHistoryItemStateForCommit(
+      m_historyItem.get(), type,
+      sameDocumentNavigationSource == SameDocumentNavigationHistoryApi
+          ? HistoryNavigationType::kHistoryApi
+          : HistoryNavigationType::kFragment);
+  m_historyItem->setDocumentState(m_frame->document()->formElementsState());
+  if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
+    m_historyItem->setStateObject(std::move(data));
+    m_historyItem->setScrollRestorationType(scrollRestorationType);
+  }
+  localFrameClient().dispatchDidNavigateWithinPage(
+      m_historyItem.get(), loadTypeToCommitType(type), initiatingDocument);
 }
 
 const KURL& DocumentLoader::urlForHistory() const {
   return unreachableURL().isEmpty() ? url() : unreachableURL();
 }
 
-void DocumentLoader::commitIfReady() {
-  if (m_state < Committed) {
-    m_state = Committed;
-    frameLoader().commitProvisionalLoad();
+void DocumentLoader::setHistoryItemStateForCommit(
+    HistoryItem* oldItem,
+    FrameLoadType loadType,
+    HistoryNavigationType navigationType) {
+  if (!m_historyItem || !isBackForwardLoadType(loadType))
+    m_historyItem = HistoryItem::create();
+
+  m_historyItem->setURL(urlForHistory());
+  m_historyItem->setReferrer(SecurityPolicy::generateReferrer(
+      m_request.getReferrerPolicy(), m_historyItem->url(),
+      m_request.httpReferrer()));
+  m_historyItem->setFormInfoFromRequest(m_request);
+
+  // Don't propagate state from the old item to the new item if there isn't an
+  // old item (obviously), or if this is a back/forward navigation, since we
+  // explicitly want to restore the state we just committed.
+  if (!oldItem || isBackForwardLoadType(loadType))
+    return;
+  // Don't propagate state from the old item if this is a different-document
+  // navigation, unless the before and after pages are logically related. This
+  // means they have the same url (ignoring fragment) and the new item was
+  // loaded via reload or client redirect.
+  HistoryCommitType historyCommitType = loadTypeToCommitType(loadType);
+  if (navigationType == HistoryNavigationType::kDifferentDocument &&
+      (historyCommitType != HistoryInertCommit ||
+       !equalIgnoringFragmentIdentifier(oldItem->url(), m_historyItem->url())))
+    return;
+  m_historyItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
+  m_historyItem->setScrollOffset(oldItem->getScrollOffset());
+  m_historyItem->setDidSaveScrollOrScaleState(
+      oldItem->didSaveScrollOrScaleState());
+  m_historyItem->setVisualViewportScrollOffset(
+      oldItem->visualViewportScrollOffset());
+  m_historyItem->setPageScaleFactor(oldItem->pageScaleFactor());
+  m_historyItem->setScrollRestorationType(oldItem->scrollRestorationType());
+
+  // The item sequence number determines whether items are "the same", such
+  // back/forward navigation between items with the same item sequence number is
+  // a no-op. Only treat this as identical if the navigation did not create a
+  // back/forward entry and the url is identical or it was loaded via
+  // history.replaceState().
+  if (historyCommitType == HistoryInertCommit &&
+      (navigationType == HistoryNavigationType::kHistoryApi ||
+       oldItem->url() == m_historyItem->url())) {
+    m_historyItem->setStateObject(oldItem->stateObject());
+    m_historyItem->setItemSequenceNumber(oldItem->itemSequenceNumber());
   }
 }
 
@@ -317,8 +405,34 @@ void DocumentLoader::notifyFinished(Resource* resource) {
         m_mainResource.get());
   }
 
-  frameLoader().loadFailed(this, m_mainResource->resourceError());
+  loadFailed(m_mainResource->resourceError());
   clearMainResourceHandle();
+}
+
+void DocumentLoader::loadFailed(const ResourceError& error) {
+  if (!error.isCancellation() && m_frame->owner()) {
+    // FIXME: For now, fallback content doesn't work cross process.
+    if (m_frame->owner()->isLocal())
+      m_frame->deprecatedLocalOwner()->renderFallbackContent();
+  }
+
+  HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
+  FrameLoader& loader = frameLoader();
+  if (m_state < Committed) {
+    if (m_state == NotStarted)
+      probe::frameClearedScheduledClientNavigation(m_frame);
+    m_state = SentDidFinishLoad;
+    localFrameClient().dispatchDidFailProvisionalLoad(error, historyCommitType);
+    if (!m_frame)
+      return;
+    loader.detachProvisionalDocumentLoader(this);
+  } else if (m_state == Committed) {
+    if (m_frame->document()->parser())
+      m_frame->document()->parser()->stopParsing();
+    m_state = SentDidFinishLoad;
+    localFrameClient().dispatchDidFailLoad(error, historyCommitType);
+  }
+  loader.checkCompleted();
 }
 
 void DocumentLoader::finishedLoading(double finishTime) {
@@ -332,11 +446,6 @@ void DocumentLoader::finishedLoading(double finishTime) {
   if (!responseEndTime)
     responseEndTime = monotonicallyIncreasingTime();
   timing().setResponseEnd(responseEndTime);
-
-  commitIfReady();
-  if (!m_frame)
-    return;
-
   if (!maybeCreateArchive()) {
     // If this is an empty document, it will not have actually been created yet.
     // Commit dummy data so that DocumentWriter::begin() gets called and creates
@@ -400,7 +509,7 @@ bool DocumentLoader::redirectReceived(
   // If a redirection happens during a back/forward navigation, don't restore
   // any state from the old HistoryItem. There is a provisional history item for
   // back/forward navigation only. In the other case, clearing it is a no-op.
-  frameLoader().clearProvisionalHistoryItem();
+  m_historyItem.clear();
 
   localFrameClient().dispatchDidReceiveServerRedirectForProvisionalLoad();
 
@@ -546,6 +655,20 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType,
   if (m_writer)
     return;
 
+  // Set history state before commitProvisionalLoad() so that we still have
+  // access to the previous committed DocumentLoader's HistoryItem, in case we
+  // need to copy state from it.
+  if (!frameLoader().stateMachine()->creatingInitialEmptyDocument()) {
+    setHistoryItemStateForCommit(frameLoader().documentLoader()->historyItem(),
+                                 m_loadType,
+                                 HistoryNavigationType::kDifferentDocument);
+  }
+
+  DCHECK_EQ(m_state, Provisional);
+  frameLoader().commitProvisionalLoad();
+  if (!m_frame)
+    return;
+
   const AtomicString& encoding = response().textEncodingName();
 
   // Prepare a DocumentInit before clearing the frame, because it may need to
@@ -580,12 +703,12 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType,
 }
 
 void DocumentLoader::commitData(const char* bytes, size_t length) {
-  DCHECK_EQ(m_state, Committed);
   ensureWriter(m_response.mimeType());
+  DCHECK_GE(m_state, Committed);
 
   // This can happen if document.close() is called by an event handler while
   // there's still pending incoming data.
-  if (m_frame && !m_frame->document()->parsing())
+  if (!m_frame || !m_frame->document()->parsing())
     return;
 
   if (length)
@@ -636,9 +759,6 @@ void DocumentLoader::processData(const char* data, size_t length) {
 
   if (isArchiveMIMEType(response().mimeType()))
     return;
-  commitIfReady();
-  if (!m_frame)
-    return;
   commitData(data, length);
 
   // If we are sending data to MediaDocument, we should stop here and cancel the
@@ -663,7 +783,7 @@ void DocumentLoader::detachFromFrame() {
   m_fetcher->stopFetching();
 
   if (m_frame && !sentDidFinishLoad())
-    frameLoader().loadFailed(this, ResourceError::cancelledError(url()));
+    loadFailed(ResourceError::cancelledError(url()));
 
   // If that load cancellation triggered another detach, leave.
   // (fast/frames/detach-frame-nested-no-crash.html is an example of this.)
@@ -700,6 +820,8 @@ bool DocumentLoader::maybeCreateArchive() {
   // The origin is the MHTML file, we need to set the base URL to the document
   // encoded in the MHTML so relative URLs are resolved properly.
   ensureWriter(mainResource->mimeType(), mainResource->url());
+  if (!m_frame)
+    return false;
 
   // The Document has now been created.
   m_frame->document()->enforceSandboxFlags(SandboxAll);
@@ -787,7 +909,8 @@ void DocumentLoader::didInstallNewDocument(Document* document) {
   document->setReadyState(Document::Loading);
   document->initContentSecurityPolicy(m_contentSecurityPolicy.release());
 
-  frameLoader().didInstallNewDocument();
+  if (m_historyItem && isBackForwardLoadType(m_loadType))
+    document->setStateForNewFormElements(m_historyItem->getDocumentState());
 
   String suboriginHeader = m_response.httpHeaderField(HTTPNames::Suborigin);
   if (!suboriginHeader.isNull()) {
@@ -842,7 +965,22 @@ void DocumentLoader::didInstallNewDocument(Document* document) {
 void DocumentLoader::didCommitNavigation() {
   if (frameLoader().stateMachine()->creatingInitialEmptyDocument())
     return;
-  frameLoader().receivedFirstData();
+
+  if (!m_frame->loader().stateMachine()->committedMultipleRealLoads() &&
+      m_loadType == FrameLoadTypeStandard) {
+    m_frame->loader().stateMachine()->advanceTo(
+        FrameLoaderStateMachine::CommittedMultipleRealLoads);
+  }
+
+  localFrameClient().dispatchDidCommitLoad(m_historyItem.get(),
+                                           loadTypeToCommitType(m_loadType));
+
+  // When the embedder gets notified (above) that the new navigation has
+  // committed, the embedder will drop the old Content Security Policy and
+  // therefore now is a good time to report to the embedder the Content
+  // Security Policies that have accumulated so far for the new navigation.
+  m_frame->securityContext()->contentSecurityPolicy()->reportAccumulatedHeaders(
+      &localFrameClient());
 
   // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is
   // called for the metrics tracking logic to handle it properly.

@@ -2413,7 +2413,8 @@ TEST_P(ParameterizedWebFrameTest, pageScaleFactorWrittenToHistoryItem) {
   webViewHelper.webView()->setPageScaleFactor(3);
   EXPECT_EQ(3, toLocalFrame(webViewHelper.webView()->page()->mainFrame())
                    ->loader()
-                   .currentItem()
+                   .documentLoader()
+                   ->historyItem()
                    ->pageScaleFactor());
 }
 
@@ -2438,7 +2439,8 @@ TEST_P(ParameterizedWebFrameTest, initialScaleWrittenToHistoryItem) {
   EXPECT_EQ(minimumPageScaleFactor,
             toLocalFrame(webViewHelper.webView()->page()->mainFrame())
                 ->loader()
-                .currentItem()
+                .documentLoader()
+                ->historyItem()
                 ->pageScaleFactor());
 }
 
@@ -7035,17 +7037,18 @@ TEST_P(ParameterizedWebFrameTest, BackToReload) {
   WebFrame* frame = webViewHelper.webView()->mainFrame();
   const FrameLoader& mainFrameLoader =
       webViewHelper.webView()->mainFrameImpl()->frame()->loader();
-  Persistent<HistoryItem> firstItem = mainFrameLoader.currentItem();
+  Persistent<HistoryItem> firstItem =
+      mainFrameLoader.documentLoader()->historyItem();
   EXPECT_TRUE(firstItem);
 
   registerMockedHttpURLLoad("white-1x1.png");
   FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
-  EXPECT_NE(firstItem.get(), mainFrameLoader.currentItem());
+  EXPECT_NE(firstItem.get(), mainFrameLoader.documentLoader()->historyItem());
 
   FrameTestHelpers::loadHistoryItem(frame, WebHistoryItem(firstItem.get()),
                                     WebHistoryDifferentDocumentLoad,
                                     WebCachePolicy::UseProtocolCachePolicy);
-  EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
+  EXPECT_EQ(firstItem.get(), mainFrameLoader.documentLoader()->historyItem());
 
   FrameTestHelpers::reloadFrame(frame);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
@@ -7079,8 +7082,9 @@ TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
 
   FrameTestHelpers::reloadFrame(childFrame);
   EXPECT_EQ(item.urlString(), mainFrame->document().url().string());
-  EXPECT_EQ(item.urlString(),
-            WebString(mainFrameLoader.currentItem()->urlString()));
+  EXPECT_EQ(
+      item.urlString(),
+      WebString(mainFrameLoader.documentLoader()->historyItem()->urlString()));
 }
 
 TEST_P(ParameterizedWebFrameTest, ReloadPost) {
@@ -7113,18 +7117,19 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload) {
   WebFrame* frame = webViewHelper.webView()->mainFrame();
   const FrameLoader& mainFrameLoader =
       webViewHelper.webView()->mainFrameImpl()->frame()->loader();
-  Persistent<HistoryItem> firstItem = mainFrameLoader.currentItem();
+  Persistent<HistoryItem> firstItem =
+      mainFrameLoader.documentLoader()->historyItem();
   EXPECT_TRUE(firstItem);
 
   registerMockedHttpURLLoad("white-1x1.png");
   FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
-  EXPECT_NE(firstItem.get(), mainFrameLoader.currentItem());
+  EXPECT_NE(firstItem.get(), mainFrameLoader.documentLoader()->historyItem());
 
   // Cache policy overrides should take.
   FrameTestHelpers::loadHistoryItem(frame, WebHistoryItem(firstItem),
                                     WebHistoryDifferentDocumentLoad,
                                     WebCachePolicy::ValidatingCacheData);
-  EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
+  EXPECT_EQ(firstItem.get(), mainFrameLoader.documentLoader()->historyItem());
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
             frame->dataSource()->getRequest().getCachePolicy());
 }
@@ -7402,17 +7407,18 @@ TEST_P(ParameterizedWebFrameTest, SameDocumentHistoryNavigationCommitType) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(
       m_baseURL + "push_state.html", true, &client);
-  Persistent<HistoryItem> item =
-      toLocalFrame(webViewImpl->page()->mainFrame())->loader().currentItem();
+  Persistent<HistoryItem> item = toLocalFrame(webViewImpl->page()->mainFrame())
+                                     ->loader()
+                                     .documentLoader()
+                                     ->historyItem();
   runPendingTasks();
 
   toLocalFrame(webViewImpl->page()->mainFrame())
       ->loader()
-      .load(
-          FrameLoadRequest(
-              nullptr, FrameLoader::resourceRequestFromHistoryItem(
-                           item.get(), WebCachePolicy::UseProtocolCachePolicy)),
-          FrameLoadTypeBackForward, item.get(), HistorySameDocumentLoad);
+      .load(FrameLoadRequest(nullptr,
+                             item->generateResourceRequest(
+                                 WebCachePolicy::UseProtocolCachePolicy)),
+            FrameLoadTypeBackForward, item.get(), HistorySameDocumentLoad);
   EXPECT_EQ(WebBackForwardCommit, client.lastCommitType());
 }
 
@@ -7538,12 +7544,12 @@ TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem) {
   frame->loadRequest(request);
 
   // Before commit, there is no history item.
-  EXPECT_FALSE(mainFrameLoader.currentItem());
+  EXPECT_FALSE(mainFrameLoader.documentLoader()->historyItem());
 
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(frame);
 
   // After commit, there is.
-  HistoryItem* item = mainFrameLoader.currentItem();
+  HistoryItem* item = mainFrameLoader.documentLoader()->historyItem();
   ASSERT_TRUE(item);
   EXPECT_EQ(WTF::String(url.data()), item->urlString());
 }

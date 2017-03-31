@@ -39,11 +39,11 @@
 
 namespace blink {
 
-class Document;
 class DocumentState;
 class EncodedFormData;
 class KURL;
 class ResourceRequest;
+enum class WebCachePolicy;
 
 class CORE_EXPORT HistoryItem final
     : public GarbageCollectedFinalized<HistoryItem> {
@@ -107,7 +107,7 @@ class CORE_EXPORT HistoryItem final
   void setFormData(PassRefPtr<EncodedFormData>);
   void setFormContentType(const AtomicString&);
 
-  bool isCurrentDocument(Document*) const;
+  ResourceRequest generateResourceRequest(WebCachePolicy);
 
   DECLARE_TRACE();
 

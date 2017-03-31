@@ -828,7 +828,7 @@ Vector<String> Internals::formControlStateOfHistoryItem(
     ExceptionState& exceptionState) {
   HistoryItem* mainItem = nullptr;
   if (frame())
-    mainItem = frame()->loader().currentItem();
+    mainItem = frame()->loader().documentLoader()->historyItem();
   if (!mainItem) {
     exceptionState.throwDOMException(InvalidAccessError,
                                      "No history item is available.");
@@ -842,7 +842,7 @@ void Internals::setFormControlStateOfHistoryItem(
     ExceptionState& exceptionState) {
   HistoryItem* mainItem = nullptr;
   if (frame())
-    mainItem = frame()->loader().currentItem();
+    mainItem = frame()->loader().documentLoader()->historyItem();
   if (!mainItem) {
     exceptionState.throwDOMException(InvalidAccessError,
                                      "No history item is available.");
@@ -2358,7 +2358,11 @@ Vector<String> Internals::getReferencedFilePaths() const {
   if (!frame())
     return Vector<String>();
 
-  return frame()->loader().currentItem()->getReferencedFilePaths();
+  return frame()
+      ->loader()
+      .documentLoader()
+      ->historyItem()
+      ->getReferencedFilePaths();
 }
 
 void Internals::startStoringCompositedLayerDebugInfo(

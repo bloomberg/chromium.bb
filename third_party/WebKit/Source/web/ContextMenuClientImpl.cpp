@@ -301,7 +301,8 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
 
   if (selectedFrame != m_webView->page()->mainFrame()) {
     data.frameURL = urlFromFrame(selectedFrame);
-    HistoryItem* historyItem = selectedFrame->loader().currentItem();
+    HistoryItem* historyItem =
+        selectedFrame->loader().documentLoader()->historyItem();
     if (historyItem)
       data.frameHistoryItem = WebHistoryItem(historyItem);
   }

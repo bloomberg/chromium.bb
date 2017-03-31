@@ -25,7 +25,6 @@
 
 #include "core/loader/HistoryItem.h"
 
-#include "core/dom/Document.h"
 #include "core/html/forms/FormController.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -162,10 +161,18 @@ EncodedFormData* HistoryItem::formData() {
   return m_formData.get();
 }
 
-bool HistoryItem::isCurrentDocument(Document* doc) const {
-  // FIXME: We should find a better way to check if this is the current
-  // document.
-  return equalIgnoringFragmentIdentifier(url(), doc->url());
+ResourceRequest HistoryItem::generateResourceRequest(
+    WebCachePolicy cachePolicy) {
+  ResourceRequest request(m_urlString);
+  request.setHTTPReferrer(m_referrer);
+  request.setCachePolicy(cachePolicy);
+  if (m_formData) {
+    request.setHTTPMethod(HTTPNames::POST);
+    request.setHTTPBody(m_formData);
+    request.setHTTPContentType(m_formContentType);
+    request.addHTTPOriginIfNeeded(m_referrer.referrer);
+  }
+  return request;
 }
 
 DEFINE_TRACE(HistoryItem) {

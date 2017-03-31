@@ -62,10 +62,12 @@ class ApplicationCacheHost;
 class SubresourceFilter;
 class ResourceFetcher;
 class DocumentInit;
+class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
 class FrameLoader;
 class ResourceTimingInfo;
+class SerializedScriptValue;
 class WebServiceWorkerNetworkProvider;
 struct ViewportDescriptionWrapper;
 
@@ -120,7 +122,11 @@ class CORE_EXPORT DocumentLoader
   void didChangePerformanceTiming();
   void didObserveLoadingBehavior(WebLoadingBehaviorFlag);
   void updateForSameDocumentNavigation(const KURL&,
-                                       SameDocumentNavigationSource);
+                                       SameDocumentNavigationSource,
+                                       PassRefPtr<SerializedScriptValue>,
+                                       HistoryScrollRestorationType,
+                                       FrameLoadType,
+                                       Document*);
   const ResourceResponse& response() const { return m_response; }
   bool isClientRedirect() const { return m_isClientRedirect; }
   void setIsClientRedirect(bool isClientRedirect) {
@@ -143,6 +149,7 @@ class CORE_EXPORT DocumentLoader
   // is actually handled in the renderer.
   bool didStart() const { return m_state != NotStarted; }
 
+  void markAsCommitted();
   void setSentDidFinishLoad() { m_state = SentDidFinishLoad; }
   bool sentDidFinishLoad() const { return m_state == SentDidFinishLoad; }
 
@@ -153,6 +160,9 @@ class CORE_EXPORT DocumentLoader
   void setNavigationType(NavigationType navigationType) {
     m_navigationType = navigationType;
   }
+
+  void setItemForHistoryNavigation(HistoryItem* item) { m_historyItem = item; }
+  HistoryItem* historyItem() const { return m_historyItem; }
 
   void startLoadingMainResource();
 
@@ -201,6 +211,8 @@ class CORE_EXPORT DocumentLoader
   std::unique_ptr<SourceLocation> copySourceLocation() const;
   void setSourceLocation(std::unique_ptr<SourceLocation>);
 
+  void loadFailed(const ResourceError&);
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
@@ -235,7 +247,6 @@ class CORE_EXPORT DocumentLoader
   FrameLoader& frameLoader() const;
   LocalFrameClient& localFrameClient() const;
 
-  void commitIfReady();
   void commitData(const char* bytes, size_t length);
   void clearMainResourceHandle();
 
@@ -243,6 +254,15 @@ class CORE_EXPORT DocumentLoader
 
   void finishedLoading(double finishTime);
   void cancelLoadAfterCSPDenied(const ResourceResponse&);
+
+  enum class HistoryNavigationType {
+    kDifferentDocument,
+    kFragment,
+    kHistoryApi
+  };
+  void setHistoryItemStateForCommit(HistoryItem* oldItem,
+                                    FrameLoadType,
+                                    HistoryNavigationType);
 
   // RawResourceClient implementation
   bool redirectReceived(Resource*,
@@ -269,6 +289,7 @@ class CORE_EXPORT DocumentLoader
   Member<ResourceFetcher> m_fetcher;
 
   Member<RawResource> m_mainResource;
+  Member<HistoryItem> m_historyItem;
 
   Member<DocumentWriter> m_writer;
 

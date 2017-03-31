@@ -56,8 +56,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   webViewImpl->setPageScaleFactor(3.0f);
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 500));
   loader.documentLoader()->initialScrollState().wasScrolledByUser = false;
-  loader.currentItem()->setPageScaleFactor(2);
-  loader.currentItem()->setScrollOffset(ScrollOffset(0, 200));
+  loader.documentLoader()->historyItem()->setPageScaleFactor(2);
+  loader.documentLoader()->historyItem()->setScrollOffset(ScrollOffset(0, 200));
 
   // Flip back the wasScrolledByUser flag which was set to true by
   // setPageScaleFactor because otherwise
@@ -86,8 +86,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   webViewImpl->setPageScaleFactor(3.0f);
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 500));
   loader.documentLoader()->initialScrollState().wasScrolledByUser = false;
-  loader.currentItem()->setPageScaleFactor(0);
-  loader.currentItem()->setScrollOffset(ScrollOffset(0, 400));
+  loader.documentLoader()->historyItem()->setPageScaleFactor(0);
+  loader.documentLoader()->historyItem()->setScrollOffset(ScrollOffset(0, 400));
 
   // FrameLoader::restoreScrollPositionAndViewState flows differently if scale
   // is zero.

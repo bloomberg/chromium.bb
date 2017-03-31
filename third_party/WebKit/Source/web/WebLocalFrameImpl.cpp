@@ -1678,10 +1678,9 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(
   FrameLoadRequest newRequest = request;
   FrameLoadType loadType = FrameLoadTypeStandard;
   if (childItem) {
-    newRequest = FrameLoadRequest(
-        request.originDocument(),
-        FrameLoader::resourceRequestFromHistoryItem(
-            childItem, WebCachePolicy::UseProtocolCachePolicy));
+    newRequest = FrameLoadRequest(request.originDocument(),
+                                  childItem->generateResourceRequest(
+                                      WebCachePolicy::UseProtocolCachePolicy));
     loadType = FrameLoadTypeInitialHistoryLoad;
   }
   webframeChild->frame()->loader().load(newRequest, loadType, childItem);
@@ -1994,9 +1993,8 @@ WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(
     const WebHistoryItem& item,
     WebCachePolicy cachePolicy) const {
   HistoryItem* historyItem = item;
-  ResourceRequest request =
-      FrameLoader::resourceRequestFromHistoryItem(historyItem, cachePolicy);
-  return WrappedResourceRequest(request);
+  return WrappedResourceRequest(
+      historyItem->generateResourceRequest(cachePolicy));
 }
 
 WebURLRequest WebLocalFrameImpl::requestForReload(
@@ -2051,9 +2049,19 @@ void WebLocalFrameImpl::loadData(const WebData& data,
   // unreachableURL informs FrameLoader::reload to load unreachableURL
   // instead of the currently loaded URL.
   ResourceRequest request;
-  if (replace && !unreachableURL.isEmpty() &&
-      frame()->loader().provisionalDocumentLoader())
-    request = frame()->loader().provisionalDocumentLoader()->originalRequest();
+  HistoryItem* historyItem = item;
+  DocumentLoader* provisionalDocumentLoader =
+      frame()->loader().provisionalDocumentLoader();
+  if (replace && !unreachableURL.isEmpty() && provisionalDocumentLoader) {
+    request = provisionalDocumentLoader->originalRequest();
+    // When replacing a failed back/forward provisional navigation with an error
+    // page, retain the HistoryItem for the failed provisional navigation
+    // and reuse it for the error page navigation.
+    if (provisionalDocumentLoader->loadType() == FrameLoadTypeBackForward) {
+      historyItem = provisionalDocumentLoader->historyItem();
+      webFrameLoadType = WebFrameLoadType::BackForward;
+    }
+  }
   request.setURL(baseURL);
   request.setCheckForBrowserSideNavigation(false);
 
@@ -2064,7 +2072,6 @@ void WebLocalFrameImpl::loadData(const WebData& data,
   if (isClientRedirect)
     frameRequest.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
 
-  HistoryItem* historyItem = item;
   frame()->loader().load(
       frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem,
       static_cast<HistoryLoadType>(webHistoryLoadType));
@@ -2077,9 +2084,8 @@ bool WebLocalFrameImpl::maybeRenderFallbackContent(
   if (!frame()->owner() || !frame()->owner()->canRenderFallbackContent())
     return false;
 
-  FrameLoader& frameloader = frame()->loader();
-  DCHECK(frameloader.provisionalDocumentLoader());
-  frameloader.loadFailed(frameloader.provisionalDocumentLoader(), error);
+  DCHECK(frame()->loader().provisionalDocumentLoader());
+  frame()->loader().provisionalDocumentLoader()->loadFailed(error);
   return true;
 }
 

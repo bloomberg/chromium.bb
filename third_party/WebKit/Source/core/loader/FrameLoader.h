@@ -55,6 +55,7 @@
 
 namespace blink {
 
+class Document;
 class DocumentLoader;
 class HTMLFormElement;
 class Frame;
@@ -63,7 +64,6 @@ class ProgressTracker;
 class ResourceError;
 class SerializedScriptValue;
 class SubstituteData;
-enum class WebCachePolicy;
 struct FrameLoadRequest;
 
 CORE_EXPORT bool isBackForwardLoadType(FrameLoadType);
@@ -74,9 +74,6 @@ class CORE_EXPORT FrameLoader final {
   DISALLOW_NEW();
 
  public:
-  static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*,
-                                                        WebCachePolicy);
-
   explicit FrameLoader(LocalFrame*);
   ~FrameLoader();
 
@@ -136,11 +133,6 @@ class CORE_EXPORT FrameLoader final {
 
   void didExplicitOpen();
 
-  // Callbacks from DocumentWriter
-  void didInstallNewDocument();
-
-  void receivedFirstData();
-
   String userAgent() const;
 
   void dispatchDidClearWindowObjectInMainWorld();
@@ -168,8 +160,6 @@ class CORE_EXPORT FrameLoader final {
   void finishedParsing();
   void checkCompleted();
 
-  void clearProvisionalHistoryItem();
-
   // This prepares the FrameLoader for the next commit. It will dispatch unload
   // events, abort XHR requests and detach the document. Returns true if the
   // frame is ready to receive the next commit, or false otherwise.
@@ -195,9 +185,7 @@ class CORE_EXPORT FrameLoader final {
                                        FrameLoadType,
                                        Document*);
 
-  HistoryItem* currentItem() const { return m_currentItem.get(); }
   void saveScrollState();
-
   void restoreScrollPositionAndViewState();
 
   // The navigation should only be continued immediately in this frame if this
@@ -217,6 +205,8 @@ class CORE_EXPORT FrameLoader final {
   // have created a dummy provisional DocumentLoader, so this will return true
   // while the client handles the navigation.
   bool hasProvisionalNavigation() const { return provisionalDocumentLoader(); }
+
+  void detachProvisionalDocumentLoader(DocumentLoader*);
 
   DECLARE_TRACE();
 
@@ -240,17 +230,15 @@ class CORE_EXPORT FrameLoader final {
                                      FrameLoadType,
                                      NavigationPolicy,
                                      NavigationType);
-  void startLoad(FrameLoadRequest&, FrameLoadType, NavigationPolicy);
-
-  enum class HistoryNavigationType { DifferentDocument, Fragment, HistoryApi };
-  void setHistoryItemStateForCommit(FrameLoadType,
-                                    HistoryCommitType,
-                                    HistoryNavigationType);
+  void startLoad(FrameLoadRequest&,
+                 FrameLoadType,
+                 NavigationPolicy,
+                 HistoryItem*);
 
   void loadInSameDocument(const KURL&,
                           PassRefPtr<SerializedScriptValue> stateObject,
                           FrameLoadType,
-                          HistoryLoadType,
+                          HistoryItem*,
                           ClientRedirectPolicy,
                           Document*);
   void restoreScrollPositionAndViewStateForLoadType(FrameLoadType);
@@ -286,9 +274,6 @@ class CORE_EXPORT FrameLoader final {
   // certain settings on the new loader.
   Member<DocumentLoader> m_documentLoader;
   Member<DocumentLoader> m_provisionalDocumentLoader;
-
-  Member<HistoryItem> m_currentItem;
-  Member<HistoryItem> m_provisionalItem;
 
   class DeferredHistoryLoad
       : public GarbageCollectedFinalized<DeferredHistoryLoad> {

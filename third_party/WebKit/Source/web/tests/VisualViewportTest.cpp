@@ -14,6 +14,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/geometry/DoublePoint.h"
@@ -876,7 +877,8 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
   EXPECT_SIZE_EQ(ScrollOffset(0, 0),
                  toLocalFrame(webViewImpl()->page()->mainFrame())
                      ->loader()
-                     .currentItem()
+                     .documentLoader()
+                     ->historyItem()
                      ->visualViewportScrollOffset());
 
   VisualViewport& visualViewport = frame()->page()->visualViewport();
@@ -884,7 +886,8 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
 
   EXPECT_EQ(2, toLocalFrame(webViewImpl()->page()->mainFrame())
                    ->loader()
-                   .currentItem()
+                   .documentLoader()
+                   ->historyItem()
                    ->pageScaleFactor());
 
   visualViewport.setLocation(FloatPoint(10, 20));
@@ -892,7 +895,8 @@ TEST_P(VisualViewportTest, TestSavedToHistoryItem) {
   EXPECT_SIZE_EQ(ScrollOffset(10, 20),
                  toLocalFrame(webViewImpl()->page()->mainFrame())
                      ->loader()
-                     .currentItem()
+                     .documentLoader()
+                     ->historyItem()
                      ->visualViewportScrollOffset());
 }
 
@@ -975,8 +979,12 @@ TEST_P(VisualViewportTest,
   visualViewport.setScale(2);
   visualViewport.setLocation(FloatPoint(350, 350));
 
-  Persistent<HistoryItem> firstItem =
-      webViewImpl()->mainFrameImpl()->frame()->loader().currentItem();
+  Persistent<HistoryItem> firstItem = webViewImpl()
+                                          ->mainFrameImpl()
+                                          ->frame()
+                                          ->loader()
+                                          .documentLoader()
+                                          ->historyItem();
   EXPECT_SIZE_EQ(ScrollOffset(0, 1000), firstItem->getScrollOffset());
 
   // Now navigate to a page which causes a smaller frameView. Make sure that
@@ -985,8 +993,12 @@ TEST_P(VisualViewportTest,
   navigateTo("about:blank");
   frameView = webViewImpl()->mainFrameImpl()->frameView();
 
-  EXPECT_NE(firstItem,
-            webViewImpl()->mainFrameImpl()->frame()->loader().currentItem());
+  EXPECT_NE(firstItem, webViewImpl()
+                           ->mainFrameImpl()
+                           ->frame()
+                           ->loader()
+                           .documentLoader()
+                           ->historyItem());
   EXPECT_LT(frameView->frameRect().size().width(), 1000);
   EXPECT_SIZE_EQ(ScrollOffset(0, 1000), firstItem->getScrollOffset());
 }

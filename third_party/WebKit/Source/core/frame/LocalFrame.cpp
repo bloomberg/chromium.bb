@@ -61,6 +61,7 @@
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/ChromeClient.h"
@@ -379,7 +380,7 @@ void LocalFrame::reload(FrameLoadType loadType,
                         ClientRedirectPolicy clientRedirectPolicy) {
   DCHECK(isReloadLoadType(loadType));
   if (clientRedirectPolicy == ClientRedirectPolicy::NotClientRedirect) {
-    if (!m_loader.currentItem())
+    if (!m_loader.documentLoader()->historyItem())
       return;
     FrameLoadRequest request =
         FrameLoadRequest(nullptr, m_loader.resourceRequestForReload(

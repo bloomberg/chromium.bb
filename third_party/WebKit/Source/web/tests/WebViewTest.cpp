@@ -1651,22 +1651,40 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
   EXPECT_EQ(111, webViewImpl->mainFrame()->getScrollOffset().height);
   LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
   mainFrameLocal->loader().saveScrollState();
-  EXPECT_EQ(2.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
-  EXPECT_EQ(94,
-            mainFrameLocal->loader().currentItem()->getScrollOffset().width());
-  EXPECT_EQ(111,
-            mainFrameLocal->loader().currentItem()->getScrollOffset().height());
+  EXPECT_EQ(2.0f, mainFrameLocal->loader()
+                      .documentLoader()
+                      ->historyItem()
+                      ->pageScaleFactor());
+  EXPECT_EQ(94, mainFrameLocal->loader()
+                    .documentLoader()
+                    ->historyItem()
+                    ->getScrollOffset()
+                    .width());
+  EXPECT_EQ(111, mainFrameLocal->loader()
+                     .documentLoader()
+                     ->historyItem()
+                     ->getScrollOffset()
+                     .height());
 
   // Confirm that resetting the page state resets the saved scroll position.
   webViewImpl->resetScrollAndScaleState();
   EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
   EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().width);
   EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
-  EXPECT_EQ(1.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
-  EXPECT_EQ(0,
-            mainFrameLocal->loader().currentItem()->getScrollOffset().width());
-  EXPECT_EQ(0,
-            mainFrameLocal->loader().currentItem()->getScrollOffset().height());
+  EXPECT_EQ(1.0f, mainFrameLocal->loader()
+                      .documentLoader()
+                      ->historyItem()
+                      ->pageScaleFactor());
+  EXPECT_EQ(0, mainFrameLocal->loader()
+                   .documentLoader()
+                   ->historyItem()
+                   ->getScrollOffset()
+                   .width());
+  EXPECT_EQ(0, mainFrameLocal->loader()
+                   .documentLoader()
+                   ->historyItem()
+                   ->getScrollOffset()
+                   .height());
 }
 
 TEST_P(WebViewTest, BackForwardRestoreScroll) {
@@ -1679,48 +1697,46 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
   // Emulate a user scroll
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 900));
   LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
-  Persistent<HistoryItem> item1 = mainFrameLocal->loader().currentItem();
+  Persistent<HistoryItem> item1 =
+      mainFrameLocal->loader().documentLoader()->historyItem();
 
   // Click an anchor
   mainFrameLocal->loader().load(FrameLoadRequest(
       mainFrameLocal->document(),
       ResourceRequest(mainFrameLocal->document()->completeURL("#a"))));
-  Persistent<HistoryItem> item2 = mainFrameLocal->loader().currentItem();
+  Persistent<HistoryItem> item2 =
+      mainFrameLocal->loader().documentLoader()->historyItem();
 
   // Go back, then forward, then back again.
   mainFrameLocal->loader().load(
-      FrameLoadRequest(
-          nullptr, FrameLoader::resourceRequestFromHistoryItem(
-                       item1.get(), WebCachePolicy::UseProtocolCachePolicy)),
+      FrameLoadRequest(nullptr, item1->generateResourceRequest(
+                                    WebCachePolicy::UseProtocolCachePolicy)),
       FrameLoadTypeBackForward, item1.get(), HistorySameDocumentLoad);
   mainFrameLocal->loader().load(
-      FrameLoadRequest(
-          nullptr, FrameLoader::resourceRequestFromHistoryItem(
-                       item2.get(), WebCachePolicy::UseProtocolCachePolicy)),
+      FrameLoadRequest(nullptr, item2->generateResourceRequest(
+                                    WebCachePolicy::UseProtocolCachePolicy)),
       FrameLoadTypeBackForward, item2.get(), HistorySameDocumentLoad);
   mainFrameLocal->loader().load(
-      FrameLoadRequest(
-          nullptr, FrameLoader::resourceRequestFromHistoryItem(
-                       item1.get(), WebCachePolicy::UseProtocolCachePolicy)),
+      FrameLoadRequest(nullptr, item1->generateResourceRequest(
+                                    WebCachePolicy::UseProtocolCachePolicy)),
       FrameLoadTypeBackForward, item1.get(), HistorySameDocumentLoad);
 
   // Click a different anchor
   mainFrameLocal->loader().load(FrameLoadRequest(
       mainFrameLocal->document(),
       ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
-  Persistent<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
+  Persistent<HistoryItem> item3 =
+      mainFrameLocal->loader().documentLoader()->historyItem();
 
   // Go back, then forward. The scroll position should be properly set on the
   // forward navigation.
   mainFrameLocal->loader().load(
-      FrameLoadRequest(
-          nullptr, FrameLoader::resourceRequestFromHistoryItem(
-                       item1.get(), WebCachePolicy::UseProtocolCachePolicy)),
+      FrameLoadRequest(nullptr, item1->generateResourceRequest(
+                                    WebCachePolicy::UseProtocolCachePolicy)),
       FrameLoadTypeBackForward, item1.get(), HistorySameDocumentLoad);
   mainFrameLocal->loader().load(
-      FrameLoadRequest(
-          nullptr, FrameLoader::resourceRequestFromHistoryItem(
-                       item3.get(), WebCachePolicy::UseProtocolCachePolicy)),
+      FrameLoadRequest(nullptr, item3->generateResourceRequest(
+                                    WebCachePolicy::UseProtocolCachePolicy)),
       FrameLoadTypeBackForward, item3.get(), HistorySameDocumentLoad);
   EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().width);
   EXPECT_GT(webViewImpl->mainFrame()->getScrollOffset().height, 2000);

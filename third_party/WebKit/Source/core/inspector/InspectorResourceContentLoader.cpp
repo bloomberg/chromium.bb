@@ -11,6 +11,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
 #include "core/page/Page.h"
@@ -111,10 +112,10 @@ void InspectorResourceContentLoader::start() {
 
     ResourceRequest resourceRequest;
     HistoryItem* item =
-        document->frame() ? document->frame()->loader().currentItem() : nullptr;
+        document->loader() ? document->loader()->historyItem() : nullptr;
     if (item) {
-      resourceRequest = FrameLoader::resourceRequestFromHistoryItem(
-          item, WebCachePolicy::ReturnCacheDataDontLoad);
+      resourceRequest = item->generateResourceRequest(
+          WebCachePolicy::ReturnCacheDataDontLoad);
     } else {
       resourceRequest = document->url();
       resourceRequest.setCachePolicy(WebCachePolicy::ReturnCacheDataDontLoad);
