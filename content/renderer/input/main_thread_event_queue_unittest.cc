@@ -1033,4 +1033,74 @@ TEST_P(MainThreadEventQueueTest, QueuingClosuresBetweenEvents) {
             handled_tasks_.at(3)->taskAsEvent()->event().type());
 }
 
+TEST_P(MainThreadEventQueueTest, BlockingTouchMoveBecomesNonBlocking) {
+  SyntheticWebTouchEvent kEvents[2];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[0].MovePoint(0, 20, 20);
+  kEvents[1].setModifiers(1);
+  kEvents[1].PressPoint(10, 10);
+  kEvents[1].MovePoint(0, 20, 30);
+  kEvents[1].dispatchType = WebInputEvent::EventNonBlocking;
+  WebTouchEvent scroll_start(WebInputEvent::TouchScrollStarted,
+                             WebInputEvent::NoModifiers,
+                             WebInputEvent::TimeStampForTesting);
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  EXPECT_EQ(WebInputEvent::Blocking, kEvents[0].dispatchType);
+  EXPECT_EQ(WebInputEvent::EventNonBlocking, kEvents[1].dispatchType);
+  EXPECT_FALSE(HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_TRUE(HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_FALSE(HandleEvent(scroll_start, INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_EQ(3u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_FALSE(needs_main_frame_);
+
+  EXPECT_EQ(WebInputEvent::EventNonBlocking,
+            static_cast<const WebTouchEvent&>(
+                handled_tasks_.at(0)->taskAsEvent()->event())
+                .dispatchType);
+  EXPECT_EQ(WebInputEvent::EventNonBlocking,
+            static_cast<const WebTouchEvent&>(
+                handled_tasks_.at(1)->taskAsEvent()->event())
+                .dispatchType);
+}
+
+TEST_P(MainThreadEventQueueTest, BlockingTouchMoveWithTouchEnd) {
+  SyntheticWebTouchEvent kEvents[2];
+  kEvents[0].PressPoint(10, 10);
+  kEvents[0].MovePoint(0, 20, 20);
+  kEvents[1].PressPoint(10, 10);
+  kEvents[1].ReleasePoint(0);
+  WebTouchEvent scroll_start(WebInputEvent::TouchScrollStarted,
+                             WebInputEvent::NoModifiers,
+                             WebInputEvent::TimeStampForTesting);
+
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_EQ(0u, event_queue().size());
+
+  EXPECT_EQ(WebInputEvent::Blocking, kEvents[0].dispatchType);
+  EXPECT_EQ(WebInputEvent::Blocking, kEvents[1].dispatchType);
+  EXPECT_FALSE(HandleEvent(kEvents[0], INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_FALSE(HandleEvent(kEvents[1], INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_FALSE(HandleEvent(scroll_start, INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
+  EXPECT_EQ(3u, event_queue().size());
+  RunPendingTasksWithSimulatedRaf();
+  EXPECT_EQ(0u, event_queue().size());
+  EXPECT_FALSE(main_task_runner_->HasPendingTask());
+  EXPECT_FALSE(needs_main_frame_);
+
+  EXPECT_EQ(WebInputEvent::Blocking,
+            static_cast<const WebTouchEvent&>(
+                handled_tasks_.at(0)->taskAsEvent()->event())
+                .dispatchType);
+  EXPECT_EQ(WebInputEvent::Blocking,
+            static_cast<const WebTouchEvent&>(
+                handled_tasks_.at(1)->taskAsEvent()->event())
+                .dispatchType);
+}
+
 }  // namespace content

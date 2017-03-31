@@ -22,10 +22,10 @@ class QueuedClosure : public MainThreadEventQueueTask {
 
   ~QueuedClosure() override {}
 
-  CoalesceResult CoalesceWith(
+  FilterResult FilterNewEvent(
       const MainThreadEventQueueTask& other_task) override {
-    return other_task.IsWebInputEvent() ? CoalesceResult::KeepSearching
-                                        : CoalesceResult::CannotCoalesce;
+    return other_task.IsWebInputEvent() ? FilterResult::KeepIterating
+                                        : FilterResult::StopIterating;
   }
 
   bool IsWebInputEvent() const override { return false; }
@@ -61,18 +61,23 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
 
   ~QueuedWebInputEvent() override {}
 
-  CoalesceResult CoalesceWith(
-      const MainThreadEventQueueTask& other_item) override {
-    if (!other_item.IsWebInputEvent())
-      return CoalesceResult::CannotCoalesce;
+  FilterResult FilterNewEvent(
+      const MainThreadEventQueueTask& other_task) override {
+    if (!other_task.IsWebInputEvent())
+      return FilterResult::StopIterating;
 
     const QueuedWebInputEvent& other_event =
-        static_cast<const QueuedWebInputEvent&>(other_item);
+        static_cast<const QueuedWebInputEvent&>(other_task);
+    if (other_event.event().type() ==
+        blink::WebInputEvent::TouchScrollStarted) {
+      return HandleTouchScrollStartQueued();
+    }
+
     if (!event().isSameEventClass(other_event.event()))
-      return CoalesceResult::KeepSearching;
+      return FilterResult::KeepIterating;
 
     if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(other_event))
-      return CoalesceResult::CannotCoalesce;
+      return FilterResult::StopIterating;
 
     // If this event was blocking push the event id to the blocking
     // list before updating the dispatch_type of this event.
@@ -89,7 +94,7 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     dispatch_type_ = other_event.dispatch_type_;
     originally_cancelable_ = other_event.originally_cancelable_;
 
-    return CoalesceResult::Coalesced;
+    return FilterResult::CoalescedEvent;
   }
 
   bool IsWebInputEvent() const override { return true; }
@@ -150,6 +155,28 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   bool originallyCancelable() const { return originally_cancelable_; }
 
  private:
+  FilterResult HandleTouchScrollStartQueued() {
+    // A TouchScrollStart will queued after this touch move which will make all
+    // previous touch moves that are queued uncancelable.
+    switch (event().type()) {
+      case blink::WebInputEvent::TouchMove: {
+        blink::WebTouchEvent& touch_event =
+            static_cast<blink::WebTouchEvent&>(event());
+        if (touch_event.dispatchType ==
+            blink::WebInputEvent::DispatchType::Blocking) {
+          touch_event.dispatchType =
+              blink::WebInputEvent::DispatchType::EventNonBlocking;
+        }
+        return FilterResult::KeepIterating;
+      }
+      case blink::WebInputEvent::TouchStart:
+      case blink::WebInputEvent::TouchEnd:
+        return FilterResult::StopIterating;
+      default:
+        return FilterResult::KeepIterating;
+    }
+  }
+
   const std::deque<uint32_t>& blockingCoalescedEventIds() const {
     return blocking_coalesced_event_ids_;
   }

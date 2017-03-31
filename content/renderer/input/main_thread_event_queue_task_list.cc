@@ -14,12 +14,12 @@ void MainThreadEventQueueTaskList::Queue(
     std::unique_ptr<MainThreadEventQueueTask> event) {
   for (auto last_event_iter = queue_.rbegin(); last_event_iter != queue_.rend();
        ++last_event_iter) {
-    switch ((*last_event_iter)->CoalesceWith(*event.get())) {
-      case MainThreadEventQueueTask::CoalesceResult::Coalesced:
+    switch ((*last_event_iter)->FilterNewEvent(*event.get())) {
+      case MainThreadEventQueueTask::FilterResult::CoalescedEvent:
         return;
-      case MainThreadEventQueueTask::CoalesceResult::CannotCoalesce:
+      case MainThreadEventQueueTask::FilterResult::StopIterating:
         break;
-      case MainThreadEventQueueTask::CoalesceResult::KeepSearching:
+      case MainThreadEventQueueTask::FilterResult::KeepIterating:
         continue;
     }
     break;

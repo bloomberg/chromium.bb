@@ -21,17 +21,25 @@ class MainThreadEventQueueTask {
  public:
   virtual ~MainThreadEventQueueTask() {}
 
-  enum class CoalesceResult {
-    Coalesced,
-    CannotCoalesce,
-    // Keep iterating on the queue looking for a matching event with the
-    // same modality.
-    KeepSearching,
+  enum class FilterResult {
+    // The passed in event was coalesced into this event. Don't queue
+    // the new event.
+    CoalescedEvent,
+
+    // Stop invoking FilterNewEvent on any other events in the queue.
+    StopIterating,
+
+    // Keep invoking FilterNewEvent on the next older event in the queue.
+    KeepIterating,
   };
 
-  virtual CoalesceResult CoalesceWith(const MainThreadEventQueueTask&) = 0;
+  // Filter a new event that is about to be queued. Acceptable actions
+  // are to coalesce event, stop iterating or keep iterating.
+  // Iteration of the list begins at the end of the queue (newest to oldest).
+  virtual FilterResult FilterNewEvent(const MainThreadEventQueueTask&) = 0;
   virtual bool IsWebInputEvent() const = 0;
   virtual void Dispatch(int routing_id, MainThreadEventQueueClient*) = 0;
+
   virtual void EventHandled(
       int routing_id,
       blink::scheduler::RendererScheduler* renderer_scheduler,
