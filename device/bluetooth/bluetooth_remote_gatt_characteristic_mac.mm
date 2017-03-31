@@ -262,7 +262,8 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
           BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
       VLOG(1) << *this
               << ": Bluetooth error while reading for characteristic, domain: "
-              << error << ", error code: " << error_code;
+              << BluetoothAdapterMac::String(error)
+              << ", error code: " << error_code;
       callbacks.second.Run(error_code);
       return;
     }
@@ -307,7 +308,8 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
         BluetoothDeviceMac::GetGattErrorCodeFromNSError(error);
     VLOG(1) << *this
             << ": Bluetooth error while writing for characteristic, error: "
-            << error << ", error code: " << error_code;
+            << BluetoothAdapterMac::String(error)
+            << ", error code: " << error_code;
     callbacks.second.Run(error_code);
     return;
   }
@@ -334,7 +336,8 @@ void BluetoothRemoteGattCharacteristicMac::DidUpdateNotificationState(
     VLOG(1) << *this
             << ": Bluetooth error while modifying notification state for "
                "characteristic, error: "
-            << error << ", error code: " << error_code;
+            << BluetoothAdapterMac::String(error)
+            << ", error code: " << error_code;
     reentrant_safe_callbacks.second.Run(error_code);
     return;
   }

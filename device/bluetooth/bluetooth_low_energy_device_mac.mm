@@ -201,7 +201,8 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverPrimaryServices(NSError* error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
     // a device services.
-    VLOG(1) << *this << ": Can't discover primary services: " << error;
+    VLOG(1) << *this << ": Can't discover primary services: "
+            << BluetoothAdapterMac::String(error);
     return;
   }
 
@@ -245,7 +246,8 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverCharacteristics(
   if (error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
-    VLOG(1) << *this << ": Can't discover characteristics: " << error;
+    VLOG(1) << *this << ": Can't discover characteristics: "
+            << BluetoothAdapterMac::String(error);
     return;
   }
 
@@ -316,7 +318,8 @@ void BluetoothLowEnergyDeviceMac::DidDiscoverDescriptors(
   if (error) {
     // TODO(http://crbug.com/609320): Need to pass the error.
     // TODO(http://crbug.com/609844): Decide what to do if discover failed
-    VLOG(1) << *this << ": Can't discover descriptors: " << error;
+    VLOG(1) << *this << ": Can't discover descriptors: "
+            << BluetoothAdapterMac::String(error);
     return;
   }
   if (!IsGattConnected()) {
@@ -402,7 +405,8 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattService(
 void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(NSError* error) {
   VLOG(1) << *this << ": Disconnected from peripheral.";
   if (error) {
-    VLOG(1) << *this << ": Bluetooth error: " << error;
+    VLOG(1) << *this
+            << ": Bluetooth error: " << BluetoothAdapterMac::String(error);
   }
   SetGattServicesDiscoveryComplete(false);
   // Removing all services at once to ensure that calling GetGattService on

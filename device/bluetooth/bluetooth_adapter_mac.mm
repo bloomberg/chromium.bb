@@ -74,6 +74,16 @@ BluetoothUUID BluetoothAdapterMac::BluetoothUUIDWithCBUUID(CBUUID* uuid) {
   return device::BluetoothUUID(uuid_c_string);
 }
 
+// static
+std::string BluetoothAdapterMac::String(NSError* error) {
+  if (!error) {
+    return "no error";
+  }
+  return std::string("error domain: ") + base::SysNSStringToUTF8(error.domain) +
+         ", code: " + std::to_string(error.code) + ", description: " +
+         base::SysNSStringToUTF8(error.localizedDescription);
+}
+
 BluetoothAdapterMac::BluetoothAdapterMac()
     : BluetoothAdapter(),
       classic_powered_(false),
@@ -676,7 +686,8 @@ void BluetoothAdapterMac::DidFailToConnectPeripheral(CBPeripheral* peripheral,
     error_code = BluetoothDeviceMac::GetConnectErrorCodeFromNSError(error);
   }
   VLOG(1) << *device_mac << ": Failed to connect to peripheral with error "
-          << error << ", error code: " << error_code;
+          << BluetoothAdapterMac::String(error)
+          << ", error code: " << error_code;
   device_mac->DidFailToConnectGatt(error_code);
 }
 
@@ -722,16 +733,6 @@ bool BluetoothAdapterMac::DoesCollideWithKnownDevice(
     return true;
   }
   return false;
-}
-
-DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(std::ostream& out,
-                                                 NSError* error) {
-  if (!error) {
-    return out << "no error";
-  }
-  return out << "error domain: " << base::SysNSStringToUTF8(error.domain)
-             << ", code: " << std::to_string(error.code) << ", description: "
-             << base::SysNSStringToUTF8(error.localizedDescription);
 }
 
 }  // namespace device
