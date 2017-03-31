@@ -31,7 +31,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
 import org.chromium.content.browser.input.FloatingPastePopupMenu;
-import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.LGEmailActionModeWorkaround;
 import org.chromium.content.browser.input.LegacyPastePopupMenu;
 import org.chromium.content.browser.input.PastePopupMenu;
@@ -83,7 +82,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private final WindowAndroid mWindowAndroid;
     private final WebContents mWebContents;
     private final RenderCoordinates mRenderCoordinates;
-    private final ImeAdapter mImeAdapter;
     private ActionMode.Callback mCallback;
 
     // Selection rectangle in DIP.
@@ -137,16 +135,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @param webContents WebContents instance.
      * @param view Container view.
      * @param renderCoordinates Coordinates info used to position elements.
-     * @param imeAdapter ImeAdapter instance to handle cursor position.
      */
     public SelectionPopupController(Context context, WindowAndroid window, WebContents webContents,
-            View view, RenderCoordinates renderCoordinates, ImeAdapter imeAdapter) {
+            View view, RenderCoordinates renderCoordinates) {
         mContext = context;
         mWindowAndroid = window;
         mWebContents = webContents;
         mView = view;
         mRenderCoordinates = renderCoordinates;
-        mImeAdapter = imeAdapter;
 
         // The menu items are allowed by default.
         mAllowedMenuItems = MENU_ITEM_SHARE | MENU_ITEM_WEB_SEARCH | MENU_ITEM_PROCESS_TEXT;

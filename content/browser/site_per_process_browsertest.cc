@@ -101,7 +101,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "content/browser/renderer_host/ime_adapter_android.h"
+#include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
 

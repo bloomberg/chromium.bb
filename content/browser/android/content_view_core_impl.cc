@@ -1100,25 +1100,7 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env,
   SendScreenRectsAndResizeWidget();
 }
 
-long ContentViewCoreImpl::GetNativeImeAdapter(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
-  if (!rwhva)
-    return 0;
-  return rwhva->GetNativeImeAdapter();
-}
-
-void ContentViewCoreImpl::ForceUpdateImeAdapter(long native_ime_adapter) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_forceUpdateImeAdapter(env, obj, native_ime_adapter);
-}
-
-void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
-                                           int text_input_type,
+void ContentViewCoreImpl::UpdateImeAdapter(int text_input_type,
                                            int text_input_flags,
                                            int text_input_mode,
                                            const std::string& text,
@@ -1135,9 +1117,9 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
 
   ScopedJavaLocalRef<jstring> jstring_text = ConvertUTF8ToJavaString(env, text);
   Java_ContentViewCore_updateImeAdapter(
-      env, obj, native_ime_adapter, text_input_type, text_input_flags,
-      text_input_mode, jstring_text, selection_start, selection_end,
-      composition_start, composition_end, show_ime_if_needed, reply_to_request);
+      env, obj, text_input_type, text_input_flags, text_input_mode,
+      jstring_text, selection_start, selection_end, composition_start,
+      composition_end, show_ime_if_needed, reply_to_request);
 }
 
 void ContentViewCoreImpl::SetAccessibilityEnabled(
@@ -1344,7 +1326,7 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& jweb_contents,
            const JavaParamRef<jobject>& jview_android_delegate,
            jlong jwindow_android,
-           jfloat dipScale,
+           jfloat dip_scale,
            const JavaParamRef<jobject>& retained_objects_set) {
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromJavaWebContents(jweb_contents));
@@ -1359,9 +1341,8 @@ jlong Init(JNIEnv* env,
   DCHECK(window_android);
   window_android->AddChild(view_android);
 
-  // TODO: pass dipScale.
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
-      env, obj, web_contents, dipScale, retained_objects_set);
+      env, obj, web_contents, dip_scale, retained_objects_set);
   return reinterpret_cast<intptr_t>(view);
 }
 
