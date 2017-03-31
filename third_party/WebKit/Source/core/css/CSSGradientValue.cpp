@@ -458,17 +458,23 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
 
   Vector<GradientStop> stops(numStops);
 
+  float gradientLength;
+  switch (getClassType()) {
+    case LinearGradientClass:
+      gradientLength = FloatSize(desc.p1 - desc.p0).diagonalLength();
+      break;
+    case RadialGradientClass:
+      gradientLength = desc.r1;
+      break;
+    case ConicGradientClass:
+      gradientLength = 1;
+      break;
+    default:
+      NOTREACHED();
+      gradientLength = 0;
+  }
+
   bool hasHints = false;
-
-  FloatPoint gradientStart = desc.p0;
-  FloatPoint gradientEnd;
-  if (isLinearGradientValue())
-    gradientEnd = desc.p1;
-  else if (isRadialGradientValue())
-    gradientEnd = gradientStart + FloatSize(desc.r1, 0);
-  float gradientLength =
-      FloatSize(gradientStart - gradientEnd).diagonalLength();
-
   for (size_t i = 0; i < numStops; ++i) {
     const CSSGradientColorStop& stop = m_stops[i];
 
@@ -566,28 +572,37 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
 
   // At this point we have a fully resolved set of stops. Time to perform
   // adjustments for repeat gradients and degenerate values if needed.
-  if (requiresStopsNormalization(stops, desc)) {
-    // Negative offsets are only an issue for non-repeating radial gradients:
-    // linear gradient points can be repositioned arbitrarily, and for repeating
-    // radial gradients we shift the radii into equivalent positive values.
-    if (isRadialGradientValue() && !m_repeating)
-      clampNegativeOffsets(stops);
-
-    if (normalizeAndAddStops(stops, desc)) {
-      if (isLinearGradientValue()) {
-        adjustGradientPointsForOffsetRange(desc, stops.front().offset,
-                                           stops.back().offset);
-      } else {
-        adjustGradientRadiiForOffsetRange(desc, stops.front().offset,
-                                          stops.back().offset);
-      }
-    } else {
-      // Normalization failed because the stop set is coincident.
-    }
-  } else {
+  // Note: the normalization trick doesn't work for conic gradients, because
+  // the underlying Skia implementation doesn't support tiling.
+  if (isConicGradientValue() || !requiresStopsNormalization(stops, desc)) {
     // No normalization required, just add the current stops.
     for (const auto& stop : stops)
       desc.stops.emplace_back(stop.offset, stop.color);
+    return;
+  }
+
+  switch (getClassType()) {
+    case LinearGradientClass:
+      if (normalizeAndAddStops(stops, desc)) {
+        adjustGradientPointsForOffsetRange(desc, stops.front().offset,
+                                           stops.back().offset);
+      }
+      break;
+    case RadialGradientClass:
+      // Negative offsets are only an issue for non-repeating radial gradients:
+      // linear gradient points can be repositioned arbitrarily, and for
+      // repeating radial gradients we shift the radii into equivalent positive
+      // values.
+      if (!m_repeating)
+        clampNegativeOffsets(stops);
+
+      if (normalizeAndAddStops(stops, desc)) {
+        adjustGradientRadiiForOffsetRange(desc, stops.front().offset,
+                                          stops.back().offset);
+      }
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
@@ -1368,8 +1383,24 @@ PassRefPtr<Gradient> CSSConicGradientValue::createGradient(
     const LayoutObject& object) {
   DCHECK(!size.isEmpty());
 
-  // TODO(fmalita): implement
-  return Gradient::createLinear(FloatPoint(), FloatPoint());
+  const float angle = m_fromAngle ? m_fromAngle->computeDegrees() : 0;
+
+  const FloatPoint position(
+      m_firstX ? positionFromValue(m_firstX, conversionData, size, true)
+               : size.width() / 2,
+      m_firstY ? positionFromValue(m_firstY, conversionData, size, false)
+               : size.height() / 2);
+
+  GradientDesc desc(position, position,
+                    m_repeating ? SpreadMethodRepeat : SpreadMethodPad);
+  addStops(desc, conversionData, object);
+
+  RefPtr<Gradient> gradient =
+      Gradient::createConic(position, angle, desc.spreadMethod,
+                            Gradient::ColorInterpolation::Premultiplied);
+  gradient->addColorStops(desc.stops);
+
+  return gradient.release();
 }
 
 bool CSSConicGradientValue::equals(const CSSConicGradientValue& other) const {

@@ -51,7 +51,7 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   WTF_MAKE_NONCOPYABLE(Gradient);
 
  public:
-  enum class Type { Linear, Radial };
+  enum class Type { Linear, Radial, Conic };
 
   enum class ColorInterpolation {
     Premultiplied,
@@ -70,6 +70,12 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
       const FloatPoint& p1,
       float r1,
       float aspectRatio = 1,
+      GradientSpreadMethod = SpreadMethodPad,
+      ColorInterpolation = ColorInterpolation::Unpremultiplied);
+
+  static PassRefPtr<Gradient> createConic(
+      const FloatPoint& position,
+      float angle,
       GradientSpreadMethod = SpreadMethodPad,
       ColorInterpolation = ColorInterpolation::Unpremultiplied);
 
