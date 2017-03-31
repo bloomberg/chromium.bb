@@ -439,7 +439,8 @@ TEST_F(MemoryDumpManagerTest, MultipleDumpers) {
 
 // Checks that the dump provider invocations depend only on the current
 // registration state and not on previous registrations and dumps.
-TEST_F(MemoryDumpManagerTest, RegistrationConsistency) {
+// flaky: crbug.com/706874
+TEST_F(MemoryDumpManagerTest, DISABLED_RegistrationConsistency) {
   InitializeMemoryDumpManager(false /* is_coordinator */);
   MockMemoryDumpProvider mdp;
 
@@ -1013,7 +1014,8 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
 
 // Tests against race conditions that might arise when disabling tracing in the
 // middle of a global memory dump.
-TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
+// flaky: crbug.com/706874
+TEST_F(MemoryDumpManagerTest, DISABLED_DisableTracingWhileDumping) {
   base::WaitableEvent tracing_disabled_event(
       WaitableEvent::ResetPolicy::AUTOMATIC,
       WaitableEvent::InitialState::NOT_SIGNALED);
