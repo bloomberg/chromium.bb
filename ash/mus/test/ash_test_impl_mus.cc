@@ -97,10 +97,4 @@ void AshTestImplMus::AddTransientChild(WmWindow* parent, WmWindow* window) {
 }
 
 }  // namespace mus
-
-// static
-std::unique_ptr<AshTestImpl> AshTestImpl::Create() {
-  return base::MakeUnique<mus::AshTestImplMus>();
-}
-
 }  // namespace ash

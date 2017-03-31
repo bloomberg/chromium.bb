@@ -65,6 +65,10 @@ class AshTestHelper {
   explicit AshTestHelper(AshTestEnvironment* ash_test_environment);
   ~AshTestHelper();
 
+  // Returns the configuration that tests are run in. See ash::Config enum for
+  // details.
+  static Config config() { return config_; }
+
   // Creates the ash::Shell and performs associated initialization.  Set
   // |start_session| to true if the user should log in before the test is run.
   void SetUp(bool start_session);

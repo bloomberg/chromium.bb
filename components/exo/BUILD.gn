@@ -93,7 +93,6 @@ source_set("test_support") {
   deps = [
     ":exo",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_without_content",
     "//base",
     "//gpu",
@@ -164,7 +163,6 @@ test("exo_unittests") {
   deps = [
     ":unit_tests",
     "//ash/public/cpp:ash_public_cpp",
-    "//ash/test:ash_with_aura_test_support",
     "//ash/test:test_support_without_content",
     "//base",
     "//base/test:test_support",

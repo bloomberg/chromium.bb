@@ -4,24 +4,6 @@
 
 import("//build/config/ui.gni")
 
-# Used to test ash with an aura backend.
-source_set("ash_with_aura_test_support") {
-  testonly = true
-  sources = [
-    "ash_test_impl_aura.cc",
-    "ash_test_impl_aura.h",
-  ]
-  deps = [
-    ":test_support_common",
-    "//ash",
-    "//base",
-    "//skia",
-    "//ui/aura:test_support",
-    "//ui/display",
-    "//ui/wm",
-  ]
-}
-
 static_library("test_support_without_content") {
   testonly = true
   sources = [
@@ -90,6 +72,12 @@ static_library("test_support_common") {
     "../laser/laser_pointer_controller_test_api.h",
     "../laser/laser_pointer_points_test_api.cc",
     "../laser/laser_pointer_points_test_api.h",
+    "../mus/test/ash_test_impl_mus.cc",
+    "../mus/test/ash_test_impl_mus.h",
+    "../mus/test/wm_test_base.cc",
+    "../mus/test/wm_test_base.h",
+    "../mus/test/wm_test_helper.cc",
+    "../mus/test/wm_test_helper.h",
     "../rotator/test/screen_rotation_animator_test_api.cc",
     "../rotator/test/screen_rotation_animator_test_api.h",
     "../shell/toplevel_window.cc",
@@ -99,6 +87,8 @@ static_library("test_support_common") {
     "ash_test_environment.h",
     "ash_test_helper.cc",
     "ash_test_helper.h",
+    "ash_test_impl_aura.cc",
+    "ash_test_impl_aura.h",
     "ash_test_views_delegate.cc",
     "ash_test_views_delegate.h",
     "child_modal_window.cc",
@@ -169,6 +159,7 @@ static_library("test_support_common") {
     "//ash/mus:lib",
     "//ash/public/cpp:ash_public_cpp",
     "//ash/resources",
+    "//base",
     "//base:i18n",
     "//base/test:test_support",
     "//chromeos",
