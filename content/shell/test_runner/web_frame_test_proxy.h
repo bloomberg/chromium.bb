@@ -149,11 +149,10 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::didHandleOnloadEvents();
   }
 
-  void didFailLoad(blink::WebLocalFrame* frame,
-                   const blink::WebURLError& error,
+  void didFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override {
-    test_client()->didFailLoad(frame, error, commit_type);
-    Base::didFailLoad(frame, error, commit_type);
+    test_client()->didFailLoad(error, commit_type);
+    Base::didFailLoad(error, commit_type);
   }
 
   void didFinishLoad(blink::WebLocalFrame* frame) override {

@@ -3965,18 +3965,16 @@ void RenderFrameImpl::didHandleOnloadEvents() {
   }
 }
 
-void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
-                                  const blink::WebURLError& error,
+void RenderFrameImpl::didFailLoad(const blink::WebURLError& error,
                                   blink::WebHistoryCommitType commit_type) {
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didFailLoad",
                "id", routing_id_);
-  DCHECK_EQ(frame_, frame);
   // TODO(nasko): Move implementation here. No state needed.
-  WebDataSource* ds = frame->dataSource();
+  WebDataSource* ds = frame_->dataSource();
   DCHECK(ds);
 
   for (auto& observer : render_view_->observers())
-    observer.DidFailLoad(frame, error);
+    observer.DidFailLoad(frame_, error);
 
   const WebURLRequest& failed_request = ds->getRequest();
   base::string16 error_description;

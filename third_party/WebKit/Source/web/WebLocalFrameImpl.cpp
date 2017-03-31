@@ -1863,7 +1863,7 @@ void WebLocalFrameImpl::didFail(const ResourceError& error,
   if (wasProvisional)
     client()->didFailProvisionalLoad(this, webError, webCommitType);
   else
-    client()->didFailLoad(this, webError, webCommitType);
+    client()->didFailLoad(webError, webCommitType);
 }
 
 void WebLocalFrameImpl::didFinish() {

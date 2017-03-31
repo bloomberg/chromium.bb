@@ -579,8 +579,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void runScriptsAtDocumentReady(bool document_is_empty) override;
   void runScriptsAtDocumentIdle(blink::WebLocalFrame* frame) override;
   void didHandleOnloadEvents() override;
-  void didFailLoad(blink::WebLocalFrame* frame,
-                   const blink::WebURLError& error,
+  void didFailLoad(const blink::WebURLError& error,
                    blink::WebHistoryCommitType commit_type) override;
   void didFinishLoad(blink::WebLocalFrame* frame) override;
   void didNavigateWithinPage(blink::WebLocalFrame* frame,

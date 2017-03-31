@@ -410,9 +410,7 @@ class BLINK_EXPORT WebFrameClient {
   // The frame's document or one of its subresources failed to load. The
   // WebHistoryCommitType is the commit type that would have been used had the
   // load succeeded.
-  virtual void didFailLoad(WebLocalFrame*,
-                           const WebURLError&,
-                           WebHistoryCommitType) {}
+  virtual void didFailLoad(const WebURLError&, WebHistoryCommitType) {}
 
   // The frame's document and all of its subresources succeeded to load.
   virtual void didFinishLoad(WebLocalFrame*) {}
