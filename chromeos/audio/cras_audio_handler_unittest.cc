@@ -2411,6 +2411,60 @@ TEST_P(CrasAudioHandlerTest, PersistActiveSpeakerAcrossReboot) {
             cras_audio_handler_->GetPrimaryActiveOutputNode());
 }
 
+// crbug.com/698809. User plug in USB speaker, then unplug it, leave
+// internal speaker as active device. Power down, plug in USB speaker again.
+// When the device powers up again, the first NodesChanged signal comes with
+// only USB speaker; followed by another NodesChanged signal with internal
+// speaker added.
+TEST_P(CrasAudioHandlerTest, USBShouldBeActiveAfterReboot) {
+  // Start with both interanl speaker and USB speaker.
+  AudioNodeList audio_nodes =
+      GenerateAudioNodeList({kInternalSpeaker, kUSBHeadphone1});
+
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the usb headphone has been made active by priority.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(kUSBHeadphone1->id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Remove USB headphone.
+  audio_nodes.clear();
+  audio_nodes.push_back(GenerateAudioNode(kInternalSpeaker));
+  ChangeAudioNodes(audio_nodes);
+  // Verify the internal speaker becomes the active device by priority.
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(kInternalSpeaker->id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Simulate after power off, plug in usb header phone, then power on.
+  // The first NodesChanged signal sends usb headphone only.
+  audio_nodes.clear();
+  audio_nodes.push_back(GenerateAudioNode(kUSBHeadphone1));
+  ChangeAudioNodes(audio_nodes);
+  // Verify the usb headerphone becomes the active device by priority.
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(kUSBHeadphone1->id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Simulate the second NodesChanged signal comes with internal speaker added.
+  audio_nodes.clear();
+  AudioNode usb_headphone = GenerateAudioNode(kUSBHeadphone1);
+  usb_headphone.active = true;
+  audio_nodes.push_back(usb_headphone);
+  audio_nodes.push_back(GenerateAudioNode(kInternalSpeaker));
+  ChangeAudioNodes(audio_nodes);
+  // Verify the usb headerphone is still the active device.
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(kUSBHeadphone1->id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+}
+
 // Test the corner case that headphone is plugged in for the first time on
 // a cros device after the device is shutdown.
 // crbug.com/622045.

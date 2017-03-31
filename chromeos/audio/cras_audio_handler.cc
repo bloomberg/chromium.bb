@@ -1229,8 +1229,19 @@ void CrasAudioHandler::HandleHotPlugDevice(
       SwitchToDevice(hotplug_device, true, ACTIVATE_BY_PRIORITY);
     }
   } else if (last_state_active) {
-    VLOG(1) << "Hotplug a device, restore to active: "
-            << hotplug_device.ToString();
+    if (!last_activate_by_user &&
+        device_priority_queue.top().id != hotplug_device.id) {
+      // This handles crbug.com/698809. Before the device is powered off, unplug
+      // the external output device, leave the internal audio device(such as
+      // internal speaker) active. Then turn off the power, plug in the exteranl
+      // device, turn on power. On some device, cras sends NodesChanged first
+      // signal with only external device; then later it sends another
+      // NodesChanged signal with internal audio device also discovered.
+      // For such case, do not switch to the lower priority device which was
+      // made active not by user's choice.
+      return;
+    }
+
     SwitchToDevice(hotplug_device, true, ACTIVATE_BY_RESTORE_PREVIOUS_STATE);
   } else {
     // Do not active the device if its previous state is inactive.
