@@ -103,7 +103,6 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets")
     public void testRender() throws IOException {
         ViewRenderer viewRenderer = new ViewRenderer(getActivity(),
                 "chrome/test/data/android/render_tests", "NewTabPageTest");
@@ -133,7 +132,6 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Feature({"NewTabPage"})
-    @CommandLineFlags.Add("enable-features=NTPSnippets")
     @UiThreadTest
     public void testThumbnailInvalidations() {
         captureThumbnail();
