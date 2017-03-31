@@ -10,8 +10,7 @@
 
 <dom-module id="settings-setup-pin-dialog">
   <template>
-    <style include="settings-shared"></style>
-    <style>
+    <style include="settings-shared">
       .warning {
         color: var(--paper-grey-700);
       }
@@ -28,7 +27,7 @@
         --iron-icon-fill-color: var(--paper-red-500);
       }
 
-      .align-center {
+      #pinKeyboardDiv {
         justify-content: center;
       }
     </style>
@@ -46,9 +45,9 @@
         </div>
 
         <!-- Pin keyboard -->
-        <div class="align-center settings-box continuation">
+        <div id="pinKeyboardDiv" class="settings-box continuation">
           <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
-                        on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}">
+              on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}">
           </pin-keyboard>
         </div>
 
@@ -58,7 +57,7 @@
           </paper-button>
 
           <paper-button class="action-button" on-tap="onPinSubmit_"
-                        disabled$="[[!enableSubmit_]]">
+              disabled$="[[!enableSubmit_]]">
             <span>[[getContinueMessage_(isConfirmStep_)]]</span>
           </paper-button>
         </div>
