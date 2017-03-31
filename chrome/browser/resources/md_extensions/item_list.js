@@ -33,8 +33,8 @@ cr.define('extensions', function() {
     ready: function() {
       /** @type {extensions.AnimationHelper} */
       this.animationHelper = new extensions.AnimationHelper(this, this.$.list);
-      this.animationHelper.setEntryAnimation(extensions.Animation.FADE_IN);
-      this.animationHelper.setExitAnimation(extensions.Animation.HERO);
+      this.animationHelper.setEntryAnimations([extensions.Animation.FADE_IN]);
+      this.animationHelper.setExitAnimations([extensions.Animation.HERO]);
     },
 
     /**

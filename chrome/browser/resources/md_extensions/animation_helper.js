@@ -37,52 +37,57 @@ cr.define('extensions', function() {
   AnimationHelper.prototype = {
     /**
      * Set the entry animation for the element.
-     * @param {extensions.Animation} animation
+     * @param {!Array<extensions.Animation>} animations
      */
-    setEntryAnimation: function(animation) {
-      var config;
-      switch (animation) {
-        case extensions.Animation.HERO:
-          config = {name: 'hero-animation', id: 'hero', toPage: this.element_};
-          break;
-        case extensions.Animation.FADE_IN:
-          assert(this.node_);
-          config = {name: 'fade-in-animation', node: this.node_};
-          break;
-        default:
-          assertNotReached();
+    setEntryAnimations: function(animations) {
+      var configs = [];
+      for (let animation of animations) {
+        switch (animation) {
+          case extensions.Animation.HERO:
+            configs.push(
+                {name: 'hero-animation', id: 'hero', toPage: this.element_});
+            break;
+          case extensions.Animation.FADE_IN:
+            assert(this.node_);
+            configs.push({name: 'fade-in-animation', node: this.node_});
+            break;
+          default:
+            assertNotReached();
+        }
       }
-      this.element_.animationConfig.entry = [config];
+      this.element_.animationConfig.entry = configs;
     },
 
     /**
      * Set the exit animation for the element.
-     * @param {extensions.Animation} animation
+     * @param {!Array<extensions.Animation>} animations
      */
-    setExitAnimation: function(animation) {
-      var config;
-      switch (animation) {
-        case extensions.Animation.HERO:
-          config =
-              {name: 'hero-animation', id: 'hero', fromPage: this.element_};
-          break;
-        case extensions.Animation.FADE_OUT:
-          assert(this.node_);
-          config = {name: 'fade-out-animation', node: this.node_};
-          break;
-        case extensions.Animation.SCALE_DOWN:
-          assert(this.node_);
-          config = {
-            name: 'scale-down-animation',
-            node: this.node_,
-            transformOrigin: '50% 50%',
-            axis: 'y',
-          };
-          break;
-        default:
-          assertNotReached();
+    setExitAnimations: function(animations) {
+      var configs = [];
+      for (let animation of animations) {
+        switch (animation) {
+          case extensions.Animation.HERO:
+            configs.push(
+                {name: 'hero-animation', id: 'hero', fromPage: this.element_});
+            break;
+          case extensions.Animation.FADE_OUT:
+            assert(this.node_);
+            configs.push({name: 'fade-out-animation', node: this.node_});
+            break;
+          case extensions.Animation.SCALE_DOWN:
+            assert(this.node_);
+            configs.push({
+              name: 'scale-down-animation',
+              node: this.node_,
+              transformOrigin: '50% 50%',
+              axis: 'y',
+            });
+            break;
+          default:
+            assertNotReached();
+        }
       }
-      this.element_.animationConfig.exit = [config];
+      this.element_.animationConfig.exit = configs;
     },
   };
 

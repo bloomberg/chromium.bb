@@ -294,19 +294,21 @@ cr.define('extensions', function() {
       var exit;
       if (fromPage == Page.ITEM_LIST && (toPage == Page.DETAIL_VIEW ||
                                          toPage == Page.ERROR_PAGE)) {
-        entry = extensions.Animation.HERO;
-        exit = extensions.Animation.HERO;
+        entry = [extensions.Animation.HERO];
+        // The item grid can be larger than the detail view that we're
+        // hero'ing into, so we want to also fade out to avoid any jarring.
+        exit = [extensions.Animation.HERO, extensions.Animation.FADE_OUT];
       } else if (toPage == Page.ITEM_LIST) {
-        entry = extensions.Animation.FADE_IN;
-        exit = extensions.Animation.SCALE_DOWN;
+        entry = [extensions.Animation.FADE_IN];
+        exit = [extensions.Animation.SCALE_DOWN];
       } else {
         assert(toPage == Page.DETAIL_VIEW ||
                toPage == Page.KEYBOARD_SHORTCUTS);
-        entry = extensions.Animation.FADE_IN;
-        exit = extensions.Animation.FADE_OUT;
+        entry = [extensions.Animation.FADE_IN];
+        exit = [extensions.Animation.FADE_OUT];
       }
-      this.getPage_(fromPage).animationHelper.setExitAnimation(exit);
-      this.getPage_(toPage).animationHelper.setEntryAnimation(entry);
+      this.getPage_(fromPage).animationHelper.setExitAnimations(exit);
+      this.getPage_(toPage).animationHelper.setEntryAnimations(entry);
       this.$.pages.selected = toPage;
     },
 

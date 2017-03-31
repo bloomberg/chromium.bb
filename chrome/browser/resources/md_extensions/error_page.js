@@ -52,8 +52,8 @@ cr.define('extensions', function() {
     ready: function() {
       /** @type {!extensions.AnimationHelper} */
       this.animationHelper = new extensions.AnimationHelper(this, this.$.main);
-      this.animationHelper.setEntryAnimation(extensions.Animation.FADE_IN);
-      this.animationHelper.setExitAnimation(extensions.Animation.SCALE_DOWN);
+      this.animationHelper.setEntryAnimations([extensions.Animation.FADE_IN]);
+      this.animationHelper.setExitAnimations([extensions.Animation.SCALE_DOWN]);
       this.sharedElements = {hero: this.$.main};
     },
 
