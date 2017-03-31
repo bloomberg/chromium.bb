@@ -18,13 +18,13 @@ Various git commands have underlying executable with a hyphenated name, such as
 The following resources can provide background on how Git works:
 
 *   [Git-SVN Crash Course](http://git-scm.com/course/svn.html) -- this crash
-    course is useful for Subversion users  witching to Git.
+    course is useful for Subversion users switching to Git.
 *   [Think Like (a) Git](http://think-like-a-git.net/) -- does a great job of
     explaining the main purpose of Git operations.
 *   [Git User's Manual](http://schacon.github.com/git/user-manual.html) -- a
     great resource to learn more about ho to use Git properly.
 *   [A Visual Git Reference](http://marklodato.github.com/visual-git-guide/index-en.html)
-    -- a resource that explains various Git operations for visual reasons.
+    -- a resource that explains various Git operations for visual learners.
 *   [Git Cheat Sheet](http://cheat.errtheblog.com/s/git) -- now that you
     understand Git, here's a cheat sheet to quickly remind you of all the
     commands you need.
