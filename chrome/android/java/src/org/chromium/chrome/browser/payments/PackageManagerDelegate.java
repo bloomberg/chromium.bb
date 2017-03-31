@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.StrictMode;
 import android.os.StrictMode.ThreadPolicy;
@@ -16,6 +18,8 @@ import android.os.StrictMode.ThreadPolicy;
 import org.chromium.base.ContextUtils;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 /** Abstraction of Android's package manager to enable unit testing. */
 public class PackageManagerDelegate {
@@ -65,6 +69,23 @@ public class PackageManagerDelegate {
     }
 
     /**
+     * Retrieves the list of activities that can respond to the given intent. And returns the
+     * activites' meta data in ResolveInfo.
+     *
+     * @param intent The intent to query.
+     * @return The list of activities that can respond to the intent.
+     */
+    public List<ResolveInfo> getActivitiesThatCanRespondToIntentWithMetaData(Intent intent) {
+        ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            return ContextUtils.getApplicationContext().getPackageManager().queryIntentActivities(
+                    intent, PackageManager.GET_META_DATA);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+    }
+
+    /**
      * Retrieves the list of services that can respond to the given intent.
      * @param intent The intent to query.
      * @return The list of services that can respond to the intent.
@@ -95,5 +116,24 @@ public class PackageManagerDelegate {
      */
     public Drawable getAppIcon(ResolveInfo resolveInfo) {
         return resolveInfo.loadIcon(ContextUtils.getApplicationContext().getPackageManager());
+    }
+
+    /**
+     * Gets the resources of the given application.
+     *
+     * @param applicationInfo The given application info.
+     * @return The resources.
+     */
+    @Nullable
+    public Resources getResourcesForApplication(ApplicationInfo applicationInfo) {
+        Resources resources;
+        try {
+            resources = ContextUtils.getApplicationContext()
+                                .getPackageManager()
+                                .getResourcesForApplication(applicationInfo);
+        } catch (NameNotFoundException e) {
+            return null;
+        }
+        return resources;
     }
 }

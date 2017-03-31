@@ -5,8 +5,9 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
+import android.content.res.Resources;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -28,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * Finds installed native Android payment apps and verifies their signatures according to the
  * payment method manifests. The manifests are located based on the payment method name, which
@@ -41,15 +44,23 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     /* package */ static final String ACTION_IS_READY_TO_PAY =
                           "org.chromium.intent.action.IS_READY_TO_PAY";
 
-    /** The name of the intent for the action of paying using "basic-card" method. */
-    /* package */ static final String ACTION_PAY_BASIC_CARD =
-                          "org.chromium.intent.action.PAY_BASIC_CARD";
-
     /**
      * The basic-card payment method name used by merchant and defined by W3C:
      * https://w3c.github.io/webpayments-methods-card/#method-id
      */
     /* package */ static final String BASIC_CARD_PAYMENT_METHOD = "basic-card";
+
+    /**
+     * Meta data name of an app's supported payment method names.
+     */
+    static final String META_DATA_NAME_OF_PAYMENT_METHOD_NAMES =
+            "org.chromium.payment_method_names";
+
+    /**
+     * Meta data name of an app's supported default payment method name.
+     */
+    static final String META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME =
+            "org.chromum.default_payment_method_name";
 
     /** The maximum number of payment method manifests to download. */
     private static final int MAX_NUMBER_OF_MANIFESTS = 10;
@@ -151,36 +162,50 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
     }
 
     private void findAndroidPaymentApps() {
+        Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
+        List<ResolveInfo> apps =
+                mPackageManagerDelegate.getActivitiesThatCanRespondToIntentWithMetaData(payIntent);
+        if (apps.isEmpty()) {
+            onSearchFinished();
+            return;
+        }
+
+        List<String[]> appSupportedMethods = new ArrayList<String[]>();
+        for (int i = 0; i < apps.size(); i++) {
+            appSupportedMethods.add(getPaymentMethodNames(apps.get(i).activityInfo));
+        }
+
+        List<String> appSupportedDefaultMethods = new ArrayList<String>();
+        for (int i = 0; i < apps.size(); i++) {
+            appSupportedDefaultMethods.add(getDefaultPaymentMethodName(apps.get(i).activityInfo));
+        }
+
         List<PaymentManifestVerifier> verifiers = new ArrayList<>();
-        if (!mPaymentMethods.isEmpty()) {
-            Intent payIntent = new Intent(AndroidPaymentApp.ACTION_PAY);
-            for (URI methodName : mPaymentMethods) {
-                payIntent.setData(Uri.parse(methodName.toString()));
-                List<ResolveInfo> apps =
-                        mPackageManagerDelegate.getActivitiesThatCanRespondToIntent(payIntent);
-                if (apps.isEmpty()) continue;
+        for (URI methodName : mPaymentMethods) {
+            List<ResolveInfo> supportedApps = filterAppsByMethodName(
+                    apps, appSupportedMethods, appSupportedDefaultMethods, methodName.toString());
+            if (supportedApps.isEmpty()) continue;
 
-                // Start the parser utility process as soon as possible, once we know that a
-                // manifest file needs to be parsed. The startup can take up to 2 seconds.
-                if (!mParser.isUtilityProcessRunning()) mParser.startUtilityProcess();
+            // Start the parser utility process as soon as possible, once we know that a
+            // manifest file needs to be parsed. The startup can take up to 2 seconds.
+            if (!mParser.isUtilityProcessRunning()) mParser.startUtilityProcess();
 
-                verifiers.add(new PaymentManifestVerifier(methodName, apps, mDownloader, mParser,
-                        mPackageManagerDelegate, this /* callback */));
-                mPendingApps.put(methodName, new HashSet<>(apps));
-                if (verifiers.size() == MAX_NUMBER_OF_MANIFESTS) {
-                    Log.d(TAG, "Reached maximum number of allowed payment app manifests.");
-                    break;
-                }
+            verifiers.add(new PaymentManifestVerifier(methodName, supportedApps, mDownloader,
+                    mParser, mPackageManagerDelegate, this /* callback */));
+            mPendingApps.put(methodName, new HashSet<>(supportedApps));
+
+            if (verifiers.size() == MAX_NUMBER_OF_MANIFESTS) {
+                Log.d(TAG, "Reached maximum number of allowed payment app manifests.");
+                break;
             }
         }
 
         if (mQueryBasicCard) {
-            Intent basicCardPayIntent = new Intent(ACTION_PAY_BASIC_CARD);
-            List<ResolveInfo> apps =
-                    mPackageManagerDelegate.getActivitiesThatCanRespondToIntent(basicCardPayIntent);
-            for (int i = 0; i < apps.size(); i++) {
+            List<ResolveInfo> supportedApps = filterAppsByMethodName(apps, appSupportedMethods,
+                    appSupportedDefaultMethods, BASIC_CARD_PAYMENT_METHOD);
+            for (int i = 0; i < supportedApps.size(); i++) {
                 // Chrome does not verify app manifests for "basic-card" support.
-                onValidPaymentApp(BASIC_CARD_PAYMENT_METHOD, apps.get(i));
+                onValidPaymentApp(BASIC_CARD_PAYMENT_METHOD, supportedApps.get(i));
             }
         }
 
@@ -192,6 +217,52 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         for (int i = 0; i < verifiers.size(); i++) {
             verifiers.get(i).verify();
         }
+    }
+
+    @Nullable
+    private String[] getPaymentMethodNames(ActivityInfo activityInfo) {
+        if (activityInfo.metaData == null) return null;
+
+        int resId = activityInfo.metaData.getInt(META_DATA_NAME_OF_PAYMENT_METHOD_NAMES);
+        if (resId == 0) return null;
+
+        Resources resources =
+                mPackageManagerDelegate.getResourcesForApplication(activityInfo.applicationInfo);
+        if (resources == null) return null;
+        return resources.getStringArray(resId);
+    }
+
+    @Nullable
+    private String getDefaultPaymentMethodName(ActivityInfo activityInfo) {
+        if (activityInfo.metaData == null) return null;
+
+        return activityInfo.metaData.getString(META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME);
+    }
+
+    private static List<ResolveInfo> filterAppsByMethodName(List<ResolveInfo> apps,
+            List<String[]> appsMethods, List<String> appsDefaultMethods, String targetMethodName) {
+        assert apps.size() == appsMethods.size();
+        assert apps.size() == appsDefaultMethods.size();
+
+        // Note that apps, appsMethods and appsDefaultMethods must have the same size. And the
+        // information at the same index must correspond to the same app.
+        List<ResolveInfo> supportedApps = new ArrayList<ResolveInfo>();
+        for (int i = 0; i < apps.size(); i++) {
+            if (targetMethodName.equals(appsDefaultMethods.get(i))) {
+                supportedApps.add(apps.get(i));
+                continue;
+            }
+
+            String[] methods = appsMethods.get(i);
+            if (methods == null) continue;
+            for (int j = 0; j < methods.length; j++) {
+                if (targetMethodName.equals(methods[j])) {
+                    supportedApps.add(apps.get(i));
+                    break;
+                }
+            }
+        }
+        return supportedApps;
     }
 
     @Override
