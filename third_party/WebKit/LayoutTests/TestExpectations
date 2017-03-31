@@ -836,10 +836,6 @@ crbug.com/703501 [ Android ] inspector-protocol/input/dispatchMouseEvent.html [ 
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
-crbug.com/701654 fast/clip/nested-rounded-rect.html [ NeedsRebaseline ]
-crbug.com/701654 fast/css/resize-corner-tracking-transformed.html  [ NeedsRebaseline ]
-crbug.com/701654 fast/forms/placeholder-position.html [ NeedsRebaseline ]
-
 crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Failure ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
