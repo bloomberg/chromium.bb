@@ -114,10 +114,13 @@ void FetchEvent::onNavigationPreloadResponse(
     return;
   DCHECK(m_preloadResponseProperty);
   ScriptState::Scope scope(scriptState);
-  FetchResponseData* responseData = FetchResponseData::createWithBuffer(
-      new BodyStreamBuffer(scriptState, new BytesConsumerForDataConsumerHandle(
-                                            scriptState->getExecutionContext(),
-                                            std::move(dataConsumeHandle))));
+  FetchResponseData* responseData =
+      dataConsumeHandle
+          ? FetchResponseData::createWithBuffer(new BodyStreamBuffer(
+                scriptState, new BytesConsumerForDataConsumerHandle(
+                                 scriptState->getExecutionContext(),
+                                 std::move(dataConsumeHandle))))
+          : FetchResponseData::create();
   Vector<KURL> urlList(1);
   urlList[0] = response->url();
   responseData->setURLList(urlList);

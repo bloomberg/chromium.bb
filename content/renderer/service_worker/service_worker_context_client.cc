@@ -364,8 +364,7 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         url_loader_(std::move(preload_handle->url_loader)),
         binding_(this, std::move(preload_handle->url_loader_client_request)) {}
 
-  ~NavigationPreloadRequest() override {
-  }
+  ~NavigationPreloadRequest() override {}
 
   void OnReceiveResponse(
       const ResourceResponseHead& response_head,
@@ -421,6 +420,13 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
         ServiceWorkerContextClient::ThreadSpecificInstance();
     if (!client)
       return;
+    if (response_) {
+      // When the response body from the server is empty, OnComplete() is called
+      // without OnStartLoadingResponseBody().
+      DCHECK(!body_.is_valid());
+      client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
+                                          nullptr);
+    }
     // This will delete |this|.
     client->OnNavigationPreloadComplete(fetch_event_id_);
   }
