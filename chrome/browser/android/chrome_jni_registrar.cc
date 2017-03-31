@@ -49,6 +49,7 @@
 #include "chrome/browser/android/download/items/offline_content_aggregator_factory_android.h"
 #include "chrome/browser/android/download/ui/thumbnail_provider.h"
 #include "chrome/browser/android/favicon_helper.h"
+#include "chrome/browser/android/feature_engagement_tracker/feature_engagement_tracker_factory_android.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/feedback/connectivity_checker.h"
 #include "chrome/browser/android/feedback/screenshot_task.h"
@@ -172,6 +173,7 @@
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "components/dom_distiller/content/browser/android/content_jni_registrar.h"
 #include "components/dom_distiller/core/android/core_jni_registrar.h"
+#include "components/feature_engagement_tracker/public/android/feature_engagement_tracker_jni_registrar.h"
 #include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/gcm_driver/instance_id/android/component_jni_registrar.h"
 #include "components/invalidation/impl/android/component_jni_registrar.h"
@@ -307,6 +309,10 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      prerender::ExternalPrerenderHandlerAndroid::
          RegisterExternalPrerenderHandlerAndroid},
     {"FaviconHelper", FaviconHelper::RegisterFaviconHelper},
+    {"FeatureEngagementTracker",
+     feature_engagement_tracker::RegisterFeatureEngagementTrackerJni},
+    {"FeatureEngagementTrackerFactory",
+     RegisterFeatureEngagementTrackerFactoryJni},
     {"FeatureUtilities", RegisterFeatureUtilities},
     {"FindInPageBridge", FindInPageBridge::RegisterFindInPageBridge},
     {"FontSizePrefsAndroid", FontSizePrefsAndroid::Register},

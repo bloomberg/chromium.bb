@@ -364,6 +364,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/externalnav/IntentWithGesturesHandler.java",
   "java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java",
   "java/src/org/chromium/chrome/browser/favicon/LargeIconBridge.java",
+  "java/src/org/chromium/chrome/browser/feature_engagement_tracker/FeatureEngagementTrackerFactory.java",
   "java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java",
   "java/src/org/chromium/chrome/browser/feedback/ConnectivityTask.java",
   "java/src/org/chromium/chrome/browser/feedback/EmptyFeedbackReporter.java",

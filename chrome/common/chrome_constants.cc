@@ -144,6 +144,8 @@ const base::FilePath::CharType kExtensionActivityLogFilename[] =
     FPL("Extension Activity");
 const base::FilePath::CharType kExtensionsCookieFilename[] =
     FPL("Extension Cookies");
+const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[] =
+    FPL("Feature Engagement Tracker");
 const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
 const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
