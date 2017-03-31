@@ -37,7 +37,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/SlotScopedTraversal.h"
 #include "core/editing/EditingUtilities.h"  // For firstPositionInOrBeforeNode
-#include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/events/Event.h"
