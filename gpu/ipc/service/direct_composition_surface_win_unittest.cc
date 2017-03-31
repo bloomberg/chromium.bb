@@ -96,6 +96,33 @@ void DestroySurface(scoped_refptr<DirectCompositionSurfaceWin> surface) {
   base::RunLoop().RunUntilIdle();
 }
 
+base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
+    const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+    const gfx::Size& size) {
+  D3D11_TEXTURE2D_DESC desc = {};
+  desc.Width = size.width();
+  desc.Height = size.height();
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.Format = DXGI_FORMAT_NV12;
+  desc.Usage = D3D11_USAGE_DEFAULT;
+  desc.SampleDesc.Count = 1;
+  desc.BindFlags = 0;
+
+  std::vector<char> image_data(size.width() * size.height() * 3 / 2);
+  // Y, U, and V should all be Oxff. Output color should be pink.
+  memset(&image_data[0], 0xff, size.width() * size.height() * 3 / 2);
+
+  D3D11_SUBRESOURCE_DATA data = {};
+  data.pSysMem = (const void*)&image_data[0];
+  data.SysMemPitch = size.width();
+
+  base::win::ScopedComPtr<ID3D11Texture2D> texture;
+  HRESULT hr = d3d11_device->CreateTexture2D(&desc, &data, texture.Receive());
+  CHECK(SUCCEEDED(hr));
+  return texture;
+}
+
 TEST(DirectCompositionSurfaceTest, TestMakeCurrent) {
   if (!CheckIfDCSupported())
     return;
@@ -255,6 +282,80 @@ TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
   DestroySurface(std::move(surface));
 }
 
+// Ensure that the GLImage isn't presented again unless it changes.
+TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
+  if (!CheckIfDCSupported())
+    return;
+
+  TestImageTransportSurfaceDelegate delegate;
+  scoped_refptr<DirectCompositionSurfaceWin> surface(
+      new DirectCompositionSurfaceWin(delegate.AsWeakPtr(),
+                                      ui::GetHiddenWindow()));
+  EXPECT_TRUE(surface->Initialize());
+  surface->SetEnableDCLayers(true);
+  gfx::Size window_size(100, 100);
+
+  scoped_refptr<gl::GLContext> context =
+      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(50, 50);
+  base::win::ScopedComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size);
+
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  image_dxgi->SetTexture(texture, 0);
+
+  ui::DCRendererLayerParams params(false, gfx::Rect(), 1, gfx::Transform(),
+                                   image_dxgi.get(),
+                                   gfx::RectF(gfx::Rect(texture_size)),
+                                   gfx::Rect(window_size), 0, 0, 1.0, 0);
+  surface->ScheduleDCLayer(params);
+
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain =
+      surface->GetLayerSwapChainForTesting(1);
+  ASSERT_FALSE(swap_chain);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
+
+  swap_chain = surface->GetLayerSwapChainForTesting(1);
+  ASSERT_TRUE(swap_chain);
+
+  UINT last_present_count = 0;
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetLastPresentCount(&last_present_count)));
+  EXPECT_EQ(1u, last_present_count);
+
+  surface->ScheduleDCLayer(params);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
+
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain2 =
+      surface->GetLayerSwapChainForTesting(1);
+  EXPECT_EQ(swap_chain2, swap_chain);
+
+  // It's the same image, so it should have the same swapchain.
+  EXPECT_TRUE(SUCCEEDED(swap_chain->GetLastPresentCount(&last_present_count)));
+  EXPECT_EQ(1u, last_present_count);
+
+  // The size of the swapchain changed, so it should be recreated.
+  ui::DCRendererLayerParams params2(false, gfx::Rect(), 1, gfx::Transform(),
+                                    image_dxgi.get(),
+                                    gfx::RectF(gfx::Rect(texture_size)),
+                                    gfx::Rect(0, 0, 25, 25), 0, 0, 1.0, 0);
+  surface->ScheduleDCLayer(params2);
+
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
+
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain3 =
+      surface->GetLayerSwapChainForTesting(1);
+  EXPECT_NE(swap_chain2, swap_chain3);
+
+  context = nullptr;
+  DestroySurface(std::move(surface));
+}
+
 COLORREF ReadBackWindowPixel(HWND window, const gfx::Point& point) {
   base::win::ScopedCreateDC mem_hdc(::CreateCompatibleDC(nullptr));
   void* bits = nullptr;
@@ -345,33 +446,6 @@ TEST_F(DirectCompositionPixelTest, DCLayersEnabled) {
 
 TEST_F(DirectCompositionPixelTest, DCLayersDisabled) {
   PixelTestSwapChain(false);
-}
-
-base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
-    const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
-    const gfx::Size& size) {
-  D3D11_TEXTURE2D_DESC desc = {};
-  desc.Width = size.width();
-  desc.Height = size.height();
-  desc.MipLevels = 1;
-  desc.ArraySize = 1;
-  desc.Format = DXGI_FORMAT_NV12;
-  desc.Usage = D3D11_USAGE_DEFAULT;
-  desc.SampleDesc.Count = 1;
-  desc.BindFlags = 0;
-
-  std::vector<char> image_data(size.width() * size.height() * 3 / 2);
-  // Y, U, and V should all be Oxff. Output color should be pink.
-  memset(&image_data[0], 0xff, size.width() * size.height() * 3 / 2);
-
-  D3D11_SUBRESOURCE_DATA data = {};
-  data.pSysMem = (const void*)&image_data[0];
-  data.SysMemPitch = size.width();
-
-  base::win::ScopedComPtr<ID3D11Texture2D> texture;
-  HRESULT hr = d3d11_device->CreateTexture2D(&desc, &data, texture.Receive());
-  CHECK(SUCCEEDED(hr));
-  return texture;
 }
 
 bool AreColorsSimilar(int a, int b) {

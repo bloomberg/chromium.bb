@@ -72,6 +72,9 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
     return swap_chain_;
   }
 
+  base::win::ScopedComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
+      size_t index) const;
+
  protected:
   ~DirectCompositionSurfaceWin() override;
 

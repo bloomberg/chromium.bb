@@ -93,6 +93,8 @@ class DCLayerTree {
   video_processor_enumerator() const {
     return video_processor_enumerator_;
   }
+  base::win::ScopedComPtr<IDXGISwapChain1> GetLayerSwapChainForTesting(
+      size_t index) const;
 
  private:
   class SwapChainPresenter;
@@ -183,6 +185,9 @@ class DCLayerTree::SwapChainPresenter {
   float swap_chain_scale_x_ = 0.0f;
   float swap_chain_scale_y_ = 0.0f;
 
+  // This is the GLImage that was presented in the last frame.
+  scoped_refptr<gl::GLImageDXGI> last_gl_image_;
+
   base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
   base::win::ScopedComPtr<IDXGISwapChain1> swap_chain_;
   base::win::ScopedComPtr<ID3D11VideoProcessorOutputView> out_view_;
@@ -249,6 +254,13 @@ void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   CHECK(SUCCEEDED(hr));
 }
 
+base::win::ScopedComPtr<IDXGISwapChain1>
+DCLayerTree::GetLayerSwapChainForTesting(size_t index) const {
+  if (index >= visual_info_.size())
+    return base::win::ScopedComPtr<IDXGISwapChain1>();
+  return visual_info_[index].swap_chain;
+}
+
 DCLayerTree::SwapChainPresenter::SwapChainPresenter(
     DCLayerTree* surface,
     base::win::ScopedComPtr<ID3D11Device> d3d11_device)
@@ -295,7 +307,14 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     swap_chain_size_ = swap_chain_size;
     swap_chain_.Release();
     ReallocateSwapChain();
+  } else if (last_gl_image_ == image_dxgi) {
+    // The swap chain is presenting the same image as last swap, which means
+    // that the image was never returned to the video decoder and should have
+    // the same contents as last time. It shouldn't need to be redrawn.
+    return;
   }
+
+  last_gl_image_ = image_dxgi;
 
   if (!out_view_) {
     base::win::ScopedComPtr<ID3D11Texture2D> texture;
@@ -999,6 +1018,11 @@ gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
 scoped_refptr<base::TaskRunner>
 DirectCompositionSurfaceWin::GetWindowTaskRunnerForTesting() {
   return child_window_.GetTaskRunnerForTesting();
+}
+
+base::win::ScopedComPtr<IDXGISwapChain1>
+DirectCompositionSurfaceWin::GetLayerSwapChainForTesting(size_t index) const {
+  return layer_tree_->GetLayerSwapChainForTesting(index);
 }
 
 }  // namespace gpu
