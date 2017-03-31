@@ -23,13 +23,12 @@
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/browser/shortcuts_provider_test_util.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #endif
@@ -113,12 +112,8 @@ TEST_F(ShortcutsProviderExtensionTest, Extension) {
                            .Build())
           .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
           .Build();
-  extensions::UnloadedExtensionInfo details(
+  extensions::ExtensionRegistry::Get(&profile_)->TriggerOnUnloaded(
       extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
-  content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(&profile_),
-      content::Details<extensions::UnloadedExtensionInfo>(&details));
 
   // Now the URL should have disappeared.
   RunShortcutsProviderTest(provider_, text, false, ExpectedURLs(),

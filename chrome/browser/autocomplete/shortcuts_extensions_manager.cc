@@ -5,36 +5,23 @@
 #include "chrome/browser/autocomplete/shortcuts_extensions_manager.h"
 
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "extensions/features/features.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
-#endif
 
 ShortcutsExtensionsManager::ShortcutsExtensionsManager(Profile* profile)
-    : profile_(profile) {
+    : registry_observer_(this), profile_(profile) {
   DCHECK(profile_);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  notification_registrar_.Add(
-      this, extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(profile_));
-#endif
+  registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
 }
 
 ShortcutsExtensionsManager::~ShortcutsExtensionsManager() {}
 
-void ShortcutsExtensionsManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED, type);
+void ShortcutsExtensionsManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
   scoped_refptr<ShortcutsBackend> shortcuts_backend =
       ShortcutsBackendFactory::GetForProfileIfExists(profile_);
   if (!shortcuts_backend)
@@ -42,8 +29,10 @@ void ShortcutsExtensionsManager::Observe(
 
   // When an extension is unloaded, we want to remove any Shortcuts associated
   // with it.
-  shortcuts_backend->DeleteShortcutsBeginningWithURL(
-      content::Details<extensions::UnloadedExtensionInfo>(details)
-          ->extension->url());
-#endif
+  shortcuts_backend->DeleteShortcutsBeginningWithURL(extension->url());
+}
+
+void ShortcutsExtensionsManager::OnShutdown(
+    extensions::ExtensionRegistry* registry) {
+  registry_observer_.RemoveAll();
 }
