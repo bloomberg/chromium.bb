@@ -20,7 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/profiles/profile.h"
@@ -340,8 +340,6 @@ void CreateIconAndSetRelaunchDetails(const base::FilePath& web_app_path,
                                      const base::FilePath& icon_file,
                                      const web_app::ShortcutInfo& shortcut_info,
                                      HWND hwnd) {
-  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   base::CommandLine command_line =
       shell_integration::CommandLineArgsForLauncher(shortcut_info.url,
                                                     shortcut_info.extension_id,
@@ -376,8 +374,10 @@ void OnShortcutInfoLoadedForSetRelaunchDetails(
   base::FilePath icon_file =
       web_app::internals::GetIconFilePath(web_app_path, shortcut_info->title);
   const web_app::ShortcutInfo& shortcut_info_ref = *shortcut_info;
-  content::BrowserThread::PostBlockingPoolTaskAndReply(
+  base::PostTaskWithTraitsAndReply(
       FROM_HERE,
+      base::TaskTraits().MayBlock().WithPriority(
+          base::TaskPriority::USER_VISIBLE),
       base::Bind(&CreateIconAndSetRelaunchDetails, web_app_path, icon_file,
                  base::ConstRef(shortcut_info_ref), hwnd),
       base::Bind(&web_app::internals::DeleteShortcutInfoOnUIThread,
