@@ -53,9 +53,6 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
     /** Whether the above-the-fold left space for a peeking card to be displayed. */
     private boolean mHasSpaceForPeekingCard;
 
-    /** Whether the above-the-fold view has ever been rendered. */
-    private boolean mHasRenderedAboveTheFoldView;
-
     /** Whether the location bar is shown as part of the UI. */
     private boolean mContainsLocationBar;
 
@@ -70,19 +67,6 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
         mSearchBoxTransitionLength =
                 res.getDimensionPixelSize(R.dimen.ntp_search_box_transition_length);
         mPeekingHeight = res.getDimensionPixelSize(R.dimen.snippets_padding);
-
-        addOnChildAttachStateChangeListener(new OnChildAttachStateChangeListener() {
-            @Override
-            public void onChildViewAttachedToWindow(View view) {
-                if (view == mAboveTheFoldView) {
-                    mHasRenderedAboveTheFoldView = true;
-                    removeOnChildAttachStateChangeListener(this);
-                }
-            }
-
-            @Override
-            public void onChildViewDetachedFromWindow(View view) {}
-        });
 
         mAboveTheFoldView = (NewTabPageLayout) LayoutInflater.from(getContext())
                                     .inflate(R.layout.new_tab_page_layout, this, false);
@@ -134,14 +118,7 @@ public class NewTabPageRecyclerView extends SuggestionsRecyclerView {
             return 0;
         }
 
-        // For the scroll below the fold experiment, the above the fold item must be scrolled away
-        // completely, so the spacer must be large enough even when we're not sure exactly how
-        // large it should be. Returning 0 would lead to http://crbug.com/674432.
-        boolean allowSpaceForInitiallyScrollingBelowTheFold =
-                CardsVariationParameters.isScrollBelowTheFoldEnabled()
-                && !mHasRenderedAboveTheFoldView;
-        if (firstVisiblePos > aboveTheFoldPosition
-                && !allowSpaceForInitiallyScrollingBelowTheFold) {
+        if (firstVisiblePos > aboveTheFoldPosition) {
             // We have enough items to fill the viewport, since we have scrolled past the
             // above-the-fold item. We must check whether the above-the-fold view has been rendered
             // at least once, because it's possible to skip right over it if the initial scroll

@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
-import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -267,16 +266,7 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
                 mUiConfig, offlinePageBridge, mContextMenuManager, /* tileGroupDelegate = */ null);
         newTabPageAdapter.refreshSuggestions();
         mRecyclerView.setAdapter(newTabPageAdapter);
-
-        int scrollOffset;
-        if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
-            scrollPosition = newTabPageAdapter.getFirstHeaderPosition();
-            scrollOffset = getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height);
-        } else {
-            scrollOffset = 0;
-        }
-        mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
-                scrollPosition, scrollOffset);
+        mRecyclerView.getLinearLayoutManager().scrollToPosition(scrollPosition);
 
         setupScrollHandling();
 
