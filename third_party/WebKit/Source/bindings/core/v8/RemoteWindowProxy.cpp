@@ -50,7 +50,7 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
     : WindowProxy(isolate, frame, std::move(world)) {}
 
 void RemoteWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
-  if (m_lifecycle != Lifecycle::ContextInitialized)
+  if (m_lifecycle != Lifecycle::ContextIsInitialized)
     return;
 
   if (behavior == DetachGlobal && !m_globalProxy.isEmpty()) {
@@ -61,8 +61,9 @@ void RemoteWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
 #endif
   }
 
-  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
-  m_lifecycle = Lifecycle::ContextDetached;
+  DCHECK_EQ(m_lifecycle, Lifecycle::ContextIsInitialized);
+  m_lifecycle = behavior == DetachGlobal ? Lifecycle::GlobalObjectIsDetached
+                                         : Lifecycle::FrameIsDetached;
 }
 
 void RemoteWindowProxy::initialize() {
@@ -101,10 +102,9 @@ void RemoteWindowProxy::createContext() {
   didAttachGlobalObject();
 #endif
 
-  // TODO(haraken): Currently we cannot enable the following DCHECK because
-  // an already detached window proxy can be re-initialized. This is wrong.
-  // DCHECK(m_lifecycle == Lifecycle::ContextUninitialized);
-  m_lifecycle = Lifecycle::ContextInitialized;
+  DCHECK(m_lifecycle == Lifecycle::ContextIsUninitialized ||
+         m_lifecycle == Lifecycle::GlobalObjectIsDetached);
+  m_lifecycle = Lifecycle::ContextIsInitialized;
 }
 
 void RemoteWindowProxy::setupWindowPrototypeChain() {

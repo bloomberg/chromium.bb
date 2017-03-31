@@ -45,7 +45,7 @@ namespace blink {
 WindowProxy::~WindowProxy() {
   // clearForClose() or clearForNavigation() must be invoked before destruction
   // starts.
-  DCHECK(m_lifecycle != Lifecycle::ContextInitialized);
+  DCHECK(m_lifecycle != Lifecycle::ContextIsInitialized);
 }
 
 DEFINE_TRACE(WindowProxy) {
@@ -59,7 +59,7 @@ WindowProxy::WindowProxy(v8::Isolate* isolate,
       m_frame(frame),
 
       m_world(std::move(world)),
-      m_lifecycle(Lifecycle::ContextUninitialized) {}
+      m_lifecycle(Lifecycle::ContextIsUninitialized) {}
 
 void WindowProxy::clearForClose() {
   disposeContext(DoNotDetachGlobal);
@@ -70,7 +70,7 @@ void WindowProxy::clearForNavigation() {
 }
 
 v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
-  if (m_lifecycle == Lifecycle::ContextInitialized) {
+  if (m_lifecycle == Lifecycle::ContextIsInitialized) {
     DLOG_IF(FATAL, !m_isGlobalObjectAttached)
         << "Context is initialized but global object is detached!";
     return m_globalProxy.newLocal(m_isolate);
@@ -79,7 +79,7 @@ v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
 }
 
 v8::Local<v8::Object> WindowProxy::releaseGlobal() {
-  DCHECK(m_lifecycle != Lifecycle::ContextInitialized);
+  DCHECK(m_lifecycle != Lifecycle::ContextIsInitialized);
 
   // Make sure the global object was detached from the proxy by calling
   // clearForNavigation().
@@ -140,9 +140,8 @@ void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
 // If there are JS code holds a closure to the old inner window,
 // it won't be able to reach the outer window via its global object.
 void WindowProxy::initializeIfNeeded() {
-  // TODO(haraken): It is wrong to re-initialize an already detached window
-  // proxy. This must be 'if(m_lifecycle == Lifecycle::ContextUninitialized)'.
-  if (m_lifecycle != Lifecycle::ContextInitialized) {
+  if (m_lifecycle == Lifecycle::ContextIsUninitialized ||
+      m_lifecycle == Lifecycle::GlobalObjectIsDetached) {
     initialize();
   }
 }

@@ -42,7 +42,6 @@ namespace blink {
 
 class DOMWindow;
 class Frame;
-class ScriptController;
 
 // WindowProxy implements the split window model of a window for a frame. In the
 // HTML standard, the split window model is composed of the Window interface
@@ -163,16 +162,62 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   virtual bool isLocal() const { return false; }
 
  protected:
-  // TODO(dcheng): Remove this friend declaration once LocalWindowProxyManager
-  // and ScriptController are merged.
-  friend class ScriptController;
-
-  // A valid transition is from ContextUninitialized to ContextInitialized,
-  // and then ContextDetached. Other transitions are forbidden.
+  // Lifecycle represents the following four states.
+  //
+  // * ContextIsUninitialized
+  // We lazily initialize WindowProxies for performance reasons, and this state
+  // is "to be initialized on demand". WindowProxy basically behaves the same as
+  // |ContextIsInitialized| from a point of view of call sites.
+  // - Possible next states: ContextIsInitialized
+  // It's possible to detach the context's frame from the DOM or navigate to a
+  // new page without initializing the WindowProxy, however, there is no
+  // transition to |FrameIsDetached| or |GlobalObjectIsDetached|
+  // because |disposeContext| does not change the state if the state is
+  // |ContextIsUninitialized|. In either case of a) the browsing context
+  // container is detached from the DOM or b) the page is navigated away, there
+  // must be no way for author script to access the context of
+  // |ContextIsUninitialized| because |ContextIsUninitialized| means that author
+  // script has never accessed the context, hence there must exist no reference
+  // to the context.
+  //
+  // * ContextIsInitialized
+  // The context is initialized and its frame is still attached to the DOM.
+  // - Possible next states: FrameIsDetached, GlobalObjectIsDetached
+  //
+  // * GlobalObjectIsDetached
+  // The context is initialized and its frame is still attached to the DOM, but
+  // the global object(inner global)'s Document is no longer the active Document
+  // of the frame (i.e. it is being navigated away). The global object (inner
+  // global) is detached from the global proxy (outer global), but the
+  // (detached) global object and context are still alive, and author script may
+  // have references to the context.
+  // The spec does not support full web features in this state. Blink supports
+  // less things than the spec.
+  // This state is also used when swapping frames.  See also |WebFrame::swap|.
+  // - Possible next states: ContextIsInitialized
+  // This state is in the middle of navigation. Once document loading is
+  // completed, the WindowProxy will always be reinitialized, as
+  // |DocumentLoader::installNewDocument| ends up calling to
+  // |WindowProxy::updateDocument|, which reinitializes the WindowProxy.
+  //
+  // * FrameIsDetached
+  // The context was initialized, but its frame has been detached from the DOM.
+  // Note that the context is still alive and author script may have references
+  // to the context and hence author script may run in the context.
+  // The spec does not support some of web features such as setTimeout, etc. on
+  // a detached window. Blink supports less things than the spec.
+  // V8PerContextData is cut off from the context.
+  // - Possible next states: n/a
   enum class Lifecycle {
-    ContextUninitialized,
-    ContextInitialized,
-    ContextDetached,
+    // v8::Context is not yet initialized.
+    ContextIsUninitialized,
+    // v8::Context is initialized.
+    ContextIsInitialized,
+    // The global object (inner global) is detached from the global proxy (outer
+    // global).
+    GlobalObjectIsDetached,
+    // The context's frame is detached from the DOM.
+    FrameIsDetached,
   };
 
   WindowProxy(v8::Isolate*, Frame&, RefPtr<DOMWrapperWorld>);

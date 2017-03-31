@@ -66,7 +66,7 @@
 namespace blink {
 
 void LocalWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
-  if (m_lifecycle != Lifecycle::ContextInitialized)
+  if (m_lifecycle != Lifecycle::ContextIsInitialized)
     return;
 
   ScriptState::Scope scope(m_scriptState.get());
@@ -104,8 +104,9 @@ void LocalWindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
   V8GCForContextDispose::instance().notifyContextDisposed(
       frame()->isMainFrame());
 
-  DCHECK(m_lifecycle == Lifecycle::ContextInitialized);
-  m_lifecycle = Lifecycle::ContextDetached;
+  DCHECK_EQ(m_lifecycle, Lifecycle::ContextIsInitialized);
+  m_lifecycle = behavior == DetachGlobal ? Lifecycle::GlobalObjectIsDetached
+                                         : Lifecycle::FrameIsDetached;
 }
 
 void LocalWindowProxy::initialize() {
@@ -196,10 +197,9 @@ void LocalWindowProxy::createContext() {
 
   m_scriptState = ScriptState::create(context, m_world);
 
-  // TODO(haraken): Currently we cannot enable the following DCHECK because
-  // an already detached window proxy can be re-initialized. This is wrong.
-  // DCHECK(m_lifecycle == Lifecycle::ContextUninitialized);
-  m_lifecycle = Lifecycle::ContextInitialized;
+  DCHECK(m_lifecycle == Lifecycle::ContextIsUninitialized ||
+         m_lifecycle == Lifecycle::GlobalObjectIsDetached);
+  m_lifecycle = Lifecycle::ContextIsInitialized;
   DCHECK(m_scriptState->contextIsValid());
 }
 
@@ -315,15 +315,14 @@ void LocalWindowProxy::updateDocument() {
   DCHECK(m_world->isMainWorld());
   // For an uninitialized main window proxy, there's nothing we need
   // to update. The update is done when the window proxy gets initialized later.
-  if (m_lifecycle == Lifecycle::ContextUninitialized)
+  if (m_lifecycle == Lifecycle::ContextIsUninitialized)
     return;
 
-  // If this WindowProxy was previously initialized, reinitialize it now to
-  // preserve JS object identity. Otherwise, extant references to the
-  // WindowProxy will be broken.
-  if (m_lifecycle == Lifecycle::ContextDetached) {
+  // For a navigated-away window proxy, reinitialize it as a new window with new
+  // context and document.
+  if (m_lifecycle == Lifecycle::GlobalObjectIsDetached) {
     initialize();
-    DCHECK_EQ(Lifecycle::ContextInitialized, m_lifecycle);
+    DCHECK_EQ(Lifecycle::ContextIsInitialized, m_lifecycle);
     // Initialization internally updates the document properties, so just
     // return afterwards.
     return;
@@ -389,19 +388,18 @@ void LocalWindowProxy::namedItemAdded(HTMLDocument* document,
                                       const AtomicString& name) {
   DCHECK(m_world->isMainWorld());
 
-  // Context must be initialized before this point.
-  DCHECK(m_lifecycle >= Lifecycle::ContextInitialized);
-  // TODO(yukishiino): Is it okay to not update named properties
-  // after the context gets detached?
-  if (m_lifecycle == Lifecycle::ContextDetached)
+  // Currently only contexts in attached frames can change the named items.
+  // TODO(yukishiino): Support detached frame's case, too, since the spec is not
+  // saying that the document needs to be attached to the DOM.
+  // https://html.spec.whatwg.org/C/dom.html#dom-document-nameditem
+  DCHECK(m_lifecycle == Lifecycle::ContextIsInitialized);
+  // TODO(yukishiino): Remove the following if-clause due to the above DCHECK.
+  if (m_lifecycle != Lifecycle::ContextIsInitialized)
     return;
 
   ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Object> documentWrapper =
       m_world->domDataStore().get(document, isolate());
-  // TODO(yukishiino,peria): We should check if the own property with the same
-  // name already exists or not, and if it exists, we shouldn't define a new
-  // accessor property (it fails).
   documentWrapper->SetAccessor(isolate()->GetCurrentContext(),
                                v8String(isolate(), name), getter).ToChecked();
 }
@@ -410,11 +408,13 @@ void LocalWindowProxy::namedItemRemoved(HTMLDocument* document,
                                         const AtomicString& name) {
   DCHECK(m_world->isMainWorld());
 
-  // Context must be initialized before this point.
-  DCHECK(m_lifecycle >= Lifecycle::ContextInitialized);
-  // TODO(yukishiino): Is it okay to not update named properties
-  // after the context gets detached?
-  if (m_lifecycle == Lifecycle::ContextDetached)
+  // Currently only contexts in attached frames can change the named items.
+  // TODO(yukishiino): Support detached frame's case, too, since the spec is not
+  // saying that the document needs to be attached to the DOM.
+  // https://html.spec.whatwg.org/C/dom.html#dom-document-nameditem
+  DCHECK(m_lifecycle == Lifecycle::ContextIsInitialized);
+  // TODO(yukishiino): Remove the following if-clause due to the above DCHECK.
+  if (m_lifecycle != Lifecycle::ContextIsInitialized)
     return;
 
   if (document->hasNamedItem(name) || document->hasExtraNamedItem(name))
@@ -428,13 +428,10 @@ void LocalWindowProxy::namedItemRemoved(HTMLDocument* document,
 }
 
 void LocalWindowProxy::updateSecurityOrigin(SecurityOrigin* origin) {
-  // For an uninitialized main window proxy, there's nothing we need
-  // to update. The update is done when the window proxy gets initialized later.
-  if (m_lifecycle == Lifecycle::ContextUninitialized)
-    return;
-  // TODO(yukishiino): Is it okay to not update security origin when the context
-  // is detached?
-  if (m_lifecycle == Lifecycle::ContextDetached)
+  // For an uninitialized window proxy, there's nothing we need to update. The
+  // update is done when the window proxy gets initialized later.
+  if (m_lifecycle == Lifecycle::ContextIsUninitialized ||
+      m_lifecycle == Lifecycle::GlobalObjectIsDetached)
     return;
 
   setSecurityToken(origin);
