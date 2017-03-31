@@ -318,6 +318,7 @@ EXPERIMENT_LIST="
     one_sided_compound
     smooth_hv
     var_refs
+    rect_intra_pred
 "
 CONFIG_LIST="
     dependency_tracking

@@ -46,6 +46,14 @@ if (aom_config("CONFIG_TX64X64") eq "yes") {
   push @tx_dims, '64';
 }
 
+@tx_sizes = ();
+foreach $w (@tx_dims) {
+  push @tx_sizes, [$w, $w];
+  foreach $h (@tx_dims) {
+    push @tx_sizes, [$w, $h] if ($w >=4 && $h >=4 && ($w == 2*$h || $h == 2*$w));
+  }
+}
+
 @pred_names = qw/dc dc_top dc_left dc_128 v h d207e d63e d45e d117 d135 d153/;
 if (aom_config("CONFIG_ALT_INTRA") eq "yes") {
   push @pred_names, qw/paeth smooth/;
@@ -60,9 +68,8 @@ if (aom_config("CONFIG_ALT_INTRA") eq "yes") {
 # Intra prediction
 #
 
-foreach $dim (@tx_dims) {
-  $w = ${dim};
-  $h = ${dim};
+foreach (@tx_sizes) {
+  ($w, $h) = @$_;
   foreach $pred_name (@pred_names) {
     add_proto "void", "aom_${pred_name}_predictor_${w}x${h}",
               "uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left";
