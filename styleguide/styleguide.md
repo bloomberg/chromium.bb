@@ -13,6 +13,8 @@ Chromium also uses these languages to a lesser degree:
   * [IDL](https://sites.google.com/a/chromium.org/dev/blink/webidl#TOC-Style)
   * [Jinja style guide](https://sites.google.com/a/chromium.org/dev/developers/jinja#TOC-Style) for [Jinja](https://sites.google.com/a/chromium.org/dev/developers/jinja) templates.
 
+Regardless of the language used, please keep code [gender neutral](gender_neutral_code.md).
+
 ## Python
 
 Python code should follow [PEP-8](https://www.python.org/dev/peps/pep-0008/).
