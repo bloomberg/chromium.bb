@@ -256,10 +256,8 @@ SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
   v128 diff = v128_sub_16(a, b);
   const v128 sign = v128_shr_n_s16(diff, 15);
   diff = v128_abs_s16(diff);
-  const v128 zero = v128_zero();
-  const v128 s = v128_max_s16(
-      zero, v128_sub_16(v128_dup_16(strength),
-                        v128_shr_u16(diff, dmp - get_msb(strength))));
+  const v128 s = v128_ssub_u16(v128_dup_16(strength),
+                               v128_shr_u16(diff, dmp - get_msb(strength)));
   return v128_sub_16(v128_xor(sign, v128_min_s16(diff, s)), sign);
 }
 
