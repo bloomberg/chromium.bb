@@ -25,6 +25,12 @@ namespace display {
 class Display;
 }
 
+namespace mash {
+namespace test {
+class MashTestSuite;
+}
+}
+
 namespace ui {
 class ScopedAnimationDurationScaleMode;
 }  // namespace ui
@@ -36,6 +42,8 @@ class WMState;
 namespace ash {
 
 class RootWindowController;
+
+enum class Config;
 
 namespace mus {
 class WindowManagerApplication;
@@ -103,6 +111,10 @@ class AshTestHelper {
   }
 
  private:
+  // These TestSuites need to manipulate |config_|.
+  friend class AshTestSuite;
+  friend class mash::test::MashTestSuite;
+
   // Called when running in mash to create the WindowManager.
   void CreateMashWindowManager();
 
@@ -122,11 +134,13 @@ class AshTestHelper {
 
   std::vector<RootWindowController*> GetRootsOrderedByDisplayId();
 
+  static Config config_;
+
   AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
-  // Owned by ash::AcceleratorController
+  // Owned by ash::AcceleratorController.
   TestScreenshotDelegate* test_screenshot_delegate_;
 
   std::unique_ptr<::wm::WMState> wm_state_;

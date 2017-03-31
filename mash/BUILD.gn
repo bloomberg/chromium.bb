@@ -117,6 +117,7 @@ if (is_chromeos) {
       "//ash:common_unittests",
       "//ash/mus:resources",
       "//ash/mus:unittests",
+      "//ash/public/cpp:ash_public_cpp",
       "//base",
       "//base/test:test_support",
       "//cc",

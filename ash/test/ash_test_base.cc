@@ -18,6 +18,7 @@
 #include "ash/display/unified_mouse_warp_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
+#include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
@@ -135,8 +136,8 @@ void AshTestBase::SetUp() {
   // Move the mouse cursor to far away so that native events doesn't
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
-  // TODO: mash needs to support CursorManager. http://crbug.com/637853.
-  if (!WmShell::Get()->IsRunningInMash())
+  // TODO: mus/mash needs to support CursorManager. http://crbug.com/637853.
+  if (Shell::GetConfig() == Config::CLASSIC)
     Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
@@ -199,7 +200,7 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 
 // static
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  if (WmShell::Get()->IsRunningInMash()) {
+  if (Shell::GetConfig() != Config::CLASSIC) {
     ash_test_helper_->UpdateDisplayForMash(display_specs);
   } else {
     display::test::DisplayManagerTestApi(

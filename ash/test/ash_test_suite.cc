@@ -4,7 +4,9 @@
 
 #include "ash/test/ash_test_suite.h"
 
+#include "ash/public/cpp/config.h"
 #include "ash/test/ash_test_environment.h"
+#include "ash/test/ash_test_helper.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
@@ -13,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/compositor/test/fake_context_factory.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
@@ -54,8 +57,18 @@ void AshTestSuite::Initialize() {
         ash_test_resources_200, ui::SCALE_FACTOR_200P);
   }
 
+  const bool is_mus = base::CommandLine::ForCurrentProcess()->HasSwitch("mus");
+  ash::test::AshTestHelper::config_ = is_mus ? Config::MUS : Config::CLASSIC;
+
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  env_ = aura::Env::CreateInstance();
+  env_ = aura::Env::CreateInstance(is_mus ? aura::Env::Mode::MUS
+                                          : aura::Env::Mode::LOCAL);
+
+  if (is_mus) {
+    context_factory_ = base::MakeUnique<ui::FakeContextFactory>();
+    env_->set_context_factory(context_factory_.get());
+    env_->set_context_factory_private(nullptr);
+  }
 }
 
 void AshTestSuite::Shutdown() {

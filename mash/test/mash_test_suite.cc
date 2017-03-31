@@ -4,6 +4,8 @@
 
 #include "mash/test/mash_test_suite.h"
 
+#include "ash/public/cpp/config.h"
+#include "ash/test/ash_test_helper.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -40,6 +42,8 @@ void MashTestSuite::Initialize() {
   PathService::Get(base::DIR_MODULE, &resources);
   resources = resources.Append(FILE_PATH_LITERAL("ash_mus_resources.pak"));
   ui::ResourceBundle::InitSharedInstanceWithPakPath(resources);
+
+  ash::test::AshTestHelper::config_ = ash::Config::MASH;
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);

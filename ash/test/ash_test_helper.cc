@@ -10,6 +10,7 @@
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/screen_mus.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
@@ -57,11 +58,6 @@ namespace ash {
 namespace test {
 namespace {
 
-bool IsMash() {
-  // TODO(sky): this won't work correctly for detecting mus vs mash.
-  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS;
-}
-
 bool CompareByDisplayId(RootWindowController* root1,
                         RootWindowController* root2) {
   return root1->GetWindow()->GetDisplayNearestWindow().id() <
@@ -69,6 +65,9 @@ bool CompareByDisplayId(RootWindowController* root1,
 }
 
 }  // namespace
+
+// static
+Config AshTestHelper::config_ = Config::CLASSIC;
 
 AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
     : ash_test_environment_(ash_test_environment),
@@ -84,11 +83,10 @@ AshTestHelper::~AshTestHelper() {}
 
 void AshTestHelper::SetUp(bool start_session) {
   display::ResetDisplayIdForTest();
-  const bool is_mash = IsMash();
-  if (is_mash)
+  if (config_ != Config::CLASSIC)
     aura::test::EnvTestHelper().SetAlwaysUseLastMouseLocation(true);
   // WindowManager creates WMState for mash.
-  if (!is_mash)
+  if (config_ == Config::CLASSIC)
     wm_state_ = base::MakeUnique<::wm::WMState>();
   views_delegate_ = ash_test_environment_->CreateViewsDelegate();
 
@@ -101,7 +99,7 @@ void AshTestHelper::SetUp(bool start_session) {
   if (!test_shell_delegate_)
     test_shell_delegate_ = new TestShellDelegate;
 
-  if (!is_mash) {
+  if (config_ == Config::CLASSIC) {
     // All of this initialization is done in WindowManagerApplication for mash.
 
     // Creates MessageCenter since g_browser_process is not created in
@@ -136,7 +134,7 @@ void AshTestHelper::SetUp(bool start_session) {
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
   ui::MaterialDesignController::Initialize();
 
-  if (is_mash)
+  if (config_ != Config::CLASSIC)
     CreateMashWindowManager();
   else
     CreateShell();
@@ -152,7 +150,7 @@ void AshTestHelper::SetUp(bool start_session) {
   if (start_session)
     session_controller_client_->CreatePredefinedUserSessions(1);
 
-  if (!is_mash) {
+  if (config_ == Config::CLASSIC) {
     // ScreenLayoutObserver is specific to classic-ash.
     // Tests that change the display configuration generally don't care about
     // the notifications and the popup UI can interfere with things like
@@ -174,16 +172,20 @@ void AshTestHelper::SetUp(bool start_session) {
         ->accelerator_controller_delegate()
         ->SetScreenshotDelegate(
             std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
+  } else if (config_ == Config::MUS) {
+    test_screenshot_delegate_ = new TestScreenshotDelegate();
+    mus::WmShellMus::Get()
+        ->accelerator_controller_delegate_mus()
+        ->SetScreenshotDelegate(
+            std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
   }
 }
 
 void AshTestHelper::TearDown() {
   window_manager_app_.reset();
 
-  const bool is_mash = IsMash();
-
   // WindowManger owns the Shell in mash.
-  if (!is_mash)
+  if (config_ == Config::CLASSIC)
     Shell::DeleteInstance();
 
   // Suspend the tear down until all resources are returned via
@@ -193,7 +195,7 @@ void AshTestHelper::TearDown() {
 
   test_screenshot_delegate_ = NULL;
 
-  if (!is_mash) {
+  if (config_ == Config::CLASSIC) {
     // Remove global message center state.
     message_center::MessageCenter::Shutdown();
 
@@ -219,8 +221,8 @@ void AshTestHelper::TearDown() {
   views_delegate_.reset();
   wm_state_.reset();
 
-  // WindowManager owns the CaptureController for mash.
-  CHECK(is_mash || !::wm::CaptureController::Get());
+  // WindowManager owns the CaptureController for mus/mash.
+  CHECK(config_ != Config::CLASSIC || !::wm::CaptureController::Get());
 }
 
 void AshTestHelper::RunAllPendingInMessageLoop() {
@@ -251,7 +253,7 @@ void AshTestHelper::UpdateDisplayForMash(const std::string& display_spec) {
   //
   // Once this is fixed, RootWindowControllerTest.MoveWindows_Basic, among
   // other unit tests, should work. http://crbug.com/695632.
-  CHECK(IsMash());
+  CHECK(config_ != Config::CLASSIC);
   const std::vector<std::string> parts = base::SplitString(
       display_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::vector<RootWindowController*> root_window_controllers =
@@ -275,7 +277,7 @@ void AshTestHelper::UpdateDisplayForMash(const std::string& display_spec) {
 }
 
 display::Display AshTestHelper::GetSecondaryDisplay() {
-  if (!IsMash())
+  if (config_ == Config::CLASSIC)
     return Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
 
   std::vector<RootWindowController*> roots = GetRootsOrderedByDisplayId();
@@ -285,11 +287,11 @@ display::Display AshTestHelper::GetSecondaryDisplay() {
 }
 
 void AshTestHelper::CreateMashWindowManager() {
-  CHECK(IsMash());
+  CHECK(config_ != Config::CLASSIC);
   window_manager_app_ = base::MakeUnique<mus::WindowManagerApplication>();
 
   window_manager_app_->window_manager_.reset(
-      new mus::WindowManager(nullptr, Config::MASH));
+      new mus::WindowManager(nullptr, config_));
   window_manager_app_->window_manager()->shell_delegate_.reset(
       test_shell_delegate_);
   window_manager_app_->window_manager()
@@ -321,7 +323,7 @@ void AshTestHelper::CreateMashWindowManager() {
 }
 
 void AshTestHelper::CreateShell() {
-  CHECK(!IsMash());
+  CHECK(config_ == Config::CLASSIC);
   ui::ContextFactory* context_factory = nullptr;
   ui::ContextFactoryPrivate* context_factory_private = nullptr;
   bool enable_pixel_output = false;

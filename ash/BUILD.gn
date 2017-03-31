@@ -1112,6 +1112,7 @@ test("ash_content_unittests") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/chromeos",
+    "//ui/compositor:test_support",
     "//ui/display",
     "//ui/display:test_support",
     "//ui/gl:test_support",
