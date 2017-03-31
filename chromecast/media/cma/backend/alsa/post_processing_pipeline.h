@@ -45,11 +45,13 @@ class PostProcessingPipeline {
   int ringing_time_in_frames_ = 0;
   int silence_frames_processed_ = 0;
   int total_delay_frames_ = 0;
-  std::vector<std::unique_ptr<AudioPostProcessor>> processors_;
 
   // Contains all libraries in use;
   // Functions in shared objects cannot be used once library is closed.
   std::vector<std::unique_ptr<base::ScopedNativeLibrary>> libraries_;
+
+  // Must be after libraries_
+  std::vector<std::unique_ptr<AudioPostProcessor>> processors_;
 
   DISALLOW_COPY_AND_ASSIGN(PostProcessingPipeline);
 };

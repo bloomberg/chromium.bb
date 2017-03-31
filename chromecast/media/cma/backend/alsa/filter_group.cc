@@ -98,5 +98,10 @@ void FilterGroup::ClearActiveInputs() {
   active_inputs_.clear();
 }
 
+void FilterGroup::DisablePostProcessingForTest() {
+  post_processing_pipeline_ =
+      base::MakeUnique<PostProcessingPipeline>(nullptr, channels_);
+}
+
 }  // namespace media
 }  // namespace chromecast

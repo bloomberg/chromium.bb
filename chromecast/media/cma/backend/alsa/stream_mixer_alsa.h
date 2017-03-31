@@ -173,6 +173,7 @@ class StreamMixerAlsa {
   void OnFramesQueued();
 
   void SetAlsaWrapperForTest(std::unique_ptr<AlsaWrapper> alsa_wrapper);
+  void DisablePostProcessingForTest();
   void WriteFramesForTest();  // Can be called on any thread.
   void ClearInputsForTest();  // Removes all inputs.
 

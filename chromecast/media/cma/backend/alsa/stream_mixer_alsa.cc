@@ -590,6 +590,12 @@ void StreamMixerAlsa::SetAlsaWrapperForTest(
   alsa_ = std::move(alsa_wrapper);
 }
 
+void StreamMixerAlsa::DisablePostProcessingForTest() {
+  for (auto& filter : filter_groups_) {
+    filter->DisablePostProcessingForTest();
+  }
+}
+
 void StreamMixerAlsa::WriteFramesForTest() {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::WriteFramesForTest);
   WriteFrames();

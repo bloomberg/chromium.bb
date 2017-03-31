@@ -71,6 +71,9 @@ class FilterGroup {
   // on each mixing iteration.
   void ClearActiveInputs();
 
+  // Resets the PostProcessingPipeline, removing all AudioPostProcessors.
+  void DisablePostProcessingForTest();
+
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
   int BytesPerOutputFormatSample();
