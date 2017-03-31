@@ -17,9 +17,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync/syncable/read_node.h"
+#include "components/sync/syncable/read_transaction.h"
+#include "components/sync/syncable/user_share.h"
 
 using sync_datatype_helper::test;
 
@@ -416,6 +420,14 @@ bool CheckAllProfilesHaveSameURLs() {
       return false;
   }
   return true;
+}
+
+bool CheckSyncDirectoryHasURL(int index, const GURL& url) {
+  syncer::ReadTransaction trans(FROM_HERE,
+                                test()->GetSyncService(index)->GetUserShare());
+  syncer::ReadNode node(&trans);
+  return syncer::BaseNode::INIT_OK ==
+         node.InitByClientTagLookup(syncer::TYPED_URLS, url.spec());
 }
 
 }  // namespace typed_urls_helper

@@ -69,6 +69,9 @@ void SetPageTitle(int index, const GURL& url, const std::string& title);
 // Returns true if all clients have the same URLs.
 bool CheckAllProfilesHaveSameURLs();
 
+// Return ture if a specific sync directory has the typed url.
+bool CheckSyncDirectoryHasURL(int index, const GURL& url);
+
 // Checks that the two vectors contain the same set of URLRows (possibly in
 // a different order).
 bool CheckURLRowVectorsAreEqual(const history::URLRows& left,

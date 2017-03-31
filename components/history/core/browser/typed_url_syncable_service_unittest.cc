@@ -1567,4 +1567,50 @@ TEST_F(TypedUrlSyncableServiceTest, MergeUrlsAfterExpiration) {
   EXPECT_EQ(4U, history_visits[2].visit_time.ToInternalValue());
 }
 
+// Create a local typed URL with one expired TYPED visit,
+// MergeDataAndStartSyncing should not pass it to sync. And then add a non
+// expired visit, OnURLsModified should only send the non expired visit to sync.
+TEST_F(TypedUrlSyncableServiceTest, LocalExpiredTypedUrlDoNotSync) {
+  URLRow row;
+  URLRows changed_urls;
+  VisitVector visits;
+
+  // Add an expired typed URL to local.
+  row = MakeTypedUrlRow(kURL, kTitle, 1, kExpiredVisit, false, &visits);
+  fake_history_backend_->SetVisitsForUrl(row, visits);
+
+  StartSyncing(syncer::SyncDataList());
+
+  // Check change processor did not receive expired typed URL.
+  syncer::SyncChangeList& changes = fake_change_processor_->changes();
+  ASSERT_EQ(0U, changes.size());
+
+  // Add a non expired typed URL to local.
+  row = MakeTypedUrlRow(kURL, kTitle, 2, 1, false, &visits);
+  fake_history_backend_->SetVisitsForUrl(row, visits);
+
+  changed_urls.push_back(row);
+  // Notify typed url sync service of the update.
+  typed_url_sync_service_->OnURLsModified(fake_history_backend_.get(),
+                                          changed_urls);
+
+  // Check change processor did not receive expired typed URL.
+  ASSERT_EQ(1U, changes.size());
+  ASSERT_TRUE(changes[0].IsValid());
+  EXPECT_EQ(syncer::TYPED_URLS, changes[0].sync_data().GetDataType());
+  EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[0].change_type());
+
+  // Get typed url specifics. Verify only a non-expired visit received.
+  sync_pb::TypedUrlSpecifics url_specifics =
+      changes[0].sync_data().GetSpecifics().typed_url();
+
+  EXPECT_TRUE(URLsEqual(row, url_specifics));
+  ASSERT_EQ(1, url_specifics.visits_size());
+  ASSERT_EQ(static_cast<const int>(visits.size() - 1),
+            url_specifics.visits_size());
+  EXPECT_EQ(visits[1].visit_time.ToInternalValue(), url_specifics.visits(0));
+  EXPECT_EQ(static_cast<const int>(visits[1].transition),
+            url_specifics.visit_transitions(0));
+}
+
 }  // namespace history

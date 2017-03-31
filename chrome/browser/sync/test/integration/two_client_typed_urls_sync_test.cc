@@ -26,6 +26,7 @@ using typed_urls_helper::AddUrlToHistoryWithTransition;
 using typed_urls_helper::AreVisitsEqual;
 using typed_urls_helper::AreVisitsUnique;
 using typed_urls_helper::CheckURLRowVectorsAreEqual;
+using typed_urls_helper::CheckSyncDirectoryHasURL;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 using typed_urls_helper::GetUrlFromClient;
@@ -120,6 +121,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
   // Second client should still have no URLs since this one is expired.
   urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(0U, urls.size());
+
+  // Sync should not receive expired visits.
+  EXPECT_FALSE(CheckSyncDirectoryHasURL(0, new_url));
 }
 
 // Flake on mac: http://crbug/115526
@@ -153,6 +157,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
   urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(0U, urls.size());
 
+  // Sync should not receive expired visits.
+  EXPECT_FALSE(CheckSyncDirectoryHasURL(0, new_url));
+
   // Now drive an update on the first client.
   AddUrlToHistory(0, new_url);
 
@@ -162,6 +169,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, MAYBE_AddExpiredThenUpdate) {
   // Second client should have the URL now.
   urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(1U, urls.size());
+
+  // Sync should receive the new visit.
+  EXPECT_TRUE(CheckSyncDirectoryHasURL(0, new_url));
+  EXPECT_TRUE(CheckSyncDirectoryHasURL(1, new_url));
 }
 
 // TCM: 3705291

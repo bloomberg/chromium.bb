@@ -426,10 +426,6 @@ void TypedUrlSyncableService::CreateOrUpdateUrl(
       // Add a new entry to |loaded_data|, and set the iterator to it.
       history::VisitVector untyped_visits;
       if (!FixupURLAndGetVisits(&untyped_url, &untyped_visits)) {
-        // Couldn't load the visits for this URL due to some kind of DB error.
-        // Don't bother writing this URL to the history DB (if we ignore the
-        // error and continue, we might end up duplicating existing visits).
-        DLOG(ERROR) << "Could not load visits for url: " << untyped_url.url();
         return;
       }
       (*visit_vectors)[untyped_url.url()] = untyped_visits;
@@ -804,7 +800,6 @@ bool TypedUrlSyncableService::CreateOrUpdateSyncNode(
   // Get the visits for this node.
   VisitVector visit_vector;
   if (!FixupURLAndGetVisits(&url, &visit_vector)) {
-    DLOG(ERROR) << "Could not load visits for url: " << url.url();
     return false;
   }
 
@@ -967,6 +962,10 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(URLRow* url,
   if (!history_backend_->GetMostRecentVisitsForURL(url->id(), kMaxVisitsToFetch,
                                                    visits)) {
     ++num_db_errors_;
+    // Couldn't load the visits for this URL due to some kind of DB error.
+    // Don't bother writing this URL to the history DB (if we ignore the
+    // error and continue, we might end up duplicating existing visits).
+    DLOG(ERROR) << "Could not load visits for url: " << url->url();
     return false;
   }
 
@@ -998,6 +997,29 @@ bool TypedUrlSyncableService::FixupURLAndGetVisits(URLRow* url,
   // crashes/bugs can cause them to mismatch), so just set it here.
   url->set_last_visit(visits->back().visit_time);
   DCHECK(CheckVisitOrdering(*visits));
+
+  // Removes all visits that are older than the current expiration time. Visits
+  // are in ascending order now, so we can check from beginning to check how
+  // many expired visits.
+  size_t num_expired_visits = 0;
+  for (auto& visit : *visits) {
+    base::Time time = visit.visit_time;
+    if (history_backend_->IsExpiredVisitTime(time)) {
+      ++num_expired_visits;
+    } else {
+      break;
+    }
+  }
+  if (num_expired_visits != 0) {
+    if (num_expired_visits == visits->size()) {
+      DVLOG(1) << "All visits are expired for url: " << url->url();
+      visits->clear();
+      return false;
+    }
+    visits->erase(visits->begin(), visits->begin() + num_expired_visits);
+  }
+  DCHECK(CheckVisitOrdering(*visits));
+
   return true;
 }
 
@@ -1014,10 +1036,6 @@ void TypedUrlSyncableService::UpdateFromSyncDB(
     // This URL already exists locally - fetch the visits so we can
     // merge them below.
     if (!FixupURLAndGetVisits(&new_url, &existing_visits)) {
-      // Couldn't load the visits for this URL due to some kind of DB error.
-      // Don't bother writing this URL to the history DB (if we ignore the
-      // error and continue, we might end up duplicating existing visits).
-      DLOG(ERROR) << "Could not load visits for url: " << new_url.url();
       return;
     }
   }
