@@ -15,11 +15,13 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_W
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
+import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -315,5 +317,96 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
 
         executeStepAndWait("stepCheckFrameDataWhileNonFocusedTab()", mWebContents);
         endTest(mWebContents);
+    }
+
+    /**
+     * Helper function to run the tests checking for the upgrade/install InfoBar
+     * being present since all that differs is the value returned by VrCoreVersionChecker
+     * and a couple asserts.
+     * @param checkerReturnValue The value to have the VrCoreVersionChecker return
+     */
+    private void infoBarTestHelper(int checkerReturnValue) throws InterruptedException {
+        MockVrCoreVersionCheckerImpl mockChecker = new MockVrCoreVersionCheckerImpl();
+        mockChecker.setMockReturnValue(checkerReturnValue);
+        VrShellDelegate.getInstanceForTesting().overrideVrCoreVersionCheckerForTesting(mockChecker);
+        String testName = "generic_webvr_page";
+        loadUrl(getHtmlTestFile(testName), 10);
+        String displayFound = "VRDisplay Found";
+        String barPresent = "InfoBar present";
+        if (checkerReturnValue == VrCoreVersionChecker.VR_READY) {
+            assertTrue(displayFound, vrDisplayFound(mWebContents));
+            assertFalse(barPresent,
+                    VrUtils.isUpdateInstallInfoBarPresent(
+                            getActivity().getWindow().getDecorView()));
+        } else if (checkerReturnValue == VrCoreVersionChecker.VR_OUT_OF_DATE
+                || checkerReturnValue == VrCoreVersionChecker.VR_NOT_AVAILABLE) {
+            // Out of date and missing cases are the same, but with different text
+            String expectedMessage, expectedButton;
+            if (checkerReturnValue == VrCoreVersionChecker.VR_OUT_OF_DATE) {
+                expectedMessage =
+                        getActivity().getString(R.string.vr_services_check_infobar_update_text);
+                expectedButton =
+                        getActivity().getString(R.string.vr_services_check_infobar_update_button);
+            } else {
+                expectedMessage =
+                        getActivity().getString(R.string.vr_services_check_infobar_install_text);
+                expectedButton =
+                        getActivity().getString(R.string.vr_services_check_infobar_install_button);
+            }
+            assertFalse(displayFound, vrDisplayFound(mWebContents));
+            assertTrue(barPresent,
+                    VrUtils.isUpdateInstallInfoBarPresent(
+                            getActivity().getWindow().getDecorView()));
+            TextView tempView = (TextView) getActivity().getWindow().getDecorView().findViewById(
+                    R.id.infobar_message);
+            assertEquals(expectedMessage, tempView.getText().toString());
+            tempView = (TextView) getActivity().getWindow().getDecorView().findViewById(
+                    R.id.button_primary);
+            assertEquals(expectedButton, tempView.getText().toString());
+        } else if (checkerReturnValue == VrCoreVersionChecker.VR_NOT_SUPPORTED) {
+            assertFalse(displayFound, vrDisplayFound(mWebContents));
+            assertFalse(barPresent,
+                    VrUtils.isUpdateInstallInfoBarPresent(
+                            getActivity().getWindow().getDecorView()));
+        } else {
+            fail("Invalid VrCoreVersionChecker value: " + String.valueOf(checkerReturnValue));
+        }
+        assertEquals(checkerReturnValue, mockChecker.getLastReturnValue());
+    }
+
+    /**
+     * Tests that the upgrade/install VR Services InfoBar is not present when
+     * VR Services is installed and up to date.
+     */
+    @MediumTest
+    public void testInfoBarNotPresentWhenVrServicesCurrent() throws InterruptedException {
+        infoBarTestHelper(VrCoreVersionChecker.VR_READY);
+    }
+
+    /**
+     * Tests that the upgrade VR Services InfoBar is present when
+     * VR Services is outdated.
+     */
+    @MediumTest
+    public void testInfoBarPresentWhenVrServicesOutdated() throws InterruptedException {
+        infoBarTestHelper(VrCoreVersionChecker.VR_OUT_OF_DATE);
+    }
+
+    /**
+     * Tests that the install VR Services InfoBar is present when VR
+     * Services is missing.
+     */
+    @MediumTest
+    public void testInfoBarPresentWhenVrServicesMissing() throws InterruptedException {
+        infoBarTestHelper(VrCoreVersionChecker.VR_NOT_AVAILABLE);
+    }
+
+    /**
+     * Tests that the install VR Services InfoBar is not present when VR
+     * is not supported on the device.
+     */
+    @MediumTest
+    public void testInfoBarNotPresentWhenVrServicesNotSupported() throws InterruptedException {
+        infoBarTestHelper(VrCoreVersionChecker.VR_NOT_SUPPORTED);
     }
 }

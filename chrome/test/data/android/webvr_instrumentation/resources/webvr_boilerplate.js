@@ -67,6 +67,8 @@ if (navigator.getVRDisplays) {
   }).then( () => {
     vrDisplayPromiseDone = true;
   });
+} else {
+  vrDisplayPromiseDone = true;
 }
 
 gl.clearColor(1.0, 0.0, 0.0, 1.0);

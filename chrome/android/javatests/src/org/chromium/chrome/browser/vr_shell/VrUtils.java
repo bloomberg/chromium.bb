@@ -11,8 +11,11 @@ import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.infobar.InfoBarLayout;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -121,5 +124,26 @@ public class VrUtils {
                 return VrShellDelegate.isInVR();
             }
         }), timeout, POLL_CHECK_INTERVAL_SHORT_MS);
+    }
+
+    /**
+     * Determines whether an InfoBar prompting the user to install/update VR
+     * Services is present.
+     * @param parentView The View to start the search in
+     * @return Whether the InfoBar is present
+     */
+    public static boolean isUpdateInstallInfoBarPresent(View parentView) {
+        // InfoBarContainer will be present regardless of whether an InfoBar
+        // is actually there, but InfoBarLayout is only present if one is
+        // currently showing.
+        if (parentView instanceof InfoBarLayout) {
+            return true;
+        } else if (parentView instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) parentView;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                if (isUpdateInstallInfoBarPresent(group.getChildAt(i))) return true;
+            }
+        }
+        return false;
     }
 }

@@ -824,6 +824,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     }
 
     /**
+     * @param versionChecker The VrCoreVersionChecker object this delegate will use
+     */
+    @VisibleForTesting
+    public void overrideVrCoreVersionCheckerForTesting(VrCoreVersionChecker versionChecker) {
+        mVrCoreVersionChecker = versionChecker;
+    }
+
+    /**
      * @return Pointer to the native VrShellDelegate object.
      */
     @CalledByNative
