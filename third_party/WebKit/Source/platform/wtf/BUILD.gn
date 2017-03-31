@@ -20,14 +20,16 @@
 #
 # When we finish moving all the files, "platform_wtf" target will take over
 # the role of "wtf".
-#
-# TODO(yutak): Set up platform_wtf_unittests in the similar manner.
 
 assert(!is_ios)
 
+import("//testing/test.gni")
 import("//third_party/WebKit/Source/config.gni")
 
-visibility = [ "//third_party/WebKit/Source/wtf/*" ]
+visibility = [
+  ":*",
+  "//third_party/WebKit/Source/wtf/*",
+]
 
 config("wtf_config") {
   if (is_win) {
@@ -57,7 +59,7 @@ config("wtf_config") {
   }
 }
 
-source_set("platform_wtf") {
+component("platform_wtf") {
   sources = [
     "ASCIICType.cpp",
     "ASCIICType.h",
@@ -329,4 +331,69 @@ source_set("platform_wtf") {
     configs -= [ "//build/config/compiler:default_symbols" ]
     configs += [ "//build/config/compiler:no_symbols" ]
   }
+}
+
+test("wtf_unittests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ "*" ]
+
+  sources = [
+    "ASCIICTypeTest.cpp",
+    "AssertionsTest.cpp",
+    "DequeTest.cpp",
+    "FunctionalTest.cpp",
+    "HashMapTest.cpp",
+    "HashSetTest.cpp",
+    "ListHashSetTest.cpp",
+    "MathExtrasTest.cpp",
+    "OptionalTest.cpp",
+    "PassRefPtrTest.cpp",
+    "RefPtrTest.cpp",
+    "StringExtrasTest.cpp",
+    "StringHasherTest.cpp",
+    "TimeTest.cpp",
+    "TreeNodeTest.cpp",
+    "TypeTraitsTest.cpp",
+    "VectorTest.cpp",
+    "dtoa_test.cpp",
+    "testing/RunAllTests.cpp",
+    "text/AtomicStringTest.cpp",
+    "text/CStringTest.cpp",
+    "text/IntegerToStringConversionTest.cpp",
+    "text/StringBufferTest.cpp",
+    "text/StringBuilderTest.cpp",
+    "text/StringImplTest.cpp",
+    "text/StringOperatorsTest.cpp",
+    "text/StringToNumberTest.cpp",
+    "text/StringViewTest.cpp",
+    "text/TextCodecICUTest.cpp",
+    "text/TextCodecLatin1Test.cpp",
+    "text/TextCodecReplacementTest.cpp",
+    "text/TextCodecTest.cpp",
+    "text/TextCodecUTF8Test.cpp",
+    "text/TextCodecUserDefinedTest.cpp",
+    "text/TextEncodingTest.cpp",
+    "text/WTFStringTest.cpp",
+    "typed_arrays/ArrayBufferBuilderTest.cpp",
+  ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  if (is_win) {
+    cflags = [ "/wd4068" ]  # Unknown pragma.
+  }
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:blink_pch",
+  ]
+
+  deps = [
+    ":platform_wtf",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
