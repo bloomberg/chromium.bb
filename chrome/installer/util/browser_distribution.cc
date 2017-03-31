@@ -12,23 +12,15 @@
 #include <utility>
 
 #include "base/atomicops.h"
-#include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/win/registry.h"
-#include "base/win/windows_version.h"
-#include "chrome/common/env_vars.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/non_updating_app_registration_data.h"
-
-using installer::MasterPreferences;
 
 namespace {
 

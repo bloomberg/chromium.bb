@@ -10,10 +10,8 @@
 #include <memory>
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -22,6 +20,11 @@
 #endif
 
 class AppRegistrationData;
+
+namespace base {
+class FilePath;
+class Version;
+}
 
 class BrowserDistribution {
  public:
