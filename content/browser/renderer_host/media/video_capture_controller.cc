@@ -46,6 +46,21 @@ static const int kInfiniteRatio = 99999;
   UMA_HISTOGRAM_SPARSE_SLOWLY(                          \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
+void CallOnError(VideoCaptureControllerEventHandler* client,
+                 VideoCaptureControllerID id) {
+  client->OnError(id);
+}
+
+void CallOnStarted(VideoCaptureControllerEventHandler* client,
+                   VideoCaptureControllerID id) {
+  client->OnStarted(id);
+}
+
+void CallOnStartedUsingGpuDecode(VideoCaptureControllerEventHandler* client,
+                                 VideoCaptureControllerID id) {
+  client->OnStartedUsingGpuDecode(id);
+}
+
 }  // anonymous namespace
 
 struct VideoCaptureController::ControllerClient {
@@ -398,15 +413,14 @@ void VideoCaptureController::OnFrameReadyInBuffer(
             mapped_size, buffer_context_id);
       }
 
-      client->event_handler->OnBufferReady(client->controller_id,
-                                           buffer_context_id, frame_info);
-
       if (!base::ContainsValue(client->buffers_in_use, buffer_context_id))
         client->buffers_in_use.push_back(buffer_context_id);
       else
         NOTREACHED() << "Unexpected duplicate buffer: " << buffer_context_id;
 
       buffer_context_iter->IncreaseConsumerCount();
+      client->event_handler->OnBufferReady(client->controller_id,
+                                           buffer_context_id, frame_info);
     }
     if (buffer_context_iter->HasConsumers()) {
       buffer_context_iter->set_read_permission(
@@ -451,12 +465,7 @@ void VideoCaptureController::OnBufferRetired(int buffer_id) {
 void VideoCaptureController::OnError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
-
-  for (const auto& client : controller_clients_) {
-    if (client->session_closed)
-      continue;
-    client->event_handler->OnError(client->controller_id);
-  }
+  PerformForClientsWithOpenSession(base::Bind(&CallOnError));
 }
 
 void VideoCaptureController::OnLog(const std::string& message) {
@@ -467,12 +476,11 @@ void VideoCaptureController::OnLog(const std::string& message) {
 void VideoCaptureController::OnStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_STARTED;
+  PerformForClientsWithOpenSession(base::Bind(&CallOnStarted));
+}
 
-  for (const auto& client : controller_clients_) {
-    if (client->session_closed)
-      continue;
-    client->event_handler->OnStarted(client->controller_id);
-  }
+void VideoCaptureController::OnStartedUsingGpuDecode() {
+  PerformForClientsWithOpenSession(base::Bind(&CallOnStartedUsingGpuDecode));
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
@@ -545,6 +553,16 @@ void VideoCaptureController::ReleaseBufferContext(
     }
   }
   buffer_contexts_.erase(buffer_context_iter);
+}
+
+void VideoCaptureController::PerformForClientsWithOpenSession(
+    EventHandlerAction action) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const auto& client : controller_clients_) {
+    if (client->session_closed)
+      continue;
+    action.Run(client->event_handler, client->controller_id);
+  }
 }
 
 }  // namespace content

@@ -156,6 +156,7 @@ static const char* const kSwitchNames[] = {
     switches::kTraceConfigFile,
     switches::kTraceStartup,
     switches::kTraceToConsole,
+    switches::kUseFakeJpegDecodeAccelerator,
     switches::kUseGpuInTests,
     switches::kV,
     switches::kVModule,

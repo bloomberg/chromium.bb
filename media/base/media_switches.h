@@ -58,6 +58,7 @@ MEDIA_EXPORT extern const char kDisableMojoRenderer[];
 MEDIA_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 MEDIA_EXPORT extern const char kUseFileForFakeVideoCapture[];
 MEDIA_EXPORT extern const char kUseFileForFakeAudioCapture[];
+MEDIA_EXPORT extern const char kUseFakeJpegDecodeAccelerator[];
 
 MEDIA_EXPORT extern const char kEnableInbandTextTracks[];
 

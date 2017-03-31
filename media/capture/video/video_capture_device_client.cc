@@ -104,7 +104,11 @@ VideoCaptureDeviceClient::VideoCaptureDeviceClient(
       jpeg_decoder_factory_callback_(jpeg_decoder_factory),
       external_jpeg_decoder_initialized_(false),
       buffer_pool_(std::move(buffer_pool)),
-      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {}
+      last_captured_pixel_format_(media::PIXEL_FORMAT_UNKNOWN) {
+  on_started_using_gpu_cb_ =
+      base::Bind(&VideoFrameReceiver::OnStartedUsingGpuDecode,
+                 base::Unretained(receiver_.get()));
+}
 
 VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {
   // This should be on the platform auxiliary thread since
@@ -281,6 +285,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     } else if (status == VideoCaptureJpegDecoder::INIT_PASSED &&
                format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
                rotation == 0 && !flip) {
+      if (on_started_using_gpu_cb_)
+        std::move(on_started_using_gpu_cb_).Run();
       external_jpeg_decoder_->DecodeCapturedData(
           data, length, format, reference_time, timestamp, std::move(buffer));
       return;
@@ -336,9 +342,8 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
 
   if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer_id)) {
     receiver_->OnNewBufferHandle(
-        buffer_id,
-        base::MakeUnique<BufferPoolBufferHandleProvider>(buffer_pool_,
-                                                         buffer_id));
+        buffer_id, base::MakeUnique<BufferPoolBufferHandleProvider>(
+                       buffer_pool_, buffer_id));
     buffer_ids_known_by_receiver_.push_back(buffer_id);
   }
 

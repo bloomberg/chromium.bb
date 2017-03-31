@@ -33,6 +33,7 @@ class ReceiverMojoToMediaAdapter : public media::VideoFrameReceiver {
   void OnError() override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
+  void OnStartedUsingGpuDecode() override;
 
  private:
   mojom::ReceiverPtr receiver_;

@@ -18,6 +18,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/ipc/client/gpu_jpeg_decode_accelerator_host.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -47,7 +48,9 @@ void VideoCaptureGpuJpegDecoder::Initialize() {
   DCHECK(CalledOnValidThread());
 
   base::AutoLock lock(lock_);
-  bool is_platform_supported = false;
+  bool is_platform_supported =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeJpegDecodeAccelerator);
 #if defined(OS_CHROMEOS)
   // Non-ChromeOS platforms do not support HW JPEG decode now. Do not establish
   // gpu channel to avoid introducing overhead.

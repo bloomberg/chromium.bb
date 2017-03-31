@@ -151,6 +151,7 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
  public:
   MOCK_METHOD1(OnError, void(VideoCaptureControllerID id));
   MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID id));
+  MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID id));
 
   void OnBufferCreated(VideoCaptureControllerID id,
                        mojo::ScopedSharedBufferHandle handle,
