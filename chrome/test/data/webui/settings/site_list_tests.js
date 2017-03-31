@@ -430,8 +430,7 @@ cr.define('site_list', function() {
             return true;
         }
         return false;
-      };
-
+      }
 
       /**
        * Configures the test element for a particular category.

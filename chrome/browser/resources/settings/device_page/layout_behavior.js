@@ -36,7 +36,7 @@ var LayoutBehavior = {
   calculatedBoundsMap_: new Map(),
 
   /** @private {string} */
-  dragLayoutId: '',
+  dragLayoutId_: '',
 
   /** @private {string} */
   dragParentId_: '',
@@ -52,7 +52,7 @@ var LayoutBehavior = {
    * @param {!Array<!chrome.system.display.DisplayLayout>} layouts
    */
   initializeDisplayLayout: function(displays, layouts) {
-    this.dragLayoutId = '';
+    this.dragLayoutId_ = '';
     this.dragParentId_ = '';
 
     this.mirroring = displays.length > 0 && !!displays[0].mirroringSourceId;
@@ -85,7 +85,7 @@ var LayoutBehavior = {
    * @return {!chrome.system.display.Bounds}
    */
   updateDisplayBounds: function(id, newBounds) {
-    this.dragLayoutId = id;
+    this.dragLayoutId_ = id;
 
     // Find the closest parent.
     var closestId = this.findClosest_(id, newBounds);
@@ -134,7 +134,7 @@ var LayoutBehavior = {
    */
   finishUpdateDisplayBounds: function(id) {
     this.highlightEdge_('', undefined);  // Remove any highlights.
-    if (id != this.dragLayoutId || !this.dragBounds_ ||
+    if (id != this.dragLayoutId_ || !this.dragBounds_ ||
         !this.dragLayoutPosition_) {
       return;
     }

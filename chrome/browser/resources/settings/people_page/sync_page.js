@@ -35,13 +35,6 @@ var SyncPrefsIndividualDataTypes = [
 /**
  * @fileoverview
  * 'settings-sync-page' is the settings page containing sync settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-sync-page></settings-sync-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-sync-page',
@@ -53,7 +46,7 @@ Polymer({
 
   properties: {
     /** @private */
-    pages: {
+    pages_: {
       type: Object,
       value: settings.PageStatus,
       readOnly: true,
@@ -355,7 +348,7 @@ Polymer({
           settings.navigateTo(settings.Route.PEOPLE);
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
-        if (this.pageStatus_ == this.pages.CONFIGURE &&
+        if (this.pageStatus_ == this.pages_.CONFIGURE &&
             this.syncPrefs && this.syncPrefs.passphraseRequired) {
           this.$$('#existingPassphraseInput').invalid = true;
         }

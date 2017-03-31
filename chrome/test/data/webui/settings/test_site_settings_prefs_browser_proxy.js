@@ -97,7 +97,7 @@ var TestSiteSettingsPrefsBrowserProxy = function() {
   ]);
 
   /** @private {boolean} */
-  this.hasIncognito = false;
+  this.hasIncognito_ = false;
 
   /** @private {!SiteSettingsPref} */
   this.prefs_ = prefsEmpty;
@@ -126,7 +126,7 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
    * @param {boolean} hasIncognito True for session started.
    */
   setIncognito: function(hasIncognito) {
-    this.hasIncognito = hasIncognito;
+    this.hasIncognito_ = hasIncognito;
     cr.webUIListenerCallback('onIncognitoStatusChanged', hasIncognito);
   },
 
@@ -279,7 +279,7 @@ TestSiteSettingsPrefsBrowserProxy.prototype = {
 
     assert(pref != undefined, 'Pref is missing for ' + contentType);
 
-    if (this.hasIncognito) {
+    if (this.hasIncognito_) {
       var incognitoElements = [];
       for (var i = 0; i < pref.length; ++i)
         incognitoElements.push(Object.assign({incognito: true}, pref[i]));

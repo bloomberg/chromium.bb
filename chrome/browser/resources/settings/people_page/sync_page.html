@@ -58,16 +58,16 @@
         border-top: var(--settings-separator-line);
       }
     </style>
-    <div id="[[pages.SPINNER]]" class="settings-box first"
-        hidden$="[[!isStatus_(pages.SPINNER, pageStatus_)]]">
+    <div id="[[pages_.SPINNER]]" class="settings-box first"
+        hidden$="[[!isStatus_(pages_.SPINNER, pageStatus_)]]">
       $i18n{syncLoading}
     </div>
-    <div id="[[pages.TIMEOUT]]" class="settings-box first"
-        hidden$="[[!isStatus_(pages.TIMEOUT, pageStatus_)]]">
+    <div id="[[pages_.TIMEOUT]]" class="settings-box first"
+        hidden$="[[!isStatus_(pages_.TIMEOUT, pageStatus_)]]">
       $i18n{syncTimeout}
     </div>
-    <div id="[[pages.CONFIGURE]]"
-        hidden$="[[!isStatus_(pages.CONFIGURE, pageStatus_)]]">
+    <div id="[[pages_.CONFIGURE]]"
+        hidden$="[[!isStatus_(pages_.CONFIGURE, pageStatus_)]]">
       <template is="dom-if" if="[[syncPrefs.passphraseRequired]]">
         <div id="existingPassphrase" class="list-frame">
           <div class="list-item">
