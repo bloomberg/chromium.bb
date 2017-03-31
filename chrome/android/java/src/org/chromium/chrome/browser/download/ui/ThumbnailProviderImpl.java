@@ -73,8 +73,8 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         String filePath = request.getFilePath();
         if (TextUtils.isEmpty(filePath)) return null;
 
-        Bitmap cachedBitmap = getBitmapCache().get(filePath).first;
-        if (cachedBitmap != null && !cachedBitmap.isRecycled()) return cachedBitmap;
+        Bitmap cachedBitmap = getBitmapFromCache(filePath);
+        if (cachedBitmap != null) return cachedBitmap;
 
         mRequestQueue.offer(request);
         processQueue();
@@ -96,14 +96,22 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
         });
     }
 
+    private Bitmap getBitmapFromCache(String filePath) {
+        Pair<Bitmap, Integer> cachedBitmapPair = getBitmapCache().get(filePath);
+        if (cachedBitmapPair == null) return null;
+        Bitmap cachedBitmap = cachedBitmapPair.first;
+        if (cachedBitmap == null || cachedBitmap.isRecycled()) return null;
+        return cachedBitmap;
+    }
+
     private void processNextRequest() {
         if (!isInitialized() || mCurrentRequest != null || mRequestQueue.isEmpty()) return;
 
         mCurrentRequest = mRequestQueue.poll();
         String currentFilePath = mCurrentRequest.getFilePath();
 
-        Bitmap cachedBitmap = getBitmapCache().get(currentFilePath).first;
-        if (cachedBitmap == null || cachedBitmap.isRecycled()) {
+        Bitmap cachedBitmap = getBitmapFromCache(currentFilePath);
+        if (cachedBitmap == null) {
             // Asynchronously process the file to make a thumbnail.
             nativeRetrieveThumbnail(mNativeThumbnailProvider, currentFilePath, mIconSizePx);
         } else {
