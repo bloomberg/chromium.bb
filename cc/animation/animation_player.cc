@@ -331,6 +331,7 @@ void AnimationPlayer::RemoveFromTicking() {
   DCHECK(animation_host_);
   // Resetting last_tick_time_ here ensures that calling ::UpdateState
   // before ::Animate doesn't start an animation.
+  is_ticking_ = false;
   last_tick_time_ = base::TimeTicks();
   animation_host_->RemoveFromTicking(this);
 }
