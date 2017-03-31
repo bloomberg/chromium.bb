@@ -34,7 +34,6 @@ class SVGStringListTearOff;
 class CORE_EXPORT SVGTests : public GarbageCollectedMixin {
  public:
   // JS API
-  SVGStringListTearOff* requiredFeatures();
   SVGStringListTearOff* requiredExtensions();
   SVGStringListTearOff* systemLanguage();
 
@@ -48,7 +47,6 @@ class CORE_EXPORT SVGTests : public GarbageCollectedMixin {
   explicit SVGTests(SVGElement* contextElement);
 
  private:
-  Member<SVGStaticStringList> m_requiredFeatures;
   Member<SVGStaticStringList> m_requiredExtensions;
   Member<SVGStaticStringList> m_systemLanguage;
 };

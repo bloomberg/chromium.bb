@@ -4368,7 +4368,6 @@ interface SVGAnimationElement : SVGElement
     getter onend
     getter onrepeat
     getter requiredExtensions
-    getter requiredFeatures
     getter systemLanguage
     getter targetElement
     method beginElement
@@ -4907,7 +4906,6 @@ interface SVGGraphicsElement : SVGElement
     getter farthestViewportElement
     getter nearestViewportElement
     getter requiredExtensions
-    getter requiredFeatures
     getter systemLanguage
     getter transform
     method constructor
@@ -5003,7 +5001,6 @@ interface SVGMaskElement : SVGElement
     getter maskContentUnits
     getter maskUnits
     getter requiredExtensions
-    getter requiredFeatures
     getter systemLanguage
     getter width
     getter x
@@ -5069,7 +5066,6 @@ interface SVGPatternElement : SVGElement
     getter patternUnits
     getter preserveAspectRatio
     getter requiredExtensions
-    getter requiredFeatures
     getter systemLanguage
     getter viewBox
     getter width

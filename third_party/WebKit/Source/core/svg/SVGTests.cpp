@@ -28,10 +28,7 @@
 namespace blink {
 
 SVGTests::SVGTests(SVGElement* contextElement)
-    : m_requiredFeatures(
-          SVGStaticStringList::create(contextElement,
-                                      SVGNames::requiredFeaturesAttr)),
-      m_requiredExtensions(
+    : m_requiredExtensions(
           SVGStaticStringList::create(contextElement,
                                       SVGNames::requiredExtensionsAttr)),
       m_systemLanguage(
@@ -39,19 +36,13 @@ SVGTests::SVGTests(SVGElement* contextElement)
                                       SVGNames::systemLanguageAttr)) {
   DCHECK(contextElement);
 
-  contextElement->addToPropertyMap(m_requiredFeatures);
   contextElement->addToPropertyMap(m_requiredExtensions);
   contextElement->addToPropertyMap(m_systemLanguage);
 }
 
 DEFINE_TRACE(SVGTests) {
-  visitor->trace(m_requiredFeatures);
   visitor->trace(m_requiredExtensions);
   visitor->trace(m_systemLanguage);
-}
-
-SVGStringListTearOff* SVGTests::requiredFeatures() {
-  return m_requiredFeatures->tearOff();
 }
 
 SVGStringListTearOff* SVGTests::requiredExtensions() {
@@ -63,8 +54,6 @@ SVGStringListTearOff* SVGTests::systemLanguage() {
 }
 
 bool SVGTests::isValid() const {
-  // No need to check requiredFeatures since hasFeature always returns true.
-
   if (m_systemLanguage->isSpecified()) {
     bool matchFound = false;
     for (const auto& value : m_systemLanguage->value()->values()) {
@@ -84,8 +73,7 @@ bool SVGTests::isValid() const {
 }
 
 bool SVGTests::isKnownAttribute(const QualifiedName& attrName) {
-  return attrName == SVGNames::requiredFeaturesAttr ||
-         attrName == SVGNames::requiredExtensionsAttr ||
+  return attrName == SVGNames::requiredExtensionsAttr ||
          attrName == SVGNames::systemLanguageAttr;
 }
 
