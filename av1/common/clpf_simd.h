@@ -13,16 +13,14 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/bitops.h"
 
-// sign(a - b) * max(0, abs(a - b) - max(0, abs(a - b) -
-// strength + (abs(a - b) >> (5 - log2(s)))))
+// sign(a-b) * min(abs(a-b), strength - (abs(a-b) >> (dmp-log2(strength))))
 SIMD_INLINE v128 constrain(v128 a, v128 b, unsigned int strength,
                            unsigned int damping) {
   const v128 diff = v128_sub_8(v128_max_u8(a, b), v128_min_u8(a, b));
   const v128 sign = v128_cmpeq_8(v128_min_u8(a, b), a);  // -(a <= b)
   const v128 s = v128_ssub_u8(v128_dup_8(strength),
                               v128_shr_u8(diff, damping - get_msb(strength)));
-  return v128_sub_8(v128_xor(sign, v128_ssub_u8(diff, v128_ssub_u8(diff, s))),
-                    sign);
+  return v128_sub_8(v128_xor(sign, v128_min_u8(diff, s)), sign);
 }
 
 // delta = 1/16 * constrain(a, x, s) + 3/16 * constrain(b, x, s) +
@@ -252,8 +250,7 @@ void SIMD_FUNC(aom_clpf_hblock)(uint8_t *dst, const uint16_t *src, int dstride,
   }
 }
 
-// sign(a - b) * max(0, abs(a - b) - max(0, abs(a - b) -
-// strength + (abs(a - b) >> (dmp - log2(s)))))
+// sign(a-b) * min(abs(a-b), strength - (abs(a-b) >> (dmp-log2(strength))))
 SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
                                unsigned int dmp) {
   v128 diff = v128_sub_16(a, b);
@@ -263,12 +260,7 @@ SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
   const v128 s = v128_max_s16(
       zero, v128_sub_16(v128_dup_16(strength),
                         v128_shr_u16(diff, dmp - get_msb(strength))));
-  return v128_sub_16(
-      v128_xor(sign,
-               v128_max_s16(
-                   zero, v128_sub_16(
-                             diff, v128_max_s16(zero, v128_sub_16(diff, s))))),
-      sign);
+  return v128_sub_16(v128_xor(sign, v128_min_s16(diff, s)), sign);
 }
 
 // delta = 1/16 * constrain(a, x, s, dmp) + 3/16 * constrain(b, x, s, dmp) +
