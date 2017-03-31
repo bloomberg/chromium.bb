@@ -103,7 +103,10 @@ __declspec(allocate(".oldntmap"))
 bool LeaveSetupBeacon() {
   HANDLE key_handle = INVALID_HANDLE_VALUE;
 
-  if (!nt::CreateRegKey(nt::HKCU, kRegistryBeaconPath,
+  if (!nt::CreateRegKey(nt::HKCU,
+                        install_static::GetRegistryPath()
+                            .append(kRegistryBeaconKeyName)
+                            .c_str(),
                         KEY_QUERY_VALUE | KEY_SET_VALUE, &key_handle))
     return false;
 
@@ -152,7 +155,10 @@ bool LeaveSetupBeacon() {
 bool ResetBeacon() {
   HANDLE key_handle = INVALID_HANDLE_VALUE;
 
-  if (!nt::CreateRegKey(nt::HKCU, kRegistryBeaconPath,
+  if (!nt::CreateRegKey(nt::HKCU,
+                        install_static::GetRegistryPath()
+                            .append(kRegistryBeaconKeyName)
+                            .c_str(),
                         KEY_QUERY_VALUE | KEY_SET_VALUE, &key_handle))
     return false;
 

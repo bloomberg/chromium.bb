@@ -569,20 +569,15 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state) {
 // UninstallActiveSetupEntries so that it could service multiple tasks.
 void RemoveBlacklistState() {
   InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
-                                 blacklist::kRegistryBeaconPath,
+                                 install_static::GetRegistryPath().append(
+                                     blacklist::kRegistryBeaconKeyName),
                                  0);  // wow64_access
-// The following key is no longer used (https://crbug.com/631771).
-// This cleanup is being left in for a time though.
-#if defined(GOOGLE_CHROME_BUILD)
-  const wchar_t kRegistryFinchListPath[] =
-      L"SOFTWARE\\Google\\Chrome\\BLFinchList";
-#else
-  const wchar_t kRegistryFinchListPath[] =
-      L"SOFTWARE\\Chromium\\BLFinchList";
-#endif
-  InstallUtil::DeleteRegistryKey(HKEY_CURRENT_USER,
-                                 kRegistryFinchListPath,
-                                 0);  // wow64_access
+  // The following key is no longer used (https://crbug.com/631771). This
+  // cleanup is being left in for a time though.
+  InstallUtil::DeleteRegistryKey(
+      HKEY_CURRENT_USER,
+      install_static::GetRegistryPath().append(L"\\BLFinchList"),
+      0);  // wow64_access
 }
 
 // Removes the browser's persistent state in the Windows registry for the

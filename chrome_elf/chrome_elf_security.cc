@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <versionhelpers.h>  // windows.h must be before
 
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 
@@ -23,8 +24,11 @@ void EarlyBrowserSecurity() {
 
   // Check for kRegistrySecurityFinchPath.  If it exists,
   // we do NOT disable extension points.  (Emergency off flag.)
-  if (nt::OpenRegKey(nt::HKCU, elf_sec::kRegSecurityFinchPath, KEY_QUERY_VALUE,
-                     &handle, &ret_val)) {
+  if (nt::OpenRegKey(nt::HKCU,
+                     install_static::GetRegistryPath()
+                         .append(elf_sec::kRegSecurityFinchKeyName)
+                         .c_str(),
+                     KEY_QUERY_VALUE, &handle, &ret_val)) {
     nt::CloseRegKey(handle);
     return;
   }

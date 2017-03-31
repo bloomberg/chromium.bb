@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/common/chrome_version.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -35,7 +36,9 @@ class ChromeBlacklistTrialTest : public testing::Test {
 
     blacklist_registry_key_.reset(
         new base::win::RegKey(HKEY_CURRENT_USER,
-                              blacklist::kRegistryBeaconPath,
+                              install_static::GetRegistryPath()
+                                  .append(blacklist::kRegistryBeaconKeyName)
+                                  .c_str(),
                               KEY_QUERY_VALUE | KEY_SET_VALUE));
   }
 

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_version.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/dll_hash/dll_hash.h"
@@ -87,6 +88,11 @@ void ReportSuccessfulBlocks() {
   }
 }
 
+base::string16 GetBeaconRegistryPath() {
+  return install_static::GetRegistryPath().append(
+      blacklist::kRegistryBeaconKeyName);
+}
+
 }  // namespace
 
 void InitializeChromeElf() {
@@ -94,7 +100,7 @@ void InitializeChromeElf() {
       kBrowserBlacklistTrialDisabledGroupName) {
     // Disable the blacklist for all future runs by removing the beacon.
     base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER);
-    blacklist_registry_key.DeleteKey(blacklist::kRegistryBeaconPath);
+    blacklist_registry_key.DeleteKey(GetBeaconRegistryPath().c_str());
   } else {
     BrowserBlacklistBeaconSetup();
   }
@@ -115,22 +121,25 @@ void InitializeChromeElf() {
   // sandbox::MITIGATION_EXTENSION_POINT_DISABLE is set properly in reg.
   // Note: the very existence of this key signals elf to not enable
   // this mitigation on browser next start.
-  base::win::RegKey finch_security_registry_key(
-      HKEY_CURRENT_USER, elf_sec::kRegSecurityFinchPath, KEY_READ);
+  const base::string16 finch_path(install_static::GetRegistryPath().append(
+      elf_sec::kRegSecurityFinchKeyName));
+  base::win::RegKey finch_security_registry_key(HKEY_CURRENT_USER,
+                                                finch_path.c_str(), KEY_READ);
 
   if (base::FeatureList::IsEnabled(features::kWinSboxDisableExtensionPoints)) {
     if (finch_security_registry_key.Valid())
       finch_security_registry_key.DeleteKey(L"");
   } else {
-    if (!finch_security_registry_key.Valid())
-      finch_security_registry_key.Create(
-          HKEY_CURRENT_USER, elf_sec::kRegSecurityFinchPath, KEY_WRITE);
+    if (!finch_security_registry_key.Valid()) {
+      finch_security_registry_key.Create(HKEY_CURRENT_USER, finch_path.c_str(),
+                                         KEY_WRITE);
+    }
   }
 }
 
 void BrowserBlacklistBeaconSetup() {
   base::win::RegKey blacklist_registry_key(HKEY_CURRENT_USER,
-                                           blacklist::kRegistryBeaconPath,
+                                           GetBeaconRegistryPath().c_str(),
                                            KEY_QUERY_VALUE | KEY_SET_VALUE);
 
   // No point in trying to continue if the registry key isn't valid.

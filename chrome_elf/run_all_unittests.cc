@@ -7,6 +7,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 
 int main(int argc, char** argv) {
   // Ensure that the CommandLine instance honors the command line passed in
@@ -15,6 +16,9 @@ int main(int argc, char** argv) {
   // depend on user32 directly or indirectly (For the curious shell32 depends
   // on user32)
   base::CommandLine::InitUsingArgvForTesting(argc, argv);
+
+  install_static::ScopedInstallDetails scoped_install_details;
+
   base::TestSuite test_suite(argc, argv);
   int ret = base::LaunchUnitTests(
       argc, argv,

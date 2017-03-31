@@ -8,6 +8,7 @@
 
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/chrome_elf_security.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
@@ -17,14 +18,16 @@ namespace {
 
 bool SetSecurityFinchFlag(bool creation) {
   bool success = true;
+  const base::string16 finch_path(install_static::GetRegistryPath().append(
+      elf_sec::kRegSecurityFinchKeyName));
   base::win::RegKey security_key(HKEY_CURRENT_USER, L"", KEY_ALL_ACCESS);
 
   if (creation) {
     if (ERROR_SUCCESS !=
-        security_key.CreateKey(elf_sec::kRegSecurityFinchPath, KEY_QUERY_VALUE))
+        security_key.CreateKey(finch_path.c_str(), KEY_QUERY_VALUE))
       success = false;
   } else {
-    if (ERROR_SUCCESS != security_key.DeleteKey(elf_sec::kRegSecurityFinchPath))
+    if (ERROR_SUCCESS != security_key.DeleteKey(finch_path.c_str()))
       success = false;
   }
 
