@@ -8,7 +8,6 @@
 #include "base/android/jni_string.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/tab_android.h"
@@ -307,9 +306,6 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
     return true;
   }
 
-  // If the WebAPK is not installed and the "Add to Home Screen" button is
-  // clicked, install the WebAPK.
-  timer_.reset(new base::ElapsedTimer());
   install_state_ = INSTALLING;
   webapk::TrackInstallSource(webapk_install_source_);
 
@@ -368,16 +364,10 @@ void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished(
     return;
   }
   UpdateStateForInstalledWebAPK(webapk_package_name);
-  webapk::TrackInstallDuration(timer_->Elapsed());
-  timer_.reset();
-  webapk::TrackInstallEvent(webapk::INSTALL_COMPLETED);
 }
 
 void AppBannerInfoBarDelegateAndroid::OnWebApkInstallFailed(
     WebApkInstallResult result) {
-  DVLOG(1) << "The WebAPK installation failed.";
-  webapk::TrackInstallEvent(webapk::INSTALL_FAILED);
-
   if (!infobar())
     return;
 
@@ -403,7 +393,7 @@ void AppBannerInfoBarDelegateAndroid::TrackWebApkInstallationDismissEvents(
     webapk::TrackInstallEvent(webapk::INFOBAR_DISMISSED_DURING_INSTALLATION);
   } else if (install_state == INSTALLED) {
     // If WebAPK is installed from this banner, TrackInstallEvent() is called in
-    // OnWebApkInstallFinished().
+    // WebApkInstaller::OnResult().
     webapk::TrackUserAction(webapk::USER_ACTION_INSTALLED_OPEN_DISMISS);
   }
 }

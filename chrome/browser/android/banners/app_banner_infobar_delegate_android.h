@@ -16,10 +16,6 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "ui/gfx/image/image.h"
 
-namespace base {
-class ElapsedTimer;
-}
-
 namespace content {
 class WebContents;
 }
@@ -163,9 +159,6 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   // Indicates the current state of a WebAPK installation.
   InstallState install_state_;
-
-  // Tracks how long it takes to install a WebAPK.
-  std::unique_ptr<base::ElapsedTimer> timer_;
 
   // Indicates the way in which a WebAPK (if applicable) is installed: from the
   // menu or from an app banner.

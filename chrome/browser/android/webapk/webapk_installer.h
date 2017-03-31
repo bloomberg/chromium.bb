@@ -22,6 +22,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace base {
+class ElapsedTimer;
 class FilePath;
 }
 
@@ -229,6 +230,9 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // Fails WebApkInstaller if WebAPK server takes too long to respond or if the
   // download takes too long.
   base::OneShotTimer timer_;
+
+  // Tracks how long it takes to install a WebAPK.
+  std::unique_ptr<base::ElapsedTimer> install_duration_timer_;
 
   // Callback to call once WebApkInstaller succeeds or fails.
   FinishCallback finish_callback_;
