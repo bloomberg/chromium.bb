@@ -1035,13 +1035,13 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
       const MV mv = mi->mbmi.mv[ref].as_mv;
 #else
       const MV mv =
-          mi->mbmi.sb_type < BLOCK_8X8
 #if CONFIG_MOTION_VAR
-              ? (build_for_obmc ? mi->bmi[block].as_mv[ref].as_mv
-                                : average_split_mvs(pd, mi, ref, block))
+          (mi->mbmi.sb_type < BLOCK_8X8 && !build_for_obmc)
+              ?
 #else
-              ? average_split_mvs(pd, mi, ref, block)
-#endif  // CONFIG_MOTION_VAR
+          mi->mbmi.sb_type < BLOCK_8X8 ?
+#endif
+              average_split_mvs(pd, mi, ref, block)
               : mi->mbmi.mv[ref].as_mv;
 #endif
 
@@ -1661,13 +1661,8 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
       mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
 
-      if (is_neighbor_overlappable(above_mbmi)) {
-        const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
-
+      if (is_neighbor_overlappable(above_mbmi))
         xd->mi[0]->mbmi.overlappable_neighbors[0]++;
-        if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
-          xd->mi[0]->mbmi.overlappable_neighbors[0]++;
-      }
     }
   }
 
@@ -1682,13 +1677,8 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
       mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
 
-      if (is_neighbor_overlappable(left_mbmi)) {
-        const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
-
+      if (is_neighbor_overlappable(left_mbmi))
         xd->mi[0]->mbmi.overlappable_neighbors[1]++;
-        if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
-          xd->mi[0]->mbmi.overlappable_neighbors[1]++;
-      }
     }
   }
 }
@@ -1728,10 +1718,7 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
 
       if (is_neighbor_overlappable(above_mbmi)) {
-        if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
-          neighbor_count += 2;
-        else
-          neighbor_count++;
+        neighbor_count++;
         if (neighbor_count > neighbor_limit) break;
         for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
           const struct macroblockd_plane *pd = &xd->plane[plane];
@@ -1777,10 +1764,7 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
 
       if (is_neighbor_overlappable(left_mbmi)) {
-        if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
-          neighbor_count += 2;
-        else
-          neighbor_count++;
+        neighbor_count++;
         if (neighbor_count > neighbor_limit) break;
         for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
           const struct macroblockd_plane *pd = &xd->plane[plane];
@@ -1854,10 +1838,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     if (!is_neighbor_overlappable(above_mbmi)) continue;
 
-    if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
-      neighbor_count += 2;
-    else
-      neighbor_count++;
+    neighbor_count++;
     if (neighbor_count > neighbor_limit) break;
 
 #if CONFIG_EXT_INTER
@@ -1895,60 +1876,36 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bh = AOMMAX((num_4x4_blocks_high_lookup[bsize] * 2) >> pd->subsampling_y,
                   4);
 
-      if (a_bsize < BLOCK_8X8 && !CONFIG_CB4X4) {
-        const PARTITION_TYPE bp = BLOCK_8X8 - a_bsize;
-        const int have_vsplit = bp != PARTITION_HORZ;
-        const int have_hsplit = bp != PARTITION_VERT;
-        const int num_4x4_w = 2 >> !have_vsplit;
-        const int num_4x4_h = 2 >> !have_hsplit;
-        const int pw = 8 >> (have_vsplit + pd->subsampling_x);
-        int x, y;
-
-        for (y = 0; y < num_4x4_h; ++y)
-          for (x = 0; x < num_4x4_w; ++x) {
-            if ((bp == PARTITION_HORZ || bp == PARTITION_SPLIT) && y == 0)
-              continue;
-
-            build_inter_predictors(xd, j, mi_col_offset, mi_row_offset,
-                                   y * 2 + x, bw, bh,
-                                   (4 * x) >> pd->subsampling_x, 0, pw, bh,
-#if CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                   0, 0,
-#endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                   mi_x, mi_y);
-          }
-      } else {
 #if CONFIG_WARPED_MOTION
-        if (above_mbmi->motion_mode == WARPED_CAUSAL) {
-          assert_motion_mode_valid(WARPED_CAUSAL,
+      if (above_mbmi->motion_mode == WARPED_CAUSAL) {
+        assert_motion_mode_valid(WARPED_CAUSAL,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                   0, cm->global_motion,
+                                 0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                   above_mi);
+                                 above_mi);
 
-          av1_warp_plane(&above_mbmi->wm_params[0],
+        av1_warp_plane(&above_mbmi->wm_params[0],
 #if CONFIG_AOM_HIGHBITDEPTH
-                         xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-                         pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
-                         pd->pre[0].stride, pd->dst.buf,
-                         (((mi_col + i) * MI_SIZE) >> pd->subsampling_x),
-                         ((mi_row * MI_SIZE) >> pd->subsampling_y), bw, bh,
-                         pd->dst.stride, pd->subsampling_x, pd->subsampling_y,
-                         16, 16, 0);
+                       pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
+                       pd->pre[0].stride, pd->dst.buf,
+                       (((mi_col + i) * MI_SIZE) >> pd->subsampling_x),
+                       ((mi_row * MI_SIZE) >> pd->subsampling_y), bw, bh,
+                       pd->dst.stride, pd->subsampling_x, pd->subsampling_y, 16,
+                       16, 0);
 
-        } else {
+      } else {
 #endif  // CONFIG_WARPED_MOTION
-          build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
-                                 0, 0, bw, bh,
+        build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
+                               0, 0, bw, bh,
 #if CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                 0, 0,
+                               0, 0,
 #endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                 mi_x, mi_y);
+                               mi_x, mi_y);
 #if CONFIG_WARPED_MOTION
-        }
-#endif  // CONFIG_WARPED_MOTION
       }
+#endif  // CONFIG_WARPED_MOTION
     }
 #if CONFIG_EXT_INTER
     *above_mbmi = backup_mbmi;
@@ -1991,10 +1948,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
     if (!is_neighbor_overlappable(left_mbmi)) continue;
 
-    if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
-      neighbor_count += 2;
-    else
-      neighbor_count++;
+    neighbor_count++;
     if (neighbor_count > neighbor_limit) break;
 
 #if CONFIG_EXT_INTER
@@ -2032,60 +1986,36 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                   4);
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
-      if (l_bsize < BLOCK_8X8 && !CONFIG_CB4X4) {
-        const PARTITION_TYPE bp = BLOCK_8X8 - l_bsize;
-        const int have_vsplit = bp != PARTITION_HORZ;
-        const int have_hsplit = bp != PARTITION_VERT;
-        const int num_4x4_w = 2 >> !have_vsplit;
-        const int num_4x4_h = 2 >> !have_hsplit;
-        const int ph = 8 >> (have_hsplit + pd->subsampling_y);
-        int x, y;
-
-        for (y = 0; y < num_4x4_h; ++y)
-          for (x = 0; x < num_4x4_w; ++x) {
-            if ((bp == PARTITION_VERT || bp == PARTITION_SPLIT) && x == 0)
-              continue;
-
-            build_inter_predictors(xd, j, mi_col_offset, mi_row_offset,
-                                   y * 2 + x, bw, bh, 0,
-                                   (4 * y) >> pd->subsampling_y, bw, ph,
-#if CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                   0, 0,
-#endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                   mi_x, mi_y);
-          }
-      } else {
 #if CONFIG_WARPED_MOTION
-        if (left_mbmi->motion_mode == WARPED_CAUSAL) {
-          assert_motion_mode_valid(WARPED_CAUSAL,
+      if (left_mbmi->motion_mode == WARPED_CAUSAL) {
+        assert_motion_mode_valid(WARPED_CAUSAL,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                   0, cm->global_motion,
+                                 0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                                   left_mi);
+                                 left_mi);
 
-          av1_warp_plane(&left_mbmi->wm_params[0],
+        av1_warp_plane(&left_mbmi->wm_params[0],
 #if CONFIG_AOM_HIGHBITDEPTH
-                         xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
+                       xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH, xd->bd,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-                         pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
-                         pd->pre[0].stride, pd->dst.buf,
-                         ((mi_col * MI_SIZE) >> pd->subsampling_x),
-                         (((mi_row + i) * MI_SIZE) >> pd->subsampling_y), bw,
-                         bh, pd->dst.stride, pd->subsampling_x,
-                         pd->subsampling_y, 16, 16, 0);
+                       pd->pre[0].buf0, pd->pre[0].width, pd->pre[0].height,
+                       pd->pre[0].stride, pd->dst.buf,
+                       ((mi_col * MI_SIZE) >> pd->subsampling_x),
+                       (((mi_row + i) * MI_SIZE) >> pd->subsampling_y), bw, bh,
+                       pd->dst.stride, pd->subsampling_x, pd->subsampling_y, 16,
+                       16, 0);
 
-        } else {
+      } else {
 #endif  // CONFIG_WARPED_MOTION
-          build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
-                                 0, 0, bw, bh,
+        build_inter_predictors(xd, j, mi_col_offset, mi_row_offset, 0, bw, bh,
+                               0, 0, bw, bh,
 #if CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                 0, 0,
+                               0, 0,
 #endif  // CONFIG_SUPERTX && CONFIG_EXT_INTER
-                                 mi_x, mi_y);
+                               mi_x, mi_y);
 #if CONFIG_WARPED_MOTION
-        }
-#endif  // CONFIG_WARPED_MOTION
       }
+#endif  // CONFIG_WARPED_MOTION
     }
 #if CONFIG_EXT_INTER
     *left_mbmi = backup_mbmi;
