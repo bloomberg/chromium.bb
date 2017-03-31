@@ -431,140 +431,6 @@ bool IsBrowserInitiated(NavigationParams* pending) {
          !pending->common_params.url.SchemeIs(url::kJavaScriptScheme);
 }
 
-NOINLINE void ExhaustMemory() {
-  volatile void* ptr = nullptr;
-  do {
-    ptr = malloc(0x10000000);
-    base::debug::Alias(&ptr);
-  } while (ptr);
-}
-
-NOINLINE void CrashIntentionally() {
-  // NOTE(shess): Crash directly rather than using NOTREACHED() so
-  // that the signature is easier to triage in crash reports.
-  //
-  // Linker's ICF feature may merge this function with other functions with the
-  // same definition and it may confuse the crash report processing system.
-  static int static_variable_to_make_this_function_unique = 0;
-  base::debug::Alias(&static_variable_to_make_this_function_unique);
-
-  volatile int* zero = nullptr;
-  *zero = 0;
-}
-
-NOINLINE void BadCastCrashIntentionally() {
-  class A {
-    virtual void f() {}
-  };
-
-  class B {
-    virtual void f() {}
-  };
-
-  A a;
-  (void)(B*)&a;
-}
-
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
-NOINLINE void MaybeTriggerAsanError(const GURL& url) {
-  // NOTE(rogerm): We intentionally perform an invalid heap access here in
-  //     order to trigger an Address Sanitizer (ASAN) error report.
-  const char kCrashDomain[] = "crash";
-  const char kHeapOverflow[] = "/heap-overflow";
-  const char kHeapUnderflow[] = "/heap-underflow";
-  const char kUseAfterFree[] = "/use-after-free";
-#if defined(SYZYASAN)
-  const char kCorruptHeapBlock[] = "/corrupt-heap-block";
-  const char kCorruptHeap[] = "/corrupt-heap";
-#endif
-
-  if (!url.DomainIs(kCrashDomain))
-    return;
-
-  if (!url.has_path())
-    return;
-
-  std::string crash_type(url.path());
-  if (crash_type == kHeapOverflow) {
-    LOG(ERROR)
-        << "Intentionally causing ASAN heap overflow"
-        << " because user navigated to " << url.spec();
-    base::debug::AsanHeapOverflow();
-  } else if (crash_type == kHeapUnderflow) {
-    LOG(ERROR)
-        << "Intentionally causing ASAN heap underflow"
-        << " because user navigated to " << url.spec();
-    base::debug::AsanHeapUnderflow();
-  } else if (crash_type == kUseAfterFree) {
-    LOG(ERROR)
-        << "Intentionally causing ASAN heap use-after-free"
-        << " because user navigated to " << url.spec();
-    base::debug::AsanHeapUseAfterFree();
-#if defined(SYZYASAN)
-  } else if (crash_type == kCorruptHeapBlock) {
-    LOG(ERROR)
-        << "Intentionally causing ASAN corrupt heap block"
-        << " because user navigated to " << url.spec();
-    base::debug::AsanCorruptHeapBlock();
-  } else if (crash_type == kCorruptHeap) {
-    LOG(ERROR)
-        << "Intentionally causing ASAN corrupt heap"
-        << " because user navigated to " << url.spec();
-    base::debug::AsanCorruptHeap();
-#endif
-  }
-}
-#endif  // ADDRESS_SANITIZER || SYZYASAN
-
-void MaybeHandleDebugURL(const GURL& url) {
-  if (!url.SchemeIs(kChromeUIScheme))
-    return;
-  if (url == kChromeUIBadCastCrashURL) {
-    LOG(ERROR)
-        << "Intentionally crashing (with bad cast)"
-        << " because user navigated to " << url.spec();
-    BadCastCrashIntentionally();
-  } else if (url == kChromeUICrashURL) {
-    LOG(ERROR) << "Intentionally crashing (with null pointer dereference)"
-               << " because user navigated to " << url.spec();
-    CrashIntentionally();
-  } else if (url == kChromeUIDumpURL) {
-    // This URL will only correctly create a crash dump file if content is
-    // hosted in a process that has correctly called
-    // base::debug::SetDumpWithoutCrashingFunction.  Refer to the documentation
-    // of base::debug::DumpWithoutCrashing for more details.
-    base::debug::DumpWithoutCrashing();
-  } else if (url == kChromeUIKillURL) {
-    LOG(ERROR) << "Intentionally issuing kill signal to current process"
-               << " because user navigated to " << url.spec();
-    base::Process::Current().Terminate(1, false);
-  } else if (url == kChromeUIHangURL) {
-    LOG(ERROR) << "Intentionally hanging ourselves with sleep infinite loop"
-               << " because user navigated to " << url.spec();
-    for (;;) {
-      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
-    }
-  } else if (url == kChromeUIShorthangURL) {
-    LOG(ERROR) << "Intentionally sleeping renderer for 20 seconds"
-               << " because user navigated to " << url.spec();
-    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
-  } else if (url == kChromeUIMemoryExhaustURL) {
-    LOG(ERROR)
-        << "Intentionally exhausting renderer memory because user navigated to "
-        << url.spec();
-    ExhaustMemory();
-  } else if (url == kChromeUICheckCrashURL) {
-    LOG(ERROR)
-        << "Intentionally causing CHECK because user navigated to "
-        << url.spec();
-    CHECK(false);
-  }
-
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
-  MaybeTriggerAsanError(url);
-#endif  // ADDRESS_SANITIZER || SYZYASAN
-}
-
 // Returns false unless this is a top-level navigation.
 bool IsTopLevelNavigation(WebFrame* frame) {
   return frame->parent() == NULL;
@@ -901,6 +767,135 @@ double ConvertToBlinkTime(const base::TimeTicks& time_ticks) {
 }
 
 }  // namespace
+
+// The following methods are outside of the anonymous namespace to ensure that
+// the corresponding symbols get emmitted even on symbol_level 1.
+NOINLINE void ExhaustMemory() {
+  volatile void* ptr = nullptr;
+  do {
+    ptr = malloc(0x10000000);
+    base::debug::Alias(&ptr);
+  } while (ptr);
+}
+
+NOINLINE void CrashIntentionally() {
+  // NOTE(shess): Crash directly rather than using NOTREACHED() so
+  // that the signature is easier to triage in crash reports.
+  //
+  // Linker's ICF feature may merge this function with other functions with the
+  // same definition and it may confuse the crash report processing system.
+  static int static_variable_to_make_this_function_unique = 0;
+  base::debug::Alias(&static_variable_to_make_this_function_unique);
+
+  volatile int* zero = nullptr;
+  *zero = 0;
+}
+
+NOINLINE void BadCastCrashIntentionally() {
+  class A {
+    virtual void f() {}
+  };
+
+  class B {
+    virtual void f() {}
+  };
+
+  A a;
+  (void)(B*) & a;
+}
+
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+NOINLINE void MaybeTriggerAsanError(const GURL& url) {
+  // NOTE(rogerm): We intentionally perform an invalid heap access here in
+  //     order to trigger an Address Sanitizer (ASAN) error report.
+  const char kCrashDomain[] = "crash";
+  const char kHeapOverflow[] = "/heap-overflow";
+  const char kHeapUnderflow[] = "/heap-underflow";
+  const char kUseAfterFree[] = "/use-after-free";
+#if defined(SYZYASAN)
+  const char kCorruptHeapBlock[] = "/corrupt-heap-block";
+  const char kCorruptHeap[] = "/corrupt-heap";
+#endif
+
+  if (!url.DomainIs(kCrashDomain))
+    return;
+
+  if (!url.has_path())
+    return;
+
+  std::string crash_type(url.path());
+  if (crash_type == kHeapOverflow) {
+    LOG(ERROR) << "Intentionally causing ASAN heap overflow"
+               << " because user navigated to " << url.spec();
+    base::debug::AsanHeapOverflow();
+  } else if (crash_type == kHeapUnderflow) {
+    LOG(ERROR) << "Intentionally causing ASAN heap underflow"
+               << " because user navigated to " << url.spec();
+    base::debug::AsanHeapUnderflow();
+  } else if (crash_type == kUseAfterFree) {
+    LOG(ERROR) << "Intentionally causing ASAN heap use-after-free"
+               << " because user navigated to " << url.spec();
+    base::debug::AsanHeapUseAfterFree();
+#if defined(SYZYASAN)
+  } else if (crash_type == kCorruptHeapBlock) {
+    LOG(ERROR) << "Intentionally causing ASAN corrupt heap block"
+               << " because user navigated to " << url.spec();
+    base::debug::AsanCorruptHeapBlock();
+  } else if (crash_type == kCorruptHeap) {
+    LOG(ERROR) << "Intentionally causing ASAN corrupt heap"
+               << " because user navigated to " << url.spec();
+    base::debug::AsanCorruptHeap();
+#endif
+  }
+}
+#endif  // ADDRESS_SANITIZER || SYZYASAN
+
+void MaybeHandleDebugURL(const GURL& url) {
+  if (!url.SchemeIs(kChromeUIScheme))
+    return;
+  if (url == kChromeUIBadCastCrashURL) {
+    LOG(ERROR) << "Intentionally crashing (with bad cast)"
+               << " because user navigated to " << url.spec();
+    BadCastCrashIntentionally();
+  } else if (url == kChromeUICrashURL) {
+    LOG(ERROR) << "Intentionally crashing (with null pointer dereference)"
+               << " because user navigated to " << url.spec();
+    CrashIntentionally();
+  } else if (url == kChromeUIDumpURL) {
+    // This URL will only correctly create a crash dump file if content is
+    // hosted in a process that has correctly called
+    // base::debug::SetDumpWithoutCrashingFunction.  Refer to the documentation
+    // of base::debug::DumpWithoutCrashing for more details.
+    base::debug::DumpWithoutCrashing();
+  } else if (url == kChromeUIKillURL) {
+    LOG(ERROR) << "Intentionally issuing kill signal to current process"
+               << " because user navigated to " << url.spec();
+    base::Process::Current().Terminate(1, false);
+  } else if (url == kChromeUIHangURL) {
+    LOG(ERROR) << "Intentionally hanging ourselves with sleep infinite loop"
+               << " because user navigated to " << url.spec();
+    for (;;) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+    }
+  } else if (url == kChromeUIShorthangURL) {
+    LOG(ERROR) << "Intentionally sleeping renderer for 20 seconds"
+               << " because user navigated to " << url.spec();
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
+  } else if (url == kChromeUIMemoryExhaustURL) {
+    LOG(ERROR)
+        << "Intentionally exhausting renderer memory because user navigated to "
+        << url.spec();
+    ExhaustMemory();
+  } else if (url == kChromeUICheckCrashURL) {
+    LOG(ERROR) << "Intentionally causing CHECK because user navigated to "
+               << url.spec();
+    CHECK(false);
+  }
+
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+  MaybeTriggerAsanError(url);
+#endif  // ADDRESS_SANITIZER || SYZYASAN
+}
 
 struct RenderFrameImpl::PendingFileChooser {
   PendingFileChooser(const FileChooserParams& p,

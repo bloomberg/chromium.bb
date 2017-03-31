@@ -57,24 +57,36 @@ def main():
   # Create a temporary directory to store the crash dumps and symbols in.
   crash_dir = tempfile.mkdtemp()
 
+  crash_service = None
+
   try:
-    print "# Generate symbols."
-    breakpad_tools_dir = os.path.join(
-        os.path.dirname(__file__), '..', '..', '..',
-        'components', 'crash', 'content', 'tools')
-    generate_symbols = os.path.join(
-        breakpad_tools_dir, 'generate_breakpad_symbols.py')
-    symbols_dir = os.path.join(crash_dir, 'symbols')
-    cmd = [generate_symbols,
-           '--build-dir=%s' % options.build_dir,
-           '--binary=%s' % options.binary,
-           '--symbols-dir=%s' % symbols_dir,
-           '--jobs=%d' % options.jobs]
-    if options.verbose:
-      cmd.append('--verbose')
-      print ' '.join(cmd)
-    failure = 'Failed to run generate_breakpad_symbols.py.'
-    subprocess.check_call(cmd)
+    if sys.platform == 'win32':
+      print "# Starting crash service."
+      crash_service_exe = os.path.join(options.build_dir,
+                                       'content_shell_crash_service.exe')
+      cmd = [crash_service_exe, '--dumps-dir=%s' % crash_dir]
+      if options.verbose:
+        print ' '.join(cmd)
+      failure = 'Failed to start crash service.'
+      crash_service = subprocess.Popen(cmd)
+    else:
+      print "# Generate symbols."
+      breakpad_tools_dir = os.path.join(
+          os.path.dirname(__file__), '..', '..', '..',
+          'components', 'crash', 'content', 'tools')
+      generate_symbols = os.path.join(
+          breakpad_tools_dir, 'generate_breakpad_symbols.py')
+      symbols_dir = os.path.join(crash_dir, 'symbols')
+      cmd = [generate_symbols,
+             '--build-dir=%s' % options.build_dir,
+             '--binary=%s' % options.binary,
+             '--symbols-dir=%s' % symbols_dir,
+             '--jobs=%d' % options.jobs]
+      if options.verbose:
+        cmd.append('--verbose')
+        print ' '.join(cmd)
+      failure = 'Failed to run generate_breakpad_symbols.py.'
+      subprocess.check_call(cmd)
 
     print "# Run content_shell and make it crash."
     cmd = [options.binary,
@@ -91,29 +103,48 @@ def main():
       with open(os.devnull, 'w') as devnull:
         subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
 
+    if sys.platform == 'win32':
+      print "# Stopping crash service"
+      failure = 'Failed to stop crash service.'
+      crash_service.terminate()
+      crash_service = None
+
     print "# Retrieve crash dump."
     dmp_files = glob.glob(os.path.join(crash_dir, '*.dmp'))
     failure = 'Expected 1 crash dump, found %d.' % len(dmp_files)
     if len(dmp_files) != 1:
       raise Exception(failure)
     dmp_file = dmp_files[0]
-    minidump = os.path.join(crash_dir, 'minidump')
 
-    dmp_to_minidump = os.path.join(breakpad_tools_dir, 'dmp2minidump.py')
-    cmd = [dmp_to_minidump, dmp_file, minidump]
-    if options.verbose:
-      print ' '.join(cmd)
-    failure = 'Failed to run dmp_to_minidump.'
-    subprocess.check_call(cmd)
+    if sys.platform != 'win32':
+      minidump = os.path.join(crash_dir, 'minidump')
+      dmp_to_minidump = os.path.join(breakpad_tools_dir, 'dmp2minidump.py')
+      cmd = [dmp_to_minidump, dmp_file, minidump]
+      if options.verbose:
+        print ' '.join(cmd)
+      failure = 'Failed to run dmp_to_minidump.'
+      subprocess.check_call(cmd)
 
     print "# Symbolize crash dump."
-    minidump_stackwalk = os.path.join(options.build_dir, 'minidump_stackwalk')
-    cmd = [minidump_stackwalk, minidump, symbols_dir]
-    if options.verbose:
-      print ' '.join(cmd)
-    failure = 'Failed to run minidump_stackwalk.'
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stack = proc.communicate()[0]
+    if sys.platform == 'win32':
+      cdb_exe = os.path.join(options.build_dir, 'cdb', 'cdb.exe')
+      cmd = [cdb_exe, '-y', options.build_dir, '-c', '.lines;.excr;k30;q',
+             '-z', dmp_file]
+      if options.verbose:
+        print ' '.join(cmd)
+      failure = 'Failed to run cdb.exe.'
+      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+      stack = proc.communicate()[0]
+    else:
+      minidump_stackwalk = os.path.join(options.build_dir, 'minidump_stackwalk')
+      cmd = [minidump_stackwalk, minidump, symbols_dir]
+      if options.verbose:
+        print ' '.join(cmd)
+      failure = 'Failed to run minidump_stackwalk.'
+      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE)
+      stack = proc.communicate()[0]
 
     # Check whether the stack contains a CrashIntentionally symbol.
     found_symbol = 'CrashIntentionally' in stack
@@ -147,6 +178,8 @@ def main():
     return 0
 
   finally:
+    if crash_service:
+      crash_service.terminate()
     try:
       shutil.rmtree(crash_dir)
     except:

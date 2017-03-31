@@ -793,7 +793,10 @@ group("content_shell_crash_test") {
     ]
   }
   if (is_win) {
-    data_deps += [ ":content_shell_crash_service" ]
+    data_deps += [
+      ":content_shell_crash_service",
+      "//build/win:copy_cdb_to_output",
+    ]
   }
   if (is_posix && !is_android) {
     data_deps += [
