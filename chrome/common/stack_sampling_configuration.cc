@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
+#include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/version_info/version_info.h"
@@ -17,16 +18,26 @@ namespace {
 base::LazyInstance<StackSamplingConfiguration>::Leaky g_configuration =
     LAZY_INSTANCE_INITIALIZER;
 
-// The profiler is currently only implemented for Windows x64, and only runs on
-// trunk, canary, and dev.
+// The profiler is currently only implemented for Windows x64 and Mac x64.
 bool IsProfilerSupported() {
-#if !defined(_WIN64)
-  return false;
+#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+  #if defined(GOOGLE_CHROME_BUILD)
+    // Only run on canary and dev.
+    const version_info::Channel channel = chrome::GetChannel();
+    return channel == version_info::Channel::CANARY ||
+           channel == version_info::Channel::DEV;
+  #else
+    return true;
+  #endif
+#elif defined(OS_MACOSX)
+  // This is experimental, so only run on trunk.
+  #if defined(GOOGLE_CHROME_BUILD)
+    return false;
+  #else
+    return true;
+  #endif
 #else
-  const version_info::Channel channel = chrome::GetChannel();
-  return (channel == version_info::Channel::UNKNOWN ||
-          channel == version_info::Channel::CANARY ||
-          channel == version_info::Channel::DEV);
+  return false;
 #endif
 }
 
