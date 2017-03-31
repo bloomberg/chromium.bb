@@ -20,6 +20,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
@@ -129,7 +130,13 @@ public class BottomToolbarPhone extends ToolbarPhone {
 
         if (mBottomSheet == null || !hasFocus) return;
 
+        boolean wasSheetOpen = mBottomSheet.isSheetOpen();
         mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, true);
+
+        if (!wasSheetOpen) {
+            mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
+                    BottomSheetMetrics.OPENED_BY_OMNIBOX_FOCUS);
+        }
     }
 
     @Override

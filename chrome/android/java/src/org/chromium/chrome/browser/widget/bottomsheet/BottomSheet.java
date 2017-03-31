@@ -107,6 +107,9 @@ public class BottomSheet
     /** The minimum distance between half and full states to allow the half state. */
     private final float mMinHalfFullDistance;
 
+    /** The  {@link BottomSheetMetrics} used to record user actions and histograms. */
+    private final BottomSheetMetrics mMetrics;
+
     /** For detecting scroll and fling events on the bottom sheet. */
     private GestureDetector mGestureDetector;
 
@@ -264,9 +267,14 @@ public class BottomSheet
             }
 
             float newOffset = getSheetOffsetFromBottom() + distanceY;
+            boolean wasOpenBeforeSwipe = mIsSheetOpen;
             setSheetOffsetFromBottom(MathUtils.clamp(newOffset, getMinOffset(), getMaxOffset()));
-
             setInternalCurrentState(SHEET_STATE_SCROLLING);
+
+            if (!wasOpenBeforeSwipe && mIsSheetOpen) {
+                mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_SWIPE);
+            }
+
             mIsScrolling = true;
             return true;
         }
@@ -274,6 +282,7 @@ public class BottomSheet
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             cancelAnimation();
+            boolean wasOpenBeforeSwipe = mIsSheetOpen;
 
             // Figure out the projected state of the sheet and animate there. Note that a swipe up
             // will have a negative velocity, swipe down will have a positive velocity. Negate this
@@ -283,6 +292,10 @@ public class BottomSheet
                     getSheetOffsetFromBottom() + getFlingDistance(-velocityY), -velocityY);
             setSheetState(targetState, true);
             mIsScrolling = false;
+
+            if (!wasOpenBeforeSwipe && mIsSheetOpen) {
+                mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_SWIPE);
+            }
 
             return true;
         }
@@ -307,7 +320,8 @@ public class BottomSheet
         mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
         mGestureDetector.setIsLongpressEnabled(false);
 
-        addObserver(new BottomSheetMetrics());
+        mMetrics = new BottomSheetMetrics();
+        addObserver(mMetrics);
     }
 
     @Override
@@ -843,6 +857,11 @@ public class BottomSheet
         return mCurrentState;
     }
 
+    /** @return Whether the sheet is currently open. */
+    public boolean isSheetOpen() {
+        return mIsSheetOpen;
+    }
+
     /**
      * Set the current state of the bottom sheet. This is for internal use to notify observers of
      * state change events.
@@ -868,6 +887,13 @@ public class BottomSheet
     @VisibleForTesting
     public BottomSheetContent getCurrentSheetContent() {
         return mSheetContent;
+    }
+
+    /**
+     * @return The {@link BottomSheetMetrics} used to record user actions and histograms.
+     */
+    public BottomSheetMetrics getBottomSheetMetrics() {
+        return mMetrics;
     }
 
     /**
