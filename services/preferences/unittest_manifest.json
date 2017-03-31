@@ -9,7 +9,7 @@
         ]
       },
       "requires": {
-        "preferences2": [ "pref_client", "pref_control" ]
+        "preferences": [ "pref_client", "pref_control" ]
       }
     }
   }

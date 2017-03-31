@@ -1073,7 +1073,7 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
         make_scoped_refptr(content::BrowserThread::GetBlockingPool()));
     info.task_runner = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
-    services->insert(std::make_pair(prefs::mojom::kPrefStoreServiceName, info));
+    services->insert(std::make_pair(prefs::mojom::kServiceName, info));
   }
 
   content::ServiceInfo identity_service_info;

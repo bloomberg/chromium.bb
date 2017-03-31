@@ -975,10 +975,6 @@ split_static_library("browser") {
     "prefs/pref_metrics_service.h",
     "prefs/pref_service_syncable_util.cc",
     "prefs/pref_service_syncable_util.h",
-    "prefs/preferences_connection_manager.cc",
-    "prefs/preferences_connection_manager.h",
-    "prefs/preferences_service.cc",
-    "prefs/preferences_service.h",
     "prefs/profile_pref_store_manager.cc",
     "prefs/profile_pref_store_manager.h",
     "prefs/session_startup_pref.cc",
@@ -4628,11 +4624,6 @@ if (enable_pepper_cdms) {
       "media/pepper_cdm_test_constants.h",
     ]
   }
-}
-
-service_manifest("preferences_manifest") {
-  name = "preferences"
-  source = "prefs/preferences_manifest.json"
 }
 
 service_manifest("preferences_forwarder_manifest") {

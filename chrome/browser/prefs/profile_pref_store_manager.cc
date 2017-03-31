@@ -112,8 +112,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   if (features::PrefServiceEnabled()) {
     ConfigurePrefService(on_reset_on_load, connector);
     prefs::mojom::PrefStoreConnectorPtr pref_connector;
-    connector->BindInterface(prefs::mojom::kPrefStoreServiceName,
-                             &pref_connector);
+    connector->BindInterface(prefs::mojom::kServiceName, &pref_connector);
     return new prefs::PersistentPrefStoreClient(std::move(pref_connector),
                                                 std::move(pref_registry));
   }
@@ -247,6 +246,6 @@ void ProfilePrefStoreManager::ConfigurePrefService(
       prefs::mojom::SimplePersistentPrefStoreConfiguration::New(
           profile_path_.Append(chrome::kPreferencesFilename)));
   prefs::mojom::PrefServiceControlPtr control;
-  connector->BindInterface(prefs::mojom::kPrefStoreServiceName, &control);
+  connector->BindInterface(prefs::mojom::kServiceName, &control);
   control->Init(std::move(config));
 }

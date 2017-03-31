@@ -35,11 +35,10 @@ using ConnectCallback = base::Callback<void(std::unique_ptr<::PrefService>)>;
 // asynchronous and |callback| will be called when it has been established. All
 // preferences that will be accessed need to be registered in |pref_registry|
 // first.
-void ConnectToPrefService(
-    service_manager::Connector* connector,
-    scoped_refptr<PrefRegistry> pref_registry,
-    ConnectCallback callback,
-    base::StringPiece service_name = mojom::kPrefStoreServiceName);
+void ConnectToPrefService(service_manager::Connector* connector,
+                          scoped_refptr<PrefRegistry> pref_registry,
+                          ConnectCallback callback,
+                          base::StringPiece service_name = mojom::kServiceName);
 
 }  // namespace prefs
 

@@ -363,10 +363,7 @@ static_library("test_support") {
   }
 }
 
-chrome_packaged_services = [
-  ":chrome_manifest",
-  "//chrome/browser:preferences_manifest",
-]
+chrome_packaged_services = [ ":chrome_manifest" ]
 
 if (is_chromeos) {
   chrome_packaged_services +=

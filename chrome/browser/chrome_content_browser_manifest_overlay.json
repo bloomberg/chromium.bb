@@ -27,7 +27,7 @@
         "nacl_broker": [ "browser" ],
         "nacl_loader": [ "browser" ],
         "preferences_forwarder": [ "pref_client" ],
-        "preferences2": [ "pref_client", "pref_control" ],
+        "preferences": [ "pref_client", "pref_control" ],
         "ui": [ "display_controller", "ime_registrar", "window_manager" ]
       }
     },

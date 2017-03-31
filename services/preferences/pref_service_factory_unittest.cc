@@ -45,7 +45,7 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 
   void CreateService(service_manager::mojom::ServiceRequest request,
                      const std::string& name) override {
-    if (name == prefs::mojom::kPrefStoreServiceName) {
+    if (name == prefs::mojom::kServiceName) {
       pref_service_context_.reset(new service_manager::ServiceContext(
           CreatePrefService({PrefValueStore::COMMAND_LINE_STORE,
                              PrefValueStore::RECOMMENDED_STORE},
@@ -83,7 +83,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
 
     // Init the pref service (in production Chrome startup would do this.)
     mojom::PrefServiceControlPtr control;
-    connector()->BindInterface(mojom::kPrefStoreServiceName, &control);
+    connector()->BindInterface(mojom::kServiceName, &control);
     auto config = mojom::PersistentPrefStoreConfiguration::New();
     config->set_simple_configuration(
         mojom::SimplePersistentPrefStoreConfiguration::New(
@@ -92,7 +92,7 @@ class PrefServiceFactoryTest : public base::MessageLoop::DestructionObserver,
     above_user_prefs_pref_store_ = new ValueMapPrefStore();
     below_user_prefs_pref_store_ = new ValueMapPrefStore();
     mojom::PrefStoreRegistryPtr registry;
-    connector()->BindInterface(mojom::kPrefStoreServiceName, &registry);
+    connector()->BindInterface(mojom::kServiceName, &registry);
     above_user_prefs_impl_ =
         PrefStoreImpl::Create(registry.get(), above_user_prefs_pref_store_,
                               PrefValueStore::COMMAND_LINE_STORE);

@@ -68,7 +68,7 @@ scoped_refptr<::PrefStore> CreateRegisteredPrefStore(
     return backing_pref_store;
 
   prefs::mojom::PrefStoreRegistryPtr registry_ptr;
-  connector->BindInterface(prefs::mojom::kPrefStoreServiceName, &registry_ptr);
+  connector->BindInterface(prefs::mojom::kServiceName, &registry_ptr);
   return make_scoped_refptr(new prefs::PrefStoreAdapter(
       backing_pref_store, prefs::PrefStoreImpl::Create(
                               registry_ptr.get(), backing_pref_store, type)));

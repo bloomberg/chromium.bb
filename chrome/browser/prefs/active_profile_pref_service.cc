@@ -19,8 +19,7 @@ void ActiveProfilePrefService::Connect(
     const ConnectCallback& callback) {
   auto* connector = content::BrowserContext::GetConnectorFor(
       ProfileManager::GetActiveUserProfile());
-  connector->BindInterface(prefs::mojom::kPrefStoreServiceName,
-                           &connector_ptr_);
+  connector->BindInterface(prefs::mojom::kServiceName, &connector_ptr_);
   connector_ptr_.set_connection_error_handler(base::Bind(
       &ActiveProfilePrefService::OnConnectError, base::Unretained(this)));
   connector_ptr_->Connect(std::move(pref_registry), callback);

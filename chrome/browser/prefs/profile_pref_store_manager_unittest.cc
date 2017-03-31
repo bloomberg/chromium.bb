@@ -154,14 +154,12 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
       connector_ = service_manager::Connector::Create(&connector_request_);
       service_manager::Connector::TestApi test_api(connector_.get());
       test_api.OverrideBinderForTesting(
-          prefs::mojom::kPrefStoreServiceName,
-          prefs::mojom::PrefStoreConnector::Name_,
+          prefs::mojom::kServiceName, prefs::mojom::PrefStoreConnector::Name_,
           base::Bind(&ProfilePrefStoreManagerTest::BindInterface,
                      base::Unretained(this),
                      prefs::mojom::PrefStoreConnector::Name_));
       test_api.OverrideBinderForTesting(
-          prefs::mojom::kPrefStoreServiceName,
-          prefs::mojom::PrefServiceControl::Name_,
+          prefs::mojom::kServiceName, prefs::mojom::PrefServiceControl::Name_,
           base::Bind(&ProfilePrefStoreManagerTest::BindInterface,
                      base::Unretained(this),
                      prefs::mojom::PrefServiceControl::Name_));
