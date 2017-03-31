@@ -20,8 +20,10 @@
 #include "av1/common/onyxc_int.h"
 
 void av1_set_mb_mi(AV1_COMMON *cm, int width, int height) {
-  const int aligned_width = ALIGN_POWER_OF_TWO(width, MI_SIZE_LOG2);
-  const int aligned_height = ALIGN_POWER_OF_TWO(height, MI_SIZE_LOG2);
+  // TODO(jingning): Fine tune the loop filter operations and bring this
+  // back to integer multiple of 4 for cb4x4.
+  const int aligned_width = ALIGN_POWER_OF_TWO(width, 3);
+  const int aligned_height = ALIGN_POWER_OF_TWO(height, 3);
 
   cm->mi_cols = aligned_width >> MI_SIZE_LOG2;
   cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
