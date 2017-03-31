@@ -12,6 +12,10 @@
     <style include="settings-shared">
       paper-checkbox {
         display: block;
+      }
+
+      paper-checkbox,
+      #description {
         margin: 15px 0;
       }
     </style>
@@ -20,7 +24,9 @@
       <div class="title">$i18n{certificateManagerCaTrustEditDialogTitle}</div>
       <div class="body">
         <div>[[explanationText_]]</div>
-        <div>$i18n{certificateManagerCaTrustEditDialogDescription}</div>
+        <div id="description">
+          $i18n{certificateManagerCaTrustEditDialogDescription}
+        </div>
         <paper-checkbox id="ssl" checked="[[trustInfo_.ssl]]">
           $i18n{certificateManagerCaTrustEditDialogSsl}
         </paper-checkbox>
