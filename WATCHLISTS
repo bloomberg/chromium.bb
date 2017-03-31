@@ -131,11 +131,10 @@
       'filepath':
         'ui/compositor/' \
         '|content/browser/compositor/' \
-        '|content/browser/renderer_host/compositor_resize_lock_aura' \
+        '|content/browser/renderer_host/compositor_resize_lock' \
         '|content/browser/renderer_host/render_widget_host_view_aura' \
         '|content/browser/renderer_host/render_widget_host_view_browsertest' \
         '|content/browser/renderer_host/delegated' \
-        '|content/browser/renderer_host/software' \
         '|content/common/gpu/client/' \
     },
     'auto_bisect': {
@@ -1633,7 +1632,8 @@
                             'robliao+watch@chromium.org'],
     'base_win': ['grt+watch@chromium.org',
                  'wfh+watch@chromium.org'],
-    'base': ['vmpstr+watch@chromium.org'],
+    'base': ['vmpstr+watch@chromium.org',
+             'danakj+watch@chromium.org',],
     'battery_status': ['timvolodine@chromium.org'],
     'binary_size': ['agrieve+watch@chromium.org',
                     'estevenson+watch@chromium.org',
@@ -1760,7 +1760,6 @@
     'blink_platform_graphics': ['ajuma+watch@chromium.org',
                                 'blink-reviews-platform-graphics@chromium.org',
                                 'cabanier@adobe.com',
-                                'danakj+watch@chromium.org',
                                 'dongseong.hwang@intel.com',
                                 'drott+blinkwatch@chromium.org',
                                 'dschulze@chromium.org',
