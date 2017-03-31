@@ -412,11 +412,10 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   std::string ip_address, ipv6_address;
   const NetworkState* network = handler->DefaultNetwork();
   if (network) {
+    ip_address = network->ip_address();
     const DeviceState* device = handler->GetDeviceState(network->device_path());
-    if (device) {
-      ip_address = device->GetIpAddressByType(shill::kTypeIPv4);
+    if (device)
       ipv6_address = device->GetIpAddressByType(shill::kTypeIPv6);
-    }
   }
 
   std::string ethernet_address, wifi_address;
