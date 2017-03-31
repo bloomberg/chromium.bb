@@ -194,9 +194,6 @@ class HttpStreamFactoryImpl::JobController
                   HttpStreamRequest::Delegate* delegate,
                   HttpStreamRequest::StreamType stream_type);
 
-  // Attaches |job| to |request_|. Does not mean that |request_| will use |job|.
-  void AttachJob(Job* job);
-
   // Called to bind |job| to the |request_| and orphan all other jobs that are
   // still associated with |request_|.
   void BindJob(Job* job);

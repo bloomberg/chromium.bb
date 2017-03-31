@@ -106,7 +106,6 @@ HttpStreamFactoryImpl::HttpStreamFactoryImpl(HttpNetworkSession* session,
       for_websockets_(for_websockets) {}
 
 HttpStreamFactoryImpl::~HttpStreamFactoryImpl() {
-  DCHECK(request_map_.empty());
   DCHECK(spdy_session_request_map_.empty());
   int alt_job_count = 0;
   int main_job_count = 0;

@@ -169,11 +169,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
 
   HttpNetworkSession* const session_;
 
-  // All Requests are handed out to clients. By the time HttpStreamFactoryImpl
-  // is destroyed, all Requests should be deleted (which should remove them from
-  // |request_map_|. The Requests will delete the corresponding job.
-  std::map<const Job*, Request*> request_map_;
-
   // All Requests/Preconnects are assigned with a JobController to manage
   // serving Job(s). JobController might outlive Request when Request
   // is served while there's some working Job left. JobController will be

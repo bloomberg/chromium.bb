@@ -301,7 +301,6 @@ void HttpStreamFactoryImpl::JobController::OnStreamFailed(
     if (main_job_ && alternative_job_) {
       // Hey, we've got other jobs! Maybe one of them will succeed, let's just
       // ignore this failure.
-      factory_->request_map_.erase(job);
       if (job->job_type() == MAIN) {
         main_job_.reset();
       } else {
@@ -435,7 +434,6 @@ void HttpStreamFactoryImpl::JobController::OnResolveProxyComplete(
       this, ALTERNATIVE, session_, request_info, priority, server_ssl_config,
       proxy_ssl_config, destination, origin_url, alternative_proxy_server,
       enable_ip_based_pooling_, job->net_log().net_log()));
-  AttachJob(alternative_job_.get());
 
   can_start_alternative_proxy_job_ = false;
   main_job_is_blocked_ = true;
@@ -711,7 +709,6 @@ void HttpStreamFactoryImpl::JobController::CreateJobs(
       this, MAIN, session_, request_info, priority, server_ssl_config,
       proxy_ssl_config, destination, origin_url, enable_ip_based_pooling_,
       net_log_.net_log()));
-  AttachJob(main_job_.get());
 
   // Create an alternative job if alternative service is set up for this domain.
   const AlternativeService alternative_service =
@@ -732,7 +729,6 @@ void HttpStreamFactoryImpl::JobController::CreateJobs(
         this, ALTERNATIVE, session_, request_info, priority, server_ssl_config,
         proxy_ssl_config, alternative_destination, origin_url,
         alternative_service, enable_ip_based_pooling_, net_log_.net_log()));
-    AttachJob(alternative_job_.get());
 
     main_job_is_blocked_ = true;
     alternative_job_->Start(request_->stream_type());
@@ -745,11 +741,6 @@ void HttpStreamFactoryImpl::JobController::CreateJobs(
   main_job_->Start(request_->stream_type());
 }
 
-void HttpStreamFactoryImpl::JobController::AttachJob(Job* job) {
-  DCHECK(job);
-  factory_->request_map_[job] = request_;
-}
-
 void HttpStreamFactoryImpl::JobController::BindJob(Job* job) {
   DCHECK(request_);
   DCHECK(job);
@@ -759,7 +750,6 @@ void HttpStreamFactoryImpl::JobController::BindJob(Job* job) {
 
   job_bound_ = true;
   bound_job_ = job;
-  factory_->request_map_.erase(job);
 
   request_->net_log().AddEvent(
       NetLogEventType::HTTP_STREAM_REQUEST_BOUND_TO_JOB,
@@ -776,14 +766,10 @@ void HttpStreamFactoryImpl::JobController::CancelJobs() {
   RemoveRequestFromSpdySessionRequestMap();
   if (job_bound_)
     return;
-  if (alternative_job_) {
-    factory_->request_map_.erase(alternative_job_.get());
+  if (alternative_job_)
     alternative_job_.reset();
-  }
-  if (main_job_) {
-    factory_->request_map_.erase(main_job_.get());
+  if (main_job_)
     main_job_.reset();
-  }
 }
 
 void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
@@ -792,11 +778,9 @@ void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
 
   DCHECK(bound_job_);
   if (bound_job_->job_type() == MAIN && alternative_job_) {
-    factory_->request_map_.erase(alternative_job_.get());
     alternative_job_->Orphan();
   } else if (bound_job_->job_type() == ALTERNATIVE && main_job_) {
     // Orphan main job.
-    factory_->request_map_.erase(main_job_.get());
     // If ResumeMainJob() is not executed, reset |main_job_|. Otherwise,
     // OnOrphanedJobComplete() will clean up |this| when the job completes.
     // Use |main_job_is_blocked_| and |!main_job_wait_time_.is_zero()| instead
