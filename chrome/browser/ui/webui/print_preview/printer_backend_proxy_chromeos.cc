@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,8 +32,6 @@
 namespace printing {
 
 namespace {
-
-enum SetupResult { SUCCESS, PPD_NOT_FOUND, FAILURE };
 
 // Store the name used in CUPS, Printer#id in |printer_name|, the description
 // as the system_driverinfo option value, and the Printer#display_name in
@@ -71,99 +70,47 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
       base::Bind(&GetSettingsOnBlockingPool, printer->id(), basic_info), cb);
 }
 
-void PostCallbackError(const PrinterSetupCallback& cb) {
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(cb, nullptr));
-}
-
 void HandlePrinterSetup(std::unique_ptr<chromeos::Printer> printer,
-                        SetupResult result,
-                        const PrinterSetupCallback& cb) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (result != SetupResult::SUCCESS) {
-    LOG(WARNING) << "Print setup failed: " << result;
-    // TODO(skau): Open printer settings if this is resolvable.
-    PostCallbackError(cb);
-    return;
-  }
-
-  VLOG(1) << "Printer setup successful for " << printer->id()
-          << " fetching properties";
-
-  // fetch settings on the blocking pool and invoke callback.
-  FetchCapabilities(std::move(printer), cb);
-}
-
-void OnPrinterAddResult(std::unique_ptr<chromeos::Printer> printer,
                         const PrinterSetupCallback& cb,
-                        int32_t result_code) {
-  // It's expected that debug daemon posts callbacks on the UI thread.
+                        chromeos::PrinterSetupResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  HandlePrinterSetup(std::move(printer), (result_code == 0) ? SUCCESS : FAILURE,
-                     cb);
-}
-
-void OnPrinterAddError(const PrinterSetupCallback& cb) {
-  // It's expected that debug daemon posts callbacks on the UI thread.
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  LOG(WARNING) << "Could not contact debugd";
-  PostCallbackError(cb);
-}
-
-void AddPrinter(std::unique_ptr<chromeos::Printer> printer,
-                const std::string& ppd_contents,
-                const PrinterSetupCallback& cb) {
-  // Always push configuration to CUPS.  It may need an update.
-  const std::string printer_name = printer->id();
-  const std::string printer_uri = printer->uri();
-
-  if (!ppd_contents.empty()) {
-    chromeos::DBusThreadManager::Get()
-        ->GetDebugDaemonClient()
-        ->CupsAddManuallyConfiguredPrinter(
-            printer_name, printer_uri, ppd_contents,
-            base::Bind(&OnPrinterAddResult, base::Passed(&printer), cb),
-            base::Bind(&OnPrinterAddError, cb));
-  } else {
-    // If we weren't given a ppd to use, we'd better be auto-configurable.
-    DCHECK(printer->IsIppEverywhere());
-    chromeos::DBusThreadManager::Get()
-        ->GetDebugDaemonClient()
-        ->CupsAddAutoConfiguredPrinter(
-            printer_name, printer_uri,
-            base::Bind(&OnPrinterAddResult, base::Passed(&printer), cb),
-            base::Bind(&OnPrinterAddError, cb));
-  }
-}
-
-void PPDResolve(std::unique_ptr<chromeos::Printer> printer,
-                const PrinterSetupCallback& cb,
-                chromeos::printing::PpdProvider::CallbackResultCode result,
-                const std::string& ppd_contents) {
   switch (result) {
-    case chromeos::printing::PpdProvider::SUCCESS: {
-      DCHECK(!ppd_contents.empty());
-      AddPrinter(std::move(printer), ppd_contents, cb);
+    case chromeos::PrinterSetupResult::SUCCESS:
+      VLOG(1) << "Printer setup successful for " << printer->id()
+              << " fetching properties";
+
+      // fetch settings on the blocking pool and invoke callback.
+      FetchCapabilities(std::move(printer), cb);
+      return;
+    case chromeos::PrinterSetupResult::PPD_NOT_FOUND:
+      LOG(WARNING) << "Could not find PPD.  Check printer configuration.";
+      // Prompt user to update configuration.
+      // TODO(skau): Fill me in
       break;
-    }
-    case chromeos::printing::PpdProvider::NOT_FOUND:
-      HandlePrinterSetup(std::move(printer), PPD_NOT_FOUND, cb);
+    case chromeos::PrinterSetupResult::PPD_UNRETRIEVABLE:
+      LOG(WARNING) << "Could not download PPD.  Check Internet connection.";
+      // Could not download PPD.  Connect to Internet.
+      // TODO(skau): Fill me in
       break;
-    default:
-      HandlePrinterSetup(std::move(printer), FAILURE, cb);
+    case chromeos::PrinterSetupResult::PRINTER_UNREACHABLE:
+    case chromeos::PrinterSetupResult::DBUS_ERROR:
+    case chromeos::PrinterSetupResult::PPD_TOO_LARGE:
+    case chromeos::PrinterSetupResult::INVALID_PPD:
+    case chromeos::PrinterSetupResult::FATAL_ERROR:
+      LOG(ERROR) << "Unexpected error in printer setup." << result;
       break;
   }
+
+  // TODO(skau): Open printer settings if this is resolvable.
+  cb.Run(nullptr);
 }
 
 class PrinterBackendProxyChromeos : public PrinterBackendProxy {
  public:
-  explicit PrinterBackendProxyChromeos(Profile* profile) {
-    prefs_ = chromeos::PrintersManagerFactory::GetForBrowserContext(profile);
-    ppd_provider_ = chromeos::printing::CreateProvider(profile);
-
+  explicit PrinterBackendProxyChromeos(Profile* profile)
+      : prefs_(chromeos::PrintersManagerFactory::GetForBrowserContext(profile)),
+        printer_configurer_(chromeos::PrinterConfigurer::Create(profile)) {
     // Construct the CupsPrintJobManager to listen for printing events.
     chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile);
   }
@@ -211,20 +158,16 @@ class PrinterBackendProxyChromeos : public PrinterBackendProxy {
       return;
     }
 
-    if (printer->IsIppEverywhere()) {
-      // ChromeOS registers printer by GUID rather than display name.
-      AddPrinter(std::move(printer), "", cb);
-    } else {
-      // Ref taken because printer is moved.
-      const chromeos::Printer::PpdReference& ppd_ref = printer->ppd_reference();
-      ppd_provider_->ResolvePpd(
-          ppd_ref, base::Bind(&PPDResolve, base::Passed(&printer), cb));
-    }
+    const chromeos::Printer& printer_ref = *printer;
+    printer_configurer_->SetUpPrinter(
+        printer_ref,
+        base::Bind(&HandlePrinterSetup, base::Passed(&printer), cb));
   };
 
  private:
   chromeos::PrintersManager* prefs_;
   scoped_refptr<chromeos::printing::PpdProvider> ppd_provider_;
+  std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrinterBackendProxyChromeos);
 };
