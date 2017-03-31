@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
@@ -57,17 +56,13 @@
         -webkit-margin-start: 8px;
       }
 
-      #dialog {
-        --cr-dialog-body-container: {
-          max-height: 450px; 
-        };
+      #dialog .body {
+        max-height: 450px;
       }
 
       @media all and (max-height: 714px) {
-        #dialog {
-          --cr-dialog-body-container: {
-            max-height: 270px; 
-          };
+        #dialog .body {
+          max-height: 270px;
         }
       }
 
@@ -81,8 +76,7 @@
         };
       }
     </style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
-        show-scroll-borders>
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">[[title_]]</div>
       <div class="body">
         <template is="dom-repeat" items="[[addressWrapper_]]">

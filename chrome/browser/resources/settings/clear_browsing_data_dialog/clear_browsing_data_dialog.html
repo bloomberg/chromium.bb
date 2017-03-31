@@ -19,6 +19,7 @@
       }
 
       #dialog .button-container {
+        border-top: 1px solid rgba(0, 0, 0, 0.14);
         margin-top: 0;
         padding-top: 10px;
       }
@@ -88,22 +89,17 @@
        * Replace the bottom margin with padding to avoid the gap between
        * the scrollbar and the bottom separator. */
       @media all and (max-height: 724px) {
-        #dialog {
-          /* crbug.com/652027: Show four and a *half* items in the list. */
-          --cr-dialog-body-container: {
-            max-height: 280px; 
-          };
-        }
-
         #dialog .body {
           margin-bottom: 0;
+          /* crbug.com/652027: Show four and a *half* items in the list. */
+          max-height: 280px;
+          overflow-y: scroll;
           padding-bottom: 12px;
         }
       }
     </style>
 
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}"
-        show-scroll-borders ignore-popstate>
+    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}" ignore-popstate>
       <div class="title">$i18n{clearBrowsingData}</div>
       <div class="body">
         <div class="row">

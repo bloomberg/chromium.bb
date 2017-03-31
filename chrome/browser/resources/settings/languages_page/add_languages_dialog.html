@@ -1,4 +1,3 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_scrollable_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
@@ -34,7 +33,7 @@
     </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">$i18n{addLanguagesDialogTitle}</div>
-      <div class="body" scrollable>
+      <div class="body">
         <settings-subpage-search label="[[searchLabel]]"
             on-search-changed="onSearchChanged_" autofocus>
         </settings-subpage-search>

@@ -59,17 +59,8 @@
       .body-container {
         display: flex;
         flex-direction: column;
+        /* TODO(dbeam): copy <paper-dialog-scrollable>'s dividers? */
         overflow: auto;
-        @apply(--cr-dialog-body-container);
-      }
-
-      :host([show-scroll-borders]) .body-container {
-        /* Prevent layout moving when border does appear. */
-        border-bottom: 1px solid transparent;
-      }
-
-      :host([show-scroll-borders]) .body-container.bottom-scrollable {
-        border-bottom: 1px solid var(--paper-grey-300);
       }
 
       :host ::content .body {
@@ -119,7 +110,6 @@
     </div>
     <div class="body-container">
       <content select=".body"></content>
-      <span id="bodyBottomMarker"></span>
     </div>
     <content select=".button-container"></content>
     <content select=".footer"></content>
