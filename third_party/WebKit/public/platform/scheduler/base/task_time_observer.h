@@ -32,6 +32,9 @@ class BLINK_PLATFORM_EXPORT TaskTimeObserver {
                               double start_time,
                               double end_time) = 0;
 
+  // Callback to be called when we enter a nested message loop.
+  virtual void onBeginNestedMessageLoop() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TaskTimeObserver);
 };

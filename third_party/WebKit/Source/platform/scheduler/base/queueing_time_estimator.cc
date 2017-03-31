@@ -72,6 +72,10 @@ void QueueingTimeEstimator::OnTopLevelTaskCompleted(
   state_.OnTopLevelTaskCompleted(client_, task_end_time);
 }
 
+void QueueingTimeEstimator::OnBeginNestedMessageLoop() {
+  state_.OnBeginNestedMessageLoop();
+}
+
 void QueueingTimeEstimator::State::OnTopLevelTaskStarted(
     base::TimeTicks task_start_time) {
   current_task_start_time = task_start_time;
@@ -80,6 +84,12 @@ void QueueingTimeEstimator::State::OnTopLevelTaskStarted(
 void QueueingTimeEstimator::State::OnTopLevelTaskCompleted(
     QueueingTimeEstimator::Client* client,
     base::TimeTicks task_end_time) {
+  if (in_nested_message_loop_) {
+    in_nested_message_loop_ = false;
+    current_task_start_time = base::TimeTicks();
+    return;
+  }
+
   if (window_start_time.is_null())
     window_start_time = current_task_start_time;
 
@@ -100,6 +110,10 @@ void QueueingTimeEstimator::State::OnTopLevelTaskCompleted(
       window_start_time + window_duration);
 
   current_task_start_time = base::TimeTicks();
+}
+
+void QueueingTimeEstimator::State::OnBeginNestedMessageLoop() {
+  in_nested_message_loop_ = true;
 }
 
 bool QueueingTimeEstimator::State::TimePastWindowEnd(base::TimeTicks time) {

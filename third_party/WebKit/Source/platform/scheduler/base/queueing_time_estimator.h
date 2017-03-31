@@ -29,15 +29,18 @@ class BLINK_PLATFORM_EXPORT QueueingTimeEstimator {
 
   class State {
    public:
+    void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
+    void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
+    void OnBeginNestedMessageLoop();
+
     base::TimeDelta current_expected_queueing_time;
     base::TimeDelta window_duration;
     base::TimeTicks window_start_time;
     base::TimeTicks current_task_start_time;
-    void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
-    void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
 
    private:
     bool TimePastWindowEnd(base::TimeTicks task_end_time);
+    bool in_nested_message_loop_ = false;
   };
 
   QueueingTimeEstimator(Client* client, base::TimeDelta window_duration);
@@ -45,6 +48,7 @@ class BLINK_PLATFORM_EXPORT QueueingTimeEstimator {
 
   void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
   void OnTopLevelTaskCompleted(base::TimeTicks task_end_time);
+  void OnBeginNestedMessageLoop();
 
   // Returns all state except for the current |client_|.
   const State& state() const { return state_; }

@@ -145,5 +145,43 @@ TEST_F(QueueingTimeEstimatorTest,
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(5500), estimatedQueueingTime);
 }
 
+// Tasks containing nested message loops may be extremely long without
+// negatively impacting user experience. Ignore such tasks.
+TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5));
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  time += base::TimeDelta::FromMilliseconds(3000);
+
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(20000);
+  estimator.OnBeginNestedMessageLoop();
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Perform an additional task after the nested message loop. A 1 second task
+  // in a 5 second window results in a 100ms expected queueing time.
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Flush the data by adding a task in the next window.
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(500);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  EXPECT_THAT(client.expected_queueing_times(),
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(100)));
+}
+
 }  // namespace scheduler
 }  // namespace blink

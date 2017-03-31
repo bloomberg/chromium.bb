@@ -188,6 +188,12 @@ void TaskQueueManager::OnBeginNestedMessageLoop() {
     any_thread().immediate_do_work_posted_count++;
     any_thread().is_nested = true;
   }
+
+  // When a nested message loop starts, task time observers may want to ignore
+  // the current task.
+  for (auto& observer : task_time_observers_)
+    observer.onBeginNestedMessageLoop();
+
   delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
 }
 

@@ -145,6 +145,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   void didProcessTask(TaskQueue* task_queue,
                       double start_time,
                       double end_time) override;
+  void onBeginNestedMessageLoop() override;
 
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time) override;
