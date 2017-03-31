@@ -170,10 +170,10 @@
           label="$i18n{largeMouseCursorLabel}">
       </settings-toggle-button>
       <template is="dom-if" if="[[enableAdjustableLargeCursor_]]">
-        <div class="list-item sub-item">
+        <div class="list-item sub-item"
+            hidden$="[[!prefs.settings.a11y.large_cursor_enabled.value]]">
           <div class="start">$i18n{largeMouseCursorSizeLabel}</div>
           <settings-slider
-             disabled$="[[!prefs.settings.a11y.large_cursor_enabled.value]]"
              pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
              min="25" max="64" label-min="$i18n{largeMouseCursorSizeSmallLabel}"
              label-max="$i18n{largeMouseCursorSizeLargeLabel}">
