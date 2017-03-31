@@ -732,6 +732,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // responsive.
   void StopHangMonitorTimeout();
 
+  // Used for UMA logging how long the renderer was unresponsive.
+  void LogHangMonitorUnresponsive();
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -819,6 +822,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // Used for UMA histogram logging to measure the time for a repaint view
   // operation to finish.
   base::TimeTicks repaint_start_time_;
+
+  // Used for UMA histogram logging to measure how long the renderer is hanging.
+  base::TimeTicks hang_start_time_;
 
   // Set to true if we shouldn't send input events from the render widget.
   bool ignore_input_events_;
