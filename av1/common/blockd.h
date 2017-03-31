@@ -1113,7 +1113,7 @@ static INLINE MOTION_MODE motion_mode_allowed(
     if (!check_num_overlappable_neighbors(mbmi)) return SIMPLE_TRANSLATION;
 #endif
 #if CONFIG_WARPED_MOTION
-    if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 3)
+    if (!has_second_ref(mbmi) && mbmi->num_proj_ref[0] >= 1)
       return WARPED_CAUSAL;
     else
 #endif  // CONFIG_WARPED_MOTION

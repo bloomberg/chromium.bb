@@ -1123,25 +1123,20 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         int bh = block_size_high[mbmi->sb_type];
         int cr_offset = -AOMMAX(bh, MI_SIZE) / 2 - 1;
         int cc_offset = i * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1;
-        int j;
-        int pixelperblock = SAMPLES_PER_NEIGHBOR;
+        int x = cc_offset + global_offset_c;
+        int y = cr_offset + global_offset_r;
 
-        for (j = 0; j < pixelperblock; j++) {
-          int x = cc_offset + j % 2 + global_offset_c;
-          int y = cr_offset + j / 2 + global_offset_r;
-
-          pts[0] = (x * 8);
-          pts[1] = (y * 8);
-          calc_projection_samples(mbmi,
+        pts[0] = (x * 8);
+        pts[1] = (y * 8);
+        calc_projection_samples(mbmi,
 #if CONFIG_GLOBAL_MOTION
-                                  xd,
+                                xd,
 #endif
-                                  x, y, pts_inref);
-
-          pts += 2;
-          pts_inref += 2;
-        }
-        np += pixelperblock;
+                                x, y, pts_inref);
+        pts += 2;
+        pts_inref += 2;
+        np++;
+        if (np >= LEAST_SQUARES_SAMPLES_MAX) return LEAST_SQUARES_SAMPLES_MAX;
       }
     }
   }
@@ -1163,25 +1158,20 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         int bh = block_size_high[mbmi->sb_type];
         int cr_offset = i * MI_SIZE + AOMMAX(bh, MI_SIZE) / 2 - 1;
         int cc_offset = -AOMMAX(bw, MI_SIZE) / 2 - 1;
-        int j;
-        int pixelperblock = SAMPLES_PER_NEIGHBOR;
+        int x = cc_offset + global_offset_c;
+        int y = cr_offset + global_offset_r;
 
-        for (j = 0; j < pixelperblock; j++) {
-          int x = cc_offset + j % 2 + global_offset_c;
-          int y = cr_offset + j / 2 + global_offset_r;
-
-          pts[0] = (x * 8);
-          pts[1] = (y * 8);
-          calc_projection_samples(mbmi,
+        pts[0] = (x * 8);
+        pts[1] = (y * 8);
+        calc_projection_samples(mbmi,
 #if CONFIG_GLOBAL_MOTION
-                                  xd,
+                                xd,
 #endif
-                                  x, y, pts_inref);
-
-          pts += 2;
-          pts_inref += 2;
-        }
-        np += pixelperblock;
+                                x, y, pts_inref);
+        pts += 2;
+        pts_inref += 2;
+        np++;
+        if (np >= LEAST_SQUARES_SAMPLES_MAX) return LEAST_SQUARES_SAMPLES_MAX;
       }
     }
   }
@@ -1199,33 +1189,23 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       int bh = block_size_high[mbmi->sb_type];
       int cr_offset = -AOMMAX(bh, MI_SIZE) / 2 - 1;
       int cc_offset = -AOMMAX(bw, MI_SIZE) / 2 - 1;
-      int j;
-      int pixelperblock = SAMPLES_PER_NEIGHBOR;
+      int x = cc_offset + global_offset_c;
+      int y = cr_offset + global_offset_r;
 
-      for (j = 0; j < pixelperblock; j++) {
-        int x = cc_offset + j % 2 + global_offset_c;
-        int y = cr_offset + j / 2 + global_offset_r;
-
-        pts[0] = (x * 8);
-        pts[1] = (y * 8);
-        calc_projection_samples(mbmi,
+      pts[0] = (x * 8);
+      pts[1] = (y * 8);
+      calc_projection_samples(mbmi,
 #if CONFIG_GLOBAL_MOTION
-                                xd,
+                              xd,
 #endif
-                                x, y, pts_inref);
-
-        pts += 2;
-        pts_inref += 2;
-      }
-      np += pixelperblock;
+                              x, y, pts_inref);
+      pts += 2;
+      pts_inref += 2;
+      np++;
     }
   }
   assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
-  if (np == 0) {
-    return 0;
-  }
-  assert(2 * np <= SAMPLES_ARRAY_SIZE);
   return np;
 }
 #endif  // CONFIG_WARPED_MOTION

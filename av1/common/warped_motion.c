@@ -1279,10 +1279,17 @@ void av1_warp_plane(WarpedMotionParams *wm,
 }
 
 #if CONFIG_WARPED_MOTION
-
 #define LEAST_SQUARES_ORDER 2
-#define LEAST_SQUARES_SAMPLES_MAX 32
-#define LEAST_SQUARES_MV_MAX 1024  // max mv in 1/8-pel
+
+#define LS_MV_MAX 1024  // max mv in 1/8-pel
+#define LS_STEP 2
+
+#define LS_SUM(a) ((a)*4 + LS_STEP * 2)
+#define LS_SQUARE(a) ((a) * (a)*4 + (a)*4 * LS_STEP + LS_STEP * LS_STEP * 2)
+#define LS_PRODUCT1(a, b) \
+  ((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP)
+#define LS_PRODUCT2(a, b) \
+  ((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2)
 
 #if LEAST_SQUARES_ORDER == 2
 static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
@@ -1291,7 +1298,7 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   int32_t A[2][2] = { { 0, 0 }, { 0, 0 } };
   int32_t Bx[2] = { 0, 0 };
   int32_t By[2] = { 0, 0 };
-  int i, j, n = 0;
+  int i, n = 0;
 
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
@@ -1322,26 +1329,22 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   //
   // The loop below computes: A = P'P, Bx = P'q, By = P'r
   // We need to just compute inv(A).Bx and inv(A).By for the solutions.
-  for (j = 0; j < SAMPLES_PER_NEIGHBOR && n < LEAST_SQUARES_SAMPLES_MAX; ++j) {
-    int sx, sy, dx, dy;
-    // Contribution from neighbor block
-    for (i = j; i < np && n < LEAST_SQUARES_SAMPLES_MAX;
-         i += SAMPLES_PER_NEIGHBOR) {
-      dx = pts2[i * 2] - dux;
-      dy = pts2[i * 2 + 1] - duy;
-      sx = pts1[i * 2] - sux;
-      sy = pts1[i * 2 + 1] - suy;
-      if (abs(sx - dx) < LEAST_SQUARES_MV_MAX &&
-          abs(sy - dy) < LEAST_SQUARES_MV_MAX) {
-        A[0][0] += sx * sx;
-        A[0][1] += sx * sy;
-        A[1][1] += sy * sy;
-        Bx[0] += sx * dx;
-        Bx[1] += sy * dx;
-        By[0] += sx * dy;
-        By[1] += sy * dy;
-        n++;
-      }
+  int sx, sy, dx, dy;
+  // Contribution from neighbor block
+  for (i = 0; i < np && n < LEAST_SQUARES_SAMPLES_MAX; i++) {
+    dx = pts2[i * 2] - dux;
+    dy = pts2[i * 2 + 1] - duy;
+    sx = pts1[i * 2] - sux;
+    sy = pts1[i * 2 + 1] - suy;
+    if (abs(sx - dx) < LS_MV_MAX && abs(sy - dy) < LS_MV_MAX) {
+      A[0][0] += LS_SQUARE(sx);
+      A[0][1] += LS_PRODUCT1(sx, sy);
+      A[1][1] += LS_SQUARE(sy);
+      Bx[0] += LS_PRODUCT2(sx, dx);
+      Bx[1] += LS_PRODUCT1(sy, dx);
+      By[0] += LS_PRODUCT1(sx, dy);
+      By[1] += LS_PRODUCT2(sy, dy);
+      n++;
     }
   }
   int64_t Px[2], Py[2];
@@ -1390,7 +1393,7 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   int32_t A[3][3] = { { 0, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } };
   int32_t Bx[3] = { 0, 0, 0 };
   int32_t By[3] = { 0, 0, 0 };
-  int i, j, n = 0, off;
+  int i, n = 0, off;
 
   int64_t C00, C01, C02, C11, C12, C22;
   int64_t Px[3], Py[3];
@@ -1421,54 +1424,47 @@ static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
   // The loop below computes: A = P'P, Bx = P'q, By = P'r
   // We need to just compute inv(A).Bx and inv(A).By for the solutions.
   //
-  for (j = 0; j < SAMPLES_PER_NEIGHBOR && n < LEAST_SQUARES_SAMPLES_MAX; ++j) {
-    // Contribution from sample in current block
-    const int y_offset = j >> 1;
-    const int x_offset = j & 1;
-    int sx, sy, dx, dy;
-    sx = (cx_offset + x_offset) * 8;
-    sy = (cy_offset + y_offset) * 8;
-    dx = sx + mvx;
-    dy = sy + mvy;
-    if (abs(sx - dx) < LEAST_SQUARES_MV_MAX &&
-        abs(sy - dy) < LEAST_SQUARES_MV_MAX) {
-      A[0][0] += sx * sx;
-      A[0][1] += sx * sy;
-      A[0][2] += sx;
-      A[1][1] += sy * sy;
-      A[1][2] += sy;
-      A[2][2] += 1;
-      Bx[0] += sx * dx;
-      Bx[1] += sy * dx;
-      Bx[2] += dx;
-      By[0] += sx * dy;
-      By[1] += sy * dy;
-      By[2] += dy;
+  int sx, sy, dx, dy;
+  // Contribution from sample in current block
+  sx = cx_offset * 8;
+  sy = cy_offset * 8;
+  dx = sx + mvx;
+  dy = sy + mvy;
+  if (abs(sx - dx) < LS_MV_MAX && abs(sy - dy) < LS_MV_MAX) {
+    A[0][0] += LS_SQUARE(sx);
+    A[0][1] += LS_PRODUCT1(sx, sy);
+    A[0][2] += LS_SUM(sx);
+    A[1][1] += LS_SQUARE(sy);
+    A[1][2] += LS_SUM(sy);
+    A[2][2] += 4;
+    Bx[0] += LS_PRODUCT2(sx, dx);
+    Bx[1] += LS_PRODUCT1(sy, dx);
+    Bx[2] += LS_SUM(dx);
+    By[0] += LS_PRODUCT1(sx, dy);
+    By[1] += LS_PRODUCT2(sy, dy);
+    By[2] += LS_SUM(dy);
+    n++;
+  }
+  // Contribution from neighbor block
+  for (i = 0; i < np && n < LEAST_SQUARES_SAMPLES_MAX; i++) {
+    dx = pts2[i * 2] - ux;
+    dy = pts2[i * 2 + 1] - uy;
+    sx = pts1[i * 2] - ux;
+    sy = pts1[i * 2 + 1] - uy;
+    if (abs(sx - dx) < LS_MV_MAX && abs(sy - dy) < LS_MV_MAX) {
+      A[0][0] += LS_SQUARE(sx);
+      A[0][1] += LS_PRODUCT1(sx, sy);
+      A[0][2] += LS_SUM(sx);
+      A[1][1] += LS_SQUARE(sy);
+      A[1][2] += LS_SUM(sy);
+      A[2][2] += 4;
+      Bx[0] += LS_PRODUCT2(sx, dx);
+      Bx[1] += LS_PRODUCT1(sy, dx);
+      Bx[2] += LS_SUM(dx);
+      By[0] += LS_PRODUCT1(sx, dy);
+      By[1] += LS_PRODUCT2(sy, dy);
+      By[2] += LS_SUM(dy);
       n++;
-    }
-    // Contribution from neighbor block
-    for (i = j; i < np && n < LEAST_SQUARES_SAMPLES_MAX;
-         i += SAMPLES_PER_NEIGHBOR) {
-      dx = pts2[i * 2] - ux;
-      dy = pts2[i * 2 + 1] - uy;
-      sx = pts1[i * 2] - ux;
-      sy = pts1[i * 2 + 1] - uy;
-      if (abs(sx - dx) < LEAST_SQUARES_MV_MAX &&
-          abs(sy - dy) < LEAST_SQUARES_MV_MAX) {
-        A[0][0] += sx * sx;
-        A[0][1] += sx * sy;
-        A[0][2] += sx;
-        A[1][1] += sy * sy;
-        A[1][2] += sy;
-        A[2][2] += 1;
-        Bx[0] += sx * dx;
-        Bx[1] += sy * dx;
-        Bx[2] += dx;
-        By[0] += sx * dy;
-        By[1] += sy * dy;
-        By[2] += dy;
-        n++;
-      }
     }
   }
   // Compute Cofactors of A
