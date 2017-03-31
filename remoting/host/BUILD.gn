@@ -265,8 +265,6 @@ static_library("host") {
     "screen_resolution.h",
     "server_log_entry_host.cc",
     "server_log_entry_host.h",
-    "service_urls.cc",
-    "service_urls.h",
     "shutdown_watchdog.cc",
     "shutdown_watchdog.h",
     "signaling_connector.cc",

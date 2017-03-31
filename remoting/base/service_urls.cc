@@ -1,13 +1,13 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/service_urls.h"
+#include "remoting/base/service_urls.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "google_apis/google_api_keys.h"
-#include "remoting/signaling/remoting_bot.h"
+#include "remoting/base/remoting_bot.h"
 
 // Configurable service data.
 const char kDirectoryBaseUrl[] = "https://www.googleapis.com/chromoting/v1";
@@ -50,23 +50,23 @@ ServiceUrls::ServiceUrls()
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   CHECK(command_line);
   if (command_line->HasSwitch(kDirectoryBaseUrlSwitch)) {
-    directory_base_url_ = command_line->GetSwitchValueASCII(
-        kDirectoryBaseUrlSwitch);
+    directory_base_url_ =
+        command_line->GetSwitchValueASCII(kDirectoryBaseUrlSwitch);
   }
   if (command_line->HasSwitch(kGcdBaseUrlSwitch)) {
     gcd_base_url_ = command_line->GetSwitchValueASCII(kGcdBaseUrlSwitch);
   }
   if (command_line->HasSwitch(kXmppServerAddressSwitch)) {
-    xmpp_server_address_ = command_line->GetSwitchValueASCII(
-        kXmppServerAddressSwitch);
+    xmpp_server_address_ =
+        command_line->GetSwitchValueASCII(kXmppServerAddressSwitch);
     xmpp_server_address_for_me2me_host_ = xmpp_server_address_;
   }
   if (command_line->HasSwitch(kXmppServerDisableTlsSwitch)) {
     xmpp_server_use_tls_ = false;
   }
   if (command_line->HasSwitch(kDirectoryBotJidSwitch)) {
-    directory_bot_jid_ = command_line->GetSwitchValueASCII(
-        kDirectoryBotJidSwitch);
+    directory_bot_jid_ =
+        command_line->GetSwitchValueASCII(kDirectoryBotJidSwitch);
   }
   if (command_line->HasSwitch(kGcdJidSwitch)) {
     gcd_jid_ = command_line->GetSwitchValueASCII(kGcdJidSwitch);

@@ -7,11 +7,11 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/remoting_bot.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/name_value_map.h"
 #include "remoting/protocol/session_plugin.h"
 #include "remoting/signaling/jid_util.h"
-#include "remoting/signaling/remoting_bot.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
 using buzz::QName;

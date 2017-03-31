@@ -24,11 +24,15 @@ source_set("base") {
     "leaky_bucket.h",
     "rate_counter.cc",
     "rate_counter.h",
+    "remoting_bot.cc",
+    "remoting_bot.h",
     "rsa_key_pair.cc",
     "rsa_key_pair.h",
     "running_samples.cc",
     "running_samples.h",
     "scoped_sc_handle_win.h",
+    "service_urls.cc",
+    "service_urls.h",
     "socket_reader.cc",
     "socket_reader.h",
     "telemetry_log_writer.cc",
@@ -56,6 +60,7 @@ source_set("base") {
   ]
   deps = [
     "//base/third_party/dynamic_annotations",
+    "//google_apis",
     "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
@@ -65,9 +70,11 @@ source_set("base") {
     sources -= [
       "chromium_url_request.cc",
       "chromoting_event.cc",
+      "service_urls.cc",
       "telemetry_log_writer.cc",
       "url_request_context_getter.cc",
     ]
+    deps -= [ "//google_apis" ]
   }
 }
 
