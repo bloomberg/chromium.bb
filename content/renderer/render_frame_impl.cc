@@ -1284,7 +1284,8 @@ void RenderFrameImpl::Initialize() {
       render_thread ? render_thread->input_handler_manager() : nullptr;
   if (input_handler_manager) {
     DCHECK(render_view_->HasAddedInputHandler());
-    input_handler_manager->RegisterRoutingID(GetRoutingID());
+    input_handler_manager->RegisterAssociatedRenderFrameRoutingID(
+        GetRoutingID(), render_view_->GetRoutingID());
   }
 
   const base::CommandLine& command_line =

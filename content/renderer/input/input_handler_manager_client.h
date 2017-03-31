@@ -39,6 +39,12 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   // Called from the compositor thread.
   virtual void RegisterRoutingID(int routing_id) = 0;
   virtual void UnregisterRoutingID(int routing_id) = 0;
+  virtual void RegisterAssociatedRenderFrameRoutingID(
+      int render_frame_routing_id,
+      int render_view_routing_id) = 0;
+  virtual void QueueClosureForMainThreadEventQueue(
+      int routing_id,
+      const base::Closure& closure) = 0;
 
   // |HandleInputEvent| will respond to overscroll by calling the passed in
   // callback.

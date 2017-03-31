@@ -129,6 +129,31 @@ void InputHandlerManager::RemoveInputHandler(int routing_id) {
   input_handlers_.erase(routing_id);
 }
 
+void InputHandlerManager::RegisterAssociatedRenderFrameRoutingID(
+    int render_frame_routing_id,
+    int render_view_routing_id) {
+  if (task_runner_->BelongsToCurrentThread()) {
+    RegisterAssociatedRenderFrameRoutingIDOnCompositorThread(
+        render_frame_routing_id, render_view_routing_id);
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&InputHandlerManager::
+                       RegisterAssociatedRenderFrameRoutingIDOnCompositorThread,
+                   base::Unretained(this), render_frame_routing_id,
+                   render_view_routing_id));
+  }
+}
+
+void InputHandlerManager::
+    RegisterAssociatedRenderFrameRoutingIDOnCompositorThread(
+        int render_frame_routing_id,
+        int render_view_routing_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->RegisterAssociatedRenderFrameRoutingID(render_frame_routing_id,
+                                                  render_view_routing_id);
+}
+
 void InputHandlerManager::RegisterRoutingID(int routing_id) {
   if (task_runner_->BelongsToCurrentThread()) {
     RegisterRoutingIDOnCompositorThread(routing_id);
@@ -228,6 +253,12 @@ void InputHandlerManager::HandleInputEvent(
       std::move(input_event), latency_info,
       base::Bind(&InputHandlerManager::DidHandleInputEventAndOverscroll,
                  weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void InputHandlerManager::QueueClosureForMainThreadEventQueue(
+    int routing_id,
+    const base::Closure& closure) {
+  client_->QueueClosureForMainThreadEventQueue(routing_id, closure);
 }
 
 void InputHandlerManager::DidHandleInputEventAndOverscroll(

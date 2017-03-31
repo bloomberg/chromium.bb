@@ -68,6 +68,12 @@ class CONTENT_EXPORT InputHandlerManager {
   void RegisterRoutingID(int routing_id);
   void UnregisterRoutingID(int routing_id);
 
+  void RegisterAssociatedRenderFrameRoutingID(int render_frame_routing_id,
+                                              int render_view_routing_id);
+  void RegisterAssociatedRenderFrameRoutingIDOnCompositorThread(
+      int render_frame_routing_id,
+      int render_view_routing_id);
+
   void ObserveGestureEventAndResultOnMainThread(
       int routing_id,
       const blink::WebGestureEvent& gesture_event,
@@ -94,6 +100,9 @@ class CONTENT_EXPORT InputHandlerManager {
                                 const ui::LatencyInfo& latency_info,
                                 const InputEventAckStateCallback& callback);
 
+  virtual void QueueClosureForMainThreadEventQueue(
+      int routing_id,
+      const base::Closure& closure);
   // Called from the compositor's thread.
   void DidOverscroll(int routing_id, const ui::DidOverscrollParams& params);
 

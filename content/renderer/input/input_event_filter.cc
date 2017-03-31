@@ -79,10 +79,19 @@ void InputEventFilter::RegisterRoutingID(int routing_id) {
       routing_id, this, main_task_runner_, renderer_scheduler_);
 }
 
+void InputEventFilter::RegisterAssociatedRenderFrameRoutingID(
+    int render_frame_routing_id,
+    int render_view_routing_id) {
+  base::AutoLock locked(routes_lock_);
+  DCHECK(routes_.find(render_view_routing_id) != routes_.end());
+  associated_routes_[render_frame_routing_id] = render_view_routing_id;
+}
+
 void InputEventFilter::UnregisterRoutingID(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.erase(routing_id);
   route_queues_.erase(routing_id);
+  associated_routes_.erase(routing_id);
 }
 
 void InputEventFilter::DidOverscroll(int routing_id,
@@ -93,6 +102,22 @@ void InputEventFilter::DidOverscroll(int routing_id,
 
 void InputEventFilter::DidStopFlinging(int routing_id) {
   SendMessage(base::MakeUnique<InputHostMsg_DidStopFlinging>(routing_id));
+}
+
+void InputEventFilter::QueueClosureForMainThreadEventQueue(
+    int routing_id,
+    const base::Closure& closure) {
+  DCHECK(target_task_runner_->BelongsToCurrentThread());
+  RouteQueueMap::iterator iter = route_queues_.find(routing_id);
+  if (iter != route_queues_.end()) {
+    iter->second->QueueClosure(closure);
+    return;
+  }
+
+  // For some reason we didn't find an event queue for the route.
+  // Don't drop the task on the floor allow it to execute.
+  NOTREACHED();
+  main_task_runner_->PostTask(FROM_HERE, closure);
 }
 
 void InputEventFilter::DispatchNonBlockingEventToMainThread(
@@ -176,22 +201,39 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
 
   TRACE_EVENT0("input", "InputEventFilter::OnMessageReceived::InputMessage");
 
+  int routing_id = message.routing_id();
   {
     base::AutoLock locked(routes_lock_);
-    if (routes_.find(message.routing_id()) == routes_.end())
-      return false;
+    if (routes_.find(routing_id) == routes_.end()) {
+      // |routes_| is based on the RenderView routing_id but the routing_id
+      // may be from a RenderFrame. Messages from RenderFrames should be handled
+      // synchronously with the associated RenderView as well.
+      // Use the associated table to see if we have a mapping from
+      // RenderFrame->RenderView if so use the queue for that routing id.
+      // TODO(dtapuska): Input messages should NOT be sent to RenderFrames and
+      // RenderViews; they should only goto one and this code will be
+      // unnecessary as this would break for mojo which doesn't guarantee
+      // ordering on different channels but Chrome IPC does.
+      auto associated_routing_id = associated_routes_.find(routing_id);
+      if (associated_routing_id == associated_routes_.end() ||
+          routes_.find(associated_routing_id->second) == routes_.end()) {
+        return false;
+      }
+      routing_id = associated_routing_id->second;
+    }
   }
 
   bool postedTask = target_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputEventFilter::ForwardToHandler, this, message,
-                            received_time));
+      FROM_HERE, base::Bind(&InputEventFilter::ForwardToHandler, this,
+                            routing_id, message, received_time));
   LOG_IF(WARNING, !postedTask) << "PostTask failed";
   return true;
 }
 
 InputEventFilter::~InputEventFilter() {}
 
-void InputEventFilter::ForwardToHandler(const IPC::Message& message,
+void InputEventFilter::ForwardToHandler(int associated_routing_id,
+                                        const IPC::Message& message,
                                         base::TimeTicks received_time) {
   DCHECK(input_handler_manager_);
   DCHECK(target_task_runner_->BelongsToCurrentThread());
@@ -203,13 +245,11 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
         "input",
         "InputEventFilter::ForwardToHandler::ForwardToMainListener",
         TRACE_EVENT_SCOPE_THREAD);
-    CHECK(main_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(main_listener_, message)))
-        << "PostTask failed";
+    input_handler_manager_->QueueClosureForMainThreadEventQueue(
+        associated_routing_id, base::Bind(main_listener_, message));
     return;
   }
 
-  int routing_id = message.routing_id();
   InputMsg_HandleInputEvent::Param params;
   if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
@@ -218,6 +258,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
   ui::LatencyInfo latency_info = std::get<2>(params);
   InputEventDispatchType dispatch_type = std::get<3>(params);
 
+  // HandleInputEvent is always sent to the RenderView routing ID
+  // so it should be the same as the message routing ID.
+  DCHECK(associated_routing_id == message.routing_id());
   DCHECK(event);
   DCHECK(dispatch_type == DISPATCH_TYPE_BLOCKING ||
          dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
@@ -226,9 +269,9 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message,
     event->setTimeStampSeconds(ui::EventTimeStampToSeconds(received_time));
 
   input_handler_manager_->HandleInputEvent(
-      routing_id, std::move(event), latency_info,
+      associated_routing_id, std::move(event), latency_info,
       base::Bind(&InputEventFilter::DidForwardToHandlerAndOverscroll, this,
-                 routing_id, dispatch_type));
+                 associated_routing_id, dispatch_type));
 };
 
 void InputEventFilter::DidForwardToHandlerAndOverscroll(
