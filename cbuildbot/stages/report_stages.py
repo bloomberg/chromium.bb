@@ -908,10 +908,11 @@ class ReportStage(generic_stages.BuilderStage,
 
     Args:
       db_credentials_dir: Path to CIDB database credentials.
+      tree: Sheriff-o-Matic tree to submit alerts to.
     """
     dispatcher_cmd = [os.path.join(self._build_root, 'chromite', 'scripts',
-                                   'som_alerts_dispatcher',
-                                   '--som_tree', tree)]
+                                   'som_alerts_dispatcher'),
+                      '--som_tree', tree]
     if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
       # User the service account file if it exists.
       dispatcher_cmd.extend(['--service_acct_json',
