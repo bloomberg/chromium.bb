@@ -25,7 +25,7 @@ struct lookahead_entry {
   YV12_BUFFER_CONFIG img;
   int64_t ts_start;
   int64_t ts_end;
-  unsigned int flags;
+  aom_enc_frame_flags_t flags;
 };
 
 // The max of past frames we want to keep in the queue.
@@ -77,7 +77,7 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
 #if CONFIG_AOM_HIGHBITDEPTH
                        int use_highbitdepth,
 #endif
-                       unsigned int flags);
+                       aom_enc_frame_flags_t flags);
 
 /**\brief Get the next source buffer to encode
  *

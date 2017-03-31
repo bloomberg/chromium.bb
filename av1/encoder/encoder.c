@@ -5156,7 +5156,7 @@ static void check_initial_width(AV1_COMP *cpi,
   }
 }
 
-int av1_receive_raw_frame(AV1_COMP *cpi, unsigned int frame_flags,
+int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
                           YV12_BUFFER_CONFIG *sd, int64_t time_stamp,
                           int64_t end_time) {
   AV1_COMMON *const cm = &cpi->common;
