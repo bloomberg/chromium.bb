@@ -65,8 +65,10 @@ class TouchEmulatorTest : public testing::Test,
     EXPECT_EQ(1U, event.touchesLength);
     EXPECT_EQ(last_mouse_x_, event.touches[0].position.x);
     EXPECT_EQ(last_mouse_y_, event.touches[0].position.y);
-    const int all_buttons = WebInputEvent::LeftButtonDown |
-        WebInputEvent::MiddleButtonDown | WebInputEvent::RightButtonDown;
+    const int all_buttons =
+        WebInputEvent::LeftButtonDown | WebInputEvent::MiddleButtonDown |
+        WebInputEvent::RightButtonDown | WebInputEvent::BackButtonDown |
+        WebInputEvent::ForwardButtonDown;
     EXPECT_EQ(0, event.modifiers() & all_buttons);
     WebInputEvent::DispatchType expected_dispatch_type =
         event.type() == WebInputEvent::TouchCancel

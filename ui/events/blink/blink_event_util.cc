@@ -120,22 +120,22 @@ WebPointerProperties::PointerType ToWebPointerType(int tool_type) {
 }
 
 WebPointerProperties::Button ToWebPointerButton(int android_button_state) {
-    if (android_button_state & MotionEvent::BUTTON_PRIMARY)
-        return WebPointerProperties::Button::Left;
-    else if (android_button_state & MotionEvent::BUTTON_SECONDARY)
-        return WebPointerProperties::Button::Right;
-    else if (android_button_state & MotionEvent::BUTTON_TERTIARY)
-        return WebPointerProperties::Button::Middle;
-    else if (android_button_state & MotionEvent::BUTTON_BACK)
-        return WebPointerProperties::Button::X1;
-    else if (android_button_state & MotionEvent::BUTTON_FORWARD)
-        return WebPointerProperties::Button::X2;
-    else if (android_button_state & MotionEvent::BUTTON_STYLUS_PRIMARY)
-        return WebPointerProperties::Button::Left;
-    else if (android_button_state & MotionEvent::BUTTON_STYLUS_SECONDARY)
-        return WebPointerProperties::Button::Right;
-    else
-        return WebPointerProperties::Button::NoButton;
+  if (android_button_state & MotionEvent::BUTTON_PRIMARY)
+    return WebPointerProperties::Button::Left;
+  else if (android_button_state & MotionEvent::BUTTON_SECONDARY)
+    return WebPointerProperties::Button::Right;
+  else if (android_button_state & MotionEvent::BUTTON_TERTIARY)
+    return WebPointerProperties::Button::Middle;
+  else if (android_button_state & MotionEvent::BUTTON_BACK)
+    return WebPointerProperties::Button::Back;
+  else if (android_button_state & MotionEvent::BUTTON_FORWARD)
+    return WebPointerProperties::Button::Forward;
+  else if (android_button_state & MotionEvent::BUTTON_STYLUS_PRIMARY)
+    return WebPointerProperties::Button::Left;
+  else if (android_button_state & MotionEvent::BUTTON_STYLUS_SECONDARY)
+    return WebPointerProperties::Button::Right;
+  else
+    return WebPointerProperties::Button::NoButton;
 }
 
 WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
@@ -587,6 +587,10 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= blink::WebInputEvent::MiddleButtonDown;
   if (flags & EF_RIGHT_MOUSE_BUTTON)
     modifiers |= blink::WebInputEvent::RightButtonDown;
+  if (flags & EF_BACK_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::BackButtonDown;
+  if (flags & EF_FORWARD_MOUSE_BUTTON)
+    modifiers |= blink::WebInputEvent::ForwardButtonDown;
   if (flags & EF_IS_REPEAT)
     modifiers |= blink::WebInputEvent::IsAutoRepeat;
   if (flags & EF_TOUCH_ACCESSIBILITY)
@@ -940,6 +944,10 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= EF_MIDDLE_MOUSE_BUTTON;
   if (modifiers & blink::WebInputEvent::RightButtonDown)
     flags |= EF_RIGHT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::BackButtonDown)
+    flags |= EF_BACK_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::ForwardButtonDown)
+    flags |= EF_FORWARD_MOUSE_BUTTON;
   if (modifiers & blink::WebInputEvent::IsAutoRepeat)
     flags |= EF_IS_REPEAT;
 

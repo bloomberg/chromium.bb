@@ -95,6 +95,29 @@ function runTests() {
     "pointerup 2,0", "mouseup 2,0"
   ], "LMR button sequence");
 
+  eventSender.mouseDown(0);
+  eventSender.mouseDown(2);
+  eventSender.mouseDown(1);
+  eventSender.mouseDown(3);
+  eventSender.mouseDown(4);
+  eventSender.mouseUp(0);
+  eventSender.mouseUp(2);
+  eventSender.mouseUp(1);
+  eventSender.mouseUp(3);
+  eventSender.mouseUp(4);
+  testReceivedEvents([
+    "pointerdown 0,1", "mousedown 0,1",
+    "pointermove 2,3", "mousedown 2,3",
+    "pointermove 1,7", "mousedown 1,7",
+    "pointermove 3,15", "mousedown 3,15",
+    "pointermove 4,31", "mousedown 4,31",
+    "pointermove 0,30", "mouseup 0,30",
+    "pointermove 2,28", "mouseup 2,28",
+    "pointermove 1,24", "mouseup 1,24",
+    "pointermove 3,16", "mouseup 3,16",
+    "pointerup 4,0", "mouseup 4,0",
+  ], "LMRBF button sequence");
+
   eventSender.mouseDown(1);
   eventSender.mouseMoveTo(rect.left + 6, rect.top + 6);
   eventSender.mouseUp(1);

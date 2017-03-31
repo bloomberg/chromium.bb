@@ -229,6 +229,9 @@ class WebInputEvent {
     // events will set this.
     IsCompatibilityEventForTouch = 1 << 19,
 
+    BackButtonDown = 1 << 20,
+    ForwardButtonDown = 1 << 21,
+
     // The set of non-stateful modifiers that specifically change the
     // interpretation of the key being pressed. For example; IsLeft,
     // IsRight, IsComposing don't change the meaning of the key

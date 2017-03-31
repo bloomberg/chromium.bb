@@ -293,12 +293,20 @@ unsigned short MouseEvent::webInputEventModifiersToButtons(unsigned modifiers) {
 
   if (modifiers & WebInputEvent::LeftButtonDown)
     buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Left);
-  if (modifiers & WebInputEvent::RightButtonDown)
+  if (modifiers & WebInputEvent::RightButtonDown) {
     buttons |=
         static_cast<unsigned short>(WebPointerProperties::Buttons::Right);
-  if (modifiers & WebInputEvent::MiddleButtonDown)
+  }
+  if (modifiers & WebInputEvent::MiddleButtonDown) {
     buttons |=
         static_cast<unsigned short>(WebPointerProperties::Buttons::Middle);
+  }
+  if (modifiers & WebInputEvent::BackButtonDown)
+    buttons |= static_cast<unsigned short>(WebPointerProperties::Buttons::Back);
+  if (modifiers & WebInputEvent::ForwardButtonDown) {
+    buttons |=
+        static_cast<unsigned short>(WebPointerProperties::Buttons::Forward);
+  }
 
   return buttons;
 }

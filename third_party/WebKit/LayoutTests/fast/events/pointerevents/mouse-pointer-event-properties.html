@@ -159,7 +159,7 @@ function runMouseTests(x, y) {
   eventSender.mouseMoveTo(x + 5, y + 5);
   debug("");
 
-  debug("--- click left/right button ---");
+  debug("--- click left/right/back/forward button ---");
   // TODO(mustaq): Skip middle button because it triggers autoscroll. Consider
   // bringing it back if we choose to prevent autoscrolling by canceling middle
   // mousedown. crbug.com/644488.
@@ -167,6 +167,10 @@ function runMouseTests(x, y) {
   eventSender.mouseUp(0);
   eventSender.mouseDown(2);
   eventSender.mouseUp(2);
+  eventSender.mouseDown(3);
+  eventSender.mouseUp(3);
+  eventSender.mouseDown(4);
+  eventSender.mouseUp(4);
   debug("");
 
   debug("--- click with each modifier ---");

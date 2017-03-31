@@ -401,6 +401,10 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
     web_input_event_modifiers |= blink::WebInputEvent::MiddleButtonDown;
   if (aura_event_flags & ui::EF_RIGHT_MOUSE_BUTTON)
     web_input_event_modifiers |= blink::WebInputEvent::RightButtonDown;
+  if (aura_event_flags & ui::EF_BACK_MOUSE_BUTTON)
+    web_input_event_modifiers |= blink::WebInputEvent::BackButtonDown;
+  if (aura_event_flags & ui::EF_FORWARD_MOUSE_BUTTON)
+    web_input_event_modifiers |= blink::WebInputEvent::ForwardButtonDown;
   return web_input_event_modifiers;
 }
 

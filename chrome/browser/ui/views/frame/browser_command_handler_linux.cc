@@ -48,6 +48,11 @@ void BrowserCommandHandlerLinux::OnMouseEvent(ui::MouseEvent* event) {
     controller.GoBack();
   else if (forward_button_pressed && controller.CanGoForward())
     controller.GoForward();
+
   // Always consume the event, whether a navigation was successful or not.
+  //
+  // TODO(mustaq): Perhaps we should mark "handled" only for successful
+  //   navigation above but a bug in the past didn't allow it:
+  //   https://codereview.chromium.org/2763313002/#msg19
   event->SetHandled();
 }

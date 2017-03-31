@@ -174,6 +174,10 @@ WebMouseEvent::Button GetButtonTypeFromButtonNumber(int button_code) {
       return WebMouseEvent::Button::Middle;
     case 2:
       return WebMouseEvent::Button::Right;
+    case 3:
+      return WebMouseEvent::Button::Back;
+    case 4:
+      return WebMouseEvent::Button::Forward;
   }
   NOTREACHED();
   return WebMouseEvent::Button::NoButton;
@@ -189,8 +193,10 @@ int GetWebMouseEventModifierForButton(WebMouseEvent::Button button) {
       return WebMouseEvent::MiddleButtonDown;
     case WebMouseEvent::Button::Right:
       return WebMouseEvent::RightButtonDown;
-    case WebPointerProperties::Button::X1:
-    case WebPointerProperties::Button::X2:
+    case WebPointerProperties::Button::Back:
+      return WebMouseEvent::BackButtonDown;
+    case WebPointerProperties::Button::Forward:
+      return WebMouseEvent::ForwardButtonDown;
     case WebPointerProperties::Button::Eraser:
       return 0;  // Not implemented yet
   }
@@ -198,9 +204,10 @@ int GetWebMouseEventModifierForButton(WebMouseEvent::Button button) {
   return 0;
 }
 
-const int kButtonsInModifiers = WebMouseEvent::LeftButtonDown |
-                                WebMouseEvent::MiddleButtonDown |
-                                WebMouseEvent::RightButtonDown;
+const int kButtonsInModifiers =
+    WebMouseEvent::LeftButtonDown | WebMouseEvent::MiddleButtonDown |
+    WebMouseEvent::RightButtonDown | WebMouseEvent::BackButtonDown |
+    WebMouseEvent::ForwardButtonDown;
 
 int modifiersWithButtons(int modifiers, int buttons) {
   return (modifiers & ~kButtonsInModifiers) | (buttons & kButtonsInModifiers);
@@ -289,6 +296,10 @@ int GetKeyModifier(const std::string& modifier_name) {
     return WebInputEvent::MiddleButtonDown;
   } else if (!strcmp(characters, "rightButton")) {
     return WebInputEvent::RightButtonDown;
+  } else if (!strcmp(characters, "backButton")) {
+    return WebInputEvent::BackButtonDown;
+  } else if (!strcmp(characters, "forwardButton")) {
+    return WebInputEvent::ForwardButtonDown;
   } else if (!strcmp(characters, "capsLockOn")) {
     return WebInputEvent::CapsLockOn;
   } else if (!strcmp(characters, "numLockOn")) {

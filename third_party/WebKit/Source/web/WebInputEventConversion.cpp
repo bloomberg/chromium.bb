@@ -123,7 +123,8 @@ unsigned toWebInputEventModifierFrom(WebMouseEvent::Button button) {
 
   unsigned webMouseButtonToPlatformModifier[] = {
       WebInputEvent::LeftButtonDown, WebInputEvent::MiddleButtonDown,
-      WebInputEvent::RightButtonDown};
+      WebInputEvent::RightButtonDown, WebInputEvent::BackButtonDown,
+      WebInputEvent::ForwardButtonDown};
 
   return webMouseButtonToPlatformModifier[static_cast<int>(button)];
 }
@@ -237,6 +238,12 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frameViewBase,
     case short(WebPointerProperties::Button::Right):
       button = WebMouseEvent::Button::Right;
       break;
+    case short(WebPointerProperties::Button::Back):
+      button = WebMouseEvent::Button::Back;
+      break;
+    case short(WebPointerProperties::Button::Forward):
+      button = WebMouseEvent::Button::Forward;
+      break;
   }
   if (event.buttonDown()) {
     switch (event.button()) {
@@ -248,6 +255,12 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frameViewBase,
         break;
       case short(WebPointerProperties::Button::Right):
         m_modifiers |= WebInputEvent::RightButtonDown;
+        break;
+      case short(WebPointerProperties::Button::Back):
+        m_modifiers |= WebInputEvent::BackButtonDown;
+        break;
+      case short(WebPointerProperties::Button::Forward):
+        m_modifiers |= WebInputEvent::ForwardButtonDown;
         break;
     }
   } else {

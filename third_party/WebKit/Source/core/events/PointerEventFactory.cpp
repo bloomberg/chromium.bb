@@ -64,8 +64,8 @@ unsigned short buttonToButtonsBitfield(WebPointerProperties::Button button) {
     CASE_BUTTON_TO_BUTTONS(Left);
     CASE_BUTTON_TO_BUTTONS(Right);
     CASE_BUTTON_TO_BUTTONS(Middle);
-    CASE_BUTTON_TO_BUTTONS(X1);
-    CASE_BUTTON_TO_BUTTONS(X2);
+    CASE_BUTTON_TO_BUTTONS(Back);
+    CASE_BUTTON_TO_BUTTONS(Forward);
     CASE_BUTTON_TO_BUTTONS(Eraser);
   }
 

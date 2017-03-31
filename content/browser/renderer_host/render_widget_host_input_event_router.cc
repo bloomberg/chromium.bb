@@ -193,7 +193,9 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
 
   const int mouse_button_modifiers = blink::WebInputEvent::LeftButtonDown |
                                      blink::WebInputEvent::MiddleButtonDown |
-                                     blink::WebInputEvent::RightButtonDown;
+                                     blink::WebInputEvent::RightButtonDown |
+                                     blink::WebInputEvent::BackButtonDown |
+                                     blink::WebInputEvent::ForwardButtonDown;
   if (mouse_capture_target_.target &&
       event->type() != blink::WebInputEvent::MouseDown &&
       (event->type() == blink::WebInputEvent::MouseUp ||

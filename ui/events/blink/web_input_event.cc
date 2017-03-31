@@ -432,6 +432,14 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
     if (event.changed_button_flags())
       button_flags = event.changed_button_flags();
   }
+
+  // TODO(mustaq): This |if| ordering look suspicious. Replacing with if-else &
+  // changing the order to L/R/M/B/F breaks
+  // pointerevent_pointermove_on_chorded_mouse_button-manual.html! Investigate.
+  if (button_flags & EF_BACK_MOUSE_BUTTON)
+    webkit_event.button = blink::WebMouseEvent::Button::Back;
+  if (button_flags & EF_FORWARD_MOUSE_BUTTON)
+    webkit_event.button = blink::WebMouseEvent::Button::Forward;
   if (button_flags & EF_LEFT_MOUSE_BUTTON)
     webkit_event.button = blink::WebMouseEvent::Button::Left;
   if (button_flags & EF_MIDDLE_MOUSE_BUTTON)

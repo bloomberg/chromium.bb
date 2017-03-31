@@ -123,6 +123,10 @@ int WebEventModifiersToEventFlags(int modifiers) {
     flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
   if (modifiers & blink::WebInputEvent::RightButtonDown)
     flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::BackButtonDown)
+    flags |= ui::EF_BACK_MOUSE_BUTTON;
+  if (modifiers & blink::WebInputEvent::ForwardButtonDown)
+    flags |= ui::EF_FORWARD_MOUSE_BUTTON;
 
   return flags;
 }
