@@ -66,7 +66,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
      * @param fullscreenManager A ChromeFullscreenManager instance.
      * @param resourceManager A ResourceManager for loading static resources.
      * @param forceHideAndroidBrowserControls True if the Android browser controls are being hidden.
-     * @param sizingFlags The sizing flags for the toolbar.
+     * @param viewportMode The sizing mode of the viewport being drawn in.
      * @param isTablet If the device is a tablet.
      * @param windowHeight The height of the window.
      */
@@ -78,7 +78,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
 
         if (fullscreenManager == null) return;
         ControlContainer toolbarContainer = fullscreenManager.getControlContainer();
-        if (!isTablet && toolbarContainer != null) {
+        if (!isTablet && toolbarContainer != null
+                && !fullscreenManager.areBrowserControlsAtBottom()) {
             if (mProgressBarDrawingInfo == null) mProgressBarDrawingInfo = new DrawingInfo();
             toolbarContainer.getProgressBarDrawingInfo(mProgressBarDrawingInfo);
         } else {
@@ -102,8 +103,7 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
                 fullscreenManager.areBrowserControlsAtBottom());
 
         if (mProgressBarDrawingInfo == null) return;
-        nativeUpdateProgressBar(mNativePtr,
-                mProgressBarDrawingInfo.progressBarRect.left,
+        nativeUpdateProgressBar(mNativePtr, mProgressBarDrawingInfo.progressBarRect.left,
                 mProgressBarDrawingInfo.progressBarRect.top,
                 mProgressBarDrawingInfo.progressBarRect.width(),
                 mProgressBarDrawingInfo.progressBarRect.height(),
