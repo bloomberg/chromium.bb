@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/big_endian.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 
@@ -16,13 +17,6 @@ static const size_t kHeaderLength = sizeof(uint32_t);
 
 static_assert(sizeof(size_t) >= kHeaderLength,
               "chunked byte buffer not supported on this architecture");
-
-uint32_t ReadBigEndian32(const uint8_t* buffer) {
-  return (static_cast<uint32_t>(buffer[3])) |
-         (static_cast<uint32_t>(buffer[2]) << 8) |
-         (static_cast<uint32_t>(buffer[1]) << 16) |
-         (static_cast<uint32_t>(buffer[0]) << 24);
-}
 
 }  // namespace
 
@@ -128,7 +122,10 @@ ChunkedByteBuffer::Chunk::~Chunk() {
 
 size_t ChunkedByteBuffer::Chunk::ExpectedContentLength() const {
   DCHECK_EQ(header.size(), kHeaderLength);
-  return static_cast<size_t>(ReadBigEndian32(&header[0]));
+  uint32_t content_length = 0;
+  base::ReadBigEndian(reinterpret_cast<const char*>(&header[0]),
+                      &content_length);
+  return static_cast<size_t>(content_length);
 }
 
 }  // namespace content
