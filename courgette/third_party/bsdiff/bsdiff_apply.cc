@@ -97,6 +97,7 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader* header,
   const uint8_t* extra_start = extra_bytes->Buffer();
   const uint8_t* extra_end = extra_start + extra_bytes->Remaining();
   const uint8_t* extra_position = extra_start;
+  extra_bytes->Skip(extra_bytes->Remaining());
 
   const uint8_t* old_position = old_start;
 
@@ -185,9 +186,7 @@ BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
   if (CalculateCrc(old_start, old_size) != header.scrc32)
     return CRC_ERROR;
 
-  MBS_ApplyPatch(&header, patch_stream, old_start, old_size, new_stream);
-
-  return OK;
+  return MBS_ApplyPatch(&header, patch_stream, old_start, old_size, new_stream);
 }
 
 BSDiffStatus ApplyBinaryPatch(base::File old_file,
