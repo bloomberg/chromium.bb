@@ -122,6 +122,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     int process_crash_count;
     bool in_process_gpu;
     bool passthrough_cmd_decoder;
+    bool supports_overlays;
     CollectInfoResult basic_info_state;
     CollectInfoResult context_info_state;
 #if defined(OS_WIN)
@@ -180,6 +181,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt("processCrashCount", process_crash_count);
   enumerator->AddBool("inProcessGpu", in_process_gpu);
   enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
+  enumerator->AddBool("supportsOverlays", supports_overlays);
   enumerator->AddInt("basicInfoState", basic_info_state);
   enumerator->AddInt("contextInfoState", context_info_state);
 #if defined(OS_WIN)

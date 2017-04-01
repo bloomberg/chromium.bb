@@ -155,6 +155,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const int process_crash_count = 0xdead;
   const bool in_process_gpu = true;
   const bool passthrough_cmd_decoder = true;
+  const bool supports_overlays = true;
   const gpu::CollectInfoResult basic_info_state =
       gpu::CollectInfoResult::kCollectInfoSuccess;
   const gpu::CollectInfoResult context_info_state =
@@ -202,6 +203,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.process_crash_count = process_crash_count;
   input.in_process_gpu = in_process_gpu;
   input.passthrough_cmd_decoder = passthrough_cmd_decoder;
+  input.supports_overlays = supports_overlays;
   input.basic_info_state = basic_info_state;
   input.context_info_state = context_info_state;
 #if defined(OS_WIN)
@@ -262,6 +264,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(process_crash_count, output.process_crash_count);
   EXPECT_EQ(in_process_gpu, output.in_process_gpu);
   EXPECT_EQ(passthrough_cmd_decoder, output.passthrough_cmd_decoder);
+  EXPECT_EQ(supports_overlays, output.supports_overlays);
   EXPECT_EQ(basic_info_state, output.basic_info_state);
   EXPECT_EQ(context_info_state, output.context_info_state);
 #if defined(OS_WIN)

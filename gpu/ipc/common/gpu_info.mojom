@@ -106,6 +106,7 @@ struct GpuInfo {
   int32 process_crash_count;
   bool in_process_gpu;
   bool passthrough_cmd_decoder;
+  bool supports_overlays;
   CollectInfoResult basic_info_state;
   CollectInfoResult context_info_state;
   CollectInfoResult dx_diagnostics_info_state;

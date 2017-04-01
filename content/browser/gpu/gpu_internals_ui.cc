@@ -132,6 +132,8 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
       "Passthrough Command Decoder",
       new base::Value(gpu_info.passthrough_cmd_decoder)));
   basic_info->Append(NewDescriptionValuePair(
+      "Supports overlays", new base::Value(gpu_info.supports_overlays)));
+  basic_info->Append(NewDescriptionValuePair(
       "Sandboxed", new base::Value(gpu_info.sandboxed)));
   basic_info->Append(NewDescriptionValuePair(
       "GPU0", GPUDeviceToString(gpu_info.gpu)));

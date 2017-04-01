@@ -217,6 +217,9 @@ struct GPU_EXPORT GPUInfo {
   // True if the GPU process is using the passthrough command decoder.
   bool passthrough_cmd_decoder;
 
+  // True if the current set of outputs supports overlays.
+  bool supports_overlays = false;
+
   // The state of whether the basic/context/DxDiagnostics info is collected and
   // if the collection fails or not.
   CollectInfoResult basic_info_state;

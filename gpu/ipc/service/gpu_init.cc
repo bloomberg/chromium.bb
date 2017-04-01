@@ -26,6 +26,10 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
+#if defined(OS_WIN)
+#include "gpu/ipc/service/direct_composition_surface_win.h"
+#endif
+
 namespace gpu {
 
 namespace {
@@ -98,6 +102,14 @@ void CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
     case gpu::kCollectInfoSuccess:
       break;
   }
+
+#if defined(OS_WIN)
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
+      gl::GLSurfaceEGL::IsDirectCompositionSupported() &&
+      DirectCompositionSurfaceWin::AreOverlaysSupported()) {
+    gpu_info.supports_overlays = true;
+  }
+#endif  // defined(OS_WIN)
 }
 #endif  // defined(OS_MACOSX)
 
