@@ -64,46 +64,11 @@ struct AllElementsSelectorQueryTrait {
   }
 };
 
-enum ClassElementListBehavior { AllElements, OnlyRoots };
-
-template <ClassElementListBehavior onlyRoots>
-class ClassElementList {
-  STACK_ALLOCATED();
-
- public:
-  ClassElementList(ContainerNode& rootNode, const AtomicString& className)
-      : m_className(className),
-        m_rootNode(&rootNode),
-        m_currentElement(
-            nextInternal(ElementTraversal::firstWithin(rootNode))) {}
-
-  bool isEmpty() const { return !m_currentElement; }
-
-  Element* next() {
-    Element* current = m_currentElement;
-    DCHECK(current);
-    if (onlyRoots)
-      m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(
-          *m_currentElement, m_rootNode));
-    else
-      m_currentElement =
-          nextInternal(ElementTraversal::next(*m_currentElement, m_rootNode));
-    return current;
-  }
-
- private:
-  Element* nextInternal(Element* element) {
-    for (; element; element = ElementTraversal::next(*element, m_rootNode)) {
-      if (element->hasClass() && element->classNames().contains(m_className))
-        return element;
-    }
-    return nullptr;
-  }
-
-  const AtomicString& m_className;
-  Member<ContainerNode> m_rootNode;
-  Member<Element> m_currentElement;
-};
+// TODO(esprehn): Move this to Element and update callers elsewhere.
+inline bool hasClassName(const Element& element,
+                         const AtomicString& className) {
+  return element.hasClass() && element.classNames().contains(className);
+}
 
 inline bool selectorMatches(const CSSSelector& selector,
                             Element& element,
@@ -156,13 +121,16 @@ template <typename SelectorQueryTrait>
 static void collectElementsByClassName(
     ContainerNode& rootNode,
     const AtomicString& className,
+    const CSSSelector* selector,
     typename SelectorQueryTrait::OutputType& output) {
   for (Element& element : ElementTraversal::descendantsOf(rootNode)) {
-    if (element.hasClass() && element.classNames().contains(className)) {
-      SelectorQueryTrait::appendElement(output, element);
-      if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
-        return;
-    }
+    if (!hasClassName(element, className))
+      continue;
+    if (selector && !selectorMatches(*selector, element, rootNode))
+      continue;
+    SelectorQueryTrait::appendElement(output, element);
+    if (SelectorQueryTrait::shouldOnlyMatchFirstElement)
+      return;
   }
 }
 
@@ -216,7 +184,7 @@ inline bool ancestorHasClassName(ContainerNode& rootNode,
 
   for (Element* element = &toElement(rootNode); element;
        element = element->parentElement()) {
-    if (element->hasClass() && element->classNames().contains(className))
+    if (hasClassName(*element, className))
       return true;
   }
   return false;
@@ -262,13 +230,8 @@ void SelectorQuery::findTraverseRootsAndExecute(
     if (!SelectorQueryTrait::shouldOnlyMatchFirstElement && !startFromParent &&
         selector->match() == CSSSelector::Class) {
       if (isRightmostSelector) {
-        ClassElementList<AllElements> traverseRoots(rootNode,
-                                                    selector->value());
-        while (!traverseRoots.isEmpty()) {
-          Element& element = *traverseRoots.next();
-          if (selectorMatches(*m_selectors[0], element, rootNode))
-            SelectorQueryTrait::appendElement(output, element);
-        }
+        collectElementsByClassName<SelectorQueryTrait>(
+            rootNode, selector->value(), m_selectors[0], output);
         return;
       }
       // Since there exists some ancestor element which has the class name, we
@@ -276,10 +239,16 @@ void SelectorQuery::findTraverseRootsAndExecute(
       if (ancestorHasClassName(rootNode, selector->value()))
         break;
 
-      ClassElementList<OnlyRoots> traverseRoots(rootNode, selector->value());
-      while (!traverseRoots.isEmpty()) {
-        executeForTraverseRoot<SelectorQueryTrait>(*traverseRoots.next(),
-                                                   rootNode, output);
+      const AtomicString& className = selector->value();
+      Element* element = ElementTraversal::firstWithin(rootNode);
+      while (element) {
+        if (hasClassName(*element, className)) {
+          executeForTraverseRoot<SelectorQueryTrait>(*element, rootNode,
+                                                     output);
+          element = ElementTraversal::nextSkippingChildren(*element, &rootNode);
+        } else {
+          element = ElementTraversal::next(*element, &rootNode);
+        }
       }
       return;
     }
@@ -473,7 +442,7 @@ void SelectorQuery::execute(
     switch (firstSelector.match()) {
       case CSSSelector::Class:
         collectElementsByClassName<SelectorQueryTrait>(
-            rootNode, firstSelector.value(), output);
+            rootNode, firstSelector.value(), nullptr, output);
         return;
       case CSSSelector::Tag:
         if (firstSelector.tagQName().namespaceURI() == starAtom) {
