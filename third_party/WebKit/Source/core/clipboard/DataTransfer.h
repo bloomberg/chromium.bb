@@ -64,6 +64,7 @@ class CORE_EXPORT DataTransfer final
     InsertReplacementText,
   };
 
+  static DataTransfer* create();
   static DataTransfer* create(DataTransferType,
                               DataTransferAccessPolicy,
                               DataObject*);

@@ -109,6 +109,14 @@ static String normalizeType(const String& type, bool* convertToURL = 0) {
   return cleanType;
 }
 
+DataTransfer* DataTransfer::create() {
+  DataTransfer* data =
+      create(CopyAndPaste, DataTransferWritable, DataObject::create());
+  data->m_dropEffect = "none";
+  data->m_effectAllowed = "none";
+  return data;
+}
+
 DataTransfer* DataTransfer::create(DataTransferType type,
                                    DataTransferAccessPolicy policy,
                                    DataObject* dataObject) {
