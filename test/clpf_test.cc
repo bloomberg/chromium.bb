@@ -93,7 +93,7 @@ void test_clpf(int w, int h, int depth, int iterations,
                void (*ref_clpf)(pixel *dst, const uint16_t *src, int dstride,
                                 int sstride, int sizex, int sizey,
                                 unsigned int strength, unsigned int bitdepth)) {
-  const int size = 40;
+  const int size = 24;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, uint16_t, s[size * size]);
   DECLARE_ALIGNED(16, pixel, d[size * size]);
@@ -101,37 +101,36 @@ void test_clpf(int w, int h, int depth, int iterations,
   memset(ref_d, 0, size * size * sizeof(*ref_d));
   memset(d, 0, size * size * sizeof(*d));
 
-  int error = 0, pos = 0, strength = 0, xpos = 0, ypos = 0;
-  int bits, level, count;
+  int error = 0, pos = 0, strength = 0, xpos = 8, ypos = 8;
+  int bits, level, count, damp = 0;
+
+  assert(size >= w + 16 && size >= h + 16);
 
   // Test every combination of:
   // * Input with up to <depth> bits of noise
   // * Noise level around every value from 0 to (1<<depth)-1
-  // * Blocks anywhere in the frame (but not on the edge)
   // * All strengths
+  // * All dampings
   // If clpf and ref_clpf are the same, we're just testing speed
   for (count = 0; count < iterations; count++) {
     for (level = 0; level < (1 << depth) && !error; level++) {
       for (bits = 1; bits <= depth && !error; bits++) {
-        for (int i = 0; i < size * size; i++)
-          s[i] = clamp((rnd.Rand16() & ((1 << bits) - 1)) + level, 0,
-                       (1 << depth) - 1);
-
-        for (ypos = 8; ypos < size - h - 8 && !error; ypos += h * !error) {
-          for (xpos = 8; xpos < size - w - 8 && !error; xpos += w * !error) {
-            for (strength = depth - 8; strength < depth - 5 && !error;
-                 strength += !error) {
-              ref_clpf(ref_d + ypos * size + xpos, s + ypos * size + xpos, size,
-                       size, w, h, 1 << strength, depth);
-              if (clpf != ref_clpf)
-                ASM_REGISTER_STATE_CHECK(
-                    clpf(d + ypos * size + xpos, s + ypos * size + xpos, size,
-                         size, w, h, 1 << strength, depth));
-              if (ref_clpf != clpf)
-                for (pos = 0; pos < size * size && !error; pos++) {
-                  error = ref_d[pos] != d[pos];
-                }
-            }
+        for (damp = 4; damp <= depth && !error; damp++) {
+          for (int i = 0; i < size * size; i++)
+            s[i] = clamp((rnd.Rand16() & ((1 << bits) - 1)) + level, 0,
+                         (1 << depth) - 1);
+          for (strength = depth - 8; strength < depth - 5 && !error;
+               strength += !error) {
+            ref_clpf(ref_d + ypos * size + xpos, s + ypos * size + xpos, size,
+                     size, w, h, 1 << strength, damp);
+            if (clpf != ref_clpf)
+              ASM_REGISTER_STATE_CHECK(clpf(d + ypos * size + xpos,
+                                            s + ypos * size + xpos, size, size,
+                                            w, h, 1 << strength, damp));
+            if (ref_clpf != clpf)
+              for (pos = 0; pos < size * size && !error; pos++) {
+                error = ref_d[pos] != d[pos];
+              }
           }
         }
       }
@@ -144,8 +143,7 @@ void test_clpf(int w, int h, int depth, int iterations,
       << "First error at " << pos % size << "," << pos / size << " ("
       << (int16_t)ref_d[pos] << " != " << (int16_t)d[pos] << ") " << std::endl
       << "strength: " << (1 << strength) << std::endl
-      << "xpos: " << xpos << std::endl
-      << "ypos: " << ypos << std::endl
+      << "damping: " << damp << std::endl
       << "w: " << w << std::endl
       << "h: " << h << std::endl
       << "A=" << (pos > 2 * size ? (int16_t)s[pos - 2 * size] : -1) << std::endl
@@ -196,11 +194,11 @@ void test_clpf_speed(int w, int h, int depth, int iterations,
 }
 
 TEST_P(ClpfBlockTest, TestSIMDNoMismatch) {
-  test_clpf(sizex, sizey, 8, 1, clpf, ref_clpf);
+  test_clpf(sizex, sizey, 8, 16, clpf, ref_clpf);
 }
 
 TEST_P(ClpfSpeedTest, DISABLED_TestSpeed) {
-  test_clpf_speed(sizex, sizey, 8, 16, clpf, ref_clpf);
+  test_clpf_speed(sizex, sizey, 8, 256, clpf, ref_clpf);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
