@@ -16,7 +16,6 @@
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
-#include "chromecast/public/media_codec_support_shlib.h"
 #include "chromecast/public/video_plane.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"

@@ -13,7 +13,6 @@
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
-#include "chromecast/public/media_codec_support_shlib.h"
 #include "chromecast/public/video_plane.h"
 
 namespace chromecast {
@@ -61,29 +60,6 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
   }
 
   return new MediaPipelineBackendDefault();
-}
-
-MediaCodecSupportShlib::CodecSupport MediaCodecSupportShlib::IsSupported(
-    const std::string& codec) {
-#if defined(OS_ANDROID)
-  // TODO(servolk): Find a way to reuse IsCodecSupportedOnAndroid.
-
-  // Theora is not supported
-  if (codec == "theora")
-    return kNotSupported;
-
-  // MPEG-2 variants of AAC are not supported on Android.
-  // MPEG2_AAC_MAIN / MPEG2_AAC_LC / MPEG2_AAC_SSR
-  if (codec == "mp4a.66" || codec == "mp4a.67" || codec == "mp4a.68")
-    return kNotSupported;
-
-  // VP9 is guaranteed supported but is often software-decode only.
-  // TODO(gunsch/servolk): look into querying for hardware decode support.
-  if (codec == "vp9" || codec == "vp9.0")
-    return kNotSupported;
-#endif
-
-  return kDefault;
 }
 
 double CastMediaShlib::GetMediaClockRate() {
