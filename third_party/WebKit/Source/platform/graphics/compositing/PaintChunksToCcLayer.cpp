@@ -181,6 +181,9 @@ static void recordPairedEndDisplayItems(
 static gfx::Rect largeRect(-200000, -200000, 400000, 400000);
 static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
                                                  cc::DisplayItemList* list) {
+  DCHECK(DisplayItem::isDrawingType(displayItem.getType()) ||
+         displayItem.getType() == DisplayItem::kSubsequence ||
+         displayItem.getType() == DisplayItem::kEndSubsequence);
   if (DisplayItem::isDrawingType(displayItem.getType())) {
     sk_sp<const PaintRecord> record =
         static_cast<const DrawingDisplayItem&>(displayItem).GetPaintRecord();

@@ -14,11 +14,15 @@ ClipPathRecorder::ClipPathRecorder(GraphicsContext& context,
                                    const DisplayItemClient& client,
                                    const Path& clipPath)
     : m_context(context), m_client(client) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_context.getPaintController().createAndAppend<BeginClipPathDisplayItem>(
       m_client, clipPath);
 }
 
 ClipPathRecorder::~ClipPathRecorder() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_context.getPaintController().endItem<EndClipPathDisplayItem>(m_client);
 }
 

@@ -68,6 +68,8 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
       m_clipperState(ClipperState::NotApplied),
       m_layoutObject(layoutObject),
       m_context(context) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   if (clipPathOperation.type() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation& shape = toShapeClipPathOperation(clipPathOperation);
     if (!shape.isValid())
@@ -102,6 +104,8 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
 }
 
 ClipPathClipper::~ClipPathClipper() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   if (m_resourceClipper)
     finishEffect();
 }

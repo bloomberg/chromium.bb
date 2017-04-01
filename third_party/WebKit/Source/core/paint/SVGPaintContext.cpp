@@ -157,8 +157,10 @@ void SVGPaintContext::applyClipIfNecessary() {
   ClipPathOperation* clipPathOperation = m_object.styleRef().clipPath();
   if (!clipPathOperation)
     return;
-  m_clipPathClipper.emplace(paintInfo().context, *clipPathOperation, m_object,
-                            m_object.objectBoundingBox(), FloatPoint());
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    m_clipPathClipper.emplace(paintInfo().context, *clipPathOperation, m_object,
+                              m_object.objectBoundingBox(), FloatPoint());
+  }
 }
 
 bool SVGPaintContext::applyMaskIfNecessary(SVGResources* resources) {
@@ -212,7 +214,8 @@ bool SVGPaintContext::isIsolationInstalled() const {
     return true;
   if (m_masker || m_filter)
     return true;
-  if (m_clipPathClipper && m_clipPathClipper->usingMask())
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_clipPathClipper &&
+      m_clipPathClipper->usingMask())
     return true;
   return false;
 }

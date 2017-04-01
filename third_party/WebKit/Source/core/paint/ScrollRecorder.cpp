@@ -15,6 +15,8 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context,
                                DisplayItem::Type type,
                                const IntSize& currentOffset)
     : m_client(client), m_beginItemType(type), m_context(context) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_context.getPaintController().createAndAppend<BeginScrollDisplayItem>(
       m_client, m_beginItemType, currentOffset);
 }
@@ -29,6 +31,8 @@ ScrollRecorder::ScrollRecorder(GraphicsContext& context,
                      currentOffset) {}
 
 ScrollRecorder::~ScrollRecorder() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_context.getPaintController().endItem<EndScrollDisplayItem>(
       m_client, DisplayItem::scrollTypeToEndScrollType(m_beginItemType));
 }

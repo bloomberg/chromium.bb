@@ -19,12 +19,16 @@ CompositingRecorder::CompositingRecorder(GraphicsContext& graphicsContext,
                                          const FloatRect* bounds,
                                          ColorFilter colorFilter)
     : m_client(client), m_graphicsContext(graphicsContext) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   graphicsContext.getPaintController()
       .createAndAppend<BeginCompositingDisplayItem>(m_client, xferMode, opacity,
                                                     bounds, colorFilter);
 }
 
 CompositingRecorder::~CompositingRecorder() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   // If the end of the current display list is of the form
   // [BeginCompositingDisplayItem] [DrawingDisplayItem], then fold the
   // BeginCompositingDisplayItem into a new DrawingDisplayItem that replaces

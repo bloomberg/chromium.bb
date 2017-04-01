@@ -158,16 +158,19 @@ TEST_P(PaintControllerTest, NestedRecorders) {
                   FloatRect(100, 100, 200, 200));
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 3,
-      TestDisplayItem(client, clipType),
-      TestDisplayItem(client, backgroundDrawingType),
-      TestDisplayItem(client, DisplayItem::clipTypeToEndClipType(clipType)));
-
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 1,
+                        TestDisplayItem(client, backgroundDrawingType));
+
     EXPECT_EQ(1u, getPaintController().paintChunks().size());
     EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects,
                 UnorderedElementsAre(FloatRect(LayoutRect::infiniteIntRect())));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        getPaintController().getDisplayItemList(), 3,
+        TestDisplayItem(client, clipType),
+        TestDisplayItem(client, backgroundDrawingType),
+        TestDisplayItem(client, DisplayItem::clipTypeToEndClipType(clipType)));
   }
 }
 
@@ -697,16 +700,20 @@ TEST_P(PaintControllerTest, UpdateClip) {
   }
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 4,
-      TestDisplayItem(first, clipType),
-      TestDisplayItem(first, backgroundDrawingType),
-      TestDisplayItem(second, backgroundDrawingType),
-      TestDisplayItem(first, DisplayItem::clipTypeToEndClipType(clipType)));
-
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
+                        TestDisplayItem(first, backgroundDrawingType),
+                        TestDisplayItem(second, backgroundDrawingType));
+
     getPaintController().updateCurrentPaintChunkProperties(
         &m_rootPaintChunkId, defaultPaintChunkProperties());
+  } else {
+    EXPECT_DISPLAY_LIST(
+        getPaintController().getDisplayItemList(), 4,
+        TestDisplayItem(first, clipType),
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(second, backgroundDrawingType),
+        TestDisplayItem(first, DisplayItem::clipTypeToEndClipType(clipType)));
   }
 
   first.setDisplayItemsUncached();
@@ -759,14 +766,11 @@ TEST_P(PaintControllerTest, UpdateClip) {
   }
   getPaintController().commitNewDisplayItems();
 
-  EXPECT_DISPLAY_LIST(
-      getPaintController().getDisplayItemList(), 4,
-      TestDisplayItem(first, backgroundDrawingType),
-      TestDisplayItem(second, clipType),
-      TestDisplayItem(second, backgroundDrawingType),
-      TestDisplayItem(second, DisplayItem::clipTypeToEndClipType(clipType)));
-
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
+                        TestDisplayItem(first, backgroundDrawingType),
+                        TestDisplayItem(second, backgroundDrawingType));
+
     EXPECT_EQ(2u, getPaintController().paintChunks().size());
     EXPECT_THAT(getPaintController().paintChunks()[0].rasterInvalidationRects,
                 UnorderedElementsAre(FloatRect(
@@ -775,6 +779,13 @@ TEST_P(PaintControllerTest, UpdateClip) {
     EXPECT_THAT(getPaintController().paintChunks()[1].rasterInvalidationRects,
                 UnorderedElementsAre(FloatRect(
                     LayoutRect::infiniteIntRect())));  // This is a new chunk.
+  } else {
+    EXPECT_DISPLAY_LIST(
+        getPaintController().getDisplayItemList(), 4,
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(second, clipType),
+        TestDisplayItem(second, backgroundDrawingType),
+        TestDisplayItem(second, DisplayItem::clipTypeToEndClipType(clipType)));
   }
 }
 

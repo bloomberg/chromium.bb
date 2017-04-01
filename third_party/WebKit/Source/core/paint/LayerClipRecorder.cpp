@@ -26,6 +26,8 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphicsContext,
     : m_graphicsContext(graphicsContext),
       m_layoutObject(layoutObject),
       m_clipType(clipType) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
   Vector<FloatRoundedRect> roundedRects;
   if (clipRoot && clipRect.hasRadius()) {
@@ -104,6 +106,8 @@ void LayerClipRecorder::collectRoundedRectClips(
 }
 
 LayerClipRecorder::~LayerClipRecorder() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_graphicsContext.getPaintController().endItem<EndClipDisplayItem>(
       m_layoutObject, DisplayItem::clipTypeToEndClipType(m_clipType));
 }

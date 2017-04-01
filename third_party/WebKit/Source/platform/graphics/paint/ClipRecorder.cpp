@@ -15,11 +15,15 @@ ClipRecorder::ClipRecorder(GraphicsContext& context,
                            DisplayItem::Type type,
                            const IntRect& clipRect)
     : m_client(client), m_context(context), m_type(type) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_context.getPaintController().createAndAppend<ClipDisplayItem>(
       m_client, type, clipRect);
 }
 
 ClipRecorder::~ClipRecorder() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   m_context.getPaintController().endItem<EndClipDisplayItem>(
       m_client, DisplayItem::clipTypeToEndClipType(m_type));
 }

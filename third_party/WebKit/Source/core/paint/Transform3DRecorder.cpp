@@ -16,6 +16,8 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context,
                                          const TransformationMatrix& transform,
                                          const FloatPoint3D& transformOrigin)
     : m_context(context), m_client(client), m_type(type) {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   DCHECK(DisplayItem::isTransform3DType(type));
   m_skipRecordingForIdentityTransform = transform.isIdentity();
 
@@ -27,6 +29,8 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context,
 }
 
 Transform3DRecorder::~Transform3DRecorder() {
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    return;
   if (m_skipRecordingForIdentityTransform)
     return;
 

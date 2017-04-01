@@ -8,7 +8,6 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
-#include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
