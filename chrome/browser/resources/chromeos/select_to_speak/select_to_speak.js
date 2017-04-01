@@ -68,6 +68,20 @@ var SelectToSpeak = function() {
     desktop.addEventListener(
         EventType.MOUSE_CANCELED, this.onMouseCanceled_.bind(this), true);
   }.bind(this));
+
+  /** @private { ?string } */
+  this.voiceNameFromPrefs_ = null;
+
+  /** @private { ?string } */
+  this.voiceNameFromLocale_ = null;
+
+  /** @private { Set<string> } */
+  this.validVoiceNames_ = new Set();
+
+  /** @private { number } */
+  this.speechRate_ = 1.0;
+
+  this.initPreferences_();
 };
 
 SelectToSpeak.prototype = {
@@ -189,8 +203,9 @@ SelectToSpeak.prototype = {
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       var isLast = (i == nodes.length - 1);
-      chrome.tts.speak(node.name || '', {
-        lang: 'en-US',
+
+      var options = {
+        rate: this.rate_,
         'enqueue': true,
         onEvent: (function(node, isLast, event) {
           if (event.type == 'start') {
@@ -204,9 +219,101 @@ SelectToSpeak.prototype = {
             }
           }
         }).bind(this, node, isLast)
+      };
+
+      // Pick the voice name from prefs first, or the one that matches
+      // the locale next, but don't pick a voice that isn't currently
+      // loaded. If no voices are found, leave the voiceName option
+      // unset to let the browser try to route the speech request
+      // anyway if possible.
+      console.log('Pref: ' + this.voiceNameFromPrefs_);
+      console.log('Locale: ' + this.voiceNameFromLocale_);
+      var valid = '';
+      this.validVoiceNames_.forEach(function(voiceName) {
+        if (valid)
+          valid += ',';
+        valid += voiceName;
       });
+      console.log('Valid: ' + valid);
+      if (this.voiceNameFromPrefs_ &&
+          this.validVoiceNames_.has(this.voiceNameFromPrefs_)) {
+        options['voiceName'] = this.voiceNameFromPrefs_;
+      } else if (this.voiceNameFromLocale_ &&
+          this.validVoiceNames_.has(this.voiceNameFromLocale_)) {
+        options['voiceName'] = this.voiceNameFromLocale_;
+      }
+
+      chrome.tts.speak(node.name || '', options);
     }
+  },
+
+  /**
+   * Loads preferences from chrome.storage, sets default values if
+   * necessary, and registers a listener to update prefs when they
+   * change.
+   */
+  initPreferences_: function() {
+    var updatePrefs = (function() {
+      chrome.storage.sync.get(['voice', 'rate'], (function(prefs) {
+        if (prefs['voice']) {
+          this.voiceNameFromPrefs_ = prefs['voice'];
+        }
+        if (prefs['rate']) {
+          this.rate_ = parseFloat(prefs['rate']);
+        } else {
+          chrome.storage.sync.set({'rate': this.rate_});
+        }
+      }).bind(this));
+    }).bind(this);
+
+    updatePrefs();
+    chrome.storage.onChanged.addListener(updatePrefs);
+
+    this.updateDefaultVoice_();
+    window.speechSynthesis.onvoiceschanged = (function() {
+      this.updateDefaultVoice_();
+    }).bind(this);
+  },
+
+  /**
+   * Get the list of TTS voices, and set the default voice if not already set.
+   */
+  updateDefaultVoice_: function() {
+    console.log('updateDefaultVoice_ ' + this.down_);
+    var uiLocale = chrome.i18n.getMessage('@@ui_locale');
+    uiLocale = uiLocale.replace('_', '-').toLowerCase();
+
+    chrome.tts.getVoices((function(voices) {
+      console.log('updateDefaultVoice_ voices: ' + voices.length);
+      this.validVoiceNames_ = new Set();
+
+      if (voices.length == 0)
+        return;
+
+      voices.forEach((function(voice) {
+        this.validVoiceNames_.add(voice.voiceName);
+      }).bind(this));
+
+      voices.sort(function(a, b) {
+        function score(voice) {
+          var lang = voice.lang.toLowerCase();
+          var s = 0;
+          if (lang == uiLocale)
+            s += 2;
+          if (lang.substr(0, 2) == uiLocale.substr(0, 2))
+            s += 1;
+          return s;
+        }
+        return score(b) - score(a);
+      });
+
+      this.voiceNameFromLocale_ = voices[0].voiceName;
+
+      chrome.storage.sync.get(['voice'], (function(prefs) {
+        if (!prefs['voice']) {
+          chrome.storage.sync.set({'voice': voices[0].voiceName});
+        }
+      }).bind(this));
+    }).bind(this));
   }
 };
-
-new SelectToSpeak();

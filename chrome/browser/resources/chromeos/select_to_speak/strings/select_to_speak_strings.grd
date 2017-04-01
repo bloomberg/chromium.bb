@@ -123,6 +123,36 @@
       <message desc="The description for Select-to-speak." name="IDS_SELECT_TO_SPEAK_DESCRIPTION">
         Hold down Search and click or drag to speak anything.
       </message>
+      <message desc="The title of the Select-to-speak options page." name="IDS_SELECT_TO_SPEAK_OPTIONS_PAGE_TITLE">
+        Select-to-speak Options
+      </message>      
+      <message desc="Section of the Select-to-speak options dialog where the user can adjust synthesized speech properties." name="IDS_SELECT_TO_SPEAK_OPTIONS_SPEECH">
+        Speech
+      </message>
+      <message desc="Label for the control in the Select-to-speak options dialog where the user can choose a voice from a list." name="IDS_SELECT_TO_SPEAK_OPTIONS_VOICES_DESCRIPTION">
+        Select a voice:
+      </message>
+      <message desc="Label for the control in the Select-to-speak options dialog where the user can choose the rate/speed of synthesized speech." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_DESCRIPTION">
+        Select a speech rate:
+      </message>
+      <message desc="Label for the slowest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_SLOWEST">
+        Slowest
+      </message>
+      <message desc="Label for slow synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_SLOW">
+        Slow
+      </message>
+      <message desc="Label for a normal synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_NORMAL">
+        Normal
+      </message>
+      <message desc="Label for fast synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FAST">
+        Fast
+      </message>
+      <message desc="Label for faster synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FASTER">
+        Faster
+      </message>
+      <message desc="Label for the fastest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FASTEST">
+        Fastest
+      </message>
     </messages>
   </release>
 </grit>

@@ -1,0 +1,48 @@
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<!doctype html>
+<html>
+  <head>
+    <title class="i18n" msgid="options_page_title">
+      Select-to-speak Options
+    </title>
+    <link rel="stylesheet" type="text/css" href="options.css">
+  </head>
+  <body>
+    <h1 class="i18n" msgid="name"></h1>
+
+    <div class="container">
+
+      <h2 class="i18n" msgid="options_speech"></h2>
+      <div class="option">
+        <span class="i18n" msgid="options_voices_description"
+              id="voices_description"></span>
+        <select id="voice" aria-labelledby="voices_description">
+        </select>
+      </div>
+
+      <div class="option">
+        <span class="i18n" msgid="options_rate_description"
+              id="rate_description"></span>
+        <select id="rate" aria-labelledby="rate_description">
+          <option value="0.5" class="i18n" msgid="options_rate_slowest">
+          </option>
+          <option value="0.75" class="i18n" msgid="options_rate_slow">
+          </option>
+          <option value="1.0" class="i18n" msgid="options_rate_normal">
+          </option>
+          <option value="1.25" class="i18n" msgid="options_rate_fast">
+          </option>
+          <option value="1.5" class="i18n" msgid="options_rate_faster">
+          </option>
+          <option value="2.0" class="i18n" msgid="options_rate_fastest">
+          </option>
+        </select>
+      </div>
+
+    </div>
+
+    <script src="select_to_speak_options.js"></script>
+  </body>
+</html>

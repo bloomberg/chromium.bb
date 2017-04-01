@@ -6,10 +6,25 @@
     {
       'target_name': 'select_to_speak',
       'dependencies': [
+	'externs',
 	'<(EXTERNS_GYP):accessibility_private',
 	'<(EXTERNS_GYP):automation',
 	'<(EXTERNS_GYP):chrome_extensions',
        ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'select_to_speak_options',
+      'dependencies': [
+	'externs',
+	'<(EXTERNS_GYP):accessibility_private',
+	'<(EXTERNS_GYP):automation',
+	'<(EXTERNS_GYP):chrome_extensions',
+       ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'externs',
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],

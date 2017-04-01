@@ -11,15 +11,18 @@
 {% endif %}
   "background": {
     "scripts": [
-      "select_to_speak.js"
+      "select_to_speak.js",
+      "select_to_speak_main.js"
     ]
   },
   "permissions": [
     "accessibilityPrivate",
+    "storage",
     "tts"
   ],
   "automation": {
     "desktop": true
   },
-  "default_locale": "en"
+  "default_locale": "en",
+  "options_page": "options.html"
 }
