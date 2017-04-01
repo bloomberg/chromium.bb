@@ -128,21 +128,19 @@ class ContentViewCoreImpl : public ContentViewCore,
   void FlingCancel(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    jlong time_ms);
-  void SingleTap(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jlong time_ms,
-                 jfloat x,
-                 jfloat y);
   void DoubleTap(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj,
                  jlong time_ms,
                  jfloat x,
                  jfloat y);
-  void LongPress(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jlong time_ms,
-                 jfloat x,
-                 jfloat y);
+
+  void ResolveTapDisambiguation(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                jlong time_ms,
+                                jfloat x,
+                                jfloat y,
+                                jboolean is_long_press);
+
   void PinchBegin(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   jlong time_ms,

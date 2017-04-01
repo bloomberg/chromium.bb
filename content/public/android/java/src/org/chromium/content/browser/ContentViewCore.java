@@ -728,28 +728,17 @@ public class ContentViewCore
                 });
             }
         });
-        // TODO(yongsheng): LONG_TAP is not enabled in PopupZoomer. So need to dispatch a LONG_TAP
-        // gesture if a user completes a tap on PopupZoomer UI after a LONG_PRESS gesture.
         PopupZoomer.OnTapListener listener = new PopupZoomer.OnTapListener() {
             // mContainerView can change, but this OnTapListener can only be used
             // with the mContainerViewAtCreation.
             private final ViewGroup mContainerViewAtCreation = mContainerView;
 
             @Override
-            public boolean onSingleTap(View v, MotionEvent e) {
+            public void onResolveTapDisambiguation(
+                    long timeMs, float x, float y, boolean isLongPress) {
+                if (mNativeContentViewCore == 0) return;
                 mContainerViewAtCreation.requestFocus();
-                if (mNativeContentViewCore != 0) {
-                    nativeSingleTap(mNativeContentViewCore, e.getEventTime(), e.getX(), e.getY());
-                }
-                return true;
-            }
-
-            @Override
-            public boolean onLongPress(View v, MotionEvent e) {
-                if (mNativeContentViewCore != 0) {
-                    nativeLongPress(mNativeContentViewCore, e.getEventTime(), e.getX(), e.getY());
-                }
-                return true;
+                nativeResolveTapDisambiguation(mNativeContentViewCore, timeMs, x, y, isLongPress);
             }
         };
         mPopupZoomer.setOnTapListener(listener);
@@ -2632,14 +2621,11 @@ public class ContentViewCore
 
     private native void nativeFlingCancel(long nativeContentViewCoreImpl, long timeMs);
 
-    private native void nativeSingleTap(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y);
-
     private native void nativeDoubleTap(
             long nativeContentViewCoreImpl, long timeMs, float x, float y);
 
-    private native void nativeLongPress(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y);
+    private native void nativeResolveTapDisambiguation(
+            long nativeContentViewCoreImpl, long timeMs, float x, float y, boolean isLongPress);
 
     private native void nativePinchBegin(
             long nativeContentViewCoreImpl, long timeMs, float x, float y);

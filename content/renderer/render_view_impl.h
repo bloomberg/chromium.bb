@@ -544,6 +544,9 @@ class CONTENT_EXPORT RenderViewImpl
                         const blink::WebPluginAction& action);
   void OnMoveOrResizeStarted();
   void OnReleaseDisambiguationPopupBitmap(const cc::SharedBitmapId& id);
+  void OnResolveTapDisambiguation(double timestamp_seconds,
+                                  gfx::Point tap_viewport_offset,
+                                  bool is_long_press);
   void OnSetActive(bool active);
   void OnSetBackgroundOpaque(bool opaque);
   void OnExitFullscreen();

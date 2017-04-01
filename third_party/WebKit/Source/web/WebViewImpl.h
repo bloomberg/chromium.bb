@@ -433,6 +433,10 @@ class WEB_EXPORT WebViewImpl final
 
   void animateDoubleTapZoom(const IntPoint&);
 
+  void resolveTapDisambiguation(double timestampSeconds,
+                                WebPoint tapViewportOffset,
+                                bool isLongPress) override;
+
   void enableFakePageScaleAnimationForTesting(bool);
   bool fakeDoubleTapAnimationPendingForTesting() const {
     return m_doubleTapZoomPending;
@@ -705,6 +709,8 @@ class WEB_EXPORT WebViewImpl final
   Vector<std::unique_ptr<LinkHighlightImpl>> m_linkHighlights;
   std::unique_ptr<CompositorAnimationTimeline> m_linkHighlightsTimeline;
   std::unique_ptr<FullscreenController> m_fullscreenController;
+
+  WebPoint m_lastTapDisambiguationBestCandidatePosition;
 
   WebColor m_baseBackgroundColor;
   bool m_baseBackgroundColorOverrideEnabled;

@@ -406,6 +406,12 @@ class WebView : protected WebWidget {
   // Hides any popup (suggestions, selects...) that might be showing.
   virtual void hidePopups() = 0;
 
+  // Generate a synthetic touch event applying the result of a tap
+  // disambiguation popup.
+  virtual void resolveTapDisambiguation(double timestampSeconds,
+                                        WebPoint tapViewportOffset,
+                                        bool isLongPress) = 0;
+
   // Visited link state --------------------------------------------------
 
   // Tells all WebView instances to update the visited link state for the

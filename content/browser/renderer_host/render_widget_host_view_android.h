@@ -224,6 +224,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
+  void ResolveTapDisambiguation(double timestamp_seconds,
+                                gfx::Point tap_viewport_offset,
+                                bool is_long_press);
 
   void OnStartContentIntent(const GURL& content_url, bool is_main_frame);
 

@@ -56,8 +56,10 @@ class PopupZoomer extends View {
     private static final int UMA_TAPDISAMBIGUATION_OTHER = 0;
     private static final int UMA_TAPDISAMBIGUATION_BACKBUTTON = 1;
     private static final int UMA_TAPDISAMBIGUATION_TAPPEDOUTSIDE = 2;
-    private static final int UMA_TAPDISAMBIGUATION_TAPPEDINSIDE = 3;
-    private static final int UMA_TAPDISAMBIGUATION_COUNT = 4;
+    private static final int UMA_TAPDISAMBIGUATION_TAPPEDINSIDE_DEPRECATED = 3;
+    private static final int UMA_TAPDISAMBIGUATION_TAPPEDINSIDE_SAMENODE = 4;
+    private static final int UMA_TAPDISAMBIGUATION_TAPPEDINSIDE_DIFFERENTNODE = 5;
+    private static final int UMA_TAPDISAMBIGUATION_COUNT = 6;
 
     private void recordHistogram(int value) {
         RecordHistogram.recordEnumeratedHistogram(
@@ -66,11 +68,9 @@ class PopupZoomer extends View {
 
     /**
      * Interface to be implemented to listen for touch events inside the zoomed area.
-     * The MotionEvent coordinates correspond to original unzoomed view.
      */
     public static interface OnTapListener {
-        public boolean onSingleTap(View v, MotionEvent event);
-        public boolean onLongPress(View v, MotionEvent event);
+        public void onResolveTapDisambiguation(long timeMs, float x, float y, boolean isLongPress);
     }
 
     private OnTapListener mOnTapListener;
@@ -232,13 +232,8 @@ class PopupZoomer extends View {
                             tappedOutside();
                         } else if (mOnTapListener != null) {
                             PointF converted = convertTouchPoint(x, y);
-                            MotionEvent event = MotionEvent.obtainNoHistory(e);
-                            event.setLocation(converted.x, converted.y);
-                            if (isLongPress) {
-                                mOnTapListener.onLongPress(PopupZoomer.this, event);
-                            } else {
-                                mOnTapListener.onSingleTap(PopupZoomer.this, event);
-                            }
+                            mOnTapListener.onResolveTapDisambiguation(
+                                    e.getEventTime(), converted.x, converted.y, isLongPress);
                             tappedInside();
                         }
                         return true;
@@ -542,7 +537,8 @@ class PopupZoomer extends View {
     }
     private void tappedInside() {
         if (!mShowing) return;
-        recordHistogram(UMA_TAPDISAMBIGUATION_TAPPEDINSIDE);
+        // Tapped-inside histogram value is recorded on the renderer side,
+        // not here.
 
         startAnimation(false);
     }

@@ -1784,6 +1784,16 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
   }
 }
 
+void RenderWidgetHostViewAndroid::ResolveTapDisambiguation(
+    double timestamp_seconds,
+    gfx::Point tap_viewport_offset,
+    bool is_long_press) {
+  DCHECK(host_);
+  host_->Send(new ViewMsg_ResolveTapDisambiguation(
+      host_->GetRoutingID(), timestamp_seconds, tap_viewport_offset,
+      is_long_press));
+}
+
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
   if (host_)
     host_->MoveCaret(point);

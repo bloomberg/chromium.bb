@@ -1263,6 +1263,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupBitmap,
                         OnReleaseDisambiguationPopupBitmap)
+    IPC_MESSAGE_HANDLER(ViewMsg_ResolveTapDisambiguation,
+                        OnResolveTapDisambiguation)
     IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
 
@@ -2678,6 +2680,13 @@ void RenderViewImpl::OnReleaseDisambiguationPopupBitmap(
   DCHECK(it != disambiguation_bitmaps_.end());
   delete it->second;
   disambiguation_bitmaps_.erase(it);
+}
+
+void RenderViewImpl::OnResolveTapDisambiguation(double timestamp_seconds,
+                                                gfx::Point tap_viewport_offset,
+                                                bool is_long_press) {
+  webview()->resolveTapDisambiguation(timestamp_seconds, tap_viewport_offset,
+                                      is_long_press);
 }
 
 void RenderViewImpl::DidCommitCompositorFrame() {

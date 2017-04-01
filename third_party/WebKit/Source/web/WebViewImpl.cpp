@@ -856,6 +856,12 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
           if (goodTargets.size() >= 2 && m_client &&
               m_client->didTapMultipleTargets(visualViewportOffset, boundingBox,
                                               goodTargets)) {
+            // Stash the position of the node that would've been used absent
+            // disambiguation, for UMA purposes.
+            m_lastTapDisambiguationBestCandidatePosition =
+                targetedEvent.hitTestResult().roundedPointInMainFrame() -
+                roundedIntSize(targetedEvent.hitTestResult().localPoint());
+
             enableTapHighlights(highlightNodes);
             for (size_t i = 0; i < m_linkHighlights.size(); ++i)
               m_linkHighlights[i]->startHighlightAnimationIfNeeded();
@@ -929,6 +935,59 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
   }
   m_client->didHandleGestureEvent(event, eventCancelled);
   return eventResult;
+}
+
+namespace {
+// This enum is used to back a histogram, and should therefore be treated as
+// append-only.
+enum TapDisambiguationResult {
+  UmaTapDisambiguationOther = 0,
+  UmaTapDisambiguationBackButton = 1,
+  UmaTapDisambiguationTappedOutside = 2,
+  UmaTapDisambiguationTappedInsideDeprecated = 3,
+  UmaTapDisambiguationTappedInsideSameNode = 4,
+  UmaTapDisambiguationTappedInsideDifferentNode = 5,
+  UmaTapDisambiguationCount = 6,
+};
+
+void RecordTapDisambiguation(TapDisambiguationResult result) {
+  UMA_HISTOGRAM_ENUMERATION("Touchscreen.TapDisambiguation", result,
+                            UmaTapDisambiguationCount);
+}
+
+}  // namespace
+
+void WebViewImpl::resolveTapDisambiguation(double timestampSeconds,
+                                           WebPoint tapViewportOffset,
+                                           bool isLongPress) {
+  WebGestureEvent event(
+      isLongPress ? WebInputEvent::GestureLongPress : WebInputEvent::GestureTap,
+      WebInputEvent::NoModifiers, timestampSeconds);
+
+  event.x = tapViewportOffset.x;
+  event.y = tapViewportOffset.y;
+  event.sourceDevice = blink::WebGestureDeviceTouchscreen;
+
+  {
+    // Compute UMA stat about whether the node selected by disambiguation UI was
+    // different from the one preferred by the regular hit-testing + adjustment
+    // logic.
+    WebGestureEvent scaledEvent =
+        TransformWebGestureEvent(mainFrameImpl()->frameView(), event);
+    GestureEventWithHitTestResults targetedEvent =
+        m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(
+            scaledEvent);
+    WebPoint nodePosition =
+        targetedEvent.hitTestResult().roundedPointInMainFrame() -
+        roundedIntSize(targetedEvent.hitTestResult().localPoint());
+    TapDisambiguationResult result =
+        (nodePosition == m_lastTapDisambiguationBestCandidatePosition)
+            ? UmaTapDisambiguationTappedInsideSameNode
+            : UmaTapDisambiguationTappedInsideDifferentNode;
+    RecordTapDisambiguation(result);
+  }
+
+  handleGestureEvent(event);
 }
 
 WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(

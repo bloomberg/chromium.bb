@@ -570,10 +570,18 @@ IPC_MESSAGE_ROUTED1(ViewMsg_PpapiBrokerPermissionResult,
                     bool /* result */)
 #endif
 
-// An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
-// process to release the magnified image.
+// An acknowledgement to ViewHostMsg_ShowDisambiguationPopup to notify the
+// renderer process to release the magnified image.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
                     cc::SharedBitmapId /* id */)
+
+// If the ViewHostMsg_ShowDisambiguationPopup resulted in the user tapping
+// inside the popup, instruct the renderer to generate a synthetic tap at that
+// offset.
+IPC_MESSAGE_ROUTED3(ViewMsg_ResolveTapDisambiguation,
+                    double /* timestamp_seconds */,
+                    gfx::Point /* tap_viewport_offset */,
+                    bool /* is_long_press */)
 
 // Fetches complete rendered content of a web page as plain text.
 IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
