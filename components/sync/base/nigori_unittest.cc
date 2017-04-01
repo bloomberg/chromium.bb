@@ -126,13 +126,12 @@ TEST(SyncNigoriTest, ExportImport) {
   Nigori nigori1;
   EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
 
-  std::string user_key;
   std::string encryption_key;
   std::string mac_key;
-  EXPECT_TRUE(nigori1.ExportKeys(&user_key, &encryption_key, &mac_key));
+  EXPECT_TRUE(nigori1.ExportKeys(&encryption_key, &mac_key));
 
   Nigori nigori2;
-  EXPECT_TRUE(nigori2.InitByImport(user_key, encryption_key, mac_key));
+  EXPECT_TRUE(nigori2.InitByImport(encryption_key, mac_key));
 
   std::string original("test");
   std::string plaintext;
