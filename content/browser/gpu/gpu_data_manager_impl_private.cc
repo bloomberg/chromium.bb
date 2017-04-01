@@ -713,7 +713,9 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info) {
-  gpu_feature_info_ = gpu_feature_info;
+  if (!use_swiftshader_) {
+    gpu_feature_info_ = gpu_feature_info;
+  }
 }
 
 void GpuDataManagerImplPrivate::UpdateVideoMemoryUsageStats(
@@ -1264,11 +1266,21 @@ void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
 
 void GpuDataManagerImplPrivate::EnableSwiftShaderIfNecessary() {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
-  if (!GpuAccessAllowed(nullptr) ||
-      blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL)) {
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableSoftwareRasterizer))
-      use_swiftshader_ = true;
+  if ((!GpuAccessAllowed(nullptr) ||
+       blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL)) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSoftwareRasterizer)) {
+    use_swiftshader_ = true;
+
+    // Remove all previously recorded GPU info
+    gpu_info_ = gpu::GPUInfo();
+    // Set some basic info to identify the GPU as SwiftShader
+    gpu_info_.gl_vendor = "Google Inc.";
+    gpu_info_.gl_renderer = "Google SwiftShader";
+    gpu_info_.software_rendering = true;
+
+    for (auto& status : gpu_feature_info_.status_values)
+      status = gpu::kGpuFeatureStatusBlacklisted;
   }
 #endif
 }

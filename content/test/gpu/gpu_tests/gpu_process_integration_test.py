@@ -549,6 +549,22 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self.fail('getParameter(UNMASKED_RENDERER_WEBGL) was null')
     if 'SwiftShader' not in renderer:
       self.fail('Expected SwiftShader renderer; instead got ' + renderer)
+    if not self.browser.supports_system_info:
+      self.fail("Browser doesn't support GetSystemInfo")
+    gpu = self.browser.GetSystemInfo().gpu
+    if not gpu:
+      self.fail('Target machine must have a GPU')
+    if not gpu.aux_attributes:
+      self.fail('Browser must support GPU aux attributes')
+    if not gpu.aux_attributes['software_rendering']:
+      self.fail("Software rendering was disabled")
+    device = gpu.devices[0]
+    if not device:
+      self.fail("System Info doesn't have a device")
+    if device.vendor_id != 0:
+      self.fail("Wrong vendor ID. Expected 0, got " + hex(device.vendor_id))
+    if device.device_id != 0:
+      self.fail("Wrong device ID. Expected 0, got " + hex(device.device_id))
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

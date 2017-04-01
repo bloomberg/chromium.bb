@@ -737,21 +737,28 @@ TEST_F(GpuDataManagerImplPrivateTest, UpdateActiveGpu) {
   if (manager->ShouldUseSwiftShader()) {
     EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
               manager->GetBlacklistedFeatureCount());
-  } else {
-    EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
-  }
 
-  // Update with the same Intel GPU active.
-  EXPECT_FALSE(manager->UpdateActiveGpu(0x8086, 0x04a1));
-  {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
-  EXPECT_FALSE(observer.gpu_info_updated());
-  if (manager->ShouldUseSwiftShader()) {
+    // Update to previous Intel GPU.
+    EXPECT_TRUE(manager->UpdateActiveGpu(0x8086, 0x04a1));
+    {
+      base::RunLoop run_loop;
+      run_loop.RunUntilIdle();
+    }
+    EXPECT_TRUE(observer.gpu_info_updated());
+
     EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
               manager->GetBlacklistedFeatureCount());
   } else {
+    EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
+
+    // Update with the same Intel GPU active.
+    EXPECT_FALSE(manager->UpdateActiveGpu(0x8086, 0x04a1));
+    {
+      base::RunLoop run_loop;
+      run_loop.RunUntilIdle();
+    }
+    EXPECT_FALSE(observer.gpu_info_updated());
+
     EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   }
 
@@ -772,17 +779,24 @@ TEST_F(GpuDataManagerImplPrivateTest, UpdateActiveGpu) {
   observer.Reset();
   EXPECT_FALSE(observer.gpu_info_updated());
 
-  // Update with the same NVIDIA GPU active.
-  EXPECT_FALSE(manager->UpdateActiveGpu(0x10de, 0x0640));
-  {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
-  EXPECT_FALSE(observer.gpu_info_updated());
   if (manager->ShouldUseSwiftShader()) {
+    // Update to previous NVIDIA GPU.
+    EXPECT_TRUE(manager->UpdateActiveGpu(0x10de, 0x0640));
+    {
+      base::RunLoop run_loop;
+      run_loop.RunUntilIdle();
+    }
+    EXPECT_TRUE(observer.gpu_info_updated());
     EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
               manager->GetBlacklistedFeatureCount());
   } else {
+    // Update with the same NVIDIA GPU active.
+    EXPECT_FALSE(manager->UpdateActiveGpu(0x10de, 0x0640));
+    {
+      base::RunLoop run_loop;
+      run_loop.RunUntilIdle();
+    }
+    EXPECT_FALSE(observer.gpu_info_updated());
     EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   }
 

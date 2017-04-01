@@ -850,9 +850,14 @@ void GpuProcessHost::DidInitialize(
     const gpu::GpuFeatureInfo& gpu_feature_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", true);
   initialized_ = true;
-  gpu_info_ = gpu_info;
-  GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
-  GpuDataManagerImpl::GetInstance()->UpdateGpuFeatureInfo(gpu_feature_info);
+  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+  if (!gpu_data_manager->ShouldUseSwiftShader()) {
+    gpu_info_ = gpu_info;
+    gpu_data_manager->UpdateGpuInfo(gpu_info);
+    gpu_data_manager->UpdateGpuFeatureInfo(gpu_feature_info);
+  } else {
+    gpu_info_ = gpu_data_manager->GetGPUInfo();
+  }
 }
 
 void GpuProcessHost::DidFailInitialize() {
