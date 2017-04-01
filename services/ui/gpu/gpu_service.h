@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -186,6 +187,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   bool in_host_process_ = false;
   base::Time start_time_;
 
+  // Used to track the task to bind a GpuServiceRequest on the io thread.
+  base::CancelableTaskTracker bind_task_tracker_;
   std::unique_ptr<mojo::BindingSet<mojom::GpuService>> bindings_;
 
   base::WeakPtr<GpuService> weak_ptr_;

@@ -95,19 +95,17 @@ GpuService::GpuService(const gpu::GPUInfo& gpu_info,
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       sync_point_manager_(nullptr),
+      bindings_(base::MakeUnique<mojo::BindingSet<mojom::GpuService>>()),
       weak_ptr_factory_(this) {
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
 
 GpuService::~GpuService() {
   DCHECK(main_runner_->BelongsToCurrentThread());
+  bind_task_tracker_.TryCancelAll();
   logging::SetLogMessageHandler(nullptr);
   g_log_callback.Get() =
       base::Callback<void(int, size_t, const std::string&)>();
-  if (bindings_) {
-    io_runner_->PostTask(FROM_HERE,
-                         base::Bind(&DestroyBinding, base::Passed(&bindings_)));
-  }
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
   owned_sync_point_manager_.reset();
@@ -118,6 +116,8 @@ GpuService::~GpuService() {
   // process begins waiting for them to exit.
   if (owned_shutdown_event_)
     owned_shutdown_event_->Signal();
+  io_runner_->PostTask(FROM_HERE,
+                       base::Bind(&DestroyBinding, base::Passed(&bindings_)));
 }
 
 void GpuService::UpdateGPUInfoFromPreferences(
@@ -185,13 +185,12 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
 
 void GpuService::Bind(mojom::GpuServiceRequest request) {
   if (main_runner_->BelongsToCurrentThread()) {
-    io_runner_->PostTask(FROM_HERE,
-                         base::Bind(&GpuService::Bind, base::Unretained(this),
-                                    base::Passed(std::move(request))));
+    bind_task_tracker_.PostTask(
+        io_runner_.get(), FROM_HERE,
+        base::Bind(&GpuService::Bind, base::Unretained(this),
+                   base::Passed(std::move(request))));
     return;
   }
-  if (!bindings_)
-    bindings_ = base::MakeUnique<mojo::BindingSet<mojom::GpuService>>();
   bindings_->AddBinding(this, std::move(request));
 }
 
