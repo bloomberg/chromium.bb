@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<title>Bluetooth interface</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
@@ -12,5 +13,7 @@ test(() => {
 
   // Bluetooth implements BluetoothDiscovery;
   assert_true('requestDevice' in navigator.bluetooth);
+  assert_equals(navigator.bluetooth.requestDevice.length, 0);
 }, 'Bluetooth IDL test');
+
 </script>
