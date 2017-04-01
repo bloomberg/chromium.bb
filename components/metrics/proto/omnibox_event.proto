@@ -177,7 +177,7 @@ message OmniboxEventProto {
   }
 
   // The result set displayed on the completion popup
-  // Next tag: 7
+  // Next tag: 8
   message Suggestion {
     // Where does this result come from?
     optional ProviderType provider = 1;
@@ -196,6 +196,14 @@ message OmniboxEventProto {
       HISTORY_KEYWORD = 5;        // A past page whose keyword contains the
                                   // input
       NAVSUGGEST = 6;             // A suggested URL
+                                  //
+                                  // result_subtype_identifier is currently used
+                                  // for contextual zero-suggest suggestions
+                                  // provided by the experimental service (note
+                                  // that not all NAVSUUGGEST suggestions come
+                                  // from the experimental service).
+                                  // For subtype definitions, please contact
+                                  // gcomanici@chromium.org.
       SEARCH_WHAT_YOU_TYPED = 7;  // The input as a search query (with the
                                   // default engine)
       SEARCH_HISTORY = 8;         // A past search (with the default engine)
@@ -253,6 +261,12 @@ message OmniboxEventProto {
 
     // Whether this item is disabled in the UI (not clickable).
     optional bool is_disabled = 6;
+
+    // Used to identify the specific source / type for suggestions by the
+    // suggest server. The meaning of individual values is determined by the
+    // provider of each suggestion type and is different for every suggestion
+    // type. See enum ResultType above for more details.
+    optional int32 result_subtype_identifier = 7;
   }
   repeated Suggestion suggestion = 9;
 

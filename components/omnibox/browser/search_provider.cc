@@ -963,7 +963,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     }
 
     SearchSuggestionParser::SuggestResult verbatim(
-        trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, 0,
         trimmed_verbatim, base::string16(), base::string16(), answer_contents,
         answer_type, std::move(answer), std::string(), std::string(), false,
         verbatim_relevance, relevance_from_server, false, trimmed_verbatim);
@@ -986,7 +986,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         const base::string16& trimmed_verbatim =
             base::CollapseWhitespace(keyword_input_.text(), false);
         SearchSuggestionParser::SuggestResult verbatim(
-            trimmed_verbatim, AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+            trimmed_verbatim, AutocompleteMatchType::SEARCH_OTHER_ENGINE, 0,
             trimmed_verbatim, base::string16(), base::string16(),
             base::string16(), base::string16(), nullptr, std::string(),
             std::string(), true, keyword_verbatim_relevance,
@@ -1172,7 +1172,7 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
       insertion_position = scored_results.begin();
     }
     SearchSuggestionParser::SuggestResult history_suggestion(
-        trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
+        trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY, 0,
         trimmed_suggestion, base::string16(), base::string16(),
         base::string16(), base::string16(), nullptr, std::string(),
         std::string(), is_keyword, relevance, false, false, trimmed_input);
@@ -1414,6 +1414,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   AutocompleteMatch match(this, navigation.relevance(), false,
                           navigation.type());
   match.destination_url = navigation.url();
+  match.subtype_identifier = navigation.subtype_identifier();
   BaseSearchProvider::SetDeletionURL(navigation.deletion_url(), &match);
   // First look for the user's input inside the formatted url as it would be
   // without trimming the scheme, so we can find matches at the beginning of the

@@ -367,6 +367,12 @@ struct AutocompleteMatch {
   // Type of this match.
   Type type;
 
+  // Used to identify the specific source / type for suggestions by the
+  // suggest server. See |result_type_identifier| in omnibox.proto for more
+  // details.
+  // The identifier 0 is reserved for cases where this specific type is unset.
+  int subtype_identifier;
+
   // Set with a keyword provider match if this match can show a keyword hint.
   // For example, if this is a SearchProvider match for "www.amazon.com",
   // |associated_keyword| could be a KeywordProvider match for "amazon.com".

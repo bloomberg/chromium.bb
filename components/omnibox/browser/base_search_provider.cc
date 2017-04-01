@@ -114,9 +114,9 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   // mode.  They also assume the caller knows what it's doing and we set
   // this match to look as if it was received/created synchronously.
   SearchSuggestionParser::SuggestResult suggest_result(
-      suggestion, type, suggestion, base::string16(), base::string16(),
-      base::string16(), base::string16(), nullptr, std::string(),
-      std::string(), from_keyword_provider, 0, false, false, base::string16());
+      suggestion, type, 0, suggestion, base::string16(), base::string16(),
+      base::string16(), base::string16(), nullptr, std::string(), std::string(),
+      from_keyword_provider, 0, false, false, base::string16());
   suggest_result.set_received_after_last_keystroke(false);
   return CreateSearchSuggestion(
       NULL, AutocompleteInput(), from_keyword_provider, suggest_result,
@@ -215,6 +215,7 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.answer_contents = suggestion.answer_contents();
   match.answer_type = suggestion.answer_type();
   match.answer = SuggestionAnswer::copy(suggestion.answer());
+  match.subtype_identifier = suggestion.subtype_identifier();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     match.RecordAdditionalInfo(
         kACMatchPropertyInputText, base::UTF16ToUTF8(input.text()));

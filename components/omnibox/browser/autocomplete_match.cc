@@ -123,16 +123,18 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer(SuggestionAnswer::copy(match.answer.get())),
       transition(match.transition),
       type(match.type),
-      associated_keyword(match.associated_keyword.get() ?
-          new AutocompleteMatch(*match.associated_keyword) : NULL),
+      subtype_identifier(match.subtype_identifier),
+      associated_keyword(match.associated_keyword.get()
+                             ? new AutocompleteMatch(*match.associated_keyword)
+                             : NULL),
       keyword(match.keyword),
       from_previous(match.from_previous),
-      search_terms_args(match.search_terms_args.get() ?
-          new TemplateURLRef::SearchTermsArgs(*match.search_terms_args) :
-          NULL),
+      search_terms_args(
+          match.search_terms_args.get()
+              ? new TemplateURLRef::SearchTermsArgs(*match.search_terms_args)
+              : NULL),
       additional_info(match.additional_info),
-      duplicate_matches(match.duplicate_matches) {
-}
+      duplicate_matches(match.duplicate_matches) {}
 
 AutocompleteMatch::~AutocompleteMatch() {
 }
@@ -161,6 +163,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer = SuggestionAnswer::copy(match.answer.get());
   transition = match.transition;
   type = match.type;
+  subtype_identifier = match.subtype_identifier;
   associated_keyword.reset(match.associated_keyword.get() ?
       new AutocompleteMatch(*match.associated_keyword) : NULL);
   keyword = match.keyword;

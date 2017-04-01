@@ -55,9 +55,11 @@ SearchSuggestionParser::Result::Result(bool from_keyword_provider,
                                        int relevance,
                                        bool relevance_from_server,
                                        AutocompleteMatchType::Type type,
+                                       int subtype_identifier,
                                        const std::string& deletion_url)
     : from_keyword_provider_(from_keyword_provider),
       type_(type),
+      subtype_identifier_(subtype_identifier),
       relevance_(relevance),
       relevance_from_server_(relevance_from_server),
       received_after_last_keystroke_(true),
@@ -72,6 +74,7 @@ SearchSuggestionParser::Result::~Result() {}
 SearchSuggestionParser::SuggestResult::SuggestResult(
     const base::string16& suggestion,
     AutocompleteMatchType::Type type,
+    int subtype_identifier,
     const base::string16& match_contents,
     const base::string16& match_contents_prefix,
     const base::string16& annotation,
@@ -89,6 +92,7 @@ SearchSuggestionParser::SuggestResult::SuggestResult(
              relevance,
              relevance_from_server,
              type,
+             subtype_identifier,
              deletion_url),
       suggestion_(suggestion),
       match_contents_prefix_(match_contents_prefix),
@@ -224,6 +228,7 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
     const AutocompleteSchemeClassifier& scheme_classifier,
     const GURL& url,
     AutocompleteMatchType::Type type,
+    int subtype_identifier,
     const base::string16& description,
     const std::string& deletion_url,
     bool from_keyword_provider,
@@ -234,6 +239,7 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
              relevance,
              relevance_from_server,
              type,
+             subtype_identifier,
              deletion_url),
       url_(url),
       formatted_url_(AutocompleteInput::FormattedStringWithEquivalentMeaning(
@@ -415,6 +421,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   const base::ListValue* types = NULL;
   const base::ListValue* relevances = NULL;
   const base::ListValue* suggestion_details = NULL;
+  const base::ListValue* subtype_identifiers = NULL;
   const base::DictionaryValue* extras = NULL;
   int prefetch_index = -1;
   if (root_list->GetDictionary(4, &extras)) {
@@ -440,6 +447,12 @@ bool SearchSuggestionParser::ParseSuggestResults(
     if (extras->GetList("google:suggestdetail", &suggestion_details) &&
         suggestion_details->GetSize() != results_list->GetSize())
       suggestion_details = NULL;
+
+    // Get subtype identifiers.
+    if (extras->GetList("google:subtypeid", &subtype_identifiers) &&
+        subtype_identifiers->GetSize() != results_list->GetSize()) {
+      subtype_identifiers = NULL;
+    }
 
     // Store the metadata that came with the response in case we need to pass it
     // along with the prefetch query to Instant.
@@ -468,6 +481,10 @@ bool SearchSuggestionParser::ParseSuggestResults(
       relevances = NULL;
     AutocompleteMatchType::Type match_type =
         AutocompleteMatchType::SEARCH_SUGGEST;
+    int subtype_identifier = 0;
+    if (subtype_identifiers) {
+      subtype_identifiers->GetInteger(index, &subtype_identifier);
+    }
     if (types && types->GetString(index, &type))
       match_type = GetAutocompleteMatchType(type);
     const base::DictionaryValue* suggestion_detail = NULL;
@@ -487,8 +504,9 @@ bool SearchSuggestionParser::ParseSuggestResults(
         if (descriptions != NULL)
           descriptions->GetString(index, &title);
         results->navigation_results.push_back(NavigationResult(
-            scheme_classifier, url, match_type, title, deletion_url,
-            is_keyword_result, relevance, relevances != NULL, input.text()));
+            scheme_classifier, url, match_type, subtype_identifier, title,
+            deletion_url, is_keyword_result, relevance, relevances != NULL,
+            input.text()));
       }
     } else {
       // TODO(dschuyler) If the "= " is no longer sent from the back-end
@@ -546,7 +564,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       results->suggest_results.push_back(SuggestResult(
           base::CollapseWhitespace(suggestion, false), match_type,
-          base::CollapseWhitespace(match_contents, false),
+          subtype_identifier, base::CollapseWhitespace(match_contents, false),
           match_contents_prefix, annotation, answer_contents, answer_type_str,
           std::move(answer), suggest_query_params, deletion_url,
           is_keyword_result, relevance, relevances != NULL, should_prefetch,

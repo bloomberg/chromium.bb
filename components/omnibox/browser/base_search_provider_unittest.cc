@@ -102,7 +102,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
       .WillRepeatedly(Return(template_url.get()));
 
   SearchSuggestionParser::SuggestResult more_relevant(
-      query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
+      query, AutocompleteMatchType::SEARCH_HISTORY, 0, query, base::string16(),
       base::string16(), base::string16(), base::string16(), nullptr,
       std::string(), std::string(), false, 1300, true, false, query);
   provider_->AddMatchToMap(
@@ -110,10 +110,10 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
       false, false, &map);
 
   SearchSuggestionParser::SuggestResult less_relevant(
-      query, AutocompleteMatchType::SEARCH_SUGGEST, query, base::string16(),
+      query, AutocompleteMatchType::SEARCH_SUGGEST, 0, query, base::string16(),
       base::string16(), answer_contents, answer_type,
-      SuggestionAnswer::copy(answer.get()), std::string(), std::string(),
-      false, 850, true, false, query);
+      SuggestionAnswer::copy(answer.get()), std::string(), std::string(), false,
+      850, true, false, query);
   provider_->AddMatchToMap(
       less_relevant, std::string(), TemplateURLRef::NO_SUGGESTION_CHOSEN,
       false, false, &map);
@@ -142,7 +142,7 @@ TEST_F(BaseSearchProviderTest, PreserveAnswersWhenDeduplicating) {
   std::unique_ptr<SuggestionAnswer> answer2(new SuggestionAnswer());
   answer2->set_type(8242);
   more_relevant = SearchSuggestionParser::SuggestResult(
-      query, AutocompleteMatchType::SEARCH_HISTORY, query, base::string16(),
+      query, AutocompleteMatchType::SEARCH_HISTORY, 0, query, base::string16(),
       base::string16(), answer_contents2, answer_type2,
       SuggestionAnswer::copy(answer2.get()), std::string(), std::string(),
       false, 1300, true, false, query);

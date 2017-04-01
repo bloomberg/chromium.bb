@@ -363,6 +363,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.description.length(), ACMatchClassification::NONE,
       &match.description_class);
+  match.subtype_identifier = navigation.subtype_identifier();
   return match;
 }
 
@@ -447,7 +448,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
       const history::MostVisitedURL& url = most_visited_urls_[i];
       SearchSuggestionParser::NavigationResult nav(
           client()->GetSchemeClassifier(), url.url,
-          AutocompleteMatchType::NAVSUGGEST, url.title, std::string(), false,
+          AutocompleteMatchType::NAVSUGGEST, 0, url.title, std::string(), false,
           relevance, true, current_query_string16);
       matches_.push_back(NavigationToMatch(nav));
       --relevance;
@@ -468,8 +469,10 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   const SearchSuggestionParser::NavigationResults& nav_results(
       results_.navigation_results);
   for (SearchSuggestionParser::NavigationResults::const_iterator it(
-           nav_results.begin()); it != nav_results.end(); ++it)
+           nav_results.begin());
+       it != nav_results.end(); ++it) {
     matches_.push_back(NavigationToMatch(*it));
+  }
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {

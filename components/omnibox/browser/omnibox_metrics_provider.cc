@@ -154,11 +154,14 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   for (AutocompleteResult::const_iterator i(log.result.begin());
        i != log.result.end(); ++i) {
     OmniboxEventProto::Suggestion* suggestion = omnibox_event->add_suggestion();
-    suggestion->set_provider(i->provider->AsOmniboxEventProviderType());
+    const auto provider_type = i->provider->AsOmniboxEventProviderType();
+    suggestion->set_provider(provider_type);
     suggestion->set_result_type(AsOmniboxEventResultType(i->type));
     suggestion->set_relevance(i->relevance);
     if (i->typed_count != -1)
       suggestion->set_typed_count(i->typed_count);
+    if (i->subtype_identifier > 0)
+      suggestion->set_result_subtype_identifier(i->subtype_identifier);
   }
   for (ProvidersInfo::const_iterator i(log.providers_info.begin());
        i != log.providers_info.end(); ++i) {
