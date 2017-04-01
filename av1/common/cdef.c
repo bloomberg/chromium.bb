@@ -147,9 +147,28 @@ static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
   }
 }
 
+static INLINE void copy_rect(uint16_t *dst, int dstride, const uint16_t *src,
+                             int sstride, int v, int h) {
+  int i, j;
+  OD_ASSERT((h & 0x7) == 0);
+  for (i = 0; i < v; i++) {
+    for (j = 0; j < h; j += 8) {
+      int k = i * dstride + j;
+      int l = i * sstride + j;
+      dst[k + 0] = src[l + 0];
+      dst[k + 1] = src[l + 1];
+      dst[k + 2] = src[l + 2];
+      dst[k + 3] = src[l + 3];
+      dst[k + 4] = src[l + 4];
+      dst[k + 5] = src[l + 5];
+      dst[k + 6] = src[l + 6];
+      dst[k + 7] = src[l + 7];
+    }
+  }
+}
+
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     MACROBLOCKD *xd) {
-  int r, c;
   int sbr, sbc;
   int nhsb, nvsb;
   uint16_t src[OD_DERING_INBUF_SIZE];
@@ -298,12 +317,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                       coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER,
                       hsize);
         } else if (sbr > 0) {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = 0; c < hsize; c++) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  linebuf[pli][r * stride + coffset + c];
-            }
-          }
+          copy_rect(&src[OD_FILT_HBORDER], OD_FILT_BSTRIDE,
+                    &linebuf[pli][coffset], stride, OD_FILT_VBORDER, hsize);
         } else {
           fill_rect(&src[OD_FILT_HBORDER], OD_FILT_BSTRIDE, OD_FILT_VBORDER,
                     hsize, OD_DERING_VERY_LARGE);
@@ -314,12 +329,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                       coffset - OD_FILT_HBORDER, xd->plane[pli].dst.stride,
                       OD_FILT_VBORDER, OD_FILT_HBORDER);
         } else if (sbr > 0 && sbc > 0) {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = -OD_FILT_HBORDER; c < 0; c++) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  linebuf[pli][r * stride + coffset + c];
-            }
-          }
+          copy_rect(src, OD_FILT_BSTRIDE,
+                    &linebuf[pli][coffset - OD_FILT_HBORDER], stride,
+                    OD_FILT_VBORDER, OD_FILT_HBORDER);
         } else {
           fill_rect(src, OD_FILT_BSTRIDE, OD_FILT_VBORDER, OD_FILT_HBORDER,
                     OD_DERING_VERY_LARGE);
@@ -331,12 +343,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                       coffset + hsize, xd->plane[pli].dst.stride,
                       OD_FILT_VBORDER, OD_FILT_HBORDER);
         } else if (sbr > 0 && sbc < nhsb - 1) {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = hsize; c < hsize + OD_FILT_HBORDER; c++) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  linebuf[pli][r * stride + coffset + c];
-            }
-          }
+          copy_rect(&src[hsize + OD_FILT_HBORDER], OD_FILT_BSTRIDE,
+                    &linebuf[pli][coffset + hsize], stride, OD_FILT_VBORDER,
+                    OD_FILT_HBORDER);
         } else {
           fill_rect(&src[hsize + OD_FILT_HBORDER], OD_FILT_BSTRIDE,
                     OD_FILT_VBORDER, OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
@@ -344,21 +353,13 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         if (dering_left) {
           /* If we deringed the superblock on the left then we need to copy in
              saved pixels. */
-          for (r = 0; r < rend + OD_FILT_VBORDER; r++) {
-            for (c = 0; c < OD_FILT_HBORDER; c++) {
-              src[r * OD_FILT_BSTRIDE + c] =
-                  colbuf[pli][r * OD_FILT_HBORDER + c];
-            }
-          }
+          copy_rect(src, OD_FILT_BSTRIDE, colbuf[pli], OD_FILT_HBORDER,
+                    rend + OD_FILT_VBORDER, OD_FILT_HBORDER);
         }
-        for (r = 0; r < rend + OD_FILT_VBORDER; r++) {
-          for (c = 0; c < OD_FILT_HBORDER; c++) {
-            /* Saving pixels in case we need to dering the superblock on the
-               right. */
-            colbuf[pli][r * OD_FILT_HBORDER + c] =
-                src[r * OD_FILT_BSTRIDE + c + hsize];
-          }
-        }
+        /* Saving pixels in case we need to dering the superblock on the
+            right. */
+        copy_rect(colbuf[pli], OD_FILT_HBORDER, src + hsize, OD_FILT_BSTRIDE,
+                  rend + OD_FILT_VBORDER, OD_FILT_HBORDER);
         copy_sb8_16(
             cm, &linebuf[pli][coffset], stride, xd->plane[pli].dst.buf,
             (MAX_MIB_SIZE << mi_wide_l2[pli]) * (sbr + 1) - OD_FILT_VBORDER,
