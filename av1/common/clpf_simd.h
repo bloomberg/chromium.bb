@@ -20,7 +20,7 @@ SIMD_INLINE v128 constrain(v128 a, v128 b, unsigned int strength,
   const v128 sign = v128_cmpeq_8(v128_min_u8(a, b), a);  // -(a <= b)
   const v128 s = v128_ssub_u8(v128_dup_8(strength),
                               v128_shr_u8(diff, damping - get_msb(strength)));
-  return v128_sub_8(v128_xor(sign, v128_min_u8(diff, s)), sign);
+  return v128_xor(v128_add_8(sign, v128_min_u8(diff, s)), sign);
 }
 
 // delta = 1/16 * constrain(a, x, s) + 3/16 * constrain(b, x, s) +
@@ -258,7 +258,7 @@ SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
   diff = v128_abs_s16(diff);
   const v128 s = v128_ssub_u16(v128_dup_16(strength),
                                v128_shr_u16(diff, dmp - get_msb(strength)));
-  return v128_sub_16(v128_xor(sign, v128_min_s16(diff, s)), sign);
+  return v128_xor(v128_add_16(sign, v128_min_s16(diff, s)), sign);
 }
 
 // delta = 1/16 * constrain(a, x, s, dmp) + 3/16 * constrain(b, x, s, dmp) +
