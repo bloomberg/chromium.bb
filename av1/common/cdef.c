@@ -231,6 +231,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         int coffset;
         int rend, cend;
         int clpf_damping = 3 - (pli != AOM_PLANE_Y) + (cm->base_qindex >> 6);
+        int hsize = nhb << mi_wide_l2[pli];
+        int vsize = nvb << mi_high_l2[pli];
 
         if (pli) {
           if (chroma_dering)
@@ -241,22 +243,21 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         }
 
         if (sbc == nhsb - 1)
-          cend = (nhb << mi_wide_l2[pli]);
+          cend = hsize;
         else
-          cend = (nhb << mi_wide_l2[pli]) + OD_FILT_HBORDER;
+          cend = hsize + OD_FILT_HBORDER;
 
         if (sbr == nvsb - 1)
-          rend = (nvb << mi_high_l2[pli]);
+          rend = vsize;
         else
-          rend = (nvb << mi_high_l2[pli]) + OD_FILT_VBORDER;
+          rend = vsize + OD_FILT_VBORDER;
 
         coffset = sbc * MAX_MIB_SIZE << mi_wide_l2[pli];
         if (sbc == nhsb - 1) {
           /* On the last superblock column, fill in the right border with
              OD_DERING_VERY_LARGE to avoid filtering with the outside. */
           for (r = 0; r < rend + OD_FILT_VBORDER; ++r) {
-            const int block_width = (nhb << mi_wide_l2[pli]) + OD_FILT_HBORDER;
-            for (c = cend; c < block_width; ++c) {
+            for (c = cend; c < hsize + OD_FILT_HBORDER; ++c) {
               src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
                   OD_DERING_VERY_LARGE;
             }
@@ -266,9 +267,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           /* On the last superblock row, fill in the bottom border with
              OD_DERING_VERY_LARGE to avoid filtering with the outside. */
           for (r = rend; r < rend + OD_FILT_VBORDER; ++r) {
-            const int block_width =
-                (nhb << mi_wide_l2[pli]) + 2 * OD_FILT_HBORDER;
-            for (c = 0; c < block_width; ++c) {
+            for (c = 0; c < hsize + 2 * OD_FILT_HBORDER; ++c) {
               src[(r + OD_FILT_VBORDER) * OD_FILT_BSTRIDE + c] =
                   OD_DERING_VERY_LARGE;
             }
@@ -287,17 +286,17 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                       xd->plane[pli].dst.buf,
                       (MAX_MIB_SIZE << mi_wide_l2[pli]) * sbr - OD_FILT_VBORDER,
                       coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER,
-                      nhb << mi_wide_l2[pli]);
+                      hsize);
         } else if (sbr > 0) {
           for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = 0; c < (nhb << mi_wide_l2[pli]); c++) {
+            for (c = 0; c < hsize; c++) {
               src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
                   linebuf[pli][r * stride + coffset + c];
             }
           }
         } else {
           for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = 0; c < (nhb << mi_wide_l2[pli]); c++) {
+            for (c = 0; c < hsize; c++) {
               src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
                   OD_DERING_VERY_LARGE;
             }
@@ -327,21 +326,18 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           copy_sb8_16(cm, &src[OD_FILT_HBORDER + (nhb << mi_high_l2[pli])],
                       OD_FILT_BSTRIDE, xd->plane[pli].dst.buf,
                       (MAX_MIB_SIZE << mi_wide_l2[pli]) * sbr - OD_FILT_VBORDER,
-                      coffset + (nhb << mi_wide_l2[pli]),
-                      xd->plane[pli].dst.stride, OD_FILT_VBORDER,
-                      OD_FILT_HBORDER);
+                      coffset + hsize, xd->plane[pli].dst.stride,
+                      OD_FILT_VBORDER, OD_FILT_HBORDER);
         } else if (sbr > 0 && sbc < nhsb - 1) {
           for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = nhb << mi_wide_l2[pli];
-                 c < (nhb << mi_wide_l2[pli]) + OD_FILT_HBORDER; c++) {
+            for (c = hsize; c < hsize + OD_FILT_HBORDER; c++) {
               src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
                   linebuf[pli][r * stride + coffset + c];
             }
           }
         } else {
           for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = nhb << mi_wide_l2[pli];
-                 c < (nhb << mi_wide_l2[pli]) + OD_FILT_HBORDER; c++) {
+            for (c = hsize; c < hsize + OD_FILT_HBORDER; c++) {
               src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
                   OD_DERING_VERY_LARGE;
             }
@@ -360,46 +356,40 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           for (c = 0; c < OD_FILT_HBORDER; c++) {
             /* Saving pixels in case we need to dering the superblock on the
                right. */
-            colbuf[pli][r][c] =
-                src[r * OD_FILT_BSTRIDE + c + (nhb << mi_wide_l2[pli])];
+            colbuf[pli][r][c] = src[r * OD_FILT_BSTRIDE + c + hsize];
           }
         }
         copy_sb8_16(
             cm, &linebuf[pli][coffset], stride, xd->plane[pli].dst.buf,
             (MAX_MIB_SIZE << mi_wide_l2[pli]) * (sbr + 1) - OD_FILT_VBORDER,
-            coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER,
-            (nhb << mi_wide_l2[pli]));
+            coffset, xd->plane[pli].dst.stride, OD_FILT_VBORDER, hsize);
 
         if (level == 0 && clpf_strength == 0) continue;
         if (tile_top) {
           for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = 0; c < (nhb << mi_wide_l2[pli]) + 2 * OD_FILT_HBORDER;
-                 c++) {
+            for (c = 0; c < hsize + 2 * OD_FILT_HBORDER; c++) {
               src[r * OD_FILT_BSTRIDE + c] = OD_DERING_VERY_LARGE;
             }
           }
         }
         if (tile_left) {
-          for (r = 0; r < (nvb << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER; r++) {
+          for (r = 0; r < vsize + 2 * OD_FILT_VBORDER; r++) {
             for (c = 0; c < OD_FILT_HBORDER; c++) {
               src[r * OD_FILT_BSTRIDE + c] = OD_DERING_VERY_LARGE;
             }
           }
         }
         if (tile_bottom) {
-          for (r = (nvb << mi_high_l2[pli]);
-               r < (nvb << mi_high_l2[pli]) + OD_FILT_VBORDER; r++) {
-            for (c = 0; c < (nhb << mi_wide_l2[pli]) + 2 * OD_FILT_HBORDER;
-                 c++) {
+          for (r = vsize; r < vsize + OD_FILT_VBORDER; r++) {
+            for (c = 0; c < hsize + 2 * OD_FILT_HBORDER; c++) {
               src[(r + OD_FILT_VBORDER) * OD_FILT_BSTRIDE + c] =
                   OD_DERING_VERY_LARGE;
             }
           }
         }
         if (tile_right) {
-          for (r = 0; r < (nvb << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER; r++) {
-            for (c = (nhb << mi_wide_l2[pli]);
-                 c < (nhb << mi_wide_l2[pli]) + OD_FILT_HBORDER; ++c) {
+          for (r = 0; r < vsize + 2 * OD_FILT_VBORDER; r++) {
+            for (c = hsize; c < hsize + OD_FILT_HBORDER; ++c) {
               src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
                   OD_DERING_VERY_LARGE;
             }
