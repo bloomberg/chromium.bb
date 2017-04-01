@@ -91,21 +91,24 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
   return count;
 }
 
-void copy_nxm_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
-                              int sstride, int n, int m) {
+void copy_rect8_8bit_to_16bit_c(uint16_t *dst, int dstride, const uint8_t *src,
+                                int sstride, int v, int h) {
   int i, j;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
+  OD_ASSERT((h & 0x7) == 0);
+  for (i = 0; i < v; i++) {
+    for (j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
 }
 
-void copy_nxm_16bit_to_16bit_c(uint16_t *dst, int dstride, const uint16_t *src,
-                               int sstride, int n, int m) {
+void copy_rect8_16bit_to_16bit_c(uint16_t *dst, int dstride,
+                                 const uint16_t *src, int sstride, int v,
+                                 int h) {
   int i, j;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < n; j++) {
+  OD_ASSERT((h & 0x7) == 0);
+  for (i = 0; i < v; i++) {
+    for (j = 0; j < h; j++) {
       dst[i * dstride + j] = src[i * sstride + j];
     }
   }
@@ -118,11 +121,11 @@ void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
   if (cm->use_highbitdepth) {
     const uint16_t *base =
         &CONVERT_TO_SHORTPTR(src)[src_voffset * sstride + src_hoffset];
-    copy_nxm_16bit_to_16bit(dst, dstride, base, sstride, hsize, vsize);
+    copy_rect8_16bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
   } else {
 #endif
     const uint8_t *base = &src[src_voffset * sstride + src_hoffset];
-    copy_nxm_8bit_to_16bit(dst, dstride, base, sstride, hsize, vsize);
+    copy_rect8_8bit_to_16bit(dst, dstride, base, sstride, vsize, hsize);
 #if CONFIG_AOM_HIGHBITDEPTH
   }
 #endif

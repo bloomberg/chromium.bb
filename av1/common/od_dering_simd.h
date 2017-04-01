@@ -405,32 +405,28 @@ void SIMD_FUNC(copy_4x4_16bit_to_16bit)(uint16_t *dst, int dstride,
   }
 }
 
-void SIMD_FUNC(copy_nxm_8bit_to_16bit)(uint16_t *dst, int dstride,
-                                       const uint8_t *src, int sstride, int n,
-                                       int m) {
+void SIMD_FUNC(copy_rect8_8bit_to_16bit)(uint16_t *dst, int dstride,
+                                         const uint8_t *src, int sstride, int v,
+                                         int h) {
   int i, j;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < (n & ~0x7); j += 8) {
+  OD_ASSERT((h & 0x7) == 0);
+  for (i = 0; i < v; i++) {
+    for (j = 0; j < h; j += 8) {
       v64 row = v64_load_unaligned(&src[i * sstride + j]);
       v128_store_unaligned(&dst[i * dstride + j], v128_unpack_u8_s16(row));
-    }
-    for (; j < n; j++) {
-      dst[i * dstride + j] = src[i * sstride + j];
     }
   }
 }
 
-void SIMD_FUNC(copy_nxm_16bit_to_16bit)(uint16_t *dst, int dstride,
-                                        const uint16_t *src, int sstride, int n,
-                                        int m) {
+void SIMD_FUNC(copy_rect8_16bit_to_16bit)(uint16_t *dst, int dstride,
+                                          const uint16_t *src, int sstride,
+                                          int v, int h) {
   int i, j;
-  for (i = 0; i < m; i++) {
-    for (j = 0; j < (n & ~0x7); j += 8) {
+  OD_ASSERT((h & 0x7) == 0);
+  for (i = 0; i < v; i++) {
+    for (j = 0; j < h; j += 8) {
       v128 row = v128_load_unaligned(&src[i * sstride + j]);
       v128_store_unaligned(&dst[i * dstride + j], row);
-    }
-    for (; j < n; j++) {
-      dst[i * dstride + j] = src[i * sstride + j];
     }
   }
 }

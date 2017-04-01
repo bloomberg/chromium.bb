@@ -633,8 +633,8 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
   add_proto qw/void copy_4x4_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
   add_proto qw/void copy_8x8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
   add_proto qw/void copy_4x4_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride";
-  add_proto qw/void copy_nxm_8bit_to_16bit/, "uint16_t *dst, int dstride, const uint8_t *src, int sstride, int n, int m";
-  add_proto qw/void copy_nxm_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride, int n, int m";
+  add_proto qw/void copy_rect8_8bit_to_16bit/, "uint16_t *dst, int dstride, const uint8_t *src, int sstride, int v, int h";
+  add_proto qw/void copy_rect8_16bit_to_16bit/, "uint16_t *dst, int dstride, const uint16_t *src, int sstride, int v, int h";
 
 # VS compiling for 32 bit targets does not support vector types in
   # structs as arguments, which makes the v256 type of the intrinsics
@@ -652,8 +652,8 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
     specialize qw/copy_4x4_16bit_to_8bit sse2 ssse3 sse4_1 neon/;
     specialize qw/copy_8x8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
     specialize qw/copy_4x4_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
-    specialize qw/copy_nxm_8bit_to_16bit sse2 ssse3 sse4_1 neon/;
-    specialize qw/copy_nxm_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_rect8_8bit_to_16bit sse2 ssse3 sse4_1 neon/;
+    specialize qw/copy_rect8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
   }
 }
 
