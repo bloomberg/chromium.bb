@@ -387,15 +387,17 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
   },
   'mac': {
+    'src/chrome/installer/mac/third_party/xz/xz':
+      Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
+
+    'src/third_party/freetype/src':
+      Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
+
     'src/third_party/google_toolbox_for_mac/src':
       Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
 
-
     'src/third_party/lighttpd':
       Var('chromium_git') + '/chromium/deps/lighttpd.git' + '@' + Var('lighttpd_revision'),
-
-    'src/chrome/installer/mac/third_party/xz/xz':
-      Var('chromium_git') + '/chromium/deps/xz.git' + '@' + 'eecaf55632ca72e90eb2641376bce7cdbc7284f7',
   },
   'unix': {
     # Linux, really.
