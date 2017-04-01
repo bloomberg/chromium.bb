@@ -358,6 +358,7 @@ shared_library("remoting_core") {
     "chromoting_module.cc",
     "chromoting_module.h",
     "core.cc",
+    "core.h",
     "core_resource.h",
     "elevated_native_messaging_host.cc",
     "elevated_native_messaging_host.h",

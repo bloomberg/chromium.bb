@@ -20,6 +20,7 @@ shared_library("libwds") {
     "gen/parser.cpp",
     "gen/parser.h",
     "src/libwds/common/logging.cpp",
+    "src/libwds/common/logging.h",
     "src/libwds/common/message_handler.cpp",
     "src/libwds/common/message_handler.h",
     "src/libwds/common/rtsp_input_handler.cpp",

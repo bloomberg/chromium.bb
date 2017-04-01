@@ -9,6 +9,7 @@ static_library("nacl_trusted_plugin") {
     "nacl_subprocess.cc",
     "nacl_subprocess.h",
     "plugin.cc",
+    "plugin.h",
     "plugin_error.h",
     "pnacl_coordinator.cc",
     "pnacl_coordinator.h",

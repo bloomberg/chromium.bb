@@ -95,6 +95,7 @@ blink_core_sources("frame") {
     "ScreenOrientationController.cpp",
     "ScreenOrientationController.h",
     "Settings.cpp",
+    "Settings.h",
     "SettingsDelegate.cpp",
     "SettingsDelegate.h",
     "SmartClip.cpp",

@@ -1422,7 +1422,10 @@ split_static_library("ui") {
       "//ui/keyboard:mojom",
     ]
   } else {  # Not ash.
-    sources += [ "views/touch_uma/touch_uma.cc" ]
+    sources += [
+      "views/touch_uma/touch_uma.cc",
+      "views/touch_uma/touch_uma.h",
+    ]
   }
   if (toolkit_views) {
     sources += [

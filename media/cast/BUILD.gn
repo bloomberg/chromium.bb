@@ -42,6 +42,7 @@ source_set("common") {
     "logging/logging_defines.cc",
     "logging/logging_defines.h",
     "logging/proto/proto_utils.cc",
+    "logging/proto/proto_utils.h",
     "logging/raw_event_subscriber.h",
     "logging/raw_event_subscriber_bundle.cc",
     "logging/raw_event_subscriber_bundle.h",
