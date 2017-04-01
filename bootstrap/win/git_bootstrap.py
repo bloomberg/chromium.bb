@@ -146,16 +146,6 @@ def install_git(args, git_version, git_directory):
   _check_call([git_bat_path, 'config', '--system', 'core.fscache', 'true'])
 
 
-def sync_git_help_files(git_directory):
-  """Updates depot_tools help files inside |git_directory|."""
-  # TODO(phajdan.jr): consider replacing the call with python code.
-  _check_call([
-      'xcopy', '/i', '/q', '/d', '/y',
-      os.path.join(ROOT_DIR, 'man', 'html', '*'),
-      os.path.join(git_directory, 'mingw64', 'share', 'doc', 'git-doc')],
-      stdout=DEVNULL)
-
-
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--bits', type=int, choices=(32,64), default=64,
@@ -178,13 +168,18 @@ def main(argv):
   git_version = get_target_git_version()
   git_directory = os.path.join(
       ROOT_DIR, 'git-%s-%s_bin' % (git_version, args.bits))
+  git_docs_dir = os.path.join(
+      git_directory, 'mingw%s' % args.bits, 'share', 'doc', 'git-doc')
 
   clean_up_old_git_installations(git_directory)
 
   if need_to_install_git(args, git_directory):
     install_git(args, git_version, git_directory)
 
-  sync_git_help_files(git_directory)
+  # Update depot_tools files for "git help <command>"
+  docsrc = os.path.join(ROOT_DIR, 'man', 'html')
+  for name in os.listdir(docsrc):
+    shutil.copy2(os.path.join(docsrc, name), os.path.join(git_docs_dir, name))
 
   return 0
 
