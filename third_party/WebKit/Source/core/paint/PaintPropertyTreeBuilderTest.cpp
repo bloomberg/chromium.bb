@@ -3394,4 +3394,19 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGHiddenResource) {
             transformOutsideUseProperties->transform()->parent());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, SVGRootBlending) {
+  setBodyInnerHTML(
+      "<svg id='svgroot' 'width=100' height='100'"
+      "    style='position: relative; z-index: 0'>"
+      " <rect width='100' height='100' fill='#00FF00'"
+      "     style='mix-blend-mode: difference'/>"
+      "</svg>");
+
+  LayoutObject& svgRoot = *document().getElementById("svgroot")->layoutObject();
+  const ObjectPaintProperties* svgRootProperties = svgRoot.paintProperties();
+  EXPECT_TRUE(svgRootProperties->effect());
+  EXPECT_EQ(EffectPaintPropertyNode::root(),
+            svgRootProperties->effect()->parent());
+}
+
 }  // namespace blink

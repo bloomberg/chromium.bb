@@ -1249,9 +1249,6 @@ Bug(none) css3/blending/background-blend-mode-overlapping-accelerated-elements.h
 Bug(none) css3/blending/mix-blend-mode-simple-text.html [ Failure ]
 Bug(none) css3/blending/mix-blend-mode-simple.html [ Failure ]
 Bug(none) css3/blending/effect-background-blend-mode-stacking.html [ Failure ]
-Bug(none) css3/blending/svg-isolation-embed-isolate.html [ Failure ]
-Bug(none) css3/blending/svg-isolation-iframe-isolate.html [ Failure ]
-Bug(none) css3/blending/svg-isolation-object-isolate.html [ Failure ]
 
 Bug(none) svg/custom/marker-zero-length-linecaps.svg [ Failure ]
 Bug(none) svg/custom/mask-changes.svg [ Failure ]
@@ -1392,5 +1389,3 @@ Bug(700530) fast/css3-text/css3-text-decoration/text-underline-position/text-und
 crbug.com/665259 svg/as-background-image/svg-as-background-5.html [ Failure ]
 crbug.com/665259 svg/as-background-image/svg-as-background-6.html [ Failure ]
 crbug.com/665259 svg/stroke/non-scaling-stroke-paintserver-same-as-fill.html [ Failure ]
-crbug.com/665259 css3/blending/svg-isolation-svg-img-isolate.html [ Failure ]
-crbug.com/665259 css3/blending/svg-isolation-img-isolate.html [ Failure ]

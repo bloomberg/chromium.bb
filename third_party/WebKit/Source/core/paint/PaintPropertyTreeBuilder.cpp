@@ -482,10 +482,10 @@ void PaintPropertyTreeBuilder::updateEffect(
 
     // Can't omit effect node if we have paint children with exotic blending.
     if (object.isSVG()) {
-      // Yes, including LayoutSVGRoot, because SVG layout objects don't create
-      // PaintLayer so PaintLayer::hasNonIsolatedDescendantWithBlendMode()
-      // doesn't catch SVG descendants.
-      if (SVGLayoutSupport::isIsolationRequired(&object))
+      // This handles SVGRoot objects which have PaintLayers.
+      if (object.isSVGRoot() && object.hasNonIsolatedBlendingDescendants())
+        effectNodeNeeded = true;
+      else if (SVGLayoutSupport::isIsolationRequired(&object))
         effectNodeNeeded = true;
     } else if (PaintLayer* layer = toLayoutBoxModelObject(object).layer()) {
       if (layer->hasNonIsolatedDescendantWithBlendMode())
