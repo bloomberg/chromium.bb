@@ -54,7 +54,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     DATA_PIPE_PRODUCER,
     DATA_PIPE_CONSUMER,
     SHARED_BUFFER,
-    WAIT_SET,
     WATCHER,
 
     // "Private" types (not exposed via the public interface):

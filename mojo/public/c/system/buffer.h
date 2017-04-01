@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file contains types/constants and functions specific to buffers (and in
-// particular shared buffers).
-// TODO(vtl): Reorganize this file (etc.) to separate general buffer functions
-// from (shared) buffer creation.
+// This file contains types/constants and functions specific to shared buffers.
 //
 // Note: This header should be compilable as C.
 
@@ -20,15 +17,13 @@
 
 // |MojoCreateSharedBufferOptions|: Used to specify creation parameters for a
 // shared buffer to |MojoCreateSharedBuffer()|.
+//
 //   |uint32_t struct_size|: Set to the size of the
 //       |MojoCreateSharedBufferOptions| struct. (Used to allow for future
 //       extensions.)
+//
 //   |MojoCreateSharedBufferOptionsFlags flags|: Reserved for future use.
 //       |MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE|: No flags; default mode.
-//
-// TODO(vtl): Maybe add a flag to indicate whether the memory should be
-// executable or not?
-// TODO(vtl): Also a flag for discardable (ashmem-style) buffers.
 
 typedef uint32_t MojoCreateSharedBufferOptionsFlags;
 
@@ -50,17 +45,21 @@ MOJO_STATIC_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
 
 // |MojoDuplicateBufferHandleOptions|: Used to specify parameters in duplicating
 // access to a shared buffer to |MojoDuplicateBufferHandle()|.
+//
 //   |uint32_t struct_size|: Set to the size of the
 //       |MojoDuplicateBufferHandleOptions| struct. (Used to allow for future
 //       extensions.)
-//   |MojoDuplicateBufferHandleOptionsFlags flags|: Reserved for future use.
-//       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE|: No flags; default
-//       mode.
-//       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY|: The duplicate
-//       shared buffer can only be mapped read-only. A read-only duplicate can
-//       only be created before the buffer is passed over a message pipe.
 //
-// TODO(vtl): Add flags to remove writability (and executability)? Also, COW?
+//   |MojoDuplicateBufferHandleOptionsFlags flags|: Flags to control the
+//       behavior of |MojoDuplicateBufferHandle()|. May be some combination of
+//       the following:
+//
+//       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE|: No flags; default
+//           mode.
+//       |MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY|: The duplicate
+//           shared buffer can only be mapped read-only. A read-only duplicate
+//           may only be created before any handles to the buffer are passed
+//           over a message pipe.
 
 typedef uint32_t MojoDuplicateBufferHandleOptionsFlags;
 
@@ -102,18 +101,15 @@ extern "C" {
 // label for pointer parameters.
 
 // Creates a buffer of size |num_bytes| bytes that can be shared between
-// applications (by duplicating the handle -- see |MojoDuplicateBufferHandle()|
-// -- and passing it over a message pipe). To access the buffer, one must call
-// |MojoMapBuffer()|.
+// processes. The returned handle may be duplicated any number of times by
+// |MojoDuplicateBufferHandle()|.
+//
+// To access the buffer's storage, one must call |MojoMapBuffer()|.
 //
 // |options| may be set to null for a shared buffer with the default options.
 //
 // On success, |*shared_buffer_handle| will be set to the handle for the shared
-// buffer. (On failure, it is not modified.)
-//
-// Note: While more than |num_bytes| bytes may apparently be
-// available/visible/readable/writable, trying to use those extra bytes is
-// undefined behavior.
+// buffer. On failure it is not modified.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
@@ -128,16 +124,13 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateSharedBuffer(
     uint64_t num_bytes,                                   // In.
     MojoHandle* shared_buffer_handle);                    // Out.
 
-// Duplicates the handle |buffer_handle| to a buffer. This creates another
-// handle (returned in |*new_buffer_handle| on success), which can then be sent
-// to another application over a message pipe, while retaining access to the
-// |buffer_handle| (and any mappings that it may have).
+// Duplicates the handle |buffer_handle| as a new shared buffer handle. On
+// success this returns the new handle in |*new_buffer_handle|. A shared buffer
+// remains allocated as long as there is at least one shared buffer handle
+// referencing it in at least one process in the system.
 //
 // |options| may be set to null to duplicate the buffer handle with the default
 // options.
-//
-// On success, |*shared_buffer_handle| will be set to the handle for the new
-// buffer handle. (On failure, it is not modified.)
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
@@ -152,17 +145,16 @@ MOJO_SYSTEM_EXPORT MojoResult MojoDuplicateBufferHandle(
 // Maps the part (at offset |offset| of length |num_bytes|) of the buffer given
 // by |buffer_handle| into memory, with options specified by |flags|. |offset +
 // num_bytes| must be less than or equal to the size of the buffer. On success,
-// |*buffer| points to memory with the requested part of the buffer. (On
-// failure, it is not modified.)
+// |*buffer| points to memory with the requested part of the buffer. On
+// failure |*buffer| it is not modified.
 //
-// A single buffer handle may have multiple active mappings (possibly depending
-// on the buffer type). The permissions (e.g., writable or executable) of the
-// returned memory may depend on the properties of the buffer and properties
-// attached to the buffer handle as well as |flags|.
+// A single buffer handle may have multiple active mappings The permissions
+// (e.g., writable or executable) of the returned memory depend on th
+// properties of the buffer and properties attached to the buffer handle, as
+// well as |flags|.
 //
-// Note: Though data outside the specified range may apparently be
-// available/visible/readable/writable, trying to use those extra bytes is
-// undefined behavior.
+// A mapped buffer must eventually be unmapped by calling |MojoUnmapBuffer()|
+// with the value of |*buffer| returned by this function.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.
@@ -179,8 +171,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
 
 // Unmaps a buffer pointer that was mapped by |MojoMapBuffer()|. |buffer| must
 // have been the result of |MojoMapBuffer()| (not some other pointer inside
-// the mapped memory), and the entire mapping will be removed (partial unmapping
-// is not supported). A mapping may only be unmapped once.
+// the mapped memory), and the entire mapping will be removed.
+//
+// A mapping may only be unmapped once.
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success.

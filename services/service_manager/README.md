@@ -1,27 +1,30 @@
 # Service Manager User Guide
 
+[TOC]
+
 ## What is the Service Manager?
 
-The Service Manager is a tool that brokers connections and capabilities between
-and manages instances of components, referred to henceforth as services.
+The **Service Manager** is a tool that brokers connections and capabilities
+between --  and manages instances of -- system components referred to henceforth
+as **services**.
 
 The Service Manager performs the following functions:
 
-* Brokering connections between services, including communicating policies such
-  as capabilities (which include access to interfaces), user identity, etc.
-* Launching and managing the lifecycle services and processes (though services
-  may also create their own processes and tell the Service Manager about them).
-* Tracks running services, and provides an API that allows services to
-  understand whats running.
+* Brokers interface requests between service instances, enforcing static
+  capability policies declared by the services involved.
+* Launches and manages the lifecycle of services and processes.
+* Isolates service instances and interface requests among them according to
+  user identity.
+* Tracks running service instances and exposes privileged APIs for querying
+  system state.
 
-The Service Manager presents a series of Mojo interfaces to services, though in
-practice interacting with the Service is made simpler with a client library.
-Currently, there is only a client library written in C++, since that meets the
-needs of most of the use cases in Chrome.
+The Service Manager presents a series of Mojo
+[interfaces](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces)
+to services, though in practice most interaction with the Service Manager is
+made simpler by using its corresponding
+[C++ client library](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp).
 
-## Details
-
-### Mojo Recap
+## Mojo Recap
 
 The Mojo system provides two key components of interest here - a lightweight
 message pipe concept allowing two endpoints to communicate, and a bindings layer
@@ -29,776 +32,506 @@ that allows interfaces to be described to bind to those endpoints, with
 ergonomic bindings for languages used in Chrome.
 
 Mojo message pipes are designed to be lightweight and may be read from/written
-to and passed around from one process to the next. In most situations however
-the developer wont interact with the pipes directly, rather with a generated
-types encapsulating a bound interface.
-
-To use the bindings, a developer defines their interface in the Mojo IDL format,
-**mojom**. With some build magic, the generated headers can then be included and
-used from C++, JS and Java.
-
-It is important to note here that Mojo Interfaces have fully qualified
-identifiers in string form, generated from the module path and interface name:
-**`module.path.InterfaceName`**. This is how interfaces are referenced in
-Service Manifests, and how they will be referenced throughout this document.
-
-This would be a good place for me to refer to this in-depth Mojo User Guide,
-which spells all of this out in great detail.
-
-### Services
-
-A Service is any bit of code the Service Manager knows about. This could be a
-unique process, or just a bit of code run in some existing process.
-
-The Service Manager disambiguates services by their **Identity**. Every service
-has its own unique Identity. From the Service Managers perspective, a services
-Identity is represented by the tuple of the its Name, UserId and Instance Name.
-The Name is a formatted string that superficially represents a scheme:host pair,
-but actually isnt a URL. More on the structure of these names later. The UserId
-is a string GUID, representing the user the service is run as. The Instance Name
-is a string, typically (but not necessarily) derived from the Name, which can be
-used to allow multiple instances of a service to exist for the same Name,UserId
-pair. In Chrome an example of this would be multiple instances of the renderer
-or the same profile.
-
-A Service implements the Mojo interface service_manager.mojom.Service, which is
-the primary means the Service Manager has of communicating with its service.
-Service has two methods: OnStart(), called once at when the Service Manager
-first learns about the service, and OnConnect(), which the Service Manager calls
- every time some other service tries to connect to this one.
-
-Services have a link back to the Service Manager too, primarily in the form of
-the service_manager.mojom.Connector interface. The Connector allows services to
-open connections to other services.
-
-A unique connection from the Service Manager to a service is called an
-instance, each with its own unique identifier, called an instance id. Every
-instance has a unique Identity. It is possible to locate an existing instance
-purely using its Identity.
-
-Services define their own lifetimes. Services in processes started by other
-services (rather than the Service Manager) may even outlive the connection with
-the Service Manager. For processes launched by the Service Manager, when a
-service wishes to terminate it closes the Service pipe with the Service Manager
-and the Service Manager destroys its corresponding instance and asks the process
-to exit.
-
-#### A simple Service example
-
-Consider this simple application that implements the Service interface:
-
-**my_service.cc:**
-
-    #include "services/service_manager/public/c/main.h"
-    #include "services/service_manager/public/cpp/service.h"
-    #include "services/service_manager/public/cpp/service_runner.h"
-
-    class MyService : public service_manager::Service {
-     public:
-      MyService() {}
-      ~MyService() override {}
-
-      // Overridden from service_manager::Service:
-      void OnStart() override {
-      }
-      bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                     service_manager::InterfaceRegistry* registry) override {
-        return true;
-      }
-    };
-
-    MojoResult ServiceMain(MojoHandle service_request_handle) {
-      return service_manager::ServiceRunner(new MyService).Run(
-          service_request_handle);
-    }
-
-**manifest.json:**
-
-    {
-      "name": "my_service",
-      "display_name": "My Service",
-      "inteface_provider_spec": {
-        "service_manager:connector": {}
-      }
-    }
-
-**BUILD.gn:**
-
-    import("//services/service_manager/public/cpp/service.gni")
-    import("//services/service_manager/public/service_manifest.gni")
-
-    service("my_service") {
-      sources = [ "my_service.cc" ]
-      deps = [ "//base", "//services/service_manager/public/cpp" ]
-    }
-
-    service_manifest("manifest") {
-      name = "my_service"
-      source = "manifest.json"
-    }
-
-What does all this do? Building the app target produces two files in the output
-directory: Packages/my_service/my_service.library and
-Packages/my_service/manifest.json. app.library is a DSO loaded by the Service
-Manager in its own process when another service connects to the
-service:my_service name. This is not the only way (nor even the most likely one)
- you can implement a Service, but it's the simplest and easiest to reason about.
-
-This service doesn't do much. Its implementation of OnStart() is empty, and its
-implementation of OnConnect just returns true to allow the inbound connection to
-complete. Let's study the parameters to these methods though, since they'll be
-important as we begin to do more in our service.
-
-##### OnStart Parameters
-
-###### const service_manager::ServiceInfo& info
-ServiceInfo is a struct containing two fields, Identity and
-InterfaceProviderSpec. The Identity field identifies this Service instance in
-the Service Manager, and contains three components - the service name, the user
-id the instance is run as, and an instance qualifier. The InterfaceProviderSpec
-contains the definitions of the capabilities exposed and consumed by this
-service that are statically declared in its manifest.
-
-##### OnConnect Parameters
-
-###### const service_manager::ServiceInfo& remote_info
-Like the ServiceInfo parameter passed to OnStart, but defines the remote Service
-that initiated the connection. The Service Manager client library uses this
-information to limit what capabilities are exposed to the remote via the
-InterfaceRegistry parameter.
-
-###### service_manager::InterfaceRegistry* registry
-An object the local service uses to expose interfaces to be consumed by the
-remote. This object is constructed by the Service Manager client library and
-uses the InterfaceProviderSpecs of both the local and the remote service to
-limit which interfaces can be bound by the remote. This object implements
-service_manager::mojom::InterfaceProvider, which encapsulates the physical link
-between the two services. The InterfaceRegistry is owned by the ServiceContext,
-and will outlive the underlying pipe.
-
-The service can decide to block the connection outright by returning false from
-this method. In that scenario the underlying pipe will be closed and the remote
-end will see an error and have the chance to recover.
-
-Before we add any functionality to our service, such as exposing an interface,
-we should look at how we connect to another service and bind an interface from
-it. This will lay the groundwork to understanding how to export an interface.
-
-### Connecting
-
-Once we have a Connector, we can connect to other services and bind interfaces
-from them. In the trivial app above we can do this directly in OnStart:
-
-    void OnStart(const service_manager::ServiceInfo& info) override {
-      std::unique_ptr<service_manager::Connection> connection =
-          connector()->Connect("service:other_service");
-      mojom::SomeInterfacePtr some_interface;
-      connection->GetInterface(&some_interface);
-      some_interface->Foo();
-    }
-
-This assumes an interface called 'mojo.SomeInterface' with a method 'Foo()'
-exported by another service identified by the name 'service:other_service'.
-
-What is happening here? Let's look line-by-line
-
-
-    std::unique_ptr<service_manager::Connection> connection =
-        connector->Connect("service:other_service");
-
-This asks the Service Manager to open a connection to the service named
-'service:other_service'. The Connect() method returns a Connection object similar
- to the one received by OnConnect() - in fact this Connection object binds the
- other ends of the pipes of the Connection object received by OnConnect in the
-remote service. This time, the caller of Connect() takes ownership of the
-Connection, and when it is destroyed the connection (and the underlying pipes)
-is closed. A note on this later.
-
-    mojom::SomeInterfacePtr some_interface;
-
-This is a shorthand from the mojom bindings generator, producing an
-instantiation of a mojo::InterfacePtr<mojom::SomeInterface>. At this point the
-InterfacePtr is unbound (has no pipe handle), and calling is_bound() on it will
-return false. Before we can call any methods, we need to bind it to a Mojo
-message pipe. This is accomplished on the following line:
-
-    connection->GetInterface(&some_interface);
-
-Calling this method allocates a Mojo message pipe, binds the client handle to
-the provided InterfacePtr, and sends the server handle to the remote service,
-where it will eventually (asynchronously) be bound to an object implementing the
-requested interface. Now that our InterfacePtr has been bound, we can start
-calling methods on it:
-
-    some_interface->Foo();
-
-Now an important note about lifetimes. At this point the Connection returned by
-Connect() goes out of scope, and is destroyed. This closes the underlying
-InterfaceProvider pipes with the remote service. But Mojo methods are
-asynchronous. Does this mean that the call to Foo() above is lost? No. Before
-closing, queued writes to the pipe are flushed.
-
-### Implementing an Interface
-
-Let's look at how to implement an interface now from a service and expose it to
-inbound connections from other services. To do this we'll need to implement
-OnConnect() in our Service implementation, and implement a couple of other
-interfaces. For the sake of this example, we'll imagine now we're writing the
-'service:other_service' service, implementing the interface defined in this
-mojom:
-
-**some_interface.mojom:**
-
-    module mojom;
-
-    interface SomeInterface {
-      Foo();
-    };
-
-To build this mojom we need to invoke the mojom gn template from
-`//mojo/public/tools/bindings/mojom.gni`. Once we do that and look at the
-output, we can see that the C++ class mojom::SomeInterface is generated and can
-be #included from the same path as the .mojom file at some_interface.mojom.h.
-In our implementation of the service:other_service, we'll need to derive
-from this class to implement the interface. But that's not enough. We'll also have
-to find a way to bind inbound requests to bind this interface to the object that
-implements it. Let's look at a snippet of a class that does all of this:
-
-**other_service.cc:**
-
-    class Service : public service_manager::Service,
-                    public service_manager::InterfaceFactory<mojom::SomeInterface>,
-                    public mojom::SomeInterface {
-     public:
-      ..
-
-      // Overridden from service_manager::Service:
-      bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                     service_manager::InterfaceRegistry* registry) override {
-        registry->AddInterface<mojom::SomeInterface>(this);
-        return true;
-      }
-
-      // Overridden from service_manager::InterfaceFactory<mojom::SomeInterface>:
-      void Create(const service_manager::Identity& remote_identity,
-                  mojom::SomeInterfaceRequest request) override {
-        bindings_.AddBinding(this, std::move(request));
-      }
-
-      // Overridden from mojom::SomeInterface:
-      void Foo() override { /* .. */ }
-
-      mojo::BindingSet<mojom::SomeInterface> bindings_;
-    };
-
-Let's study what's going on, starting with the obvious - we derive from
-`mojom::SomeInterface` and implement `Foo()`. How do we bind this implementation
-to a pipe handle from a connected service? First we have to advertise the
-interface to the service via the registry provided at the incoming connection.
-This is accomplished in OnConnect():
-
-    registry->AddInterface<mojom::SomeInterface>(this);
-
-This adds the `mojom.SomeInterface` interface name to the inbound
-InterfaceRegistry, and tells it to consult this object when it needs to
-construct an implementation to bind. Why this object? Well in addition to
-Service and SomeInterface, we also implement an instantiation of the generic
-interface InterfaceFactory. InterfaceFactory is the missing piece - it binds a
-request for SomeInterface (in the form of a message pipe server handle) to the
-object that implements the interface (this). This is why we implement Create():
-
-    bindings_.AddBinding(this, std::move(request));
-
-In this case, this single instance binds requests for this interface from all
-connected services, so we use a mojo::BindingSet to hold them all.
-Alternatively, we could construct an object per request, and use mojo::Binding.
-
-### Statically Declaring Capabilities
-
-While the code above looks like it should work, if we were to type it all in,
-build it and run it it still wouldn't. In fact, if we ran it, we'd see this
-error in the console:
-
-`InterfaceProviderSpec prevented connection from: service:my_service to service:other_service`
-
-The answer lies in an omission in one of the files I didn't discuss earlier, the
-manifest.json, specifically the empty 'interface_provider_specs' dictionary.
-
-When held, a capability controls some behavior in a service, including the
-ability to bind specific interfaces. At a primitive level, a simple way to think
-about a capability is the ability to bind a pipe and communicate over it.
-
-At the top level, the Service Manager implements the delegation of capabilities
-in accordance with rules spelled out in each service's manifest.
-
-Each service produces a manifest file with some typical metadata about itself,
-and an 'interface_provider_spec'. An interface_provider_spec describes
-capabilities offered by the service and those consumed from other services.
-Let's study a fairly complete interface_provider_spec from another service's
-manifest:
-
-    "interface_provider_specs": {
-      "service_manager:connector": {
-        "provides": {
-          "web": ["if1", "if2"],
-          "uid": []
-        },
-        "requires": {
-          "*": ["c1", "c2"],
-          "service:foo": ["c3"]
-        }
-      }
-    }
-
-At the top level of the interface_provider_spec dictionary are one or more
-sub-dictionaries, each corresponding to an individual InterfaceProviderSpec
-definition. In all cases, there is a dictionary called
-"service_manager:connector". The name here means that the spec is meaningful to
-the Service Manager, and relates to the service_manager::mojom::InterfaceProvider
-pair expressed via the Connector interface. This is the spec that controls what
-capabilities are exposed between services via the Connect()/OnConnect() methods.
-
-Within each spec definition there are two sub-dictionaries:
-
-#### Provided Capabilities
-
-The provides dictionary enumerates the capabilities provided by the service. A
-capability is an alias, either to some special behavior exposed by the service
-to remote services that request that capability, or to a set of interfaces
-exposed by the service to remote services. In the former case, in the
-dictionary we provide an empty array as the value of the capability key, in the
-latter case we provide an array with a list of the fully qualified Mojo
-interface names (module.path.InterfaceName). A special case of array is one that
-contains the single entry "*", which means 'all interfaces'.
-
-Let's consider our previous example the `service:other_service`, which we want
-our `service:my_service` to connect to, and bind mojom::SomeInterface. Every
-interface that a service provides that is intended to be reachable via
-Connect()/OnConnect() must be statically declared in the manifest as exported
-in the providing service's manifest as part of a named capability. A capability
-name is just a string that provider and consumer agree upon. Here's what
-`service:other_service`'s manifest must then look like:
-
-    {
-      "name": "service:other_service",
-      "display_name": "Other Service",
-      "interface_provider_specs": {
-        "service_manager:connector": {
-          "provides": {
-            "other_capability": [ "mojom.SomeInterface" ]
-          }
-        }
+to and passed around from one process to another. In most situations a developer
+won't interact with the pipes directly, but rather with bindings types generated
+to encapsulate a bound interface. To use the bindings, a developer defines their
+interface in the [Mojom IDL format](/mojo/public/tools/bindings). With some
+build magic, the generated definitions can then be referenced from C++,
+JavaScript and Java code.
+
+See the [Mojo documentation](/mojo) for a complete overview, detailed
+explanations, and API references.
+
+## Services
+
+A **service** is a collection of one or more private implementations of public
+Mojo interfaces which are reachable via the Service Manager. Every service is
+comprised of the following pieces:
+
+* A set of public Mojo interface definitions
+* A **service manifest** declarating arbitrarily named capabilities which are
+  each comprised of one or more exposed Mojo interfaces.
+* Private implementation code which responds to lifecycle events and incoming
+  interface requests, all driven by the Service Manager.
+
+The Service Manager is responsible for starting new service instances on-demand,
+and a given service many have any number of concurrently running instances. The
+Service Manager disambiguates service instances by their unique
+**identity**. A service's identity is represented by the 3-tuple of the its
+**service name**, **user ID**, and **instance qualifier**:
+
+* The service name is a free-form -- typically short -- string identifying the
+  the specific service being run in the instance.
+* The user ID is a GUID string representing the identity of a user in the system.
+  Every running service instance is associated with a specific user ID.
+* Finally, the instance qualifier is an arbitrary free-form string used to
+  disambiguate multiple instances of a service for the same user.
+
+As long as a service instance is running it must maintain an implementation of
+the
+[`service_manager.mojom.Service`](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces/service.mojom)
+interface. Typically this is done in C++ code by implementing the C++ client
+library's
+[`service_manager::Service`](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/service.h)
+interface. This interface is driven by messages from the Service Manager and is
+used to receive incoming interface requests the Service Manager brokers from
+other services.
+
+Every service instance also has an outgoing link back to the Service Manager
+which it can use to make interface requests to other services in the system.
+This is the
+[`service_manager.mojom.Connector`](https://cs.chromium.org/chromium/src/services/service_manager/public/interfaces/connector.mojom)
+interface, and it's commonly used via the C++ client library's
+[`service_manager::Connector`](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/connector.h)
+class.
+
+## A Simple Service Example
+
+This section walks through the creation of a simple skeleton service.
+
+### Private Implementation
+
+Consider this implementation of the `service_manager::Service` interface:
+
+**`//services//my_service/my_service.h`**
+``` cpp
+#include "base/macros.h"
+#include "services/service_manager/public/cpp/service.h"
+
+namespace my_service {
+
+class MyService : public service_manager::Service {
+ public:
+  MyService();
+  ~MyService() override;
+
+  // service_manager::Service:
+  void OnStart() override;
+  void OnBindInterface(const service_manager::ServiceInfo& remote_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle handle) override;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MyService);
+};
+
+}  // namespace my_service
+```
+
+**`//services//my_service/my_service.cc`**
+``` cpp
+#include "services/my_service/my_service.h"
+
+namespace my_service {
+
+MyService::MyService() = default;
+
+MyService::~MyService() = default;
+
+void MyService::OnStart() {
+}
+
+void MyService::OnBindInterface(const service_manager::ServiceInfo& remote_info,
+                                const std::string& interface_name,
+                                mojo::ScopedMessagePipeHandle handle) {
+}
+
+}  // namespace my_service
+```
+
+### Main Entry Point
+
+While services do not need to define a main entry point -- *e.g.* they may only
+intend to be embedded in other running processes -- for the sake of completeness
+we also define a `ServiceMain` definition so that the service can be run in its
+own process:
+
+**`//services/my_service/my_service_main.cc`**
+``` cpp
+#include "services/my_service/my_service.h"
+#include "services/service_manager/public/c/main.h"
+#include "services/service_manager/public/cpp/service_runner.h"
+
+MojoResult ServiceMain(MojoHandle service_request_handle) {
+  return service_manager::ServiceRunner(new MyService).Run(
+      service_request_handle);
+}
+```
+
+### Manifest
+
+A static manifest is provided to the Service Manager by each service to declare
+the capabilities exposed and required by the service:
+
+**`//services/my_service/manifest.json`**
+``` json
+{
+  "name": "my_service",
+  "display_name": "My Service",
+  "interface_provider_spec": {
+    "service_manager:connector": {}
+  }
+}
+```
+
+See [Service Manifests](#Service-Manifests) for more information.
+
+### Build Targets
+
+Finally some build targets corresponding to the above things:
+
+**`//services/my_service/BUILD.gn`**
+``` python
+import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/service_manifest.gni")
+
+source_set("lib") {
+  public = [ "my_service.h" ]
+  sources = [ "my_service.cc" ]
+
+  public_deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+  ]
+}
+
+service("my_service") {
+  sources = [
+    "my_service_main.cc",
+  ]
+  deps = [
+    ":lib",
+    "//services/service_manager/public/c",
+  ]
+}
+
+service_manifest("manifest") {
+  name = "my_service"
+  source = "manifest.json"
+}
+```
+
+Building the `my_service` target produces a `my_service.service` (or on Windows,
+`my_service.service.exe`) binary in the output directory. This can be run as
+a standalone executable, but it will exit immediately without doing anything
+interesting, because it won't have a `Service` pipe to drive it. The Service
+Manager knows how to provide such a pipe when launching a service executable.
+
+This service doesn't do much of anything. It will simply run forever (or at
+least until the Service Manager itself shuts down), ignoring all incoming
+messages. Before we expand on the definition of this service, let's look at some
+of the details of the `service_manager::Service` interface.
+
+### OnStart
+
+The `Service` implementation is guaranteed to receive a single `OnStart()`
+invocation from the Service Manager before anything else hapens. Once this
+method is called, the implementation can access it
+`service_manager::ServiceContext` via `context()`. This object itself exposes a
+few values:
+
+* `service_info()` is a `service_manager::ServiceInfo` structure describing the
+  running service from the Service Manager's perspective. This includes the
+  `service_manager::Identity` which uniquely identifies the running instance,
+  as well as the `service_manager::InterfaceProviderSpec` describing the
+  capability specifications outlined in the service's manifest.
+* `identity()` is a shortcut to the `Identity` stored in the
+  `ServiceInfo`.
+* `connector()` is a `service_manager::Connector` which can be used to make
+  outgoing interface requests to other services.
+
+For example, we could modify `MyService` to connect out to logger service on
+startup:
+
+``` cpp
+void MyService::OnStart() {
+  logger::mojom::LoggerPtr logger;
+  context()->connector()->BindInterface("logger", &logger);
+  logger->Log("Started MyService!");
+}
+```
+
+### OnBindInterface
+
+The `OnBindInterface` method on `service_manager::Service` is invoked by the
+Service Manager any time another service instance uses its own `Connector` to
+request an interface from this `my_service` instance. The Service Manager only
+invokes this method once it has already validated that the request meets the
+mutual constraints specified in each involved service's manifest.
+
+The arguments to `OnBindInterface` are as follows:
+
+* `remote_info` is the `service_manager::ServiceInfo` corresponding to the
+  remote service which is requesting this interface. The information in this
+  structure is provided authoritatively by the Service Manager and can be
+  trusted in any context.
+* `interface_name` is the (`std::string`) name of the interface being requested
+  by the remote service. The Service Manager has already validated that the
+  remote service requires at least one capability which exposes this interface
+  from the local service.
+* `handle` is the `mojo::ScopedMessagePipeHandle` of an interface pipe which
+  the remote service expects us to bind to a concrete implementation of
+  the requested interface.
+
+The Service Manager client library provides a
+`service_manager::InterfaceRegistry` class definition which can make it easier
+for services to bind incoming interface requests. Typesafe binding callbacks are
+added to an `InterfaceRegistry` ahead of time, and the incoming arguments to
+`OnBindInterface` can be forwarded to the registry, which will bind the message
+pipe if it knows how. For example, we could modify our `MyService`
+implementation as follows:
+
+``` cpp
+namespace {
+
+void BindDatabase(my_service::mojom::DatabaseRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<my_service::DatabaseImpl>(),
+                          std::move(request));
+}
+
+}  // namespace
+
+MyService::MyService() {
+  // Imagine |registry_| is added as a member of MyService, with type
+  // service_manager::InterfaceRegistry.
+
+  // The |my_service::mojom::Database| interface type is inferred by the
+  // compiler in the AddInterface call, and this effectively adds the bound
+  // function to an internal map keyed on the interface name, i.e.
+  // "my_service::mojom::Database" in this case.
+  registry_.AddInterface(base::Bind(&BindDatabase));
+}
+
+void MyService::OnBindInterface(const service_manager::ServiceInfo& remote_info,
+                                const std::string& interface_name,
+                                mojo::ScopedMessagePipeHandle handle) {
+  registry_.BindInterface(interface_name, std::move(handle));
+}
+```
+
+For more details regarding the definition of Mojom interfaces, implementing them
+in C++, and working with C++ types like `InterfaceRequest`, see the
+[Mojom IDL and Bindings Generator](/mojo/public/tools/bindings) and
+[Mojo C++ Bindings API](/mojo/public/cpp/bindings) documentation.
+
+## Service Manifests
+
+If some service were to come along and attempt to connect to `my_servce` and
+bind the `my_service::mojom::Database` interface, we might see the Service
+Manager spit out an error log complaining that `InterfaceProviderSpec` prevented
+a connection to `my_service`.
+
+In order for the interface to be reachable by other services, we must first fix
+its manifest's **interface provider spec**. The interface provider spec is
+a dictionary keyed by **interface provider name**, with each value representing
+the **capability spec** for that provider.
+
+Each capability spec defines an optional `"provides"` key and an optional
+`"requires"` key.
+
+The `provides` key value is a dictionary which is itself keyed by arbitrary
+free-form strings (capability names, implicitly scoped to the manifest's own
+service) whose values are lists of Mojom interface names exposed as part of that
+capability.
+
+The `requires` key value is also a dictionary, but it's one which is keyed by
+remote service name. Each value is a list of capabilities required from the
+corresponding remote service.
+
+Finally, every interface provider spec (often exclusively) contains one standard
+capability spec named "service_manager:connector". This is the capability spec
+enforced when inter-service connections are made from a service's `Connector`
+interface.
+
+Let's update the `my_service` manifest as follows:
+
+**`//services/my_service/manifest.json`**
+``` json
+{
+  "name": "my_service",
+  "display_name": "My Service",
+  "interface_provider_spec": {
+    "service_manager:connector": {
+      "provides": {
+        "database": [
+          "my_service::mojom::Database"
+        ]
       }
     }
+  }
+}
+```
 
-#### Required Capabilities
+This means that `my_service` has defined a `database` capability comprised
+solely of the `my_service::mojom::Database` interface. Any service which
+requires this capability can bind that interface from `my_service`.
 
-The requires dictionary enumerates the capabilities required by the service. The
-keys into this dictionary are the names of the services it intends to connect
-to, and the values for each key are an array of capability names required of
-that service. A "*" key in the 'requires' dictionary allows the service to provide
-a capability spec that must be adhered to by all services it connects to.
+For the sake of this example, let's define another service manifest:
 
-A consequence of this is that a service must statically declare every interface
-it provides in at least one capability in its manifest.
-
-Armed with this knowledge, we can return to manifest.json from the first
-example and fill out the interface_provider_specs:
-
-    {
-      "name": "service:my_service",
-      "display_name": "My Service",
-      "interface_provider_specs": {
-        "service_manager:connector": {
-          "requires": {
-            "service:other_service": [],
-          }
-        }
+**`//services/other_service/manifest.json`**
+``` json
+{
+  "name": "other_service",
+  "display_name": "Other Service",
+  "interface_provider_spec": {
+    "service_manager:connector": {
+      "requires": {
+        "my_service": [ "database" ]
       }
     }
+  }
+}
+```
 
-If we just run now, it still won't work, and we'll see this error:
+Now if `other_service` attempts to bind the database interface:
 
-    InterfaceProviderSpec "service_manager:connector" prevented service:
-    service:my_service from binding interface mojom.SomeInterface exposed by:
-    service:other_service
+``` cpp
+void OtherService::OnStart() {
+  my_service::mojom::DatabasePtr database;
+  context()->connector()->BindInterface("my_service", &database);
+  database->AddTable(...);
+}
+```
 
-The connection was allowed to complete, but the attempt to bind
-`mojom.SomeInterface` was blocked. As it happens, this interface is provided as
-part of the capability `other_capability` exported by `service:other_service`.
-We need to add that capability to the array in our manifest:
+The Service Manager will approve of the request and forward it on to the
+`my_service` instance's `OnBindInterface` method.
 
-    "requires": {
-      "service:other_service": [ "other_capability" ],
-    }
+## Testing
 
-Now everything should work.
+Now that we've built a simple service it's time to write a test for it.
+The Service Manager client library provides a test fixture base class in
+[`service_manager::test::ServiceTest`](https://cs.chromium.org/chromium/src/services/service_manager/public/cpp/service_test.h) that makes writing service integration tests straightforward. This test fixture
+runs an in-process Service Manager on a background thread which allows test
+service instances to be injected at runtime.
 
-### Testing
+Let's look at a simple test of our service:
 
-Now that we've built a simple application and service, it's time to write a test
-for them. The Service Manager client library provides a gtest base class
-**service_manager::test::ServiceTest** that makes writing integration tests of
-services straightforward. Let's look at a simple test of our service:
+**`//services/my_service/my_service_unittest.cc`**
+``` cpp
+#include "base/bind.h"
+#include "base/run_loop.h"
+#include "services/service_manager/public/cpp/service_test.h"
+#include "path/to/some_interface.mojom.h"
 
-    #include "base/bind.h"
-    #include "base/run_loop.h"
-    #include "services/service_manager/public/cpp/service_test.h"
-    #include "path/to/some_interface.mojom.h"
+class MyServiceTest : public service_manager::test::ServiceTest {
+ public:
+  // Our tests run as service instances themselves. In this case each instance
+  // identifies as the service named "my_service_unittests".
+  MyServiceTest() : service_manager::test::ServiceTest("my_service_unittests") {
+  }
 
-    void QuitLoop(base::RunLoop* loop) {
-      loop->Quit();
-    }
+  ~MyServiceTest() override {}
+}
 
-    class Test : public service_manager::test::ServiceTest {
-     public:
-      Test() : service_manager::test::ServiceTest("exe:service_unittest") {}
-      ~Test() override {}
-    }
+TEST_F(MyServiceTest, Basic) {
+  my_service::mojom::DatabsaePtr database;
+  connector()->BindInterface("my_service", &database);
 
-    TEST_F(Test, Basic) {
-      mojom::SomeInterface some_interface;
-      connector()->ConnectToInterface("service:other_service", &some_interface);
-      base::RunLoop loop;
-      some_interface->Foo(base::Bind(&QuitLoop, &loop));
-      loop.Run();
-    }
+  base::RunLoop loop;
 
-The BUILD.gn for this test file looks like any other using the test() template.
-It must also depend on
-//services/service_manager/public/cpp:service_test_support.
+  // This assumes DropTable expects a response with no arugments. When the
+  // response is received, the RunLoop is quit.
+  database->DropTable("foo", loop.QuitClosure());
 
-ServiceTest does a few things, but most importantly it register the test itself
-as a Service, with the name you pass it via its constructor. In the example
-above, we supplied the name 'exe:service_unittest'. This name is has no special
-meaning other than that henceforth it will be used to identify the test service.
+  loop.Run();
+}
+```
 
-Behind the scenes, ServiceTest spins up the Service Manager on a background
-thread, and asks it to create an instance for the test service on the main
-thread, with the name supplied. ServiceTest blocks the main thread while the
-Service Manager thread does this initialization. Once the Service Manager has
-created the instance, it calls OnStart() (as for any other service), and the
-main thread continues, running the test. At this point accessors defined in
-service_test.h like connector() can be used to connect to other services.
+If adding a new test binary for these tests, we can augment our `BUILD.gn` to
+use the `service_test` GN template like so:
 
-You'll note in the example above I made Foo() take a callback, this is to give
-the test something interesting to do. In the mojom for SomeInterface we'd have
-the Foo() method return an empty response. In service:other_service, we'd have
-Foo() take the callback as a parameter, and run it. In the test, we spin a
-RunLoop until we get that response. In real world cases we can pass back state &
-validate expectations. You can see real examples of this test framework in use
-in the Service Manager's own suite of tests, under
-//services/service_manager/tests.
+**`//services/my_service/BUILD.gn`**
+``` cpp
+import("//services/catalog/public/tools/catalog.gni")
+import("//services/service_manager/public/tools/test/service_test.gni")
 
-### Packaging
+service_test("my_service_unittests") {
+  sources = [
+    "my_service_unittest.cc",
+  ]
+  deps = [
+    "//services/my_service/public/interfaces",
+  ]
+  catalog = ":my_service_unittests_catalog"
+}
 
-By default a .library statically links its dependencies, so having many of them
-will yield an installed product many times larger than Chrome today. For this
-reason it's desirable to package several Services together in a single binary.
-The Service Manager provides an interface **service_manager.mojom.ServiceFactory**:
+service_manifest("my_service_unittests_manifest") {
+  name = "my_service_unittests"
+  manifest = "my_service_unittests_manifest.json"
+}
 
-    interface ServiceFactory {
-      CreateService(Service& service, string name);
-    };
+catalog("my_service_unittests_catalog") {
+  testonly = true
+  embedded_services = [ ":my_service_unittests_manifest" ]
+  standalone_services = [ ":manifest" ]
+}
+```
 
-When implemented by a service, the service becomes a 'package' of other
-services, which are instantiated by this interface. Imagine we have two services
-service:service1 and service:service2, and we wish to package them together in a
-single package service:services. We write the Service implementations for
-service:service1 and service:service2, and then a Service implementation for
-service:services - the latter implements ServiceFactory and instantiates the
-other two:
+Alright, there's a lot going on here. First we also have to create a service
+manifest for the test service itself, as the Service Manager needs to be able
+to reason about the test's own required capabilities with respect to the
+service-under-test.
 
-    using service_manager::mojom::ServiceFactory;
-    using service_manager::mojom::ServiceRequest;
+We can do something like:
 
-    class Services : public service_manager::Service,
-                     public service_manager::InterfaceFactory<ServiceFactory>,
-                     public ServiceFactory {
-
-      // Expose ServiceFactory to inbound connections and implement
-      // InterfaceFactory to bind requests for it to this object.
-      void CreateService(ServiceRequest request,
-                         const std::string& name) {
-        if (name == "service:service1")
-          new Service1(std::move(request));
-        else if (name == "service:service2")
-          new Service2(std::move(request));
+**`//services/my_service/my_service_unittests_manifest.json`**
+``` json
+{
+  "name": "my_service_unittests",
+  "display_name": "my_service tests",
+  "interface_provider_spec": {
+    "service_manager:connector": {
+      "requires": {
+        "my_service": [ "database" ]
       }
     }
+  }
+}
+```
 
-This is only half the story though. While this does mean that service:service1
-and service:service2 are now packaged (statically linked) with service:services,
-as it stands to connect to either packaged service you'd have to connect to
-service:services first, and call CreateService yourself. This is undesirable for
-a couple of reasons, firstly in that it complicates the connect flow, secondly
-in that it forces details of the packaging, which are a distribution-level
-implementation detail on services wishing to use a service.
+You may also notice that we have suddenly introduced a **catalog** in the
+`service_test` target incantation. Any runtime environment which hosts a
+Service Manager must provide the Service Manager implementation with a catalog
+of service manifests. This catalog defines the complete set of services
+recognized by the Service Manager instance and can be used in all kinds of
+interesting ways to control how various services are started in the system. See
+[Service Manager Catalogs](#Service-Manager-Catalogs) for more information.
 
-To solve this, the Service Manager actually automates resolving packaged service
-names to the package service. The Service Manager considers the name of a
-service provided by some other package service to be an 'alias' to that package
-service. The Service Manager resolves these aliases based on information found,
-you guessed it, in the manifests for the package service.
+For now let's just accept that we have to create a `catalog` rule for our test
+suite and plug it into the `service_test` target.
 
-Let's imagine service:service1 and service:service2 have typical manifests of the
-form we covered earlier. Now imagine service:services, the package service that
-combines the two. In the package install directory rather than the following
-structure:
+In practice, we typically try to avoid introducing new unittest binaries for
+individual services. Instead we have an aggregate `service_unittests` target
+defined in [`//services/BUILD.gn`](https://cs.chromium.org/chromium/src/services/BUILD.gn).
+There are several examples of other services adding their service tests to this
+suite.
 
-    service1/service1.library,manifest.json
-    service2/service2.library,manifest.json
+## Service Manager Catalogs
 
-Instead we'll have:
+A **catalog** is an aggregation of service manifests which comprises a complete
+runtime configuration of the Service Manager.
 
-    package/services.library,manifest.json
+The GN `catalog` target template defined in
+[`//services/catalog/public/tools/catalog.gni`](https://cs.chromium.org/chromium/src/services/catalog/public/tools/catalog.gni).
+provides a simple means of aggregating service manifests into a single build
+artifact. See the comments on the template for detailed documentation.
 
-The manifest for the package service describes not only itself, but includes the
-manifests of all the services it provides. Fortunately there is some GN build
-magic that automates generating this meta-manifest, so you don't need to write
-it by hand. In the service_manifest() template instantiation for services, we
-add the following lines:
+This GNI also defines a `catalog_cpp_source` target which can generate a static
+C++ representation of an aggregated catalog manifest so that it can be passed
+the Service Manager at runtime.
 
-    deps = [ ":service1_manifest", ":service2_manifest" ]
-    packaged_services = [ "service1", "service2" ]
+In general, service developers should never be concerned with creating new
+catalogs or instantiating the Service Manager, but it's important to be aware
+of these concepts. When introducing a new service into any runtime environment
+-- including Chrome, Content, or various unit test suites such as
+`service_unittests` discussed in the previous section -- your service manifest
+must be added to the catalog used in that environment.
 
-The deps line lists the service_manifest targets for the packaged services to be
-consumed, and the packaged_services line provides the service names, without the
-'service:' prefix. The presence of these two lines will cause the Manifest Collator
-script to run, merging the dependent manifests into the package manifest. You
-can study the resulting manifest to see what gets generated.
+TODO - expand on this
 
-At startup, the Service Manager will scan the package directory and consume the
-manifests it finds, so it can learn about how to resolve aliases that it might
-encounter subsequently.
+## Packaging Services
 
-### Executables
+TODO
 
-Thus far, the examples we've covered have packaged Services in .library files.
-It's also possible to have a conventional executable provide a Service. There
-are two different ways to use executables with the Service Manager, the first is
-to have the Service Manager start the executable itself, the second is to have
-some other executable start the process and then tell the Service Manager about
-it. In both cases, the target executable has to perform a handshake with the
-Service Manager early on so it can bind the Service request the Service Manager
-sends it.
+## Chrome and Chrome OS Service Manager Integration
 
-Assuming you have an executable that properly initializes the Mojo EDK, you add
-the following lines at some point early in application startup to establish the
-connection with the Service Manager:
-
-    #include "services/service_manager/public/cpp/service.h"
-    #include "services/service_manager/public/cpp/service_context.h"
-    #include "services/service_manager/runner/child/runner_connection.h"
-
-    class MyService : public service_manager::Service {
-    ..
-    };
-
-    service_manager::mojom::ServiceRequest request;
-    std::unique_ptr<service_manager::RunnerConnection> connection(
-       service_manager::RunnerConnection::ConnectToRunner(
-            &request, ScopedMessagePipeHandle()));
-    MyService service;
-    service_manager::ServiceContext context(&service, std::move(request));
-
-What's happening here? The Service/ServiceContext usage should be familiar from
-our earlier examples. The interesting part here happens in
-`RunnerConnection::ConnectToRunner()`. Before we look at what ConnectToRunner
-does, it's important to cover how this process is launched. In this example,
-this process is launched by the Service Manager. This is achieved through the
-use of the 'exe' Service Name type. The Service Names we've covered thus far
-have looked like 'service:foo'. The 'mojo' prefix means that the Service Manager
-should look for a .library file at 'foo/foo.library' alongside the Service Manager
-executable. If the code above was linked into an executable 'app.exe' alongside
-the Service Manager executable in the output directory, it can be launched by
-connecting to the name 'exe:app'. When the Service Manager launches an
-executable, it passes a pipe to it on the command line, which the executable is
-expected to bind to receive a ServiceRequest on. Now back to ConnectToRunner.
-It spins up a background 'control' thread with the Service Manager, binds the
-pipe from the command line parameter, and blocks the main thread until the
-ServiceRequest arrives and can be bound.
-
-Like services provided from .library files, we have to provide a manifest for
-services provided from executables. The format is identical, but in the
-service_manifest template we need to set the type property to 'exe' to cause the
-generation step to put the manifest in the right place (it gets placed alongside
-the executable, with the name <exe_name>_manifest.json.)
-
-### Service-Launched Processes
-
-There are some scenarios where a service will need to launch its own process,
-rather than relying on the Service Manager to do it. The Connector API provides
-the ability to tell the Service Manager about a process that the service has or
-will create. The executable that the service launches (henceforth referred to as
-the 'target') should be written using RunnerConnection as discussed in the
-previous section. The connect flow in the service that launches the target
-(henceforth referred to as the driver) works like this:
-
-    base::FilePath target_path;
-    base::PathService::Get(base::DIR_EXE, &target_path);
-    target_path = target_path.Append(FILE_PATH_LITERAL("target.exe"));
-    base::CommandLine target_command_line(target_path);
-
-    mojo::edk::PlatformChannelPair pair;
-    mojo::edk::HandlePassingInformation info;
-    pair.PrepareToPassClientHandleToChildProcess(&target_command_line, &info);
-
-    mojo::edk::PendingProcessConnection connection;
-    std::string token;
-    mojo::ScopedMessagePipeHandle pipe = connection.CreateMessagePipe(&token);
-    target_command_line.AppendSwitchASCII(switches::kPrimordialPipeToken,
-                                          token);
-
-    service_manager::Identity target("exe:target",
-                                     service_manager::mojom::kInheritUserID);
-    service_manager::mojom::PIDReceiverPtr receiver;
-    connector->RegisterService(target, std::move(pipe), MakeRequest(&receiver));
-
-    base::LaunchOptions options;
-    options.handles_to_inherit = &info;
-    base::Process process = base::LaunchProcess(target_command_line, options);
-    connection.Connect(process.Handle(), pair.PassServerHandle());
-
-That's a lot. But it boils down to these steps:
-1. Creating the message pipe to connect the target process and the Service
-Manager.
-2. Putting the server end of the pipe onto the command line to the target
-process.
-3. Binding the client end to a ServiceFactoryPtr, constructing an Identity for
-the target process and passing both through Connector::Connect().
-4. Starting the process with the configured command line.
-
-In this example the target executable could be the same as the previous example.
-
-A word about process lifetimes. Processes created by the Service Manager are
-also managed by the Service Manager. While a service-launched process may quit
-itself at any point, when the Service Manager shuts down it will also shut down
-any process it started. Processes created by services themselves are left to
-those services to manage.
-
-### Other InterfaceProviderSpecs
-
-We discussed InterfaceProviderSpecs in detail in the section above about
-exchange of capabilities between services. That section focused on how
-interfaces are exposed via Connect()/OnConnect(). Looking at the structure of
-service manifests:
-
-    "interface_provider_specs": {
-      "service_manager:connector": {
-        "provides": {
-          ...
-        },
-        "requires": {
-          ...
-        }
-      }
-    }
-
-It was discussed that the "service_manager:connector" dictionary described
-capabilities of interest to the Service Manager. While our use cases thus far
-have focused on this single InterfaceProviderSpec, it's possible (and desirable)
-to use others, any time an InterfaceProvider is used. Why? Well
-InterfaceProvider is a generic interface - it can theoretically be used to bind,
-anything and as such it's useful to be able to statically assert what interfaces
-are exposed to what contexts. In Chromium, manifest files get security review,
-which provides an extra layer of care when we think about what capabilities are
-being exposed between contexts at different trust levels. A concrete example
-from Chrome - a pair of InterfaceProviders is used to expose frame-specific
-interfaces between browser and renderer processes. To define another spec, we do
-this:
-
-    "interface_provider_specs": {
-      "service_manager:connector": {
-        "provides": {
-          ...
-        },
-        "requires": {
-          ...
-        }
-      },
-      "my_spec_name": {
-        "provides": {
-          ...
-        },
-        "requires": {
-          ...
-        }
-      }
-    }
-
-And here again we can define capabilities & consume them. To actually hook up
-this new spec in code, we must do what `service_manager::ServiceContext` does
-for us with the `service_manager:connector` spec, and configure a
-`service_manager::InterfaceRegistry` appropriately:
-
-    void OnStart(const service_manager::ServiceInfo& info) override {
-      registry_ =
-          base::MakeUnique<service_manager::InterfaceRegistry>("my_spec_name");
-      registry_->AddInterface<mojom::Foo>(this);
-      registry_->AddInterface<mojom::Bar>(this);
-
-      // Store this so we can use it when we Bind() registry_.
-      local_info_ = info;
-    }
-
-    bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                   service_manager::InterfaceRegistry* remote) override {
-      remote_info_ = remote_info;
-      registry->AddInterface<mojom::MyInterface>(this);
-      return true;
-    }
-
-    ...
-
-    // mojom::MyInterface:
-    void GetInterfaceProvider(
-        service_manager::mojom::InterfaceProviderRequest request) override {
-      service_manager::InterfaceProviderSpec my_spec, remote_spec;
-      service_manager::GetInterfaceProviderSpec(
-          "my_spec_name", local_info_.interface_provider_specs, &my_spec);
-      service_manager::GetInterfaceProviderSpec(
-          "my_spec_name", remote_info_.interface_provider_specs, &remote_spec);
-      registry_->Bind(std::move(request), local_info_.identity, my_spec,
-                      remote_info_.identity, remote_spec);
-      // |registry_| is now bound to the remote, and its GetInterface()
-      // implementation is now controlled via the rules set out in
-      // `my_spec_name` declared in this service's and the remote service's
-      // manifests.
-    }
-
-    ...
-
-    std::unique_ptr<service_manager::InterfaceRegistry> registry_;
-    service_manager::ServiceInfo local_info_;
-    service_manager::ServiceInfo remote_info_;
-
-When we construct an `InterfaceRegistry` we pass the name of the spec that
-controls it. When our service is started we're given (by the Service Manager)
-our own spec. This allows us to know everything we provide. When we receive a
-connection request from another service, the Service Manager provides us with
-the remote service's spec. This is enough information that when we're asked to
-bind the InterfaceRegistry to a pipe from the remote, the appropriate filtering
-is performed.
-
-
-***
-
-TBD:
-
-Instances & Processes
-
-Service lifetime strategies
-
-Process lifetimes.
-
-Under the Hood
-Four major components: Service Manager API (Mojom), Service Manager, Catalog,
-Service Manager Client Lib.
-The connect flow, catalog, etc.
-Capability brokering in the Service Manager
-Userids
-
-Finer points:
-
-Service Names: mojo, exe
+TODO

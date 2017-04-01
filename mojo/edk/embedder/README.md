@@ -1,4 +1,9 @@
-# Mojo Embedder Development Kit (EDK)
+# ![Mojo Graphic](https://goo.gl/6CdlbH) Mojo Embedder Development Kit (EDK)
+This document is a subset of the [Mojo documentation](/mojo).
+
+[TOC]
+
+## Overview
 
 The Mojo EDK is a (binary-unstable) API which enables a process to use Mojo both
 internally and for IPC to other Mojo-embedding processes.
@@ -7,6 +12,12 @@ Using any of the API surface in `//mojo/edk/embedder` requires (somewhat
 confusingly) a direct dependency on the GN `//mojo/edk/system` target. Despite
 this fact, you should never reference any of the headers in `mojo/edk/system`
 directly, as everything there is considered to be an internal detail of the EDK.
+
+**NOTE:** Unless you are introducing a new binary entry point into the system
+(*e.g.,* a new executable with a new `main()` definition), you probably don't
+need to know anything about the EDK API. Most processes defined in the Chrome
+repo today already fully initialize the EDK so that Mojo's other public APIs
+"just work" out of the box.
 
 ## Basic Initialization
 
@@ -320,8 +331,16 @@ interface Foo {
 Once you've bootstrapped your process connection with a real mojom interface,
 you can avoid any further mucking around with EDK APIs or raw message pipe
 handles, as everything beyond this point - including the passing of other
-interface pipes - can be handled eloquently using public bindings APIs.
+interface pipes - can be handled eloquently using
+[public bindings APIs](/mojo#High-Level-Bindings-APIs).
 
-See [additional Mojo documentation](
-    https://www.chromium.org/developers/design-documents/mojo) for more
-information.
+## Setting System Properties
+
+The public Mojo C System API exposes a
+[**`MojoGetProperty`**](/mojo/public/c/system#MojoGetProperty) function for
+querying global, embedder-defined property values. These can be set by calling:
+
+```
+mojo::edk::SetProperty(MojoPropertyType type, const void* value)
+```
+

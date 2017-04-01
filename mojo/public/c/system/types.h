@@ -14,9 +14,6 @@
 
 #include "mojo/public/c/system/macros.h"
 
-// TODO(vtl): Notes: Use of undefined flags will lead to undefined behavior
-// (typically they'll be ignored), not necessarily an error.
-
 // |MojoTimeTicks|: A time delta, in microseconds, the meaning of which is
 // source-dependent.
 
@@ -84,8 +81,6 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 //
 // The codes from |MOJO_RESULT_OK| to |MOJO_RESULT_DATA_LOSS| come from
 // Google3's canonical error codes.
-//
-// TODO(vtl): Add a |MOJO_RESULT_UNSATISFIABLE|?
 
 typedef uint32_t MojoResult;
 
