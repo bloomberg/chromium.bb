@@ -13,5 +13,16 @@
       <span class="extension-name"></span>
       <span class="extension-icon" role="button" tabindex="0"></span>
     </span>
+<if expr="chromeos">
+    <span class="configuring-in-progress-text" hidden>
+      $i18n{configuringInProgressText}
+      <span class="configuring-text-jumping-dots">
+        <span>.</span><span>.</span><span>.</span>
+      </span>
+    </span>
+    <span class="configuring-failed-text" hidden>
+      $i18n{configuringFailedText}
+    </span>
+</if>
   </span>
 </li>

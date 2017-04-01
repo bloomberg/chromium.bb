@@ -312,8 +312,6 @@ cr.define('print_preview', function() {
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
     SELECTED_DESTINATION_CAPABILITIES_READY:
         'print_preview.DestinationStore.SELECTED_DESTINATION_CAPABILITIES_READY',
-    PRINTER_CONFIGURED:
-        'print_preview.DestinationStore.PRINTER_CONFIGURED',
   };
 
   /**
@@ -1109,28 +1107,11 @@ cr.define('print_preview', function() {
      * Attempt to resolve the capabilities for a Chrome OS printer.
      * @param {!print_preview.Destination} destination The destination which
      *     requires resolution.
+     * @return {!Promise<!print_preview.PrinterSetupResponse>}
      */
     resolveCrosDestination: function(destination) {
       assert(destination.origin == print_preview.Destination.Origin.CROS);
-      this.nativeLayer_.setupPrinter(destination.id).then(
-          /**
-            * Handle the result of a successful PRINTER_SETUP request.
-            * @param {!print_preview.PrinterSetupResponse} response.
-            */
-          function(response) {
-            this.dispatchEvent(new CustomEvent(
-                DestinationStore.EventType.PRINTER_CONFIGURED, {
-                  detail: response
-                }));
-          }.bind(this),
-          /**
-           * Calling printer setup failed.
-           */
-          function() {
-            this.dispatchEvent(new CustomEvent(
-                DestinationStore.EventType.PRINTER_CONFIGURED,
-                {detail: {printerId: destination.id, success: false}}));
-          }.bind(this));
+      return this.nativeLayer_.setupPrinter(destination.id);
     },
 
     /**

@@ -225,6 +225,17 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @param {string} destinationId The ID of the destination.
+     * @return {?print_preview.DestinationListItem} The found destination list
+     *     item or null if not found.
+     */
+    getDestinationItem: function(destinationId) {
+      return this.listItems_.find(function(listItem) {
+        return listItem.destination.id == destinationId;
+      }) || null;
+    },
+
+    /**
      * @param {string} text Text to set the action link to.
      * @protected
      */

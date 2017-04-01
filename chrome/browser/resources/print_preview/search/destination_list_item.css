@@ -98,3 +98,16 @@
   margin: 0 3px;
   width: 24px;
 }
+
+.configuring-in-progress-text,
+.configuring-failed-text {
+  -webkit-margin-start: 1em;
+  flex: 0 1 auto;
+  line-height: 24px;
+  vertical-align: middle;
+}
+
+.configuring-failed-text {
+  color: red;
+  font-style: italic;
+}
