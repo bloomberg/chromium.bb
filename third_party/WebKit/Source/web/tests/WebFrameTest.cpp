@@ -85,7 +85,6 @@
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/Cursor.h"
 #include "platform/DragImage.h"
-#include "platform/KeyboardCodes.h"
 #include "platform/PlatformResourceLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -110,7 +109,6 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebFloatRect.h"
-#include "public/platform/WebKeyboardEvent.h"
 #include "public/platform/WebMockClipboard.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebThread.h"
@@ -4269,62 +4267,6 @@ TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest) {
 
   // Now retrieve the FocusedNode and test it should be null.
   EXPECT_EQ(0, webViewHelper.webView()->focusedElement());
-}
-
-class ChangedSelectionCounter : public FrameTestHelpers::TestWebFrameClient {
- public:
-  ChangedSelectionCounter() : m_callCount(0) {}
-  void didChangeSelection(bool isSelectionEmpty) { ++m_callCount; }
-  int count() const { return m_callCount; }
-  void reset() { m_callCount = 0; }
-
- private:
-  int m_callCount;
-};
-
-TEST_P(ParameterizedWebFrameTest, TabKeyCursorMoveTriggersOneSelectionChange) {
-  ChangedSelectionCounter counter;
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  registerMockedHttpURLLoad("editable_elements.html");
-  WebViewImpl* webView = webViewHelper.initializeAndLoad(
-      m_baseURL + "editable_elements.html", true, &counter);
-
-  WebKeyboardEvent tabDownEvent(WebInputEvent::KeyDown,
-                                WebInputEvent::NoModifiers,
-                                WebInputEvent::TimeStampForTesting);
-  WebKeyboardEvent tabUpEvent(WebInputEvent::KeyUp, WebInputEvent::NoModifiers,
-                              WebInputEvent::TimeStampForTesting);
-  tabDownEvent.domKey = Platform::current()->domKeyEnumFromString("\t");
-  tabUpEvent.domKey = Platform::current()->domKeyEnumFromString("\t");
-  tabDownEvent.windowsKeyCode = VKEY_TAB;
-  tabUpEvent.windowsKeyCode = VKEY_TAB;
-
-  // Move to the next text-field: 1 cursor change.
-  counter.reset();
-  webView->handleInputEvent(WebCoalescedInputEvent(tabDownEvent));
-  webView->handleInputEvent(WebCoalescedInputEvent(tabUpEvent));
-  EXPECT_EQ(1, counter.count());
-
-  // Move to another text-field: 1 cursor change.
-  webView->handleInputEvent(WebCoalescedInputEvent(tabDownEvent));
-  webView->handleInputEvent(WebCoalescedInputEvent(tabUpEvent));
-  EXPECT_EQ(2, counter.count());
-
-  // Move to a number-field: 1 cursor change.
-  webView->handleInputEvent(WebCoalescedInputEvent(tabDownEvent));
-  webView->handleInputEvent(WebCoalescedInputEvent(tabUpEvent));
-  EXPECT_EQ(3, counter.count());
-
-  // Move to an editable element: 1 cursor change.
-  webView->handleInputEvent(WebCoalescedInputEvent(tabDownEvent));
-  webView->handleInputEvent(WebCoalescedInputEvent(tabUpEvent));
-  EXPECT_EQ(4, counter.count());
-
-  // Move to a non-editable element: 0 cursor changes.
-  // TODO(editing-dev): Once we've fixed crbug.com/692898 test this too:
-  //  webView->handleInputEvent(WebCoalescedInputEvent(tabDownEvent));
-  //  webView->handleInputEvent(WebCoalescedInputEvent(tabUpEvent));
-  //  EXPECT_EQ(4, counter.count());
 }
 
 // Implementation of WebFrameClient that tracks the v8 contexts that are created

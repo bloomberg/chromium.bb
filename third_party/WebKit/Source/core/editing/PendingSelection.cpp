@@ -123,11 +123,10 @@ void PendingSelection::commit(LayoutView& layoutView) {
   // necessarily valid, and the following steps assume a valid selection. See
   // <https://bugs.webkit.org/show_bug.cgi?id=69563> and
   // <rdar://problem/10232866>.
-  const SelectionInFlatTree selection = calcVisibleSelection(originalSelection);
-  const VisibleSelectionInFlatTree& visibleSelection =
-      createVisibleSelection(selection);
+  const VisibleSelectionInFlatTree& selection =
+      createVisibleSelection(calcVisibleSelection(originalSelection));
 
-  if (!visibleSelection.isRange() || !selectionHasFocus(selection)) {
+  if (!selection.isRange()) {
     layoutView.clearSelection();
     return;
   }
@@ -138,11 +137,11 @@ void PendingSelection::commit(LayoutView& layoutView) {
   // If we pass [foo, 3] as the start of the selection, the selection painting
   // code will think that content on the line containing 'foo' is selected
   // and will fill the gap before 'bar'.
-  PositionInFlatTree startPos = visibleSelection.start();
+  PositionInFlatTree startPos = selection.start();
   PositionInFlatTree candidate = mostForwardCaretPosition(startPos);
   if (isVisuallyEquivalentCandidate(candidate))
     startPos = candidate;
-  PositionInFlatTree endPos = visibleSelection.end();
+  PositionInFlatTree endPos = selection.end();
   candidate = mostBackwardCaretPosition(endPos);
   if (isVisuallyEquivalentCandidate(candidate))
     endPos = candidate;
@@ -151,8 +150,8 @@ void PendingSelection::commit(LayoutView& layoutView) {
   // |VisiblePosition| when a selection is deleted because we don't yet notify
   // the |FrameSelection| of text removal.
   if (startPos.isNull() || endPos.isNull() ||
-      visibleSelection.visibleStart().deepEquivalent() ==
-          visibleSelection.visibleEnd().deepEquivalent())
+      selection.visibleStart().deepEquivalent() ==
+          selection.visibleEnd().deepEquivalent())
     return;
   LayoutObject* startLayoutObject = startPos.anchorNode()->layoutObject();
   LayoutObject* endLayoutObject = endPos.anchorNode()->layoutObject();
