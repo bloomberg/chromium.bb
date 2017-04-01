@@ -1187,24 +1187,6 @@ String Element::computedName() {
   return cache->get()->computedNameForNode(this);
 }
 
-AccessibleNode* Element::existingAccessibleNode() const {
-  if (!RuntimeEnabledFeatures::accessibilityObjectModelEnabled())
-    return nullptr;
-
-  if (!hasRareData())
-    return nullptr;
-
-  return elementRareData()->accessibleNode();
-}
-
-AccessibleNode* Element::accessibleNode() {
-  if (!RuntimeEnabledFeatures::accessibilityObjectModelEnabled())
-    return nullptr;
-
-  ElementRareData& rareData = ensureElementRareData();
-  return rareData.ensureAccessibleNode(this);
-}
-
 const AtomicString& Element::getAttribute(const AtomicString& localName) const {
   if (!elementData())
     return nullAtom;

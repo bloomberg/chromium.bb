@@ -42,7 +42,7 @@ struct SameSizeAsElementRareData : NodeRareData {
   LayoutSize sizeForResizing;
   IntSize scrollOffset;
   void* pointers[2];
-  Member<void*> members[14];
+  Member<void*> members[13];
 };
 
 CSSStyleDeclaration& ElementRareData::ensureInlineCSSStyleDeclaration(
@@ -84,7 +84,6 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData) {
   visitor->trace(m_cssomWrapper);
   visitor->trace(m_cssomMapWrapper);
   visitor->trace(m_pseudoElementData);
-  visitor->trace(m_accessibleNode);
   visitor->trace(m_v0CustomElementDefinition);
   visitor->trace(m_customElementDefinition);
   visitor->trace(m_intersectionObserverData);
@@ -102,7 +101,6 @@ DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(ElementRareData) {
   visitor->traceWrappersWithManualWriteBarrier(m_attributeMap);
   visitor->traceWrappersWithManualWriteBarrier(m_dataset);
   visitor->traceWrappersWithManualWriteBarrier(m_classList);
-  visitor->traceWrappersWithManualWriteBarrier(m_accessibleNode);
   visitor->traceWrappersWithManualWriteBarrier(m_intersectionObserverData);
   NodeRareData::traceWrappersAfterDispatch(visitor);
 }

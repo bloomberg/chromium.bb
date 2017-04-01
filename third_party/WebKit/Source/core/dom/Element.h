@@ -42,7 +42,6 @@
 namespace blink {
 
 class ElementAnimations;
-class AccessibleNode;
 class Attr;
 class Attribute;
 class CSSStyleDeclaration;
@@ -255,9 +254,6 @@ class CORE_EXPORT Element : public ContainerNode {
 
   const AtomicString& computedRole();
   String computedName();
-
-  AccessibleNode* existingAccessibleNode() const;
-  AccessibleNode* accessibleNode();
 
   void didMoveToNewDocument(Document&) override;
 

@@ -30,7 +30,6 @@
 
 #include "SkMatrix44.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/AccessibleNode.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
@@ -377,15 +376,6 @@ void AXObject::detach() {
 
 bool AXObject::isDetached() const {
   return !m_axObjectCache;
-}
-
-const AtomicString& AXObject::getAOMPropertyOrARIAAttribute(
-    AOMStringProperty property) const {
-  Node* node = this->getNode();
-  if (!node || !node->isElementNode())
-    return nullAtom;
-
-  return AccessibleNode::getProperty(toElement(node), property);
 }
 
 bool AXObject::isARIATextControl() const {
@@ -813,8 +803,7 @@ String AXObject::ariaTextAlternative(bool recursive,
     nameSources->push_back(NameSource(*foundTextAlternative, aria_labelAttr));
     nameSources->back().type = nameFrom;
   }
-  const AtomicString& ariaLabel =
-      getAOMPropertyOrARIAAttribute(AOMStringProperty::kLabel);
+  const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
   if (!ariaLabel.isEmpty()) {
     textAlternative = ariaLabel;
 

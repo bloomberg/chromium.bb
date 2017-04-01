@@ -15,13 +15,6 @@ interface Accelerometer : Sensor
     getter y
     getter z
     method constructor
-interface AccessibleNode
-    attribute @@toStringTag
-    getter label
-    getter role
-    method constructor
-    setter label
-    setter role
 interface AmbientLightSensor : Sensor
     attribute @@toStringTag
     getter illuminance
@@ -1690,7 +1683,6 @@ interface DynamicsCompressorNode : AudioNode
 interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
-    getter accessibleNode
     getter assignedSlot
     getter attributes
     getter childElementCount

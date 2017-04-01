@@ -29,7 +29,6 @@
 #include "modules/accessibility/AXNodeObject.h"
 
 #include "core/InputTypeNames.h"
-#include "core/dom/AccessibleNode.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
@@ -619,8 +618,7 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
     return IgnoredRole;
 
   if (isHTMLIFrameElement(*getNode())) {
-    const AtomicString& ariaRole =
-        getAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
+    const AtomicString& ariaRole = getAttribute(roleAttr);
     if (ariaRole == "none" || ariaRole == "presentation")
       return IframePresentationalRole;
     return IframeRole;
@@ -693,8 +691,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole() {
 }
 
 AccessibilityRole AXNodeObject::determineAriaRoleAttribute() const {
-  const AtomicString& ariaRole =
-      getAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
+  const AtomicString& ariaRole = getAttribute(roleAttr);
   if (ariaRole.isNull() || ariaRole.isEmpty())
     return UnknownRole;
 
@@ -1994,8 +1991,7 @@ bool AXNodeObject::nameFromLabelElement() const {
     return false;
 
   // Step 2C from: http://www.w3.org/TR/accname-aam-1.1
-  const AtomicString& ariaLabel =
-      getAOMPropertyOrARIAAttribute(AOMStringProperty::kLabel);
+  const AtomicString& ariaLabel = getAttribute(aria_labelAttr);
   if (!ariaLabel.isEmpty())
     return false;
 
@@ -2929,11 +2925,8 @@ String AXNodeObject::nativeTextAlternative(
         nameSources->back().type = nameFrom;
       }
       if (Element* documentElement = document->documentElement()) {
-        AXObject* axDocument = axObjectCache().getOrCreate(documentElement);
-        DCHECK(axDocument);
         const AtomicString& ariaLabel =
-            axDocument->getAOMPropertyOrARIAAttribute(
-                AOMStringProperty::kLabel);
+            documentElement->getAttribute(aria_labelAttr);
         if (!ariaLabel.isEmpty()) {
           textAlternative = ariaLabel;
 
