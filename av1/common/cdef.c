@@ -135,7 +135,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int nhsb, nvsb;
   uint16_t src[OD_DERING_INBUF_SIZE];
   uint16_t *linebuf[3];
-  uint16_t colbuf[3][OD_BSIZE_MAX + 2 * OD_FILT_VBORDER][OD_FILT_HBORDER];
+  uint16_t colbuf[3][(OD_BSIZE_MAX + 2 * OD_FILT_VBORDER) * OD_FILT_HBORDER];
   dering_list dlist[MAX_MIB_SIZE * MAX_MIB_SIZE];
   unsigned char *row_dering, *prev_row_dering, *curr_row_dering;
   int dering_count;
@@ -174,7 +174,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           (MAX_MIB_SIZE << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER;
       for (r = 0; r < block_height; ++r) {
         for (c = 0; c < OD_FILT_HBORDER; ++c) {
-          colbuf[pli][r][c] = OD_DERING_VERY_LARGE;
+          colbuf[pli][r * OD_FILT_HBORDER + c] = OD_DERING_VERY_LARGE;
         }
       }
     }
@@ -348,7 +348,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
              saved pixels. */
           for (r = 0; r < rend + OD_FILT_VBORDER; r++) {
             for (c = 0; c < OD_FILT_HBORDER; c++) {
-              src[r * OD_FILT_BSTRIDE + c] = colbuf[pli][r][c];
+              src[r * OD_FILT_BSTRIDE + c] =
+                  colbuf[pli][r * OD_FILT_HBORDER + c];
             }
           }
         }
@@ -356,7 +357,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           for (c = 0; c < OD_FILT_HBORDER; c++) {
             /* Saving pixels in case we need to dering the superblock on the
                right. */
-            colbuf[pli][r][c] = src[r * OD_FILT_BSTRIDE + c + hsize];
+            colbuf[pli][r * OD_FILT_HBORDER + c] =
+                src[r * OD_FILT_BSTRIDE + c + hsize];
           }
         }
         copy_sb8_16(
