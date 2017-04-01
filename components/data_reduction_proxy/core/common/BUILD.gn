@@ -17,6 +17,8 @@ template("common_tmpl") {
       "data_reduction_proxy_event_storage_delegate.h",
       "data_reduction_proxy_event_store.cc",
       "data_reduction_proxy_event_store.h",
+      "data_reduction_proxy_features.cc",
+      "data_reduction_proxy_features.h",
       "data_reduction_proxy_headers.cc",
       "data_reduction_proxy_headers.h",
       "data_reduction_proxy_page_load_timing.cc",

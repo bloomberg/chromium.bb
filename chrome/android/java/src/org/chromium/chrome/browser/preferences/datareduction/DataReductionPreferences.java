@@ -32,6 +32,7 @@ import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
  * Settings fragment that allows the user to configure Data Saver.
  */
 public class DataReductionPreferences extends PreferenceFragment {
+    public static final String FROM_MAIN_MENU = "FromMainMenu";
 
     public static final String PREF_DATA_REDUCTION_SWITCH = "data_reduction_switch";
     private static final String PREF_DATA_REDUCTION_STATS = "data_reduction_stats";
@@ -43,6 +44,7 @@ public class DataReductionPreferences extends PreferenceFragment {
     private boolean mWasEnabledAtCreation;
     /** Whether the current Activity is started from the snackbar promo. */
     private boolean mFromPromo;
+    private boolean mFromMainMenu;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,8 @@ public class DataReductionPreferences extends PreferenceFragment {
         if (getActivity() != null) {
             mFromPromo = IntentUtils.safeGetBooleanExtra(getActivity().getIntent(),
                     DataReductionPromoSnackbarController.FROM_PROMO, false);
+            mFromMainMenu = IntentUtils.safeGetBooleanExtra(
+                    getActivity().getIntent(), FROM_MAIN_MENU, false);
         }
     }
 
@@ -78,6 +82,14 @@ public class DataReductionPreferences extends PreferenceFragment {
             statusChange = mIsEnabled
                     ? DataReductionProxyUma.ACTION_SNACKBAR_LINK_CLICKED
                     : DataReductionProxyUma.ACTION_SNACKBAR_LINK_CLICKED_DISABLED;
+        } else if (mFromMainMenu) {
+            if (mWasEnabledAtCreation) {
+                statusChange = mIsEnabled ? DataReductionProxyUma.ACTION_MAIN_MENU_ON_TO_ON
+                                          : DataReductionProxyUma.ACTION_MAIN_MENU_ON_TO_OFF;
+            } else {
+                statusChange = mIsEnabled ? DataReductionProxyUma.ACTION_MAIN_MENU_OFF_TO_ON
+                                          : DataReductionProxyUma.ACTION_MAIN_MENU_OFF_TO_OFF;
+            }
         } else if (mWasEnabledAtCreation) {
             statusChange = mIsEnabled
                     ? DataReductionProxyUma.ACTION_ON_TO_ON

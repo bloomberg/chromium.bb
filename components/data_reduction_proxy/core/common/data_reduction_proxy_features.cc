@@ -1,0 +1,16 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
+
+namespace data_reduction_proxy {
+namespace features {
+
+// Enables the Data Reduction Proxy menu item in the main menu rather than under
+// Settings on Android.
+const base::Feature kDataReductionMainMenu{"DataReductionProxyMainMenu",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features
+}  // namespace data_reduction_proxy

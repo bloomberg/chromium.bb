@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/ntp_snippets/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -54,6 +55,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchUrlActions,
     &kCustomContextMenu,
     &kCustomFeedbackUi,
+    &data_reduction_proxy::features::kDataReductionMainMenu,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
     &kNewPhotoPicker,

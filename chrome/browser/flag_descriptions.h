@@ -1284,6 +1284,18 @@ extern const char kEnableDataReductionProxySavingsPromoName[];
 // 1 MB of savings
 extern const char kEnableDataReductionProxySavingsPromoDescription[];
 
+#if defined(OS_ANDROID)
+
+// An about:flags experiment title to enable the Data Saver menu item in the
+// main menu rather than under settings on Android
+extern const char kEnableDataReductionProxyMainMenuName[];
+
+// Describes an about:flags experiment to enable the Data Saver menu item in the
+// main menu rather than under settings on Android
+extern const char kEnableDataReductionProxyMainMenuDescription[];
+
+#endif  // defined(OS_ANDROID)
+
 // Name of about:flags option for LCD text.
 extern const char kLcdTextName[];
 

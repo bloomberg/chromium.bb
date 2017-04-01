@@ -468,6 +468,30 @@
             ]
         }
     ],
+    "DataReductionProxyMainMenu": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DataReductionProxyMainMenu"
+                    ]
+                },
+                {
+                    "name": "Enabled_Persistent",
+                    "params": {
+                        "persistent_menu_item_enabled": "true"
+                    },
+                    "enable_features": [
+                        "DataReductionProxyMainMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataReductionProxyServerExperiments": [
         {
             "platforms": [

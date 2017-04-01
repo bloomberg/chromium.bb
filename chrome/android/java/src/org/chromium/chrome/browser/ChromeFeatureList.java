@@ -132,7 +132,10 @@ public abstract class ChromeFeatureList {
     public static final String CONTEXTUAL_SEARCH_URL_ACTIONS = "ContextualSearchUrlActions";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";
     public static final String CUSTOM_FEEDBACK_UI = "CustomFeedbackUi";
-    /** Whether we show an important sites dialog in the "Clear Browsing Data" flow. */
+    // Enables the Data Reduction Proxy menu item in the main menu rather than under Settings on
+    // Android.
+    public static final String DATA_REDUCTION_MAIN_MENU = "DataReductionProxyMainMenu";
+    // Whether we show an important sites dialog in the "Clear Browsing Data" flow.
     public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
     public static final String TABS_IN_CBD = "TabsInCBD";
     public static final String IMPROVED_A2HS = "ImprovedA2HS";

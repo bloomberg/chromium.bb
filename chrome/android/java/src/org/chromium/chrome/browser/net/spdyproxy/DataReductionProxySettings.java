@@ -13,6 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.UrlConstants;
 
 import java.text.NumberFormat;
@@ -58,6 +59,11 @@ public class DataReductionProxySettings {
     private static DataReductionProxySettings sSettings;
 
     private static final String DATA_REDUCTION_ENABLED_PREF = "BANDWIDTH_REDUCTION_PROXY_ENABLED";
+
+    private static final String DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF =
+            "BANDWIDTH_REDUCTION_PROXY_HAS_EVER_BEEN_ENABLED";
+
+    private static final String PARAM_PERSISTENT_MENU_ITEM_ENABLED = "persistent_menu_item_enabled";
 
     private static final String WEBLITE_HOSTNAME = "googleweblight.com";
 
@@ -150,6 +156,30 @@ public class DataReductionProxySettings {
     /** Returns true if the Data Reduction Proxy proxy is enabled. */
     public boolean isDataReductionProxyEnabled() {
         return nativeIsDataReductionProxyEnabled(mNativeDataReductionProxySettings);
+    }
+
+    /**
+     * Returns true if the Data Reduction Proxy menu item should be shown in the main menu.
+     */
+    public boolean shouldUseDataReductionMainMenuItem() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DATA_REDUCTION_MAIN_MENU)) return false;
+
+        if (ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.DATA_REDUCTION_MAIN_MENU, PARAM_PERSISTENT_MENU_ITEM_ENABLED,
+                    false)) {
+            // If the Data Reduction Proxy is enabled, set the pref storing that the proxy has
+            // ever been enabled.
+            if (isDataReductionProxyEnabled()) {
+                ContextUtils.getAppSharedPreferences()
+                        .edit()
+                        .putBoolean(DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, true)
+                        .apply();
+            }
+            return ContextUtils.getAppSharedPreferences().getBoolean(
+                    DATA_REDUCTION_HAS_EVER_BEEN_ENABLED_PREF, false);
+        } else {
+            return isDataReductionProxyEnabled();
+        }
     }
 
     /** Returns true if the SPDY proxy is managed by an administrator's policy. */

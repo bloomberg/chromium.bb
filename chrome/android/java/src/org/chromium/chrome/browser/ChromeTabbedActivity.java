@@ -47,6 +47,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
@@ -78,6 +79,7 @@ import org.chromium.chrome.browser.metrics.StartupMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.ChromeHomeNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -1248,6 +1250,18 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (startIncognito) mTabModelSelectorImpl.selectModel(true);
 
         return mTabModelSelectorImpl;
+    }
+
+    @Override
+    protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
+        return new AppMenuPropertiesDelegate(this) {
+            @Override
+            public int getFooterResourceId() {
+                return DataReductionProxySettings.getInstance().shouldUseDataReductionMainMenuItem()
+                        ? R.layout.data_reduction_main_menu_footer
+                        : 0;
+            }
+        };
     }
 
     @Override

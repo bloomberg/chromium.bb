@@ -41,6 +41,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/error_page/common/error_page_switches.h"
@@ -772,6 +773,15 @@ const FeatureEntry::FeatureVariation kDelayNavigationFeatureVariations[] = {
      arraysize(kDelayNavigation5SecondDelay25Percent), nullptr},
     {"(0-5 second randomized delay)", kDelayNavigation5SecondDelayRandomize,
      arraysize(kDelayNavigation5SecondDelayRandomize), nullptr}};
+
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kPersistentMenuItemEnabled[] = {
+    {"persistent_menu_item_enabled", "true"}};
+
+const FeatureEntry::FeatureVariation kDataReductionMainMenuFeatureVariations[] =
+    {{"(persistent)", kPersistentMenuItemEnabled,
+      arraysize(kPersistentMenuItemEnabled), nullptr}};
+#endif  // OS_ANDROID
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -1647,6 +1657,14 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
                            kEnableDataReductionProxySavingsPromo)},
+    {"enable-data-reduction-proxy-main-menu",
+     flag_descriptions::kEnableDataReductionProxyMainMenuName,
+     flag_descriptions::kEnableDataReductionProxyMainMenuDescription,
+     kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         data_reduction_proxy::features::kDataReductionMainMenu,
+         kDataReductionMainMenuFeatureVariations,
+         "DataReductionProxyMainMenu")},
 #endif  // OS_ANDROID
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhost,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,

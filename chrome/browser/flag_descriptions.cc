@@ -1167,6 +1167,17 @@ const char kEnableDataReductionProxySavingsPromoDescription[] =
     "already saved 1 MB of data, then the promo will not be shown. Data "
     "Saver must be enabled for the promo to be shown.";
 
+#if defined(OS_ANDROID)
+
+const char kEnableDataReductionProxyMainMenuName[] =
+    "Enable Data Saver main menu item";
+
+const char kEnableDataReductionProxyMainMenuDescription[] =
+    "Enables the Data Saver menu item in the main menu rather than under "
+    "Settings.";
+
+#endif  // defined(OS_ANDROID)
+
 const char kLcdTextName[] = "LCD text antialiasing";
 
 const char kLcdTextDescription[] =
