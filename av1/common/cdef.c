@@ -205,29 +205,16 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       tile_left = boundary_tl & TILE_LEFT_BOUNDARY;
       tile_bottom = boundary_br & TILE_BOTTOM_BOUNDARY;
       tile_right = boundary_br & TILE_RIGHT_BOUNDARY;
-      level = cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
-                                                         cm->mi_stride +
-                                                     MAX_MIB_SIZE * sbc]
-                                     ->mbmi.cdef_strength] /
-              CLPF_STRENGTHS;
-      clpf_strength =
-          cm->cdef_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
-                                                     cm->mi_stride +
-                                                 MAX_MIB_SIZE * sbc]
-                                 ->mbmi.cdef_strength] %
-          CLPF_STRENGTHS;
+      const int mbmi_cdef_strength =
+          cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                              MAX_MIB_SIZE * sbc]
+              ->mbmi.cdef_strength;
+      level = cm->cdef_strengths[mbmi_cdef_strength] / CLPF_STRENGTHS;
+      clpf_strength = cm->cdef_strengths[mbmi_cdef_strength] % CLPF_STRENGTHS;
       clpf_strength += clpf_strength == 3;
-      uv_level = cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
-                                                               cm->mi_stride +
-                                                           MAX_MIB_SIZE * sbc]
-                                           ->mbmi.cdef_strength] /
-                 CLPF_STRENGTHS;
+      uv_level = cm->cdef_uv_strengths[mbmi_cdef_strength] / CLPF_STRENGTHS;
       uv_clpf_strength =
-          cm->cdef_uv_strengths[cm->mi_grid_visible[MAX_MIB_SIZE * sbr *
-                                                        cm->mi_stride +
-                                                    MAX_MIB_SIZE * sbc]
-                                    ->mbmi.cdef_strength] %
-          CLPF_STRENGTHS;
+          cm->cdef_uv_strengths[mbmi_cdef_strength] % CLPF_STRENGTHS;
       uv_clpf_strength += uv_clpf_strength == 3;
       curr_row_dering[sbc] = 0;
       if ((level == 0 && clpf_strength == 0 && uv_level == 0 &&
