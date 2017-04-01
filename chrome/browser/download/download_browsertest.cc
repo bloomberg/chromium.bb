@@ -3437,13 +3437,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceDiscardDownload) {
   ASSERT_TRUE(updated_downloads.empty());
 }
 
-// Test is flaky Linux. crbug.com/705224
-#if defined(OS_LINUX)
-#define MAYBE_FeedbackServiceKeepDownload DISABLED_FeedbackServiceKeepDownload
-#else
-#define MAYBE_FeedbackServiceKeepDownload FeedbackServiceKeepDownload
-#endif
-IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_FeedbackServiceKeepDownload) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackServiceKeepDownload) {
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   safe_browsing::SetExtendedReportingPref(prefs, true);
@@ -3455,6 +3449,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_FeedbackServiceKeepDownload) {
       interruption_observer(new content::DownloadTestObserverInterrupted(
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
+  std::unique_ptr<content::DownloadTestObserver> completion_observer(
+      new content::DownloadTestObserverTerminal(
+          DownloadManagerForBrowser(browser()), 1,
+          content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_IGNORE));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(download_url), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
@@ -3490,12 +3488,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_FeedbackServiceKeepDownload) {
   // Begin feedback and check that file is still there.
   download_protection_service->feedback_service()->BeginFeedbackForDownload(
       downloads[0], DownloadCommands::KEEP);
+  completion_observer->WaitForFinished();
 
   std::vector<DownloadItem*> updated_downloads;
   GetDownloads(browser(), &updated_downloads);
   ASSERT_EQ(std::size_t(1), updated_downloads.size());
   ASSERT_FALSE(updated_downloads[0]->IsDangerous());
-  ASSERT_TRUE(PathExists(updated_downloads[0]->GetFullPath()));
+  ASSERT_TRUE(PathExists(updated_downloads[0]->GetTargetFilePath()));
   updated_downloads[0]->Cancel(true);
 }
 
