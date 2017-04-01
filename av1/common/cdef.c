@@ -128,6 +128,25 @@ void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
 #endif
 }
 
+static INLINE void fill_rect(uint16_t *dst, int dstride, int v, int h,
+                             uint16_t x) {
+  int i, j;
+  OD_ASSERT((h & 0x7) == 0);
+  for (i = 0; i < v; i++) {
+    for (j = 0; j < h; j += 8) {
+      int k = i * dstride + j;
+      dst[k + 0] = x;
+      dst[k + 1] = x;
+      dst[k + 2] = x;
+      dst[k + 3] = x;
+      dst[k + 4] = x;
+      dst[k + 5] = x;
+      dst[k + 6] = x;
+      dst[k + 7] = x;
+    }
+  }
+}
+
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     MACROBLOCKD *xd) {
   int r, c;
@@ -172,11 +191,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     for (pli = 0; pli < nplanes; pli++) {
       const int block_height =
           (MAX_MIB_SIZE << mi_high_l2[pli]) + 2 * OD_FILT_VBORDER;
-      for (r = 0; r < block_height; ++r) {
-        for (c = 0; c < OD_FILT_HBORDER; ++c) {
-          colbuf[pli][r * OD_FILT_HBORDER + c] = OD_DERING_VERY_LARGE;
-        }
-      }
+      fill_rect(colbuf[pli], OD_FILT_HBORDER, block_height, OD_FILT_HBORDER,
+                OD_DERING_VERY_LARGE);
     }
     dering_left = 1;
     for (sbc = 0; sbc < nhsb; sbc++) {
@@ -256,22 +272,16 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
         if (sbc == nhsb - 1) {
           /* On the last superblock column, fill in the right border with
              OD_DERING_VERY_LARGE to avoid filtering with the outside. */
-          for (r = 0; r < rend + OD_FILT_VBORDER; ++r) {
-            for (c = cend; c < hsize + OD_FILT_HBORDER; ++c) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(&src[cend + OD_FILT_HBORDER], OD_FILT_BSTRIDE,
+                    rend + OD_FILT_VBORDER, hsize + OD_FILT_HBORDER - cend,
+                    OD_DERING_VERY_LARGE);
         }
         if (sbr == nvsb - 1) {
           /* On the last superblock row, fill in the bottom border with
              OD_DERING_VERY_LARGE to avoid filtering with the outside. */
-          for (r = rend; r < rend + OD_FILT_VBORDER; ++r) {
-            for (c = 0; c < hsize + 2 * OD_FILT_HBORDER; ++c) {
-              src[(r + OD_FILT_VBORDER) * OD_FILT_BSTRIDE + c] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(&src[(rend + OD_FILT_VBORDER) * OD_FILT_BSTRIDE],
+                    OD_FILT_BSTRIDE, OD_FILT_VBORDER,
+                    hsize + 2 * OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
         }
         /* Copy in the pixels we need from the current superblock for
            deringing.*/
@@ -295,12 +305,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             }
           }
         } else {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = 0; c < hsize; c++) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(&src[OD_FILT_HBORDER], OD_FILT_BSTRIDE, OD_FILT_VBORDER,
+                    hsize, OD_DERING_VERY_LARGE);
         }
         if (!prev_row_dering[sbc - 1]) {
           copy_sb8_16(cm, src, OD_FILT_BSTRIDE, xd->plane[pli].dst.buf,
@@ -315,12 +321,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             }
           }
         } else {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = -OD_FILT_HBORDER; c < 0; c++) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(src, OD_FILT_BSTRIDE, OD_FILT_VBORDER, OD_FILT_HBORDER,
+                    OD_DERING_VERY_LARGE);
         }
         if (!prev_row_dering[sbc + 1]) {
           copy_sb8_16(cm, &src[OD_FILT_HBORDER + (nhb << mi_high_l2[pli])],
@@ -336,12 +338,8 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
             }
           }
         } else {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = hsize; c < hsize + OD_FILT_HBORDER; c++) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(&src[hsize + OD_FILT_HBORDER], OD_FILT_BSTRIDE,
+                    OD_FILT_VBORDER, OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
         }
         if (dering_left) {
           /* If we deringed the superblock on the left then we need to copy in
@@ -368,34 +366,22 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
         if (level == 0 && clpf_strength == 0) continue;
         if (tile_top) {
-          for (r = 0; r < OD_FILT_VBORDER; r++) {
-            for (c = 0; c < hsize + 2 * OD_FILT_HBORDER; c++) {
-              src[r * OD_FILT_BSTRIDE + c] = OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(src, OD_FILT_BSTRIDE, OD_FILT_VBORDER,
+                    hsize + 2 * OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
         }
         if (tile_left) {
-          for (r = 0; r < vsize + 2 * OD_FILT_VBORDER; r++) {
-            for (c = 0; c < OD_FILT_HBORDER; c++) {
-              src[r * OD_FILT_BSTRIDE + c] = OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(src, OD_FILT_BSTRIDE, vsize + 2 * OD_FILT_VBORDER,
+                    OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
         }
         if (tile_bottom) {
-          for (r = vsize; r < vsize + OD_FILT_VBORDER; r++) {
-            for (c = 0; c < hsize + 2 * OD_FILT_HBORDER; c++) {
-              src[(r + OD_FILT_VBORDER) * OD_FILT_BSTRIDE + c] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(&src[(vsize + OD_FILT_VBORDER) * OD_FILT_BSTRIDE],
+                    OD_FILT_BSTRIDE, OD_FILT_VBORDER,
+                    hsize + 2 * OD_FILT_HBORDER, OD_DERING_VERY_LARGE);
         }
         if (tile_right) {
-          for (r = 0; r < vsize + 2 * OD_FILT_VBORDER; r++) {
-            for (c = hsize; c < hsize + OD_FILT_HBORDER; ++c) {
-              src[r * OD_FILT_BSTRIDE + c + OD_FILT_HBORDER] =
-                  OD_DERING_VERY_LARGE;
-            }
-          }
+          fill_rect(&src[hsize + OD_FILT_HBORDER], OD_FILT_BSTRIDE,
+                    vsize + 2 * OD_FILT_VBORDER, OD_FILT_HBORDER,
+                    OD_DERING_VERY_LARGE);
         }
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
