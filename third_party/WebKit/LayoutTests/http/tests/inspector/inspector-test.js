@@ -770,7 +770,7 @@ InspectorTest.hideInspectorView = function()
 
 InspectorTest.mainFrame = function()
 {
-    return SDK.ResourceTreeModel.fromTarget(InspectorTest.mainTarget).mainFrame;
+    return InspectorTest.resourceTreeModel.mainFrame;
 }
 
 InspectorTest.StringOutputStream = function(callback)
@@ -983,18 +983,14 @@ SDK.targetManager.observeTargets({
         InspectorTest.RuntimeAgent = target.runtimeAgent();
         InspectorTest.TargetAgent = target.targetAgent();
 
-        InspectorTest.networkManager = SDK.NetworkManager.fromTarget(target);
-        InspectorTest.securityOriginManager = SDK.SecurityOriginManager.fromTarget(target);
-        InspectorTest.resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
+        InspectorTest.networkManager = target.model(SDK.NetworkManager);
+        InspectorTest.securityOriginManager = target.model(SDK.SecurityOriginManager);
+        InspectorTest.resourceTreeModel = target.model(SDK.ResourceTreeModel);
         InspectorTest.debuggerModel = target.model(SDK.DebuggerModel);
         InspectorTest.runtimeModel = target.model(SDK.RuntimeModel);
-        InspectorTest.domModel = SDK.DOMModel.fromTarget(target);
+        InspectorTest.domModel = target.model(SDK.DOMModel);
         InspectorTest.cssModel = target.model(SDK.CSSModel);
-        InspectorTest.powerProfiler = target.powerProfiler;
         InspectorTest.cpuProfilerModel = target.model(SDK.CPUProfilerModel);
-        InspectorTest.heapProfilerModel = target.heapProfilerModel;
-        InspectorTest.animationModel = target.animationModel;
-        InspectorTest.serviceWorkerCacheModel = target.serviceWorkerCacheModel;
         InspectorTest.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
         InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;

@@ -3,7 +3,7 @@ function initialize_LayerTreeTests()
     InspectorTest.layerTreeModel = function()
     {
         if (!InspectorTest._layerTreeModel)
-            InspectorTest._layerTreeModel = Layers.LayerTreeModel.fromTarget(InspectorTest.mainTarget);
+            InspectorTest._layerTreeModel = InspectorTest.mainTarget.model(Layers.LayerTreeModel);
         return InspectorTest._layerTreeModel;
     }
 

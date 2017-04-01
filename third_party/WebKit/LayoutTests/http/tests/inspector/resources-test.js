@@ -79,17 +79,17 @@ InspectorTest.resourceMatchingURL = function(resourceURL)
 
 InspectorTest.databaseModel = function()
 {
-    return Resources.DatabaseModel.fromTarget(InspectorTest.mainTarget);
+    return InspectorTest.mainTarget.model(Resources.DatabaseModel);
 }
 
 InspectorTest.domStorageModel = function()
 {
-    return Resources.DOMStorageModel.fromTarget(InspectorTest.mainTarget);
+    return InspectorTest.mainTarget.model(Resources.DOMStorageModel);
 }
 
 InspectorTest.indexedDBModel = function()
 {
-    return Resources.IndexedDBModel.fromTarget(InspectorTest.mainTarget);
+    return InspectorTest.mainTarget.model(Resources.IndexedDBModel);
 }
 
 }
