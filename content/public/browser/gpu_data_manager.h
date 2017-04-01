@@ -31,8 +31,8 @@ class GpuDataManager {
   // Getter for the singleton.
   CONTENT_EXPORT static GpuDataManager* GetInstance();
 
-  virtual void InitializeForTesting(const std::string& gpu_blacklist_json,
-                                    const gpu::GPUInfo& gpu_info) = 0;
+  // This is only called by extensions testing.
+  virtual void BlacklistWebGLForTesting() = 0;
 
   virtual bool IsFeatureBlacklisted(int feature) const = 0;
   virtual bool IsFeatureEnabled(int feature) const = 0;

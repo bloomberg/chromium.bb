@@ -34,12 +34,12 @@
 #include "content/public/common/web_preferences.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/config/gpu_control_list_jsons.h"
+#include "gpu/config/gpu_driver_bug_list_autogen.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
-#include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
+#include "gpu/config/software_rendering_list_autogen.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/switches.h"
 #include "media/media_features.h"
@@ -140,7 +140,6 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  bool disabled = false;
 
   // Use entry 0 to capture the total number of times that data
   // was recorded in this histogram in order to have a convenient
@@ -151,22 +150,12 @@ void UpdateStats(const gpu::GPUInfo& gpu_info,
 
   if (blacklisted_features.size() != 0) {
     std::vector<uint32_t> flag_entries;
-    blacklist->GetDecisionEntries(&flag_entries, disabled);
+    blacklist->GetDecisionEntries(&flag_entries);
     DCHECK_GT(flag_entries.size(), 0u);
     for (size_t i = 0; i < flag_entries.size(); ++i) {
       UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerEntry",
                                  flag_entries[i], max_entry_id + 1);
     }
-  }
-
-  // This counts how many users are affected by a disabled entry - this allows
-  // us to understand the impact of an entry before enable it.
-  std::vector<uint32_t> flag_disabled_entries;
-  disabled = true;
-  blacklist->GetDecisionEntries(&flag_disabled_entries, disabled);
-  for (uint32_t disabled_entry : flag_disabled_entries) {
-    UMA_HISTOGRAM_EXACT_LINEAR("GPU.BlacklistTestResultsPerDisabledEntry",
-                               disabled_entry, max_entry_id + 1);
   }
 
   const gpu::GpuFeatureType kGpuFeatures[] = {
@@ -304,7 +293,7 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
 }  // namespace anonymous
 
 void GpuDataManagerImplPrivate::InitializeForTesting(
-    const std::string& gpu_blacklist_json,
+    const gpu::GpuControlListData& gpu_blacklist_data,
     const gpu::GPUInfo& gpu_info) {
   // This function is for testing only, so disable histograms.
   update_histograms_ = false;
@@ -312,7 +301,8 @@ void GpuDataManagerImplPrivate::InitializeForTesting(
   // Prevent all further initialization.
   finalized_ = true;
 
-  InitializeImpl(gpu_blacklist_json, std::string(), gpu_info);
+  gpu::GpuControlListData gpu_driver_bug_list_data;
+  InitializeImpl(gpu_blacklist_data, gpu_driver_bug_list_data, gpu_info);
 }
 
 bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
@@ -624,20 +614,22 @@ void GpuDataManagerImplPrivate::Initialize() {
   }
 #endif  // ARCH_CPU_X86_FAMILY
 
-  std::string gpu_blacklist_string;
-  std::string gpu_driver_bug_list_string;
+  gpu::GpuControlListData gpu_blacklist_data;
   if (!force_software_gl &&
       !command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
-    gpu_blacklist_string = gpu::kSoftwareRenderingListJson;
+    gpu_blacklist_data = {gpu::kSoftwareRenderingListVersion,
+                          gpu::kSoftwareRenderingListEntryCount,
+                          gpu::kSoftwareRenderingListEntries};
   }
+  gpu::GpuControlListData gpu_driver_bug_list_data;
   if (!force_software_gl &&
       !command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
-    gpu_driver_bug_list_string = gpu::kGpuDriverBugListJson;
+    gpu_driver_bug_list_data = {gpu::kGpuDriverBugListVersion,
+                                gpu::kGpuDriverBugListEntryCount,
+                                gpu::kGpuDriverBugListEntries};
   }
-  InitializeImpl(gpu_blacklist_string,
-                 gpu_driver_bug_list_string,
-                 gpu_info);
+  InitializeImpl(gpu_blacklist_data, gpu_driver_bug_list_data, gpu_info);
 
   if (in_process_gpu_) {
     command_line->AppendSwitch(switches::kDisableGpuWatchdog);
@@ -1197,28 +1189,23 @@ GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
 }
 
 void GpuDataManagerImplPrivate::InitializeImpl(
-    const std::string& gpu_blacklist_json,
-    const std::string& gpu_driver_bug_list_json,
+    const gpu::GpuControlListData& gpu_blacklist_data,
+    const gpu::GpuControlListData& gpu_driver_bug_list_data,
     const gpu::GPUInfo& gpu_info) {
   const bool log_gpu_control_list_decisions =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kLogGpuControlListDecisions);
 
-  if (!gpu_blacklist_json.empty()) {
-    gpu_blacklist_.reset(gpu::GpuBlacklist::Create());
+  if (gpu_blacklist_data.entry_count) {
+    gpu_blacklist_ = gpu::GpuBlacklist::Create(gpu_blacklist_data);
     if (log_gpu_control_list_decisions)
-      gpu_blacklist_->enable_control_list_logging("gpu_blacklist");
-    bool success = gpu_blacklist_->LoadList(
-        gpu_blacklist_json, gpu::GpuControlList::kCurrentOsOnly);
-    DCHECK(success);
+      gpu_blacklist_->EnableControlListLogging("gpu_blacklist");
   }
-  if (!gpu_driver_bug_list_json.empty()) {
-    gpu_driver_bug_list_.reset(gpu::GpuDriverBugList::Create());
+  if (gpu_driver_bug_list_data.entry_count) {
+    gpu_driver_bug_list_ =
+        gpu::GpuDriverBugList::Create(gpu_driver_bug_list_data);
     if (log_gpu_control_list_decisions)
-      gpu_driver_bug_list_->enable_control_list_logging("gpu_driver_bug_list");
-    bool success = gpu_driver_bug_list_->LoadList(
-        gpu_driver_bug_list_json, gpu::GpuControlList::kCurrentOsOnly);
-    DCHECK(success);
+      gpu_driver_bug_list_->EnableControlListLogging("gpu_driver_bug_list");
   }
 
   gpu_info_ = gpu_info;

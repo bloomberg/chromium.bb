@@ -8,7 +8,6 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -44,7 +43,6 @@ TEST(GpuUtilTest,
   GPUInfo gpu_info;
   CollectBasicGraphicsInfo(&gpu_info);
   std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
-  list->LoadList(kGpuDriverBugListJson, GpuControlList::kCurrentOsOnly);
   list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
   std::vector<std::string> expected_disabled_extensions =
       list->GetDisabledExtensions();

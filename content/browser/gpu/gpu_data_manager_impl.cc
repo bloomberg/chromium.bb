@@ -19,14 +19,55 @@ GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
   return base::Singleton<GpuDataManagerImpl>::get();
 }
 
+void GpuDataManagerImpl::BlacklistWebGLForTesting() {
+  // Manually generate the following data instead of going through
+  // gpu/config/process_json.py because this is just one simple instance.
+  static const int kFeatureListForEntry0[1] = {
+      gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL};
+  static const gpu::GpuControlList::Entry kEntry = {
+      1,  // id
+      "ExtensionWebstoreGetWebGLStatusTest.Blocked",
+      arraysize(kFeatureListForEntry0),  // features size
+      kFeatureListForEntry0,             // features
+      0,                                 // DisabledExtensions size
+      nullptr,                           // DisabledExtensions
+      0,                                 // CrBugs size
+      nullptr,                           // CrBugs
+      {
+          gpu::GpuControlList::kOsAny,  // os_type
+          {gpu::GpuControlList::kUnknown,
+           gpu::GpuControlList::kVersionStyleNumerical, nullptr,
+           nullptr},                                   // os_version
+          0x00,                                        // vendor_id
+          0,                                           // DeviceIDs size
+          nullptr,                                     // DeviceIDs
+          gpu::GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+          gpu::GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+          nullptr,                                     // driver info
+          nullptr,                                     // GL strings
+          nullptr,                                     // machine model info
+          nullptr,                                     // more conditions
+      },
+      0,        // exceptions count
+      nullptr,  // exceptions
+  };
+  static const gpu::GpuControlListData kData("1.0", 1, &kEntry);
+
+  gpu::GPUInfo gpu_info;
+
+  base::AutoLock auto_lock(lock_);
+  private_->InitializeForTesting(kData, gpu_info);
+}
+
 void GpuDataManagerImpl::InitializeForTesting(
-    const std::string& gpu_blacklist_json, const gpu::GPUInfo& gpu_info) {
+    const gpu::GpuControlListData& gpu_blacklist_data,
+    const gpu::GPUInfo& gpu_info) {
   base::AutoLock auto_lock(lock_);
   // Relax the cross-thread access restriction to non-thread-safe RefCount.
   // See the comment in Initialize().
   base::ScopedAllowCrossThreadRefCountAccess
       allow_cross_thread_ref_count_access;
-  private_->InitializeForTesting(gpu_blacklist_json, gpu_info);
+  private_->InitializeForTesting(gpu_blacklist_data, gpu_info);
 }
 
 bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {

@@ -17,9 +17,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "gpu/config/gpu_blacklist.h"
-#include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_driver_bug_list.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -98,8 +98,6 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
 void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
                                   base::CommandLine* command_line) {
   std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
-  list->LoadList(kGpuDriverBugListJson,
-                 GpuControlList::kCurrentOsOnly);
   std::set<int> workarounds = list->MakeDecision(
       GpuControlList::kOsAny, std::string(), gpu_info);
   GpuDriverBugList::AppendWorkaroundsFromCommandLine(
@@ -196,7 +194,6 @@ GpuFeatureInfo GetGpuFeatureInfo(const GPUInfo& gpu_info,
   std::set<int> blacklisted_features;
   if (!command_line.HasSwitch(switches::kIgnoreGpuBlacklist)) {
     std::unique_ptr<GpuBlacklist> list(GpuBlacklist::Create());
-    list->LoadList(kSoftwareRenderingListJson, GpuControlList::kCurrentOsOnly);
     blacklisted_features =
         list->MakeDecision(GpuControlList::kOsAny, std::string(), gpu_info);
   }

@@ -4,54 +4,52 @@
 
 #include <stddef.h>
 
-#include <memory>
-
-#include "base/json/json_reader.h"
 #include "gpu/config/gpu_control_list.h"
+#include "gpu/config/gpu_control_list_testing_data.h"
 #include "gpu/config/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#define LONG_STRING_CONST(...) #__VA_ARGS__
-
 namespace gpu {
 
-enum TestFeatureType {
-  TEST_FEATURE_0 = 0,
-  TEST_FEATURE_1,
-  TEST_FEATURE_2
-};
+namespace {
+
+constexpr auto kOsLinux = GpuControlList::kOsLinux;
+constexpr auto kOsMacosx = GpuControlList::kOsMacosx;
+constexpr auto kOsWin = GpuControlList::kOsWin;
+constexpr auto kOsChromeOS = GpuControlList::kOsChromeOS;
+constexpr auto kOsAndroid = GpuControlList::kOsAndroid;
+constexpr auto kOsAny = GpuControlList::kOsAny;
+
+}  // namespace anonymous
 
 class GpuControlListEntryTest : public testing::Test {
  public:
-  GpuControlListEntryTest() { }
+  typedef GpuControlList::Entry Entry;
+
+  GpuControlListEntryTest() {}
   ~GpuControlListEntryTest() override {}
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;
   }
 
-  typedef GpuControlList::ScopedGpuControlListEntry ScopedEntry;
-
-  static ScopedEntry GetEntryFromString(
-      const std::string& json, bool supports_feature_type_all) {
-    std::unique_ptr<base::Value> root = base::JSONReader::Read(json);
-    base::DictionaryValue* value = NULL;
-    if (!root || !root->GetAsDictionary(&value))
-      return NULL;
-
-    GpuControlList::FeatureMap feature_map;
-    feature_map["test_feature_0"] = TEST_FEATURE_0;
-    feature_map["test_feature_1"] = TEST_FEATURE_1;
-    feature_map["test_feature_2"] = TEST_FEATURE_2;
-
-    return GpuControlList::GpuControlListEntry::GetEntryFromValue(
-        value, true, feature_map, supports_feature_type_all);
+  const Entry& GetEntry(size_t index) {
+    EXPECT_LT(index, kGpuControlListTestingEntryCount);
+    EXPECT_EQ(index + 1, kGpuControlListTestingEntries[index].id);
+    return kGpuControlListTestingEntries[index];
   }
 
-  static ScopedEntry GetEntryFromString(const std::string& json) {
-    return GetEntryFromString(json, false);
+  size_t CountFeature(const Entry& entry, int feature) {
+    size_t count = 0;
+    for (size_t ii = 0; ii < entry.feature_size; ++ii) {
+      if (entry.features[ii] == feature) {
+        ++count;
+      }
+    }
+    return count;
   }
 
+ protected:
   void SetUp() override {
     gpu_info_.gpu.vendor_id = 0x10de;
     gpu_info_.gpu.device_id = 0x0640;
@@ -64,1057 +62,362 @@ class GpuControlListEntryTest : public testing::Test {
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
   }
 
- protected:
   GPUInfo gpu_info_;
 };
 
 TEST_F(GpuControlListEntryTest, DetailedEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 5,
-        "description": "test entry",
-        "cr_bugs": [1024, 678],
-        "webkit_bugs": [1950],
-        "os": {
-          "type": "macosx",
-          "version": {
-            "op": "=",
-            "value": "10.6.4"
-          }
-        },
-        "vendor_id": "0x10de",
-        "device_id": ["0x0640"],
-        "driver_version": {
-          "op": "=",
-          "value": "1.6.18"
-        },
-        "features": [
-          "test_feature_0"
-        ],
-        "disabled_extensions": [
-          "test_extension1",
-          "test_extension2"
-        ]
-      }
-  );
-
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
-  EXPECT_FALSE(entry->disabled());
-  EXPECT_EQ(5u, entry->id());
-  EXPECT_STREQ("test entry", entry->description().c_str());
-  EXPECT_EQ(2u, entry->cr_bugs().size());
-  EXPECT_EQ(1024, entry->cr_bugs()[0]);
-  EXPECT_EQ(678, entry->cr_bugs()[1]);
-  EXPECT_EQ(1u, entry->webkit_bugs().size());
-  EXPECT_EQ(1950, entry->webkit_bugs()[0]);
-  EXPECT_EQ(1u, entry->features().size());
-  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_0));
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info(), true));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6.4", gpu_info()));
-  EXPECT_STREQ("test_extension1", entry->disabled_extensions()[0].c_str());
-  EXPECT_STREQ("test_extension2", entry->disabled_extensions()[1].c_str());
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_DetailedEntry);
+  EXPECT_EQ(kOsMacosx, entry.conditions.os_type);
+  EXPECT_STREQ("GpuControlListEntryTest.DetailedEntry", entry.description);
+  EXPECT_EQ(2u, entry.cr_bug_size);
+  EXPECT_EQ(1024u, entry.cr_bugs[0]);
+  EXPECT_EQ(678u, entry.cr_bugs[1]);
+  EXPECT_EQ(1u, entry.feature_size);
+  EXPECT_EQ(1u, CountFeature(entry, TEST_FEATURE_0));
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info(), true));
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.6.4", gpu_info()));
+  EXPECT_EQ(2u, entry.disabled_extension_size);
+  EXPECT_STREQ("test_extension1", entry.disabled_extensions[0]);
+  EXPECT_STREQ("test_extension2", entry.disabled_extensions[1]);
 }
 
 TEST_F(GpuControlListEntryTest, VendorOnAllOsEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "0x10de",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
-
-  const GpuControlList::OsType os_type[] = {
-    GpuControlList::kOsMacosx,
-    GpuControlList::kOsWin,
-    GpuControlList::kOsLinux,
-    GpuControlList::kOsChromeOS,
-    GpuControlList::kOsAndroid
-  };
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_VendorOnAllOsEntry);
+  EXPECT_EQ(kOsAny, entry.conditions.os_type);
+  const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
+                                            kOsChromeOS, kOsAndroid};
   for (size_t i = 0; i < arraysize(os_type); ++i)
-    EXPECT_TRUE(entry->Contains(os_type[i], "10.6", gpu_info()));
+    EXPECT_TRUE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, VendorOnLinuxEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "linux"
-        },
-        "vendor_id": "0x10de",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
-
-  const GpuControlList::OsType os_type[] = {
-    GpuControlList::kOsMacosx,
-    GpuControlList::kOsWin,
-    GpuControlList::kOsChromeOS,
-    GpuControlList::kOsAndroid
-  };
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_VendorOnLinuxEntry);
+  EXPECT_EQ(kOsLinux, entry.conditions.os_type);
+  const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsChromeOS,
+                                            kOsAndroid};
   for (size_t i = 0; i < arraysize(os_type); ++i)
-    EXPECT_FALSE(entry->Contains(os_type[i], "10.6", gpu_info()));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "10.6", gpu_info()));
+    EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, AllExceptNVidiaOnLinuxEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "linux"
-        },
-        "exceptions": [
-          {
-            "vendor_id": "0x10de"
-          }
-        ],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
-
-  const GpuControlList::OsType os_type[] = {
-    GpuControlList::kOsMacosx,
-    GpuControlList::kOsWin,
-    GpuControlList::kOsLinux,
-    GpuControlList::kOsChromeOS,
-    GpuControlList::kOsAndroid
-  };
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_AllExceptNVidiaOnLinuxEntry);
+  EXPECT_EQ(kOsLinux, entry.conditions.os_type);
+  const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
+                                            kOsChromeOS, kOsAndroid};
   for (size_t i = 0; i < arraysize(os_type); ++i)
-    EXPECT_FALSE(entry->Contains(os_type[i], "10.6", gpu_info()));
+    EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, AllExceptIntelOnLinuxEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "linux"
-        },
-        "exceptions": [
-          {
-            "vendor_id": "0x8086"
-          }
-        ],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
-
-  const GpuControlList::OsType os_type[] = {
-    GpuControlList::kOsMacosx,
-    GpuControlList::kOsWin,
-    GpuControlList::kOsChromeOS,
-    GpuControlList::kOsAndroid
-  };
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_AllExceptIntelOnLinuxEntry);
+  EXPECT_EQ(kOsLinux, entry.conditions.os_type);
+  const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsChromeOS,
+                                            kOsAndroid};
   for (size_t i = 0; i < arraysize(os_type); ++i)
-    EXPECT_FALSE(entry->Contains(os_type[i], "10.6", gpu_info()));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "10.6", gpu_info()));
+    EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, DateOnWindowsEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "win"
-        },
-        "driver_date": {
-          "op": "<",
-          "value": "2010.5.8"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsWin, entry->GetOsType());
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_DateOnWindowsEntry);
+  EXPECT_EQ(kOsWin, entry.conditions.os_type);
   GPUInfo gpu_info;
   gpu_info.driver_date = "4-12-2010";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsWin, "10.6", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsWin, "10.6", gpu_info));
   gpu_info.driver_date = "5-8-2010";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsWin, "10.6", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.6", gpu_info));
   gpu_info.driver_date = "5-9-2010";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsWin, "10.6", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsWin, "10.6", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, MultipleDevicesEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "0x10de",
-        "device_id": ["0x1023", "0x0640"],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
-
-  const GpuControlList::OsType os_type[] = {
-    GpuControlList::kOsMacosx,
-    GpuControlList::kOsWin,
-    GpuControlList::kOsLinux,
-    GpuControlList::kOsChromeOS,
-    GpuControlList::kOsAndroid
-  };
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_MultipleDevicesEntry);
+  EXPECT_EQ(kOsAny, entry.conditions.os_type);
+  const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
+                                            kOsChromeOS, kOsAndroid};
   for (size_t i = 0; i < arraysize(os_type); ++i)
-    EXPECT_TRUE(entry->Contains(os_type[i], "10.6", gpu_info()));
+    EXPECT_TRUE(entry.Contains(os_type[i], "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, ChromeOSEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "chromeos"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsChromeOS, entry->GetOsType());
-
-  const GpuControlList::OsType os_type[] = {
-    GpuControlList::kOsMacosx,
-    GpuControlList::kOsWin,
-    GpuControlList::kOsLinux,
-    GpuControlList::kOsAndroid
-  };
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_ChromeOSEntry);
+  EXPECT_EQ(kOsChromeOS, entry.conditions.os_type);
+  const GpuControlList::OsType os_type[] = {kOsMacosx, kOsWin, kOsLinux,
+                                            kOsAndroid};
   for (size_t i = 0; i < arraysize(os_type); ++i)
-    EXPECT_FALSE(entry->Contains(os_type[i], "10.6", gpu_info()));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsChromeOS, "10.6", gpu_info()));
-}
-
-TEST_F(GpuControlListEntryTest, MalformedVendor) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "[0x10de]",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() == NULL);
-}
-
-TEST_F(GpuControlListEntryTest, UnknownFieldEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "unknown_field": 0,
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() == NULL);
-}
-
-TEST_F(GpuControlListEntryTest, UnknownExceptionFieldEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 2,
-        "exceptions": [
-          {
-            "unknown_field": 0
-          }
-        ],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() == NULL);
-}
-
-TEST_F(GpuControlListEntryTest, UnknownFeatureEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "features": [
-          "some_unknown_feature",
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() == NULL);
+    EXPECT_FALSE(entry.Contains(os_type[i], "10.6", gpu_info()));
+  EXPECT_TRUE(entry.Contains(kOsChromeOS, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, GlVersionGLESEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_type": "gles",
-        "gl_version": {
-          "op": "=",
-          "value": "3.0"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlVersionGLESEntry);
   GPUInfo gpu_info;
   gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.4.2", gpu_info));
   gpu_info.gl_version = "OpenGL ES 3.0V@66.0 AU@ (CL@)";
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.4.2", gpu_info));
   gpu_info.gl_version = "OpenGL ES 3.1 V@66.0 AU@ (CL@)";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.4.2", gpu_info));
   gpu_info.gl_version = "3.0 NVIDIA-8.24.11 310.90.9b01";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_version = "OpenGL ES 3.0 (ANGLE 1.2.0.2450)";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsWin, "6.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlVersionANGLEEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_type": "angle",
-        "gl_version": {
-          "op": ">",
-          "value": "2.0"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlVersionANGLEEntry);
   GPUInfo gpu_info;
   gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.4.2", gpu_info));
   gpu_info.gl_version = "3.0 NVIDIA-8.24.11 310.90.9b01";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_version = "OpenGL ES 3.0 (ANGLE 1.2.0.2450)";
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsWin, "6.1", gpu_info));
   gpu_info.gl_version = "OpenGL ES 2.0 (ANGLE 1.2.0.2450)";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsWin, "6.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlVersionGLEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_type": "gl",
-        "gl_version": {
-          "op": "<",
-          "value": "4.0"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlVersionGLEntry);
   GPUInfo gpu_info;
   gpu_info.gl_version = "OpenGL ES 3.0 V@66.0 AU@ (CL@)";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsAndroid, "4.4.2", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.4.2", gpu_info));
   gpu_info.gl_version = "3.0 NVIDIA-8.24.11 310.90.9b01";
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_version = "4.0 NVIDIA-8.24.11 310.90.9b01";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_version = "OpenGL ES 3.0 (ANGLE 1.2.0.2450)";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "6.1", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsWin, "6.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlVendorEqual) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_vendor": "NVIDIA",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlVendorEqual);
   GPUInfo gpu_info;
   gpu_info.gl_vendor = "NVIDIA";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   // Case sensitive.
   gpu_info.gl_vendor = "NVidia";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_vendor = "NVIDIA-x";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlVendorWithDot) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_vendor": "X\\.Org.*",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlVendorWithDot);
   GPUInfo gpu_info;
   gpu_info.gl_vendor = "X.Org R300 Project";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsLinux, "", gpu_info));
   gpu_info.gl_vendor = "X.Org";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlRendererContains) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_renderer": ".*GeForce.*",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlRendererContains);
   GPUInfo gpu_info;
   gpu_info.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   // Case sensitive.
   gpu_info.gl_renderer = "NVIDIA GEFORCE GT 120 OpenGL Engine";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_renderer = "GeForce GT 120 OpenGL Engine";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_renderer = "NVIDIA GeForce";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_renderer = "NVIDIA Ge Force";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlRendererCaseInsensitive) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_renderer": "(?i).*software.*",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_GlRendererCaseInsensitive);
   GPUInfo gpu_info;
   gpu_info.gl_renderer = "software rasterizer";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_renderer = "Software Rasterizer";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, GlExtensionsEndWith) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "gl_extensions": ".*GL_SUN_slice_accum",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_GlExtensionsEndWith);
   GPUInfo gpu_info;
   gpu_info.gl_extensions = "GL_SGIS_generate_mipmap "
                            "GL_SGIX_shadow "
                            "GL_SUN_slice_accum";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.gl_extensions = "GL_SGIS_generate_mipmap "
                            "GL_SUN_slice_accum "
                            "GL_SGIX_shadow";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-}
-
-TEST_F(GpuControlListEntryTest, DisabledEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "disabled": true,
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_TRUE(entry->disabled());
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, OptimusEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "linux"
-        },
-        "multi_gpu_style": "optimus",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_OptimusEntry);
+  EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   GPUInfo gpu_info;
   gpu_info.optimus = true;
-
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "10.6", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, AMDSwitchableEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "multi_gpu_style": "amd_switchable",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_AMDSwitchableEntry);
+  EXPECT_EQ(kOsMacosx, entry.conditions.os_type);
   GPUInfo gpu_info;
   gpu_info.amd_switchable = true;
-
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.6", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, DriverVendorBeginWith) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "driver_vendor": "NVIDIA.*",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_DriverVendorBeginWith);
   GPUInfo gpu_info;
   gpu_info.driver_vendor = "NVIDIA Corporation";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   // Case sensitive.
   gpu_info.driver_vendor = "NVidia Corporation";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.driver_vendor = "NVIDIA";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.driver_vendor = "USA NVIDIA";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.9", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, LexicalDriverVersionEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "linux"
-        },
-        "vendor_id": "0x1002",
-        "driver_version": {
-          "op": "=",
-          "style": "lexical",
-          "value": "8.76"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_LexicalDriverVersionEntry);
+  EXPECT_EQ(kOsLinux, entry.conditions.os_type);
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x1002;
-
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
-
   gpu_info.driver_version = "8.76";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "10.6", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info));
   gpu_info.driver_version = "8.768";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "10.6", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info));
   gpu_info.driver_version = "8.76.8";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "10.6", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "10.6", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, NeedsMoreInfoEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "0x8086",
-        "driver_version": {
-          "op": "<",
-          "value": "10.7"
-        },
-        "features": [
-          "test_feature_1"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_NeedsMoreInfoEntry);
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
-  EXPECT_TRUE(entry->NeedsMoreInfo(gpu_info, true));
-
+  EXPECT_TRUE(entry.NeedsMoreInfo(gpu_info, true));
   gpu_info.driver_version = "10.6";
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, true));
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info, true));
 }
 
 TEST_F(GpuControlListEntryTest, NeedsMoreInfoForExceptionsEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "0x8086",
-        "exceptions": [
-          {
-            "gl_renderer": ".*mesa.*"
-          }
-        ],
-        "features": [
-          "test_feature_1"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_NeedsMoreInfoForExceptionsEntry);
   GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
-  EXPECT_TRUE(entry->NeedsMoreInfo(gpu_info, true));
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
-
+  EXPECT_TRUE(entry.NeedsMoreInfo(gpu_info, true));
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info, false));
   gpu_info.gl_renderer = "mesa";
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, true));
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info, true));
 }
 
 TEST_F(GpuControlListEntryTest, NeedsMoreInfoForGlVersionEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id" : 1,
-        "gl_type": "gl",
-        "gl_version": {
-          "op": "<",
-          "value" : "3.5"
-        },
-        "features" : [
-          "test_feature_1"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_NeedsMoreInfoForGlVersionEntry);
   GPUInfo gpu_info;
-  EXPECT_TRUE(entry->NeedsMoreInfo(gpu_info, true));
-  EXPECT_TRUE(
-      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
-
+  EXPECT_TRUE(entry.NeedsMoreInfo(gpu_info, true));
+  EXPECT_TRUE(entry.Contains(kOsLinux, std::string(), gpu_info));
   gpu_info.gl_version = "3.1 Mesa 11.1.0";
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
-  EXPECT_TRUE(
-      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
-
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info, false));
+  EXPECT_TRUE(entry.Contains(kOsLinux, std::string(), gpu_info));
   gpu_info.gl_version = "4.1 Mesa 12.1.0";
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
-  EXPECT_FALSE(
-      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
-
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info, false));
+  EXPECT_FALSE(entry.Contains(kOsLinux, std::string(), gpu_info));
   gpu_info.gl_version = "OpenGL ES 2.0 Mesa 12.1.0";
-  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
-  EXPECT_FALSE(
-      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
+  EXPECT_FALSE(entry.NeedsMoreInfo(gpu_info, false));
+  EXPECT_FALSE(entry.Contains(kOsLinux, std::string(), gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, FeatureTypeAllEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "features": [
-          "all"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json, true));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(3u, entry->features().size());
-  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_0));
-  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_1));
-  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_2));
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_FeatureTypeAllEntry);
+
+  EXPECT_EQ(3u, entry.feature_size);
+  EXPECT_EQ(1u, CountFeature(entry, TEST_FEATURE_0));
+  EXPECT_EQ(1u, CountFeature(entry, TEST_FEATURE_1));
+  EXPECT_EQ(1u, CountFeature(entry, TEST_FEATURE_2));
 }
 
 TEST_F(GpuControlListEntryTest, FeatureTypeAllEntryWithExceptions) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "features": [
-          "all",
-          {"exceptions" : [
-            "test_feature_0"
-          ]}
-        ]
-      }
-  );
-  bool supports_feature_type_all = true;
-  ScopedEntry entry(GetEntryFromString(json, supports_feature_type_all));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_1));
-  EXPECT_EQ(1u, entry->features().count(TEST_FEATURE_2));
-  EXPECT_EQ(2u, entry->features().size());
-
-  supports_feature_type_all = false;
-  entry = ScopedEntry(GetEntryFromString(json, supports_feature_type_all));
-  EXPECT_TRUE(entry.get() == NULL);
-}
-
-TEST_F(GpuControlListEntryTest, FeatureTypeAllEntryWithUnknownField) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "features": [
-          "all", {
-            "exceptions" : [
-              "test_feature_0"
-            ],
-            "unknown_field" : 0
-          }
-        ]
-      }
-  );
-  bool supports_feature_type_all = true;
-  ScopedEntry entry(GetEntryFromString(json, supports_feature_type_all));
-  EXPECT_TRUE(entry.get() == NULL);
-
-  supports_feature_type_all = false;
-  entry = ScopedEntry(GetEntryFromString(json, supports_feature_type_all));
-  EXPECT_TRUE(entry.get() == NULL);
-}
-
-TEST_F(GpuControlListEntryTest, InvalidVendorIdEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "0x0000",
-        "features": [
-          "test_feature_1"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() == NULL);
-}
-
-TEST_F(GpuControlListEntryTest, InvalidDeviceIdEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "vendor_id": "0x10de",
-        "device_id": ["0x1023", "0x0000"],
-        "features": [
-          "test_feature_1"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() == NULL);
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_FeatureTypeAllEntryWithExceptions);
+  EXPECT_EQ(2u, entry.feature_size);
+  EXPECT_EQ(1u, CountFeature(entry, TEST_FEATURE_1));
+  EXPECT_EQ(1u, CountFeature(entry, TEST_FEATURE_2));
 }
 
 TEST_F(GpuControlListEntryTest, SingleActiveGPU) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x10de",
-        "device_id": ["0x0640"],
-        "multi_gpu_category": "active",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6", gpu_info()));
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_SingleActiveGPU);
+  EXPECT_EQ(kOsMacosx, entry.conditions.os_type);
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, MachineModelName) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "android"
-        },
-        "machine_model_name": [
-          "Nexus 4", "XT1032", "GT-.*", "SCH-.*"
-        ],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsAndroid, entry->GetOsType());
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_MachineModelName);
+  EXPECT_EQ(kOsAndroid, entry.conditions.os_type);
   GPUInfo gpu_info;
-
   gpu_info.machine_model_name = "Nexus 4";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "XT1032";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "XT1032i";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "Nexus 5";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "Nexus";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "GT-N7100";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "GT-I9300";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.1", gpu_info));
   gpu_info.machine_model_name = "SCH-I545";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, MachineModelNameException) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "exceptions": [
-          {
-            "os": {
-              "type": "android"
-            },
-            "machine_model_name": ["Nexus.*"]
-          }
-        ],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_MachineModelNameException);
+  EXPECT_EQ(kOsAny, entry.conditions.os_type);
   GPUInfo gpu_info;
-
   gpu_info.machine_model_name = "Nexus 4";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "4.1", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.1", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "4.1", gpu_info));
   gpu_info.machine_model_name = "Nexus 7";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "4.1", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsAndroid, "4.1", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "4.1", gpu_info));
   gpu_info.machine_model_name = "";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsAndroid, "4.1", gpu_info));
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsLinux, "4.1", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsAndroid, "4.1", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsLinux, "4.1", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, MachineModelVersion) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "machine_model_name": ["MacBookPro"],
-        "machine_model_version": {
-          "op": "=",
-          "value": "7.1"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_MachineModelVersion);
   GPUInfo gpu_info;
   gpu_info.machine_model_name = "MacBookPro";
   gpu_info.machine_model_version = "7.1";
-  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6", gpu_info));
+  EXPECT_EQ(kOsMacosx, entry.conditions.os_type);
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.6", gpu_info));
 }
 
 TEST_F(GpuControlListEntryTest, MachineModelVersionException) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "machine_model_name": ["MacBookPro"],
-        "exceptions": [
-          {
-            "machine_model_version": {
-              "op": ">",
-              "value": "7.1"
-            }
-          }
-        ],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
-
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_MachineModelVersionException);
+  EXPECT_EQ(kOsMacosx, entry.conditions.os_type);
   GPUInfo gpu_info;
   gpu_info.machine_model_name = "MacBookPro";
   gpu_info.machine_model_version = "7.0";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6", gpu_info));
-
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.6", gpu_info));
   gpu_info.machine_model_version = "7.2";
-  EXPECT_FALSE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6", gpu_info));
-
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.6", gpu_info));
   gpu_info.machine_model_version = "";
-  EXPECT_TRUE(entry->Contains(
-      GpuControlList::kOsMacosx, "10.6", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.6", gpu_info));
 }
 
 class GpuControlListEntryDualGPUTest : public GpuControlListEntryTest {
@@ -1140,238 +443,226 @@ class GpuControlListEntryDualGPUTest : public GpuControlListEntryTest {
     gpu_info_.secondary_gpus[0].active = false;
   }
 
-  void EntryShouldApply(const std::string& entry_json) const {
-    EXPECT_TRUE(EntryApplies(entry_json));
+  void EntryShouldApply(const Entry& entry) const {
+    EXPECT_TRUE(EntryApplies(entry));
   }
 
-  void EntryShouldNotApply(const std::string& entry_json) const {
-    EXPECT_FALSE(EntryApplies(entry_json));
+  void EntryShouldNotApply(const Entry& entry) const {
+    EXPECT_FALSE(EntryApplies(entry));
   }
 
  private:
-  bool EntryApplies(const std::string& entry_json) const {
-    ScopedEntry entry(GetEntryFromString(entry_json));
-    EXPECT_TRUE(entry.get());
-    EXPECT_EQ(GpuControlList::kOsMacosx, entry->GetOsType());
-    return entry->Contains(GpuControlList::kOsMacosx, "10.6", gpu_info());
+  bool EntryApplies(const Entry& entry) const {
+    EXPECT_EQ(kOsMacosx, entry.conditions.os_type);
+    return entry.Contains(kOsMacosx, "10.6", gpu_info());
   }
 };
 
 TEST_F(GpuControlListEntryDualGPUTest, CategoryAny) {
-  const std::string json_intel = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x8086",
-        "device_id": ["0x0166"],
-        "multi_gpu_category": "any",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  EntryShouldApply(json_intel);
-
-  const std::string json_nvidia = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x10de",
-        "device_id": ["0x0640"],
-        "multi_gpu_category": "any",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  EntryShouldApply(json_nvidia);
+  const Entry& entry_intel =
+      GetEntry(kGpuControlListEntryDualGPUTest_CategoryAny_Intel);
+  EntryShouldApply(entry_intel);
+  const Entry& entry_nvidia =
+      GetEntry(kGpuControlListEntryDualGPUTest_CategoryAny_NVidia);
+  EntryShouldApply(entry_nvidia);
 }
 
 TEST_F(GpuControlListEntryDualGPUTest, CategoryPrimarySecondary) {
-  const std::string json_secondary = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x8086",
-        "device_id": ["0x0166"],
-        "multi_gpu_category": "secondary",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  EntryShouldApply(json_secondary);
-
-  const std::string json_primary = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x8086",
-        "device_id": ["0x0166"],
-        "multi_gpu_category": "primary",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  EntryShouldNotApply(json_primary);
-
-  const std::string json_default = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x8086",
-        "device_id": ["0x0166"],
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry_secondary =
+      GetEntry(kGpuControlListEntryDualGPUTest_CategorySecondary);
+  EntryShouldApply(entry_secondary);
+  const Entry& entry_primary =
+      GetEntry(kGpuControlListEntryDualGPUTest_CategoryPrimary);
+  EntryShouldNotApply(entry_primary);
+  const Entry& entry_default =
+      GetEntry(kGpuControlListEntryDualGPUTest_CategoryDefault);
   // Default is active, and the secondary Intel GPU is active.
-  EntryShouldApply(json_default);
+  EntryShouldApply(entry_default);
 }
 
 TEST_F(GpuControlListEntryDualGPUTest, ActiveSecondaryGPU) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x8086",
-        "device_id": ["0x0166", "0x0168"],
-        "multi_gpu_category": "active",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryDualGPUTest_ActiveSecondaryGPU);
   // By default, secondary GPU is active.
-  EntryShouldApply(json);
-
+  EntryShouldApply(entry);
   ActivatePrimaryGPU();
-  EntryShouldNotApply(json);
+  EntryShouldNotApply(entry);
 }
 
 TEST_F(GpuControlListEntryDualGPUTest, VendorOnlyActiveSecondaryGPU) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x8086",
-        "multi_gpu_category": "active",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryDualGPUTest_VendorOnlyActiveSecondaryGPU);
   // By default, secondary GPU is active.
-  EntryShouldApply(json);
-
+  EntryShouldApply(entry);
   ActivatePrimaryGPU();
-  EntryShouldNotApply(json);
+  EntryShouldNotApply(entry);
 }
 
 TEST_F(GpuControlListEntryDualGPUTest, ActivePrimaryGPU) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x10de",
-        "device_id": ["0x0640"],
-        "multi_gpu_category": "active",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryDualGPUTest_ActivePrimaryGPU);
   // By default, secondary GPU is active.
-  EntryShouldNotApply(json);
-
+  EntryShouldNotApply(entry);
   ActivatePrimaryGPU();
-  EntryShouldApply(json);
+  EntryShouldApply(entry);
 }
 
 TEST_F(GpuControlListEntryDualGPUTest, VendorOnlyActivePrimaryGPU) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "macosx"
-        },
-        "vendor_id": "0x10de",
-        "multi_gpu_category": "active",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryDualGPUTest_VendorOnlyActivePrimaryGPU);
   // By default, secondary GPU is active.
-  EntryShouldNotApply(json);
-
+  EntryShouldNotApply(entry);
   ActivatePrimaryGPU();
-  EntryShouldApply(json);
-}
-
-TEST_F(GpuControlListEntryTest, LinuxKernelVersion) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "os": {
-          "type": "linux",
-          "version": {
-            "op": "<",
-            "value": "3.19.1"
-          }
-        },
-        "vendor_id": "0x8086",
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsLinux, entry->GetOsType());
-
-  GPUInfo gpu_info;
-  gpu_info.gpu.vendor_id = 0x8086;
-
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsLinux,
-                              "3.13.0-63-generic",
-                              gpu_info));
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsLinux,
-                               "3.19.2-1-generic",
-                               gpu_info));
+  EntryShouldApply(entry);
 }
 
 TEST_F(GpuControlListEntryTest, PixelShaderVersion) {
-  const std::string json = LONG_STRING_CONST(
-      {"id" : 1, "pixel_shader_version" : {"op" : "<", "value" : "4.1"}});
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_EQ(GpuControlList::kOsAny, entry->GetOsType());
-
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_PixelShaderVersion);
+  EXPECT_EQ(kOsAny, entry.conditions.os_type);
   GPUInfo gpu_info;
   gpu_info.pixel_shader_version = "3.2";
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+  EXPECT_TRUE(entry.Contains(kOsMacosx, "10.9", gpu_info));
   gpu_info.pixel_shader_version = "4.9";
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsMacosx, "10.9", gpu_info));
+  EXPECT_FALSE(entry.Contains(kOsMacosx, "10.9", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, OsVersionZero) {
+  {
+    const Entry& entry = GetEntry(kGpuControlListEntryTest_OsVersionZeroLT);
+    // All forms of version 0 is considered invalid.
+    EXPECT_FALSE(entry.Contains(kOsAndroid, "0", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsAndroid, "0.0", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsAndroid, "0.00.0", gpu_info()));
+  }
+  {
+    const Entry& entry = GetEntry(kGpuControlListEntryTest_OsVersionZeroAny);
+    EXPECT_TRUE(entry.Contains(kOsAndroid, "0", gpu_info()));
+    EXPECT_TRUE(entry.Contains(kOsAndroid, "0.0", gpu_info()));
+    EXPECT_TRUE(entry.Contains(kOsAndroid, "0.00.0", gpu_info()));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, OsComparison) {
+  {
+    const Entry& entry = GetEntry(kGpuControlListEntryTest_OsComparisonAny);
+    const GpuControlList::OsType os_type[] = {kOsWin, kOsLinux, kOsMacosx,
+                                              kOsChromeOS, kOsAndroid};
+    for (size_t i = 0; i < arraysize(os_type); ++i) {
+      EXPECT_TRUE(entry.Contains(os_type[i], std::string(), gpu_info()));
+      EXPECT_TRUE(entry.Contains(os_type[i], "7.8", gpu_info()));
+    }
+  }
+  {
+    const Entry& entry = GetEntry(kGpuControlListEntryTest_OsComparisonGE);
+    EXPECT_FALSE(entry.Contains(kOsMacosx, "10.8.3", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsLinux, "10", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsChromeOS, "13", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsAndroid, "7", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsWin, std::string(), gpu_info()));
+    EXPECT_TRUE(entry.Contains(kOsWin, "6", gpu_info()));
+    EXPECT_TRUE(entry.Contains(kOsWin, "6.1", gpu_info()));
+    EXPECT_TRUE(entry.Contains(kOsWin, "7", gpu_info()));
+    EXPECT_FALSE(entry.Contains(kOsWin, "5", gpu_info()));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, ExceptionWithoutVendorId) {
+  const Entry& entry =
+      GetEntry(kGpuControlListEntryTest_ExceptionWithoutVendorId);
+  EXPECT_EQ(0x8086u, entry.exceptions[0].vendor_id);
+  EXPECT_EQ(0x8086u, entry.exceptions[1].vendor_id);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  gpu_info.gpu.device_id = 0x2a02;
+  gpu_info.driver_version = "9.1";
+  EXPECT_FALSE(entry.Contains(kOsLinux, "2.1", gpu_info));
+  gpu_info.driver_version = "9.0";
+  EXPECT_TRUE(entry.Contains(kOsLinux, "2.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, MultiGpuStyleAMDSwitchable) {
+  GPUInfo gpu_info;
+  gpu_info.amd_switchable = true;
+  gpu_info.gpu.vendor_id = 0x1002;
+  gpu_info.gpu.device_id = 0x6760;
+  GPUInfo::GPUDevice integrated_gpu;
+  integrated_gpu.vendor_id = 0x8086;
+  integrated_gpu.device_id = 0x0116;
+  gpu_info.secondary_gpus.push_back(integrated_gpu);
+
+  {  // amd_switchable_discrete entry
+    const Entry& entry =
+        GetEntry(kGpuControlListEntryTest_MultiGpuStyleAMDSwitchableDiscrete);
+    // Integrated GPU is active
+    gpu_info.gpu.active = false;
+    gpu_info.secondary_gpus[0].active = true;
+    EXPECT_FALSE(entry.Contains(kOsWin, "6.0", gpu_info));
+    // Discrete GPU is active
+    gpu_info.gpu.active = true;
+    gpu_info.secondary_gpus[0].active = false;
+    EXPECT_TRUE(entry.Contains(kOsWin, "6.0", gpu_info));
+  }
+
+  {  // amd_switchable_integrated entry
+    const Entry& entry =
+        GetEntry(kGpuControlListEntryTest_MultiGpuStyleAMDSwitchableIntegrated);
+    // Discrete GPU is active
+    gpu_info.gpu.active = true;
+    gpu_info.secondary_gpus[0].active = false;
+    EXPECT_FALSE(entry.Contains(kOsWin, "6.0", gpu_info));
+    // Integrated GPU is active
+    gpu_info.gpu.active = false;
+    gpu_info.secondary_gpus[0].active = true;
+    EXPECT_TRUE(entry.Contains(kOsWin, "6.0", gpu_info));
+    // For non AMD switchable
+    gpu_info.amd_switchable = false;
+    EXPECT_FALSE(entry.Contains(kOsWin, "6.0", gpu_info));
+  }
+}
+
+TEST_F(GpuControlListEntryTest, InProcessGPU) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_InProcessGPU);
+  GPUInfo gpu_info;
+  gpu_info.in_process_gpu = true;
+  EXPECT_TRUE(entry.Contains(kOsWin, "6.1", gpu_info));
+  gpu_info.in_process_gpu = false;
+  EXPECT_FALSE(entry.Contains(kOsWin, "6.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, SameGPUTwiceTest) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_SameGPUTwiceTest);
+  GPUInfo gpu_info;
+  gpu_info.gpu.vendor_id = 0x8086;
+  // Real case on Intel GMA* on Windows
+  gpu_info.secondary_gpus.push_back(gpu_info.gpu);
+  EXPECT_TRUE(entry.Contains(kOsWin, "6.1", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, NVidiaNumberingScheme) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_NVidiaNumberingScheme);
+  GPUInfo gpu_info;
+  gpu_info.gl_vendor = "NVIDIA";
+  gpu_info.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
+  gpu_info.gpu.vendor_id = 0x10de;
+  gpu_info.gpu.device_id = 0x0640;
+  // test the same driver version number
+  gpu_info.driver_version = "8.17.12.6973";
+  EXPECT_TRUE(entry.Contains(kOsWin, "7.0", gpu_info));
+  // test a lower driver version number
+  gpu_info.driver_version = "8.15.11.8647";
+  EXPECT_TRUE(entry.Contains(kOsWin, "7.0", gpu_info));
+  // test a higher driver version number
+  gpu_info.driver_version = "9.18.13.2723";
+  EXPECT_FALSE(entry.Contains(kOsWin, "7.0", gpu_info));
+}
+
+TEST_F(GpuControlListEntryTest, DirectRendering) {
+  const Entry& entry = GetEntry(kGpuControlListEntryTest_DirectRendering);
+  GPUInfo gpu_info;
+  gpu_info.direct_rendering = true;
+  EXPECT_FALSE(entry.Contains(kOsLinux, "7.0", gpu_info));
+  gpu_info.direct_rendering = false;
+  EXPECT_TRUE(entry.Contains(kOsLinux, "7.0", gpu_info));
 }
 
 }  // namespace gpu
-

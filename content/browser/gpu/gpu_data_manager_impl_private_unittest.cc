@@ -11,6 +11,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
+#include "content/browser/gpu/gpu_data_manager_testing_autogen.h"
+#include "content/browser/gpu/gpu_data_manager_testing_entry_enums_autogen.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
@@ -74,8 +76,7 @@ static GURL GetDomain2ForTesting() {
 
 class GpuDataManagerImplPrivateTest : public testing::Test {
  public:
-  GpuDataManagerImplPrivateTest() { }
-
+  GpuDataManagerImplPrivateTest() {}
   ~GpuDataManagerImplPrivateTest() override {}
 
  protected:
@@ -150,32 +151,18 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklisting) {
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
   EXPECT_TRUE(reason.empty());
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "features": [
-              "accelerated_webgl"
-            ]
-          },
-          {
-            "id": 2,
-            "gl_renderer": ".*GeForce.*",
-            "features": [
-              "accelerated_2d_canvas"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_GpuSideBlacklisting_0],
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_GpuSideBlacklisting_1],
+  };
+  const gpu::GpuControlListData kData("1.0", 2, kEntries);
 
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
   EXPECT_TRUE(reason.empty());
@@ -220,33 +207,18 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideBlacklistingWebGL) {
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
   EXPECT_TRUE(reason.empty());
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "features": [
-              "accelerated_2d_canvas"
-            ]
-          },
-          {
-            "id": 2,
-            "gl_renderer": ".*GeForce.*",
-            "features": [
-              "accelerated_webgl",
-              "webgl2"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_GpuSideBlacklistingWebGL_0],
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_GpuSideBlacklistingWebGL_1],
+  };
+  const gpu::GpuControlListData kData("1.0", 2, kEntries);
 
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
   EXPECT_TRUE(reason.empty());
@@ -282,29 +254,16 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "exceptions": [
-              {
-                "gl_renderer": ".*GeForce.*"
-              }
-            ],
-            "features": [
-              "accelerated_webgl"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_GpuSideException],
+  };
+  const gpu::GpuControlListData kData("1.0", 1, kEntries);
+
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(manager->ShouldUseSwiftShader()
@@ -326,7 +285,8 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuSideExceptions) {
 
 TEST_F(GpuDataManagerImplPrivateTest, DisableHardwareAcceleration) {
   ScopedGpuDataManagerImplPrivate manager;
-  manager->InitializeForTesting("", gpu::GPUInfo());
+  const gpu::GpuControlListData kData;
+  manager->InitializeForTesting(kData, gpu::GPUInfo());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   std::string reason;
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
@@ -347,7 +307,8 @@ TEST_F(GpuDataManagerImplPrivateTest, DisableHardwareAcceleration) {
 TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering) {
   // Blacklist, then register SwiftShader.
   ScopedGpuDataManagerImplPrivate manager;
-  manager->InitializeForTesting("", gpu::GPUInfo());
+  const gpu::GpuControlListData kData;
+  manager->InitializeForTesting(kData, gpu::GPUInfo());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
@@ -364,7 +325,8 @@ TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering) {
 TEST_F(GpuDataManagerImplPrivateTest, SwiftShaderRendering2) {
   // Register SwiftShader, then blacklist.
   ScopedGpuDataManagerImplPrivate manager;
-  manager->InitializeForTesting("", gpu::GPUInfo());
+  const gpu::GpuControlListData kData;
+  manager->InitializeForTesting(kData, gpu::GPUInfo());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_FALSE(manager->ShouldUseSwiftShader());
@@ -405,7 +367,8 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuInfoUpdate) {
 
 TEST_F(GpuDataManagerImplPrivateTest, NoGpuInfoUpdateWithSwiftShader) {
   ScopedGpuDataManagerImpl manager;
-  manager->InitializeForTesting("", gpu::GPUInfo());
+  const gpu::GpuControlListData kData;
+  manager->InitializeForTesting(kData, gpu::GPUInfo());
 
   manager->DisableHardwareAcceleration();
   if (manager->ShouldUseSwiftShader()) {
@@ -594,34 +557,16 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStrings) {
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "vendor_id": "0x8086",
-            "exceptions": [
-              {
-                "device_id": ["0x0042"],
-                "driver_version": {
-                  "op": ">=",
-                  "value": "8.0.2"
-                }
-              }
-            ],
-            "features": [
-              "accelerated_webgl"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_SetGLStrings],
+  };
+  const gpu::GpuControlListData kData("1.0", 1, kEntries);
+
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
   gpu_info.gpu.device_id = 0x0042;
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   // Not enough GPUInfo.
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
@@ -648,30 +593,12 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "vendor_id": "0x8086",
-            "exceptions": [
-              {
-                "device_id": ["0x0042"],
-                "driver_version": {
-                  "op": ">=",
-                  "value": "8.0.2"
-                }
-              }
-            ],
-            "features": [
-              "accelerated_webgl"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_SetGLStringsNoEffects],
+  };
+  const gpu::GpuControlListData kData("1.0", 1, kEntries);
+
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
   gpu_info.gpu.device_id = 0x0042;
@@ -680,7 +607,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsNoEffects) {
   gpu_info.gl_version = kGLVersionMesa801;
   gpu_info.driver_vendor = "Mesa";
   gpu_info.driver_version = "8.0.1";
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   // Full GPUInfo, the entry applies.
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
@@ -707,18 +634,11 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
 
-  const std::string blacklist_json = LONG_STRING_CONST({
-    "name" : "gpu blacklist",
-    "version" : "0.1",
-    "entries" : [ {
-      "id" : 1,
-      "vendor_id" : "0x8086",
-      "device_id" : ["0x0042"],
-      "driver_vendor" : "Mesa",
-      "driver_version" : {"op" : ">=", "value" : "8.0.0"},
-      "features" : ["accelerated_webgl"]
-    } ]
-  });
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_SetGLStringsDefered],
+  };
+  const gpu::GpuControlListData kData("1.0", 1, kEntries);
 
   // Check that it is allowed to call SetGLStrings before Initialize.
 
@@ -728,7 +648,7 @@ TEST_F(GpuDataManagerImplPrivateTest, SetGLStringsDefered) {
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x8086;
   gpu_info.gpu.device_id = 0x0042;
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   EXPECT_TRUE(manager->GpuAccessAllowed(NULL));
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
@@ -771,25 +691,16 @@ TEST_F(GpuDataManagerImplPrivateTest, BlacklistAllFeatures) {
   EXPECT_TRUE(manager->GpuAccessAllowed(&reason));
   EXPECT_TRUE(reason.empty());
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "features": [
-              "all"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_BlacklistAllFeatures],
+  };
+  const gpu::GpuControlListData kData("1.0", 1, kEntries);
 
   gpu::GPUInfo gpu_info;
   gpu_info.gpu.vendor_id = 0x10de;
   gpu_info.gpu.device_id = 0x0640;
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
 
   EXPECT_EQ(static_cast<size_t>(gpu::NUMBER_OF_GPU_FEATURE_TYPES),
             manager->GetBlacklistedFeatureCount());
@@ -802,22 +713,11 @@ TEST_F(GpuDataManagerImplPrivateTest, BlacklistAllFeatures) {
 TEST_F(GpuDataManagerImplPrivateTest, UpdateActiveGpu) {
   ScopedGpuDataManagerImpl manager;
 
-  const std::string blacklist_json = LONG_STRING_CONST(
-      {
-        "name": "gpu blacklist",
-        "version": "0.1",
-        "entries": [
-          {
-            "id": 1,
-            "vendor_id": "0x8086",
-            "multi_gpu_category": "active",
-            "features": [
-              "accelerated_webgl"
-            ]
-          }
-        ]
-      }
-  );
+  const gpu::GpuControlList::Entry kEntries[] = {
+      gpu::kGpuDataManagerTestingEntries
+          [gpu::kGpuDataManagerImplPrivateTest_UpdateActiveGpu],
+  };
+  const gpu::GpuControlListData kData("1.0", 1, kEntries);
 
   // Two GPUs, the secondary Intel GPU is active.
   gpu::GPUInfo gpu_info;
@@ -830,7 +730,7 @@ TEST_F(GpuDataManagerImplPrivateTest, UpdateActiveGpu) {
   intel_gpu.active = true;
   gpu_info.secondary_gpus.push_back(intel_gpu);
 
-  manager->InitializeForTesting(blacklist_json, gpu_info);
+  manager->InitializeForTesting(kData, gpu_info);
   TestObserver observer;
   manager->AddObserver(&observer);
 

@@ -39,9 +39,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
  public:
   static GpuDataManagerImplPrivate* Create(GpuDataManagerImpl* owner);
 
-  void InitializeForTesting(
-      const std::string& gpu_blacklist_json,
-      const gpu::GPUInfo& gpu_info);
+  void InitializeForTesting(const gpu::GpuControlListData& gpu_blacklist_data,
+                            const gpu::GPUInfo& gpu_info);
   bool IsFeatureBlacklisted(int feature) const;
   bool IsFeatureEnabled(int feature) const;
   bool IsWebGLEnabled() const;
@@ -193,8 +192,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
 
-  void InitializeImpl(const std::string& gpu_blacklist_json,
-                      const std::string& gpu_driver_bug_list_json,
+  void InitializeImpl(const gpu::GpuControlListData& gpu_blacklist_data,
+                      const gpu::GpuControlListData& gpu_driver_bug_list_data,
                       const gpu::GPUInfo& gpu_info);
 
   void RunPostInitTasks();

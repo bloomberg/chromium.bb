@@ -1,25 +1,6 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// Determines whether a certain driver bug exists in the current system.
-// The format of a valid gpu_driver_bug_list.json file is defined in
-// <gpu/config/gpu_control_list_format.txt>.
-// The supported "features" can be found in
-// <gpu/config/gpu_driver_bug_workaround_type.h>.
-
-#include "gpu/config/gpu_control_list_jsons.h"
-
-#define LONG_STRING_CONST(...) #__VA_ARGS__
-
-namespace gpu {
-
-const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
-
 {
   "name": "gpu driver bug list",
-  // Please update the version number whenever you change this file.
-  "version": "9.37",
+  "version": "10.0",
   "entries": [
     {
       "id": 1,
@@ -584,9 +565,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         "use_virtualized_gl_contexts"
       ]
     },
-)  // LONG_STRING_CONST macro
-// Avoid C2026 (string too big) error on VisualStudio.
-LONG_STRING_CONST(
     {
       "id": 74,
       "cr_bugs": [278606, 382686],
@@ -1234,7 +1212,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 129,
-      // TODO(dshwang): Fix ANGLE crash. crbug.com/518889
+      "comment": "TODO(dshwang): Fix ANGLE crash. crbug.com/518889",
       "description": "ANGLE crash on glReadPixels from incomplete cube map texture",
       "cr_bugs": [518889],
       "os": {
@@ -1387,11 +1365,12 @@ LONG_STRING_CONST(
       "description": "glReadPixels fails on FBOs with SRGB_ALPHA textures, Nexus 5X",
       "cr_bugs": [550292, 565179],
       "os": {
-        "type": "android"
-        // Originally on Android 6.0. Expect it to fail in later versions.
+        "type": "android",
+        "comment": "Originally on Android 6.0. Expect it to fail in later versions."
       },
       "gl_vendor": "Qualcomm",
-      "gl_renderer": "Adreno \\(TM\\) 4.*", // Originally on 418.
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "comment": "Originally on 418.",
       "disabled_extensions": ["GL_EXT_sRGB"]
     },
     {
@@ -1456,9 +1435,6 @@ LONG_STRING_CONST(
         "broken_egl_image_ref_counting"
       ]
     },
-)  // LONG_STRING_CONST macro
-// Avoid C2026 (string too big) error on VisualStudio.
-LONG_STRING_CONST(
     {
       "id": 147,
       "description": "Limit max texure size to 4096 on all of Android",
@@ -1790,8 +1766,8 @@ LONG_STRING_CONST(
         "version": {
           "op": "between",
           "value": "7.0.0",
-          "value2": "7.0.99"
-          // Only initial version of N.
+          "value2": "7.0.99",
+          "comment": "Only initial version of N."
         }
       },
       "gl_renderer": "Adreno \\(TM\\) 4.*",
@@ -2308,20 +2284,19 @@ LONG_STRING_CONST(
         "use_virtualized_gl_contexts"
       ]
     },
-)  // LONG_STRING_CONST macro
-// Avoid C2026 (string too big) error on VisualStudio.
-LONG_STRING_CONST(
     {
-      // Corresponds to software rendering list #140.
       "id": 214,
+      "comment": [
+        "Corresponds to software rendering list #140",
+        "Somehow the first workaround won't work without the second",
+        "See https://crbug.com/698197 for details"
+      ],
       "description": "Certain versions of Qualcomm driver don't setup scissor state correctly when FBO0 is bound.",
       "cr_bugs": [670607, 696627, 698197],
       "gl_vendor": "Qualcomm.*",
       "machine_model_name": ["Nexus 7", "KFTHWI", "KFSAWI", "KFAPWI", "KFTHWA", "KFSAWA", "KFAPWA"],
       "features": [
         "force_update_scissor_state_when_binding_fbo0",
-        // Somehow the main workaround above won't work without the one below.
-        // See https://crbug.com/698197 for details.
         "disable_chromium_framebuffer_multisample"
       ]
     },
@@ -2399,11 +2374,9 @@ LONG_STRING_CONST(
         "disallow_large_instanced_draw"
       ]
     }
+  ],
+  "comment": [
+    "Please update the version number on top whenever you change this file",
+    "Please run gpu/config/process_json.py whenever you change this file"
   ]
-  // Please update the version number at beginning of this file whenever you
-  // change this file.
 }
-
-);  // LONG_STRING_CONST macro
-
-}  // namespace gpu

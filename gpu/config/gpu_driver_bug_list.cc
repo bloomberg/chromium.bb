@@ -5,6 +5,7 @@
 #include "gpu/config/gpu_driver_bug_list.h"
 
 #include "base/logging.h"
+#include "gpu/config/gpu_driver_bug_list_autogen.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
@@ -26,16 +27,23 @@ const GpuDriverBugWorkaroundInfo kFeatureList[] = {
 
 }  // namespace anonymous
 
-GpuDriverBugList::GpuDriverBugList()
-    : GpuControlList() {
-}
+GpuDriverBugList::GpuDriverBugList(const GpuControlListData& data)
+    : GpuControlList(data) {}
 
 GpuDriverBugList::~GpuDriverBugList() {
 }
 
 // static
-GpuDriverBugList* GpuDriverBugList::Create() {
-  GpuDriverBugList* list = new GpuDriverBugList();
+std::unique_ptr<GpuDriverBugList> GpuDriverBugList::Create() {
+  GpuControlListData data(kGpuDriverBugListVersion, kGpuDriverBugListEntryCount,
+                          kGpuDriverBugListEntries);
+  return Create(data);
+}
+
+// static
+std::unique_ptr<GpuDriverBugList> GpuDriverBugList::Create(
+    const GpuControlListData& data) {
+  std::unique_ptr<GpuDriverBugList> list(new GpuDriverBugList(data));
 
   DCHECK_EQ(static_cast<int>(arraysize(kFeatureList)),
             NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES);
@@ -106,4 +114,3 @@ void GpuDriverBugList::AppendAllWorkarounds(
 }
 
 }  // namespace gpu
-

@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/three_d_api_types.h"
+#include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 
@@ -65,8 +66,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   static GpuDataManagerImpl* GetInstance();
 
   // GpuDataManager implementation.
-  void InitializeForTesting(const std::string& gpu_blacklist_json,
-                            const gpu::GPUInfo& gpu_info) override;
+  void BlacklistWebGLForTesting() override;
   bool IsFeatureBlacklisted(int feature) const override;
   bool IsFeatureEnabled(int feature) const override;
   bool IsWebGLEnabled() const override;
@@ -103,6 +103,9 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // preliminary blacklisted features; it should only be called at browser
   // startup time in UI thread before the IO restriction is turned on.
   void Initialize();
+
+  void InitializeForTesting(const gpu::GpuControlListData& gpu_blacklist_data,
+                            const gpu::GPUInfo& gpu_info);
 
   // Only update if the current GPUInfo is not finalized.  If blacklist is
   // loaded, run through blacklist and update blacklisted features.

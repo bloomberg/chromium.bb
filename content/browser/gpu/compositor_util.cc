@@ -375,7 +375,6 @@ base::Value* GetProblems() {
     problem->SetString("description",
         "GPU process was unable to boot: " + gpu_access_blocked_reason);
     problem->Set("crBugs", new base::ListValue());
-    problem->Set("webkitBugs", new base::ListValue());
     base::ListValue* disabled_features = new base::ListValue();
     disabled_features->AppendString("all");
     problem->Set("affectedGpuSettings", disabled_features);
@@ -392,7 +391,6 @@ base::Value* GetProblems() {
       problem->SetString(
           "description", gpu_feature_info.disabled_description);
       problem->Set("crBugs", new base::ListValue());
-      problem->Set("webkitBugs", new base::ListValue());
       base::ListValue* disabled_features = new base::ListValue();
       disabled_features->AppendString(gpu_feature_info.name);
       problem->Set("affectedGpuSettings", disabled_features);

@@ -270,7 +270,7 @@ cr.define('gpu', function() {
       problemEl.appendChild(desc);
 
       // Spacing ':' element
-      if (problem.crBugs.length + problem.webkitBugs.length > 0) {
+      if (problem.crBugs.length > 0) {
         var tmp = document.createElement('span');
         tmp.textContent = ': ';
         problemEl.appendChild(tmp);
@@ -291,22 +291,6 @@ cr.define('gpu', function() {
         var bugid = parseInt(problem.crBugs[j]);
         link.textContent = bugid;
         link.href = 'http://crbug.com/' + bugid;
-        problemEl.appendChild(link);
-        nbugs++;
-      }
-
-      for (j = 0; j < problem.webkitBugs.length; ++j) {
-        if (nbugs > 0) {
-          var tmp = document.createElement('span');
-          tmp.textContent = ', ';
-          problemEl.appendChild(tmp);
-        }
-
-        var link = document.createElement('a');
-        var bugid = parseInt(problem.webkitBugs[j]);
-        link.textContent = bugid;
-
-        link.href = 'https://bugs.webkit.org/show_bug.cgi?id=' + bugid;
         problemEl.appendChild(link);
         nbugs++;
       }

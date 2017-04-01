@@ -5,7 +5,7 @@
 #ifndef GPU_CONFIG_GPU_BLACKLIST_H_
 #define GPU_CONFIG_GPU_BLACKLIST_H_
 
-#include <string>
+#include <memory>
 
 #include "base/macros.h"
 #include "gpu/config/gpu_control_list.h"
@@ -16,10 +16,11 @@ class GPU_EXPORT GpuBlacklist : public GpuControlList {
  public:
   ~GpuBlacklist() override;
 
-  static GpuBlacklist* Create();
+  static std::unique_ptr<GpuBlacklist> Create();
+  static std::unique_ptr<GpuBlacklist> Create(const GpuControlListData& data);
 
  private:
-  GpuBlacklist();
+  explicit GpuBlacklist(const GpuControlListData& data);
 
   DISALLOW_COPY_AND_ASSIGN(GpuBlacklist);
 };

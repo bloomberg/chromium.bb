@@ -1,24 +1,6 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// Determines whether certain gpu-related features are blacklisted or not.
-// The format of a valid software_rendering_list.json file is defined in
-// <gpu/config/gpu_control_list_format.txt>.
-// The supported "features" can be found in <gpu/config/gpu_blacklist.cc>.
-
-#include "gpu/config/gpu_control_list_jsons.h"
-
-#define LONG_STRING_CONST(...) #__VA_ARGS__
-
-namespace gpu {
-
-const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
-
 {
   "name": "software rendering list",
-  // Please update the version number whenever you change this file.
-  "version": "12.23",
+  "version": "13.0",
   "entries": [
     {
       "id": 1,
@@ -32,7 +14,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "multi_gpu_category": "any",
       "features": [
         "accelerated_webgl",
-        "flash_3d",
+        "flash3d",
         "flash_stage3d",
         "gpu_rasterization"
       ]
@@ -53,14 +35,11 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "id": 4,
       "description": "The Intel Mobile 945 Express family of chipsets is not compatible with WebGL",
       "cr_bugs": [232035],
-      "os": {
-        "type": "any"
-      },
       "vendor_id": "0x8086",
       "device_id": ["0x27AE", "0x27A2"],
       "features": [
         "accelerated_webgl",
-        "flash_3d",
+        "flash3d",
         "flash_stage3d",
         "accelerated_2d_canvas"
       ]
@@ -101,9 +80,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "id": 8,
       "description": "NVIDIA GeForce FX Go5200 is assumed to be buggy",
       "cr_bugs": [72938],
-      "os": {
-        "type": "any"
-      },
       "vendor_id": "0x10de",
       "device_id": ["0x0324"],
       "features": [
@@ -122,7 +98,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "multi_gpu_category": "any",
       "features": [
         "accelerated_webgl",
-        "flash_3d",
+        "flash3d",
         "flash_stage3d",
         "gpu_rasterization"
       ]
@@ -460,15 +436,18 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "accelerated_video_decode",
-        "flash_3d",
+        "flash3d",
         "flash_stage3d"
       ]
     },
     {
-      // Panel fitting is only used with OS_CHROMEOS. To avoid displaying an
-      // error in chrome:gpu on every other platform, this blacklist entry needs
-      // to only match on chromeos. The drawback is that panel_fitting will not
-      // appear to be blacklisted if accidentally queried on non-chromeos.
+      "comment": [
+        "Panel fitting is only used with OS_CHROMEOS. To avoid displaying an ",
+        "error in chrome:gpu on every other platform, this blacklist entry ",
+        "needs to only match on chromeos. The drawback is that panel_fitting ",
+        "will not appear to be blacklisted if accidentally queried on ",
+        "non-chromeos."
+      ],
       "id": 57,
       "description": "Chrome OS panel fitting is only supported for Intel IVB and SNB Graphics Controllers",
       "os": {
@@ -614,8 +593,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
         "all"
       ]
     },
-)  // String split to avoid MSVC char limit.
-LONG_STRING_CONST(
     {
       "id": 76,
       "description": "WebGL is disabled on Android unless the GPU runs in a separate process or reset notification is supported",
@@ -625,10 +602,7 @@ LONG_STRING_CONST(
       "in_process_gpu": true,
       "exceptions": [
         {
-          "gl_reset_notification_strategy": {
-            "op": "=",
-            "value": "33362"
-          }
+          "gl_reset_notification_strategy": "33362"
         },
         {
           "gl_renderer": "Mali-4.*",
@@ -1311,8 +1285,6 @@ LONG_STRING_CONST(
         "gpu_rasterization"
       ]
     },
-)  // String split to avoid MSVC char limit.
-LONG_STRING_CONST(
     {
       "id": 125,
       "description": "VirtualBox driver is unstable on linux.",
@@ -1530,8 +1502,8 @@ LONG_STRING_CONST(
       ]
     },
     {
-      // Corresponds to GPU driver bug #214.
       "id": 140,
+      "comment": "Corresponds to GPU driver bug #214",
       "description": "Some old Qualcomm scissor bug workaround needs disabling MSAA to work, which is a core part of WebGL 2.",
       "cr_bugs": [670607, 696627, 698197],
       "gl_vendor": "Qualcomm.*",
@@ -1540,9 +1512,9 @@ LONG_STRING_CONST(
         "webgl2"
       ]
     }
+  ],
+  "comment": [
+    "Please update the version number on top whenever you change this file",
+    "Please run gpu/config/process_json.py whenever you change this file"
   ]
 }
-
-);  // LONG_STRING_CONST macro
-
-}  // namespace gpu

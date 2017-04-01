@@ -5,13 +5,12 @@
 #ifndef GPU_CONFIG_GPU_DRIVER_BUG_LIST_H_
 #define GPU_CONFIG_GPU_DRIVER_BUG_LIST_H_
 
+#include <memory>
 #include <set>
-#include <string>
 
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "gpu/config/gpu_control_list.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -20,7 +19,9 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
  public:
   ~GpuDriverBugList() override;
 
-  static GpuDriverBugList* Create();
+  static std::unique_ptr<GpuDriverBugList> Create();
+  static std::unique_ptr<GpuDriverBugList> Create(
+      const GpuControlListData& data);
 
   // Append |workarounds| with these passed in through the
   // |command_line|.
@@ -34,7 +35,7 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
   static void AppendAllWorkarounds(std::vector<const char*>* workarounds);
 
  private:
-  GpuDriverBugList();
+  explicit GpuDriverBugList(const GpuControlListData& data);
 
   DISALLOW_COPY_AND_ASSIGN(GpuDriverBugList);
 };
@@ -42,4 +43,3 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_DRIVER_BUG_LIST_H_
-

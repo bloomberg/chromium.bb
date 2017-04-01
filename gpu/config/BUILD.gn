@@ -40,10 +40,12 @@ source_set("config_sources") {
     "gpu_blacklist.h",
     "gpu_control_list.cc",
     "gpu_control_list.h",
-    "gpu_control_list_jsons.h",
     "gpu_driver_bug_list.cc",
     "gpu_driver_bug_list.h",
-    "gpu_driver_bug_list_json.cc",
+    "gpu_driver_bug_list_arrays_and_structs_autogen.h",
+    "gpu_driver_bug_list_autogen.cc",
+    "gpu_driver_bug_list_autogen.h",
+    "gpu_driver_bug_list_exceptions_autogen.h",
     "gpu_driver_bug_workaround_type.h",
     "gpu_driver_bug_workarounds.cc",
     "gpu_driver_bug_workarounds.h",
@@ -69,7 +71,10 @@ source_set("config_sources") {
     "gpu_test_expectations_parser.h",
     "gpu_util.cc",
     "gpu_util.h",
-    "software_rendering_list_json.cc",
+    "software_rendering_list_arrays_and_structs_autogen.h",
+    "software_rendering_list_autogen.cc",
+    "software_rendering_list_autogen.h",
+    "software_rendering_list_exceptions_autogen.h",
   ]
 
   configs += [

@@ -20,7 +20,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
-#include "gpu/config/gpu_info.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
@@ -47,32 +46,6 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
       const std::vector<std::string>& expected_errors,
       const std::vector<std::string>& actual_errors) {
     ASSERT_EQ(expected_errors, actual_errors);
-  }
-
-  // This should only be called once per test instance. Calling more than once
-  // will result in stale information in the GPUDataManager which will throw off
-  // the RequirementsChecker.
-  void BlackListGPUFeatures(const std::vector<std::string>& features) {
-#if !defined(NDEBUG)
-    static bool called = false;
-    DCHECK(!called);
-    called = true;
-#endif
-
-    static const std::string json_blacklist =
-      "{\n"
-      "  \"name\": \"gpu blacklist\",\n"
-      "  \"version\": \"1.0\",\n"
-      "  \"entries\": [\n"
-      "    {\n"
-      "      \"id\": 1,\n"
-      "      \"features\": [\"" + base::JoinString(features, "\", \"") + "\"]\n"
-      "    }\n"
-      "  ]\n"
-      "}";
-    gpu::GPUInfo gpu_info;
-    content::GpuDataManager::GetInstance()->InitializeForTesting(
-        json_blacklist, gpu_info);
   }
 
  protected:
@@ -129,10 +102,7 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, DisallowWebGL) {
       LoadExtensionFromDirName("require_3d"));
   ASSERT_TRUE(extension.get());
 
-  // Backlist webgl
-  std::vector<std::string> blacklisted_features;
-  blacklisted_features.push_back("accelerated_webgl");
-  BlackListGPUFeatures(blacklisted_features);
+  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
   content::RunAllBlockingPoolTasksUntilIdle();
 
   std::vector<std::string> expected_errors;

@@ -128,7 +128,6 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/value_builder.h"
-#include "gpu/config/gpu_info.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -637,23 +636,6 @@ class ExtensionServiceTest
 
   void TestExternalProvider(MockExtensionProvider* provider,
                             Manifest::Location location);
-
-  void BlackListWebGL() {
-    static const std::string json_blacklist =
-        "{\n"
-        "  \"name\": \"gpu blacklist\",\n"
-        "  \"version\": \"1.0\",\n"
-        "  \"entries\": [\n"
-        "    {\n"
-        "      \"id\": 1,\n"
-        "      \"features\": [\"accelerated_webgl\"]\n"
-        "    }\n"
-        "  ]\n"
-        "}";
-    gpu::GPUInfo gpu_info;
-    content::GpuDataManager::GetInstance()->InitializeForTesting(
-        json_blacklist, gpu_info);
-  }
 
   // Grants all optional permissions stated in manifest to active permission
   // set for extension |id|.
@@ -4567,7 +4549,7 @@ TEST_F(ExtensionServiceTest, UninstallExtensionHelperTerminated) {
 // other disable reasons.
 TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
   InitializeEmptyExtensionService();
-  BlackListWebGL();
+  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
 
   base::FilePath path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path =
@@ -4596,7 +4578,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsEnabled) {
 // Extensions disabled through user action should stay disabled.
 TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
   InitializeEmptyExtensionService();
-  BlackListWebGL();
+  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
 
   base::FilePath path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path =
@@ -4627,7 +4609,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsDisabled) {
 // permission increase.
 TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
   InitializeEmptyExtensionService();
-  BlackListWebGL();
+  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
 
   base::FilePath path = data_dir().AppendASCII("requirements");
   base::FilePath pem_path =
@@ -4659,7 +4641,7 @@ TEST_F(ExtensionServiceTest, UpgradingRequirementsPermissions) {
 // requirements.
 TEST_F(ExtensionServiceTest, UnpackedRequirements) {
   InitializeEmptyExtensionService();
-  BlackListWebGL();
+  content::GpuDataManager::GetInstance()->BlacklistWebGLForTesting();
 
   base::FilePath path =
       data_dir().AppendASCII("requirements").AppendASCII("v2_bad_requirements");

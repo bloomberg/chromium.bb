@@ -3,55 +3,54 @@
 // found in the LICENSE file.
 
 #include "gpu/config/gpu_blacklist.h"
-
-#include <memory>
-
-#include "gpu/config/gpu_control_list_jsons.h"
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-const char kOsVersion[] = "10.6.4";
 
 namespace gpu {
 
 class GpuBlacklistTest : public testing::Test {
  public:
   GpuBlacklistTest() { }
-
   ~GpuBlacklistTest() override {}
 
   const GPUInfo& gpu_info() const {
     return gpu_info_;
   }
 
-  void RunFeatureTest(const std::string& feature_name,
-                      GpuFeatureType feature_type) {
-    const std::string json =
-        "{\n"
-        "  \"name\": \"gpu blacklist\",\n"
-        "  \"version\": \"0.1\",\n"
-        "  \"entries\": [\n"
-        "    {\n"
-        "      \"id\": 1,\n"
-        "      \"os\": {\n"
-        "        \"type\": \"macosx\"\n"
-        "      },\n"
-        "      \"vendor_id\": \"0x10de\",\n"
-        "      \"device_id\": [\"0x0640\"],\n"
-        "      \"features\": [\n"
-        "        \"" +
-        feature_name +
-        "\"\n"
-        "      ]\n"
-        "    }\n"
-        "  ]\n"
-        "}";
-
-    std::unique_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
-    EXPECT_TRUE(blacklist->LoadList(json, GpuBlacklist::kAllOs));
-    std::set<int> type = blacklist->MakeDecision(
-        GpuBlacklist::kOsMacosx, kOsVersion, gpu_info());
+  void RunFeatureTest(GpuFeatureType feature_type) {
+    const int kFeatureListForEntry1[1] = {feature_type};
+    const uint32_t kDeviceIDsForEntry1[1] = {0x0640};
+    const GpuControlList::Entry kTestEntries[1] = {{
+        1,                      // id
+        "Test entry",           // description
+        1,                      // features size
+        kFeatureListForEntry1,  // features
+        0,                      // DisabledExtensions size
+        nullptr,                // DisabledExtensions
+        0,                      // CrBugs size
+        nullptr,                // CrBugs
+        {
+            GpuControlList::kOsMacosx,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             nullptr, nullptr},                    // os_version
+            0x10de,                                // vendor_id
+            1,                                     // DeviceIDs size
+            kDeviceIDsForEntry1,                   // DeviceIDs
+            GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
+            nullptr,                               // driver info
+            nullptr,                               // GL strings
+            nullptr,                               // machine model info
+            nullptr,                               // more conditions
+        },
+        0,        // exceptions count
+        nullptr,  // exceptions
+    }};
+    GpuControlListData data("1.0", 1, kTestEntries);
+    std::unique_ptr<GpuBlacklist> blacklist = GpuBlacklist::Create(data);
+    std::set<int> type =
+        blacklist->MakeDecision(GpuBlacklist::kOsMacosx, "10.12.3", gpu_info());
     EXPECT_EQ(1u, type.size());
     EXPECT_EQ(1u, type.count(feature_type));
   }
@@ -69,76 +68,46 @@ class GpuBlacklistTest : public testing::Test {
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
   }
 
-  void TearDown() override {}
-
  private:
   GPUInfo gpu_info_;
 };
 
-TEST_F(GpuBlacklistTest, CurrentBlacklistValidation) {
-  std::unique_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
-  EXPECT_TRUE(blacklist->LoadList(
-      kSoftwareRenderingListJson, GpuBlacklist::kAllOs));
-}
-
-TEST_F(GpuBlacklistTest, DuplicatedIDValidation) {
-  std::unique_ptr<GpuBlacklist> blacklist(GpuBlacklist::Create());
-  EXPECT_TRUE(blacklist->LoadList(
-      kSoftwareRenderingListJson, GpuBlacklist::kAllOs));
-  EXPECT_FALSE(blacklist->has_duplicated_entry_id());
-}
-
-#define GPU_BLACKLIST_FEATURE_TEST(test_name, feature_name, feature_type) \
-TEST_F(GpuBlacklistTest, test_name) {                                     \
-  RunFeatureTest(feature_name, feature_type);                             \
-}
+#define GPU_BLACKLIST_FEATURE_TEST(test_name, feature_type) \
+  TEST_F(GpuBlacklistTest, test_name) { RunFeatureTest(feature_type); }
 
 GPU_BLACKLIST_FEATURE_TEST(Accelerated2DCanvas,
-                           "accelerated_2d_canvas",
                            GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
 
 GPU_BLACKLIST_FEATURE_TEST(GpuCompositing,
-                           "gpu_compositing",
                            GPU_FEATURE_TYPE_GPU_COMPOSITING)
 
-GPU_BLACKLIST_FEATURE_TEST(WebGL,
-                           "accelerated_webgl",
-                           GPU_FEATURE_TYPE_ACCELERATED_WEBGL)
+GPU_BLACKLIST_FEATURE_TEST(AcceleratedWebGL, GPU_FEATURE_TYPE_ACCELERATED_WEBGL)
 
 GPU_BLACKLIST_FEATURE_TEST(Flash3D,
-                           "flash_3d",
                            GPU_FEATURE_TYPE_FLASH3D)
 
 GPU_BLACKLIST_FEATURE_TEST(FlashStage3D,
-                           "flash_stage3d",
                            GPU_FEATURE_TYPE_FLASH_STAGE3D)
 
 GPU_BLACKLIST_FEATURE_TEST(FlashStage3DBaseline,
-                           "flash_stage3d_baseline",
                            GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE)
 
 GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoDecode,
-                           "accelerated_video_decode",
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE)
 
 GPU_BLACKLIST_FEATURE_TEST(AcceleratedVideoEncode,
-                           "accelerated_video_encode",
                            GPU_FEATURE_TYPE_ACCELERATED_VIDEO_ENCODE)
 
 GPU_BLACKLIST_FEATURE_TEST(PanelFitting,
-                           "panel_fitting",
                            GPU_FEATURE_TYPE_PANEL_FITTING)
 
 GPU_BLACKLIST_FEATURE_TEST(GpuRasterization,
-                           "gpu_rasterization",
                            GPU_FEATURE_TYPE_GPU_RASTERIZATION)
 
 GPU_BLACKLIST_FEATURE_TEST(AcceleratedVpxDecode,
-                           "accelerated_vpx_decode",
                            GPU_FEATURE_TYPE_ACCELERATED_VPX_DECODE)
 
 GPU_BLACKLIST_FEATURE_TEST(WebGL2,
-                           "webgl2",
                            GPU_FEATURE_TYPE_WEBGL2)
 
 }  // namespace gpu
