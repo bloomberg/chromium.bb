@@ -48,10 +48,10 @@
             items="[[getLanguages_(
                 languages.supported, languages.enabled.*, filterValue_)]]">
           <template>
-            <paper-checkbox class="list-item" checked="[[willAdd_(item.code)]]"
+            <paper-checkbox class="list-item no-outline"
+                checked="[[willAdd_(item.code)]]" tabindex$="[[tabIndex]]"
                 title$="[[item.nativeDisplayName]]"
-                on-change="onLanguageCheckboxChange_"
-                tabindex$="[[tabIndex]]">
+                on-change="onLanguageCheckboxChange_">
               [[getDisplayText_(item)]]
             </paper-checkbox>
           </template>
