@@ -9,7 +9,6 @@
 <script>
 
 const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
-const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
 
 // This test verifies that the settings defined in the mock Mojo service
 // implementation are the same as those returned by the corresponding
@@ -59,8 +58,7 @@ async_test(function(t) {
 
         assert_equals(settings.zoom, mock_settings.zoom.current);
 
-        // TODO(mcasas): check |torch| when the mojom interface is updated,
-        // https://crbug.com/700607.
+        assert_equals(settings.torch, mock_settings.torch);
 
         t.done();
       }, 100);

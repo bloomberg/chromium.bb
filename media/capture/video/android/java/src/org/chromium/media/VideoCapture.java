@@ -72,27 +72,28 @@ public abstract class VideoCapture {
     public abstract PhotoCapabilities getPhotoCapabilities();
 
     /**
-    * @param zoom Zoom level, should be ignored if 0.
-    * @param focusMode Focus mode following AndroidMeteringMode enum.
-    * @param exposureMode Exposure mode following AndroidMeteringMode enum.
-    * @param pointsOfInterest2D 2D normalized points of interest, marshalled with
-    * x coordinate first followed by the y coordinate.
-    * @param hasExposureCompensation Indicates if |exposureCompensation| is set.
-    * @param exposureCompensation Adjustment to auto exposure. 0 means not adjusted.
-    * @param whiteBalanceMode White Balance mode following AndroidMeteringMode enum.
-    * @param iso Sensitivity to light. 0, which would be invalid, means ignore.
-    * @param hasRedEyeReduction Indicates if |redEyeReduction| is set.
-    * @param redEyeReduction Value of red eye reduction for the auto flash setting.
-    * @param fillLightMode Flash/Torch setting, following AndroidFillLightMode enum.
-    * @param colorTemperature White Balance reference temperature, valid if whiteBalanceMode is
-    * manual, and its value is larger than 0.
-    */
+     * @param zoom Zoom level, should be ignored if 0.
+     * @param focusMode Focus mode following AndroidMeteringMode enum.
+     * @param exposureMode Exposure mode following AndroidMeteringMode enum.
+     * @param pointsOfInterest2D 2D normalized points of interest, marshalled with
+     * x coordinate first followed by the y coordinate.
+     * @param hasExposureCompensation Indicates if |exposureCompensation| is set.
+     * @param exposureCompensation Adjustment to auto exposure. 0 means not adjusted.
+     * @param whiteBalanceMode White Balance mode following AndroidMeteringMode enum.
+     * @param iso Sensitivity to light. 0, which would be invalid, means ignore.
+     * @param hasRedEyeReduction Indicates if |redEyeReduction| is set.
+     * @param redEyeReduction Value of red eye reduction for the auto flash setting.
+     * @param fillLightMode Flash setting, following AndroidFillLightMode enum.
+     * @param colorTemperature White Balance reference temperature, valid if whiteBalanceMode is
+     * manual, and its value is larger than 0.
+     * @param torch Torch setting, true meaning on.
+     */
     @CalledByNative
     public abstract void setPhotoOptions(double zoom, int focusMode, int exposureMode, double width,
             double height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
             double exposureCompensation, int whiteBalanceMode, double iso,
             boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
-            double colorTemperature);
+            boolean hasTorch, boolean torch, double colorTemperature);
 
     @CalledByNative
     public abstract boolean takePhoto(final long callbackId);

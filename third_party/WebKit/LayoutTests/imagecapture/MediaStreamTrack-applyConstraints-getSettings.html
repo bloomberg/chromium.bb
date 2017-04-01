@@ -33,8 +33,9 @@ async_test(function(t) {
                                       saturation           : 5,
                                       sharpness            : 6,
 
-                                      zoom                 : 3.141592
-                                      // TODO: torch https://crbug.com/700607.
+                                      zoom                 : 3.141592,
+
+                                      torch                : true
                                     }]};
   var theMock = null;
   var videoTrack = null;
@@ -82,8 +83,7 @@ async_test(function(t) {
 
       assert_equals(constraints.advanced[0].zoom, settings.zoom, 'zoom');
 
-      // TODO(mcasas): check |torch| when the mojom interface is updated,
-      // https://crbug.com/700607.
+      assert_equals(constraints.advanced[0].torch, settings.torch, 'torch');
 
       t.done();
     })

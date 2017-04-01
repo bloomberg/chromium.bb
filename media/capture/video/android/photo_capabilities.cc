@@ -145,11 +145,29 @@ PhotoCapabilities::AndroidMeteringMode PhotoCapabilities::getWhiteBalanceMode()
                                                  object_));
 }
 
-PhotoCapabilities::AndroidFillLightMode PhotoCapabilities::getFillLightMode()
-    const {
+std::vector<PhotoCapabilities::AndroidFillLightMode>
+PhotoCapabilities::getFillLightModes() const {
   DCHECK(!object_.is_null());
-  return static_cast<AndroidFillLightMode>(
-      Java_PhotoCapabilities_getFillLightMode(AttachCurrentThread(), object_));
+
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<AndroidFillLightMode> modes;
+  static_assert(
+      std::is_same<int,
+                   std::underlying_type<AndroidFillLightMode>::type>::value,
+      "AndroidFillLightMode underlying type should be int");
+
+  base::android::ScopedJavaLocalRef<jintArray> jni_modes =
+      Java_PhotoCapabilities_getFillLightModes(env, object_);
+  if (jni_modes.obj()) {
+    base::android::JavaIntArrayToIntVector(
+        env, jni_modes.obj(), reinterpret_cast<std::vector<int>*>(&modes));
+  }
+  return modes;
+}
+
+bool PhotoCapabilities::getTorch() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getTorch(AttachCurrentThread(), object_);
 }
 
 bool PhotoCapabilities::getRedEyeReduction() const {

@@ -448,11 +448,33 @@ void FakePhotoDevice::GetPhotoCapabilities(
     VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) {
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
+
+  photo_capabilities->white_balance_mode = mojom::MeteringMode::NONE;
+  photo_capabilities->exposure_mode = mojom::MeteringMode::NONE;
+  photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
+
+  photo_capabilities->exposure_compensation = mojom::Range::New();
+  photo_capabilities->color_temperature = mojom::Range::New();
   photo_capabilities->iso = mojom::Range::New();
   photo_capabilities->iso->current = 100.0;
   photo_capabilities->iso->max = 100.0;
   photo_capabilities->iso->min = 100.0;
   photo_capabilities->iso->step = 0.0;
+
+  photo_capabilities->brightness = media::mojom::Range::New();
+  photo_capabilities->contrast = media::mojom::Range::New();
+  photo_capabilities->saturation = media::mojom::Range::New();
+  photo_capabilities->sharpness = media::mojom::Range::New();
+
+  photo_capabilities->zoom = mojom::Range::New();
+  photo_capabilities->zoom->current = fake_device_state_->zoom;
+  photo_capabilities->zoom->max = kMaxZoom;
+  photo_capabilities->zoom->min = kMinZoom;
+  photo_capabilities->zoom->step = kZoomStep;
+
+  photo_capabilities->torch = false;
+
+  photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->height->current =
       fake_device_state_->format.frame_size.height();
@@ -465,22 +487,7 @@ void FakePhotoDevice::GetPhotoCapabilities(
   photo_capabilities->width->max = 1920.0;
   photo_capabilities->width->min = 96.0;
   photo_capabilities->width->step = 1.0;
-  photo_capabilities->zoom = mojom::Range::New();
-  photo_capabilities->zoom->current = fake_device_state_->zoom;
-  photo_capabilities->zoom->max = kMaxZoom;
-  photo_capabilities->zoom->min = kMinZoom;
-  photo_capabilities->zoom->step = kZoomStep;
-  photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->exposure_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->exposure_compensation = mojom::Range::New();
-  photo_capabilities->white_balance_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->fill_light_mode = mojom::FillLightMode::NONE;
-  photo_capabilities->red_eye_reduction = false;
-  photo_capabilities->color_temperature = mojom::Range::New();
-  photo_capabilities->brightness = media::mojom::Range::New();
-  photo_capabilities->contrast = media::mojom::Range::New();
-  photo_capabilities->saturation = media::mojom::Range::New();
-  photo_capabilities->sharpness = media::mojom::Range::New();
+
   callback.Run(std::move(photo_capabilities));
 }
 

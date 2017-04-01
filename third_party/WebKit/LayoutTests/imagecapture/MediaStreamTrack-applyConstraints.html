@@ -35,8 +35,9 @@ async_test(function(t) {
                                       saturation           : 5,
                                       sharpness            : 6,
 
-                                      zoom                 : 3.141592
-                                      // TODO: torch https://crbug.com/700607.
+                                      zoom                 : 3.141592,
+
+                                      torch                : true
                                     }]};
 
   var theMock = null;
@@ -77,6 +78,9 @@ async_test(function(t) {
                     theMock.options().saturation, 'saturation value');
       assert_equals(constraints.advanced[0].sharpness,
                     theMock.options().sharpness, 'sharpness value');
+
+      assert_equals(constraints.advanced[0].torch, theMock.options().torch,
+                    'torch');
 
       t.done();
     })

@@ -28,6 +28,7 @@
 namespace blink {
 
 using FillLightMode = media::mojom::blink::FillLightMode;
+using MeteringMode = media::mojom::blink::MeteringMode;
 
 namespace {
 
@@ -39,14 +40,17 @@ bool trackIsInactive(const MediaStreamTrack& track) {
   return track.readyState() != "live" || !track.enabled() || track.muted();
 }
 
-media::mojom::blink::MeteringMode parseMeteringMode(const String& blinkMode) {
+MeteringMode parseMeteringMode(const String& blinkMode) {
   if (blinkMode == "manual")
-    return media::mojom::blink::MeteringMode::MANUAL;
+    return MeteringMode::MANUAL;
   if (blinkMode == "single-shot")
-    return media::mojom::blink::MeteringMode::SINGLE_SHOT;
+    return MeteringMode::SINGLE_SHOT;
   if (blinkMode == "continuous")
-    return media::mojom::blink::MeteringMode::CONTINUOUS;
-  return media::mojom::blink::MeteringMode::NONE;
+    return MeteringMode::CONTINUOUS;
+  if (blinkMode == "none")
+    return MeteringMode::NONE;
+  NOTREACHED();
+  return MeteringMode::NONE;
 }
 
 FillLightMode parseFillLightMode(const String& blinkMode) {
@@ -56,18 +60,19 @@ FillLightMode parseFillLightMode(const String& blinkMode) {
     return FillLightMode::AUTO;
   if (blinkMode == "flash")
     return FillLightMode::FLASH;
-  return FillLightMode::NONE;
+  NOTREACHED();
+  return FillLightMode::OFF;
 }
 
-WebString toString(media::mojom::blink::MeteringMode value) {
+WebString toString(MeteringMode value) {
   switch (value) {
-    case media::mojom::blink::MeteringMode::NONE:
+    case MeteringMode::NONE:
       return WebString::fromUTF8("none");
-    case media::mojom::blink::MeteringMode::MANUAL:
+    case MeteringMode::MANUAL:
       return WebString::fromUTF8("manual");
-    case media::mojom::blink::MeteringMode::SINGLE_SHOT:
+    case MeteringMode::SINGLE_SHOT:
       return WebString::fromUTF8("single-shot");
-    case media::mojom::blink::MeteringMode::CONTINUOUS:
+    case MeteringMode::CONTINUOUS:
       return WebString::fromUTF8("continuous");
     default:
       NOTREACHED() << "Unknown MeteringMode";
@@ -345,8 +350,13 @@ void ImageCapture::setMediaTrackConstraints(
     settings->zoom = constraints.zoom().getAsDouble();
   }
 
-  // TODO(mcasas): add |torch| when the mojom interface is updated,
-  // https://crbug.com/700607.
+  // TODO(mcasas): support ConstrainBooleanParameters where applicable.
+  settings->has_torch =
+      constraints.hasTorch() && constraints.torch().isBoolean();
+  if (settings->has_torch) {
+    m_currentConstraints.setTorch(constraints.torch());
+    settings->torch = constraints.torch().getAsBoolean();
+  }
 
   m_service->SetOptions(m_streamTrack->component()->source()->id(),
                         std::move(settings),
@@ -387,6 +397,8 @@ void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
 
   if (m_capabilities.hasZoom())
     settings.setZoom(m_capabilities.zoom()->current());
+  if (m_capabilities.hasTorch())
+    settings.setTorch(m_capabilities.torch());
 
   // TODO(mcasas): add |torch| when the mojom interface is updated,
   // https://crbug.com/700607.
@@ -423,6 +435,8 @@ void ImageCapture::onPhotoCapabilities(
     onCapabilitiesUpdate(capabilities.Clone());
 
     PhotoCapabilities* caps = PhotoCapabilities::create();
+
+    caps->setRedEyeReduction(capabilities->red_eye_reduction);
     // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
     // mojo::StructTraits supports garbage-collected mappings,
     // https://crbug.com/700180.
@@ -430,17 +444,7 @@ void ImageCapture::onPhotoCapabilities(
         MediaSettingsRange::create(std::move(capabilities->height)));
     caps->setImageWidth(
         MediaSettingsRange::create(std::move(capabilities->width)));
-
-    // TODO(mcasas): use a list of supported modes when mojo is updated.
-    // https://crbug.com/700607.
-    if (capabilities->fill_light_mode == FillLightMode::NONE)
-      caps->setFillLightMode(Vector<FillLightMode>());
-    else
-      caps->setFillLightMode({capabilities->fill_light_mode});
-
-    // TODO(mcasas): use a list of supported modes when mojo is updated.
-    // https://crbug.com/700607.
-    caps->setRedEyeReduction(capabilities->red_eye_reduction);
+    caps->setFillLightMode(capabilities->fill_light_mode);
 
     resolver->resolve(caps);
   }
@@ -532,6 +536,8 @@ void ImageCapture::onCapabilitiesUpdate(
     m_capabilities.setZoom(
         MediaSettingsRange::create(std::move(capabilities->zoom)));
   }
+
+  m_capabilities.setTorch(capabilities->torch);
 
   // TODO(mcasas): do |torch| when the mojom interface is updated,
   // https://crbug.com/700607.

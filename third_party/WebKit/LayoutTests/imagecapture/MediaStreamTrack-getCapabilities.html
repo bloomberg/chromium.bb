@@ -123,8 +123,7 @@ async_test(function(t) {
         assert_equals(capabilities.zoom.current, mock_capabilities.zoom.current);
         assert_equals(capabilities.zoom.step, mock_capabilities.zoom.step);
 
-        // TODO(mcasas): check |torch| when the mojom interface is updated,
-        // https://crbug.com/700607.
+        assert_equals(capabilities.torch, mock_capabilities.torch, 'torch');
 
         t.done();
       }, 100);

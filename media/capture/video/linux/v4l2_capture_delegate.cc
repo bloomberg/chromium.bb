@@ -588,8 +588,8 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->width = mojom::Range::New();
   photo_capabilities->exposure_compensation = mojom::Range::New();
-  photo_capabilities->fill_light_mode = mojom::FillLightMode::NONE;
-  photo_capabilities->red_eye_reduction = false;
+  photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
+  photo_capabilities->torch = false;
 
   photo_capabilities->brightness =
       RetrieveUserControlRange(device_fd_.get(), V4L2_CID_BRIGHTNESS);

@@ -34,7 +34,8 @@ class PhotoCapabilities final
   }
 
   String redEyeReduction() const;
-  void setRedEyeReduction(bool redEyeReduction) {
+  void setRedEyeReduction(
+      media::mojom::blink::RedEyeReduction redEyeReduction) {
     m_redEyeReduction = redEyeReduction;
   }
 
@@ -46,7 +47,7 @@ class PhotoCapabilities final
   Member<MediaSettingsRange> m_imageHeight;
   Member<MediaSettingsRange> m_imageWidth;
   Vector<media::mojom::blink::FillLightMode> m_fillLightModes;
-  bool m_redEyeReduction;
+  media::mojom::blink::RedEyeReduction m_redEyeReduction;
 };
 
 }  // namespace blink

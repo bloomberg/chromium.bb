@@ -540,29 +540,27 @@ public class VideoCaptureCamera
             if (index >= 0) builder.setCurrentColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(index));
         }
 
-        if (parameters.getSupportedFlashModes() == null) {
-            builder.setFillLightMode(AndroidFillLightMode.NONE);
-        } else {
-            switch (parameters.getFlashMode()) {
-                case android.hardware.Camera.Parameters.FLASH_MODE_OFF:
-                    builder.setFillLightMode(AndroidFillLightMode.OFF);
-                    break;
-                case android.hardware.Camera.Parameters.FLASH_MODE_AUTO:
-                    builder.setFillLightMode(AndroidFillLightMode.AUTO);
-                    break;
-                case android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE:
-                    builder.setRedEyeReduction(true);
-                    builder.setFillLightMode(AndroidFillLightMode.AUTO);
-                    break;
-                case android.hardware.Camera.Parameters.FLASH_MODE_ON:
-                    builder.setFillLightMode(AndroidFillLightMode.FLASH);
-                    break;
-                case android.hardware.Camera.Parameters.FLASH_MODE_TORCH:
-                    builder.setFillLightMode(AndroidFillLightMode.TORCH);
-                    break;
-                default:
-                    builder.setFillLightMode(AndroidFillLightMode.NONE);
+        final List<String> flashModes = parameters.getSupportedFlashModes();
+        if (flashModes != null) {
+            builder.setTorch(
+                    flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_TORCH));
+            builder.setRedEyeReduction(
+                    flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_RED_EYE));
+
+            ArrayList<Integer> modes = new ArrayList<Integer>(0);
+            if (flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_OFF)) {
+                modes.add(Integer.valueOf(AndroidFillLightMode.OFF));
             }
+            if (flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_AUTO)) {
+                modes.add(Integer.valueOf(AndroidFillLightMode.AUTO));
+            }
+            if (flashModes.contains(android.hardware.Camera.Parameters.FLASH_MODE_ON)) {
+                modes.add(Integer.valueOf(AndroidFillLightMode.FLASH));
+            }
+
+            int[] modesAsIntArray = new int[modes.size()];
+            for (int i = 0; i < modes.size(); i++) modesAsIntArray[i] = modes.get(i).intValue();
+            builder.setFillLightModes(modesAsIntArray);
         }
 
         return builder.build();
@@ -573,7 +571,7 @@ public class VideoCaptureCamera
             double height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
             double exposureCompensation, int whiteBalanceMode, double iso,
             boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
-            double colorTemperature) {
+            boolean hasTorch, boolean torch, double colorTemperature) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -667,10 +665,8 @@ public class VideoCaptureCamera
             }
         }
 
-        // NONE is only used for getting capabilities, to signify "no flash unit". Ignore it.
         if (parameters.getSupportedFlashModes() != null
-                && fillLightMode != AndroidFillLightMode.NOT_SET
-                && fillLightMode != AndroidFillLightMode.NONE) {
+                && fillLightMode != AndroidFillLightMode.NOT_SET) {
             switch (fillLightMode) {
                 case AndroidFillLightMode.OFF:
                     parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_OFF);
@@ -683,10 +679,10 @@ public class VideoCaptureCamera
                 case AndroidFillLightMode.FLASH:
                     parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_ON);
                     break;
-                case AndroidFillLightMode.TORCH:
-                    parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
-                    break;
                 default:
+            }
+            if (hasTorch && torch) {
+                parameters.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
             }
         }
 

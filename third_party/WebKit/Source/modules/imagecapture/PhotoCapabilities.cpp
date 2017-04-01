@@ -32,7 +32,17 @@ Vector<String> PhotoCapabilities::fillLightMode() const {
 }
 
 String PhotoCapabilities::redEyeReduction() const {
-  return m_redEyeReduction ? "controllable" : "never";
+  switch (m_redEyeReduction) {
+    case media::mojom::blink::RedEyeReduction::NEVER:
+      return "never";
+    case media::mojom::blink::RedEyeReduction::ALWAYS:
+      return "always";
+    case media::mojom::blink::RedEyeReduction::CONTROLLABLE:
+      return "controllable";
+    default:
+      NOTREACHED();
+  }
+  return "";
 }
 
 DEFINE_TRACE(PhotoCapabilities) {

@@ -23,8 +23,10 @@ let mockImageCaptureReady = define(
           exposure_compensation :
               { min : -200.0, max : 200.0, current : 33.0, step : 33.0},
           white_balance_mode : imageCapture.MeteringMode.CONTINUOUS,
-          fill_light_mode : imageCapture.FillLightMode.AUTO,
-          red_eye_reduction : true,
+          fill_light_mode : [ imageCapture.FillLightMode.AUTO,
+                              imageCapture.FillLightMode.FLASH],
+          red_eye_reduction : imageCapture.RedEyeReduction.CONTROLLABLE,
+          torch : false,
           color_temperature :
               { min : 2500.0, max : 6500.0, current : 6000.0, step : 1000.0 },
           brightness : { min : 1.0, max : 10.0, current : 5.0, step : 1.0 },
@@ -71,7 +73,7 @@ let mockImageCaptureReady = define(
             settings.white_balance_mode;
       }
       if (settings.has_fill_light_mode)
-        this.state_.capabilities.fill_light_mode = settings.fill_light_mode;
+        this.state_.capabilities.fill_light_mode = [settings.fill_light_mode];
       if (settings.has_red_eye_reduction)
         this.state_.capabilities.red_eye_reduction = settings.red_eye_reduction;
       if (settings.has_color_temperature) {
@@ -86,6 +88,9 @@ let mockImageCaptureReady = define(
         this.state_.capabilities.saturation.current = settings.saturation;
       if (settings.has_sharpness)
         this.state_.capabilities.sharpness.current = settings.sharpness;
+
+      if (settings.has_torch)
+        this.state_.capabilities.torch = settings.torch;
 
       return Promise.resolve({ success : true });
     }

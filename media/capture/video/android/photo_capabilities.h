@@ -7,6 +7,7 @@
 
 #include <jni.h>
 #include <string>
+#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 
@@ -32,11 +33,9 @@ class PhotoCapabilities {
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
   enum class AndroidFillLightMode {
     NOT_SET,
-    NONE,  // Only meaningful for getting capabilities, meaning "no flash unit".
     OFF,
     AUTO,
     FLASH,
-    TORCH,
   };
 
   explicit PhotoCapabilities(base::android::ScopedJavaLocalRef<jobject> object);
@@ -65,7 +64,8 @@ class PhotoCapabilities {
   double getCurrentExposureCompensation() const;
   double getStepExposureCompensation() const;
   AndroidMeteringMode getWhiteBalanceMode() const;
-  AndroidFillLightMode getFillLightMode() const;
+  std::vector<AndroidFillLightMode> getFillLightModes() const;
+  bool getTorch() const;
   bool getRedEyeReduction() const;
   int getMinColorTemperature() const;
   int getMaxColorTemperature() const;
