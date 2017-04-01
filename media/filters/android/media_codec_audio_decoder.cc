@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/android/media_codec_bridge_impl.h"
-#include "media/base/audio_buffer.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/timestamp_constants.h"
@@ -26,6 +25,7 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       sample_rate_(0),
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
+      pool_(new AudioBufferMemoryPool()),
       weak_factory_(this) {
   DVLOG(1) << __func__;
 }
@@ -363,9 +363,9 @@ bool MediaCodecAudioDecoder::OnDecodedFrame(
   const size_t frame_count = out.size / bytes_per_frame;
 
   // Create AudioOutput buffer based on current parameters.
-  scoped_refptr<AudioBuffer> audio_buffer =
-      AudioBuffer::CreateBuffer(kSampleFormatS16, channel_layout_,
-                                channel_count_, sample_rate_, frame_count);
+  scoped_refptr<AudioBuffer> audio_buffer = AudioBuffer::CreateBuffer(
+      kSampleFormatS16, channel_layout_, channel_count_, sample_rate_,
+      frame_count, pool_);
 
   // Copy data into AudioBuffer.
   CHECK_LE(out.size, audio_buffer->data_size());

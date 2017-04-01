@@ -15,6 +15,7 @@
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "media/base/audio_buffer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -109,6 +110,8 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   RenderingDelay last_mixer_delay_;
   int64_t pending_output_frames_;
   float volume_multiplier_;
+
+  scoped_refptr<::media::AudioBufferMemoryPool> pool_;
 
   base::WeakPtrFactory<AudioDecoderAlsa> weak_factory_;
 

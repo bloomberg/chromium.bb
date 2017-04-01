@@ -434,4 +434,51 @@ TEST(AudioBufferTest, TrimRangeInterleaved) {
   TrimRangeTest(kSampleFormatF32);
 }
 
+TEST(AudioBufferTest, AudioBufferMemoryPool) {
+  scoped_refptr<AudioBufferMemoryPool> pool(new AudioBufferMemoryPool());
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+
+  const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
+  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<uint8_t>(
+      kSampleFormatU8, kChannelLayout,
+      ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 1, 1,
+      kSampleRate / 100, base::TimeDelta());
+
+  // Creating and returning a buffer should increase pool size.
+  scoped_refptr<AudioBuffer> b1 = AudioBuffer::CopyFrom(
+      kSampleFormatU8, buffer->channel_layout(), buffer->channel_count(),
+      buffer->sample_rate(), buffer->frame_count(), &buffer->channel_data()[0],
+      buffer->timestamp(), pool);
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+  b1 = nullptr;
+  EXPECT_EQ(1u, pool->get_pool_size_for_testing());
+
+  // Even (especially) when used with CreateBuffer.
+  b1 = AudioBuffer::CreateBuffer(kSampleFormatU8, buffer->channel_layout(),
+                                 buffer->channel_count(), buffer->sample_rate(),
+                                 buffer->frame_count(), pool);
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+  scoped_refptr<AudioBuffer> b2 = AudioBuffer::CreateBuffer(
+      kSampleFormatU8, buffer->channel_layout(), buffer->channel_count(),
+      buffer->sample_rate(), buffer->frame_count(), pool);
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+  b2 = nullptr;
+  EXPECT_EQ(1u, pool->get_pool_size_for_testing());
+  b1 = nullptr;
+  EXPECT_EQ(2u, pool->get_pool_size_for_testing());
+
+  // A buffer of a different size should not reuse the buffer and drain pool.
+  b2 = AudioBuffer::CreateBuffer(kSampleFormatU8, buffer->channel_layout(),
+                                 buffer->channel_count(), buffer->sample_rate(),
+                                 buffer->frame_count() / 2, pool);
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+
+  // Mark pool for destruction and ensure buffer is still valid.
+  pool = nullptr;
+  memset(b2->channel_data()[0], 0, b2->frame_count());
+
+  // Destruct final frame after pool; hope nothing explodes.
+  b2 = nullptr;
+}
+
 }  // namespace media

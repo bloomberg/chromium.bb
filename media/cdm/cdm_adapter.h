@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_native_library.h"
 #include "base/threading/thread.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_factory.h"
@@ -223,6 +224,8 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
   CreateCdmFileIOCB create_cdm_file_io_cb_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  scoped_refptr<AudioBufferMemoryPool> pool_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CdmAdapter> weak_factory_;

@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/cdm_session_tracker.h"
@@ -242,6 +243,8 @@ class ContentDecryptorDelegate {
   media::CdmPromiseAdapter cdm_promise_adapter_;
 
   media::CdmSessionTracker cdm_session_tracker_;
+
+  scoped_refptr<media::AudioBufferMemoryPool> pool_;
 
   base::WeakPtr<ContentDecryptorDelegate> weak_this_;
   base::WeakPtrFactory<ContentDecryptorDelegate> weak_ptr_factory_;

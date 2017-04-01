@@ -14,7 +14,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
-#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_key_information.h"
@@ -384,6 +383,7 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
       audio_samples_per_second_(0),
       audio_channel_count_(0),
       audio_channel_layout_(media::CHANNEL_LAYOUT_NONE),
+      pool_(new media::AudioBufferMemoryPool()),
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 }
@@ -1238,13 +1238,9 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
 
     const int frame_count = frame_size / audio_bytes_per_frame;
     scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
-        sample_format,
-        audio_channel_layout_,
-        audio_channel_count_,
-        audio_samples_per_second_,
-        frame_count,
-        &channel_ptrs[0],
-        base::TimeDelta::FromMicroseconds(timestamp));
+        sample_format, audio_channel_layout_, audio_channel_count_,
+        audio_samples_per_second_, frame_count, &channel_ptrs[0],
+        base::TimeDelta::FromMicroseconds(timestamp), pool_);
     frames->push_back(frame);
 
     cur += frame_size;

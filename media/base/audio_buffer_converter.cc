@@ -8,7 +8,6 @@
 #include <cmath>
 
 #include "base/logging.h"
-#include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -34,7 +33,8 @@ AudioBufferConverter::AudioBufferConverter(const AudioParameters& output_params)
       buffered_input_frames_(0.0),
       io_sample_rate_ratio_(1.0),
       timestamp_helper_(output_params_.sample_rate()),
-      is_flushing_(false) {}
+      is_flushing_(false),
+      pool_(new AudioBufferMemoryPool()) {}
 
 AudioBufferConverter::~AudioBufferConverter() {}
 
@@ -187,12 +187,10 @@ void AudioBufferConverter::ConvertIfPossible() {
   if (!request_frames)
     return;
 
-  scoped_refptr<AudioBuffer> output_buffer =
-      AudioBuffer::CreateBuffer(kSampleFormatPlanarF32,
-                                output_params_.channel_layout(),
-                                output_params_.channels(),
-                                output_params_.sample_rate(),
-                                request_frames);
+  scoped_refptr<AudioBuffer> output_buffer = AudioBuffer::CreateBuffer(
+      kSampleFormatPlanarF32, output_params_.channel_layout(),
+      output_params_.channels(), output_params_.sample_rate(), request_frames,
+      pool_);
   std::unique_ptr<AudioBus> output_bus =
       AudioBus::CreateWrapper(output_buffer->channel_count());
 

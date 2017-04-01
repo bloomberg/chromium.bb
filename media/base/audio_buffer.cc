@@ -19,6 +19,29 @@ static base::TimeDelta CalculateDuration(int frames, double sample_rate) {
       frames * base::Time::kMicrosecondsPerSecond / sample_rate);
 }
 
+AudioBufferMemoryPool::AudioBufferMemoryPool() {}
+AudioBufferMemoryPool::~AudioBufferMemoryPool() {}
+
+AudioBufferMemoryPool::AudioMemory AudioBufferMemoryPool::CreateBuffer(
+    size_t size) {
+  base::AutoLock al(entry_lock_);
+  while (!entries_.empty()) {
+    MemoryEntry& front = entries_.front();
+    MemoryEntry entry(std::move(front.first), front.second);
+    entries_.pop_front();
+    if (entry.second == size)
+      return std::move(entry.first);
+  }
+
+  return AudioMemory(static_cast<uint8_t*>(
+      base::AlignedAlloc(size, AudioBuffer::kChannelAlignment)));
+}
+
+void AudioBufferMemoryPool::ReturnBuffer(AudioMemory memory, size_t size) {
+  base::AutoLock al(entry_lock_);
+  entries_.emplace_back(std::move(memory), size);
+}
+
 AudioBuffer::AudioBuffer(SampleFormat sample_format,
                          ChannelLayout channel_layout,
                          int channel_count,
@@ -26,18 +49,20 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
                          int frame_count,
                          bool create_buffer,
                          const uint8_t* const* data,
-                         const base::TimeDelta timestamp)
+                         const base::TimeDelta timestamp,
+                         scoped_refptr<AudioBufferMemoryPool> pool)
     : sample_format_(sample_format),
       channel_layout_(channel_layout),
       channel_count_(channel_count),
       sample_rate_(sample_rate),
       adjusted_frame_count_(frame_count),
-      end_of_stream_(!create_buffer && data == NULL && frame_count == 0),
+      end_of_stream_(!create_buffer && !data && !frame_count),
       timestamp_(timestamp),
       duration_(end_of_stream_
                     ? base::TimeDelta()
                     : CalculateDuration(adjusted_frame_count_, sample_rate_)),
-      data_size_(0) {
+      data_size_(0),
+      pool_(std::move(pool)) {
   CHECK_GE(channel_count_, 0);
   CHECK_LE(channel_count_, limits::kMaxChannels);
   CHECK_GE(frame_count, 0);
@@ -80,15 +105,24 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   // Allocate our own buffer and copy the supplied data into it. Buffer must
   // contain the data for all channels.
   data_size_ = data_size_per_channel * channel_count_;
-  data_.reset(
-      static_cast<uint8_t*>(base::AlignedAlloc(data_size_, kChannelAlignment)));
+
+  if (pool_) {
+    data_ = pool_->CreateBuffer(data_size_);
+  } else {
+    data_.reset(static_cast<uint8_t*>(
+        base::AlignedAlloc(data_size_, kChannelAlignment)));
+  }
+
   channel_data_.reserve(1);
   channel_data_.push_back(data_.get());
   if (data)
     memcpy(data_.get(), data[0], data_size_);
 }
 
-AudioBuffer::~AudioBuffer() {}
+AudioBuffer::~AudioBuffer() {
+  if (pool_)
+    pool_->ReturnBuffer(std::move(data_), data_size_);
+}
 
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
@@ -98,18 +132,14 @@ scoped_refptr<AudioBuffer> AudioBuffer::CopyFrom(
     int sample_rate,
     int frame_count,
     const uint8_t* const* data,
-    const base::TimeDelta timestamp) {
+    const base::TimeDelta timestamp,
+    scoped_refptr<AudioBufferMemoryPool> pool) {
   // If you hit this CHECK you likely have a bug in a demuxer. Go fix it.
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
   CHECK(data[0]);
-  return make_scoped_refptr(new AudioBuffer(sample_format,
-                                            channel_layout,
-                                            channel_count,
-                                            sample_rate,
-                                            frame_count,
-                                            true,
-                                            data,
-                                            timestamp));
+  return make_scoped_refptr(
+      new AudioBuffer(sample_format, channel_layout, channel_count, sample_rate,
+                      frame_count, true, data, timestamp, std::move(pool)));
 }
 
 // static
@@ -118,11 +148,12 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateBuffer(
     ChannelLayout channel_layout,
     int channel_count,
     int sample_rate,
-    int frame_count) {
+    int frame_count,
+    scoped_refptr<AudioBufferMemoryPool> pool) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
-  return make_scoped_refptr(
-      new AudioBuffer(sample_format, channel_layout, channel_count, sample_rate,
-                      frame_count, true, NULL, kNoTimestamp));
+  return make_scoped_refptr(new AudioBuffer(
+      sample_format, channel_layout, channel_count, sample_rate, frame_count,
+      true, nullptr, kNoTimestamp, std::move(pool)));
 }
 
 // static
@@ -133,22 +164,17 @@ scoped_refptr<AudioBuffer> AudioBuffer::CreateEmptyBuffer(
     int frame_count,
     const base::TimeDelta timestamp) {
   CHECK_GT(frame_count, 0);  // Otherwise looks like an EOF buffer.
-  // Since data == NULL, format doesn't matter.
-  return make_scoped_refptr(new AudioBuffer(kSampleFormatF32,
-                                            channel_layout,
-                                            channel_count,
-                                            sample_rate,
-                                            frame_count,
-                                            false,
-                                            NULL,
-                                            timestamp));
+  // Since data == nullptr, format doesn't matter.
+  return make_scoped_refptr(new AudioBuffer(
+      kSampleFormatF32, channel_layout, channel_count, sample_rate, frame_count,
+      false, nullptr, timestamp, nullptr));
 }
 
 // static
 scoped_refptr<AudioBuffer> AudioBuffer::CreateEOSBuffer() {
   return make_scoped_refptr(new AudioBuffer(kUnknownSampleFormat,
                                             CHANNEL_LAYOUT_NONE, 0, 0, 0, false,
-                                            NULL, kNoTimestamp));
+                                            nullptr, kNoTimestamp, nullptr));
 }
 
 // Convert int16_t values in the range [INT16_MIN, INT16_MAX] to [-1.0, 1.0].
@@ -189,8 +215,7 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
       const float* source_data =
           reinterpret_cast<const float*>(channel_data_[ch]) +
           source_frame_offset;
-      memcpy(dest->channel(ch) + dest_frame_offset,
-             source_data,
+      memcpy(dest->channel(ch) + dest_frame_offset, source_data,
              sizeof(float) * frames_to_copy);
     }
     return;
@@ -233,8 +258,8 @@ void AudioBuffer::ReadFrames(int frames_to_copy,
   int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format_);
   int frame_size = channel_count_ * bytes_per_channel;
   const uint8_t* source_data = data_.get() + source_frame_offset * frame_size;
-  dest->FromInterleavedPartial(
-      source_data, dest_frame_offset, frames_to_copy, bytes_per_channel);
+  dest->FromInterleavedPartial(source_data, dest_frame_offset, frames_to_copy,
+                               bytes_per_channel);
 }
 
 void AudioBuffer::TrimStart(int frames_to_trim) {

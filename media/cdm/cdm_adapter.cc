@@ -376,6 +376,7 @@ CdmAdapter::CdmAdapter(
       allocator_(std::move(allocator)),
       create_cdm_file_io_cb_(create_cdm_file_io_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      pool_(new AudioBufferMemoryPool()),
       weak_factory_(this) {
   DCHECK(!key_system_.empty());
   DCHECK(!session_message_cb_.is_null());
@@ -936,7 +937,7 @@ bool CdmAdapter::AudioFramesDataToAudioFrames(
     scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
         sample_format, audio_channel_layout_, audio_channel_count,
         audio_samples_per_second_, frame_count, &channel_ptrs[0],
-        base::TimeDelta::FromMicroseconds(timestamp));
+        base::TimeDelta::FromMicroseconds(timestamp), pool_);
     result_frames->push_back(frame);
 
     data += frame_size;

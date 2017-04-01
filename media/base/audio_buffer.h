@@ -8,12 +8,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
@@ -28,6 +31,7 @@ class StructPtr;
 
 namespace media {
 class AudioBus;
+class AudioBufferMemoryPool;
 
 namespace mojom {
 class AudioBuffer;
@@ -48,22 +52,29 @@ class MEDIA_EXPORT AudioBuffer
   // interleaved data, only the first buffer is used. For planar data, the
   // number of buffers must be equal to |channel_count|. |frame_count| is the
   // number of frames in each buffer. |data| must not be null and |frame_count|
-  // must be >= 0.
-  static scoped_refptr<AudioBuffer> CopyFrom(SampleFormat sample_format,
-                                             ChannelLayout channel_layout,
-                                             int channel_count,
-                                             int sample_rate,
-                                             int frame_count,
-                                             const uint8_t* const* data,
-                                             const base::TimeDelta timestamp);
+  // must be >= 0. For optimal efficiency when many buffers are being created, a
+  // AudioBufferMemoryPool can be provided to avoid thrashing memory.
+  static scoped_refptr<AudioBuffer> CopyFrom(
+      SampleFormat sample_format,
+      ChannelLayout channel_layout,
+      int channel_count,
+      int sample_rate,
+      int frame_count,
+      const uint8_t* const* data,
+      const base::TimeDelta timestamp,
+      scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
 
   // Create an AudioBuffer with |frame_count| frames. Buffer is allocated, but
-  // not initialized. Timestamp and duration are set to kNoTimestamp.
-  static scoped_refptr<AudioBuffer> CreateBuffer(SampleFormat sample_format,
-                                                 ChannelLayout channel_layout,
-                                                 int channel_count,
-                                                 int sample_rate,
-                                                 int frame_count);
+  // not initialized. Timestamp and duration are set to kNoTimestamp. For
+  // optimal efficiency when many buffers are being created, a
+  // AudioBufferMemoryPool can be provided to avoid thrashing memory.
+  static scoped_refptr<AudioBuffer> CreateBuffer(
+      SampleFormat sample_format,
+      ChannelLayout channel_layout,
+      int channel_count,
+      int sample_rate,
+      int frame_count,
+      scoped_refptr<AudioBufferMemoryPool> pool = nullptr);
 
   // Create an empty AudioBuffer with |frame_count| frames.
   static scoped_refptr<AudioBuffer> CreateEmptyBuffer(
@@ -157,7 +168,8 @@ class MEDIA_EXPORT AudioBuffer
               int frame_count,
               bool create_buffer,
               const uint8_t* const* data,
-              const base::TimeDelta timestamp);
+              const base::TimeDelta timestamp,
+              scoped_refptr<AudioBufferMemoryPool> pool);
 
   virtual ~AudioBuffer();
 
@@ -177,7 +189,45 @@ class MEDIA_EXPORT AudioBuffer
   // For planar data, points to each channels data.
   std::vector<uint8_t*> channel_data_;
 
+  // Allows recycling of memory data to avoid repeated allocations.
+  scoped_refptr<AudioBufferMemoryPool> pool_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioBuffer);
+};
+
+// Basic memory pool for reusing AudioBuffer internal memory to avoid thrashing.
+//
+// The pool is managed in a last-in-first-out manner, returned buffers are put
+// at the back of the queue. When a new buffer is requested by AudioBuffer, we
+// will scan from the front to find a matching buffer. All non-matching buffers
+// are dropped. The assumption is that when we reach steady-state all buffers
+// will have the same sized allocation. At most the pool will be equal in size
+// to the maximum number of concurrent AudioBuffer instances.
+//
+// Each AudioBuffer instance created with an AudioBufferMemoryPool will take a
+// ref on the pool instance so that it may return buffers in the future.
+class MEDIA_EXPORT AudioBufferMemoryPool
+    : public base::RefCountedThreadSafe<AudioBufferMemoryPool> {
+ public:
+  AudioBufferMemoryPool();
+
+  size_t get_pool_size_for_testing() const { return entries_.size(); }
+
+ private:
+  friend class AudioBuffer;
+  friend class base::RefCountedThreadSafe<AudioBufferMemoryPool>;
+
+  ~AudioBufferMemoryPool();
+
+  using AudioMemory = std::unique_ptr<uint8_t, base::AlignedFreeDeleter>;
+  AudioMemory CreateBuffer(size_t size);
+  void ReturnBuffer(AudioMemory memory, size_t size);
+
+  base::Lock entry_lock_;
+  using MemoryEntry = std::pair<AudioMemory, size_t>;
+  std::list<MemoryEntry> entries_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioBufferMemoryPool);
 };
 
 }  // namespace media

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
@@ -45,6 +46,11 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   void Decode(const scoped_refptr<DecoderBuffer>& buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
+
+  // Callback called from within FFmpeg to allocate a buffer based on the
+  // properties of |codec_context| and |frame|. See AVCodecContext.get_buffer2
+  // documentation inside FFmpeg.
+  int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags);
 
  private:
   // There are four states the decoder can be in:
@@ -110,6 +116,8 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   std::unique_ptr<AudioDiscardHelper> discard_helper_;
 
   scoped_refptr<MediaLog> media_log_;
+
+  scoped_refptr<AudioBufferMemoryPool> pool_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegAudioDecoder);
 };

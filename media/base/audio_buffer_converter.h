@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "media/base/audio_buffer.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -17,7 +18,6 @@
 
 namespace media {
 
-class AudioBuffer;
 class AudioBus;
 
 // Takes AudioBuffers in any format and uses an AudioConverter to convert them
@@ -97,6 +97,9 @@ class MEDIA_EXPORT AudioBufferConverter : public AudioConverter::InputCallback {
   // Are we flushing everything, without regard for providing AudioConverter
   // full AudioBuses in ProvideInput()?
   bool is_flushing_;
+
+  // Pool to avoid thrashing memory when allocating AudioBuffers.
+  scoped_refptr<AudioBufferMemoryPool> pool_;
 
   // The AudioConverter which does the real work here.
   std::unique_ptr<AudioConverter> audio_converter_;

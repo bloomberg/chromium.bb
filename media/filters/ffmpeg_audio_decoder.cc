@@ -42,98 +42,21 @@ static inline int DetermineChannels(AVFrame* frame) {
 #endif
 }
 
+// Called by FFmpeg's allocation routine to allocate a buffer. Uses
+// AVCodecContext.opaque to get the object reference in order to call
+// GetAudioBuffer() to do the actual allocation.
+static int GetAudioBufferImpl(struct AVCodecContext* s,
+                              AVFrame* frame,
+                              int flags) {
+  FFmpegAudioDecoder* decoder = static_cast<FFmpegAudioDecoder*>(s->opaque);
+  return decoder->GetAudioBuffer(s, frame, flags);
+}
+
 // Called by FFmpeg's allocation routine to free a buffer. |opaque| is the
 // AudioBuffer allocated, so unref it.
 static void ReleaseAudioBufferImpl(void* opaque, uint8_t* data) {
   if (opaque)
     static_cast<AudioBuffer*>(opaque)->Release();
-}
-
-// Called by FFmpeg's allocation routine to allocate a buffer. Uses
-// AVCodecContext.opaque to get the object reference in order to call
-// GetAudioBuffer() to do the actual allocation.
-static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
-  DCHECK(s->codec->capabilities & CODEC_CAP_DR1);
-  DCHECK_EQ(s->codec_type, AVMEDIA_TYPE_AUDIO);
-
-  // Since this routine is called by FFmpeg when a buffer is required for audio
-  // data, use the values supplied by FFmpeg (ignoring the current settings).
-  // FFmpegDecode() gets to determine if the buffer is useable or not.
-  AVSampleFormat format = static_cast<AVSampleFormat>(frame->format);
-  SampleFormat sample_format =
-      AVSampleFormatToSampleFormat(format, s->codec_id);
-  int channels = DetermineChannels(frame);
-  if (channels <= 0 || channels >= limits::kMaxChannels) {
-    DLOG(ERROR) << "Requested number of channels (" << channels
-                << ") exceeds limit.";
-    return AVERROR(EINVAL);
-  }
-
-  int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
-  if (frame->nb_samples <= 0)
-    return AVERROR(EINVAL);
-
-  if (s->channels != channels) {
-    DLOG(ERROR) << "AVCodecContext and AVFrame disagree on channel count.";
-    return AVERROR(EINVAL);
-  }
-
-  if (s->sample_rate != frame->sample_rate) {
-    DLOG(ERROR) << "AVCodecContext and AVFrame disagree on sample rate."
-                << s->sample_rate << " vs " << frame->sample_rate;
-    return AVERROR(EINVAL);
-  }
-
-  // Determine how big the buffer should be and allocate it. FFmpeg may adjust
-  // how big each channel data is in order to meet the alignment policy, so
-  // we need to take this into consideration.
-  int buffer_size_in_bytes = av_samples_get_buffer_size(
-      &frame->linesize[0], channels, frame->nb_samples, format,
-      0 /* align, use ffmpeg default */);
-  // Check for errors from av_samples_get_buffer_size().
-  if (buffer_size_in_bytes < 0)
-    return buffer_size_in_bytes;
-  int frames_required = buffer_size_in_bytes / bytes_per_channel / channels;
-  DCHECK_GE(frames_required, frame->nb_samples);
-
-  ChannelLayout channel_layout =
-      ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels);
-
-  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
-    DLOG(ERROR) << "Unsupported channel layout.";
-    return AVERROR(EINVAL);
-  }
-
-  scoped_refptr<AudioBuffer> buffer = AudioBuffer::CreateBuffer(
-      sample_format, channel_layout, channels, s->sample_rate, frames_required);
-
-  // Initialize the data[] and extended_data[] fields to point into the memory
-  // allocated for AudioBuffer. |number_of_planes| will be 1 for interleaved
-  // audio and equal to |channels| for planar audio.
-  int number_of_planes = buffer->channel_data().size();
-  if (number_of_planes <= AV_NUM_DATA_POINTERS) {
-    DCHECK_EQ(frame->extended_data, frame->data);
-    for (int i = 0; i < number_of_planes; ++i)
-      frame->data[i] = buffer->channel_data()[i];
-  } else {
-    // There are more channels than can fit into data[], so allocate
-    // extended_data[] and fill appropriately.
-    frame->extended_data = static_cast<uint8_t**>(
-        av_malloc(number_of_planes * sizeof(*frame->extended_data)));
-    int i = 0;
-    for (; i < AV_NUM_DATA_POINTERS; ++i)
-      frame->extended_data[i] = frame->data[i] = buffer->channel_data()[i];
-    for (; i < number_of_planes; ++i)
-      frame->extended_data[i] = buffer->channel_data()[i];
-  }
-
-  // Now create an AVBufferRef for the data just allocated. It will own the
-  // reference to the AudioBuffer object.
-  AudioBuffer* opaque = buffer.get();
-  opaque->AddRef();
-  frame->buf[0] = av_buffer_create(
-      frame->data[0], buffer_size_in_bytes, ReleaseAudioBufferImpl, opaque, 0);
-  return 0;
 }
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
@@ -142,8 +65,8 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
     : task_runner_(task_runner),
       state_(kUninitialized),
       av_sample_format_(0),
-      media_log_(media_log) {
-}
+      media_log_(media_log),
+      pool_(new AudioBufferMemoryPool()) {}
 
 FFmpegAudioDecoder::~FFmpegAudioDecoder() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -402,7 +325,7 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
   AudioDecoderConfigToAVCodecContext(config_, codec_context_.get());
 
   codec_context_->opaque = this;
-  codec_context_->get_buffer2 = GetAudioBuffer;
+  codec_context_->get_buffer2 = GetAudioBufferImpl;
   codec_context_->refcounted_frames = 1;
 
   if (config_.codec() == kCodecOpus)
@@ -444,6 +367,93 @@ void FFmpegAudioDecoder::ResetTimestampState() {
       new AudioDiscardHelper(config_.samples_per_second(), codec_delay,
                              config_.codec() == kCodecVorbis));
   discard_helper_->Reset(codec_delay);
+}
+
+int FFmpegAudioDecoder::GetAudioBuffer(struct AVCodecContext* s,
+                                       AVFrame* frame,
+                                       int flags) {
+  DCHECK(s->codec->capabilities & CODEC_CAP_DR1);
+  DCHECK_EQ(s->codec_type, AVMEDIA_TYPE_AUDIO);
+
+  // Since this routine is called by FFmpeg when a buffer is required for audio
+  // data, use the values supplied by FFmpeg (ignoring the current settings).
+  // FFmpegDecode() gets to determine if the buffer is useable or not.
+  AVSampleFormat format = static_cast<AVSampleFormat>(frame->format);
+  SampleFormat sample_format =
+      AVSampleFormatToSampleFormat(format, s->codec_id);
+  int channels = DetermineChannels(frame);
+  if (channels <= 0 || channels >= limits::kMaxChannels) {
+    DLOG(ERROR) << "Requested number of channels (" << channels
+                << ") exceeds limit.";
+    return AVERROR(EINVAL);
+  }
+
+  int bytes_per_channel = SampleFormatToBytesPerChannel(sample_format);
+  if (frame->nb_samples <= 0)
+    return AVERROR(EINVAL);
+
+  if (s->channels != channels) {
+    DLOG(ERROR) << "AVCodecContext and AVFrame disagree on channel count.";
+    return AVERROR(EINVAL);
+  }
+
+  if (s->sample_rate != frame->sample_rate) {
+    DLOG(ERROR) << "AVCodecContext and AVFrame disagree on sample rate."
+                << s->sample_rate << " vs " << frame->sample_rate;
+    return AVERROR(EINVAL);
+  }
+
+  // Determine how big the buffer should be and allocate it. FFmpeg may adjust
+  // how big each channel data is in order to meet the alignment policy, so
+  // we need to take this into consideration.
+  int buffer_size_in_bytes = av_samples_get_buffer_size(
+      &frame->linesize[0], channels, frame->nb_samples, format,
+      0 /* align, use ffmpeg default */);
+  // Check for errors from av_samples_get_buffer_size().
+  if (buffer_size_in_bytes < 0)
+    return buffer_size_in_bytes;
+  int frames_required = buffer_size_in_bytes / bytes_per_channel / channels;
+  DCHECK_GE(frames_required, frame->nb_samples);
+
+  ChannelLayout channel_layout =
+      ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels);
+
+  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
+    DLOG(ERROR) << "Unsupported channel layout.";
+    return AVERROR(EINVAL);
+  }
+
+  scoped_refptr<AudioBuffer> buffer =
+      AudioBuffer::CreateBuffer(sample_format, channel_layout, channels,
+                                s->sample_rate, frames_required, pool_);
+
+  // Initialize the data[] and extended_data[] fields to point into the memory
+  // allocated for AudioBuffer. |number_of_planes| will be 1 for interleaved
+  // audio and equal to |channels| for planar audio.
+  int number_of_planes = buffer->channel_data().size();
+  if (number_of_planes <= AV_NUM_DATA_POINTERS) {
+    DCHECK_EQ(frame->extended_data, frame->data);
+    for (int i = 0; i < number_of_planes; ++i)
+      frame->data[i] = buffer->channel_data()[i];
+  } else {
+    // There are more channels than can fit into data[], so allocate
+    // extended_data[] and fill appropriately.
+    frame->extended_data = static_cast<uint8_t**>(
+        av_malloc(number_of_planes * sizeof(*frame->extended_data)));
+    int i = 0;
+    for (; i < AV_NUM_DATA_POINTERS; ++i)
+      frame->extended_data[i] = frame->data[i] = buffer->channel_data()[i];
+    for (; i < number_of_planes; ++i)
+      frame->extended_data[i] = buffer->channel_data()[i];
+  }
+
+  // Now create an AVBufferRef for the data just allocated. It will own the
+  // reference to the AudioBuffer object.
+  AudioBuffer* opaque = buffer.get();
+  opaque->AddRef();
+  frame->buf[0] = av_buffer_create(frame->data[0], buffer_size_in_bytes,
+                                   ReleaseAudioBufferImpl, opaque, 0);
+  return 0;
 }
 
 }  // namespace media

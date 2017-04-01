@@ -18,7 +18,6 @@
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
-#include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
 #include "media/base/channel_layout.h"
 #include "media/base/decoder_buffer.h"
@@ -72,6 +71,7 @@ AudioDecoderAlsa::AudioDecoderAlsa(MediaPipelineBackendAlsa* backend)
       current_pts_(kInvalidTimestamp),
       pending_output_frames_(kNoPendingOutput),
       volume_multiplier_(1.0f),
+      pool_(new ::media::AudioBufferMemoryPool()),
       weak_factory_(this) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(backend_);
@@ -380,7 +380,7 @@ void AudioDecoderAlsa::OnBufferDecoded(
     scoped_refptr<::media::AudioBuffer> buffer = ::media::AudioBuffer::CopyFrom(
         ::media::kSampleFormatPlanarF32, ::media::CHANNEL_LAYOUT_STEREO,
         kNumChannels, config_.samples_per_second, input_frames, channels,
-        base::TimeDelta());
+        base::TimeDelta(), pool_);
     rate_shifter_->EnqueueBuffer(buffer);
     rate_shifter_info_.back().input_frames += input_frames;
   }
