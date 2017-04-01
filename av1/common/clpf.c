@@ -17,7 +17,8 @@
 static int sign(int i) { return i < 0 ? -1 : 1; }
 
 static int constrain(int x, int s, unsigned int damping) {
-  return sign(x) * AOMMIN(abs(x), s - (abs(x) >> (damping - get_msb(s))));
+  return sign(x) *
+         AOMMIN(abs(x), AOMMAX(0, s - (abs(x) >> (damping - get_msb(s)))));
 }
 
 int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int G,
