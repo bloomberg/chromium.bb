@@ -51,9 +51,14 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
 }
 
 InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
+    sourceMapManager() {
+        return this._sourceMapManager;
+    }
+
     constructor(target)
     {
         super(target);
+        this._sourceMapManager = new SDK.SourceMapManager();
         this._target = target;
         this._breakpointResolvedEventTarget = new Common.Object();
         this._scripts = {};

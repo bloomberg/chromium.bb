@@ -137,10 +137,12 @@ function test()
         {
             InspectorTest.addResult("Adding compiled.js");
             InspectorTest.evaluateInPage("\n//# sourceMappingURL=http://127.0.0.1:8000/inspector/resources/source-map.json_\n");
-            InspectorTest.addSniffer(Bindings.CompilerScriptMapping.prototype, "_sourceMapLoaded", onSourceMapLoaded);
+            InspectorTest.debuggerModel.sourceMapManager().addEventListener(
+                    SDK.SourceMapManager.Events.SourceMapFailedToAttach, onSourceMapLoaded, this);
 
-            function onSourceMapLoaded(script, uiSourceCodePath, sourceMap)
+            function onSourceMapLoaded(event)
             {
+                var script = event.data;
                 if (script.sourceMapURL !== "http://127.0.0.1:8000/inspector/resources/source-map.json_")
                     return;
                 InspectorTest.addResult("SourceMap Failed to load.");

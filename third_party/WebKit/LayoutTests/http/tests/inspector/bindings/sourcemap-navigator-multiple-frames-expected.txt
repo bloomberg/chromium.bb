@@ -53,6 +53,7 @@ top
       inspector/bindings/resources
         sourcemap-frame.html
         sourcemap-script.js
+        sourcemap-typescript.ts
         sourcemap-sass.scss
         sourcemap-style.css
 
@@ -73,6 +74,7 @@ top
       inspector/bindings/resources
         sourcemap-frame.html
         sourcemap-script.js
+        sourcemap-typescript.ts
         sourcemap-sass.scss
         sourcemap-style.css
 

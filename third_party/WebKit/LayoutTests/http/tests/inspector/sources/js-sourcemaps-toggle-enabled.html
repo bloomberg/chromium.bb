@@ -1,0 +1,45 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+
+<script>
+
+function addScript() {
+    var script = document.createElement('script');
+    script.src = 'resources/sourcemap-script.js';
+    document.head.appendChild(script);
+}
+
+async function test()
+{
+    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    sourcesNavigator.show(UI.inspectorView.element);
+
+    Common.moduleSetting('jsSourceMapsEnabled').set(true);
+    InspectorTest.evaluateInPagePromise('addScript()');
+    await InspectorTest.waitForUISourceCode('sourcemap-typescript.ts'),
+
+    InspectorTest.markStep('dumpInitialNavigator');
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('disableJSSourceMaps');
+    Common.moduleSetting('jsSourceMapsEnabled').set(false);
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.markStep('enableJSSourceMaps');
+    Common.moduleSetting('jsSourceMapsEnabled').set(true);
+    await InspectorTest.waitForUISourceCode('sourcemap-typescript.ts'),
+    InspectorTest.dumpNavigatorView(sourcesNavigator, false);
+
+    InspectorTest.completeTest();
+};
+
+</script>
+
+</head>
+
+<body id="inspect" onload="runTest()">
+<p>Verify that JavaScript sourcemap enabling and disabling adds/removes sourcemap sources.</p>
+
+</body>
+</html>
