@@ -12,10 +12,16 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
+#include "base/test/test_message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/media_log.h"
+#include "media/blink/watch_time_reporter.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -29,8 +35,7 @@ const char kTestDeviceID[] = "test-device-id";
 class MediaInternalsTestBase {
  public:
   MediaInternalsTestBase()
-    : media_internals_(content::MediaInternals::GetInstance()) {
-  }
+      : media_internals_(content::MediaInternals::GetInstance()) {}
   virtual ~MediaInternalsTestBase() {}
 
  protected:
@@ -305,9 +310,278 @@ TEST_P(MediaInternalsAudioLogTest, AudioLogCreateClose) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    MediaInternalsAudioLogTest, MediaInternalsAudioLogTest, testing::Values(
-        media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
-        media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER,
-        media::AudioLogFactory::AUDIO_OUTPUT_STREAM));
+    MediaInternalsAudioLogTest,
+    MediaInternalsAudioLogTest,
+    testing::Values(media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
+                    media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER,
+                    media::AudioLogFactory::AUDIO_OUTPUT_STREAM));
+
+class DirectMediaLog : public media::MediaLog {
+ public:
+  explicit DirectMediaLog(int render_process_id)
+      : render_process_id_(render_process_id),
+        internals_(content::MediaInternals::GetInstance()) {}
+
+  void AddEvent(std::unique_ptr<media::MediaLogEvent> event) override {
+    std::vector<media::MediaLogEvent> events(1, *event);
+    internals_->OnMediaEvents(render_process_id_, events);
+  }
+
+ private:
+  ~DirectMediaLog() override {}
+
+  const int render_process_id_;
+  MediaInternals* const internals_;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectMediaLog);
+};
+
+class MediaInternalsWatchTimeTest : public testing::Test,
+                                    public MediaInternalsTestBase {
+ public:
+  MediaInternalsWatchTimeTest()
+      : render_process_id_(0),
+        internals_(content::MediaInternals::GetInstance()),
+        media_log_(new DirectMediaLog(render_process_id_)),
+        histogram_tester_(new base::HistogramTester()),
+        watch_time_keys_(media::MediaLog::GetWatchTimeKeys()),
+        watch_time_power_keys_(media::MediaLog::GetWatchTimePowerKeys()) {}
+
+  void Initialize(bool has_audio,
+                  bool has_video,
+                  bool is_mse,
+                  bool is_encrypted) {
+    wtr_.reset(new media::WatchTimeReporter(
+        has_audio, has_video, is_mse, is_encrypted, true, media_log_,
+        gfx::Size(800, 600),
+        base::Bind(&MediaInternalsWatchTimeTest::GetCurrentMediaTime,
+                   base::Unretained(this))));
+    wtr_->set_reporting_interval_for_testing();
+  }
+
+  void CycleWatchTimeReporter() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void ExpectWatchTime(const std::vector<base::StringPiece>& keys,
+                       base::TimeDelta value) {
+    for (auto key : watch_time_keys_) {
+      auto it = std::find(keys.begin(), keys.end(), key);
+      if (it == keys.end()) {
+        histogram_tester_->ExpectTotalCount(key.as_string(), 0);
+      } else {
+        histogram_tester_->ExpectUniqueSample(key.as_string(),
+                                              value.InMilliseconds(), 1);
+      }
+    }
+  }
+
+  void ResetHistogramTester() {
+    histogram_tester_.reset(new base::HistogramTester());
+  }
+
+  MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
+
+ protected:
+  const int render_process_id_;
+  MediaInternals* const internals_;
+  scoped_refptr<DirectMediaLog> media_log_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
+  std::unique_ptr<media::WatchTimeReporter> wtr_;
+  const base::flat_set<base::StringPiece> watch_time_keys_;
+  const base::flat_set<base::StringPiece> watch_time_power_keys_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaInternalsWatchTimeTest);
+};
+
+TEST_F(MediaInternalsWatchTimeTest, BasicAudio) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, false, true, true);
+  wtr_->OnPlaying();
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleWatchTimeReporter();
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+
+  CycleWatchTimeReporter();
+  wtr_.reset();
+
+  ExpectWatchTime(
+      {media::MediaLog::kWatchTimeAudioAll, media::MediaLog::kWatchTimeAudioMse,
+       media::MediaLog::kWatchTimeAudioEme, media::MediaLog::kWatchTimeAudioAc,
+       media::MediaLog::kWatchTimeAudioEmbeddedExperience},
+      kWatchTimeLate);
+}
+
+TEST_F(MediaInternalsWatchTimeTest, BasicVideo) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, true, false, true);
+  wtr_->OnPlaying();
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleWatchTimeReporter();
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+
+  CycleWatchTimeReporter();
+  wtr_.reset();
+
+  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoAll,
+                   media::MediaLog::kWatchTimeAudioVideoSrc,
+                   media::MediaLog::kWatchTimeAudioVideoEme,
+                   media::MediaLog::kWatchTimeAudioVideoAc,
+                   media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
+                  kWatchTimeLate);
+}
+
+TEST_F(MediaInternalsWatchTimeTest, BasicPower) {
+  constexpr base::TimeDelta kWatchTime1 = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTime2 = base::TimeDelta::FromSeconds(10);
+  constexpr base::TimeDelta kWatchTime3 = base::TimeDelta::FromSeconds(30);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTime1))
+      .WillOnce(testing::Return(kWatchTime2))
+      .WillOnce(testing::Return(kWatchTime2))
+      .WillRepeatedly(testing::Return(kWatchTime3));
+
+  Initialize(true, true, false, true);
+  wtr_->OnPlaying();
+  wtr_->set_is_on_battery_power_for_testing(true);
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleWatchTimeReporter();
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+
+  CycleWatchTimeReporter();
+
+  // Transition back to AC power, this should generate AC watch time as well.
+  wtr_->OnPowerStateChangeForTesting(false);
+  CycleWatchTimeReporter();
+
+  // This should finalize the power watch time on battery.
+  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoBattery}, kWatchTime2);
+  ResetHistogramTester();
+  wtr_.reset();
+
+  std::vector<base::StringPiece> normal_keys = {
+      media::MediaLog::kWatchTimeAudioVideoAll,
+      media::MediaLog::kWatchTimeAudioVideoSrc,
+      media::MediaLog::kWatchTimeAudioVideoEme,
+      media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience};
+
+  for (auto key : watch_time_keys_) {
+    if (key == media::MediaLog::kWatchTimeAudioVideoAc) {
+      histogram_tester_->ExpectUniqueSample(
+          key.as_string(), (kWatchTime3 - kWatchTime2).InMilliseconds(), 1);
+      continue;
+    }
+
+    auto it = std::find(normal_keys.begin(), normal_keys.end(), key);
+    if (it == normal_keys.end()) {
+      histogram_tester_->ExpectTotalCount(key.as_string(), 0);
+    } else {
+      histogram_tester_->ExpectUniqueSample(key.as_string(),
+                                            kWatchTime3.InMilliseconds(), 1);
+    }
+  }
+}
+
+TEST_F(MediaInternalsWatchTimeTest, BasicHidden) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, true, false, true);
+  wtr_->OnHidden();
+  wtr_->OnPlaying();
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleWatchTimeReporter();
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+
+  CycleWatchTimeReporter();
+  wtr_.reset();
+
+  ExpectWatchTime(
+      {media::MediaLog::kWatchTimeAudioVideoBackgroundAll,
+       media::MediaLog::kWatchTimeAudioVideoBackgroundSrc,
+       media::MediaLog::kWatchTimeAudioVideoBackgroundEme,
+       media::MediaLog::kWatchTimeAudioVideoBackgroundAc,
+       media::MediaLog::kWatchTimeAudioVideoBackgroundEmbeddedExperience},
+      kWatchTimeLate);
+}
+
+TEST_F(MediaInternalsWatchTimeTest, PlayerDestructionFinalizes) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, true, false, true);
+  wtr_->OnPlaying();
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleWatchTimeReporter();
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+
+  CycleWatchTimeReporter();
+
+  media_log_->AddEvent(
+      media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_DESTROYED));
+
+  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoAll,
+                   media::MediaLog::kWatchTimeAudioVideoSrc,
+                   media::MediaLog::kWatchTimeAudioVideoEme,
+                   media::MediaLog::kWatchTimeAudioVideoAc,
+                   media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
+                  kWatchTimeLate);
+}
+
+TEST_F(MediaInternalsWatchTimeTest, ProcessDestructionFinalizes) {
+  constexpr base::TimeDelta kWatchTimeEarly = base::TimeDelta::FromSeconds(5);
+  constexpr base::TimeDelta kWatchTimeLate = base::TimeDelta::FromSeconds(10);
+  EXPECT_CALL(*this, GetCurrentMediaTime())
+      .WillOnce(testing::Return(base::TimeDelta()))
+      .WillOnce(testing::Return(kWatchTimeEarly))
+      .WillRepeatedly(testing::Return(kWatchTimeLate));
+  Initialize(true, true, false, true);
+  wtr_->OnPlaying();
+
+  // No log should have been generated yet since the message loop has not had
+  // any chance to pump.
+  CycleWatchTimeReporter();
+  ExpectWatchTime(std::vector<base::StringPiece>(), base::TimeDelta());
+
+  CycleWatchTimeReporter();
+
+  internals_->OnProcessTerminatedForTesting(render_process_id_);
+  ExpectWatchTime({media::MediaLog::kWatchTimeAudioVideoAll,
+                   media::MediaLog::kWatchTimeAudioVideoSrc,
+                   media::MediaLog::kWatchTimeAudioVideoEme,
+                   media::MediaLog::kWatchTimeAudioVideoAc,
+                   media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience},
+                  kWatchTimeLate);
+}
 
 }  // namespace content

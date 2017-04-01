@@ -89,12 +89,13 @@ class CONTENT_EXPORT MediaInternals
                                            int render_frame_id,
                                            media::AudioLog* audio_log);
 
+  void OnProcessTerminatedForTesting(int process_id);
+
  private:
   // Inner class to handle reporting pipelinestatus to UMA
   class MediaInternalsUMAHandler;
 
   friend class AudioLogImpl;
-  friend class MediaInternalsTest;
 
   MediaInternals();
 

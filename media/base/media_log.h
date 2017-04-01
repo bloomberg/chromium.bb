@@ -12,6 +12,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -90,6 +91,8 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   void SetBooleanProperty(const std::string& key, bool value);
 
   // Histogram names used for reporting; also double as MediaLog key names.
+  // NOTE: If you add to this list you must update GetWatchTimeKeys() and if
+  // necessary, GetWatchTimePowerKeys().
   static const char kWatchTimeAudioAll[];
   static const char kWatchTimeAudioMse[];
   static const char kWatchTimeAudioEme[];
@@ -104,10 +107,20 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
   static const char kWatchTimeAudioVideoBattery[];
   static const char kWatchTimeAudioVideoAc[];
   static const char kWatchTimeAudioVideoEmbeddedExperience[];
+  static const char kWatchTimeAudioVideoBackgroundAll[];
+  static const char kWatchTimeAudioVideoBackgroundMse[];
+  static const char kWatchTimeAudioVideoBackgroundEme[];
+  static const char kWatchTimeAudioVideoBackgroundSrc[];
+  static const char kWatchTimeAudioVideoBackgroundBattery[];
+  static const char kWatchTimeAudioVideoBackgroundAc[];
+  static const char kWatchTimeAudioVideoBackgroundEmbeddedExperience[];
 
   // Markers which signify the watch time should be finalized immediately.
   static const char kWatchTimeFinalize[];
   static const char kWatchTimeFinalizePower[];
+
+  static base::flat_set<base::StringPiece> GetWatchTimeKeys();
+  static base::flat_set<base::StringPiece> GetWatchTimePowerKeys();
 
  protected:
   friend class base::RefCountedThreadSafe<MediaLog>;

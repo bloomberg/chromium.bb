@@ -41,8 +41,57 @@ const char MediaLog::kWatchTimeAudioAc[] = "Media.WatchTime.Audio.AC";
 const char MediaLog::kWatchTimeAudioEmbeddedExperience[] =
     "Media.WatchTime.Audio.EmbeddedExperience";
 
+// Audio+video background watch time metrics.
+const char MediaLog::kWatchTimeAudioVideoBackgroundAll[] =
+    "Media.WatchTime.AudioVideo.Background.All";
+const char MediaLog::kWatchTimeAudioVideoBackgroundMse[] =
+    "Media.WatchTime.AudioVideo.Background.MSE";
+const char MediaLog::kWatchTimeAudioVideoBackgroundEme[] =
+    "Media.WatchTime.AudioVideo.Background.EME";
+const char MediaLog::kWatchTimeAudioVideoBackgroundSrc[] =
+    "Media.WatchTime.AudioVideo.Background.SRC";
+const char MediaLog::kWatchTimeAudioVideoBackgroundBattery[] =
+    "Media.WatchTime.AudioVideo.Background.Battery";
+const char MediaLog::kWatchTimeAudioVideoBackgroundAc[] =
+    "Media.WatchTime.AudioVideo.Background.AC";
+const char MediaLog::kWatchTimeAudioVideoBackgroundEmbeddedExperience[] =
+    "Media.WatchTime.AudioVideo.Background.EmbeddedExperience";
+
 const char MediaLog::kWatchTimeFinalize[] = "FinalizeWatchTime";
 const char MediaLog::kWatchTimeFinalizePower[] = "FinalizePowerWatchTime";
+
+base::flat_set<base::StringPiece> MediaLog::GetWatchTimeKeys() {
+  return {kWatchTimeAudioAll,
+          kWatchTimeAudioMse,
+          kWatchTimeAudioEme,
+          kWatchTimeAudioSrc,
+          kWatchTimeAudioBattery,
+          kWatchTimeAudioAc,
+          kWatchTimeAudioEmbeddedExperience,
+          kWatchTimeAudioVideoAll,
+          kWatchTimeAudioVideoMse,
+          kWatchTimeAudioVideoEme,
+          kWatchTimeAudioVideoSrc,
+          kWatchTimeAudioVideoBattery,
+          kWatchTimeAudioVideoAc,
+          kWatchTimeAudioVideoEmbeddedExperience,
+          kWatchTimeAudioVideoBackgroundAll,
+          kWatchTimeAudioVideoBackgroundMse,
+          kWatchTimeAudioVideoBackgroundEme,
+          kWatchTimeAudioVideoBackgroundSrc,
+          kWatchTimeAudioVideoBackgroundBattery,
+          kWatchTimeAudioVideoBackgroundAc,
+          kWatchTimeAudioVideoBackgroundEmbeddedExperience};
+}
+
+base::flat_set<base::StringPiece> MediaLog::GetWatchTimePowerKeys() {
+  return {kWatchTimeAudioBattery,
+          kWatchTimeAudioAc,
+          kWatchTimeAudioVideoBattery,
+          kWatchTimeAudioVideoAc,
+          kWatchTimeAudioVideoBackgroundBattery,
+          kWatchTimeAudioVideoBackgroundAc};
+}
 
 std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
   switch (level) {
@@ -166,8 +215,7 @@ std::string MediaLog::MediaEventToLogString(const MediaLogEvent& event) {
   if (event.type == MediaLogEvent::PIPELINE_ERROR &&
       event.params.GetInteger("pipeline_error", &error_code)) {
     PipelineStatus status = static_cast<PipelineStatus>(error_code);
-    return EventTypeToString(event.type) + " " +
-        media::MediaLog::PipelineStatusToString(status);
+    return EventTypeToString(event.type) + " " + PipelineStatusToString(status);
   }
   std::string params_json;
   base::JSONWriter::Write(event.params, &params_json);

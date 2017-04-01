@@ -9,6 +9,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -290,16 +292,7 @@ class MediaInternals::MediaInternalsUMAHandler {
                        const media::MediaLogEvent& event);
 
  private:
-  struct WatchTimeInfo {
-    base::TimeDelta all_watch_time = media::kNoTimestamp;
-    base::TimeDelta mse_watch_time = media::kNoTimestamp;
-    base::TimeDelta eme_watch_time = media::kNoTimestamp;
-    base::TimeDelta src_watch_time = media::kNoTimestamp;
-    base::TimeDelta ac_watch_time = media::kNoTimestamp;
-    base::TimeDelta battery_watch_time = media::kNoTimestamp;
-    base::TimeDelta embedded_experience_watch_time = media::kNoTimestamp;
-  };
-
+  using WatchTimeInfo = base::flat_map<base::StringPiece, base::TimeDelta>;
   struct PipelineInfo {
     bool has_pipeline = false;
     bool has_ever_played = false;
@@ -321,66 +314,33 @@ class MediaInternals::MediaInternalsUMAHandler {
   // Helper to generate PipelineStatus UMA name for AudioVideo streams.
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);
 
-  // Saves the watch time info from |event| under |key| at |watch_time| if |key|
-  // is present in |event.params|.
-  void MaybeSaveWatchTime(const media::MediaLogEvent& event,
-                          const char* key,
-                          base::TimeDelta* watch_time) {
-    if (!event.params.HasKey(key))
-      return;
-
-    double in_seconds;
-    const bool result =
-        event.params.GetDoubleWithoutPathExpansion(key, &in_seconds);
-    DCHECK(result);
-    *watch_time = base::TimeDelta::FromSecondsD(in_seconds);
-
-    DVLOG(2) << "Saved watch time for " << key << " of " << *watch_time;
+  void RecordWatchTime(const base::StringPiece& key, base::TimeDelta value) {
+    base::Histogram::FactoryTimeGet(
+        key.as_string(), base::TimeDelta::FromSeconds(7),
+        base::TimeDelta::FromHours(10), 50,
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->AddTime(value);
   }
 
   enum class FinalizeType { EVERYTHING, POWER_ONLY };
   void FinalizeWatchTime(bool has_video,
                          WatchTimeInfo* watch_time_info,
                          FinalizeType finalize_type) {
-// Use a macro instead of a function so we can use the histogram macro (which
-// checks that the uma name is a static value). We use a custom time range for
-// the histogram macro to capitalize on common expected watch times.
-#define MAYBE_RECORD_WATCH_TIME(uma_name, watch_time)                         \
-  if (watch_time_info->watch_time != media::kNoTimestamp) {                   \
-    UMA_HISTOGRAM_CUSTOM_TIMES(                                               \
-        media::MediaLog::uma_name, watch_time_info->watch_time,               \
-        base::TimeDelta::FromSeconds(7), base::TimeDelta::FromHours(10), 50); \
-    watch_time_info->watch_time = media::kNoTimestamp;                        \
-  }
-
-    if (has_video) {
-      if (finalize_type == FinalizeType::EVERYTHING) {
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAll, all_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoMse, mse_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEme, eme_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoSrc, src_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoEmbeddedExperience,
-                                embedded_experience_watch_time);
-      } else {
-        DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
-      }
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoBattery, battery_watch_time);
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioVideoAc, ac_watch_time);
-    } else {
-      if (finalize_type == FinalizeType::EVERYTHING) {
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioAll, all_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioMse, mse_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioEme, eme_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioSrc, src_watch_time);
-        MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioEmbeddedExperience,
-                                embedded_experience_watch_time);
-      } else {
-        DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
-      }
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioBattery, battery_watch_time);
-      MAYBE_RECORD_WATCH_TIME(kWatchTimeAudioAc, ac_watch_time);
+    if (finalize_type == FinalizeType::EVERYTHING) {
+      for (auto& kv : *watch_time_info)
+        RecordWatchTime(kv.first, kv.second);
+      watch_time_info->clear();
+      return;
     }
-#undef MAYBE_RECORD_WATCH_TIME
+
+    DCHECK_EQ(finalize_type, FinalizeType::POWER_ONLY);
+    for (auto power_key : watch_time_power_keys_) {
+      auto it = watch_time_info->find(power_key);
+      if (it == watch_time_info->end())
+        continue;
+      RecordWatchTime(it->first, it->second);
+      watch_time_info->erase(it);
+    }
   }
 
   // Key is player id.
@@ -392,11 +352,15 @@ class MediaInternals::MediaInternalsUMAHandler {
   // Stores player information per renderer.
   RendererPlayerMap renderer_info_;
 
+  const base::flat_set<base::StringPiece> watch_time_keys_;
+  const base::flat_set<base::StringPiece> watch_time_power_keys_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaInternalsUMAHandler);
 };
 
-MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler() {
-}
+MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler()
+    : watch_time_keys_(media::MediaLog::GetWatchTimeKeys()),
+      watch_time_power_keys_(media::MediaLog::GetWatchTimePowerKeys()) {}
 
 void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
     int render_process_id,
@@ -458,54 +422,35 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
     case media::MediaLogEvent::Type::WATCH_TIME_UPDATE: {
       DVLOG(2) << "Processing watch time update.";
       PipelineInfo& info = player_info[event.id];
-      WatchTimeInfo& wti = info.watch_time_info;
-      // Save audio only watch time information.
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioAll,
-                         &wti.all_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioMse,
-                         &wti.mse_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioEme,
-                         &wti.eme_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioSrc,
-                         &wti.src_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioBattery,
-                         &wti.battery_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioAc,
-                         &wti.ac_watch_time);
-      MaybeSaveWatchTime(event,
-                         media::MediaLog::kWatchTimeAudioEmbeddedExperience,
-                         &wti.embedded_experience_watch_time);
 
-      // Save audio+video watch time information.
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAll,
-                         &wti.all_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoMse,
-                         &wti.mse_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoEme,
-                         &wti.eme_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoSrc,
-                         &wti.src_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoBattery,
-                         &wti.battery_watch_time);
-      MaybeSaveWatchTime(event, media::MediaLog::kWatchTimeAudioVideoAc,
-                         &wti.ac_watch_time);
-      MaybeSaveWatchTime(
-          event, media::MediaLog::kWatchTimeAudioVideoEmbeddedExperience,
-          &wti.embedded_experience_watch_time);
+      for (base::DictionaryValue::Iterator it(event.params); !it.IsAtEnd();
+           it.Advance()) {
+        // Don't log random histogram keys from the untrusted renderer, instead
+        // ensure they are from our list of known keys. Use |key_name| from the
+        // key map, since otherwise we'll end up storing a StringPiece which
+        // points into the soon-to-be-destructed DictionaryValue.
+        auto key_name = watch_time_keys_.find(it.key());
+        if (key_name == watch_time_keys_.end())
+          continue;
+        info.watch_time_info[*key_name] =
+            base::TimeDelta::FromSecondsD(it.value().GetDouble());
+      }
 
       if (event.params.HasKey(media::MediaLog::kWatchTimeFinalize)) {
         bool should_finalize;
         DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalize,
                                        &should_finalize) &&
                should_finalize);
-        FinalizeWatchTime(info.has_video, &wti, FinalizeType::EVERYTHING);
+        FinalizeWatchTime(info.has_video, &info.watch_time_info,
+                          FinalizeType::EVERYTHING);
       } else if (event.params.HasKey(
                      media::MediaLog::kWatchTimeFinalizePower)) {
         bool should_finalize;
         DCHECK(event.params.GetBoolean(media::MediaLog::kWatchTimeFinalizePower,
                                        &should_finalize) &&
                should_finalize);
-        FinalizeWatchTime(info.has_video, &wti, FinalizeType::POWER_ONLY);
+        FinalizeWatchTime(info.has_video, &info.watch_time_info,
+                          FinalizeType::POWER_ONLY);
       }
       break;
     }
@@ -517,6 +462,8 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
         break;
 
       ReportUMAForPipelineStatus(it->second);
+      FinalizeWatchTime(it->second.has_video, &(it->second.watch_time_info),
+                        FinalizeType::EVERYTHING);
       player_info.erase(it);
     }
     default:
@@ -808,6 +755,10 @@ void MediaInternals::SetWebContentsTitleForAudioLogEntry(
     media::AudioLog* audio_log) {
   static_cast<AudioLogImpl*>(audio_log)
       ->SendWebContentsTitle(component_id, render_process_id, render_frame_id);
+}
+
+void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
+  uma_handler_->OnProcessTerminated(process_id);
 }
 
 void MediaInternals::SendUpdate(const base::string16& update) {
