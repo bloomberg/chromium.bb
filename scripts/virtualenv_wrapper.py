@@ -75,6 +75,7 @@ def _CreateVenvEnvironment(env_dict):
   """
   new_env_dict = env_dict.copy()
   new_env_dict[_VENV_MARKER] = '1'
+  new_env_dict.pop('PYTHONPATH', None)
   return new_env_dict
 
 
