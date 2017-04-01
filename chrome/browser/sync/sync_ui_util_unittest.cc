@@ -262,7 +262,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
           .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
       provider->SetAuthError(
           signin->GetAuthenticatedAccountId(),
-          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+          GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
       EXPECT_CALL(*service, HasUnrecoverableError())
           .WillRepeatedly(Return(false));
       return;
@@ -343,7 +343,7 @@ sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
     case STATUS_CASE_AUTHENTICATING:
       return sync_ui_util::NO_ACTION;
     case STATUS_CASE_AUTH_ERROR:
-      return sync_ui_util::NO_ACTION;
+      return sync_ui_util::REAUTHENTICATE;
     case STATUS_CASE_PROTOCOL_ERROR:
       return sync_ui_util::UPGRADE_CLIENT;
     case STATUS_CASE_PASSPHRASE_ERROR:

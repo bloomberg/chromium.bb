@@ -59,7 +59,7 @@ void SigninErrorController::AuthStatusChanged() {
 
     // Ignore the states we don't want to elevate to the user.
     if (error.state() == GoogleServiceAuthError::NONE ||
-        error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
+        error.IsTransientError()) {
       continue;
     }
 

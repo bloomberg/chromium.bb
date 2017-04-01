@@ -288,13 +288,12 @@ TEST_F(ProfileOAuth2TokenServiceIOSDelegateTest,
   base::RunLoop().RunUntilIdle();
 
   ResetObserverCounts();
-  GoogleServiceAuthError cancelled_error(
-      GoogleServiceAuthError::REQUEST_CANCELED);
-  oauth2_delegate_->UpdateAuthError(GetAccountId(account1), cancelled_error);
+  GoogleServiceAuthError error(GoogleServiceAuthError::SERVICE_ERROR);
+  oauth2_delegate_->UpdateAuthError(GetAccountId(account1), error);
   EXPECT_EQ(1, error_changed_count_);
 
   oauth2_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
-  oauth2_delegate_->UpdateAuthError(GetAccountId(account1), cancelled_error);
+  oauth2_delegate_->UpdateAuthError(GetAccountId(account1), error);
   EXPECT_EQ(0, error_changed_count_);
 }

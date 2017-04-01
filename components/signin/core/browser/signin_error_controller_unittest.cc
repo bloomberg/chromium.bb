@@ -150,9 +150,9 @@ TEST_F(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
     { GoogleServiceAuthError::CAPTCHA_REQUIRED, true },
     { GoogleServiceAuthError::ACCOUNT_DELETED, true },
     { GoogleServiceAuthError::ACCOUNT_DISABLED, true },
-    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, true },
+    { GoogleServiceAuthError::SERVICE_UNAVAILABLE, false },
     { GoogleServiceAuthError::TWO_FACTOR, true },
-    { GoogleServiceAuthError::REQUEST_CANCELED, true },
+    { GoogleServiceAuthError::REQUEST_CANCELED, false },
     { GoogleServiceAuthError::HOSTED_NOT_ALLOWED_DEPRECATED, false },
     { GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE, true },
     { GoogleServiceAuthError::SERVICE_ERROR, true },
@@ -200,7 +200,7 @@ TEST_F(SigninErrorControllerTest, AuthStatusChange) {
   // the set. But if another error crops up...
   //
   // |     provider0       |       provider1          | ...
-  // | SERVICE_UNAVAILABLE | INVALID_GAIA_CREDENTIALS | ...
+  // |   SERVICE_ERROR     | INVALID_GAIA_CREDENTIALS | ...
   //
   // we want the controller to still use the original error.
 
@@ -229,9 +229,8 @@ TEST_F(SigninErrorControllerTest, AuthStatusChange) {
   // Change the 1st provider's error.
   provider1->SetAuthError(
       kOtherTestAccountId,
-      GoogleServiceAuthError(
-          GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-  ASSERT_EQ(GoogleServiceAuthError::SERVICE_UNAVAILABLE,
+      GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
+  ASSERT_EQ(GoogleServiceAuthError::SERVICE_ERROR,
             error_controller_->auth_error().state());
   ASSERT_STREQ(kOtherTestAccountId,
                error_controller_->error_account_id().c_str());
@@ -241,7 +240,7 @@ TEST_F(SigninErrorControllerTest, AuthStatusChange) {
       kTestAccountId,
       GoogleServiceAuthError(
           GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
-  ASSERT_EQ(GoogleServiceAuthError::SERVICE_UNAVAILABLE,
+  ASSERT_EQ(GoogleServiceAuthError::SERVICE_ERROR,
             error_controller_->auth_error().state());
   ASSERT_STREQ(kOtherTestAccountId,
                error_controller_->error_account_id().c_str());
