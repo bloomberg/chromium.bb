@@ -4,6 +4,8 @@
 
 #include "ui/app_list/presenter/app_list.h"
 
+#include <utility>
+
 #include "ui/app_list/presenter/app_list_delegate.h"
 
 namespace app_list {
@@ -33,6 +35,11 @@ void AppList::Dismiss() {
 void AppList::ToggleAppList(int64_t display_id) {
   if (presenter_)
     presenter_->ToggleAppList(display_id);
+}
+
+void AppList::StartVoiceInteractionSession() {
+  if (presenter_)
+    presenter_->StartVoiceInteractionSession();
 }
 
 bool AppList::IsVisible() const {

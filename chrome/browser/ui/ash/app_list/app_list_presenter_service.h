@@ -23,6 +23,7 @@ class AppListPresenterService : public app_list::mojom::AppListPresenter {
   void Show(int64_t display_id) override;
   void Dismiss() override;
   void ToggleAppList(int64_t display_id) override;
+  void StartVoiceInteractionSession() override;
 
  private:
   app_list::AppListPresenterImpl* GetPresenter();

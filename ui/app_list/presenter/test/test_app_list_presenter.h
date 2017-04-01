@@ -25,15 +25,18 @@ class TestAppListPresenter : public app_list::mojom::AppListPresenter {
   void Show(int64_t display_id) override;
   void Dismiss() override;
   void ToggleAppList(int64_t display_id) override;
+  void StartVoiceInteractionSession() override;
 
   size_t show_count() const { return show_count_; }
   size_t dismiss_count() const { return dismiss_count_; }
   size_t toggle_count() const { return toggle_count_; }
+  size_t voice_session_count() const { return voice_session_count_; }
 
  private:
   size_t show_count_ = 0u;
   size_t dismiss_count_ = 0u;
   size_t toggle_count_ = 0u;
+  size_t voice_session_count_ = 0u;
 
   mojo::Binding<app_list::mojom::AppListPresenter> binding_;
 

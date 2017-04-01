@@ -4,6 +4,8 @@
 
 #include "ash/shell/example_app_list_presenter.h"
 
+#include <memory>
+
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
 #include "ash/shell/example_factory.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
@@ -61,6 +63,8 @@ void ExampleAppListPresenter::Dismiss() {
 void ExampleAppListPresenter::ToggleAppList(int64_t display_id) {
   app_list_presenter_impl_.ToggleAppList(display_id);
 }
+
+void ExampleAppListPresenter::StartVoiceInteractionSession() {}
 
 }  // namespace shell
 }  // namespace ash

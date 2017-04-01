@@ -33,4 +33,7 @@ interface AppListPresenter {
   // Show the app list (on the specified display) if it is hidden; hide the
   // app list if it is shown.
   ToggleAppList(int64 display_id);
+
+  // Starts a voice interaction session.
+  StartVoiceInteractionSession();
 };

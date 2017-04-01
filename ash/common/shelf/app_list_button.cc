@@ -4,6 +4,9 @@
 
 #include "ash/common/shelf/app_list_button.h"
 
+#include <memory>
+#include <utility>
+
 #include "ash/common/shelf/ink_drop_button_listener.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_view.h"
@@ -12,8 +15,11 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/app_list/presenter/app_list.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
@@ -21,6 +27,15 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/painter.h"
+
+namespace {
+
+bool IsVoiceInteractionEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnableVoiceInteraction);
+}
+
+}  // namespace
 
 namespace ash {
 
@@ -67,28 +82,6 @@ void AppListButton::UpdateShelfItemBackground(SkColor color) {
   SchedulePaint();
 }
 
-bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
-  ImageButton::OnMousePressed(event);
-  shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
-  return true;
-}
-
-void AppListButton::OnMouseReleased(const ui::MouseEvent& event) {
-  ImageButton::OnMouseReleased(event);
-  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
-}
-
-void AppListButton::OnMouseCaptureLost() {
-  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
-  ImageButton::OnMouseCaptureLost();
-}
-
-bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
-  ImageButton::OnMouseDragged(event);
-  shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
-  return true;
-}
-
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
@@ -110,10 +103,51 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
       break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      if (IsVoiceInteractionEnabled()) {
+        Shell::Get()->app_list()->StartVoiceInteractionSession();
+        event->SetHandled();
+      } else {
+        ImageButton::OnGestureEvent(event);
+      }
+      break;
+    case ui::ET_GESTURE_LONG_TAP:
+      if (IsVoiceInteractionEnabled()) {
+        // Also consume the long tap event. This happens after the user long
+        // presses and lifts the finger. We already handled the long press
+        // ignore the long tap to avoid bringing up the context menu again.
+        AnimateInkDrop(views::InkDropState::HIDDEN, event);
+        event->SetHandled();
+      } else {
+        ImageButton::OnGestureEvent(event);
+      }
+      break;
     default:
       ImageButton::OnGestureEvent(event);
       return;
   }
+}
+
+bool AppListButton::OnMousePressed(const ui::MouseEvent& event) {
+  ImageButton::OnMousePressed(event);
+  shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
+  return true;
+}
+
+void AppListButton::OnMouseReleased(const ui::MouseEvent& event) {
+  ImageButton::OnMouseReleased(event);
+  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
+}
+
+void AppListButton::OnMouseCaptureLost() {
+  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
+  ImageButton::OnMouseCaptureLost();
+}
+
+bool AppListButton::OnMouseDragged(const ui::MouseEvent& event) {
+  ImageButton::OnMouseDragged(event);
+  shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
+  return true;
 }
 
 void AppListButton::OnPaint(gfx::Canvas* canvas) {

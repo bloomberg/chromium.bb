@@ -28,5 +28,9 @@ void TestAppListPresenter::ToggleAppList(int64_t display_id) {
   toggle_count_++;
 }
 
+void TestAppListPresenter::StartVoiceInteractionSession() {
+  voice_session_count_++;
+}
+
 }  // namespace test
 }  // namespace app_list

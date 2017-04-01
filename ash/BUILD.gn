@@ -1150,6 +1150,7 @@ source_set("common_unittests") {
     "common/metrics/pointer_metrics_recorder_unittest.cc",
     "common/mus_property_mirror_ash_unittest.cc",
     "common/session/session_controller_unittest.cc",
+    "common/shelf/app_list_button_unittest.cc",
     "common/shelf/shelf_application_menu_model_unittest.cc",
     "common/shelf/shelf_background_animator_unittest.cc",
     "common/shelf/shelf_button_pressed_metric_tracker_unittest.cc",

@@ -5,6 +5,8 @@
 #ifndef ASH_COMMON_SHELF_APP_LIST_BUTTON_H_
 #define ASH_COMMON_SHELF_APP_LIST_BUTTON_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -31,6 +33,9 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
   // Updates background and schedules a paint.
   void UpdateShelfItemBackground(SkColor color);
 
+  // views::ImageButton overrides:
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
  protected:
   // views::ImageButton overrides:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -44,9 +49,6 @@ class ASH_EXPORT AppListButton : public views::ImageButton {
   bool ShouldEnterPushedState(const ui::Event& event) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
-
-  // ui::EventHandler overrides:
-  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   // Get the center point of the app list button used to draw its background and
