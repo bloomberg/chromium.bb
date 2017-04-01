@@ -24,6 +24,7 @@
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+#include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/events/mojo/latency_info_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
@@ -226,6 +227,171 @@ class CCSerializationPerfTest : public testing::Test {
                            test_name, count, "", true);
   }
 
+  static void RunComplexCompositorFrameTest(const std::string& test_name) {
+    CompositorFrame frame;
+
+    TransferableResourceArray& resource_list = frame.resource_list;
+    for (uint32_t i = 0; i < 80; ++i) {
+      TransferableResource arbitrary_resource;
+      resource_list.push_back(arbitrary_resource);
+    }
+
+    RenderPassList& render_pass_list = frame.render_pass_list;
+
+    gfx::Transform arbitrary_matrix1;
+    arbitrary_matrix1.Scale(3, 3);
+    arbitrary_matrix1.Translate(-5, 20);
+    arbitrary_matrix1.Rotate(15);
+    gfx::Transform arbitrary_matrix2;
+    arbitrary_matrix2.Scale(10, -1);
+    arbitrary_matrix2.Translate(20, 3);
+    arbitrary_matrix2.Rotate(24);
+    gfx::Rect arbitrary_rect1(-5, 9, 3, 15);
+    gfx::Rect arbitrary_rect1_inside_rect1(-4, 12, 2, 8);
+    gfx::Rect arbitrary_rect2_inside_rect1(-5, 11, 1, 2);
+    gfx::Rect arbitrary_rect2(40, 23, 11, 7);
+    gfx::Rect arbitrary_rect1_inside_rect2(44, 23, 4, 2);
+    gfx::Rect arbitrary_rect2_inside_rect2(41, 25, 3, 5);
+    gfx::Rect arbitrary_rect3(7, -53, 22, 19);
+    gfx::Rect arbitrary_rect1_inside_rect3(10, -40, 6, 3);
+    gfx::Rect arbitrary_rect2_inside_rect3(12, -51, 5, 12);
+    gfx::Size arbitrary_size1(15, 19);
+    gfx::Size arbitrary_size2(3, 99);
+    gfx::Size arbitrary_size3(75, 1281);
+    gfx::RectF arbitrary_rectf1(4.2f, -922.1f, 15.6f, 29.5f);
+    gfx::RectF arbitrary_rectf2(2.1f, -411.05f, 7.8f, 14.75f);
+    gfx::SizeF arbitrary_sizef1(15.2f, 104.6f);
+    gfx::PointF arbitrary_pointf1(31.4f, 15.9f);
+    gfx::PointF arbitrary_pointf2(26.5f, -35.8f);
+    gfx::Vector2dF arbitrary_vector2df1(16.2f, -85.1f);
+    gfx::Vector2dF arbitrary_vector2df2(-8.3f, 0.47f);
+    float arbitrary_float1 = 0.7f;
+    float arbitrary_float2 = 0.3f;
+    float arbitrary_float3 = 0.9f;
+    float arbitrary_float_array[4] = {3.5f, 6.2f, 9.3f, 12.3f};
+    bool arbitrary_bool1 = true;
+    bool arbitrary_bool2 = false;
+    bool arbitrary_bool3 = true;
+    bool arbitrary_bool4 = true;
+    bool arbitrary_bool5 = false;
+    bool arbitrary_bool6 = true;
+    int arbitrary_context_id1 = 12;
+    int arbitrary_context_id2 = 57;
+    int arbitrary_context_id3 = -503;
+    SkColor arbitrary_color = SkColorSetARGB(25, 36, 47, 58);
+    SkBlendMode arbitrary_blend_mode1 = SkBlendMode::kScreen;
+    SkBlendMode arbitrary_blend_mode2 = SkBlendMode::kLighten;
+    SkBlendMode arbitrary_blend_mode3 = SkBlendMode::kOverlay;
+    ResourceId arbitrary_resourceid1 = 55;
+    ResourceId arbitrary_resourceid2 = 47;
+    ResourceId arbitrary_resourceid3 = 23;
+    ResourceId arbitrary_resourceid4 = 16;
+    SkScalar arbitrary_sigma = SkFloatToScalar(2.0f);
+    gfx::ColorSpace arbitrary_color_space = gfx::ColorSpace::CreateXYZD50();
+    int root_id = 14;
+
+    FilterOperations arbitrary_filters1;
+    arbitrary_filters1.Append(
+        FilterOperation::CreateGrayscaleFilter(arbitrary_float1));
+    arbitrary_filters1.Append(FilterOperation::CreateReferenceFilter(
+        SkBlurImageFilter::Make(arbitrary_sigma, arbitrary_sigma, nullptr)));
+
+    FilterOperations arbitrary_filters2;
+    arbitrary_filters2.Append(
+        FilterOperation::CreateBrightnessFilter(arbitrary_float2));
+
+    std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
+    pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2,
+                    arbitrary_matrix1, arbitrary_filters2, arbitrary_filters1,
+                    arbitrary_color_space, arbitrary_bool1);
+
+    // Texture quads
+    for (uint32_t i = 0; i < 10; ++i) {
+      SharedQuadState* shared_state1_in =
+          pass_in->CreateAndAppendSharedQuadState();
+      shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_size1,
+                               arbitrary_rect1, arbitrary_rect2,
+                               arbitrary_bool1, arbitrary_float1,
+                               arbitrary_blend_mode1, arbitrary_context_id1);
+
+      TextureDrawQuad* texture_in =
+          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      texture_in->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid1,
+          arbitrary_size1, arbitrary_bool1, arbitrary_pointf1,
+          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
+          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+
+      TextureDrawQuad* texture_in2 =
+          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      texture_in2->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid2,
+          arbitrary_size1, arbitrary_bool3, arbitrary_pointf1,
+          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
+          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+
+      TextureDrawQuad* texture_in3 =
+          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      texture_in3->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid3,
+          arbitrary_size1, arbitrary_bool2, arbitrary_pointf1,
+          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
+          arbitrary_bool4, arbitrary_bool6, arbitrary_bool6);
+
+      TextureDrawQuad* texture_in4 =
+          pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
+      texture_in4->SetAll(
+          shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+          arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid4,
+          arbitrary_size2, arbitrary_bool4, arbitrary_pointf1,
+          arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
+          arbitrary_bool4, arbitrary_bool5, arbitrary_bool6);
+    }
+
+    // Tiled quads
+    for (uint32_t i = 0; i < 10; ++i) {
+      SharedQuadState* shared_state2_in =
+          pass_in->CreateAndAppendSharedQuadState();
+      shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_size2,
+                               arbitrary_rect2, arbitrary_rect3,
+                               arbitrary_bool1, arbitrary_float2,
+                               arbitrary_blend_mode2, arbitrary_context_id2);
+      for (uint32_t j = 0; j < 6; ++j) {
+        TileDrawQuad* tile_in =
+            pass_in->CreateAndAppendDrawQuad<TileDrawQuad>();
+        tile_in->SetAll(shared_state2_in, arbitrary_rect2,
+                        arbitrary_rect2_inside_rect2,
+                        arbitrary_rect1_inside_rect2, arbitrary_bool1,
+                        arbitrary_resourceid3, arbitrary_rectf1,
+                        arbitrary_size1, arbitrary_bool2, arbitrary_bool3);
+      }
+    }
+
+    // Solid color quads
+    for (uint32_t i = 0; i < 5; ++i) {
+      SharedQuadState* shared_state3_in =
+          pass_in->CreateAndAppendSharedQuadState();
+      shared_state3_in->SetAll(arbitrary_matrix1, arbitrary_size3,
+                               arbitrary_rect3, arbitrary_rect1,
+                               arbitrary_bool1, arbitrary_float3,
+                               arbitrary_blend_mode3, arbitrary_context_id3);
+      for (uint32_t j = 0; j < 5; ++j) {
+        SolidColorDrawQuad* solidcolor_in =
+            pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+        solidcolor_in->SetAll(shared_state3_in, arbitrary_rect3,
+                              arbitrary_rect1_inside_rect3,
+                              arbitrary_rect2_inside_rect3, arbitrary_bool1,
+                              arbitrary_color, arbitrary_bool2);
+      }
+    }
+
+    render_pass_list.push_back(std::move(pass_in));
+    RunTest(test_name, std::move(frame), UseSingleSharedQuadState::NO);
+  }
+
   static void RunCompositorFrameTest(const std::string& test_name,
                                      uint32_t num_quads,
                                      uint32_t num_passes,
@@ -259,6 +425,14 @@ class CCSerializationPerfTest : public testing::Test {
     RunDeserializationTestParamTraits(test_name, frame, single_sqs);
   }
 };
+
+// Test for compositor frames with one render pass, 80 resources in resource
+// list, 10 shared quad states with 4 texture quads each, 10 shared quad states
+// with 6 tiled quads each, and 5 shared quad states with 5 solid color quads
+// each.
+TEST_F(CCSerializationPerfTest, DelegatedFrame_Complex) {
+  RunComplexCompositorFrameTest("DelegatedFrame_Complex");
+}
 
 // Test for compositor frames with one render pass and 4000 quads.
 TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_4000) {
