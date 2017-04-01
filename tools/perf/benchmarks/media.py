@@ -142,7 +142,10 @@ class MediaAndroidToughVideoCasesTBMv2(_MediaTBMv2Benchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)
+    # crbug.com/707286: This benchmark is having issues with devices other
+    # than Nexus 5X. Disabling on those devices until we figure out the cause.
+    return (cls.IsSvelte(possible_browser) or
+            possible_browser.platform.GetDeviceTypeName() != 'Nexus 5X')
 
   @classmethod
   def Name(cls):
