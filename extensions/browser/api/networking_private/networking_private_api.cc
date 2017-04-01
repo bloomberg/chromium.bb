@@ -30,14 +30,16 @@ const int kDefaultNetworkListLimit = 1000;
 const char kPrivateOnlyError[] = "Requires networkingPrivate API access.";
 
 const char* const kPrivatePropertiesForSet[] = {
-    "ProxySettings", "StaticIPConfig", "VPN.Host",          "VPN.IPsec",
-    "VPN.L2TP",      "VPN.OpenVPN",    "VPN.ThirdPartyVPN",
+    "Cellular.APN", "ProxySettings", "StaticIPConfig", "VPN.Host",
+    "VPN.IPsec",    "VPN.L2TP",      "VPN.OpenVPN",    "VPN.ThirdPartyVPN",
 };
 
 const char* const kPrivatePropertiesForGet[] = {
-    "Cellular.ESN", "Cellular.ICCID", "Cellular.IMEI", "Cellular.IMSI",
-    "Cellular.MDN", "Cellular.MEID",  "Cellular.MIN",  "Ethernet.EAP",
-    "VPN.IPsec",    "VPN.L2TP",       "VPN.OpenVPN",   "WiFi.EAP",
+    "Cellular.APN",  "Cellular.APNList", "Cellular.LastGoodAPN",
+    "Cellular.ESN",  "Cellular.ICCID",   "Cellular.IMEI",
+    "Cellular.IMSI", "Cellular.MDN",     "Cellular.MEID",
+    "Cellular.MIN",  "Ethernet.EAP",     "VPN.IPsec",
+    "VPN.L2TP",      "VPN.OpenVPN",      "WiFi.EAP",
     "WiMax.EAP",
 };
 
@@ -232,6 +234,8 @@ ExtensionFunction::ResponseAction NetworkingPrivateGetStateFunction::Run() {
 
 void NetworkingPrivateGetStateFunction::Success(
     std::unique_ptr<base::DictionaryValue> result) {
+  FilterProperties(result.get(), PropertiesType::GET, extension(),
+                   source_context_type(), source_url());
   Respond(OneArgument(std::move(result)));
 }
 

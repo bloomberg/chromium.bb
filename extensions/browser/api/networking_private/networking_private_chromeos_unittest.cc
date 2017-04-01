@@ -223,6 +223,16 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
     device_test_->SetDeviceProperty(kCellularDevicePath,
                                     shill::kModelIDProperty,
                                     base::Value("test_model_id"));
+    std::unique_ptr<base::DictionaryValue> apn =
+        DictionaryBuilder()
+            .Set(shill::kApnProperty, "test-apn")
+            .Set(shill::kApnUsernameProperty, "test-user")
+            .Set(shill::kApnPasswordProperty, "test-password")
+            .Build();
+    std::unique_ptr<base::ListValue> apn_list =
+        ListBuilder().Append(apn->CreateDeepCopy()).Build();
+    device_test_->SetDeviceProperty(kCellularDevicePath,
+                                    shill::kCellularApnListProperty, *apn_list);
 
     service_test_->AddService(kCellularServicePath, kCellularGuid,
                               kCellularName, shill::kTypeCellular,
@@ -235,6 +245,10 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
     service_test_->SetServiceProperty(kCellularServicePath,
                                       shill::kRoamingStateProperty,
                                       base::Value(shill::kRoamingStateHome));
+    service_test_->SetServiceProperty(kCellularServicePath,
+                                      shill::kCellularApnProperty, *apn);
+    service_test_->SetServiceProperty(
+        kCellularServicePath, shill::kCellularLastGoodApnProperty, *apn);
 
     profile_test_->AddService(kUserProfilePath, kCellularServicePath);
 
@@ -1100,6 +1114,12 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
 
   ASSERT_TRUE(result);
 
+  std::unique_ptr<base::DictionaryValue> expected_apn =
+      DictionaryBuilder()
+          .Set("AccessPointName", "test-apn")
+          .Set("Username", "test-user")
+          .Set("Password", "test-password")
+          .Build();
   std::unique_ptr<base::DictionaryValue> expected_result =
       DictionaryBuilder()
           .Set("Cellular",
@@ -1123,6 +1143,11 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
                    .Set("MIN", "test_min")
                    .Set("NetworkTechnology", "GSM")
                    .Set("RoamingState", "Home")
+                   .Set("APNList", ListBuilder()
+                                       .Append(expected_apn->CreateDeepCopy())
+                                       .Build())
+                   .Set("APN", expected_apn->CreateDeepCopy())
+                   .Set("LastGoodAPN", expected_apn->CreateDeepCopy())
                    .Build())
           .Set("ConnectionState", "Connected")
           .Set("GUID", "cellular_guid")
