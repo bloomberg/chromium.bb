@@ -35,6 +35,8 @@ static_library("metrics") {
     "file_metrics_provider.h",
     "histogram_encoder.cc",
     "histogram_encoder.h",
+    "log_decoder.cc",
+    "log_decoder.h",
     "log_store.h",
     "machine_id_provider.h",
     "machine_id_provider_stub.cc",

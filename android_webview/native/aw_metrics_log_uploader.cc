@@ -6,7 +6,7 @@
 
 #include "android_webview/jni/AwMetricsLogUploader_jni.h"
 #include "base/android/jni_array.h"
-#include "third_party/zlib/google/compression_utils.h"
+#include "components/metrics/log_decoder.h"
 
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
@@ -25,7 +25,11 @@ void AwMetricsLogUploader::UploadLog(const std::string& compressed_log_data,
   // server. The platform mechanism does its own compression, so undo the
   // previous compression.
   std::string log_data;
-  compression::GzipUncompress(compressed_log_data, &log_data);
+  if (!metrics::DecodeLogData(compressed_log_data, &log_data)) {
+    // If the log is corrupt, pretend the server rejected it (HTTP Bad Request).
+    on_upload_complete_.Run(400);
+    return;
+  }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> java_data = ToJavaByteArray(
