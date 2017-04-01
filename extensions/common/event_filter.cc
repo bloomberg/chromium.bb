@@ -22,9 +22,11 @@ EventFilter::EventMatcherEntry::EventMatcherEntry(
     URLMatcher* url_matcher,
     const URLMatcherConditionSet::Vector& condition_sets)
     : event_matcher_(std::move(event_matcher)), url_matcher_(url_matcher) {
-  for (URLMatcherConditionSet::Vector::const_iterator it =
-       condition_sets.begin(); it != condition_sets.end(); it++)
-    condition_set_ids_.push_back((*it)->id());
+  condition_set_ids_.reserve(condition_sets.size());
+  for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
+       condition_sets) {
+    condition_set_ids_.push_back(condition_set->id());
+  }
   url_matcher_->AddConditionSets(condition_sets);
 }
 
@@ -62,10 +64,10 @@ EventFilter::MatcherID EventFilter::AddEventMatcher(
     return -1;
 
   MatcherID id = next_id_++;
-  for (URLMatcherConditionSet::Vector::iterator it = condition_sets.begin();
-       it != condition_sets.end(); it++) {
+  for (const scoped_refptr<URLMatcherConditionSet>& condition_set :
+       condition_sets) {
     condition_set_id_to_event_matcher_id_.insert(
-        std::make_pair((*it)->id(), id));
+        std::make_pair(condition_set->id(), id));
   }
   id_to_event_name_[id] = event_name;
   event_matchers_[event_name][id] = base::MakeUnique<EventMatcherEntry>(
@@ -143,7 +145,8 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
     return matchers;
 
   EventMatcherMap& matcher_map = it->second;
-  GURL url_to_match_against = event_info.has_url() ? event_info.url() : GURL();
+  const GURL& url_to_match_against =
+      event_info.has_url() ? event_info.url() : GURL::EmptyGURL();
   std::set<URLMatcherConditionSet::ID> matching_condition_set_ids =
       url_matcher_.MatchURL(url_to_match_against);
   for (std::set<URLMatcherConditionSet::ID>::iterator it =
