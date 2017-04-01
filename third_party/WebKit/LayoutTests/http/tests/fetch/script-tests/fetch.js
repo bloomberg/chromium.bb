@@ -166,11 +166,8 @@ promise_test(function(t) {
 promise_test(function(t) {
     var request = new Request(
       '/fetch/resources/fetch-status.php?status=200#fragment');
-
-    // The url attribute's getter must return request's url,
-    // serialized with the exclude fragment flag set.
     assert_equals(request.url,
-      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200');
+      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200#fragment');
 
     return fetch(request)
       .then(function(response) {

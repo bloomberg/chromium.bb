@@ -434,8 +434,8 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
     test_page_url_ = GetURL("/pnacl_url_loader.html");
   }
 
-  std::string GetRequestStringForPNACL() const {
-    return RequestString(test_page_url_, "navigate", "include") +
+  std::string GetRequestStringForPNACL(const std::string& fragment) const {
+    return RequestString(test_page_url_ + fragment, "navigate", "include") +
            RequestString(GetURL("/pnacl_url_loader.nmf"), "same-origin",
                          "include") +
            RequestString(GetURL("/pnacl_url_loader_newlib_pnacl.pexe"),
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, SameOrigin) {
   // In pnacl_url_loader.cc:
   //   request.SetMethod("GET");
   //   request.SetURL("/echo");
-  EXPECT_EQ(GetRequestStringForPNACL() +
+  EXPECT_EQ(GetRequestStringForPNACL("#Same") +
                 RequestString(GetURL("/echo"), "same-origin", "include"),
             ExecutePNACLUrlLoaderTest("Same"));
 }
@@ -473,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, SameOriginCORS) {
   //   request.SetMethod("GET");
   //   request.SetURL("/echo");
   //   request.SetAllowCrossOriginRequests(true);
-  EXPECT_EQ(GetRequestStringForPNACL() +
+  EXPECT_EQ(GetRequestStringForPNACL("#SameCORS") +
                 RequestString(GetURL("/echo"), "cors", "same-origin"),
             ExecutePNACLUrlLoaderTest("SameCORS"));
 }
@@ -484,7 +484,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
   //   request.SetMethod("GET");
   //   request.SetURL("/echo");
   //   request.SetAllowCredentials(true);
-  EXPECT_EQ(GetRequestStringForPNACL() +
+  EXPECT_EQ(GetRequestStringForPNACL("#SameCredentials") +
                 RequestString(GetURL("/echo"), "same-origin", "include"),
             ExecutePNACLUrlLoaderTest("SameCredentials"));
 }
@@ -496,7 +496,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
   //   request.SetURL("/echo");
   //   request.SetAllowCrossOriginRequests(true);
   //   request.SetAllowCredentials(true);
-  EXPECT_EQ(GetRequestStringForPNACL() +
+  EXPECT_EQ(GetRequestStringForPNACL("#SameCORSCredentials") +
                 RequestString(GetURL("/echo"), "cors", "include"),
             ExecutePNACLUrlLoaderTest("SameCORSCredentials"));
 }
@@ -506,7 +506,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, OtherOrigin) {
   //   request.SetMethod("GET");
   //   request.SetURL("https://www.example.com/echo");
   // This request fails because AllowCrossOriginRequests is not set.
-  EXPECT_EQ(GetRequestStringForPNACL(), ExecutePNACLUrlLoaderTest("Other"));
+  EXPECT_EQ(GetRequestStringForPNACL("#Other"),
+            ExecutePNACLUrlLoaderTest("Other"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, OtherOriginCORS) {
@@ -515,7 +516,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest, OtherOriginCORS) {
   //   request.SetURL("https://www.example.com/echo");
   //   request.SetAllowCrossOriginRequests(true);
   EXPECT_EQ(
-      GetRequestStringForPNACL() +
+      GetRequestStringForPNACL("#OtherCORS") +
           RequestString("https://www.example.com/echo", "cors", "same-origin"),
       ExecutePNACLUrlLoaderTest("OtherCORS"));
 }
@@ -527,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
   //   request.SetURL("https://www.example.com/echo");
   //   request.SetAllowCredentials(true);
   // This request fails because AllowCrossOriginRequests is not set.
-  EXPECT_EQ(GetRequestStringForPNACL(),
+  EXPECT_EQ(GetRequestStringForPNACL("#OtherCredentials"),
             ExecutePNACLUrlLoaderTest("OtherCredentials"));
 }
 
@@ -539,7 +540,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPITest,
   //   request.SetAllowCrossOriginRequests(true);
   //   request.SetAllowCredentials(true);
   EXPECT_EQ(
-      GetRequestStringForPNACL() +
+      GetRequestStringForPNACL("#OtherCORSCredentials") +
           RequestString("https://www.example.com/echo", "cors", "include"),
       ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
 }
@@ -563,44 +564,48 @@ class ChromeServiceWorkerFetchPPAPIPrivateTest
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest, SameOrigin) {
-  EXPECT_EQ(GetRequestStringForPNACL(), ExecutePNACLUrlLoaderTest("Same"));
+  EXPECT_EQ(GetRequestStringForPNACL("#Same"),
+            ExecutePNACLUrlLoaderTest("Same"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        SameOriginCORS) {
-  EXPECT_EQ(GetRequestStringForPNACL(), ExecutePNACLUrlLoaderTest("SameCORS"));
+  EXPECT_EQ(GetRequestStringForPNACL("#SameCORS"),
+            ExecutePNACLUrlLoaderTest("SameCORS"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        SameOriginCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL(),
+  EXPECT_EQ(GetRequestStringForPNACL("#SameCredentials"),
             ExecutePNACLUrlLoaderTest("SameCredentials"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        SameOriginCORSCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL(),
+  EXPECT_EQ(GetRequestStringForPNACL("#SameCORSCredentials"),
             ExecutePNACLUrlLoaderTest("SameCORSCredentials"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest, OtherOrigin) {
-  EXPECT_EQ(GetRequestStringForPNACL(), ExecutePNACLUrlLoaderTest("Other"));
+  EXPECT_EQ(GetRequestStringForPNACL("#Other"),
+            ExecutePNACLUrlLoaderTest("Other"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        OtherOriginCORS) {
-  EXPECT_EQ(GetRequestStringForPNACL(), ExecutePNACLUrlLoaderTest("OtherCORS"));
+  EXPECT_EQ(GetRequestStringForPNACL("#OtherCORS"),
+            ExecutePNACLUrlLoaderTest("OtherCORS"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        OtherOriginCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL(),
+  EXPECT_EQ(GetRequestStringForPNACL("#OtherCredentials"),
             ExecutePNACLUrlLoaderTest("OtherCredentials"));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        OtherOriginCORSCredentials) {
-  EXPECT_EQ(GetRequestStringForPNACL(),
+  EXPECT_EQ(GetRequestStringForPNACL("#OtherCORSCredentials"),
             ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
 }
 

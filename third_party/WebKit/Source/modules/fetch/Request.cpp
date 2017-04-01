@@ -493,13 +493,7 @@ String Request::method() const {
 }
 
 KURL Request::url() const {
-  // The url attribute's getter must return request's url, serialized with the
-  // exclude fragment flag set.
-  if (!m_request->url().hasFragmentIdentifier())
-    return m_request->url();
-  KURL url(m_request->url());
-  url.removeFragmentIdentifier();
-  return url;
+  return m_request->url();
 }
 
 String Request::context() const {
@@ -696,8 +690,13 @@ void Request::populateWebServiceWorkerRequest(
     WebServiceWorkerRequest& webRequest) const {
   webRequest.setMethod(method());
   webRequest.setRequestContext(m_request->context());
-  // This strips off the fragment part.
-  webRequest.setURL(url());
+
+  // Strip off the fragment part of URL. So far, all users of
+  // WebServiceWorkerRequest expect the fragment to be excluded.
+  KURL url(m_request->url());
+  if (m_request->url().hasFragmentIdentifier())
+    url.removeFragmentIdentifier();
+  webRequest.setURL(url);
 
   const FetchHeaderList* headerList = m_headers->headerList();
   for (size_t i = 0, size = headerList->size(); i < size; ++i) {
