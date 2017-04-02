@@ -2401,14 +2401,15 @@ static int64_t intra_model_yrd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const int max_blocks_high = max_block_high(xd, bsize, 0);
   mbmi->tx_size = tx_size;
   // Prediction.
+  const int step = stepr * stepc;
+  int block = 0;
   for (row = 0; row < max_blocks_high; row += stepr) {
     for (col = 0; col < max_blocks_wide; col += stepc) {
-      struct macroblockd_plane *const pd = &xd->plane[0];
-      uint8_t *dst =
-          &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-      av1_predict_intra_block(xd, pd->width, pd->height,
-                              txsize_to_bsize[tx_size], mbmi->mode, dst,
-                              pd->dst.stride, dst, pd->dst.stride, col, row, 0);
+      const int block_raster_idx =
+          av1_block_index_to_raster_order(tx_size, block);
+      av1_predict_intra_block_facade(xd, 0, block_raster_idx, col, row,
+                                     tx_size);
+      block += step;
     }
   }
   // RD estimation.

@@ -1082,7 +1082,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   const TX_TYPE tx_type =
       get_tx_type(plane_type, xd, block_raster_idx, tx_size);
-  PREDICTION_MODE mode;
   const int diff_stride = block_size_wide[plane_bsize];
   uint8_t *src, *dst;
   int16_t *src_diff;
@@ -1098,15 +1097,13 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   int i, j;
 #endif
 
+  av1_predict_intra_block_facade(xd, plane, block_raster_idx, blk_col, blk_row,
+                                 tx_size);
+
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   src = &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
   src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-  mode = (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
-  av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
-                          mode, dst, dst_stride, dst, dst_stride, blk_col,
-                          blk_row, plane);
-
   subtract_block(xd, tx1d_height, tx1d_width, src_diff, diff_stride, src,
                  src_stride, dst, dst_stride);
 

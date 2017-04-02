@@ -538,27 +538,17 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
 static void predict_and_reconstruct_intra_block(
     AV1_COMMON *cm, MACROBLOCKD *const xd, aom_reader *const r,
     MB_MODE_INFO *const mbmi, int plane, int row, int col, TX_SIZE tx_size) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  PREDICTION_MODE mode = (plane == 0) ? mbmi->mode : mbmi->uv_mode;
   PLANE_TYPE plane_type = get_plane_type(plane);
-  uint8_t *dst;
   const int block_idx = (row << 1) + col;
 #if CONFIG_PVQ
   (void)r;
 #endif
-  dst = &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-
-#if !CONFIG_CB4X4
-  if (mbmi->sb_type < BLOCK_8X8)
-    if (plane == 0) mode = xd->mi[0]->bmi[block_idx].as_mode;
-#endif
-  av1_predict_intra_block(xd, pd->width, pd->height, txsize_to_bsize[tx_size],
-                          mode, dst, pd->dst.stride, dst, pd->dst.stride, col,
-                          row, plane);
+  av1_predict_intra_block_facade(xd, plane, block_idx, col, row, tx_size);
 
   if (!mbmi->skip) {
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
 #if !CONFIG_PVQ
+    struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
     int eob;
@@ -571,9 +561,12 @@ static void predict_and_reconstruct_intra_block(
         av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
                                 tx_type, &max_scan_line, r, mbmi->segment_id);
 #endif  // CONFIG_LV_MAP
-    if (eob)
+    if (eob) {
+      uint8_t *dst =
+          &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
       inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                               max_scan_line, eob);
+    }
 #else
     av1_pvq_decode_helper2(cm, xd, mbmi, plane, row, col, tx_size, tx_type);
 #endif
