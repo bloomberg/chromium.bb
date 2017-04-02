@@ -74,6 +74,26 @@ static void subtract_block(const MACROBLOCKD *xd, int rows, int cols,
                      pred_stride);
 }
 
+void av1_subtract_txb(MACROBLOCK *x, int plane, BLOCK_SIZE plane_bsize,
+                      int blk_col, int blk_row, TX_SIZE tx_size) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  struct macroblock_plane *const p = &x->plane[plane];
+  const struct macroblockd_plane *const pd = &x->e_mbd.plane[plane];
+  const int diff_stride = block_size_wide[plane_bsize];
+  const int src_stride = p->src.stride;
+  const int dst_stride = pd->dst.stride;
+  const int tx1d_width = tx_size_wide[tx_size];
+  const int tx1d_height = tx_size_high[tx_size];
+  uint8_t *dst =
+      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+  uint8_t *src =
+      &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
+  int16_t *src_diff =
+      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
+  subtract_block(xd, tx1d_height, tx1d_width, src_diff, diff_stride, src,
+                 src_stride, dst, dst_stride);
+}
+
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &x->e_mbd.plane[plane];
@@ -1082,14 +1102,10 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
   const TX_TYPE tx_type =
       get_tx_type(plane_type, xd, block_raster_idx, tx_size);
-  const int diff_stride = block_size_wide[plane_bsize];
-  uint8_t *src, *dst;
-  int16_t *src_diff;
   uint16_t *eob = &p->eobs[block];
-  const int src_stride = p->src.stride;
   const int dst_stride = pd->dst.stride;
-  const int tx1d_width = tx_size_wide[tx_size];
-  const int tx1d_height = tx_size_high[tx_size];
+  uint8_t *dst =
+      &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   int ctx = 0;
   INV_TXFM_PARAM inv_txfm_param;
 #if CONFIG_PVQ
@@ -1099,13 +1115,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   av1_predict_intra_block_facade(xd, plane, block_raster_idx, blk_col, blk_row,
                                  tx_size);
-
-  dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-  src = &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
-  src_diff =
-      &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-  subtract_block(xd, tx1d_height, tx1d_width, src_diff, diff_stride, src,
-                 src_stride, dst, dst_stride);
+  av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
 #if !CONFIG_PVQ
   const ENTROPY_CONTEXT *a = &args->ta[blk_col];
