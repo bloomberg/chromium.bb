@@ -65,17 +65,11 @@ config("tcmalloc_flags") {
       # tcmalloc contains some unused local template specializations.
       "-Wno-unused-function",
 
-      # tcmalloc uses COMPILE_ASSERT without static_assert but with
-      # typedefs.
+      # tcmalloc uses COMPILE_ASSERT without static_assert but with typedefs.
       "-Wno-unused-local-typedefs",
 
-      # for magic2_ in debugallocation.cc (only built in Debug builds)
-      # typedefs.
+      # for magic2_ in debugallocation.cc (only built in Debug builds) typedefs.
       "-Wno-unused-private-field",
-
-      # base/basictypes.h's kint64min definition shifts a negative value around,
-      # which is undefined behavior. TODO(thakis): Try to get that fixed.
-      "-Wno-shift-negative-value",
     ]
   } else {
     cflags = []
