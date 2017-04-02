@@ -606,11 +606,10 @@ bool GpuProcessHost::Init() {
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(GetGpuMainThreadFactory());
-    in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
-        InProcessChildThreadParams(
+    in_process_gpu_thread_.reset(
+        GetGpuMainThreadFactory()(InProcessChildThreadParams(
             base::ThreadTaskRunnerHandle::Get(),
-            process_->child_connection()->service_token()),
-        gpu_preferences));
+            process_->child_connection()->service_token())));
     base::Thread::Options options;
 #if defined(OS_WIN)
     // WGL needs to create its own window and pump messages on it.

@@ -11,16 +11,11 @@ namespace base {
 class Thread;
 }
 
-namespace gpu {
-struct GpuPreferences;
-}
-
 namespace content {
 class InProcessChildThreadParams;
 
 typedef base::Thread* (*GpuMainThreadFactoryFunction)(
-    const InProcessChildThreadParams&,
-    const gpu::GpuPreferences&);
+    const InProcessChildThreadParams&);
 
 CONTENT_EXPORT void RegisterGpuMainThreadFactory(
     GpuMainThreadFactoryFunction create);

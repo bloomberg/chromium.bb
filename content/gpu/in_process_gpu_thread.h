@@ -11,12 +11,6 @@
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "gpu/command_buffer/service/gpu_preferences.h"
-
-namespace gpu {
-class GpuMemoryBufferFactory;
-struct GpuPreferences;
-}
 
 namespace content {
 
@@ -26,8 +20,7 @@ class GpuProcess;
 // with --in-process-gpu or --single-process.
 class InProcessGpuThread : public base::Thread {
  public:
-  InProcessGpuThread(const InProcessChildThreadParams& params,
-                     const gpu::GpuPreferences& gpu_preferences);
+  explicit InProcessGpuThread(const InProcessChildThreadParams& params);
   ~InProcessGpuThread() override;
 
  protected:
@@ -40,16 +33,11 @@ class InProcessGpuThread : public base::Thread {
   // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
   GpuProcess* gpu_process_;
 
-  const gpu::GpuPreferences gpu_preferences_;
-
-  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(InProcessGpuThread);
 };
 
 CONTENT_EXPORT base::Thread* CreateInProcessGpuThread(
-    const InProcessChildThreadParams& params,
-    const gpu::GpuPreferences& gpu_preferences);
+    const InProcessChildThreadParams& params);
 
 }  // namespace content
 

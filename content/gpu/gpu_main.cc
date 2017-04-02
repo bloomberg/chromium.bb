@@ -37,7 +37,6 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/gpu_init.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/switches.h"
@@ -272,11 +271,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(NULL);
   GetContentClient()->SetGpuInfo(gpu_init.gpu_info());
 
-  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory;
-  if (init_success &&
-      gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER)
-    gpu_memory_buffer_factory = gpu::GpuMemoryBufferFactory::CreateNativeType();
-
   base::ThreadPriority io_thread_priority = base::ThreadPriority::NORMAL;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   io_thread_priority = base::ThreadPriority::DISPLAY;
@@ -285,8 +279,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   GpuProcess gpu_process(io_thread_priority);
   GpuChildThread* child_thread = new GpuChildThread(
       gpu_init.TakeWatchdogThread(), dead_on_arrival, gpu_init.gpu_info(),
-      gpu_init.gpu_feature_info(), std::move(deferred_messages.Get()),
-      gpu_memory_buffer_factory.get());
+      gpu_init.gpu_feature_info(), std::move(deferred_messages.Get()));
   deferred_messages.Get().clear();
 
   child_thread->Init(start_time);

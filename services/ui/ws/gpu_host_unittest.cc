@@ -53,8 +53,7 @@ class TestGpuService : public GpuService {
 
 TestGpuService::TestGpuService()
     : GpuService(gpu::GPUInfo(),
-                 nullptr,
-                 nullptr,
+                 nullptr /* watchdog_thread */,
                  base::ThreadTaskRunnerHandle::Get(),
                  gpu::GpuFeatureInfo()) {}
 

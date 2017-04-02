@@ -48,7 +48,6 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
  public:
   GpuService(const gpu::GPUInfo& gpu_info,
              std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
-             gpu::GpuMemoryBufferFactory* memory_buffer_factory,
              scoped_refptr<base::SingleThreadTaskRunner> io_runner,
              const gpu::GpuFeatureInfo& gpu_feature_info);
 
@@ -69,6 +68,8 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   gpu::GpuChannelManager* gpu_channel_manager() {
     return gpu_channel_manager_.get();
   }
+
+  gpu::ImageFactory* gpu_image_factory();
 
   gpu::GpuWatchdogThread* watchdog_thread() { return watchdog_thread_.get(); }
 
@@ -159,7 +160,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 
-  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory_;
+  std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
 
   gpu::GpuPreferences gpu_preferences_;
 

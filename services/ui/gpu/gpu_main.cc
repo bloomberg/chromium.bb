@@ -156,14 +156,8 @@ void GpuMain::InitOnGpuThread(
   if (!success)
     return;
 
-  if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER) {
-    gpu_memory_buffer_factory_ =
-        gpu::GpuMemoryBufferFactory::CreateNativeType();
-  }
-
   gpu_service_ = base::MakeUnique<GpuService>(
-      gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
-      gpu_memory_buffer_factory_.get(), io_runner,
+      gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_runner,
       gpu_init_->gpu_feature_info());
 }
 
@@ -175,11 +169,7 @@ void GpuMain::CreateDisplayCompositorInternal(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group());
 
-  // |gpu_memory_buffer_factory_| is null in tests.
-  gpu::ImageFactory* image_factory =
-      gpu_memory_buffer_factory_ ? gpu_memory_buffer_factory_->AsImageFactory()
-                                 : nullptr;
-
+  gpu::ImageFactory* image_factory = gpu_service_->gpu_image_factory();
   mojom::GpuServicePtr gpu_service;
   mojom::GpuServiceRequest gpu_service_request(&gpu_service);
 

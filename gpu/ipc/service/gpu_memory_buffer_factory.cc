@@ -27,7 +27,6 @@ GpuMemoryBufferFactory::CreateNativeType() {
 #if defined(USE_OZONE)
   return base::WrapUnique(new GpuMemoryBufferFactoryOzoneNativePixmap);
 #endif
-  NOTREACHED();
   return nullptr;
 }
 

@@ -9,12 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/threading/thread_local.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/public/common/content_client.h"
@@ -22,26 +18,11 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/common/activity_flags.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/config/gpu_info_collector.h"
-#include "gpu/config/gpu_switches.h"
-#include "gpu/config/gpu_util.h"
-#include "gpu/ipc/common/memory_stats.h"
-#include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator.h"
-#include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
-#include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
-#include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_switches.h"
-#include "ui/gl/init/gl_factory.h"
-#include "url/gurl.h"
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -76,23 +57,19 @@ GpuChildThread::GpuChildThread(
     bool dead_on_arrival,
     const gpu::GPUInfo& gpu_info,
     const gpu::GpuFeatureInfo& gpu_feature_info,
-    DeferredMessages deferred_messages,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    DeferredMessages deferred_messages)
     : GpuChildThread(GetOptions(),
                      std::move(watchdog_thread),
                      dead_on_arrival,
                      false /* in_browser_process */,
                      gpu_info,
-                     gpu_feature_info,
-                     gpu_memory_buffer_factory) {
+                     gpu_feature_info) {
   deferred_messages_ = std::move(deferred_messages);
 }
 
-GpuChildThread::GpuChildThread(
-    const InProcessChildThreadParams& params,
-    const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params,
+                               const gpu::GPUInfo& gpu_info,
+                               const gpu::GpuFeatureInfo& gpu_feature_info)
     : GpuChildThread(ChildThreadImpl::Options::Builder()
                          .InBrowserProcess(params)
                          .ConnectToBrowser(true)
@@ -101,8 +78,7 @@ GpuChildThread::GpuChildThread(
                      false /* dead_on_arrival */,
                      true /* in_browser_process */,
                      gpu_info,
-                     gpu_feature_info,
-                     gpu_memory_buffer_factory) {}
+                     gpu_feature_info) {}
 
 GpuChildThread::GpuChildThread(
     const ChildThreadImpl::Options& options,
@@ -110,14 +86,12 @@ GpuChildThread::GpuChildThread(
     bool dead_on_arrival,
     bool in_browser_process,
     const gpu::GPUInfo& gpu_info,
-    const gpu::GpuFeatureInfo& gpu_feature_info,
-    gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
+    const gpu::GpuFeatureInfo& gpu_feature_info)
     : ChildThreadImpl(options),
       dead_on_arrival_(dead_on_arrival),
       in_browser_process_(in_browser_process),
       gpu_service_(new ui::GpuService(gpu_info,
                                       std::move(gpu_watchdog_thread),
-                                      gpu_memory_buffer_factory,
                                       ChildProcess::current()->io_task_runner(),
                                       gpu_feature_info)),
       gpu_main_binding_(this) {

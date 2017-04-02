@@ -36,7 +36,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
-class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 }
 
@@ -62,13 +61,11 @@ class GpuChildThread : public ChildThreadImpl,
                  bool dead_on_arrival,
                  const gpu::GPUInfo& gpu_info,
                  const gpu::GpuFeatureInfo& gpu_feature_info,
-                 DeferredMessages deferred_messages,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+                 DeferredMessages deferred_messages);
 
   GpuChildThread(const InProcessChildThreadParams& params,
                  const gpu::GPUInfo& gpu_info,
-                 const gpu::GpuFeatureInfo& gpu_feature_info,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+                 const gpu::GpuFeatureInfo& gpu_feature_info);
 
   ~GpuChildThread() override;
 
@@ -80,8 +77,7 @@ class GpuChildThread : public ChildThreadImpl,
                  bool dead_on_arrival,
                  bool in_browser_process,
                  const gpu::GPUInfo& gpu_info,
-                 const gpu::GpuFeatureInfo& gpu_feature_info,
-                 gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
+                 const gpu::GpuFeatureInfo& gpu_feature_info);
 
   void CreateGpuMainService(ui::mojom::GpuMainAssociatedRequest request);
 

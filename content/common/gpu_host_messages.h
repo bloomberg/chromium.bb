@@ -6,16 +6,8 @@
 // for a much smaller-than-usual include guard section.
 
 #include "build/build_config.h"
-#include "content/common/content_export.h"
-#include "gpu/command_buffer/common/sync_token.h"
-#include "gpu/config/gpu_feature_info.h"
-#include "gpu/config/gpu_info.h"
-#include "gpu/ipc/common/surface_handle.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_start.h"
-#include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/ipc/gfx_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT

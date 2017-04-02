@@ -23,7 +23,8 @@ class GPU_EXPORT GpuMemoryBufferFactory {
  public:
   virtual ~GpuMemoryBufferFactory() {}
 
-  // Creates a new factory instance for native GPU memory buffers.
+  // Creates a new factory instance for native GPU memory buffers. Returns null
+  // if native buffers are not supported.
   static std::unique_ptr<GpuMemoryBufferFactory> CreateNativeType();
 
   // Creates a new GPU memory buffer instance. A valid handle is returned on

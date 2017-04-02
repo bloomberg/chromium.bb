@@ -85,13 +85,13 @@ void DestroyBinding(
 
 GpuService::GpuService(const gpu::GPUInfo& gpu_info,
                        std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
-                       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
                        scoped_refptr<base::SingleThreadTaskRunner> io_runner,
                        const gpu::GpuFeatureInfo& gpu_feature_info)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
+      gpu_memory_buffer_factory_(
+          gpu::GpuMemoryBufferFactory::CreateNativeType()),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       sync_point_manager_(nullptr),
@@ -174,7 +174,7 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   gpu_channel_manager_.reset(new gpu::GpuChannelManager(
       gpu_preferences_, this, watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get(), io_runner_, sync_point_manager_,
-      gpu_memory_buffer_factory_, gpu_feature_info_,
+      gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags)));
 
   media_gpu_channel_manager_.reset(
@@ -192,6 +192,12 @@ void GpuService::Bind(mojom::GpuServiceRequest request) {
     return;
   }
   bindings_->AddBinding(this, std::move(request));
+}
+
+gpu::ImageFactory* GpuService::gpu_image_factory() {
+  return gpu_memory_buffer_factory_
+             ? gpu_memory_buffer_factory_->AsImageFactory()
+             : nullptr;
 }
 
 void GpuService::RecordLogMessage(int severity,
