@@ -630,11 +630,6 @@ void PaintInvalidationState::assertFastPathAndSlowPathRectsEqual(
 
 #endif  // CHECK_FAST_PATH_SLOW_PATH_EQUALITY
 
-static const PaintPropertyTreeBuilderContext& dummyTreeBuilderContext() {
-  DEFINE_STATIC_LOCAL(PaintPropertyTreeBuilderContext, dummyContext, ());
-  return dummyContext;
-}
-
 static GeometryMapper& dummyGeometryMapper() {
   DEFINE_STATIC_LOCAL(std::unique_ptr<GeometryMapper>, dummyMapper,
                       (GeometryMapper::create()));
@@ -643,9 +638,9 @@ static GeometryMapper& dummyGeometryMapper() {
 
 PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
     const PaintInvalidationState& paintInvalidationState)
-    // The dummy parameters will be never used because the overriding
+    // The dummy parameter will be never used because the overriding
     // mapLocalRectToVisualRectInBacking() uses PaintInvalidationState.
-    : PaintInvalidatorContext(dummyTreeBuilderContext(), dummyGeometryMapper()),
+    : PaintInvalidatorContext(nullptr, dummyGeometryMapper()),
       m_paintInvalidationState(paintInvalidationState) {
   forcedSubtreeInvalidationFlags =
       paintInvalidationState.m_forcedSubtreeInvalidationFlags;

@@ -3409,6 +3409,7 @@ inline void LayoutObject::markAncestorsForPaintInvalidation() {
 inline void LayoutObject::setNeedsPaintOffsetAndVisualRectUpdate() {
   if (needsPaintOffsetAndVisualRectUpdate())
     return;
+
   for (auto* object = this;
        object && !object->needsPaintOffsetAndVisualRectUpdate();
        object = object->parentCrossingFrames()) {

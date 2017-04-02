@@ -45,8 +45,12 @@ class PrePaintTreeWalk {
       bool& hasClip,
       FloatClipRect&);
 
-  // Returns true if the tree walk should stop before processing this object.
-  bool shouldEndWalkBefore(const LayoutObject&, const PrePaintTreeWalkContext&);
+  bool ALWAYS_INLINE
+  needsTreeBuilderContextUpdate(const FrameView&,
+                                const PrePaintTreeWalkContext&);
+  bool ALWAYS_INLINE
+  needsTreeBuilderContextUpdate(const LayoutObject&,
+                                const PrePaintTreeWalkContext&);
 
   PaintPropertyTreeBuilder m_propertyTreeBuilder;
   PaintInvalidator m_paintInvalidator;
