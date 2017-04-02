@@ -250,7 +250,7 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo,
   markerPaintInfo.m_cullRect.m_rect = bounds;
 
   SVGContainerPainter(marker).paint(markerPaintInfo);
-  canvas->PlaybackPaintRecord(builder.endRecording());
+  builder.endRecording(*canvas);
 
   canvas->restore();
 }

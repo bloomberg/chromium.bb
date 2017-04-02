@@ -330,45 +330,43 @@ class ChromePrintContext : public PrintContext {
     IntRect allPagesRect(0, 0, pageWidth, totalHeight);
 
     PaintRecordBuilder builder(allPagesRect, &canvas->getMetaData());
-    {
-      GraphicsContext& context = builder.context();
-      context.setPrinting(true);
-      context.beginRecording(allPagesRect);
+    GraphicsContext& context = builder.context();
+    context.setPrinting(true);
+    context.beginRecording(allPagesRect);
 
-      // Fill the whole background by white.
-      context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
+    // Fill the whole background by white.
+    context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
 
-      int currentHeight = 0;
-      for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
-        // Draw a line for a page boundary if this isn't the first page.
-        if (pageIndex > 0) {
-          context.save();
-          context.setStrokeColor(Color(0, 0, 255));
-          context.setFillColor(Color(0, 0, 255));
-          context.drawLine(IntPoint(0, currentHeight),
-                           IntPoint(pageWidth, currentHeight));
-          context.restore();
-        }
-
-        AffineTransform transform;
-        transform.translate(0, currentHeight);
-#if OS(WIN) || OS(MACOSX)
-        // Account for the disabling of scaling in spoolPage. In the context
-        // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
-        float scale = getPageShrink(pageIndex);
-        transform.scale(scale, scale);
-#endif
+    int currentHeight = 0;
+    for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
+      // Draw a line for a page boundary if this isn't the first page.
+      if (pageIndex > 0) {
         context.save();
-        context.concatCTM(transform);
-
-        spoolPage(context, pageIndex, allPagesRect);
-
+        context.setStrokeColor(Color(0, 0, 255));
+        context.setFillColor(Color(0, 0, 255));
+        context.drawLine(IntPoint(0, currentHeight),
+                         IntPoint(pageWidth, currentHeight));
         context.restore();
-
-        currentHeight += pageSizeInPixels.height() + 1;
       }
-      canvas->PlaybackPaintRecord(context.endRecording());
+
+      AffineTransform transform;
+      transform.translate(0, currentHeight);
+#if OS(WIN) || OS(MACOSX)
+      // Account for the disabling of scaling in spoolPage. In the context
+      // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
+      float scale = getPageShrink(pageIndex);
+      transform.scale(scale, scale);
+#endif
+      context.save();
+      context.concatCTM(transform);
+
+      spoolPage(context, pageIndex, allPagesRect);
+
+      context.restore();
+
+      currentHeight += pageSizeInPixels.height() + 1;
     }
+    canvas->PlaybackPaintRecord(context.endRecording());
   }
 
  protected:

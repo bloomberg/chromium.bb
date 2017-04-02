@@ -148,8 +148,13 @@ class CORE_EXPORT SVGImage final : public Image {
                                const KURL&);
   sk_sp<SkImage> imageForCurrentFrameForContainer(const KURL&,
                                                   const IntSize& containerSize);
+
+  // Paints the current frame. If a PaintCanvas is passed, paints into that
+  // canvas and returns nullptr.
+  // Otherwise returns a pointer to the new PaintRecord.
   sk_sp<PaintRecord> paintRecordForCurrentFrame(const FloatRect& bounds,
-                                                const KURL&);
+                                                const KURL&,
+                                                PaintCanvas* = nullptr);
 
   void drawInternal(PaintCanvas*,
                     const PaintFlags&,

@@ -101,7 +101,7 @@ void WebFont::drawText(WebCanvas* canvas,
     context.restore();
   }
 
-  canvas->PlaybackPaintRecord(builder.endRecording());
+  builder.endRecording(*canvas);
 }
 
 int WebFont::calculateWidth(const WebTextRun& run) const {

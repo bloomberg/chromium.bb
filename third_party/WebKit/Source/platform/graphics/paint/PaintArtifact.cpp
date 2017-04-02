@@ -85,27 +85,34 @@ size_t PaintArtifact::approximateUnsharedMemoryUsage() const {
 }
 
 void PaintArtifact::replay(const FloatRect& bounds,
-                           GraphicsContext& graphicsContext,
-                           const PropertyTreeState& replayState) const {
+                           GraphicsContext& graphicsContext) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     for (const DisplayItem& displayItem : m_displayItemList)
       displayItem.replay(graphicsContext);
   } else {
-    std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
-    Vector<const PaintChunk*> pointerPaintChunks;
-    pointerPaintChunks.reserveInitialCapacity(paintChunks().size());
-
-    // TODO(chrishtr): it's sad to have to copy this vector just to turn
-    // references into pointers.
-    for (const auto& chunk : paintChunks())
-      pointerPaintChunks.push_back(&chunk);
-    scoped_refptr<cc::DisplayItemList> displayItemList =
-        PaintChunksToCcLayer::convert(pointerPaintChunks, replayState,
-                                      gfx::Vector2dF(), getDisplayItemList(),
-                                      *geometryMapper);
-    graphicsContext.canvas()->drawDisplayItemList(displayItemList);
+    replay(bounds, *graphicsContext.canvas());
   }
+}
+
+void PaintArtifact::replay(const FloatRect& bounds,
+                           PaintCanvas& canvas,
+                           const PropertyTreeState& replayState) const {
+  TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
+  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+  Vector<const PaintChunk*> pointerPaintChunks;
+  pointerPaintChunks.reserveInitialCapacity(paintChunks().size());
+
+  // TODO(chrishtr): it's sad to have to copy this vector just to turn
+  // references into pointers.
+  for (const auto& chunk : paintChunks())
+    pointerPaintChunks.push_back(&chunk);
+  scoped_refptr<cc::DisplayItemList> displayItemList =
+      PaintChunksToCcLayer::convert(pointerPaintChunks, replayState,
+                                    gfx::Vector2dF(), getDisplayItemList(),
+                                    *geometryMapper);
+  canvas.drawDisplayItemList(displayItemList);
 }
 
 DISABLE_CFI_PERF

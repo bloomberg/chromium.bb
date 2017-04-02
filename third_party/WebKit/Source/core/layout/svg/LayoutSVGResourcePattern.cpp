@@ -218,7 +218,7 @@ sk_sp<PaintRecord> LayoutSVGResourcePattern::asPaintRecord(
   PaintCanvas* canvas = paintRecorder.beginRecording(bounds);
   canvas->save();
   canvas->concat(affineTransformToSkMatrix(tileTransform));
-  canvas->drawPicture(builder.endRecording());
+  builder.endRecording(*canvas);
   canvas->restore();
   return paintRecorder.finishRecordingAsPicture();
 }

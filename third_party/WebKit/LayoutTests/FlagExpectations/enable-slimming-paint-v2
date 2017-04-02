@@ -1388,4 +1388,3 @@ Bug(700530) fast/css3-text/css3-text-decoration/text-underline-position/text-und
 # (likely missing code to account for CompositingRecorder).
 crbug.com/665259 svg/as-background-image/svg-as-background-5.html [ Failure ]
 crbug.com/665259 svg/as-background-image/svg-as-background-6.html [ Failure ]
-crbug.com/665259 svg/stroke/non-scaling-stroke-paintserver-same-as-fill.html [ Failure ]

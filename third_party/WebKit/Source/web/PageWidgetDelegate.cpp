@@ -98,7 +98,7 @@ static void paintInternal(Page& page,
     }
   }
 
-  canvas->PlaybackPaintRecord(builder.endRecording());
+  builder.endRecording(*canvas);
 }
 
 void PageWidgetDelegate::paint(Page& page,

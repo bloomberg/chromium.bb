@@ -51,13 +51,23 @@ PaintRecordBuilder::~PaintRecordBuilder() {
 #endif
 }
 
-sk_sp<PaintRecord> PaintRecordBuilder::endRecording(
-    const PropertyTreeState& propertyTreeState) {
+sk_sp<PaintRecord> PaintRecordBuilder::endRecording() {
   m_context->beginRecording(m_bounds);
   m_paintController->commitNewDisplayItems();
-  m_paintController->paintArtifact().replay(m_bounds, *m_context,
-                                            propertyTreeState);
+  m_paintController->paintArtifact().replay(m_bounds, *m_context);
   return m_context->endRecording();
+}
+
+void PaintRecordBuilder::endRecording(
+    PaintCanvas& canvas,
+    const PropertyTreeState& propertyTreeState) {
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    canvas.drawPicture(endRecording());
+  } else {
+    m_paintController->commitNewDisplayItems();
+    m_paintController->paintArtifact().replay(m_bounds, canvas,
+                                              propertyTreeState);
+  }
 }
 
 }  // namespace blink

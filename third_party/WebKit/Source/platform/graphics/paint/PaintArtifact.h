@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
@@ -71,10 +72,15 @@ class PLATFORM_EXPORT PaintArtifact final {
 
   // Draws the paint artifact to a GraphicsContext.
   // |bounds| is the bounding box of the paint artifact's display list.
+  void replay(const FloatRect& bounds, GraphicsContext&) const;
+
+  // Draws the paint artifact to a PaintCanvas.
+  // |bounds| is the bounding box of the paint artifact's display list.
+  // SPv2 only.
   // In SPv2 mode, replays into the ancestor state given by |replayState|.
   void replay(
       const FloatRect& bounds,
-      GraphicsContext&,
+      PaintCanvas&,
       const PropertyTreeState& replayState = PropertyTreeState::root()) const;
 
   // Writes the paint artifact into a WebDisplayItemList.

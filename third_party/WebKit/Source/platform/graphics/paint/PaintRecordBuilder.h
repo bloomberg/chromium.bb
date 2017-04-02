@@ -10,6 +10,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/graphics/paint/PaintCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -52,7 +53,11 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   // context since construction. If SPv2 is on, flattens all paint chunks
   // into PropertyTreeState::root() space.
   // In SPv2 mode, replays into the ancestor state given by |replayState|.
-  sk_sp<PaintRecord> endRecording(
+  sk_sp<PaintRecord> endRecording();
+
+  // Replays the recording directly into the given canvas.
+  void endRecording(
+      PaintCanvas&,
       const PropertyTreeState& replayState = PropertyTreeState::root());
 
   // DisplayItemClient methods

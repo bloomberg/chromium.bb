@@ -411,7 +411,8 @@ void SVGImage::draw(PaintCanvas* canvas,
 }
 
 sk_sp<PaintRecord> SVGImage::paintRecordForCurrentFrame(const FloatRect& bounds,
-                                                        const KURL& url) {
+                                                        const KURL& url,
+                                                        PaintCanvas* canvas) {
   DCHECK(m_page);
   FrameView* view = toLocalFrame(m_page->mainFrame())->view();
   view->resize(containerSize());
@@ -435,6 +436,10 @@ sk_sp<PaintRecord> SVGImage::paintRecordForCurrentFrame(const FloatRect& bounds,
   view->paint(builder.context(), CullRect(intBounds));
   DCHECK(!view->needsLayout());
 
+  if (canvas) {
+    builder.endRecording(*canvas);
+    return nullptr;
+  }
   return builder.endRecording();
 }
 
@@ -466,7 +471,7 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
     canvas->save();
     canvas->clipRect(enclosingIntRect(dstRect));
     canvas->concat(affineTransformToSkMatrix(transform));
-    canvas->PlaybackPaintRecord(paintRecordForCurrentFrame(srcRect, url));
+    paintRecordForCurrentFrame(srcRect, url, canvas);
     canvas->restore();
   }
 

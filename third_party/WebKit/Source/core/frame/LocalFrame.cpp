@@ -128,7 +128,8 @@ static std::unique_ptr<DragImage> createDragImage(
     float opacity,
     RespectImageOrientationEnum imageOrientation,
     const FloatRect& cssBounds,
-    sk_sp<PaintRecord> contents) {
+    PaintRecordBuilder& builder,
+    const PropertyTreeState& propertyTreeState) {
   float deviceScaleFactor = frame.page()->deviceScaleFactorDeprecated();
   float pageScaleFactor = frame.page()->visualViewport().scale();
 
@@ -138,11 +139,6 @@ static std::unique_ptr<DragImage> createDragImage(
   transform.scale(deviceScaleFactor * pageScaleFactor);
   transform.translate(-deviceBounds.x(), -deviceBounds.y());
 
-  PaintRecorder recorder;
-  PaintCanvas* canvas = recorder.beginRecording(deviceBounds);
-  canvas->concat(affineTransformToSkMatrix(transform));
-  canvas->drawPicture(contents);
-
   // Rasterize upfront, since DragImage::create() is going to do it anyway
   // (SkImage::asLegacyBitmap).
   SkSurfaceProps surfaceProps(0, kUnknown_SkPixelGeometry);
@@ -150,7 +146,11 @@ static std::unique_ptr<DragImage> createDragImage(
       deviceBounds.width(), deviceBounds.height(), &surfaceProps);
   if (!surface)
     return nullptr;
-  recorder.finishRecordingAsPicture()->playback(surface->getCanvas());
+
+  SkiaPaintCanvas skiaPaintCanvas(surface->getCanvas());
+  skiaPaintCanvas.concat(affineTransformToSkMatrix(transform));
+  builder.endRecording(skiaPaintCanvas, propertyTreeState);
+
   RefPtr<Image> image = StaticBitmapImage::create(surface->makeImageSnapshot());
   float screenDeviceScaleFactor =
       frame.page()->chromeClient().screenInfo().deviceScaleFactor;
@@ -221,7 +221,7 @@ class DraggedNodeImageBuilder {
     return createDragImage(
         *m_localFrame, 1.0f,
         LayoutObject::shouldRespectImageOrientation(draggedLayoutObject),
-        boundingBox, builder.endRecording(borderBoxProperties));
+        boundingBox, builder, borderBoxProperties);
   }
 
  private:
@@ -743,7 +743,7 @@ std::unique_ptr<DragImage> LocalFrame::dragImageForSelection(float opacity) {
   m_view->paintContents(builder.context(), paintFlags,
                         enclosingIntRect(paintingRect));
   return createDragImage(*this, opacity, DoNotRespectImageOrientation,
-                         paintingRect, builder.endRecording());
+                         paintingRect, builder, PropertyTreeState::root());
 }
 
 String LocalFrame::selectedText() const {

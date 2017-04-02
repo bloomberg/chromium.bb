@@ -186,7 +186,8 @@ sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(
   PaintRecorder paintRecorder;
   PaintCanvas* canvas = paintRecorder.beginRecording(dstRect);
   canvas->concat(affineTransformToSkMatrix(transform));
-  canvas->drawPicture(builder.endRecording());
+  builder.endRecording(*canvas);
+
   return SkPictureImageFilter::Make(
       ToSkPicture(paintRecorder.finishRecordingAsPicture()), dstRect);
 }
