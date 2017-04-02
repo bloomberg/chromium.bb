@@ -208,6 +208,10 @@ SIMD_INLINE v128 v128_abs_s16(v128 x) {
   return vreinterpretq_s64_s16(vabsq_s16(vreinterpretq_s16_s64(x)));
 }
 
+SIMD_INLINE v128 v128_abs_s8(v128 x) {
+  return vreinterpretq_s64_s8(vabsq_s8(vreinterpretq_s8_s64(x)));
+}
+
 SIMD_INLINE v128 v128_mul_s16(v64 a, v64 b) {
   return vreinterpretq_s64_s32(
       vmull_s16(vreinterpret_s16_s64(a), vreinterpret_s16_s64(b)));

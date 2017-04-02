@@ -244,6 +244,10 @@ SIMD_INLINE c_v128 c_v128_abs_s16(c_v128 a) {
   return c_v128_from_v64(c_v64_abs_s16(a.v64[1]), c_v64_abs_s16(a.v64[0]));
 }
 
+SIMD_INLINE c_v128 c_v128_abs_s8(c_v128 a) {
+  return c_v128_from_v64(c_v64_abs_s8(a.v64[1]), c_v64_abs_s8(a.v64[0]));
+}
+
 SIMD_INLINE c_v128 c_v128_mul_s16(c_v64 a, c_v64 b) {
   c_v64 lo_bits = c_v64_mullo_s16(a, b);
   c_v64 hi_bits = c_v64_mulhi_s16(a, b);

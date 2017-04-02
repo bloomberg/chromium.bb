@@ -242,6 +242,10 @@ SIMD_INLINE v64 v64_abs_s16(v64 x) {
   return vreinterpret_s64_s16(vabs_s16(vreinterpret_s16_s64(x)));
 }
 
+SIMD_INLINE v64 v64_abs_s8(v64 x) {
+  return vreinterpret_s64_s8(vabs_s8(vreinterpret_s8_s64(x)));
+}
+
 SIMD_INLINE v64 v64_mullo_s16(v64 x, v64 y) {
   return vreinterpret_s64_s16(
       vmul_s16(vreinterpret_s16_s64(x), vreinterpret_s16_s64(y)));

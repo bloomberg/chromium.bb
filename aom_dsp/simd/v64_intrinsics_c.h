@@ -264,6 +264,13 @@ SIMD_INLINE c_v64 c_v64_abs_s16(c_v64 a) {
   return t;
 }
 
+SIMD_INLINE c_v64 c_v64_abs_s8(c_v64 a) {
+  c_v64 t;
+  int c;
+  for (c = 0; c < 8; c++) t.u8[c] = (int8_t)a.u8[c] > 0 ? a.u8[c] : -a.u8[c];
+  return t;
+}
+
 SIMD_INLINE c_v64 _c_v64_zip_8(c_v64 a, c_v64 b, int mode) {
   c_v64 t;
   if (mode) {

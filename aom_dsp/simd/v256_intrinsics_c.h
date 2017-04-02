@@ -253,6 +253,10 @@ SIMD_INLINE c_v256 c_v256_abs_s16(c_v256 a) {
   return c_v256_from_v128(c_v128_abs_s16(a.v128[1]), c_v128_abs_s16(a.v128[0]));
 }
 
+SIMD_INLINE c_v256 c_v256_abs_s8(c_v256 a) {
+  return c_v256_from_v128(c_v128_abs_s8(a.v128[1]), c_v128_abs_s8(a.v128[0]));
+}
+
 SIMD_INLINE c_v256 c_v256_mul_s16(c_v128 a, c_v128 b) {
   c_v128 lo_bits = c_v128_mullo_s16(a, b);
   c_v128 hi_bits = c_v128_mulhi_s16(a, b);
