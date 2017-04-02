@@ -13154,6 +13154,10 @@
         ],
         "chrome_sdk": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
@@ -13228,7 +13232,12 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "paygen": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
         "vm_tests": [],
@@ -13272,6 +13281,10 @@
         ],
         "chrome_sdk": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
@@ -13346,7 +13359,12 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "paygen": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
         "vm_tests": [],
@@ -13813,6 +13831,10 @@
         ],
         "chrome_sdk": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
@@ -13888,7 +13910,12 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "paygen": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
         "vm_tests": [],
@@ -27518,6 +27545,10 @@
         ],
         "chrome_sdk": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
@@ -27592,7 +27623,12 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "paygen": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "upload_hw_test_artifacts": false,
         "vm_tests": [],

@@ -1109,10 +1109,13 @@ def GeneralTemplates(site_config, ge_build_config):
       dev_installer_prebuilts=False,
       vm_tests=[],
       vm_tests_override=None,
+      # TODO(harshmodi): Re-enable this when we start using vboot
+      signer_tests=False,
       hw_tests=[],
       paygen=False,
       upload_hw_test_artifacts=False,
       image_test=False,
+      images=remove_images(['recovery', 'factory_install'])
   )
 
   # An anchor of Laktiu' test customizations.
