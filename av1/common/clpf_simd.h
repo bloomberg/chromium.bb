@@ -59,9 +59,10 @@ SIMD_INLINE v128 calc_hdelta(v128 x, v128 a, v128 b, v128 c, v128 d,
 }
 
 // Process blocks of width 8, two lines at a time, 8 bit.
-static void clpf_block8(uint8_t *dst, const uint16_t *src, int dstride,
-                        int sstride, int sizey, unsigned int strength,
-                        unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_block8)(uint8_t *dst, const uint16_t *src,
+                                   int dstride, int sstride, int sizey,
+                                   unsigned int strength,
+                                   unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -92,9 +93,10 @@ static void clpf_block8(uint8_t *dst, const uint16_t *src, int dstride,
 }
 
 // Process blocks of width 4, four lines at a time, 8 bit.
-static void clpf_block4(uint8_t *dst, const uint16_t *src, int dstride,
-                        int sstride, int sizey, unsigned int strength,
-                        unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_block4)(uint8_t *dst, const uint16_t *src,
+                                   int dstride, int sstride, int sizey,
+                                   unsigned int strength,
+                                   unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 4) {
@@ -149,9 +151,10 @@ static void clpf_block4(uint8_t *dst, const uint16_t *src, int dstride,
   }
 }
 
-static void clpf_hblock8(uint8_t *dst, const uint16_t *src, int dstride,
-                         int sstride, int sizey, unsigned int strength,
-                         unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_hblock8)(uint8_t *dst, const uint16_t *src,
+                                    int dstride, int sstride, int sizey,
+                                    unsigned int strength,
+                                    unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -176,9 +179,10 @@ static void clpf_hblock8(uint8_t *dst, const uint16_t *src, int dstride,
 }
 
 // Process blocks of width 4, four lines at a time, 8 bit.
-static void clpf_hblock4(uint8_t *dst, const uint16_t *src, int dstride,
-                         int sstride, int sizey, unsigned int strength,
-                         unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_hblock4)(uint8_t *dst, const uint16_t *src,
+                                    int dstride, int sstride, int sizey,
+                                    unsigned int strength,
+                                    unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 4) {
@@ -230,8 +234,8 @@ void SIMD_FUNC(aom_clpf_block)(uint8_t *dst, const uint16_t *src, int dstride,
     // * block heights not a multiple of 4 if the block width is 4
     aom_clpf_block_c(dst, src, dstride, sstride, sizex, sizey, strength, dmp);
   } else {
-    (sizex == 4 ? clpf_block4 : clpf_block8)(dst, src, dstride, sstride, sizey,
-                                             strength, dmp - get_msb(strength));
+    (sizex == 4 ? SIMD_FUNC(clpf_block4) : SIMD_FUNC(clpf_block8))(
+        dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
 
@@ -244,7 +248,7 @@ void SIMD_FUNC(aom_clpf_hblock)(uint8_t *dst, const uint16_t *src, int dstride,
     // * block heights not a multiple of 4 if the block width is 4
     aom_clpf_hblock_c(dst, src, dstride, sstride, sizex, sizey, strength, dmp);
   } else {
-    (sizex == 4 ? clpf_hblock4 : clpf_hblock8)(
+    (sizex == 4 ? SIMD_FUNC(clpf_hblock4) : SIMD_FUNC(clpf_hblock8))(
         dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
@@ -331,9 +335,10 @@ static void calc_hdelta_hbd8(v128 o, v128 a, v128 b, v128 c, v128 d,
 }
 
 // Process blocks of width 4, two lines at time.
-SIMD_INLINE void clpf_block_hbd4(uint16_t *dst, const uint16_t *src,
-                                 int dstride, int sstride, int sizey,
-                                 unsigned int strength, unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_block_hbd4)(uint16_t *dst, const uint16_t *src,
+                                       int dstride, int sstride, int sizey,
+                                       unsigned int strength,
+                                       unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -362,9 +367,10 @@ SIMD_INLINE void clpf_block_hbd4(uint16_t *dst, const uint16_t *src,
 }
 
 // The most simple case.  Start here if you need to understand the functions.
-SIMD_INLINE void clpf_block_hbd(uint16_t *dst, const uint16_t *src, int dstride,
-                                int sstride, int sizey, unsigned int strength,
-                                unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_block_hbd)(uint16_t *dst, const uint16_t *src,
+                                      int dstride, int sstride, int sizey,
+                                      unsigned int strength,
+                                      unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y++) {
@@ -385,9 +391,10 @@ SIMD_INLINE void clpf_block_hbd(uint16_t *dst, const uint16_t *src, int dstride,
 }
 
 // Process blocks of width 4, horizontal filter, two lines at time.
-SIMD_INLINE void clpf_hblock_hbd4(uint16_t *dst, const uint16_t *src,
-                                  int dstride, int sstride, int sizey,
-                                  unsigned int strength, unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_hblock_hbd4)(uint16_t *dst, const uint16_t *src,
+                                        int dstride, int sstride, int sizey,
+                                        unsigned int strength,
+                                        unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -409,9 +416,10 @@ SIMD_INLINE void clpf_hblock_hbd4(uint16_t *dst, const uint16_t *src,
 }
 
 // Process blocks of width 8, horizontal filter, two lines at time.
-SIMD_INLINE void clpf_hblock_hbd(uint16_t *dst, const uint16_t *src,
-                                 int dstride, int sstride, int sizey,
-                                 unsigned int strength, unsigned int adjdamp) {
+static void SIMD_FUNC(clpf_hblock_hbd)(uint16_t *dst, const uint16_t *src,
+                                       int dstride, int sstride, int sizey,
+                                       unsigned int strength,
+                                       unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y++) {
@@ -438,7 +446,7 @@ void SIMD_FUNC(aom_clpf_block_hbd)(uint16_t *dst, const uint16_t *src,
     aom_clpf_block_hbd_c(dst, src, dstride, sstride, sizex, sizey, strength,
                          dmp);
   } else {
-    (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(
+    (sizex == 4 ? SIMD_FUNC(clpf_block_hbd4) : SIMD_FUNC(clpf_block_hbd))(
         dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
@@ -454,7 +462,7 @@ void SIMD_FUNC(aom_clpf_hblock_hbd)(uint16_t *dst, const uint16_t *src,
     aom_clpf_hblock_hbd_c(dst, src, dstride, sstride, sizex, sizey, strength,
                           dmp);
   } else {
-    (sizex == 4 ? clpf_hblock_hbd4 : clpf_hblock_hbd)(
+    (sizex == 4 ? SIMD_FUNC(clpf_hblock_hbd4) : SIMD_FUNC(clpf_hblock_hbd))(
         dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
