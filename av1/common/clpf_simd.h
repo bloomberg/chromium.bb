@@ -13,20 +13,19 @@
 #include "aom_ports/mem.h"
 #include "aom_ports/bitops.h"
 
-// sign(a-b) * min(abs(a-b), strength - (abs(a-b) >> (dmp-log2(strength))))
+// sign(a - b) * min(abs(a - b), max(0, strength - (abs(a - b) >> adjdamp)))
 SIMD_INLINE v128 constrain(v128 a, v128 b, unsigned int strength,
-                           unsigned int damping) {
+                           unsigned int adjdamp) {
   const v128 diff = v128_sub_8(v128_max_u8(a, b), v128_min_u8(a, b));
   const v128 sign = v128_cmpeq_8(v128_min_u8(a, b), a);  // -(a <= b)
-  const v128 s = v128_ssub_u8(v128_dup_8(strength),
-                              v128_shr_u8(diff, damping - get_msb(strength)));
+  const v128 s = v128_ssub_u8(v128_dup_8(strength), v128_shr_u8(diff, adjdamp));
   return v128_xor(v128_add_8(sign, v128_min_u8(diff, s)), sign);
 }
 
-// delta = 1/16 * constrain(a, x, s) + 3/16 * constrain(b, x, s) +
-//         1/16 * constrain(c, x, s) + 3/16 * constrain(d, x, s) +
-//         3/16 * constrain(e, x, s) + 1/16 * constrain(f, x, s) +
-//         3/16 * constrain(g, x, s) + 1/16 * constrain(h, x, s)
+// delta = 1/16 * constrain(a, x, s, d) + 3/16 * constrain(b, x, s, d) +
+//         1/16 * constrain(c, x, s, d) + 3/16 * constrain(d, x, s, d) +
+//         3/16 * constrain(e, x, s, d) + 1/16 * constrain(f, x, s, d) +
+//         3/16 * constrain(g, x, s, d) + 1/16 * constrain(h, x, s, d)
 SIMD_INLINE v128 calc_delta(v128 x, v128 a, v128 b, v128 c, v128 d, v128 e,
                             v128 f, v128 g, v128 h, unsigned int s,
                             unsigned int dmp) {
@@ -44,8 +43,8 @@ SIMD_INLINE v128 calc_delta(v128 x, v128 a, v128 b, v128 c, v128 d, v128 e,
              4));
 }
 
-// delta = 1/8 * constrain(a, x, s) + 3/8 * constrain(b, x, s) +
-//         3/8 * constrain(c, x, s) + 1/8 * constrain(d, x, s) +
+// delta = 1/8 * constrain(a, x, s, d) + 3/8 * constrain(b, x, s, d) +
+//         3/8 * constrain(c, x, s, d) + 1/8 * constrain(d, x, s, d) +
 SIMD_INLINE v128 calc_hdelta(v128 x, v128 a, v128 b, v128 c, v128 d,
                              unsigned int s, unsigned int dmp) {
   const v128 bc = v128_add_8(constrain(b, x, s, dmp), constrain(c, x, s, dmp));
@@ -62,7 +61,7 @@ SIMD_INLINE v128 calc_hdelta(v128 x, v128 a, v128 b, v128 c, v128 d,
 // Process blocks of width 8, two lines at a time, 8 bit.
 static void clpf_block8(uint8_t *dst, const uint16_t *src, int dstride,
                         int sstride, int sizey, unsigned int strength,
-                        unsigned int dmp) {
+                        unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -83,7 +82,7 @@ static void clpf_block8(uint8_t *dst, const uint16_t *src, int dstride,
     const v128 f = v128_pack_s16_u8(v128_load_unaligned(src + 2),
                                     v128_load_unaligned(src + 2 + sstride));
     const v128 o = calc_delta(v128_pack_s16_u8(l1, l2), a, b, c, d, e, f, g, h,
-                              strength, dmp);
+                              strength, adjdamp);
 
     v64_store_aligned(dst, v128_high_v64(o));
     v64_store_aligned(dst + dstride, v128_low_v64(o));
@@ -95,7 +94,7 @@ static void clpf_block8(uint8_t *dst, const uint16_t *src, int dstride,
 // Process blocks of width 4, four lines at a time, 8 bit.
 static void clpf_block4(uint8_t *dst, const uint16_t *src, int dstride,
                         int sstride, int sizey, unsigned int strength,
-                        unsigned int dmp) {
+                        unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 4) {
@@ -138,7 +137,7 @@ static void clpf_block4(uint8_t *dst, const uint16_t *src, int dstride,
 
     const v128 o = calc_delta(
         v128_pack_s16_u8(v128_from_v64(l2, l3), v128_from_v64(l4, l5)), a, b, c,
-        d, e, f, g, h, strength, dmp);
+        d, e, f, g, h, strength, adjdamp);
 
     u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
     u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
@@ -152,7 +151,7 @@ static void clpf_block4(uint8_t *dst, const uint16_t *src, int dstride,
 
 static void clpf_hblock8(uint8_t *dst, const uint16_t *src, int dstride,
                          int sstride, int sizey, unsigned int strength,
-                         unsigned int dmp) {
+                         unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -167,7 +166,7 @@ static void clpf_hblock8(uint8_t *dst, const uint16_t *src, int dstride,
     const v128 d = v128_pack_s16_u8(v128_load_unaligned(src + 2),
                                     v128_load_unaligned(src + 2 + sstride));
     const v128 o =
-        calc_hdelta(v128_pack_s16_u8(l1, l2), a, b, c, d, strength, dmp);
+        calc_hdelta(v128_pack_s16_u8(l1, l2), a, b, c, d, strength, adjdamp);
 
     v64_store_aligned(dst, v128_high_v64(o));
     v64_store_aligned(dst + dstride, v128_low_v64(o));
@@ -179,7 +178,7 @@ static void clpf_hblock8(uint8_t *dst, const uint16_t *src, int dstride,
 // Process blocks of width 4, four lines at a time, 8 bit.
 static void clpf_hblock4(uint8_t *dst, const uint16_t *src, int dstride,
                          int sstride, int sizey, unsigned int strength,
-                         unsigned int dmp) {
+                         unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 4) {
@@ -210,7 +209,7 @@ static void clpf_hblock4(uint8_t *dst, const uint16_t *src, int dstride,
 
     const v128 o = calc_hdelta(
         v128_pack_s16_u8(v128_from_v64(l0, l1), v128_from_v64(l2, l3)), a, b, c,
-        d, strength, dmp);
+        d, strength, adjdamp);
 
     u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
     u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
@@ -232,7 +231,7 @@ void SIMD_FUNC(aom_clpf_block)(uint8_t *dst, const uint16_t *src, int dstride,
     aom_clpf_block_c(dst, src, dstride, sstride, sizex, sizey, strength, dmp);
   } else {
     (sizex == 4 ? clpf_block4 : clpf_block8)(dst, src, dstride, sstride, sizey,
-                                             strength, dmp);
+                                             strength, dmp - get_msb(strength));
   }
 }
 
@@ -245,26 +244,26 @@ void SIMD_FUNC(aom_clpf_hblock)(uint8_t *dst, const uint16_t *src, int dstride,
     // * block heights not a multiple of 4 if the block width is 4
     aom_clpf_hblock_c(dst, src, dstride, sstride, sizex, sizey, strength, dmp);
   } else {
-    (sizex == 4 ? clpf_hblock4 : clpf_hblock8)(dst, src, dstride, sstride,
-                                               sizey, strength, dmp);
+    (sizex == 4 ? clpf_hblock4 : clpf_hblock8)(
+        dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
 
-// sign(a-b) * min(abs(a-b), strength - (abs(a-b) >> (dmp-log2(strength))))
+// sign(a - b) * min(abs(a - b), max(0, strength - (abs(a - b) >> adjdamp)))
 SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
-                               unsigned int dmp) {
+                               unsigned int adjdamp) {
   v128 diff = v128_sub_16(a, b);
   const v128 sign = v128_shr_n_s16(diff, 15);
   diff = v128_abs_s16(diff);
-  const v128 s = v128_ssub_u16(v128_dup_16(strength),
-                               v128_shr_u16(diff, dmp - get_msb(strength)));
+  const v128 s =
+      v128_ssub_u16(v128_dup_16(strength), v128_shr_u16(diff, adjdamp));
   return v128_xor(v128_add_16(sign, v128_min_s16(diff, s)), sign);
 }
 
-// delta = 1/16 * constrain(a, x, s, dmp) + 3/16 * constrain(b, x, s, dmp) +
-//         1/16 * constrain(c, x, s, dmp) + 3/16 * constrain(d, x, s, dmp) +
-//         3/16 * constrain(e, x, s, dmp) + 1/16 * constrain(f, x, s, dmp) +
-//         3/16 * constrain(g, x, s, dmp) + 1/16 * constrain(h, x, s, dmp)
+// delta = 1/16 * constrain(a, x, s, d) + 3/16 * constrain(b, x, s, d) +
+//         1/16 * constrain(c, x, s, d) + 3/16 * constrain(d, x, s, d) +
+//         3/16 * constrain(e, x, s, d) + 1/16 * constrain(f, x, s, d) +
+//         3/16 * constrain(g, x, s, d) + 1/16 * constrain(h, x, s, d)
 SIMD_INLINE v128 calc_delta_hbd(v128 x, v128 a, v128 b, v128 c, v128 d, v128 e,
                                 v128 f, v128 g, v128 h, unsigned int s,
                                 unsigned int dmp) {
@@ -295,8 +294,9 @@ static void calc_delta_hbd4(v128 o, v128 a, v128 b, v128 c, v128 d, v128 e,
 
 static void calc_delta_hbd8(v128 o, v128 a, v128 b, v128 c, v128 d, v128 e,
                             v128 f, v128 g, v128 h, uint16_t *dst,
-                            unsigned int s, unsigned int dmp) {
-  v128_store_aligned(dst, calc_delta_hbd(o, a, b, c, d, e, f, g, h, s, dmp));
+                            unsigned int s, unsigned int adjdamp) {
+  v128_store_aligned(dst,
+                     calc_delta_hbd(o, a, b, c, d, e, f, g, h, s, adjdamp));
 }
 
 // delta = 1/16 * constrain(a, x, s, dmp) + 3/16 * constrain(b, x, s, dmp) +
@@ -317,22 +317,23 @@ SIMD_INLINE v128 calc_hdelta_hbd(v128 x, v128 a, v128 b, v128 c, v128 d,
 }
 
 static void calc_hdelta_hbd4(v128 o, v128 a, v128 b, v128 c, v128 d,
-                             uint16_t *dst, unsigned int s, unsigned int dmp,
-                             int dstride) {
-  o = calc_hdelta_hbd(o, a, b, c, d, s, dmp);
+                             uint16_t *dst, unsigned int s,
+                             unsigned int adjdamp, int dstride) {
+  o = calc_hdelta_hbd(o, a, b, c, d, s, adjdamp);
   v64_store_aligned(dst, v128_high_v64(o));
   v64_store_aligned(dst + dstride, v128_low_v64(o));
 }
 
 static void calc_hdelta_hbd8(v128 o, v128 a, v128 b, v128 c, v128 d,
-                             uint16_t *dst, unsigned int s, unsigned int dmp) {
-  v128_store_aligned(dst, calc_hdelta_hbd(o, a, b, c, d, s, dmp));
+                             uint16_t *dst, unsigned int s,
+                             unsigned int adjdamp) {
+  v128_store_aligned(dst, calc_hdelta_hbd(o, a, b, c, d, s, adjdamp));
 }
 
 // Process blocks of width 4, two lines at time.
 SIMD_INLINE void clpf_block_hbd4(uint16_t *dst, const uint16_t *src,
                                  int dstride, int sstride, int sizey,
-                                 unsigned int strength, unsigned int dmp) {
+                                 unsigned int strength, unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -354,7 +355,7 @@ SIMD_INLINE void clpf_block_hbd4(uint16_t *dst, const uint16_t *src,
                                  v64_load_unaligned(src + 2 + sstride));
 
     calc_delta_hbd4(v128_from_v64(l1, l2), a, b, c, d, e, f, g, h, dst,
-                    strength, dmp, dstride);
+                    strength, adjdamp, dstride);
     src += sstride * 2;
     dst += dstride * 2;
   }
@@ -363,7 +364,7 @@ SIMD_INLINE void clpf_block_hbd4(uint16_t *dst, const uint16_t *src,
 // The most simple case.  Start here if you need to understand the functions.
 SIMD_INLINE void clpf_block_hbd(uint16_t *dst, const uint16_t *src, int dstride,
                                 int sstride, int sizey, unsigned int strength,
-                                unsigned int dmp) {
+                                unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y++) {
@@ -377,7 +378,7 @@ SIMD_INLINE void clpf_block_hbd(uint16_t *dst, const uint16_t *src, int dstride,
     const v128 e = v128_load_unaligned(src + 1);
     const v128 f = v128_load_unaligned(src + 2);
 
-    calc_delta_hbd8(o, a, b, c, d, e, f, g, h, dst, strength, dmp);
+    calc_delta_hbd8(o, a, b, c, d, e, f, g, h, dst, strength, adjdamp);
     src += sstride;
     dst += dstride;
   }
@@ -386,7 +387,7 @@ SIMD_INLINE void clpf_block_hbd(uint16_t *dst, const uint16_t *src, int dstride,
 // Process blocks of width 4, horizontal filter, two lines at time.
 SIMD_INLINE void clpf_hblock_hbd4(uint16_t *dst, const uint16_t *src,
                                   int dstride, int sstride, int sizey,
-                                  unsigned int strength, unsigned int dmp) {
+                                  unsigned int strength, unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y += 2) {
@@ -401,7 +402,7 @@ SIMD_INLINE void clpf_hblock_hbd4(uint16_t *dst, const uint16_t *src,
 
     calc_hdelta_hbd4(v128_from_v64(v64_load_unaligned(src),
                                    v64_load_unaligned(src + sstride)),
-                     a, b, c, d, dst, strength, dmp, dstride);
+                     a, b, c, d, dst, strength, adjdamp, dstride);
     src += sstride * 2;
     dst += dstride * 2;
   }
@@ -410,7 +411,7 @@ SIMD_INLINE void clpf_hblock_hbd4(uint16_t *dst, const uint16_t *src,
 // Process blocks of width 8, horizontal filter, two lines at time.
 SIMD_INLINE void clpf_hblock_hbd(uint16_t *dst, const uint16_t *src,
                                  int dstride, int sstride, int sizey,
-                                 unsigned int strength, unsigned int dmp) {
+                                 unsigned int strength, unsigned int adjdamp) {
   int y;
 
   for (y = 0; y < sizey; y++) {
@@ -420,7 +421,7 @@ SIMD_INLINE void clpf_hblock_hbd(uint16_t *dst, const uint16_t *src,
     const v128 c = v128_load_unaligned(src + 1);
     const v128 d = v128_load_unaligned(src + 2);
 
-    calc_hdelta_hbd8(o, a, b, c, d, dst, strength, dmp);
+    calc_hdelta_hbd8(o, a, b, c, d, dst, strength, adjdamp);
     src += sstride;
     dst += dstride;
   }
@@ -437,8 +438,8 @@ void SIMD_FUNC(aom_clpf_block_hbd)(uint16_t *dst, const uint16_t *src,
     aom_clpf_block_hbd_c(dst, src, dstride, sstride, sizex, sizey, strength,
                          dmp);
   } else {
-    (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(dst, src, dstride, sstride,
-                                                    sizey, strength, dmp);
+    (sizex == 4 ? clpf_block_hbd4 : clpf_block_hbd)(
+        dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
 
@@ -454,6 +455,6 @@ void SIMD_FUNC(aom_clpf_hblock_hbd)(uint16_t *dst, const uint16_t *src,
                           dmp);
   } else {
     (sizex == 4 ? clpf_hblock_hbd4 : clpf_hblock_hbd)(
-        dst, src, dstride, sstride, sizey, strength, dmp);
+        dst, src, dstride, sstride, sizey, strength, dmp - get_msb(strength));
   }
 }
