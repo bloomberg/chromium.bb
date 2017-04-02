@@ -905,17 +905,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     m_previousScrollOffsetAccumulationForPainting = s;
   }
 
-  bool hasPreviousPaintingClipRects() const {
-    return m_hasPreviousPaintingClipRects;
+  ClipRects* previousPaintingClipRects() const {
+    return m_previousPaintingClipRects.get();
   }
-
-  const ClipRects& previousPaintingClipRects() const {
-    return m_previousPaintingClipRects;
-  }
-
-  void setPreviousPaintingClipRects(const ClipRects& clipRects) {
-    m_previousPaintingClipRects = clipRects;
-    m_hasPreviousPaintingClipRects = true;
+  void setPreviousPaintingClipRects(ClipRects& clipRects) {
+    m_previousPaintingClipRects = &clipRects;
   }
 
   LayoutRect previousPaintDirtyRect() const { return m_previousPaintDirtyRect; }
@@ -1210,8 +1204,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned m_selfPaintingStatusChanged : 1;
 
-  unsigned m_hasPreviousPaintingClipRects : 1;
-
   LayoutBoxModelObject& m_layoutObject;
 
   PaintLayer* m_parent;
@@ -1247,7 +1239,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   std::unique_ptr<PaintLayerStackingNode> m_stackingNode;
 
   IntSize m_previousScrollOffsetAccumulationForPainting;
-  ClipRects m_previousPaintingClipRects;
+  RefPtr<ClipRects> m_previousPaintingClipRects;
   LayoutRect m_previousPaintDirtyRect;
 
   std::unique_ptr<PaintLayerRareData> m_rareData;

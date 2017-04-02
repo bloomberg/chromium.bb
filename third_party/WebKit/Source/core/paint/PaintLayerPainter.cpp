@@ -228,8 +228,9 @@ static bool shouldRepaintSubsequence(
         paintLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
             .paintingClipRects(paintingInfo.rootLayer, respectOverflowClip,
                                subpixelAccumulation);
-    if (!paintLayer.hasPreviousPaintingClipRects() ||
-        clipRects != paintLayer.previousPaintingClipRects()) {
+    ClipRects* previousClipRects = paintLayer.previousPaintingClipRects();
+    if (&clipRects != previousClipRects &&
+        (!previousClipRects || clipRects != *previousClipRects)) {
       needsRepaint = true;
       shouldClearEmptyPaintPhaseFlags = true;
     }
