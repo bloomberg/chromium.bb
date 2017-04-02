@@ -41,7 +41,8 @@ struct insp_mi_data {
   int8_t tx_type;
   int8_t tx_size;
 #if CONFIG_CDEF
-// TODO(negge): add per block CDEF data
+  int8_t cdef_level;
+  int8_t cdef_strength;
 #endif
 };
 

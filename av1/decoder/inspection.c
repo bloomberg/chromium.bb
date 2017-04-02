@@ -11,6 +11,9 @@
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/inspection.h"
 #include "av1/common/enums.h"
+#if CONFIG_CDEF
+#include "av1/common/cdef.h"
+#endif
 
 void ifd_init(insp_frame_data *fd, int frame_width, int frame_height) {
   fd->mi_cols = ALIGN_POWER_OF_TWO(frame_width, MI_SIZE_LOG2) >> MI_SIZE_LOG2;
@@ -75,8 +78,12 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
       // Transform
       mi->tx_type = mbmi->tx_type;
       mi->tx_size = mbmi->tx_size;
+
 #if CONFIG_CDEF
-// TODO(negge): copy per block CDEF data
+      mi->cdef_level = cm->cdef_strengths[mbmi->cdef_strength] / CLPF_STRENGTHS;
+      mi->cdef_strength =
+          cm->cdef_strengths[mbmi->cdef_strength] % CLPF_STRENGTHS;
+      mi->cdef_strength += mi->cdef_strength == 3;
 #endif
     }
   }

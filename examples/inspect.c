@@ -434,11 +434,10 @@ void inspect(void *pbi, void *data) {
     buf += put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter));
   }
   if (layers & CDEF_LAYER) {
-    // buf += put_block_info(buf, NULL, "clpf",
-    //                         offsetof(insp_mi_data, clpf));
-    // buf += sprintf(buf, "  \"clpfStrengthY\": %d,\n",
-    // frame_data.clpf_strength_y);
-    // buf += sprintf(buf, "  \"clpfSize\": %d,\n", frame_data.clpf_size);
+    buf += put_block_info(buf, NULL, "cdef_level",
+                          offsetof(insp_mi_data, cdef_level));
+    buf += put_block_info(buf, NULL, "cdef_strength",
+                          offsetof(insp_mi_data, cdef_strength));
   }
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
