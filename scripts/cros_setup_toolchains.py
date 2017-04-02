@@ -1204,11 +1204,6 @@ def main(argv):
   boards_wanted = (set(options.include_boards.split(','))
                    if options.include_boards else set())
 
-  # pylint: disable=global-statement
-  # Disable compiler-rt if using binary packages till binary package is available
-  global TARGET_COMPILER_RT_ENABLED
-  if options.usepkg:
-    TARGET_COMPILER_RT_ENABLED = ()
   if options.cfg_name:
     ShowConfig(options.cfg_name)
   elif options.create_packages:
