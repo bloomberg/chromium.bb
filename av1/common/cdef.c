@@ -203,7 +203,9 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   for (pli = 0; pli < nplanes; pli++) {
     dec[pli] = xd->plane[pli].subsampling_x;
     mi_wide_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
-    mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_y;
+    // TODO(stemidts/jmvalin): We should use subsampling_y below but can't
+    // until we've properly fixed 4:2:2
+    mi_high_l2[pli] = MI_SIZE_LOG2 - xd->plane[pli].subsampling_x;
   }
   stride = (cm->mi_cols << MI_SIZE_LOG2) + 2 * OD_FILT_HBORDER;
   for (pli = 0; pli < nplanes; pli++) {
