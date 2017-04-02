@@ -896,6 +896,7 @@ if (!is_ios) {
   group("webkit_layout_tests") {
     testonly = true
     data_deps = [
+      ":layout_test_data_mojo_bindings",
       "//content/shell:content_shell",
       "//mojo/public/interfaces/bindings/tests:test_interfaces",
       "//third_party/WebKit/public:blink_devtools_frontend_resources_files",
@@ -951,6 +952,22 @@ if (!is_ios) {
         "//build/android/",
       ]
     }
+  }
+
+  copy("layout_test_data_mojo_bindings") {
+    testonly = true
+
+    sources = [
+      "$root_gen_dir/mojo/public/js/mojo_bindings.js",
+    ]
+
+    outputs = [
+      "$root_gen_dir/layout_test_data/mojo/public/js/mojo_bindings.js",
+    ]
+
+    deps = [
+      "//mojo/public/js:new_bindings",
+    ]
   }
 }
 

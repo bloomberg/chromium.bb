@@ -35,7 +35,45 @@ group("bindings") {
   ]
 
   deps = [
+    ":new_bindings",
     "//mojo/public/interfaces/bindings:bindings__generator",
+  ]
+}
+
+action("new_bindings") {
+  new_bindings_js_files = [
+    # This must be the first file in the list, because it initializes global
+    # variable |mojoBindings| that the others need to refer to.
+    "new_bindings/base.js",
+
+    "$interfaces_bindings_gen_dir/new_bindings/interface_control_messages.mojom.js",
+    "new_bindings/bindings.js",
+    "new_bindings/buffer.js",
+    "new_bindings/codec.js",
+    "new_bindings/connector.js",
+    "new_bindings/interface_types.js",
+    "new_bindings/lib/control_message_handler.js",
+    "new_bindings/lib/control_message_proxy.js",
+    "new_bindings/router.js",
+    "new_bindings/unicode.js",
+    "new_bindings/validator.js",
+  ]
+  compiled_file = "$target_gen_dir/mojo_bindings.js"
+
+  # TODO(yzshen): Eventually we would like to use Closure Compiler to minify the
+  # bindings instead of simply concatenating the files.
+  script = "//v8/tools/concatenate-files.py"
+
+  sources = new_bindings_js_files
+  outputs = [
+    compiled_file,
+  ]
+
+  args = rebase_path(new_bindings_js_files)
+  args += [ rebase_path(compiled_file) ]
+
+  deps = [
+    "//mojo/public/interfaces/bindings:new_bindings__generator",
   ]
 }
 

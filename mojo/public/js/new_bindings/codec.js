@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/public/js/codec", [
-  "mojo/public/js/buffer",
-  "mojo/public/js/interface_types",
-  "mojo/public/js/unicode",
-], function(buffer, types, unicode) {
+(function() {
+  var internal = mojo.internal;
 
   var kErrorUnsigned = "Passing negative value to unsigned";
   var kErrorArray = "Passing non Array for array type";
@@ -138,7 +135,7 @@ define("mojo/public/js/codec", [
     var numberOfElements = this.readUint32();
     var base = this.next;
     this.next += numberOfElements;
-    return unicode.decodeUtf8String(
+    return internal.decodeUtf8String(
         new Uint8Array(this.buffer.arrayBuffer, base, numberOfElements));
   };
 
@@ -314,7 +311,7 @@ define("mojo/public/js/codec", [
 
   Encoder.prototype.encodeString = function(val) {
     var base = this.next + kArrayHeaderSize;
-    var numberOfElements = unicode.encodeUtf8String(
+    var numberOfElements = internal.encodeUtf8String(
         val, new Uint8Array(this.buffer.arrayBuffer, base));
     var numberOfBytes = kArrayHeaderSize + numberOfElements;
     this.writeUint32(numberOfBytes);
@@ -389,7 +386,7 @@ define("mojo/public/js/codec", [
     if (typeof(val) !== "string") {
       throw new Error(kErrorString);
     }
-    var encodedSize = kArrayHeaderSize + unicode.utf8Length(val);
+    var encodedSize = kArrayHeaderSize + internal.utf8Length(val);
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeString(val);
   };
@@ -473,7 +470,7 @@ define("mojo/public/js/codec", [
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
     var numberOfBytes = kMessageHeaderSize + payloadSize;
-    this.buffer = new buffer.Buffer(numberOfBytes);
+    this.buffer = new internal.Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageHeaderSize);
     encoder.writeUint32(kMessageHeaderSize);
@@ -511,7 +508,7 @@ define("mojo/public/js/codec", [
     // Currently, we don't compute the payload size correctly ahead of time.
     // Instead, we resize the buffer at the end.
     var numberOfBytes = kMessageWithRequestIDHeaderSize + payloadSize;
-    this.buffer = new buffer.Buffer(numberOfBytes);
+    this.buffer = new internal.Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(kMessageWithRequestIDHeaderSize);
@@ -814,7 +811,7 @@ define("mojo/public/js/codec", [
   Interface.prototype.encodedSize = 8;
 
   Interface.prototype.decode = function(decoder) {
-    var interfacePtrInfo = new types.InterfacePtrInfo(
+    var interfacePtrInfo = new mojo.InterfacePtrInfo(
         decoder.decodeHandle(), decoder.readUint32());
     var interfacePtr = new this.cls();
     interfacePtr.ptr.bind(interfacePtrInfo);
@@ -823,7 +820,7 @@ define("mojo/public/js/codec", [
 
   Interface.prototype.encode = function(encoder, val) {
     var interfacePtrInfo =
-        val ? val.ptr.passInterface() : new types.InterfacePtrInfo(null, 0);
+        val ? val.ptr.passInterface() : new mojo.InterfacePtrInfo(null, 0);
     encoder.encodeHandle(interfacePtrInfo.handle);
     encoder.writeUint32(interfacePtrInfo.version);
   };
@@ -840,7 +837,7 @@ define("mojo/public/js/codec", [
   InterfaceRequest.encodedSize = 4;
 
   InterfaceRequest.decode = function(decoder) {
-    return new types.InterfaceRequest(decoder.decodeHandle());
+    return new mojo.InterfaceRequest(decoder.decodeHandle());
   };
 
   InterfaceRequest.encode = function(encoder, val) {
@@ -877,46 +874,44 @@ define("mojo/public/js/codec", [
 
   NullableMapOf.prototype = Object.create(MapOf.prototype);
 
-  var exports = {};
-  exports.align = align;
-  exports.isAligned = isAligned;
-  exports.Message = Message;
-  exports.MessageBuilder = MessageBuilder;
-  exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
-  exports.MessageReader = MessageReader;
-  exports.kArrayHeaderSize = kArrayHeaderSize;
-  exports.kMapStructPayloadSize = kMapStructPayloadSize;
-  exports.kStructHeaderSize = kStructHeaderSize;
-  exports.kEncodedInvalidHandleValue = kEncodedInvalidHandleValue;
-  exports.kMessageHeaderSize = kMessageHeaderSize;
-  exports.kMessageWithRequestIDHeaderSize = kMessageWithRequestIDHeaderSize;
-  exports.kMessageExpectsResponse = kMessageExpectsResponse;
-  exports.kMessageIsResponse = kMessageIsResponse;
-  exports.Int8 = Int8;
-  exports.Uint8 = Uint8;
-  exports.Int16 = Int16;
-  exports.Uint16 = Uint16;
-  exports.Int32 = Int32;
-  exports.Uint32 = Uint32;
-  exports.Int64 = Int64;
-  exports.Uint64 = Uint64;
-  exports.Float = Float;
-  exports.Double = Double;
-  exports.String = String;
-  exports.Enum = Enum;
-  exports.NullableString = NullableString;
-  exports.PointerTo = PointerTo;
-  exports.NullablePointerTo = NullablePointerTo;
-  exports.ArrayOf = ArrayOf;
-  exports.NullableArrayOf = NullableArrayOf;
-  exports.PackedBool = PackedBool;
-  exports.Handle = Handle;
-  exports.NullableHandle = NullableHandle;
-  exports.Interface = Interface;
-  exports.NullableInterface = NullableInterface;
-  exports.InterfaceRequest = InterfaceRequest;
-  exports.NullableInterfaceRequest = NullableInterfaceRequest;
-  exports.MapOf = MapOf;
-  exports.NullableMapOf = NullableMapOf;
-  return exports;
-});
+  internal.align = align;
+  internal.isAligned = isAligned;
+  internal.Message = Message;
+  internal.MessageBuilder = MessageBuilder;
+  internal.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
+  internal.MessageReader = MessageReader;
+  internal.kArrayHeaderSize = kArrayHeaderSize;
+  internal.kMapStructPayloadSize = kMapStructPayloadSize;
+  internal.kStructHeaderSize = kStructHeaderSize;
+  internal.kEncodedInvalidHandleValue = kEncodedInvalidHandleValue;
+  internal.kMessageHeaderSize = kMessageHeaderSize;
+  internal.kMessageWithRequestIDHeaderSize = kMessageWithRequestIDHeaderSize;
+  internal.kMessageExpectsResponse = kMessageExpectsResponse;
+  internal.kMessageIsResponse = kMessageIsResponse;
+  internal.Int8 = Int8;
+  internal.Uint8 = Uint8;
+  internal.Int16 = Int16;
+  internal.Uint16 = Uint16;
+  internal.Int32 = Int32;
+  internal.Uint32 = Uint32;
+  internal.Int64 = Int64;
+  internal.Uint64 = Uint64;
+  internal.Float = Float;
+  internal.Double = Double;
+  internal.String = String;
+  internal.Enum = Enum;
+  internal.NullableString = NullableString;
+  internal.PointerTo = PointerTo;
+  internal.NullablePointerTo = NullablePointerTo;
+  internal.ArrayOf = ArrayOf;
+  internal.NullableArrayOf = NullableArrayOf;
+  internal.PackedBool = PackedBool;
+  internal.Handle = Handle;
+  internal.NullableHandle = NullableHandle;
+  internal.Interface = Interface;
+  internal.NullableInterface = NullableInterface;
+  internal.InterfaceRequest = InterfaceRequest;
+  internal.NullableInterfaceRequest = NullableInterfaceRequest;
+  internal.MapOf = MapOf;
+  internal.NullableMapOf = NullableMapOf;
+})();

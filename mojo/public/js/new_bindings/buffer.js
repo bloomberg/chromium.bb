@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/public/js/buffer", function() {
+(function() {
+  var internal = mojo.internal;
 
   var kHostIsLittleEndian = (function () {
     var endianArrayBuffer = new ArrayBuffer(2);
@@ -150,7 +151,5 @@ define("mojo/public/js/buffer", function() {
     this.dataView.setFloat64(offset, value, kHostIsLittleEndian);
   }
 
-  var exports = {};
-  exports.Buffer = Buffer;
-  return exports;
-});
+  internal.Buffer = Buffer;
+})();

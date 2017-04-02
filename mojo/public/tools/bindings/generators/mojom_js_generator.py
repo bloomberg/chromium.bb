@@ -368,6 +368,7 @@ class Generator(generator.Generator):
       "module": self.module,
       "structs": self.GetStructs() + self.GetStructsFromMethods(),
       "unions": self.GetUnions(),
+      "use_new_js_bindings": self.use_new_js_bindings,
       "interfaces": self.GetInterfaces(),
       "imported_interfaces": self.GetImportedInterfaces(),
     }

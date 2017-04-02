@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define("mojo/public/js/validator", [
-  "mojo/public/js/codec",
-], function(codec) {
+(function() {
+  var internal = mojo.internal;
 
   var validationError = {
     NONE: 'VALIDATION_ERROR_NONE',
@@ -30,32 +29,33 @@ define("mojo/public/js/validator", [
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
 
   function isEnumClass(cls) {
-    return cls instanceof codec.Enum;
+    return cls instanceof internal.Enum;
   }
 
   function isStringClass(cls) {
-    return cls === codec.String || cls === codec.NullableString;
+    return cls === internal.String || cls === internal.NullableString;
   }
 
   function isHandleClass(cls) {
-    return cls === codec.Handle || cls === codec.NullableHandle;
+    return cls === internal.Handle || cls === internal.NullableHandle;
   }
 
   function isInterfaceClass(cls) {
-    return cls instanceof codec.Interface;
+    return cls instanceof internal.Interface;
   }
 
   function isInterfaceRequestClass(cls) {
-    return cls === codec.InterfaceRequest ||
-        cls === codec.NullableInterfaceRequest;
+    return cls === internal.InterfaceRequest ||
+        cls === internal.NullableInterfaceRequest;
   }
 
   function isNullable(type) {
-    return type === codec.NullableString || type === codec.NullableHandle ||
-        type === codec.NullableInterface ||
-        type === codec.NullableInterfaceRequest ||
-        type instanceof codec.NullableArrayOf ||
-        type instanceof codec.NullablePointerTo;
+    return type === internal.NullableString ||
+        type === internal.NullableHandle ||
+        type === internal.NullableInterface ||
+        type === internal.NullableInterfaceRequest ||
+        type instanceof internal.NullableArrayOf ||
+        type instanceof internal.NullablePointerTo;
   }
 
   function Validator(message) {
@@ -98,7 +98,7 @@ define("mojo/public/js/validator", [
   };
 
   Validator.prototype.claimHandle = function(index) {
-    if (index === codec.kEncodedInvalidHandleValue)
+    if (index === internal.kEncodedInvalidHandleValue)
       return true;
 
     if (index < this.handleIndex || index >= this.handleIndexLimit)
@@ -119,7 +119,7 @@ define("mojo/public/js/validator", [
   Validator.prototype.validateHandle = function(offset, nullable) {
     var index = this.message.buffer.getUint32(offset);
 
-    if (index === codec.kEncodedInvalidHandleValue)
+    if (index === internal.kEncodedInvalidHandleValue)
       return nullable ?
           validationError.NONE : validationError.UNEXPECTED_INVALID_HANDLE;
 
@@ -138,10 +138,10 @@ define("mojo/public/js/validator", [
   };
 
   Validator.prototype.validateStructHeader = function(offset, minNumBytes) {
-    if (!codec.isAligned(offset))
+    if (!internal.isAligned(offset))
       return validationError.MISALIGNED_OBJECT;
 
-    if (!this.isValidRange(offset, codec.kStructHeaderSize))
+    if (!this.isValidRange(offset, internal.kStructHeaderSize))
       return validationError.ILLEGAL_MEMORY_RANGE;
 
     var numBytes = this.message.buffer.getUint32(offset);
@@ -182,7 +182,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateMessageHeader = function() {
 
-    var err = this.validateStructHeader(0, codec.kMessageHeaderSize);
+    var err = this.validateStructHeader(0, internal.kMessageHeaderSize);
     if (err != validationError.NONE)
       return err;
 
@@ -190,11 +190,11 @@ define("mojo/public/js/validator", [
     var version = this.message.getHeaderVersion();
 
     var validVersionAndNumBytes =
-        (version == 0 && numBytes == codec.kMessageHeaderSize) ||
+        (version == 0 && numBytes == internal.kMessageHeaderSize) ||
         (version == 1 &&
-         numBytes == codec.kMessageWithRequestIDHeaderSize) ||
+         numBytes == internal.kMessageWithRequestIDHeaderSize) ||
         (version > 1 &&
-         numBytes >= codec.kMessageWithRequestIDHeaderSize);
+         numBytes >= internal.kMessageWithRequestIDHeaderSize);
     if (!validVersionAndNumBytes)
       return validationError.UNEXPECTED_STRUCT_HEADER;
 
@@ -322,13 +322,14 @@ define("mojo/public/js/validator", [
       return mapIsNullable ?
           validationError.NONE : validationError.UNEXPECTED_NULL_POINTER;
 
-    var mapEncodedSize = codec.kStructHeaderSize + codec.kMapStructPayloadSize;
+    var mapEncodedSize = internal.kStructHeaderSize +
+        internal.kMapStructPayloadSize;
     var err = this.validateStructHeader(structOffset, mapEncodedSize);
     if (err !== validationError.NONE)
         return err;
 
     // Validate the keys array.
-    var keysArrayPointerOffset = structOffset + codec.kStructHeaderSize;
+    var keysArrayPointerOffset = structOffset + internal.kStructHeaderSize;
     err = this.validateArrayPointer(
         keysArrayPointerOffset, keyClass.encodedSize, keyClass, false, [0], 0);
     if (err !== validationError.NONE)
@@ -337,7 +338,7 @@ define("mojo/public/js/validator", [
     // Validate the values array.
     var valuesArrayPointerOffset = keysArrayPointerOffset + 8;
     var valuesArrayDimensions = [0]; // Validate the actual length below.
-    if (valueClass instanceof codec.ArrayOf)
+    if (valueClass instanceof internal.ArrayOf)
       valuesArrayDimensions =
           valuesArrayDimensions.concat(valueClass.dimensions());
     var err = this.validateArrayPointer(valuesArrayPointerOffset,
@@ -360,7 +361,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateStringPointer = function(offset, nullable) {
     return this.validateArrayPointer(
-        offset, codec.Uint8.encodedSize, codec.Uint8, nullable, [0], 0);
+        offset, internal.Uint8.encodedSize, internal.Uint8, nullable, [0], 0);
   };
 
   // Similar to Array_Data<T>::Validate()
@@ -369,10 +370,10 @@ define("mojo/public/js/validator", [
   Validator.prototype.validateArray =
       function (offset, elementSize, elementType, expectedDimensionSizes,
                 currentDimension) {
-    if (!codec.isAligned(offset))
+    if (!internal.isAligned(offset))
       return validationError.MISALIGNED_OBJECT;
 
-    if (!this.isValidRange(offset, codec.kArrayHeaderSize))
+    if (!this.isValidRange(offset, internal.kArrayHeaderSize))
       return validationError.ILLEGAL_MEMORY_RANGE;
 
     var numBytes = this.message.buffer.getUint32(offset);
@@ -380,10 +381,10 @@ define("mojo/public/js/validator", [
 
     // Note: this computation is "safe" because elementSize <= 8 and
     // numElements is a uint32.
-    var elementsTotalSize = (elementType === codec.PackedBool) ?
+    var elementsTotalSize = (elementType === internal.PackedBool) ?
         Math.ceil(numElements / 8) : (elementSize * numElements);
 
-    if (numBytes < codec.kArrayHeaderSize + elementsTotalSize)
+    if (numBytes < internal.kArrayHeaderSize + elementsTotalSize)
       return validationError.UNEXPECTED_ARRAY_HEADER;
 
     if (expectedDimensionSizes[currentDimension] != 0 &&
@@ -396,7 +397,7 @@ define("mojo/public/js/validator", [
 
     // Validate the array's elements if they are pointers or handles.
 
-    var elementsOffset = offset + codec.kArrayHeaderSize;
+    var elementsOffset = offset + internal.kArrayHeaderSize;
     var nullable = isNullable(elementType);
 
     if (isHandleClass(elementType))
@@ -409,11 +410,11 @@ define("mojo/public/js/validator", [
           elementsOffset, numElements, nullable);
     if (isStringClass(elementType))
       return this.validateArrayElements(
-          elementsOffset, numElements, codec.Uint8, nullable, [0], 0);
-    if (elementType instanceof codec.PointerTo)
+          elementsOffset, numElements, internal.Uint8, nullable, [0], 0);
+    if (elementType instanceof internal.PointerTo)
       return this.validateStructElements(
           elementsOffset, numElements, elementType.cls, nullable);
-    if (elementType instanceof codec.ArrayOf)
+    if (elementType instanceof internal.ArrayOf)
       return this.validateArrayElements(
           elementsOffset, numElements, elementType.cls, nullable,
           expectedDimensionSizes, currentDimension + 1);
@@ -430,7 +431,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateHandleElements =
       function(offset, numElements, nullable) {
-    var elementSize = codec.Handle.encodedSize;
+    var elementSize = internal.Handle.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateHandle(elementOffset, nullable);
@@ -442,7 +443,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateInterfaceElements =
       function(offset, numElements, nullable) {
-    var elementSize = codec.Interface.prototype.encodedSize;
+    var elementSize = internal.Interface.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateInterface(elementOffset, nullable);
@@ -454,7 +455,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateInterfaceRequestElements =
       function(offset, numElements, nullable) {
-    var elementSize = codec.InterfaceRequest.encodedSize;
+    var elementSize = internal.InterfaceRequest.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateInterfaceRequest(elementOffset, nullable);
@@ -468,7 +469,7 @@ define("mojo/public/js/validator", [
   Validator.prototype.validateArrayElements =
       function(offset, numElements, elementClass, nullable,
                expectedDimensionSizes, currentDimension) {
-    var elementSize = codec.PointerTo.prototype.encodedSize;
+    var elementSize = internal.PointerTo.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateArrayPointer(
@@ -482,7 +483,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateStructElements =
       function(offset, numElements, structClass, nullable) {
-    var elementSize = codec.PointerTo.prototype.encodedSize;
+    var elementSize = internal.PointerTo.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err =
@@ -495,7 +496,7 @@ define("mojo/public/js/validator", [
 
   Validator.prototype.validateEnumElements =
       function(offset, numElements, enumClass) {
-    var elementSize = codec.Enum.prototype.encodedSize;
+    var elementSize = internal.Enum.prototype.encodedSize;
     for (var i = 0; i < numElements; i++) {
       var elementOffset = offset + i * elementSize;
       var err = this.validateEnum(elementOffset, enumClass);
@@ -505,8 +506,6 @@ define("mojo/public/js/validator", [
     return validationError.NONE;
   };
 
-  var exports = {};
-  exports.validationError = validationError;
-  exports.Validator = Validator;
-  return exports;
-});
+  internal.validationError = validationError;
+  internal.Validator = Validator;
+})();

@@ -2,19 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+{%- if use_new_js_bindings %}
+
+"use strict";
+
+(function() {
+  // TODO(yzshen): Define these aliases to minimize the differences between the
+  // old/new modes. Remove them when the old mode goes away.
+  var bindings = mojo;
+  var codec = mojo.internal;
+  var validator = mojo.internal;
+{%-   for import in imports %}
+  var {{import.unique_name}} = {{import.module.namespace}};
+{%-   endfor %}
+
+{% include "module_definition.tmpl" %}
+})();
+
+{%- else %}
+
 define("{{module.path}}", [
 {%- if module.path !=
          "mojo/public/interfaces/bindings/interface_control_messages.mojom" and
        module.path !=
          "mojo/public/interfaces/bindings/pipe_control_messages.mojom" %}
     "mojo/public/js/bindings",
-{%- endif %}
+{%-   endif %}
     "mojo/public/js/codec",
     "mojo/public/js/core",
     "mojo/public/js/validator",
-{%- for import in imports %}
+{%-   for import in imports %}
     "{{import.module.path}}",
-{%- endfor %}
+{%-   endfor %}
 ], function(
 {%- if module.path !=
          "mojo/public/interfaces/bindings/interface_control_messages.mojom" and
@@ -22,12 +41,14 @@ define("{{module.path}}", [
          "mojo/public/interfaces/bindings/pipe_control_messages.mojom" -%}
 bindings, {% endif -%}
 codec, core, validator
-{%- for import in imports -%}
+{%-   for import in imports -%}
     , {{import.unique_name}}
-{%- endfor -%}
+{%-   endfor -%}
 ) {
 
 {%- include "module_definition.tmpl" %}
 
   return exports;
 });
+
+{%- endif %}

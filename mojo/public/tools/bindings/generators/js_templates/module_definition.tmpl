@@ -1,5 +1,5 @@
 {#--- Constants #}
-{%-  for constant in module.constants %}
+{%- for constant in module.constants %}
   var {{constant.name}} = {{constant.value|expression_to_text}};
 {%- endfor %}
 
@@ -25,8 +25,13 @@
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 
+{%- if use_new_js_bindings %}
+  var exports = mojo.internal.exposeNamespace("{{module.namespace}}");
+{%- else %}
   var exports = {};
-{%-  for constant in module.constants %}
+{%- endif %}
+
+{%- for constant in module.constants %}
   exports.{{constant.name}} = {{constant.name}};
 {%- endfor %}
 {%- for enum in enums %}
@@ -41,10 +46,4 @@
 {%- for interface in interfaces %}
   exports.{{interface.name}} = {{interface.name}};
   exports.{{interface.name}}Ptr = {{interface.name}}Ptr;
-{#--- Interface Client #}
-{%-   if interface.client in interfaces|map(attribute='name') %}
-  exports.{{interface.name}}.client = {{interface.client}};
-{%-   elif interface.client in imported_interfaces %}
-  exports.{{interface.name}}.client = {{imported_interfaces[interface.client]}};
-{%-   endif %}
 {%- endfor %}

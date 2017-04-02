@@ -15,3 +15,15 @@ mojom("bindings") {
   export_define = "MOJO_CPP_BINDINGS_IMPLEMENTATION"
   export_header = "mojo/public/cpp/bindings/bindings_export.h"
 }
+
+# TODO(yzshen): Remove this target and use the one above once
+# |use_new_js_bindings| becomes true by default.
+mojom("new_bindings") {
+  visibility = []
+  sources = [
+    "new_bindings/interface_control_messages.mojom",
+    "new_bindings/pipe_control_messages.mojom",
+  ]
+
+  use_new_js_bindings = true
+}

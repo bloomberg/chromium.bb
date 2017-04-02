@@ -7,7 +7,9 @@
  * stored in ArrayBuffers. There is much room for optimization in this code if
  * it proves necessary.
  */
-define("mojo/public/js/unicode", function() {
+(function() {
+  var internal = mojo.internal;
+
   /**
    * Decodes the UTF8 string from the given buffer.
    * @param {ArrayBufferView} buffer The buffer containing UTF8 string data.
@@ -43,9 +45,7 @@ define("mojo/public/js/unicode", function() {
     return utf8String.length;
   }
 
-  var exports = {};
-  exports.decodeUtf8String = decodeUtf8String;
-  exports.encodeUtf8String = encodeUtf8String;
-  exports.utf8Length = utf8Length;
-  return exports;
-});
+  internal.decodeUtf8String = decodeUtf8String;
+  internal.encodeUtf8String = encodeUtf8String;
+  internal.utf8Length = utf8Length;
+})();
