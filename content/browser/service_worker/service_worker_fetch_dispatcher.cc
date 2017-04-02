@@ -132,6 +132,8 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
       ResourceRequestCompletionStatus status;
       status.error_code = net::ERR_ABORTED;
       client_->OnComplete(status);
+      AddDevToolsCallback(
+          base::Bind(&NotifyNavigationPreloadCompletedOnUI, status));
     }
   }
 
@@ -166,7 +168,16 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override {
+    completed_ = true;
+    // When the server returns a redirect response, we only send
+    // OnReceiveRedirect IPC and don't send OnComplete IPC. The service worker
+    // will clean up the preload request when OnReceiveRedirect() is called.
     client_->OnReceiveRedirect(redirect_info, head);
+    AddDevToolsCallback(
+        base::Bind(&NotifyNavigationPreloadResponseReceivedOnUI, url_, head));
+    ResourceRequestCompletionStatus status;
+    AddDevToolsCallback(
+        base::Bind(&NotifyNavigationPreloadCompletedOnUI, status));
   }
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
@@ -174,8 +185,10 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   }
   void OnComplete(
       const ResourceRequestCompletionStatus& completion_status) override {
-    client_->OnComplete(completion_status);
+    if (completed_)
+      return;
     completed_ = true;
+    client_->OnComplete(completion_status);
     AddDevToolsCallback(
         base::Bind(&NotifyNavigationPreloadCompletedOnUI, completion_status));
   }

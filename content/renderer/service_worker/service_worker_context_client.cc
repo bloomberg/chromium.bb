@@ -51,6 +51,7 @@
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -381,9 +382,21 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override {
+    DCHECK(!response_);
+    DCHECK(net::HttpResponseHeaders::IsRedirectResponseCode(
+        response_head.headers->response_code()));
+
+    ServiceWorkerContextClient* client =
+        ServiceWorkerContextClient::ThreadSpecificInstance();
+    if (!client)
+      return;
+    response_ = base::MakeUnique<blink::WebURLResponse>();
+    WebURLLoaderImpl::PopulateURLResponse(url_, response_head, response_.get(),
+                                          false /* report_security_info */);
+    client->OnNavigationPreloadResponse(fetch_event_id_, std::move(response_),
+                                        nullptr);
     // This will delete |this|.
-    ReportErrorToClient(
-        "Service Worker navigation preload doesn't support redirects.");
+    client->OnNavigationPreloadComplete(fetch_event_id_);
   }
 
   void OnDataDownloaded(int64_t data_length,

@@ -13,6 +13,7 @@
 #include "modules/serviceworkers/FetchRespondWithObserver.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
+#include "platform/network/NetworkUtils.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "wtf/PtrUtil.h"
@@ -133,7 +134,9 @@ void FetchEvent::onNavigationPreloadResponse(
     responseData->headerList()->append(header.key, header.value);
   }
   FetchResponseData* taintedResponse =
-      responseData->createBasicFilteredResponse();
+      NetworkUtils::isRedirectResponseCode(response->httpStatusCode())
+          ? responseData->createOpaqueRedirectFilteredResponse()
+          : responseData->createBasicFilteredResponse();
   m_preloadResponseProperty->resolve(
       Response::create(scriptState->getExecutionContext(), taintedResponse));
 }

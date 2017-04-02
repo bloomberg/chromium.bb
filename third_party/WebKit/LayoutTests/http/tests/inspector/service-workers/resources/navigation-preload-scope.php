@@ -1,7 +1,7 @@
 <?php
-if (isset($_GET['RedirectError'])) {
-  header('Location: dummy.html');
+if (isset($_GET['Redirect'])) {
   header('HTTP/1.0 302 Found');
+  header('Location: ./navigation-preload-redirected.html');
 } if (isset($_GET['BrokenChunked'])) {
   header("Content-type: text/html; charset=UTF-8");
   header("Transfer-encoding: chunked");

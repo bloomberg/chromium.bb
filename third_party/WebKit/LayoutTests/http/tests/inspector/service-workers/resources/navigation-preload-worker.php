@@ -17,12 +17,6 @@ self.addEventListener('fetch', event => {
           .catch(_ => { return new Response('dummy'); }));
       return;
     }
-    if (event.request.url.indexOf('RedirectError') != -1) {
-      event.respondWith(
-        event.preloadResponse
-          .catch(_ => { return new Response('dummy'); }));
-      return;
-    }
     if (event.preloadResponse) {
       event.respondWith(event.preloadResponse);
     }

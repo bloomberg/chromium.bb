@@ -6,6 +6,7 @@ Loading an iframe.
 onRequestStarted:
   url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php
 onResponseReceived:
+  statusCode: 200
   timing available: true
   requestHeaders['Service-Worker-Navigation-Preload']: hello
 onRequestFinished:
@@ -15,6 +16,7 @@ Loading another iframe.
 onRequestStarted:
   url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php?BrokenChunked
 onResponseReceived:
+  statusCode: 200
   timing available: true
   requestHeaders['Service-Worker-Navigation-Preload']: hello
 onRequestFinished:
@@ -23,9 +25,12 @@ The iframe loaded.
 -----------------
 Loading another iframe.
 onRequestStarted:
-  url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php?RedirectError
+  url: http://127.0.0.1:8000/inspector/service-workers/resources/navigation-preload-scope.php?Redirect
+onResponseReceived:
+  statusCode: 302
+  timing available: true
+  requestHeaders['Service-Worker-Navigation-Preload']: hello
 onRequestFinished:
-  localizedFailDescription: Navigation Preload Error
 The iframe loaded.
 -----------------
 Done
