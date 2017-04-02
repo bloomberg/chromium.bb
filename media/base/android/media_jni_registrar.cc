@@ -11,6 +11,7 @@
 #include "media/audio/android/audio_manager_android.h"
 #include "media/audio/android/audio_record_input.h"
 #include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/media_drm_storage_bridge.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_player_listener.h"
 #include "media/base/android/media_server_crash_listener.h"
@@ -21,6 +22,8 @@ static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     {"AudioManagerAndroid", AudioManagerAndroid::RegisterAudioManager},
     {"AudioRecordInput", AudioRecordInputStream::RegisterAudioRecordInput},
     {"MediaDrmBridge", MediaDrmBridge::RegisterMediaDrmBridge},
+    {"MediaDrmStorageBridge",
+     MediaDrmStorageBridge::RegisterMediaDrmStorageBridge},
     {"MediaPlayerBridge", MediaPlayerBridge::RegisterMediaPlayerBridge},
     {"MediaPlayerListener", MediaPlayerListener::RegisterMediaPlayerListener},
     {"MediaServerCrashListener",

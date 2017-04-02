@@ -7,6 +7,7 @@ package org.chromium.media;
 import android.media.MediaDrm;
 
 import org.chromium.base.Callback;
+import org.chromium.media.MediaDrmStorageBridge.PersistentInfo;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -158,6 +159,12 @@ class MediaDrmSessionManager {
         private void setKeyType(int keyType) {
             mKeyType = keyType;
         }
+
+        private PersistentInfo toPersistentInfo() {
+            assert mSessionId.keySetId() != null;
+
+            return new PersistentInfo(mSessionId.emeId(), mSessionId.keySetId(), mMimeType);
+        }
     }
 
     // Maps from DRM/EME session ID to SessionInfo. SessionInfo contains
@@ -170,9 +177,15 @@ class MediaDrmSessionManager {
     private HashMap<ByteBuffer, SessionInfo> mEmeSessionInfoMap;
     private HashMap<ByteBuffer, SessionInfo> mDrmSessionInfoMap;
 
-    public MediaDrmSessionManager() {
+    // The persistent storage to record map from EME session ID to key set ID
+    // for persistent license.
+    private MediaDrmStorageBridge mStorage;
+
+    public MediaDrmSessionManager(MediaDrmStorageBridge storage) {
         mEmeSessionInfoMap = new HashMap<>();
         mDrmSessionInfoMap = new HashMap<>();
+
+        mStorage = storage;
     }
 
     /**
@@ -185,8 +198,7 @@ class MediaDrmSessionManager {
 
         sessionId.setKeySetId(keySetId);
 
-        // TODO(yucliu): Write updated key set ID to persistent storage.
-        callback.onResult(true);
+        mStorage.saveInfo(get(sessionId).toPersistentInfo(), callback);
     }
 
     /**

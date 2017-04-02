@@ -83,6 +83,9 @@ public class MediaDrmBridge {
     // associated meta data, e.g. mime types, key types.
     private MediaDrmSessionManager mSessionManager;
 
+    // The persistent storage to record origin provisioning informations.
+    private MediaDrmStorageBridge mStorage;
+
     // The queue of all pending createSession() data.
     private ArrayDeque<PendingCreateSessionData> mPendingCreateSessionDataQueue;
 
@@ -90,6 +93,9 @@ public class MediaDrmBridge {
 
     // MediaDrmBridge is waiting for provisioning response from the server.
     private boolean mProvisioningPending;
+
+    // Boolean to track if 'ORIGIN' is set in MediaDrm.
+    private boolean mOriginSet = false;
 
     /**
      *  An equivalent of MediaDrm.KeyStatus, which is only available on M+.
@@ -196,15 +202,17 @@ public class MediaDrmBridge {
     }
 
     @TargetApi(Build.VERSION_CODES.M)
-    private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge)
-            throws android.media.UnsupportedSchemeException {
+    private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge,
+            long nativeMediaDrmStorageBridge) throws android.media.UnsupportedSchemeException {
         mSchemeUUID = schemeUUID;
         mMediaDrm = new MediaDrm(schemeUUID);
 
         mNativeMediaDrmBridge = nativeMediaDrmBridge;
         assert isNativeMediaDrmBridgeValid();
 
-        mSessionManager = new MediaDrmSessionManager();
+        mStorage = new MediaDrmStorageBridge(nativeMediaDrmStorageBridge);
+        mSessionManager = new MediaDrmSessionManager(mStorage);
+
         mPendingCreateSessionDataQueue = new ArrayDeque<PendingCreateSessionData>();
         mResetDeviceCredentialsPending = false;
         mProvisioningPending = false;
@@ -330,10 +338,11 @@ public class MediaDrmBridge {
      * @param securityOrigin Security origin. Empty value means no need for origin isolated storage.
      * @param securityLevel Security level. If empty, the default one should be used.
      * @param nativeMediaDrmBridge Native object of this class.
+     * @param nativeMediaDrmStorageBridge Native object of persistent storage.
      */
     @CalledByNative
     private static MediaDrmBridge create(byte[] schemeUUID, String securityOrigin,
-            String securityLevel, long nativeMediaDrmBridge) {
+            String securityLevel, long nativeMediaDrmBridge, long nativeMediaDrmStorageBridge) {
         UUID cryptoScheme = getUUIDFromBytes(schemeUUID);
         if (cryptoScheme == null || !MediaDrm.isCryptoSchemeSupported(cryptoScheme)) {
             return null;
@@ -341,7 +350,8 @@ public class MediaDrmBridge {
 
         MediaDrmBridge mediaDrmBridge = null;
         try {
-            mediaDrmBridge = new MediaDrmBridge(cryptoScheme, nativeMediaDrmBridge);
+            mediaDrmBridge = new MediaDrmBridge(
+                    cryptoScheme, nativeMediaDrmBridge, nativeMediaDrmStorageBridge);
             Log.d(TAG, "MediaDrmBridge successfully created.");
         } catch (android.media.UnsupportedSchemeException e) {
             Log.e(TAG, "Unsupported DRM scheme", e);
@@ -386,6 +396,7 @@ public class MediaDrmBridge {
 
         try {
             mMediaDrm.setPropertyString(ORIGIN, origin);
+            mOriginSet = true;
             return true;
         } catch (java.lang.IllegalArgumentException e) {
             Log.e(TAG, "Failed to set security origin %s", origin, e);
@@ -513,7 +524,7 @@ public class MediaDrmBridge {
             closeSessionNoException(sessionId);
             onSessionClosed(sessionId);
         }
-        mSessionManager = new MediaDrmSessionManager();
+        mSessionManager = new MediaDrmSessionManager(mStorage);
 
         // Close mMediaCryptoSession if it's open or notify MediaCrypto
         // creation failure if it's never successfully opened.
@@ -917,7 +928,23 @@ public class MediaDrmBridge {
             return;
         }
 
-        processPendingCreateSessionData();
+        if (!mOriginSet) {
+            processPendingCreateSessionData();
+            return;
+        }
+
+        mStorage.onProvisioned(new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean initSuccess) {
+                if (!initSuccess) {
+                    Log.e(TAG, "Failed to initialize storage for origin");
+                    release();
+                    return;
+                }
+
+                processPendingCreateSessionData();
+            }
+        });
     }
 
     /**

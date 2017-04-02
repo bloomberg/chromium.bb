@@ -18,7 +18,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "media/base/android/android_util.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_drm_storage_bridge.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
@@ -266,9 +268,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
 
-  // A helper method to create a JavaObjectPtr.
-  JavaObjectPtr CreateJavaObjectPtr(jobject object);
-
   // A helper method that is called when MediaCrypto is ready.
   void NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto);
 
@@ -284,6 +283,9 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
 
   // UUID of the key system.
   std::vector<uint8_t> scheme_uuid_;
+
+  // Persistent storage for session ID map.
+  MediaDrmStorageBridge storage_;
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;
