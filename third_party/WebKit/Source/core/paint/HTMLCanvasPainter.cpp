@@ -10,7 +10,6 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
 namespace blink {

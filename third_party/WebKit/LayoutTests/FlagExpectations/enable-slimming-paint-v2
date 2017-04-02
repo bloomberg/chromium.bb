@@ -953,9 +953,12 @@ Bug(none) fast/text/word-break.html [ Failure ]
 Bug(none) fast/writing-mode/border-radius-clipping-vertical-lr.html [ Failure ]
 Bug(none) fast/writing-mode/fieldsets.html [ Failure ]
 Bug(none) svg/as-background-image/tiled-background-image.html [ Crash Timeout ]
+# Mask does not work correctly
+crbug.com/707444 svg/as-background-image/svg-as-background-6.html [ Failure ]
 Bug(none) svg/as-image/image-respects-pageScaleFactor.html [ Crash Timeout ]
 
 # Subpixel differences
+Bug(none) svg/as-background-image/svg-as-background-5.html [ Failure ]
 Bug(none) svg/batik/filters/feTile.svg [ Failure ]
 Bug(none) svg/batik/filters/filterRegions.svg [ Failure ]
 Bug(none) svg/batik/masking/maskRegions.svg [ Failure ]
@@ -1383,8 +1386,3 @@ Bug(700530) compositing/overflow/paint-neg-z-order-descendants-into-scrolling-co
 Bug(700530) fast/multicol/tall-content-in-inner-with-fixed-height.html [ Failure ]
 Bug(700530) compositing/geometry/abs-position-inside-opacity.html [ Failure ]
 Bug(700530) fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-cjk.html [ Failure ]
-
-# These are failing due to compositing isolation failures in SVG
-# (likely missing code to account for CompositingRecorder).
-crbug.com/665259 svg/as-background-image/svg-as-background-5.html [ Failure ]
-crbug.com/665259 svg/as-background-image/svg-as-background-6.html [ Failure ]

@@ -12,7 +12,6 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintTiming.h"
 #include "core/paint/SVGPaintContext.h"
-#include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
 #include "wtf/Optional.h"
 

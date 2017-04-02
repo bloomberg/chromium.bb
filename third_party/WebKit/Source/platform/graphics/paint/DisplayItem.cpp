@@ -101,9 +101,7 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(PopupContainerBorder);
     DEBUG_STRING_CASE(PopupListBoxBackground);
     DEBUG_STRING_CASE(PopupListBoxRow);
-    DEBUG_STRING_CASE(PrintedContentBackground);
     DEBUG_STRING_CASE(PrintedContentDestinationLocations);
-    DEBUG_STRING_CASE(PrintedContentLineBoundary);
     DEBUG_STRING_CASE(PrintedContentPDFURLRect);
     DEBUG_STRING_CASE(Resizer);
     DEBUG_STRING_CASE(SVGClip);
@@ -168,12 +166,10 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ClipLayerForeground);
     DEBUG_STRING_CASE(ClipLayerParent);
     DEBUG_STRING_CASE(ClipLayerOverflowControls);
-    DEBUG_STRING_CASE(ClipNodeImage);
     DEBUG_STRING_CASE(ClipPopupListBoxFrame);
     DEBUG_STRING_CASE(ClipScrollbarsToBoxBounds);
     DEBUG_STRING_CASE(ClipSelectionImage);
     DEBUG_STRING_CASE(PageWidgetDelegateClip);
-    DEBUG_STRING_CASE(ClipPrintedPage);
     DEFAULT_CASE;
   }
 }
