@@ -241,6 +241,8 @@ void Performance::reportLongTask(double startTime,
                                  double endTime,
                                  ExecutionContext* taskContext,
                                  bool hasMultipleContexts) {
+  if (!frame())
+    return;
   std::pair<String, DOMWindow*> attribution = Performance::sanitizedAttribution(
       taskContext, hasMultipleContexts, frame());
   DOMWindow* culpritDomWindow = attribution.second;

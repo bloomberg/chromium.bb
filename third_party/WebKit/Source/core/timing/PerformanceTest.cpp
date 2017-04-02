@@ -41,13 +41,18 @@ class PerformanceTest : public ::testing::Test {
     m_performance->m_observerFilterOptions = PerformanceEntry::Invalid;
   }
 
-  LocalFrame* frame() const { return m_pageHolder->document().frame(); }
+  void simulateDidProcessLongTask() {
+    auto* monitor = frame()->performanceMonitor();
+    monitor->willExecuteScript(document());
+    monitor->didExecuteScript();
+    monitor->didProcessTask(nullptr, 0, 1);
+  }
+
+  LocalFrame* frame() const { return &m_pageHolder->frame(); }
 
   Document* document() const { return &m_pageHolder->document(); }
 
-  LocalFrame* anotherFrame() const {
-    return m_anotherPageHolder->document().frame();
-  }
+  LocalFrame* anotherFrame() const { return &m_anotherPageHolder->frame(); }
 
   Document* anotherDocument() const { return &m_anotherPageHolder->document(); }
 
@@ -100,6 +105,28 @@ TEST_F(PerformanceTest, SanitizedLongTaskName_CrossOrigin) {
             sanitizedAttribution(anotherDocument(), false, frame()));
 }
 
+// https://crbug.com/706798: Checks that after navigation that have replaced the
+// window object, calls to not garbage collected yet Performance belonging to
+// the old window do not cause a crash.
+TEST_F(PerformanceTest, NavigateAway) {
+  addLongTaskObserver();
+  m_performance->updateLongTaskInstrumentation();
+  EXPECT_TRUE(observingLongTasks());
+
+  // Simulate navigation commit.
+  DocumentInit init(KURL(), frame());
+  document()->shutdown();
+  frame()->setDOMWindow(LocalDOMWindow::create(*frame()));
+  frame()->domWindow()->installNewDocument(AtomicString(), init);
+
+  // m_performance is still alive, and should not crash when notified.
+  simulateDidProcessLongTask();
+}
+
+// Checks that Performance object and its fields (like PerformanceTiming)
+// function correctly after transition to another document in the same window.
+// This happens when a page opens a new window and it navigates to a same-origin
+// document.
 TEST(PerformanceLifetimeTest, SurviveContextSwitch) {
   std::unique_ptr<DummyPageHolder> pageHolder =
       DummyPageHolder::create(IntSize(800, 600));
