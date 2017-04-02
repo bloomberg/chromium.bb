@@ -35,7 +35,6 @@
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_framer_decoder_adapter.h"
 
-using std::hex;
 using std::string;
 using std::vector;
 
@@ -769,7 +768,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ != GetRstStreamSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
-        VLOG(1) << "Undefined frame flags for RST_STREAM frame: " << hex
+        VLOG(1) << "Undefined frame flags for RST_STREAM frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ = 0;
       }
@@ -789,7 +788,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
                  current_frame_length_ > GetSettingsMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ & ~SETTINGS_FLAG_ACK) {
-        VLOG(1) << "Undefined frame flags for SETTINGS frame: " << hex
+        VLOG(1) << "Undefined frame flags for SETTINGS frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ &= SETTINGS_FLAG_ACK;
       }
@@ -800,7 +799,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else {
         if (current_frame_flags_ & ~PING_FLAG_ACK) {
-          VLOG(1) << "Undefined frame flags for PING frame: " << hex
+          VLOG(1) << "Undefined frame flags for PING frame: " << std::hex
                   << static_cast<int>(current_frame_flags_);
           current_frame_flags_ &= PING_FLAG_ACK;
         }
@@ -813,7 +812,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ < GetGoAwayMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_frame_flags_ != 0) {
-          VLOG(1) << "Undefined frame flags for GOAWAY frame: " << hex
+          VLOG(1) << "Undefined frame flags for GOAWAY frame: " << std::hex
                   << static_cast<int>(current_frame_flags_);
           current_frame_flags_ = 0;
         }
@@ -832,7 +831,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
         } else if (current_frame_flags_ &
                    ~(CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
                      HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_PADDED)) {
-          VLOG(1) << "Undefined frame flags for HEADERS frame: " << hex
+          VLOG(1) << "Undefined frame flags for HEADERS frame: " << std::hex
                   << static_cast<int>(current_frame_flags_);
           current_frame_flags_ &=
               (CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
@@ -844,7 +843,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ != GetWindowUpdateSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
-        VLOG(1) << "Undefined frame flags for WINDOW_UPDATE frame: " << hex
+        VLOG(1) << "Undefined frame flags for WINDOW_UPDATE frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ = 0;
       }
@@ -853,7 +852,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ != GetBlockedSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
-        VLOG(1) << "Undefined frame flags for BLOCKED frame: " << hex
+        VLOG(1) << "Undefined frame flags for BLOCKED frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ = 0;
       }
@@ -863,7 +862,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ &
                  ~(PUSH_PROMISE_FLAG_END_PUSH_PROMISE | HEADERS_FLAG_PADDED)) {
-        VLOG(1) << "Undefined frame flags for PUSH_PROMISE frame: " << hex
+        VLOG(1) << "Undefined frame flags for PUSH_PROMISE frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ &=
             (PUSH_PROMISE_FLAG_END_PUSH_PROMISE | HEADERS_FLAG_PADDED);
@@ -873,7 +872,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ < GetContinuationMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ & ~HEADERS_FLAG_END_HEADERS) {
-        VLOG(1) << "Undefined frame flags for CONTINUATION frame: " << hex
+        VLOG(1) << "Undefined frame flags for CONTINUATION frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ &= HEADERS_FLAG_END_HEADERS;
       }
@@ -882,7 +881,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ <= GetAltSvcMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
       } else if (current_frame_flags_ != 0) {
-        VLOG(1) << "Undefined frame flags for ALTSVC frame: " << hex
+        VLOG(1) << "Undefined frame flags for ALTSVC frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ = 0;
       }
@@ -891,7 +890,7 @@ void SpdyFramer::ProcessControlFrameHeader() {
       if (current_frame_length_ != GetPrioritySize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else if (current_frame_flags_ != 0) {
-        VLOG(1) << "Undefined frame flags for PRIORITY frame: " << hex
+        VLOG(1) << "Undefined frame flags for PRIORITY frame: " << std::hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ = 0;
       }
