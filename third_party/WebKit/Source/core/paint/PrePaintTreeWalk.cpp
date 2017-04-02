@@ -135,22 +135,22 @@ void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
     context.ancestorTransformedOrRootPaintLayer = &paintLayer;
   }
 
-  const ObjectPaintProperties& ancestorPaintProperties =
-      *context.ancestorTransformedOrRootPaintLayer->layoutObject()
-           .paintProperties();
-  PropertyTreeState ancestorState =
-      *ancestorPaintProperties.localBorderBoxProperties();
+  const auto& ancestor =
+      context.ancestorTransformedOrRootPaintLayer->layoutObject();
+  PropertyTreeState ancestorState = *ancestor.localBorderBoxProperties();
 
 #ifdef CHECK_CLIP_RECTS
   ShouldRespectOverflowClipType respectOverflowClip = RespectOverflowClip;
 #endif
   if (context.ancestorTransformedOrRootPaintLayer->compositingState() ==
-          PaintsIntoOwnBacking &&
-      ancestorPaintProperties.overflowClip()) {
-    ancestorState.setClip(ancestorPaintProperties.overflowClip());
+      PaintsIntoOwnBacking) {
+    const auto* ancestorProperties = ancestor.paintProperties();
+    if (ancestorProperties && ancestorProperties->overflowClip()) {
+      ancestorState.setClip(ancestorProperties->overflowClip());
 #ifdef CHECK_CLIP_RECTS
-    respectOverflowClip = IgnoreOverflowClip;
+      respectOverflowClip = IgnoreOverflowClip;
 #endif
+    }
   }
 
 #ifdef CHECK_CLIP_RECTS

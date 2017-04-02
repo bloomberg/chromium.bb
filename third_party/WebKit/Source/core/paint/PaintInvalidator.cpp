@@ -105,8 +105,7 @@ LayoutRect PaintInvalidator::mapLocalRectToVisualRectInBacking(
       rect.moveBy(Point(object.paintOffset()));
 
     const auto* containerContentsProperties =
-        context.paintInvalidationContainer->paintProperties()
-            ->contentsProperties();
+        context.paintInvalidationContainer->contentsProperties();
 
     if (context.m_treeBuilderContext.current.transform ==
             containerContentsProperties->transform() &&
@@ -180,9 +179,7 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
     point.moveBy(object.paintOffset());
 
     const auto* containerTransform =
-        context.paintInvalidationContainer->paintProperties()
-            ->contentsProperties()
-            ->transform();
+        context.paintInvalidationContainer->contentsProperties()->transform();
     if (context.m_treeBuilderContext.current.transform != containerTransform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
       context.m_geometryMapper.sourceToDestinationRect(

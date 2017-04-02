@@ -215,8 +215,7 @@ class DraggedNodeImageBuilder {
     PaintLayerPainter(*layer).paint(builder.context(), paintingInfo, flags);
     PropertyTreeState borderBoxProperties = PropertyTreeState::root();
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-      borderBoxProperties =
-          *layer->layoutObject().paintProperties()->localBorderBoxProperties();
+      borderBoxProperties = *layer->layoutObject().localBorderBoxProperties();
     }
     return createDragImage(
         *m_localFrame, 1.0f,

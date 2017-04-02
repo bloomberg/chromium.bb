@@ -41,11 +41,10 @@ class VisualRectMappingTest : public RenderingTest {
       return;
 
     FloatRect geometryMapperRect(localRect);
-    if (object.paintProperties()) {
+    if (object.paintProperties() || object.localBorderBoxProperties()) {
       geometryMapperRect.moveBy(FloatPoint(object.paintOffset()));
       document().view()->geometryMapper().sourceToDestinationVisualRect(
-          *object.paintProperties()->localBorderBoxProperties(),
-          *ancestor.paintProperties()->contentsProperties(),
+          *object.localBorderBoxProperties(), *ancestor.contentsProperties(),
           geometryMapperRect);
       geometryMapperRect.moveBy(-FloatPoint(ancestor.paintOffset()));
     }

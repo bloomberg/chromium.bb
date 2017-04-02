@@ -209,13 +209,10 @@ LayoutRect PaintLayerClipper::localClipRect(
     premappedRect.moveBy(context.rootLayer->layoutObject().paintOffset());
 
     const auto* clipRootLayerTransform = clippingRootLayer.layoutObject()
-                                             .paintProperties()
-                                             ->localBorderBoxProperties()
+                                             .localBorderBoxProperties()
                                              ->transform();
-    const auto* layerTransform = m_layer.layoutObject()
-                                     .paintProperties()
-                                     ->localBorderBoxProperties()
-                                     ->transform();
+    const auto* layerTransform =
+        m_layer.layoutObject().localBorderBoxProperties()->transform();
     FloatRect clippedRectInLocalSpace(premappedRect);
     m_geometryMapper->sourceToDestinationRect(
         clipRootLayerTransform, layerTransform, clippedRectInLocalSpace);
@@ -263,20 +260,14 @@ void PaintLayerClipper::calculateRectsWithGeometryMapper(
     ClipRect& backgroundRect,
     ClipRect& foregroundRect,
     const LayoutPoint* offsetFromRoot) const {
-  const auto* properties = m_layer.layoutObject().paintProperties();
-  // TODO(chrishtr): fix the underlying bug that causes this situation.
-  if (!properties) {
-    backgroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
-    foregroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
-  } else {
-    calculateBackgroundClipRectWithGeometryMapper(context, backgroundRect);
-    backgroundRect.move(context.subPixelAccumulation);
-    backgroundRect.intersect(paintDirtyRect);
+  calculateBackgroundClipRectWithGeometryMapper(context, backgroundRect);
+  backgroundRect.move(context.subPixelAccumulation);
+  backgroundRect.intersect(paintDirtyRect);
 
-    calculateForegroundClipRectWithGeometryMapper(context, foregroundRect);
-    foregroundRect.move(context.subPixelAccumulation);
-    foregroundRect.intersect(paintDirtyRect);
-  }
+  calculateForegroundClipRectWithGeometryMapper(context, foregroundRect);
+  foregroundRect.move(context.subPixelAccumulation);
+  foregroundRect.intersect(paintDirtyRect);
+
   LayoutPoint offset;
   if (offsetFromRoot)
     offset = *offsetFromRoot;
@@ -415,15 +406,17 @@ void PaintLayerClipper::calculateBackgroundClipRectWithGeometryMapper(
   PropertyTreeState destinationPropertyTreeState(nullptr, nullptr, nullptr);
   initializeCommonClipRectState(context, sourcePropertyTreeState,
                                 destinationPropertyTreeState);
-  const auto* ancestorProperties =
-      context.rootLayer->layoutObject().paintProperties();
 
   if (&m_layer != context.rootLayer) {
+    auto* ancestorProperties =
+        context.rootLayer->layoutObject().paintProperties();
+    const auto* ancestorOverflowClip =
+        ancestorProperties ? ancestorProperties->overflowClip() : nullptr;
     // Set the clip of |destinationPropertyTreeState| to be inside the
     // ancestor's overflow clip, so that that clip is not applied.
     if (context.respectOverflowClip == IgnoreOverflowClip &&
-        ancestorProperties->overflowClip())
-      destinationPropertyTreeState.setClip(ancestorProperties->overflowClip());
+        ancestorOverflowClip)
+      destinationPropertyTreeState.setClip(ancestorOverflowClip);
   }
 
   // The background rect applies all clips *above* m_layer, but not the overflow
@@ -453,21 +446,22 @@ void PaintLayerClipper::initializeCommonClipRectState(
     PropertyTreeState& sourcePropertyTreeState,
     PropertyTreeState& destinationPropertyTreeState) const {
   DCHECK(m_geometryMapper);
-  const auto* properties = m_layer.layoutObject().paintProperties();
-  DCHECK(properties && properties->localBorderBoxProperties());
+  DCHECK(m_layer.layoutObject().localBorderBoxProperties());
 
-  sourcePropertyTreeState = *properties->localBorderBoxProperties();
-  const auto* ancestorProperties =
-      context.rootLayer->layoutObject().paintProperties();
-  DCHECK(ancestorProperties && ancestorProperties->localBorderBoxProperties());
+  sourcePropertyTreeState = *m_layer.layoutObject().localBorderBoxProperties();
+  DCHECK(context.rootLayer->layoutObject().localBorderBoxProperties());
   destinationPropertyTreeState =
-      *ancestorProperties->localBorderBoxProperties();
+      *context.rootLayer->layoutObject().localBorderBoxProperties();
+
+  auto* ancestorProperties =
+      context.rootLayer->layoutObject().paintProperties();
+  const auto* ancestorCssClip =
+      ancestorProperties ? ancestorProperties->cssClip() : nullptr;
   // CSS clip of the root is always applied.
-  if (ancestorProperties->cssClip()) {
+  if (ancestorCssClip) {
     DCHECK(destinationPropertyTreeState.clip() ==
            ancestorProperties->cssClip());
-    destinationPropertyTreeState.setClip(
-        ancestorProperties->cssClip()->parent());
+    destinationPropertyTreeState.setClip(ancestorCssClip->parent());
   }
 }
 
@@ -480,25 +474,26 @@ void PaintLayerClipper::calculateForegroundClipRectWithGeometryMapper(
   initializeCommonClipRectState(context, sourcePropertyTreeState,
                                 destinationPropertyTreeState);
   const auto* properties = m_layer.layoutObject().paintProperties();
-  const auto* ancestorProperties =
-      context.rootLayer->layoutObject().paintProperties();
 
   if (&m_layer == context.rootLayer) {
     // Set the overflow clip for |sourcePropertyTreeState| so that it differs
     // from |destinationPropertyTreeState| in its clip.
-    if (context.respectOverflowClip == RespectOverflowClip &&
+    if (context.respectOverflowClip == RespectOverflowClip && properties &&
         properties->overflowClip())
       sourcePropertyTreeState.setClip(properties->overflowClip());
   } else {
+    const auto* ancestorProperties =
+        context.rootLayer->layoutObject().paintProperties();
+
     // Set the clip of |destinationPropertyTreeState| to be inside the
     // ancestor's overflow clip, so that that clip is not applied.
     if (context.respectOverflowClip == IgnoreOverflowClip &&
-        ancestorProperties->overflowClip())
+        ancestorProperties && ancestorProperties->overflowClip())
       destinationPropertyTreeState.setClip(ancestorProperties->overflowClip());
 
     // Set the overflow clip for |sourcePropertyTreeState| so that it differs
     // from destinationPropertyTreeState| in its clip.
-    if (properties->overflowClip())
+    if (properties && properties->overflowClip())
       sourcePropertyTreeState.setClip(properties->overflowClip());
   }
 
@@ -535,7 +530,8 @@ void PaintLayerClipper::calculateBackgroundClipRect(
     ClipRect& output) const {
   if (m_geometryMapper) {
     // TODO(chrishtr): fix the underlying bug that causes this situation.
-    if (!m_layer.layoutObject().paintProperties()) {
+    if (!m_layer.layoutObject().paintProperties() &&
+        !m_layer.layoutObject().localBorderBoxProperties()) {
       output.setRect(FloatClipRect());
       return;
     }

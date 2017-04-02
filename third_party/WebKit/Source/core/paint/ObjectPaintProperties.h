@@ -20,17 +20,10 @@
 
 namespace blink {
 
-// This class stores the paint property nodes associated with a LayoutObject.
-// The object owns each of the property nodes directly set here (e.g, m_cssClip,
-// m_paintOffsetTranslation, etc.) and RefPtrs are only used to harden against
-// use-after-free bugs. These paint properties are built/updated by
-// PaintPropertyTreeBuilder during the PrePaint lifecycle step.
-//
-// There are two groups of information stored on ObjectPaintProperties:
-// 1. The set of property nodes created locally and owned by this LayoutObject.
-// 2. The set of property nodes (inherited, or created locally) that can be used
-//    along with LayoutObject::paintOffset to paint the border box of this
-//    LayoutObject (see: localBorderBoxProperties).
+// This class stores the paint property nodes created by a LayoutObject. The
+// object owns each of the property nodes directly and RefPtrs are only used to
+// harden against use-after-free bugs. These paint properties are built/updated
+// by PaintPropertyTreeBuilder during the PrePaint lifecycle step.
 //
 // [update & clear implementation note] This class has update[property](...) and
 // clear[property]() helper functions for efficiently creating and updating
@@ -58,8 +51,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // |                                    for example, transform or
   // |                                    position:fixed.
   // +---[ transform ]                    The space created by CSS transform.
-  //     |                                This is the local border box space,
-  //     |                                see: localBorderBoxProperties below.
+  //     |                                This is the local border box space.
   //     +---[ perspective ]              The space created by CSS perspective.
   //     |   +---[ svgLocalToBorderBoxTransform ] Additional transform for
   //                                      children of the outermost root SVG.
@@ -139,58 +131,13 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_overflowClip.get();
   }
 
-  // This is a complete set of property nodes that should be used as a starting
-  // point to paint this layout object. This is cached because some properties
-  // inherit from the containing block chain instead of the painting parent and
-  // cannot be derived in O(1) during the paint walk. For example:
-  // <div style='opacity: 0.3;'/> would have a propertyTreeState.effect()
-  // with opacity of 0.3 which was created by the div itself. Note that
-  // propertyTreeState.transform() would not be null but would instead point to
-  // the transform space setup by div's ancestors.
-  const PropertyTreeState* localBorderBoxProperties() const {
-    return m_localBorderBoxProperties.get();
-  }
-
   // This is the complete set of property nodes that can be used to paint the
-  // contents of this object. It is similar to localBorderBoxProperties but
-  // includes properties (e.g., overflow clip, scroll translation) that apply to
-  // contents. This is suitable for paint invalidation.
-  const PropertyTreeState* contentsProperties() const {
-    if (!m_contentsProperties) {
-      if (!m_localBorderBoxProperties)
-        return nullptr;
-      updateContentsProperties();
-    } else {
-#if DCHECK_IS_ON()
-      // Check if the cached m_contentsProperties is valid.
-      DCHECK(m_localBorderBoxProperties);
-      std::unique_ptr<PropertyTreeState> oldProperties =
-          std::move(m_contentsProperties);
-      updateContentsProperties();
-      DCHECK(*m_contentsProperties == *oldProperties);
-#endif
-    }
-    return m_contentsProperties.get();
-  };
-
-  void updateLocalBorderBoxProperties(
-      const TransformPaintPropertyNode* transform,
-      const ClipPaintPropertyNode* clip,
-      const EffectPaintPropertyNode* effect) {
-    if (m_localBorderBoxProperties) {
-      m_localBorderBoxProperties->setTransform(transform);
-      m_localBorderBoxProperties->setClip(clip);
-      m_localBorderBoxProperties->setEffect(effect);
-    } else {
-      m_localBorderBoxProperties = WTF::wrapUnique(
-          new PropertyTreeState(PropertyTreeState(transform, clip, effect)));
-    }
-    m_contentsProperties = nullptr;
-  }
-  void clearLocalBorderBoxProperties() {
-    m_localBorderBoxProperties = nullptr;
-    m_contentsProperties = nullptr;
-  }
+  // contents of this object. It is similar to the local border box properties
+  // but also includes properties (e.g., overflow clip, scroll translation) that
+  // apply to an object's contents.
+  static std::unique_ptr<PropertyTreeState> contentsProperties(
+      PropertyTreeState* localBorderBoxProperties,
+      ObjectPaintProperties*);
 
   // The following clear* functions return true if the property tree structure
   // changes (an existing node was deleted), and false otherwise. See the
@@ -320,10 +267,6 @@ class CORE_EXPORT ObjectPaintProperties {
       cloned->m_scrollTranslation = m_scrollTranslation->clone();
     if (m_scrollbarPaintOffset)
       cloned->m_scrollbarPaintOffset = m_scrollbarPaintOffset->clone();
-    if (m_localBorderBoxProperties) {
-      cloned->m_localBorderBoxProperties =
-          WTF::wrapUnique(new PropertyTreeState(*m_localBorderBoxProperties));
-    }
     return cloned;
   }
 #endif
@@ -375,9 +318,6 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> m_svgLocalToBorderBoxTransform;
   RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
   RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
-
-  std::unique_ptr<PropertyTreeState> m_localBorderBoxProperties;
-  mutable std::unique_ptr<PropertyTreeState> m_contentsProperties;
 };
 
 }  // namespace blink

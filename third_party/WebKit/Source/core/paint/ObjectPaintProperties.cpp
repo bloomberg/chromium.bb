@@ -6,21 +6,27 @@
 
 namespace blink {
 
-void ObjectPaintProperties::updateContentsProperties() const {
-  DCHECK(m_localBorderBoxProperties);
-  DCHECK(!m_contentsProperties);
+std::unique_ptr<PropertyTreeState> ObjectPaintProperties::contentsProperties(
+    PropertyTreeState* localBorderBoxProperties,
+    ObjectPaintProperties* paintProperties) {
+  if (!localBorderBoxProperties)
+    return nullptr;
 
-  m_contentsProperties =
-      WTF::makeUnique<PropertyTreeState>(*m_localBorderBoxProperties);
+  std::unique_ptr<PropertyTreeState> contents =
+      WTF::makeUnique<PropertyTreeState>(*localBorderBoxProperties);
 
-  if (scrollTranslation())
-    m_contentsProperties->setTransform(scrollTranslation());
-  if (overflowClip())
-    m_contentsProperties->setClip(overflowClip());
-  else if (cssClip())
-    m_contentsProperties->setClip(cssClip());
+  if (paintProperties) {
+    if (paintProperties->scrollTranslation())
+      contents->setTransform(paintProperties->scrollTranslation());
+    if (paintProperties->overflowClip())
+      contents->setClip(paintProperties->overflowClip());
+    else if (paintProperties->cssClip())
+      contents->setClip(paintProperties->cssClip());
+  }
 
   // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
+
+  return contents;
 }
 
 }  // namespace blink

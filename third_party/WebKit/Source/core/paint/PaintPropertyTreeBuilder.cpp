@@ -684,14 +684,13 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(
   if (!object.needsPaintPropertyUpdate() && !context.forceSubtreeUpdate)
     return;
 
-  // We need localBorderBoxProperties for layered objects only.
+  // We only need to cache the local border box properties for layered objects.
   if (!object.hasLayer()) {
-    if (auto* properties = object.getMutableForPainting().paintProperties())
-      properties->clearLocalBorderBoxProperties();
+    object.getMutableForPainting().clearLocalBorderBoxProperties();
   } else {
-    auto& properties = object.getMutableForPainting().ensurePaintProperties();
-    properties.updateLocalBorderBoxProperties(
+    PropertyTreeState localBorderBox = PropertyTreeState(
         context.current.transform, context.current.clip, context.currentEffect);
+    object.getMutableForPainting().setLocalBorderBoxProperties(localBorderBox);
   }
 }
 

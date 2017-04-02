@@ -266,14 +266,12 @@ PaintResult PaintLayerPainter::paintLayerContents(
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
       RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
       m_paintLayer.layoutObject().isLayoutView()) {
-    const auto* objectPaintProperties =
-        m_paintLayer.layoutObject().paintProperties();
-    DCHECK(objectPaintProperties &&
-           objectPaintProperties->localBorderBoxProperties());
+    const auto* localBorderBoxProperties =
+        m_paintLayer.layoutObject().localBorderBoxProperties();
+    DCHECK(localBorderBoxProperties);
     PaintChunkProperties properties(
         context.getPaintController().currentPaintChunkProperties());
-    properties.propertyTreeState =
-        *objectPaintProperties->localBorderBoxProperties();
+    properties.propertyTreeState = *localBorderBoxProperties;
     properties.backfaceHidden = m_paintLayer.layoutObject().hasHiddenBackface();
     scopedPaintChunkProperties.emplace(context.getPaintController(),
                                        m_paintLayer, properties);
@@ -495,14 +493,12 @@ PaintResult PaintLayerPainter::paintLayerContents(
     // the top of this method, in scopedPaintChunkProperties.
     DCHECK(!(RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
              m_paintLayer.layoutObject().isLayoutView()));
-    const auto* objectPaintProperties =
-        m_paintLayer.layoutObject().paintProperties();
-    DCHECK(objectPaintProperties &&
-           objectPaintProperties->localBorderBoxProperties());
+    const auto* localBorderBoxProperties =
+        m_paintLayer.layoutObject().localBorderBoxProperties();
+    DCHECK(localBorderBoxProperties);
     PaintChunkProperties properties(
         context.getPaintController().currentPaintChunkProperties());
-    properties.propertyTreeState =
-        *objectPaintProperties->localBorderBoxProperties();
+    properties.propertyTreeState = *localBorderBoxProperties;
     properties.backfaceHidden = m_paintLayer.layoutObject().hasHiddenBackface();
     contentScopedPaintChunkProperties.emplace(context.getPaintController(),
                                               m_paintLayer, properties);

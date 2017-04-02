@@ -85,6 +85,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
@@ -3561,6 +3562,48 @@ ObjectPaintProperties& LayoutObject::RarePaintData::ensurePaintProperties() {
   if (!m_paintProperties)
     m_paintProperties = ObjectPaintProperties::create();
   return *m_paintProperties.get();
+}
+
+void LayoutObject::RarePaintData::clearLocalBorderBoxProperties() {
+  m_localBorderBoxProperties = nullptr;
+
+  // The contents properties are based on the border box so we need to clear
+  // the cached value.
+  m_contentsProperties = nullptr;
+}
+
+void LayoutObject::RarePaintData::setLocalBorderBoxProperties(
+    PropertyTreeState& state) {
+  if (!m_localBorderBoxProperties)
+    m_localBorderBoxProperties = WTF::makeUnique<PropertyTreeState>(state);
+  else
+    *m_localBorderBoxProperties = state;
+
+  // The contents properties are based on the border box so we need to clear
+  // the cached value.
+  m_contentsProperties = nullptr;
+}
+
+const PropertyTreeState* LayoutObject::RarePaintData::contentsProperties()
+    const {
+  if (!m_contentsProperties) {
+    if (m_localBorderBoxProperties) {
+      m_contentsProperties = ObjectPaintProperties::contentsProperties(
+          m_localBorderBoxProperties.get(), m_paintProperties.get());
+    }
+  } else {
+#if DCHECK_IS_ON()
+    // Check that the cached contents properties are valid by checking that they
+    // do not change if recalculated.
+    DCHECK(m_localBorderBoxProperties);
+    std::unique_ptr<PropertyTreeState> oldProperties =
+        std::move(m_contentsProperties);
+    m_contentsProperties = ObjectPaintProperties::contentsProperties(
+        m_localBorderBoxProperties.get(), m_paintProperties.get());
+    DCHECK(*m_contentsProperties == *oldProperties);
+#endif
+  }
+  return m_contentsProperties.get();
 }
 
 LayoutObject::RarePaintData& LayoutObject::ensureRarePaintData() {

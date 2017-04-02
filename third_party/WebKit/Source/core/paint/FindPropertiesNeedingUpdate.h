@@ -118,6 +118,11 @@ class FindObjectPropertiesNeedingUpdateScope {
 
     if (const auto* properties = m_object.paintProperties())
       m_originalProperties = properties->clone();
+
+    if (const auto* localBorderBox = m_object.localBorderBoxProperties()) {
+      m_originalLocalBorderBoxProperties =
+          WTF::wrapUnique(new PropertyTreeState(*localBorderBox));
+    }
   }
 
   ~FindObjectPropertiesNeedingUpdateScope() {
@@ -169,25 +174,30 @@ class FindObjectPropertiesNeedingUpdateScope {
       DCHECK_OBJECT_PROPERTY_EQ(m_object,
                                 m_originalProperties->scrollbarPaintOffset(),
                                 objectProperties->scrollbarPaintOffset());
-      const auto* originalBorderBox =
-          m_originalProperties->localBorderBoxProperties();
-      const auto* objectBorderBox =
-          objectProperties->localBorderBoxProperties();
-      if (originalBorderBox && objectBorderBox) {
-        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->transform(),
-                                  objectBorderBox->transform());
-        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->clip(),
-                                  objectBorderBox->clip());
-        DCHECK_OBJECT_PROPERTY_EQ(m_object, originalBorderBox->effect(),
-                                  objectBorderBox->effect());
-      } else {
-        DCHECK_EQ(!!originalBorderBox, !!objectBorderBox)
-            << " Object: " << m_object.debugName();
-      }
     } else {
       DCHECK_EQ(!!m_originalProperties, !!objectProperties)
           << " Object: " << m_object.debugName();
     }
+
+    const auto* objectBorderBox = m_object.localBorderBoxProperties();
+    if (m_originalLocalBorderBoxProperties && objectBorderBox) {
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalLocalBorderBoxProperties->transform(),
+                                objectBorderBox->transform());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalLocalBorderBoxProperties->clip(),
+                                objectBorderBox->clip());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalLocalBorderBoxProperties->effect(),
+                                objectBorderBox->effect());
+    } else {
+      DCHECK_EQ(!!m_originalLocalBorderBoxProperties, !!objectBorderBox)
+          << " Object: " << m_object.debugName();
+    }
+
+    // Instead of checking that the contents properties are unchanged here,
+    // we check them on every access in LayoutObject::contentsProperties.
+
     // Restore original clean bit.
     m_object.getMutableForPainting().clearNeedsPaintPropertyUpdateForTesting();
   }
@@ -198,6 +208,7 @@ class FindObjectPropertiesNeedingUpdateScope {
   bool m_neededForcedSubtreeUpdate;
   LayoutPoint m_originalPaintOffset;
   std::unique_ptr<const ObjectPaintProperties> m_originalProperties;
+  std::unique_ptr<const PropertyTreeState> m_originalLocalBorderBoxProperties;
 };
 
 }  // namespace blink

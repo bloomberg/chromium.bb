@@ -338,20 +338,22 @@ bool PaintLayer::sticksToViewport() const {
   // An option for improving this is to cache the nearest scroll node in
   // the local border box properties.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    const auto* viewProperties = layoutObject().view()->paintProperties();
+    const auto* viewBorderBoxProperties =
+        layoutObject().view()->localBorderBoxProperties();
     const ScrollPaintPropertyNode* ancestorTargetScrollNode;
     if (layoutObject().style()->position() == EPosition::kFixed) {
-      ancestorTargetScrollNode = viewProperties->localBorderBoxProperties()
-                                     ->transform()
-                                     ->findEnclosingScrollNode();
+      ancestorTargetScrollNode =
+          viewBorderBoxProperties->transform()->findEnclosingScrollNode();
     } else {
-      ancestorTargetScrollNode = viewProperties->contentsProperties()
+      ancestorTargetScrollNode = layoutObject()
+                                     .view()
+                                     ->contentsProperties()
                                      ->transform()
                                      ->findEnclosingScrollNode();
     }
 
-    const auto* properties = layoutObject().paintProperties();
-    const auto* transform = properties->localBorderBoxProperties()->transform();
+    const auto* transform =
+        layoutObject().localBorderBoxProperties()->transform();
     return transform->findEnclosingScrollNode() == ancestorTargetScrollNode;
   }
 
