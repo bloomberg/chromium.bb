@@ -6,7 +6,6 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/InterfaceProvider.h"
 #include "wtf/Functional.h"
 
@@ -63,8 +62,6 @@ void InstalledAppController::getInstalledRelatedApps(
 void InstalledAppController::provideTo(
     LocalFrame& frame,
     WebRelatedAppsFetcher* relatedAppsFetcher) {
-  DCHECK(RuntimeEnabledFeatures::installedAppEnabled());
-
   InstalledAppController* controller =
       new InstalledAppController(frame, relatedAppsFetcher);
   Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);

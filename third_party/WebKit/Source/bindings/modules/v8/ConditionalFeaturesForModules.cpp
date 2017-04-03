@@ -52,6 +52,14 @@ void installConditionalFeaturesForModules(
   v8::Isolate* isolate = scriptState->isolate();
   const DOMWrapperWorld& world = scriptState->world();
   if (wrapperTypeInfo == &V8Navigator::wrapperTypeInfo) {
+    // Mimics the [SecureContext] extended attribute. Work-around for
+    // https://crbug.com/695123.
+    if (OriginTrials::installedAppEnabled(executionContext) &&
+        executionContext->isSecureContext()) {
+      V8NavigatorPartial::installInstalledApp(isolate, world,
+                                              v8::Local<v8::Object>(),
+                                              prototypeObject, interfaceObject);
+    }
     if (OriginTrials::webShareEnabled(executionContext)) {
       V8NavigatorPartial::installWebShare(isolate, world,
                                           v8::Local<v8::Object>(),
@@ -176,6 +184,16 @@ void installPendingConditionalFeatureForModules(
     V8WindowPartial::installImageCapture(isolate, world, globalInstanceObject,
                                          v8::Local<v8::Object>(),
                                          v8::Local<v8::Function>());
+    return;
+  }
+  if (feature == "InstalledApp") {
+    if (contextData->getExistingConstructorAndPrototypeForType(
+            &V8Navigator::wrapperTypeInfo, &prototypeObject,
+            &interfaceObject)) {
+      V8NavigatorPartial::installInstalledApp(isolate, world,
+                                              v8::Local<v8::Object>(),
+                                              prototypeObject, interfaceObject);
+    }
     return;
   }
   if (feature == "ServiceWorkerNavigationPreload") {

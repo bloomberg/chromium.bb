@@ -504,6 +504,7 @@
     },
     {
       name: "InstalledApp",
+      origin_trial_feature_name: "InstalledApp",
       status: "experimental",
     },
     {

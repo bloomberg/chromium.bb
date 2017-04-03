@@ -10,7 +10,7 @@
 // https://crbug.com/687444.
 [
     NoInterfaceObject,
-    RuntimeEnabled=InstalledApp
+    OriginTrialEnabled=InstalledApp
 ] interface RelatedApplication {
     readonly attribute DOMString platform;
     readonly attribute DOMString url;

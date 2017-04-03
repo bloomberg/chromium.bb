@@ -6,7 +6,11 @@
 // https://github.com/WICG/get-installed-related-apps/blob/master/EXPLAINER.md
 
 [
-    RuntimeEnabled=InstalledApp,
+    OriginTrialEnabled=InstalledApp,
 ] partial interface Navigator {
-    [SecureContext, CallWith=ScriptState, Measure] Promise<RelatedApplication> getInstalledRelatedApps();
+    // TODO(mgiuca): Add [SecureContext] to this method. Currently prevented due
+    // to clash with OriginTrialEnabled (so it is manually checked in the method
+    // installation code instead). This can be resolved either when
+    // OriginTrialEnabled is removed, or https://crbug.com/695123 is fixed.
+    [CallWith=ScriptState, Measure] Promise<RelatedApplication> getInstalledRelatedApps();
 };
