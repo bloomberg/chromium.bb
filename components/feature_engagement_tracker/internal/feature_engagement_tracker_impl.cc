@@ -26,16 +26,12 @@ FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
 
 FeatureEngagementTrackerImpl::~FeatureEngagementTrackerImpl() = default;
 
-void FeatureEngagementTrackerImpl::Event(const base::Feature& feature,
-                                         const std::string& precondition) {
+void FeatureEngagementTrackerImpl::NotifyEvent(const std::string& event) {
   // TODO(nyquist): Track this event.
 }
 
-void FeatureEngagementTrackerImpl::Used(const base::Feature& feature) {
-  // TODO(nyquist): Track this event.
-}
-
-bool FeatureEngagementTrackerImpl::Trigger(const base::Feature& feature) {
+bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
+    const base::Feature& feature) {
   bool should_trigger =
       !has_shown_enlightenment_ && base::FeatureList::IsEnabled(feature);
   has_shown_enlightenment_ |= should_trigger;

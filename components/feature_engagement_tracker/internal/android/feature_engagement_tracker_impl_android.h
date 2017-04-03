@@ -44,16 +44,13 @@ class FeatureEngagementTrackerImplAndroid
   }
 
   // FeatureEngagementTracker JNI bridge implementation.
-  virtual void Event(JNIEnv* env,
-                     const base::android::JavaRef<jobject>& jobj,
-                     const base::android::JavaParamRef<jstring>& jfeature,
-                     const base::android::JavaParamRef<jstring>& jprecondition);
-  virtual void Used(JNIEnv* env,
-                    const base::android::JavaRef<jobject>& jobj,
-                    const base::android::JavaParamRef<jstring>& jfeature);
-  virtual bool Trigger(JNIEnv* env,
-                       const base::android::JavaRef<jobject>& jobj,
-                       const base::android::JavaParamRef<jstring>& jfeature);
+  virtual void NotifyEvent(JNIEnv* env,
+                           const base::android::JavaRef<jobject>& jobj,
+                           const base::android::JavaParamRef<jstring>& jevent);
+  virtual bool ShouldTriggerHelpUI(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jfeature);
   virtual void Dismissed(JNIEnv* env,
                          const base::android::JavaRef<jobject>& jobj);
   virtual void AddOnInitializedCallback(

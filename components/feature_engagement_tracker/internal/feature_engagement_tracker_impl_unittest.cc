@@ -27,9 +27,9 @@ TEST(FeatureEngagementTrackerImplTest, EnabledFeatureShouldTriggerOnce) {
   std::vector<const base::Feature*> features = {&kTestFeatureFoo};
   FeatureEngagementTrackerImpl tracker(features);
 
-  // Only the first call to Trigger() should lead to enlightenment.
-  EXPECT_TRUE(tracker.Trigger(kTestFeatureFoo));
-  EXPECT_FALSE(tracker.Trigger(kTestFeatureFoo));
+  // Only the first call to ShouldTriggerHelpUI() should lead to enlightenment.
+  EXPECT_TRUE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
 }
 
 TEST(FeatureEngagementTrackerImplTest, OnlyEnabledFeaturesShouldTrigger) {
@@ -45,8 +45,8 @@ TEST(FeatureEngagementTrackerImplTest, OnlyEnabledFeaturesShouldTrigger) {
   // kTestFeatureBar is disabled. Ordering disabled feature first to ensure this
   // captures a different behavior than the
   // OnlyOneFeatureShouldTriggerPerSession test below.
-  EXPECT_FALSE(tracker.Trigger(kTestFeatureBar));
-  EXPECT_TRUE(tracker.Trigger(kTestFeatureFoo));
+  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureBar));
+  EXPECT_TRUE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
 }
 
 TEST(FeatureEngagementTrackerImplTest, OnlyOneFeatureShouldTriggerPerSession) {
@@ -59,8 +59,8 @@ TEST(FeatureEngagementTrackerImplTest, OnlyOneFeatureShouldTriggerPerSession) {
   FeatureEngagementTrackerImpl tracker(features);
 
   // Only one feature should get to show enlightenment.
-  EXPECT_TRUE(tracker.Trigger(kTestFeatureFoo));
-  EXPECT_FALSE(tracker.Trigger(kTestFeatureBar));
+  EXPECT_TRUE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureBar));
 }
 
 TEST(FeatureEngagementTrackerImplTest, NeverTriggerWhenAllFeaturesDisabled) {
@@ -73,8 +73,8 @@ TEST(FeatureEngagementTrackerImplTest, NeverTriggerWhenAllFeaturesDisabled) {
   FeatureEngagementTrackerImpl tracker(features);
 
   // No features should get to show enlightenment.
-  EXPECT_FALSE(tracker.Trigger(kTestFeatureFoo));
-  EXPECT_FALSE(tracker.Trigger(kTestFeatureBar));
+  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureFoo));
+  EXPECT_FALSE(tracker.ShouldTriggerHelpUI(kTestFeatureBar));
 }
 
 }  // namespace feature_engagement_tracker

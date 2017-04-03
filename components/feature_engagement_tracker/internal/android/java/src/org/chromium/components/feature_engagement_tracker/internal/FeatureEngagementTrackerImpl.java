@@ -30,21 +30,15 @@ public class FeatureEngagementTrackerImpl implements FeatureEngagementTracker {
     }
 
     @Override
-    public void event(String feature, String precondition) {
+    public void notifyEvent(String event) {
         assert mNativePtr != 0;
-        nativeEvent(mNativePtr, feature, precondition);
+        nativeNotifyEvent(mNativePtr, event);
     }
 
     @Override
-    public void used(String feature) {
+    public boolean shouldTriggerHelpUI(String feature) {
         assert mNativePtr != 0;
-        nativeUsed(mNativePtr, feature);
-    }
-
-    @Override
-    public boolean trigger(String feature) {
-        assert mNativePtr != 0;
-        return nativeTrigger(mNativePtr, feature);
+        return nativeShouldTriggerHelpUI(mNativePtr, feature);
     }
 
     @Override
@@ -70,10 +64,9 @@ public class FeatureEngagementTrackerImpl implements FeatureEngagementTracker {
         return mNativePtr;
     }
 
-    private native void nativeEvent(
-            long nativeFeatureEngagementTrackerImplAndroid, String feature, String precondition);
-    private native void nativeUsed(long nativeFeatureEngagementTrackerImplAndroid, String feature);
-    private native boolean nativeTrigger(
+    private native void nativeNotifyEvent(
+            long nativeFeatureEngagementTrackerImplAndroid, String event);
+    private native boolean nativeShouldTriggerHelpUI(
             long nativeFeatureEngagementTrackerImplAndroid, String feature);
     private native void nativeDismissed(long nativeFeatureEngagementTrackerImplAndroid);
     private native void nativeAddOnInitializedCallback(

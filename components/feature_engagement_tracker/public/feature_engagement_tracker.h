@@ -47,19 +47,16 @@ class FeatureEngagementTracker : public KeyedService {
       const base::FilePath& storage_dir,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
 
-  // Must be called whenever an event related to a precondition happens.
-  virtual void Event(const base::Feature& feature,
-                     const std::string& precondition) = 0;
-
-  // Must be called whenever a feature has been used.
-  virtual void Used(const base::Feature& feature) = 0;
+  // Must be called whenever an event happens.
+  virtual void NotifyEvent(const std::string& event) = 0;
 
   // This function must be called whenever the triggering condition for a
-  // specific feature happens. Returns true iff the display of feature
-  // enlightenment must happen.
+  // specific feature happens. Returns true iff the display of the in-product
+  // help must happen.
   // If |true| is returned, the caller *must* call Dismissed() when display
   // of feature enlightenment ends.
-  virtual bool Trigger(const base::Feature& feature) WARN_UNUSED_RESULT = 0;
+  virtual bool ShouldTriggerHelpUI(const base::Feature& feature)
+      WARN_UNUSED_RESULT = 0;
 
   // Must be called after display of feature enlightenment finishes.
   virtual void Dismissed() = 0;

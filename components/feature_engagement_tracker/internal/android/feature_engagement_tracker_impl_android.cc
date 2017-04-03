@@ -96,36 +96,23 @@ FeatureEngagementTrackerImplAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
 }
 
-void FeatureEngagementTrackerImplAndroid::Event(
+void FeatureEngagementTrackerImplAndroid::NotifyEvent(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj,
-    const base::android::JavaParamRef<jstring>& jfeature,
-    const base::android::JavaParamRef<jstring>& jprecondition) {
-  std::string feature = ConvertJavaStringToUTF8(env, jfeature);
-  DCHECK(features_.find(feature) != features_.end());
-
-  std::string precondition = ConvertJavaStringToUTF8(env, jprecondition);
-  feature_engagement_tracker_impl_->Event(*features_[feature], precondition);
+    const base::android::JavaParamRef<jstring>& jevent) {
+  std::string event = ConvertJavaStringToUTF8(env, jevent);
+  feature_engagement_tracker_impl_->NotifyEvent(event);
 }
 
-void FeatureEngagementTrackerImplAndroid::Used(
+bool FeatureEngagementTrackerImplAndroid::ShouldTriggerHelpUI(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj,
     const base::android::JavaParamRef<jstring>& jfeature) {
   std::string feature = ConvertJavaStringToUTF8(env, jfeature);
   DCHECK(features_.find(feature) != features_.end());
 
-  feature_engagement_tracker_impl_->Used(*features_[feature]);
-}
-
-bool FeatureEngagementTrackerImplAndroid::Trigger(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>& jobj,
-    const base::android::JavaParamRef<jstring>& jfeature) {
-  std::string feature = ConvertJavaStringToUTF8(env, jfeature);
-  DCHECK(features_.find(feature) != features_.end());
-
-  return feature_engagement_tracker_impl_->Trigger(*features_[feature]);
+  return feature_engagement_tracker_impl_->ShouldTriggerHelpUI(
+      *features_[feature]);
 }
 
 void FeatureEngagementTrackerImplAndroid::Dismissed(

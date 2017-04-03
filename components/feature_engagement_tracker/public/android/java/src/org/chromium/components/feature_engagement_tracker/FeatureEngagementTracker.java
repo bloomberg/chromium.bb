@@ -16,25 +16,19 @@ import org.chromium.base.Callback;
  */
 public interface FeatureEngagementTracker {
     /**
-     * Must be called whenever an event related to a precondition happens.
+     * Must be called whenever an event happens.
      */
-    void event(String feature, String precondition);
+    void notifyEvent(String event);
 
     /**
-     * Must be called whenever a feature has been used.
-     */
-    void used(String feature);
-
-    /**
-     * This function must be called whenever the triggering condition for a
-     * specific feature happens. Returns true iff the display of feature
-     * enlightenment must happen.
+     * This function must be called whenever the triggering condition for a specific feature
+     * happens. Returns true iff the display of the in-product help must happen.
      * If {@code true} is returned, the caller *must* call {@link #dismissed()} when display
      * of feature enlightenment ends.
      * @return whether feature enlightenment should be displayed.
      */
     @CheckResult
-    boolean trigger(String feature);
+    boolean shouldTriggerHelpUI(String feature);
 
     /**
      * Must be called after display of feature enlightenment finishes.
