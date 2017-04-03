@@ -4322,7 +4322,16 @@ TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
 }
 #endif
 
-TEST_F(ExtensionServiceTest, UpdatingPendingExternalExtensionWithFlags) {
+// Crashes on Linux/CrOS.  https://crbug.com/703712
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_UpdatingPendingExternalExtensionWithFlags \
+  DISABLED_UpdatingPendingExternalExtensionWithFlags
+#else
+#define MAYBE_UpdatingPendingExternalExtensionWithFlags \
+  UpdatingPendingExternalExtensionWithFlags
+#endif
+
+TEST_F(ExtensionServiceTest, MAYBE_UpdatingPendingExternalExtensionWithFlags) {
   // Regression test for crbug.com/627522
   const char kPrefFromBookmark[] = "from_bookmark";
 
