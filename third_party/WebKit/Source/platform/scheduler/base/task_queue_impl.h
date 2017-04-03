@@ -254,8 +254,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     // main thread, so it should be locked before accessing from other threads.
     TaskQueueManager* task_queue_manager;
     TimeDomain* time_domain;
-
-    WTF::Deque<Task> immediate_incoming_queue;
   };
 
   struct MainThreadOnly {
@@ -319,7 +317,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   // Can be called from any thread.
   WTF::Deque<TaskQueueImpl::Task> TakeImmediateIncomingQueue();
 
-  void TraceQueueSize(bool is_locked) const;
+  void TraceQueueSize() const;
   static void QueueAsValueInto(const WTF::Deque<Task>& queue,
                                base::trace_event::TracedValue* state);
   static void QueueAsValueInto(const std::priority_queue<Task>& queue,
@@ -358,6 +356,17 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   const MainThreadOnly& main_thread_only() const {
     DCHECK(main_thread_checker_.CalledOnValidThread());
     return main_thread_only_;
+  }
+
+  mutable base::Lock immediate_incoming_queue_lock_;
+  WTF::Deque<Task> immediate_incoming_queue_;
+  WTF::Deque<Task>& immediate_incoming_queue() {
+    immediate_incoming_queue_lock_.AssertAcquired();
+    return immediate_incoming_queue_;
+  }
+  const WTF::Deque<Task>& immediate_incoming_queue() const {
+    immediate_incoming_queue_lock_.AssertAcquired();
+    return immediate_incoming_queue_;
   }
 
   const bool should_monitor_quiescence_;

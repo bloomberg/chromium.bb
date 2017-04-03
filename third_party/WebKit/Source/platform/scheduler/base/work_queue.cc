@@ -119,7 +119,7 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   // OnPopQueue calls GetFrontTaskEnqueueOrder which checks BlockedByFence() so
   // we don't need to here.
   work_queue_sets_->OnPopQueue(this);
-  task_queue_->TraceQueueSize(false);
+  task_queue_->TraceQueueSize();
   return pending_task;
 }
 

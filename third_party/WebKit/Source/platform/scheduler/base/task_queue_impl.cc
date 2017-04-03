@@ -172,6 +172,7 @@ TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
 
 void TaskQueueImpl::UnregisterTaskQueue() {
   base::AutoLock lock(any_thread_lock_);
+  base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   if (main_thread_only().time_domain)
     main_thread_only().time_domain->UnregisterQueue(this);
   if (!any_thread().task_queue_manager)
@@ -183,7 +184,7 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   any_thread().task_queue_manager = nullptr;
   main_thread_only().task_queue_manager = nullptr;
   main_thread_only().delayed_incoming_queue = std::priority_queue<Task>();
-  any_thread().immediate_incoming_queue.clear();
+  immediate_incoming_queue().clear();
   main_thread_only().immediate_work_queue.reset();
   main_thread_only().delayed_work_queue.reset();
 }
@@ -289,7 +290,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
         this, {delayed_run_time, pending_task.sequence_num}, now);
   }
 
-  TraceQueueSize(false);
+  TraceQueueSize();
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
@@ -324,7 +325,7 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(Task pending_task) {
     PushOntoDelayedIncomingQueueFromMainThread(std::move(pending_task),
                                                time_domain_now);
   }
-  TraceQueueSize(false);
+  TraceQueueSize();
 }
 
 void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
@@ -335,7 +336,19 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     bool nestable) {
   // If the |immediate_incoming_queue| is empty we need a DoWork posted to make
   // it run.
-  if (any_thread().immediate_incoming_queue.empty()) {
+  bool was_immediate_incoming_queue_empty;
+
+  {
+    base::AutoLock lock(immediate_incoming_queue_lock_);
+    was_immediate_incoming_queue_empty = immediate_incoming_queue().empty();
+    immediate_incoming_queue().emplace_back(posted_from, std::move(task),
+                                            desired_run_time, sequence_number,
+                                            nestable, sequence_number);
+    any_thread().task_queue_manager->DidQueueTask(
+        immediate_incoming_queue().back());
+  }
+
+  if (was_immediate_incoming_queue_empty) {
     // However there's no point posting a DoWork for a blocked queue. NB we can
     // only tell if it's disabled from the main thread.
     bool queue_is_blocked =
@@ -345,12 +358,8 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
         this, sequence_number, queue_is_blocked);
     any_thread().time_domain->OnQueueHasImmediateWork(this);
   }
-  any_thread().immediate_incoming_queue.emplace_back(
-      posted_from, std::move(task), desired_run_time, sequence_number, nestable,
-      sequence_number);
-  any_thread().task_queue_manager->DidQueueTask(
-      any_thread().immediate_incoming_queue.back());
-  TraceQueueSize(true);
+
+  TraceQueueSize();
 }
 
 void TaskQueueImpl::ReloadImmediateWorkQueueIfEmpty() {
@@ -361,9 +370,9 @@ void TaskQueueImpl::ReloadImmediateWorkQueueIfEmpty() {
 }
 
 WTF::Deque<TaskQueueImpl::Task> TaskQueueImpl::TakeImmediateIncomingQueue() {
-  base::AutoLock lock(any_thread_lock_);
+  base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   WTF::Deque<TaskQueueImpl::Task> queue;
-  queue.swap(any_thread().immediate_incoming_queue);
+  queue.swap(immediate_incoming_queue());
   return queue;
 }
 
@@ -374,8 +383,8 @@ bool TaskQueueImpl::IsEmpty() const {
     return false;
   }
 
-  base::AutoLock lock(any_thread_lock_);
-  return any_thread().immediate_incoming_queue.empty();
+  base::AutoLock lock(immediate_incoming_queue_lock_);
+  return immediate_incoming_queue().empty();
 }
 
 size_t TaskQueueImpl::GetNumberOfPendingTasks() const {
@@ -384,8 +393,8 @@ size_t TaskQueueImpl::GetNumberOfPendingTasks() const {
   task_count += main_thread_only().delayed_incoming_queue.size();
   task_count += main_thread_only().immediate_work_queue->Size();
 
-  base::AutoLock lock(any_thread_lock_);
-  task_count += any_thread().immediate_incoming_queue.size();
+  base::AutoLock lock(immediate_incoming_queue_lock_);
+  task_count += immediate_incoming_queue().size();
   return task_count;
 }
 
@@ -405,8 +414,8 @@ bool TaskQueueImpl::HasPendingImmediateWork() const {
   }
 
   // Finally tasks on |immediate_incoming_queue| count as immediate work.
-  base::AutoLock lock(any_thread_lock_);
-  return !any_thread().immediate_incoming_queue.empty();
+  base::AutoLock lock(immediate_incoming_queue_lock_);
+  return !immediate_incoming_queue().empty();
 }
 
 base::Optional<base::TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
@@ -446,7 +455,7 @@ TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   return base::nullopt;
 }
 
-void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
+void TaskQueueImpl::TraceQueueSize() const {
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(disabled_by_default_tracing_category_,
                                      &is_tracing);
@@ -458,17 +467,12 @@ void TaskQueueImpl::TraceQueueSize(bool is_locked) const {
   if (base::PlatformThread::CurrentId() != thread_id_)
     return;
 
-  if (!is_locked)
-    any_thread_lock_.Acquire();
-  else
-    any_thread_lock_.AssertAcquired();
+  base::AutoLock lock(immediate_incoming_queue_lock_);
   TRACE_COUNTER1(disabled_by_default_tracing_category_, GetName(),
-                 any_thread().immediate_incoming_queue.size() +
+                 immediate_incoming_queue().size() +
                      main_thread_only().immediate_work_queue->Size() +
                      main_thread_only().delayed_work_queue->Size() +
                      main_thread_only().delayed_incoming_queue.size());
-  if (!is_locked)
-    any_thread_lock_.Release();
 }
 
 const char* TaskQueueImpl::GetName() const {
@@ -494,6 +498,7 @@ TaskQueueImpl::QueuePriority TaskQueueImpl::GetQueuePriority() const {
 
 void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   base::AutoLock lock(any_thread_lock_);
+  base::AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   state->BeginDictionary();
   state->SetString("name", GetName());
   state->SetString(
@@ -507,7 +512,7 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       disabled_by_default_verbose_tracing_category_, &verbose_tracing_enabled);
   state->SetInteger("immediate_incoming_queue_size",
-                    any_thread().immediate_incoming_queue.size());
+                    immediate_incoming_queue().size());
   state->SetInteger("delayed_incoming_queue_size",
                     main_thread_only().delayed_incoming_queue.size());
   state->SetInteger("immediate_work_queue_size",
@@ -525,7 +530,7 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     state->SetInteger("current_fence", main_thread_only().current_fence);
   if (verbose_tracing_enabled) {
     state->BeginArray("immediate_incoming_queue");
-    QueueAsValueInto(any_thread().immediate_incoming_queue, state);
+    QueueAsValueInto(immediate_incoming_queue(), state);
     state->EndArray();
     state->BeginArray("delayed_work_queue");
     main_thread_only().delayed_work_queue->AsValueInto(state);
@@ -632,11 +637,10 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
 
   if (!task_unblocked && previous_fence &&
       previous_fence < main_thread_only().current_fence) {
-    base::AutoLock lock(any_thread_lock_);
-    if (!any_thread().immediate_incoming_queue.empty() &&
-        any_thread().immediate_incoming_queue.front().enqueue_order() >
-            previous_fence &&
-        any_thread().immediate_incoming_queue.front().enqueue_order() <
+    base::AutoLock lock(immediate_incoming_queue_lock_);
+    if (!immediate_incoming_queue().empty() &&
+        immediate_incoming_queue().front().enqueue_order() > previous_fence &&
+        immediate_incoming_queue().front().enqueue_order() <
             main_thread_only().current_fence) {
       task_unblocked = true;
     }
@@ -659,10 +663,9 @@ void TaskQueueImpl::RemoveFence() {
   task_unblocked |= main_thread_only().delayed_work_queue->RemoveFence();
 
   if (!task_unblocked && previous_fence) {
-    base::AutoLock lock(any_thread_lock_);
-    if (!any_thread().immediate_incoming_queue.empty() &&
-        any_thread().immediate_incoming_queue.front().enqueue_order() >
-            previous_fence) {
+    base::AutoLock lock(immediate_incoming_queue_lock_);
+    if (!immediate_incoming_queue().empty() &&
+        immediate_incoming_queue().front().enqueue_order() > previous_fence) {
       task_unblocked = true;
     }
   }
@@ -682,11 +685,11 @@ bool TaskQueueImpl::BlockedByFence() const {
     return false;
   }
 
-  base::AutoLock lock(any_thread_lock_);
-  if (any_thread().immediate_incoming_queue.empty())
+  base::AutoLock lock(immediate_incoming_queue_lock_);
+  if (immediate_incoming_queue().empty())
     return true;
 
-  return any_thread().immediate_incoming_queue.front().enqueue_order() >
+  return immediate_incoming_queue().front().enqueue_order() >
          main_thread_only().current_fence;
 }
 
@@ -815,8 +818,8 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
     bool immediate_queues_empty =
         main_thread_only().immediate_work_queue->Empty();
     if (immediate_queues_empty) {
-      base::AutoLock lock(any_thread_lock_);
-      immediate_queues_empty = any_thread().immediate_incoming_queue.empty();
+      base::AutoLock lock(immediate_incoming_queue_lock_);
+      immediate_queues_empty = immediate_incoming_queue().empty();
     }
     // Avoid holding the lock while we fire the notification.
     if (!immediate_queues_empty)
@@ -882,8 +885,8 @@ void TaskQueueImpl::SweepCanceledDelayedTasks(base::TimeTicks now) {
 
 void TaskQueueImpl::PushImmediateIncomingTaskForTest(
     TaskQueueImpl::Task&& task) {
-  base::AutoLock lock(any_thread_lock_);
-  any_thread().immediate_incoming_queue.push_back(std::move(task));
+  base::AutoLock lock(immediate_incoming_queue_lock_);
+  immediate_incoming_queue().push_back(std::move(task));
 }
 
 }  // namespace internal
