@@ -195,7 +195,6 @@
       'Linux deterministic (dbg)': 'debug_bot',
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
-      'Linux V8 API Stability': 'release_bot',
       'Mac deterministic': 'release_bot_mac_strip',
       'Mac deterministic (dbg)': 'debug_bot',
       'Mojo ChromiumOS': 'chromeos_with_codecs_ozone_release_trybot',
@@ -206,7 +205,6 @@
       'Site Isolation Win': 'release_trybot_x86',
       'ThinLTO Linux ToT': 'thin_lto_clang_tot_full_symbols_release_static_use_lld',
       'UBSanVptr Linux': 'ubsan_vptr_release_bot',
-      'WebKit Linux - TraceWrappables': 'debug_bot',
       'WebKit Linux - RandomOrder': 'release_bot',
       'WebKit Mac - RandomOrder': 'release_bot',
       'WebKit Win - RandomOrder': 'release_bot_x86',
@@ -361,6 +359,7 @@
     'client.v8.chromium': {
       'Linux - Future': 'v8_future_release_bot',
       'Linux - Future (dbg)': 'v8_future_debug_bot',
+      'Linux V8 API Stability': 'release_bot',
     },
 
     'client.v8.fyi': {
