@@ -221,6 +221,13 @@ void RecordFileBandwidth(size_t length,
 // Increment one of the count for parallel download.
 void RecordParallelDownloadCount(DownloadCountTypes type);
 
+// Records the actual total number of requests sent for a parallel download,
+// including the initial request.
+void RecordParallelDownloadRequestCount(int request_count);
+
+// Records if each byte stream is successfully added to download sink.
+void RecordParallelDownloadAddStreamSuccess(bool success);
+
 // Records the bandwidth for parallel download and estimates the saved time at
 // the file end. Does not count in any hash computation or file open/close time.
 void RecordParallelDownloadStats(

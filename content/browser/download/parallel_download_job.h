@@ -75,7 +75,6 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
 
   // Information about the initial request when download is started.
   int64_t initial_request_offset_;
-  int64_t initial_request_length_;
 
   // The length of the response body of the original request.
   // Used to estimate the remaining size of the content when the initial

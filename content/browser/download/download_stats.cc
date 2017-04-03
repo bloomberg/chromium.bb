@@ -773,6 +773,15 @@ void RecordParallelDownloadCount(DownloadCountTypes type) {
                             DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
+void RecordParallelDownloadRequestCount(int request_count) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.ParallelDownloadRequestCount",
+                              request_count, 1, 10, 11);
+}
+
+void RecordParallelDownloadAddStreamSuccess(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Download.ParallelDownloadAddStreamSuccess", success);
+}
+
 void RecordParallelDownloadStats(
     size_t bytes_downloaded_with_parallel_streams,
     base::TimeDelta time_with_parallel_streams,

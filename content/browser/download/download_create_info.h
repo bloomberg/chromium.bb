@@ -69,10 +69,6 @@ struct CONTENT_EXPORT DownloadCreateInfo {
   // TODO(xingliu): Refactor to remove |offset| and |length|.
   int64_t offset;
 
-  // The length of the initial request.
-  // This value matches the length in DownloadSaveInfo.
-  int64_t length;
-
   // True if the download was initiated by user action.
   bool has_user_gesture;
 
