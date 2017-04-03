@@ -4,8 +4,9 @@
 # found in the LICENSE file.
 
 """
-Provides an augmented `git log --graph` view. In particular, it also annotates
-commits with branches + tags that point to them. Items are colorized as follows:
+Enhances `git log --graph` view with information on commit branches + tags that
+point to them. Items are colorized as follows:
+
   * Cyan    - Currently checked out branch
   * Green   - Local branch
   * Red     - Remote branches
@@ -37,7 +38,33 @@ RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
 # Git emits combined color
 BRIGHT_RED = '\x1b[1;31m'
 
+
+def print_help():
+  names = {
+    'Cyan': CYAN,
+    'Green': GREEN,
+    'Magenta': MAGENTA,
+    'Red': RED,
+    'White': WHITE,
+    'Blue background': BLUEBAK,
+  }
+  msg = "usage: git map [-h] [<args>]\n"
+
+  for line in __doc__.splitlines():
+    for key in names.keys():
+      if key in line:
+        msg += line.replace('* ', '* ' + names[key])+RESET+'\n'
+        break
+    else:
+      msg += line + '\n'
+  sys.stdout.write(msg)
+
+
 def main(argv):
+  if '-h' in argv:
+    print_help()
+    return 0
+
   map_extra = get_config_list('depot_tools.map_extra')
   fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%ad%Creset ~ %s'
   log_proc = subprocess2.Popen(
