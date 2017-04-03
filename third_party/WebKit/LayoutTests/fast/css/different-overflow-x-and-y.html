@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<div id="target" style="overflow-x: hidden; overflow-y: scroll"></div>
+<script>
+var element = document.getElementById('target');
+test(function() {
+  assert_equals("", window.getComputedStyle(element).overflow);
+}, 'Overflow is empty string if overflowX != overflowY')
+</script>
