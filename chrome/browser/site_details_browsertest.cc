@@ -658,8 +658,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_FALSE(IsInTrial("SiteIsolationExtensionsActive"));
 }
 
-// Flaky on Windows. crbug.com/671891
-#if defined(OS_WIN)
+// Flaky on Windows and Mac. crbug.com/671891
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_IsolateExtensions DISABLED_IsolateExtensions
 #else
 #define MAYBE_IsolateExtensions IsolateExtensions
