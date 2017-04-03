@@ -28,6 +28,8 @@ ExtensionsTest::ExtensionsTest()
       browser_context_(new content::TestBrowserContext),
       extensions_browser_client_(
           new TestExtensionsBrowserClient(browser_context_.get())) {
+  BrowserContextDependencyManager::GetInstance()->MarkBrowserContextLive(
+      browser_context_.get());
   content::SetBrowserClientForTesting(content_browser_client_.get());
   content::SetUtilityClientForTesting(content_utility_client_.get());
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
