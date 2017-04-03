@@ -6,9 +6,9 @@ package org.chromium.net;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-import android.util.Log;
 
 import org.chromium.base.FileUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 

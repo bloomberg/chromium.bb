@@ -8,8 +8,8 @@ import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.StrictMode;
 import android.support.test.filters.SmallTest;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.FailureType;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;
