@@ -65,6 +65,7 @@ void GpuBrowserCompositorOutputSurface::OnReflectorChanged() {
     reflector_texture_.reset(new ReflectorTexture(context_provider()));
     reflector_->OnSourceTextureMailboxUpdated(reflector_texture_->mailbox());
   }
+  reflector_texture_defined_ = false;
 }
 
 void GpuBrowserCompositorOutputSurface::BindToClient(
@@ -108,12 +109,13 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 
   gfx::Size surface_size = frame.size;
   if (reflector_) {
-    if (frame.sub_buffer_rect) {
+    if (frame.sub_buffer_rect && reflector_texture_defined_) {
       reflector_texture_->CopyTextureSubImage(*frame.sub_buffer_rect);
       reflector_->OnSourcePostSubBuffer(*frame.sub_buffer_rect, surface_size);
     } else {
       reflector_texture_->CopyTextureFullImage(surface_size);
       reflector_->OnSourceSwapBuffers(surface_size);
+      reflector_texture_defined_ = true;
     }
   }
 

@@ -86,6 +86,7 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
 
   cc::OutputSurfaceClient* client_ = nullptr;
   std::unique_ptr<ReflectorTexture> reflector_texture_;
+  bool reflector_texture_defined_ = false;
   bool set_draw_rectangle_for_frame_ = false;
   // True if the draw rectangle has been set at all since the last resize.
   bool has_set_draw_rectangle_since_last_resize_ = false;
