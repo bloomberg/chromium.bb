@@ -146,9 +146,15 @@ else ()
   if (CMAKE_C_COMPILER_ID MATCHES "GNU\|Clang")
     set(CONFIG_GCC 1)
   endif ()
+
+  if ("${CMAKE_BUILD_TYPE}" MATCHES "Rel")
+    add_compiler_flag_if_supported("-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0")
+  endif ()
+  add_compiler_flag_if_supported("-D_LARGEFILE_SOURCE")
+  add_compiler_flag_if_supported("-D_FILE_OFFSET_BITS=64")
 endif ()
 
-if (AOM_TARGET_SYSTEM MATCHES "Darwin\|Linux\|Windows")
+if ("${AOM_TARGET_SYSTEM}" MATCHES "Darwin\|Linux\|Windows")
   set(CONFIG_OS_SUPPORT 1)
 endif ()
 
