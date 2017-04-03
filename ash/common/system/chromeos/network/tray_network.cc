@@ -207,7 +207,8 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
     bool wifi_enabled =
         NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
             NetworkTypePattern::WiFi());
-    image_view_->SetImage(network_icon::GetImageForWifiChipState(wifi_enabled));
+    image_view_->SetImage(
+        network_icon::GetBasicImageForWiFiNetwork(wifi_enabled));
 
     const int string_id = wifi_enabled
                               ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED

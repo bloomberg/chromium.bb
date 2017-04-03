@@ -31,6 +31,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -56,14 +57,24 @@ namespace {
 const int kTrayIconBadgeOffset = 3;
 const int kMenuIconBadgeOffset = 2;
 
+// Describes a single badge which is defined by a vector icon.
+struct Badge {
+  bool operator==(const Badge& other) const {
+    return other.icon == icon && other.color == color;
+  }
+  bool operator!=(const Badge& other) const { return !(other == *this); }
+
+  const gfx::VectorIcon* icon;
+  SkColor color;
+};
+
 //------------------------------------------------------------------------------
-// Struct to pass icon badges to NetworkIconImageSource.
+// Struct to pass a collection of badges to NetworkIconImageSource.
 struct Badges {
-  gfx::ImageSkia top_left;
-  gfx::ImageSkia top_right;
-  gfx::ImageSkia center;
-  gfx::ImageSkia bottom_left;
-  gfx::ImageSkia bottom_right;
+  Badge top_left = {};
+  Badge center = {};
+  Badge bottom_left = {};
+  Badge bottom_right = {};
 };
 
 //------------------------------------------------------------------------------
@@ -110,10 +121,10 @@ class NetworkIconImpl {
   int strength_index_;
 
   // Cached technology badge for the network when the icon was last generated.
-  gfx::ImageSkia technology_badge_;
+  Badge technology_badge_ = {};
 
   // Cached vpn badge for the network when the icon was last generated.
-  gfx::ImageSkia vpn_badge_;
+  Badge vpn_badge_ = {};
 
   // Cached roaming state of the network when the icon was last generated.
   std::string roaming_state_;
@@ -213,30 +224,39 @@ class NetworkIconImageSource : public gfx::CanvasImageSource {
     const int height = size().height();
 
     // The base icon is centered in both dimensions.
+    const int icon_x = (width - icon_.width()) / 2;
     const int icon_y = (height - icon_.height()) / 2;
-    canvas->DrawImageInt(icon_, (width - icon_.width()) / 2, icon_y);
+    canvas->DrawImageInt(icon_, icon_x, icon_y);
 
-    // The badges are flush against the edges of the canvas, except at the top,
-    // where the badge is only 1dp higher than the base image.
+    auto paint_badge = [&canvas](const Badge& badge, int x, int y,
+                                 int badge_size = 0) {
+      gfx::ScopedCanvas scoped(canvas);
+      canvas->Translate(gfx::Vector2d(x, y));
+      if (badge_size)
+        gfx::PaintVectorIcon(canvas, *badge.icon, badge_size, badge.color);
+      else
+        gfx::PaintVectorIcon(canvas, *badge.icon, badge.color);
+    };
+
+    // The center badge is scaled and centered over the icon.
+    if (badges_.center.icon)
+      paint_badge(badges_.center, icon_x, icon_y, icon_.width());
+
+    // The other badges are flush against the edges of the canvas, except at the
+    // top, where the badge is only 1dp higher than the base image.
     const int top_badge_y = icon_y - 1;
-    if (!badges_.top_left.isNull())
-      canvas->DrawImageInt(badges_.top_left, 0, top_badge_y);
-    if (!badges_.top_right.isNull()) {
-      canvas->DrawImageInt(badges_.top_right, width - badges_.top_right.width(),
-                           top_badge_y);
+    if (badges_.top_left.icon)
+      paint_badge(badges_.top_left, 0, top_badge_y);
+    if (badges_.bottom_left.icon) {
+      paint_badge(
+          badges_.bottom_left, 0,
+          height - gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_left.icon));
     }
-    if (!badges_.center.isNull()) {
-      canvas->DrawImageInt(badges_.center, (width - badges_.center.width()) / 2,
-                           (height - badges_.center.height()) / 2);
-    }
-    if (!badges_.bottom_left.isNull()) {
-      canvas->DrawImageInt(badges_.bottom_left, 0,
-                           height - badges_.bottom_left.height());
-    }
-    if (!badges_.bottom_right.isNull()) {
-      canvas->DrawImageInt(badges_.bottom_right,
-                           width - badges_.bottom_right.width(),
-                           height - badges_.bottom_right.height());
+    if (badges_.bottom_right.icon) {
+      const int badge_size =
+          gfx::GetDefaultSizeOfVectorIcon(*badges_.bottom_right.icon);
+      paint_badge(badges_.bottom_right, width - badge_size,
+                  height - badge_size);
     }
   }
 
@@ -418,12 +438,21 @@ gfx::ImageSkia GetImageForIndex(ImageType image_type,
   return gfx::ImageSkia(source, source->size());
 }
 
-const gfx::ImageSkia GetDisconnectedImage(IconType icon_type,
-                                          const std::string& network_type) {
+// Returns an image to represent either a fully connected/enabled network or a
+// disconnected/disabled network.
+const gfx::ImageSkia GetBasicImage(bool connected,
+                                   IconType icon_type,
+                                   const std::string& network_type) {
   DCHECK_NE(shill::kTypeVPN, network_type);
-  ImageType image_type = ImageTypeForNetworkType(network_type);
-  const int disconnected_index = 0;
-  return GetImageForIndex(image_type, icon_type, disconnected_index);
+  SignalStrengthImageSource* source = new SignalStrengthImageSource(
+      ImageTypeForNetworkType(network_type), icon_type, kNumNetworkImages - 1);
+  gfx::ImageSkia icon = gfx::ImageSkia(source, source->size());
+  Badges badges;
+  if (!connected) {
+    badges.center = {&kNetworkBadgeOffIcon,
+                     GetDefaultColorForIconType(icon_type)};
+  }
+  return NetworkIconImageSource::CreateImage(icon, badges);
 }
 
 gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
@@ -467,17 +496,9 @@ gfx::ImageSkia ConnectingVpnImage(double animation) {
   return *s_vpn_images[index];
 }
 
-gfx::ImageSkia ConnectingVpnBadge(double animation, IconType icon_type) {
-  int index = animation * nextafter(static_cast<float>(kNumFadeImages), 0);
-  static gfx::ImageSkia* s_vpn_badges[kNumFadeImages];
-  if (!s_vpn_badges[index]) {
-    // Lazily cache images.
-    gfx::ImageSkia badge = gfx::CreateVectorIcon(
-        kNetworkBadgeVpnIcon, GetDefaultColorForIconType(icon_type));
-    s_vpn_badges[index] = new gfx::ImageSkia(
-        gfx::ImageSkiaOperations::CreateTransparentImage(badge, animation));
-  }
-  return *s_vpn_badges[index];
+Badge ConnectingVpnBadge(double animation, IconType icon_type) {
+  return {&kNetworkBadgeVpnIcon,
+          SkColorSetA(GetDefaultColorForIconType(icon_type), 0xFF * animation)};
 }
 
 int StrengthIndex(int strength) {
@@ -489,33 +510,33 @@ int StrengthIndex(int strength) {
   return index;
 }
 
-gfx::ImageSkia BadgeForNetworkTechnology(const NetworkState* network,
-                                         IconType icon_type) {
+Badge BadgeForNetworkTechnology(const NetworkState* network,
+                                IconType icon_type) {
+  Badge badge = {nullptr, GetDefaultColorForIconType(icon_type)};
   const std::string& technology = network->network_technology();
-  const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   if (technology == shill::kNetworkTechnologyEvdo) {
-    icon = &kNetworkBadgeTechnologyEvdoIcon;
+    badge.icon = &kNetworkBadgeTechnologyEvdoIcon;
   } else if (technology == shill::kNetworkTechnology1Xrtt) {
-    icon = &kNetworkBadgeTechnology1xIcon;
+    badge.icon = &kNetworkBadgeTechnology1xIcon;
   } else if (technology == shill::kNetworkTechnologyGprs ||
              technology == shill::kNetworkTechnologyGsm) {
-    icon = &kNetworkBadgeTechnologyGprsIcon;
+    badge.icon = &kNetworkBadgeTechnologyGprsIcon;
   } else if (technology == shill::kNetworkTechnologyEdge) {
-    icon = &kNetworkBadgeTechnologyEdgeIcon;
+    badge.icon = &kNetworkBadgeTechnologyEdgeIcon;
   } else if (technology == shill::kNetworkTechnologyUmts) {
-    icon = &kNetworkBadgeTechnology3gIcon;
+    badge.icon = &kNetworkBadgeTechnology3gIcon;
   } else if (technology == shill::kNetworkTechnologyHspa) {
-    icon = &kNetworkBadgeTechnologyHspaIcon;
+    badge.icon = &kNetworkBadgeTechnologyHspaIcon;
   } else if (technology == shill::kNetworkTechnologyHspaPlus) {
-    icon = &kNetworkBadgeTechnologyHspaPlusIcon;
+    badge.icon = &kNetworkBadgeTechnologyHspaPlusIcon;
   } else if (technology == shill::kNetworkTechnologyLte) {
-    icon = &kNetworkBadgeTechnologyLteIcon;
+    badge.icon = &kNetworkBadgeTechnologyLteIcon;
   } else if (technology == shill::kNetworkTechnologyLteAdvanced) {
-    icon = &kNetworkBadgeTechnologyLteAdvancedIcon;
+    badge.icon = &kNetworkBadgeTechnologyLteAdvancedIcon;
   } else {
-    return gfx::ImageSkia();
+    return {};
   }
-  return gfx::CreateVectorIcon(*icon, GetDefaultColorForIconType(icon_type));
+  return badge;
 }
 
 gfx::ImageSkia GetIcon(const NetworkState* network,
@@ -585,7 +606,7 @@ NetworkIconImpl::NetworkIconImpl(const std::string& path, IconType icon_type)
       strength_index_(-1),
       behind_captive_portal_(false) {
   // Default image
-  image_ = GetDisconnectedImage(icon_type, shill::kTypeWifi);
+  image_ = GetBasicImage(false, icon_type, shill::kTypeWifi);
 }
 
 void NetworkIconImpl::Update(const NetworkState* network) {
@@ -630,9 +651,8 @@ bool NetworkIconImpl::UpdateWirelessStrengthIndex(const NetworkState* network) {
 
 bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
   bool dirty = false;
-  const gfx::ImageSkia technology_badge =
-      BadgeForNetworkTechnology(network, icon_type_);
-  if (!technology_badge.BackedBySameObjectAs(technology_badge_)) {
+  const Badge technology_badge = BadgeForNetworkTechnology(network, icon_type_);
+  if (technology_badge == technology_badge_) {
     technology_badge_ = technology_badge;
     dirty = true;
   }
@@ -664,13 +684,11 @@ bool NetworkIconImpl::UpdateVPNBadge() {
   const NetworkState* vpn =
       NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
           NetworkTypePattern::VPN());
-  if (vpn && vpn_badge_.isNull()) {
-    vpn_badge_ = gfx::CreateVectorIcon(kNetworkBadgeVpnIcon,
-                                       GetDefaultColorForIconType(icon_type_));
-    return true;
-  }
-  if (!vpn && !vpn_badge_.isNull()) {
-    vpn_badge_ = gfx::ImageSkia();
+  Badge vpn_badge = {};
+  if (vpn)
+    vpn_badge = {&kNetworkBadgeVpnIcon, GetDefaultColorForIconType(icon_type_)};
+  if (vpn_badge != vpn_badge_) {
+    vpn_badge_ = vpn_badge;
     return true;
   }
   return false;
@@ -684,12 +702,10 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   if (type == shill::kTypeWifi) {
     if (network->security_class() != shill::kSecurityNone &&
         IconTypeIsDark(icon_type_)) {
-      badges->bottom_right =
-          gfx::CreateVectorIcon(kNetworkBadgeSecureIcon, icon_color);
+      badges->bottom_right = {&kNetworkBadgeSecureIcon, icon_color};
     }
   } else if (type == shill::kTypeWimax) {
-    technology_badge_ =
-        gfx::CreateVectorIcon(kNetworkBadgeTechnology4gIcon, icon_color);
+    technology_badge_ = {&kNetworkBadgeTechnology4gIcon, icon_color};
   } else if (type == shill::kTypeCellular) {
     if (network->roaming() == shill::kRoamingStateRoaming) {
       // For networks that are always in roaming don't show roaming badge.
@@ -699,8 +715,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
       LOG_IF(WARNING, !device) << "Could not find device state for "
                                << network->device_path();
       if (!device || !device->provider_requires_roaming()) {
-        badges->bottom_right =
-            gfx::CreateVectorIcon(kNetworkBadgeRoamingIcon, icon_color);
+        badges->bottom_right = {&kNetworkBadgeRoamingIcon, icon_color};
       }
     }
   }
@@ -710,8 +725,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   }
 
   if (behind_captive_portal_) {
-    badges->bottom_right =
-        gfx::CreateVectorIcon(kNetworkBadgeCaptivePortalIcon, icon_color);
+    badges->bottom_right = {&kNetworkBadgeCaptivePortalIcon, icon_color};
   }
 }
 
@@ -752,7 +766,7 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
                                   IconType icon_type) {
   DCHECK(network);
   if (!network->visible())
-    return GetDisconnectedImage(icon_type, network->type());
+    return GetBasicImage(false, icon_type, network->type());
 
   if (network->IsConnectingState())
     return GetConnectingImage(icon_type, network->type());
@@ -761,15 +775,12 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
   return icon->image();
 }
 
-gfx::ImageSkia GetImageForConnectedMobileNetwork() {
-  ImageType image_type = ImageTypeForNetworkType(shill::kTypeWifi);
-  const IconType icon_type = ICON_TYPE_LIST;
-  const int connected_index = kNumNetworkImages - 1;
-  return GetImageForIndex(image_type, icon_type, connected_index);
+gfx::ImageSkia GetBasicImageForWiFiNetwork(bool connected) {
+  return GetBasicImage(connected, ICON_TYPE_LIST, shill::kTypeWifi);
 }
 
 gfx::ImageSkia GetImageForDisconnectedCellNetwork() {
-  return GetDisconnectedImage(ICON_TYPE_LIST, shill::kTypeCellular);
+  return GetBasicImage(false, ICON_TYPE_LIST, shill::kTypeCellular);
 }
 
 gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
@@ -780,19 +791,7 @@ gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
   source->set_color(icon_color);
   gfx::ImageSkia icon = gfx::ImageSkia(source, source->size());
   Badges badges;
-  badges.bottom_right =
-      gfx::CreateVectorIcon(kNetworkBadgeAddOtherIcon, badge_color);
-  return NetworkIconImageSource::CreateImage(icon, badges);
-}
-
-gfx::ImageSkia GetImageForWifiChipState(bool enabled) {
-  SignalStrengthImageSource* source =
-      new SignalStrengthImageSource(ImageTypeForNetworkType(shill::kTypeWifi),
-                                    ICON_TYPE_LIST, kNumNetworkImages - 1);
-  gfx::ImageSkia icon = gfx::ImageSkia(source, source->size());
-  Badges badges;
-  if (!enabled)
-    badges.center = gfx::CreateVectorIcon(kNetworkBadgeOffIcon, kMenuIconColor);
+  badges.bottom_right = {&kNetworkBadgeAddOtherIcon, badge_color};
   return NetworkIconImageSource::CreateImage(icon, badges);
 }
 
@@ -938,7 +937,7 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
       *animating = true;
     } else {
       // Otherwise show the disconnected wifi icon.
-      *image = GetDisconnectedImage(icon_type, shill::kTypeWifi);
+      *image = GetBasicImage(false, icon_type, shill::kTypeWifi);
       if (label) {
         *label = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED);

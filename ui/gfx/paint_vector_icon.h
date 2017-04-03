@@ -16,9 +16,15 @@ struct VectorIcon;
 
 GFX_EXPORT extern const VectorIcon kNoneIcon;
 
-// Draws a vector icon identified by |id| onto |canvas| at (0, 0). |dip_size|
-// is the length of a single edge of the square icon, in device independent
-// pixels. |color| is used as the fill.
+// Draws a vector icon identified by |id| onto |canvas| at (0, 0). |color| is
+// used as the fill. The size will come from the .icon file (the 1x version, if
+// multiple versions exist).
+GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
+                                const VectorIcon& icon,
+                                SkColor color);
+
+// As above, with a specificed size. |dip_size| is the length of a single edge
+// of the square icon, in device independent pixels.
 GFX_EXPORT void PaintVectorIcon(Canvas* canvas,
                                 const VectorIcon& icon,
                                 int dip_size,
@@ -48,6 +54,9 @@ GFX_EXPORT ImageSkia CreateVectorIconFromSource(const std::string& source,
                                                 int dip_size,
                                                 SkColor color);
 #endif
+
+// Calculates the size that will be default for |icon|, in dip.
+GFX_EXPORT int GetDefaultSizeOfVectorIcon(const gfx::VectorIcon& icon);
 
 }  // namespace gfx
 

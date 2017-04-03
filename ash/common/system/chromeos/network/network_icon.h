@@ -33,9 +33,10 @@ ASH_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
-// Gets the full strength image for a Wi-Fi network.
+// Gets an image for a Wi-Fi network, either full strength or strike-through
+// based on |connected|.
 // TODO(estade): Expose SignalStrengthImageSource and use that instead.
-ASH_EXPORT gfx::ImageSkia GetImageForConnectedMobileNetwork();
+ASH_EXPORT gfx::ImageSkia GetBasicImageForWiFiNetwork(bool connected);
 
 // Gets the disconnected image for a cell network.
 // TODO(estade): Expose SignalStrengthImageSource and use that instead.
@@ -45,9 +46,6 @@ ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
 // main icon and |badge_color| for the badge.
 ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
                                                     SkColor badge_color);
-
-// Gets the icon used to indicate whether system Wi-Fi is enabled or disabled.
-ASH_EXPORT gfx::ImageSkia GetImageForWifiChipState(bool enabled);
 
 // Returns the label for |network| based on |icon_type|. |network| cannot be
 // nullptr.

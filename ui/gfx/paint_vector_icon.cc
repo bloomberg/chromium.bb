@@ -148,9 +148,9 @@ void PaintPath(Canvas* canvas,
 
       case R_MOVE_TO: {
         if (previous_command_type == CLOSE) {
-          // This triggers injectMoveToIfNeeded() so that the next subpath will
-          // start at the correct place. See
-          // [ https://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand ].
+          // This triggers injectMoveToIfNeeded() so that the next subpath
+          // will start at the correct place. See [
+          // https://www.w3.org/TR/SVG/paths.html#PathDataClosePathCommand ].
           path.rLineTo(0, 0);
         }
 
@@ -179,8 +179,8 @@ void PaintPath(Canvas* canvas,
         (path.*path_fn)(
             rx, ry, angle,
             large_arc_flag ? SkPath::kLarge_ArcSize : SkPath::kSmall_ArcSize,
-            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction,
-            x, y);
+            arc_sweep_flag ? SkPath::kCW_Direction : SkPath::kCCW_Direction, x,
+            y);
         break;
       }
 
@@ -452,6 +452,10 @@ static base::LazyInstance<VectorIconCache>::DestructorAtExit g_icon_cache =
 
 const VectorIcon kNoneIcon = {};
 
+void PaintVectorIcon(Canvas* canvas, const VectorIcon& icon, SkColor color) {
+  PaintVectorIcon(canvas, icon, GetDefaultSizeOfVectorIcon(icon), color);
+}
+
 void PaintVectorIcon(Canvas* canvas,
                      const VectorIcon& icon,
                      int dip_size,
@@ -464,10 +468,7 @@ void PaintVectorIcon(Canvas* canvas,
 }
 
 ImageSkia CreateVectorIcon(const VectorIcon& icon, SkColor color) {
-  const PathElement* one_x_path = icon.path_1x_ ? icon.path_1x_ : icon.path_;
-  int size = one_x_path[0].type == CANVAS_DIMENSIONS ? one_x_path[1].arg
-                                                     : kReferenceSizeDip;
-  return CreateVectorIcon(icon, size, color);
+  return CreateVectorIcon(icon, GetDefaultSizeOfVectorIcon(icon), color);
 }
 
 ImageSkia CreateVectorIcon(const VectorIcon& icon,
@@ -490,6 +491,12 @@ ImageSkia CreateVectorIconFromSource(const std::string& source,
                                      SkColor color) {
   return CanvasImageSource::MakeImageSkia<VectorIconSource>(source, dip_size,
                                                             color);
+}
+
+int GetDefaultSizeOfVectorIcon(const gfx::VectorIcon& icon) {
+  const PathElement* one_x_path = icon.path_1x_ ? icon.path_1x_ : icon.path_;
+  return one_x_path[0].type == CANVAS_DIMENSIONS ? one_x_path[1].arg
+                                                 : kReferenceSizeDip;
 }
 
 }  // namespace gfx
