@@ -258,6 +258,20 @@
             "href": "/multidevice/webview/tipsandtricks"
           }
         ]
+      },
+      {
+        "title": "Chrome for iOS",
+        "href": "/multidevice/ios/links",
+        "items": [
+          {
+            "title": "Opening Links in Chrome",
+            "href": "/multidevice/ios/links"
+          },
+          {
+            "title": "User Agent",
+            "href": "/multidevice/user-agent#chrome_for_ios_user_agent"
+          }
+        ]
       }
     ]
   },
