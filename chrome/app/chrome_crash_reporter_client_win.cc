@@ -6,9 +6,12 @@
 // Add test coverage for Crashpad.
 #include "chrome/app/chrome_crash_reporter_client_win.h"
 
-#include <assert.h>
 #include <windows.h>
+
+#include <assert.h>
 #include <shellapi.h>
+
+#include <iterator>
 #include <memory>
 #include <string>
 
@@ -88,7 +91,7 @@ size_t RegisterCrashKeysHelper() {
   //
   // For now these need to be kept relatively up to date with those in
   // chrome/common/crash_keys.cc::RegisterChromeCrashKeys().
-  constexpr base::debug::CrashKey fixed_keys[] = {
+  static constexpr base::debug::CrashKey kFixedKeys[] = {
       {kMetricsClientId, kSmallSize},
       {kChannel, kSmallSize},
       {kActiveURL, kLargeSize},
@@ -113,7 +116,7 @@ size_t RegisterCrashKeysHelper() {
       {"discardable-memory-allocated", kSmallSize},
       {"discardable-memory-free", kSmallSize},
       {kFontKeyName, kSmallSize},
-      { "mojo-message-error", kMediumSize },
+      {"mojo-message-error", kMediumSize},
       {"ppapi_path", kMediumSize},
       {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},
@@ -163,21 +166,21 @@ size_t RegisterCrashKeysHelper() {
       {"initrf_root_proxy_is_live", kSmallSize},
 
       // Temporary for https://crbug.com/626802.
-      { "newframe_routing_id", kSmallSize },
-      { "newframe_proxy_id", kSmallSize },
-      { "newframe_opener_id", kSmallSize },
-      { "newframe_parent_id", kSmallSize },
-      { "newframe_widget_id", kSmallSize },
-      { "newframe_widget_hidden", kSmallSize },
-      { "newframe_replicated_origin", kSmallSize },
-      { "newframe_oopifs_possible", kSmallSize },
+      {"newframe_routing_id", kSmallSize},
+      {"newframe_proxy_id", kSmallSize},
+      {"newframe_opener_id", kSmallSize},
+      {"newframe_parent_id", kSmallSize},
+      {"newframe_widget_id", kSmallSize},
+      {"newframe_widget_hidden", kSmallSize},
+      {"newframe_replicated_origin", kSmallSize},
+      {"newframe_oopifs_possible", kSmallSize},
 
       // Temporary for https://crbug.com/630103.
-      { "origin_mismatch_url", crash_keys::kLargeSize },
-      { "origin_mismatch_origin", crash_keys::kMediumSize },
-      { "origin_mismatch_transition", crash_keys::kSmallSize },
-      { "origin_mismatch_redirects", crash_keys::kSmallSize },
-      { "origin_mismatch_same_page", crash_keys::kSmallSize },
+      {"origin_mismatch_url", crash_keys::kLargeSize},
+      {"origin_mismatch_origin", crash_keys::kMediumSize},
+      {"origin_mismatch_transition", crash_keys::kSmallSize},
+      {"origin_mismatch_redirects", crash_keys::kSmallSize},
+      {"origin_mismatch_same_page", crash_keys::kSmallSize},
 
       // Temporary for https://crbug.com/612711.
       {"aci_wrong_sp_extension_id", kSmallSize},
@@ -195,15 +198,15 @@ size_t RegisterCrashKeysHelper() {
       {"swdh_set_hosted_version_restart_count", crash_keys::kSmallSize},
 
       // Temporary for https://crbug.com/697745.
-      { "engine_params", crash_keys::kMediumSize },
-      { "engine1_params", crash_keys::kMediumSize },
-      { "engine2_params", crash_keys::kMediumSize },
+      {"engine_params", crash_keys::kMediumSize},
+      {"engine1_params", crash_keys::kMediumSize},
+      {"engine2_params", crash_keys::kMediumSize},
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
   // a collection of data, like command line switches or extension IDs.
-  std::vector<base::debug::CrashKey> keys(fixed_keys,
-                                          fixed_keys + arraysize(fixed_keys));
+  std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
+                                          std::end(kFixedKeys));
 
   crash_keys::GetCrashKeysForCommandLineSwitches(&keys);
 
