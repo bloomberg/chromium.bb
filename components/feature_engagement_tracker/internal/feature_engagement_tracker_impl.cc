@@ -4,6 +4,10 @@
 
 #include "components/feature_engagement_tracker/internal/feature_engagement_tracker_impl.h"
 
+#include "base/feature_list.h"
+#include "components/feature_engagement_tracker/internal/feature_list.h"
+#include "components/feature_engagement_tracker/public/feature_constants.h"
+
 namespace feature_engagement_tracker {
 
 // This method is declared in //components/feature_engagement_tracker/public/
@@ -13,25 +17,29 @@ namespace feature_engagement_tracker {
 FeatureEngagementTracker* FeatureEngagementTracker::Create(
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background__task_runner) {
-  return new FeatureEngagementTrackerImpl;
+  return new FeatureEngagementTrackerImpl(GetAllFeatures());
 }
 
-FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl() = default;
+FeatureEngagementTrackerImpl::FeatureEngagementTrackerImpl(
+    FeatureVector features)
+    : features_(features), has_shown_enlightenment_(false) {}
 
 FeatureEngagementTrackerImpl::~FeatureEngagementTrackerImpl() = default;
 
-void FeatureEngagementTrackerImpl::Event(const std::string& feature,
+void FeatureEngagementTrackerImpl::Event(const base::Feature& feature,
                                          const std::string& precondition) {
   // TODO(nyquist): Track this event.
 }
 
-void FeatureEngagementTrackerImpl::Used(const std::string& feature) {
+void FeatureEngagementTrackerImpl::Used(const base::Feature& feature) {
   // TODO(nyquist): Track this event.
 }
 
-bool FeatureEngagementTrackerImpl::Trigger(const std::string& feature) {
-  // TODO(nyquist): Track this event and add business logic.
-  return false;
+bool FeatureEngagementTrackerImpl::Trigger(const base::Feature& feature) {
+  bool should_trigger =
+      !has_shown_enlightenment_ && base::FeatureList::IsEnabled(feature);
+  has_shown_enlightenment_ |= should_trigger;
+  return should_trigger;
 }
 
 void FeatureEngagementTrackerImpl::Dismissed() {

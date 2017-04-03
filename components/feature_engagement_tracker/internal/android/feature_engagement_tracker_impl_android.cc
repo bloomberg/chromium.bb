@@ -4,9 +4,13 @@
 
 #include "components/feature_engagement_tracker/internal/android/feature_engagement_tracker_impl_android.h"
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/feature_list.h"
+#include "components/feature_engagement_tracker/internal/feature_list.h"
 #include "components/feature_engagement_tracker/public/feature_engagement_tracker.h"
 #include "jni/FeatureEngagementTrackerImpl_jni.h"
 
@@ -17,6 +21,16 @@ namespace {
 const char kFeatureEngagementTrackerImplAndroidKey[] =
     "feature_engagement_tracker_impl_android";
 
+// Create mapping from feature name to base::Feature.
+FeatureEngagementTrackerImplAndroid::FeatureMap CreateMapFromNameToFeature(
+    FeatureEngagementTrackerImpl::FeatureVector features) {
+  FeatureEngagementTrackerImplAndroid::FeatureMap feature_map;
+  for (auto it = features.begin(); it != features.end(); ++it) {
+    feature_map[(*it)->name] = *it;
+  }
+  return feature_map;
+}
+
 FeatureEngagementTrackerImplAndroid* FromFeatureEngagementTrackerImpl(
     FeatureEngagementTracker* feature_engagement_tracker) {
   FeatureEngagementTrackerImpl* impl =
@@ -25,7 +39,8 @@ FeatureEngagementTrackerImplAndroid* FromFeatureEngagementTrackerImpl(
       static_cast<FeatureEngagementTrackerImplAndroid*>(
           impl->GetUserData(kFeatureEngagementTrackerImplAndroidKey));
   if (!impl_android) {
-    impl_android = new FeatureEngagementTrackerImplAndroid(impl);
+    impl_android =
+        new FeatureEngagementTrackerImplAndroid(impl, GetAllFeatures());
     impl->SetUserData(kFeatureEngagementTrackerImplAndroidKey, impl_android);
   }
   return impl_android;
@@ -60,8 +75,10 @@ FeatureEngagementTracker::GetJavaObject(
 }
 
 FeatureEngagementTrackerImplAndroid::FeatureEngagementTrackerImplAndroid(
-    FeatureEngagementTrackerImpl* feature_engagement_tracker_impl)
-    : feature_engagement_tracker_impl_(feature_engagement_tracker_impl) {
+    FeatureEngagementTrackerImpl* feature_engagement_tracker_impl,
+    FeatureEngagementTrackerImpl::FeatureVector features)
+    : features_(CreateMapFromNameToFeature(features)),
+      feature_engagement_tracker_impl_(feature_engagement_tracker_impl) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   java_obj_.Reset(env, Java_FeatureEngagementTrackerImpl_create(
@@ -85,8 +102,10 @@ void FeatureEngagementTrackerImplAndroid::Event(
     const base::android::JavaParamRef<jstring>& jfeature,
     const base::android::JavaParamRef<jstring>& jprecondition) {
   std::string feature = ConvertJavaStringToUTF8(env, jfeature);
+  DCHECK(features_.find(feature) != features_.end());
+
   std::string precondition = ConvertJavaStringToUTF8(env, jprecondition);
-  feature_engagement_tracker_impl_->Event(feature, precondition);
+  feature_engagement_tracker_impl_->Event(*features_[feature], precondition);
 }
 
 void FeatureEngagementTrackerImplAndroid::Used(
@@ -94,7 +113,9 @@ void FeatureEngagementTrackerImplAndroid::Used(
     const base::android::JavaRef<jobject>& jobj,
     const base::android::JavaParamRef<jstring>& jfeature) {
   std::string feature = ConvertJavaStringToUTF8(env, jfeature);
-  feature_engagement_tracker_impl_->Used(feature);
+  DCHECK(features_.find(feature) != features_.end());
+
+  feature_engagement_tracker_impl_->Used(*features_[feature]);
 }
 
 bool FeatureEngagementTrackerImplAndroid::Trigger(
@@ -102,7 +123,9 @@ bool FeatureEngagementTrackerImplAndroid::Trigger(
     const base::android::JavaRef<jobject>& jobj,
     const base::android::JavaParamRef<jstring>& jfeature) {
   std::string feature = ConvertJavaStringToUTF8(env, jfeature);
-  return feature_engagement_tracker_impl_->Trigger(feature);
+  DCHECK(features_.find(feature) != features_.end());
+
+  return feature_engagement_tracker_impl_->Trigger(*features_[feature]);
 }
 
 void FeatureEngagementTrackerImplAndroid::Dismissed(

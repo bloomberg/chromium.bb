@@ -14,8 +14,11 @@ static_library("internal") {
   ]
 
   sources = [
+    "feature_constants.cc",
     "feature_engagement_tracker_impl.cc",
     "feature_engagement_tracker_impl.h",
+    "feature_list.cc",
+    "feature_list.h",
   ]
 
   deps = [
@@ -46,6 +49,7 @@ source_set("unit_tests") {
 
   deps = [
     ":internal",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

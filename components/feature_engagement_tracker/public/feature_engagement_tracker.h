@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -47,18 +48,18 @@ class FeatureEngagementTracker : public KeyedService {
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
 
   // Must be called whenever an event related to a precondition happens.
-  virtual void Event(const std::string& feature,
+  virtual void Event(const base::Feature& feature,
                      const std::string& precondition) = 0;
 
   // Must be called whenever a feature has been used.
-  virtual void Used(const std::string& feature) = 0;
+  virtual void Used(const base::Feature& feature) = 0;
 
   // This function must be called whenever the triggering condition for a
   // specific feature happens. Returns true iff the display of feature
   // enlightenment must happen.
   // If |true| is returned, the caller *must* call Dismissed() when display
   // of feature enlightenment ends.
-  virtual bool Trigger(const std::string& feature) WARN_UNUSED_RESULT = 0;
+  virtual bool Trigger(const base::Feature& feature) WARN_UNUSED_RESULT = 0;
 
   // Must be called after display of feature enlightenment finishes.
   virtual void Dismissed() = 0;

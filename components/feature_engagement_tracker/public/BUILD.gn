@@ -9,6 +9,7 @@ if (is_android) {
 
 source_set("public") {
   sources = [
+    "feature_constants.h",
     "feature_engagement_tracker.h",
   ]
 
@@ -24,7 +25,10 @@ source_set("public") {
 
 if (is_android) {
   android_library("public_java") {
-    java_files = [ "android/java/src/org/chromium/components/feature_engagement_tracker/FeatureEngagementTracker.java" ]
+    java_files = [
+      "android/java/src/org/chromium/components/feature_engagement_tracker/FeatureConstants.java",
+      "android/java/src/org/chromium/components/feature_engagement_tracker/FeatureEngagementTracker.java",
+    ]
 
     deps = [
       "//base:base_java",
