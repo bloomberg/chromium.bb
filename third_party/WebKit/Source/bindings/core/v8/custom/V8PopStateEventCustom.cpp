@@ -32,21 +32,26 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8History.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/events/PopStateEvent.h"
 #include "core/frame/History.h"
 
 namespace blink {
+
+namespace {
+// |kSymbolKey| is a key for a cached attribute for History.state.
+// TODO(peria): Do not use this cached attribute directly.
+constexpr char kSymbolKey[] = "History#State";
+}
 
 // Save the state value to a hidden attribute in the V8PopStateEvent, and return
 // it, for convenience.
 static v8::Local<v8::Value> cacheState(ScriptState* scriptState,
                                        v8::Local<v8::Object> popStateEvent,
                                        v8::Local<v8::Value> state) {
-  V8HiddenValue::setHiddenValue(scriptState, popStateEvent,
-                                V8HiddenValue::state(scriptState->isolate()),
-                                state);
+  V8PrivateProperty::getPopStateEventState(scriptState->isolate())
+      .set(popStateEvent, state);
   return state;
 }
 
@@ -54,8 +59,9 @@ void V8PopStateEvent::stateAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Isolate* isolate = info.GetIsolate();
   ScriptState* scriptState = ScriptState::current(isolate);
-  v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(
-      scriptState, info.Holder(), V8HiddenValue::state(isolate));
+  V8PrivateProperty::Symbol propertySymbol =
+      V8PrivateProperty::getPopStateEventState(isolate);
+  v8::Local<v8::Value> result = propertySymbol.getOrEmpty(info.Holder());
 
   if (!result.IsEmpty()) {
     v8SetReturnValue(info, result);
@@ -87,23 +93,21 @@ void V8PopStateEvent::stateAttributeGetterCustom(
   // deserialization with history.state.
 
   bool isSameState = history->isSameAsCurrentState(event->serializedState());
-
   if (isSameState) {
+    V8PrivateProperty::Symbol historyState =
+        V8PrivateProperty::getSymbol(isolate, kSymbolKey);
     v8::Local<v8::Value> v8HistoryValue = ToV8(history, info.Holder(), isolate);
     if (v8HistoryValue.IsEmpty())
       return;
     v8::Local<v8::Object> v8History = v8HistoryValue.As<v8::Object>();
-    if (!history->stateChanged()) {
-      result = V8HiddenValue::getHiddenValue(scriptState, v8History,
-                                             V8HiddenValue::state(isolate));
-      if (!result.IsEmpty()) {
-        v8SetReturnValue(info, cacheState(scriptState, info.Holder(), result));
-        return;
-      }
+    if (!history->stateChanged() && historyState.hasValue(v8History)) {
+      v8SetReturnValue(info,
+                       cacheState(scriptState, info.Holder(),
+                                  historyState.getOrUndefined(v8History)));
+      return;
     }
     result = event->serializedState()->deserialize(isolate);
-    V8HiddenValue::setHiddenValue(scriptState, v8History,
-                                  V8HiddenValue::state(isolate), result);
+    historyState.set(v8History, result);
   } else {
     result = event->serializedState()->deserialize(isolate);
   }

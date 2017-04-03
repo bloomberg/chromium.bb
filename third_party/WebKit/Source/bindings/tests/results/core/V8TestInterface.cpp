@@ -20,10 +20,10 @@
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8DOMConfiguration.h"
 #include "bindings/core/v8/V8EventListenerHelper.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/core/v8/V8TestInterface2.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
@@ -88,10 +88,13 @@ static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "testInterfaceAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "testInterfaceAttribute");
 
   // Prepare the value to be set.
   TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -114,10 +117,13 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 }
 
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "doubleAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "doubleAttribute");
 
   // Prepare the value to be set.
   double cppValue = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -136,10 +142,13 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "floatAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "floatAttribute");
 
   // Prepare the value to be set.
   float cppValue = NativeValueTraits<IDLFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -158,10 +167,13 @@ static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbac
 }
 
 static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "unrestrictedDoubleAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "unrestrictedDoubleAttribute");
 
   // Prepare the value to be set.
   double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -180,10 +192,13 @@ static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallback
 }
 
 static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "unrestrictedFloatAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "unrestrictedFloatAttribute");
 
   // Prepare the value to be set.
   float cppValue = NativeValueTraits<IDLUnrestrictedFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -202,10 +217,13 @@ static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::
 }
 
 static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "testEnumAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "testEnumAttribute");
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -222,7 +240,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
       "EnumValue3",
   };
   if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
+    currentExecutionContext(isolate)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
     return;
   }
 
@@ -241,10 +259,13 @@ static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInf
 }
 
 static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "stringOrDoubleAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "stringOrDoubleAttribute");
 
   // Prepare the value to be set.
   StringOrDouble cppValue;
@@ -264,10 +285,13 @@ static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackIn
 }
 
 static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "conditionalLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "conditionalLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -290,6 +314,9 @@ static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 }
 
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
@@ -303,7 +330,10 @@ static void staticReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCal
 }
 
 static void staticReturnDOMWrapperAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "staticReturnDOMWrapperAttribute");
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "staticReturnDOMWrapperAttribute");
 
   // Prepare the value to be set.
   TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -329,7 +359,9 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute"), v8Value);
+  V8PrivateProperty::getSymbol(
+      info.GetIsolate(), "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute")
+      .set(holder, v8Value);
 
   v8SetReturnValue(info, v8Value);
 }
@@ -347,6 +379,9 @@ static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::Functi
 }
 
 static void legacyInterfaceTypeCheckingAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
@@ -365,10 +400,13 @@ static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "alwaysExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "alwaysExposedAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -387,10 +425,13 @@ static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "workerExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "workerExposedAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -409,10 +450,13 @@ static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "windowExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "windowExposedAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -436,9 +480,12 @@ static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 }
 
 static void lenientThisAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
+  if (!V8TestInterface::hasInstance(info.Holder(), isolate))
     return; // Return silently because of [LenientThis].
 
   v8::Local<v8::Object> holder = info.Holder();
@@ -459,10 +506,13 @@ static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "secureContextAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -485,10 +535,13 @@ static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::Functi
 }
 
 static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "secureContextRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -511,10 +564,13 @@ static void secureContextWindowExposedAttributeAttributeGetter(const v8::Functio
 }
 
 static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWindowExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "secureContextWindowExposedAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -537,10 +593,13 @@ static void secureContextWorkerExposedAttributeAttributeGetter(const v8::Functio
 }
 
 static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWorkerExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "secureContextWorkerExposedAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -563,10 +622,13 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(con
 }
 
 static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWindowExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "secureContextWindowExposedRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -589,10 +651,13 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(con
 }
 
 static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWorkerExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "secureContextWorkerExposedRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -615,6 +680,9 @@ static void implementsStaticStringAttributeAttributeGetter(const v8::FunctionCal
 }
 
 static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
@@ -640,6 +708,9 @@ static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackI
 }
 
 static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
@@ -660,10 +731,13 @@ static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInf
 }
 
 static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "implementsNodeAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "implementsNodeAttribute");
 
   // Prepare the value to be set.
   Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -688,11 +762,14 @@ static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCal
 }
 
 static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
   // Prepare the value to be set.
-  moveEventListenerToNewWrapper(info.GetIsolate(), holder, impl->implementsEventHandlerAttribute(), v8Value, V8TestInterface::eventListenerCacheIndex);
+  moveEventListenerToNewWrapper(isolate, holder, impl->implementsEventHandlerAttribute(), v8Value, V8TestInterface::eventListenerCacheIndex);
 
   impl->setImplementsEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::forReceiverObject(info), v8Value, true, ListenerFindOrCreate));
 }
@@ -706,10 +783,13 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::Funct
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "implementsRuntimeEnabledNodeAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "implementsRuntimeEnabledNodeAttribute");
 
   // Prepare the value to be set.
   Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -728,6 +808,9 @@ static void implements2StaticStringAttributeAttributeGetter(const v8::FunctionCa
 }
 
 static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
@@ -745,6 +828,9 @@ static void implements2StringAttributeAttributeGetter(const v8::FunctionCallback
 }
 
 static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
@@ -765,6 +851,9 @@ static void implements3StringAttributeAttributeGetter(const v8::FunctionCallback
 }
 
 static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
@@ -781,6 +870,9 @@ static void implements3StaticStringAttributeAttributeGetter(const v8::FunctionCa
 }
 
 static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
@@ -798,10 +890,13 @@ static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 }
 
 static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -816,7 +911,10 @@ static void partialStaticLongAttributeAttributeGetter(const v8::FunctionCallback
 }
 
 static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialStaticLongAttribute");
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialStaticLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -837,17 +935,20 @@ static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8
 }
 
 static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialCallWithExecutionContextLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialCallWithExecutionContextLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
   if (exceptionState.hadException())
     return;
 
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+  ExecutionContext* executionContext = currentExecutionContext(isolate);
 
   TestInterfacePartial::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
@@ -861,10 +962,13 @@ static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCal
 }
 
 static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialPartialEnumTypeAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialPartialEnumTypeAttribute");
 
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
@@ -879,7 +983,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
       "bar",
   };
   if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", dummyExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
+    currentExecutionContext(isolate)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
     return;
   }
 
@@ -895,10 +999,13 @@ static void partialSecureContextLongAttributeAttributeGetter(const v8::FunctionC
 }
 
 static void partialSecureContextLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -917,10 +1024,13 @@ static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 }
 
 static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2LongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partial2LongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -935,7 +1045,10 @@ static void partial2StaticLongAttributeAttributeGetter(const v8::FunctionCallbac
 }
 
 static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2StaticLongAttribute");
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partial2StaticLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -954,10 +1067,13 @@ static void partial2SecureContextAttributeAttributeGetter(const v8::FunctionCall
 }
 
 static void partial2SecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2SecureContextAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partial2SecureContextAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -980,10 +1096,13 @@ static void partialSecureContextAttributeAttributeGetter(const v8::FunctionCallb
 }
 
 static void partialSecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -1006,10 +1125,13 @@ static void partialSecureContextRuntimeEnabledAttributeAttributeGetter(const v8:
 }
 
 static void partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -1032,10 +1154,13 @@ static void partialSecureContextWindowExposedAttributeAttributeGetter(const v8::
 }
 
 static void partialSecureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWindowExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextWindowExposedAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -1058,10 +1183,13 @@ static void partialSecureContextWorkerExposedAttributeAttributeGetter(const v8::
 }
 
 static void partialSecureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWorkerExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextWorkerExposedAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -1084,10 +1212,13 @@ static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGet
 }
 
 static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWindowExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextWindowExposedRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -1110,10 +1241,13 @@ static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGet
 }
 
 static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWorkerExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partialSecureContextWorkerExposedRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);

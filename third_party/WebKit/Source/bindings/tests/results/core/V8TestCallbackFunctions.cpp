@@ -66,6 +66,9 @@ static void voidCallbackFunctionAttributeAttributeGetter(const v8::FunctionCallb
 }
 
 static void voidCallbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 
@@ -84,6 +87,9 @@ static void anyCallbackFunctionOptionalAnyArgAttributeAttributeGetter(const v8::
 }
 
 static void anyCallbackFunctionOptionalAnyArgAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestCallbackFunctions* impl = V8TestCallbackFunctions::toImpl(holder);
 

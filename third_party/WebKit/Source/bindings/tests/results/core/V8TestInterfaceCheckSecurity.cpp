@@ -73,10 +73,13 @@ static void longAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Valu
 }
 
 static void longAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "longAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "longAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -95,10 +98,13 @@ static void doNotCheckSecurityLongAttributeAttributeGetter(const v8::PropertyCal
 }
 
 static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -125,10 +131,13 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::Pro
 }
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const V8CrossOriginSetterInfo& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityOnSetterLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceCheckSecurity", "doNotCheckSecurityOnSetterLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -174,9 +183,13 @@ static void doNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
     return;
   }
 
-  v8::Local<v8::Value> hiddenValue = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), v8AtomicString(info.GetIsolate(), "doNotCheckSecurityVoidMethod"));
-  if (!hiddenValue.IsEmpty()) {
-    v8SetReturnValue(info, hiddenValue);
+  // {{method.name}} must be same with |methodName| (=name) in
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  V8PrivateProperty::Symbol propertySymbol =
+      V8PrivateProperty::getSymbol(info.GetIsolate(), "doNotCheckSecurityVoidMethod");
+  v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
+  if (propertySymbol.hasValue(holder)) {
+    v8SetReturnValue(info, propertySymbol.getOrUndefined(holder));
   }
 }
 
@@ -202,9 +215,13 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
     return;
   }
 
-  v8::Local<v8::Value> hiddenValue = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
-  if (!hiddenValue.IsEmpty()) {
-    v8SetReturnValue(info, hiddenValue);
+  // {{method.name}} must be same with |methodName| (=name) in
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  V8PrivateProperty::Symbol propertySymbol =
+      V8PrivateProperty::getSymbol(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
+  v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
+  if (propertySymbol.hasValue(holder)) {
+    v8SetReturnValue(info, propertySymbol.getOrUndefined(holder));
   }
 }
 
@@ -230,9 +247,13 @@ static void doNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
     return;
   }
 
-  v8::Local<v8::Value> hiddenValue = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), v8AtomicString(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod"));
-  if (!hiddenValue.IsEmpty()) {
-    v8SetReturnValue(info, hiddenValue);
+  // {{method.name}} must be same with |methodName| (=name) in
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  V8PrivateProperty::Symbol propertySymbol =
+      V8PrivateProperty::getSymbol(info.GetIsolate(), "doNotCheckSecurityPerWorldBindingsVoidMethod");
+  v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
+  if (propertySymbol.hasValue(holder)) {
+    v8SetReturnValue(info, propertySymbol.getOrUndefined(holder));
   }
 }
 
@@ -258,9 +279,13 @@ static void doNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
     return;
   }
 
-  v8::Local<v8::Value> hiddenValue = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), v8AtomicString(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod"));
-  if (!hiddenValue.IsEmpty()) {
-    v8SetReturnValue(info, hiddenValue);
+  // {{method.name}} must be same with |methodName| (=name) in
+  // {{cpp_class}}OriginSafeMethodSetter defined in interface.cpp.tmpl.
+  V8PrivateProperty::Symbol propertySymbol =
+      V8PrivateProperty::getSymbol(info.GetIsolate(), "doNotCheckSecurityUnforgeableVoidMethod");
+  v8::Local<v8::Object> holder = v8::Local<v8::Object>::Cast(info.Holder());
+  if (propertySymbol.hasValue(holder)) {
+    v8SetReturnValue(info, propertySymbol.getOrUndefined(holder));
   }
 }
 
@@ -271,13 +296,17 @@ static void TestInterfaceCheckSecurityOriginSafeMethodSetter(v8::Local<v8::Name>
   if (holder.IsEmpty())
     return;
   TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
-  v8::String::Utf8Value attributeName(name);
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", *attributeName);
+  v8::String::Utf8Value methodName(name);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceCheckSecurity", *methodName);
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
     return;
   }
 
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), name.As<v8::String>(), v8Value);
+  // |methodName| must be same with {{method.name}} in
+  // {{method.name}}OriginSafeMethodGetter{{world_suffix}} defined in
+  // methods.cpp.tmpl
+  V8PrivateProperty::getSymbol(info.GetIsolate(), *methodName)
+      .set(v8::Local<v8::Object>::Cast(info.Holder()), v8Value);
 }
 static const struct {
   using GetterCallback = void(*)(const v8::PropertyCallbackInfo<v8::Value>&);

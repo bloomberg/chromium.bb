@@ -32,7 +32,6 @@ class ScriptWrappable;
   V(port1)                                   \
   V(port2)                                   \
   V(requestInFetchEvent)                     \
-  V(state)                                   \
   V(testInterfaces)                          \
   V(thenableHiddenPromise)                   \
   V(toStringString)                          \

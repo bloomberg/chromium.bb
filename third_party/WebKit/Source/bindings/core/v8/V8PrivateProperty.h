@@ -39,6 +39,7 @@ class ScriptWrappable;
   X(MutationObserver, Callback)                       \
   X(NamedConstructor, Initialized)                    \
   X(PerformanceObserver, Callback)                    \
+  X(PopStateEvent, State)                             \
   X(SameObject, NotificationActions)                  \
   X(SameObject, NotificationData)                     \
   X(SameObject, NotificationVibrate)                  \
@@ -105,6 +106,10 @@ class CORE_EXPORT V8PrivateProperty {
       return object->SetPrivate(context(), m_privateSymbol, value).ToChecked();
     }
 
+    bool deleteProperty(v8::Local<v8::Object> object) const {
+      return object->DeletePrivate(context(), m_privateSymbol).ToChecked();
+    }
+
     v8::Local<v8::Private> getPrivate() const { return m_privateSymbol; }
 
    private:
@@ -168,7 +173,7 @@ class CORE_EXPORT V8PrivateProperty {
         privateProp->m_symbolWindowDocumentCachedAccessor.newLocal(isolate));
   }
 
-  static Symbol createSymbol(v8::Isolate* isolate, const char* symbol) {
+  static Symbol getSymbol(v8::Isolate* isolate, const char* symbol) {
     return Symbol(isolate, createCachedV8Private(isolate, symbol));
   }
 
@@ -177,6 +182,7 @@ class CORE_EXPORT V8PrivateProperty {
 
   static v8::Local<v8::Private> createV8Private(v8::Isolate*,
                                                 const char* symbol);
+  // TODO(peria): Remove this method. We should not use v8::Private::ForApi().
   static v8::Local<v8::Private> createCachedV8Private(v8::Isolate*,
                                                       const char* symbol);
 

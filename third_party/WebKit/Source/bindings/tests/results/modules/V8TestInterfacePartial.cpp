@@ -43,10 +43,13 @@ static void partial4LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 }
 
 static void partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial4LongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partial4LongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -61,7 +64,10 @@ static void partial4StaticLongAttributeAttributeGetter(const v8::FunctionCallbac
 }
 
 static void partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial4StaticLongAttribute");
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface", "partial4StaticLongAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);

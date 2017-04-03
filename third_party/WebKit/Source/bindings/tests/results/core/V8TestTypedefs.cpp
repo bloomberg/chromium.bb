@@ -75,10 +75,13 @@ static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8:
 }
 
 static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "uLongLongAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestTypedefs", "uLongLongAttribute");
 
   // Prepare the value to be set.
   uint64_t cppValue = NativeValueTraits<IDLUnsignedLongLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -100,10 +103,13 @@ static void domStringOrDoubleOrNullAttributeAttributeGetter(const v8::FunctionCa
 }
 
 static void domStringOrDoubleOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestTypedefs", "domStringOrDoubleOrNullAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestTypedefs", "domStringOrDoubleOrNullAttribute");
 
   // Prepare the value to be set.
   StringOrDouble cppValue;

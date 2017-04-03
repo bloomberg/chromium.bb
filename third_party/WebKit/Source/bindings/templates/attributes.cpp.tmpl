@@ -60,10 +60,12 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
-  v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
+  V8PrivateProperty::Symbol propertySymbol =
+      V8PrivateProperty::getSymbol(info.GetIsolate(),
+          "{{cpp_class}}#{{attribute.name.capitalize()}}");
   if (!impl->{{attribute.cached_attribute_validation_method}}()) {
-    v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::forFunctionObject(info), holder, propertyName);
-    if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
+    v8::Local<v8::Value> v8Value = propertySymbol.getOrUndefined(holder);
+    if (!v8Value->IsUndefined()) {
       v8SetReturnValue(info, v8Value);
       return;
     }
@@ -136,7 +138,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   v8::Local<v8::Value> v8Value({{attribute.cpp_value_to_v8_value}});
-  V8HiddenValue::setHiddenValue(ScriptState::forFunctionObject(info), holder, propertyName, v8Value);
+  propertySymbol.set(holder, v8Value);
   {% endif %}
 
   {% if attribute.is_explicit_nullable %}
@@ -152,7 +154,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}))
     return;
   v8::Local<v8::Value> v8Value(ToV8({{attribute.cpp_value}}, holder, info.GetIsolate()));
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#{{interface_name}}#{{attribute.name}}"), v8Value);
+  V8PrivateProperty::getSymbol(
+      info.GetIsolate(), "KeepAlive#{{interface_name}}#{{attribute.name}}")
+      .set(holder, v8Value);
   {% endif %}
 
   {% if world_suffix %}
@@ -281,14 +285,17 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% filter format_remove_duplicates(['ExceptionState exceptionState']) %}
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   {% set define_exception_state -%}
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "{{interface_name}}", "{{attribute.name}}");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "{{interface_name}}", "{{attribute.name}}");
   {%- endset %}
 
   {% if attribute.is_lenient_this %}
   // [LenientThis]
   // Make sure that info.Holder() really points to an instance if [LenientThis].
-  if (!{{v8_class}}::hasInstance(info.Holder(), info.GetIsolate()))
+  if (!{{v8_class}}::hasInstance(info.Holder(), isolate))
     return; // Return silently because of [LenientThis].
   {% endif %}
 
@@ -320,9 +327,9 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // Perform a security check for the receiver object.
   {{define_exception_state}}
   {% if local_dom_window_only %}
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), uncheckedImpl, exceptionState)) {
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(isolate), uncheckedImpl, exceptionState)) {
   {% else %}
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(isolate), impl, exceptionState)) {
   {% endif %}{# local_dom_window_only #}
     v8SetReturnValue(info, v8Value);
     return;
@@ -349,7 +356,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // Prepare the value to be set.
   {% if attribute.idl_type == 'EventHandler' %}
   {% if not is_node %}
-  moveEventListenerToNewWrapper(info.GetIsolate(), holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex);
+  moveEventListenerToNewWrapper(isolate, holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex);
   {% endif %}
   {% else %}{# not EventHandler #}
   {{v8_value_to_local_cpp_value(attribute) | indent(2)}}
@@ -369,13 +376,13 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   DummyExceptionStateForTesting dummyExceptionState;
   {{declare_enum_validation_variable(attribute.enum_values) | indent(2)}}
   if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", dummyExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
+    currentExecutionContext(isolate)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
     return;
   }
   {% endif %}
 
   {% if attribute.is_call_with_execution_context or attribute.is_setter_call_with_execution_context %}
-  ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+  ExecutionContext* executionContext = currentExecutionContext(isolate);
   {% endif %}
 
   {% if attribute.is_call_with_script_state %}
@@ -387,14 +394,16 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.is_replaceable %}
-  v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
+  v8::Local<v8::String> propertyName = v8AtomicString(isolate, "{{attribute.name}}");
   {% endif %}
   {{attribute.cpp_setter}};
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
   // Invalidate the cached value.
-  V8HiddenValue::deleteHiddenValue(ScriptState::forFunctionObject(info), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"));
+  V8PrivateProperty::getSymbol(
+      isolate, "{{cpp_class}}#{{attribute.name.capitalize()}}")
+      .deleteProperty(holder, v8::Undefined(isolate));
   {% endif %}
 }
 {% endfilter %}{# format_remove_duplicates #}

@@ -64,6 +64,9 @@ static void typeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 }
 
 static void typeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   SVGTestInterface* impl = V8SVGTestInterface::toImpl(holder);
 

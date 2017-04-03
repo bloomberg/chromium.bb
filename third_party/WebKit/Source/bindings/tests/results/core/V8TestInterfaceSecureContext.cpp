@@ -63,10 +63,13 @@ static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -89,10 +92,13 @@ static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::Functi
 }
 
 static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -115,10 +121,13 @@ static void secureContextWindowExposedAttributeAttributeGetter(const v8::Functio
 }
 
 static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -141,10 +150,13 @@ static void secureContextWorkerExposedAttributeAttributeGetter(const v8::Functio
 }
 
 static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -167,10 +179,13 @@ static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(con
 }
 
 static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWindowExposedRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -193,10 +208,13 @@ static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(con
 }
 
 static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceSecureContext* impl = V8TestInterfaceSecureContext::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedRuntimeEnabledAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceSecureContext", "secureContextWorkerExposedRuntimeEnabledAttribute");
 
   // Prepare the value to be set.
   bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);

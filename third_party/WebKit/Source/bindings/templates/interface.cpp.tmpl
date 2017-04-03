@@ -491,14 +491,20 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::Name> name, v8::Lo
   if (holder.IsEmpty())
     return;
   {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
-  v8::String::Utf8Value attributeName(name);
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "{{interface_name}}", *attributeName);
+  v8::String::Utf8Value methodName(name);
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "{{interface_name}}", *methodName);
   if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()), impl, exceptionState)) {
     return;
   }
 
   {# The findInstanceInPrototypeChain() call above only returns a non-empty handle if info.Holder() is an Object. #}
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), v8::Local<v8::Object>::Cast(info.Holder()), name.As<v8::String>(), v8Value);
+  {% raw %}
+  // |methodName| must be same with {{method.name}} in
+  // {{method.name}}OriginSafeMethodGetter{{world_suffix}} defined in
+  // methods.cpp.tmpl
+  {% endraw %}
+  V8PrivateProperty::getSymbol(info.GetIsolate(), *methodName)
+      .set(v8::Local<v8::Object>::Cast(info.Holder()), v8Value);
 }
 {% endif %}
 {% endblock %}

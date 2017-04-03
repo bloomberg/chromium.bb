@@ -67,10 +67,13 @@ static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info
 }
 
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceGarbageCollected", "attr1");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterfaceGarbageCollected", "attr1");
 
   // Prepare the value to be set.
   TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);

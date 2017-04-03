@@ -66,10 +66,13 @@ static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "testInterfaceAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "testInterfaceAttribute");
 
   // Prepare the value to be set.
   TestInterface5Implementation* cppValue = V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value);
@@ -92,10 +95,13 @@ static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 }
 
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "doubleAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "doubleAttribute");
 
   // Prepare the value to be set.
   double cppValue = NativeValueTraits<IDLDouble>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -114,10 +120,13 @@ static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "floatAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "floatAttribute");
 
   // Prepare the value to be set.
   float cppValue = NativeValueTraits<IDLFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -136,10 +145,13 @@ static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbac
 }
 
 static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "unrestrictedDoubleAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "unrestrictedDoubleAttribute");
 
   // Prepare the value to be set.
   double cppValue = NativeValueTraits<IDLUnrestrictedDouble>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -158,10 +170,13 @@ static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallback
 }
 
 static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "unrestrictedFloatAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "unrestrictedFloatAttribute");
 
   // Prepare the value to be set.
   float cppValue = NativeValueTraits<IDLUnrestrictedFloat>::nativeValue(info.GetIsolate(), v8Value, exceptionState);
@@ -176,6 +191,9 @@ static void staticStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 }
 
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   // Prepare the value to be set.
   V8StringResource<> cppValue = v8Value;
   if (!cppValue.prepare())
@@ -201,10 +219,13 @@ static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "alwaysExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "alwaysExposedAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -223,10 +244,13 @@ static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "workerExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "workerExposedAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);
@@ -245,10 +269,13 @@ static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
 
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "windowExposedAttribute");
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext, "TestInterface5", "windowExposedAttribute");
 
   // Prepare the value to be set.
   int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(info.GetIsolate(), v8Value, exceptionState, NormalConversion);

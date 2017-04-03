@@ -67,6 +67,9 @@ static void nodeNameAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& i
 }
 
 static void nodeNameAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
@@ -87,6 +90,9 @@ static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Va
 }
 
 static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
@@ -117,6 +123,9 @@ static void eventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 }
 
 static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
@@ -150,6 +159,9 @@ static void reflectStringAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 static void reflectStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 
@@ -170,6 +182,9 @@ static void reflectUrlStringAttributeAttributeGetter(const v8::FunctionCallbackI
 }
 
 static void reflectUrlStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ALLOW_UNUSED_LOCAL(isolate);
+
   v8::Local<v8::Object> holder = info.Holder();
   TestInterfaceNode* impl = V8TestInterfaceNode::toImpl(holder);
 

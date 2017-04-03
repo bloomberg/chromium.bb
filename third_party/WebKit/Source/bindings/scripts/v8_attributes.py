@@ -111,7 +111,7 @@ def attribute_context(interface, attribute, interfaces):
     cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
     keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
     if cached_attribute_validation_method or keep_alive_for_gc:
-        includes.add('bindings/core/v8/V8HiddenValue.h')
+        includes.add('bindings/core/v8/V8PrivateProperty.h')
 
     # [CachedAccessor]
     is_cached_accessor = 'CachedAccessor' in extended_attributes
