@@ -81,14 +81,9 @@ SyncSetupWebUITestAsync.prototype = {
   },
 };
 
-// This test is flaky on Linux bot (crbug.com/579666) and Windows bot
+// This test is flaky on Linux bot (crbug.com/579666) and Windows & Mac bots
 // (crbug.com/608975).
-GEN('#if defined(OS_LINUX) || defined(OS_WIN)');
-GEN('#define MAYBE_VerifySignIn DISABLED_VerifySignIn');
-GEN('#else');
-GEN('#define MAYBE_VerifySignIn VerifySignIn');
-GEN('#endif  // defined(OS_LINUX) || defined(OS_WIN)');
-TEST_F('SyncSetupWebUITestAsync', 'MAYBE_VerifySignIn', function() {
+TEST_F('SyncSetupWebUITestAsync', 'DISABLED_VerifySignIn', function() {
   // Handle SyncSetupStartSignIn by displaying the sync setup dialog, verifying
   // that a confirmation dialog appears, and clicking OK to dismiss the dialog.
   // Note that this test doesn't actually do a gaia sign in.
