@@ -431,7 +431,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Tests that a typed URL (after Sync is enabled) is uploaded to the Sync
 // server.
-- (void)testSyncTypedURLUpload {
+// TODO(crbug.com/707846): Re-enable test.
+- (void)DISABLED_testSyncTypedURLUpload {
   const GURL mockURL("http://not-a-real-site/");
 
   chrome_test_util::ClearBrowsingHistory();
@@ -552,7 +553,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 
 // Test that typed url is deleted from client after server sends tombstone for
 // that typed url.
-- (void)testSyncTypedURLDeleteFromServer {
+// TODO(crbug.com/707846): Re-enable test.
+- (void)DISABLE_testSyncTypedURLDeleteFromServer {
   const GURL mockURL("http://not-a-real-site/");
 
   chrome_test_util::ClearBrowsingHistory();
