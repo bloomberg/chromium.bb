@@ -91,6 +91,10 @@ class CronetEnvironment {
     http_cache_ = http_cache;
   }
 
+  void set_experimental_options(const std::string& experimental_options) {
+    experimental_options_ = experimental_options;
+  }
+
   void SetHostResolverRules(const std::string& host_resolver_rules);
 
   void set_ssl_key_log_file_name(const std::string& ssl_key_log_file_name) {
@@ -134,6 +138,7 @@ class CronetEnvironment {
   bool quic_enabled_;
   std::string quic_user_agent_id_;
   std::string accept_language_;
+  std::string experimental_options_;
   std::string ssl_key_log_file_name_;
   URLRequestContextConfig::HttpCacheType http_cache_;
 
