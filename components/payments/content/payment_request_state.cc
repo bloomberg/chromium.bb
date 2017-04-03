@@ -29,12 +29,11 @@ PaymentRequestState::PaymentRequestState(
       personal_data_manager_(personal_data_manager),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
-      selected_instrument_(nullptr),
-      selected_shipping_option_(nullptr) {
+      selected_instrument_(nullptr) {
   PopulateProfileCache();
-  UpdateSelectedShippingOption();
   SetDefaultProfileSelections();
 }
+PaymentRequestState::~PaymentRequestState() {}
 
 bool PaymentRequestState::CanMakePayment() const {
   for (const std::unique_ptr<PaymentInstrument>& instrument :
@@ -52,7 +51,6 @@ void PaymentRequestState::AddObserver(Observer* observer) {
   CHECK(observer);
   observers_.AddObserver(observer);
 }
-PaymentRequestState::~PaymentRequestState() {}
 
 void PaymentRequestState::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
@@ -80,8 +78,8 @@ void PaymentRequestState::OnInstrumentDetailsReady(
         PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
             selected_shipping_profile_, app_locale_);
 
-    DCHECK(selected_shipping_option_);
-    payment_response->shipping_option = selected_shipping_option_->id;
+    DCHECK(spec_->selected_shipping_option());
+    payment_response->shipping_option = spec_->selected_shipping_option()->id;
   }
 
   // Contact Details section.
@@ -115,15 +113,19 @@ void PaymentRequestState::GeneratePaymentResponse() {
 }
 
 void PaymentRequestState::SetSelectedShippingOption(
-    mojom::PaymentShippingOption* option) {
-  selected_shipping_option_ = option;
-  UpdateIsReadyToPayAndNotifyObservers();
+    const std::string& shipping_option_id) {
+  // This will inform the merchant and will lead to them calling updateWith with
+  // new PaymentDetails.
+  delegate_->OnShippingOptionIdSelected(shipping_option_id);
 }
 
 void PaymentRequestState::SetSelectedShippingProfile(
     autofill::AutofillProfile* profile) {
   selected_shipping_profile_ = profile;
   UpdateIsReadyToPayAndNotifyObservers();
+  delegate_->OnShippingAddressSelected(
+      PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
+          selected_shipping_profile_, app_locale_));
 }
 
 void PaymentRequestState::SetSelectedContactProfile(
@@ -187,7 +189,9 @@ void PaymentRequestState::PopulateProfileCache() {
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {
-  if (!shipping_profiles().empty())
+  // Only pre-select an address if the merchant provided at least one selected
+  // shipping option.
+  if (!shipping_profiles().empty() && spec_->selected_shipping_option())
     selected_shipping_profile_ = shipping_profiles()[0];
 
   if (!contact_profiles().empty())
@@ -260,22 +264,6 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
   }
 
   return true;
-}
-
-void PaymentRequestState::UpdateSelectedShippingOption() {
-  selected_shipping_option_ = nullptr;
-
-  // As per the spec, the selected shipping option should initially be the last
-  // one in the array that has its selected field set to true.
-  auto selected_shipping_option_it = std::find_if(
-      spec_->details().shipping_options.rbegin(),
-      spec_->details().shipping_options.rend(),
-      [](const payments::mojom::PaymentShippingOptionPtr& element) {
-        return element->selected;
-      });
-  if (selected_shipping_option_it != spec_->details().shipping_options.rend()) {
-    selected_shipping_option_ = selected_shipping_option_it->get();
-  }
 }
 
 }  // namespace payments

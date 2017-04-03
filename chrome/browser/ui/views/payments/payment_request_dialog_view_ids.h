@@ -27,22 +27,29 @@ enum class DialogViewID : int {
   EDITOR_SAVE_BUTTON,
   PAY_BUTTON,
   CANCEL_BUTTON,
+  BACK_BUTTON,
 
-  // The following are StyledLabel objects.
+  // The following are Label objects.
   ORDER_SUMMARY_TOTAL_AMOUNT_LABEL,
   ORDER_SUMMARY_LINE_ITEM_1,
   ORDER_SUMMARY_LINE_ITEM_2,
   ORDER_SUMMARY_LINE_ITEM_3,
+  SHIPPING_OPTION_DESCRIPTION,
+  SHIPPING_OPTION_AMOUNT,
+
+  // Used in "three line labels" to annotate each Label of the grouping.
+  THREE_LINE_LABEL_LINE_1,
+  THREE_LINE_LABEL_LINE_2,
+  THREE_LINE_LABEL_LINE_3,
 
   // The following are views contained within the Payment Method Sheet.
+  CONTACT_INFO_SHEET_LIST_VIEW,
   PAYMENT_METHOD_SHEET_LIST_VIEW,
+  SHIPPING_ADDRESS_SHEET_LIST_VIEW,
 
   // Used in selectable rows. Each row in a view reuses this ID, but the ID is
   // unique at the scope of the parent row.
   CHECKMARK_VIEW,
-
-  // The following are views contained within the Contact Info Sheet.
-  CONTACT_INFO_ITEM_CHECKMARK_VIEW,
 
   // Used to label the error labels with an offset, which gets added to
   // the Autofill type value they represent (for tests).

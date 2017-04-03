@@ -46,6 +46,13 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
     virtual void OnPaymentResponseAvailable(
         mojom::PaymentResponsePtr response) = 0;
 
+    // Called when the shipping option has changed to |shipping_option_id|.
+    virtual void OnShippingOptionIdSelected(std::string shipping_option_id) = 0;
+
+    // Called when the shipping address has changed to |address|.
+    virtual void OnShippingAddressSelected(
+        mojom::PaymentAddressPtr address) = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -87,9 +94,6 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   PaymentInstrument* selected_instrument() const {
     return selected_instrument_;
   }
-  mojom::PaymentShippingOption* selected_shipping_option() {
-    return selected_shipping_option_;
-  }
 
   // Returns the appropriate Autofill Profiles for this user. The profiles
   // returned are owned by the PaymentRequestState.
@@ -106,7 +110,7 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
 
   // Setters to change the selected information. Will have the side effect of
   // recomputing "is ready to pay" and notify observers.
-  void SetSelectedShippingOption(mojom::PaymentShippingOption* option);
+  void SetSelectedShippingOption(const std::string& shipping_option_id);
   void SetSelectedShippingProfile(autofill::AutofillProfile* profile);
   void SetSelectedContactProfile(autofill::AutofillProfile* profile);
   void SetSelectedInstrument(PaymentInstrument* instrument);
@@ -141,11 +145,6 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   // (contact info, shipping address).
   bool ArePaymentOptionsSatisfied();
 
-  // Updates the selected_shipping_option based on the data passed to this
-  // payment request by the website. This will set selected_shipping_option_ to
-  // the last option marked selected in the options array.
-  void UpdateSelectedShippingOption();
-
   bool is_ready_to_pay_;
 
   const std::string app_locale_;
@@ -158,9 +157,6 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_contact_profile_;
   PaymentInstrument* selected_instrument_;
-  // The shipping options (and thus this pointer) are owned by |spec_| which
-  // outlives this object.
-  mojom::PaymentShippingOption* selected_shipping_option_;
 
   // Profiles may change due to (e.g.) sync events, so profiles are cached after
   // loading and owned here. They are populated once only, and ordered by

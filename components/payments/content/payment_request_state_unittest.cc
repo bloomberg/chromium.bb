@@ -52,6 +52,8 @@ class PaymentRequestStateTest : public testing::Test,
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override {
     payment_response_ = std::move(response);
   };
+  void OnShippingOptionIdSelected(std::string shipping_option_id) override {}
+  void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override {}
 
   void RecreateStateWithOptionsAndDetails(
       mojom::PaymentOptionsPtr options,
@@ -201,28 +203,6 @@ TEST_F(PaymentRequestStateTest, CanMakePayment_BasicCard_SpecificUnavailable) {
   EXPECT_FALSE(state()->CanMakePayment());
 }
 
-// Test that the last shipping option is selected.
-TEST_F(PaymentRequestStateTest, ShippingOptionsSelection) {
-  std::vector<mojom::PaymentShippingOptionPtr> shipping_options;
-  mojom::PaymentShippingOptionPtr option = mojom::PaymentShippingOption::New();
-  option->id = "option:1";
-  option->selected = false;
-  shipping_options.push_back(std::move(option));
-  mojom::PaymentShippingOptionPtr option2 = mojom::PaymentShippingOption::New();
-  option2->id = "option:2";
-  option2->selected = true;
-  shipping_options.push_back(std::move(option2));
-  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
-  details->shipping_options = std::move(shipping_options);
-
-  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
-  options->request_shipping = true;
-  RecreateStateWithOptionsAndDetails(std::move(options), std::move(details),
-                                     GetMethodDataForVisa());
-
-  EXPECT_EQ("option:2", state()->selected_shipping_option()->id);
-}
-
 TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
   options->request_shipping = true;
@@ -230,6 +210,13 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   options->request_payer_phone = true;
   options->request_payer_email = true;
   RecreateStateWithOptions(std::move(options));
+
+  // Because there are shipping options, no address is selected by default.
+  // Therefore we are not ready to pay.
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  state()->SetSelectedShippingProfile(test_address());
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
 
   EXPECT_TRUE(state()->is_ready_to_pay());
 }

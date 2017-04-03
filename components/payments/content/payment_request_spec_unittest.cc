@@ -20,11 +20,20 @@ class PaymentRequestSpecTest : public testing::Test,
   void OnInvalidSpecProvided() override {
     on_invalid_spec_provided_called_ = true;
   }
+  void OnSpecUpdated() override { on_spec_updated_called_ = true; }
 
   void RecreateSpecWithMethodData(
-      std::vector<payments::mojom::PaymentMethodDataPtr> method_data) {
+      std::vector<mojom::PaymentMethodDataPtr> method_data) {
     spec_ = base::MakeUnique<PaymentRequestSpec>(
-        nullptr, nullptr, std::move(method_data), this, "en-US");
+        mojom::PaymentOptions::New(), mojom::PaymentDetails::New(),
+        std::move(method_data), this, "en-US");
+  }
+
+  void RecreateSpecWithOptionsAndDetails(mojom::PaymentOptionsPtr options,
+                                         mojom::PaymentDetailsPtr details) {
+    spec_ = base::MakeUnique<PaymentRequestSpec>(
+        std::move(options), std::move(details),
+        std::vector<mojom::PaymentMethodDataPtr>(), this, "en-US");
   }
 
   PaymentRequestSpec* spec() { return spec_.get(); }
@@ -35,6 +44,7 @@ class PaymentRequestSpecTest : public testing::Test,
  private:
   std::unique_ptr<PaymentRequestSpec> spec_;
   bool on_invalid_spec_provided_called_ = false;
+  bool on_spec_updated_called_ = false;
 };
 
 // Test that empty method data notifies observers of an invalid spec.
@@ -264,6 +274,44 @@ TEST_F(PaymentRequestSpecTest,
   EXPECT_EQ(2u, spec()->supported_card_networks().size());
   EXPECT_EQ("visa", spec()->supported_card_networks()[0]);
   EXPECT_EQ("unionpay", spec()->supported_card_networks()[1]);
+}
+
+// Test that the last shipping option is selected, even in the case of
+// updateWith.
+TEST_F(PaymentRequestSpecTest, ShippingOptionsSelection) {
+  std::vector<mojom::PaymentShippingOptionPtr> shipping_options;
+  mojom::PaymentShippingOptionPtr option = mojom::PaymentShippingOption::New();
+  option->id = "option:1";
+  option->selected = false;
+  shipping_options.push_back(std::move(option));
+  mojom::PaymentShippingOptionPtr option2 = mojom::PaymentShippingOption::New();
+  option2->id = "option:2";
+  option2->selected = true;
+  shipping_options.push_back(std::move(option2));
+  mojom::PaymentDetailsPtr details = mojom::PaymentDetails::New();
+  details->shipping_options = std::move(shipping_options);
+
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_shipping = true;
+  RecreateSpecWithOptionsAndDetails(std::move(options), std::move(details));
+
+  EXPECT_EQ("option:2", spec()->selected_shipping_option()->id);
+
+  std::vector<mojom::PaymentShippingOptionPtr> new_shipping_options;
+  mojom::PaymentShippingOptionPtr new_option =
+      mojom::PaymentShippingOption::New();
+  new_option->id = "option:1";
+  new_option->selected = false;
+  shipping_options.push_back(std::move(new_option));
+  mojom::PaymentShippingOptionPtr new_option2 =
+      mojom::PaymentShippingOption::New();
+  new_option2->id = "option:2";
+  new_option2->selected = true;
+  new_shipping_options.push_back(std::move(new_option2));
+  mojom::PaymentDetailsPtr new_details = mojom::PaymentDetails::New();
+  new_details->shipping_options = std::move(new_shipping_options);
+
+  spec()->UpdateWith(std::move(new_details));
 }
 
 }  // namespace payments

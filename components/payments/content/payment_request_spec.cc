@@ -20,12 +20,22 @@ PaymentRequestSpec::PaymentRequestSpec(
     const std::string& app_locale)
     : options_(std::move(options)),
       details_(std::move(details)),
-      app_locale_(app_locale) {
+      app_locale_(app_locale),
+      selected_shipping_option_(nullptr),
+      observer_for_testing_(nullptr) {
   if (observer)
     AddObserver(observer);
+  UpdateSelectedShippingOption();
   PopulateValidatedMethodData(method_data);
 }
 PaymentRequestSpec::~PaymentRequestSpec() {}
+
+void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
+  details_ = std::move(details);
+  // We reparse the |details_| and update the observers.
+  UpdateSelectedShippingOption();
+  NotifyOnSpecUpdated();
+}
 
 void PaymentRequestSpec::AddObserver(Observer* observer) {
   CHECK(observer);
@@ -164,9 +174,34 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
                                       supported_card_networks_.end());
 }
 
+void PaymentRequestSpec::UpdateSelectedShippingOption() {
+  if (!request_shipping())
+    return;
+
+  // As per the spec, the selected shipping option should initially be the last
+  // one in the array that has its selected field set to true.
+  auto selected_shipping_option_it = std::find_if(
+      details().shipping_options.rbegin(), details().shipping_options.rend(),
+      [](const payments::mojom::PaymentShippingOptionPtr& element) {
+        return element->selected;
+      });
+  if (selected_shipping_option_it != details().shipping_options.rend()) {
+    selected_shipping_option_ = selected_shipping_option_it->get();
+  }
+}
+
 void PaymentRequestSpec::NotifyOnInvalidSpecProvided() {
   for (auto& observer : observers_)
     observer.OnInvalidSpecProvided();
+  if (observer_for_testing_)
+    observer_for_testing_->OnInvalidSpecProvided();
+}
+
+void PaymentRequestSpec::NotifyOnSpecUpdated() {
+  for (auto& observer : observers_)
+    observer.OnSpecUpdated();
+  if (observer_for_testing_)
+    observer_for_testing_->OnSpecUpdated();
 }
 
 CurrencyFormatter* PaymentRequestSpec::GetOrCreateCurrencyFormatter(

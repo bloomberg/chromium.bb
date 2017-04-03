@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/theme_resources.h"
@@ -79,16 +80,19 @@ std::unique_ptr<views::View> GetThreeLineLabel(AddressStyleType type,
       const gfx::FontList& font_list = label->font_list();
       label->SetFontList(font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
     }
+    label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_1));
     container->AddChildView(label.release());
   }
 
   if (!s2.empty()) {
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s2);
+    label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_2));
     container->AddChildView(label.release());
   }
 
   if (!s3.empty()) {
     std::unique_ptr<views::Label> label = base::MakeUnique<views::Label>(s3);
+    label->set_id(static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_3));
     container->AddChildView(label.release());
   }
 
@@ -162,6 +166,7 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->set_tag(static_cast<int>(
         PaymentRequestCommonTags::BACK_BUTTON_TAG));
+    back_arrow->set_id(static_cast<int>(DialogViewID::BACK_BUTTON));
     layout->AddView(back_arrow);
   }
 
@@ -312,9 +317,18 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
   container->SetLayoutManager(layout.release());
 
   if (shipping_option) {
-    container->AddChildView(
-        new views::Label(base::ASCIIToUTF16(shipping_option->label)));
-    container->AddChildView(new views::Label(formatted_amount));
+    std::unique_ptr<views::Label> shipping_label =
+        base::MakeUnique<views::Label>(
+            base::ASCIIToUTF16(shipping_option->label));
+    shipping_label->set_id(
+        static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
+    container->AddChildView(shipping_label.release());
+
+    std::unique_ptr<views::Label> amount_label =
+        base::MakeUnique<views::Label>(formatted_amount);
+    amount_label->set_id(
+        static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
+    container->AddChildView(amount_label.release());
   }
 
   return container;

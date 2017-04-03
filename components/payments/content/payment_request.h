@@ -55,16 +55,19 @@ class PaymentRequest : public mojom::PaymentRequest,
             mojom::PaymentDetailsPtr details,
             mojom::PaymentOptionsPtr options) override;
   void Show() override;
-  void UpdateWith(mojom::PaymentDetailsPtr details) override {}
+  void UpdateWith(mojom::PaymentDetailsPtr details) override;
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;
 
   // PaymentRequestSpec::Observer:
+  void OnSpecUpdated() override {}
   void OnInvalidSpecProvided() override;
 
   // PaymentRequestState::Delegate:
   void OnPaymentResponseAvailable(mojom::PaymentResponsePtr response) override;
+  void OnShippingOptionIdSelected(std::string shipping_option_id) override;
+  void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
 
   // Called when the user explicitely cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through

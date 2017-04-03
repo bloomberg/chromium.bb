@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "components/payments/content/payment_request_dialog.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace payments {
@@ -28,7 +29,8 @@ using ControllerMap =
 // is responsible for displaying the view associated with the current state of
 // the WebPayments flow and managing the transition between those states.
 class PaymentRequestDialogView : public views::DialogDelegateView,
-                                 public PaymentRequestDialog {
+                                 public PaymentRequestDialog,
+                                 public PaymentRequestSpec::Observer {
  public:
   class ObserverForTest {
    public:
@@ -51,6 +53,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
     virtual void OnEditorViewUpdated() = 0;
 
     virtual void OnErrorMessageShown() = 0;
+
+    virtual void OnSpecDoneUpdating() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to
@@ -60,18 +64,22 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
                            PaymentRequestDialogView::ObserverForTest* observer);
   ~PaymentRequestDialogView() override;
 
-  // views::WidgetDelegate
+  // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
 
-  // views::DialogDelegate
+  // views::DialogDelegate:
   bool Cancel() override;
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
 
-  // payments::PaymentRequestDialog
+  // payments::PaymentRequestDialog:
   void ShowDialog() override;
   void CloseDialog() override;
   void ShowErrorMessage() override;
+
+  // PaymentRequestSpec::Observer:
+  void OnInvalidSpecProvided() override {}
+  void OnSpecUpdated() override;
 
   void Pay();
   void GoBack();

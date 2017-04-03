@@ -48,21 +48,6 @@ class PaymentRequestNoShippingTest : public PaymentRequestBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestNoShippingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest,
-                       OpenAndNavigateToOrderSummary) {
-  InvokePaymentRequestUI();
-
-  OpenOrderSummaryScreen();
-
-  // Verify the expected amounts are shown.
-  EXPECT_EQ(base::ASCIIToUTF16("USD $5.00"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL));
-  EXPECT_EQ(base::ASCIIToUTF16("$4.50"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_1));
-  EXPECT_EQ(base::ASCIIToUTF16("$0.50"),
-            GetStyledLabelText(DialogViewID::ORDER_SUMMARY_LINE_ITEM_2));
-}
-
 IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, OpenAndNavigateTo404) {
   InvokePaymentRequestUI();
 

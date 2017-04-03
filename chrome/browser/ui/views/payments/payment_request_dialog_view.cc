@@ -54,6 +54,8 @@ PaymentRequestDialogView::PaymentRequestDialogView(
     PaymentRequestDialogView::ObserverForTest* observer)
     : request_(request), observer_for_testing_(observer), being_closed_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (observer_for_testing_)
+    request->spec()->add_observer_for_testing(this);
   SetLayoutManager(new views::FillLayout());
 
   view_stack_.set_owned_by_client();
@@ -115,6 +117,12 @@ void PaymentRequestDialogView::ShowErrorMessage() {
                    /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnErrorMessageShown();
+}
+
+void PaymentRequestDialogView::OnSpecUpdated() {
+  // Since this is called in tests only, |observer_for_testing_| is defined.
+  DCHECK(observer_for_testing_);
+  observer_for_testing_->OnSpecDoneUpdating();
 }
 
 void PaymentRequestDialogView::Pay() {

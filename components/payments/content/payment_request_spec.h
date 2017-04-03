@@ -32,6 +32,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
     // Called when the provided spec (details, options, method_data) is invalid.
     virtual void OnInvalidSpecProvided() = 0;
 
+    // Called when the provided spec has changed.
+    virtual void OnSpecUpdated() = 0;
+
    protected:
     virtual ~Observer() {}
   };
@@ -42,6 +45,10 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
                      PaymentRequestSpec::Observer* observer,
                      const std::string& app_locale);
   ~PaymentRequestSpec() override;
+
+  // Called when the merchant has new PaymentDetails. Will recompute every spec
+  // state that depends on |details|.
+  void UpdateWith(mojom::PaymentDetailsPtr details);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -74,15 +81,31 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // all items are supposed to have the same currency in a given request.
   std::string GetFormattedCurrencyCode();
 
+  mojom::PaymentShippingOption* selected_shipping_option() const {
+    return selected_shipping_option_;
+  }
+
   const mojom::PaymentDetails& details() const { return *details_.get(); }
 
  private:
+  friend class PaymentRequestDialogView;
+  void add_observer_for_testing(Observer* observer_for_testing) {
+    observer_for_testing_ = observer_for_testing;
+  }
+
   // Validates the |method_data| and fills |supported_card_networks_|.
   void PopulateValidatedMethodData(
       const std::vector<mojom::PaymentMethodDataPtr>& method_data);
 
+  // Updates the selected_shipping_option based on the data passed to this
+  // payment request by the website. This will set selected_shipping_option_ to
+  // the last option marked selected in the options array.
+  void UpdateSelectedShippingOption();
+
   // Will notify all observers that the spec is invalid.
   void NotifyOnInvalidSpecProvided();
+  // Will notify all observers that the spec has changed.
+  void NotifyOnSpecUpdated();
 
   // Returns the CurrencyFormatter instance for this PaymentRequest.
   // |locale_name| should be the result of the browser's GetApplicationLocale().
@@ -96,6 +119,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   mojom::PaymentOptionsPtr options_;
   mojom::PaymentDetailsPtr details_;
   const std::string app_locale_;
+  // The currently shipping option as specified by the merchant.
+  mojom::PaymentShippingOption* selected_shipping_option_;
+
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
 
   // A list/set of supported basic card networks. The list is used to keep the
@@ -108,7 +134,10 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // |supported_card_networks_set_| to check merchant support.
   std::set<std::string> basic_card_specified_networks_;
 
+  // The |observer_for_testing_| will fire after all the |observers_| have been
+  // notified.
   base::ObserverList<Observer> observers_;
+  Observer* observer_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);
 };

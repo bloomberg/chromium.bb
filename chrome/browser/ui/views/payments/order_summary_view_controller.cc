@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -88,11 +87,21 @@ OrderSummaryViewController::OrderSummaryViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog), pay_button_(nullptr) {
+  spec->AddObserver(this);
   state->AddObserver(this);
 }
 
 OrderSummaryViewController::~OrderSummaryViewController() {
+  spec()->RemoveObserver(this);
   state()->RemoveObserver(this);
+}
+
+void OrderSummaryViewController::OnSpecUpdated() {
+  UpdateContentView();
+}
+
+void OrderSummaryViewController::OnSelectedInformationChanged() {
+  UpdatePayButtonState(state()->is_ready_to_pay());
 }
 
 std::unique_ptr<views::Button>
@@ -147,10 +156,6 @@ void OrderSummaryViewController::FillContentView(views::View* content_view) {
                          total_label_value, true,
                          DialogViewID::ORDER_SUMMARY_TOTAL_AMOUNT_LABEL)
           .release());
-}
-
-void OrderSummaryViewController::OnSelectedInformationChanged() {
-  UpdatePayButtonState(state()->is_ready_to_pay());
 }
 
 void OrderSummaryViewController::UpdatePayButtonState(bool enabled) {

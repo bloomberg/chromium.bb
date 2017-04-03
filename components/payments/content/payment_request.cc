@@ -71,6 +71,16 @@ void PaymentRequest::Show() {
   delegate_->ShowDialog(this);
 }
 
+void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
+  std::string error;
+  if (!payments::validatePaymentDetails(details, &error)) {
+    LOG(ERROR) << error;
+    OnConnectionTerminated();
+    return;
+  }
+  spec_->UpdateWith(std::move(details));
+}
+
 void PaymentRequest::Abort() {
   // The API user has decided to abort. We return a successful abort message to
   // the renderer, which closes the Mojo message pipe, which triggers
@@ -110,6 +120,16 @@ void PaymentRequest::OnInvalidSpecProvided() {
 void PaymentRequest::OnPaymentResponseAvailable(
     mojom::PaymentResponsePtr response) {
   client_->OnPaymentResponse(std::move(response));
+}
+
+void PaymentRequest::OnShippingOptionIdSelected(
+    std::string shipping_option_id) {
+  client_->OnShippingOptionChange(shipping_option_id);
+}
+
+void PaymentRequest::OnShippingAddressSelected(
+    mojom::PaymentAddressPtr address) {
+  client_->OnShippingAddressChange(std::move(address));
 }
 
 void PaymentRequest::UserCancelled() {

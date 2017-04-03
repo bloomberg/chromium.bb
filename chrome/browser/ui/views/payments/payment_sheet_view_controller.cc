@@ -194,11 +194,17 @@ PaymentSheetViewController::PaymentSheetViewController(
     : PaymentRequestSheetController(spec, state, dialog),
       pay_button_(nullptr),
       widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {
+  spec->AddObserver(this);
   state->AddObserver(this);
 }
 
 PaymentSheetViewController::~PaymentSheetViewController() {
+  spec()->RemoveObserver(this);
   state()->RemoveObserver(this);
+}
+
+void PaymentSheetViewController::OnSpecUpdated() {
+  UpdateContentView();
 }
 
 void PaymentSheetViewController::OnSelectedInformationChanged() {
@@ -240,8 +246,14 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
   if (spec()->request_shipping()) {
     layout->StartRow(0, 0);
     layout->AddView(CreateShippingRow().release());
-    layout->StartRow(0, 0);
-    layout->AddView(CreateShippingOptionRow().release());
+    // It's possible for requestShipping to be true and for there to be no
+    // shipping options yet (they will come in updateWith).
+    // TODO(crbug.com/707353): Put a better placeholder row, instead of no row.
+    std::unique_ptr<views::Button> shipping_row = CreateShippingOptionRow();
+    if (shipping_row) {
+      layout->StartRow(0, 0);
+      layout->AddView(shipping_row.release());
+    }
   }
   layout->StartRow(0, 0);
   layout->AddView(CreatePaymentMethodRow().release());
@@ -383,9 +395,9 @@ std::unique_ptr<views::View>
 PaymentSheetViewController::CreateShippingSectionContent() {
   auto* profile = state()->selected_shipping_profile();
 
-  return profile ? payments::GetShippingAddressLabel(
-                       AddressStyleType::SUMMARY,
-                       state()->GetApplicationLocale(), *profile)
+  return profile ? GetShippingAddressLabel(AddressStyleType::SUMMARY,
+                                           state()->GetApplicationLocale(),
+                                           *profile)
                  : base::MakeUnique<views::Label>(base::string16());
 }
 
@@ -486,8 +498,11 @@ PaymentSheetViewController::CreateContactInfoRow() {
 
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreateShippingOptionRow() {
-  payments::mojom::PaymentShippingOption* selected_option =
-      state()->selected_shipping_option();
+  mojom::PaymentShippingOption* selected_option =
+      spec()->selected_shipping_option();
+  if (!selected_option)
+    return nullptr;
+
   std::unique_ptr<views::View> option_label = CreateShippingOptionLabel(
       selected_option, selected_option ? spec()->GetFormattedCurrencyAmount(
                                              selected_option->amount->value)

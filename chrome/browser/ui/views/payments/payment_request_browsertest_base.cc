@@ -146,6 +146,11 @@ void PaymentRequestBrowserTestBase::OnErrorMessageShown() {
     event_observer_->Observe(DialogEvent::ERROR_MESSAGE_SHOWN);
 }
 
+void PaymentRequestBrowserTestBase::OnSpecDoneUpdating() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::SPEC_DONE_UPDATING);
+}
+
 void PaymentRequestBrowserTestBase::OnWidgetDestroyed(views::Widget* widget) {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
@@ -212,6 +217,12 @@ void PaymentRequestBrowserTestBase::OpenShippingAddressEditorScreen() {
   ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 
   ClickOnDialogViewAndWait(DialogViewID::PAYMENT_METHOD_ADD_SHIPPING_BUTTON);
+}
+
+void PaymentRequestBrowserTestBase::ClickOnBackArrow() {
+  ResetEventObserver(DialogEvent::BACK_NAVIGATION);
+
+  ClickOnDialogViewAndWait(DialogViewID::BACK_BUTTON);
 }
 
 content::WebContents* PaymentRequestBrowserTestBase::GetActiveWebContents() {
@@ -313,6 +324,60 @@ void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(
   WaitForObservedEvent();
 }
 
+void PaymentRequestBrowserTestBase::ClickOnChildInListViewAndWait(
+    int child_index,
+    int total_num_children,
+    DialogViewID list_view_id) {
+  views::View* list_view =
+      dialog_view()->GetViewByID(static_cast<int>(list_view_id));
+  EXPECT_TRUE(list_view);
+  EXPECT_EQ(total_num_children, list_view->child_count());
+  ClickOnDialogViewAndWait(list_view->child_at(child_index));
+}
+
+std::vector<base::string16>
+PaymentRequestBrowserTestBase::GetThreeLineLabelValues(
+    DialogViewID parent_view_id) {
+  std::vector<base::string16> line_labels;
+  views::View* parent_view =
+      dialog_view()->GetViewByID(static_cast<int>(parent_view_id));
+  EXPECT_TRUE(parent_view);
+
+  views::View* view = parent_view->GetViewByID(
+      static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_1));
+  if (view)
+    line_labels.push_back(static_cast<views::Label*>(view)->text());
+  view = parent_view->GetViewByID(
+      static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_2));
+  if (view)
+    line_labels.push_back(static_cast<views::Label*>(view)->text());
+  view = parent_view->GetViewByID(
+      static_cast<int>(DialogViewID::THREE_LINE_LABEL_LINE_3));
+  if (view)
+    line_labels.push_back(static_cast<views::Label*>(view)->text());
+
+  return line_labels;
+}
+
+std::vector<base::string16>
+PaymentRequestBrowserTestBase::GetShippingOptionLabelValues(
+    DialogViewID parent_view_id) {
+  std::vector<base::string16> labels;
+  views::View* parent_view =
+      dialog_view()->GetViewByID(static_cast<int>(parent_view_id));
+  EXPECT_TRUE(parent_view);
+
+  views::View* view = parent_view->GetViewByID(
+      static_cast<int>(DialogViewID::SHIPPING_OPTION_DESCRIPTION));
+  DCHECK(view);
+  labels.push_back(static_cast<views::Label*>(view)->text());
+  view = parent_view->GetViewByID(
+      static_cast<int>(DialogViewID::SHIPPING_OPTION_AMOUNT));
+  DCHECK(view);
+  labels.push_back(static_cast<views::Label*>(view)->text());
+  return labels;
+}
+
 void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(
     const base::string16& value,
     autofill::ServerFieldType type) {
@@ -392,12 +457,12 @@ const base::string16& PaymentRequestBrowserTestBase::GetErrorLabelForType(
 }
 
 PaymentRequestBrowserTestBase::DialogEventObserver::DialogEventObserver(
-    PaymentRequestBrowserTestBase::DialogEvent event)
-    : event_(event), seen_(false) {}
+    std::list<PaymentRequestBrowserTestBase::DialogEvent> event_sequence)
+    : events_(std::move(event_sequence)) {}
 PaymentRequestBrowserTestBase::DialogEventObserver::~DialogEventObserver() {}
 
 void PaymentRequestBrowserTestBase::DialogEventObserver::Wait() {
-  if (seen_)
+  if (events_.empty())
     return;
 
   DCHECK(!run_loop_.running());
@@ -406,17 +471,25 @@ void PaymentRequestBrowserTestBase::DialogEventObserver::Wait() {
 
 void PaymentRequestBrowserTestBase::DialogEventObserver::Observe(
     PaymentRequestBrowserTestBase::DialogEvent event) {
-  if (seen_)
+  if (events_.empty())
     return;
 
-  DCHECK_EQ(event_, event);
-  seen_ = true;
-  if (run_loop_.running())
+  DCHECK_EQ(events_.front(), event);
+  events_.pop_front();
+  // Only quit the loop if no other events are expected.
+  if (events_.empty() && run_loop_.running())
     run_loop_.Quit();
 }
 
 void PaymentRequestBrowserTestBase::ResetEventObserver(DialogEvent event) {
-  event_observer_ = base::MakeUnique<DialogEventObserver>(event);
+  event_observer_ =
+      base::MakeUnique<DialogEventObserver>(std::list<DialogEvent>{event});
+}
+
+void PaymentRequestBrowserTestBase::ResetEventObserverForSequence(
+    std::list<DialogEvent> event_sequence) {
+  event_observer_ =
+      base::MakeUnique<DialogEventObserver>(std::move(event_sequence));
 }
 
 void PaymentRequestBrowserTestBase::WaitForObservedEvent() {

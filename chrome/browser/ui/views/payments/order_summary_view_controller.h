@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
 
 namespace views {
@@ -15,13 +16,12 @@ class Button;
 
 namespace payments {
 
-class PaymentRequestSpec;
-class PaymentRequestState;
 class PaymentRequestDialogView;
 
 // The PaymentRequestSheetController subtype for the Order Summary screen of the
 // Payment Request flow.
 class OrderSummaryViewController : public PaymentRequestSheetController,
+                                   public PaymentRequestSpec::Observer,
                                    public PaymentRequestState::Observer {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
@@ -29,6 +29,10 @@ class OrderSummaryViewController : public PaymentRequestSheetController,
                              PaymentRequestState* state,
                              PaymentRequestDialogView* dialog);
   ~OrderSummaryViewController() override;
+
+  // PaymentRequestSpec::Observer:
+  void OnInvalidSpecProvided() override {}
+  void OnSpecUpdated() override;
 
   // PaymentRequestState::Observer:
   void OnSelectedInformationChanged() override;

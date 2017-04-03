@@ -121,6 +121,10 @@ class ShippingProfileViewController : public ProfileListViewController {
     return state()->shipping_profiles();
   }
 
+  DialogViewID GetDialogViewId() override {
+    return DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW;
+  }
+
   base::string16 GetSheetTitle() override {
     return GetShippingAddressSectionString(spec()->shipping_type());
   }
@@ -175,6 +179,10 @@ class ContactProfileViewController : public ProfileListViewController {
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
     return state()->contact_profiles();
+  }
+
+  DialogViewID GetDialogViewId() override {
+    return DialogViewID::CONTACT_INFO_SHEET_LIST_VIEW;
   }
 
   base::string16 GetSheetTitle() override {
@@ -245,7 +253,9 @@ void ProfileListViewController::PopulateList() {
 
 void ProfileListViewController::FillContentView(views::View* content_view) {
   content_view->SetLayoutManager(new views::FillLayout);
-  content_view->AddChildView(list_.CreateListView().release());
+  std::unique_ptr<views::View> list_view = list_.CreateListView();
+  list_view->set_id(static_cast<int>(GetDialogViewId()));
+  content_view->AddChildView(list_view.release());
 }
 
 std::unique_ptr<views::View>

@@ -16,7 +16,7 @@ namespace {
 
 class ShippingOptionItem : public PaymentRequestItemList::Item {
  public:
-  ShippingOptionItem(payments::mojom::PaymentShippingOption* shipping_option,
+  ShippingOptionItem(mojom::PaymentShippingOption* shipping_option,
                      PaymentRequestSpec* spec,
                      PaymentRequestState* state,
                      PaymentRequestItemList* parent_list,
@@ -37,7 +37,7 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
 
   void SelectedStateChanged() override {
     if (selected()) {
-      state()->SetSelectedShippingOption(shipping_option_);
+      state()->SetSelectedShippingOption(shipping_option_->id);
       dialog_->GoBack();
     }
   }
@@ -68,7 +68,7 @@ ShippingOptionViewController::ShippingOptionViewController(
   for (const auto& option : spec->details().shipping_options) {
     shipping_option_list_.AddItem(base::MakeUnique<ShippingOptionItem>(
         option.get(), spec, state, &shipping_option_list_, dialog,
-        option.get() == state->selected_shipping_option()));
+        option.get() == spec->selected_shipping_option()));
   }
 }
 

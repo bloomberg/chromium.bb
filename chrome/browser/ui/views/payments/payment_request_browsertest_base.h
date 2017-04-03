@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_BROWSERTEST_BASE_H_
 
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -86,6 +87,7 @@ class PaymentRequestBrowserTestBase
   void OnContactInfoOpened() override;
   void OnEditorViewUpdated() override;
   void OnErrorMessageShown() override;
+  void OnSpecDoneUpdating() override;
 
   // views::WidgetObserver
   // Effective way to be warned of all dialog closures.
@@ -105,6 +107,7 @@ class PaymentRequestBrowserTestBase
   void OpenShippingSectionScreen();
   void OpenCreditCardEditorScreen();
   void OpenShippingAddressEditorScreen();
+  void ClickOnBackArrow();
 
   content::WebContents* GetActiveWebContents();
 
@@ -132,6 +135,15 @@ class PaymentRequestBrowserTestBase
                                 bool wait_for_animation = true);
   void ClickOnDialogViewAndWait(views::View* view,
                                 bool wait_for_animation = true);
+  void ClickOnChildInListViewAndWait(int child_index,
+                                     int total_num_children,
+                                     DialogViewID list_view_id);
+  // Returns "three-line label" values under |parent_view|.
+  std::vector<base::string16> GetThreeLineLabelValues(
+      DialogViewID parent_view_id);
+  // Returns the shipping option labels under |parent_view_id|.
+  std::vector<base::string16> GetShippingOptionLabelValues(
+      DialogViewID parent_view_id);
 
   // Setting the |value| in the textfield of a given |type|.
   void SetEditorTextfieldValue(const base::string16& value,
@@ -174,6 +186,7 @@ class PaymentRequestBrowserTestBase
     EDITOR_VIEW_UPDATED,
     CAN_MAKE_PAYMENT_CALLED,
     ERROR_MESSAGE_SHOWN,
+    SPEC_DONE_UPDATING,
   };
 
   // DialogEventObserver is used to wait on specific events that may have
@@ -181,35 +194,37 @@ class PaymentRequestBrowserTestBase
   // used.
   //
   // Usage:
-  // observer_.reset(new DialogEventObserver([DialogEvent]));
+  // observer_ =
+  // base::MakeUnique<DialogEventObserver>(std:list<DialogEvent>(...));
   //
-  // Do stuff, which (a)synchronously calls observer_->Observe([DialogEvent]).
+  // Do stuff, which (a)synchronously calls observer_->Observe(...).
   //
-  // observer_->Wait();  <- Will either return right away if event was observed,
-  //                     <- or use a RunLoop's Run/Quit to wait for the event.
+  // observer_->Wait();  <- Will either return right away if events were
+  //                     <- observed, or use a RunLoop's Run/Quit to wait.
   class DialogEventObserver {
    public:
-    explicit DialogEventObserver(DialogEvent event);
+    explicit DialogEventObserver(std::list<DialogEvent> event_sequence);
     ~DialogEventObserver();
 
-    // Either returns right away if the event was observed between this object's
-    // construction and this call to Wait(), or use a RunLoop to wait for it.
+    // Either returns right away if all events were observed between this
+    // object's construction and this call to Wait(), or use a RunLoop to wait
+    // for them.
     void Wait();
 
-    // Observes the event (quits the RunLoop if it was running).
+    // Observes and event (quits the RunLoop if we are done waiting).
     void Observe(DialogEvent event);
 
    private:
-    DialogEvent event_;
-    bool seen_;
+    std::list<DialogEvent> events_;
     base::RunLoop run_loop_;
 
     DISALLOW_COPY_AND_ASSIGN(DialogEventObserver);
   };
 
-  // Resets the event observer for a given |event|.
+  // Resets the event observer for a given |event| or |event_sequence|.
   void ResetEventObserver(DialogEvent event);
-  // Wait for the event passed to ResetEventObserver() to occur.
+  void ResetEventObserverForSequence(std::list<DialogEvent> event_sequence);
+  // Wait for the event(s) passed to ResetEventObserver*() to occur.
   void WaitForObservedEvent();
 
  private:

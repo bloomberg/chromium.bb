@@ -23,6 +23,7 @@ class View;
 
 namespace payments {
 
+enum class DialogViewID;
 class PaymentRequestSpec;
 class PaymentRequestState;
 class PaymentRequestDialogView;
@@ -69,6 +70,8 @@ class ProfileListViewController : public PaymentRequestSheetController {
   // Returns the profiles cached by |request| which are appropriate for display
   // in this context.
   virtual std::vector<autofill::AutofillProfile*> GetProfiles() = 0;
+
+  virtual DialogViewID GetDialogViewId() = 0;
 
   void PopulateList();
 
