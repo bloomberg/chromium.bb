@@ -124,9 +124,8 @@ SIMD_INLINE v128 v128_abs_s8(v128 a) {
 #if defined(__SSSE3__)
   return _mm_abs_epi8(a);
 #else
-  v128 t = _mm_sub_epi8(_mm_setzero_si128(), a);
-  v128 mask = _mm_cmplt_epi8(t, a);
-  return _mm_or_si128(_mm_andnot_si128(mask, t), _mm_and_si128(mask, a));
+  v128 sign = _mm_cmplt_epi8(a, _mm_setzero_si128());
+  return _mm_xor_si128(sign, _mm_add_epi8(a, sign));
 #endif
 }
 
