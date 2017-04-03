@@ -92,10 +92,6 @@ crbug.com/606302 [ Linux Win Mac ] transforms/3d/point-mapping/3d-point-mapping-
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
-crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
-crbug.com/619103 virtual/disable-spinvalidation/paint/invalidation/background-resize-width.html [ Failure ]
-crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
-
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/images/webp-color-profile-lossy.html [ Failure ]
 crbug.com/587737 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure Crash ]
@@ -103,6 +99,9 @@ crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-
 crbug.com/630615 [ Win ] images/color-profile-background-image-space.html [ Skip ]
 
 ########## Ref tests can't be rebaselined ##########
+crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
+crbug.com/619103 virtual/disable-spinvalidation/paint/invalidation/background-resize-width.html [ Failure ]
+
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Failure ]
 
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
