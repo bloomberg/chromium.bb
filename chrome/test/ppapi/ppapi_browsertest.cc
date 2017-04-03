@@ -1303,8 +1303,13 @@ class NonSfiPackagedAppTest : public PackagedAppTest {
 
 // Load a packaged app, and wait for it to successfully post a "hello" message
 // back.
+#if defined(OS_WIN)
+// flaky: crbug.com/707068
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, DISABLED_SuccessfulLoad) {
+#else
 IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest,
                        MAYBE_PPAPI_NACL(SuccessfulLoad)) {
+#endif
   RunTests("packaged_app");
 }
 
