@@ -47,9 +47,10 @@ typedef (Uint8ClampedArray or Uint16Array or Float32Array) ImageDataArray;
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
     [RuntimeEnabled=ExperimentalCanvasFeatures, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
 
+    [RuntimeEnabled=ExperimentalCanvasFeatures] ImageDataColorSettings getColorSettings();
+
     readonly attribute unsigned long width;
     readonly attribute unsigned long height;
     readonly attribute Uint8ClampedArray data;
     [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute ImageDataArray dataUnion;
-    [RuntimeEnabled=ExperimentalCanvasFeatures] readonly attribute ImageDataColorSettings colorSettings;
 };
