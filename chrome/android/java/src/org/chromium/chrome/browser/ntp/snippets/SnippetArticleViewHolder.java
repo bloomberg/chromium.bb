@@ -87,7 +87,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private final boolean mUseFaviconService;
     private final ColorStateList mIconForegroundColorList;
     private final int mIconBackgroundColor;
-    private final int mFileTypeIconPaddingPx;
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
@@ -125,8 +124,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mIconForegroundColorList = DownloadUtils.getIconForegroundColorList(parent.getContext());
         mThumbnailProvider = new ThumbnailProviderImpl(
                 Math.min(mThumbnailView.getMaxWidth(), mThumbnailView.getMaxHeight()));
-        mFileTypeIconPaddingPx = mThumbnailView.getResources().getDimensionPixelSize(
-                R.dimen.snippets_thumbnail_file_type_icon_padding);
 
         new ImpressionTracker(itemView, this);
         new DisplayStyleObserverAdapter(itemView, uiConfig, new DisplayStyleObserver() {
@@ -298,10 +295,25 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
     private void setThumbnailFromFileType(int fileType) {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        mThumbnailView.setPadding(mFileTypeIconPaddingPx, mFileTypeIconPaddingPx,
-                mFileTypeIconPaddingPx, mFileTypeIconPaddingPx);
+
+        // The provided asset is 36dp, but the spec requires 32dp. Add padding to force the asset to
+        // be scaled down.
+        final int actualIconSizeDp = 36;
+        final int desiredIconSizeDp = 32;
+        Drawable icon = ApiCompatibilityUtils.getDrawable(mThumbnailView.getResources(),
+                DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_36_DP));
+
+        final int drawableSize = icon.getIntrinsicWidth();
+        assert icon.getIntrinsicHeight() == drawableSize;
+
+        final int viewSize = mThumbnailView.getResources().getDimensionPixelSize(
+                R.dimen.snippets_thumbnail_size);
+        final float scale = ((float) desiredIconSizeDp) / actualIconSizeDp;
+        final int padding = (int) (viewSize / 2f - drawableSize * scale / 2f);
+        mThumbnailView.setPadding(padding, padding, padding, padding);
+
         mThumbnailView.setBackgroundColor(mIconBackgroundColor);
-        mThumbnailView.setImageResource(DownloadUtils.getIconResId(fileType));
+        mThumbnailView.setImageDrawable(icon);
         mThumbnailView.setTint(mIconForegroundColorList);
     }
 
