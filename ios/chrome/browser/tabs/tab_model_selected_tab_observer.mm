@@ -45,7 +45,8 @@
     @autoreleasepool {
       [[NSNotificationCenter defaultCenter]
           postNotificationName:kTabModelTabDeselectedNotification
-                        object:@{kTabModelTabKey : oldTab}];
+                        object:_tabModel
+                      userInfo:@{kTabModelTabKey : oldTab}];
     }
   }
 
