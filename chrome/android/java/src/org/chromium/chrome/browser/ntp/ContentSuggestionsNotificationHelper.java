@@ -21,6 +21,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -29,6 +30,8 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
+import org.chromium.chrome.browser.preferences.ContentSuggestionsPreferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -140,16 +143,18 @@ public class ContentSuggestionsNotificationHelper {
 
         int nextId = nextNotificationId();
         Uri uri = Uri.parse(url);
-        Intent contentIntent =
+        PendingIntent contentIntent = PendingIntent.getBroadcast(context, 0,
                 new Intent(context, OpenUrlReceiver.class)
                         .setData(uri)
                         .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
-                        .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory);
-        Intent deleteIntent =
+                        .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory),
+                0);
+        PendingIntent deleteIntent = PendingIntent.getBroadcast(context, 0,
                 new Intent(context, DeleteReceiver.class)
                         .setData(uri)
                         .putExtra(NOTIFICATION_CATEGORY_EXTRA, category)
-                        .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory);
+                        .putExtra(NOTIFICATION_ID_WITHIN_CATEGORY_EXTRA, idWithinCategory),
+                0);
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory
                         .createChromeNotificationBuilder(true /* preferCompat */,
@@ -158,14 +163,22 @@ public class ContentSuggestionsNotificationHelper {
                                 NotificationConstants.CHANNEL_GROUP_ID_GENERAL,
                                 context.getString(R.string.notification_category_group_general))
                         .setAutoCancel(true)
-                        .setContentIntent(PendingIntent.getBroadcast(context, 0, contentIntent, 0))
-                        .setDeleteIntent(PendingIntent.getBroadcast(context, 0, deleteIntent, 0))
+                        .setContentIntent(contentIntent)
+                        .setDeleteIntent(deleteIntent)
                         .setContentTitle(title)
                         .setContentText(text)
                         .setGroup(NOTIFICATION_TAG)
                         .setPriority(priority)
                         .setLargeIcon(image)
                         .setSmallIcon(R.drawable.ic_chrome);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SETTINGS)) {
+            PendingIntent settingsIntent = PendingIntent.getActivity(context, 0,
+                    PreferencesLauncher.createIntentForSettingsPage(
+                            context, ContentSuggestionsPreferences.class.getName()),
+                    0);
+            builder.addAction(R.drawable.settings_cog, context.getString(R.string.preferences),
+                    settingsIntent);
+        }
         if (priority >= 0) {
             builder.setDefaults(Notification.DEFAULT_ALL);
         }
