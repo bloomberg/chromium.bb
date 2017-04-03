@@ -2816,6 +2816,29 @@
             ]
         }
     ],
+    "UKM": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "RecordSessionId": "true"
+                    },
+                    "enable_features": [
+                        "Ukm"
+                    ]
+                }
+            ]
+        }
+    ],
     "UMA_EnableCellularLogUpload": [
         {
             "platforms": [
