@@ -8,8 +8,10 @@
 @class ContentSuggestion;
 @class ContentSuggestionIdentifier;
 @class ContentSuggestionsSectionInformation;
+@class FaviconAttributes;
 @protocol ContentSuggestionsDataSink;
 @protocol ContentSuggestionsImageFetcher;
+class GURL;
 
 // Typedef for a block taking the fetched suggestions as parameter.
 typedef void (^MoreSuggestionsFetched)(NSArray<ContentSuggestion*>* _Nonnull);
@@ -31,6 +33,12 @@ typedef void (^MoreSuggestionsFetched)(NSArray<ContentSuggestion*>* _Nonnull);
 
 // Returns an image updater for the suggestions provided by this data source.
 - (nullable id<ContentSuggestionsImageFetcher>)imageFetcher;
+
+// Fetches favicon attributes and calls the completion block.
+- (void)fetchFaviconAttributesForURL:(const GURL&)URL
+                          completion:
+                              (void (^_Nonnull)(FaviconAttributes* _Nonnull))
+                                  completion;
 
 // Fetches additional content. All the |knownSuggestions| must come from the
 // same |sectionInfo|. If the fetch was completed, the given |callback| is

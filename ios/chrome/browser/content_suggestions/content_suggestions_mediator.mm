@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/favicon/core/large_icon_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
@@ -18,6 +19,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
@@ -27,6 +29,9 @@
 #endif
 
 namespace {
+
+// Size of the favicon returned by the provider.
+const CGFloat kDefaultFaviconSize = 16;
 
 // TODO(crbug.com/701275): Once base::BindBlock supports the move semantics,
 // remove this wrapper.
@@ -138,6 +143,9 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
     NSMutableDictionary<ContentSuggestionsCategoryWrapper*,
                         ContentSuggestionsSectionInformation*>*
         sectionInformationByCategory;
+// FaviconAttributesProvider to fetch the favicon for the suggestions.
+@property(nonatomic, nullable, strong)
+    FaviconAttributesProvider* attributesProvider;
 
 // Converts the |suggestions| from |category| to ContentSuggestion and adds them
 // to the |contentArray|  if the category is available.
@@ -161,17 +169,23 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 @synthesize contentService = _contentService;
 @synthesize dataSink = _dataSink;
 @synthesize sectionInformationByCategory = _sectionInformationByCategory;
+@synthesize attributesProvider = _attributesProvider;
 
 #pragma mark - Public
 
-- (instancetype)initWithContentService:
-    (ntp_snippets::ContentSuggestionsService*)contentService {
+- (instancetype)
+initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
+      largeIconService:(favicon::LargeIconService*)largeIconService {
   self = [super init];
   if (self) {
     _suggestionBridge =
         base::MakeUnique<ContentSuggestionsServiceBridge>(self, contentService);
     _contentService = contentService;
     _sectionInformationByCategory = [[NSMutableDictionary alloc] init];
+    _attributesProvider = [[FaviconAttributesProvider alloc]
+        initWithFaviconSize:kDefaultFaviconSize
+             minFaviconSize:1
+           largeIconService:largeIconService];
   }
   return self;
 }
@@ -246,6 +260,12 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
   self.contentService->Fetch([wrapper category], known_suggestion_ids,
                              serviceCallback);
+}
+
+- (void)fetchFaviconAttributesForURL:(const GURL&)URL
+                          completion:(void (^)(FaviconAttributes*))completion {
+  [self.attributesProvider fetchFaviconAttributesForURL:URL
+                                             completion:completion];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver

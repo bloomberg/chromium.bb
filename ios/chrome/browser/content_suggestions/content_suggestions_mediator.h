@@ -10,6 +10,10 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 
+namespace favicon {
+class LargeIconService;
+}
+
 namespace ntp_snippets {
 class ContentSuggestionsService;
 }
@@ -22,8 +26,9 @@ class ContentSuggestionsService;
 @interface ContentSuggestionsMediator : NSObject<ContentSuggestionsDataSource>
 
 // Initialize the mediator with the |contentService| to mediate.
-- (instancetype)initWithContentService:
-    (ntp_snippets::ContentSuggestionsService*)contentService
+- (instancetype)
+initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
+      largeIconService:(favicon::LargeIconService*)largeIconService
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

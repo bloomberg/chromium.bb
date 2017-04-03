@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -266,17 +267,7 @@ SectionIdentifier SectionIdentifierForInfo(
       }
       case ContentSuggestionTypeArticle: {
         ContentSuggestionsArticleItem* articleItem =
-            [[ContentSuggestionsArticleItem alloc]
-                initWithType:ItemTypeForContentSuggestionType(suggestion.type)
-                       title:suggestion.title
-                    subtitle:suggestion.text
-                    delegate:self
-                         url:suggestion.url];
-
-        articleItem.publisher = suggestion.publisher;
-        articleItem.publishDate = suggestion.publishDate;
-
-        articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+            [self articleItemForSuggestion:suggestion];
 
         NSIndexPath* addedIndexPath = [self addItem:articleItem
                             toSectionWithIdentifier:sectionIdentifier];
@@ -460,6 +451,43 @@ SectionIdentifier SectionIdentifierForInfo(
   return item;
 }
 
+// Returns an article build with the |suggestion|.
+- (ContentSuggestionsArticleItem*)articleItemForSuggestion:
+    (ContentSuggestion*)suggestion {
+  ContentSuggestionsArticleItem* articleItem =
+      [[ContentSuggestionsArticleItem alloc]
+          initWithType:ItemTypeForContentSuggestionType(suggestion.type)
+                 title:suggestion.title
+              subtitle:suggestion.text
+              delegate:self
+                   url:suggestion.url];
+
+  articleItem.publisher = suggestion.publisher;
+  articleItem.publishDate = suggestion.publishDate;
+
+  articleItem.suggestionIdentifier = suggestion.suggestionIdentifier;
+
+  __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
+  __weak ContentSuggestionsArticleItem* weakItem = articleItem;
+  void (^completionBlock)(FaviconAttributes* attributes) =
+      ^(FaviconAttributes* attributes) {
+        ContentSuggestionsArticleItem* strongItem = weakItem;
+        ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
+        if (!strongSelf || !strongItem) {
+          return;
+        }
+
+        strongItem.attributes = attributes;
+
+        [strongSelf reconfigure:strongItem];
+      };
+
+  [self.dataSource fetchFaviconAttributesForURL:articleItem.articleURL
+                                     completion:completionBlock];
+
+  return articleItem;
+}
+
 // Adds |item| to |sectionIdentifier| section of the model of the
 // CollectionView. Returns the IndexPath of the newly added item.
 - (NSIndexPath*)addItem:(CSCollectionViewItem*)item
@@ -471,6 +499,23 @@ SectionIdentifier SectionIdentifierForInfo(
   [model addItem:item toSectionWithIdentifier:sectionIdentifier];
 
   return [NSIndexPath indexPathForItem:itemNumber inSection:section];
+}
+
+// Reconfigures the |item| in the collection view.
+- (void)reconfigure:(CSCollectionViewItem*)item {
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+
+  for (NSInteger sectionNumber = 0; sectionNumber < [model numberOfSections];
+       sectionNumber++) {
+    NSInteger sectionIdentifier =
+        [model sectionIdentifierForSection:sectionNumber];
+    if ([model hasItem:item inSectionWithIdentifier:sectionIdentifier]) {
+      [self.collectionViewController
+          reconfigureCellsForItems:@[ item ]
+           inSectionWithIdentifier:sectionIdentifier];
+    }
+  }
 }
 
 @end

@@ -12,6 +12,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -72,7 +73,9 @@
   contentSuggestionsService->remote_suggestions_scheduler()->OnNTPOpened();
 
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
-      initWithContentService:contentSuggestionsService];
+      initWithContentService:contentSuggestionsService
+            largeIconService:IOSChromeLargeIconServiceFactory::
+                                 GetForBrowserState(self.browserState)];
 
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault
