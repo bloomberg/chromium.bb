@@ -1718,9 +1718,12 @@ static size_t GetMallocUsage() {
 }  // namespace
 #endif
 
-void RenderThreadImpl::GetRendererMemoryMetrics(
+bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {
   DCHECK(memory_metrics);
+
+  if (RenderView::GetRenderViewCount() == 0)
+    return false;
 
   blink::WebMemoryStatistics blink_stats = blink::WebMemoryStatistics::Get();
   memory_metrics->partition_alloc_kb =
@@ -1762,6 +1765,8 @@ void RenderThreadImpl::GetRendererMemoryMetrics(
       (total_allocated - discardable_usage) / 1024 / 1024;
   memory_metrics->total_allocated_per_render_view_mb =
       total_allocated / RenderView::GetRenderViewCount() / 1024 / 1024;
+
+  return true;
 }
 
 // TODO(tasak): Once it is possible to use memory-infra without tracing,
@@ -1776,7 +1781,9 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() {
   // TODO(tasak): Compare memory metrics between purge-enabled renderers and
   // purge-disabled renderers (A/B testing).
   RendererMemoryMetrics memory_metrics;
-  GetRendererMemoryMetrics(&memory_metrics);
+  if (!GetRendererMemoryMetrics(&memory_metrics))
+    return;
+
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.PartitionAllocKB",
                           memory_metrics.partition_alloc_kb);
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.BlinkGCKB",
@@ -1814,7 +1821,9 @@ void RenderThreadImpl::RecordPurgeAndSuspendMemoryGrowthMetrics() const {
     return;
 
   RendererMemoryMetrics memory_metrics;
-  GetRendererMemoryMetrics(&memory_metrics);
+  if (!GetRendererMemoryMetrics(&memory_metrics))
+    return;
+
   UMA_HISTOGRAM_MEMORY_KB(
       "PurgeAndSuspend.Experimental.MemoryGrowth.PartitionAllocKB",
       GET_MEMORY_GROWTH(memory_metrics, purge_and_suspend_memory_metrics_,
@@ -2241,7 +2250,9 @@ void RenderThreadImpl::OnPurgeMemory() {
   // Record amount of purged memory after 2 seconds. 2 seconds is arbitrary
   // but it works most cases.
   RendererMemoryMetrics metrics;
-  GetRendererMemoryMetrics(&metrics);
+  if (!GetRendererMemoryMetrics(&metrics))
+    return;
+
   GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&RenderThreadImpl::RecordPurgeMemory, base::Unretained(this),
@@ -2257,7 +2268,8 @@ void RenderThreadImpl::OnPurgeMemory() {
 
 void RenderThreadImpl::RecordPurgeMemory(RendererMemoryMetrics before) {
   RendererMemoryMetrics after;
-  GetRendererMemoryMetrics(&after);
+  if (!GetRendererMemoryMetrics(&after))
+    return;
   int64_t mbytes = static_cast<int64_t>(before.total_allocated_mb) -
                    static_cast<int64_t>(after.total_allocated_mb);
   if (mbytes < 0)

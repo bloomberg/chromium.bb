@@ -502,7 +502,7 @@ class CONTENT_EXPORT RenderThreadImpl
     size_t non_discardable_total_allocated_mb;
     size_t total_allocated_per_render_view_mb;
   };
-  void GetRendererMemoryMetrics(RendererMemoryMetrics* memory_metrics) const;
+  bool GetRendererMemoryMetrics(RendererMemoryMetrics* memory_metrics) const;
 
   bool NeedsToRecordFirstActivePaint() const {
     return needs_to_record_first_active_paint_;

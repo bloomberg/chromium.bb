@@ -4006,7 +4006,8 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
 
   if (RenderThreadImpl::current()) {
     RenderThreadImpl::RendererMemoryMetrics memory_metrics;
-    RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics);
+    if (!RenderThreadImpl::current()->GetRendererMemoryMetrics(&memory_metrics))
+      return;
     UMA_HISTOGRAM_MEMORY_MB(
         "Memory.Experimental.Renderer.PartitionAlloc.DidFinishLoad",
         memory_metrics.partition_alloc_kb / 1024);
