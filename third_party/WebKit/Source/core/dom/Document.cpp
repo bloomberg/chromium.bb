@@ -6155,23 +6155,6 @@ void Document::setContextFeatures(ContextFeatures& features) {
   m_contextFeatures = &features;
 }
 
-static LayoutObject* nearestCommonHoverAncestor(LayoutObject* obj1,
-                                                LayoutObject* obj2) {
-  if (!obj1 || !obj2)
-    return 0;
-
-  for (LayoutObject* currObj1 = obj1; currObj1;
-       currObj1 = currObj1->hoverAncestor()) {
-    for (LayoutObject* currObj2 = obj2; currObj2;
-         currObj2 = currObj2->hoverAncestor()) {
-      if (currObj1 == currObj2)
-        return currObj1;
-    }
-  }
-
-  return 0;
-}
-
 // TODO(mustaq) |request| parameter maybe a misuse of HitTestRequest in
 // updateHoverActiveState() since the function doesn't bother with hit-testing.
 void Document::updateHoverActiveState(const HitTestRequest& request,
@@ -6249,70 +6232,55 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
   // Update our current hover node.
   setHoverNode(newHoverNode);
 
-  // We have two different objects. Fetch their layoutObjects.
-  LayoutObject* oldHoverObj =
-      oldHoverNode ? oldHoverNode->layoutObject() : nullptr;
-  LayoutObject* newHoverObj =
-      newHoverNode ? newHoverNode->layoutObject() : nullptr;
-
-  // Locate the common ancestor layout object for the two layoutObjects.
-  LayoutObject* ancestor = nearestCommonHoverAncestor(oldHoverObj, newHoverObj);
-  Node* ancestorNode(ancestor ? ancestor->node() : nullptr);
+  Node* ancestor =
+      (oldHoverNode && oldHoverNode->isConnected() && newHoverNode)
+          ? FlatTreeTraversal::commonAncestor(*oldHoverNode, *newHoverNode)
+          : nullptr;
 
   HeapVector<Member<Node>, 32> nodesToRemoveFromChain;
   HeapVector<Member<Node>, 32> nodesToAddToChain;
 
-  if (oldHoverObj != newHoverObj) {
-    // If the old hovered node is not nil but it's layoutObject is, it was
-    // probably detached as part of the :hover style (for instance by setting
-    // display:none in the :hover pseudo-class). In this case, the old hovered
-    // element (and its ancestors) must be updated, to ensure it's normal style
-    // is re-applied.
-    if (oldHoverNode && !oldHoverObj) {
-      for (Node& node : NodeTraversal::inclusiveAncestorsOf(*oldHoverNode)) {
-        if (!mustBeInActiveChain ||
-            (node.isElementNode() && toElement(node).inActiveChain()))
-          nodesToRemoveFromChain.push_back(node);
-      }
-    }
-
+  if (oldHoverNode != newHoverNode) {
     // The old hover path only needs to be cleared up to (and not including) the
     // common ancestor;
-    for (LayoutObject* curr = oldHoverObj; curr && curr != ancestor;
-         curr = curr->hoverAncestor()) {
-      if (curr->node() && !curr->isText() &&
-          (!mustBeInActiveChain || curr->node()->inActiveChain()))
-        nodesToRemoveFromChain.push_back(curr->node());
+    //
+    // FIXME(ecobos@igalia.com): oldHoverNode may be disconnected from the tree
+    // already. This is due to our handling of m_hoverNode in
+    // hoveredNodeDetached (which assumes all the parents are hovered) and
+    // mustBeInActiveChain (which makes this not hold).
+    //
+    // In that case, none of the nodes in the chain have the flags, so there's
+    // no problem in skipping this step.
+    if (oldHoverNode && oldHoverNode->isConnected()) {
+      for (Node* curr = oldHoverNode; curr && curr != ancestor;
+           curr = FlatTreeTraversal::parent(*curr)) {
+        if (!curr->isTextNode() &&
+            (!mustBeInActiveChain || curr->inActiveChain()))
+          nodesToRemoveFromChain.push_back(curr);
+      }
     }
-
-    // TODO(mustaq): The two loops above may push a single node twice into
-    // nodesToRemoveFromChain. There must be a better way.
   }
 
   // Now set the hover state for our new object up to the root.
-  for (LayoutObject* curr = newHoverObj; curr; curr = curr->hoverAncestor()) {
-    if (curr->node() && !curr->isText() &&
-        (!mustBeInActiveChain || curr->node()->inActiveChain()))
-      nodesToAddToChain.push_back(curr->node());
+  for (Node* curr = newHoverNode; curr;
+       curr = FlatTreeTraversal::parent(*curr)) {
+    if (!curr->isTextNode() && (!mustBeInActiveChain || curr->inActiveChain()))
+      nodesToAddToChain.push_back(curr);
   }
 
-  size_t removeCount = nodesToRemoveFromChain.size();
-  for (size_t i = 0; i < removeCount; ++i) {
-    nodesToRemoveFromChain[i]->setHovered(false);
-  }
+  for (Node* node : nodesToRemoveFromChain)
+    node->setHovered(false);
 
   bool sawCommonAncestor = false;
-  size_t addCount = nodesToAddToChain.size();
-  for (size_t i = 0; i < addCount; ++i) {
+  for (Node* node : nodesToAddToChain) {
     // Elements past the common ancestor do not change hover state, but might
     // change active state.
-    if (ancestorNode && nodesToAddToChain[i] == ancestorNode)
+    if (node == ancestor)
       sawCommonAncestor = true;
     if (allowActiveChanges)
-      nodesToAddToChain[i]->setActive(true);
-    if (!sawCommonAncestor || nodesToAddToChain[i] == m_hoverNode) {
-      nodesToAddToChain[i]->setHovered(true);
-    }
+      node->setActive(true);
+    if (!sawCommonAncestor || node == m_hoverNode)
+      node->setHovered(true);
   }
 }
 
