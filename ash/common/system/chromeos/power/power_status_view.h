@@ -12,7 +12,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class ImageView;
 class Label;
 }
 
@@ -47,13 +46,6 @@ class ASH_EXPORT PowerStatusView : public views::View,
   views::Label* percentage_label_;
   views::Label* separator_label_;
   views::Label* time_status_label_;
-
-  // Battery status indicator icon. Unused in material design.
-  views::ImageView* icon_;
-
-  // Information about the image last used to update |icon_|. Cached to avoid
-  // unnecessary updates (http://crbug.com/589348).
-  PowerStatus::BatteryImageInfo previous_battery_image_info_;
 
   // Only used in material design.
   base::string16 accessible_name_;

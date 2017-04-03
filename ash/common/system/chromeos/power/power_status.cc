@@ -21,7 +21,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace ash {
@@ -290,8 +290,7 @@ std::string PowerStatus::GetCurrentPowerSourceID() const {
   return proto_.external_power_source_id();
 }
 
-PowerStatus::BatteryImageInfo PowerStatus::GetBatteryImageInfo(
-    IconSet icon_set) const {
+PowerStatus::BatteryImageInfo PowerStatus::GetBatteryImageInfo() const {
   BatteryImageInfo info;
   CalculateBatteryImageInfo(&info);
   return info;
@@ -328,18 +327,21 @@ void PowerStatus::CalculateBatteryImageInfo(BatteryImageInfo* info) const {
   }
 }
 
-gfx::ImageSkia PowerStatus::GetBatteryImage(
-    const BatteryImageInfo& info) const {
+// static
+gfx::Size PowerStatus::GetBatteryImageSizeInDip() {
+  return gfx::Size(kBatteryCanvasSize, kBatteryCanvasSize);
+}
+
+gfx::ImageSkiaRep PowerStatus::GetBatteryImage(const BatteryImageInfo& info,
+                                               float scale) const {
   const bool use_alert_color =
       (info.charge_level == kMinVisualChargeLevel && !IsLinePowerConnected());
   const SkColor badge_color =
       use_alert_color ? kBatteryAlertColor : kBatteryBadgeColor;
   const SkColor charge_color =
       use_alert_color ? kBatteryAlertColor : kBatteryChargeColor;
-  gfx::Canvas canvas(
-      gfx::Size(kBatteryCanvasSize, kBatteryCanvasSize),
-      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor(),
-      false);
+
+  gfx::Canvas canvas(GetBatteryImageSizeInDip(), scale, false /* opaque */);
 
   // Paint the battery's base (background) color.
   PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSize,
@@ -361,7 +363,7 @@ gfx::ImageSkia PowerStatus::GetBatteryImage(
   if (info.icon_badge)
     PaintVectorIcon(&canvas, *info.icon_badge, kBatteryCanvasSize, badge_color);
 
-  return gfx::ImageSkia(canvas.ExtractImageRep());
+  return gfx::ImageSkiaRep(canvas.GetBitmap(), scale);
 }
 
 base::string16 PowerStatus::GetAccessibleNameString(

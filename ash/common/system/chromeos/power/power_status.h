@@ -28,9 +28,6 @@ namespace ash {
 // available to interested classes within Ash.
 class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
  public:
-  // Different styles of battery icons.
-  enum IconSet { ICON_LIGHT, ICON_DARK };
-
   // Interface for classes that wish to be notified when the power status
   // has changed.
   class Observer {
@@ -192,14 +189,18 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   // Returns information about the image that would be returned by
   // GetBatteryImage(). This can be cached and compared against future objects
   // returned by this method to avoid creating new images unnecessarily.
-  BatteryImageInfo GetBatteryImageInfo(IconSet icon_set) const;
+  BatteryImageInfo GetBatteryImageInfo() const;
 
   // A helper function called by GetBatteryImageInfo(). Populates the fields of
   // |info|.
   void CalculateBatteryImageInfo(BatteryImageInfo* info) const;
 
+  // The size of the image GetBatteryImage will return, in DIP.
+  static gfx::Size GetBatteryImageSizeInDip();
+
   // Creates a new image that should be shown for the battery's current state.
-  gfx::ImageSkia GetBatteryImage(const BatteryImageInfo& info) const;
+  gfx::ImageSkiaRep GetBatteryImage(const BatteryImageInfo& info,
+                                    float scale) const;
 
   // Returns an string describing the current state for accessibility.
   base::string16 GetAccessibleNameString(bool full_description) const;

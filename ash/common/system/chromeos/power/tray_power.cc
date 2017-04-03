@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -100,7 +101,7 @@ class PowerTrayView : public TrayItemView {
 
   ~PowerTrayView() override {}
 
-  // Overriden from views::View.
+  // Overridden from views::View.
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->SetName(accessible_name_);
     node_data->role = ui::AX_ROLE_BUTTON;
@@ -117,20 +118,39 @@ class PowerTrayView : public TrayItemView {
   }
 
  private:
-  void UpdateImage() {
-    const PowerStatus::BatteryImageInfo info =
-        PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_LIGHT);
-    if (info != previous_image_info_) {
-      image_view()->SetImage(PowerStatus::Get()->GetBatteryImage(info));
-      previous_image_info_ = info;
+  class PowerTrayImageSource : public gfx::ImageSkiaSource {
+   public:
+    explicit PowerTrayImageSource(const PowerStatus::BatteryImageInfo& info)
+        : info_(info) {}
+
+    // gfx::ImageSkiaSource implementation.
+    gfx::ImageSkiaRep GetImageForScale(float scale) override {
+      return PowerStatus::Get()->GetBatteryImage(info_, scale);
     }
+
+    const PowerStatus::BatteryImageInfo& info() const { return info_; }
+
+   private:
+    PowerStatus::BatteryImageInfo info_;
+
+    DISALLOW_COPY_AND_ASSIGN(PowerTrayImageSource);
+  };
+
+  void UpdateImage() {
+    const PowerStatus::BatteryImageInfo& info =
+        PowerStatus::Get()->GetBatteryImageInfo();
+    // Only change the image when the info changes. http://crbug.com/589348
+    if (image_source_ && image_source_->info() == info)
+      return;
+    image_source_ = new PowerTrayImageSource(info);
+    // gfx::ImageSkia takes ownership of image_source_. It will stay alive until
+    // we call SetImage() again, which only happens here.
+    image_view()->SetImage(
+        gfx::ImageSkia(image_source_, PowerStatus::GetBatteryImageSizeInDip()));
   }
 
   base::string16 accessible_name_;
-
-  // Information about the last-used image. Cached to avoid unnecessary updates
-  // (http://crbug.com/589348).
-  PowerStatus::BatteryImageInfo previous_image_info_;
+  PowerTrayImageSource* image_source_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };

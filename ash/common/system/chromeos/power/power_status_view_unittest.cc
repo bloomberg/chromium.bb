@@ -52,8 +52,6 @@ class PowerStatusViewTest : public test::AshTestBase {
     return view_->time_status_label_->text();
   }
 
-  gfx::ImageSkia GetBatteryImage() const { return view_->icon_->GetImage(); }
-
  private:
   std::unique_ptr<PowerStatusView> view_;
 

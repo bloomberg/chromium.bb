@@ -159,40 +159,30 @@ TEST_F(PowerStatusTest, GetBatteryImageInfo) {
   prop.set_battery_percent(98.0);
   power_status_->SetProtoForTesting(prop);
   const PowerStatus::BatteryImageInfo info_charging_98 =
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT);
+      power_status_->GetBatteryImageInfo();
 
   // 99% should use the same icon as 98%.
   prop.set_battery_percent(99.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(info_charging_98,
-            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+  EXPECT_EQ(info_charging_98, power_status_->GetBatteryImageInfo());
 
-  // The dark icon set should use a different image for non-MD, but the
-  // same image for MD.
-  prop.set_battery_percent(98.0);
-  EXPECT_EQ(info_charging_98,
-            power_status_->GetBatteryImageInfo(PowerStatus::ICON_DARK));
-
-  // A different icon should be used when the battery is full, too.
+  // A different icon should be used when the battery is full.
   prop.set_battery_state(PowerSupplyProperties::FULL);
   prop.set_battery_percent(100.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_NE(info_charging_98,
-            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+  EXPECT_NE(info_charging_98, power_status_->GetBatteryImageInfo());
 
   // A much-lower battery level should use a different icon.
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   prop.set_battery_percent(20.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_NE(info_charging_98,
-            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+  EXPECT_NE(info_charging_98, power_status_->GetBatteryImageInfo());
 
   // Ditto for 98%, but on USB instead of AC.
   prop.set_external_power(PowerSupplyProperties::USB);
   prop.set_battery_percent(98.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_NE(info_charging_98,
-            power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT));
+  EXPECT_NE(info_charging_98, power_status_->GetBatteryImageInfo());
 }
 
 // Tests that the |icon_badge| member of BatteryImageInfo is set correctly
@@ -206,15 +196,13 @@ TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   prop.set_battery_percent(98.0);
   power_status_->SetProtoForTesting(prop);
   const gfx::VectorIcon* bolt_icon =
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+      power_status_->GetBatteryImageInfo().icon_badge;
   EXPECT_TRUE(bolt_icon);
 
   // A discharging battery connected to AC should also have a bolt badge.
   prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      bolt_icon,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  EXPECT_EQ(bolt_icon, power_status_->GetBatteryImageInfo().icon_badge);
 
   // A charging battery connected to USB power should have an
   // unreliable badge.
@@ -222,7 +210,7 @@ TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   power_status_->SetProtoForTesting(prop);
   const gfx::VectorIcon* unreliable_icon =
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+      power_status_->GetBatteryImageInfo().icon_badge;
   EXPECT_NE(unreliable_icon, bolt_icon);
   EXPECT_TRUE(unreliable_icon);
 
@@ -230,16 +218,14 @@ TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   // unreliable badge.
   prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      unreliable_icon,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  EXPECT_EQ(unreliable_icon, power_status_->GetBatteryImageInfo().icon_badge);
 
   // Show the right icon when no battery is present.
   prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
   prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
   power_status_->SetProtoForTesting(prop);
   const gfx::VectorIcon* x_icon =
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+      power_status_->GetBatteryImageInfo().icon_badge;
   EXPECT_TRUE(x_icon);
   EXPECT_NE(bolt_icon, x_icon);
   EXPECT_NE(unreliable_icon, x_icon);
@@ -247,19 +233,17 @@ TEST_F(PowerStatusTest, BatteryImageInfoIconBadge) {
   // Do not show a badge when the battery is discharging.
   prop.set_battery_state(PowerSupplyProperties::DISCHARGING);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_FALSE(
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  EXPECT_FALSE(power_status_->GetBatteryImageInfo().icon_badge);
 
   // Show the right icon for a discharging battery when it falls below
   // a charge level of PowerStatus::kCriticalBatteryChargePercentage.
   prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentage);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_FALSE(
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge);
+  EXPECT_FALSE(power_status_->GetBatteryImageInfo().icon_badge);
   prop.set_battery_percent(PowerStatus::kCriticalBatteryChargePercentage - 1);
   power_status_->SetProtoForTesting(prop);
   const gfx::VectorIcon* alert_icon =
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).icon_badge;
+      power_status_->GetBatteryImageInfo().icon_badge;
   EXPECT_TRUE(alert_icon);
   EXPECT_NE(bolt_icon, alert_icon);
   EXPECT_NE(unreliable_icon, alert_icon);
@@ -275,50 +259,36 @@ TEST_F(PowerStatusTest, BatteryImageInfoChargeLevel) {
   prop.set_external_power(PowerSupplyProperties::DISCONNECTED);
   prop.set_battery_state(PowerSupplyProperties::NOT_PRESENT);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      0,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_level);
 
   // A charge level of 0 when the battery is 0% full.
   prop.set_external_power(PowerSupplyProperties::AC);
   prop.set_battery_state(PowerSupplyProperties::CHARGING);
   prop.set_battery_percent(0.0);
-  EXPECT_EQ(
-      0,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(0, power_status_->GetBatteryImageInfo().charge_level);
 
   // A charge level of 1 when the battery is up to 16% full, and a level of 2
   // for 17% full.
   prop.set_battery_percent(16.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      1,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(1, power_status_->GetBatteryImageInfo().charge_level);
   prop.set_battery_percent(17.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      2,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(2, power_status_->GetBatteryImageInfo().charge_level);
 
   // A charge level of 6 when the battery is 50% full.
   prop.set_battery_percent(50.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      6,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(6, power_status_->GetBatteryImageInfo().charge_level);
 
   // A charge level of 11 when the battery is 99% full, and a level of 12 when
   // the battery is 100% full.
   prop.set_battery_percent(99.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      11,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(11, power_status_->GetBatteryImageInfo().charge_level);
   prop.set_battery_percent(100.0);
   power_status_->SetProtoForTesting(prop);
-  EXPECT_EQ(
-      12,
-      power_status_->GetBatteryImageInfo(PowerStatus::ICON_LIGHT).charge_level);
+  EXPECT_EQ(12, power_status_->GetBatteryImageInfo().charge_level);
 }
 
 }  // namespace ash

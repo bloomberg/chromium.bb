@@ -32,8 +32,7 @@ PowerStatusView::PowerStatusView(bool default_view_right_align)
     : default_view_right_align_(default_view_right_align),
       percentage_label_(new views::Label),
       separator_label_(new views::Label),
-      time_status_label_(new views::Label),
-      icon_(nullptr) {
+      time_status_label_(new views::Label) {
   if (MaterialDesignController::IsSystemTrayMenuMaterial())
     SetFocusBehavior(FocusBehavior::ALWAYS);
 
@@ -51,20 +50,6 @@ PowerStatusView::~PowerStatusView() {
 
 void PowerStatusView::OnPowerStatusChanged() {
   UpdateText();
-
-  // We do not show a battery icon in the material design system menu.
-  // TODO(tdanderson): Remove the non-MD code and the IconSet enum once
-  // material design is enabled by default. See crbug.com/614453.
-  if (MaterialDesignController::UseMaterialDesignSystemIcons())
-    return;
-
-  const PowerStatus::BatteryImageInfo info =
-      PowerStatus::Get()->GetBatteryImageInfo(PowerStatus::ICON_DARK);
-  if (info != previous_battery_image_info_) {
-    icon_->SetImage(PowerStatus::Get()->GetBatteryImage(info));
-    icon_->SetVisible(true);
-    previous_battery_image_info_ = info;
-  }
 }
 
 void PowerStatusView::LayoutView() {
@@ -77,9 +62,7 @@ void PowerStatusView::LayoutView() {
     AddChildView(percentage_label_);
     AddChildView(separator_label_);
     AddChildView(time_status_label_);
-
-    icon_ = new views::ImageView;
-    AddChildView(icon_);
+    AddChildView(new views::ImageView);
 
     return;
   }
@@ -92,10 +75,8 @@ void PowerStatusView::LayoutView() {
       kTrayPopupPaddingBetweenItems);
   SetLayoutManager(layout);
 
-  if (!material_design) {
-    icon_ = TrayPopupUtils::CreateMainImageView();
-    AddChildView(icon_);
-  }
+  if (!material_design)
+    AddChildView(TrayPopupUtils::CreateMainImageView());
 
   AddChildView(percentage_label_);
   AddChildView(separator_label_);
