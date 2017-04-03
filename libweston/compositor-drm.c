@@ -2841,9 +2841,26 @@ edid_parse(struct drm_edid *edid, const uint8_t *data, size_t length)
 	return 0;
 }
 
+/** Parse monitor make, model and serial from EDID
+ *
+ * \param b The backend instance.
+ * \param output The output whose \c drm_edid to fill in.
+ * \param props The DRM connector properties to get the EDID from.
+ * \param make[out] The monitor make (PNP ID).
+ * \param model[out] The monitor model (name).
+ * \param serial_number[out] The monitor serial number.
+ *
+ * Each of \c *make, \c *model and \c *serial_number are set only if the
+ * information is found in the EDID. The pointers they are set to must not
+ * be free()'d explicitly, instead they get implicitly freed when the
+ * \c drm_output is destroyed.
+ */
 static void
 find_and_parse_output_edid(struct drm_backend *b, struct drm_output *output,
-			   drmModeObjectPropertiesPtr props)
+			   drmModeObjectPropertiesPtr props,
+			   const char **make,
+			   const char **model,
+			   const char **serial_number)
 {
 	drmModePropertyBlobPtr edid_blob = NULL;
 	uint32_t blob_id;
@@ -2868,16 +2885,14 @@ find_and_parse_output_edid(struct drm_backend *b, struct drm_output *output,
 			   output->edid.monitor_name,
 			   output->edid.serial_number);
 		if (output->edid.pnp_id[0] != '\0')
-			output->base.make = output->edid.pnp_id;
+			*make = output->edid.pnp_id;
 		if (output->edid.monitor_name[0] != '\0')
-			output->base.model = output->edid.monitor_name;
+			*model = output->edid.monitor_name;
 		if (output->edid.serial_number[0] != '\0')
-			output->base.serial_number = output->edid.serial_number;
+			*serial_number = output->edid.serial_number;
 	}
 	drmModeFreePropertyBlob(edid_blob);
 }
-
-
 
 static int
 parse_modeline(const char *s, drmModeModeInfo *mode)
@@ -3092,10 +3107,6 @@ drm_output_set_mode(struct weston_output *base,
 
 	struct drm_mode *current;
 	drmModeModeInfo crtc_mode;
-
-	output->base.make = "unknown";
-	output->base.model = "unknown";
-	output->base.serial_number = "unknown";
 
 	if (connector_get_current_mode(output->connector, b->drm.fd, &crtc_mode) < 0)
 		return -1;
@@ -3328,6 +3339,9 @@ create_output_for_connector(struct drm_backend *b,
 	drmModeObjectPropertiesPtr props;
 	struct drm_mode *drm_mode;
 	char *name;
+	const char *make = "unknown";
+	const char *model = "unknown";
+	const char *serial_number = "unknown";
 	int i;
 
 	static const struct drm_property_info connector_props[] = {
@@ -3374,7 +3388,11 @@ create_output_for_connector(struct drm_backend *b,
 	}
 	drm_property_info_populate(b, connector_props, output->props_conn,
 				   WDRM_CONNECTOR__COUNT, props);
-	find_and_parse_output_edid(b, output, props);
+	find_and_parse_output_edid(b, output, props,
+				   &make, &model, &serial_number);
+	output->base.make = (char *)make;
+	output->base.model = (char *)model;
+	output->base.serial_number = (char *)serial_number;
 	drmModeFreeObjectProperties(props);
 
 	for (i = 0; i < output->connector->count_modes; i++) {
