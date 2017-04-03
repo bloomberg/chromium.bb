@@ -195,7 +195,7 @@ class ContentSubresourceFilterThrottleManagerTest
     return nullptr;
   }
 
-  void SimulateSamePageCommit() {
+  void SimulateSameDocumentCommit() {
     navigation_simulator_->CommitSameDocument();
     navigation_simulator_.reset();
   }
@@ -413,7 +413,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   // Commit another navigation that triggers page level activation.
   GURL url2 = GURL(base::StringPrintf("%s#ref", kTestURLWithActivation));
   CreateTestNavigation(url2, main_rfh());
-  SimulateSamePageCommit();
+  SimulateSameDocumentCommit();
 
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/2/disallowed.html"), main_rfh());

@@ -127,10 +127,10 @@ class SubresourceFilterAgentTest : public ::testing::Test {
         true /* is_new_navigation */, false /* is_same_document_navigation */);
   }
 
-  void PerformSamePageNavigationWithoutSettingActivationLevel() {
+  void PerformSameDocumentNavigationWithoutSettingActivationLevel() {
     agent_as_rfo()->DidStartProvisionalLoad(nullptr);
     agent_as_rfo()->DidCommitProvisionalLoad(
-        true /* is_new_navigation */, true /* is_same_page_navigation */);
+        true /* is_new_navigation */, true /* is_same_document_navigation */);
     // No DidFinishLoad is called in this case.
   }
 
@@ -293,7 +293,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   // In-page navigation should not count as a new load.
   ExpectNoSubresourceFilterGetsInjected();
   ExpectNoSignalAboutFirstSubresourceDisallowed();
-  PerformSamePageNavigationWithoutSettingActivationLevel();
+  PerformSameDocumentNavigationWithoutSettingActivationLevel();
   ExpectLoadPolicy(kTestFirstURL,
                    blink::WebDocumentSubresourceFilter::kDisallow);
   ExpectLoadPolicy(kTestSecondURL, blink::WebDocumentSubresourceFilter::kAllow);
