@@ -452,6 +452,12 @@
         '1': 'official_chrome_pgo_phase_1',
         '2': 'official_chrome_pgo_phase_2',
       },
+      # TODO(mmoss): Remove this once official recipes are working and this
+      # just becomes the regular "win64-pgo" builder.
+      'win64-pgo-recipes': {
+        '1': 'official_chrome_pgo_phase_1',
+        '2': 'official_chrome_pgo_phase_2',
+      },
     },
 
     'official.desktop.continuous': {
