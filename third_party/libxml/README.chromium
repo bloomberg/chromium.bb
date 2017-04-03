@@ -16,7 +16,7 @@ Modifications:
 - Apply patch contributed here: https://crbug.com/628581#c18
 - Apply patch contributed here: https://crbug.com/620679#c34
 - Apply patch contributed here: https://crbug.com/683629#c9
-- Modify win32/xmlversion.h, mac/include/libxml/xmlversion.h and
+- Modify win32/include/libxml/xmlversion.h, mac/include/libxml/xmlversion.h and
   linux/include/libxml/xmlversion.h to not define these:
   LIBXML_SCHEMAS_ENABLED, LIBXML_VALID_ENABLED, LIBXML_XINCLUDE_ENABLED
 
