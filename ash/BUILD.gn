@@ -400,8 +400,6 @@ component("ash") {
     "common/system/tray/tray_item_more.h",
     "common/system/tray/tray_item_view.cc",
     "common/system/tray/tray_item_view.h",
-    "common/system/tray/tray_notification_view.cc",
-    "common/system/tray/tray_notification_view.h",
     "common/system/tray/tray_popup_header_button.cc",
     "common/system/tray/tray_popup_header_button.h",
     "common/system/tray/tray_popup_ink_drop_style.h",

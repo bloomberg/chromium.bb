@@ -12,10 +12,10 @@
 #include "ash/common/system/accessibility_observer.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_image_item.h"
-#include "ash/common/system/tray/tray_notification_view.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/view.h"
 
 namespace chromeos {
 class TrayAccessibilityTest;
@@ -38,11 +38,18 @@ class SystemTrayItem;
 
 namespace tray {
 
-class AccessibilityPopupView : public TrayNotificationView {
+// A view for closable notification views, laid out like:
+//  -------------------
+// | icon  contents  x |
+//  ----------------v--
+// The close button will call OnClose() when clicked.
+class AccessibilityPopupView : public views::View {
  public:
   explicit AccessibilityPopupView(uint32_t enabled_state_bits);
 
   const views::Label* label_for_test() const { return label_; }
+
+  void Init();
 
  private:
   views::Label* CreateLabel(uint32_t enabled_state_bits);

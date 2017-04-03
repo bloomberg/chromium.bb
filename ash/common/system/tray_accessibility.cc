@@ -19,7 +19,6 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -29,11 +28,14 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/resources/grit/ui_resources.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -135,9 +137,57 @@ class DefaultAccessibilityView : public TrayItemMore {
 // ash::tray::AccessibilityPopupView
 
 AccessibilityPopupView::AccessibilityPopupView(uint32_t enabled_state_bits)
-    : TrayNotificationView(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK),
-      label_(CreateLabel(enabled_state_bits)) {
-  InitView(label_);
+    : label_(CreateLabel(enabled_state_bits)) {}
+
+void AccessibilityPopupView::Init() {
+  set_background(views::Background::CreateSolidBackground(kBackgroundColor));
+
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  views::ImageView* close_button = new views::ImageView();
+  close_button->SetImage(
+      ResourceBundle::GetSharedInstance().GetImageSkiaNamed(IDR_MESSAGE_CLOSE));
+  close_button->SetHorizontalAlignment(views::ImageView::CENTER);
+  close_button->SetVerticalAlignment(views::ImageView::CENTER);
+
+  views::ImageView* icon = new views::ImageView;
+  icon->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon, kMenuIconColor));
+
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
+
+  // Icon
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                     0, /* resize percent */
+                     views::GridLayout::FIXED, kNotificationIconWidth,
+                     kNotificationIconWidth);
+
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
+
+  // Contents
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     100, /* resize percent */
+                     views::GridLayout::FIXED, kTrayNotificationContentsWidth,
+                     kTrayNotificationContentsWidth);
+
+  columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal / 2);
+
+  // Close button
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
+                     0, /* resize percent */
+                     views::GridLayout::FIXED, kNotificationButtonWidth,
+                     kNotificationButtonWidth);
+
+  // Layout rows
+  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
+  layout->StartRow(0, 0);
+  layout->AddView(icon);
+  layout->AddView(label_);
+  layout->AddView(close_button);
+  layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
 }
 
 views::Label* AccessibilityPopupView::CreateLabel(uint32_t enabled_state_bits) {
@@ -462,6 +512,7 @@ views::View* TrayAccessibility::CreateDetailedView(LoginStatus status) {
   if (request_popup_view_state_) {
     detailed_popup_ =
         new tray::AccessibilityPopupView(request_popup_view_state_);
+    detailed_popup_->Init();
     request_popup_view_state_ = A11Y_NONE;
     return detailed_popup_;
   } else {
