@@ -1791,11 +1791,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       m_layoutObject.setShouldDoFullPaintInvalidation(reason);
     }
-    void setShouldDoFullPaintInvalidationWithoutGeometryChange(
-        PaintInvalidationReason reason) {
-      m_layoutObject.setShouldDoFullPaintInvalidationWithoutGeometryChange(
-          reason);
-    }
     void setBackgroundChangedSinceLastPaintInvalidation() {
       m_layoutObject.setBackgroundChangedSinceLastPaintInvalidation();
     }

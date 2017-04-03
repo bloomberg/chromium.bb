@@ -5,24 +5,28 @@
 #ifndef PaintInvalidator_h
 #define PaintInvalidator_h
 
-#include "core/layout/LayoutObject.h"
-#include "core/paint/PaintPropertyTreeBuilder.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/paint/GeometryMapper.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
+class FrameView;
+class LayoutBoxModelObject;
+class LayoutObject;
+class PaintLayer;
+struct PaintPropertyTreeBuilderContext;
+
 struct PaintInvalidatorContext {
   PaintInvalidatorContext(
-      const PaintPropertyTreeBuilderContext* treeBuilderContext,
+      const PaintPropertyTreeBuilderContext& treeBuilderContext,
       GeometryMapper& geometryMapper)
       : parentContext(nullptr),
         m_treeBuilderContext(treeBuilderContext),
         m_geometryMapper(geometryMapper) {}
 
   PaintInvalidatorContext(
-      const PaintPropertyTreeBuilderContext* treeBuilderContext,
+      const PaintPropertyTreeBuilderContext& treeBuilderContext,
       const PaintInvalidatorContext& parentContext)
       : parentContext(&parentContext),
         forcedSubtreeInvalidationFlags(
@@ -39,27 +43,14 @@ struct PaintInvalidatorContext {
   virtual void mapLocalRectToVisualRectInBacking(const LayoutObject&,
                                                  LayoutRect&) const;
 
-  bool needsVisualRectUpdate(const LayoutObject& object) const {
-    if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
-      return true;
-#if DCHECK_IS_ON()
-    if (m_forceVisualRectUpdateForChecking)
-      return true;
-#endif
-    return object.needsPaintOffsetAndVisualRectUpdate() ||
-           (forcedSubtreeInvalidationFlags &
-            PaintInvalidatorContext::ForcedSubtreeVisualRectUpdate);
-  }
-
   const PaintInvalidatorContext* parentContext;
 
   enum ForcedSubtreeInvalidationFlag {
     ForcedSubtreeInvalidationChecking = 1 << 0,
-    ForcedSubtreeVisualRectUpdate = 1 << 1,
+    ForcedSubtreeInvalidationRectUpdate = 1 << 1,
     ForcedSubtreeFullInvalidation = 1 << 2,
     ForcedSubtreeFullInvalidationForStackedContents = 1 << 3,
     ForcedSubtreeSVGResourceChange = 1 << 4,
-
     // TODO(crbug.com/637313): This is temporary before we support filters in
     // paint property tree.
     ForcedSubtreeSlowPathRect = 1 << 5,
@@ -110,13 +101,8 @@ struct PaintInvalidatorContext {
 
  private:
   friend class PaintInvalidator;
-  const PaintPropertyTreeBuilderContext* m_treeBuilderContext;
+  const PaintPropertyTreeBuilderContext& m_treeBuilderContext;
   GeometryMapper& m_geometryMapper;
-
-#if DCHECK_IS_ON()
-  friend class FindVisualRectNeedingUpdateScopeBase;
-  mutable bool m_forceVisualRectUpdateForChecking = false;
-#endif
 };
 
 class PaintInvalidator {
@@ -145,8 +131,6 @@ class PaintInvalidator {
                                          PaintInvalidatorContext&);
   ALWAYS_INLINE void updatePaintInvalidationContainer(const LayoutObject&,
                                                       PaintInvalidatorContext&);
-  ALWAYS_INLINE void updateVisualRectIfNeeded(const LayoutObject&,
-                                              PaintInvalidatorContext&);
   ALWAYS_INLINE void updateVisualRect(const LayoutObject&,
                                       PaintInvalidatorContext&);
 

@@ -6,12 +6,6 @@
 #define FindPropertiesNeedingUpdate_h
 
 #if DCHECK_IS_ON()
-
-#include "core/frame/FrameView.h"
-#include "core/layout/LayoutObject.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintPropertyTreeBuilder.h"
-
 namespace blink {
 
 // This file contains two scope classes for catching cases where paint
@@ -96,9 +90,9 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   Persistent<FrameView> m_frameView;
   bool m_neededPaintPropertyUpdate;
   bool m_neededForcedSubtreeUpdate;
-  RefPtr<const TransformPaintPropertyNode> m_originalPreTranslation;
-  RefPtr<const ClipPaintPropertyNode> m_originalContentClip;
-  RefPtr<const TransformPaintPropertyNode> m_originalScrollTranslation;
+  RefPtr<TransformPaintPropertyNode> m_originalPreTranslation;
+  RefPtr<ClipPaintPropertyNode> m_originalContentClip;
+  RefPtr<TransformPaintPropertyNode> m_originalScrollTranslation;
 };
 
 #define DCHECK_OBJECT_PROPERTY_EQ(object, original, updated)            \
@@ -132,18 +126,6 @@ class FindObjectPropertiesNeedingUpdateScope {
   }
 
   ~FindObjectPropertiesNeedingUpdateScope() {
-    // Paint offset and paintOffsetTranslation should not change under
-    // FindObjectPropertiesNeedingUpdateScope no matter if we needed paint
-    // property update.
-    DCHECK_OBJECT_PROPERTY_EQ(m_object, &m_originalPaintOffset,
-                              &m_object.paintOffset());
-    const auto* objectProperties = m_object.paintProperties();
-    if (m_originalProperties && objectProperties) {
-      DCHECK_OBJECT_PROPERTY_EQ(m_object,
-                                m_originalProperties->paintOffsetTranslation(),
-                                objectProperties->paintOffsetTranslation());
-    }
-
     // No need to check if an update was already needed.
     if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
@@ -154,7 +136,13 @@ class FindObjectPropertiesNeedingUpdateScope {
     //    LayoutObject::setNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
     //    PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
+    DCHECK_OBJECT_PROPERTY_EQ(m_object, &m_originalPaintOffset,
+                              &m_object.paintOffset());
+    const auto* objectProperties = m_object.paintProperties();
     if (m_originalProperties && objectProperties) {
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->paintOffsetTranslation(),
+                                objectProperties->paintOffsetTranslation());
       DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->transform(),
                                 objectProperties->transform());
       DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->effect(),

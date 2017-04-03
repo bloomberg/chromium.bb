@@ -34,7 +34,6 @@
 #include "core/layout/api/LayoutBlockItem.h"
 #include "core/layout/api/LayoutItem.h"
 #include "core/layout/api/LayoutViewItem.h"
-#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintInvalidator.h"
@@ -222,23 +221,15 @@ void CaretDisplayItemClient::invalidatePaintInCurrentLayoutBlock(
   DCHECK(m_layoutBlock);
 
   LayoutRect newVisualRect;
-#if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(*m_layoutBlock, context, m_visualRect,
-                                          newVisualRect);
-#endif
-  if (context.needsVisualRectUpdate(*m_layoutBlock)) {
-    if (!m_localRect.isEmpty()) {
-      newVisualRect = m_localRect;
-      context.mapLocalRectToVisualRectInBacking(*m_layoutBlock, newVisualRect);
+  if (!m_localRect.isEmpty()) {
+    newVisualRect = m_localRect;
+    context.mapLocalRectToVisualRectInBacking(*m_layoutBlock, newVisualRect);
 
-      if (m_layoutBlock->usesCompositedScrolling()) {
-        // The caret should use scrolling coordinate space.
-        DCHECK(m_layoutBlock == context.paintInvalidationContainer);
-        newVisualRect.move(LayoutSize(m_layoutBlock->scrolledContentOffset()));
-      }
+    if (m_layoutBlock->usesCompositedScrolling()) {
+      // The caret should use scrolling coordinate space.
+      DCHECK(m_layoutBlock == context.paintInvalidationContainer);
+      newVisualRect.move(LayoutSize(m_layoutBlock->scrolledContentOffset()));
     }
-  } else {
-    newVisualRect = m_visualRect;
   }
 
   if (m_layoutBlock == m_previousLayoutBlock)

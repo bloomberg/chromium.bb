@@ -3145,8 +3145,6 @@ void FrameView::prePaint() {
       // we need to propagate the flags into the ancestor chain so that
       // PrePaintTreeWalk can reach this frame.
       frameView.setNeedsPaintPropertyUpdate();
-      if (auto owner = frameView.frame().ownerLayoutItem())
-        owner.setMayNeedPaintInvalidation();
     }
   });
 
@@ -4972,8 +4970,6 @@ void FrameView::beginLifecycleUpdates() {
   if (!frame().loader().stateMachine()->committedFirstRealDocumentLoad())
     return;
   m_lifecycleUpdatesThrottled = false;
-  if (auto owner = frame().ownerLayoutItem())
-    owner.setMayNeedPaintInvalidation();
   setupRenderThrottling();
   updateRenderThrottlingStatus(m_hiddenForThrottling, m_subtreeThrottled);
   // The compositor will "defer commits" for the main frame until we

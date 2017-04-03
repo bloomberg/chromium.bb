@@ -76,11 +76,11 @@ class CORE_EXPORT PaintInvalidationState {
 
   bool forcedSubtreeInvalidationRectUpdateWithinContainerOnly() const {
     return m_forcedSubtreeInvalidationFlags ==
-           PaintInvalidatorContext::ForcedSubtreeVisualRectUpdate;
+           PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate;
   }
   void setForceSubtreeInvalidationRectUpdateWithinContainer() {
     m_forcedSubtreeInvalidationFlags |=
-        PaintInvalidatorContext::ForcedSubtreeVisualRectUpdate;
+        PaintInvalidatorContext::ForcedSubtreeInvalidationRectUpdate;
   }
 
   const LayoutBoxModelObject& paintInvalidationContainer() const {

@@ -11,7 +11,6 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/PaintInvalidationState.h"
-#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
@@ -35,16 +34,8 @@ void PaintInvalidationCapableScrollableArea::willRemoveScrollbar(
 static LayoutRect scrollControlVisualRect(
     const IntRect& scrollControlRect,
     const LayoutBox& box,
-    const PaintInvalidatorContext& context,
-    const LayoutRect& previousVisualRect) {
+    const PaintInvalidatorContext& context) {
   LayoutRect visualRect(scrollControlRect);
-#if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(box, context, previousVisualRect,
-                                          visualRect);
-#endif
-  if (!context.needsVisualRectUpdate(box))
-    return previousVisualRect;
-
   // No need to apply any paint offset. Scroll controls paint in a different
   // transform space than their contained box (the scrollbarPaintOffset
   // transform node).
@@ -91,12 +82,12 @@ static LayoutRect invalidatePaintOfScrollbarIfNeeded(
     const PaintInvalidatorContext& context) {
   bool isOverlay = scrollbar && scrollbar->isOverlayScrollbar();
 
-  LayoutRect newVisualRect;
   // Calculate visual rect of the scrollbar, except overlay composited
   // scrollbars because we invalidate the graphics layer only.
+  LayoutRect newVisualRect;
   if (scrollbar && !(graphicsLayer && isOverlay)) {
-    newVisualRect = scrollControlVisualRect(scrollbar->frameRect(), box,
-                                            context, previousVisualRect);
+    newVisualRect =
+        scrollControlVisualRect(scrollbar->frameRect(), box, context);
   }
 
   bool needsPaintInvalidation = needsPaintInvalidationArg;
@@ -169,8 +160,7 @@ void PaintInvalidationCapableScrollableArea::
       verticalScrollbarNeedsPaintInvalidation(), box, context));
 
   LayoutRect scrollCornerAndResizerVisualRect =
-      scrollControlVisualRect(scrollCornerAndResizerRect(), box, context,
-                              m_scrollCornerAndResizerVisualRect);
+      scrollControlVisualRect(scrollCornerAndResizerRect(), box, context);
   const LayoutBoxModelObject& paintInvalidationContainer =
       *context.paintInvalidationContainer;
   if (invalidatePaintOfScrollControlIfNeeded(

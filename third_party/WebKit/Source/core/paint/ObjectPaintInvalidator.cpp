@@ -9,7 +9,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/HostWindow.h"
@@ -580,9 +579,9 @@ ObjectPaintInvalidatorWithContext::computePaintInvalidationReason() {
 DISABLE_CFI_PERF
 void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
     PaintInvalidationReason reason) {
-  // Update selection rect when we are doing full invalidation with geometry
-  // change (in case that the object is moved, composite status changed, etc.)
-  // or shouldInvalidationSelection is set (in case that the selection itself
+  // Update selection rect when we are doing full invalidation (in case that the
+  // object is moved, composite status changed, etc.) or
+  // shouldInvalidationSelection is set (in case that the selection itself
   // changed).
   bool fullInvalidation = isImmediateFullPaintInvalidationReason(reason);
   if (!fullInvalidation && !m_object.shouldInvalidateSelection())
@@ -593,18 +592,8 @@ void ObjectPaintInvalidatorWithContext::invalidateSelectionIfNeeded(
   LayoutRect oldSelectionRect;
   if (m_object.hasSelectionVisualRect())
     oldSelectionRect = selectionVisualRectMap().at(&m_object);
-
-  LayoutRect newSelectionRect;
-#if DCHECK_IS_ON()
-  FindVisualRectNeedingUpdateScope finder(m_object, m_context, oldSelectionRect,
-                                          newSelectionRect);
-#endif
-  if (m_context.needsVisualRectUpdate(m_object)) {
-    newSelectionRect = m_object.localSelectionRect();
-    m_context.mapLocalRectToVisualRectInBacking(m_object, newSelectionRect);
-  } else {
-    newSelectionRect = oldSelectionRect;
-  }
+  LayoutRect newSelectionRect = m_object.localSelectionRect();
+  m_context.mapLocalRectToVisualRectInBacking(m_object, newSelectionRect);
 
   setSelectionVisualRect(m_object, newSelectionRect);
 
@@ -654,8 +643,7 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
       DCHECK(isImmediateFullPaintInvalidationReason(reason));
       // This allows descendants to know the computed reason if it's different
       // from the original reason before paint invalidation.
-      m_object.getMutableForPainting()
-          .setShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
+      m_object.getMutableForPainting().setShouldDoFullPaintInvalidation(reason);
       fullyInvalidatePaint(reason, m_context.oldVisualRect,
                            m_object.visualRect());
   }
