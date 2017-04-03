@@ -2508,11 +2508,20 @@ static const char * const connector_type_names[] = {
 #endif
 };
 
+/** Create a name given a DRM connector
+ *
+ * \param con The DRM connector whose type and id form the name.
+ * \return A newly allocate string, or NULL on error. Must be free()'d
+ * after use.
+ *
+ * The name does not identify the DRM display device.
+ */
 static char *
 make_connector_name(const drmModeConnector *con)
 {
-	char name[32];
+	char *name;
 	const char *type_name = NULL;
+	int ret;
 
 	if (con->connector_type < ARRAY_LENGTH(connector_type_names))
 		type_name = connector_type_names[con->connector_type];
@@ -2520,9 +2529,11 @@ make_connector_name(const drmModeConnector *con)
 	if (!type_name)
 		type_name = "UNNAMED";
 
-	snprintf(name, sizeof name, "%s-%d", type_name, con->connector_type_id);
+	ret = asprintf(&name, "%s-%d", type_name, con->connector_type_id);
+	if (ret < 0)
+		return NULL;
 
-	return strdup(name);
+	return name;
 }
 
 static int
