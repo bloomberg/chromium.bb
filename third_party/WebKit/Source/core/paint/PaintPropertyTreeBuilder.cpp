@@ -1107,11 +1107,11 @@ void PaintPropertyTreeBuilder::updatePropertiesForSelf(
 
   if (object.isBoxModelObject() || object.isSVG()) {
     updateTransform(object, context);
+    updateCssClip(object, context);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       updateEffect(object, context);
       updateFilter(object, context);
     }
-    updateCssClip(object, context);
     updateLocalBorderBoxContext(object, context);
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
       updateScrollbarPaintOffset(object, context);
