@@ -18,13 +18,13 @@ enum SensorState {
     DependentLifetime,
     RuntimeEnabled=Sensor,
 ] interface Sensor : EventTarget {
-    readonly attribute SensorState state;
+    [MeasureAs=GenericSensorState] readonly attribute SensorState state;
     [CallWith=ScriptState] readonly attribute DOMHighResTimeStamp? timestamp;
 
     [MeasureAs=GenericSensorStart] void start();
     [MeasureAs=GenericSensorStop] void stop();
 
-    attribute EventHandler onerror;
-    attribute EventHandler onchange;
-    attribute EventHandler onactivate;
+    [MeasureAs=GenericSensorOnError] attribute EventHandler onerror;
+    [MeasureAs=GenericSensorOnChange] attribute EventHandler onchange;
+    [MeasureAs=GenericSensorOnActivate] attribute EventHandler onactivate;
 };

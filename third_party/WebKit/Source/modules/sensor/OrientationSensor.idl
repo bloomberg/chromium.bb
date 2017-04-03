@@ -11,5 +11,5 @@ typedef (Float32Array or Float64Array or DOMMatrix) RotationMatrixType;
     RuntimeEnabled=Sensor,
 ] interface OrientationSensor : Sensor {
     [CachedAttribute=isReadingDirty] readonly attribute FrozenArray<double>? quaternion;
-    [RaisesException] void populateMatrix(RotationMatrixType targetBuffer);
+    [RaisesException, MeasureAs=OrientationSensorPopulateMatrix] void populateMatrix(RotationMatrixType targetBuffer);
 };

@@ -10,6 +10,7 @@
     Constructor(optional SensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
+    MeasureAs=MagnetometerConstructor
 ] interface Magnetometer : Sensor {
     readonly attribute unrestricted double? x;
     readonly attribute unrestricted double? y;

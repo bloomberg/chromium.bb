@@ -1516,6 +1516,16 @@ class CORE_EXPORT UseCounter {
     HTMLContentElement = 1896,
     HTMLShadowElement = 1897,
     HTMLSlotElement = 1898,
+    AccelerometerConstructor = 1899,
+    AbsoluteOrientationSensorConstructor = 1900,
+    AmbientLightSensorConstructor = 1901,
+    GenericSensorOnActivate = 1902,
+    GenericSensorOnChange = 1903,
+    GenericSensorOnError = 1904,
+    GenericSensorState = 1905,
+    GyroscopeConstructor = 1906,
+    MagnetometerConstructor = 1907,
+    OrientationSensorPopulateMatrix = 1908,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

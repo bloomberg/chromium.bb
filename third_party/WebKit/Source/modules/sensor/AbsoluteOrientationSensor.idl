@@ -10,5 +10,6 @@
     Constructor(optional SensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
+    MeasureAs=AbsoluteOrientationSensorConstructor
 ] interface AbsoluteOrientationSensor : OrientationSensor {
 };
