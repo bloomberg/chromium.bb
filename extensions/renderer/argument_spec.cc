@@ -105,6 +105,10 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
       additional_properties_ =
           base::MakeUnique<ArgumentSpec>(*additional_properties_value);
     }
+    std::string instance_of;
+    if (dict->GetString("isInstanceOf", &instance_of)) {
+      instance_of_ = instance_of;
+    }
   } else if (type_ == ArgumentType::LIST) {
     const base::DictionaryValue* item_value = nullptr;
     CHECK(dict->GetDictionary("items", &item_value));
@@ -334,6 +338,39 @@ bool ArgumentSpec::ParseArgumentToObject(
       }
       if (result)
         result->SetWithoutPathExpansion(*utf8_key, std::move(property));
+    }
+  }
+
+  if (instance_of_) {
+    // Check for the instance somewhere in the object's prototype chain.
+    // NOTE: This only checks that something in the prototype chain was
+    // constructed with the same name as the desired instance, but doesn't
+    // validate that it's the same constructor as the expected one. For
+    // instance, if we expect isInstanceOf == 'Date', script could pass in
+    // (function() {
+    //   function Date() {}
+    //   return new Date();
+    // })()
+    // Since the object contains 'Date' in its prototype chain, this check
+    // succeeds, even though the object is not of built-in type Date.
+    // Since this isn't (or at least shouldn't be) a security check, this is
+    // okay.
+    bool found = false;
+    v8::Local<v8::Value> next_check = object;
+    do {
+      v8::Local<v8::Object> current = next_check.As<v8::Object>();
+      v8::String::Utf8Value constructor(current->GetConstructorName());
+      if (*instance_of_ ==
+          base::StringPiece(*constructor, constructor.length())) {
+        found = true;
+        break;
+      }
+      next_check = current->GetPrototype();
+    } while (next_check->IsObject());
+
+    if (!found) {
+      *error = "Object is not of correct instance";
+      return false;
     }
   }
 

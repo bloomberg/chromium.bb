@@ -504,4 +504,64 @@ TEST_F(ArgumentSpecUnitTest, AdditionalPropertiesTest) {
   }
 }
 
+TEST_F(ArgumentSpecUnitTest, InstanceOfTest) {
+  {
+    const char kInstanceOfRegExp[] =
+        "{"
+        "  'type': 'object',"
+        "  'isInstanceOf': 'RegExp'"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kInstanceOfRegExp));
+    ExpectSuccess(spec, "(new RegExp())", "{}");
+    ExpectSuccess(spec, "({ __proto__: RegExp.prototype })", "{}");
+    ExpectSuccess(spec,
+                  "(function() {\n"
+                  "  function subRegExp() {}\n"
+                  "  subRegExp.prototype = { __proto__: RegExp.prototype };\n"
+                  "  return new subRegExp();\n"
+                  "})()",
+                  "{}");
+    ExpectSuccess(spec,
+                  "(function() {\n"
+                  "  function RegExp() {}\n"
+                  "  return new RegExp();\n"
+                  "})()",
+                  "{}");
+    ExpectFailure(spec, "({})");
+    ExpectFailure(spec, "('')");
+    ExpectFailure(spec, "('.*')");
+    ExpectFailure(spec, "({ __proto__: Date.prototype })");
+  }
+
+  {
+    const char kInstanceOfCustomClass[] =
+        "{"
+        "  'type': 'object',"
+        "  'isInstanceOf': 'customClass'"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kInstanceOfCustomClass));
+    ExpectSuccess(spec,
+                  "(function() {\n"
+                  "  function customClass() {}\n"
+                  "  return new customClass();\n"
+                  "})()",
+                  "{}");
+    ExpectSuccess(spec,
+                  "(function() {\n"
+                  "  function customClass() {}\n"
+                  "  function otherClass() {}\n"
+                  "  otherClass.prototype = \n"
+                  "      { __proto__: customClass.prototype };\n"
+                  "  return new otherClass();\n"
+                  "})()",
+                  "{}");
+    ExpectFailure(spec, "({})");
+    ExpectFailure(spec,
+                  "(function() {\n"
+                  "  function otherClass() {}\n"
+                  "  return new otherClass();\n"
+                  "})()");
+  }
+}
+
 }  // namespace extensions

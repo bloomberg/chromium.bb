@@ -126,6 +126,11 @@ class ArgumentSpec {
   // none of the following fields describing the argument will be.
   base::Optional<std::string> ref_;
 
+  // The type of instance an object should be, if any. Only applicable for
+  // ArgumentType::OBJECT. If specified, the argument must contain the instance
+  // type in its prototype chain.
+  base::Optional<std::string> instance_of_;
+
   // A minimum, if any.
   base::Optional<int> minimum_;
 
