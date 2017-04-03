@@ -378,7 +378,7 @@ static void amdgpu_cs_uvd_decode(void)
 	/* TODO: use a real CRC32 */
 	for (i = 0, sum = 0; i < dt_size; ++i)
 		sum += ptr[i];
-	CU_ASSERT_EQUAL(sum, 0x20345d8);
+	CU_ASSERT_EQUAL(sum, SUM_DECODE);
 
 	r = amdgpu_bo_cpu_unmap(buf_handle);
 	CU_ASSERT_EQUAL(r, 0);
