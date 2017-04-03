@@ -5,6 +5,8 @@
 #include "core/layout/ng/ng_block_node.h"
 
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "core/layout/LayoutMultiColumnSet.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -81,6 +83,32 @@ void FloatingObjectPositionedUpdated(NGFloatingObject* ng_floating_object,
     floating_object->setIsPlaced(true);
     floating_object->setIsInPlacedTree(true);
   }
+}
+
+void UpdateLegacyMultiColumnFlowThread(LayoutBox* layout_box,
+                                       const NGPhysicalBoxFragment* fragment) {
+  LayoutBlockFlow* multicol = toLayoutBlockFlow(layout_box);
+  LayoutMultiColumnFlowThread* flow_thread = multicol->multiColumnFlowThread();
+  if (!flow_thread)
+    return;
+  if (LayoutMultiColumnSet* column_set = flow_thread->firstMultiColumnSet()) {
+    column_set->setWidth(fragment->Width());
+    column_set->setHeight(fragment->Height());
+
+    // TODO(mstensho): This value has next to nothing to do with the flow thread
+    // portion size, but at least it's usually better than zero.
+    column_set->endFlow(fragment->Height());
+
+    column_set->clearNeedsLayout();
+  }
+  // TODO(mstensho): Fix the relatively nonsensical values here (the content box
+  // size of the multicol container has very little to do with the price of
+  // eggs).
+  flow_thread->setWidth(fragment->Width());
+  flow_thread->setHeight(fragment->Height());
+
+  flow_thread->validateColumnSets();
+  flow_thread->clearNeedsLayout();
 }
 
 }  // namespace
@@ -238,6 +266,8 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   NGPhysicalBoxFragment* fragment =
       toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
 
+  if (layout_box_->style()->specifiesColumns())
+    UpdateLegacyMultiColumnFlowThread(layout_box_, fragment);
   layout_box_->setWidth(fragment->Width());
   layout_box_->setHeight(fragment->Height());
   NGBoxStrut border_and_padding = ComputeBorders(constraint_space, Style()) +
