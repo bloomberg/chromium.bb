@@ -11,6 +11,7 @@
 #include "chrome/common/safe_browsing/crx_info.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -65,8 +66,40 @@ void BlacklistStateFetcher::SendRequest(const std::string& id) {
   request.SerializeToString(&request_str);
 
   GURL request_url = RequestUrl();
-  std::unique_ptr<net::URLFetcher> fetcher_ptr = net::URLFetcher::Create(
-      url_fetcher_id_++, request_url, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("extension_blacklist", R"(
+        semantics {
+          sender: "Extension Blacklist"
+          description:
+            "Chromium protects the users from malicious extensions by checking "
+            "extensions that are being installed or have been installed "
+            "against a list of known malwares. Chromium sends the identifiers "
+            "of extensions to Google and Google responds with whether it "
+            "believes each extension is malware or not. Only extensions that "
+            "match the safe browsing blacklist can trigger this request."
+          trigger:
+            "When extensions are being installed and at startup when existing "
+            "extensions are scanned."
+          data: "The identifier of the installed extension."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "Safe Browsing cookies store"
+          setting:
+            "Users can enable or disable this feature by toggling 'Protect you "
+            "and your device from dangerous sites' in Chromium settings under "
+            "Privacy. This feature is enabled by default."
+          chrome_policy {
+            SafeBrowsingEnabled {
+              policy_options {mode: MANDATORY}
+              SafeBrowsingEnabled: false
+            }
+          }
+        })");
+  std::unique_ptr<net::URLFetcher> fetcher_ptr =
+      net::URLFetcher::Create(url_fetcher_id_++, request_url,
+                              net::URLFetcher::POST, this, traffic_annotation);
   net::URLFetcher* fetcher = fetcher_ptr.get();
   requests_[fetcher] = {std::move(fetcher_ptr), id};
   fetcher->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
