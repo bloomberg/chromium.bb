@@ -295,9 +295,7 @@ void SurfaceHitTestTestHelper(
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   float scale_factor = GetAdjustmentScaleFactorForAndroid(shell);
 
@@ -1040,9 +1038,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
               ->GetRenderWidgetHost()
               ->GetView());
 
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
 
 #if defined(OS_ANDROID)
   // Android browser tests have some differences that affect the results. One
@@ -1149,9 +1145,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
               ->GetRenderWidgetHost()
               ->GetView());
 
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
 
   // Save the original offset as a point of reference.
   filter->Wait();
@@ -1289,12 +1283,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollEventToOOPIF) {
       static_cast<RenderWidgetHostViewAura*>(
           root->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
-      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
-
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   // Create listener for input events.
   TestInputEventObserver child_frame_monitor(
@@ -1394,9 +1383,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
               ->GetRenderWidgetHost()
               ->GetView());
 
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_nested));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(nested_iframe_node->current_frame_host());
 
   float scale_factor = GetAdjustmentScaleFactorForAndroid(shell());
 
@@ -1472,12 +1459,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
-      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   // Target input event to child frame.
   blink::WebMouseEvent child_event(blink::WebInputEvent::MouseDown,
@@ -1542,12 +1525,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Verifying surfaces are ready in B and D are sufficient, since other
   // surfaces contain at least one of them.
-  SurfaceHitTestReadyNotifier notifier_b(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_b));
-  notifier_b.WaitForSurfaceReady();
-  SurfaceHitTestReadyNotifier notifier_d(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_d));
-  notifier_d.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(b_node->current_frame_host());
+  WaitForChildFrameSurfaceReady(d_node->current_frame_host());
 
   // Create listeners for mouse events. These are used to verify that the
   // RenderWidgetHostInputEventRouter is generating MouseLeave, etc for
@@ -1665,9 +1644,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   float scale_factor = GetAdjustmentScaleFactorForAndroid(shell());
 
@@ -5598,9 +5575,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessMouseWheelBrowserTest,
   // surface information required for event hit testing is ready.
   RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
       root->child_at(0)->current_frame_host()->GetView());
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(root->child_at(0)->current_frame_host());
 
   content::RenderFrameHostImpl* child = root->child_at(0)->current_frame_host();
   SetupWheelAndScrollHandlers(child);
@@ -5646,11 +5621,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
-  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
-      root->child_at(0)->current_frame_host()->GetView());
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(root->child_at(0)->current_frame_host());
 
   // There's no intrinsic reason the following values can't be equal, but they
   // aren't at present, and if they become the same this test will need to be
@@ -5810,11 +5781,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
-  RenderWidgetHostViewBase* child_rwhv = static_cast<RenderWidgetHostViewBase*>(
-      child_frame_host->GetView());
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_frame_host);
 
   // There have been no GestureTaps sent yet.
   {
@@ -6013,14 +5980,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
   auto* child_frame_host = root->child_at(0)->current_frame_host();
+  auto* rwhv_child =
+      static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
-  auto* rwhv_child =
-      static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_frame_host);
 
   // All touches & gestures are sent to the main frame's view, and should be
   // routed appropriately from there.
@@ -6100,9 +6065,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // surface information required for event hit testing is ready.
   auto* rwhv_child =
       static_cast<RenderWidgetHostViewBase*>(child_frame_host->GetView());
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_frame_host);
 
   // All touches & gestures are sent to the main frame's view, and should be
   // routed appropriately from there.
@@ -6214,9 +6177,7 @@ void CreateContextMenuTestHelper(
   // Ensure that the child process renderer is ready to have input events
   // routed to it. This happens when the browser process has received
   // updated compositor surfaces from both renderer processes.
-  SurfaceHitTestReadyNotifier notifier(
-      static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child));
-  notifier.WaitForSurfaceReady();
+  WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
   // A WebContentsDelegate to listen for the ShowContextMenu message.
   ContextMenuObserverDelegate context_menu_delegate;
@@ -8493,9 +8454,7 @@ class SitePerProcessGestureBrowserTest : public SitePerProcessBrowserTest {
     rwhva_root_ = static_cast<RenderWidgetHostViewAura*>(
         shell()->web_contents()->GetRenderWidgetHostView());
 
-    SurfaceHitTestReadyNotifier notifier(
-        static_cast<RenderWidgetHostViewChildFrame*>(rwhv_child_));
-    notifier.WaitForSurfaceReady();
+    WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
     rwhi_child_ = child_node->current_frame_host()->GetRenderWidgetHost();
     rwhi_root_ = root_node->current_frame_host()->GetRenderWidgetHost();

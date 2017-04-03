@@ -171,11 +171,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   // If OOPIFs are enabled, wait until compositor frames are all properly
   // displayed, otherwise the touch event will not get sent to the correct
   // renderer process.
-  if (main_frame->GetView() != child_frame->GetView()) {
-    SurfaceHitTestReadyNotifier notifier(
-        static_cast<RenderWidgetHostViewChildFrame*>(child_frame->GetView()));
-    notifier.WaitForSurfaceReady();
-  }
+  WaitForChildFrameSurfaceReady(child_frame);
 
   // Send a touch exploration event to the button in the first iframe.
   // A touch exploration event is just a mouse move event with

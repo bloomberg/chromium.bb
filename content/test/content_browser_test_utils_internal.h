@@ -25,15 +25,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 
-namespace cc {
-class SurfaceManager;
-}
-
 namespace content {
 
 class FrameTreeNode;
 class RenderFrameHost;
-class RenderWidgetHostViewChildFrame;
 class Shell;
 class SiteInstance;
 class ToRenderFrameHost;
@@ -116,27 +111,6 @@ class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
                             throttles) override;
 
   GURL url_;
-};
-
-// Helper class to assist with hit testing surfaces in multiple processes.
-// WaitForSurfaceReady() will only return after a Surface from |target_view|
-// has been composited in the top-level frame's Surface. At that point,
-// browser process hit testing to target_view's Surface can succeed.
-class SurfaceHitTestReadyNotifier {
- public:
-  SurfaceHitTestReadyNotifier(RenderWidgetHostViewChildFrame* target_view);
-  ~SurfaceHitTestReadyNotifier() {}
-
-  void WaitForSurfaceReady();
-
- private:
-  bool ContainsSurfaceId(const cc::SurfaceId& container_surface_id);
-
-  cc::SurfaceManager* surface_manager_;
-  cc::SurfaceId root_surface_id_;
-  RenderWidgetHostViewChildFrame* target_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceHitTestReadyNotifier);
 };
 
 // Helper for mocking choosing a file via a file dialog.

@@ -695,19 +695,8 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     frame = GetFrameByName(frame_name);
     DCHECK(frame);
 
-    // Wait until frame contents (e.g. images) have painted (which should happen
-    // in the animation frame that *starts* after the onload event - therefore
-    // we need to wait for 2 animation frames).
-    script = std::string(
-        "requestAnimationFrame(function() {\n"
-        "  requestAnimationFrame(function() {\n"
-        "    domAutomationController.send(43);\n"
-        "  });\n"
-        "});\n");
-    if (!content::ExecuteScriptAndExtractInt(frame, script, &response))
-      return false;
-    if (response != 43)
-      return false;
+    // Wait until frame contents have painted and are ready for hit testing.
+    WaitForChildFrameSurfaceReady(frame);
 
     return true;
   }
@@ -838,8 +827,7 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, DragStartInFrame) {
 
 // There is no known way to execute test-controlled tasks during
 // a drag-and-drop loop run by Windows OS.
-// Flaky on Linux. crbug.com/704603
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN)
 #define MAYBE_DragImageBetweenFrames DISABLED_DragImageBetweenFrames
 #else
 #define MAYBE_DragImageBetweenFrames DragImageBetweenFrames

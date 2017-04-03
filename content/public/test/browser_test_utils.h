@@ -376,6 +376,12 @@ void WaitForGuestSurfaceReady(content::WebContents* web_contents);
 
 #endif
 
+// Waits until the cc::Surface associated with a cross-process child frame
+// has been drawn for the first time. Once this method returns it should be
+// safe to assume that events sent to the top-level RenderWidgetHostView can
+// be expected to properly hit-test to this surface, if appropriate.
+void WaitForChildFrameSurfaceReady(content::RenderFrameHost* child_frame);
+
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.
 class TitleWatcher : public WebContentsObserver {

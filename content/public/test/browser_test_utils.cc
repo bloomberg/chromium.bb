@@ -1227,26 +1227,61 @@ void SendRoutedGestureTapSequence(content::WebContents* web_contents,
   rwhva->OnGestureEvent(&gesture_tap);
 }
 
-// TODO(wjmaclean): The next two functions are a modified version of
-// SurfaceHitTestReadyNotifier that (1) works for BrowserPlugin-based guests,
-// and (2) links outside of content-browsertests. At some point in time we
-// should probably merge these.
+#endif
+
 namespace {
 
-bool ContainsSurfaceId(const cc::SurfaceId& container_surface_id,
-                       RenderWidgetHostViewChildFrame* target_view) {
+class SurfaceHitTestReadyNotifier {
+ public:
+  SurfaceHitTestReadyNotifier(RenderWidgetHostViewBase* target_view);
+  ~SurfaceHitTestReadyNotifier() {}
+
+  void WaitForSurfaceReady(RenderWidgetHostViewBase* root_container);
+
+ private:
+  bool ContainsSurfaceId(const cc::SurfaceId& container_surface_id);
+
+  cc::SurfaceManager* surface_manager_;
+  RenderWidgetHostViewBase* target_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(SurfaceHitTestReadyNotifier);
+};
+
+SurfaceHitTestReadyNotifier::SurfaceHitTestReadyNotifier(
+    RenderWidgetHostViewBase* target_view)
+    : target_view_(target_view) {
+  surface_manager_ = GetSurfaceManager();
+}
+
+void SurfaceHitTestReadyNotifier::WaitForSurfaceReady(
+    RenderWidgetHostViewBase* root_view) {
+  cc::SurfaceId root_surface_id = root_view->SurfaceIdForTesting();
+  while (!ContainsSurfaceId(root_surface_id)) {
+    // TODO(kenrb): Need a better way to do this. Needs investigation on
+    // whether we can add a callback through RenderWidgetHostViewBaseObserver
+    // from OnSwapCompositorFrame and avoid this busy waiting. A callback on
+    // every compositor frame might be generally undesirable for performance,
+    // however.
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+}
+
+bool SurfaceHitTestReadyNotifier::ContainsSurfaceId(
+    const cc::SurfaceId& container_surface_id) {
   if (!container_surface_id.is_valid())
     return false;
 
   cc::Surface* container_surface =
-      GetSurfaceManager()->GetSurfaceForId(container_surface_id);
+      surface_manager_->GetSurfaceForId(container_surface_id);
   if (!container_surface || !container_surface->active_referenced_surfaces())
     return false;
 
   for (const cc::SurfaceId& id :
        *container_surface->active_referenced_surfaces()) {
-    if (id == target_view->SurfaceIdForTesting() ||
-        ContainsSurfaceId(id, target_view))
+    if (id == target_view_->SurfaceIdForTesting() || ContainsSurfaceId(id))
       return true;
   }
   return false;
@@ -1254,26 +1289,39 @@ bool ContainsSurfaceId(const cc::SurfaceId& container_surface_id,
 
 }  // namespace
 
+#if defined(USE_AURA)
 void WaitForGuestSurfaceReady(content::WebContents* guest_web_contents) {
   RenderWidgetHostViewChildFrame* child_view =
       static_cast<RenderWidgetHostViewChildFrame*>(
           guest_web_contents->GetRenderWidgetHostView());
 
-  cc::SurfaceId root_surface_id =
-      static_cast<RenderWidgetHostViewAura*>(
-          static_cast<content::WebContentsImpl*>(guest_web_contents)
-              ->GetOuterWebContents()
-              ->GetRenderWidgetHostView())
-          ->SurfaceIdForTesting();
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      static_cast<content::WebContentsImpl*>(guest_web_contents)
+          ->GetOuterWebContents()
+          ->GetRenderWidgetHostView());
 
-  while (!ContainsSurfaceId(root_surface_id, child_view)) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
+  SurfaceHitTestReadyNotifier notifier(child_view);
+  notifier.WaitForSurfaceReady(root_view);
 }
+
 #endif
+
+void WaitForChildFrameSurfaceReady(content::RenderFrameHost* child_frame) {
+  RenderWidgetHostViewBase* child_view =
+      static_cast<RenderFrameHostImpl*>(child_frame)
+          ->GetRenderWidgetHost()
+          ->GetView();
+  if (!child_view || !child_view->IsRenderWidgetHostViewChildFrame())
+    return;
+
+  RenderWidgetHostViewBase* root_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(child_view)
+          ->FrameConnectorForTesting()
+          ->GetRootRenderWidgetHostViewForTesting();
+
+  SurfaceHitTestReadyNotifier notifier(child_view);
+  notifier.WaitForSurfaceReady(root_view);
+}
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
                            const base::string16& expected_title)
