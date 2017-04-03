@@ -113,13 +113,13 @@ void AffiliationFetcher::StartRequest() {
           setting:
             "Users can enable or disable this feature either by stoping "
             "syncing passwords to Google (via unchecking 'Passwords' in "
-            "Chrome's settings under 'Sign In', 'Advanced sync settings') or "
+            "Chromium's settings under 'Sign In', 'Advanced sync settings') or "
             "by introducing a custom passphrase to disable this service. The "
             "feature is enabled by default."
-          policy {
+          chrome_policy {
             SyncDisabled {
               policy_options {mode: MANDATORY}
-              value: True
+              SyncDisabled: True
             }
           }
         })");

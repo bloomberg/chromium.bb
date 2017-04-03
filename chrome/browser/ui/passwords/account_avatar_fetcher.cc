@@ -34,10 +34,10 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           setting:
             "One can disable saving new credentials in the settings (see "
             "'Passwords and forms'). There is no setting to disable the API."
-          policy {
+          chrome_policy {
             PasswordManagerEnabled {
                 policy_options {mode: MANDATORY}
-                value: false
+                PasswordManagerEnabled: false
             }
           }
         })");

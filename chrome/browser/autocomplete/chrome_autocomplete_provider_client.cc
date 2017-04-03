@@ -282,10 +282,10 @@ void ChromeAutocompleteProviderClient::PrefetchImage(const GURL& url) {
             "service to help complete searches and URLs typed in the "
             "address bar.' in Chromium's settings under Advanced. The "
             "feature is enabled by default."
-          policy {
+          chrome_policy {
             SearchSuggestEnabled {
                 policy_options {mode: MANDATORY}
-                value: false
+                SearchSuggestEnabled: false
             }
           }
         })");

@@ -95,7 +95,8 @@ void IntranetRedirectDetector::FinishSleep() {
         }
         policy {
           cookies_allowed: false
-          policy_exception_justification =
+          setting: "This feature cannot be disabled by settings."
+          policy_exception_justification:
               "Not implemented, considered not useful."
         })");
 

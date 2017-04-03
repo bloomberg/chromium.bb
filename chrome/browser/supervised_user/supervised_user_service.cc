@@ -798,10 +798,10 @@ void SupervisedUserService::OnBlacklistFileChecked(const base::FilePath& path,
             "The feature can be remotely enabled or disabled by the parent. In "
             "addition, if sign-in is restricted to accounts from a managed "
             "domain, those accounts are not going to be child accounts."
-          policy {
+          chrome_policy {
             RestrictSigninToPattern {
               policy_options {mode: MANDATORY}
-              value: "*@manageddomain.com"
+              RestrictSigninToPattern: "*@manageddomain.com"
             }
           }
         })");

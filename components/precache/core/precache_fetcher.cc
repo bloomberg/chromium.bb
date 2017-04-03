@@ -340,7 +340,7 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
             "via unchecking 'Use a prediction service to load pages more "
             "quickly' in Chromium settings under Privacy; Enabling 'Data "
             "Saver' in Chromium settings on Android."
-          policy {
+          chrome_policy {
             NetworkPredictionOptions {
               policy_options {mode: MANDATORY}
               NetworkPredictionOptions: 2
@@ -390,7 +390,7 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
                 "downloads via unchecking 'Use a prediction service to load "
                 "pages more quickly' in Chromium settings under Privacy; "
                 "Enabling 'Data Saver' in Chromium settings on Android."
-              policy {
+              chrome_policy {
                 NetworkPredictionOptions {
                   policy_options {mode: MANDATORY}
                   NetworkPredictionOptions: 2
@@ -426,7 +426,7 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
               "downloads via unchecking 'Use a prediction service to load "
               "pages more quickly' in Chromium settings under Privacy; "
               "Enabling 'Data Saver' in Chromium settings on Android."
-            policy {
+            chrome_policy {
               NetworkPredictionOptions {
                 policy_options {mode: MANDATORY}
                 NetworkPredictionOptions: 2

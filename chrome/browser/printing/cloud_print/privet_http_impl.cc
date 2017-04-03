@@ -746,10 +746,9 @@ std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
           setting:
             "Users can enable or disable background requests by 'Show "
             "notifications when new printers are detected on the network' in "
-            "Chrome's settings under Advanced Settings, Google Cloud Print. "
+            "Chromium's settings under Advanced Settings, Google Cloud Print. "
             "User triggered requests, like from print preview or "
             "chrome://devices/ cannot be disabled."
-          }
           policy_exception_justification:
             "Not implemented, it's good to do so."
         })");

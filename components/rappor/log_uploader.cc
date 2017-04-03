@@ -133,7 +133,7 @@ void LogUploader::StartScheduledUpload() {
             "'Automatically send usage statistics and crash reports to Google'"
             "in Chromium's settings under Advanced Settings, Privacy. The "
             "feature is enabled by default."
-          policy {
+          chrome_policy {
             MetricsReportingEnabled {
               policy_options {mode: MANDATORY}
               MetricsReportingEnabled: false

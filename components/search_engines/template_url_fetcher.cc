@@ -32,7 +32,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           "corresponding search engine is added to the list in the browser "
           "settings (chrome://settings/searchEngines)."
         trigger:
-          "User visits a web page containing a <link rel="search"> tag."
+          "User visits a web page containing a <link rel=\"search\"> tag."
         data: "None"
         destination: WEBSITE
       }

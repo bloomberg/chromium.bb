@@ -316,33 +316,33 @@ void TraceCrashServiceUploader::CreateAndStartURLFetcher(
         semantics {
           sender: "Background Performance Traces"
           description:
-            "Under certain conditions, Google Chrome will send anonymized "
+            "Under certain conditions, Chromium will send anonymized "
             "performance timeline data to Google for the purposes of improving "
-            "Chrome performance. We can set up a percentage of the population "
-            "to send back trace reports when a certain UMA histogram bucket is "
-            "incremented, for example, \"For 1% of the Beta population, send "
-            "us a trace if it ever takes more than 1 seconds for the Omnibox "
-            "to respond to a typed character\". The possible types of triggers "
-            "right now are UMA histograms, and manually triggered events from "
-            "code (think of them like asserts, that'll cause a report to be "
-            "sent if enabled for that population)."
+            "Chromium performance. We can set up a percentage of the "
+            "population to send back trace reports when a certain UMA "
+            "histogram bucket is incremented, for example, 'For 1% of the Beta "
+            "population, send us a trace if it ever takes more than 1 seconds "
+            "for the Omnibox to respond to a typed character'. The possible "
+            "types of triggers right now are UMA histograms, and manually "
+            "triggered events from code (think of them like asserts, that'll "
+            "cause a report to be sent if enabled for that population)."
           trigger:
             "Google-controlled triggering conditions, usually when a bad "
             "performance situation occurs."
-          data: "An anonymized Chrome trace (see about://tracing)."
+          data: "An anonymized Chromium trace (see about://tracing)."
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
           cookies_allowed: false
           setting:
             "You can enable or disable this feature via 'Automatically send "
-            "usage statistics and crash reports to Google' in Chrome's "
+            "usage statistics and crash reports to Google' in Chromium's "
             "settings under Advanced, Privacy. This feature is enabled by "
             "default."
-          policy {
+          chrome_policy {
             MetricsReportingEnabled {
               policy_options {mode: MANDATORY}
-              value: false
+              MetricsReportingEnabled: false
             }
           }
         })");

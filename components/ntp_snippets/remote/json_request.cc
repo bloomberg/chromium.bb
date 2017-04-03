@@ -380,10 +380,10 @@ std::unique_ptr<net::URLFetcher> JsonRequest::Builder::BuildURLFetcher(
           setting:
             "This feature cannot be disabled by settings now (but is requested "
             "to be implemented in crbug.com/695129)."
-          policy {
+          chrome_policy {
             NTPContentSuggestionsEnabled {
               policy_options {mode: MANDATORY}
-              value: false
+              NTPContentSuggestionsEnabled: false
             }
           }
         })");

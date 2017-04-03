@@ -710,7 +710,7 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
             "resources from the network to enrich the debugging experience "
             "(e.g. source map resources)."
           trigger: "User opens Developer Tools to debug a web page."
-          data: "Any resources requested by Developer Tools"
+          data: "Any resources requested by Developer Tools."
           destination: WEBSITE
         }
         policy {
@@ -718,10 +718,10 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
           cookies_store: "user"
           setting:
             "It's not possible to disable this feature from settings."
-          policy {
+          chrome_policy {
             DeveloperToolsDisabled {
               policy_options {mode: MANDATORY}
-              value: true
+              DeveloperToolsDisabled: true
             }
           }
         })");

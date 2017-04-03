@@ -234,7 +234,7 @@ void DevToolsDataSource::StartRemoteDataRequest(
         semantics {
           sender: "Developer Tools Remote Data Request From Google"
           description:
-            "This service fetches Chrome DevTools front-end files from the "
+            "This service fetches Chromium DevTools front-end files from the "
             "cloud for the remote debugging scenario."
           trigger:
             "When user attaches to mobile phone for debugging."
@@ -245,10 +245,10 @@ void DevToolsDataSource::StartRemoteDataRequest(
           cookies_allowed: true
           cookies_store: "user"
           setting: "This feature cannot be disabled by settings."
-          policy {
+          chrome_policy {
             DeveloperToolsDisabled {
               policy_options {mode: MANDATORY}
-              value: True
+              DeveloperToolsDisabled: True
             }
           }
         })");
@@ -273,7 +273,7 @@ void DevToolsDataSource::StartCustomDataRequest(
         semantics {
           sender: "Developer Tools Remote Data Request"
           description:
-            "This service fetches Chrome DevTools front-end files from the "
+            "This service fetches Chromium DevTools front-end files from the "
             "cloud for the remote debugging scenario. This can only happen if "
             "a URL was passed on the commandline via flag "
             "'--custom-devtools-frontend'. This URL overrides the default "
@@ -289,7 +289,7 @@ void DevToolsDataSource::StartCustomDataRequest(
           cookies_allowed: true
           cookies_store: "user"
           setting: "This feature cannot be disabled by settings."
-          policy {
+          chrome_policy {
             DeveloperToolsDisabled {
               policy_options {mode: MANDATORY}
               DeveloperToolsDisabled: True
