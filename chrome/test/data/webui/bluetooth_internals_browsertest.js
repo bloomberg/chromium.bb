@@ -307,7 +307,16 @@ BluetoothInternalsTest.prototype = {
   },
 };
 
-TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
+// Flaky on Mac & Linux in Debug. See crbug.com/707824
+GEN('#if !defined(NDEBUG) && (defined(OS_MACOSX) || defined(OS_LINUX))');
+GEN('#define MAYBE_Startup_BluetoothInternals ' +
+    'DISABLED_Startup_BluetoothInternals');
+GEN('#else');
+GEN('#define MAYBE_Startup_BluetoothInternals Startup_BluetoothInternals');
+GEN('#endif');
+
+TEST_F('BluetoothInternalsTest', 'MAYBE_Startup_BluetoothInternals',
+    function() {
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
 
   var adapterFactory = null;
