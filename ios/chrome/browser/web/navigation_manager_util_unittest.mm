@@ -19,14 +19,14 @@ class NavigationManagerUtilTest : public PlatformTest {
 
 // Tests that empty navigation manager returns nullptr.
 TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemEmpty) {
-  EXPECT_FALSE(GetLastNonRedirectedItem(nullptr));
-  EXPECT_FALSE(GetLastNonRedirectedItem(&nav_manager_));
+  EXPECT_FALSE(GetLastCommittedNonRedirectedItem(nullptr));
+  EXPECT_FALSE(GetLastCommittedNonRedirectedItem(&nav_manager_));
 }
 
 // Tests that typed in URL works correctly.
 TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemTypedUrl) {
   nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_TYPED);
-  web::NavigationItem* item = GetLastNonRedirectedItem(&nav_manager_);
+  web::NavigationItem* item = GetLastCommittedNonRedirectedItem(&nav_manager_);
   ASSERT_TRUE(item);
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       item->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));
@@ -35,7 +35,7 @@ TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemTypedUrl) {
 // Tests that link click works correctly.
 TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemLinkClicked) {
   nav_manager_.AddItem(GURL("http://foo.com/page0"), ui::PAGE_TRANSITION_LINK);
-  web::NavigationItem* item = GetLastNonRedirectedItem(&nav_manager_);
+  web::NavigationItem* item = GetLastCommittedNonRedirectedItem(&nav_manager_);
   ASSERT_TRUE(item);
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
@@ -48,7 +48,7 @@ TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemLinkMultiRedirects) {
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   nav_manager_.AddItem(GURL("http://bar.com/redir2"),
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  web::NavigationItem* item = GetLastNonRedirectedItem(&nav_manager_);
+  web::NavigationItem* item = GetLastCommittedNonRedirectedItem(&nav_manager_);
   ASSERT_TRUE(item);
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       item->GetTransitionType(), ui::PAGE_TRANSITION_LINK));
@@ -62,9 +62,8 @@ TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemAllRedirects) {
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   nav_manager_.AddItem(GURL("http://bar.com/redir2"),
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  web::NavigationItem* item = GetLastNonRedirectedItem(&nav_manager_);
-  ASSERT_TRUE(item);
-  EXPECT_EQ(GURL("http://bar.com/redir0"), item->GetURL());
+  web::NavigationItem* item = GetLastCommittedNonRedirectedItem(&nav_manager_);
+  EXPECT_FALSE(item);
 }
 
 // Tests that earlier redirects are not found.
@@ -76,7 +75,7 @@ TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemNotEarliest) {
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   nav_manager_.AddItem(GURL("http://bar.com/redir2"),
                        ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  web::NavigationItem* item = GetLastNonRedirectedItem(&nav_manager_);
+  web::NavigationItem* item = GetLastCommittedNonRedirectedItem(&nav_manager_);
   ASSERT_TRUE(item);
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       item->GetTransitionType(), ui::PAGE_TRANSITION_TYPED));

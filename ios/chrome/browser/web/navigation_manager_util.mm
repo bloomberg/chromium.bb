@@ -8,18 +8,18 @@
 #error "This file requires ARC support."
 #endif
 
-web::NavigationItem* GetLastNonRedirectedItem(
+web::NavigationItem* GetLastCommittedNonRedirectedItem(
     web::NavigationManager* nav_manager) {
   if (!nav_manager || !nav_manager->GetItemCount())
     return nullptr;
   int index = nav_manager->GetLastCommittedItemIndex();
-  web::NavigationItem* item = nullptr;
   while (index >= 0) {
-    item = nav_manager->GetItemAtIndex(index);
+    web::NavigationItem* item = nav_manager->GetItemAtIndex(index);
     // Returns the first non-Redirect item found.
     if ((item->GetTransitionType() & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) == 0)
-      break;
+      return item;
     --index;
   }
-  return item;
+
+  return nullptr;
 }

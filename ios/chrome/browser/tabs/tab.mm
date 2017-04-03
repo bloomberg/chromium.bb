@@ -1512,7 +1512,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   web::NavigationManager* navigationManager = [self navigationManager];
   DCHECK(navigationManager);
   web::NavigationItem* lastNonRedirectedItem =
-      GetLastNonRedirectedItem(navigationManager);
+      GetLastCommittedNonRedirectedItem(navigationManager);
   if (!lastNonRedirectedItem)
     return;
 
