@@ -11,9 +11,11 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/ui/accessibility_cursor_ring_layer.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace chromeos {
@@ -26,6 +28,10 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   static AccessibilityFocusRingController* GetInstance();
 
   enum FocusRingBehavior { FADE_OUT_FOCUS_RING, PERSIST_FOCUS_RING };
+
+  // Set the focus ring color, or reset it back to the default.
+  void SetFocusRingColor(SkColor color);
+  void ResetFocusRingColor();
 
   // Draw a focus ring around the given set of rects, in global screen
   // coordinates. Use |focus_ring_behavior| to specify whether the focus
@@ -100,6 +106,7 @@ class AccessibilityFocusRingController : public FocusRingLayerDelegate {
   std::vector<AccessibilityFocusRing> focus_rings_;
   std::vector<std::unique_ptr<AccessibilityFocusRingLayer>> focus_layers_;
   FocusRingBehavior focus_ring_behavior_ = FADE_OUT_FOCUS_RING;
+  base::Optional<SkColor> focus_ring_color_;
 
   LayerAnimationInfo cursor_animation_info_;
   gfx::Point cursor_location_;

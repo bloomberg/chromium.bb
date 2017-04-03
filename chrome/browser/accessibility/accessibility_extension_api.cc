@@ -25,6 +25,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/image_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
 #if defined(OS_CHROMEOS)
@@ -80,6 +81,16 @@ AccessibilityPrivateSetFocusRingFunction::Run() {
     EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger(kWidth, &width));
     EXTENSION_FUNCTION_VALIDATE(rect_value->GetInteger(kHeight, &height));
     rects.push_back(gfx::Rect(left, top, width, height));
+  }
+
+  std::string color_str;
+  if (args_->GetSize() >= 2 && args_->GetString(1, &color_str)) {
+    SkColor color;
+    if (!extensions::image_util::ParseHexColorString(color_str, &color))
+      return RespondNow(Error("Could not parse hex color"));
+    AccessibilityFocusRingController::GetInstance()->SetFocusRingColor(color);
+  } else {
+    AccessibilityFocusRingController::GetInstance()->ResetFocusRingColor();
   }
 
   // Move the visible focus ring to cover all of these rects.

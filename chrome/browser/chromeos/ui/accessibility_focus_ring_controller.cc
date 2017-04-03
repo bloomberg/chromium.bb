@@ -80,6 +80,16 @@ AccessibilityFocusRingController::AccessibilityFocusRingController() {
 AccessibilityFocusRingController::~AccessibilityFocusRingController() {
 }
 
+void AccessibilityFocusRingController::SetFocusRingColor(SkColor color) {
+  focus_ring_color_ = color;
+  UpdateFocusRingsFromFocusRects();
+}
+
+void AccessibilityFocusRingController::ResetFocusRingColor() {
+  focus_ring_color_.reset();
+  UpdateFocusRingsFromFocusRects();
+}
+
 void AccessibilityFocusRingController::SetFocusRing(
     const std::vector<gfx::Rect>& rects,
     AccessibilityFocusRingController::FocusRingBehavior focus_ring_behavior) {
@@ -117,6 +127,13 @@ void AccessibilityFocusRingController::UpdateFocusRingsFromFocusRects() {
     // In FADE mode, set all focus rings to their destination location.
     for (size_t i = 0; i < focus_rings_.size(); ++i)
       focus_layers_[i]->Set(focus_rings_[i]);
+  }
+
+  for (size_t i = 0; i < focus_rings_.size(); ++i) {
+    if (focus_ring_color_)
+      focus_layers_[i]->SetColor(*focus_ring_color_);
+    else
+      focus_layers_[i]->ResetColor();
   }
 }
 

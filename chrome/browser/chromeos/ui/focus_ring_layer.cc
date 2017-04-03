@@ -29,7 +29,7 @@ const SkColor kShadowColor = SkColorSetRGB(77, 144, 254);
 FocusRingLayerDelegate::~FocusRingLayerDelegate() {}
 
 FocusRingLayer::FocusRingLayer(FocusRingLayerDelegate* delegate)
-    : delegate_(delegate), root_window_(nullptr), compositor_(nullptr) {}
+    : delegate_(delegate) {}
 
 FocusRingLayer::~FocusRingLayer() {
   if (compositor_ && compositor_->HasAnimationObserver(this))
@@ -50,6 +50,14 @@ bool FocusRingLayer::CanAnimate() const {
 
 void FocusRingLayer::SetOpacity(float opacity) {
   layer()->SetOpacity(opacity);
+}
+
+void FocusRingLayer::SetColor(SkColor color) {
+  custom_color_ = color;
+}
+
+void FocusRingLayer::ResetColor() {
+  custom_color_.reset();
 }
 
 void FocusRingLayer::CreateOrUpdateLayer(aura::Window* root_window,
@@ -92,7 +100,7 @@ void FocusRingLayer::OnPaintLayer(const ui::PaintContext& context) {
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(kShadowColor);
+  flags.setColor(custom_color_ ? *custom_color_ : kShadowColor);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(2);
 

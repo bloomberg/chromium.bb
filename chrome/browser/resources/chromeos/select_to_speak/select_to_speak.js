@@ -81,6 +81,9 @@ var SelectToSpeak = function() {
   /** @private { number } */
   this.speechRate_ = 1.0;
 
+  /** @const { string } */
+  this.color_ = "#f73a98";
+
   this.initPreferences_();
 };
 
@@ -114,7 +117,7 @@ SelectToSpeak.prototype = {
     var rect = rectFromPoints(
         this.mouseStart_.x, this.mouseStart_.y,
         evt.mouseX, evt.mouseY);
-    chrome.accessibilityPrivate.setFocusRing([rect]);
+    chrome.accessibilityPrivate.setFocusRing([rect], this.color_);
   },
 
   /**
@@ -209,7 +212,8 @@ SelectToSpeak.prototype = {
         'enqueue': true,
         onEvent: (function(node, isLast, event) {
           if (event.type == 'start') {
-            chrome.accessibilityPrivate.setFocusRing([node.location]);
+            chrome.accessibilityPrivate.setFocusRing(
+                [node.location], this.color_);
           } else if (event.type == 'interrupted' ||
                      event.type == 'cancelled') {
             chrome.accessibilityPrivate.setFocusRing([]);
