@@ -149,7 +149,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
-// TCM ID - 3711279.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
@@ -159,7 +158,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
-// TCM ID - 3706267.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Uninstall)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
@@ -190,7 +188,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
-// TCM ID - 3699295.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AppsMatchChecker().Wait());
@@ -209,7 +206,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
-// TCM ID - 7723126.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
                        E2E_ENABLED(UpdateEnableDisableApp)) {
   ASSERT_TRUE(SetupSync());
@@ -225,7 +221,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
   ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
-// TCM ID - 7706637.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
                        E2E_ENABLED(UpdateIncognitoEnableDisable)) {
   ASSERT_TRUE(SetupSync());

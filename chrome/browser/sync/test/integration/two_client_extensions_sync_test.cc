@@ -130,7 +130,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
       static_cast<int>(GetInstalledExtensions(GetProfile(0)).size()));
 }
 
-// TCM ID - 3637311.
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Add)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
@@ -141,7 +140,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Add)) {
   EXPECT_EQ(1u, GetInstalledExtensions(GetProfile(0)).size());
 }
 
-// TCM ID - 3724281.
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Uninstall)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
@@ -154,7 +152,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Uninstall)) {
   EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
 }
 
-// TCM ID - 3605300.
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        MAYBE_E2E(UpdateEnableDisableExtension)) {
   ASSERT_TRUE(SetupSync());
@@ -174,7 +171,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(ExtensionsMatchChecker().Wait());
 }
 
-// TCM ID - 3728322.
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
                        E2E_ENABLED(UpdateIncognitoEnableDisable)) {
   ASSERT_TRUE(SetupSync());

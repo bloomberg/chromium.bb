@@ -24,7 +24,6 @@ class TwoClientSearchEnginesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientSearchEnginesSyncTest);
 };
 
-// TCM ID - 8898628.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
@@ -39,7 +38,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(search_engines_helper::HasSearchEngine(1, search_engine_seed));
 }
 
-// TCM ID - 8898660.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Delete)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
@@ -59,7 +57,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(Delete)) {
   ASSERT_FALSE(search_engines_helper::HasSearchEngine(1, search_engine_seed));
 }
 
-// TCM ID - 8912240.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(AddMultiple)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -72,7 +69,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
   ASSERT_TRUE(SearchEnginesMatchChecker().Wait());
 }
 
-// TCM ID - 9011135.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Duplicates) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
@@ -90,7 +86,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, Duplicates) {
   ASSERT_TRUE(SearchEnginesMatchChecker().Wait());
 }
 
-// TCM ID - 9004201.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(UpdateKeyword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -108,7 +103,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
   ASSERT_TRUE(SearchEnginesMatchChecker().Wait());
 }
 
-// TCM ID - 8894859.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(UpdateUrl)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
@@ -125,7 +119,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, E2E_ENABLED(UpdateUrl)) {
   ASSERT_TRUE(SearchEnginesMatchChecker().Wait());
 }
 
-// TCM ID - 8910490.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(UpdateName)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -142,7 +135,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
   ASSERT_TRUE(SearchEnginesMatchChecker().Wait());
 }
 
-// TCM ID - 9004196.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, ConflictKeyword) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
@@ -163,7 +155,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, ConflictKeyword) {
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 }
 
-// TCM ID - 9004187.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, MergeMultiple) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   DisableVerifier();
@@ -189,7 +180,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, MergeMultiple) {
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 }
 
-// TCM ID - 8906436.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
@@ -205,7 +195,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest, DisableSync) {
   ASSERT_TRUE(search_engines_helper::AllServicesMatch());
 }
 
-// TCM ID - 8891809.
 IN_PROC_BROWSER_TEST_F(TwoClientSearchEnginesSyncTest,
                        E2E_ENABLED(SyncDefault)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

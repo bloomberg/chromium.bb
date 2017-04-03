@@ -90,19 +90,16 @@ std::string BookmarksSyncPerfTest::NextIndexedURLTitle() {
 IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  // TCM ID - 7556828.
   AddURLs(0, kNumBookmarks);
   base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
   PrintResult("bookmarks", "add_bookmarks", dt);
 
-  // TCM ID - 7564762.
   UpdateURLs(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
   PrintResult("bookmarks", "update_bookmarks", dt);
 
-  // TCM ID - 7566626.
   RemoveURLs(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));

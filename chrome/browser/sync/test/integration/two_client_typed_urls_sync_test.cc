@@ -77,7 +77,6 @@ class TwoClientTypedUrlsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientTypedUrlsSyncTest);
 };
 
-// TCM: 3728323
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(Add)) {
   // Use a randomized URL to prevent test collisions.
   const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
@@ -169,7 +168,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpiredThenUpdate) {
   EXPECT_TRUE(CheckSyncDirectoryHasURL(1, new_url));
 }
 
-// TCM: 3705291
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
   // Use a randomized URL to prevent test collisions.
   const base::string16 kHistoryUrl = ASCIIToUTF16(base::StringPrintf(
@@ -196,7 +194,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
   ASSERT_EQ(initial_count, GetTypedUrlsFromClient(1).size());
 }
 
-// TCM: 3643277
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        E2E_ENABLED(DisableEnableSync)) {
   const base::string16 kUrl1(ASCIIToUTF16("http://history1.google.com/"));

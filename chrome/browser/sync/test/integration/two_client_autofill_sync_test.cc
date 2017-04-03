@@ -104,7 +104,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
   ASSERT_EQ(0U, GetAllKeys(0).size());
 }
 
-// TCM ID - 3678296.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddUnicodeProfile) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -194,7 +193,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 7261786.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddDuplicateProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -205,7 +203,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddDuplicateProfiles) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3636294.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -221,7 +218,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, SameProfileWithConflict) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3626291.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddEmptyProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -230,7 +226,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddEmptyProfile) {
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3616283.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -240,7 +235,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddProfile) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3632260.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddMultipleProfiles) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -252,7 +246,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddMultipleProfiles) {
   ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3602257.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DeleteProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -267,7 +260,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DeleteProfile) {
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3627300.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MergeProfiles) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
@@ -279,7 +271,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MergeProfiles) {
   ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3665264.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -301,7 +292,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3628299.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
@@ -323,7 +313,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
 
-// TCM ID - 3608295.
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 

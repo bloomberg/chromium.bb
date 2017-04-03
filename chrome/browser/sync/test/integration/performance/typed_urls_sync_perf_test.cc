@@ -97,19 +97,16 @@ GURL TypedUrlsSyncPerfTest::IntToURL(int n) {
 IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  // TCM ID - 7985716.
   AddURLs(0, kNumUrls);
   base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetURLCount(1));
   PrintResult("typed_urls", "add_typed_urls", dt);
 
-  // TCM ID - 7981755.
   UpdateURLs(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetURLCount(1));
   PrintResult("typed_urls", "update_typed_urls", dt);
 
-  // TCM ID - 7651271.
   RemoveURLs(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));

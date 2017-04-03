@@ -46,7 +46,6 @@ class TwoClientPasswordsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientPasswordsSyncTest);
 };
 
-// TCM ID - 3732277
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
@@ -92,7 +91,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SamePasswordFormsChecker().Wait());
 }
 
-// TCM ID - 4603879
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Update) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
@@ -114,7 +112,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Update) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-// TCM ID - 3719309
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
@@ -195,7 +192,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ONLY(Delete)) {
   ASSERT_EQ(init_password_count - 2, GetPasswordCount(0));
 }
 
-// TCM ID - 7573511
 // Flaky on Mac and Windows: http://crbug.com/111399
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_DeleteAll DISABLED_DeleteAll
@@ -222,7 +218,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, MAYBE_DeleteAll) {
   ASSERT_EQ(0, GetVerifierPasswordCount());
 }
 
-// TCM ID - 3694311
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(AllProfilesContainSamePasswordForms());

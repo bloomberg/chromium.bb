@@ -83,19 +83,16 @@ std::string PasswordsSyncPerfTest::NextPassword() {
 IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, MAYBE_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  // TCM ID - 7367749.
   AddLogins(0, kNumPasswords);
   base::TimeDelta dt = TimeUntilQuiescence(GetSyncClients());
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
   PrintResult("passwords", "add_passwords", dt);
 
-  // TCM ID - 7365093.
   UpdateLogins(0);
   dt = TimeUntilQuiescence(GetSyncClients());
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
   PrintResult("passwords", "update_passwords", dt);
 
-  // TCM ID - 7557852
   RemoveLogins(0);
   dt = TimeUntilQuiescence(GetSyncClients());
   ASSERT_EQ(0, GetPasswordCount(1));

@@ -173,19 +173,16 @@ void ForceSync(int profile) {
 IN_PROC_BROWSER_TEST_F(AutofillSyncPerfTest, AutofillProfiles_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  // TCM ID - 7557873.
   AddProfiles(0, kNumProfiles);
   base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumProfiles, GetProfileCount(1));
   PrintResult("autofill", "add_autofill_profiles", dt);
 
-  // TCM ID - 7549835.
   UpdateProfiles(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumProfiles, GetProfileCount(1));
   PrintResult("autofill", "update_autofill_profiles", dt);
 
-  // TCM ID - 7553678.
   RemoveProfiles(0);
   dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetProfileCount(1));
