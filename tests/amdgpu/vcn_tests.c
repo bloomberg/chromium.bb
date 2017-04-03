@@ -35,6 +35,7 @@
 #include "amdgpu_test.h"
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
+#include "decode_messages.h"
 
 #define IB_SIZE		4096
 #define MAX_RESOURCES	16
@@ -228,28 +229,160 @@ static void free_resource(struct amdgpu_vcn_bo *vcn_bo)
 	memset(vcn_bo, 0, sizeof(*vcn_bo));
 }
 
+static void vcn_dec_cmd(uint64_t addr, unsigned cmd, int *idx)
+{
+	ib_cpu[(*idx)++] = 0x81C4;
+	ib_cpu[(*idx)++] = addr;
+	ib_cpu[(*idx)++] = 0x81C5;
+	ib_cpu[(*idx)++] = addr >> 32;
+	ib_cpu[(*idx)++] = 0x81C3;
+	ib_cpu[(*idx)++] = cmd << 1;
+}
+
 static void amdgpu_cs_vcn_dec_create(void)
 {
+	struct amdgpu_vcn_bo msg_buf;
+	int len, r;
+
 	if (family_id < AMDGPU_FAMILY_RV)
 		return;
 
-	/* TODO */
+	num_resources  = 0;
+	alloc_resource(&msg_buf, 4096, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = msg_buf.handle;
+	resources[num_resources++] = ib_handle;
+
+	r = amdgpu_bo_cpu_map(msg_buf.handle, (void **)&msg_buf.ptr);
+	CU_ASSERT_EQUAL(r, 0);
+
+	memset(msg_buf.ptr, 0, 4096);
+	memcpy(msg_buf.ptr, vcn_dec_create_msg, sizeof(vcn_dec_create_msg));
+
+	len = 0;
+	ib_cpu[len++] = 0x81C4;
+	ib_cpu[len++] = msg_buf.addr;
+	ib_cpu[len++] = 0x81C5;
+	ib_cpu[len++] = msg_buf.addr >> 32;
+	ib_cpu[len++] = 0x81C3;
+	ib_cpu[len++] = 0;
+	for (; len % 16; ++len)
+		ib_cpu[len] = 0x81ff;
+
+	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
+	CU_ASSERT_EQUAL(r, 0);
+
+	free_resource(&msg_buf);
 }
 
 static void amdgpu_cs_vcn_dec_decode(void)
 {
+	const unsigned dpb_size = 15923584, ctx_size = 5287680, dt_size = 737280;
+	uint64_t msg_addr, fb_addr, bs_addr, dpb_addr, ctx_addr, dt_addr, it_addr, sum;
+	struct amdgpu_vcn_bo dec_buf;
+	int size, len, i, r;
+	uint8_t *dec;
+
 	if (family_id < AMDGPU_FAMILY_RV)
 		return;
 
-	/* TODO */
+	size = 4*1024; /* msg */
+	size += 4*1024; /* fb */
+	size += 4096; /*it_scaling_table*/
+	size += ALIGN(sizeof(uvd_bitstream), 4*1024);
+	size += ALIGN(dpb_size, 4*1024);
+	size += ALIGN(dt_size, 4*1024);
+
+	num_resources  = 0;
+	alloc_resource(&dec_buf, size, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = dec_buf.handle;
+	resources[num_resources++] = ib_handle;
+
+	r = amdgpu_bo_cpu_map(dec_buf.handle, (void **)&dec_buf.ptr);
+	dec = dec_buf.ptr;
+
+	CU_ASSERT_EQUAL(r, 0);
+	memset(dec_buf.ptr, 0, size);
+	memcpy(dec_buf.ptr, vcn_dec_decode_msg, sizeof(vcn_dec_decode_msg));
+	memcpy(dec_buf.ptr + sizeof(vcn_dec_decode_msg),
+			avc_decode_msg, sizeof(avc_decode_msg));
+
+	dec += 4*1024;
+	dec += 4*1024;
+	memcpy(dec, uvd_it_scaling_table, sizeof(uvd_it_scaling_table));
+
+	dec += 4*1024;
+	memcpy(dec, uvd_bitstream, sizeof(uvd_bitstream));
+
+	dec += ALIGN(sizeof(uvd_bitstream), 4*1024);
+
+	dec += ALIGN(dpb_size, 4*1024);
+
+	msg_addr = dec_buf.addr;
+	fb_addr = msg_addr + 4*1024;
+	it_addr = fb_addr + 4*1024;
+	bs_addr = it_addr + 4*1024;
+	dpb_addr = ALIGN(bs_addr + sizeof(uvd_bitstream), 4*1024);
+	ctx_addr = ALIGN(dpb_addr + 0x006B9400, 4*1024);
+	dt_addr = ALIGN(dpb_addr + dpb_size, 4*1024);
+
+	len = 0;
+	vcn_dec_cmd(msg_addr, 0x0, &len);
+	vcn_dec_cmd(dpb_addr, 0x1, &len);
+	vcn_dec_cmd(dt_addr, 0x2, &len);
+	vcn_dec_cmd(fb_addr, 0x3, &len);
+	vcn_dec_cmd(bs_addr, 0x100, &len);
+	vcn_dec_cmd(it_addr, 0x204, &len);
+	vcn_dec_cmd(ctx_addr, 0x206, &len);
+
+	ib_cpu[len++] = 0x81C6;
+	ib_cpu[len++] = 0x1;
+	for (; len % 16; ++len)
+		ib_cpu[len] = 0x80000000;
+
+	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
+	CU_ASSERT_EQUAL(r, 0);
+
+	for (i = 0, sum = 0; i < dt_size; ++i)
+		sum += dec[i];
+
+	CU_ASSERT_EQUAL(sum, SUM_DECODE);
+
+	free_resource(&dec_buf);
 }
 
 static void amdgpu_cs_vcn_dec_destroy(void)
 {
+	struct amdgpu_vcn_bo msg_buf;
+	int len, r;
+
 	if (family_id < AMDGPU_FAMILY_RV)
 		return;
 
-	/* TODO */
+	num_resources  = 0;
+	alloc_resource(&msg_buf, 1024, AMDGPU_GEM_DOMAIN_GTT);
+	resources[num_resources++] = msg_buf.handle;
+	resources[num_resources++] = ib_handle;
+
+	r = amdgpu_bo_cpu_map(msg_buf.handle, (void **)&msg_buf.ptr);
+	CU_ASSERT_EQUAL(r, 0);
+
+	memset(msg_buf.ptr, 0, 1024);
+	memcpy(msg_buf.ptr, vcn_dec_destroy_msg, sizeof(vcn_dec_destroy_msg));
+
+	len = 0;
+	ib_cpu[len++] = 0x81C4;
+	ib_cpu[len++] = msg_buf.addr;
+	ib_cpu[len++] = 0x81C5;
+	ib_cpu[len++] = msg_buf.addr >> 32;
+	ib_cpu[len++] = 0x81C3;
+	ib_cpu[len++] = 0;
+	for (; len % 16; ++len)
+		ib_cpu[len] = 0x80000000;
+
+	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
+	CU_ASSERT_EQUAL(r, 0);
+
+	free_resource(&msg_buf);
 }
 
 static void amdgpu_cs_vcn_enc_create(void)
