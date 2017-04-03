@@ -36,6 +36,7 @@ class CONTENT_EXPORT BuildableVideoCaptureDevice {
     virtual void WillStartDevice(media::VideoFacingMode facing_mode) = 0;
     virtual void DidStartDevice(VideoCaptureController* controller) = 0;
     virtual void OnDeviceStartFailed(VideoCaptureController* controller) = 0;
+    virtual void OnDeviceStartAborted() = 0;
   };
 
   virtual ~BuildableVideoCaptureDevice() {}

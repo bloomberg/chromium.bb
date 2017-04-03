@@ -146,7 +146,7 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
   MOCK_METHOD2(Aborted, void(MediaStreamType, int));
 };  // class MockMediaStreamProviderListener
 
-// Needed as an input argument to StartCaptureForClient().
+// Needed as an input argument to ConnectClient().
 class MockFrameObserver : public VideoCaptureControllerEventHandler {
  public:
   MOCK_METHOD1(OnError, void(VideoCaptureControllerID id));
@@ -237,23 +237,18 @@ class VideoCaptureManagerTest : public testing::Test {
         gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
     VideoCaptureControllerID client_id(next_client_id_++);
-    vcm_->StartCaptureForClient(
-        session_id,
-        params,
-        client_id,
-        frame_observer_.get(),
+    vcm_->ConnectClient(
+        session_id, params, client_id, frame_observer_.get(),
         base::Bind(&VideoCaptureManagerTest::OnGotControllerCallback,
-                   base::Unretained(this),
-                   client_id,
-                   expect_success));
+                   base::Unretained(this), client_id, expect_success));
     base::RunLoop().RunUntilIdle();
     return client_id;
   }
 
   void StopClient(VideoCaptureControllerID client_id) {
     ASSERT_TRUE(1 == controllers_.count(client_id));
-    vcm_->StopCaptureForClient(controllers_[client_id], client_id,
-                               frame_observer_.get(), false);
+    vcm_->DisconnectClient(controllers_[client_id], client_id,
+                           frame_observer_.get(), false);
     controllers_.erase(client_id);
   }
 
@@ -350,8 +345,8 @@ TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
   // Wait for device opened.
   base::RunLoop().RunUntilIdle();
 
-  vcm_->StopCaptureForClient(controllers_[client_id], client_id,
-                             frame_observer_.get(), true);
+  vcm_->DisconnectClient(controllers_[client_id], client_id,
+                         frame_observer_.get(), true);
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();

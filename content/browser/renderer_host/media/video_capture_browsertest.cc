@@ -102,9 +102,9 @@ class VideoCaptureBrowserTest
       return;
     }
 
-    video_capture_manager_->StopCaptureForClient(
-        controller_.get(), stub_client_id_, &mock_controller_event_handler_,
-        false);
+    video_capture_manager_->DisconnectClient(controller_.get(), stub_client_id_,
+                                             &mock_controller_event_handler_,
+                                             false);
 
     EXPECT_CALL(mock_stream_provider_listener_, Closed(_, _))
         .WillOnce(InvokeWithoutArgs([continuation]() { continuation.Run(); }));
@@ -149,7 +149,7 @@ class VideoCaptureBrowserTest
     capture_params.requested_format = media::VideoCaptureFormat(
         GetParam().resolution_to_use, GetParam().frame_rate_to_use,
         GetParam().pixel_format_to_use);
-    video_capture_manager_->StartCaptureForClient(
+    video_capture_manager_->ConnectClient(
         session_id_, capture_params, stub_client_id_,
         &mock_controller_event_handler_,
         base::Bind(&VideoCaptureBrowserTest::OnConnectClientToControllerAnswer,

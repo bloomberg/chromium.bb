@@ -39,7 +39,7 @@ VideoCaptureHost::~VideoCaptureHost() {
     const base::WeakPtr<VideoCaptureController>& controller = it->second;
     if (controller) {
       const VideoCaptureControllerID controller_id(it->first);
-      media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+      media_stream_manager_->video_capture_manager()->DisconnectClient(
           controller.get(), controller_id, this, false);
       ++it;
     } else {
@@ -142,7 +142,7 @@ void VideoCaptureHost::Start(int32_t device_id,
   }
 
   controllers_[controller_id] = base::WeakPtr<VideoCaptureController>();
-  media_stream_manager_->video_capture_manager()->StartCaptureForClient(
+  media_stream_manager_->video_capture_manager()->ConnectClient(
       session_id, params, controller_id, this,
       base::Bind(&VideoCaptureHost::OnControllerAdded,
                  weak_factory_.GetWeakPtr(), device_id));
@@ -295,7 +295,7 @@ void VideoCaptureHost::OnControllerAdded(
   auto it = controllers_.find(controller_id);
   if (it == controllers_.end()) {
     if (controller) {
-      media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+      media_stream_manager_->video_capture_manager()->DisconnectClient(
           controller.get(), controller_id, this, false);
     }
     return;
@@ -327,7 +327,7 @@ void VideoCaptureHost::DeleteVideoCaptureController(
   if (!controller)
     return;
 
-  media_stream_manager_->video_capture_manager()->StopCaptureForClient(
+  media_stream_manager_->video_capture_manager()->DisconnectClient(
       controller.get(), controller_id, this, on_error);
 }
 

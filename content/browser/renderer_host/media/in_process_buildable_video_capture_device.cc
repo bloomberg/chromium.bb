@@ -99,6 +99,7 @@ void InProcessBuildableVideoCaptureDevice::CreateAndStartDeviceAsync(
     Callbacks* callbacks,
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_EQ(State::NO_DEVICE, state_);
 
   const int max_buffers = (controller->stream_type() == MEDIA_TAB_VIDEO_CAPTURE
                                ? kMaxNumberOfBuffersForTabCapture
@@ -178,6 +179,7 @@ void InProcessBuildableVideoCaptureDevice::CreateAndStartDeviceAsync(
   }
 
   device_task_runner_->PostTask(FROM_HERE, start_capture_closure);
+  state_ = State::DEVICE_START_IN_PROGRESS;
 }
 
 void InProcessBuildableVideoCaptureDevice::ReleaseDeviceAsync(
@@ -185,19 +187,28 @@ void InProcessBuildableVideoCaptureDevice::ReleaseDeviceAsync(
     base::OnceClosure done_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   controller->SetConsumerFeedbackObserver(nullptr);
-  if (!device_)
-    return;
-  media::VideoCaptureDevice* device_ptr = device_.release();
-
-  bool posting_task_succeeded = device_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&StopAndReleaseDeviceOnDeviceThread, device_ptr,
-                 base::Bind([](scoped_refptr<base::SingleThreadTaskRunner>) {},
-                            device_task_runner_)));
-  if (posting_task_succeeded == false) {
-    // Since posting to the task runner has failed, we attempt doing it on
-    // the calling thread instead.
-    StopAndReleaseDeviceOnDeviceThread(device_ptr, base::Bind([]() {}));
+  switch (state_) {
+    case State::DEVICE_START_IN_PROGRESS:
+      state_ = State::DEVICE_START_ABORTING;
+      return;
+    case State::NO_DEVICE:
+    case State::DEVICE_START_ABORTING:
+      return;
+    case State::DEVICE_STARTED:
+      media::VideoCaptureDevice* device_ptr = device_.release();
+      bool posting_task_succeeded = device_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &StopAndReleaseDeviceOnDeviceThread, device_ptr,
+              base::Bind([](scoped_refptr<base::SingleThreadTaskRunner>) {},
+                         device_task_runner_)));
+      if (posting_task_succeeded == false) {
+        // Since posting to the task runner has failed, we attempt doing it on
+        // the calling thread instead.
+        StopAndReleaseDeviceOnDeviceThread(device_ptr, base::Bind([]() {}));
+      }
+      state_ = State::NO_DEVICE;
+      return;
   }
   base::ResetAndReturn(&done_cb).Run();
 }
@@ -294,13 +305,11 @@ InProcessBuildableVideoCaptureDevice::CreateDeviceClient(
     base::WeakPtr<media::VideoFrameReceiver> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_ =
+  return base::MakeUnique<media::VideoCaptureDeviceClient>(
+      base::MakeUnique<VideoFrameReceiverOnIOThread>(receiver),
       new media::VideoCaptureBufferPoolImpl(
           base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-          buffer_pool_max_buffer_count);
-
-  return base::MakeUnique<media::VideoCaptureDeviceClient>(
-      base::MakeUnique<VideoFrameReceiverOnIOThread>(receiver), buffer_pool_,
+          buffer_pool_max_buffer_count),
       base::Bind(&CreateGpuJpegDecoder,
                  base::Bind(&media::VideoFrameReceiver::OnFrameReadyInBuffer,
                             receiver)));
@@ -312,20 +321,45 @@ void InProcessBuildableVideoCaptureDevice::OnDeviceStarted(
     base::OnceClosure done_cb,
     std::unique_ptr<media::VideoCaptureDevice> device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!device) {
-    callbacks->OnDeviceStartFailed(controller);
-    base::ResetAndReturn(&done_cb).Run();
-    return;
+  switch (state_) {
+    case State::DEVICE_START_IN_PROGRESS:
+      if (!device) {
+        state_ = State::NO_DEVICE;
+        callbacks->OnDeviceStartFailed(controller);
+        base::ResetAndReturn(&done_cb).Run();
+        return;
+      }
+      // Passing raw pointer |device.get()| to the controller is safe,
+      // because we take ownership of |device| and we call
+      // controller->SetConsumerFeedbackObserver(nullptr) before releasing
+      // |device|.
+      controller->SetConsumerFeedbackObserver(
+          base::MakeUnique<VideoFrameConsumerFeedbackObserverOnTaskRunner>(
+              device.get(), device_task_runner_));
+      device_ = std::move(device);
+      state_ = State::DEVICE_STARTED;
+      callbacks->DidStartDevice(controller);
+      base::ResetAndReturn(&done_cb).Run();
+      return;
+    case State::DEVICE_START_ABORTING:
+      if (device) {
+        device_ = std::move(device);
+        state_ = State::DEVICE_STARTED;
+        // We do not move our |done_cb| to this invocation, because
+        // we still need it to stay alive for the remainder of this method
+        // execution. Our implementation of ReleaseDeviceAsync() does not
+        // actually need the context while releasing the device.
+        ReleaseDeviceAsync(controller, base::Bind([]() {}));
+      }
+      state_ = State::NO_DEVICE;
+      callbacks->OnDeviceStartAborted();
+      base::ResetAndReturn(&done_cb).Run();
+      return;
+    case State::NO_DEVICE:
+    case State::DEVICE_STARTED:
+      NOTREACHED();
+      return;
   }
-  // Passing raw pointer |device.get()| to the controller is safe,
-  // because we take ownership of |device| and we call
-  // controller->SetConsumerFeedbackObserver(nullptr) before releasing |device|.
-  controller->SetConsumerFeedbackObserver(
-      base::MakeUnique<VideoFrameConsumerFeedbackObserverOnTaskRunner>(
-          device.get(), device_task_runner_));
-  device_ = std::move(device);
-  callbacks->DidStartDevice(controller);
-  base::ResetAndReturn(&done_cb).Run();
 }
 
 void InProcessBuildableVideoCaptureDevice::DoStartDeviceCaptureOnDeviceThread(

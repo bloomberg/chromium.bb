@@ -53,6 +53,13 @@ class InProcessBuildableVideoCaptureDevice
   using ReceiveDeviceCallback =
       base::Callback<void(std::unique_ptr<media::VideoCaptureDevice> device)>;
 
+  enum class State {
+    NO_DEVICE,
+    DEVICE_START_IN_PROGRESS,
+    DEVICE_START_ABORTING,
+    DEVICE_STARTED
+  };
+
   std::unique_ptr<media::VideoCaptureDeviceClient> CreateDeviceClient(
       int buffer_pool_max_buffer_count,
       base::WeakPtr<media::VideoFrameReceiver> receiver);
@@ -88,6 +95,7 @@ class InProcessBuildableVideoCaptureDevice
   const scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
   media::VideoCaptureDeviceFactory* const device_factory_;
   std::unique_ptr<media::VideoCaptureDevice> device_;
+  State state_ = State::NO_DEVICE;
 };
 
 }  // namespace content

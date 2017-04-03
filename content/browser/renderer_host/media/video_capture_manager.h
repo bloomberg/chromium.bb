@@ -88,20 +88,20 @@ class CONTENT_EXPORT VideoCaptureManager
   // that the client was successfully added. A NULL controller is passed to
   // the callback on failure. |done_cb| is not allowed to synchronously call
   // StopCaptureForClient().
-  void StartCaptureForClient(media::VideoCaptureSessionId session_id,
-                             const media::VideoCaptureParams& capture_params,
-                             VideoCaptureControllerID client_id,
-                             VideoCaptureControllerEventHandler* client_handler,
-                             const DoneCB& done_cb);
+  void ConnectClient(media::VideoCaptureSessionId session_id,
+                     const media::VideoCaptureParams& capture_params,
+                     VideoCaptureControllerID client_id,
+                     VideoCaptureControllerEventHandler* client_handler,
+                     const DoneCB& done_cb);
 
   // Called by VideoCaptureHost to remove |client_handler|. If this is the last
   // client of the device, the |controller| and its VideoCaptureDevice may be
   // destroyed. The client must not access |controller| after calling this
   // function.
-  void StopCaptureForClient(VideoCaptureController* controller,
-                            VideoCaptureControllerID client_id,
-                            VideoCaptureControllerEventHandler* client_handler,
-                            bool aborted_due_to_error);
+  void DisconnectClient(VideoCaptureController* controller,
+                        VideoCaptureControllerID client_id,
+                        VideoCaptureControllerEventHandler* client_handler,
+                        bool aborted_due_to_error);
 
   // Called by VideoCaptureHost to pause to update video buffer specified by
   // |client_id| and |client_handler|. If all clients of |controller| are
@@ -113,7 +113,7 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // Called by VideoCaptureHost to resume to update video buffer specified by
   // |client_id| and |client_handler|. The |session_id| and |params| should be
-  // same as those used in StartCaptureForClient().
+  // same as those used in ConnectClient().
   // If this is first active client of |controller|, device will be allocated
   // and it will take a little time to resume.
   // Allocating device could failed if other app holds the camera, the error
@@ -205,6 +205,7 @@ class CONTENT_EXPORT VideoCaptureManager
   void WillStartDevice(media::VideoFacingMode facing_mode) override;
   void DidStartDevice(VideoCaptureController* controller) override;
   void OnDeviceStartFailed(VideoCaptureController* controller) override;
+  void OnDeviceStartAborted() override;
 
   // Retrieves camera calibration information for a particular device. Returns
   // nullopt_t if the |device_id| is not found or camera calibration information
@@ -251,13 +252,12 @@ class CONTENT_EXPORT VideoCaptureManager
   // |device_id| and |type| (if it is already opened), by its |controller| or by
   // its |serial_id|. In all cases, if not found, nullptr is returned.
   VideoCaptureController* LookupControllerBySessionId(int session_id);
-  VideoCaptureController* LookupControllerByTypeAndId(
+  VideoCaptureController* LookupControllerByMediaTypeAndDeviceId(
       MediaStreamType type,
       const std::string& device_id) const;
   bool IsControllerPointerValid(const VideoCaptureController* controller) const;
-  VideoCaptureController* LookupControllerBySerialId(int serial_id) const;
-  scoped_refptr<VideoCaptureController> GetControllerSharedRefFromSerialId(
-      int serial_id) const;
+  scoped_refptr<VideoCaptureController> GetControllerSharedRef(
+      VideoCaptureController* controller) const;
 
   // Finds the device info by |id| in |devices_info_cache_|, or nullptr.
   DeviceInfo* GetDeviceInfoById(const std::string& id);
@@ -271,15 +271,16 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // Starting a capture device can take 1-2 seconds.
   // To avoid multiple unnecessary start/stop commands to the OS, each start
-  // request is queued in |device_start_queue_|.
-  // QueueStartDevice creates a new entry in |device_start_queue_| and posts a
+  // request is queued in |device_start_request_queue_|.
+  // QueueStartDevice creates a new entry in |device_start_request_queue_| and
+  // posts a
   // request to start the device on the device thread unless there is
   // another request pending start.
   void QueueStartDevice(media::VideoCaptureSessionId session_id,
                         VideoCaptureController* controller,
                         const media::VideoCaptureParams& params);
   void DoStopDevice(VideoCaptureController* controller);
-  void HandleQueuedStartRequest();
+  void ProcessDeviceStartRequestQueue();
 
   void MaybePostDesktopCaptureWindowId(media::VideoCaptureSessionId session_id);
 
@@ -301,7 +302,7 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // An entry is kept in this map for every session that has been created via
   // the Open() entry point. The keys are session_id's. This map is used to
-  // determine which device to use when StartCaptureForClient() occurs. Used
+  // determine which device to use when ConnectClient() occurs. Used
   // only on the IO thread.
   SessionMap sessions_;
 
@@ -309,7 +310,9 @@ class CONTENT_EXPORT VideoCaptureManager
   // not be started. This member is only accessed on IO thread.
   std::vector<scoped_refptr<VideoCaptureController>> controllers_;
 
-  DeviceStartQueue device_start_queue_;
+  // TODO(chfremer): Consider using CancellableTaskTracker, see
+  // crbug.com/598465.
+  DeviceStartQueue device_start_request_queue_;
 
   // Queue to keep photo-associated requests waiting for a device to initialize,
   // bundles a session id integer and an associated photo-related request.
