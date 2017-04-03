@@ -13,6 +13,8 @@
 namespace {
 // Default corner radius for the favicon image view.
 const CGFloat kDefaultCornerRadius = 3;
+// Percentage of white for the default background, when there is no attributes.
+const CGFloat kDefaultWhitePercentage = 0.47;
 }
 
 @interface FaviconViewNew () {
@@ -39,7 +41,8 @@ const CGFloat kDefaultCornerRadius = 3;
     _faviconImageView.image = nil;
 
     _faviconFallbackLabel = [[UILabel alloc] initWithFrame:self.bounds];
-    _faviconFallbackLabel.backgroundColor = [UIColor clearColor];
+    _faviconFallbackLabel.backgroundColor =
+        [UIColor colorWithWhite:kDefaultWhitePercentage alpha:1];
     _faviconFallbackLabel.textAlignment = NSTextAlignmentCenter;
     _faviconFallbackLabel.isAccessibilityElement = NO;
     _faviconFallbackLabel.clipsToBounds = YES;
@@ -62,6 +65,15 @@ const CGFloat kDefaultCornerRadius = 3;
 }
 
 - (void)configureWithAttributes:(FaviconAttributes*)attributes {
+  if (!attributes) {
+    self.faviconFallbackLabel.backgroundColor =
+        [UIColor colorWithWhite:kDefaultWhitePercentage alpha:1];
+    self.faviconFallbackLabel.text = nil;
+    self.faviconFallbackLabel.hidden = NO;
+    self.faviconImageView.hidden = YES;
+    return;
+  }
+
   if (attributes.faviconImage) {
     self.faviconImageView.image = attributes.faviconImage;
     self.faviconImageView.hidden = NO;

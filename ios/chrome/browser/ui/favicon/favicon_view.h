@@ -19,9 +19,9 @@ const CGFloat kFaviconPreferredSize = 24.0f;
 @interface FaviconViewNew : UIView
 
 // Configures this view with given attributes.
-- (void)configureWithAttributes:(FaviconAttributes*)attributes;
+- (void)configureWithAttributes:(nullable FaviconAttributes*)attributes;
 // Sets monogram font.
-- (void)setFont:(UIFont*)font;
+- (void)setFont:(nonnull UIFont*)font;
 
 @end
 

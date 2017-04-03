@@ -76,9 +76,7 @@ const CGFloat kInfoTextTransparency = 0.38;
 
 - (void)configureCell:(ReadingListCell*)cell {
   [super configureCell:cell];
-  if (self.attributes) {
-    [cell.faviconView configureWithAttributes:self.attributes];
-  }
+  [cell.faviconView configureWithAttributes:self.attributes];
   cell.titleLabel.text = self.title;
   cell.subtitleLabel.text = self.subtitle;
   cell.distillationState = _distillationState;
@@ -459,6 +457,7 @@ const CGFloat kInfoTextTransparency = 0.38;
   self.distillationDate = 0;
   self.distillationSize = 0;
   [self setShowInfo:NO];
+  [self.faviconView configureWithAttributes:nil];
   self.accessibilityCustomActions = nil;
   [super prepareForReuse];
 }
