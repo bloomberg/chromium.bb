@@ -9,7 +9,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "base/auto_reset.h"
-#include "ui/aura/window_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
@@ -25,31 +24,8 @@ const float kBackdropOpacity = 1.0f;
 
 }  // namespace
 
-class WorkspaceBackdropDelegate::WindowObserverImpl
-    : public aura::WindowObserver {
- public:
-  explicit WindowObserverImpl(WorkspaceBackdropDelegate* delegate)
-      : delegate_(delegate) {}
-  ~WindowObserverImpl() override {}
-
- private:
-  // aura::WindowObserver overrides:
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds) override {
-    // The container size has changed and the layer needs to be adapt to it.
-    delegate_->AdjustToContainerBounds();
-  }
-
-  WorkspaceBackdropDelegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowObserverImpl);
-};
-
 WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(WmWindow* container)
-    : container_observer_(new WindowObserverImpl(this)),
-      container_(container),
-      in_restacking_(false) {
+    : container_(container), in_restacking_(false) {
   background_ = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -73,11 +49,9 @@ WorkspaceBackdropDelegate::WorkspaceBackdropDelegate(WmWindow* container)
   DCHECK(background_window_->GetBounds() == params.bounds);
   Show();
   RestackBackdrop();
-  container_->aura_window()->AddObserver(container_observer_.get());
 }
 
 WorkspaceBackdropDelegate::~WorkspaceBackdropDelegate() {
-  container_->aura_window()->RemoveObserver(container_observer_.get());
   // TODO: animations won't work right with mus: http://crbug.com/548396.
   ::wm::ScopedHidingAnimationSettings hiding_settings(
       background_->GetNativeView());
@@ -106,10 +80,6 @@ void WorkspaceBackdropDelegate::OnPostWindowStateTypeChange(
     wm::WindowState* window_state,
     wm::WindowStateType old_type) {
   RestackBackdrop();
-}
-
-void WorkspaceBackdropDelegate::OnDisplayWorkAreaInsetsChanged() {
-  AdjustToContainerBounds();
 }
 
 void WorkspaceBackdropDelegate::RestackBackdrop() {
@@ -151,24 +121,10 @@ WmWindow* WorkspaceBackdropDelegate::GetCurrentTopWindow() {
   return nullptr;
 }
 
-void WorkspaceBackdropDelegate::AdjustToContainerBounds() {
-  // Cover the entire container window.
-  gfx::Rect target_rect(gfx::Point(0, 0), container_->GetBounds().size());
-  if (target_rect != background_window_->GetBounds()) {
-    // TODO: this won't work right with mus: http://crbug.com/548396.
-    // This needs to be instant.
-    ui::ScopedLayerAnimationSettings settings(
-        background_window_->GetLayer()->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
-    background_window_->SetBounds(target_rect);
-    if (!background_->IsVisible())
-      background_window_->GetLayer()->SetOpacity(kBackdropOpacity);
-  }
-}
-
 void WorkspaceBackdropDelegate::Show() {
   background_window_->GetLayer()->SetOpacity(0.0f);
   background_->Show();
+  background_->SetFullscreen(true);
   ui::ScopedLayerAnimationSettings settings(
       background_window_->GetLayer()->GetAnimator());
   background_window_->GetLayer()->SetOpacity(kBackdropOpacity);

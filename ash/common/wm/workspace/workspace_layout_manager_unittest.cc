@@ -1098,31 +1098,33 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, VerifyBackdropAndItsStacking) {
   EXPECT_EQ("b", GetWindowOrderAsString(nullptr, window1, window2, window3));
 }
 
-// Tests that when hidding the shelf, that the backdrop resizes to fill the
-// entire workspace area.
-TEST_F(WorkspaceLayoutManagerBackdropTest, ShelfVisibilityChangesBounds) {
+// Tests that when hidding the shelf, that the backdrop stays fullscreen.
+TEST_F(WorkspaceLayoutManagerBackdropTest,
+       ShelfVisibilityDoesNotChangesBounds) {
   WmShelf* shelf = GetPrimaryShelf();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   ShowTopWindowBackdrop(true);
   RunAllPendingInMessageLoop();
+  const gfx::Size fullscreen_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
 
   ASSERT_EQ(SHELF_VISIBLE, shelf_layout_manager->visibility_state());
-  gfx::Rect initial_bounds = default_container()->GetChildren()[0]->GetBounds();
+  EXPECT_EQ(fullscreen_size,
+            default_container()->GetChildren()[0]->GetBounds().size());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   shelf_layout_manager->UpdateVisibilityState();
 
-  // When the shelf is re-shown WorkspaceLayoutManager shrinks all children
-  // including the backdrop.
+  // When the shelf is re-shown WorkspaceLayoutManager shrinks all children but
+  // the backdrop.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   shelf_layout_manager->UpdateVisibilityState();
-  gfx::Rect reduced_bounds = default_container()->GetChildren()[0]->GetBounds();
-  EXPECT_LT(reduced_bounds.height(), initial_bounds.height());
+  EXPECT_EQ(fullscreen_size,
+            default_container()->GetChildren()[0]->GetBounds().size());
 
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
   shelf_layout_manager->UpdateVisibilityState();
-
-  EXPECT_GT(default_container()->GetChildren()[0]->GetBounds().height(),
-            reduced_bounds.height());
+  EXPECT_EQ(fullscreen_size,
+            default_container()->GetChildren()[0]->GetBounds().size());
 }
 
 class WorkspaceLayoutManagerKeyboardTest : public AshTest {

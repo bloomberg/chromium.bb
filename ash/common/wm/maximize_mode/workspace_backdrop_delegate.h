@@ -35,24 +35,16 @@ class ASH_EXPORT WorkspaceBackdropDelegate
   void OnWindowStackingChanged(WmWindow* window) override;
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,
                                    wm::WindowStateType old_type) override;
-  void OnDisplayWorkAreaInsetsChanged() override;
 
  private:
-  class WindowObserverImpl;
-
   // Restack the backdrop relatively to the other windows in the container.
   void RestackBackdrop();
 
   // Returns the current visible top level window in the container.
   WmWindow* GetCurrentTopWindow();
 
-  // Position & size the background over the container window.
-  void AdjustToContainerBounds();
-
   // Show the overlay.
   void Show();
-
-  std::unique_ptr<WindowObserverImpl> container_observer_;
 
   // The background which covers the rest of the screen.
   views::Widget* background_ = nullptr;

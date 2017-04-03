@@ -297,8 +297,6 @@ void WorkspaceLayoutManager::OnDisplayMetricsChanged(
     const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     AdjustAllWindowsBoundsForWorkAreaChange(&event);
   }
-  if (backdrop_delegate_)
-    backdrop_delegate_->OnDisplayWorkAreaInsetsChanged();
 }
 
 //////////////////////////////////////////////////////////////////////////////
