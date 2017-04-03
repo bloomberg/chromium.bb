@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "content/public/browser/download_danger_type.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 
 namespace chromecast {
@@ -28,14 +29,10 @@ void CastDownloadManagerDelegate::GetNextId(
 bool CastDownloadManagerDelegate::DetermineDownloadTarget(
     content::DownloadItem* item,
     const content::DownloadTargetCallback& callback) {
-  // Running the DownloadTargetCallback with an empty FilePath signals
-  // that the download should be cancelled.
   base::FilePath empty;
-  callback.Run(
-      empty,
-      content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-      content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
-      empty);
+  callback.Run(empty, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, empty,
+               content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   return true;
 }
 

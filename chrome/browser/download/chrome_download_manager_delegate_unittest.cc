@@ -274,12 +274,14 @@ void ChromeDownloadManagerDelegateTest::SetDefaultDownloadPath(
   pref_service_->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
 
-void StoreDownloadTargetInfo(const base::Closure& closure,
-                         DownloadTargetInfo* target_info,
-                         const base::FilePath& target_path,
-                         DownloadItem::TargetDisposition target_disposition,
-                         content::DownloadDangerType danger_type,
-                         const base::FilePath& intermediate_path) {
+void StoreDownloadTargetInfo(
+    const base::Closure& closure,
+    DownloadTargetInfo* target_info,
+    const base::FilePath& target_path,
+    DownloadItem::TargetDisposition target_disposition,
+    content::DownloadDangerType danger_type,
+    const base::FilePath& intermediate_path,
+    content::DownloadInterruptReason interrupt_reason) {
   target_info->target_path = target_path;
   target_info->target_disposition = target_disposition;
   target_info->danger_type = danger_type;

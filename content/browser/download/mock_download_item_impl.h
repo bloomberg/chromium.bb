@@ -26,11 +26,12 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                        const DownloadItem::ReceivedSlices& received_slices);
   ~MockDownloadItemImpl() override;
 
-  MOCK_METHOD4(OnDownloadTargetDetermined,
+  MOCK_METHOD5(OnDownloadTargetDetermined,
                void(const base::FilePath&,
                     TargetDisposition,
                     DownloadDangerType,
-                    const base::FilePath&));
+                    const base::FilePath&,
+                    DownloadInterruptReason));
   MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
   MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));
   MOCK_METHOD0(UpdateObservers, void());

@@ -425,10 +425,13 @@ class CONTENT_EXPORT DownloadItemImpl
       const base::FilePath& target_path,
       TargetDisposition disposition,
       DownloadDangerType danger_type,
-      const base::FilePath& intermediate_path);
+      const base::FilePath& intermediate_path,
+      DownloadInterruptReason interrupt_reason);
 
   void OnDownloadRenamedToIntermediateName(
       DownloadInterruptReason reason, const base::FilePath& full_path);
+
+  void OnTargetResolved();
 
   // If all pre-requisites have been met, complete download processing, i.e. do
   // internal cleanup, file rename, and potentially auto-open.  (Dangerous
@@ -637,10 +640,11 @@ class CONTENT_EXPORT DownloadItemImpl
   // Did the delegate delay calling Complete on this download?
   bool delegate_delayed_complete_ = false;
 
-  // Error return from DestinationError.  Stored separately from
-  // last_reason_ so that we can avoid handling destination errors until
-  // after file name determination has occurred.
-  DownloadInterruptReason destination_error_ = DOWNLOAD_INTERRUPT_REASON_NONE;
+  // Error return from DestinationError or received at Start().  Stored
+  // separately from last_reason_ so that we can avoid handling destination
+  // errors until after file name determination has occurred.
+  DownloadInterruptReason deferred_interrupt_reason_ =
+      DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // The following fields describe the current state of the download file.
 

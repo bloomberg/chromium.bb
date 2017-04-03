@@ -22,37 +22,51 @@ class BrowserContext;
 class WebContents;
 
 // Called by SavePackage when it creates a DownloadItem.
-typedef base::Callback<void(DownloadItem*)>
-    SavePackageDownloadCreatedCallback;
+using SavePackageDownloadCreatedCallback = base::Callback<void(DownloadItem*)>;
 
 // Will be called asynchronously with the results of the ChooseSavePath
 // operation.  If the delegate wants notification of the download item created
 // in response to this operation, the SavePackageDownloadCreatedCallback will be
 // non-null.
-typedef base::Callback<void(const base::FilePath&,
-                            SavePageType,
-                            const SavePackageDownloadCreatedCallback&)>
-    SavePackagePathPickedCallback;
+using SavePackagePathPickedCallback =
+    base::Callback<void(const base::FilePath&,
+                        SavePageType,
+                        const SavePackageDownloadCreatedCallback&)>;
 
-// Called with the results of DetermineDownloadTarget(). If the delegate decides
-// to cancel the download, then |target_path| should be set to an empty path. If
-// |target_path| is non-empty, then |intermediate_path| is required to be
-// non-empty and specify the path to the intermediate file (which could be the
-// same as |target_path|). Both |target_path| and |intermediate_path| are
-// expected to in the same directory.
-typedef base::Callback<void(
-    const base::FilePath& target_path,
-    DownloadItem::TargetDisposition disposition,
-    DownloadDangerType danger_type,
-    const base::FilePath& intermediate_path)> DownloadTargetCallback;
+// Called with the results of DetermineDownloadTarget().
+//
+// |target_path| should be set to a non-empty path which is taken to be the
+//     final target path for the download. Any file already at this path will be
+//     overwritten.
+//
+// |disposition| and |danger_type| are attributes associated with the download
+//     item and can be accessed via the DownloadItem accessors.
+//
+// |intermediate_path| specifies the path to the intermediate file. The download
+//     will be written to this path until all the bytes have been written. Upon
+//     completion, the file will be renamed to |target_path|.
+//     |intermediate_path| could be the same as |target_path|. Both paths must
+//     be in the same directory.
+//
+// |interrupt_reason| should be set to DOWNLOAD_INTERRUPT_REASON_NONE in
+//     order to proceed with the download. DOWNLOAD_INTERRUPT_REASON_USER_CANCEL
+//     results in the download being marked cancelled. Any other value results
+//     in the download being marked as interrupted. The other fields are only
+//     considered valid if |interrupt_reason| is NONE.
+using DownloadTargetCallback =
+    base::Callback<void(const base::FilePath& target_path,
+                        DownloadItem::TargetDisposition disposition,
+                        DownloadDangerType danger_type,
+                        const base::FilePath& intermediate_path,
+                        DownloadInterruptReason interrupt_reason)>;
 
 // Called when a download delayed by the delegate has completed.
-typedef base::Callback<void(bool)> DownloadOpenDelayedCallback;
+using DownloadOpenDelayedCallback = base::Callback<void(bool)>;
 
 // Called with the result of CheckForFileExistence().
-typedef base::Callback<void(bool result)> CheckForFileExistenceCallback;
+using CheckForFileExistenceCallback = base::Callback<void(bool result)>;
 
-typedef base::Callback<void(uint32_t)> DownloadIdCallback;
+using DownloadIdCallback = base::Callback<void(uint32_t)>;
 
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManagerDelegate {

@@ -784,10 +784,11 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
 
     DownloadItemModel(item).SetDangerLevel(target_info->danger_level);
   }
-  callback.Run(target_info->target_path,
-               target_info->target_disposition,
-               target_info->danger_type,
-               target_info->intermediate_path);
+  callback.Run(target_info->target_path, target_info->target_disposition,
+               target_info->danger_type, target_info->intermediate_path,
+               target_info->target_path.empty()
+                   ? content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED
+                   : content::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(

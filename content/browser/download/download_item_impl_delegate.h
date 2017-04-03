@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
 
 namespace content {
@@ -25,13 +26,6 @@ class BrowserContext;
 // be left unimplemented.
 class CONTENT_EXPORT DownloadItemImplDelegate {
  public:
-  typedef base::Callback<void(
-      const base::FilePath&,            // Target path
-      DownloadItem::TargetDisposition,  // overwrite/uniquify target
-      DownloadDangerType,
-      const base::FilePath&             // Intermediate file path
-                              )> DownloadTargetCallback;
-
   // The boolean argument indicates whether or not the download was
   // actually opened.
   typedef base::Callback<void(bool)> ShouldOpenDownloadCallback;

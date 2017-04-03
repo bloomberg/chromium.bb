@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -292,7 +293,7 @@ class MockDownloadFileFactory
   MOCK_METHOD2(MockCreateFile,
                MockDownloadFile*(const DownloadSaveInfo&, ByteStreamReader*));
 
-  virtual DownloadFile* CreateFile(
+  DownloadFile* CreateFile(
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> byte_stream,
@@ -380,10 +381,12 @@ class DownloadManagerTest : public testing::Test {
 
   DownloadManagerTest()
       : callback_called_(false),
+        target_disposition_(DownloadItem::TARGET_DISPOSITION_OVERWRITE),
+        danger_type_(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
+        interrupt_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        next_download_id_(0) {
-  }
+        next_download_id_(0) {}
 
   // We tear down everything in TearDown().
   ~DownloadManagerTest() override {}
@@ -486,12 +489,14 @@ class DownloadManagerTest : public testing::Test {
       const base::FilePath& target_path,
       DownloadItem::TargetDisposition disposition,
       DownloadDangerType danger_type,
-      const base::FilePath& intermediate_path) {
+      const base::FilePath& intermediate_path,
+      DownloadInterruptReason interrupt_reason) {
     callback_called_ = true;
     target_path_ = target_path;
     target_disposition_ = disposition;
     danger_type_ = danger_type;
     intermediate_path_ = intermediate_path;
+    interrupt_reason_ = interrupt_reason;
   }
 
   void DetermineDownloadTarget(DownloadItemImpl* item) {
@@ -512,6 +517,7 @@ class DownloadManagerTest : public testing::Test {
   DownloadItem::TargetDisposition target_disposition_;
   DownloadDangerType danger_type_;
   base::FilePath intermediate_path_;
+  DownloadInterruptReason interrupt_reason_;
 
   std::vector<GURL> download_urls_;
 
@@ -585,13 +591,13 @@ TEST_F(DownloadManagerTest, DetermineDownloadTarget_False) {
       .WillOnce(ReturnRef(path));
 
   // Confirm that the callback was called with the right values in this case.
-  callback_called_ = false;
   DetermineDownloadTarget(&item);
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(path, target_path_);
   EXPECT_EQ(DownloadItem::TARGET_DISPOSITION_OVERWRITE, target_disposition_);
   EXPECT_EQ(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, danger_type_);
   EXPECT_EQ(path, intermediate_path_);
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason_);
 }
 
 TEST_F(DownloadManagerTest, GetDownloadByGuid) {
