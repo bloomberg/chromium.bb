@@ -160,9 +160,13 @@ void FindRequestManager::OnFindReply(RenderFrameHost* rfh,
       number_of_matches_ += matches_delta;
       matches_per_frame_it->second = number_of_matches;
 
+      // All matches may have been removed since the last find reply.
+      if (rfh == active_frame_ && !number_of_matches)
+        relative_active_match_ordinal_ = 0;
+
       // The active match ordinal may need updating since the number of matches
       // before the active match may have changed.
-      if (rfh != active_frame_)
+      if (rfh != active_frame_ || !number_of_matches)
         UpdateActiveMatchOrdinal();
     }
   }
