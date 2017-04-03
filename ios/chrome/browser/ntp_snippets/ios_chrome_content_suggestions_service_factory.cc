@@ -183,9 +183,9 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
     std::string api_key;
-    // The API is private. If we don't have the official API key, don't even
-    // try.
-    if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+    // This API needs whitelisted API keys. Get the key only if it is not a
+    // dummy key.
+    if (google_apis::HasKeysConfigured()) {
       bool is_stable_channel = GetChannel() == version_info::Channel::STABLE;
       api_key = is_stable_channel ? google_apis::GetAPIKey()
                                   : google_apis::GetNonStableAPIKey();
