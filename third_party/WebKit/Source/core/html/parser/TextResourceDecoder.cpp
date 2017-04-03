@@ -142,12 +142,12 @@ TextResourceDecoder::TextResourceDecoder(
     const String& mimeType,
     const WTF::TextEncoding& specifiedDefaultEncoding,
     EncodingDetectionOption encodingDetectionOption,
-    const String& url)
+    const KURL& hintUrl)
     : m_contentType(determineContentType(mimeType)),
       m_encoding(defaultEncoding(m_contentType, specifiedDefaultEncoding)),
       m_source(DefaultEncoding),
       m_hintEncoding(0),
-      m_hintUrl(url.utf8()),
+      m_hintUrl(hintUrl),
       m_checkedForBOM(false),
       m_checkedForCSSCharset(false),
       m_checkedForXMLCharset(false),
@@ -161,7 +161,7 @@ TextResourceDecoder::TextResourceDecoder(
   } else if (m_encodingDetectionOption == UseAllAutoDetection) {
     // Checking empty URL helps unit testing. Providing defaultLanguage() is
     // sometimes difficult in tests.
-    if (!url.isEmpty()) {
+    if (!hintUrl.isEmpty()) {
       // This object is created in the main thread, but used in another thread.
       // We should not share an AtomicString.
       AtomicString locale = defaultLanguage();
@@ -472,8 +472,8 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
 
   if (shouldAutoDetect()) {
     WTF::TextEncoding detectedEncoding;
-    if (detectTextEncoding(data, len, m_hintEncoding, m_hintUrl.data(),
-                           m_hintLanguage, &detectedEncoding))
+    if (detectTextEncoding(data, len, m_hintEncoding, m_hintUrl, m_hintLanguage,
+                           &detectedEncoding))
       setEncoding(detectedEncoding, EncodingFromContentSniffing);
   }
 
@@ -500,7 +500,7 @@ String TextResourceDecoder::flush() {
        (!m_checkedForCSSCharset && (m_contentType == CSSContent)))) {
     WTF::TextEncoding detectedEncoding;
     if (detectTextEncoding(m_buffer.data(), m_buffer.size(), m_hintEncoding,
-                           m_hintUrl.data(), m_hintLanguage, &detectedEncoding))
+                           m_hintUrl, m_hintLanguage, &detectedEncoding))
       setEncoding(detectedEncoding, EncodingFromContentSniffing);
   }
 

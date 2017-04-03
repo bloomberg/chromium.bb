@@ -39,7 +39,7 @@ namespace blink {
 bool detectTextEncoding(const char* data,
                         size_t length,
                         const char* hintEncodingName,
-                        const char* hintUrl,
+                        const KURL& hintUrl,
                         const char* hintUserLanguage,
                         WTF::TextEncoding* detectedEncoding) {
   *detectedEncoding = WTF::TextEncoding();
@@ -48,7 +48,7 @@ bool detectTextEncoding(const char* data,
   int consumedBytes;
   bool isReliable;
   Encoding encoding = CompactEncDet::DetectEncoding(
-      data, length, hintUrl, nullptr, nullptr,
+      data, length, hintUrl.getString().ascii().data(), nullptr, nullptr,
       EncodingNameAliasToEncoding(hintEncodingName), language,
       CompactEncDet::WEB_CORPUS,
       false,  // Include 7-bit encodings to detect ISO-2022-JP
@@ -61,8 +61,8 @@ bool detectTextEncoding(const char* data,
   // be applied to local file resources).
   // Detection failure leads |TextResourceDecoder| to use its default encoding
   // determined from system locale or TLD.
-  String protocol = hintUrl ? KURL(ParsedURLString, hintUrl).protocol() : "";
-  if (encoding == UNKNOWN_ENCODING || (protocol != "file" && encoding == UTF8))
+  if (encoding == UNKNOWN_ENCODING ||
+      (hintUrl.protocol() != "file" && encoding == UTF8))
     return false;
 
   *detectedEncoding = WTF::TextEncoding(MimeEncodingName(encoding));

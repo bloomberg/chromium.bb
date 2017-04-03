@@ -4,6 +4,7 @@
 
 #include "platform/text/TextEncodingDetector.h"
 
+#include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/TextEncoding.h"
 
@@ -16,7 +17,7 @@ TEST(TextEncodingDetectorTest, RespectIso2022Jp) {
       "$BKL3$F;F|K\\%O%`%U%!%$%?!<%:$,%=%U%H%P%s%/$H$N%W%l!<%*%U$r@)$7!\"";
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(iso2022jp.c_str(), iso2022jp.length(),
-                                   nullptr, nullptr, nullptr, &encoding);
+                                   nullptr, KURL(), nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("ISO-2022-JP"), encoding);
 }
@@ -28,7 +29,7 @@ TEST(TextEncodingDetectorTest, Ignore7BitEncoding) {
       " ~{\x54\x42\x31\x7D\x37\x22\x55\x39\x35\x3D\x3D\x71~} abc";
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(hzGb2312.c_str(), hzGb2312.length(), nullptr,
-                                   nullptr, nullptr, &encoding);
+                                   KURL(), nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("US-ASCII"), encoding);
 }
@@ -41,7 +42,7 @@ TEST(TextEncodingDetectorTest, NonWHATWGEncodingBecomesAscii) {
       "\x87\x01\xd7\xff\x01\x57\x33\x44\x55\x66\x77\xed\xcb\xa9";
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(pseudoJpg.c_str(), pseudoJpg.length(),
-                                   nullptr, nullptr, nullptr, &encoding);
+                                   nullptr, KURL(), nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("US-ASCII"), encoding);
 }
@@ -54,13 +55,14 @@ TEST(TextEncodingDetectorTest, UrlHintHelpsEUCJP) {
       "TITLE>";
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(eucjpBytes.c_str(), eucjpBytes.length(),
-                                   nullptr, nullptr, nullptr, &encoding);
+                                   nullptr, KURL(), nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
       << "Without language hint, it's detected as GBK";
 
+  KURL urlJpDomain(ParsedURLString, "http://example.co.jp/");
   result = detectTextEncoding(eucjpBytes.c_str(), eucjpBytes.length(), nullptr,
-                              "http://example.co.jp/", nullptr, &encoding);
+                              urlJpDomain, nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("EUC-JP"), encoding)
       << "With URL hint including '.jp', it's detected as EUC-JP";
@@ -74,13 +76,13 @@ TEST(TextEncodingDetectorTest, LanguageHintHelpsEUCJP) {
       "TITLE>";
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(eucjpBytes.c_str(), eucjpBytes.length(),
-                                   nullptr, nullptr, nullptr, &encoding);
+                                   nullptr, KURL(), nullptr, &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
       << "Without language hint, it's detected as GBK";
 
   result = detectTextEncoding(eucjpBytes.c_str(), eucjpBytes.length(), nullptr,
-                              nullptr, "ja", &encoding);
+                              KURL(), "ja", &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("EUC-JP"), encoding)
       << "With language hint 'ja', it's detected as EUC-JP";
@@ -92,7 +94,7 @@ TEST(TextEncodingDetectorTest, UTF8DetectionShouldFail) {
       "\xA1llit artihkkaliid. Maid don s\xC3\xA1ht\xC3\xA1t dievasmah";
   WTF::TextEncoding encoding;
   bool result = detectTextEncoding(utf8Bytes.c_str(), utf8Bytes.length(),
-                                   nullptr, nullptr, nullptr, &encoding);
+                                   nullptr, KURL(), nullptr, &encoding);
   EXPECT_FALSE(result);
 }
 
@@ -101,8 +103,9 @@ TEST(TextEncodingDetectorTest, RespectUTF8DetectionForFileResource) {
       "tnegirjji gosa gii beare s\xC3\xA1htt\xC3\xA1 \xC4\x8D\xC3"
       "\xA1llit artihkkaliid. Maid don s\xC3\xA1ht\xC3\xA1t dievasmah";
   WTF::TextEncoding encoding;
+  KURL fileUrl(ParsedURLString, "file:///text.txt");
   bool result = detectTextEncoding(utf8Bytes.c_str(), utf8Bytes.length(),
-                                   nullptr, "file:///text", nullptr, &encoding);
+                                   nullptr, fileUrl, nullptr, &encoding);
   EXPECT_TRUE(result);
 }
 

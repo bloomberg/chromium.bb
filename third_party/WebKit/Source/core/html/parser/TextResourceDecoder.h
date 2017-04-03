@@ -23,10 +23,11 @@
 #ifndef TextResourceDecoder_h
 #define TextResourceDecoder_h
 
+#include <memory>
 #include "core/CoreExport.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/TextEncoding.h"
-#include <memory>
 
 namespace blink {
 
@@ -52,13 +53,13 @@ class CORE_EXPORT TextResourceDecoder {
       const String& mimeType,
       const WTF::TextEncoding& defaultEncoding = WTF::TextEncoding()) {
     return WTF::wrapUnique(new TextResourceDecoder(
-        mimeType, defaultEncoding, UseContentAndBOMBasedDetection, String()));
+        mimeType, defaultEncoding, UseContentAndBOMBasedDetection, KURL()));
   }
 
   static std::unique_ptr<TextResourceDecoder> createWithAutoDetection(
       const String& mimeType,
       const WTF::TextEncoding& defaultEncoding,
-      const String& url) {
+      const KURL& url) {
     return WTF::wrapUnique(new TextResourceDecoder(mimeType, defaultEncoding,
                                                    UseAllAutoDetection, url));
   }
@@ -67,7 +68,7 @@ class CORE_EXPORT TextResourceDecoder {
   // https://encoding.spec.whatwg.org/#utf-8-decode.
   static std::unique_ptr<TextResourceDecoder> createAlwaysUseUTF8ForText() {
     return WTF::wrapUnique(new TextResourceDecoder(
-        "plain/text", UTF8Encoding(), AlwaysUseUTF8ForText, String()));
+        "plain/text", UTF8Encoding(), AlwaysUseUTF8ForText, KURL()));
   }
   ~TextResourceDecoder();
 
@@ -113,7 +114,7 @@ class CORE_EXPORT TextResourceDecoder {
   TextResourceDecoder(const String& mimeType,
                       const WTF::TextEncoding& defaultEncoding,
                       EncodingDetectionOption,
-                      const String& url);
+                      const KURL& hintUrl);
 
  private:
   enum ContentType {
@@ -137,7 +138,7 @@ class CORE_EXPORT TextResourceDecoder {
   std::unique_ptr<TextCodec> m_codec;
   EncodingSource m_source;
   const char* m_hintEncoding;
-  const CString m_hintUrl;
+  const KURL m_hintUrl;
   Vector<char> m_buffer;
   char m_hintLanguage[3];
   bool m_checkedForBOM;

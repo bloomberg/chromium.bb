@@ -39,6 +39,7 @@ class TextEncoding;
 }
 
 namespace blink {
+class KURL;
 
 // Given a sequence of bytes in |data| of length |len| and an optional
 // hintEncodingName, detect the most likely character encoding.
@@ -50,7 +51,7 @@ namespace blink {
 PLATFORM_EXPORT bool detectTextEncoding(const char* data,
                                         size_t length,
                                         const char* hintEncodingName,
-                                        const char* hintUrl,
+                                        const KURL& hintUrl,
                                         const char* hintUserLanguage,
                                         WTF::TextEncoding* detectedEncoding);
 
