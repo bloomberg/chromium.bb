@@ -54,6 +54,17 @@ id ExecuteJavaScript(NSString* javascript,
 // Taps html element with |elementID| in the current web view.
 + (void)tapWebViewElementWithID:(NSString*)elementID;
 
+// Waits for a static html view containing |text|. If the condition is not met
+// before a timeout, there is a GREYAssert.
++ (void)waitForStaticHTMLViewContainingText:(NSString*)text;
+
+// Waits for there to be no static html view, or a static html view that does
+// not contain |text|. If the condition is not met before a timeout, there is a
+// GREYAssert.
++ (void)waitForStaticHTMLViewNotContainingText:(NSString*)text;
+
+// Waits for a Chrome error page. If it is not found, a GREYAssert is induced.
++ (void)waitForErrorPage;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

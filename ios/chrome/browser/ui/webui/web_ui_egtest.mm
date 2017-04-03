@@ -29,7 +29,6 @@
 
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
-using chrome_test_util::StaticHtmlViewContainingText;
 using chrome_test_util::TapWebViewElementWithId;
 using chrome_test_util::WebViewContainingText;
 
@@ -122,8 +121,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
       assertWithMatcher:grey_sufficientlyVisible()];
   NSString* kTermsText = @"Google Chrome Terms of Service";
-  [[EarlGrey selectElementWithMatcher:StaticHtmlViewContainingText(kTermsText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForStaticHTMLViewContainingText:kTermsText];
 }
 
 // Tests that back navigation functions properly after navigation via anchor

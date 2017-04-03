@@ -294,24 +294,26 @@ std::map<GURL, std::string> ResponsesForDistillationServer() {
 
 // Tests that the correct version of kDistillableURL is displayed.
 void AssertIsShowingDistillablePage(bool online) {
-  // There will be multiple reload. Wait.
-  id<GREYMatcher> web_view_match = nil;
+  NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
+  // There will be multiple reloads, wait for the page to be displayed.
   if (online) {
+    // TODO(crbug.com/707009): Remove use of WebViewContainingText, with a
+    // method that is not an EarlGrey matcher.
+    id<GREYMatcher> web_view_match = nil;
     web_view_match = chrome_test_util::WebViewContainingText(kContentToKeep);
+    ConditionBlock wait_for_loading = ^{
+      NSError* error = nil;
+      [[EarlGrey selectElementWithMatcher:web_view_match]
+          assertWithMatcher:grey_notNil()
+                      error:&error];
+      return error == nil;
+    };
+    GREYAssert(testing::WaitUntilConditionOrTimeout(kLoadOfflineTimeout,
+                                                    wait_for_loading),
+               @"Page did not load.");
   } else {
-    web_view_match = chrome_test_util::StaticHtmlViewContainingText(
-        base::SysUTF8ToNSString(kContentToKeep));
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep];
   }
-  ConditionBlock wait_for_loading = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:web_view_match]
-        assertWithMatcher:grey_notNil()
-                    error:&error];
-    return error == nil;
-  };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(kLoadOfflineTimeout,
-                                                  wait_for_loading),
-             @"Page did not load.");
 
   // Test Omnibox URL
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
@@ -323,11 +325,12 @@ void AssertIsShowingDistillablePage(bool online) {
                                           kContentToKeep)]
       assertWithMatcher:online ? grey_notNil() : grey_nil()];
 
-  // Test presence of offline page
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::StaticHtmlViewContainingText(
-                                   base::SysUTF8ToNSString(kContentToKeep))]
-      assertWithMatcher:online ? grey_nil() : grey_notNil()];
+  // Test presence of offline page.
+  if (online) {
+    [ChromeEarlGrey waitForStaticHTMLViewNotContainingText:contentToKeep];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep];
+  }
 
   // Test the presence of the omnibox offline chip.
   [[EarlGrey

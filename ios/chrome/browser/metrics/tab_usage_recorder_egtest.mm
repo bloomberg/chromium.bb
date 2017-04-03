@@ -198,16 +198,6 @@ void SwitchToNormalMode() {
       @"Waiting switch to normal mode.");
 }
 
-// Check that the error page is visible.
-void CheckErrorPageIsVisible() {
-  // The DNS error page is static HTML content.
-  NSString* const kError =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::StaticHtmlViewContainingText(
-                                   kError)] assertWithMatcher:grey_notNil()];
-}
-
 // Open the settings submenu. Assumes that settings menu is visible.
 void OpenSettingsSubMenuUnsynced(int submenu) {
   id<GREYMatcher> settings_button_matcher =
@@ -515,11 +505,11 @@ void SelectTabUsingUI(NSString* title) {
 
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey loadURL:invalidURL];
-  CheckErrorPageIsVisible();
+  [ChromeEarlGrey waitForErrorPage];
   OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
   SwitchToNormalMode();
-  CheckErrorPageIsVisible();
+  [ChromeEarlGrey waitForErrorPage];
 
   histogramTester.ExpectUniqueSample(kEvictedTabReloadSuccessRate,
                                      TabUsageRecorder::LOAD_FAILURE, 1,

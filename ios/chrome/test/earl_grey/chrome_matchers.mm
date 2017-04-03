@@ -31,53 +31,6 @@
 
 namespace {
 
-// Script that returns document.body as a string.
-NSString* const kGetDocumentBodyJavaScript =
-    @"document.body ? document.body.textContent : null";
-
-// Synchronously returns the result of executed JavaScript.
-id ExecuteScriptInStaticController(
-    StaticHtmlViewController* html_view_controller,
-    NSString* script) {
-  __block id result = nil;
-  __block bool did_finish = false;
-  web::JavaScriptResultBlock completion_handler =
-      ^(id script_result, NSError* error) {
-        result = [script_result copy];
-        did_finish = true;
-      };
-  [html_view_controller executeJavaScript:script
-                        completionHandler:completion_handler];
-
-  GREYAssert(
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout,
-                                           ^{
-                                             return did_finish;
-                                           }),
-      @"JavaScript did not complete");
-
-  return result;
-}
-
-// TODO(crbug.com/684142): This matcher uses too many implementation details,
-// it would be good to replace it.
-id<GREYMatcher> WebViewWithNavDelegateOfClass(Class cls) {
-  MatchesBlock matches = ^BOOL(UIView* view) {
-    return [view isKindOfClass:[WKWebView class]] &&
-           [base::mac::ObjCCast<WKWebView>(view).navigationDelegate
-               isKindOfClass:cls];
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"web view with "];
-    [description appendText:NSStringFromClass(cls)];
-    [description appendText:@"navigation delegate"];
-  };
-
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
 id<GREYMatcher> CollectionViewSwitchIsOn(BOOL is_on) {
   MatchesBlock matches = ^BOOL(id element) {
     CollectionViewSwitchCell* switch_cell =
@@ -144,43 +97,6 @@ id<GREYMatcher> WebViewContainingText(std::string text) {
 
 id<GREYMatcher> WebViewNotContainingText(std::string text) {
   return web::WebViewNotContainingText(std::move(text), GetCurrentWebState());
-}
-
-id<GREYMatcher> StaticHtmlViewContainingText(NSString* text) {
-  // The WKWebView in a static HTML view isn't part of a webState, but it
-  // does have the StaticHtmlViewController as its navigation delegate.
-  MatchesBlock matches = ^BOOL(WKWebView* webView) {
-    StaticHtmlViewController* html_view_controller =
-        base::mac::ObjCCast<StaticHtmlViewController>(
-            webView.navigationDelegate);
-
-    __block BOOL did_succeed = NO;
-    NSDate* deadline =
-        [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
-    while (([[NSDate date] compare:deadline] != NSOrderedDescending) &&
-           !did_succeed) {
-      id result = ExecuteScriptInStaticController(html_view_controller,
-                                                  kGetDocumentBodyJavaScript);
-      if ([result isKindOfClass:[NSString class]]) {
-        NSString* body = base::mac::ObjCCast<NSString>(result);
-        did_succeed = [body containsString:text];
-      }
-      base::test::ios::SpinRunLoopWithMaxDelay(
-          base::TimeDelta::FromSecondsD(testing::kSpinDelaySeconds));
-    }
-    return did_succeed;
-  };
-
-  DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"static HTML web view containing "];
-    [description appendText:text];
-  };
-
-  return grey_allOf(
-      WebViewWithNavDelegateOfClass([StaticHtmlViewController class]),
-      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                           descriptionBlock:describe],
-      nil);
 }
 
 id<GREYMatcher> WebViewContainingBlockedImage(std::string image_id) {

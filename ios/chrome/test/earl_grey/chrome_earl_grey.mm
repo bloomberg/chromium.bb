@@ -9,14 +9,19 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
+#include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/history_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
+#import "ios/chrome/test/app/static_html_view_test_util.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -123,6 +128,36 @@ id ExecuteJavaScript(NSString* javascript,
                                          base::SysNSStringToUTF8(elementID));
   GREYAssertTrue(success, @"Failed to tap web view element with ID: %@",
                  elementID);
+}
+
++ (void)waitForErrorPage {
+  NSString* const kInternetDisconnectedError =
+      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
+  [self waitForStaticHTMLViewContainingText:kInternetDisconnectedError];
+}
+
++ (void)waitForStaticHTMLViewContainingText:(NSString*)text {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for static HTML text."
+                  block:^BOOL {
+                    return chrome_test_util::StaticHtmlViewContainingText(
+                        chrome_test_util::GetCurrentWebState(),
+                        base::SysNSStringToUTF8(text));
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed to find static html view containing %@", text);
+}
+
++ (void)waitForStaticHTMLViewNotContainingText:(NSString*)text {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for absence of static HTML text."
+                  block:^BOOL {
+                    return !chrome_test_util::StaticHtmlViewContainingText(
+                        chrome_test_util::GetCurrentWebState(),
+                        base::SysNSStringToUTF8(text));
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed, there was a static html view containing %@", text);
 }
 
 @end

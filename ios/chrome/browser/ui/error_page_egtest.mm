@@ -23,7 +23,6 @@
 #endif
 
 using chrome_test_util::OmniboxText;
-using chrome_test_util::StaticHtmlViewContainingText;
 using chrome_test_util::TapWebViewElementWithId;
 using chrome_test_util::WebViewContainingText;
 
@@ -31,9 +30,6 @@ using web::test::HttpServer;
 
 // Tests display of error pages for bad URLs.
 @interface ErrorPageTestCase : ChromeTestCase
-
-// Checks that the DNS error page is visible.
-- (void)checkErrorPageIsVisible;
 
 // Checks that the DNS error page is not visible.
 - (void)checkErrorPageIsNotVisible;
@@ -43,16 +39,6 @@ using web::test::HttpServer;
 @implementation ErrorPageTestCase
 
 #pragma mark - utilities
-
-// TODO(crbug.com/638674): Evaluate if this can move to shared code.
-- (void)checkErrorPageIsVisible {
-  // The DNS error page is static HTML content, so it isn't part of the webview
-  // owned by the webstate.
-  NSString* const kError =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey selectElementWithMatcher:StaticHtmlViewContainingText(kError)]
-      assertWithMatcher:grey_notNil()];
-}
 
 - (void)checkErrorPageIsNotVisible {
   // Check that the webview belongs to the web controller, and that the error
@@ -77,7 +63,7 @@ using web::test::HttpServer;
 
   [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()];
 
-  [self checkErrorPageIsVisible];
+  [ChromeEarlGrey waitForErrorPage];
 }
 
 // Tests whether the error page is displayed if it is behind a redirect.
@@ -96,7 +82,7 @@ using web::test::HttpServer;
   [[EarlGrey selectElementWithMatcher:OmniboxText(redirectedURL)]
       assertWithMatcher:grey_notNil()];
 
-  [self checkErrorPageIsVisible];
+  [ChromeEarlGrey waitForErrorPage];
 }
 
 // Tests that the error page is not displayed if the bad URL is in a <iframe>

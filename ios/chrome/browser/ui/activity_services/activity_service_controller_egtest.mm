@@ -73,11 +73,7 @@ id<GREYMatcher> PrintButton() {
 
   // Open an error page.
   [ChromeEarlGrey loadURL:ErrorPageResponseProvider::GetDnsFailureUrl()];
-  NSString* const kError =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::StaticHtmlViewContainingText(
-                                   kError)] assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForErrorPage];
 
   // Execute the Print action.
   [[EarlGrey selectElementWithMatcher:PrintButton()] performAction:grey_tap()];

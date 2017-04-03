@@ -102,20 +102,6 @@ void SetupBackAndForwardResponseProvider() {
   web::test::SetUpSimpleHttpServer(responses);
 }
 
-// Matcher for the error page.
-// TODO(crbug.com/638674): Evaluate if this can move to shared code. See
-// ios/chrome/browser/ui/error_page_egtest.mm.
-id<GREYMatcher> ErrorPage() {
-  NSString* const kDNSError =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  NSString* const kInternetDisconnectedError =
-      l10n_util::GetNSString(IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED);
-  return grey_anyOf(chrome_test_util::StaticHtmlViewContainingText(kDNSError),
-                    chrome_test_util::StaticHtmlViewContainingText(
-                        kInternetDisconnectedError),
-                    nil);
-}
-
 // URLs for server redirect tests.
 const char kRedirectIndexURL[] = "http://redirect";
 const char kRedirect301URL[] = "http://redirect/redirect?code=301";
@@ -437,8 +423,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   // page not available error.
   const GURL badURL("http://www.badurljkljkljklfloofy.com");
   [ChromeEarlGrey loadURL:badURL];
-  [[EarlGrey selectElementWithMatcher:ErrorPage()]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForErrorPage];
 
   // Go back to page 1 by clicking back button.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
@@ -449,8 +434,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   // Go forward to page 2 by calling window.history.forward() and assert that
   // the error page is shown.
   TapWebViewElementWithId(kForwardHTMLButtonLabel);
-  [[EarlGrey selectElementWithMatcher:ErrorPage()]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForErrorPage];
 }
 
 #pragma mark window.location.hash operations
