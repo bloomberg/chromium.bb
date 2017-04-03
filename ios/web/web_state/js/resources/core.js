@@ -481,66 +481,6 @@ goog.require('__crWeb.message');
     invokeOnHost_({'command': 'window.hashchange'});
   });
 
-  // Returns if a frame with |name| is found in |currentWindow|.
-  // Note frame.name is undefined for cross domain frames.
-  var hasFrame_ = function(currentWindow, name) {
-    if (currentWindow.name === name)
-      return true;
-
-    var frames = currentWindow.frames;
-    for (var index = 0; index < frames.length; ++index) {
-      var frame = frames[index];
-      if (frame === undefined)
-        continue;
-      if (hasFrame_(frame, name))
-        return true;
-    }
-    return false;
-  };
-
-  // Checks if |node| is an anchor to be opened in the current tab.
-  var isInternaLink_ = function(node) {
-    if (!(node instanceof HTMLAnchorElement))
-      return false;
-
-    // Anchor with href='javascript://.....' will be opened in the current tab
-    // for simplicity.
-    if (node.href.indexOf('javascript:') == 0)
-      return true;
-
-    // UIWebView will take care of the following cases.
-    //
-    // - If the given browsing context name is the empty string or '_self', then
-    //   the chosen browsing context must be the current one.
-    //
-    // - If the given browsing context name is '_parent', then the chosen
-    //   browsing context must be the parent browsing context of the current
-    //   one, unless there is no one, in which case the chosen browsing context
-    //   must be the current browsing context.
-    //
-    // - If the given browsing context name is '_top', then the chosen browsing
-    //   context must be the top-level browsing context of the current one, if
-    //   there is one, or else the current browsing context.
-    //
-    // Here an undefined target is considered in the same way as an empty
-    // target.
-    if (node.target === undefined || node.target === '' ||
-        node.target === '_self' || node.target === '_parent' ||
-        node.target === '_top') {
-      return true;
-    }
-
-    // A new browsing context is being requested for an '_blank' target.
-    if (node.target === '_blank')
-      return false;
-
-    // Otherwise UIWebView will take care of the case where there exists a
-    // browsing context whose name is the same as the given browsing context
-    // name. If there is no such a browsing context, a new browsing context is
-    // being requested.
-    return hasFrame_(window, node.target);
-  };
-
   var getComputedWebkitTouchCallout_ = function(element) {
     return window.getComputedStyle(element, null)['webkitTouchCallout'];
   };
