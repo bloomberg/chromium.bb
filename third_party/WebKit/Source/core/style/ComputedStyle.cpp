@@ -1995,7 +1995,7 @@ void ComputedStyle::addAppliedTextDecoration(
   else if (!list->hasOneRef())
     list = list->copy();
 
-  list->append(decoration);
+  list->push_back(decoration);
 }
 
 void ComputedStyle::overrideTextDecorationColors(Color overrideColor) {

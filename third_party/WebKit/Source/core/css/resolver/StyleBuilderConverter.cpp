@@ -1156,7 +1156,7 @@ PassRefPtr<SVGDashArray> StyleBuilderConverter::convertStrokeDasharray(
   RefPtr<SVGDashArray> array = SVGDashArray::create();
   size_t length = dashes.length();
   for (size_t i = 0; i < length; ++i) {
-    array->append(convertLength(state, toCSSPrimitiveValue(dashes.item(i))));
+    array->push_back(convertLength(state, toCSSPrimitiveValue(dashes.item(i))));
   }
 
   return array.release();

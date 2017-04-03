@@ -33,7 +33,7 @@ class RefVector : public RefCounted<RefVector<T>> {
 
   size_t size() const { return m_vector.size(); }
   bool isEmpty() const { return !size(); }
-  void append(const T& decoration) { m_vector.push_back(decoration); }
+  void push_back(const T& decoration) { m_vector.push_back(decoration); }
   const Vector<T>& vector() const { return m_vector; }
 
  private:
