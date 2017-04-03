@@ -2814,6 +2814,14 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_CONTEXTMENU_VIDEO_TITLE" desc="The title of a context menu tab when the item pressed contains more than one type. This indicates that all the actions are related to a video.">
         VIDEO
       </message>
+
+      <!-- Search Widget strings -->
+      <message name="IDS_SEARCH_WIDGET_DEFAULT" desc= "Default text for the search widget">
+        Search
+      </message>
+      <message name="IDS_SEARCH_WITH_PRODUCT" desc= "Text for search widget with a search engine name">
+        Search with <ph name="PRODUCT_NAME">%1$s<ex>Google</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>
