@@ -20,7 +20,6 @@ class WebContents;
 
 class GURL;
 struct InstallableData;
-class WebApkIconHasher;
 
 // WebApkUpdateDataFetcher is the C++ counterpart of
 // org.chromium.chrome.browser's WebApkUpdateDataFetcher in Java. It is created
@@ -86,9 +85,6 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
 
   // The URL for which the installable data is being fetched / was last fetched.
   GURL last_fetched_url_;
-
-  // Downloads app icon and computes Murmur2 hash.
-  std::unique_ptr<WebApkIconHasher> icon_hasher_;
 
   // Downloaded data for |web_manifest_url_|.
   ShortcutInfo info_;

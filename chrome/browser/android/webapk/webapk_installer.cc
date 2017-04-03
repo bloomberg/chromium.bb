@@ -395,7 +395,10 @@ void WebApkInstaller::InstallAsync(const FinishCallback& finish_callback) {
   //
   // We redownload the icon in order to take the Murmur2 hash. The redownload
   // should be fast because the icon should be in the HTTP cache.
-  DownloadAppIconAndComputeMurmur2Hash();
+  WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+      request_context_getter_, shortcut_info_.best_primary_icon_url,
+      base::Bind(&WebApkInstaller::OnGotIconMurmur2Hash,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebApkInstaller::UpdateAsync(
@@ -464,18 +467,8 @@ void WebApkInstaller::OnURLFetchComplete(const net::URLFetcher* source) {
   OnGotWebApkDownloadUrl(signed_download_url, response->package_name());
 }
 
-void WebApkInstaller::DownloadAppIconAndComputeMurmur2Hash() {
-  icon_hasher_.reset(new WebApkIconHasher(
-      request_context_getter_, shortcut_info_.best_primary_icon_url,
-      base::Bind(&WebApkInstaller::OnGotIconMurmur2Hash,
-                 weak_ptr_factory_.GetWeakPtr())));
-  icon_hasher_->DownloadAndComputeMurmur2Hash();
-}
-
 void WebApkInstaller::OnGotIconMurmur2Hash(
     const std::string& icon_murmur2_hash) {
-  icon_hasher_.reset();
-
   // An empty hash indicates that |icon_hasher_| encountered an error.
   if (icon_murmur2_hash.empty()) {
     OnResult(WebApkInstallResult::FAILURE);

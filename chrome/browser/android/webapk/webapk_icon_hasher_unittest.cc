@@ -37,10 +37,10 @@ class WebApkIconHasherRunner {
   ~WebApkIconHasherRunner() {}
 
   void Run(const GURL& icon_url) {
-    WebApkIconHasher hasher(url_request_context_getter_.get(), icon_url,
+    WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+        url_request_context_getter_.get(), icon_url,
         base::Bind(&WebApkIconHasherRunner::OnCompleted,
                    base::Unretained(this)));
-    hasher.DownloadAndComputeMurmur2Hash();
 
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();

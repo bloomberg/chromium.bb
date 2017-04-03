@@ -34,8 +34,6 @@ namespace webapk {
 class WebApk;
 }
 
-class WebApkIconHasher;
-
 // Talks to Chrome WebAPK server and Google Play to generate a WebAPK on the
 // server, download it, and install it. The native WebApkInstaller owns the
 // Java WebApkInstaller counterpart.
@@ -161,9 +159,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Downloads app icon in order to compute Murmur2 hash.
-  void DownloadAppIconAndComputeMurmur2Hash();
-
   // Called with the computed Murmur2 hash for the app icon.
   void OnGotIconMurmur2Hash(const std::string& icon_murmur2_hash);
 
@@ -220,9 +215,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // Sends HTTP request to WebAPK server.
   std::unique_ptr<net::URLFetcher> url_fetcher_;
-
-  // Downloads app icon and computes Murmur2 hash.
-  std::unique_ptr<WebApkIconHasher> icon_hasher_;
 
   // Downloads WebAPK.
   std::unique_ptr<FileDownloader> downloader_;
