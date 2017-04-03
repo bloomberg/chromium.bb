@@ -96,10 +96,6 @@ Status: ?
 Promote to fixed size ints, which match the current (32bit) ones.
 
 
-amdgpu_drm.h
- - Using the stdint.h uint*_t over the respective __u* ones
-Status: Trivial.
-
 drm_mode.h
  - Missing DPI encode/connector pair.
 Status: Trivial.
