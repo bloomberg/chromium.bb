@@ -9,25 +9,23 @@
 #include "base/macros.h"
 #include "components/toolbar/toolbar_model_delegate.h"
 
-@class Tab;
-@class TabModel;
+class WebStateList;
 
 namespace web {
 class NavigationItem;
+class WebState;
 }
 
 // Implementation of ToolbarModelDelegate which uses an instance of
 // TabModel in order to fulfil its duties.
 class ToolbarModelDelegateIOS : public ToolbarModelDelegate {
  public:
-  explicit ToolbarModelDelegateIOS(TabModel* tab_model);
+  // |web_state_list| must outlive this ToolbarModelDelegateIOS object.
+  explicit ToolbarModelDelegateIOS(WebStateList* web_state_list);
   ~ToolbarModelDelegateIOS() override;
 
-  // Sets the |tab_model_| with provided values.
-  void SetTabModel(TabModel* tab_model);
-
-  // Returns the current tab.
-  Tab* GetCurrentTab() const;
+  // Returns the active WebState.
+  web::WebState* GetActiveWebState() const;
 
  private:
   // Helper method to extract the NavigationItem from which the states are
@@ -46,7 +44,7 @@ class ToolbarModelDelegateIOS : public ToolbarModelDelegate {
   bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
 
-  base::scoped_nsobject<TabModel> tab_model_;
+  WebStateList* web_state_list_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarModelDelegateIOS);
 };

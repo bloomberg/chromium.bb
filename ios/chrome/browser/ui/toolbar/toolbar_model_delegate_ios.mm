@@ -14,27 +14,23 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
+#include "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 
-ToolbarModelDelegateIOS::ToolbarModelDelegateIOS(TabModel* tab_model)
-    : tab_model_([tab_model retain]) {}
+ToolbarModelDelegateIOS::ToolbarModelDelegateIOS(WebStateList* web_state_list)
+    : web_state_list_(web_state_list) {}
 
 ToolbarModelDelegateIOS::~ToolbarModelDelegateIOS() {}
 
-void ToolbarModelDelegateIOS::SetTabModel(TabModel* tab_model) {
-  DCHECK(tab_model);
-  tab_model_.reset([tab_model retain]);
-}
-
-Tab* ToolbarModelDelegateIOS::GetCurrentTab() const {
-  return [tab_model_ currentTab];
+web::WebState* ToolbarModelDelegateIOS::GetActiveWebState() const {
+  return web_state_list_->GetActiveWebState();
 }
 
 web::NavigationItem* ToolbarModelDelegateIOS::GetNavigationItem() const {
-  web::WebState* web_state = [GetCurrentTab() webState];
+  web::WebState* web_state = GetActiveWebState();
   web::NavigationManager* navigation_manager =
       web_state ? web_state->GetNavigationManager() : nullptr;
   return navigation_manager ? navigation_manager->GetVisibleItem() : nullptr;
@@ -74,7 +70,7 @@ bool ToolbarModelDelegateIOS::ShouldDisplayURL() const {
 
 security_state::SecurityLevel ToolbarModelDelegateIOS::GetSecurityLevel()
     const {
-  web::WebState* web_state = [GetCurrentTab() webState];
+  web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
   // initialization), assume no security style.
   if (!web_state)
@@ -94,7 +90,7 @@ scoped_refptr<net::X509Certificate> ToolbarModelDelegateIOS::GetCertificate()
 }
 
 bool ToolbarModelDelegateIOS::FailsMalwareCheck() const {
-  web::WebState* web_state = [GetCurrentTab() webState];
+  web::WebState* web_state = GetActiveWebState();
   // If there is no active WebState (which can happen during toolbar
   // initialization), so nothing can fail.
   if (!web_state)

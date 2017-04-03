@@ -7,20 +7,22 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #include "components/toolbar/test_toolbar_model.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/tabs/tab.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_impl_ios.h"
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/test/base/perf_test_ios.h"
+#include "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
+#include "ios/shared/chrome/browser/tabs/web_state_list.h"
+#include "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/test/ios/keyboard_appearance_listener.h"
@@ -71,17 +73,17 @@ class OmniboxPerfTest : public PerfTest {
     window_.reset([[UIWindow alloc] initWithFrame:screenBounds]);
     [window_ makeKeyAndVisible];
 
-    // Create a mock Tab and a TabModel that will always return the mock Tab as
-    // the current tab.
-    current_tab_.reset(
-        [(Tab*)[OCMockObject niceMockForClass:[Tab class]] retain]);
-    id tab_model = [OCMockObject mockForClass:[TabModel class]];
-    [[[tab_model stub] andReturn:current_tab_] currentTab];
-    tab_model_.reset([tab_model retain]);
+    // Create a WebStateList that will always return the test WebState as
+    // the active WebState.
+    web_state_list_ = base::MakeUnique<WebStateList>(
+        &web_state_list_delegate_, WebStateList::WebStateOwned);
+    std::unique_ptr<web::TestWebState> web_state =
+        base::MakeUnique<web::TestWebState>();
+    web_state_list_->InsertWebState(0, web_state.release());
 
     // Creates the Toolbar for testing and sizes it to the width of the screen.
     toolbar_model_delegate_.reset(
-        new ToolbarModelDelegateIOS(tab_model_.get()));
+        new ToolbarModelDelegateIOS(web_state_list_.get()));
     toolbar_model_ios_.reset(
         new ToolbarModelImplIOS(toolbar_model_delegate_.get()));
 
@@ -201,8 +203,9 @@ class OmniboxPerfTest : public PerfTest {
   }
 
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<Tab> current_tab_;
-  base::scoped_nsobject<TabModel> tab_model_;
+  FakeWebStateListDelegate web_state_list_delegate_;
+  std::unique_ptr<WebStateList> web_state_list_;
+  web::WebState* web_state_;
   std::unique_ptr<ToolbarModelDelegateIOS> toolbar_model_delegate_;
   std::unique_ptr<ToolbarModelIOS> toolbar_model_ios_;
   base::scoped_nsobject<WebToolbarController> toolbar_;

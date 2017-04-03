@@ -48,6 +48,8 @@
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
+#include "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
+#include "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
@@ -113,6 +115,30 @@ using web::WebStateImpl;
 }
 @end
 
+@interface BVCTestTabModel : OCMockComplexTypeHelper
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+@end
+
+@implementation BVCTestTabModel {
+  FakeWebStateListDelegate _webStateListDelegate;
+  std::unique_ptr<WebStateList> _webStateList;
+}
+
+- (instancetype)init {
+  if ((self = [super
+           initWithRepresentedObject:[OCMockObject
+                                         niceMockForClass:[TabModel class]]])) {
+    _webStateList = base::MakeUnique<WebStateList>(&_webStateListDelegate,
+                                                   WebStateList::WebStateOwned);
+  }
+  return self;
+}
+
+- (WebStateList*)webStateList {
+  return _webStateList.get();
+}
+@end
+
 #pragma mark -
 
 namespace {
@@ -146,7 +172,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     bookmarks::test::WaitForBookmarkModelToLoad(bookmark_model);
 
     // Set up mock TabModel, Tab, and CRWWebController.
-    id tabModel = [OCMockObject mockForClass:[TabModel class]];
+    base::scoped_nsobject<id> tabModel([[BVCTestTabModel alloc] init]);
     base::scoped_nsobject<id> currentTab([[BVCTestTabMock alloc]
         initWithRepresentedObject:[OCMockObject niceMockForClass:[Tab class]]]);
     id webControllerMock =
