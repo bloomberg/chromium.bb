@@ -186,22 +186,20 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
                                ExceptionState&);
 
   ImageData* createImageData(ImageData*, ExceptionState&) const;
-  ImageData* createImageData(double width,
-                             double height,
-                             ExceptionState&) const;
-  ImageData* getImageData(double sx,
-                          double sy,
-                          double sw,
-                          double sh,
+  ImageData* createImageData(int width, int height, ExceptionState&) const;
+  ImageData* getImageData(int sx,
+                          int sy,
+                          int sw,
+                          int sh,
                           ExceptionState&) const;
-  void putImageData(ImageData*, double dx, double dy, ExceptionState&);
+  void putImageData(ImageData*, int dx, int dy, ExceptionState&);
   void putImageData(ImageData*,
-                    double dx,
-                    double dy,
-                    double dirtyX,
-                    double dirtyY,
-                    double dirtyWidth,
-                    double dirtyHeight,
+                    int dx,
+                    int dy,
+                    int dirtyX,
+                    int dirtyY,
+                    int dirtyWidth,
+                    int dirtyHeight,
                     ExceptionState&);
 
   bool imageSmoothingEnabled() const;

@@ -29,12 +29,12 @@ if (!context.createImageData)
         for (var i = 0; i < data.data.length; i++)
             data.data[i] = 0;
     }
-    
+
 var buffer = context.createImageData(100, 100);
 // Fill top left corner
 fillRect(buffer, 0, 0, 50, 50, 0, 128, 0, 255);
 
-function checkPixelColor(x, y, color) 
+function checkPixelColor(x, y, color)
 {
     data = context.getImageData(x, y, 1, 1).data;
     for (i = 0; i < 4; i++)
@@ -50,61 +50,61 @@ function pixelShouldBe(x, y, color)
 
 var pixelTests = [
     // 0 - 6
-    ['PixelTestBasicDrawing 1', 25, 25, [0, 128, 0, 255]],    
-    ['PixelTestBasicDrawing 2', 49, 0, [0, 128, 0, 255]],    
-    ['PixelTestBasicDrawing 3', 0, 49, [0, 128, 0, 255]],    
-    ['PixelTestBasicDrawing 4', 49, 49, [0, 128, 0, 255]],    
-    ['PixelTestBasicDrawing 5', 50, 0, [0, 0, 0, 0]],    
-    ['PixelTestBasicDrawing 6', 0, 50, [0, 0, 0, 0]],    
-    ['PixelTestBasicDrawing 7', 50, 50, [0, 0, 0, 0]],    
+    ['PixelTestBasicDrawing 1', 25, 25, [0, 128, 0, 255]],
+    ['PixelTestBasicDrawing 2', 49, 0, [0, 128, 0, 255]],
+    ['PixelTestBasicDrawing 3', 0, 49, [0, 128, 0, 255]],
+    ['PixelTestBasicDrawing 4', 49, 49, [0, 128, 0, 255]],
+    ['PixelTestBasicDrawing 5', 50, 0, [0, 0, 0, 0]],
+    ['PixelTestBasicDrawing 6', 0, 50, [0, 0, 0, 0]],
+    ['PixelTestBasicDrawing 7', 50, 50, [0, 0, 0, 0]],
     // 7 - 11
-    ['PixelTestPositionedDrawing 1', 0, 50, [0, 128, 0, 255]],    
-    ['PixelTestPositionedDrawing 2', 25, 75, [0, 128, 0, 255]],    
-    ['PixelTestPositionedDrawing 3', 49, 50, [0, 128, 0, 255]],    
-    ['PixelTestPositionedDrawing 4', 0, 99, [0, 128, 0, 255]],    
-    ['PixelTestPositionedDrawing 5', 49, 99, [0, 128, 0, 255]],    
+    ['PixelTestPositionedDrawing 1', 0, 50, [0, 128, 0, 255]],
+    ['PixelTestPositionedDrawing 2', 25, 75, [0, 128, 0, 255]],
+    ['PixelTestPositionedDrawing 3', 49, 50, [0, 128, 0, 255]],
+    ['PixelTestPositionedDrawing 4', 0, 99, [0, 128, 0, 255]],
+    ['PixelTestPositionedDrawing 5', 49, 99, [0, 128, 0, 255]],
     // 12 - 15
-    ['PixelTestTranslation 1', 50, 50, [0, 128, 0, 255]],    
-    ['PixelTestTranslation 2', 75, 75, [0, 128, 0, 255]],    
-    ['PixelTestTranslation 3', 99, 99, [0, 128, 0, 255]],    
-    ['PixelTestTranslation 4', 50, 49, [0, 0, 0, 0]],    
+    ['PixelTestTranslation 1', 50, 50, [0, 128, 0, 255]],
+    ['PixelTestTranslation 2', 75, 75, [0, 128, 0, 255]],
+    ['PixelTestTranslation 3', 99, 99, [0, 128, 0, 255]],
+    ['PixelTestTranslation 4', 50, 49, [0, 0, 0, 0]],
     // 16 - 27
-    ['PixelTestRegionIntersectLeftEdge 1', 0, 25, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectLeftEdge 2', 0, 50, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectLeftEdge 3', 0, 75, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectRightEdge 1', 99, 25, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectRightEdge 2', 99, 50, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectRightEdge 3', 99, 75, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectTopEdge 1', 25, 0, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectTopEdge 2', 50, 0, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectTopEdge 3', 75, 0, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectBototmEdge 1', 25, 99, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectBototmEdge 2', 50, 99, [0, 128, 0, 255]],    
-    ['PixelTestRegionIntersectBototmEdge 3', 75, 99, [0, 128, 0, 255]],    
+    ['PixelTestRegionIntersectLeftEdge 1', 0, 25, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectLeftEdge 2', 0, 50, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectLeftEdge 3', 0, 75, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectRightEdge 1', 99, 25, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectRightEdge 2', 99, 50, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectRightEdge 3', 99, 75, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectTopEdge 1', 25, 0, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectTopEdge 2', 50, 0, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectTopEdge 3', 75, 0, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectBototmEdge 1', 25, 99, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectBototmEdge 2', 50, 99, [0, 128, 0, 255]],
+    ['PixelTestRegionIntersectBototmEdge 3', 75, 99, [0, 128, 0, 255]],
     // 28 - 51
-    ['PixelTestDirtyRegionIntersectLeftEdge 1', 0, 25, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectLeftEdge 2', 0, 50, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectLeftEdge 3', 0, 75, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectLeftEdge 4', 10, 25, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectLeftEdge 5', 10, 50, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectLeftEdge 6', 10, 75, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectRightEdge 1', 99, 25, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectRightEdge 2', 99, 50, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectRightEdge 3', 99, 75, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectRightEdge 4', 89, 25, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectRightEdge 5', 89, 50, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectRightEdge 6', 89, 75, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectTopEdge 1', 25, 0, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectTopEdge 2', 50, 0, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectTopEdge 3', 75, 0, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectTopEdge 4', 25, 10, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectTopEdge 5', 50, 10, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectTopEdge 6', 75, 10, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectBottomEdge 1', 25, 99, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectBottomEdge 2', 50, 99, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectBottomEdge 3', 75, 99, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectBottomEdge 4', 25, 89, [0, 128, 0, 255]],    
-    ['PixelTestDirtyRegionIntersectBottomEdge 5', 50, 89, [0, 128, 0, 255]],    
+    ['PixelTestDirtyRegionIntersectLeftEdge 1', 0, 25, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectLeftEdge 2', 0, 50, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectLeftEdge 3', 0, 75, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectLeftEdge 4', 10, 25, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectLeftEdge 5', 10, 50, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectLeftEdge 6', 10, 75, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectRightEdge 1', 99, 25, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectRightEdge 2', 99, 50, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectRightEdge 3', 99, 75, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectRightEdge 4', 89, 25, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectRightEdge 5', 89, 50, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectRightEdge 6', 89, 75, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectTopEdge 1', 25, 0, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectTopEdge 2', 50, 0, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectTopEdge 3', 75, 0, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectTopEdge 4', 25, 10, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectTopEdge 5', 50, 10, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectTopEdge 6', 75, 10, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectBottomEdge 1', 25, 99, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectBottomEdge 2', 50, 99, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectBottomEdge 3', 75, 99, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectBottomEdge 4', 25, 89, [0, 128, 0, 255]],
+    ['PixelTestDirtyRegionIntersectBottomEdge 5', 50, 89, [0, 128, 0, 255]],
     ['PixelTestDirtyRegionIntersectBottomEdge 6', 75, 89, [0, 128, 0, 255]],
 ];
 
@@ -203,7 +203,7 @@ test(function(t) {
     context.putImageData(buffer, 0, 0, 0, 90, 100, 100);
     generate_tests(pixelShouldBe, pixelTests.slice(46));
 }, "Test drawing with only part of the dirty region intersecting the window.");
-    
+
 test(function(t) {
     var smallbuffer = context.createImageData(10, 10);
     fillRect(smallbuffer, 0, 0, 10, 10, 255, 0, 0, 255);
@@ -242,26 +242,8 @@ test(function(t) {
 
 var testInvalidParams = [
     ['TestInvalidParam 1', null, function() {context.putImageData({}, 0, 0);}],
-    ['TestInvalidParam 2', null, function() {context.putImageData(buffer, NaN, 0, 0, 0, 0, 0);}],
-    ['TestInvalidParam 3', null, function() {context.putImageData(buffer, 0, NaN, 0, 0, 0, 0);}],
-    ['TestInvalidParam 4', null, function() {context.putImageData(buffer, 0, 0, NaN, 0, 0, 0);}],
-    ['TestInvalidParam 5', null, function() {context.putImageData(buffer, 0, 0, 0, NaN, 0, 0);}],
-    ['TestInvalidParam 6', null, function() {context.putImageData(buffer, 0, 0, 0, 0, NaN, 0);}],
-    ['TestInvalidParam 7', null, function() {context.putImageData(buffer, 0, 0, 0, 0, 0, NaN);}],
-    ['TestInvalidParam 8', null, function() {context.putImageData(buffer, Infinity, 0, 0, 0, 0, 0);}],
-    ['TestInvalidParam 9', null, function() {context.putImageData(buffer, 0, Infinity, 0, 0, 0, 0);}],
-    ['TestInvalidParam 10', null, function() {context.putImageData(buffer, 0, 0, Infinity, 0, 0, 0);}],
-    ['TestInvalidParam 11', null, function() {context.putImageData(buffer, 0, 0, 0, Infinity, 0, 0);}],
-    ['TestInvalidParam 12', null, function() {context.putImageData(buffer, 0, 0, 0, 0, Infinity, 0);}],
-    ['TestInvalidParam 13', null, function() {context.putImageData(buffer, 0, 0, 0, 0, 0, Infinity);}],
-    ['TestInvalidParam 14', null, function() {context.putImageData(buffer, undefined, 0, 0, 0, 0, 0);}],
-    ['TestInvalidParam 15', null, function() {context.putImageData(buffer, 0, undefined, 0, 0, 0, 0);}],
-    ['TestInvalidParam 16', null, function() {context.putImageData(buffer, 0, 0, undefined, 0, 0, 0);}],
-    ['TestInvalidParam 17', null, function() {context.putImageData(buffer, 0, 0, 0, undefined, 0, 0);}],
-    ['TestInvalidParam 18', null, function() {context.putImageData(buffer, 0, 0, 0, 0, undefined, 0);}],
-    ['TestInvalidParam 19', null, function() {context.putImageData(buffer, 0, 0, 0, 0, 0, undefined);}],
-    ['TestInvalidParam 20', null, function() {context.putImageData(null, 0, 0, 0, 0, 0, 0);}],
-    ['TestInvalidParam 21', null, function() {context.putImageData(undefined, 0, 0, 0, 0, 0, 0);}],
+    ['TestInvalidParam 2', null, function() {context.putImageData(null, 0, 0, 0, 0, 0, 0);}],
+    ['TestInvalidParam 3', null, function() {context.putImageData(undefined, 0, 0, 0, 0, 0, 0);}],
 
 ];
 

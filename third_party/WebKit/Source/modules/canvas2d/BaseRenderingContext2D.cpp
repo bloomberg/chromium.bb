@@ -1506,8 +1506,8 @@ ImageData* BaseRenderingContext2D::createImageData(
 }
 
 ImageData* BaseRenderingContext2D::createImageData(
-    double sw,
-    double sh,
+    int sw,
+    int sh,
     ExceptionState& exceptionState) const {
   if (!sw || !sh) {
     exceptionState.throwDOMException(
@@ -1516,15 +1516,7 @@ ImageData* BaseRenderingContext2D::createImageData(
     return nullptr;
   }
 
-  FloatSize logicalSize(fabs(sw), fabs(sh));
-  if (!logicalSize.isExpressibleAsIntSize())
-    return nullptr;
-
-  IntSize size = expandedIntSize(logicalSize);
-  if (size.width() < 1)
-    size.setWidth(1);
-  if (size.height() < 1)
-    size.setHeight(1);
+  IntSize size(abs(sw), abs(sh));
 
   ImageData* result = ImageData::create(size);
   if (!result)
@@ -1533,10 +1525,10 @@ ImageData* BaseRenderingContext2D::createImageData(
 }
 
 ImageData* BaseRenderingContext2D::getImageData(
-    double sx,
-    double sy,
-    double sw,
-    double sh,
+    int sx,
+    int sy,
+    int sw,
+    int sh,
     ExceptionState& exceptionState) const {
   m_usageCounters.numGetImageDataCalls++;
   m_usageCounters.areaGetImageDataCalls += sw * sh;
@@ -1560,14 +1552,6 @@ ImageData* BaseRenderingContext2D::getImageData(
     sh = -sh;
   }
 
-  FloatRect logicalRect(sx, sy, sw, sh);
-  if (logicalRect.width() < 1)
-    logicalRect.setWidth(1);
-  if (logicalRect.height() < 1)
-    logicalRect.setHeight(1);
-  if (!logicalRect.isExpressibleAsIntRect())
-    return nullptr;
-
   Optional<ScopedUsHistogramTimer> timer;
   if (imageBuffer() && imageBuffer()->isAccelerated()) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -1589,7 +1573,8 @@ ImageData* BaseRenderingContext2D::getImageData(
     timer.emplace(scopedUsCounterCPU);
   }
 
-  IntRect imageDataRect = enclosingIntRect(logicalRect);
+  IntRect imageDataRect(sx, sy, sw, sh);
+  DVLOG(1) << sx << ", " << sy << ", " << sw << ", " << sh;
   ImageBuffer* buffer = imageBuffer();
   if (!buffer || isContextLost()) {
     ImageData* result = ImageData::create(imageDataRect.size());
@@ -1611,20 +1596,20 @@ ImageData* BaseRenderingContext2D::getImageData(
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,
-                                          double dx,
-                                          double dy,
+                                          int dx,
+                                          int dy,
                                           ExceptionState& exceptionState) {
   putImageData(data, dx, dy, 0, 0, data->width(), data->height(),
                exceptionState);
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,
-                                          double dx,
-                                          double dy,
-                                          double dirtyX,
-                                          double dirtyY,
-                                          double dirtyWidth,
-                                          double dirtyHeight,
+                                          int dx,
+                                          int dy,
+                                          int dirtyX,
+                                          int dirtyY,
+                                          int dirtyWidth,
+                                          int dirtyHeight,
                                           ExceptionState& exceptionState) {
   m_usageCounters.numPutImageDataCalls++;
   m_usageCounters.areaPutImageDataCalls += dirtyWidth * dirtyHeight;
@@ -1647,10 +1632,9 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     dirtyHeight = -dirtyHeight;
   }
 
-  FloatRect clipRect(dirtyX, dirtyY, dirtyWidth, dirtyHeight);
-  clipRect.intersect(IntRect(0, 0, data->width(), data->height()));
+  IntRect destRect(dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+  destRect.intersect(IntRect(0, 0, data->width(), data->height()));
   IntSize destOffset(static_cast<int>(dx), static_cast<int>(dy));
-  IntRect destRect = enclosingIntRect(clipRect);
   destRect.move(destOffset);
   destRect.intersect(IntRect(IntPoint(), buffer->size()));
   if (destRect.isEmpty())

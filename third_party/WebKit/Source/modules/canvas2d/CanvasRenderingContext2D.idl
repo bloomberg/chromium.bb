@@ -125,10 +125,10 @@ enum ImageSmoothingQuality {"low", "medium", "high"};
 
     // pixel manipulation
     [RaisesException] ImageData createImageData(ImageData imagedata);
-    [RaisesException] ImageData createImageData(double sw, double sh);
-    [RaisesException] ImageData getImageData(double sx, double sy, double sw, double sh);
-    [RaisesException] void putImageData(ImageData imagedata, double dx, double dy);
-    [RaisesException] void putImageData(ImageData imagedata, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight);
+    [RaisesException] ImageData createImageData(long sw, long sh);
+    [RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh);
+    [RaisesException] void putImageData(ImageData imagedata, long dx, long dy);
+    [RaisesException] void putImageData(ImageData imagedata, long dx, long dy, long dirtyX, long dirtyY, long dirtyWidth, long dirtyHeight);
 
     // Context state
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
