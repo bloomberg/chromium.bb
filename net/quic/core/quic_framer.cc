@@ -22,6 +22,7 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/platform/api/quic_aligned.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
+#include "net/quic/platform/api/quic_flag_utils.h"
 #include "net/quic/platform/api/quic_logging.h"
 #include "net/quic/platform/api/quic_map_util.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
@@ -776,6 +777,9 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
       public_flags > (FLAGS_quic_reloadable_flag_quic_remove_multipath_bit
                           ? PACKET_PUBLIC_FLAGS_MAX_WITHOUT_MULTIPATH_FLAG
                           : PACKET_PUBLIC_FLAGS_MAX)) {
+    if (FLAGS_quic_reloadable_flag_quic_remove_multipath_bit) {
+      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_remove_multipath_bit, 1, 2);
+    }
     set_detailed_error("Illegal public flags value.");
     return false;
   }
@@ -820,6 +824,9 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
         public_flags > (FLAGS_quic_reloadable_flag_quic_remove_multipath_bit
                             ? PACKET_PUBLIC_FLAGS_MAX_WITHOUT_MULTIPATH_FLAG
                             : PACKET_PUBLIC_FLAGS_MAX)) {
+      if (FLAGS_quic_reloadable_flag_quic_remove_multipath_bit) {
+        QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_remove_multipath_bit, 1, 2);
+      }
       set_detailed_error("Illegal public flags value.");
       return false;
     }
