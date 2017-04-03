@@ -122,36 +122,15 @@ source_set("bookmarks") {
   ]
 }
 
-source_set("unit_tests_arc") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "bookmark_ios_unittest.h",
-    "bookmark_utils_ios_unittest.mm",
-  ]
-  deps = [
-    ":bookmarks",
-    "//base",
-    "//components/bookmarks/browser",
-    "//components/bookmarks/test",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/bookmarks",
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/web:test_support",
-    "//testing/gtest",
-  ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "bookmark_home_view_controller_unittest.mm",
+    "bookmark_ios_unittest.h",
     "bookmark_ios_unittest.mm",
     "bookmark_position_cache_unittest.mm",
-  ]
-  public_deps = [
-    ":unit_tests_arc",
+    "bookmark_utils_ios_unittest.mm",
   ]
   deps = [
     ":bookmarks",
