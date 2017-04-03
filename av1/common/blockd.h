@@ -192,6 +192,11 @@ static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
   return lut[mode];
 }
 
+static INLINE int have_nearmv_in_inter_mode(PREDICTION_MODE mode) {
+  return (mode == NEARMV || mode == NEAR_NEARMV || mode == NEAREST_NEARMV ||
+          mode == NEAR_NEARESTMV || mode == NEAR_NEWMV || mode == NEW_NEARMV);
+}
+
 static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
   return (mode == NEWMV || mode == NEW_NEWMV || mode == NEAREST_NEWMV ||
           mode == NEW_NEARESTMV || mode == NEAR_NEWMV || mode == NEW_NEARMV);
@@ -209,6 +214,10 @@ static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
 #endif  // CONFIG_COMPOUND_SEGMENT
 }
 #else
+
+static INLINE int have_nearmv_in_inter_mode(PREDICTION_MODE mode) {
+  return (mode == NEARMV);
+}
 
 static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
   return (mode == NEWMV);

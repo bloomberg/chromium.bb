@@ -1100,25 +1100,52 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_REF_MV
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
-      (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) &&
+      (mbmi->sb_type >= BLOCK_8X8 || unify_bsize)) {
 #if CONFIG_EXT_INTER
-      (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV)) {
-#else
-      mbmi->mode == NEWMV) {
-#endif
-    for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-      int_mv this_mv =
-          (i == 0)
-              ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
-              : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].comp_mv;
-      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                   xd->n8_h << MI_SIZE_LOG2, xd);
-      x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
-      mbmi->pred_mv[i] = this_mv;
-      mi->mbmi.pred_mv[i] = this_mv;
+    if (has_second_ref(mbmi)) {
+      int ref_mv_idx = mbmi->ref_mv_idx;
+      // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
+      // (like NEARMV) instead
+      if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
+        ref_mv_idx = 1 + mbmi->ref_mv_idx;
+
+      if (compound_ref0_mode(mbmi->mode) == NEWMV) {
+        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].this_mv;
+        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
+        x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
+        mbmi->pred_mv[0] = this_mv;
+        mi->mbmi.pred_mv[0] = this_mv;
+      }
+      if (compound_ref1_mode(mbmi->mode) == NEWMV) {
+        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].comp_mv;
+        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
+        x->mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
+        mbmi->pred_mv[1] = this_mv;
+        mi->mbmi.pred_mv[1] = this_mv;
+      }
+    } else {
+#endif  // CONFIG_EXT_INTER
+      if (mbmi->mode == NEWMV) {
+        for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
+          int_mv this_mv =
+              (i == 0)
+                  ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
+                  : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx]
+                        .comp_mv;
+          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                       xd->n8_h << MI_SIZE_LOG2, xd);
+          x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
+          mbmi->pred_mv[i] = this_mv;
+          mi->mbmi.pred_mv[i] = this_mv;
+        }
+      }
+#if CONFIG_EXT_INTER
     }
-  }
 #endif
+  }
+#endif  // CONFIG_REF_MV
 
   // If segmentation in use
   if (seg->enabled) {
@@ -1289,6 +1316,7 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
   const int mi_height = mi_size_high[bsize];
   const int x_mis = AOMMIN(mi_width, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(mi_height, cm->mi_rows - mi_row);
+  const int unify_bsize = CONFIG_CB4X4;
   MV_REF *const frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
   int w, h;
 
@@ -1308,27 +1336,52 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_REF_MV
   rf_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1 &&
-#if !CONFIG_CB4X4
-      mbmi->sb_type >= BLOCK_8X8 &&
-#endif  // !CONFIG_CB4X4
+      (mbmi->sb_type >= BLOCK_8X8 || unify_bsize)) {
 #if CONFIG_EXT_INTER
-      (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV)) {
-#else
-      mbmi->mode == NEWMV) {
-#endif
-    for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-      int_mv this_mv =
-          (i == 0)
-              ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
-              : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].comp_mv;
-      clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
-                   xd->n8_h << MI_SIZE_LOG2, xd);
-      lower_mv_precision(&this_mv.as_mv, cm->allow_high_precision_mv);
-      x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
-      mbmi->pred_mv[i] = this_mv;
+    if (has_second_ref(mbmi)) {
+      int ref_mv_idx = mbmi->ref_mv_idx;
+      // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
+      // (like NEARMV) instead
+      if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
+        ref_mv_idx = 1 + mbmi->ref_mv_idx;
+
+      if (compound_ref0_mode(mbmi->mode) == NEWMV) {
+        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].this_mv;
+        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
+        x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
+        mbmi->pred_mv[0] = this_mv;
+        mi->mbmi.pred_mv[0] = this_mv;
+      }
+      if (compound_ref1_mode(mbmi->mode) == NEWMV) {
+        int_mv this_mv = x->mbmi_ext->ref_mv_stack[rf_type][ref_mv_idx].comp_mv;
+        clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
+        x->mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
+        mbmi->pred_mv[1] = this_mv;
+        mi->mbmi.pred_mv[1] = this_mv;
+      }
+    } else {
+#endif  // CONFIG_EXT_INTER
+      if (mbmi->mode == NEWMV) {
+        for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
+          int_mv this_mv =
+              (i == 0)
+                  ? x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx].this_mv
+                  : x->mbmi_ext->ref_mv_stack[rf_type][mbmi->ref_mv_idx]
+                        .comp_mv;
+          clamp_mv_ref(&this_mv.as_mv, xd->n8_w << MI_SIZE_LOG2,
+                       xd->n8_h << MI_SIZE_LOG2, xd);
+          x->mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
+          mbmi->pred_mv[i] = this_mv;
+          mi->mbmi.pred_mv[i] = this_mv;
+        }
+      }
+#if CONFIG_EXT_INTER
     }
-  }
 #endif
+  }
+#endif  // CONFIG_REF_MV
 
   // If segmentation in use
   if (seg->enabled) {
@@ -2236,7 +2289,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
         }
 
 #if CONFIG_EXT_INTER
-        if (mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV) {
+        if (have_nearmv_in_inter_mode(mbmi->mode)) {
 #else
         if (mbmi->mode == NEARMV) {
 #endif

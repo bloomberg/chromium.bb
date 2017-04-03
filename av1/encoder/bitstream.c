@@ -318,11 +318,7 @@ static void write_drl_idx(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
     return;
   }
 
-#if CONFIG_EXT_INTER
-  if (mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV) {
-#else
-  if (mbmi->mode == NEARMV) {
-#endif
+  if (have_nearmv_in_inter_mode(mbmi->mode)) {
     int idx;
     // TODO(jingning): Temporary solution to compensate the NEARESTMV offset.
     for (idx = 1; idx < 3; ++idx) {
@@ -1825,8 +1821,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
 #if CONFIG_REF_MV
 #if CONFIG_EXT_INTER
-        if (mode == NEARMV || mode == NEAR_NEARMV || mode == NEWMV ||
-            mode == NEW_NEWMV)
+        if (mode == NEWMV || mode == NEW_NEWMV ||
+            have_nearmv_in_inter_mode(mode))
 #else
         if (mode == NEARMV || mode == NEWMV)
 #endif
