@@ -22,6 +22,7 @@ amdgpu_bo_list_update
 amdgpu_bo_query_info
 amdgpu_bo_set_metadata
 amdgpu_bo_va_op
+amdgpu_bo_va_op_raw
 amdgpu_bo_wait_for_idle
 amdgpu_create_bo_from_user_mem
 amdgpu_cs_create_semaphore
