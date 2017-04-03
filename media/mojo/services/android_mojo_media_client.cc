@@ -4,12 +4,16 @@
 
 #include "media/mojo/services/android_mojo_media_client.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "media/base/android/android_cdm_factory.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
 #include "media/filters/android/media_codec_audio_decoder.h"
+#include "media/mojo/interfaces/media_drm_storage.mojom.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
+#include "media/mojo/services/mojo_media_drm_storage.h"
 #include "media/mojo/services/mojo_provision_fetcher.h"
 #include "services/service_manager/public/cpp/connect.h"
 
@@ -24,6 +28,15 @@ std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
   service_manager::GetInterface(host_interfaces, &provision_fetcher_ptr);
   return base::MakeUnique<MojoProvisionFetcher>(
       std::move(provision_fetcher_ptr));
+}
+
+std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
+    service_manager::mojom::InterfaceProvider* host_interfaces) {
+  DCHECK(host_interfaces);
+  mojom::MediaDrmStoragePtr media_drm_storage_ptr;
+  service_manager::GetInterface(host_interfaces, &media_drm_storage_ptr);
+  return base::MakeUnique<MojoMediaDrmStorage>(
+      std::move(media_drm_storage_ptr));
 }
 
 }  // namespace
@@ -46,8 +59,10 @@ std::unique_ptr<CdmFactory> AndroidMojoMediaClient::CreateCdmFactory(
                  << "AndroidMojoMediaClient";
     return nullptr;
   }
+
   return base::MakeUnique<AndroidCdmFactory>(
-      base::Bind(&CreateProvisionFetcher, host_interfaces));
+      base::Bind(&CreateProvisionFetcher, host_interfaces),
+      base::Bind(&CreateMediaDrmStorage, host_interfaces));
 }
 
 }  // namespace media

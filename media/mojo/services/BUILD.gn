@@ -135,6 +135,8 @@ source_set("lib") {
     sources += [
       "android_mojo_media_client.cc",
       "android_mojo_media_client.h",
+      "mojo_media_drm_storage.cc",
+      "mojo_media_drm_storage.h",
     ]
   }
 }

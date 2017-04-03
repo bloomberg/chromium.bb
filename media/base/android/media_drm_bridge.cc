@@ -318,6 +318,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     const GURL& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
+    const CreateStorageCB& create_storage_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
@@ -331,8 +332,8 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
 
   scoped_refptr<MediaDrmBridge> media_drm_bridge(new MediaDrmBridge(
       scheme_uuid, security_origin, security_level, create_fetcher_cb,
-      session_message_cb, session_closed_cb, session_keys_change_cb,
-      session_expiration_update_cb));
+      create_storage_cb, session_message_cb, session_closed_cb,
+      session_keys_change_cb, session_expiration_update_cb));
 
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge = nullptr;
@@ -346,6 +347,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     const GURL& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
+    const CreateStorageCB& create_storage_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
@@ -356,9 +358,9 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     return nullptr;
 
   return CreateInternal(key_system, security_origin, security_level,
-                        create_fetcher_cb, session_message_cb,
-                        session_closed_cb, session_keys_change_cb,
-                        session_expiration_update_cb);
+                        create_fetcher_cb, create_storage_cb,
+                        session_message_cb, session_closed_cb,
+                        session_keys_change_cb, session_expiration_update_cb);
 }
 
 // static
@@ -372,10 +374,10 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
   if (!AreMediaDrmApisAvailable())
     return nullptr;
 
-  return MediaDrmBridge::Create(key_system, GURL::EmptyGURL(), security_level,
-                                create_fetcher_cb, SessionMessageCB(),
-                                SessionClosedCB(), SessionKeysChangeCB(),
-                                SessionExpirationUpdateCB());
+  return MediaDrmBridge::Create(
+      key_system, GURL::EmptyGURL(), security_level, create_fetcher_cb,
+      CreateStorageCB(), SessionMessageCB(), SessionClosedCB(),
+      SessionKeysChangeCB(), SessionExpirationUpdateCB());
 }
 
 void MediaDrmBridge::SetServerCertificate(
@@ -779,12 +781,14 @@ MediaDrmBridge::MediaDrmBridge(
     const GURL& security_origin,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb,
+    const CreateStorageCB& create_storage_cb,
     const SessionMessageCB& session_message_cb,
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb)
     : scheme_uuid_(scheme_uuid),
       create_fetcher_cb_(create_fetcher_cb),
+      create_storage_cb_(create_storage_cb),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
@@ -818,6 +822,10 @@ MediaDrmBridge::MediaDrmBridge(
   // passing to MediaDrm.
   ScopedJavaLocalRef<jstring> j_security_origin = ConvertUTF8ToJavaString(
       env, use_origin_isolated_storage ? security_origin.spec() : "");
+
+  // TODO(yucliu): Use |create_storage_cb_| to create MediaDrmStorage which can
+  // be used by Java side to store/retrieve persistent data. This should only
+  // be used when |use_origin_isolated_storage| is true.
 
   // Note: OnMediaCryptoReady() could be called in this call.
   j_media_drm_.Reset(Java_MediaDrmBridge_create(

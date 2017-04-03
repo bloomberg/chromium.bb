@@ -19,8 +19,10 @@
 
 namespace media {
 
-AndroidCdmFactory::AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb)
-    : create_fetcher_cb_(create_fetcher_cb) {}
+AndroidCdmFactory::AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb,
+                                     const CreateStorageCB& create_storage_cb)
+    : create_fetcher_cb_(create_fetcher_cb),
+      create_storage_cb_(create_storage_cb) {}
 
 AndroidCdmFactory::~AndroidCdmFactory() {}
 
@@ -80,8 +82,8 @@ void AndroidCdmFactory::Create(
 
   scoped_refptr<MediaDrmBridge> cdm(MediaDrmBridge::Create(
       key_system, security_origin, security_level, create_fetcher_cb_,
-      session_message_cb, session_closed_cb, session_keys_change_cb,
-      session_expiration_update_cb));
+      create_storage_cb_, session_message_cb, session_closed_cb,
+      session_keys_change_cb, session_expiration_update_cb));
   if (!cdm) {
     error_message = "MediaDrmBridge cannot be created for " + key_system +
                     " with security level " + base::IntToString(security_level);

@@ -20,6 +20,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "media/base/android/android_util.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
+#include "media/base/android/media_drm_storage.h"
 #include "media/base/android/media_drm_storage_bridge.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/cdm_promise_adapter.h"
@@ -96,6 +97,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const GURL& security_origin,
       SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb,
+      const CreateStorageCB& create_storage_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
@@ -243,6 +245,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       const GURL& security_origin,
       SecurityLevel security_level,
       const CreateFetcherCB& create_fetcher_cb,
+      const CreateStorageCB& create_storage_cb,
       const SessionMessageCB& session_message_cb,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
@@ -256,6 +259,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
                  const GURL& security_origin,
                  SecurityLevel security_level,
                  const CreateFetcherCB& create_fetcher_cb,
+                 const CreateStorageCB& create_storage_cb,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const SessionKeysChangeCB& session_keys_change_cb,
@@ -301,6 +305,9 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
 
   // The callback to create a ProvisionFetcher.
   CreateFetcherCB create_fetcher_cb_;
+
+  // The callback to create a MediaDrmStorage.
+  CreateStorageCB create_storage_cb_;
 
   // The ProvisionFetcher that requests and receives provisioning data.
   // Non-null iff when a provision request is pending.

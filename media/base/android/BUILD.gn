@@ -39,6 +39,8 @@ if (is_android) {
       "media_drm_bridge_client.h",
       "media_drm_bridge_delegate.cc",
       "media_drm_bridge_delegate.h",
+      "media_drm_storage.cc",
+      "media_drm_storage.h",
       "media_drm_storage_bridge.cc",
       "media_drm_storage_bridge.h",
       "media_jni_registrar.cc",

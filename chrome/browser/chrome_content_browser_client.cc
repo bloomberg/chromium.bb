@@ -386,6 +386,9 @@
 
 #if defined(ENABLE_MOJO_MEDIA)
 #include "chrome/browser/media/output_protection_impl.h"
+#if defined(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
+#include "chrome/browser/media/android/cdm/media_drm_storage_factory.h"
+#endif
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
@@ -3134,6 +3137,10 @@ void ChromeContentBrowserClient::ExposeInterfacesToMediaService(
 #if defined(ENABLE_MOJO_MEDIA)
   registry->AddInterface(
       base::Bind(&OutputProtectionImpl::Create, render_frame_host));
+#if defined(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
+  registry->AddInterface(
+      base::Bind(&chrome::CreateMediaDrmStorage, render_frame_host));
+#endif
 #endif  // defined(ENABLE_MOJO_MEDIA)
 }
 

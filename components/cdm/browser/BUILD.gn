@@ -6,14 +6,18 @@ source_set("browser") {
   sources = [
     "cdm_message_filter_android.cc",
     "cdm_message_filter_android.h",
+    "media_drm_storage_impl.cc",
+    "media_drm_storage_impl.h",
   ]
 
   deps = [
     "//base",
     "//components/cdm/common",
+    "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
     "//media",
+    "//media/mojo/interfaces",
   ]
 }
