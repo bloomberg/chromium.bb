@@ -216,14 +216,6 @@ bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledProtocol(
       job_factory_->IsHandledProtocol(scheme);
 }
 
-bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledURL(
-    const GURL& url) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return (url.is_valid() &&
-      io_thread_delegate_->IsHandledProtocol(url.scheme())) ||
-      job_factory_->IsHandledURL(url);
-}
-
 bool ProtocolHandlerRegistry::JobInterceptorFactory::IsSafeRedirectTarget(
     const GURL& location) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

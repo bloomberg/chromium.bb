@@ -244,10 +244,6 @@ class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
     return scheme == "blob";
   }
 
-  bool IsHandledURL(const GURL& url) const override {
-    return url.SchemeIs("blob");
-  }
-
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }

@@ -578,7 +578,7 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 
   const net::URLRequestJobFactory* job_factory =
       info->GetContext()->GetRequestContext()->job_factory();
-  if (job_factory->IsHandledURL(url))
+  if (!url.is_valid() || job_factory->IsHandledProtocol(url.scheme()))
     return false;
 
   return delegate_->HandleExternalProtocol(url, info);
@@ -1935,8 +1935,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   bool is_external_protocol =
-      !resource_context->GetRequestContext()->job_factory()->IsHandledURL(
-          info.common_params.url);
+      info.common_params.url.is_valid() &&
+      !resource_context->GetRequestContext()->job_factory()->IsHandledProtocol(
+          info.common_params.url.scheme());
   bool non_web_url_in_guest =
       info.is_for_guests_only &&
       !policy->IsWebSafeScheme(info.common_params.url.scheme()) &&

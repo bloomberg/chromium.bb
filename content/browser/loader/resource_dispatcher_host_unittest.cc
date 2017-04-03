@@ -594,10 +594,6 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
     return supported_schemes_.count(scheme) > 0;
   }
 
-  bool IsHandledURL(const GURL& url) const override {
-    return supported_schemes_.count(url.scheme()) > 0;
-  }
-
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }

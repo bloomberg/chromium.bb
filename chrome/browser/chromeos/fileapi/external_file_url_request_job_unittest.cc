@@ -83,10 +83,6 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
     return scheme == content::kExternalFileScheme;
   }
 
-  bool IsHandledURL(const GURL& url) const override {
-    return url.is_valid() && IsHandledProtocol(url.scheme());
-  }
-
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }

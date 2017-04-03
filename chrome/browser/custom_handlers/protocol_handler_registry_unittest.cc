@@ -62,8 +62,8 @@ void AssertIntercepted(
 }
 
 // FakeURLRequestJobFactory returns NULL for all job creation requests and false
-// for all IsHandled*() requests. FakeURLRequestJobFactory can be chained to
-// ProtocolHandlerRegistry::JobInterceptorFactory so the result of
+// for all IsHandledProtocol() requests. FakeURLRequestJobFactory can be chained
+// to ProtocolHandlerRegistry::JobInterceptorFactory so the result of
 // MaybeCreateJobWithProtocolHandler() indicates whether the
 // ProtocolHandlerRegistry properly handled a job creation request.
 class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
@@ -91,7 +91,6 @@ class FakeURLRequestJobFactory : public net::URLRequestJobFactory {
   bool IsHandledProtocol(const std::string& scheme) const override {
     return false;
   }
-  bool IsHandledURL(const GURL& url) const override { return false; }
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }

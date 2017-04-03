@@ -299,7 +299,7 @@ void SaveFileManager::OnSaveURL(const GURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const net::URLRequestContext* request_context = context->GetRequestContext();
-  if (!request_context->job_factory()->IsHandledURL(url)) {
+  if (!request_context->job_factory()->IsHandledProtocol(url.scheme())) {
     // Since any URLs which have non-standard scheme have been filtered
     // by save manager(see GURL::SchemeIsStandard). This situation
     // should not happen.

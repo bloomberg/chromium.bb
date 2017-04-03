@@ -35,10 +35,6 @@ bool AwURLRequestJobFactory::IsHandledProtocol(
   return true;
 }
 
-bool AwURLRequestJobFactory::IsHandledURL(const GURL& url) const {
-  return true;
-}
-
 URLRequestJob* AwURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
     const std::string& scheme,
     URLRequest* request,

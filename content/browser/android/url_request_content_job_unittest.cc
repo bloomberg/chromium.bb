@@ -69,10 +69,6 @@ class CallbacksJobFactory : public net::URLRequestJobFactory {
     return scheme == "content";
   }
 
-  bool IsHandledURL(const GURL& url) const override {
-    return IsHandledProtocol(url.scheme());
-  }
-
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return false;
   }

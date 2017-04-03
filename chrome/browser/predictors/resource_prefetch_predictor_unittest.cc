@@ -109,8 +109,6 @@ class MockURLRequestJobFactory : public net::URLRequestJobFactory {
     return true;
   }
 
-  bool IsHandledURL(const GURL& url) const override { return true; }
-
   bool IsSafeRedirectTarget(const GURL& location) const override {
     return true;
   }
