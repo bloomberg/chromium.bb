@@ -796,13 +796,15 @@ void Shell::Init(const ShellInitParams& init_params) {
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
   // Can be null in tests.
+  // TODO(jonross): reenable once the cause of crbug.com/707321 is determined.
+  /*
   if (wm_shell_->IsRunningInMash() && shell_delegate_->GetShellConnector()) {
     prefs::ConnectToPrefService(
         shell_delegate_->GetShellConnector(),
         make_scoped_refptr(new PrefRegistrySimple()),
         base::Bind(&Shell::OnPrefServiceInitialized, base::Unretained(this)),
         prefs::mojom::kForwarderServiceName);
-  }
+  }*/
 
   // Some delegates access WmShell during their construction. Create them here
   // instead of the WmShell constructor.
