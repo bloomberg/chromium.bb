@@ -2658,8 +2658,7 @@ function testFindAPI_findupdate() {
     // Test the |findupdate| event.
     webview.addEventListener('findupdate', function(e) {
       if (e.activeMatchOrdinal > 0) {
-        // embedder.test.assertTrue(e.numberOfMatches >= e.activeMatchOrdinal)
-        // This currently fails because of http://crbug.com/342445 .
+        embedder.test.assertTrue(e.numberOfMatches >= e.activeMatchOrdinal)
         embedder.test.assertTrue(e.selectionRect.width > 0);
         embedder.test.assertTrue(e.selectionRect.height > 0);
       }
@@ -2676,9 +2675,9 @@ function testFindAPI_findupdate() {
         }
       }
     });
-    wv.find("dog");
-    wv.find("cat");
-    wv.find("dog");
+    webview.find("dog");
+    webview.find("cat");
+    webview.find("dog");
   });
 
   document.body.appendChild(webview);
@@ -3141,7 +3140,7 @@ embedder.test.testList = {
   'testScreenshotCapture' : testScreenshotCapture,
   'testZoomAPI' : testZoomAPI,
   'testFindAPI': testFindAPI,
-  'testFindAPI_findupdate': testFindAPI,
+  'testFindAPI_findupdate': testFindAPI_findupdate,
   'testLoadDataAPI': testLoadDataAPI,
   'testResizeEvents': testResizeEvents,
   'testPerOriginZoomMode': testPerOriginZoomMode,
