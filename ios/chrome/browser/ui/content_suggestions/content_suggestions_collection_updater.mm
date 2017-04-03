@@ -28,7 +28,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -352,18 +351,15 @@ SectionIdentifier SectionIdentifierForInfo(
 
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
   __weak ContentSuggestionsArticleItem* weakArticle = articleItem;
-  void (^imageFetchedCallback)(const gfx::Image&) = ^(const gfx::Image& image) {
-    if (image.IsEmpty()) {
-      return;
-    }
 
+  void (^imageFetchedCallback)(UIImage*) = ^(UIImage* image) {
     ContentSuggestionsCollectionUpdater* strongSelf = weakSelf;
     ContentSuggestionsArticleItem* strongArticle = weakArticle;
     if (!strongSelf || !strongArticle) {
       return;
     }
 
-    strongArticle.image = image.CopyUIImage();
+    strongArticle.image = image;
     [strongSelf.collectionViewController
         reconfigureCellsForItems:@[ strongArticle ]
          inSectionWithIdentifier:sectionIdentifier];

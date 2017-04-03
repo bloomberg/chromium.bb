@@ -307,12 +307,18 @@ ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
 
 - (void)fetchImageForSuggestion:
             (ContentSuggestionIdentifier*)suggestionIdentifier
-                       callback:(void (^)(const gfx::Image&))callback {
+                       callback:(void (^)(UIImage*))callback {
   self.contentService->FetchSuggestionImage(
       SuggestionIDForSectionID(
           [self categoryWrapperForSectionInfo:suggestionIdentifier.sectionInfo],
           suggestionIdentifier.IDInSection),
-      base::BindBlockArc(callback));
+      base::BindBlockArc(^(const gfx::Image& image) {
+        if (image.IsEmpty() || !callback) {
+          return;
+        }
+
+        callback([image.ToUIImage() copy]);
+      }));
 }
 
 #pragma mark - Private

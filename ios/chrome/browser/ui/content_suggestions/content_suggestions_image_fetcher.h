@@ -5,11 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_IMAGE_UPDATER_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_IMAGE_UPDATER_H_
 
-#import <Foundation/Foundation.h>
-
-namespace gfx {
-class Image;
-}
+#import <UIKit/UIKit.h>
 
 @class ContentSuggestionIdentifier;
 
@@ -17,10 +13,10 @@ class Image;
 @protocol ContentSuggestionsImageFetcher
 
 // Fetches the image associated with the |suggestionIdentifier| and passes it to
-// the |callback|.
+// the |callback|. The callback may never be called.
 - (void)fetchImageForSuggestion:
             (ContentSuggestionIdentifier*)suggestionIdentifier
-                       callback:(void (^)(const gfx::Image&))callback;
+                       callback:(void (^)(UIImage*))callback;
 
 @end
 
