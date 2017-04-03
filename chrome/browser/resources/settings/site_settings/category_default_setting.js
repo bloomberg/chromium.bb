@@ -13,6 +13,20 @@ Polymer({
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
+    /* The second line, shown under the |optionLabel_| line. (optional) */
+    optionDescription: String,
+
+    /* The second line, shown under the |subOptionLabel| line. (optional) */
+    subOptionDescription: String,
+
+    /* The sub-option is a separate toggle. Setting this label will show the
+     * additional toggle. Shown above |subOptionDescription|. (optional) */
+    subOptionLabel: String,
+
+    /* The on/off text for |optionLabel_| below. */
+    toggleOffLabel: String,
+    toggleOnLabel: String,
+
     /** @private {chrome.settingsPrivate.PrefObject} */
     controlParams_: {
       type: Object,
@@ -21,6 +35,13 @@ Polymer({
       },
     },
 
+    /**
+     * The label to be shown next to the toggle (above |optionDescription|).
+     * This will be either toggleOffLabel or toggleOnLabel.
+     * @private
+     */
+    optionLabel_: String,
+
     /** @private {!DefaultContentSetting} */
     priorDefaultContentSetting_: {
       type: Object,
@@ -28,12 +49,6 @@ Polymer({
         return /** @type {DefaultContentSetting} */({});
       },
     },
-
-    /**
-     * The description to be shown next to the slider.
-     * @private
-     */
-    sliderDescription_: String,
 
     /**
      * Cookies and Flash settings have a sub-control that is used to mimic a
@@ -45,16 +60,6 @@ Polymer({
       value: function() {
         return /** @type {chrome.settingsPrivate.PrefObject} */({});
       },
-    },
-
-    /* Labels for the toggle on/off positions. */
-    toggleOffLabel: String,
-    toggleOnLabel: String,
-
-    subOptionLabel: String,
-    subOptionSecondary: {
-      type: String,
-      value: null,  // Needs default value so binding fires upon initialization.
     },
   },
 
@@ -193,7 +198,7 @@ Polymer({
           this.category).then(function(defaultValue) {
             this.updateControlParams_(defaultValue);
 
-            // Flash only shows ALLOW or BLOCK descriptions on the slider.
+            // Flash only shows ALLOW or BLOCK descriptions on the toggle.
             var setting = defaultValue.setting;
             if (this.category == settings.ContentSettingsTypes.PLUGINS &&
                 setting == settings.PermissionValues.IMPORTANT_CONTENT) {
@@ -204,7 +209,7 @@ Polymer({
               setting = settings.PermissionValues.ALLOW;
             }
             var categoryEnabled = setting != settings.PermissionValues.BLOCK;
-            this.sliderDescription_ =
+            this.optionLabel_ =
                 categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
           }.bind(this));
   },
@@ -217,14 +222,4 @@ Polymer({
     return this.category == settings.ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
   },
-
-  /**
-   * Returns classname to indicate secondary label exists.
-   * @param {boolean} subOptionLabel
-   * @return {string}
-   * @private
-   */
-  subOptionClass_: function(subOptionLabel) {
-    return subOptionLabel ? 'two-line' : '';
-  }
 });
