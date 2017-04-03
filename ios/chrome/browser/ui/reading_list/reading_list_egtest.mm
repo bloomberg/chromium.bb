@@ -62,6 +62,7 @@ const CFTimeInterval kSnackbarDisappearanceTimeout =
 const CFTimeInterval kLoadOfflineTimeout = 5;
 const CFTimeInterval kLongPressDuration = 1.0;
 const CFTimeInterval kDistillationTimeout = 5;
+const CFTimeInterval kServerOperationDelay = 1;
 const char kReadHeader[] = "Read";
 const char kUnreadHeader[] = "Unread";
 
@@ -358,6 +359,8 @@ void AssertIsShowingDistillablePage(bool online) {
   web::test::HttpServer& server = web::test::HttpServer::GetSharedInstance();
   if (!server.IsRunning()) {
     server.StartOrDie();
+    base::test::ios::SpinRunLoopWithMinDelay(
+        base::TimeDelta::FromSecondsD(kServerOperationDelay));
   }
   [super tearDown];
 }
@@ -444,6 +447,8 @@ void AssertIsShowingDistillablePage(bool online) {
   AssertIsShowingDistillablePage(true);
   // Stop server to reload offline.
   server.Stop();
+  base::test::ios::SpinRunLoopWithMinDelay(
+      base::TimeDelta::FromSecondsD(kServerOperationDelay));
 
   chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
       web::ReloadType::NORMAL, false);
@@ -463,6 +468,7 @@ void AssertIsShowingDistillablePage(bool online) {
   AddCurrentPageToReadingList();
 
   // Navigate to http://beans
+
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNonDistillableURL)];
   [ChromeEarlGrey waitForPageToFinishLoading];
 
@@ -473,12 +479,16 @@ void AssertIsShowingDistillablePage(bool online) {
 
   // Stop server to generate error.
   server.Stop();
+  base::test::ios::SpinRunLoopWithMinDelay(
+      base::TimeDelta::FromSecondsD(kServerOperationDelay));
   // Long press the entry, and open it offline.
   TapEntry(pageTitle);
 
   AssertIsShowingDistillablePage(false);
   // Start server to reload online error.
   server.StartOrDie();
+  base::test::ios::SpinRunLoopWithMinDelay(
+      base::TimeDelta::FromSecondsD(kServerOperationDelay));
   web::test::SetUpSimpleHttpServer(ResponsesForDistillationServer());
 
   chrome_test_util::GetCurrentWebState()->GetNavigationManager()->Reload(
