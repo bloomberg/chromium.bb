@@ -15,8 +15,8 @@ void HeadlessBrowserImpl::PlatformCreateWindow() {}
 
 void HeadlessBrowserImpl::PlatformInitializeWebContents(
     const gfx::Size& initial_size,
-    content::WebContents* web_contents) {
-  NSView* web_view = web_contents->GetNativeView();
+    HeadlessWebContentsImpl* web_contents) {
+  NSView* web_view = web_contents->web_contents()->GetNativeView();
   [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
 
   NSRect frame = NSMakeRect(0, 0, initial_size.width(), initial_size.height());
