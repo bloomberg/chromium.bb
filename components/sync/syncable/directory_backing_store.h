@@ -187,6 +187,7 @@ class DirectoryBackingStore : public base::NonThreadSafe {
   bool MigrateVersion87To88();
   bool MigrateVersion88To89();
   bool MigrateVersion89To90();
+  bool MigrateVersion90To91();
 
   // Accessor for needs_column_refresh_.  Used in tests.
   bool needs_column_refresh() const;
