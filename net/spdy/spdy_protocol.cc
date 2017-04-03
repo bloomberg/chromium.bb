@@ -124,8 +124,6 @@ const char* FrameTypeToString(SpdyFrameType frame_type) {
       return "PRIORITY";
     case SpdyFrameType::ALTSVC:
       return "ALTSVC";
-    case SpdyFrameType::BLOCKED:
-      return "BLOCKED";
     case SpdyFrameType::EXTENSION:
       return "EXTENSION (unspecified)";
   }
@@ -354,14 +352,6 @@ void SpdyWindowUpdateIR::Visit(SpdyFrameVisitor* visitor) const {
 
 SpdyFrameType SpdyWindowUpdateIR::frame_type() const {
   return SpdyFrameType::WINDOW_UPDATE;
-}
-
-void SpdyBlockedIR::Visit(SpdyFrameVisitor* visitor) const {
-  return visitor->VisitBlocked(*this);
-}
-
-SpdyFrameType SpdyBlockedIR::frame_type() const {
-  return SpdyFrameType::BLOCKED;
 }
 
 void SpdyPushPromiseIR::Visit(SpdyFrameVisitor* visitor) const {

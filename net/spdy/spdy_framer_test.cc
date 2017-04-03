@@ -2294,45 +2294,6 @@ TEST_P(SpdyFramerTest, CreateWindowUpdate) {
   }
 }
 
-TEST_P(SpdyFramerTest, SerializeBlocked) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-
-  const char kDescription[] = "BLOCKED frame";
-  const unsigned char kType = SerializeFrameType(SpdyFrameType::BLOCKED);
-  const unsigned char kFrameData[] = {
-      0x00,  0x00, 0x00,        // Length: 0
-      kType,                    //   Type: BLOCKED
-      0x00,                     //  Flags: none
-      0x00,  0x00, 0x00, 0x00,  // Stream: 0
-  };
-  SpdyBlockedIR blocked_ir(0);
-  SpdySerializedFrame frame(framer.SerializeFrame(blocked_ir));
-  if (use_output_) {
-    ASSERT_TRUE(framer.SerializeFrame(blocked_ir, &output_));
-    frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
-  }
-  CompareFrame(kDescription, frame, kFrameData, arraysize(kFrameData));
-}
-
-TEST_P(SpdyFramerTest, CreateBlocked) {
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-
-  const char kDescription[] = "BLOCKED frame";
-  const SpdyStreamId kStreamId = 3;
-
-  SpdySerializedFrame frame_serialized(
-      framer.SerializeBlocked(SpdyBlockedIR(kStreamId)));
-  if (use_output_) {
-    ASSERT_TRUE(framer.SerializeBlocked(SpdyBlockedIR(kStreamId), &output_));
-    frame_serialized =
-        SpdySerializedFrame(output_.Begin(), output_.Size(), false);
-  }
-  SpdyBlockedIR blocked_ir(kStreamId);
-  SpdySerializedFrame frame_created(framer.SerializeFrame(blocked_ir));
-
-  CompareFrames(kDescription, frame_serialized, frame_created);
-}
-
 TEST_P(SpdyFramerTest, CreatePushPromiseUncompressed) {
   {
     // Test framing PUSH_PROMISE without padding.
@@ -3732,7 +3693,6 @@ TEST_P(SpdyFramerTest, SizesTest) {
   EXPECT_EQ(17u, framer.GetGoAwayMinimumSize());
   EXPECT_EQ(9u, framer.GetHeadersMinimumSize());
   EXPECT_EQ(13u, framer.GetWindowUpdateSize());
-  EXPECT_EQ(9u, framer.GetBlockedSize());
   EXPECT_EQ(13u, framer.GetPushPromiseMinimumSize());
   EXPECT_EQ(11u, framer.GetAltSvcMinimumSize());
   EXPECT_EQ(9u, framer.GetFrameMinimumSize());
@@ -4176,8 +4136,6 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
 
 // TODO(mlavan): Add TEST_F(SpdyFramerTest, AltSvcFrameFlags)
 
-// TODO(hkhalil): Add TEST_F(SpdyFramerTest, BlockedFrameFlags)
-
 // Test handling of a RST_STREAM with out-of-bounds status codes.
 TEST_P(SpdyFramerTest, RstStreamStatusBounds) {
   const unsigned char kH2RstStreamInvalid[] = {
@@ -4257,29 +4215,6 @@ TEST_P(SpdyFramerTest, GoAwayStreamIdBounds) {
   EXPECT_CALL(visitor, OnGoAway(0x7fffffff, ERROR_CODE_NO_ERROR));
   framer.ProcessInput(reinterpret_cast<const char*>(kH2FrameData),
                       arraysize(kH2FrameData));
-  EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
-  EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.spdy_framer_error())
-      << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());
-}
-
-TEST_P(SpdyFramerTest, OnBlocked) {
-  const SpdyStreamId kStreamId = 0;
-
-  testing::StrictMock<test::MockSpdyFramerVisitor> visitor;
-  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
-  framer.set_visitor(&visitor);
-
-  EXPECT_CALL(visitor, OnBlocked(kStreamId));
-
-  SpdyBlockedIR blocked_ir(0);
-  SpdySerializedFrame frame(framer.SerializeFrame(blocked_ir));
-  if (use_output_) {
-    output_.Reset();
-    ASSERT_TRUE(framer.SerializeFrame(blocked_ir, &output_));
-    frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
-  }
-  framer.ProcessInput(frame.data(), framer.GetBlockedSize());
-
   EXPECT_EQ(SpdyFramer::SPDY_READY_FOR_FRAME, framer.state());
   EXPECT_EQ(SpdyFramer::SPDY_NO_ERROR, framer.spdy_framer_error())
       << SpdyFramer::SpdyFramerErrorToString(framer.spdy_framer_error());

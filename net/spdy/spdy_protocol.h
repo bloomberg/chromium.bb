@@ -82,9 +82,7 @@ enum class SpdyFrameType : uint8_t {
   CONTINUATION = 0x09,
   // ALTSVC is a public extension.
   ALTSVC = 0x0a,
-  // BLOCKED was never standardized, and should be deleted.
-  BLOCKED = 0x0b,
-  MAX_FRAME_TYPE = BLOCKED,
+  MAX_FRAME_TYPE = ALTSVC,
   // The specific value of EXTENSION is meaningless; it is a placeholder used
   // within SpdyFramer's state machine when handling unknown frames via an
   // extension API.
@@ -703,20 +701,6 @@ class NET_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameWithStreamIdIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyWindowUpdateIR);
 };
 
-class NET_EXPORT_PRIVATE SpdyBlockedIR
-    : public NON_EXPORTED_BASE(SpdyFrameWithStreamIdIR) {
- public:
-  explicit SpdyBlockedIR(SpdyStreamId stream_id)
-      : SpdyFrameWithStreamIdIR(stream_id) {}
-
-  void Visit(SpdyFrameVisitor* visitor) const override;
-
-  SpdyFrameType frame_type() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyBlockedIR);
-};
-
 class NET_EXPORT_PRIVATE SpdyPushPromiseIR : public SpdyFrameWithHeaderBlockIR {
  public:
   SpdyPushPromiseIR(SpdyStreamId stream_id, SpdyStreamId promised_stream_id)
@@ -923,7 +907,6 @@ class SpdyFrameVisitor {
   virtual void VisitGoAway(const SpdyGoAwayIR& goaway) = 0;
   virtual void VisitHeaders(const SpdyHeadersIR& headers) = 0;
   virtual void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) = 0;
-  virtual void VisitBlocked(const SpdyBlockedIR& blocked) = 0;
   virtual void VisitPushPromise(const SpdyPushPromiseIR& push_promise) = 0;
   virtual void VisitContinuation(const SpdyContinuationIR& continuation) = 0;
   virtual void VisitAltSvc(const SpdyAltSvcIR& altsvc) = 0;

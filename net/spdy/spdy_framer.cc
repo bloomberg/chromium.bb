@@ -280,12 +280,6 @@ size_t SpdyFramer::GetWindowUpdateSize() const {
   return GetFrameHeaderSize() + 4;
 }
 
-size_t SpdyFramer::GetBlockedSize() const {
-  // Size, in bytes, of a BLOCKED frame.
-  // The BLOCKED frame has no payload beyond the control frame header.
-  return GetFrameHeaderSize();
-}
-
 size_t SpdyFramer::GetPushPromiseMinimumSize() const {
   // Size, in bytes, of a PUSH_PROMISE frame, sans the embedded header block.
   // Calculated as frame prefix + 4 (promised stream id)
@@ -847,15 +841,6 @@ void SpdyFramer::ProcessControlFrameHeader() {
         current_frame_flags_ = 0;
       }
       break;
-    case SpdyFrameType::BLOCKED:
-      if (current_frame_length_ != GetBlockedSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ != 0) {
-        VLOG(1) << "Undefined frame flags for BLOCKED frame: " << std::hex
-                << static_cast<int>(current_frame_flags_);
-        current_frame_flags_ = 0;
-      }
-      break;
     case SpdyFrameType::PUSH_PROMISE:
       if (current_frame_length_ < GetPushPromiseMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
@@ -1363,10 +1348,6 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
         DCHECK(successful_read);
         DCHECK(reader.IsDoneReading());
         visitor_->OnWindowUpdate(current_frame_stream_id_, delta_window_size);
-      } break;
-      case SpdyFrameType::BLOCKED: {
-        DCHECK(reader.IsDoneReading());
-        visitor_->OnBlocked(current_frame_stream_id_);
       } break;
       case SpdyFrameType::PRIORITY: {
         uint32_t stream_dependency;
@@ -2029,14 +2010,6 @@ SpdySerializedFrame SpdyFramer::SerializeWindowUpdate(
   return builder.take();
 }
 
-SpdySerializedFrame SpdyFramer::SerializeBlocked(
-    const SpdyBlockedIR& blocked) const {
-  SpdyFrameBuilder builder(GetBlockedSize());
-  builder.BeginNewFrame(*this, SpdyFrameType::BLOCKED, kNoFlags,
-                        blocked.stream_id());
-  return builder.take();
-}
-
 void SpdyFramer::SerializePushPromiseBuilderHelper(
     const SpdyPushPromiseIR& push_promise,
     uint8_t* flags,
@@ -2229,9 +2202,6 @@ class FrameSerializationVisitor : public SpdyFrameVisitor {
   void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) override {
     frame_ = framer_->SerializeWindowUpdate(window_update);
   }
-  void VisitBlocked(const SpdyBlockedIR& blocked) override {
-    frame_ = framer_->SerializeBlocked(blocked);
-  }
   void VisitPushPromise(const SpdyPushPromiseIR& push_promise) override {
     frame_ = framer_->SerializePushPromise(push_promise);
   }
@@ -2299,10 +2269,6 @@ class FlagsSerializationVisitor : public SpdyFrameVisitor {
   }
 
   void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) override {
-    flags_ = kNoFlags;
-  }
-
-  void VisitBlocked(const SpdyBlockedIR& blocked) override {
     flags_ = kNoFlags;
   }
 
@@ -2545,13 +2511,6 @@ bool SpdyFramer::SerializeWindowUpdate(const SpdyWindowUpdateIR& window_update,
   return ok;
 }
 
-bool SpdyFramer::SerializeBlocked(const SpdyBlockedIR& blocked,
-                                  ZeroCopyOutputBuffer* output) const {
-  SpdyFrameBuilder builder(GetBlockedSize(), output);
-  return builder.BeginNewFrame(*this, SpdyFrameType::BLOCKED, kNoFlags,
-                               blocked.stream_id());
-}
-
 bool SpdyFramer::SerializePushPromise(const SpdyPushPromiseIR& push_promise,
                                       ZeroCopyOutputBuffer* output) {
   uint8_t flags = 0;
@@ -2680,9 +2639,6 @@ class FrameSerializationVisitorWithOutput : public SpdyFrameVisitor {
   }
   void VisitWindowUpdate(const SpdyWindowUpdateIR& window_update) override {
     result_ = framer_->SerializeWindowUpdate(window_update, output_);
-  }
-  void VisitBlocked(const SpdyBlockedIR& blocked) override {
-    result_ = framer_->SerializeBlocked(blocked, output_);
   }
   void VisitPushPromise(const SpdyPushPromiseIR& push_promise) override {
     result_ = framer_->SerializePushPromise(push_promise, output_);
