@@ -12,7 +12,6 @@
 
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "headless/lib/browser/headless_window_tree_host.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
@@ -79,13 +78,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   HeadlessBrowserImpl* browser() const;
   HeadlessBrowserContextImpl* browser_context() const;
 
-  void set_window_tree_host(std::unique_ptr<HeadlessWindowTreeHost> host) {
-    window_tree_host_ = std::move(host);
-  }
-  HeadlessWindowTreeHost* window_tree_host() const {
-    return window_tree_host_.get();
-  }
-
  private:
   // Takes ownership of |web_contents|.
   HeadlessWebContentsImpl(content::WebContents* web_contents,
@@ -97,7 +89,6 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
 
   class Delegate;
   std::unique_ptr<Delegate> web_contents_delegate_;
-  std::unique_ptr<HeadlessWindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
   std::list<MojoService> mojo_services_;

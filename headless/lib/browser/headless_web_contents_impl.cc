@@ -159,7 +159,7 @@ HeadlessWebContentsImpl::CreateFromWebContents(
 }
 
 void HeadlessWebContentsImpl::InitializeScreen(const gfx::Size& initial_size) {
-  browser()->PlatformInitializeWebContents(initial_size, this);
+  browser()->PlatformInitializeWebContents(initial_size, web_contents_.get());
 }
 
 HeadlessWebContentsImpl::HeadlessWebContentsImpl(
