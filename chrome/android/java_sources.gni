@@ -1168,7 +1168,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/PromoDialogLayout.java",
   "java/src/org/chromium/chrome/browser/widget/RadioButtonWithDescription.java",
   "java/src/org/chromium/chrome/browser/widget/RoundedIconGenerator.java",
-  "java/src/org/chromium/chrome/browser/widget/TextBubble.java",
   "java/src/org/chromium/chrome/browser/widget/TintedDrawable.java",
   "java/src/org/chromium/chrome/browser/widget/TintedImageButton.java",
   "java/src/org/chromium/chrome/browser/widget/TintedImageView.java",
@@ -1203,13 +1202,16 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/findinpage/FindToolbarPhone.java",
   "java/src/org/chromium/chrome/browser/widget/findinpage/FindToolbarTablet.java",
   "java/src/org/chromium/chrome/browser/widget/incognitotoggle/IncognitoToggleButtonTablet.java",
+  "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemHighlightView.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemView.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableItemViewHolder.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectionDelegate.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableListLayout.java",
   "java/src/org/chromium/chrome/browser/widget/selection/SelectableListToolbar.java",
-  "java/src/org/chromium/chrome/browser/widget/newtab/NewTabButton.java",
+  "java/src/org/chromium/chrome/browser/widget/textbubble/ArrowBubbleDrawable.java",
+  "java/src/org/chromium/chrome/browser/widget/textbubble/TextBubble.java",
+  "java/src/org/chromium/chrome/browser/widget/textbubble/ViewAnchoredTextBubble.java",
 ]
 
 chrome_vr_java_sources = [

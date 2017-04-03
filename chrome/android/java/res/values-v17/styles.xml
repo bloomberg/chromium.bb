@@ -286,9 +286,9 @@
     </style>
 
     <!-- Bubble styles -->
-    <style name="TabSwitcherCalloutAnimation">
-        <item name="android:windowEnterAnimation">@anim/tab_switcher_callout_in</item>
-        <item name="android:windowExitAnimation">@anim/tab_switcher_callout_out</item>
+    <style name="TextBubbleAnimation">
+        <item name="android:windowEnterAnimation">@anim/textbubble_in</item>
+        <item name="android:windowExitAnimation">@anim/textbubble_out</item>
     </style>
     <style name="FullscreenNotificationBubble" parent="@android:style/Animation.Toast">
         <item name="android:windowEnterAnimation">@anim/fullscreen_notification_in</item>

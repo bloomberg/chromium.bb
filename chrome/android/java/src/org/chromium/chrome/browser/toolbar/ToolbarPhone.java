@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.widget.newtab.NewTabButton;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -235,7 +236,7 @@ public class ToolbarPhone extends ToolbarLayout
     private LayoutUpdateHost mLayoutUpdateHost;
 
     /** Callout for the tab switcher button. */
-    private TabSwitcherCallout mTabSwitcherCallout;
+    private TextBubble mTabSwitcherCallout;
 
     /** Whether or not we've checked if the TabSwitcherCallout needs to be shown. */
     private boolean mHasCheckedIfTabSwitcherCalloutIsNecessary;
