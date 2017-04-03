@@ -30,17 +30,18 @@
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "public/web/WebSpellCheckClient.h"
-#include "public/web/WebTextCheckingResult.h"
-#include "web/WebTextCheckingCompletionImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
 
-SpellCheckerClientImpl::SpellCheckerClientImpl(WebViewImpl* webview)
-    : m_webView(webview), m_spellCheckThisFieldStatus(SpellCheckAutomatic) {}
+SpellCheckerClientImpl::SpellCheckerClientImpl(
+    WebViewImpl* webview,
+    TextCheckerClient* textCheckerClient)
+    : m_webView(webview),
+      m_textCheckerClient(textCheckerClient),
+      m_spellCheckThisFieldStatus(SpellCheckAutomatic) {}
 
 SpellCheckerClientImpl::~SpellCheckerClientImpl() {}
 
@@ -107,46 +108,6 @@ void SpellCheckerClientImpl::toggleSpellCheckingEnabled() {
       }
     }
   }
-}
-
-void SpellCheckerClientImpl::checkSpellingOfString(const String& text,
-                                                   int* misspellingLocation,
-                                                   int* misspellingLength) {
-  // SpellCheckWord will write (0, 0) into the output vars, which is what our
-  // caller expects if the word is spelled correctly.
-  int spellLocation = -1;
-  int spellLength = 0;
-
-  // Check to see if the provided text is spelled correctly.
-  if (m_webView->spellCheckClient()) {
-    m_webView->spellCheckClient()->checkSpelling(text, spellLocation,
-                                                 spellLength, nullptr);
-  } else {
-    spellLocation = 0;
-    spellLength = 0;
-  }
-
-  // Note: the Mac code checks if the pointers are null before writing to them,
-  // so we do too.
-  if (misspellingLocation)
-    *misspellingLocation = spellLocation;
-  if (misspellingLength)
-    *misspellingLength = spellLength;
-}
-
-void SpellCheckerClientImpl::requestCheckingOfString(
-    TextCheckingRequest* request) {
-  if (!m_webView->spellCheckClient())
-    return;
-  const String& text = request->data().text();
-  m_webView->spellCheckClient()->requestCheckingOfText(
-      text, new WebTextCheckingCompletionImpl(request));
-}
-
-void SpellCheckerClientImpl::cancelAllPendingRequests() {
-  if (!m_webView->spellCheckClient())
-    return;
-  m_webView->spellCheckClient()->cancelAllPendingRequests();
 }
 
 void SpellCheckerClientImpl::updateSpellingUIWithMisspelledWord(
