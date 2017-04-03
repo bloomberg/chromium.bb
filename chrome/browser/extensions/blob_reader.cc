@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -32,7 +33,11 @@ BlobReader::BlobReader(Profile* profile,
     blob_url = GURL(std::string("blob:uuid/") + blob_uuid);
   }
   DCHECK(blob_url.is_valid());
-  fetcher_ = net::URLFetcher::Create(blob_url, net::URLFetcher::GET, this);
+
+  // This network request is annotated with NO_TRAFFIC_ANNOTATION_YET as
+  // it is scheduled to be removed in (crbug.com/701851).
+  fetcher_ = net::URLFetcher::Create(blob_url, net::URLFetcher::GET, this,
+                                     NO_TRAFFIC_ANNOTATION_YET);
   fetcher_->SetRequestContext(profile->GetRequestContext());
 }
 
