@@ -1309,7 +1309,7 @@ it or fix the checkout.
       exec(gclient_utils.FileRead(filename), scope)
     except SyntaxError as e:
       gclient_utils.SyntaxErrorToError(filename, e)
-    return scope['entries']
+    return scope.get('entries', {})
 
   def _EnforceRevisions(self):
     """Checks for revision overrides."""
