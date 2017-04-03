@@ -25,12 +25,9 @@ class ScriptWrappable;
   V(customElementCreatedCallback)            \
   V(customElementDetachedCallback)           \
   V(customElementsRegistryMap)               \
-  V(event)                                   \
   V(idbCursorRequest)                        \
   V(internalBodyBuffer)                      \
   V(internalBodyStream)                      \
-  V(port1)                                   \
-  V(port2)                                   \
   V(requestInFetchEvent)                     \
   V(testInterfaces)                          \
   V(thenableHiddenPromise)                   \

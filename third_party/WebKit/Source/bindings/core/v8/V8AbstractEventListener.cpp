@@ -34,7 +34,7 @@
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/events/BeforeUnloadEvent.h"
@@ -127,16 +127,16 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState,
     v8::TryCatch tryCatch(isolate());
     tryCatch.SetVerbose(true);
 
+    v8::Local<v8::Object> global = scriptState->context()->Global();
+    V8PrivateProperty::Symbol eventSymbol =
+        V8PrivateProperty::getGlobalEvent(isolate());
     // Save the old 'event' property so we can restore it later.
-    v8::Local<v8::Value> savedEvent = V8HiddenValue::getHiddenValue(
-        scriptState, scriptState->context()->Global(),
-        V8HiddenValue::event(isolate()));
+    v8::Local<v8::Value> savedEvent = eventSymbol.getOrUndefined(global);
     tryCatch.Reset();
 
     // Make the event available in the global object, so LocalDOMWindow can
     // expose it.
-    V8HiddenValue::setHiddenValue(scriptState, scriptState->context()->Global(),
-                                  V8HiddenValue::event(isolate()), jsEvent);
+    eventSymbol.set(global, jsEvent);
     tryCatch.Reset();
 
     returnValue = callListenerFunction(scriptState, jsEvent, event);
@@ -154,14 +154,7 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState,
 
     // Restore the old event. This must be done for all exit paths through this
     // method.
-    if (savedEvent.IsEmpty())
-      V8HiddenValue::setHiddenValue(
-          scriptState, scriptState->context()->Global(),
-          V8HiddenValue::event(isolate()), v8::Undefined(isolate()));
-    else
-      V8HiddenValue::setHiddenValue(
-          scriptState, scriptState->context()->Global(),
-          V8HiddenValue::event(isolate()), savedEvent);
+    eventSymbol.set(global, savedEvent);
     tryCatch.Reset();
   }
 

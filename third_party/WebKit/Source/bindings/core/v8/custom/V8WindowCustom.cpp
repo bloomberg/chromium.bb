@@ -43,6 +43,7 @@
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/Deprecation.h"
@@ -119,26 +120,16 @@ void V8Window::locationAttributeGetterCustom(
 void V8Window::eventAttributeGetterCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
-  ExceptionState exceptionState(
-      info.GetIsolate(), ExceptionState::GetterContext, "Window", "event");
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
-                                            impl, exceptionState)) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ExceptionState exceptionState(isolate, ExceptionState::GetterContext,
+                                "Window", "event");
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(isolate), impl,
+                                            exceptionState)) {
     return;
   }
 
-  LocalFrame* frame = impl->frame();
-  ASSERT(frame);
-  // This is a fast path to retrieve info.Holder()->CreationContext().
-  v8::Local<v8::Context> context =
-      toV8Context(frame, DOMWrapperWorld::current(info.GetIsolate()));
-  if (context.IsEmpty())
-    return;
-
-  v8::Local<v8::Value> jsEvent = V8HiddenValue::getHiddenValue(
-      ScriptState::current(info.GetIsolate()), context->Global(),
-      V8HiddenValue::event(info.GetIsolate()));
-  if (jsEvent.IsEmpty())
-    return;
+  v8::Local<v8::Value> jsEvent =
+      V8PrivateProperty::getGlobalEvent(isolate).getOrUndefined(info.Holder());
   v8SetReturnValue(info, jsEvent);
 }
 
@@ -146,24 +137,15 @@ void V8Window::eventAttributeSetterCustom(
     v8::Local<v8::Value> value,
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
-  ExceptionState exceptionState(
-      info.GetIsolate(), ExceptionState::SetterContext, "Window", "event");
-  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(info.GetIsolate()),
-                                            impl, exceptionState)) {
+  v8::Isolate* isolate = info.GetIsolate();
+  ExceptionState exceptionState(isolate, ExceptionState::SetterContext,
+                                "Window", "event");
+  if (!BindingSecurity::shouldAllowAccessTo(currentDOMWindow(isolate), impl,
+                                            exceptionState)) {
     return;
   }
 
-  LocalFrame* frame = impl->frame();
-  ASSERT(frame);
-  // This is a fast path to retrieve info.Holder()->CreationContext().
-  v8::Local<v8::Context> context =
-      toV8Context(frame, DOMWrapperWorld::current(info.GetIsolate()));
-  if (context.IsEmpty())
-    return;
-
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()),
-                                context->Global(),
-                                V8HiddenValue::event(info.GetIsolate()), value);
+  V8PrivateProperty::getGlobalEvent(isolate).set(info.Holder(), value);
 }
 
 void V8Window::frameElementAttributeGetterCustom(
