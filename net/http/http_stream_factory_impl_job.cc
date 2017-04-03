@@ -528,10 +528,6 @@ void HttpStreamFactoryImpl::Job::OnHttpsProxyTunnelResponseCallback(
 void HttpStreamFactoryImpl::Job::OnPreconnectsComplete() {
   DCHECK(!new_spdy_session_);
 
-  if (new_spdy_session_.get()) {
-    delegate_->OnNewSpdySessionReady(this, new_spdy_session_,
-                                     spdy_session_direct_);
-  }
   delegate_->OnPreconnectsComplete(this);
   // |this| may be deleted after this call.
 }
