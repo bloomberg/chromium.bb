@@ -89,11 +89,6 @@ APP_LIST_EXPORT extern const char kSearchResultOpenDisplayTypeHistogram[];
 APP_LIST_EXPORT extern const char kSearchQueryLength[];
 APP_LIST_EXPORT extern const char kSearchResultDistanceFromOrigin[];
 
-#if defined(OS_LINUX)
-// The WM_CLASS name for the app launcher window on Linux.
-APP_LIST_EXPORT extern const char kAppListWMClass[];
-#endif
-
 // Returns the shadow values for a view at |z_height|.
 APP_LIST_EXPORT gfx::ShadowValue GetShadowForZHeight(int z_height);
 

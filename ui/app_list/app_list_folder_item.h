@@ -69,7 +69,6 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   ui::MenuModel* GetContextMenuModel() override;
   AppListItem* FindChildItem(const std::string& id) override;
   size_t ChildItemCount() const override;
-  void OnExtensionPreferenceChanged() override;
   bool CompareForTest(const AppListItem* other) const override;
 
   // Returns an id for a new folder.

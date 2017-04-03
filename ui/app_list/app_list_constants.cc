@@ -14,13 +14,7 @@ const SkColor kSearchBoxBackground = SK_ColorWHITE;
 
 const SkColor kSearchTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 
-// In Windows, transparent background color will cause ugly text rendering,
-// therefore kContentsBackgroundColor should be used. See crbug.com/406989
-#if defined(OS_CHROMEOS)
 const SkColor kLabelBackgroundColor = SK_ColorTRANSPARENT;
-#else
-const SkColor kLabelBackgroundColor = kContentsBackgroundColor;
-#endif
 
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
 const SkColor kBottomSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
@@ -139,14 +133,6 @@ const char kSearchQueryLength[] = "Apps.AppListSearchQueryLength";
 // search results to the selected result.
 const char kSearchResultDistanceFromOrigin[] =
     "Apps.AppListSearchResultDistanceFromOrigin";
-
-#if defined(OS_LINUX)
-#if defined(GOOGLE_CHROME_BUILD)
-const char kAppListWMClass[] = "chrome_app_list";
-#else  // CHROMIUM_BUILD
-const char kAppListWMClass[] = "chromium_app_list";
-#endif
-#endif
 
 gfx::ShadowValue GetShadowForZHeight(int z_height) {
   if (z_height <= 0)

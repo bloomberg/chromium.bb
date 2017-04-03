@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -22,7 +21,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -47,20 +45,6 @@ void ExtensionAppModelBuilder::InitializePrefChangeRegistrars() {
       prefs::kHideWebStoreIcon,
       base::Bind(&ExtensionAppModelBuilder::OnProfilePreferenceChanged,
                  base::Unretained(this)));
-
-  if (!extensions::util::IsNewBookmarkAppsEnabled())
-    return;
-
-  // TODO(calamity): analyze the performance impact of doing this every
-  // extension pref change.
-  extensions::ExtensionsBrowserClient* client =
-      extensions::ExtensionsBrowserClient::Get();
-  extension_pref_change_registrar_.Init(
-      client->GetPrefServiceForContext(profile()));
-  extension_pref_change_registrar_.Add(
-    extensions::pref_names::kExtensions,
-    base::Bind(&ExtensionAppModelBuilder::OnExtensionPreferenceChanged,
-               base::Unretained(this)));
 }
 
 void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
@@ -85,10 +69,6 @@ void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
       RemoveApp((*app)->id(), false);
     }
   }
-}
-
-void ExtensionAppModelBuilder::OnExtensionPreferenceChanged() {
-  model()->NotifyExtensionPreferenceChanged();
 }
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(

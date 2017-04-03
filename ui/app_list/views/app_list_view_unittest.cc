@@ -104,9 +104,6 @@ class AppListViewTestContext {
   // Tests switching rapidly between multiple pages of the launcher.
   void RunPageSwitchingAnimationTest();
 
-  // Tests changing the App List profile.
-  void RunProfileChangeTest();
-
   // Tests displaying of the search results.
   void RunSearchResultsTest();
 
@@ -461,46 +458,6 @@ void AppListViewTestContext::RunPageSwitchingAnimationTest() {
   Close();
 }
 
-void AppListViewTestContext::RunProfileChangeTest() {
-  EXPECT_FALSE(view_->GetWidget()->IsVisible());
-  EXPECT_EQ(-1, GetPaginationModel()->total_pages());
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
-
-  Show();
-
-  EXPECT_EQ(2, GetPaginationModel()->total_pages());
-
-  // Change the profile. The original model needs to be kept alive for
-  // observers to unregister themselves.
-  std::unique_ptr<AppListTestModel> original_test_model(
-      delegate_->ReleaseTestModel());
-  delegate_->set_next_profile_app_count(1);
-
-  // The original ContentsView is destroyed here.
-  view_->SetProfileByPath(base::FilePath());
-  EXPECT_EQ(1, GetPaginationModel()->total_pages());
-
-  StartPageView* start_page_view =
-      view_->app_list_main_view()->contents_view()->start_page_view();
-  EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
-
-  // New model updates should be processed by the start page view.
-  delegate_->GetTestModel()->results()->Add(
-      base::MakeUnique<TestStartPageSearchResult>());
-  start_page_view->UpdateForTesting();
-  EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
-
-  // Old model updates should be ignored.
-  original_test_model->results()->Add(
-      base::MakeUnique<TestStartPageSearchResult>());
-  original_test_model->results()->Add(
-      base::MakeUnique<TestStartPageSearchResult>());
-  start_page_view->UpdateForTesting();
-  EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
-
-  Close();
-}
-
 void AppListViewTestContext::RunSearchResultsTest() {
   EXPECT_FALSE(view_->GetWidget()->IsVisible());
   EXPECT_EQ(-1, GetPaginationModel()->total_pages());
@@ -595,10 +552,7 @@ class AppListViewTestAura : public views::ViewsTestBase {
     // window as the parent. This only works on aura where the root window is a
     // NativeView as well as a NativeWindow.
     gfx::NativeView container = NULL;
-#if defined(USE_AURA)
     container = GetContext();
-#endif
-
     test_context_.reset(new AppListViewTestContext(container));
   }
 
@@ -638,9 +592,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase {
   class AppListViewTestViewsDelegate : public views::TestViewsDelegate {
    public:
     explicit AppListViewTestViewsDelegate(AppListViewTestDesktop* parent)
-#if defined(OS_CHROMEOS)
         : parent_(parent)
-#endif
     {
     }
 
@@ -650,9 +602,7 @@ class AppListViewTestDesktop : public views::ViewsTestBase {
         views::internal::NativeWidgetDelegate* delegate) override;
 
    private:
-#if defined(OS_CHROMEOS)
     AppListViewTestDesktop* parent_;
-#endif
 
     DISALLOW_COPY_AND_ASSIGN(AppListViewTestViewsDelegate);
   };
@@ -667,13 +617,8 @@ void AppListViewTestDesktop::AppListViewTestViewsDelegate::OnBeforeWidgetInit(
 // ChromeOS, use the root window from the AuraTestHelper rather than depending
 // on ash::Shell:GetPrimaryRootWindow(). Also assume non-ChromeOS is never the
 // Ash desktop, as that is covered by AppListViewTestAura.
-#if defined(OS_CHROMEOS)
   if (!params->parent && !params->context)
     params->context = parent_->GetContext();
-#elif defined(USE_AURA)
-  if (params->parent == NULL && params->context == NULL && !params->child)
-    params->native_widget = new views::DesktopNativeWidgetAura(delegate);
-#endif
 }
 
 }  // namespace
@@ -715,15 +660,6 @@ TEST_F(AppListViewTestAura, PageSwitchingAnimationTest) {
 
 TEST_F(AppListViewTestDesktop, PageSwitchingAnimationTest) {
   EXPECT_NO_FATAL_FAILURE(test_context_->RunPageSwitchingAnimationTest());
-}
-
-// Tests that the profile changes operate correctly.
-TEST_F(AppListViewTestAura, ProfileChangeTest) {
-  EXPECT_NO_FATAL_FAILURE(test_context_->RunProfileChangeTest());
-}
-
-TEST_F(AppListViewTestDesktop, ProfileChangeTest) {
-  EXPECT_NO_FATAL_FAILURE(test_context_->RunProfileChangeTest());
 }
 
 // Tests that the correct views are displayed for showing search results.

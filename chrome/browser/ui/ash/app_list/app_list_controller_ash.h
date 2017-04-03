@@ -30,9 +30,6 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
   Pinnable GetPinnable(const std::string& app_id) override;
   void OnShowChildDialog() override;
   void OnCloseChildDialog() override;
-  bool CanDoCreateShortcutsFlow() override;
-  void DoCreateShortcutsFlow(Profile* profile,
-                             const std::string& extension_id) override;
   void CreateNewWindow(Profile* profile, bool incognito) override;
   void OpenURL(Profile* profile,
                const GURL& url,
@@ -46,8 +43,6 @@ class AppListControllerDelegateAsh : public AppListControllerDelegate {
                  const extensions::Extension* extension,
                  AppListSource source,
                  int event_flags) override;
-  void ShowForProfileByPath(const base::FilePath& profile_path) override;
-  bool ShouldShowUserIcon() override;
 
  private:
   ash::ShelfLaunchSource AppListSourceToLaunchSource(AppListSource source);

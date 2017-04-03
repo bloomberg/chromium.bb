@@ -47,8 +47,7 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Reload the title and icon from the underlying extension.
   void Reload();
 
-  // Updates the app item's icon, if necessary adding an overlay and/or making
-  // it gray.
+  // Updates the app item's icon, if necessary making it gray.
   void UpdateIcon();
 
   // Update page and app launcher ordinals to put the app in between |prev| and
@@ -75,9 +74,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Private equivalent to Activate(), without refocus for already-running apps.
   void Launch(int event_flags);
 
-  // Whether or not the app item needs an overlay.
-  bool NeedsOverlay() const;
-
   // Overridden from extensions::IconImage::Observer:
   void OnExtensionIconImageChanged(extensions::IconImage* image) override;
   void OnExtensionIconImageDestroyed(extensions::IconImage* image) override;
@@ -89,8 +85,6 @@ class ExtensionAppItem : public ChromeAppListItem,
   // Overridden from AppListItem:
   void Activate(int event_flags) override;
   ui::MenuModel* GetContextMenuModel() override;
-  // Updates the icon if the overlay needs to be added/removed.
-  void OnExtensionPreferenceChanged() override;
   const char* GetItemType() const override;
 
   // Overridden from app_list::AppContextMenuDelegate:
@@ -109,9 +103,6 @@ class ExtensionAppItem : public ChromeAppListItem,
 
   // Whether or not this app is a platform app.
   bool is_platform_app_;
-
-  // Whether this app item has an overlay.
-  bool has_overlay_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppItem);
 };

@@ -77,13 +77,10 @@ class FakeProfile : public Profile {
   base::Time GetStartTime() const override;
   base::FilePath last_selected_directory() override;
   void set_last_selected_directory(const base::FilePath& path) override;
-
-#if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale,
                        AppLocaleChangedVia via) override;
   void OnLogin() override;
   void InitChromeOSPreferences() override;
-#endif  // defined(OS_CHROMEOS)
 
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
   chrome_browser_net::Predictor* GetNetworkPredictor() override;

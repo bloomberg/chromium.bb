@@ -116,11 +116,9 @@ class StartPageService : public KeyedService,
   // getUserMedia() request from the web contents.
   class StartPageWebContentsDelegate;
 
-#if defined(OS_CHROMEOS)
   // This class observes the change of audio input device availability and
   // checks if currently the system has valid audio input.
   class AudioStatus;
-#endif
 
   // This class observes network change events and disables/enables voice search
   // based on network connectivity.
@@ -175,9 +173,7 @@ class StartPageService : public KeyedService,
 
   bool network_available_;
   bool microphone_available_;
-#if defined(OS_CHROMEOS)
   std::unique_ptr<AudioStatus> audio_status_;
-#endif
   std::unique_ptr<NetworkChangeObserver> network_change_observer_;
 
   bool search_engine_is_google_;

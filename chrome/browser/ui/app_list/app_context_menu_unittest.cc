@@ -9,25 +9,21 @@
 #include <vector>
 
 #include "base/macros.h"
-
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_context_menu.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/arc/test/fake_app_instance.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "components/arc/test/fake_app_instance.h"
-#endif
 
 namespace {
 
@@ -64,10 +60,6 @@ class FakeAppListControllerDelegate :
     return open_apps_.count(app_id) != 0;
   }
 
-  void SetCanCreateShortcuts(bool can_create_shortcuts) {
-    can_create_shortcuts_ = can_create_shortcuts;
-  }
-
   void SetCanShowAppInfo(bool can_show_app_info) {
     can_show_app_info_ = can_show_app_info;
   }
@@ -80,13 +72,11 @@ class FakeAppListControllerDelegate :
       return NO_PIN;
     return it->second;
   }
-  bool CanDoCreateShortcutsFlow() override { return can_create_shortcuts_; }
   bool CanDoShowAppInfoFlow() override { return can_show_app_info_; }
 
  private:
   std::map<std::string, Pinnable> pinnable_apps_;
   std::unordered_set<std::string> open_apps_;
-  bool can_create_shortcuts_ = false;
   bool can_show_app_info_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAppListControllerDelegate);
@@ -190,13 +180,11 @@ class AppContextMenuTest : public AppListTestBase {
 
   void TestExtensionApp(const std::string& app_id,
                         bool platform_app,
-                        bool can_create_shortcuts,
                         bool can_show_app_info,
                         AppListControllerDelegate::Pinnable pinnable,
                         extensions::LaunchType launch_type) {
     controller_.reset(new FakeAppListControllerDelegate());
     controller_->SetAppPinnable(app_id, pinnable);
-    controller_->SetCanCreateShortcuts(can_create_shortcuts);
     controller_->SetCanShowAppInfo(can_show_app_info);
     controller_->SetExtensionLaunchType(profile(), app_id, launch_type);
     app_list::ExtensionAppContextMenu menu(menu_delegate(),
@@ -217,8 +205,6 @@ class AppContextMenuTest : public AppListTestBase {
           pinnable != AppListControllerDelegate::PIN_FIXED,
           false));
     }
-    if (can_create_shortcuts)
-      states.push_back(MenuState(app_list::AppContextMenu::CREATE_SHORTCUTS));
     AddSeparator(&states);
 
     if (!platform_app) {
@@ -261,10 +247,8 @@ class AppContextMenuTest : public AppListTestBase {
     ValidateMenuState(menu_model, states);
   }
 
-  void TestChromeApp(bool can_create_shortcuts,
-                     bool can_show_app_info) {
+  void TestChromeApp(bool can_show_app_info) {
     controller_.reset(new FakeAppListControllerDelegate());
-    controller_->SetCanCreateShortcuts(can_create_shortcuts);
     controller_->SetCanShowAppInfo(can_show_app_info);
     app_list::ExtensionAppContextMenu menu(menu_delegate(),
                                            profile(),
@@ -304,23 +288,20 @@ TEST_F(AppContextMenuTest, ExtensionApp) {
         pinnable <= AppListControllerDelegate::PIN_FIXED;
         pinnable =
             static_cast<AppListControllerDelegate::Pinnable>(pinnable+1)) {
-      for (size_t combinations = 0; combinations < (1 << 3); ++combinations) {
+      for (size_t combinations = 0; combinations < (1 << 2); ++combinations) {
         TestExtensionApp(AppListTestBase::kHostedAppId,
                          (combinations & (1 << 0)) != 0,
                          (combinations & (1 << 1)) != 0,
-                         (combinations & (1 << 2)) != 0,
                          pinnable,
                          launch_type);
         TestExtensionApp(AppListTestBase::kPackagedApp1Id,
                          (combinations & (1 << 0)) != 0,
                          (combinations & (1 << 1)) != 0,
-                         (combinations & (1 << 2)) != 0,
                          pinnable,
                          launch_type);
         TestExtensionApp(AppListTestBase::kPackagedApp2Id,
                          (combinations & (1 << 0)) != 0,
                          (combinations & (1 << 1)) != 0,
-                         (combinations & (1 << 2)) != 0,
                          pinnable,
                          launch_type);
       }
@@ -331,10 +312,8 @@ TEST_F(AppContextMenuTest, ExtensionApp) {
 TEST_F(AppContextMenuTest, ChromeApp) {
   app_list::ExtensionAppContextMenu::DisableInstalledExtensionCheckForTesting(
       true);
-  for (size_t combinations = 0; combinations < (1 << 2); ++combinations) {
-    TestChromeApp((combinations & (1 << 0)) != 0,
-                  (combinations & (1 << 1)) != 0);
-  }
+  for (bool can_show_app_info : {true, false})
+    TestChromeApp(can_show_app_info);
 }
 
 TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
@@ -348,7 +327,6 @@ TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
   EXPECT_EQ(nullptr, menu_model);
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(AppContextMenuTest, ArcMenu) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
@@ -492,5 +470,3 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
         menu, 4, MenuState(app_list::AppContextMenu::SHOW_APP_INFO));
   }
 }
-
-#endif

@@ -8,24 +8,16 @@
 
 #include <vector>
 
-#include "base/callback.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/metrics/user_metrics.h"
 #include "base/profiler/scoped_tracker.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/custom_launcher_page_contents.h"
@@ -34,21 +26,13 @@
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/page_navigator.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -64,39 +48,12 @@
 #include "ui/app_list/search_controller.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/webview/webview.h"
-
-#if defined(USE_AURA)
 #include "ui/keyboard/keyboard_util.h"
-#endif
-
-#if defined(USE_ASH)
-#include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
-#endif
-
-namespace chrome {
-const char kAppLauncherCategoryTag[] = "AppLauncher";
-}  // namespace chrome
+#include "ui/views/controls/webview/webview.h"
 
 namespace {
 
 const int kAutoLaunchDefaultTimeoutMilliSec = 50;
-
-void PopulateUsers(const base::FilePath& active_profile_path,
-                   app_list::AppListViewDelegate::Users* users) {
-  users->clear();
-  std::vector<ProfileAttributesEntry*> entries = g_browser_process->
-      profile_manager()->GetProfileAttributesStorage().
-      GetAllProfilesAttributesSortedByName();
-  for (const auto* entry : entries) {
-    app_list::AppListViewDelegate::User user;
-    user.name = entry->GetName();
-    user.email = entry->GetUserName();
-    user.profile_path = entry->GetPath();
-    user.active = active_profile_path == user.profile_path;
-    users->push_back(user);
-  }
-}
 
 // Gets a list of URLs of the custom launcher pages to show in the launcher.
 // Returns a URL for each installed launcher page. If --custom-launcher-page is
@@ -151,30 +108,8 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
       profile_(NULL),
       model_(NULL),
       is_voice_query_(false),
-      template_url_service_observer_(this),
-      scoped_observer_(this) {
+      template_url_service_observer_(this) {
   CHECK(controller_);
-  // The SigninManagerFactor and the SigninManagers are observed to keep the
-  // profile switcher menu up to date, with the correct list of profiles and the
-  // correct email address (or none for signed out users) for each.
-  SigninManagerFactory::GetInstance()->AddObserver(this);
-
-  // Start observing all already-created SigninManagers.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
-
-  for (std::vector<Profile*>::iterator i = profiles.begin();
-       i != profiles.end();
-       ++i) {
-    SigninManagerBase* manager =
-        SigninManagerFactory::GetForProfileIfExists(*i);
-    if (manager) {
-      DCHECK(!scoped_observer_.IsObserving(manager));
-      scoped_observer_.Add(manager);
-    }
-  }
-
-  profile_manager->GetProfileAttributesStorage().AddObserver(this);
   speech_ui_.reset(new app_list::SpeechUIModel);
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -196,16 +131,10 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
-  // Note that the destructor is not always called. E.g. on Mac, this is owned
-  // by a leaky singleton. Essential shutdown work must be done by observing
-  // chrome::NOTIFICATION_APP_TERMINATING.
-  SetProfile(NULL);
-  g_browser_process->profile_manager()->GetProfileAttributesStorage().
-      RemoveObserver(this);
-
-  SigninManagerFactory* factory = SigninManagerFactory::GetInstance();
-  if (factory)
-    factory->RemoveObserver(this);
+  // The destructor might not be called since the delegate is owned by a leaky
+  // singleton. This matches the shutdown work done in Observe() in response to
+  // chrome::NOTIFICATION_APP_TERMINATING, which may happen before this.
+  SetProfile(nullptr);
 }
 
 void AppListViewDelegate::SetProfile(Profile* new_profile) {
@@ -223,9 +152,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
         app_list::StartPageService::Get(profile_);
     if (start_page_service)
       start_page_service->RemoveObserver(this);
-#if defined(USE_ASH)
     app_sync_ui_state_watcher_.reset();
-#endif
     model_ = NULL;
   }
 
@@ -257,13 +184,10 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
                  ->GetModel();
 
-#if defined(USE_ASH)
     app_sync_ui_state_watcher_.reset(
         new AppSyncUIStateWatcher(profile_, model_));
-#endif
 
     SetUpSearchUI();
-    SetUpProfileSwitcher();
     SetUpCustomLauncherPages();
     OnTemplateURLServiceChanged();
   }
@@ -289,21 +213,6 @@ void AppListViewDelegate::SetUpSearchUI() {
       speech_ui_.get()));
 
   search_controller_ = CreateSearchController(profile_, model_, controller_);
-}
-
-void AppListViewDelegate::SetUpProfileSwitcher() {
-  // If a profile change is observed when there is no app list, there is nothing
-  // to update until SetProfile() calls this function again.
-  if (!profile_)
-    return;
-
-#if defined(USE_ASH)
-  // Don't populate the app list users if we are on the ash desktop.
-  return;
-#endif  // USE_ASH
-
-  // Populate the app list users.
-  PopulateUsers(profile_->GetPath(), &users_);
 }
 
 void AppListViewDelegate::SetUpCustomLauncherPages() {
@@ -350,58 +259,6 @@ void AppListViewDelegate::OnHotwordRecognized(
   DCHECK_EQ(app_list::SPEECH_RECOGNITION_HOTWORD_LISTENING,
             speech_ui_->state());
   StartSpeechRecognitionForHotword(preamble);
-}
-
-void AppListViewDelegate::SigninManagerCreated(SigninManagerBase* manager) {
-  scoped_observer_.Add(manager);
-}
-
-void AppListViewDelegate::SigninManagerShutdown(SigninManagerBase* manager) {
-  if (scoped_observer_.IsObserving(manager))
-    scoped_observer_.Remove(manager);
-}
-
-void AppListViewDelegate::GoogleSigninFailed(
-    const GoogleServiceAuthError& error) {
-  SetUpProfileSwitcher();
-}
-
-void AppListViewDelegate::GoogleSigninSucceeded(const std::string& account_id,
-                                                const std::string& username,
-                                                const std::string& password) {
-  SetUpProfileSwitcher();
-}
-
-void AppListViewDelegate::GoogleSignedOut(const std::string& account_id,
-                                          const std::string& username) {
-  SetUpProfileSwitcher();
-}
-
-void AppListViewDelegate::OnProfileAdded(const base::FilePath& profile_path) {
-  SetUpProfileSwitcher();
-}
-
-void AppListViewDelegate::OnProfileWasRemoved(
-    const base::FilePath& profile_path,
-    const base::string16& profile_name) {
-  SetUpProfileSwitcher();
-}
-
-void AppListViewDelegate::OnProfileNameChanged(
-    const base::FilePath& profile_path,
-    const base::string16& old_profile_name) {
-  SetUpProfileSwitcher();
-}
-
-bool AppListViewDelegate::ForceNativeDesktop() const {
-  return controller_->ForceNativeDesktop();
-}
-
-void AppListViewDelegate::SetProfileByPath(const base::FilePath& profile_path) {
-  DCHECK(model_);
-  // The profile must be loaded before this is called.
-  SetProfile(
-      g_browser_process->profile_manager()->GetProfileByPath(profile_path));
 }
 
 app_list::AppListModel* AppListViewDelegate::GetModel() {
@@ -506,21 +363,6 @@ void AppListViewDelegate::ViewClosing() {
   }
 }
 
-void AppListViewDelegate::OpenHelp() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
-  content::OpenURLParams params(GURL(chrome::kAppLauncherHelpURL),
-                                content::Referrer(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_LINK, false);
-  displayer.browser()->OpenURL(params);
-}
-
-void AppListViewDelegate::OpenFeedback() {
-  Browser* browser = chrome::FindTabbedBrowser(profile_, false);
-  chrome::ShowFeedbackPage(browser, std::string(),
-                           chrome::kAppLauncherCategoryTag);
-}
-
 void AppListViewDelegate::StartSpeechRecognition() {
   StartSpeechRecognitionForHotword(nullptr);
 }
@@ -565,11 +407,6 @@ void AppListViewDelegate::StartSpeechRecognitionForHotword(
   }
 }
 
-void AppListViewDelegate::ShowForProfileByPath(
-    const base::FilePath& profile_path) {
-  controller_->ShowForProfileByPath(profile_path);
-}
-
 void AppListViewDelegate::OnSpeechResult(const base::string16& result,
                                          bool is_final) {
   speech_ui_->SetSpeechResult(result, is_final);
@@ -605,7 +442,6 @@ void AppListViewDelegate::OnSpeechRecognitionStateChanged(
   }
 }
 
-#if defined(TOOLKIT_VIEWS)
 views::View* AppListViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
   app_list::StartPageService* service =
@@ -665,17 +501,11 @@ void AppListViewDelegate::CustomLauncherPagePopSubpage() {
   if (launcher_page_event_dispatcher_)
     launcher_page_event_dispatcher_->PopSubpage();
 }
-#endif
 
 bool AppListViewDelegate::IsSpeechRecognitionEnabled() {
   app_list::StartPageService* service =
       app_list::StartPageService::Get(profile_);
   return service && service->GetSpeechRecognitionContents();
-}
-
-const app_list::AppListViewDelegate::Users&
-AppListViewDelegate::GetUsers() const {
-  return users_;
 }
 
 void AppListViewDelegate::OnTemplateURLServiceChanged() {
@@ -702,9 +532,4 @@ void AppListViewDelegate::Observe(int type,
   DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
 
   SetProfile(nullptr);  // Ensures launcher page web contents are torn down.
-
-  // SigninManagerFactory is not a leaky singleton (unlike this class), and
-  // its destructor will check that it has no remaining observers.
-  scoped_observer_.RemoveAll();
-  SigninManagerFactory::GetInstance()->RemoveObserver(this);
 }

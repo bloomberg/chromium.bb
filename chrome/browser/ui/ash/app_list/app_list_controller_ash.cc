@@ -74,16 +74,6 @@ void AppListControllerDelegateAsh::OnCloseChildDialog() {
     app_list_view->SetAppListOverlayVisible(false);
 }
 
-bool AppListControllerDelegateAsh::CanDoCreateShortcutsFlow() {
-  return false;
-}
-
-void AppListControllerDelegateAsh::DoCreateShortcutsFlow(
-    Profile* profile,
-    const std::string& extension_id) {
-  NOTREACHED();
-}
-
 void AppListControllerDelegateAsh::CreateNewWindow(Profile* profile,
                                                    bool incognito) {
   if (incognito)
@@ -130,16 +120,6 @@ void AppListControllerDelegateAsh::LaunchApp(
       ash::AppLaunchId(extension->id()), AppListSourceToLaunchSource(source),
       event_flags);
   DismissView();
-}
-
-void AppListControllerDelegateAsh::ShowForProfileByPath(
-    const base::FilePath& profile_path) {
-  // Ash doesn't have profile switching.
-  NOTREACHED();
-}
-
-bool AppListControllerDelegateAsh::ShouldShowUserIcon() {
-  return false;
 }
 
 ash::ShelfLaunchSource

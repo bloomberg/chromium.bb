@@ -60,10 +60,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/app_list/app_list_switches.h"
-
-#if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
-#endif
 
 using base::RecordAction;
 using base::UserMetricsAction;
@@ -210,7 +207,6 @@ class StartPageService::StartPageWebContentsDelegate
   DISALLOW_COPY_AND_ASSIGN(StartPageWebContentsDelegate);
 };
 
-#if defined(OS_CHROMEOS)
 
 class StartPageService::AudioStatus
     : public chromeos::CrasAudioHandler::AudioObserver {
@@ -248,8 +244,6 @@ class StartPageService::AudioStatus
 
   DISALLOW_COPY_AND_ASSIGN(AudioStatus);
 };
-
-#endif  // OS_CHROMEOS
 
 class StartPageService::NetworkChangeObserver
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
@@ -389,9 +383,7 @@ void StartPageService::AppListShown() {
         "appList.startPage.onAppListShown");
   }
 
-#if defined(OS_CHROMEOS)
   audio_status_.reset(new AudioStatus(this));
-#endif
 }
 
 void StartPageService::AppListHidden() {
@@ -399,9 +391,7 @@ void StartPageService::AppListHidden() {
     StopSpeechRecognition();
   }
 
-#if defined(OS_CHROMEOS)
   audio_status_.reset();
-#endif
 }
 
 void StartPageService::StartSpeechRecognition(
@@ -411,10 +401,8 @@ void StartPageService::StartSpeechRecognition(
 
   if (!speech_recognizer_) {
     std::string profile_locale;
-#if defined(OS_CHROMEOS)
     profile_locale = profile_->GetPrefs()->GetString(
         prefs::kApplicationLocale);
-#endif
     if (profile_locale.empty())
       profile_locale = g_browser_process->GetApplicationLocale();
 
@@ -439,17 +427,11 @@ void StartPageService::StopSpeechRecognition() {
 }
 
 bool StartPageService::HotwordEnabled() {
-// Voice input for the launcher is unsupported on non-ChromeOS platforms.
-// TODO(amistry): Make speech input, and hotwording, work on non-ChromeOS.
-#if defined(OS_CHROMEOS)
   HotwordService* service = HotwordServiceFactory::GetForProfile(profile_);
   return state_ != SPEECH_RECOGNITION_OFF &&
       service &&
       (service->IsSometimesOnEnabled() || service->IsAlwaysOnEnabled()) &&
       service->IsServiceAvailable();
-#else
-  return false;
-#endif
 }
 
 content::WebContents* StartPageService::GetStartPageContents() {
@@ -482,11 +464,9 @@ void StartPageService::OnSpeechSoundLevelChanged(int16_t level) {
 
 void StartPageService::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-#if defined(OS_CHROMEOS)
   // Sometimes this can be called even though there are no audio input devices.
   if (audio_status_ && !audio_status_->CanListen())
     new_state = SPEECH_RECOGNITION_OFF;
-#endif
   if (!microphone_available_)
     new_state = SPEECH_RECOGNITION_OFF;
   if (!network_available_)
@@ -534,10 +514,7 @@ void StartPageService::GetSpeechAuthParameters(std::string* auth_scope,
 
 void StartPageService::Shutdown() {
   UnloadContents();
-#if defined(OS_CHROMEOS)
   audio_status_.reset();
-#endif
-
   speech_auth_helper_.reset();
   network_change_observer_.reset();
 }

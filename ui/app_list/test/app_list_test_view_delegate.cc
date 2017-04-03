@@ -34,15 +34,6 @@ int AppListTestViewDelegate::GetStopSpeechRecognitionCountAndReset() {
   return count;
 }
 
-bool AppListTestViewDelegate::ForceNativeDesktop() const {
-  return false;
-}
-
-void AppListTestViewDelegate::SetProfileByPath(
-    const base::FilePath& profile_path) {
-  ReplaceTestModel(next_profile_app_count_);
-}
-
 AppListModel* AppListTestViewDelegate::GetModel() {
   return model_.get();
 }
@@ -80,7 +71,6 @@ void AppListTestViewDelegate::StopSpeechRecognition() {
   ++stop_speech_recognition_count_;
 }
 
-#if defined(TOOLKIT_VIEWS)
 views::View* AppListTestViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
   return NULL;
@@ -89,14 +79,9 @@ std::vector<views::View*> AppListTestViewDelegate::CreateCustomPageWebViews(
     const gfx::Size& size) {
   return std::vector<views::View*>();
 }
-#endif
 
 bool AppListTestViewDelegate::IsSpeechRecognitionEnabled() {
   return false;
-}
-
-const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {
-  return users_;
 }
 
 void AppListTestViewDelegate::ReplaceTestModel(int item_count) {

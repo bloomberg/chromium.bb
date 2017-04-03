@@ -168,12 +168,10 @@ base::FilePath FakeProfile::last_selected_directory() {
 
 void FakeProfile::set_last_selected_directory(const base::FilePath& path) {}
 
-#if defined(OS_CHROMEOS)
 void FakeProfile::ChangeAppLocale(
     const std::string& locale, AppLocaleChangedVia via) {}
 void FakeProfile::OnLogin() {}
 void FakeProfile::InitChromeOSPreferences() {}
-#endif  // defined(OS_CHROMEOS)
 
 PrefProxyConfigTracker* FakeProfile::GetProxyConfigTracker() {
   return nullptr;

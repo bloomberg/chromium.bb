@@ -47,10 +47,6 @@
 #include "ui/wm/core/masked_window_targeter.h"
 #include "ui/wm/core/shadow_types.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace app_list {
 
 namespace {
@@ -326,11 +322,6 @@ bool AppListView::ShouldDescendIntoChildForEventHandling(
 
   return views::BubbleDialogDelegateView::
       ShouldDescendIntoChildForEventHandling(child, location);
-}
-
-void AppListView::SetProfileByPath(const base::FilePath& profile_path) {
-  delegate_->SetProfileByPath(profile_path);
-  app_list_main_view_->ModelChanged();
 }
 
 PaginationModel* AppListView::GetAppsPaginationModel() {

@@ -49,10 +49,6 @@ const extensions::Extension* GetExtension(Profile* profile,
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
-bool AppListControllerDelegate::ForceNativeDesktop() const {
-  return false;
-}
-
 void AppListControllerDelegate::ViewClosing() {}
 
 gfx::Rect AppListControllerDelegate::GetAppListBounds() {

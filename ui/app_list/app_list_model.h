@@ -131,9 +131,6 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // has a single child left.
   void DeleteUninstalledItem(const std::string& id);
 
-  // Call OnExtensionPreferenceChanged() for all items in the model.
-  void NotifyExtensionPreferenceChanged();
-
   // Sets whether or not the folder UI should be enabled. If |folders_enabled|
   // is false, removes any non-OEM folders.
   void SetFoldersEnabled(bool folders_enabled);

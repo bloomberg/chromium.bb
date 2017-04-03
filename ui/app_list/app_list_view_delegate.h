@@ -5,28 +5,18 @@
 #ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
-#include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/files/file_path.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/app_list/app_list_export.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace gfx {
 class Size;
 }
 
-#if defined(TOOLKIT_VIEWS)
 namespace views {
 class View;
 }
-#endif
 
 namespace app_list {
 
@@ -36,36 +26,7 @@ class SpeechUIModel;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
-  // A user of the app list.
-  struct APP_LIST_EXPORT User {
-    User();
-    User(const User& other);
-    ~User();
-
-    // Whether or not this user is the current user of the app list.
-    bool active;
-
-    // The name of this user.
-    base::string16 name;
-
-    // The email address of this user.
-    base::string16 email;
-
-    // The path to this user's profile directory.
-    base::FilePath profile_path;
-  };
-  typedef std::vector<User> Users;
-
   virtual ~AppListViewDelegate() {}
-
-  // Whether to force the use of a native desktop widget when the app list
-  // window is first created.
-  virtual bool ForceNativeDesktop() const = 0;
-
-  // Sets the delegate to use the profile at |profile_path|. This is currently
-  // only used by non-Ash Windows.
-  virtual void SetProfileByPath(const base::FilePath& profile_path) = 0;
-
   // Gets the model associated with the view delegate. The model may be owned
   // by the delegate, or owned elsewhere (e.g. a profile keyed service).
   virtual AppListModel* GetModel() = 0;
@@ -109,20 +70,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
 
-  // Open the help UI.
-  virtual void OpenHelp() = 0;
-
-  // Open the feedback UI.
-  virtual void OpenFeedback() = 0;
-
   // Invoked to toggle the status of speech recognition.
   virtual void StartSpeechRecognition() = 0;
   virtual void StopSpeechRecognition() = 0;
 
-  // Shows the app list for the profile specified by |profile_path|.
-  virtual void ShowForProfileByPath(const base::FilePath& profile_path) = 0;
-
-#if defined(TOOLKIT_VIEWS)
   // Creates the web view for the start page. The caller takes the ownership of
   // the returned view.
   virtual views::View* CreateStartPageWebView(const gfx::Size& size) = 0;
@@ -137,13 +88,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Invoked when the custom launcher page's subpage should be popped.
   virtual void CustomLauncherPagePopSubpage() = 0;
-#endif
 
   // Returns true if the delegate supports speech recognition.
   virtual bool IsSpeechRecognitionEnabled() = 0;
-
-  // Returns the list of users (for AppListMenu).
-  virtual const Users& GetUsers() const = 0;
 };
 
 }  // namespace app_list

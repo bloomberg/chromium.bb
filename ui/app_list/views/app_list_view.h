@@ -15,10 +15,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace app_list {
 class ApplicationDragAndDropHost;
 class AppListMainView;
@@ -79,8 +75,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) override;
-
-  void SetProfileByPath(const base::FilePath& profile_path);
 
   AppListMainView* app_list_main_view() { return app_list_main_view_; }
 

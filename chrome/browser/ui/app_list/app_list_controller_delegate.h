@@ -15,10 +15,6 @@
 
 class Profile;
 
-namespace base {
-class FilePath;
-}
-
 namespace extensions {
 class Extension;
 class ExtensionSet;
@@ -51,10 +47,6 @@ class AppListControllerDelegate {
 
   virtual ~AppListControllerDelegate();
 
-  // Whether to force the use of a native desktop widget when the app list
-  // window is first created.
-  virtual bool ForceNativeDesktop() const;
-
   // Dismisses the view.
   virtual void DismissView() = 0;
 
@@ -82,14 +74,6 @@ class AppListControllerDelegate {
   // displays an overlay that disables the app list while the dialog is open.
   virtual void OnShowChildDialog();
   virtual void OnCloseChildDialog();
-
-  // Whether the controller supports a Create Shortcuts flow.
-  virtual bool CanDoCreateShortcutsFlow() = 0;
-
-  // Show the dialog to create shortcuts. Call only if
-  // CanDoCreateShortcutsFlow() returns true.
-  virtual void DoCreateShortcutsFlow(Profile* profile,
-                                     const std::string& extension_id) = 0;
 
   // Whether the controller supports a Show App Info flow.
   virtual bool CanDoShowAppInfoFlow();
@@ -120,13 +104,6 @@ class AppListControllerDelegate {
                          const extensions::Extension* extension,
                          AppListSource source,
                          int event_flags) = 0;
-
-  // Show the app list for the profile specified by |profile_path|.
-  virtual void ShowForProfileByPath(const base::FilePath& profile_path) = 0;
-
-  // Whether or not the icon indicating which user is logged in should be
-  // visible.
-  virtual bool ShouldShowUserIcon() = 0;
 
   static std::string AppListSourceToString(AppListSource source);
 

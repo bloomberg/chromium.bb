@@ -21,9 +21,6 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   void UnpinApp(const std::string& app_id) override;
   Pinnable GetPinnable(const std::string& app_id) override;
   bool IsAppOpen(const std::string& app_id) const override;
-  bool CanDoCreateShortcutsFlow() override;
-  void DoCreateShortcutsFlow(Profile* profile,
-                             const std::string& extension_id) override;
   bool CanDoShowAppInfoFlow() override;
   void DoShowAppInfoFlow(Profile* profile,
                          const std::string& extension_id) override;
@@ -40,8 +37,6 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
                  const extensions::Extension* extension,
                  AppListSource source,
                  int event_flags) override;
-  void ShowForProfileByPath(const base::FilePath& profile_path) override;
-  bool ShouldShowUserIcon() override;
 
   const GURL& last_opened_url() const { return last_opened_url_; }
 

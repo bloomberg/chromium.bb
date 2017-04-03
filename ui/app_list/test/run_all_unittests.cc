@@ -14,14 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-
-#if defined(OS_MACOSX)
-#include "base/test/mock_chrome_application_mac.h"
-#endif
-
-#if defined(TOOLKIT_VIEWS)
 #include "ui/gl/test/gl_surface_test_support.h"
-#endif
 
 namespace {
 
@@ -38,12 +31,7 @@ class AppListTestSuite : public base::TestSuite {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(kTestType, "applist");
 
-#if defined(OS_MACOSX)
-    mock_cr_app::RegisterMockCrApp();
-#endif
-#if defined(TOOLKIT_VIEWS)
     gl::GLSurfaceTestSupport::InitializeOneOff();
-#endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();
 

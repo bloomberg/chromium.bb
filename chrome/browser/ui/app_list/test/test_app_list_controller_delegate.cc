@@ -40,15 +40,6 @@ bool TestAppListControllerDelegate::IsAppOpen(const std::string& app_id) const {
   return false;
 }
 
-bool TestAppListControllerDelegate::CanDoCreateShortcutsFlow() {
-  return false;
-}
-
-void TestAppListControllerDelegate::DoCreateShortcutsFlow(
-    Profile* profile,
-    const std::string& extension_id) {
-}
-
 bool TestAppListControllerDelegate::CanDoShowAppInfoFlow() {
   return false;
 }
@@ -81,14 +72,6 @@ void TestAppListControllerDelegate::LaunchApp(
     const extensions::Extension* extension,
     AppListSource source,
     int event_flags) {
-}
-
-void TestAppListControllerDelegate::ShowForProfileByPath(
-    const base::FilePath& profile_path) {
-}
-
-bool TestAppListControllerDelegate::ShouldShowUserIcon() {
-  return false;
 }
 
 }  // namespace test

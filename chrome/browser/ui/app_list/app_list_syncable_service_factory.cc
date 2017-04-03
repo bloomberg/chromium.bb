@@ -17,11 +17,8 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
-
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
-#endif
 
 namespace app_list {
 
@@ -45,10 +42,8 @@ AppListSyncableServiceFactory* AppListSyncableServiceFactory::GetInstance() {
 std::unique_ptr<KeyedService> AppListSyncableServiceFactory::BuildInstanceFor(
     content::BrowserContext* browser_context) {
   Profile* profile = static_cast<Profile*>(browser_context);
-#if defined(OS_CHROMEOS)
   if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return NULL;
-#endif
   VLOG(1) << "BuildInstanceFor: " << profile->GetDebugName()
           << " (" << profile << ")";
   return base::MakeUnique<AppListSyncableService>(
@@ -69,9 +64,7 @@ AppListSyncableServiceFactory::AppListSyncableServiceFactory()
   FactorySet dependent_factories;
   dependent_factories.insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
-#if defined(OS_CHROMEOS)
   dependent_factories.insert(ArcAppListPrefsFactory::GetInstance());
-#endif
   DriveAppProvider::AppendDependsOnFactories(&dependent_factories);
   for (FactorySet::iterator it = dependent_factories.begin();
        it != dependent_factories.end();

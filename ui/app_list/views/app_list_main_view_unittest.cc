@@ -292,15 +292,8 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
   EXPECT_FALSE(item1->is_highlighted());
 }
 
-// No touch on desktop Mac. Tracked in http://crbug.com/445520.
-#if defined(OS_MACOSX) && !defined(USE_AURA)
-#define MAYBE_TapGestureToHighlight DISABLED_TapGestureToHighlight
-#else
-#define MAYBE_TapGestureToHighlight TapGestureToHighlight
-#endif
-
 // Tests that tap gesture on app item highlights it
-TEST_F(AppListMainViewTest, MAYBE_TapGestureToHighlight) {
+TEST_F(AppListMainViewTest, TapGestureToHighlight) {
   delegate_->GetTestModel()->PopulateApps(1);
   main_widget_->Show();
 

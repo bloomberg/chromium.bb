@@ -23,6 +23,8 @@
 #include "ui/app_list/views/page_switcher.h"
 #include "ui/app_list/views/pulsing_block_view.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/animation.h"
@@ -32,11 +34,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif  // defined(USE_AURA)
 
 namespace app_list {
 
@@ -1097,7 +1094,6 @@ void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
   // could have integer round error and causes jitter.
   *drag_point = event.root_location();
 
-#if defined(USE_AURA)
   // GetWidget() could be NULL for tests.
   if (GetWidget()) {
     aura::Window::ConvertPointToTarget(
@@ -1105,7 +1101,6 @@ void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
         GetWidget()->GetNativeWindow(),
         drag_point);
   }
-#endif
 
   views::View::ConvertPointFromWidget(this, drag_point);
 }

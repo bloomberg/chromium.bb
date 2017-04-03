@@ -220,14 +220,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   // Overridden from app_list::AppListViewDelegate:
-  bool ForceNativeDesktop() const override { return false; }
-
-  void SetProfileByPath(const base::FilePath& profile_path) override {
-    // Nothing needs to be done.
-  }
-
-  const Users& GetUsers() const override { return users_; }
-
   app_list::AppListModel* GetModel() override { return model_.get(); }
 
   app_list::SpeechUIModel* GetSpeechUI() override { return &speech_ui_; }
@@ -290,20 +282,8 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  void OpenHelp() override {
-    // Nothing needs to be done.
-  }
-
-  void OpenFeedback() override {
-    // Nothing needs to be done.
-  }
-
   void StartSpeechRecognition() override { NOTIMPLEMENTED(); }
   void StopSpeechRecognition() override { NOTIMPLEMENTED(); }
-
-  void ShowForProfileByPath(const base::FilePath& profile_path) override {
-    // Nothing needs to be done.
-  }
 
   views::View* CreateStartPageWebView(const gfx::Size& size) override {
     return NULL;
@@ -322,7 +302,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   std::unique_ptr<app_list::AppListModel> model_;
   app_list::SpeechUIModel speech_ui_;
-  Users users_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };

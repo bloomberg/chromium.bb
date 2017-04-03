@@ -43,11 +43,6 @@ void AppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
             IDS_APP_LIST_CONTEXT_MENU_UNPIN :
             IDS_APP_LIST_CONTEXT_MENU_PIN);
   }
-
-  if (controller_->CanDoCreateShortcutsFlow()) {
-    menu_model_->AddItemWithStringId(CREATE_SHORTCUTS,
-                                     IDS_NEW_TAB_APP_CREATE_SHORTCUT);
-  }
 }
 
 bool AppContextMenu::IsItemForCommandIdDynamic(int command_id) const {
@@ -97,9 +92,6 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case TOGGLE_PIN:
       TogglePin(app_id_);
-      break;
-    case CREATE_SHORTCUTS:
-      controller_->DoCreateShortcutsFlow(profile_, app_id_);
       break;
   }
 }

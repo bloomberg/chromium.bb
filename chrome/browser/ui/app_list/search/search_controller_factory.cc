@@ -23,10 +23,7 @@
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search/mixer.h"
 #include "ui/app_list/search_controller.h"
-
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
-#endif
 
 namespace app_list {
 
@@ -37,10 +34,7 @@ constexpr size_t kMaxAppsGroupResults = 8;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxSuggestionsResults = 6;
-
-#if defined(OS_CHROMEOS)
 constexpr size_t kMaxLauncherSearchResults = 2;
-#endif
 
 // Constants related to the SuggestionsService in AppList field trial.
 constexpr char kSuggestionsProviderFieldTrialName[] =
@@ -97,7 +91,6 @@ std::unique_ptr<SearchController> CreateSearchController(
 
   // LauncherSearchProvider is added only when flag is enabled, not in guest
   // session and running on Chrome OS.
-#if defined(OS_CHROMEOS)
   if (app_list::switches::IsDriveSearchInChromeLauncherEnabled() &&
       !profile->IsGuestSession()) {
     size_t search_api_group_id =
@@ -105,7 +98,6 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(search_api_group_id,
                             base::MakeUnique<LauncherSearchProvider>(profile));
   }
-#endif
 
   return controller;
 }

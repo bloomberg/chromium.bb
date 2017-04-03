@@ -25,7 +25,6 @@ class AppContextMenu : public ui::SimpleMenuModel::Delegate {
   enum CommandId {
     LAUNCH_NEW = 100,
     TOGGLE_PIN,
-    CREATE_SHORTCUTS,
     SHOW_APP_INFO,
     OPTIONS,
     UNINSTALL,

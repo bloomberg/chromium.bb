@@ -31,13 +31,10 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/tokenized_string.h"
 #include "ui/app_list/search/tokenized_string_match.h"
-
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
-#endif
 
 using extensions::ExtensionRegistry;
 
@@ -193,7 +190,6 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
   DISALLOW_COPY_AND_ASSIGN(ExtensionDataSource);
 };
 
-#if defined(OS_CHROMEOS)
 class ArcDataSource : public AppSearchProvider::DataSource,
                       public ArcAppListPrefs::Observer {
  public:
@@ -256,7 +252,6 @@ class ArcDataSource : public AppSearchProvider::DataSource,
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDataSource);
 };
-#endif
 
 }  // namespace
 
@@ -270,10 +265,8 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
       update_results_factory_(this) {
   data_sources_.emplace_back(
       base::MakeUnique<ExtensionDataSource>(profile, this));
-#if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile))
     data_sources_.emplace_back(base::MakeUnique<ArcDataSource>(profile, this));
-#endif
 }
 
 AppSearchProvider::~AppSearchProvider() {}

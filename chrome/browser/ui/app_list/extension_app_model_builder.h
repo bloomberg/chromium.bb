@@ -84,14 +84,8 @@ class ExtensionAppModelBuilder : public AppListModelBuilder,
   // Handles profile prefs changes.
   void OnProfilePreferenceChanged();
 
-  // Handles extension prefs changes.
-  void OnExtensionPreferenceChanged();
-
   // Registrar used to monitor the profile prefs.
   PrefChangeRegistrar profile_pref_change_registrar_;
-
-  // Registrar used to monitor the extension prefs.
-  PrefChangeRegistrar extension_pref_change_registrar_;
 
   // We listen to this to show app installing progress.
   extensions::InstallTracker* tracker_ = nullptr;

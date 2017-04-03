@@ -38,15 +38,12 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
-#endif
 
 using syncer::SyncChange;
 
@@ -130,14 +127,10 @@ bool AppIsDefault(ExtensionService* service, const std::string& id) {
 }
 
 bool IsUnRemovableDefaultApp(const std::string& id) {
-  if (id == extension_misc::kChromeAppId ||
-      id == extensions::kWebStoreAppId)
-    return true;
-#if defined(OS_CHROMEOS)
-  if (id == file_manager::kFileManagerAppId || id == genius_app::kGeniusAppId)
-    return true;
-#endif
-  return false;
+  return id == extension_misc::kChromeAppId ||
+         id == extensions::kWebStoreAppId ||
+         id == file_manager::kFileManagerAppId ||
+         id == genius_app::kGeniusAppId;
 }
 
 void UninstallExtension(ExtensionService* service, const std::string& id) {
@@ -152,10 +145,8 @@ bool GetAppListItemType(AppListItem* item,
   const char* item_type = item->GetItemType();
   if (item_type == ExtensionAppItem::kItemType) {
     *type = sync_pb::AppListSpecifics::TYPE_APP;
-#if defined(OS_CHROMEOS)
   } else if (item_type == ArcAppItem::kItemType) {
     *type = sync_pb::AppListSpecifics::TYPE_APP;
-#endif
   } else if (item_type == AppListFolderItem::kItemType) {
     *type = sync_pb::AppListSpecifics::TYPE_FOLDER;
   } else {
@@ -256,13 +247,11 @@ class AppListSyncableService::ModelObserver : public AppListModelObserver {
     if (item->GetItemType() == AppListFolderItem::kItemType)
       return;
 
-#if defined(OS_CHROMEOS)
     if (item->GetItemType() == ArcAppItem::kItemType) {
       // Don't sync remove changes coming as result of disabling ARC.
       if (!arc::IsArcPlayStoreEnabledForProfile(owner_->profile()))
         return;
     }
-#endif
 
     owner_->RemoveSyncItem(item->id());
   }
@@ -393,26 +382,20 @@ void AppListSyncableService::BuildModel() {
   if (service)
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
-#if defined(OS_CHROMEOS)
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
-#endif
   DCHECK(profile_);
   if (app_list::switches::IsAppListSyncEnabled()) {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
     apps_builder_->InitializeWithService(this, model_.get());
-#if defined(OS_CHROMEOS)
     if (arc_apps_builder_.get())
       arc_apps_builder_->InitializeWithService(this, model_.get());
-#endif
   } else {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
-#if defined(OS_CHROMEOS)
     if (arc_apps_builder_.get())
       arc_apps_builder_->InitializeWithProfile(profile_, model_.get());
-#endif
   }
 
   if (app_list::switches::IsDriveAppsInAppListEnabled())
@@ -1229,11 +1212,9 @@ syncer::StringOrdinal AppListSyncableService::GetOemFolderPos() {
 }
 
 bool AppListSyncableService::AppIsOem(const std::string& id) {
-#if defined(OS_CHROMEOS)
   const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_prefs && arc_prefs->IsOem(id))
     return true;
-#endif
 
   if (!extension_system_->extension_service())
     return false;
