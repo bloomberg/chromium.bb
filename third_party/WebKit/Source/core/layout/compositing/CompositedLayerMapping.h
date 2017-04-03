@@ -103,6 +103,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Update whether layer needs blending.
   void updateContentsOpaque();
 
+  void updateRasterizationPolicy();
+
   GraphicsLayer* mainGraphicsLayer() const { return m_graphicsLayer.get(); }
 
   // Layer to clip children

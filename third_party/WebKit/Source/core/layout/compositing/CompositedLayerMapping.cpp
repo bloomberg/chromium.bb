@@ -504,6 +504,16 @@ void CompositedLayerMapping::updateContentsOpaque() {
   }
 }
 
+void CompositedLayerMapping::updateRasterizationPolicy() {
+  bool allowTransformedRasterization =
+      !requiresCompositing(m_owningLayer.getCompositingReasons() &
+                           ~CompositingReasonSquashingDisallowed);
+  m_graphicsLayer->contentLayer()->setAllowTransformedRasterization(
+      allowTransformedRasterization);
+  if (m_squashingLayer)
+    m_squashingLayer->contentLayer()->setAllowTransformedRasterization(true);
+}
+
 void CompositedLayerMapping::updateCompositedBounds() {
   DCHECK_EQ(m_owningLayer.compositor()->lifecycle().state(),
             DocumentLifecycle::InCompositingUpdate);
@@ -1118,6 +1128,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
   updateElementIdAndCompositorMutableProperties();
   updateBackgroundPaintsOntoScrollingContentsLayer();
   updateContentsOpaque();
+  updateRasterizationPolicy();
   updateAfterPartResize();
   updateRenderingContext();
   updateShouldFlattenTransform();

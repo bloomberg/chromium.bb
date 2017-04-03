@@ -80,6 +80,8 @@ class CC_EXPORT PictureLayerImpl
 
   void SetNearestNeighbor(bool nearest_neighbor);
 
+  void SetUseTransformedRasterization(bool use);
+
   size_t GPUMemoryUsageInBytes() const override;
 
   void RunMicroBenchmark(MicroBenchmarkImpl* benchmark) override;
@@ -151,6 +153,7 @@ class CC_EXPORT PictureLayerImpl
   const Layer::LayerMaskType mask_type_;
 
   bool nearest_neighbor_;
+  bool use_transformed_rasterization_;
   bool is_directly_composited_image_;
 
   // Use this instead of |visible_layer_rect()| for tiling calculations. This

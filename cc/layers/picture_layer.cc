@@ -12,6 +12,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -54,6 +55,8 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   DropRecordingSourceContentIfInvalid();
 
   layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
+  layer_impl->SetUseTransformedRasterization(
+      ShouldUseTransformedRasterization());
 
   // Preserve lcd text settings from the current raster source.
   bool can_use_lcd_text = layer_impl->RasterSourceUsesLCDText();
@@ -198,6 +201,14 @@ void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
   SetNeedsCommit();
 }
 
+void PictureLayer::SetAllowTransformedRasterization(bool allowed) {
+  if (picture_layer_inputs_.allow_transformed_rasterization == allowed)
+    return;
+
+  picture_layer_inputs_.allow_transformed_rasterization = allowed;
+  SetNeedsCommit();
+}
+
 bool PictureLayer::HasDrawableContent() const {
   return picture_layer_inputs_.client && Layer::HasDrawableContent();
 }
@@ -231,6 +242,32 @@ void PictureLayer::DropRecordingSourceContentIfInvalid() {
     picture_layer_inputs_.display_list = nullptr;
     picture_layer_inputs_.painter_reported_memory_usage = 0;
   }
+}
+
+bool PictureLayer::ShouldUseTransformedRasterization() const {
+  if (!picture_layer_inputs_.allow_transformed_rasterization)
+    return false;
+
+  const TransformTree& transform_tree =
+      layer_tree_host()->property_trees()->transform_tree;
+  DCHECK(!transform_tree.needs_update());
+  if (transform_tree.Node(transform_tree_index())
+          ->to_screen_is_potentially_animated)
+    return false;
+
+  const gfx::Transform& to_screen =
+      transform_tree.ToScreen(transform_tree_index());
+  if (!to_screen.IsScaleOrTranslation())
+    return false;
+
+  float origin_x =
+      to_screen.matrix().getFloat(0, 3) + offset_to_transform_parent().x();
+  float origin_y =
+      to_screen.matrix().getFloat(1, 3) + offset_to_transform_parent().y();
+  if (origin_x - floorf(origin_x) == 0.f && origin_y - floorf(origin_y) == 0.f)
+    return false;
+
+  return true;
 }
 
 const DisplayItemList* PictureLayer::GetDisplayItemList() {

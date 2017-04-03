@@ -59,6 +59,11 @@ blink::WebLayer* WebContentLayerImpl::layer() {
   return layer_.get();
 }
 
+void WebContentLayerImpl::setAllowTransformedRasterization(bool allowed) {
+  static_cast<PictureLayer*>(layer_->layer())
+      ->SetAllowTransformedRasterization(allowed);
+}
+
 gfx::Rect WebContentLayerImpl::PaintableRegion() {
   return client_->paintableRegion();
 }

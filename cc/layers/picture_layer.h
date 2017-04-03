@@ -28,6 +28,8 @@ class CC_EXPORT PictureLayer : public Layer {
     return picture_layer_inputs_.nearest_neighbor;
   }
 
+  void SetAllowTransformedRasterization(bool allowed);
+
   // Layer interface.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
@@ -57,6 +59,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
     ContentLayerClient* client = nullptr;
     bool nearest_neighbor = false;
+    bool allow_transformed_rasterization = false;
     gfx::Rect recorded_viewport;
     scoped_refptr<DisplayItemList> display_list;
     size_t painter_reported_memory_usage = 0;
@@ -78,6 +81,8 @@ class CC_EXPORT PictureLayer : public Layer {
   friend class TestSerializationPictureLayer;
 
   void DropRecordingSourceContentIfInvalid();
+
+  bool ShouldUseTransformedRasterization() const;
 
   std::unique_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::

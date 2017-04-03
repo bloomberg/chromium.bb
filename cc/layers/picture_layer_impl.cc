@@ -109,6 +109,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       only_used_low_res_last_append_quads_(false),
       mask_type_(mask_type),
       nearest_neighbor_(false),
+      use_transformed_rasterization_(false),
       is_directly_composited_image_(false) {
   layer_tree_impl()->RegisterPictureLayerImpl(this);
 }
@@ -145,6 +146,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->twin_layer_ = this;
 
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
+  layer_impl->SetUseTransformedRasterization(use_transformed_rasterization_);
 
   // Solid color layers have no tilings.
   DCHECK(!raster_source_->IsSolidColor() || tilings_->num_tilings() == 0);
@@ -869,6 +871,14 @@ void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
     return;
 
   nearest_neighbor_ = nearest_neighbor;
+  NoteLayerPropertyChanged();
+}
+
+void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
+  if (use_transformed_rasterization_ == use)
+    return;
+
+  use_transformed_rasterization_ = use;
   NoteLayerPropertyChanged();
 }
 

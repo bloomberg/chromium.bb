@@ -37,6 +37,12 @@ class WebContentLayer {
 
   // The WebContentLayer has ownership of this wrapper.
   virtual WebLayer* layer() = 0;
+
+  // Normally content layers are rasterized in a space with both axis and
+  // origin aligned to local layer space, optionally with a uniform scale.
+  // With this flag set to true, the compositor may raster contents in any
+  // space, e.g. device pixel space.
+  virtual void setAllowTransformedRasterization(bool) = 0;
 };
 
 }  // namespace blink
