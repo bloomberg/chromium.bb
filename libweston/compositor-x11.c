@@ -1028,12 +1028,12 @@ x11_output_create(struct weston_compositor *compositor,
 		return -1;
 	}
 
-	output->base.name = strdup(name);
+	weston_output_init(&output->base, compositor, name);
+
 	output->base.destroy = x11_output_destroy;
 	output->base.disable = x11_output_disable;
 	output->base.enable = x11_output_enable;
 
-	weston_output_init(&output->base, compositor);
 	weston_compositor_add_pending_output(&output->base, compositor);
 
 	return 0;

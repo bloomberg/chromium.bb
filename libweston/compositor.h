@@ -1926,7 +1926,8 @@ weston_output_set_transform(struct weston_output *output,
 
 void
 weston_output_init(struct weston_output *output,
-		   struct weston_compositor *compositor);
+		   struct weston_compositor *compositor,
+		   const char *name);
 
 void
 weston_compositor_add_pending_output(struct weston_output *output,

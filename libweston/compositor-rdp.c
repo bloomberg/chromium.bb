@@ -584,12 +584,12 @@ rdp_backend_create_output(struct weston_compositor *compositor)
 	if (output == NULL)
 		return -1;
 
-	output->base.name =  strdup("rdp");
+	weston_output_init(&output->base, compositor, "rdp");
+
 	output->base.destroy = rdp_output_destroy;
 	output->base.disable = rdp_output_disable;
 	output->base.enable = rdp_output_enable;
 
-	weston_output_init(&output->base, compositor);
 	weston_compositor_add_pending_output(&output->base, compositor);
 
 	return 0;

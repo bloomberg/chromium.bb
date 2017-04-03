@@ -3327,6 +3327,7 @@ create_output_for_connector(struct drm_backend *b,
 	struct drm_output *output;
 	drmModeObjectPropertiesPtr props;
 	struct drm_mode *drm_mode;
+	char *name;
 	int i;
 
 	static const struct drm_property_info connector_props[] = {
@@ -3354,10 +3355,13 @@ create_output_for_connector(struct drm_backend *b,
 
 	output->original_crtc = drmModeGetCrtc(b->drm.fd, output->crtc_id);
 
+	name = make_connector_name(connector);
+	weston_output_init(&output->base, b->compositor, name);
+	free(name);
+
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
 	output->base.disable = drm_output_disable;
-	output->base.name = make_connector_name(connector);
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
@@ -3372,8 +3376,6 @@ create_output_for_connector(struct drm_backend *b,
 				   WDRM_CONNECTOR__COUNT, props);
 	find_and_parse_output_edid(b, output, props);
 	drmModeFreeObjectProperties(props);
-
-	weston_output_init(&output->base, b->compositor);
 
 	for (i = 0; i < output->connector->count_modes; i++) {
 		drm_mode = drm_output_add_mode(output, &output->connector->modes[i]);

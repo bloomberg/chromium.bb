@@ -4679,23 +4679,25 @@ weston_output_set_transform(struct weston_output *output,
  *
  * \param output     The weston_output object to initialize
  * \param compositor The compositor instance.
+ * \param name       Name for the output (the string is copied).
  *
  * Sets initial values for fields that are expected to be
  * configured either by compositors or backends.
+ *
+ * The name is used in logs, and can be used by compositors as a configuration
+ * identifier.
  *
  * \memberof weston_output
  * \internal
  */
 WL_EXPORT void
 weston_output_init(struct weston_output *output,
-		   struct weston_compositor *compositor)
+		   struct weston_compositor *compositor,
+		   const char *name)
 {
 	output->compositor = compositor;
 	output->destroying = 0;
-
-	/* Backends must set output->name */
-	assert(output->name);
-
+	output->name = strdup(name);
 	wl_list_init(&output->link);
 	output->enabled = false;
 
