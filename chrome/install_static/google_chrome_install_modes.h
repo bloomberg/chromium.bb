@@ -13,6 +13,8 @@ enum : bool {
   kUseGoogleUpdateIntegration = true,
 };
 
+// Note: This list of indices must be kept in sync with the brand-specific
+// resource strings in chrome/installer/util/prebuild/create_string_rc.
 enum InstallConstantIndex {
   STABLE_INDEX,
   CANARY_INDEX,

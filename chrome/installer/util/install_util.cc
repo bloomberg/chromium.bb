@@ -269,15 +269,6 @@ bool InstallUtil::IsPerUserInstall() {
   return !install_static::InstallDetails::Get().system_level();
 }
 
-bool InstallUtil::IsChromeSxSProcess() {
-#if defined(GOOGLE_CHROME_BUILD)
-  return install_static::InstallDetails::Get().install_mode_index() ==
-         install_static::CANARY_INDEX;
-#else
-  return false;
-#endif
-}
-
 // static
 bool InstallUtil::IsFirstRunSentinelPresent() {
   // TODO(msw): Consolidate with first_run::internal::IsFirstRunSentinelPresent.

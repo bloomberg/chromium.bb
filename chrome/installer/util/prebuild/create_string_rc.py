@@ -30,6 +30,7 @@ IDS_L10N_OFFSET_* for the language we are interested in.
 """
 
 import argparse
+import exceptions
 import glob
 import io
 import os
@@ -45,31 +46,106 @@ from grit.extern import tclib
 # The IDs of strings we want to import from the .grd files and include in
 # setup.exe's resources.
 STRING_IDS = [
-  'IDS_PRODUCT_NAME',
-  'IDS_SXS_SHORTCUT_NAME',
-  'IDS_PRODUCT_DESCRIPTION',
   'IDS_ABOUT_VERSION_COMPANY_NAME',
-  'IDS_INSTALL_HIGHER_VERSION',
+  'IDS_APP_SHORTCUTS_SUBDIR_NAME',
+  'IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY',
+  'IDS_INBOUND_MDNS_RULE_DESCRIPTION',
+  'IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY',
+  'IDS_INBOUND_MDNS_RULE_NAME',
+  'IDS_INBOUND_MDNS_RULE_NAME_CANARY',
+  'IDS_INSTALL_EXISTING_VERSION_LAUNCHED',
   'IDS_INSTALL_FAILED',
-  'IDS_SAME_VERSION_REPAIR_FAILED',
-  'IDS_SETUP_PATCH_FAILED',
-  'IDS_INSTALL_OS_NOT_SUPPORTED',
+  'IDS_INSTALL_HIGHER_VERSION',
+  'IDS_INSTALL_INSUFFICIENT_RIGHTS',
+  'IDS_INSTALL_INVALID_ARCHIVE',
   'IDS_INSTALL_OS_ERROR',
+  'IDS_INSTALL_OS_NOT_SUPPORTED',
   'IDS_INSTALL_SINGLETON_ACQUISITION_FAILED',
   'IDS_INSTALL_TEMP_DIR_FAILED',
   'IDS_INSTALL_UNCOMPRESSION_FAILED',
-  'IDS_INSTALL_INVALID_ARCHIVE',
-  'IDS_INSTALL_INSUFFICIENT_RIGHTS',
-  'IDS_SHORTCUT_TOOLTIP',
+  'IDS_PRODUCT_DESCRIPTION',
+  'IDS_PRODUCT_NAME',
+  'IDS_SAME_VERSION_REPAIR_FAILED',
+  'IDS_SETUP_PATCH_FAILED',
   'IDS_SHORTCUT_NEW_WINDOW',
-  'IDS_APP_SHORTCUTS_SUBDIR_NAME',
-  'IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY',
-  'IDS_INBOUND_MDNS_RULE_NAME',
-  'IDS_INBOUND_MDNS_RULE_NAME_CANARY',
-  'IDS_INBOUND_MDNS_RULE_DESCRIPTION',
-  'IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY',
-  'IDS_INSTALL_EXISTING_VERSION_LAUNCHED',
+  'IDS_SHORTCUT_TOOLTIP',
+  'IDS_SXS_SHORTCUT_NAME',
 ]
+
+# Certain strings are conditional on a brand's install mode (see
+# chrome/install_static/install_modes.h for details). This allows
+# installer::GetLocalizedString to return a resource specific to the current
+# install mode at runtime (e.g., "Google Chrome SxS" as IDS_SHORTCUT_NAME for
+# the localized shortcut name for Google Chrome's canary channel).
+# l10n_util::GetStringUTF16 (used within the rest of Chrome) is unaffected, and
+# will always return the requested string.
+#
+# This mapping provides brand- and mode-specific string ids for a given input id
+# as described here:
+# {
+#   resource_id_1: {  # A resource ID for use with GetLocalizedString.
+#     brand_1: [  # 'google_chrome', for example.
+#       string_id_1,  # Strings listed in order of the brand's modes, as
+#       string_id_2,  # specified in install_static::InstallConstantIndex.
+#       ...
+#       string_id_N,
+#     ],
+#     brand_2: [  # 'chromium', for example.
+#       ...
+#     ],
+#   },
+#   resource_id_2:  ...
+# }
+# 'resource_id_1' names an existing string ID. All calls to
+# installer::GetLocalizedString with this string ID will map to the
+# mode-specific string.
+#
+# Note: Update the test expectations in GetBaseMessageIdForMode.GoogleStringIds
+# when adding to/modifying this structure.
+MODE_SPECIFIC_STRINGS = {
+  'IDS_APP_SHORTCUTS_SUBDIR_NAME': {
+    'google_chrome': [
+      'IDS_APP_SHORTCUTS_SUBDIR_NAME',
+      'IDS_APP_SHORTCUTS_SUBDIR_NAME_CANARY',
+    ],
+    'chromium': [
+      'IDS_APP_SHORTCUTS_SUBDIR_NAME',
+    ],
+  },
+  'IDS_INBOUND_MDNS_RULE_DESCRIPTION': {
+    'google_chrome': [
+      'IDS_INBOUND_MDNS_RULE_DESCRIPTION',
+      'IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY',
+    ],
+    'chromium': [
+      'IDS_INBOUND_MDNS_RULE_DESCRIPTION',
+    ],
+  },
+  'IDS_INBOUND_MDNS_RULE_NAME': {
+    'google_chrome': [
+      'IDS_INBOUND_MDNS_RULE_NAME',
+      'IDS_INBOUND_MDNS_RULE_NAME_CANARY',
+    ],
+    'chromium': [
+      'IDS_INBOUND_MDNS_RULE_NAME',
+    ],
+  },
+  # In contrast to the strings above, this one (IDS_PRODUCT_NAME) is used
+  # throughout Chrome in mode-independent contexts. Within the installer (the
+  # place where this mapping matters), it is only used for mode-specific strings
+  # such as the name of Chrome's shortcut.
+  'IDS_PRODUCT_NAME': {
+    'google_chrome': [
+      'IDS_PRODUCT_NAME',
+      'IDS_SXS_SHORTCUT_NAME',
+    ],
+    'chromium': [
+      'IDS_PRODUCT_NAME',
+    ],
+  },
+}
+# Note: Update the test expectations in GetBaseMessageIdForMode.GoogleStringIds
+# when adding to/modifying the above structure.
 
 # The ID of the first resource string.
 FIRST_RESOURCE_ID = 1600
@@ -215,7 +291,7 @@ class XtbHandler(sax.handler.ContentHandler):
 
 class StringRcMaker(object):
   """Makes .h and .rc files containing strings and translations."""
-  def __init__(self, name, inputs, outdir):
+  def __init__(self, name, inputs, outdir, brand):
     """Constructs a maker.
 
     Args:
@@ -227,6 +303,7 @@ class StringRcMaker(object):
     self.name = name
     self.inputs = inputs
     self.outdir = outdir
+    self.brand = brand
 
   def MakeFiles(self):
     translated_strings = self.__ReadSourceAndTranslatedStrings()
@@ -347,6 +424,7 @@ class StringRcMaker(object):
     lines = []
     do_languages_lines = ['\n#define DO_LANGUAGES']
     installer_string_mapping_lines = ['\n#define DO_INSTALLER_STRING_MAPPING']
+    do_mode_strings_lines = ['\n#define DO_MODE_STRINGS']
 
     # Write the values for how the languages ids are offset.
     seen_languages = set()
@@ -370,6 +448,18 @@ class StringRcMaker(object):
                                       resource_id))
       resource_id += 1
 
+    # Handle mode-specific strings.
+    for string_id, brands in MODE_SPECIFIC_STRINGS.iteritems():
+      # Populate the DO_MODE_STRINGS macro.
+      brand_strings = brands.get(self.brand)
+      if not brand_strings:
+        raise exceptions.RuntimeError(
+          'No strings declared for brand \'%s\' in MODE_SPECIFIC_STRINGS for '
+          'message %s' % (self.brand, string_id))
+      do_mode_strings_lines.append(
+        '  HANDLE_MODE_STRING(%s_BASE, %s)'
+        % (string_id, ', '.join([ ('%s_BASE' % s) for s in brand_strings])))
+
     # Write out base ID values.
     for string_id in STRING_IDS:
       lines.append('#define %s_BASE %s_%s' % (string_id,
@@ -383,6 +473,7 @@ class StringRcMaker(object):
       outfile.write('\n#ifndef RC_INVOKED')
       outfile.write(' \\\n'.join(do_languages_lines))
       outfile.write(' \\\n'.join(installer_string_mapping_lines))
+      outfile.write(' \\\n'.join(do_mode_strings_lines))
       # .rc files must end in a new line
       outfile.write('\n#endif  // ndef RC_INVOKED\n')
 
@@ -398,6 +489,12 @@ def ParseCommandLine():
 
   parser = argparse.ArgumentParser(
     description='Generate .h and .rc files for installer strings.')
+  brands = [b for b in MODE_SPECIFIC_STRINGS.itervalues().next().iterkeys()]
+  parser.add_argument('-b',
+                      choices=brands,
+                      required=True,
+                      help='identifier of the browser brand (e.g., chromium).',
+                      dest='brand')
   parser.add_argument('-i', action='append',
                       type=GrdPathAndXtbDirPair,
                       required=True,
@@ -417,7 +514,7 @@ def ParseCommandLine():
 
 def main():
   args = ParseCommandLine()
-  StringRcMaker(args.name, args.inputs, args.outdir).MakeFiles()
+  StringRcMaker(args.name, args.inputs, args.outdir, args.brand).MakeFiles()
   return 0
 
 

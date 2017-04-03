@@ -16,15 +16,13 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
-#include "chrome/installer/util/google_chrome_sxs_distribution.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/non_updating_app_registration_data.h"
 
 namespace {
 
-// The BrowserDistribution objects are never freed.
+// The BrowserDistribution object is never freed.
 BrowserDistribution* g_browser_distribution = NULL;
 
 }  // namespace
@@ -37,7 +35,7 @@ BrowserDistribution::BrowserDistribution(
     std::unique_ptr<AppRegistrationData> app_reg_data)
     : app_reg_data_(std::move(app_reg_data)) {}
 
-BrowserDistribution::~BrowserDistribution() {}
+BrowserDistribution::~BrowserDistribution() = default;
 
 template<class DistributionClass>
 BrowserDistribution* BrowserDistribution::GetOrCreateBrowserDistribution(
@@ -58,13 +56,8 @@ BrowserDistribution* BrowserDistribution::GetDistribution() {
   BrowserDistribution* dist = NULL;
 
 #if defined(GOOGLE_CHROME_BUILD)
-  if (InstallUtil::IsChromeSxSProcess()) {
-    dist = GetOrCreateBrowserDistribution<GoogleChromeSxSDistribution>(
-        &g_browser_distribution);
-  } else {
-    dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
-        &g_browser_distribution);
-  }
+  dist = GetOrCreateBrowserDistribution<GoogleChromeDistribution>(
+      &g_browser_distribution);
 #else
   dist = GetOrCreateBrowserDistribution<BrowserDistribution>(
       &g_browser_distribution);
@@ -99,6 +92,8 @@ base::string16 BrowserDistribution::GetDisplayName() {
 }
 
 base::string16 BrowserDistribution::GetShortcutName() {
+  // IDS_PRODUCT_NAME is automatically mapped to the mode-specific shortcut
+  // name.
   return installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
 }
 

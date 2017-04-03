@@ -37,8 +37,6 @@
 
 namespace {
 
-const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
 // the locale, we use US English.
@@ -89,12 +87,8 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
 }  // namespace
 
 GoogleChromeDistribution::GoogleChromeDistribution()
-    : BrowserDistribution(
-          base::MakeUnique<UpdatingAppRegistrationData>(kChromeGuid)) {}
-
-GoogleChromeDistribution::GoogleChromeDistribution(
-    std::unique_ptr<AppRegistrationData> app_reg_data)
-    : BrowserDistribution(std::move(app_reg_data)) {}
+    : BrowserDistribution(base::MakeUnique<UpdatingAppRegistrationData>(
+          install_static::GetAppGuid())) {}
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const base::Version& version,

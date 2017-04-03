@@ -8,16 +8,7 @@
 #ifndef CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 #define CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_
 
-#include <memory>
-
-#include "base/strings/string16.h"
 #include "chrome/installer/util/browser_distribution.h"
-
-namespace base {
-class FilePath;
-}
-
-class AppRegistrationData;
 
 class GoogleChromeDistribution : public BrowserDistribution {
  public:
@@ -54,9 +45,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
  protected:
   // Disallow construction from others.
   GoogleChromeDistribution();
-
-  explicit GoogleChromeDistribution(
-      std::unique_ptr<AppRegistrationData> app_reg_data);
 
  private:
   friend class BrowserDistribution;

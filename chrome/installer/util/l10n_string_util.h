@@ -31,9 +31,13 @@ class TranslationDelegate {
 void SetTranslationDelegate(TranslationDelegate* delegate);
 
 // Given a string base id, return the localized version of the string based on
-// the system language.  This is used for shortcuts placed on the user's
-// desktop.  The string is retrieved from the TranslationDelegate if one has
-// been set.  Otherwise, the string is read from the binary's string table.
+// the system language. This is used for shortcuts placed on the user's desktop.
+// The string is retrieved from the TranslationDelegate if one has been set.
+// Otherwise, the string is read from the binary's string table. Certain
+// messages (see MODE_SPECIFIC_STRINGS in create_string_rc.py) are dynamically
+// mapped to a variant that is specific to the current install mode (e.g.,
+// IDS_INBOUND_MDNS_RULE_NAME is mapped to IDS_INBOUND_MDNS_RULE_NAME_CANARY for
+// canary Chrome).
 std::wstring GetLocalizedString(int base_message_id);
 
 // Returns the localized version of a string (obtained from GetLocalizedString)
@@ -47,6 +51,11 @@ std::wstring GetLocalizedEulaResource();
 
 // Returns the language identifier of the translation currently in use.
 std::wstring GetCurrentTranslation();
+
+// Returns the mode-specific message id for |base_message_id| given the current
+// install mode. Returns |base_message_id| itself if it does not have per-mode
+// variants. See MODE_SPECIFIC_STRINGS in create_string_rc.py for details..
+int GetBaseMessageIdForMode(int base_message_id);
 
 }  // namespace installer.
 

@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/advanced_firewall_manager_win.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installer_util_strings.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/legacy_firewall_manager_win.h"
@@ -49,19 +48,11 @@ class FirewallManagerAdvancedImpl : public FirewallManager {
 
  private:
   static base::string16 GetMdnsRuleName() {
-#if defined(GOOGLE_CHROME_BUILD)
-    if (InstallUtil::IsChromeSxSProcess())
-      return GetLocalizedString(IDS_INBOUND_MDNS_RULE_NAME_CANARY_BASE);
-#endif
     return GetLocalizedString(IDS_INBOUND_MDNS_RULE_NAME_BASE);
   }
 
   static base::string16 GetMdnsRuleDescription() {
-#if defined(GOOGLE_CHROME_BUILD)
-    if (InstallUtil::IsChromeSxSProcess())
-      return GetLocalizedString(IDS_INBOUND_MDNS_RULE_DESCRIPTION_CANARY_BASE);
-#endif
-      return GetLocalizedString(IDS_INBOUND_MDNS_RULE_DESCRIPTION_BASE);
+    return GetLocalizedString(IDS_INBOUND_MDNS_RULE_DESCRIPTION_BASE);
   }
 
   AdvancedFirewallManager manager_;

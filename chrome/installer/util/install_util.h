@@ -86,12 +86,6 @@ class InstallUtil {
   // InstallDetails.
   static bool IsPerUserInstall();
 
-  // Returns true if this is running setup process for Chrome SxS (as
-  // indicated by the presence of --chrome-sxs on the command line) or if this
-  // is running Chrome process from the Chrome SxS installation (as indicated
-  // by either --chrome-sxs or the executable path).
-  static bool IsChromeSxSProcess();
-
   // Returns true if the sentinel file exists (or the path cannot be obtained).
   static bool IsFirstRunSentinelPresent();
 

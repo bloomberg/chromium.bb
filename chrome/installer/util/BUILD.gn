@@ -156,8 +156,6 @@ static_library("with_no_strings") {
       "duplicate_tree_detector.h",
       "firewall_manager_win.cc",
       "firewall_manager_win.h",
-      "google_chrome_sxs_distribution.cc",
-      "google_chrome_sxs_distribution.h",
       "google_update_constants.cc",
       "google_update_constants.h",
       "google_update_settings.cc",
@@ -243,6 +241,8 @@ action("generate_strings") {
   ]
 
   args = [
+    "-b",
+    "$branding_path_component",
     "-i",
     rebase_path(grdfile, root_build_dir) + ":resources",
     "-n",
@@ -293,6 +293,7 @@ if (is_win) {
       "install_util_unittest.cc",
       "installer_util_test_common.cc",
       "installer_util_test_common.h",
+      "l10n_string_util_unittest.cc",
       "language_selector_unittest.cc",
       "legacy_firewall_manager_win_unittest.cc",
       "logging_installer_unittest.cc",
