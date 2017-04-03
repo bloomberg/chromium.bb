@@ -56,12 +56,6 @@ class CC_SURFACES_EXPORT Surface {
   void EvictFrame();
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> copy_request);
 
-  // This method gets rid of both active and pending frames and leaks their
-  // resources.
-  // TODO(samans): This method should not be necessary once crbug.com/701988 is
-  // fixed.
-  void Reset();
-
   // Notifies the Surface that a blocking SurfaceId now has an active frame.
   void NotifySurfaceIdAvailable(const SurfaceId& surface_id);
 
@@ -93,9 +87,6 @@ class CC_SURFACES_EXPORT Surface {
   void RunDrawCallbacks();
 
   base::WeakPtr<SurfaceFactory> factory() { return factory_; }
-  void set_factory(base::WeakPtr<SurfaceFactory> factory) {
-    factory_ = factory;
-  }
 
   // Add a SurfaceSequence that must be satisfied before the Surface is
   // destroyed.
