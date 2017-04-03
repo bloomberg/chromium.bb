@@ -108,9 +108,12 @@ v8::Local<v8::String> GenerateThumbnailURL(
 }
 
 v8::Local<v8::String> GenerateThumb2URL(v8::Isolate* isolate,
-                                        const std::string& url) {
-  return UTF8ToV8String(
-      isolate, base::StringPrintf("chrome-search://thumb2/%s", url.c_str()));
+                                        const GURL& page_url,
+                                        const GURL& fallback_thumb_url) {
+  return UTF8ToV8String(isolate,
+                        base::StringPrintf("chrome-search://thumb2/%s?fb=%s",
+                                           page_url.spec().c_str(),
+                                           fallback_thumb_url.spec().c_str()));
 }
 
 // Populates a Javascript MostVisitedItem object from |mv_item|.
@@ -149,21 +152,13 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
   obj->Set(v8::String::NewFromUtf8(isolate, "rid"),
            v8::Int32::New(isolate, restricted_id));
 
-  // If the suggestion already has a suggested thumbnail, we create an thumbnail
-  // array with both the local thumbnail and the proposed one.
-  // Otherwise, we just create an array with the generated one.
-  if (!mv_item.thumbnail.spec().empty()) {
-    v8::Local<v8::Array> thumbs = v8::Array::New(isolate, 2);
-    // Note: The "thumb2" source captures a thumbnail on the next visit.
-    thumbs->Set(0, GenerateThumb2URL(isolate, mv_item.url.spec()));
-    thumbs->Set(1, UTF8ToV8String(isolate, mv_item.thumbnail.spec()));
-    obj->Set(v8::String::NewFromUtf8(isolate, "thumbnailUrls"), thumbs);
-  } else {
-    v8::Local<v8::Array> thumbs = v8::Array::New(isolate, 1);
-    thumbs->Set(0,
-                GenerateThumbnailURL(isolate, render_view_id, restricted_id));
-    obj->Set(v8::String::NewFromUtf8(isolate, "thumbnailUrls"), thumbs);
-  }
+  // If the suggestion already has a suggested thumbnail, we create a thumbnail
+  // URL with both the local thumbnail and the proposed one as a fallback.
+  // Otherwise, we just pass on the generated one.
+  obj->Set(v8::String::NewFromUtf8(isolate, "thumbnailUrl"),
+           mv_item.thumbnail.is_valid()
+               ? GenerateThumb2URL(isolate, mv_item.url, mv_item.thumbnail)
+               : GenerateThumbnailURL(isolate, render_view_id, restricted_id));
 
   // If the suggestion already has a favicon, we populate the element with it.
   if (!mv_item.favicon.spec().empty()) {

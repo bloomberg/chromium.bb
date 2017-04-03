@@ -58,8 +58,8 @@ window.addEventListener('DOMContentLoaded', function() {
 
     if (data.dummy) {
       showEmptyTile();
-    } else if (data.thumbnailUrls && data.thumbnailUrls.length) {
-      createThumbnail(data.thumbnailUrls[0], 'thumbnail');
+    } else if (data.thumbnailUrl) {
+      createThumbnail(data.thumbnailUrl, 'thumbnail');
     } else if (data.domain) {
       showDomainElement();
     } else {

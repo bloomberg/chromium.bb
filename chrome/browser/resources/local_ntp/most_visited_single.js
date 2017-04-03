@@ -441,59 +441,10 @@ var renderTile = function(data) {
     title.classList.add('multiline');
   }
 
-  // We keep track of the outcome of loading possible thumbnails for this
-  // tile. Possible values:
-  //   - null: waiting for load/error
-  //   - false: error
-  //   - a string: URL that loaded correctly.
-  // This is populated by imageLoaded/imageLoadFailed, and selectBestImage
-  // selects the best one to display.
-  var results = [];
   var thumb = tile.querySelector('.mv-thumb');
   var img = document.createElement('img');
-  var loaded = false;
-
-  var selectBestImage = function() {
-    if (loaded) {
-      return;
-    }
-    // |results| is ordered from best candidate to worst.
-    for (var i = 0; i < results.length; ++i) {
-      if (results[i] === null) {
-        // A better candidate is still waiting to be loaded; defer.
-        return;
-      }
-      if (results[i] != false) {
-        // This is the best (non-failed) candidate. Use it!
-        img.src = results[i];
-        loaded = true;
-        return;
-      }
-    }
-    // If we get here, then all candidates failed to load.
-    thumb.classList.add('failed-img');
-    thumb.removeChild(img);
-    // Usually we count the load once the img element gets either a 'load' or
-    // an 'error' event. Since we have removed the img element, instead count
-    // the load here.
-    countLoad();
-  };
-
-  var imageLoaded = function(idx, url) {
-    return function(ev) {
-      results[idx] = url;
-      selectBestImage();
-    };
-  };
-
-  var imageLoadFailed = function(idx) {
-    return function(ev) {
-      results[idx] = false;
-      selectBestImage();
-    };
-  };
-
   img.title = data.title;
+  img.src = data.thumbnailUrl;
   loadedCounter += 1;
   img.addEventListener('load', countLoad);
   img.addEventListener('error', countLoad);
@@ -502,26 +453,6 @@ var renderTile = function(data) {
     thumb.removeChild(img);
   });
   thumb.appendChild(img);
-
-  if (data.thumbnailUrl) {
-    img.src = data.thumbnailUrl;
-  } else {
-    // Get all thumbnailUrls for the tile.
-    // They are ordered from best one to be used to worst.
-    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
-      results.push(null);
-    }
-    for (var i = 0; i < data.thumbnailUrls.length; ++i) {
-      if (data.thumbnailUrls[i]) {
-        var image = new Image();
-        image.src = data.thumbnailUrls[i];
-        image.onload = imageLoaded(i, data.thumbnailUrls[i]);
-        image.onerror = imageLoadFailed(i);
-      } else {
-        imageLoadFailed(i)(/*ev=*/null);
-      }
-    }
-  }
 
   var favicon = tile.querySelector('.mv-favicon');
   if (data.faviconUrl) {
