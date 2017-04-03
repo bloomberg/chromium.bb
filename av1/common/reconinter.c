@@ -994,9 +994,9 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
                 plane,
 #if CONFIG_GLOBAL_MOTION
                 is_global[ref], (mi_x >> pd->subsampling_x) + x,
-                (mi_y >> pd->subsampling_y) + y, ref
+                (mi_y >> pd->subsampling_y) + y, ref,
 #endif  // CONFIG_GLOBAL_MOTION
-                                                     xd);
+                xd);
           else
 #endif  // CONFIG_EXT_INTER
             av1_make_inter_predictor(

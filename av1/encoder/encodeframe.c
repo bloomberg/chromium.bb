@@ -2432,7 +2432,7 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
       0, xd->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-      mi);
+      xd->mi[0]);
   check_ncobmc = is_inter_block(mbmi) && motion_allowed >= OBMC_CAUSAL;
   if (!dry_run && check_ncobmc) {
     av1_check_ncobmc_rd(cpi, x, mi_row, mi_col);

@@ -12803,7 +12803,7 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
 #if CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
                            0, cm->global_motion,
 #endif  // CONFIG_GLOBAL_MOTION && SEPARATE_GLOBAL_MOTION
-                           mi);
+                           xd->mi[0]);
   av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 
   av1_subtract_plane(x, bsize, 0);
