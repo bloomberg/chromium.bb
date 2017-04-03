@@ -1347,11 +1347,6 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, DISABLED_Focus_InputMethod) {
 
 #if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, TextSelection) {
-#if defined(OS_MACOSX)
-  // TODO(ekaramad): This test is failing under OOPIF for MAC.
-  if (GetParam())
-    return;
-#endif
   SetupTest("web_view/text_selection",
             "/extensions/platform_apps/web_view/text_selection/guest.html");
   ASSERT_TRUE(guest_web_contents());
