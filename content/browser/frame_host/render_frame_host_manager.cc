@@ -637,11 +637,6 @@ void RenderFrameHostManager::DiscardUnusedFrame(
     rvh->set_main_frame_routing_id(MSG_ROUTING_NONE);
     rvh->set_is_active(false);
     rvh->set_is_swapped_out(true);
-
-    if (rvh->GetWidget()->GetView()) {
-      rvh->GetWidget()->GetView()->Destroy();
-      rvh->GetWidget()->SetView(nullptr);
-    }
   }
 
   render_frame_host.reset();
@@ -655,15 +650,6 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
 bool RenderFrameHostManager::DeleteFromPendingList(
     RenderFrameHostImpl* render_frame_host) {
-  // If this is a main frame RFH that's about to be deleted, update its RVH's
-  // swapped-out state here. https://crbug.com/505887
-  if (frame_tree_node_->IsMainFrame()) {
-    RenderViewHostImpl* rvh = render_frame_host->render_view_host();
-
-    if (!rvh->is_active())
-      rvh->set_is_swapped_out(true);
-  }
-
   for (RFHPendingDeleteList::iterator iter = pending_delete_hosts_.begin();
        iter != pending_delete_hosts_.end();
        iter++) {
@@ -1778,6 +1764,11 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
 
   if (frame_tree_node_->IsMainFrame()) {
     success = InitRenderView(render_view_host, proxy);
+
+    // If we are reusing the RenderViewHost and it doesn't already have a
+    // RenderWidgetHostView, we need to create one if this is the main frame.
+    if (!render_view_host->GetWidget()->GetView())
+      delegate_->CreateRenderWidgetHostViewForRenderManager(render_view_host);
   } else {
     DCHECK(render_view_host->IsRenderViewLive());
   }
@@ -2190,44 +2181,6 @@ void RenderFrameHostManager::CommitPending() {
     old_background_color = old_render_frame_host->GetView()->background_color();
   }
 
-  // The RenderViewHost keeps track of the main RenderFrameHost routing id.
-  // If this is committing a main frame navigation, update it and set the
-  // routing id in the RenderViewHost associated with the old RenderFrameHost
-  // to MSG_ROUTING_NONE.
-  if (is_main_frame) {
-    RenderViewHostImpl* rvh = render_frame_host_->render_view_host();
-    rvh->set_main_frame_routing_id(render_frame_host_->routing_id());
-
-    // If we are reusing the RenderViewHost, we need to create the
-    // RenderWidgetHostView if this is the main frame.
-    if (rvh->IsRenderViewLive() && !rvh->is_active())
-      delegate_->CreateRenderWidgetHostViewForRenderManager(rvh);
-
-    // If the RenderViewHost is transitioning from swapped out to active state,
-    // it was reused, so dispatch a RenderViewReady event.  For example, this
-    // is necessary to hide the sad tab if one is currently displayed.  See
-    // https://crbug.com/591984.
-    //
-    // TODO(alexmos):  Remove this and move RenderViewReady consumers to use
-    // the main frame's RenderFrameCreated instead.
-    if (!rvh->is_active())
-      rvh->PostRenderViewReady();
-
-    rvh->set_is_active(true);
-    rvh->set_is_swapped_out(false);
-
-    // Tell the old RenderViewHost it is no longer active.
-    RenderViewHostImpl* old_rvh = old_render_frame_host->render_view_host();
-    old_rvh->set_main_frame_routing_id(MSG_ROUTING_NONE);
-    old_rvh->set_is_active(false);
-
-    // Destroy the old RenderWidgetHostView.
-    if (old_rvh->GetWidget()->GetView()) {
-      old_rvh->GetWidget()->GetView()->Destroy();
-      old_rvh->GetWidget()->SetView(nullptr);
-    }
-  }
-
   // Show the new view (or a sad tab) if necessary.
   bool new_rfh_has_view = !!render_frame_host_->GetView();
   if (!delegate_->IsHidden() && new_rfh_has_view) {
@@ -2243,6 +2196,14 @@ void RenderFrameHostManager::CommitPending() {
     render_frame_host_->ResetLoadingState();
     delegate_->RenderProcessGoneFromRenderManager(
         render_frame_host_->render_view_host());
+  }
+
+  // For top-level frames, also hide the old RenderViewHost's view.
+  // TODO(creis): As long as show/hide are on RVH, we don't want to hide on
+  // subframe navigations or we will interfere with the top-level frame.
+  if (is_main_frame &&
+      old_render_frame_host->render_view_host()->GetWidget()->GetView()) {
+    old_render_frame_host->render_view_host()->GetWidget()->GetView()->Hide();
   }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
@@ -2268,6 +2229,30 @@ void RenderFrameHostManager::CommitPending() {
 
   if (has_old_background_color && render_frame_host_->GetView())
     render_frame_host_->GetView()->SetBackgroundColor(old_background_color);
+
+  // The RenderViewHost keeps track of the main RenderFrameHost routing id.
+  // If this is committing a main frame navigation, update it and set the
+  // routing id in the RenderViewHost associated with the old RenderFrameHost
+  // to MSG_ROUTING_NONE.
+  if (is_main_frame) {
+    RenderViewHostImpl* rvh = render_frame_host_->render_view_host();
+    rvh->set_main_frame_routing_id(render_frame_host_->routing_id());
+
+    // If the RenderViewHost is transitioning from swapped out to active state,
+    // it was reused, so dispatch a RenderViewReady event.  For example, this
+    // is necessary to hide the sad tab if one is currently displayed.  See
+    // https://crbug.com/591984.
+    //
+    // TODO(alexmos):  Remove this and move RenderViewReady consumers to use
+    // the main frame's RenderFrameCreated instead.
+    if (!rvh->is_active())
+      rvh->PostRenderViewReady();
+
+    rvh->set_is_active(true);
+    rvh->set_is_swapped_out(false);
+    old_render_frame_host->render_view_host()->set_main_frame_routing_id(
+        MSG_ROUTING_NONE);
+  }
 
   // Swap out the old frame now that the new one is visible.
   // This will swap it out and schedule it for deletion when the swap out ack
