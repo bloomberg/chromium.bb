@@ -45,6 +45,19 @@ void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
     return;
   }
 
+  uint32_t fourcc_format = buffer->GetFramebufferPixelFormat();
+  const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
+  for (const uint64_t modifier : modifiers) {
+    // A value of 0 means DRM_FORMAT_MOD_NONE. If the CRTC has any other
+    // modifier (tiling, compression, etc.) we can't read the fb and assume it's
+    // a linear buffer.
+    if (modifier) {
+      VLOG(2) << "Crtc has a modifier and we might not know how to interpret "
+                 "the fb.";
+      return;
+    }
+  }
+
   // If the display controller is in mirror mode, the CRTCs should be sharing
   // the same framebuffer.
   DrmConsoleBuffer saved_buffer(drm, saved_crtc->buffer_id);
