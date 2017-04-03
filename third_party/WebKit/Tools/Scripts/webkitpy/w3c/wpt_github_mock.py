@@ -7,15 +7,17 @@ from webkitpy.w3c.wpt_github import MergeError
 
 class MockWPTGitHub(object):
 
-    def __init__(self, pull_requests, unsuccessful_merge_index=-1):
+    def __init__(self, pull_requests, unsuccessful_merge_index=-1, create_pr_fail_index=-1):
         self.pull_requests = pull_requests
         self.calls = []
         self.pull_requests_created = []
         self.pull_requests_merged = []
         self.unsuccessful_merge_index = unsuccessful_merge_index
+        self.create_pr_index = 0
+        self.create_pr_fail_index = create_pr_fail_index
 
-    def in_flight_pull_requests(self):
-        self.calls.append('in_flight_pull_requests')
+    def all_pull_requests(self, limit=30):  # pylint: disable=unused-argument
+        self.calls.append('all_pull_requests')
         return self.pull_requests
 
     def merge_pull_request(self, number):
@@ -34,7 +36,10 @@ class MockWPTGitHub(object):
         assert desc_title
         assert body
 
-        self.pull_requests_created.append((remote_branch_name, desc_title, body))
+        if self.create_pr_fail_index != self.create_pr_index:
+            self.pull_requests_created.append((remote_branch_name, desc_title, body))
+
+        self.create_pr_index += 1
 
         return {}
 

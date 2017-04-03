@@ -83,8 +83,23 @@ class WPTGitHub(object):
         path = '/search/issues?q=repo:w3c/web-platform-tests%20is:open%20type:pr%20label:{}'.format(EXPORT_LABEL)
         data, status_code = self.request(path, method='GET')
         if status_code == 200:
-            return [PullRequest(title=item['title'],
-                                number=item['number']) for item in data['items']]
+            return [self.make_pr_from_item(item) for item in data['items']]
+        else:
+            raise Exception('Non-200 status code (%s): %s' % (status_code, data))
+
+    def make_pr_from_item(self, item):
+        return PullRequest(
+            title=item['title'],
+            number=item['number'],
+            body=item['body'],
+            state=item['state'])
+
+    def all_pull_requests(self, limit=30):
+        assert limit <= 100, 'Maximum GitHub page size exceeded.'
+        path = '/search/issues?q=repo:w3c/web-platform-tests%20type:pr%20label:{}&page=1&per_page={}'.format(EXPORT_LABEL, limit)
+        data, status_code = self.request(path, method='GET')
+        if status_code == 200:
+            return [self.make_pr_from_item(item) for item in data['items']]
         else:
             raise Exception('Non-200 status code (%s): %s' % (status_code, data))
 
@@ -137,4 +152,4 @@ class MergeError(Exception):
     """
     pass
 
-PullRequest = namedtuple('PullRequest', ['title', 'number'])
+PullRequest = namedtuple('PullRequest', ['title', 'number', 'body', 'state'])

@@ -52,7 +52,7 @@ class MockResponse(object):
     def __init__(self, values):
         self.status_code = values['status_code']
         self.url = ''
-        self.body = ''
+        self.body = values.get('body', '')
 
         if int(self.status_code) >= 400:
             raise urllib2.HTTPError(

@@ -38,6 +38,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'footers', '--position', 'add087a97844f4b9e307d9a216940582d96db306'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'format-patch', '-1', '--stdout', 'add087a97844f4b9e307d9a216940582d96db306', '--', 'some', 'files'],
@@ -60,6 +61,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'add087a97844f4b9e307d9a216940582d96db306..HEAD', '--reverse', '--',
              'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'footers', '--position', 'add087a97844f4b9e307d9a216940582d96db306'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306']
@@ -81,6 +83,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'add087a97844f4b9e307d9a216940582d96db306..HEAD', '--reverse', '--',
              'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'footers', '--position', 'add087a97844f4b9e307d9a216940582d96db306'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306']
@@ -101,6 +104,7 @@ class CommonTest(unittest.TestCase):
             ['git', 'rev-parse', '--show-toplevel'],
             ['git', 'rev-list', 'beefcafe..HEAD', '--reverse', '--',
              'add087a97844f4b9e307d9a216940582d96db306/third_party/WebKit/LayoutTests/external/wpt/'],
+            ['git', 'footers', '--position', 'add087a97844f4b9e307d9a216940582d96db306'],
             ['git', 'diff-tree', '--name-only', '--no-commit-id', '-r', 'add087a97844f4b9e307d9a216940582d96db306', '--',
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'show', '--format=%B', '--no-patch', 'add087a97844f4b9e307d9a216940582d96db306'],

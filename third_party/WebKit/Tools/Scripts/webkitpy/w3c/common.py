@@ -51,10 +51,29 @@ def exportable_commits_since(chromium_commit_hash, host, local_wpt):
     return [commit for commit in chromium_commits if is_exportable(commit, local_wpt)]
 
 
+def exportable_commits_over_last_n_commits(number, host, local_wpt):
+    """Lists exportable commits after a certain point.
+
+    Args:
+        number: Number of commits back to look. The commits to check will
+            include all commits starting from the commit before HEAD~n, up
+            to and including HEAD.
+        host: A Host object.
+        local_wpt: A LocalWPT instance, used to see whether a Chromium commit
+            can be applied cleanly in the upstream repo.
+
+    Returns:
+        A list of ChromiumCommit objects for commits that are exportable after
+        the given commit, in chronological order.
+    """
+    return exportable_commits_since('HEAD~{}'.format(number + 1), host, local_wpt)
+
+
 def is_exportable(chromium_commit, local_wpt):
     """Checks whether a given patch is exportable and can be applied."""
     patch = chromium_commit.format_patch()
+
     return ('NOEXPORT=true' not in chromium_commit.message() and
-            not chromium_commit.message().startswith('Import ') and
+            not chromium_commit.message().startswith('Import') and
             patch and
             local_wpt.test_patch(patch, chromium_commit))

@@ -26,13 +26,16 @@ class ChromiumCommit(object):
         assert sha or position, 'requires sha or position'
         assert not (sha and position), 'cannot accept both sha and position'
 
-        if position and not sha:
+        if position:
             if position.startswith('Cr-Commit-Position: '):
                 position = position[len('Cr-Commit-Position: '):]
 
             sha = self.position_to_sha(position)
+        else:
+            position = self.sha_to_position(sha)
 
         assert len(sha) == 40, 'Expected SHA-1 hash, got {}'.format(sha)
+        assert sha and position, 'ChromiumCommit should have sha and position after __init__'
         self.sha = sha
         self.position = position
 
@@ -51,6 +54,11 @@ class ChromiumCommit(object):
     def position_to_sha(self, commit_position):
         return self.host.executive.run_command([
             'git', 'crrev-parse', commit_position
+        ], cwd=self.absolute_chromium_dir).strip()
+
+    def sha_to_position(self, sha):
+        return self.host.executive.run_command([
+            'git', 'footers', '--position', sha
         ], cwd=self.absolute_chromium_dir).strip()
 
     def subject(self):

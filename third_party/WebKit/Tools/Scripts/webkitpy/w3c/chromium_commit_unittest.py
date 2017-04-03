@@ -13,17 +13,25 @@ CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 class ChromiumCommitTest(unittest.TestCase):
 
-    def test_accepts_sha(self):
-        chromium_commit = ChromiumCommit(MockHost(), sha='c881563d734a86f7d9cd57ac509653a61c45c240')
-
-        self.assertEqual(chromium_commit.sha, 'c881563d734a86f7d9cd57ac509653a61c45c240')
-        self.assertIsNone(chromium_commit.position)
+    def test_validates_sha(self):
+        with self.assertRaises(AssertionError):
+            ChromiumCommit(MockHost(), sha='rutabaga')
 
     def test_derives_sha_from_position(self):
         host = MockHost()
         host.executive = MockExecutive(output='c881563d734a86f7d9cd57ac509653a61c45c240')
         pos = 'Cr-Commit-Position: refs/heads/master@{#789}'
         chromium_commit = ChromiumCommit(host, position=pos)
+
+        self.assertEqual(chromium_commit.position, 'refs/heads/master@{#789}')
+        self.assertEqual(chromium_commit.sha, 'c881563d734a86f7d9cd57ac509653a61c45c240')
+
+    def test_derives_position_from_sha(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'footers': 'refs/heads/master@{#789}'
+        })
+        chromium_commit = ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240')
 
         self.assertEqual(chromium_commit.position, 'refs/heads/master@{#789}')
         self.assertEqual(chromium_commit.sha, 'c881563d734a86f7d9cd57ac509653a61c45c240')
