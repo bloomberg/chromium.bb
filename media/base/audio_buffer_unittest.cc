@@ -481,4 +481,38 @@ TEST(AudioBufferTest, AudioBufferMemoryPool) {
   b2 = nullptr;
 }
 
+// Planar allocations use a different path, so make sure pool is used.
+TEST(AudioBufferTest, AudioBufferMemoryPoolPlanar) {
+  scoped_refptr<AudioBufferMemoryPool> pool(new AudioBufferMemoryPool());
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+
+  const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_MONO;
+  scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<uint8_t>(
+      kSampleFormatPlanarF32, kChannelLayout,
+      ChannelLayoutToChannelCount(kChannelLayout), kSampleRate, 1, 1,
+      kSampleRate / 100, base::TimeDelta());
+
+  // Creating and returning a buffer should increase pool size.
+  scoped_refptr<AudioBuffer> b1 = AudioBuffer::CopyFrom(
+      kSampleFormatPlanarF32, buffer->channel_layout(), buffer->channel_count(),
+      buffer->sample_rate(), buffer->frame_count(), &buffer->channel_data()[0],
+      buffer->timestamp(), pool);
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+  b1 = nullptr;
+  EXPECT_EQ(1u, pool->get_pool_size_for_testing());
+
+  // Even (especially) when used with CreateBuffer.
+  b1 = AudioBuffer::CreateBuffer(kSampleFormatU8, buffer->channel_layout(),
+                                 buffer->channel_count(), buffer->sample_rate(),
+                                 buffer->frame_count(), pool);
+  EXPECT_EQ(0u, pool->get_pool_size_for_testing());
+
+  // Mark pool for destruction and ensure buffer is still valid.
+  pool = nullptr;
+  memset(b1->channel_data()[0], 0, b1->frame_count());
+
+  // Destruct final frame after pool; hope nothing explodes.
+  b1 = nullptr;
+}
+
 }  // namespace media

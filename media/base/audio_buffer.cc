@@ -87,8 +87,12 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
 
     // Allocate a contiguous buffer for all the channel data.
     data_size_ = channel_count_ * block_size_per_channel;
-    data_.reset(static_cast<uint8_t*>(
-        base::AlignedAlloc(data_size_, kChannelAlignment)));
+    if (pool_) {
+      data_ = pool_->CreateBuffer(data_size_);
+    } else {
+      data_.reset(static_cast<uint8_t*>(
+          base::AlignedAlloc(data_size_, kChannelAlignment)));
+    }
     channel_data_.reserve(channel_count_);
 
     // Copy each channel's data into the appropriate spot.
