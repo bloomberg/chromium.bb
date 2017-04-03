@@ -45,6 +45,8 @@ struct BindStateBaseRefCountTraits {
 class BASE_EXPORT BindStateBase
     : public RefCountedThreadSafe<BindStateBase, BindStateBaseRefCountTraits> {
  public:
+  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
+
   using InvokeFuncStorage = void(*)();
 
  private:

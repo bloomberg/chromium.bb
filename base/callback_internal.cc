@@ -74,9 +74,8 @@ bool CallbackBase<CopyMode::MoveOnly>::EqualsInternal(
   return bind_state_ == other.bind_state_;
 }
 
-CallbackBase<CopyMode::MoveOnly>::CallbackBase(
-    BindStateBase* bind_state)
-    : bind_state_(bind_state) {
+CallbackBase<CopyMode::MoveOnly>::CallbackBase(BindStateBase* bind_state)
+    : bind_state_(bind_state ? AdoptRef(bind_state) : nullptr) {
   DCHECK(!bind_state_.get() || bind_state_->HasOneRef());
 }
 
