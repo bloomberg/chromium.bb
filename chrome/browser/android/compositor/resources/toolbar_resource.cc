@@ -10,6 +10,9 @@ namespace android {
 
 // static
 ToolbarResource* ToolbarResource::From(ui::Resource* resource) {
+  if (!resource)
+    return nullptr;
+
   DCHECK_EQ(Type::TOOLBAR, resource->type());
   return static_cast<ToolbarResource*>(resource);
 }
