@@ -23,7 +23,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
-#include "net/quic/test_tools/quic_stream_factory_peer.h"
+#include "net/quic/chromium/quic_stream_factory_peer.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "testing/gmock/include/gmock/gmock.h"

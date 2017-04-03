@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/test_tools/quic_stream_factory_peer.h"
+#include "net/quic/chromium/quic_stream_factory_peer.h"
 
 #include <string>
 #include <vector>

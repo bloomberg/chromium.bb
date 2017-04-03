@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_TEST_TOOLS_QUIC_STREAM_FACTORY_PEER_H_
-#define NET_QUIC_TEST_TOOLS_QUIC_STREAM_FACTORY_PEER_H_
+#ifndef NET_QUIC_CHROMIUM_QUIC_STREAM_FACTORY_PEER_H_
+#define NET_QUIC_CHROMIUM_QUIC_STREAM_FACTORY_PEER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -110,4 +110,4 @@ class QuicStreamFactoryPeer {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_QUIC_TEST_TOOLS_QUIC_STREAM_FACTORY_PEER_H_
+#endif  // NET_QUIC_CHROMIUM_QUIC_STREAM_FACTORY_PEER_H_
