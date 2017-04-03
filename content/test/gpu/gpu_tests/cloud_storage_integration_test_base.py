@@ -247,9 +247,12 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     params = cls._reference_image_parameters
     msaa_string = '_msaa' if params.msaa else '_non_msaa'
     if params.vendor_id:
+      os_type = cls.GetParsedCommandLineOptions().os_type
+      if str(cls.browser.platform.GetOSVersionName()).lower() == "win10":
+        # Allow separate baselines for Windows 10 and Windows 7.
+        os_type = "win10"
       return '%s_%04x_%04x%s' % (
-        cls.GetParsedCommandLineOptions().os_type, params.vendor_id,
-        params.device_id, msaa_string)
+        os_type, params.vendor_id, params.device_id, msaa_string)
     else:
       # This is the code path for Android devices. Include the model
       # name (e.g. "Nexus 9") in the GPU string to disambiguate
