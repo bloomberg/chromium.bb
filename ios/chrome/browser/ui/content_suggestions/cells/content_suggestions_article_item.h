@@ -14,6 +14,8 @@ class Time;
 }
 
 @class ContentSuggestionsArticleItem;
+@class FaviconAttributes;
+@class FaviconViewNew;
 class GURL;
 
 // Delegate for a ContentSuggestionsArticleItem.
@@ -44,6 +46,8 @@ class GURL;
 @property(nonatomic, copy) NSString* publisher;
 @property(nonatomic, assign) base::Time publishDate;
 @property(nonatomic, weak) id<ContentSuggestionsArticleItemDelegate> delegate;
+// Attributes for favicon.
+@property(nonatomic, strong) FaviconAttributes* attributes;
 
 @end
 
@@ -52,6 +56,8 @@ class GURL;
 
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
 @property(nonatomic, readonly, strong) UILabel* subtitleLabel;
+// View for displaying the favicon.
+@property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
 
 // Sets an |image| to illustrate the article, replacing the "no image" icon.
 - (void)setContentImage:(UIImage*)image;

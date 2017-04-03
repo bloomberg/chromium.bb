@@ -32,6 +32,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
+    "//ios/chrome/browser/ui/favicon:favicon_ui",
     "//ios/chrome/browser/ui/reading_list",
     "//ios/chrome/browser/ui/util",
     "//ui/base",

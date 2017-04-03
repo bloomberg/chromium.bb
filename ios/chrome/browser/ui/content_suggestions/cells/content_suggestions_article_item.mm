@@ -6,6 +6,8 @@
 
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -18,8 +20,11 @@
 
 namespace {
 const CGFloat kImageSize = 72;
-// When updating this, make sure to update |layoutSubviews|.
 const CGFloat kStandardSpacing = 16;
+const CGFloat kSmallSpacing = 8;
+
+// Size of the favicon view.
+const CGFloat kFaviconSize = 16;
 // Size of the icon displayed when there is not image.
 const CGFloat kIconSize = 24;
 // Name of the icon displayed when there is not image.
@@ -55,6 +60,7 @@ const CGFloat kAnimationDuration = 0.3;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
 @synthesize delegate = _delegate;
 @synthesize imageFetched = _imageFetched;
+@synthesize attributes = _attributes;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title
@@ -79,6 +85,8 @@ const CGFloat kAnimationDuration = 0.3;
     // Fetch the image. During the fetch the cell's image should still be set.
     [self.delegate loadImageForArticleItem:self];
   }
+  if (self.attributes)
+    [cell.faviconView configureWithAttributes:self.attributes];
   cell.titleLabel.text = self.title;
   cell.subtitleLabel.text = self.subtitle;
   [cell setContentImage:self.image];
@@ -114,6 +122,7 @@ const CGFloat kAnimationDuration = 0.3;
 @synthesize noImageIcon = _noImageIcon;
 @synthesize publisherLabel = _publisherLabel;
 @synthesize contentImageView = _contentImageView;
+@synthesize faviconView = _faviconView;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -124,6 +133,7 @@ const CGFloat kAnimationDuration = 0.3;
     _noImageIcon = [[UIImageView alloc] initWithFrame:CGRectZero];
     _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _contentImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _faviconView = [[FaviconViewNew alloc] init];
 
     _titleLabel.numberOfLines = 2;
     _subtitleLabel.numberOfLines = 2;
@@ -142,11 +152,13 @@ const CGFloat kAnimationDuration = 0.3;
     _subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _publisherLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _contentImageView.translatesAutoresizingMaskIntoConstraints = NO;
+    _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 
     [self.contentView addSubview:_imageContainer];
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_subtitleLabel];
     [self.contentView addSubview:_publisherLabel];
+    [self.contentView addSubview:_faviconView];
 
     [_imageContainer addSubview:_noImageIcon];
     [_imageContainer addSubview:_contentImageView];
@@ -161,6 +173,8 @@ const CGFloat kAnimationDuration = 0.3;
     _titleLabel.font = [MDCTypography subheadFont];
     _subtitleLabel.font = [MDCTypography body1Font];
     _publisherLabel.font = [MDCTypography captionFont];
+    _faviconView.font =
+        [[MDCTypography fontLoader] regularFontOfSize:kFaviconSize / 2];
 
     _subtitleLabel.textColor = [[MDCPalette greyPalette] tint700];
     _publisherLabel.textColor = [[MDCPalette greyPalette] tint700];
@@ -217,6 +231,8 @@ const CGFloat kAnimationDuration = 0.3;
       parentWidth - kImageSize - 3 * kStandardSpacing;
   self.subtitleLabel.preferredMaxLayoutWidth =
       parentWidth - kImageSize - 3 * kStandardSpacing;
+  self.publisherLabel.preferredMaxLayoutWidth =
+      parentWidth - kFaviconSize - kSmallSpacing - 2 * kStandardSpacing;
 
   // Re-layout with the new preferred width to allow the label to adjust its
   // height.
@@ -231,12 +247,33 @@ const CGFloat kAnimationDuration = 0.3;
     [_imageContainer.heightAnchor
         constraintEqualToAnchor:_imageContainer.widthAnchor],
     [_imageContainer.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
+
+    // Publisher.
     [_publisherLabel.topAnchor
         constraintGreaterThanOrEqualToAnchor:_imageContainer.bottomAnchor
                                     constant:kStandardSpacing],
     [_publisherLabel.topAnchor
         constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
                                     constant:kStandardSpacing],
+    [_publisherLabel.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
+                                 constant:-kStandardSpacing],
+
+    // Favicon.
+    [_faviconView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:_imageContainer.bottomAnchor
+                                    constant:kStandardSpacing],
+    [_faviconView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:_subtitleLabel.bottomAnchor
+                                    constant:kStandardSpacing],
+    [_faviconView.centerYAnchor
+        constraintEqualToAnchor:_publisherLabel.centerYAnchor],
+    [_faviconView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.contentView.bottomAnchor
+                                 constant:-kStandardSpacing],
+    [_faviconView.heightAnchor constraintEqualToConstant:kFaviconSize],
+    [_faviconView.widthAnchor
+        constraintEqualToAnchor:_faviconView.heightAnchor],
 
     // No image icon.
     [_noImageIcon.centerXAnchor
@@ -254,16 +291,17 @@ const CGFloat kAnimationDuration = 0.3;
         @"H:|-(space)-[title]-(space)-[image]-(space)-|",
         @"H:|-(space)-[text]-(space)-[image]",
         @"V:|-(space)-[title]-[text]",
-        @"H:|-(space)-[publish]-(space)-|",
-        @"V:[publish]-|",
+        @"H:|-(space)-[favicon]-(small)-[publish]-(space)-|",
       ],
       @{
         @"image" : _imageContainer,
         @"title" : _titleLabel,
         @"text" : _subtitleLabel,
         @"publish" : _publisherLabel,
+        @"favicon" : _faviconView,
       },
-      @{ @"space" : @(kStandardSpacing) });
+      @{ @"space" : @(kStandardSpacing),
+         @"small" : @(kSmallSpacing) });
 }
 
 @end
