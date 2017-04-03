@@ -7,7 +7,7 @@
 
 // Define CDM_API so that functionality implemented by the CDM module
 // can be exported to consumers.
-#if defined(WIN32)
+#if defined(_WIN32)
 
 #if defined(CDM_IMPLEMENTATION)
 #define CDM_API __declspec(dllexport)
@@ -15,8 +15,8 @@
 #define CDM_API __declspec(dllimport)
 #endif  // defined(CDM_IMPLEMENTATION)
 
-#else  // defined(WIN32)
+#else  // defined(_WIN32)
 #define CDM_API __attribute__((visibility("default")))
-#endif  // defined(WIN32)
+#endif  // defined(_WIN32)
 
 #endif  // CDM_CONTENT_DECRYPTION_MODULE_EXPORT_H_

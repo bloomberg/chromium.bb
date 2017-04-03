@@ -5,7 +5,7 @@
 #ifndef CDM_CONTENT_DECRYPTION_MODULE_EXT_H_
 #define CDM_CONTENT_DECRYPTION_MODULE_EXT_H_
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
@@ -19,17 +19,15 @@ typedef unsigned int uint32_t;
 
 namespace cdm {
 
-#if defined(WIN32)
+#if defined(_WIN32)
 typedef wchar_t FilePathCharType;
 typedef HANDLE PlatformFile;
 const PlatformFile kInvalidPlatformFile = INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
+#else
 typedef char FilePathCharType;
 typedef int PlatformFile;
 const PlatformFile kInvalidPlatformFile = -1;
-#else  // !defined(WIN32) && !defined(OS_POSIX)
-#error Unsupported platform.
-#endif  // defined(WIN32)
+#endif  // defined(_WIN32)
 
 struct HostFile {
   HostFile(const FilePathCharType* file_path,

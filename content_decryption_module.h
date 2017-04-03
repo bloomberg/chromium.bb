@@ -22,15 +22,15 @@ typedef __int64 int64_t;
 // about that for the internal symbols, but it has only become a practical issue
 // after introduction of LTO devirtualization. See more details on
 // https://crbug.com/609564#c35
-#if defined(WIN32)
+#if defined(_WIN32)
 #if defined(__clang__)
 #define CDM_CLASS_API [[clang::lto_visibility_public]]
 #else
 #define CDM_CLASS_API
 #endif
-#else  // defined(WIN32)
+#else  // defined(_WIN32)
 #define CDM_CLASS_API __attribute__((visibility("default")))
-#endif  // defined(WIN32)
+#endif  // defined(_WIN32)
 
 // The version number must be rolled when the exported functions are updated!
 // If the CDM and the adapter use different versions of these functions, the
