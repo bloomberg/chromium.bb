@@ -233,8 +233,12 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   // Returns the primary cell at (row, effectiveColumn) if the cell exists and
   // originates from (instead of spanning into) the grid slot, or nullptr.
+  LayoutTableCell* originatingCellAt(unsigned row, unsigned effectiveColumn);
   const LayoutTableCell* originatingCellAt(unsigned row,
-                                           unsigned effectiveColumn) const;
+                                           unsigned effectiveColumn) const {
+    return const_cast<LayoutTableSection*>(this)->originatingCellAt(
+        row, effectiveColumn);
+  }
 
   unsigned numCols(unsigned row) const { return m_grid[row].row.size(); }
 

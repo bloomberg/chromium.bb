@@ -1159,14 +1159,9 @@ void LayoutTableSection::layoutRows() {
 
     unsigned nCols = numCols(r);
     for (unsigned c = 0; c < nCols; c++) {
-      CellStruct& cs = cellAt(r, c);
-      LayoutTableCell* cell = cs.primaryCell();
-
-      if (!cell || cs.inColSpan)
+      LayoutTableCell* cell = originatingCellAt(r, c);
+      if (!cell)
         continue;
-
-      if (cell->rowIndex() != r)
-        continue;  // Rowspanned cells are handled in the first row they occur.
 
       int rHeight;
       int rowLogicalTop;
@@ -1280,11 +1275,8 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows,
   for (unsigned r = 0; r < totalRows; r++) {
     unsigned nCols = numCols(r);
     for (unsigned c = 0; c < nCols; c++) {
-      CellStruct& cs = cellAt(r, c);
-      LayoutTableCell* cell = cs.primaryCell();
-      if (!cell || cs.inColSpan)
-        continue;
-      if (r < totalRows - 1 && cell == primaryCellAt(r + 1, c))
+      auto* cell = originatingCellAt(r, c);
+      if (!cell)
         continue;
       addOverflowFromChild(cell);
 #if DCHECK_IS_ON()
@@ -1322,9 +1314,8 @@ bool LayoutTableSection::recalcChildOverflowAfterStyleChange() {
     bool rowChildrenOverflowChanged = false;
     unsigned nCols = numCols(r);
     for (unsigned c = 0; c < nCols; c++) {
-      CellStruct& cs = cellAt(r, c);
-      LayoutTableCell* cell = cs.primaryCell();
-      if (!cell || cs.inColSpan || !cell->needsOverflowRecalcAfterStyleChange())
+      auto* cell = originatingCellAt(r, c);
+      if (!cell || !cell->needsOverflowRecalcAfterStyleChange())
         continue;
       rowChildrenOverflowChanged |= cell->recalcOverflowAfterStyleChange();
     }
@@ -1768,16 +1759,16 @@ const LayoutTableCell* LayoutTableSection::firstRowCellAdjoiningTableEnd()
   return primaryCellAt(0, adjoiningEndCellColumnIndex);
 }
 
-const LayoutTableCell* LayoutTableSection::originatingCellAt(
+LayoutTableCell* LayoutTableSection::originatingCellAt(
     unsigned row,
-    unsigned effectiveColumn) const {
-  const auto& rowVector = m_grid[row].row;
+    unsigned effectiveColumn) {
+  auto& rowVector = m_grid[row].row;
   if (effectiveColumn >= rowVector.size())
     return nullptr;
-  const auto& cellStruct = rowVector[effectiveColumn];
+  auto& cellStruct = rowVector[effectiveColumn];
   if (cellStruct.inColSpan)
     return nullptr;
-  if (const auto* cell = cellStruct.primaryCell()) {
+  if (auto* cell = cellStruct.primaryCell()) {
     if (cell->rowIndex() == row)
       return cell;
   }
