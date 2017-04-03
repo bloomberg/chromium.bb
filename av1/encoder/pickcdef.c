@@ -201,7 +201,6 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   uint64_t(*mse[3])[TOTAL_STRENGTHS];
   int clpf_damping = 3 + (cm->base_qindex >> 6);
   int i;
-  int best_lev[CDEF_MAX_STRENGTHS];
   int nb_strengths;
   int nb_strength_bits;
   int quantizer;
@@ -329,6 +328,8 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   nb_strength_bits = 0;
   /* Search for different number of signalling bits. */
   for (i = 0; i <= 3; i++) {
+    int j;
+    int best_lev[CDEF_MAX_STRENGTHS];
     nb_strengths = 1 << i;
     tot_mse = joint_strength_search(best_lev, nb_strengths, mse[0], sb_count);
     /* Count superblock signalling cost. */
@@ -338,22 +339,24 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     if (tot_mse < best_tot_mse) {
       best_tot_mse = tot_mse;
       nb_strength_bits = i;
+      for (j = 0; j < 1 << nb_strength_bits; j++) {
+        cm->cdef_strengths[j] = best_lev[j];
+      }
     }
   }
   nb_strengths = 1 << nb_strength_bits;
 
   cm->cdef_bits = nb_strength_bits;
   cm->nb_cdef_strengths = nb_strengths;
-  for (i = 0; i < nb_strengths; i++) cm->cdef_strengths[i] = best_lev[i];
   for (i = 0; i < sb_count; i++) {
     int gi;
     int best_gi;
     uint64_t best_mse = (uint64_t)1 << 63;
     best_gi = 0;
     for (gi = 0; gi < cm->nb_cdef_strengths; gi++) {
-      if (mse[0][i][best_lev[gi]] < best_mse) {
+      if (mse[0][i][cm->cdef_strengths[gi]] < best_mse) {
         best_gi = gi;
-        best_mse = mse[0][i][best_lev[gi]];
+        best_mse = mse[0][i][cm->cdef_strengths[gi]];
       }
     }
     selected_strength[i] = best_gi;
