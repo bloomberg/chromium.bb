@@ -66,6 +66,9 @@ void av1_inv_txfm_add_4x8(const tran_low_t *input, uint8_t *dest, int stride,
                           int eob, TX_TYPE tx_type);
 void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                       INV_TXFM_PARAM *inv_txfm_param);
+void av1_inverse_transform_block(MACROBLOCKD *xd, const tran_low_t *dqcoeff,
+                                 const TX_TYPE tx_type, const TX_SIZE tx_size,
+                                 uint8_t *dst, int stride, int eob);
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                             int eob, int bd);

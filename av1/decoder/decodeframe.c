@@ -328,22 +328,7 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
                                     int stride, int16_t scan_line, int eob) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = pd->dqcoeff;
-  INV_TXFM_PARAM inv_txfm_param;
-  inv_txfm_param.tx_type = tx_type;
-  inv_txfm_param.tx_size = tx_size;
-  inv_txfm_param.eob = eob;
-  inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
-
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    inv_txfm_param.bd = xd->bd;
-    av1_highbd_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
-  } else {
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-    av1_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
-#if CONFIG_AOM_HIGHBITDEPTH
-  }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, stride, eob);
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
 }
 

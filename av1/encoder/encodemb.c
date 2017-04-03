@@ -1094,7 +1094,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   AV1_COMMON *cm = args->cm;
   MACROBLOCK *const x = args->x;
   MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
@@ -1107,7 +1106,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   int ctx = 0;
-  INV_TXFM_PARAM inv_txfm_param;
 #if CONFIG_PVQ
   int tx_blk_size;
   int i, j;
@@ -1143,25 +1141,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #endif  // CONFIG_NEW_QUANT
   }
 
-  if (*eob) {
-    // inverse transform
-    inv_txfm_param.tx_type = tx_type;
-    inv_txfm_param.tx_size = tx_size;
-    inv_txfm_param.eob = *eob;
-    inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
-#if CONFIG_AOM_HIGHBITDEPTH
-    inv_txfm_param.bd = xd->bd;
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      av1_highbd_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
-    } else {
-      av1_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
-    }
-#else
-    av1_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
-    *(args->skip) = 0;
-  }
+  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
+                              *eob);
 #else  // #if !CONFIG_PVQ
 
 #if CONFIG_NEW_QUANT
@@ -1197,20 +1178,8 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-  inv_txfm_param.tx_type = tx_type;
-  inv_txfm_param.tx_size = tx_size;
-  inv_txfm_param.eob = *eob;
-  inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    inv_txfm_param.bd = xd->bd;
-    av1_highbd_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
-  } else {
-#endif
-    av1_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
-#if CONFIG_AOM_HIGHBITDEPTH
-  }
-#endif
+  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
+                              *eob);
 #endif  // #if !CONFIG_PVQ
 
 #if !CONFIG_PVQ

@@ -2781,6 +2781,28 @@ void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
+void av1_inverse_transform_block(MACROBLOCKD *xd, const tran_low_t *dqcoeff,
+                                 const TX_TYPE tx_type, const TX_SIZE tx_size,
+                                 uint8_t *dst, int stride, int eob) {
+  if (!eob) return;
+  INV_TXFM_PARAM inv_txfm_param;
+  inv_txfm_param.tx_type = tx_type;
+  inv_txfm_param.tx_size = tx_size;
+  inv_txfm_param.eob = eob;
+  inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
+
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    inv_txfm_param.bd = xd->bd;
+    av1_highbd_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
+  } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    av1_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+}
+
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                              INV_TXFM_PARAM *inv_txfm_param) {
