@@ -6,7 +6,6 @@
 
 #include "core/editing/Editor.h"
 #include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
