@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/budget_service/budget.pb.h"
@@ -46,13 +47,16 @@ BudgetDatabase::BudgetInfo::BudgetInfo(const BudgetInfo&& other)
 
 BudgetDatabase::BudgetInfo::~BudgetInfo() {}
 
-BudgetDatabase::BudgetDatabase(
-    Profile* profile,
-    const base::FilePath& database_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+BudgetDatabase::BudgetDatabase(Profile* profile,
+                               const base::FilePath& database_dir)
     : profile_(profile),
       db_(new leveldb_proto::ProtoDatabaseImpl<budget_service::Budget>(
-          task_runner)),
+          base::CreateSequencedTaskRunnerWithTraits(
+              base::TaskTraits()
+                  .MayBlock()
+                  .WithPriority(base::TaskPriority::BACKGROUND)
+                  .WithShutdownBehavior(
+                      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)))),
       clock_(base::WrapUnique(new base::DefaultClock)),
       weak_ptr_factory_(this) {
   db_->Init(kDatabaseUMAName, database_dir,

@@ -17,7 +17,6 @@
 
 namespace base {
 class Clock;
-class SequencedTaskRunner;
 class Time;
 }
 
@@ -43,12 +42,8 @@ class BudgetDatabase {
       base::Callback<void(blink::mojom::BudgetServiceErrorType error_type,
                           bool success)>;
 
-  // The database_dir specifies the location of the budget information on
-  // disk. The task_runner is used by the ProtoDatabase to handle all blocking
-  // calls and disk access.
-  BudgetDatabase(Profile* profile,
-                 const base::FilePath& database_dir,
-                 const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+  // The database_dir specifies the location of the budget information on disk.
+  BudgetDatabase(Profile* profile, const base::FilePath& database_dir);
   ~BudgetDatabase();
 
   // Get the full budget expectation for the origin. This will return a

@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/budget_service/budget.pb.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -41,8 +40,7 @@ class BudgetDatabaseTest : public ::testing::Test {
   BudgetDatabaseTest()
       : success_(false),
         db_(&profile_,
-            profile_.GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
-            base::ThreadTaskRunnerHandle::Get()),
+            profile_.GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase"))),
         origin_(url::Origin(GURL(kTestOrigin))) {}
 
   void WriteBudgetComplete(base::Closure run_loop_closure,

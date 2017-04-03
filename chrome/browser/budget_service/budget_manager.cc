@@ -9,28 +9,19 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/common/origin_util.h"
 #include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/origin.h"
 
-using content::BrowserThread;
-
 BudgetManager::BudgetManager(Profile* profile)
     : profile_(profile),
       db_(profile,
-          profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase")),
-          BrowserThread::GetBlockingPool()
-              ->GetSequencedTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::GetSequenceToken(),
-                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
-      weak_ptr_factory_(this) {
-}
+          profile->GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase"))),
+      weak_ptr_factory_(this) {}
 
 BudgetManager::~BudgetManager() {}
 
