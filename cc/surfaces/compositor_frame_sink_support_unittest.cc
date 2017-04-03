@@ -118,6 +118,9 @@ class CompositorFrameSinkSupportTest : public testing::Test {
   ~CompositorFrameSinkSupportTest() override {}
 
   CompositorFrameSinkSupport& display_support() { return *supports_[0]; }
+  Surface* display_surface() {
+    return display_support().current_surface_for_testing();
+  }
 
   CompositorFrameSinkSupport& parent_support() { return *supports_[1]; }
   Surface* parent_surface() {
@@ -262,7 +265,7 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedOnTwo) {
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1, child_id2));
 
   // Submit a CompositorFrame without any dependencies to |child_id1|.
@@ -273,7 +276,7 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedOnTwo) {
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // Submit a CompositorFrame without any dependencies to |child_id2|.
@@ -284,7 +287,7 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedOnTwo) {
   EXPECT_FALSE(dependency_tracker().has_deadline());
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 }
 
 // The parent Surface is blocked on |child_id2| which is blocked on |child_id3|.
@@ -300,7 +303,7 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
@@ -310,11 +313,11 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(child_surface1()->HasActiveFrame());
   EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(child_surface1()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // The parent should still be blocked on |child_id1| because it's pending.
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
 
   // Submit a CompositorFrame without any dependencies to |child_id2|.
@@ -327,12 +330,12 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingBlockedChain) {
   // child_surface1 should now be active.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 
   // parent_surface should now be active.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 }
 
 // parent_surface and child_surface1 are blocked on |child_id2|.
@@ -349,7 +352,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // child_support1 should now be blocked on |child_id2|.
@@ -359,11 +362,11 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(child_surface1()->HasActiveFrame());
   EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(child_surface1()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // The parent should still be blocked on |child_id2|.
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // Submit a CompositorFrame without any dependencies to |child_id2|.
@@ -376,12 +379,12 @@ TEST_F(CompositorFrameSinkSupportTest,
   // child_surface1 should now be active.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 
   // parent_surface should now be active.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 }
 
 // parent_surface is blocked on |child_id1|, and child_surface2 is blocked on
@@ -398,7 +401,7 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingDeadlineHits) {
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
 
   child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
@@ -408,11 +411,11 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingDeadlineHits) {
   EXPECT_TRUE(dependency_tracker().has_deadline());
   EXPECT_FALSE(child_surface1()->HasActiveFrame());
   EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(child_surface1()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // The parent should still be blocked on |child_id1| because it's pending.
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
 
   BeginFrameArgs args =
@@ -426,13 +429,13 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingDeadlineHits) {
     // parent_support is still blocked on |child_id1|.
     EXPECT_FALSE(parent_surface()->HasActiveFrame());
     EXPECT_TRUE(parent_surface()->HasPendingFrame());
-    EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+    EXPECT_THAT(parent_surface()->blocking_surfaces(),
                 UnorderedElementsAre(child_id1));
 
     // child_support1 is still blocked on |child_id2|.
     EXPECT_FALSE(child_surface1()->HasActiveFrame());
     EXPECT_TRUE(child_surface1()->HasPendingFrame());
-    EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(),
+    EXPECT_THAT(child_surface1()->blocking_surfaces(),
                 UnorderedElementsAre(child_id2));
   }
 
@@ -444,12 +447,12 @@ TEST_F(CompositorFrameSinkSupportTest, DisplayCompositorLockingDeadlineHits) {
   // parent_surface has been activated.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 
   // child_surface1 has been activated.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 }
 
 // Verifies that the deadline does not reset if we submit CompositorFrames
@@ -469,7 +472,7 @@ TEST_F(CompositorFrameSinkSupportTest,
     // support(i) should be blocked on arbitrary_id.
     EXPECT_FALSE(surface(i)->HasActiveFrame());
     EXPECT_TRUE(surface(i)->HasPendingFrame());
-    EXPECT_THAT(surface(i)->blocking_surfaces_for_testing(),
+    EXPECT_THAT(surface(i)->blocking_surfaces(),
                 UnorderedElementsAre(arbitrary_id));
 
     // Issue a BeginFrame to get closer to the deadline.
@@ -481,7 +484,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   for (int i = 0; i < 3; ++i) {
     EXPECT_TRUE(surface(i)->HasActiveFrame());
     EXPECT_FALSE(surface(i)->HasPendingFrame());
-    EXPECT_THAT(surface(i)->blocking_surfaces_for_testing(), IsEmpty());
+    EXPECT_THAT(surface(i)->blocking_surfaces(), IsEmpty());
   }
 }
 
@@ -499,7 +502,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the CompositorFrame is blocked on |arbitrary_id|.
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(arbitrary_id));
 
   // Submit a CompositorFrame that has no dependencies.
@@ -509,7 +512,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the CompositorFrame has been activated.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 }
 
 // This test verifies that the set of references from a Surface includes both
@@ -529,7 +532,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the child surface is not blocked.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 
   // parent_support submits a CompositorFrame that depends on |child_id1|
   // which is already active. Thus, this CompositorFrame should activate
@@ -538,7 +541,7 @@ TEST_F(CompositorFrameSinkSupportTest,
                                          MakeCompositorFrame({child_id}));
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
   // Verify that the parent will add a reference to the |child_id|.
   EXPECT_THAT(parent_reference_tracker().references_to_add(),
               UnorderedElementsAre(parent_child_reference));
@@ -551,7 +554,7 @@ TEST_F(CompositorFrameSinkSupportTest,
                                          MakeCompositorFrame({arbitrary_id}));
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(arbitrary_id));
   // Verify that the parent will add a reference to |arbitrary_id| and will not
   // remove a reference to |child_id|.
@@ -582,7 +585,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the CompositorFrame is blocked on |child_id|.
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id));
 
   child_support1().SubmitCompositorFrame(
@@ -591,12 +594,12 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the child CompositorFrame activates immediately.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 
   // Verify that the parent has activated.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 
   // The parent submits a CompositorFrame without any dependencies. That frame
   // should activate immediately, replacing the earlier frame. The resource from
@@ -605,7 +608,7 @@ TEST_F(CompositorFrameSinkSupportTest,
       parent_id.local_surface_id(), MakeCompositorFrame({empty_surface_ids()}));
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
   ReturnedResource returned_resource = resource.ToReturnedResource();
   EXPECT_THAT(support_client_.last_returned_resources(),
               UnorderedElementsAre(returned_resource));
@@ -627,7 +630,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the CompositorFrame is blocked on |child_id|.
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id));
 
   // Verify that a SurfaceReference(parent_id, child_id) exists in the
@@ -640,7 +643,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   // Verify that the child CompositorFrame activates immediately.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 
   // Verify that there is no temporary reference for the child and that
   // the reference from the parent to the child still exists.
@@ -663,7 +666,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithPendingFrame) {
   // Verify that the CompositorFrame is blocked on |child_id1|.
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
 
   // Submit a CompositorFrame that depends on |child_id2|.
@@ -673,7 +676,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithPendingFrame) {
   // Verify that the CompositorFrame is blocked on |child_id2|.
   EXPECT_FALSE(child_surface1()->HasActiveFrame());
   EXPECT_TRUE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(child_surface1()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
 
   // Evict child_support1's current Surface.
@@ -683,7 +686,7 @@ TEST_F(CompositorFrameSinkSupportTest, EvictSurfaceWithPendingFrame) {
   // The parent Surface should immediately activate.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
   EXPECT_FALSE(dependency_tracker().has_deadline());
 }
 
@@ -705,7 +708,7 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   // Verify that the CompositorFrame is blocked on |child_id|.
   EXPECT_FALSE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id1));
 
   // Verify that a SurfaceReference(parent_id, child_id1) exists in the
@@ -718,12 +721,12 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   // Verify that the child CompositorFrame activates immediately.
   EXPECT_TRUE(child_surface1()->HasActiveFrame());
   EXPECT_FALSE(child_surface1()->HasPendingFrame());
-  EXPECT_THAT(child_surface1()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(child_surface1()->blocking_surfaces(), IsEmpty());
 
   // Verify that the parent Surface has activated.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
 
   // Verify that there is no temporary reference for the child and that
   // the reference from the parent to the child still exists.
@@ -739,7 +742,7 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   // |parent_id| include both the pending and active CompositorFrames.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_TRUE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(),
+  EXPECT_THAT(parent_surface()->blocking_surfaces(),
               UnorderedElementsAre(child_id2));
   EXPECT_THAT(GetChildReferences(parent_id),
               UnorderedElementsAre(child_id1, child_id2));
@@ -752,7 +755,7 @@ TEST_F(CompositorFrameSinkSupportTest, DropStaleReferencesAfterActivation) {
   // reference of |parent_id|.
   EXPECT_TRUE(parent_surface()->HasActiveFrame());
   EXPECT_FALSE(parent_surface()->HasPendingFrame());
-  EXPECT_THAT(parent_surface()->blocking_surfaces_for_testing(), IsEmpty());
+  EXPECT_THAT(parent_surface()->blocking_surfaces(), IsEmpty());
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id2));
 }
 
@@ -1098,6 +1101,59 @@ TEST_F(CompositorFrameSinkSupportTest, ReuseSurfaceAfterSupportDestroyed) {
   EXPECT_EQ(surface, surface_manager().GetSurfaceForId(child_id));
   EXPECT_TRUE(surface->factory());
   EXPECT_FALSE(surface->destroyed());
+}
+
+// This test verifies that a crash does not occur if garbage collection is
+// triggered during surface dependency resolution. This test triggers garbage
+// collection during surface resolution, by causing an activation to remove
+// a surface subtree from the root. Both the old subtree and the new
+// activated subtree refer to the same dependency. The old subtree was activated
+// by deadline, and the new subtree was activated by a dependency finally
+// resolving.
+TEST_F(CompositorFrameSinkSupportTest, DependencyTrackingGarbageCollection) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          MakeCompositorFrame({parent_id1}));
+
+  EXPECT_TRUE(dependency_tracker().has_deadline());
+
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+
+  // Advance BeginFrames to trigger a deadline.
+  for (int i = 0; i < 3; ++i) {
+    begin_frame_source()->TestOnBeginFrame(args);
+    EXPECT_TRUE(dependency_tracker().has_deadline());
+  }
+  begin_frame_source()->TestOnBeginFrame(args);
+  EXPECT_FALSE(dependency_tracker().has_deadline());
+
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+  EXPECT_FALSE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          MakeCompositorFrame({parent_id2}));
+
+  // The display surface now has two CompositorFrames. One that is pending,
+  // indirectly blocked on child_id and one that is active, also indirectly
+  // referring to child_id, but activated due to the deadline above.
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+  EXPECT_TRUE(display_surface()->HasPendingFrame());
+
+  // Submitting a CompositorFrame will trigger garbage collection of the
+  // |parent_id1| subtree. This should not crash.
+  child_support1().SubmitCompositorFrame(
+      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
 }
 
 }  // namespace test

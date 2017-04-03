@@ -120,7 +120,7 @@ class CC_SURFACES_EXPORT Surface {
                           : nullptr;
   }
 
-  const SurfaceDependencies& blocking_surfaces_for_testing() const {
+  const SurfaceDependencies& blocking_surfaces() const {
     return blocking_surfaces_;
   }
 

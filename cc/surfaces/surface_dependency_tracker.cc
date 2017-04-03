@@ -72,8 +72,12 @@ void SurfaceDependencyTracker::OnBeginFrame(const BeginFrameArgs& args) {
 
   // Activate all surfaces that respect the deadline.
   PendingSurfaceSet pending_surfaces(pending_surfaces_);
-  for (Surface* pending_surface : pending_surfaces)
+  for (Surface* pending_surface : pending_surfaces) {
+    // Clear all tracked blockers for |pending_surface|.
+    for (const SurfaceId& surface_id : pending_surface->blocking_surfaces())
+      blocked_surfaces_[surface_id].erase(pending_surface);
     pending_surface->ActivatePendingFrameForDeadline();
+  }
 
   frames_since_deadline_set_.reset();
 }
