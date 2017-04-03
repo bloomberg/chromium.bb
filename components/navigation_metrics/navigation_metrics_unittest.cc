@@ -18,7 +18,7 @@ const char* const kMainFrameSchemeDifferentPage =
 
 namespace navigation_metrics {
 
-TEST(NavigationMetrics, MainFrameSchemeDifferentPage) {
+TEST(NavigationMetrics, MainFrameSchemeDifferentDocument) {
   base::HistogramTester test;
 
   RecordMainFrameNavigation(GURL(kTestUrl), false, false, false);
@@ -29,7 +29,7 @@ TEST(NavigationMetrics, MainFrameSchemeDifferentPage) {
   test.ExpectUniqueSample(kMainFrameSchemeDifferentPage, 1 /* http */, 1);
 }
 
-TEST(NavigationMetrics, MainFrameSchemeSamePage) {
+TEST(NavigationMetrics, MainFrameSchemeSameDocument) {
   base::HistogramTester test;
 
   RecordMainFrameNavigation(GURL(kTestUrl), true, false, false);
