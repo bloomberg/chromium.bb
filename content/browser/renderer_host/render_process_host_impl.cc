@@ -619,7 +619,13 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
   // On Android we don't maintain a limit of renderer process hosts - we are
   // happy with keeping a lot of these, as long as the number of live renderer
   // processes remains reasonable, and on Android the OS takes care of that.
-  return std::numeric_limits<size_t>::max();
+  // TODO(boliu): This is a short term workaround before ChildProcessLauncher
+  // can actively kill child processes in LRU order. Bug and process is tracked
+  // in crbug.com/693484. Note this workaround is not perfect and still has
+  // corner case problems.
+  static const size_t kNumRendererSlots =
+      ChildProcessLauncher::GetNumberOfRendererSlots();
+  return kNumRendererSlots;
 #endif
 
   // On other platforms, we calculate the maximum number of renderer process

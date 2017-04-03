@@ -7,9 +7,11 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 
 import java.io.IOException;
@@ -88,6 +90,23 @@ class ChildProcessLauncherHelper {
     @CalledByNative
     private static void stop(int pid) {
         ChildProcessLauncher.stop(pid);
+    }
+
+    // Called on UI thread.
+    @CalledByNative
+    private static int getNumberOfRendererSlots() {
+        final ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+        final Context context = ContextUtils.getApplicationContext();
+        final boolean inSandbox = true;
+        final String packageName =
+                params == null ? context.getPackageName() : params.getPackageName();
+        try {
+            return ChildProcessLauncher.getNumberOfServices(context, inSandbox, packageName);
+        } catch (RuntimeException e) {
+            // Unittest packages do not declare services. Some tests require a realistic number
+            // to test child process policies, so pick a high-ish number here.
+            return 65535;
+        }
     }
 
     // Can be called on a number of threads, including launcher, and binder.

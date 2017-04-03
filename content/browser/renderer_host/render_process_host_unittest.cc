@@ -70,10 +70,6 @@ TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroid) {
   // Disable any overrides.
   RenderProcessHostImpl::SetMaxRendererProcessCount(0);
 
-  // Verify that by default the limit on Android returns max size_t.
-  EXPECT_EQ(std::numeric_limits<size_t>::max(),
-      RenderProcessHostImpl::GetMaxRendererProcessCount());
-
   // Add a few dummy process hosts.
   ASSERT_NE(0u, kMaxRendererProcessCount);
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;

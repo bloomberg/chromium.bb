@@ -239,6 +239,13 @@ void ChildProcessLauncherHelper::OnChildProcessStarted(
   }
 }
 
+// static
+size_t ChildProcessLauncherHelper::GetNumberOfRendererSlots() {
+  return static_cast<size_t>(
+      Java_ChildProcessLauncherHelper_getNumberOfRendererSlots(
+          AttachCurrentThread()));
+}
+
 }  // namespace internal
 
 bool RegisterChildProcessLauncher(JNIEnv* env) {

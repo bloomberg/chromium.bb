@@ -232,7 +232,7 @@ public class ChildProcessLauncher {
     public static final String SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING =
             "sandboxed-services-name";
 
-    private static int getNumberOfServices(Context context, boolean inSandbox, String packageName) {
+    static int getNumberOfServices(Context context, boolean inSandbox, String packageName) {
         int numServices = -1;
         if (inSandbox
                 && CommandLine.getInstance().hasSwitch(
