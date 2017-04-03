@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_
-#define IOS_CHROME_BROWSER_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_
+#ifndef IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_
+#define IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_
 
 #import <UIKit/UIKit.h>
-#import "ios/chrome/browser/favicon/favicon_attributes.h"
+#import "ios/chrome/browser/ui/favicon/favicon_attributes.h"
 
 namespace favicon {
 class LargeIconService;
@@ -41,4 +41,4 @@ class GURL;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_
+#endif  // IOS_CHROME_BROWSER_UI_FAVICON_FAVICON_ATTRIBUTES_PROVIDER_H_

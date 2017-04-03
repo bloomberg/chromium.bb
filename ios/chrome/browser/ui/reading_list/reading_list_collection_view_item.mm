@@ -7,7 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/favicon_view.h"
+#import "ios/chrome/browser/ui/favicon/favicon_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
