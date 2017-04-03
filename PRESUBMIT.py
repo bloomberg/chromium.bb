@@ -690,7 +690,7 @@ def _CheckNoTrinaryTrueFalse(input_api, output_api):
 
 
 def _CheckUnwantedDependencies(input_api, output_api):
-  """Runs checkdeps on #include statements added in this
+  """Runs checkdeps on #include and import statements added in this
   change. Breaking - rules is an error, breaking ! rules is a
   warning.
   """
@@ -704,41 +704,60 @@ def _CheckUnwantedDependencies(input_api, output_api):
         input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
     import checkdeps
     from cpp_checker import CppChecker
+    from proto_checker import ProtoChecker
     from rules import Rule
   finally:
     # Restore sys.path to what it was before.
     sys.path = original_sys_path
 
   added_includes = []
+  added_imports = []
   for f in input_api.AffectedFiles():
-    if not CppChecker.IsCppFile(f.LocalPath()):
-      continue
-
-    changed_lines = [line for line_num, line in f.ChangedContents()]
-    added_includes.append([f.LocalPath(), changed_lines])
+    if CppChecker.IsCppFile(f.LocalPath()):
+      changed_lines = [line for line_num, line in f.ChangedContents()]
+      added_includes.append([f.LocalPath(), changed_lines])
+    elif ProtoChecker.IsProtoFile(f.LocalPath()):
+      changed_lines = [line for line_num, line in f.ChangedContents()]
+      added_imports.append([f.LocalPath(), changed_lines])
 
   deps_checker = checkdeps.DepsChecker(input_api.PresubmitLocalPath())
 
   error_descriptions = []
   warning_descriptions = []
+  error_subjects = set()
+  warning_subjects = set()
   for path, rule_type, rule_description in deps_checker.CheckAddedCppIncludes(
       added_includes):
     description_with_path = '%s\n    %s' % (path, rule_description)
     if rule_type == Rule.DISALLOW:
       error_descriptions.append(description_with_path)
+      error_subjects.add("#includes")
     else:
       warning_descriptions.append(description_with_path)
+      warning_subjects.add("#includes")
+
+  for path, rule_type, rule_description in deps_checker.CheckAddedProtoImports(
+      added_imports):
+    description_with_path = '%s\n    %s' % (path, rule_description)
+    if rule_type == Rule.DISALLOW:
+      error_descriptions.append(description_with_path)
+      error_subjects.add("imports")
+    else:
+      warning_descriptions.append(description_with_path)
+      warning_subjects.add("imports")
 
   results = []
   if error_descriptions:
     results.append(output_api.PresubmitError(
-        'You added one or more #includes that violate checkdeps rules.',
+        'You added one or more %s that violate checkdeps rules.'
+            % " and ".join(error_subjects),
         error_descriptions))
   if warning_descriptions:
     results.append(output_api.PresubmitPromptOrNotify(
-        'You added one or more #includes of files that are temporarily\n'
+        'You added one or more %s of files that are temporarily\n'
         'allowed but being removed. Can you avoid introducing the\n'
-        '#include? See relevant DEPS file(s) for details and contacts.',
+        '%s? See relevant DEPS file(s) for details and contacts.' %
+            (" and ".join(warning_subjects), "/".join(warning_subjects)),
         warning_descriptions))
   return results
 
