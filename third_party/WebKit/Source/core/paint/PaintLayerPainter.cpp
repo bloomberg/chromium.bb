@@ -154,7 +154,7 @@ PaintResult PaintLayerPainter::paintLayerContentsCompositingAllPhases(
 }
 
 static bool shouldCreateSubsequence(const PaintLayer& paintLayer,
-                                    GraphicsContext& context,
+                                    const GraphicsContext& context,
                                     const PaintLayerPaintingInfo& paintingInfo,
                                     PaintLayerFlags paintFlags) {
   // Caching is not needed during printing.
