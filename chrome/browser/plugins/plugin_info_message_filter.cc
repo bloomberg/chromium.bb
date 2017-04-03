@@ -39,9 +39,12 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/ukm/ukm_entry_builder.h"
+#include "components/ukm/ukm_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/features/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -109,36 +112,6 @@ static void SendPluginAvailabilityUMA(const std::string& mime_type,
 }
 
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
-
-// Report usage metrics for Silverlight and Flash plugin instantiations to the
-// RAPPOR service.
-void ReportMetrics(const std::string& mime_type,
-                   const GURL& url,
-                   const url::Origin& main_frame_origin) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (chrome::IsIncognitoSessionActive())
-    return;
-  rappor::RapporServiceImpl* rappor_service =
-      g_browser_process->rappor_service();
-  if (!rappor_service)
-    return;
-  if (main_frame_origin.unique())
-    return;
-
-  if (mime_type == content::kFlashPluginSwfMimeType ||
-      mime_type == content::kFlashPluginSplMimeType) {
-    rappor_service->RecordSampleString(
-        "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            main_frame_origin.GetURL(),
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-    rappor_service->RecordSampleString(
-        "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-  }
-}
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Returns whether a request from a plugin to load |resource| from a renderer
@@ -209,7 +182,8 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
                                                  Profile* profile)
     : BrowserMessageFilter(ChromeMsgStart),
       context_(render_process_id, profile),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      ukm_source_id_(ukm::UkmService::GetNewSourceID()) {
   shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
           base::Bind(&PluginInfoMessageFilter::ShutdownOnUIThread,
@@ -548,9 +522,62 @@ void PluginInfoMessageFilter::GetPluginInfoReply(
   Send(reply_msg);
   if (output->status != ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ReportMetrics, output->actual_mime_type,
-                              params.url, params.main_frame_origin));
+        FROM_HERE,
+        base::Bind(&PluginInfoMessageFilter::ReportMetrics, this,
+                   params.render_frame_id, output->actual_mime_type, params.url,
+                   params.main_frame_origin, ukm_source_id_));
   }
+}
+
+void PluginInfoMessageFilter::ReportMetrics(
+    int render_frame_id,
+    const base::StringPiece& mime_type,
+    const GURL& url,
+    const url::Origin& main_frame_origin,
+    int32_t ukm_source_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  content::RenderFrameHost* frame = content::RenderFrameHost::FromID(
+      context_.render_process_id(), render_frame_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  // This can occur the web contents has already been closed or navigated away.
+  if (!web_contents)
+    return;
+
+  if (web_contents->GetBrowserContext()->IsOffTheRecord())
+    return;
+
+  rappor::RapporServiceImpl* rappor_service =
+      g_browser_process->rappor_service();
+  if (!rappor_service)
+    return;
+  if (main_frame_origin.unique())
+    return;
+
+  if (mime_type != content::kFlashPluginSwfMimeType &&
+      mime_type != content::kFlashPluginSplMimeType) {
+    return;
+  }
+
+  rappor_service->RecordSampleString(
+      "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          main_frame_origin.GetURL(),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  rappor_service->RecordSampleString(
+      "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+
+  ukm::UkmService* ukm_service = g_browser_process->ukm_service();
+  if (!ukm_service)
+    return;
+  ukm_service->UpdateSourceURL(ukm_source_id,
+                               web_contents->GetLastCommittedURL());
+  // UkmEntryBuilder records the entry when it goes out of scope.
+  std::unique_ptr<ukm::UkmEntryBuilder> builder =
+      ukm_service->GetEntryBuilder(ukm_source_id, "Plugins.FlashInstance");
 }
 
 void PluginInfoMessageFilter::Context::MaybeGrantAccess(

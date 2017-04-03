@@ -20,6 +20,7 @@
 #include "components/ukm/ukm_reporting_service.h"
 #include "url/gurl.h"
 
+class PluginInfoMessageFilter;
 class PrefRegistrySimple;
 class PrefService;
 class UkmPageLoadMetricsObserver;
@@ -44,7 +45,7 @@ extern const base::Feature kUkmFeature;
 // The URL-Keyed Metrics (UKM) service is responsible for gathering and
 // uploading reports that contain fine grained performance metrics including
 // URLs for top-level navigations.
-class UkmService : public base::SupportsWeakPtr<UkmService> {
+class UkmService {
  public:
   // Constructs a UkmService.
   // Calling code is responsible for ensuring that the lifetime of
@@ -108,8 +109,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   }
 
  private:
-  friend UkmPageLoadMetricsObserver;
   friend autofill::AutofillMetrics;
+  friend PluginInfoMessageFilter;
+  friend UkmPageLoadMetricsObserver;
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, AddEntryOnlyWithNonEmptyMetrics);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, EntryBuilderAndSerialization);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest,
