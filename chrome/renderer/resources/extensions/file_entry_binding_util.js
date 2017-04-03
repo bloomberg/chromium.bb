@@ -4,11 +4,11 @@
 
 var fileSystemNatives = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;
-var sendRequest = require('sendRequest');
 var lastError = require('lastError');
 var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
 // TODO(sammc): Don't require extension. See http://crbug.com/235689.
 var GetExtensionViews = requireNative('runtime').GetExtensionViews;
+var safeCallbackApply = require('uncaught_exception_handler').safeCallbackApply;
 
 // For a given |apiName|, generates object with two elements that are used
 // in file system relayed APIs:
@@ -72,11 +72,10 @@ function getFileBindingsForApi(apiName) {
                 // the callback will not be called with any entries.
                 if (entries.length == response.entries.length) {
                   if (response.multiple) {
-                    sendRequest.safeCallbackApply(
-                        apiName + '.' + functionName, request, callback,
-                        [entries]);
+                    safeCallbackApply(apiName + '.' + functionName, request,
+                                      callback, [entries]);
                   } else {
-                    sendRequest.safeCallbackApply(
+                    safeCallbackApply(
                         apiName + '.' + functionName, request, callback,
                         [entries[0]]);
                   }

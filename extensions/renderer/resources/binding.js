@@ -84,8 +84,8 @@ APIFunctions.prototype.setHandleRequestWithPromise =
       });
       $Function.apply(customizedFunction, this, args).then(function(result) {
         if (callback) {
-          sendRequestHandler.safeCallbackApply(name, {'stack': stack}, callback,
-                                               [result]);
+          exceptionHandler.safeCallbackApply(name, {'stack': stack}, callback,
+                                             [result]);
         }
       }).catch(function(error) {
         if (callback) {

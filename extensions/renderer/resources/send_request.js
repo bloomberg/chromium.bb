@@ -8,21 +8,14 @@ var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
 var validate = require('schemaUtils').validate;
 
+var safeCallbackApply = exceptionHandler.safeCallbackApply;
+
 // All outstanding requests from sendRequest().
 var requests = { __proto__: null };
 
 // Used to prevent double Activity Logging for API calls that use both custom
 // bindings and ExtensionFunctions (via sendRequest).
 var calledSendRequest = false;
-
-// Runs a user-supplied callback safely.
-function safeCallbackApply(name, request, callback, args) {
-  try {
-    $Function.apply(callback, request, args);
-  } catch (e) {
-    exceptionHandler.handle('Error in response to ' + name, e, request.stack);
-  }
-}
 
 // Callback handling.
 function handleResponse(requestId, name, success, responseList, error) {
@@ -143,7 +136,6 @@ function clearCalledSendRequest() {
 exports.$set('sendRequest', sendRequest);
 exports.$set('getCalledSendRequest', getCalledSendRequest);
 exports.$set('clearCalledSendRequest', clearCalledSendRequest);
-exports.$set('safeCallbackApply', safeCallbackApply);
 
 // Called by C++.
 exports.$set('handleResponse', handleResponse);

@@ -9,6 +9,28 @@ var handler = function(message, e) {
 };
 
 /**
+ * Formats the error message and invokes the error handler.
+ *
+ * @param {string} message - Error message prefix.
+ * @param {Error|*} e - Thrown object.
+ * @param {string=} priorStackTrace - Error message suffix.
+ * @see formatErrorMessage
+ */
+function handle(message, e, priorStackTrace) {
+  message = formatErrorMessage(message, e, priorStackTrace);
+  handler(message, e);
+}
+
+// Runs a user-supplied callback safely.
+function safeCallbackApply(name, request, callback, args) {
+  try {
+    $Function.apply(callback, request, args);
+  } catch (e) {
+    handle('Error in response to ' + name, e, request.stack);
+  }
+}
+
+/**
  * Append the error description and stack trace to |message|.
  *
  * @param {string} message - The prefix of the error message.
@@ -87,24 +109,14 @@ function safeErrorToString(e, omitType) {
   }
 }
 
-/**
- * Formats the error message and invokes the error handler.
- *
- * @param {string} message - Error message prefix.
- * @param {Error|*} e - Thrown object.
- * @param {string=} priorStackTrace - Error message suffix.
- * @see formatErrorMessage
- */
-exports.$set('handle', function(message, e, priorStackTrace) {
-  message = formatErrorMessage(message, e, priorStackTrace);
-  handler(message, e);
-});
+exports.$set('handle', handle);
 
 // |newHandler| A function which matches |handler|.
 exports.$set('setHandler', function(newHandler) {
   handler = newHandler;
 });
 
+exports.$set('safeCallbackApply', safeCallbackApply);
 exports.$set('getStackTrace', getStackTrace);
 exports.$set('getExtensionStackTrace', getExtensionStackTrace);
 exports.$set('safeErrorToString', safeErrorToString);
