@@ -31,6 +31,7 @@
 
 #include "core/css/CSSTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -193,6 +194,23 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass) {
   RuleSet& ruleSet = helper.ruleSet();
   const HeapVector<RuleData>* rules = ruleSet.shadowHostRules();
   ASSERT_EQ(0u, rules->size());
+}
+
+TEST(RuleSetTest, SelectorIndexLimit) {
+  StringBuilder builder;
+
+  for (unsigned i = 0; i < 16383; i++)
+    builder.append("div,");
+
+  builder.append("b,span {}");
+
+  CSSTestHelper helper;
+  helper.addCSSRules(builder.toString().ascii().data());
+  const RuleSet& ruleSet = helper.ruleSet();
+  const HeapTerminatedArray<RuleData>* rules = ruleSet.tagRules("b");
+  ASSERT_EQ(1u, rules->size());
+  EXPECT_EQ("b", rules->at(0).selector().tagQName().localName());
+  EXPECT_FALSE(ruleSet.tagRules("span"));
 }
 
 }  // namespace blink

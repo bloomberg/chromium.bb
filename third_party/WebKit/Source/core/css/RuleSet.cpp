@@ -121,7 +121,6 @@ RuleData::RuleData(StyleRule* rule,
                    AddRuleFlags addRuleFlags)
     : m_rule(rule),
       m_selectorIndex(selectorIndex),
-      m_isLastInArray(false),
       m_position(position),
       m_specificity(selector().specificity()),
       m_containsUncommonAttributeSelector(
@@ -130,6 +129,7 @@ RuleData::RuleData(StyleRule* rule,
       m_hasDocumentSecurityOrigin(addRuleFlags & RuleHasDocumentSecurityOrigin),
       m_propertyWhitelist(
           determinePropertyWhitelistType(addRuleFlags, selector())),
+      m_isLastInArray(false),
       m_descendantSelectorIdentifierHashes() {
   SelectorFilter::collectIdentifierHashes(
       selector(), m_descendantSelectorIdentifierHashes, maximumIdentifierCount);
