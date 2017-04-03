@@ -30,23 +30,20 @@
 
 // UMA keys need to be statically initialized so plain function would not
 // work. Use macros instead.
-#define PERMISSION_ACTION_UMA(secure_origin, permission, permission_secure,  \
-                              permission_insecure, action)                   \
-  UMA_HISTOGRAM_ENUMERATION(permission, static_cast<int>(action),            \
-                            static_cast<int>(PermissionAction::NUM));        \
-  if (secure_origin) {                                                       \
-    UMA_HISTOGRAM_ENUMERATION(permission_secure, static_cast<int>(action),   \
-                              static_cast<int>(PermissionAction::NUM));      \
-  } else {                                                                   \
-    UMA_HISTOGRAM_ENUMERATION(permission_insecure, static_cast<int>(action), \
-                              static_cast<int>(PermissionAction::NUM));      \
+#define PERMISSION_ACTION_UMA(secure_origin, permission, permission_secure, \
+                              permission_insecure, action)                  \
+  UMA_HISTOGRAM_ENUMERATION(permission, action, PermissionAction::NUM);     \
+  if (secure_origin) {                                                      \
+    UMA_HISTOGRAM_ENUMERATION(permission_secure, action,                    \
+                              PermissionAction::NUM);                       \
+  } else {                                                                  \
+    UMA_HISTOGRAM_ENUMERATION(permission_insecure, action,                  \
+                              PermissionAction::NUM);                       \
   }
 
 #define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type) \
-  UMA_HISTOGRAM_ENUMERATION(                                            \
-      metric_name,                                                      \
-      static_cast<base::HistogramBase::Sample>(permission_bubble_type), \
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::NUM))
+  UMA_HISTOGRAM_ENUMERATION(metric_name, permission_bubble_type,        \
+                            PermissionRequestType::NUM)
 
 #define PERMISSION_BUBBLE_GESTURE_TYPE_UMA(gesture_metric_name,              \
                                            no_gesture_metric_name,           \
@@ -131,20 +128,16 @@ void RecordPermissionRequest(ContentSettingsType content_type,
   DCHECK(success);
 
   bool secure_origin = content::IsOriginSecure(requesting_origin);
-  UMA_HISTOGRAM_ENUMERATION(
-      "ContentSettings.PermissionRequested",
-      static_cast<base::HistogramBase::Sample>(permission),
-      static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.PermissionRequested", permission,
+                            PermissionType::NUM);
   if (secure_origin) {
     UMA_HISTOGRAM_ENUMERATION(
-        "ContentSettings.PermissionRequested_SecureOrigin",
-        static_cast<base::HistogramBase::Sample>(permission),
-        static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
+        "ContentSettings.PermissionRequested_SecureOrigin", permission,
+        PermissionType::NUM);
   } else {
     UMA_HISTOGRAM_ENUMERATION(
-        "ContentSettings.PermissionRequested_InsecureOrigin",
-        static_cast<base::HistogramBase::Sample>(permission),
-        static_cast<base::HistogramBase::Sample>(PermissionType::NUM));
+        "ContentSettings.PermissionRequested_InsecureOrigin", permission,
+        PermissionType::NUM);
   }
 }
 
@@ -330,8 +323,7 @@ void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
 void PermissionUmaUtil::RecordEmbargoPromptSuppression(
     PermissionEmbargoStatus embargo_status) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoPromptSuppression",
-                            static_cast<int>(embargo_status),
-                            static_cast<int>(PermissionEmbargoStatus::NUM));
+                            embargo_status, PermissionEmbargoStatus::NUM);
 }
 
 void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
@@ -358,8 +350,7 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
 void PermissionUmaUtil::RecordEmbargoStatus(
     PermissionEmbargoStatus embargo_status) {
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.EmbargoStatus",
-                            static_cast<int>(embargo_status),
-                            static_cast<int>(PermissionEmbargoStatus::NUM));
+                            embargo_status, PermissionEmbargoStatus::NUM);
 }
 
 void PermissionUmaUtil::RecordSafeBrowsingResponse(
@@ -368,8 +359,7 @@ void PermissionUmaUtil::RecordSafeBrowsingResponse(
   UMA_HISTOGRAM_TIMES("Permissions.AutoBlocker.SafeBrowsingResponseTime",
                       response_time);
   UMA_HISTOGRAM_ENUMERATION("Permissions.AutoBlocker.SafeBrowsingResponse",
-                            static_cast<int>(response),
-                            static_cast<int>(SafeBrowsingResponse::NUM));
+                            response, SafeBrowsingResponse::NUM);
 }
 
 void PermissionUmaUtil::PermissionPromptShown(
@@ -387,10 +377,8 @@ void PermissionUmaUtil::PermissionPromptShown(
 
   RecordPermissionPromptShown(permission_prompt_type, permission_gesture_type);
 
-  UMA_HISTOGRAM_ENUMERATION(
-      kPermissionsPromptRequestsPerPrompt,
-      static_cast<base::HistogramBase::Sample>(requests.size()),
-      static_cast<base::HistogramBase::Sample>(10));
+  UMA_HISTOGRAM_ENUMERATION(kPermissionsPromptRequestsPerPrompt,
+                            requests.size(), 10);
 
   if (requests.size() > 1) {
     for (const auto* request : requests) {
@@ -656,9 +644,8 @@ void PermissionUmaUtil::RecordPermissionAction(
     // disabled on insecure origins, so there's no need to record metrics for
     // secure/insecue.
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.Geolocation",
-                                static_cast<int>(action),
-                                static_cast<int>(PermissionAction::NUM));
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.Geolocation", action,
+                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Notifications",
@@ -667,14 +654,12 @@ void PermissionUmaUtil::RecordPermissionAction(
                             action);
       break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.MidiSysEx",
-                                static_cast<int>(action),
-                                static_cast<int>(PermissionAction::NUM));
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.MidiSysEx", action,
+                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.PushMessaging",
-                                static_cast<int>(action),
-                                static_cast<int>(PermissionAction::NUM));
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.PushMessaging", action,
+                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.ProtectedMedia",
@@ -683,19 +668,16 @@ void PermissionUmaUtil::RecordPermissionAction(
                             action);
       break;
     case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.DurableStorage",
-                                static_cast<int>(action),
-                                static_cast<int>(PermissionAction::NUM));
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.DurableStorage", action,
+                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture",
-                                static_cast<int>(action),
-                                static_cast<int>(PermissionAction::NUM));
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.AudioCapture", action,
+                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture",
-                                static_cast<int>(action),
-                                static_cast<int>(PermissionAction::NUM));
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture", action,
+                                PermissionAction::NUM);
       break;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Flash",
