@@ -2984,13 +2984,11 @@ void PaintLayer::styleDidChange(StyleDifference diff,
 
 PaintLayerClipper PaintLayer::clipper(
     GeometryMapperOption geometryMapperOption) const {
-  GeometryMapper* geometryMapper = nullptr;
   if (geometryMapperOption == UseGeometryMapper) {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-    if (FrameView* frameView = m_layoutObject.document().view())
-      geometryMapper = &frameView->geometryMapper();
+    return PaintLayerClipper(*this, true);
   }
-  return PaintLayerClipper(*this, geometryMapper);
+  return PaintLayerClipper(*this, false);
 }
 
 bool PaintLayer::scrollsOverflow() const {

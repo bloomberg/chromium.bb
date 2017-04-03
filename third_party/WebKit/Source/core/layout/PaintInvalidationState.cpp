@@ -635,17 +635,11 @@ static const PaintPropertyTreeBuilderContext& dummyTreeBuilderContext() {
   return dummyContext;
 }
 
-static GeometryMapper& dummyGeometryMapper() {
-  DEFINE_STATIC_LOCAL(std::unique_ptr<GeometryMapper>, dummyMapper,
-                      (GeometryMapper::create()));
-  return *dummyMapper;
-}
-
 PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
     const PaintInvalidationState& paintInvalidationState)
     // The dummy parameters will be never used because the overriding
     // mapLocalRectToVisualRectInBacking() uses PaintInvalidationState.
-    : PaintInvalidatorContext(dummyTreeBuilderContext(), dummyGeometryMapper()),
+    : PaintInvalidatorContext(dummyTreeBuilderContext()),
       m_paintInvalidationState(paintInvalidationState) {
   forcedSubtreeInvalidationFlags =
       paintInvalidationState.m_forcedSubtreeInvalidationFlags;

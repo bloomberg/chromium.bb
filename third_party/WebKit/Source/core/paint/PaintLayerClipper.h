@@ -48,7 +48,6 @@
 #include "core/CoreExport.h"
 #include "core/paint/ClipRectsCache.h"
 
-#include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/scroll/ScrollTypes.h"
 
 #include "wtf/Allocator.h"
@@ -56,6 +55,7 @@
 namespace blink {
 
 class PaintLayer;
+class PropertyTreeState;
 
 enum ShouldRespectOverflowClipType { IgnoreOverflowClip, RespectOverflowClip };
 
@@ -172,7 +172,7 @@ class CORE_EXPORT PaintLayerClipper {
   DISALLOW_NEW();
 
  public:
-  explicit PaintLayerClipper(const PaintLayer&, GeometryMapper*);
+  explicit PaintLayerClipper(const PaintLayer&, bool useGeometryMapper);
 
   void clearClipRectsIncludingDescendants();
   void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -242,7 +242,7 @@ class CORE_EXPORT PaintLayerClipper {
   ALWAYS_INLINE LayoutRect localVisualRect() const;
 
   const PaintLayer& m_layer;
-  GeometryMapper* m_geometryMapper;
+  bool m_useGeometryMapper;
 
   friend class PaintLayerClipperTest;
 };

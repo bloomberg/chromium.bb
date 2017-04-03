@@ -73,9 +73,6 @@ class GeometryMapperTest : public ::testing::Test,
   }
 
  private:
-  void SetUp() override { geometryMapper = GeometryMapper::create(); }
-
-  void TearDown() override { geometryMapper.reset(); }
 };
 
 const static float kTestEpsilon = 1e-6;
