@@ -10,43 +10,41 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
 namespace device {
-class LocationProviderAndroid;
 struct Geoposition;
 
-// Interacts with JNI and reports back to LocationProviderAndroid. This class
+// Interacts with JNI and reports back to |on_geoposition_callback_|. This class
 // creates a LocationProvider java object and listens for updates.
 // The simplified flow is:
-//   - GeolocationProvider runs in a Geolocation Thread and fetches geolocation
-//     data from a LocationProvider.
-//   - LocationProviderAndroid accesses a singleton AndroidLocationApiAdapter.
-//   - AndroidLocationApiAdapter calls via JNI and uses the main thread Looper
+//   - GeolocationProvider runs in a Geolocation |task_runner_| and fetches
+//     geolocation data from a LocationProvider.
+//   - LocationApiAdapterAndroid calls via JNI and uses the main thread Looper
 //     in the java side to listen for location updates. We then bounce these
-//     updates to the Geolocation thread.
+//     updates to the Geolocation |task_runner_|.
 //
-// Note that AndroidLocationApiAdapter is a singleton and there's at most only
-// one LocationProviderAndroid that has called Start().
-class AndroidLocationApiAdapter {
+// Note that LocationApiAdapterAndroid is a singleton and there's at most only
+// one call to Start().
+class LocationApiAdapterAndroid {
  public:
-  // Starts the underlying location provider, returns true if successful.
-  // Called on the Geolocation thread.
-  bool Start(LocationProviderAndroid* location_provider, bool high_accuracy);
-  // Stops the underlying location provider.
-  // Called on the Geolocation thread.
-  void Stop();
+  using OnGeopositionCB = base::Callback<void(const Geoposition&)>;
 
-  // Returns our singleton.
-  static AndroidLocationApiAdapter* GetInstance();
+  // Starts the underlying location provider, returns true if successful.
+  // Called on |task_runner_|.
+  bool Start(OnGeopositionCB on_geoposition_callback, bool high_accuracy);
+
+  // Stops the underlying location provider. Called on |task_runner_|.
+  void Stop();
 
   // Called when initializing chrome_view to obtain a pointer to the java class.
   static bool RegisterGeolocationService(JNIEnv* env);
 
-  // Called by JNI on main thread looper.
+  // Called by JNI on its thread looper.
   static void OnNewLocationAvailable(double latitude,
                                      double longitude,
                                      double time_stamp,
@@ -60,28 +58,25 @@ class AndroidLocationApiAdapter {
                                      double speed);
   static void OnNewErrorAvailable(JNIEnv* env, jstring message);
 
+  // Returns our singleton.
+  static LocationApiAdapterAndroid* GetInstance();
+
  private:
-  friend struct base::DefaultSingletonTraits<AndroidLocationApiAdapter>;
-  AndroidLocationApiAdapter();
-  ~AndroidLocationApiAdapter();
+  friend struct base::DefaultSingletonTraits<LocationApiAdapterAndroid>;
+  LocationApiAdapterAndroid();
+  ~LocationApiAdapterAndroid();
 
-  void CreateJavaObject(JNIEnv* env);
-
-  // Called on the JNI main thread looper.
+  // Called on the JNI thread looper.
   void OnNewGeopositionInternal(const Geoposition& geoposition);
 
-  /// Called on the Geolocation thread.
-  static void NotifyProviderNewGeoposition(const Geoposition& geoposition);
+  base::android::ScopedJavaGlobalRef<jobject> java_location_provider_adapter_;
 
-  base::android::ScopedJavaGlobalRef<jobject>
-      java_location_provider_android_object_;
-  // TODO(mvanouwerkerk): Use a callback instead of holding a pointer.
-  LocationProviderAndroid* location_provider_;  // Owned by the arbitrator.
+  // Valid between Start() and Stop().
+  OnGeopositionCB on_geoposition_callback_;
 
-  // Guards against the following member which is accessed on Geolocation
-  // thread and the JNI main thread looper.
-  base::Lock lock_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  base::ThreadChecker jni_thread_checker_;
 };
 
 }  // namespace device

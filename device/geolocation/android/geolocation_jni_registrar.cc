@@ -13,8 +13,8 @@ namespace android {
 namespace {
 
 const base::android::RegistrationMethod kRegisteredMethods[] = {
-    {"AndroidLocationApiAdapter",
-     AndroidLocationApiAdapter::RegisterGeolocationService},
+    {"LocationApiAdapterAndroid",
+     LocationApiAdapterAndroid::RegisterGeolocationService},
 };
 
 }  // namespace

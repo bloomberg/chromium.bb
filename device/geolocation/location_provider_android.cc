@@ -6,22 +6,24 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
 #include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_api_adapter_android.h"
 
 namespace device {
 
 // LocationProviderAndroid
-LocationProviderAndroid::LocationProviderAndroid() {}
+LocationProviderAndroid::LocationProviderAndroid() : weak_ptr_factory_(this) {}
 
 LocationProviderAndroid::~LocationProviderAndroid() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   StopProvider();
 }
 
 void LocationProviderAndroid::NotifyNewGeoposition(
     const Geoposition& position) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   last_position_ = position;
   if (!callback_.is_null())
     callback_.Run(this, position);
@@ -29,22 +31,30 @@ void LocationProviderAndroid::NotifyNewGeoposition(
 
 void LocationProviderAndroid::SetUpdateCallback(
     const LocationProviderUpdateCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   callback_ = callback;
 }
 
 bool LocationProviderAndroid::StartProvider(bool high_accuracy) {
-  return AndroidLocationApiAdapter::GetInstance()->Start(this, high_accuracy);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return LocationApiAdapterAndroid::GetInstance()->Start(
+      base::Bind(&LocationProviderAndroid::NotifyNewGeoposition,
+                 weak_ptr_factory_.GetWeakPtr()),
+      high_accuracy);
 }
 
 void LocationProviderAndroid::StopProvider() {
-  AndroidLocationApiAdapter::GetInstance()->Stop();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  LocationApiAdapterAndroid::GetInstance()->Stop();
 }
 
 const Geoposition& LocationProviderAndroid::GetPosition() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return last_position_;
 }
 
 void LocationProviderAndroid::OnPermissionGranted() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Nothing to do here.
 }
 
