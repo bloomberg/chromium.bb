@@ -1453,7 +1453,6 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     *out_sse = (int64_t)tmp * 16;
 
     if (eob) {
-      const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_AOM_HIGHBITDEPTH
       DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
       uint8_t *recon = (uint8_t *)recon16;
@@ -1461,25 +1460,10 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-      const PLANE_TYPE plane_type = get_plane_type(plane);
-
-      INV_TXFM_PARAM inv_txfm_param;
-      const int block_raster_idx =
-          av1_block_index_to_raster_order(tx_size, block);
-
-      inv_txfm_param.tx_type =
-          get_tx_type(plane_type, xd, block_raster_idx, tx_size);
-      inv_txfm_param.tx_size = tx_size;
-      inv_txfm_param.eob = eob;
-      inv_txfm_param.lossless = xd->lossless[mbmi->segment_id];
-
 #if CONFIG_AOM_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-        recon = CONVERT_TO_BYTEPTR(recon);
-        inv_txfm_param.bd = xd->bd;
         aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
                                  NULL, 0, bsw, bsh, xd->bd);
-        av1_highbd_inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
       } else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
       {
@@ -1492,8 +1476,16 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         for (j = 0; j < bsh; j++)
           for (i = 0; i < bsw; i++) recon[j * MAX_TX_SIZE + i] = 0;
 #endif  // !CONFIG_PVQ
-        av1_inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
       }
+
+      const int block_raster_idx =
+          av1_block_index_to_raster_order(tx_size, block);
+      const PLANE_TYPE plane_type = get_plane_type(plane);
+      TX_TYPE tx_type = get_tx_type(plane_type, xd, block_raster_idx, tx_size);
+
+      av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, recon,
+                                  MAX_TX_SIZE, eob);
+
 #if CONFIG_DAALA_DIST
       if (plane == 0) {
         if (bsw >= 8 && bsh >= 8)
@@ -4073,26 +4065,11 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
     tmp = ROUND_POWER_OF_TWO(tmp, (xd->bd - 8) * 2);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   rd_stats->sse += tmp * 16;
+  const int eob = p->eobs[block];
 
-  if (p->eobs[block] > 0) {
-    INV_TXFM_PARAM inv_txfm_param;
-    inv_txfm_param.tx_type = tx_type;
-    inv_txfm_param.tx_size = tx_size;
-    inv_txfm_param.eob = p->eobs[block];
-    inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
-// TODO(yushin) : If PVQ is enabled, rec_buffer needs be set as zeros.
-#if CONFIG_AOM_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      inv_txfm_param.bd = xd->bd;
-      av1_highbd_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE,
-                              &inv_txfm_param);
-    } else {
-      av1_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
-    }
-#else   // CONFIG_AOM_HIGHBITDEPTH
-    av1_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
+  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, rec_buffer,
+                              MAX_TX_SIZE, eob);
+  if (eob > 0) {
     if (txb_w + blk_col > max_blocks_wide ||
         txb_h + blk_row > max_blocks_high) {
       int idx, idy;
@@ -4121,7 +4098,7 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   txb_coeff_cost =
       av1_cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l, 0);
   rd_stats->rate += txb_coeff_cost;
-  rd_stats->skip &= (p->eobs[block] == 0);
+  rd_stats->skip &= (eob == 0);
 
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(rd_stats, plane, tx_size, blk_row, blk_col,
