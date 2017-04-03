@@ -13,8 +13,11 @@
           /**
            * Saves space for error message. Using calc to leave just enough
            * space at all font sizes (default 0, grow/shrink with font-size).
+           * Using padding instead of padding-bottom to prevent 
+           * paper-input-container's default padding rule to eat up the
+           * padding-bottom rule.
            */
-          padding-bottom: calc(1rem - 8px);
+          padding: 8px 0 calc(1rem - 8px) 0;
         };
       }
     </style>
