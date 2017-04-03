@@ -14,7 +14,9 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/ntp_snippets/content_suggestions_notifier_service_factory.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -205,6 +207,31 @@ static jboolean IsRemoteSuggestionsServiceManagedByCustodian(
 
   return content_suggestions_service
       ->IsRemoteSuggestionsServiceManagedByCustodian();
+}
+
+static void SetContentSuggestionsNotificationsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller,
+    jboolean enabled) {
+  ContentSuggestionsNotifierService* notifier_service =
+      ContentSuggestionsNotifierServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  if (!notifier_service)
+    return;
+
+  notifier_service->SetEnabled(enabled);
+}
+
+static jboolean AreContentSuggestionsNotificationsEnabled(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller) {
+  ContentSuggestionsNotifierService* notifier_service =
+      ContentSuggestionsNotifierServiceFactory::GetForProfile(
+          ProfileManager::GetLastUsedProfile());
+  if (!notifier_service)
+    return false;
+
+  return notifier_service->IsEnabled();
 }
 
 NTPSnippetsBridge::NTPSnippetsBridge(JNIEnv* env,

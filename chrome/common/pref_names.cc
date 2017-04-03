@@ -1560,6 +1560,10 @@ const char kNtpCollapsedSnapshotDocument[] = "ntp.collapsed_snapshot_document";
 // Keeps track of sync promo collapsed state in the Other Devices menu.
 const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 
+// Tracks whether we should show notifications related to content suggestions.
+const char kContentSuggestionsNotificationsEnabled[] =
+    "ntp.content_suggestions.notifications.enabled";
+
 // Tracks how many notifications the user has ignored, so we can tell when we
 // should stop showing them.
 const char kContentSuggestionsConsecutiveIgnoredPrefName[] =

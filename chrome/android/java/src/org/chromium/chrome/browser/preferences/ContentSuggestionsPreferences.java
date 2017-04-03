@@ -13,6 +13,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -75,22 +76,33 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
         if (mIsEnabled == isEnabled) return;
 
         mFeatureSwitch.setChecked(isEnabled);
+        mIsEnabled = isEnabled;
 
-        if (isEnabled) {
+        if (canShowNotificationsSwitch()) {
+            mFeatureSwitch.setSummaryOn(R.string.suggestions_feature_switch_on_summary);
             setNotificationsPrefState(true);
+            mNotificationsSwitch.setChecked(
+                    SnippetsBridge.areContentSuggestionsNotificationsEnabled());
             setCaveatsPrefState(false);
         } else {
+            mFeatureSwitch.setSummaryOn(R.string.text_on);
             setNotificationsPrefState(false);
             setCaveatsPrefState(true);
         }
-        mIsEnabled = isEnabled;
+    }
+
+    private boolean canShowNotificationsSwitch() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_NOTIFICATIONS)) {
+            return false;
+        }
+        return mIsEnabled;
     }
 
     private void setNotificationsPrefState(boolean visible) {
         if (visible) {
             if (findPreference(PREF_NOTIFICATIONS_SWITCH) != null) return;
             getPreferenceScreen().addPreference(mNotificationsSwitch);
-            mNotificationsSwitch.setChecked(true); // TODO(dgn): initialise properly.
+
         } else {
             getPreferenceScreen().removePreference(mNotificationsSwitch);
         }
@@ -138,7 +150,7 @@ public class ContentSuggestionsPreferences extends PreferenceFragment {
         mNotificationsSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                // TODO(dgn) implement preference change.
+                SnippetsBridge.setContentSuggestionsNotificationsEnabled((boolean) newValue);
                 return true;
             }
         });

@@ -104,6 +104,14 @@ public class SnippetsBridge
         return nativeIsRemoteSuggestionsServiceManagedByCustodian();
     }
 
+    public static void setContentSuggestionsNotificationsEnabled(boolean enabled) {
+        nativeSetContentSuggestionsNotificationsEnabled(enabled);
+    }
+
+    public static boolean areContentSuggestionsNotificationsEnabled() {
+        return nativeAreContentSuggestionsNotificationsEnabled();
+    }
+
     @Override
     public void fetchRemoteSuggestions() {
         nativeReloadSuggestions(mNativeSnippetsBridge);
@@ -357,6 +365,8 @@ public class SnippetsBridge
     private static native boolean nativeIsRemoteSuggestionsServiceEnabled();
     private static native boolean nativeIsRemoteSuggestionsServiceManaged();
     private static native boolean nativeIsRemoteSuggestionsServiceManagedByCustodian();
+    private static native void nativeSetContentSuggestionsNotificationsEnabled(boolean enabled);
+    private static native boolean nativeAreContentSuggestionsNotificationsEnabled();
     private native int[] nativeGetCategories(long nativeNTPSnippetsBridge);
     private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge, int category);
     private native SuggestionsCategoryInfo nativeGetCategoryInfo(

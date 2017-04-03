@@ -232,9 +232,9 @@ class ContentSuggestionsNotifierService::NotifyingObserver
 ContentSuggestionsNotifierService::ContentSuggestionsNotifierService(
     Profile* profile,
     ContentSuggestionsService* suggestions)
-    : observer_(base::MakeUnique<NotifyingObserver>(suggestions, profile)) {
+    : profile_(profile), suggestions_service_(suggestions) {
   ContentSuggestionsNotificationHelper::FlushCachedMetrics();
-  suggestions->AddObserver(observer_.get());
+  UpdateObserverRegistrationState();
 }
 
 ContentSuggestionsNotifierService::~ContentSuggestionsNotifierService() =
@@ -242,6 +242,8 @@ ContentSuggestionsNotifierService::~ContentSuggestionsNotifierService() =
 
 void ContentSuggestionsNotifierService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kContentSuggestionsNotificationsEnabled,
+                                true);
   registry->RegisterIntegerPref(
       prefs::kContentSuggestionsConsecutiveIgnoredPrefName, 0);
   registry->RegisterIntegerPref(prefs::kContentSuggestionsNotificationsSentDay,
@@ -251,4 +253,25 @@ void ContentSuggestionsNotifierService::RegisterProfilePrefs(
 
   // TODO(sfiera): remove after M62; no longer (and never really) used.
   registry->RegisterStringPref(kNotificationIDWithinCategory, std::string());
+}
+
+void ContentSuggestionsNotifierService::SetEnabled(bool enabled) {
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kContentSuggestionsNotificationsEnabled, enabled);
+  UpdateObserverRegistrationState();
+}
+
+bool ContentSuggestionsNotifierService::IsEnabled() const {
+  return profile_->GetPrefs()->GetBoolean(
+      prefs::kContentSuggestionsNotificationsEnabled);
+}
+
+void ContentSuggestionsNotifierService::UpdateObserverRegistrationState() {
+  if (observer_ && !IsEnabled()) {
+    suggestions_service_->RemoveObserver(observer_.get());
+    observer_.reset();
+  } else if (IsEnabled() && !observer_) {
+    observer_.reset(new NotifyingObserver(suggestions_service_, profile_));
+    suggestions_service_->AddObserver(observer_.get());
+  }
 }

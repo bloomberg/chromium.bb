@@ -127,6 +127,8 @@ public abstract class ChromeFeatureList {
     public static final String CONSISTENT_OMNIBOX_GEOLOCATION = "ConsistentOmniboxGeolocation";
     public static final String CONTENT_SUGGESTIONS_FAVICONS_FROM_NEW_SERVER =
             "ContentSuggestionsFaviconsFromNewServer";
+    public static final String CONTENT_SUGGESTIONS_NOTIFICATIONS =
+            "ContentSuggestionsNotifications";
     public static final String CONTENT_SUGGESTIONS_SETTINGS = "ContentSuggestionsSettings";
     public static final String CONTEXTUAL_SEARCH_SINGLE_ACTIONS = "ContextualSearchSingleActions";
     public static final String CONTEXTUAL_SEARCH_URL_ACTIONS = "ContextualSearchUrlActions";

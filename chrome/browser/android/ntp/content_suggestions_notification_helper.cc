@@ -32,6 +32,10 @@ namespace {
 
 bool IsDisabledForProfile(Profile* profile) {
   PrefService* prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kContentSuggestionsNotificationsEnabled)) {
+    return true;
+  }
+
   int current =
       prefs->GetInteger(prefs::kContentSuggestionsConsecutiveIgnoredPrefName);
   int limit = variations::GetVariationParamByFeatureAsInt(

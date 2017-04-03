@@ -6,10 +6,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
+    <!-- The summaryOn text can vary depending on whether notifications are enabled.
+         So it is set programmatically. -->
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:key="suggestions_switch"
         android:title="@string/suggestions_feature_switch_title"
-        android:summaryOn="@string/suggestions_feature_switch_on_summary"
         android:summaryOff="@string/text_off"
         chrome:drawDivider="true" />
 
