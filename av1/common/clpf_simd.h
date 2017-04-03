@@ -18,7 +18,7 @@ SIMD_INLINE v128 constrain(v256 a, v256 b, unsigned int strength,
                            unsigned int adjdamp) {
   const v256 diff16 = v256_sub_16(a, b);
   v128 diff = v128_pack_s16_s8(v256_high_v128(diff16), v256_low_v128(diff16));
-  const v128 sign = v128_shr_n_s8(diff, 7);
+  const v128 sign = v128_cmplt_s8(diff, v128_zero());
   diff = v128_abs_s8(diff);
   return v128_xor(
       v128_add_8(sign,
@@ -115,34 +115,27 @@ static void SIMD_FUNC(clpf_block4)(uint8_t *dst, const uint16_t *src,
     const v64 l5 = v64_load_aligned(src + 3 * sstride);
     const v64 l6 = v64_load_aligned(src + 4 * sstride);
     const v64 l7 = v64_load_aligned(src + 5 * sstride);
-    const v256 a = v256_from_v128(v128_from_v64(l0, l1), v128_from_v64(l2, l3));
-    const v256 b = v256_from_v128(v128_from_v64(l1, l2), v128_from_v64(l3, l4));
-    const v256 g = v256_from_v128(v128_from_v64(l3, l4), v128_from_v64(l5, l6));
-    const v256 h = v256_from_v128(v128_from_v64(l4, l5), v128_from_v64(l6, l7));
-    const v256 c = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src - 2),
-                      v64_load_unaligned(src + sstride - 2)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 2),
-                      v64_load_unaligned(src + 3 * sstride - 2)));
-    const v256 d = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src - 1),
-                      v64_load_unaligned(src + sstride - 1)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 1),
-                      v64_load_unaligned(src + 3 * sstride - 1)));
-    const v256 e = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src + 1),
-                      v64_load_unaligned(src + sstride + 1)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 1),
-                      v64_load_unaligned(src + 3 * sstride + 1)));
-    const v256 f = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src + 2),
-                      v64_load_unaligned(src + sstride + 2)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 2),
-                      v64_load_unaligned(src + 3 * sstride + 2)));
-
     const v128 o =
-        calc_delta(v256_from_v128(v128_from_v64(l2, l3), v128_from_v64(l4, l5)),
-                   a, b, c, d, e, f, g, h, strength, adjdamp);
+        calc_delta(v256_from_v64(l2, l3, l4, l5), v256_from_v64(l0, l1, l2, l3),
+                   v256_from_v64(l1, l2, l3, l4),
+                   v256_from_v64(v64_load_unaligned(src - 2),
+                                 v64_load_unaligned(src + sstride - 2),
+                                 v64_load_unaligned(src + 2 * sstride - 2),
+                                 v64_load_unaligned(src + 3 * sstride - 2)),
+                   v256_from_v64(v64_load_unaligned(src - 1),
+                                 v64_load_unaligned(src + sstride - 1),
+                                 v64_load_unaligned(src + 2 * sstride - 1),
+                                 v64_load_unaligned(src + 3 * sstride - 1)),
+                   v256_from_v64(v64_load_unaligned(src + 1),
+                                 v64_load_unaligned(src + sstride + 1),
+                                 v64_load_unaligned(src + 2 * sstride + 1),
+                                 v64_load_unaligned(src + 3 * sstride + 1)),
+                   v256_from_v64(v64_load_unaligned(src + 2),
+                                 v64_load_unaligned(src + sstride + 2),
+                                 v64_load_unaligned(src + 2 * sstride + 2),
+                                 v64_load_unaligned(src + 3 * sstride + 2)),
+                   v256_from_v64(l3, l4, l5, l6), v256_from_v64(l4, l5, l6, l7),
+                   strength, adjdamp);
 
     u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
     u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
@@ -188,34 +181,28 @@ static void SIMD_FUNC(clpf_hblock4)(uint8_t *dst, const uint16_t *src,
   int y;
 
   for (y = 0; y < sizey; y += 4) {
-    const v64 l0 = v64_load_aligned(src);
-    const v64 l1 = v64_load_aligned(src + sstride);
-    const v64 l2 = v64_load_aligned(src + 2 * sstride);
-    const v64 l3 = v64_load_aligned(src + 3 * sstride);
-    const v256 a = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src - 2),
-                      v64_load_unaligned(src + sstride - 2)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 2),
-                      v64_load_unaligned(src + 3 * sstride - 2)));
-    const v256 b = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src - 1),
-                      v64_load_unaligned(src + sstride - 1)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride - 1),
-                      v64_load_unaligned(src + 3 * sstride - 1)));
-    const v256 c = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src + 1),
-                      v64_load_unaligned(src + sstride + 1)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 1),
-                      v64_load_unaligned(src + 3 * sstride + 1)));
-    const v256 d = v256_from_v128(
-        v128_from_v64(v64_load_unaligned(src + 2),
-                      v64_load_unaligned(src + sstride + 2)),
-        v128_from_v64(v64_load_unaligned(src + 2 * sstride + 2),
-                      v64_load_unaligned(src + 3 * sstride + 2)));
+    const v256 a = v256_from_v64(v64_load_unaligned(src - 2),
+                                 v64_load_unaligned(src + sstride - 2),
+                                 v64_load_unaligned(src + 2 * sstride - 2),
+                                 v64_load_unaligned(src + 3 * sstride - 2));
+    const v256 b = v256_from_v64(v64_load_unaligned(src - 1),
+                                 v64_load_unaligned(src + sstride - 1),
+                                 v64_load_unaligned(src + 2 * sstride - 1),
+                                 v64_load_unaligned(src + 3 * sstride - 1));
+    const v256 c = v256_from_v64(v64_load_unaligned(src + 1),
+                                 v64_load_unaligned(src + sstride + 1),
+                                 v64_load_unaligned(src + 2 * sstride + 1),
+                                 v64_load_unaligned(src + 3 * sstride + 1));
+    const v256 d = v256_from_v64(v64_load_unaligned(src + 2),
+                                 v64_load_unaligned(src + sstride + 2),
+                                 v64_load_unaligned(src + 2 * sstride + 2),
+                                 v64_load_unaligned(src + 3 * sstride + 2));
 
     const v128 o = calc_hdelta(
-        v256_from_v128(v128_from_v64(l0, l1), v128_from_v64(l2, l3)), a, b, c,
-        d, strength, adjdamp);
+        v256_from_v64(v64_load_aligned(src), v64_load_aligned(src + sstride),
+                      v64_load_aligned(src + 2 * sstride),
+                      v64_load_aligned(src + 3 * sstride)),
+        a, b, c, d, strength, adjdamp);
 
     u32_store_aligned(dst, v128_low_u32(v128_shr_n_byte(o, 12)));
     u32_store_aligned(dst + dstride, v128_low_u32(v128_shr_n_byte(o, 8)));
