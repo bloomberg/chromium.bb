@@ -266,7 +266,7 @@ cr.define('print_preview', function() {
      */
     onActivate_: function() {
       if (!cr.isChromeOS) {
-        onDestinationActivated_();
+        this.onDestinationActivated_();
         return;
       }
 
