@@ -507,10 +507,6 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
   return container;
 }
 
-bool NetworkStateListDetailedView::IsViewHovered(views::View* view) {
-  return static_cast<HoverHighlightView*>(view)->hover();
-}
-
 NetworkTypePattern NetworkStateListDetailedView::GetNetworkTypePattern() const {
   return list_type_ == LIST_TYPE_VPN ? NetworkTypePattern::VPN()
                                      : NetworkTypePattern::NonVirtual();

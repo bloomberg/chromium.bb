@@ -25,10 +25,6 @@ class NetworkListDelegate {
   // Creates and returns a View with the information in |info|.
   virtual views::View* CreateViewForNetwork(const NetworkInfo& info) = 0;
 
-  // Returns true if |view| is currently under the cursor. Note that |view| is
-  // guaranteed to be a View returned from |CreateViewForNetwork()|.
-  virtual bool IsViewHovered(views::View* view) = 0;
-
   // Returns the type of network this list should use.
   virtual chromeos::NetworkTypePattern GetNetworkTypePattern() const = 0;
 

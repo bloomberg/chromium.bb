@@ -465,7 +465,7 @@ void NetworkListView::UpdateNetworkListInternal() {
 
   views::View* selected_view = nullptr;
   for (const auto& iter : network_guid_map_) {
-    if (delegate_->IsViewHovered(iter.second)) {
+    if (iter.second->IsMouseHovered()) {
       selected_view = iter.second;
       break;
     }

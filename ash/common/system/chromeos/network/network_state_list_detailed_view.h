@@ -83,7 +83,6 @@ class NetworkStateListDetailedView
 
   // NetworkListDelegate:
   views::View* CreateViewForNetwork(const NetworkInfo& info) override;
-  bool IsViewHovered(views::View* view) override;
   chromeos::NetworkTypePattern GetNetworkTypePattern() const override;
   void UpdateViewForNetwork(views::View* view,
                             const NetworkInfo& info) override;

@@ -259,7 +259,7 @@ void VPNListView::Update() {
   std::string hovered_network_guid;
   for (const std::pair<const views::View* const, VPNProvider>& provider :
        provider_view_map_) {
-    if (static_cast<const HoverHighlightView*>(provider.first)->hover()) {
+    if (provider.first->IsMouseHovered()) {
       hovered_provider.reset(new VPNProvider(provider.second));
       break;
     }
@@ -267,7 +267,7 @@ void VPNListView::Update() {
   if (!hovered_provider) {
     for (const std::pair<const views::View*, std::string>& entry :
          network_view_guid_map_) {
-      if (static_cast<const HoverHighlightView*>(entry.first)->hover()) {
+      if (entry.first->IsMouseHovered()) {
         hovered_network_guid = entry.second;
         break;
       }

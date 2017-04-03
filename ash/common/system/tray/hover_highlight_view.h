@@ -121,8 +121,6 @@ class HoverHighlightView : public ActionableView {
   views::Label* text_label() { return text_label_; }
   views::Label* sub_text_label() { return sub_text_label_; }
 
-  bool hover() const { return hover_; }
-
   void set_tooltip(const base::string16& tooltip) { tooltip_ = tooltip; }
 
  protected:
