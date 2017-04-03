@@ -91,7 +91,7 @@ class SearchSuggestionParser {
     AutocompleteMatchType::Type type_;
 
     // Used to identify the specific source / type for suggestions by the
-    // suggest server. See |result_type_identifier| in omnibox.proto for more
+    // suggest server. See |result_subtype_identifier| in omnibox.proto for more
     // details.
     // The identifier 0 is reserved for cases where this specific type is unset.
     int subtype_identifier_;

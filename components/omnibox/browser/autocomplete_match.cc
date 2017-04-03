@@ -85,8 +85,8 @@ AutocompleteMatch::AutocompleteMatch()
       swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_GENERATED),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
-      from_previous(false) {
-}
+      subtype_identifier(0),
+      from_previous(false) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      int relevance,
@@ -100,8 +100,8 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_TYPED),
       type(type),
-      from_previous(false) {
-}
+      subtype_identifier(0),
+      from_previous(false) {}
 
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
