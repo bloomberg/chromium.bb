@@ -1179,11 +1179,99 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   }
 }
 
-class FlippedScissorAndViewportGLES2Interface : public TestGLES2Interface {
+class DrawElementsGLES2Interface : public TestGLES2Interface {
  public:
-  MOCK_METHOD4(Viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
-  MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
+  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
+    context->set_have_post_sub_buffer(true);
+  }
+
+  MOCK_METHOD4(
+      DrawElements,
+      void(GLenum mode, GLsizei count, GLenum type, const void* indices));
 };
+
+class GLRendererSkipTest : public GLRendererTest {
+ protected:
+  GLRendererSkipTest() {
+    auto gl_owned = base::MakeUnique<StrictMock<DrawElementsGLES2Interface>>();
+    gl_ = gl_owned.get();
+
+    auto provider = TestContextProvider::Create(std::move(gl_owned));
+    provider->BindToCurrentThread();
+
+    output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
+    output_surface_->BindToClient(&output_surface_client_);
+
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    resource_provider_ = FakeResourceProvider::Create(
+        output_surface_->context_provider(), shared_bitmap_manager_.get());
+    settings_.partial_swap_enabled = true;
+    renderer_ = base::MakeUnique<FakeRendererGL>(
+        &settings_, output_surface_.get(), resource_provider_.get());
+    renderer_->Initialize();
+    renderer_->SetVisible(true);
+  }
+
+  StrictMock<DrawElementsGLES2Interface>* gl_;
+  RendererSettings settings_;
+  FakeOutputSurfaceClient output_surface_client_;
+  std::unique_ptr<FakeOutputSurface> output_surface_;
+  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<FakeRendererGL> renderer_;
+};
+
+TEST_F(GLRendererSkipTest, DrawQuad) {
+  EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(1);
+
+  gfx::Size viewport_size(100, 100);
+  gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
+
+  int root_pass_id = 1;
+  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                                        root_pass_id, gfx::Rect(viewport_size),
+                                        gfx::Transform(), FilterOperations());
+  root_pass->damage_rect = gfx::Rect(0, 0, 25, 25);
+  AddQuad(root_pass, quad_rect, SK_ColorGREEN);
+
+  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+  DrawFrame(renderer_.get(), viewport_size);
+}
+
+TEST_F(GLRendererSkipTest, SkipQuadRect) {
+  gfx::Size viewport_size(100, 100);
+  gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
+
+  int root_pass_id = 1;
+  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                                        root_pass_id, gfx::Rect(viewport_size),
+                                        gfx::Transform(), FilterOperations());
+  root_pass->damage_rect = gfx::Rect(0, 0, 10, 10);
+  AddQuad(root_pass, quad_rect, SK_ColorGREEN);
+
+  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+  DrawFrame(renderer_.get(), viewport_size);
+  // DrawElements should not be called because the quad rect is outside the
+  // scissor.
+}
+
+TEST_F(GLRendererSkipTest, SkipClippedQuads) {
+  gfx::Size viewport_size(100, 100);
+  gfx::Rect quad_rect = gfx::Rect(25, 25, 90, 90);
+
+  int root_pass_id = 1;
+  RenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
+                                        root_pass_id, gfx::Rect(viewport_size),
+                                        gfx::Transform(), FilterOperations());
+  root_pass->damage_rect = gfx::Rect(0, 0, 25, 25);
+  AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
+  root_pass->quad_list.front()->rect = gfx::Rect(20, 20, 20, 20);
+
+  renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+  DrawFrame(renderer_.get(), viewport_size);
+  // DrawElements should not be called because the clip rect is outside the
+  // scissor.
+}
 
 TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   // When using render-to-FBO to display the surface, all rendering is done

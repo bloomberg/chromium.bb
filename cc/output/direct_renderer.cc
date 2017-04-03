@@ -414,7 +414,10 @@ bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
     return r.IsEmpty();
   }
 
-  return false;
+  gfx::RectF intersection = MathUtil::MapClippedRect(
+      quad.shared_quad_state->quad_to_target_transform, gfx::RectF(quad.rect));
+  intersection.Intersect(gfx::RectF(render_pass_scissor));
+  return intersection.IsEmpty();
 }
 
 void DirectRenderer::SetScissorStateForQuad(
@@ -540,13 +543,15 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   bool is_root_render_pass =
       current_frame()->current_render_pass == current_frame()->root_render_pass;
 
+  bool render_pass_is_clipped =
+      !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
+
   // The SetDrawRectangleCHROMIUM spec requires that the scissor bit is always
   // set on the root framebuffer or else the rendering may modify something
   // outside the damage rectangle, even if the damage rectangle is the size of
   // the full backbuffer.
-  bool render_pass_is_clipped =
-      (supports_dc_layers_ && is_root_render_pass) ||
-      !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
+  bool render_pass_requires_scissor =
+      (supports_dc_layers_ && is_root_render_pass) || render_pass_is_clipped;
   bool has_external_stencil_test =
       is_root_render_pass && output_surface_->HasExternalStencilTest();
   bool should_clear_surface =
@@ -559,7 +564,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
          !current_frame()->current_render_pass->has_transparent_background);
 
   SurfaceInitializationMode mode;
-  if (should_clear_surface && render_pass_is_clipped) {
+  if (should_clear_surface && render_pass_requires_scissor) {
     mode = SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR;
   } else if (should_clear_surface) {
     mode = SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR;
@@ -587,7 +592,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
     if (last_sorting_context_id != quad.shared_quad_state->sorting_context_id) {
       last_sorting_context_id = quad.shared_quad_state->sorting_context_id;
       FlushPolygons(&poly_list, render_pass_scissor_in_draw_space,
-                    render_pass_is_clipped);
+                    render_pass_requires_scissor);
     }
 
     // This layer is in a 3D sorting context so we add it to the list of
@@ -604,12 +609,12 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
 
     // We are not in a 3d sorting context, so we should draw the quad normally.
     SetScissorStateForQuad(quad, render_pass_scissor_in_draw_space,
-                           render_pass_is_clipped);
+                           render_pass_requires_scissor);
 
     DoDrawQuad(&quad, nullptr);
   }
   FlushPolygons(&poly_list, render_pass_scissor_in_draw_space,
-                render_pass_is_clipped);
+                render_pass_requires_scissor);
   FinishDrawingQuadList();
 }
 
