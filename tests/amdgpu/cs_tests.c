@@ -32,7 +32,7 @@
 #include "util_math.h"
 
 #include "amdgpu_test.h"
-#include "uvd_messages.h"
+#include "decode_messages.h"
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
 

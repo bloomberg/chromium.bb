@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Advanced Micro Devices, Inc.
+ * Copyright 2017 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef _UVD_MESSAGES_H_
-#define _UVD_MESSAGES_H_
+#ifndef _DECODE_MESSAGES_H_
+#define _DECODE_MESSAGES_H_
 
 static const uint8_t uvd_create_msg[] = {
 	0xe4,0x0d,0x00,0x00,0x00,0x00,0x00,0x00,0x03,0x00,0x44,0x40,0x00,0x00,0x00,0x00,
@@ -810,4 +810,4 @@ static const uint8_t uvd_it_scaling_table[] = {
 	0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,
 };
 
-#endif /* _UVD_MESSAGES_H_ */
+#endif /* _DECODE_MESSAGES_H_ */
