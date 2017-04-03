@@ -298,6 +298,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
 }
 
 QuicChromiumClientSession::~QuicChromiumClientSession() {
+  DCHECK(callback_.is_null());
+
   net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
   if (!dynamic_streams().empty())
     RecordUnexpectedOpenStreams(DESTRUCTOR);
