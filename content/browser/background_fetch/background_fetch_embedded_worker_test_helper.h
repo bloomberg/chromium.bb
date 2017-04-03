@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -34,6 +35,20 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   void set_fail_click_event(bool fail) { fail_click_event_ = fail; }
   void set_fail_fetch_fail_event(bool fail) { fail_fetch_fail_event_ = fail; }
   void set_fail_fetched_event(bool fail) { fail_fetched_event_ = fail; }
+
+  // Sets a base::Callback that should be executed when the named event is ran.
+  void set_abort_event_closure(const base::Closure& closure) {
+    abort_event_closure_ = closure;
+  }
+  void set_click_event_closure(const base::Closure& closure) {
+    click_event_closure_ = closure;
+  }
+  void set_fetch_fail_event_closure(const base::Closure& closure) {
+    fetch_fail_event_closure_ = closure;
+  }
+  void set_fetched_event_closure(const base::Closure& closure) {
+    fetched_event_closure_ = closure;
+  }
 
   const base::Optional<std::string>& last_tag() const { return last_tag_; }
   const base::Optional<mojom::BackgroundFetchState>& last_state() const {
@@ -71,6 +86,11 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   bool fail_click_event_ = false;
   bool fail_fetch_fail_event_ = false;
   bool fail_fetched_event_ = false;
+
+  base::Closure abort_event_closure_;
+  base::Closure click_event_closure_;
+  base::Closure fetch_fail_event_closure_;
+  base::Closure fetched_event_closure_;
 
   base::Optional<std::string> last_tag_;
   base::Optional<mojom::BackgroundFetchState> last_state_;

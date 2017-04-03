@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <memory>
+#include <utility>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/background_fetch/background_fetch_embedded_worker_test_helper.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
@@ -14,12 +19,90 @@
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_types.h"
+#include "content/public/test/fake_download_item.h"
+#include "content/public/test/mock_download_manager.h"
 
 namespace content {
 namespace {
 
 const char kExampleTag[] = "my-background-fetch";
 const char kAlternativeTag[] = "my-alternative-fetch";
+
+// Faked download manager that will respond to known HTTP requests with a test-
+// defined response. See CreateRequestWithProvidedResponse().
+class RespondingDownloadManager : public MockDownloadManager {
+ public:
+  RespondingDownloadManager() : weak_ptr_factory_(this) {}
+  ~RespondingDownloadManager() override = default;
+
+  // Responds to requests to |url| with the |status_code| and |response_text|.
+  void RegisterResponse(const GURL& url,
+                        int status_code,
+                        const std::string& response_text) {
+    DCHECK_EQ(registered_responses_.count(url), 0u);
+    registered_responses_[url] = std::make_pair(status_code, response_text);
+  }
+
+  // Called when the Background Fetch system starts a download, all information
+  // for which is contained in the |params|.
+  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
+    auto iter = registered_responses_.find(params->url());
+    if (iter == registered_responses_.end())
+      return;
+
+    std::unique_ptr<FakeDownloadItem> download_item =
+        base::MakeUnique<FakeDownloadItem>();
+
+    download_item->SetURL(params->url());
+    download_item->SetState(DownloadItem::DownloadState::IN_PROGRESS);
+    download_item->SetGuid(base::GenerateGUID());
+    download_item->SetStartTime(base::Time());
+
+    // Asynchronously invoke the callback set on the |params|, and then continue
+    // dealing with the response in this class.
+    BrowserThread::PostTaskAndReply(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(params->callback(), download_item.get(),
+                   DOWNLOAD_INTERRUPT_REASON_NONE),
+        base::Bind(&RespondingDownloadManager::DidStartDownload,
+                   weak_ptr_factory_.GetWeakPtr(), download_item.get()));
+
+    download_items_.push_back(std::move(download_item));
+  }
+
+ private:
+  // Called when the download has been "started" by the download manager. This
+  // is where we finish the download by sending a single update.
+  void DidStartDownload(FakeDownloadItem* download_item) {
+    auto iter = registered_responses_.find(download_item->GetURL());
+    DCHECK(iter != registered_responses_.end());
+
+    const ResponseInfo& response_info = iter->second;
+
+    download_item->SetState(DownloadItem::DownloadState::COMPLETE);
+    download_item->SetEndTime(base::Time());
+
+    // TODO(peter): Set response body, status code and so on.
+    download_item->SetReceivedBytes(response_info.second.size());
+
+    // Notify the Job Controller about the download having been updated.
+    download_item->NotifyDownloadUpdated();
+  }
+
+  using ResponseInfo =
+      std::pair<int /* status_code */, std::string /* response_text */>;
+
+  // Map of URL to the response information associated with that URL.
+  std::map<GURL, ResponseInfo> registered_responses_;
+
+  // Only used to guarantee the lifetime of the created FakeDownloadItems.
+  std::vector<std::unique_ptr<FakeDownloadItem>> download_items_;
+
+  base::WeakPtrFactory<RespondingDownloadManager> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RespondingDownloadManager);
+};
 
 IconDefinition CreateIcon(std::string src,
                           std::string sizes,
@@ -113,9 +196,36 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     run_loop.Run();
   }
 
+  // Creates a ServiceWorkerFetchRequest instance for the given details and
+  // provides a faked response with |status_code| and |response_text| to the
+  // download manager, that will resolve the download with that information.
+  ServiceWorkerFetchRequest CreateRequestWithProvidedResponse(
+      const std::string& method,
+      const std::string& url_string,
+      int status_code,
+      const std::string& response_text) {
+    GURL url(url_string);
+
+    // Register the |status_code| and |response_text| with the download manager.
+    download_manager_->RegisterResponse(GURL(url_string), status_code,
+                                        response_text);
+
+    // Create a ServiceWorkerFetchRequest request with the same information.
+    return ServiceWorkerFetchRequest(url, method, ServiceWorkerHeaderMap(),
+                                     Referrer(), false /* is_reload */);
+  }
+
   // BackgroundFetchTestBase overrides:
   void SetUp() override {
     BackgroundFetchTestBase::SetUp();
+
+    download_manager_ = new RespondingDownloadManager();
+
+    // The |download_manager_| ownership is given to the BrowserContext, and the
+    // BrowserContext will take care of deallocating it.
+    BrowserContext::SetDownloadManagerForTesting(browser_context(),
+                                                 download_manager_);
+
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(
             BrowserContext::GetDefaultStoragePartition(browser_context()));
@@ -175,6 +285,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
 
   scoped_refptr<BackgroundFetchContext> context_;
   std::unique_ptr<BackgroundFetchServiceImpl> service_;
+
+  RespondingDownloadManager* download_manager_;  // BrowserContext owned
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceTest);
 };
@@ -305,6 +417,75 @@ TEST_F(BackgroundFetchServiceTest, FetchDuplicatedRegistrationFailure) {
   ASSERT_NO_FATAL_FAILURE(Fetch(registration_id, requests, options,
                                 &second_error, &second_registration));
   ASSERT_EQ(second_error, blink::mojom::BackgroundFetchError::DUPLICATED_TAG);
+}
+
+TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
+  // This test starts a new Background Fetch, completes the registration, then
+  // fetches all files to complete the job, and then verifies that the
+  // `backgroundfetched` event will be dispatched with the expected contents.
+
+  BackgroundFetchRegistrationId registration_id;
+  ASSERT_TRUE(CreateRegistrationId(kExampleTag, &registration_id));
+
+  // base::RunLoop that we'll run until the event has been dispatched. If this
+  // test times out, it means that the event could not be dispatched.
+  base::RunLoop event_dispatched_loop;
+  embedded_worker_test_helper()->set_fetched_event_closure(
+      event_dispatched_loop.QuitClosure());
+
+  std::vector<ServiceWorkerFetchRequest> requests;
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", "https://example.com/funny_cat.txt", 200 /* status_code */,
+      "This text describes a scenario involving a funny cat."));
+  requests.push_back(CreateRequestWithProvidedResponse(
+      "GET", "https://example.com/crazy_cat.txt", 200 /* status_code */,
+      "This text descrubes a scenario involving a crazy cat."));
+
+  // Create the registration with the given |requests|.
+  {
+    BackgroundFetchOptions options;
+
+    blink::mojom::BackgroundFetchError error;
+    BackgroundFetchRegistration registration;
+
+    // Create the first registration. This must succeed.
+    ASSERT_NO_FATAL_FAILURE(
+        Fetch(registration_id, requests, options, &error, &registration));
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  // Spin the |event_dispatched_loop| to wait for the dispatched event.
+  event_dispatched_loop.Run();
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_tag().has_value());
+  EXPECT_EQ(kExampleTag, embedded_worker_test_helper()->last_tag().value());
+
+  ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
+
+  std::vector<BackgroundFetchSettledFetch> fetches =
+      embedded_worker_test_helper()->last_fetches().value();
+  ASSERT_EQ(fetches.size(), requests.size());
+
+  for (size_t i = 0; i < fetches.size(); ++i) {
+    ASSERT_EQ(fetches[i].request.url, requests[i].url);
+    EXPECT_EQ(fetches[i].request.method, requests[i].method);
+
+    EXPECT_EQ(fetches[i].request.url, fetches[i].response.url_list[0]);
+
+    // TODO(peter): change-detector tests for unsupported properties.
+    EXPECT_EQ(fetches[i].response.status_code, 0);
+    EXPECT_TRUE(fetches[i].response.status_text.empty());
+    EXPECT_EQ(fetches[i].response.response_type,
+              blink::WebServiceWorkerResponseTypeOpaque);
+    EXPECT_TRUE(fetches[i].response.headers.empty());
+    EXPECT_EQ(fetches[i].response.error,
+              blink::WebServiceWorkerResponseErrorUnknown);
+    EXPECT_TRUE(fetches[i].response.response_time.is_null());
+
+    // TODO(peter): Change-detector tests for when bodies are supported.
+    EXPECT_TRUE(fetches[i].response.blob_uuid.empty());
+    EXPECT_EQ(fetches[i].response.blob_size, 0u);
+  }
 }
 
 TEST_F(BackgroundFetchServiceTest, Abort) {

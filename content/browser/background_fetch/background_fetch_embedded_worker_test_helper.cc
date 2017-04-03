@@ -31,6 +31,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
   } else {
     callback.Run(SERVICE_WORKER_OK, base::Time::Now());
   }
+
+  if (abort_event_closure_)
+    abort_event_closure_.Run();
 }
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
@@ -47,6 +50,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
   } else {
     callback.Run(SERVICE_WORKER_OK, base::Time::Now());
   }
+
+  if (click_event_closure_)
+    click_event_closure_.Run();
 }
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
@@ -63,6 +69,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
   } else {
     callback.Run(SERVICE_WORKER_OK, base::Time::Now());
   }
+
+  if (fetch_fail_event_closure_)
+    fetch_fail_event_closure_.Run();
 }
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchedEvent(
@@ -79,6 +88,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchedEvent(
   } else {
     callback.Run(SERVICE_WORKER_OK, base::Time::Now());
   }
+
+  if (fetched_event_closure_)
+    fetched_event_closure_.Run();
 }
 
 }  // namespace content
