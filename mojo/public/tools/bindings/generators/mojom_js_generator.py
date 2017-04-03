@@ -7,6 +7,7 @@
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack
+import os
 from mojom.generate.template_expander import UseJinja
 
 _kind_to_javascript_default_value = {
@@ -324,6 +325,9 @@ def IsAnyHandleOrInterfaceField(field):
 def IsEnumField(field):
   return mojom.IsEnumKind(field.kind)
 
+def GetRelativePath(module, base_module):
+  return os.path.relpath(module.path, os.path.dirname(base_module.path))
+
 
 class Generator(generator.Generator):
 
@@ -348,6 +352,7 @@ class Generator(generator.Generator):
     "is_union_field": IsUnionField,
     "js_type": JavaScriptType,
     "payload_size": JavaScriptPayloadSize,
+    "get_relative_path": GetRelativePath,
     "stylize_method": generator.StudlyCapsToCamel,
     "union_decode_snippet": JavaScriptUnionDecodeSnippet,
     "union_encode_snippet": JavaScriptUnionEncodeSnippet,
