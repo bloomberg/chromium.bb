@@ -26,19 +26,24 @@ void WindowProxyManager::clearForNavigation() {
     entry.value->clearForNavigation();
 }
 
-void WindowProxyManager::releaseGlobals(GlobalsVector& globals) {
-  globals.reserveInitialCapacity(1 + m_isolatedWorlds.size());
-  globals.emplace_back(&m_windowProxy->world(), m_windowProxy->releaseGlobal());
+void WindowProxyManager::releaseGlobalProxies(
+    GlobalProxyVector& globalProxies) {
+  DCHECK(globalProxies.isEmpty());
+  globalProxies.reserveInitialCapacity(1 + m_isolatedWorlds.size());
+  globalProxies.emplace_back(&m_windowProxy->world(),
+                             m_windowProxy->releaseGlobalProxy());
   for (auto& entry : m_isolatedWorlds) {
-    globals.emplace_back(
+    globalProxies.emplace_back(
         &entry.value->world(),
-        windowProxyMaybeUninitialized(entry.value->world())->releaseGlobal());
+        windowProxyMaybeUninitialized(entry.value->world())
+            ->releaseGlobalProxy());
   }
 }
 
-void WindowProxyManager::setGlobals(const GlobalsVector& globals) {
-  for (const auto& entry : globals)
-    windowProxyMaybeUninitialized(*entry.first)->setGlobal(entry.second);
+void WindowProxyManager::setGlobalProxies(
+    const GlobalProxyVector& globalProxies) {
+  for (const auto& entry : globalProxies)
+    windowProxyMaybeUninitialized(*entry.first)->setGlobalProxy(entry.second);
 }
 
 WindowProxyManager::WindowProxyManager(Frame& frame, FrameType frameType)

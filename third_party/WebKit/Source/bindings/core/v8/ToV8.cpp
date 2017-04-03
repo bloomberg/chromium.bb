@@ -26,7 +26,7 @@ v8::Local<v8::Value> ToV8(DOMWindow* window,
     return v8Undefined();
 
   return frame->windowProxy(DOMWrapperWorld::current(isolate))
-      ->globalIfNotDetached();
+      ->globalProxyIfNotDetached();
 }
 
 v8::Local<v8::Value> ToV8(EventTarget* impl,

@@ -151,9 +151,9 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   void clearForClose();
   void clearForNavigation();
 
-  CORE_EXPORT v8::Local<v8::Object> globalIfNotDetached();
-  v8::Local<v8::Object> releaseGlobal();
-  void setGlobal(v8::Local<v8::Object>);
+  CORE_EXPORT v8::Local<v8::Object> globalProxyIfNotDetached();
+  v8::Local<v8::Object> releaseGlobalProxy();
+  void setGlobalProxy(v8::Local<v8::Object>);
 
   // TODO(dcheng): Temporarily exposed to avoid include cycles. Remove the need
   // for this and remove this getter.

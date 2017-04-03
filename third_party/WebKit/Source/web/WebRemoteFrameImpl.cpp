@@ -523,7 +523,7 @@ void WebRemoteFrameImpl::setHasReceivedUserGesture() {
 v8::Local<v8::Object> WebRemoteFrameImpl::globalProxy() const {
   return frame()
       ->windowProxy(DOMWrapperWorld::mainWorld())
-      ->globalIfNotDetached();
+      ->globalProxyIfNotDetached();
 }
 
 WebRemoteFrameImpl::WebRemoteFrameImpl(WebTreeScopeType scope,

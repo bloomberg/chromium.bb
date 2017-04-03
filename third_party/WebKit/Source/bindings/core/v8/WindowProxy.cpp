@@ -69,7 +69,7 @@ void WindowProxy::clearForNavigation() {
   disposeContext(DetachGlobal);
 }
 
-v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
+v8::Local<v8::Object> WindowProxy::globalProxyIfNotDetached() {
   if (m_lifecycle == Lifecycle::ContextIsInitialized) {
     DLOG_IF(FATAL, !m_isGlobalObjectAttached)
         << "Context is initialized but global object is detached!";
@@ -78,7 +78,7 @@ v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
   return v8::Local<v8::Object>();
 }
 
-v8::Local<v8::Object> WindowProxy::releaseGlobal() {
+v8::Local<v8::Object> WindowProxy::releaseGlobalProxy() {
   DCHECK(m_lifecycle != Lifecycle::ContextIsInitialized);
 
   // Make sure the global object was detached from the proxy by calling
@@ -86,14 +86,14 @@ v8::Local<v8::Object> WindowProxy::releaseGlobal() {
   DLOG_IF(FATAL, m_isGlobalObjectAttached)
       << "Context not detached by calling clearForNavigation()";
 
-  v8::Local<v8::Object> global = m_globalProxy.newLocal(m_isolate);
+  v8::Local<v8::Object> globalProxy = m_globalProxy.newLocal(m_isolate);
   m_globalProxy.clear();
-  return global;
+  return globalProxy;
 }
 
-void WindowProxy::setGlobal(v8::Local<v8::Object> global) {
+void WindowProxy::setGlobalProxy(v8::Local<v8::Object> globalProxy) {
   CHECK(m_globalProxy.isEmpty());
-  m_globalProxy.set(m_isolate, global);
+  m_globalProxy.set(m_isolate, globalProxy);
 
   // Initialize the window proxy now, to re-establish the connection between
   // the global object and the v8::Context. This is really only needed for a

@@ -72,9 +72,9 @@ bool WebFrame::swap(WebFrame* frame) {
   FrameOwner* owner = oldFrame->owner();
 
   v8::HandleScope handleScope(v8::Isolate::GetCurrent());
-  WindowProxyManager::GlobalsVector globals;
+  WindowProxyManager::GlobalProxyVector globalProxies;
   oldFrame->getWindowProxyManager()->clearForNavigation();
-  oldFrame->getWindowProxyManager()->releaseGlobals(globals);
+  oldFrame->getWindowProxyManager()->releaseGlobalProxies(globalProxies);
 
   // Although the Document in this frame is now unloaded, many resources
   // associated with the frame itself have not yet been freed yet.
@@ -110,7 +110,8 @@ bool WebFrame::swap(WebFrame* frame) {
   if (m_parent && oldFrame->hasReceivedUserGesture())
     frame->toImplBase()->frame()->setDocumentHasReceivedUserGesture();
 
-  frame->toImplBase()->frame()->getWindowProxyManager()->setGlobals(globals);
+  frame->toImplBase()->frame()->getWindowProxyManager()->setGlobalProxies(
+      globalProxies);
 
   m_parent = nullptr;
 
