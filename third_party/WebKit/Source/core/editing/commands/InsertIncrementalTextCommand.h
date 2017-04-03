@@ -9,7 +9,8 @@
 
 namespace blink {
 
-class InsertIncrementalTextCommand final : public InsertTextCommand {
+class CORE_EXPORT InsertIncrementalTextCommand final
+    : public InsertTextCommand {
  public:
   static InsertIncrementalTextCommand* create(
       Document&,

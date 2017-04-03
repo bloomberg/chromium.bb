@@ -273,6 +273,7 @@ source_set("unit_tests") {
     "commands/ApplyStyleCommandTest.cpp",
     "commands/CompositeEditCommandTest.cpp",
     "commands/DeleteSelectionCommandTest.cpp",
+    "commands/InsertIncrementalTextCommandTest.cpp",
     "commands/InsertListCommandTest.cpp",
     "commands/ReplaceSelectionCommandTest.cpp",
     "commands/SetCharacterDataCommandTest.cpp",

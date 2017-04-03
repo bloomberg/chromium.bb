@@ -12,6 +12,7 @@
 #include "core/editing/PlainTextRange.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/state_machines/ForwardCodePointStateMachine.h"
 #include "core/html/HTMLSpanElement.h"
 
 namespace blink {
@@ -20,9 +21,15 @@ namespace {
 
 size_t computeCommonPrefixLength(const String& str1, const String& str2) {
   const size_t maxCommonPrefixLength = std::min(str1.length(), str2.length());
+  ForwardCodePointStateMachine codePointStateMachine;
+  int result = 0;
   for (size_t index = 0; index < maxCommonPrefixLength; ++index) {
     if (str1[index] != str2[index])
-      return index;
+      return result;
+    codePointStateMachine.feedFollowingCodeUnit(str1[index]);
+    if (!codePointStateMachine.atCodePointBoundary())
+      continue;
+    result = index;
   }
   return maxCommonPrefixLength;
 }

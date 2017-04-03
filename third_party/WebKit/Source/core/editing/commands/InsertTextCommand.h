@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class InsertTextCommand : public CompositeEditCommand {
+class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
  public:
   enum RebalanceType {
     RebalanceLeadingAndTrailingWhitespaces,
