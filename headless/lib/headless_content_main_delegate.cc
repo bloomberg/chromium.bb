@@ -250,15 +250,18 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
           kHeadlessResourcePak.length),
       ui::SCALE_FACTOR_NONE);
 #else
-#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
-  dir_module = dir_module.Append(FILE_PATH_LITERAL("Resources/"));
-#endif
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
   // when we're running with the --headless switch), fall back to the browser's
   // resource pak.
   pak_file = dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
   if (!base::PathExists(pak_file))
     pak_file = dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
+#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
+  // In non component builds, check if fall back in Resources/ folder is
+  // available.
+  if (!base::PathExists(pak_file))
+    pak_file = dir_module.Append(FILE_PATH_LITERAL("Resources/resources.pak"));
+#endif
   ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_file, ui::SCALE_FACTOR_NONE);
 #endif
