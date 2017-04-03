@@ -497,14 +497,15 @@ typedef enum QUANT_FUNC {
 
 static AV1_QUANT_FACADE
     quant_func_list[AV1_XFORM_QUANT_TYPES][QUANT_FUNC_TYPES] = {
+#if !CONFIG_NEW_QUANT
       { av1_quantize_fp_facade, av1_highbd_quantize_fp_facade },
       { av1_quantize_b_facade, av1_highbd_quantize_b_facade },
       { av1_quantize_dc_facade, av1_highbd_quantize_dc_facade },
-#if CONFIG_NEW_QUANT
+#else   // !CONFIG_NEW_QUANT
       { av1_quantize_fp_nuq_facade, av1_highbd_quantize_fp_nuq_facade },
       { av1_quantize_b_nuq_facade, av1_highbd_quantize_b_nuq_facade },
       { av1_quantize_dc_nuq_facade, av1_highbd_quantize_dc_nuq_facade },
-#endif  // CONFIG_NEW_QUANT
+#endif  // !CONFIG_NEW_QUANT
       { NULL, NULL }
     };
 
@@ -517,14 +518,15 @@ typedef enum QUANT_FUNC {
 
 static AV1_QUANT_FACADE quant_func_list[AV1_XFORM_QUANT_TYPES]
                                        [QUANT_FUNC_TYPES] = {
+#if !CONFIG_NEW_QUANT
                                          { av1_quantize_fp_facade },
                                          { av1_quantize_b_facade },
                                          { av1_quantize_dc_facade },
-#if CONFIG_NEW_QUANT
+#else   // !CONFIG_NEW_QUANT
                                          { av1_quantize_fp_nuq_facade },
                                          { av1_quantize_b_nuq_facade },
                                          { av1_quantize_dc_nuq_facade },
-#endif  // CONFIG_NEW_QUANT
+#endif  // !CONFIG_NEW_QUANT
                                          { NULL }
                                        };
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -771,13 +773,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 #else
   {
 #endif
-#if CONFIG_NEW_QUANT
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    ctx, AV1_XFORM_QUANT_FP_NUQ);
-#else
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
-#endif  // CONFIG_NEW_QUANT
   }
 #if CONFIG_VAR_TX
   else {
@@ -898,13 +895,8 @@ static void encode_block_pass1(int plane, int block, int blk_row, int blk_col,
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
 
-#if CONFIG_NEW_QUANT
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  ctx, AV1_XFORM_QUANT_B_NUQ);
-#else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   ctx, AV1_XFORM_QUANT_B);
-#endif  // CONFIG_NEW_QUANT
 #if !CONFIG_PVQ
   if (p->eobs[block] > 0) {
 #else
@@ -1121,37 +1113,22 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   ctx = combine_entropy_contexts(*a, *l);
 
   if (args->enable_optimize_b) {
-#if CONFIG_NEW_QUANT
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    ctx, AV1_XFORM_QUANT_FP_NUQ);
-#else   // CONFIG_NEW_QUANT
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
-#endif  // CONFIG_NEW_QUANT
     if (p->eobs[block]) {
       av1_optimize_b(cm, x, plane, block, tx_size, ctx);
     }
   } else {
-#if CONFIG_NEW_QUANT
-    av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                    ctx, AV1_XFORM_QUANT_B_NUQ);
-#else   // CONFIG_NEW_QUANT
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_B);
-#endif  // CONFIG_NEW_QUANT
   }
 
   av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
                               *eob);
 #else  // #if !CONFIG_PVQ
 
-#if CONFIG_NEW_QUANT
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  ctx, AV1_XFORM_QUANT_FP_NUQ);
-#else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   ctx, AV1_XFORM_QUANT_FP);
-#endif  // CONFIG_NEW_QUANT
 
   // *(args->skip) == mbmi->skip
   if (!x->pvq_skip[plane]) *(args->skip) = 0;
