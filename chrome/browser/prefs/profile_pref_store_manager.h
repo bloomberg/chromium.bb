@@ -14,7 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/user_prefs/tracked/pref_hash_filter.h"
+#include "services/preferences/public/interfaces/preferences_configuration.mojom.h"
 
 class HashStoreContents;
 class PersistentPrefStore;
@@ -55,7 +55,7 @@ class ProfilePrefStoreManager {
   // values.
   ProfilePrefStoreManager(
       const base::FilePath& profile_path,
-      const std::vector<PrefHashFilter::TrackedPreferenceMetadata>&
+      std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
           tracking_configuration,
       size_t reporting_ids_count,
       const std::string& seed,
@@ -130,7 +130,7 @@ class ProfilePrefStoreManager {
                             service_manager::Connector* connector);
 
   const base::FilePath profile_path_;
-  const std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
       tracking_configuration_;
   const size_t reporting_ids_count_;
   const std::string seed_;

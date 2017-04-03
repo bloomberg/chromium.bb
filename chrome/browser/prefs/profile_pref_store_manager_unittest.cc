@@ -32,17 +32,23 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_store.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/user_prefs/tracked/mock_validation_delegate.h"
-#include "components/user_prefs/tracked/pref_hash_filter.h"
-#include "components/user_prefs/tracked/pref_names.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
+#include "services/preferences/public/cpp/tracked/configuration.h"
+#include "services/preferences/public/cpp/tracked/mock_validation_delegate.h"
+#include "services/preferences/public/cpp/tracked/pref_names.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+using EnforcementLevel =
+    prefs::mojom::TrackedPreferenceMetadata::EnforcementLevel;
+using PrefTrackingStrategy =
+    prefs::mojom::TrackedPreferenceMetadata::PrefTrackingStrategy;
+using ValueType = prefs::mojom::TrackedPreferenceMetadata::ValueType;
 
 class FirstEqualsPredicate {
  public:
@@ -120,11 +126,11 @@ const char kBarfoo[] = "BARFOO";
 const char kHelloWorld[] = "HELLOWORLD";
 const char kGoodbyeWorld[] = "GOODBYEWORLD";
 
-const PrefHashFilter::TrackedPreferenceMetadata kConfiguration[] = {
-    {0u, kTrackedAtomic, PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT,
-     PrefHashFilter::PrefTrackingStrategy::ATOMIC},
-    {1u, kProtectedAtomic, PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
-     PrefHashFilter::PrefTrackingStrategy::ATOMIC}};
+const prefs::TrackedPreferenceMetadata kConfiguration[] = {
+    {0u, kTrackedAtomic, EnforcementLevel::NO_ENFORCEMENT,
+     PrefTrackingStrategy::ATOMIC},
+    {1u, kProtectedAtomic, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC}};
 
 const size_t kExtraReportingId = 2u;
 const size_t kReportingIdCount = 3u;
@@ -134,8 +140,7 @@ const size_t kReportingIdCount = 3u;
 class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
  public:
   ProfilePrefStoreManagerTest()
-      : configuration_(kConfiguration,
-                       kConfiguration + arraysize(kConfiguration)),
+      : configuration_(prefs::ConstructTrackedConfiguration(kConfiguration)),
         profile_pref_registry_(new user_prefs::PrefRegistrySyncable),
         registry_verifier_(profile_pref_registry_.get()),
         seed_("seed"),
@@ -168,10 +173,9 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
     }
     mock_validation_delegate_record_ = new MockValidationDelegateRecord;
     ProfilePrefStoreManager::RegisterProfilePrefs(profile_pref_registry_.get());
-    for (const PrefHashFilter::TrackedPreferenceMetadata* it = kConfiguration;
-         it != kConfiguration + arraysize(kConfiguration);
-         ++it) {
-      if (it->strategy == PrefHashFilter::PrefTrackingStrategy::ATOMIC) {
+    for (const prefs::TrackedPreferenceMetadata* it = kConfiguration;
+         it != kConfiguration + arraysize(kConfiguration); ++it) {
+      if (it->strategy == PrefTrackingStrategy::ATOMIC) {
         profile_pref_registry_->RegisterStringPref(it->name, std::string());
       } else {
         profile_pref_registry_->RegisterDictionaryPref(it->name);
@@ -184,12 +188,12 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
     // SegregatedPrefStore. Only declare it after configured prefs have been
     // registered above for this test as kPreferenceResetTime is already
     // registered in ProfilePrefStoreManager::RegisterProfilePrefs.
-    PrefHashFilter::TrackedPreferenceMetadata pref_reset_time_config = {
-        configuration_.rbegin()->reporting_id + 1,
-        user_prefs::kPreferenceResetTime,
-        PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
-        PrefHashFilter::PrefTrackingStrategy::ATOMIC};
-    configuration_.push_back(pref_reset_time_config);
+    prefs::TrackedPreferenceMetadata pref_reset_time_config = {
+        (*configuration_.rbegin())->reporting_id + 1,
+        user_prefs::kPreferenceResetTime, EnforcementLevel::ENFORCE_ON_LOAD,
+        PrefTrackingStrategy::ATOMIC};
+    configuration_.push_back(
+        prefs::ConstructTrackedMetadata(pref_reset_time_config));
 
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ReloadConfiguration();
@@ -198,8 +202,9 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
   void ReloadConfiguration() {
     RelaunchPrefService();
     manager_.reset(new ProfilePrefStoreManager(
-        profile_dir_.GetPath(), configuration_, kReportingIdCount, seed_,
-        "device_id", &local_state_));
+        profile_dir_.GetPath(),
+        prefs::CloneTrackedConfiguration(configuration_), kReportingIdCount,
+        seed_, "device_id", &local_state_));
   }
 
   void TearDown() override {
@@ -322,6 +327,9 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
 
   void LoadExistingPrefs() {
     DestroyPrefStore();
+    // Constructing the PrefStore consumes the tracking configuration in
+    // |manager_|, so recreate it before constructing another PrefStore.
+    ReloadConfiguration();
     mock_validation_delegate_ = base::MakeUnique<MockValidationDelegate>(
         mock_validation_delegate_record_);
     pref_store_ = manager_->CreateProfilePrefStore(
@@ -374,7 +382,7 @@ class ProfilePrefStoreManagerTest : public testing::TestWithParam<bool> {
   }
 
   base::MessageLoop main_message_loop_;
-  std::vector<PrefHashFilter::TrackedPreferenceMetadata> configuration_;
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> configuration_;
   base::ScopedTempDir profile_dir_;
   TestingPrefServiceSimple local_state_;
   scoped_refptr<user_prefs::PrefRegistrySyncable> profile_pref_registry_;
@@ -484,11 +492,10 @@ TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
   ExpectStringValueEquals(kUnprotectedPref, kBarfoo);
 
   // Now update the configuration to protect it.
-  PrefHashFilter::TrackedPreferenceMetadata new_protected = {
-      kExtraReportingId, kUnprotectedPref,
-      PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
-      PrefHashFilter::PrefTrackingStrategy::ATOMIC};
-  configuration_.push_back(new_protected);
+  prefs::TrackedPreferenceMetadata new_protected = {
+      kExtraReportingId, kUnprotectedPref, EnforcementLevel::ENFORCE_ON_LOAD,
+      PrefTrackingStrategy::ATOMIC};
+  configuration_.push_back(prefs::ConstructTrackedMetadata(new_protected));
   ReloadConfiguration();
 
   // And try loading with the new configuration.
@@ -512,13 +519,10 @@ TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
 }
 
 TEST_P(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
-  std::vector<PrefHashFilter::TrackedPreferenceMetadata>
-      original_configuration = configuration_;
-  for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::iterator it =
-           configuration_.begin();
-       it != configuration_.end();
-       ++it) {
-    it->enforcement_level = PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT;
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
+      original_configuration = prefs::CloneTrackedConfiguration(configuration_);
+  for (const auto& metadata : configuration_) {
+    metadata->enforcement_level = EnforcementLevel::NO_ENFORCEMENT;
   }
   ReloadConfiguration();
 
@@ -534,12 +538,11 @@ TEST_P(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
   DestroyPrefStore();
 
   // Now introduce protection, including the never-before tracked "new_pref".
-  configuration_ = original_configuration;
-  PrefHashFilter::TrackedPreferenceMetadata new_protected = {
-      kExtraReportingId, kUnprotectedPref,
-      PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
-      PrefHashFilter::PrefTrackingStrategy::ATOMIC};
-  configuration_.push_back(new_protected);
+  configuration_ = std::move(original_configuration);
+  prefs::TrackedPreferenceMetadata new_protected = {
+      kExtraReportingId, kUnprotectedPref, EnforcementLevel::ENFORCE_ON_LOAD,
+      PrefTrackingStrategy::ATOMIC};
+  configuration_.push_back(prefs::ConstructTrackedMetadata(new_protected));
   ReloadConfiguration();
 
   // And try loading with the new configuration.
@@ -558,11 +561,10 @@ TEST_P(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
   ExpectValidationObserved(kProtectedAtomic);
 
   // Now update the configuration to protect it.
-  PrefHashFilter::TrackedPreferenceMetadata new_protected = {
-      kExtraReportingId, kUnprotectedPref,
-      PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
-      PrefHashFilter::PrefTrackingStrategy::ATOMIC};
-  configuration_.push_back(new_protected);
+  prefs::TrackedPreferenceMetadata new_protected = {
+      kExtraReportingId, kUnprotectedPref, EnforcementLevel::ENFORCE_ON_LOAD,
+      PrefTrackingStrategy::ATOMIC};
+  configuration_.push_back(prefs::ConstructTrackedMetadata(new_protected));
   seed_ = "new-seed-to-break-trust";
   ReloadConfiguration();
 
@@ -587,12 +589,9 @@ TEST_P(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   DestroyPrefStore();
 
   // Unconfigure protection for kProtectedAtomic
-  for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::iterator it =
-           configuration_.begin();
-       it != configuration_.end();
-       ++it) {
-    if (it->name == kProtectedAtomic) {
-      it->enforcement_level = PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT;
+  for (const auto& metadata : configuration_) {
+    if (metadata->name == kProtectedAtomic) {
+      metadata->enforcement_level = EnforcementLevel::NO_ENFORCEMENT;
       break;
     }
   }

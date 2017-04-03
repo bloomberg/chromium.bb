@@ -13,8 +13,7 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/tracked_preference_incident.h"
 #include "components/safe_browsing/csd.pb.h"
-#include "components/user_prefs/tracked/pref_hash_store_transaction.h"
-#include "components/user_prefs/tracked/tracked_preference_helper.h"
+#include "services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {
 
@@ -24,23 +23,26 @@ typedef ClientIncidentReport_IncidentData_TrackedPreferenceIncident TPIncident;
 typedef ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState
     TPIncident_ValueState;
 
+using ValueState =
+    prefs::mojom::TrackedPreferenceValidationDelegate::ValueState;
+
 // Maps a primary PrefHashStoreTransaction::ValueState and an external
 // validation state to a TrackedPreferenceIncident::ValueState.
 TPIncident_ValueState MapValueState(
-    PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state) {
+    ValueState value_state,
+    ValueState external_validation_value_state) {
   switch (value_state) {
-    case PrefHashStoreTransaction::CLEARED:
+    case ValueState::CLEARED:
       return TPIncident::CLEARED;
-    case PrefHashStoreTransaction::CHANGED:
+    case ValueState::CHANGED:
       return TPIncident::CHANGED;
-    case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:
+    case ValueState::UNTRUSTED_UNKNOWN_VALUE:
       return TPIncident::UNTRUSTED_UNKNOWN_VALUE;
     default:
       switch (external_validation_value_state) {
-        case PrefHashStoreTransaction::CLEARED:
+        case ValueState::CLEARED:
           return TPIncident::BYPASS_CLEARED;
-        case PrefHashStoreTransaction::CHANGED:
+        case ValueState::CHANGED:
           return TPIncident::BYPASS_CHANGED;
         default:
           return TPIncident::UNKNOWN;
@@ -61,8 +63,8 @@ PreferenceValidationDelegate::~PreferenceValidationDelegate() {
 void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
     std::unique_ptr<base::Value> value,
-    PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state,
+    ValueState value_state,
+    ValueState external_validation_value_state,
     bool is_personal) {
   TPIncident_ValueState proto_value_state =
       MapValueState(value_state, external_validation_value_state);
@@ -86,8 +88,8 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     const std::string& pref_path,
     const std::vector<std::string>& invalid_keys,
     const std::vector<std::string>& external_validation_invalid_keys,
-    PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state,
+    ValueState value_state,
+    ValueState external_validation_value_state,
     bool is_personal) {
   TPIncident_ValueState proto_value_state =
       MapValueState(value_state, external_validation_value_state);

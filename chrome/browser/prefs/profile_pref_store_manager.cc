@@ -21,19 +21,23 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/user_prefs/tracked/pref_hash_store_impl.h"
-#include "components/user_prefs/tracked/segregated_pref_store.h"
-#include "components/user_prefs/tracked/tracked_preferences_migration.h"
 #include "services/preferences/public/cpp/persistent_pref_store_client.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/preferences/tracked/pref_hash_filter.h"
+#include "services/preferences/tracked/pref_hash_store_impl.h"
+#include "services/preferences/tracked/segregated_pref_store.h"
+#include "services/preferences/tracked/tracked_preferences_migration.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_WIN)
 #include "chrome/install_static/install_util.h"
-#include "components/user_prefs/tracked/registry_hash_store_contents_win.h"
+#include "services/preferences/tracked/registry_hash_store_contents_win.h"
 #endif
 
 namespace {
+
+using EnforcementLevel =
+    prefs::mojom::TrackedPreferenceMetadata::EnforcementLevel;
 
 void RemoveValueSilently(const base::WeakPtr<JsonPrefStore> pref_store,
                          const std::string& key) {
@@ -63,14 +67,14 @@ const bool ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking =
 
 ProfilePrefStoreManager::ProfilePrefStoreManager(
     const base::FilePath& profile_path,
-    const std::vector<PrefHashFilter::TrackedPreferenceMetadata>&
+    std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
         tracking_configuration,
     size_t reporting_ids_count,
     const std::string& seed,
     const std::string& legacy_device_id,
     PrefService* local_state)
     : profile_path_(profile_path),
-      tracking_configuration_(tracking_configuration),
+      tracking_configuration_(std::move(tracking_configuration)),
       reporting_ids_count_(reporting_ids_count),
       seed_(seed),
       legacy_device_id_(legacy_device_id),
@@ -122,25 +126,22 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
                              std::unique_ptr<PrefFilter>());
   }
 
-  std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
       unprotected_configuration;
-  std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
       protected_configuration;
   std::set<std::string> protected_pref_names;
   std::set<std::string> unprotected_pref_names;
-  for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::const_iterator
-           it = tracking_configuration_.begin();
-       it != tracking_configuration_.end();
-       ++it) {
-    if (it->enforcement_level >
-        PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT) {
-      protected_configuration.push_back(*it);
-      protected_pref_names.insert(it->name);
+  for (auto& metadata : tracking_configuration_) {
+    if (metadata->enforcement_level > EnforcementLevel::NO_ENFORCEMENT) {
+      protected_pref_names.insert(metadata->name);
+      protected_configuration.push_back(std::move(metadata));
     } else {
-      unprotected_configuration.push_back(*it);
-      unprotected_pref_names.insert(it->name);
+      unprotected_pref_names.insert(metadata->name);
+      unprotected_configuration.push_back(std::move(metadata));
     }
   }
+  tracking_configuration_.clear();
 
   std::unique_ptr<PrefHashFilter> unprotected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStore(false),

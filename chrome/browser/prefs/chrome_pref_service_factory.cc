@@ -55,11 +55,12 @@
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_factory.h"
-#include "components/user_prefs/tracked/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/features/features.h"
 #include "rlz/features/features.h"
+#include "services/preferences/public/cpp/tracked/configuration.h"
+#include "services/preferences/public/cpp/tracked/pref_names.h"
 #include "sql/error_delegate_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -81,9 +82,11 @@
 using content::BrowserContext;
 using content::BrowserThread;
 
-using EnforcementLevel = PrefHashFilter::EnforcementLevel;
-using PrefTrackingStrategy = PrefHashFilter::PrefTrackingStrategy;
-using ValueType = PrefHashFilter::ValueType;
+using EnforcementLevel =
+    prefs::mojom::TrackedPreferenceMetadata::EnforcementLevel;
+using PrefTrackingStrategy =
+    prefs::mojom::TrackedPreferenceMetadata::PrefTrackingStrategy;
+using ValueType = prefs::mojom::TrackedPreferenceMetadata::ValueType;
 
 namespace {
 
@@ -100,7 +103,7 @@ bool g_disable_domain_check_for_testing = false;
 // tracked preference must be given a unique reporting ID.
 // See CleanupDeprecatedTrackedPreferences() in pref_hash_filter.cc to remove a
 // deprecated tracked preference.
-const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
+const prefs::TrackedPreferenceMetadata kTrackedPrefs[] = {
     {0, prefs::kShowHomeButton, EnforcementLevel::ENFORCE_ON_LOAD,
      PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
     {1, prefs::kHomePageIsNewTabPage, EnforcementLevel::ENFORCE_ON_LOAD,
@@ -257,35 +260,37 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
 }
 
 // Returns the effective preference tracking configuration.
-std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
 GetTrackingConfiguration() {
   const SettingsEnforcementGroup enforcement_group =
       GetSettingsEnforcementGroup();
 
-  std::vector<PrefHashFilter::TrackedPreferenceMetadata> result;
+  std::vector<prefs::mojom::TrackedPreferenceMetadataPtr> result;
   for (size_t i = 0; i < arraysize(kTrackedPrefs); ++i) {
-    PrefHashFilter::TrackedPreferenceMetadata data = kTrackedPrefs[i];
+    prefs::mojom::TrackedPreferenceMetadataPtr data =
+        prefs::ConstructTrackedMetadata(kTrackedPrefs[i]);
 
     if (GROUP_NO_ENFORCEMENT == enforcement_group) {
       // Remove enforcement for all tracked preferences.
-      data.enforcement_level = EnforcementLevel::NO_ENFORCEMENT;
+      data->enforcement_level = EnforcementLevel::NO_ENFORCEMENT;
     }
 
     if (enforcement_group >= GROUP_ENFORCE_ALWAYS_WITH_DSE &&
-        data.name == DefaultSearchManager::kDefaultSearchProviderDataPrefName) {
+        data->name ==
+            DefaultSearchManager::kDefaultSearchProviderDataPrefName) {
       // Specifically enable default search settings enforcement.
-      data.enforcement_level = EnforcementLevel::ENFORCE_ON_LOAD;
+      data->enforcement_level = EnforcementLevel::ENFORCE_ON_LOAD;
     }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     if (enforcement_group >= GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS_AND_DSE &&
-        data.name == extensions::pref_names::kExtensions) {
+        data->name == extensions::pref_names::kExtensions) {
       // Specifically enable extension settings enforcement.
-      data.enforcement_level = EnforcementLevel::ENFORCE_ON_LOAD;
+      data->enforcement_level = EnforcementLevel::ENFORCE_ON_LOAD;
     }
 #endif
 
-    result.push_back(data);
+    result.push_back(std::move(data));
   }
   return result;
 }

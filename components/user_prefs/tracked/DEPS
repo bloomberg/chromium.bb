@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/pref_registry",
-  "+crypto/hmac.h",
-  "+services/preferences/public/interfaces/tracked_preference_validation_delegate.mojom.h"
-]

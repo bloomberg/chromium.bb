@@ -13,3 +13,28 @@ union PersistentPrefStoreConfiguration {
 struct SimplePersistentPrefStoreConfiguration {
   mojo.common.mojom.FilePath pref_filename;
 };
+
+struct TrackedPreferenceMetadata {
+  enum EnforcementLevel { NO_ENFORCEMENT, ENFORCE_ON_LOAD };
+
+  enum PrefTrackingStrategy {
+    // Atomic preferences are tracked as a whole.
+    ATOMIC,
+    // Split preferences are dictionaries for which each top-level entry is
+    // tracked independently. Note: preferences using this strategy must be kept
+    // in sync with TrackedSplitPreferences in histograms.xml.
+    SPLIT,
+  };
+
+  enum ValueType {
+    IMPERSONAL,
+    // The preference value may contain personal information.
+    PERSONAL,
+  };
+
+  uint64 reporting_id;
+  string name;
+  EnforcementLevel enforcement_level;
+  PrefTrackingStrategy strategy;
+  ValueType value_type;
+};
