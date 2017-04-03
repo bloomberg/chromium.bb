@@ -124,6 +124,11 @@ public class SnippetArticle implements OfflinableSuggestion {
         return true;
     }
 
+    /** @return whether a snippet is a remote suggestion. */
+    public boolean isArticle() {
+        return mCategory == KnownCategories.ARTICLES;
+    }
+
     /** @return whether a snippet is either offline page or asset download. */
     public boolean isDownload() {
         return mCategory == KnownCategories.DOWNLOADS;

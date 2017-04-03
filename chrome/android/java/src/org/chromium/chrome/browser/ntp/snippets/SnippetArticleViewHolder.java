@@ -70,6 +70,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
             "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
+    private static final int PUBLISHER_FAVICON_MINIMUM_SIZE_PX = 16;
 
     private final SuggestionsUiDelegate mUiDelegate;
     private final UiConfig mUiConfig;
@@ -181,7 +182,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      * @param article The snippet to take the data from.
      * @param categoryInfo The info of the category which the snippet belongs to.
      */
-    public void onBindViewHolder(SnippetArticle article, SuggestionsCategoryInfo categoryInfo) {
+    public void onBindViewHolder(
+            final SnippetArticle article, SuggestionsCategoryInfo categoryInfo) {
         super.onBindViewHolder();
 
         mArticle = article;
@@ -206,7 +208,15 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         // from moving later.
         setDefaultFaviconOnView();
         try {
-            fetchFaviconFromLocalCache(new URI(mArticle.mUrl), true);
+            URI pageUrl = new URI(mArticle.mUrl);
+            if (!article.isArticle() || !SnippetsConfig.isFaviconsFromNewServerEnabled()) {
+                // The old code path. Remove when the experiment is successful.
+                // Currently, we have to use this for non-articles, due to privacy.
+                fetchFaviconFromLocalCache(pageUrl, true);
+            } else {
+                // The new code path.
+                fetchFaviconFromLocalCacheOrGoogleServer();
+            }
         } catch (URISyntaxException e) {
             // Do nothing, stick to the default favicon.
         }
@@ -398,6 +408,18 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         mThumbnailView.setTint(null);
         transitionDrawable.setCrossFadeEnabled(true);
         transitionDrawable.startTransition(FADE_IN_ANIMATION_TIME_MS);
+    }
+
+    private void fetchFaviconFromLocalCacheOrGoogleServer() {
+        // Set the desired size to 0 to specify we do not want to resize in c++, we'll resize here.
+        mUiDelegate.getSuggestionsSource().fetchSuggestionFavicon(mArticle,
+                PUBLISHER_FAVICON_MINIMUM_SIZE_PX, /* desiredSizePx */ 0, new Callback<Bitmap>() {
+                    @Override
+                    public void onResult(Bitmap image) {
+                        if (image == null) return;
+                        setFaviconOnView(image);
+                    }
+                });
     }
 
     private void fetchFaviconFromLocalCache(final URI snippetUri, final boolean fallbackToService) {
