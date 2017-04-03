@@ -144,6 +144,7 @@ static inline int64_t get_token_bit_costs(
 
 int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                    TX_SIZE tx_size, int ctx) {
+#if !CONFIG_PVQ
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -485,6 +486,13 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   mb->plane[plane].eobs[block] = final_eob;
   assert(final_eob <= default_eob);
   return final_eob;
+#else   // !CONFIG_PVQ
+  (void)cm;
+  (void)tx_size;
+  (void)ctx;
+  struct macroblock_plane *const p = &mb->plane[plane];
+  return p->eobs[block];
+#endif  // !CONFIG_PVQ
 }
 
 #if !CONFIG_PVQ
@@ -1097,7 +1105,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-  int ctx = 0;
 #if CONFIG_PVQ
   int tx_blk_size;
   int i, j;
@@ -1107,11 +1114,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                                  tx_size);
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
-#if !CONFIG_PVQ
   const ENTROPY_CONTEXT *a = &args->ta[blk_col];
   const ENTROPY_CONTEXT *l = &args->tl[blk_row];
-  ctx = combine_entropy_contexts(*a, *l);
-
+  int ctx = combine_entropy_contexts(*a, *l);
   if (args->enable_optimize_b) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
@@ -1123,13 +1128,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                     ctx, AV1_XFORM_QUANT_B);
   }
 
-  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
-                              *eob);
-#else  // #if !CONFIG_PVQ
-
-  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  ctx, AV1_XFORM_QUANT_FP);
-
+#if CONFIG_PVQ
   // *(args->skip) == mbmi->skip
   if (!x->pvq_skip[plane]) *(args->skip) = 0;
 
@@ -1154,11 +1153,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_AOM_HIGHBITDEPTH
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-
+#endif  // #if CONFIG_PVQ
   av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
                               *eob);
-#endif  // #if !CONFIG_PVQ
-
 #if !CONFIG_PVQ
   if (*eob) *(args->skip) = 0;
 #else
