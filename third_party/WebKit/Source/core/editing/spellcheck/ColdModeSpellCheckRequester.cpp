@@ -35,8 +35,6 @@ bool shouldCheckNode(const Node& node) {
 
 }  // namespace
 
-ColdModeSpellCheckRequester::~ColdModeSpellCheckRequester() = default;
-
 // static
 ColdModeSpellCheckRequester* ColdModeSpellCheckRequester::create(
     LocalFrame& frame) {

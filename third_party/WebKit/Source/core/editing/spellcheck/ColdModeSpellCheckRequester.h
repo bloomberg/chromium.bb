@@ -16,10 +16,9 @@ class SpellCheckRequester;
 // This class is only supposed to be used by IdleSpellCheckCallback in cold mode
 // invocation. Not to be confused with SpellCheckRequester.
 class ColdModeSpellCheckRequester
-    : public GarbageCollectedFinalized<ColdModeSpellCheckRequester> {
+    : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
   static ColdModeSpellCheckRequester* create(LocalFrame&);
-  ~ColdModeSpellCheckRequester();
 
   void setNeedsMoreInvocationForTesting() {
     m_needsMoreInvocationForTesting = true;
@@ -27,6 +26,8 @@ class ColdModeSpellCheckRequester
 
   void invoke(IdleDeadline*);
   bool fullDocumentChecked() const;
+
+  DECLARE_TRACE();
 
  private:
   explicit ColdModeSpellCheckRequester(LocalFrame&);
@@ -55,7 +56,6 @@ class ColdModeSpellCheckRequester
   uint64_t m_lastCheckedDOMTreeVersion;
   mutable bool m_needsMoreInvocationForTesting;
 
-  DECLARE_TRACE();
   DISALLOW_COPY_AND_ASSIGN(ColdModeSpellCheckRequester);
 };
 }
