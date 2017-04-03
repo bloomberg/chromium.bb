@@ -67,7 +67,13 @@ base::FilePath TestExtensionDir::Pack() {
 }
 
 base::FilePath TestExtensionDir::UnpackedPath() {
-  return dir_.GetPath();
+  // We make this absolute because it's possible that dir_ contains a symlink as
+  // part of it's path. When UnpackedInstaller::GetAbsolutePath() runs as part
+  // of loading the extension, the extension's path is converted to an absolute
+  // path, which actually does something like `realpath` as part of its
+  // resolution. If the tests are comparing paths to UnpackedPath(), then
+  // they'll need to compare the same absolute'd path.
+  return base::MakeAbsoluteFilePath(dir_.GetPath());
 }
 
 }  // namespace extensions
