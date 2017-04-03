@@ -10,7 +10,6 @@ interface AbsoluteOrientationSensor : OrientationSensor
     method constructor
 interface Accelerometer : Sensor
     attribute @@toStringTag
-    getter includesGravity
     getter x
     getter y
     getter z

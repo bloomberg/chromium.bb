@@ -4,15 +4,12 @@
 
 #include "modules/sensor/Accelerometer.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-
 using device::mojom::blink::SensorType;
 
 namespace blink {
 
 Accelerometer* Accelerometer::create(ExecutionContext* executionContext,
-                                     const AccelerometerOptions& options,
+                                     const SensorOptions& options,
                                      ExceptionState& exceptionState) {
   return new Accelerometer(executionContext, options, exceptionState);
 }
@@ -20,18 +17,16 @@ Accelerometer* Accelerometer::create(ExecutionContext* executionContext,
 // static
 Accelerometer* Accelerometer::create(ExecutionContext* executionContext,
                                      ExceptionState& exceptionState) {
-  return create(executionContext, AccelerometerOptions(), exceptionState);
+  return create(executionContext, SensorOptions(), exceptionState);
 }
 
 Accelerometer::Accelerometer(ExecutionContext* executionContext,
-                             const AccelerometerOptions& options,
+                             const SensorOptions& options,
                              ExceptionState& exceptionState)
     : Sensor(executionContext,
              options,
              exceptionState,
-             options.includeGravity() ? SensorType::ACCELEROMETER
-                                      : SensorType::LINEAR_ACCELERATION),
-      m_accelerometerOptions(options) {}
+             SensorType::ACCELEROMETER) {}
 
 double Accelerometer::x(bool& isNull) const {
   return readingValue(0, isNull);
@@ -43,10 +38,6 @@ double Accelerometer::y(bool& isNull) const {
 
 double Accelerometer::z(bool& isNull) const {
   return readingValue(2, isNull);
-}
-
-bool Accelerometer::includesGravity() const {
-  return m_accelerometerOptions.includeGravity();
 }
 
 DEFINE_TRACE(Accelerometer) {
