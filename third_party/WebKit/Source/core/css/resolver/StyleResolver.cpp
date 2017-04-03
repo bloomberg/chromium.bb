@@ -614,12 +614,17 @@ static const ComputedStyle* calculateBaseComputedStyle(
 
 static void updateBaseComputedStyle(StyleResolverState& state,
                                     Element* animatingElement) {
-  if (!animatingElement || state.isAnimatingCustomProperties())
+  if (!animatingElement)
     return;
 
   ElementAnimations* elementAnimations = animatingElement->elementAnimations();
-  if (elementAnimations)
-    elementAnimations->updateBaseComputedStyle(state.style());
+  if (elementAnimations) {
+    if (state.isAnimatingCustomProperties()) {
+      elementAnimations->clearBaseComputedStyle();
+    } else {
+      elementAnimations->updateBaseComputedStyle(state.style());
+    }
+  }
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::styleForElement(

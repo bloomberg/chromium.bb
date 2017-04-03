@@ -52,7 +52,8 @@ void AnimationClock::updateTime(double time) {
 }
 
 double AnimationClock::currentTime() {
-  if (m_taskForWhichTimeWasCalculated != s_currentlyRunningTask) {
+  if (m_monotonicallyIncreasingTime &&
+      m_taskForWhichTimeWasCalculated != s_currentlyRunningTask) {
     const double currentTime = m_monotonicallyIncreasingTime();
     if (m_time < currentTime) {
       // Advance to the first estimated frame after the current time.

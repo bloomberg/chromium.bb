@@ -17,15 +17,15 @@
 namespace blink {
 
 class ExceptionState;
+class ExecutionContext;
 class PropertyDescriptor;
-class ScriptState;
 
 using CSSInterpolationTypes = Vector<std::unique_ptr<CSSInterpolationType>>;
 
-class PropertyRegistration
+class CORE_EXPORT PropertyRegistration
     : public GarbageCollectedFinalized<PropertyRegistration> {
  public:
-  static void registerProperty(ScriptState*,
+  static void registerProperty(ExecutionContext*,
                                const PropertyDescriptor&,
                                ExceptionState&);
 

@@ -334,6 +334,7 @@ test("webkit_unit_tests") {
     # crbug.com/353585
     "tests/ActiveConnectionThrottlingTest.cpp",
     "tests/ActivityLoggerTest.cpp",
+    "tests/AnimationSimTest.cpp",
     "tests/BrowserControlsTest.cpp",
     "tests/ChromeClientImplTest.cpp",
     "tests/CompositorWorkerTest.cpp",

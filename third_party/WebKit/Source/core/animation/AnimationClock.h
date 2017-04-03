@@ -57,6 +57,9 @@ class CORE_EXPORT AnimationClock {
   void updateTime(double time);
   double currentTime();
   void resetTimeForTesting(double time = 0);
+  void disableSyntheticTimeForTesting() {
+    m_monotonicallyIncreasingTime = nullptr;
+  }
 
   // notifyTaskStart should be called right before the main message loop starts
   // to run the next task from the message queue.

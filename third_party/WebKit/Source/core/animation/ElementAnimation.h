@@ -66,7 +66,7 @@ class ElementAnimation {
     if (!TimingInput::convert(duration, timing, exceptionState))
       return nullptr;
 
-    return animateInternal(element, effect, timing);
+    return animate(element, effect, timing);
   }
 
   static Animation* animate(ScriptState* scriptState,
@@ -85,7 +85,7 @@ class ElementAnimation {
                               exceptionState))
       return nullptr;
 
-    Animation* animation = animateInternal(element, effect, timing);
+    Animation* animation = animate(element, effect, timing);
     animation->setId(options.id());
     return animation;
   }
@@ -99,7 +99,15 @@ class ElementAnimation {
         exceptionState);
     if (exceptionState.hadException())
       return nullptr;
-    return animateInternal(element, effect, Timing());
+    return animate(element, effect, Timing());
+  }
+
+  static Animation* animate(Element& element,
+                            EffectModel* effect,
+                            const Timing& timing) {
+    KeyframeEffect* keyframeEffect =
+        KeyframeEffect::create(&element, effect, timing);
+    return element.document().timeline().play(keyframeEffect);
   }
 
   static HeapVector<Member<Animation>> getAnimations(Element& element) {
@@ -117,15 +125,6 @@ class ElementAnimation {
         animations.push_back(animation);
     }
     return animations;
-  }
-
- private:
-  static Animation* animateInternal(Element& element,
-                                    EffectModel* effect,
-                                    const Timing& timing) {
-    KeyframeEffect* keyframeEffect =
-        KeyframeEffect::create(&element, effect, timing);
-    return element.document().timeline().play(keyframeEffect);
   }
 };
 
