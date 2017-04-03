@@ -339,4 +339,51 @@ suite('drag and drop', function() {
         DropPosition.ON | DropPosition.ABOVE | DropPosition.BELOW,
         dndManager.calculateValidDropPositions_(getFolderNode('112')));
   });
+
+  test('calculateDropInfo_', function() {
+    function assertDropInfo(parentId, index, element, position) {
+      assertDeepEquals(
+          {parentId: parentId, index: index},
+          dndManager.calculateDropInfo_(
+              {element: element, position: position}));
+    }
+
+
+    // Drops onto the list.
+    assertDropInfo('1', 0, getListItem('11'), DropPosition.ABOVE);
+    assertDropInfo('1', 2, getListItem('12'), DropPosition.BELOW);
+    assertDropInfo('13', -1, getListItem('13'), DropPosition.ON);
+
+    // Drops onto the sidebar.
+    assertDropInfo('1', 4, getFolderNode('15'), DropPosition.ABOVE);
+    assertDropInfo('1', 5, getFolderNode('15'), DropPosition.BELOW);
+    assertDropInfo('111', -1, getFolderNode('111'), DropPosition.ON);
+  });
+
+  test('simple drag and drop end to end', function() {
+    var dropParentId;
+    var dropIndex;
+    chrome.bookmarkManagerPrivate.drop = function(parentId, index) {
+      dropParentId = parentId;
+      dropIndex = index;
+    };
+
+    var dragElement = getListItem('13');
+    var dragTarget = getListItem('12');
+
+    dispatchDragEvent('dragstart', dragElement);
+    assertDeepEquals(['13'], draggedIds);
+    dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));
+
+    dispatchDragEvent(
+        'dragover', dragTarget, MockInteractions.topLeftOfNode(dragTarget));
+    assertDragStyle(dragTarget, DRAG_STYLE.ABOVE);
+
+    dispatchDragEvent('drop', dragTarget);
+    assertEquals('1', dropParentId);
+    assertEquals(1, dropIndex);
+
+    dispatchDragEvent('dragend', dragTarget);
+    assertDragStyle(dragTarget, DRAG_STYLE.NONE);
+  });
 });

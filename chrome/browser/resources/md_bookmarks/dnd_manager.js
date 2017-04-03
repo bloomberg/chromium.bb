@@ -283,11 +283,47 @@ cr.define('bookmarks', function() {
      * @param {!Event} e
      */
     onDrop_: function(e) {
-      if (this.dropDestination_)
+      if (this.dropDestination_) {
         e.preventDefault();
+
+        var dropInfo = this.calculateDropInfo_(this.dropDestination_);
+        if (dropInfo.index != -1)
+          chrome.bookmarkManagerPrivate.drop(dropInfo.parentId, dropInfo.index);
+        else
+          chrome.bookmarkManagerPrivate.drop(dropInfo.parentId);
+      }
 
       this.dropDestination_ = null;
       this.dropIndicator_.finish();
+    },
+
+    /**
+     * @param {DropDestination} dropDestination
+     * @return {{parentId: string, index: number}}
+     */
+    calculateDropInfo_: function(dropDestination) {
+      var node = getBookmarkNode(dropDestination.element);
+      var position = dropDestination.position;
+      var index = -1;
+      var parentId = node.id;
+
+      if (position != DropPosition.ON) {
+        var state = bookmarks.Store.getInstance().data;
+
+        // Drops between items in the normal list and the sidebar use the drop
+        // destination node's parent.
+        parentId = assert(node.parentId);
+        index = state.nodes[parentId].children.indexOf(node.id);
+
+        // TODO(calamity): Handle dropping to an empty bookmark list.
+        if (position == DropPosition.BELOW)
+          index++;
+      }
+
+      return {
+        index: index,
+        parentId: parentId,
+      };
     },
 
     /** @private */
