@@ -14,16 +14,7 @@
     <link rel="stylesheet" href="../stylesheets/pygment_trac.css">
 
     <style>
-      /*body {
-        font-family: sans-serif;
-        font-size: 0.9em;
-      }*/
-
-      h1 {
-        font-size: 1.3em;
-      }
-
-      h2 {
+      h3 {
         font-size: 1.0em;
         margin-top: 2em;
       }
@@ -64,33 +55,38 @@
     <title>WebVR - Samples</title>
   </head>
   <body>
+
     <div class="container" id="container">
       <header class="header">
-        <h1><a href="../" class="wordmark"><span>WebVR</span></a></h1>
+        <div id="nav">
+            <a href="../">About</a>
+            <a href="../developers" class="selected">Developers</a>
+        </div>
+
+        <h1><a href="" class="wordmark"><span>WebVR</span></a></h1>
         <h2 class="tagline">Sample Pages</h2>
       </header>
 
       <main class="main" id="main">
         <p>Sample pages demonstrating how to use various aspects of the WebVR API.</p>
 
-        <h2>Non-presenting samples</h2>
+        <h3>Non-presenting samples</h3>
         <p>These samples use the WebVR API but do not display anything in the headset.</p>
         <ul id="non-presenting-samples" class="sample-list"></ul>
 
-        <h2>Presenting samples</h2>
+        <h3>Presenting samples</h3>
         <p>These samples use the WebVR API to display imagery in the headset.</p>
         <ul id="samples" class="sample-list"></ul>
 
-        <h2>Work-in-progress samples</h2>
+        <h3>Work-in-progress samples</h3>
         <p>These samples are not yet complete and may not accurately portray the API's usage.</p>
         <ul id="wip-samples" class="sample-list"></ul>
 
-        <h2>Testing pages</h2>
+        <h3>Testing pages</h3>
         <p>These pages help stress browser conformance.</p>
         <ul id="tests" class="sample-list"></ul>
 
         <br/>
-        <hr/>
 
         <h3><a class="github-link" href="https://github.com/toji/webvr.info/blob/master/samples">View samples on GitHub</a></h3>
 
