@@ -23,7 +23,7 @@
 
 namespace blink {
 
-StyleSurroundData::StyleSurroundData() : margin(Fixed), padding(Fixed) {}
+StyleSurroundData::StyleSurroundData() : m_margin(Fixed), m_padding(Fixed) {}
 
 StyleSurroundData::StyleSurroundData(const StyleSurroundData& o)
     : RefCounted<StyleSurroundData>(),
@@ -31,14 +31,14 @@ StyleSurroundData::StyleSurroundData(const StyleSurroundData& o)
       m_right(o.m_right),
       m_top(o.m_top),
       m_bottom(o.m_bottom),
-      margin(o.margin),
-      padding(o.padding),
-      border(o.border) {}
+      m_margin(o.m_margin),
+      m_padding(o.m_padding),
+      m_border(o.m_border) {}
 
 bool StyleSurroundData::operator==(const StyleSurroundData& o) const {
   return m_left == o.m_left && m_right == o.m_right && m_top == o.m_top &&
-         m_bottom == o.m_bottom && margin == o.margin && padding == o.padding &&
-         border == o.border;
+         m_bottom == o.m_bottom && m_margin == o.m_margin &&
+         m_padding == o.m_padding && m_border == o.m_border;
 }
 
 }  // namespace blink

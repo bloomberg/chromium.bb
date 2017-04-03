@@ -532,7 +532,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
     diff.setNeedsFullLayout();
 
   if (!diff.needsFullLayout() &&
-      m_surround->margin != other.m_surround->margin) {
+      m_surround->m_margin != other.m_surround->m_margin) {
     // Relative-positioned elements collapse their margins so need a full
     // layout.
     if (hasOutOfFlowPosition())
@@ -594,8 +594,9 @@ bool ComputedStyle::scrollAnchorDisablingPropertyChanged(
   }
 
   if (m_surround.get() != other.m_surround.get()) {
-    if (m_surround->margin != other.m_surround->margin || !offsetEqual(other) ||
-        m_surround->padding != other.m_surround->padding)
+    if (m_surround->m_margin != other.m_surround->m_margin ||
+        !offsetEqual(other) ||
+        m_surround->m_padding != other.m_surround->m_padding)
       return true;
   }
 
@@ -623,7 +624,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
         borderRightWidth() != other.borderRightWidth())
       return true;
 
-    if (m_surround->padding != other.m_surround->padding)
+    if (m_surround->m_padding != other.m_surround->m_padding)
       return true;
   }
 
@@ -910,7 +911,7 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(
   if (visibility() != other.visibility() ||
       printColorAdjust() != other.printColorAdjust() ||
       insideLink() != other.insideLink() ||
-      !m_surround->border.visuallyEqual(other.m_surround->border) ||
+      !m_surround->m_border.visuallyEqual(other.m_surround->m_border) ||
       *m_background != *other.m_background)
     return true;
 
@@ -1058,7 +1059,7 @@ void ComputedStyle::updatePropertySpecificDifferences(
       diff.setNeedsRecomputeOverflow();
   }
 
-  if (!m_surround->border.visualOverflowEqual(other.m_surround->border))
+  if (!m_surround->m_border.visualOverflowEqual(other.m_surround->m_border))
     diff.setNeedsRecomputeOverflow();
 
   if (!diff.needsFullPaintInvalidation()) {
@@ -1470,7 +1471,7 @@ FloatRoundedRect ComputedStyle::getRoundedBorderFor(
   FloatRoundedRect roundedRect(pixelSnappedIntRect(borderRect));
   if (hasBorderRadius()) {
     FloatRoundedRect::Radii radii =
-        calcRadiiFor(m_surround->border, borderRect.size());
+        calcRadiiFor(m_surround->m_border, borderRect.size());
     roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(),
                                     includeLogicalLeftEdge,
                                     includeLogicalRightEdge);
@@ -2381,33 +2382,33 @@ LayoutRectOutsets ComputedStyle::imageOutsets(
 }
 
 void ComputedStyle::setBorderImageSource(StyleImage* image) {
-  if (m_surround->border.m_image.image() == image)
+  if (m_surround->m_border.m_image.image() == image)
     return;
-  m_surround.access()->border.m_image.setImage(image);
+  m_surround.access()->m_border.m_image.setImage(image);
 }
 
 void ComputedStyle::setBorderImageSlices(const LengthBox& slices) {
-  if (m_surround->border.m_image.imageSlices() == slices)
+  if (m_surround->m_border.m_image.imageSlices() == slices)
     return;
-  m_surround.access()->border.m_image.setImageSlices(slices);
+  m_surround.access()->m_border.m_image.setImageSlices(slices);
 }
 
 void ComputedStyle::setBorderImageSlicesFill(bool fill) {
-  if (m_surround->border.m_image.fill() == fill)
+  if (m_surround->m_border.m_image.fill() == fill)
     return;
-  m_surround.access()->border.m_image.setFill(fill);
+  m_surround.access()->m_border.m_image.setFill(fill);
 }
 
 void ComputedStyle::setBorderImageWidth(const BorderImageLengthBox& slices) {
-  if (m_surround->border.m_image.borderSlices() == slices)
+  if (m_surround->m_border.m_image.borderSlices() == slices)
     return;
-  m_surround.access()->border.m_image.setBorderSlices(slices);
+  m_surround.access()->m_border.m_image.setBorderSlices(slices);
 }
 
 void ComputedStyle::setBorderImageOutset(const BorderImageLengthBox& outset) {
-  if (m_surround->border.m_image.outset() == outset)
+  if (m_surround->m_border.m_image.outset() == outset)
     return;
-  m_surround.access()->border.m_image.setOutset(outset);
+  m_surround.access()->m_border.m_image.setOutset(outset);
 }
 
 bool ComputedStyle::borderObscuresBackground() const {

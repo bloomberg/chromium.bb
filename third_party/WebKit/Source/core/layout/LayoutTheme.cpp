@@ -159,10 +159,10 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e) {
 
         // Padding
         LengthBox paddingBox = m_platformTheme->controlPadding(
-            part, style.font().getFontDescription(), style.paddingBox(),
+            part, style.font().getFontDescription(), style.padding(),
             style.effectiveZoom());
-        if (paddingBox != style.paddingBox())
-          style.setPaddingBox(paddingBox);
+        if (paddingBox != style.padding())
+          style.setPadding(paddingBox);
 
         // Whitespace
         if (m_platformTheme->controlRequiresPreWhiteSpace(part))

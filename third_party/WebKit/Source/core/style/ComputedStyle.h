@@ -483,34 +483,34 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // -webkit-border-image
   static NinePieceImage initialNinePieceImage() { return NinePieceImage(); }
   const NinePieceImage& borderImage() const {
-    return m_surround->border.image();
+    return m_surround->m_border.image();
   }
   void setBorderImage(const NinePieceImage& b) {
-    SET_VAR(m_surround, border.m_image, b);
+    SET_VAR(m_surround, m_border.m_image, b);
   }
 
   // border-image-slice
   const LengthBox& borderImageSlices() const {
-    return m_surround->border.image().imageSlices();
+    return m_surround->m_border.image().imageSlices();
   }
   void setBorderImageSlices(const LengthBox&);
 
   // border-image-source
   static StyleImage* initialBorderImageSource() { return 0; }
   StyleImage* borderImageSource() const {
-    return m_surround->border.image().image();
+    return m_surround->m_border.image().image();
   }
   void setBorderImageSource(StyleImage*);
 
   // border-image-width
   const BorderImageLengthBox& borderImageWidth() const {
-    return m_surround->border.image().borderSlices();
+    return m_surround->m_border.image().borderSlices();
   }
   void setBorderImageWidth(const BorderImageLengthBox&);
 
   // border-image-outset
   const BorderImageLengthBox& borderImageOutset() const {
-    return m_surround->border.image().outset();
+    return m_surround->m_border.image().outset();
   }
   void setBorderImageOutset(const BorderImageLengthBox&);
 
@@ -518,31 +518,33 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static float initialBorderWidth() { return 3; }
 
   // border-top-width
-  float borderTopWidth() const { return m_surround->border.borderTopWidth(); }
+  float borderTopWidth() const { return m_surround->m_border.borderTopWidth(); }
   void setBorderTopWidth(float v) {
-    SET_BORDER_WIDTH(m_surround, border.m_top, v);
+    SET_BORDER_WIDTH(m_surround, m_border.m_top, v);
   }
 
   // border-bottom-width
   float borderBottomWidth() const {
-    return m_surround->border.borderBottomWidth();
+    return m_surround->m_border.borderBottomWidth();
   }
   void setBorderBottomWidth(float v) {
-    SET_BORDER_WIDTH(m_surround, border.m_bottom, v);
+    SET_BORDER_WIDTH(m_surround, m_border.m_bottom, v);
   }
 
   // border-left-width
-  float borderLeftWidth() const { return m_surround->border.borderLeftWidth(); }
+  float borderLeftWidth() const {
+    return m_surround->m_border.borderLeftWidth();
+  }
   void setBorderLeftWidth(float v) {
-    SET_BORDER_WIDTH(m_surround, border.m_left, v);
+    SET_BORDER_WIDTH(m_surround, m_border.m_left, v);
   }
 
   // border-right-width
   float borderRightWidth() const {
-    return m_surround->border.borderRightWidth();
+    return m_surround->m_border.borderRightWidth();
   }
   void setBorderRightWidth(float v) {
-    SET_BORDER_WIDTH(m_surround, border.m_right, v);
+    SET_BORDER_WIDTH(m_surround, m_border.m_right, v);
   }
 
   // Border style properties.
@@ -550,55 +552,55 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-top-style
   EBorderStyle borderTopStyle() const {
-    return m_surround->border.top().style();
+    return m_surround->m_border.top().style();
   }
   void setBorderTopStyle(EBorderStyle v) {
-    SET_VAR(m_surround, border.m_top.m_style, v);
+    SET_VAR(m_surround, m_border.m_top.m_style, v);
   }
 
   // border-right-style
   EBorderStyle borderRightStyle() const {
-    return m_surround->border.right().style();
+    return m_surround->m_border.right().style();
   }
   void setBorderRightStyle(EBorderStyle v) {
-    SET_VAR(m_surround, border.m_right.m_style, v);
+    SET_VAR(m_surround, m_border.m_right.m_style, v);
   }
 
   // border-left-style
   EBorderStyle borderLeftStyle() const {
-    return m_surround->border.left().style();
+    return m_surround->m_border.left().style();
   }
   void setBorderLeftStyle(EBorderStyle v) {
-    SET_VAR(m_surround, border.m_left.m_style, v);
+    SET_VAR(m_surround, m_border.m_left.m_style, v);
   }
 
   // border-bottom-style
   EBorderStyle borderBottomStyle() const {
-    return m_surround->border.bottom().style();
+    return m_surround->m_border.bottom().style();
   }
   void setBorderBottomStyle(EBorderStyle v) {
-    SET_VAR(m_surround, border.m_bottom.m_style, v);
+    SET_VAR(m_surround, m_border.m_bottom.m_style, v);
   }
 
   // Border color properties.
   // border-left-color
   void setBorderLeftColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(m_surround, border.m_left, v);
+    SET_BORDERVALUE_COLOR(m_surround, m_border.m_left, v);
   }
 
   // border-right-color
   void setBorderRightColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(m_surround, border.m_right, v);
+    SET_BORDERVALUE_COLOR(m_surround, m_border.m_right, v);
   }
 
   // border-top-color
   void setBorderTopColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(m_surround, border.m_top, v);
+    SET_BORDERVALUE_COLOR(m_surround, m_border.m_top, v);
   }
 
   // border-bottom-color
   void setBorderBottomColor(const StyleColor& v) {
-    SET_BORDERVALUE_COLOR(m_surround, border.m_bottom, v);
+    SET_BORDERVALUE_COLOR(m_surround, m_border.m_bottom, v);
   }
 
   // Border radius properties.
@@ -608,34 +610,34 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-top-left-radius (aka -webkit-border-top-left-radius)
   const LengthSize& borderTopLeftRadius() const {
-    return m_surround->border.topLeft();
+    return m_surround->m_border.topLeft();
   }
   void setBorderTopLeftRadius(const LengthSize& s) {
-    SET_VAR(m_surround, border.m_topLeft, s);
+    SET_VAR(m_surround, m_border.m_topLeft, s);
   }
 
   // border-top-right-radius (aka -webkit-border-top-right-radius)
   const LengthSize& borderTopRightRadius() const {
-    return m_surround->border.topRight();
+    return m_surround->m_border.topRight();
   }
   void setBorderTopRightRadius(const LengthSize& s) {
-    SET_VAR(m_surround, border.m_topRight, s);
+    SET_VAR(m_surround, m_border.m_topRight, s);
   }
 
   // border-bottom-left-radius (aka -webkit-border-bottom-left-radius)
   const LengthSize& borderBottomLeftRadius() const {
-    return m_surround->border.bottomLeft();
+    return m_surround->m_border.bottomLeft();
   }
   void setBorderBottomLeftRadius(const LengthSize& s) {
-    SET_VAR(m_surround, border.m_bottomLeft, s);
+    SET_VAR(m_surround, m_border.m_bottomLeft, s);
   }
 
   // border-bottom-right-radius (aka -webkit-border-bottom-right-radius)
   const LengthSize& borderBottomRightRadius() const {
-    return m_surround->border.bottomRight();
+    return m_surround->m_border.bottomRight();
   }
   void setBorderBottomRightRadius(const LengthSize& s) {
-    SET_VAR(m_surround, border.m_bottomRight, s);
+    SET_VAR(m_surround, m_border.m_bottomRight, s);
   }
 
   // Offset properties.
@@ -1131,23 +1133,25 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static Length initialMargin() { return Length(Fixed); }
 
   // margin-top
-  const Length& marginTop() const { return m_surround->margin.top(); }
-  void setMarginTop(const Length& v) { SET_VAR(m_surround, margin.m_top, v); }
+  const Length& marginTop() const { return m_surround->m_margin.top(); }
+  void setMarginTop(const Length& v) { SET_VAR(m_surround, m_margin.m_top, v); }
 
   // margin-bottom
-  const Length& marginBottom() const { return m_surround->margin.bottom(); }
+  const Length& marginBottom() const { return m_surround->m_margin.bottom(); }
   void setMarginBottom(const Length& v) {
-    SET_VAR(m_surround, margin.m_bottom, v);
+    SET_VAR(m_surround, m_margin.m_bottom, v);
   }
 
   // margin-left
-  const Length& marginLeft() const { return m_surround->margin.left(); }
-  void setMarginLeft(const Length& v) { SET_VAR(m_surround, margin.m_left, v); }
+  const Length& marginLeft() const { return m_surround->m_margin.left(); }
+  void setMarginLeft(const Length& v) {
+    SET_VAR(m_surround, m_margin.m_left, v);
+  }
 
   // margin-right
-  const Length& marginRight() const { return m_surround->margin.right(); }
+  const Length& marginRight() const { return m_surround->m_margin.right(); }
   void setMarginRight(const Length& v) {
-    SET_VAR(m_surround, margin.m_right, v);
+    SET_VAR(m_surround, m_margin.m_right, v);
   }
 
   // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
@@ -1332,26 +1336,28 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static Length initialPadding() { return Length(Fixed); }
 
   // padding-bottom
-  const Length& paddingBottom() const { return m_surround->padding.bottom(); }
+  const Length& paddingBottom() const { return m_surround->m_padding.bottom(); }
   void setPaddingBottom(const Length& v) {
-    SET_VAR(m_surround, padding.m_bottom, v);
+    SET_VAR(m_surround, m_padding.m_bottom, v);
   }
 
   // padding-left
-  const Length& paddingLeft() const { return m_surround->padding.left(); }
+  const Length& paddingLeft() const { return m_surround->m_padding.left(); }
   void setPaddingLeft(const Length& v) {
-    SET_VAR(m_surround, padding.m_left, v);
+    SET_VAR(m_surround, m_padding.m_left, v);
   }
 
   // padding-right
-  const Length& paddingRight() const { return m_surround->padding.right(); }
+  const Length& paddingRight() const { return m_surround->m_padding.right(); }
   void setPaddingRight(const Length& v) {
-    SET_VAR(m_surround, padding.m_right, v);
+    SET_VAR(m_surround, m_padding.m_right, v);
   }
 
   // padding-top
-  const Length& paddingTop() const { return m_surround->padding.top(); }
-  void setPaddingTop(const Length& v) { SET_VAR(m_surround, padding.m_top, v); }
+  const Length& paddingTop() const { return m_surround->m_padding.top(); }
+  void setPaddingTop(const Length& v) {
+    SET_VAR(m_surround, m_padding.m_top, v);
+  }
 
   // perspective (aka -webkit-perspective)
   static float initialPerspective() { return 0; }
@@ -2855,67 +2861,68 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Margin utility functions.
-  bool hasMargin() const { return m_surround->margin.nonZero(); }
+  bool hasMargin() const { return m_surround->m_margin.nonZero(); }
   bool hasMarginBeforeQuirk() const { return marginBefore().quirk(); }
   bool hasMarginAfterQuirk() const { return marginAfter().quirk(); }
+  const LengthBox& margin() const { return m_surround->m_margin; }
   const Length& marginBefore() const {
-    return m_surround->margin.before(getWritingMode());
+    return m_surround->m_margin.before(getWritingMode());
   }
   const Length& marginAfter() const {
-    return m_surround->margin.after(getWritingMode());
+    return m_surround->m_margin.after(getWritingMode());
   }
   const Length& marginStart() const {
-    return m_surround->margin.start(getWritingMode(), direction());
+    return m_surround->m_margin.start(getWritingMode(), direction());
   }
   const Length& marginEnd() const {
-    return m_surround->margin.end(getWritingMode(), direction());
+    return m_surround->m_margin.end(getWritingMode(), direction());
   }
   const Length& marginOver() const {
-    return m_surround->margin.over(getWritingMode());
+    return m_surround->m_margin.over(getWritingMode());
   }
   const Length& marginUnder() const {
-    return m_surround->margin.under(getWritingMode());
+    return m_surround->m_margin.under(getWritingMode());
   }
   const Length& marginStartUsing(const ComputedStyle* otherStyle) const {
-    return m_surround->margin.start(otherStyle->getWritingMode(),
-                                    otherStyle->direction());
+    return m_surround->m_margin.start(otherStyle->getWritingMode(),
+                                      otherStyle->direction());
   }
   const Length& marginEndUsing(const ComputedStyle* otherStyle) const {
-    return m_surround->margin.end(otherStyle->getWritingMode(),
-                                  otherStyle->direction());
+    return m_surround->m_margin.end(otherStyle->getWritingMode(),
+                                    otherStyle->direction());
   }
   const Length& marginBeforeUsing(const ComputedStyle* otherStyle) const {
-    return m_surround->margin.before(otherStyle->getWritingMode());
+    return m_surround->m_margin.before(otherStyle->getWritingMode());
   }
   const Length& marginAfterUsing(const ComputedStyle* otherStyle) const {
-    return m_surround->margin.after(otherStyle->getWritingMode());
+    return m_surround->m_margin.after(otherStyle->getWritingMode());
   }
   void setMarginStart(const Length&);
   void setMarginEnd(const Length&);
 
   // Padding utility functions.
-  const LengthBox& paddingBox() const { return m_surround->padding; }
+  const LengthBox& padding() const { return m_surround->m_padding; }
   const Length& paddingBefore() const {
-    return m_surround->padding.before(getWritingMode());
+    return m_surround->m_padding.before(getWritingMode());
   }
   const Length& paddingAfter() const {
-    return m_surround->padding.after(getWritingMode());
+    return m_surround->m_padding.after(getWritingMode());
   }
   const Length& paddingStart() const {
-    return m_surround->padding.start(getWritingMode(), direction());
+    return m_surround->m_padding.start(getWritingMode(), direction());
   }
   const Length& paddingEnd() const {
-    return m_surround->padding.end(getWritingMode(), direction());
+    return m_surround->m_padding.end(getWritingMode(), direction());
   }
   const Length& paddingOver() const {
-    return m_surround->padding.over(getWritingMode());
+    return m_surround->m_padding.over(getWritingMode());
   }
   const Length& paddingUnder() const {
-    return m_surround->padding.under(getWritingMode());
+    return m_surround->m_padding.under(getWritingMode());
   }
-  bool hasPadding() const { return m_surround->padding.nonZero(); }
-  void resetPadding() { SET_VAR(m_surround, padding, LengthBox(Fixed)); }
-  void setPaddingBox(const LengthBox& b) { SET_VAR(m_surround, padding, b); }
+  bool hasPadding() const { return m_surround->m_padding.nonZero(); }
+  void resetPadding() { SET_VAR(m_surround, m_padding, LengthBox(Fixed)); }
+  void setPadding(const LengthBox& b) { SET_VAR(m_surround, m_padding, b); }
 
   // Border utility functions
   LayoutRectOutsets imageOutsets(const NinePieceImage&) const;
@@ -2926,16 +2933,18 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return imageOutsets(borderImage());
   }
   bool borderImageSlicesFill() const {
-    return m_surround->border.image().fill();
+    return m_surround->m_border.image().fill();
   }
 
   void setBorderImageSlicesFill(bool);
-  const BorderData& border() const { return m_surround->border; }
-  const BorderValue& borderLeft() const { return m_surround->border.left(); }
-  const BorderValue& borderRight() const { return m_surround->border.right(); }
-  const BorderValue& borderTop() const { return m_surround->border.top(); }
+  const BorderData& border() const { return m_surround->m_border; }
+  const BorderValue& borderLeft() const { return m_surround->m_border.left(); }
+  const BorderValue& borderRight() const {
+    return m_surround->m_border.right();
+  }
+  const BorderValue& borderTop() const { return m_surround->m_border.top(); }
   const BorderValue& borderBottom() const {
-    return m_surround->border.bottom();
+    return m_surround->m_border.bottom();
   }
   const BorderValue& borderBefore() const;
   const BorderValue& borderAfter() const;
@@ -2948,10 +2957,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   float borderOverWidth() const;
   float borderUnderWidth() const;
 
-  bool hasBorderFill() const { return m_surround->border.hasBorderFill(); }
-  bool hasBorder() const { return m_surround->border.hasBorder(); }
+  bool hasBorderFill() const { return m_surround->m_border.hasBorderFill(); }
+  bool hasBorder() const { return m_surround->m_border.hasBorder(); }
   bool hasBorderDecoration() const { return hasBorder() || hasBorderFill(); }
-  bool hasBorderRadius() const { return m_surround->border.hasBorderRadius(); }
+  bool hasBorderRadius() const {
+    return m_surround->m_border.hasBorderRadius();
+  }
 
   void resetBorder() {
     resetBorderImage();
@@ -2964,28 +2975,30 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     resetBorderBottomLeftRadius();
     resetBorderBottomRightRadius();
   }
-  void resetBorderTop() { SET_VAR(m_surround, border.m_top, BorderValue()); }
+  void resetBorderTop() { SET_VAR(m_surround, m_border.m_top, BorderValue()); }
   void resetBorderRight() {
-    SET_VAR(m_surround, border.m_right, BorderValue());
+    SET_VAR(m_surround, m_border.m_right, BorderValue());
   }
   void resetBorderBottom() {
-    SET_VAR(m_surround, border.m_bottom, BorderValue());
+    SET_VAR(m_surround, m_border.m_bottom, BorderValue());
   }
-  void resetBorderLeft() { SET_VAR(m_surround, border.m_left, BorderValue()); }
+  void resetBorderLeft() {
+    SET_VAR(m_surround, m_border.m_left, BorderValue());
+  }
   void resetBorderImage() {
-    SET_VAR(m_surround, border.m_image, NinePieceImage());
+    SET_VAR(m_surround, m_border.m_image, NinePieceImage());
   }
   void resetBorderTopLeftRadius() {
-    SET_VAR(m_surround, border.m_topLeft, initialBorderRadius());
+    SET_VAR(m_surround, m_border.m_topLeft, initialBorderRadius());
   }
   void resetBorderTopRightRadius() {
-    SET_VAR(m_surround, border.m_topRight, initialBorderRadius());
+    SET_VAR(m_surround, m_border.m_topRight, initialBorderRadius());
   }
   void resetBorderBottomLeftRadius() {
-    SET_VAR(m_surround, border.m_bottomLeft, initialBorderRadius());
+    SET_VAR(m_surround, m_border.m_bottomLeft, initialBorderRadius());
   }
   void resetBorderBottomRightRadius() {
-    SET_VAR(m_surround, border.m_bottomRight, initialBorderRadius());
+    SET_VAR(m_surround, m_border.m_bottomRight, initialBorderRadius());
   }
 
   void setBorderRadius(const LengthSize& s) {
@@ -3534,14 +3547,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Color accessors are all private to make sure callers use
   // visitedDependentColor instead to access them.
   StyleColor borderLeftColor() const {
-    return m_surround->border.left().color();
+    return m_surround->m_border.left().color();
   }
   StyleColor borderRightColor() const {
-    return m_surround->border.right().color();
+    return m_surround->m_border.right().color();
   }
-  StyleColor borderTopColor() const { return m_surround->border.top().color(); }
+  StyleColor borderTopColor() const {
+    return m_surround->m_border.top().color();
+  }
   StyleColor borderBottomColor() const {
-    return m_surround->border.bottom().color();
+    return m_surround->m_border.bottom().color();
   }
   StyleColor backgroundColor() const { return m_background->color(); }
   StyleAutoColor caretColor() const {
