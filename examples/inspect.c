@@ -95,7 +95,9 @@ static const arg_def_t *main_args[] = { &limit_arg,
                                         &dump_mode_arg,
                                         &dump_skip_arg,
                                         &dump_filter_arg,
+#if CONFIG_CDEF
                                         &dump_cdef_arg,
+#endif
                                         &dump_reference_frame_arg,
                                         &dump_motion_vectors_arg,
                                         &usage_arg,
@@ -433,12 +435,14 @@ void inspect(void *pbi, void *data) {
   if (layers & FILTER_LAYER) {
     buf += put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter));
   }
+#if CONFIG_CDEF
   if (layers & CDEF_LAYER) {
     buf += put_block_info(buf, NULL, "cdef_level",
                           offsetof(insp_mi_data, cdef_level));
     buf += put_block_info(buf, NULL, "cdef_strength",
                           offsetof(insp_mi_data, cdef_strength));
   }
+#endif
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
@@ -543,6 +547,7 @@ static void parse_args(char **argv) {
   char **argi, **argj;
   struct arg arg;
   (void)dump_accounting_arg;
+  (void)dump_cdef_arg;
   for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
     if (arg_match(&arg, &dump_block_size_arg, argi)) layers |= BLOCK_SIZE_LAYER;
@@ -560,8 +565,10 @@ static void parse_args(char **argv) {
       layers |= SKIP_LAYER;
     else if (arg_match(&arg, &dump_filter_arg, argi))
       layers |= FILTER_LAYER;
+#if CONFIG_CDEF
     else if (arg_match(&arg, &dump_cdef_arg, argi))
       layers |= CDEF_LAYER;
+#endif
     else if (arg_match(&arg, &dump_reference_frame_arg, argi))
       layers |= REFERENCE_FRAME_LAYER;
     else if (arg_match(&arg, &dump_motion_vectors_arg, argi))
