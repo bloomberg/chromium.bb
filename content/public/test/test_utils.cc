@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -159,8 +160,16 @@ void RunAllBlockingPoolTasksUntilIdle() {
   while (true) {
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
 
+    // Setup a task observer to determine if MessageLoop tasks run in the
+    // current loop iteration. This must be done before
+    // TaskScheduler::FlushForTesting() since this may spin the MessageLoop.
     TaskObserver task_observer;
     base::MessageLoop::current()->AddTaskObserver(&task_observer);
+
+    // Since all blocking pool call sites are being migrated to TaskScheduler,
+    // flush TaskScheduler in addition to the blocking pool.
+    base::TaskScheduler::GetInstance()->FlushForTesting();
+
     base::RunLoop().RunUntilIdle();
     base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
 
