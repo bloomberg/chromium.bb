@@ -27,7 +27,7 @@
 #include "content/shell/browser/shell.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/event_switches.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 using blink::WebInputEvent;
 

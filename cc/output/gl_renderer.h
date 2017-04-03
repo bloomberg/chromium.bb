@@ -21,8 +21,8 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/quad_f.h"
+#include "ui/latency/latency_info.h"
 
 namespace gpu {
 namespace gles2 {

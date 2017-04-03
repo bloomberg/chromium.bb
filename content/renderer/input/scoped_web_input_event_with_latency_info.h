@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace content {
 

@@ -28,12 +28,12 @@ cc_component("ipc") {
     "//base",
     "//gpu/ipc/common",
     "//ipc",
-    "//ui/events/ipc",
     "//ui/gfx",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
+    "//ui/latency/ipc",
   ]
 }
 
@@ -68,9 +68,9 @@ mojom("interfaces") {
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
     "//skia/public/interfaces",
-    "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",
+    "//ui/latency/mojo:interfaces",
   ]
 }
 

@@ -17,7 +17,7 @@ include_rules = [
   "+third_party/khronos/GLES2/gl2ext.h",
   "+third_party/libyuv",
   "+third_party/skia/include",
-  "+ui/events/latency_info.h",
+  "+ui/latency/latency_info.h",
   "+ui/gfx",
   "+ui/gl",
   "-cc/blink",

@@ -6,8 +6,8 @@
 #include "cc/ipc/begin_frame_args_struct_traits.h"
 #include "cc/ipc/selection_struct_traits.h"
 #include "cc/ipc/surface_id_struct_traits.h"
-#include "ui/events/mojo/latency_info_struct_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
+#include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {
 

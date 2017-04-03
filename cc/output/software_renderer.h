@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/output/direct_renderer.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace cc {
 class DebugBorderDrawQuad;

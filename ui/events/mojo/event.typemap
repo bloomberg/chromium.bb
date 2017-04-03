@@ -10,6 +10,7 @@ public_deps = [
   "//mojo/common:struct_traits",
   "//ui/events",
   "//ui/events:dom_keycode_converter",
+  "//ui/latency/mojo:interfaces",
 ]
 deps = [
   "//ipc:param_traits",

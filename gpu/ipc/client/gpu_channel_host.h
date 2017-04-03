@@ -25,8 +25,8 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_filter.h"
 #include "ipc/message_router.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/latency/latency_info.h"
 
 namespace base {
 class WaitableEvent;

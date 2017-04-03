@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
-#include "ui/events/latency_info.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/latency/latency_info.h"
 
 namespace gpu {
 

@@ -85,8 +85,8 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/latency/latency_info.h"
 #include "ui/native_theme/native_theme_switches.h"
 
 #if defined(USE_AURA)

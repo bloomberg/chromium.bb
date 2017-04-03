@@ -9,8 +9,8 @@
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/swap_result.h"
+#include "ui/latency/latency_info.h"
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/remote_layer_api.h"

@@ -13,7 +13,7 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace content {
 

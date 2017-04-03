@@ -22,7 +22,7 @@ traits_headers = [
   "//skia/public/interfaces/image_filter_struct_traits.h",
   "//ui/gfx/mojo/selection_bound_struct_traits.h",
   "//ui/gfx/mojo/transform_struct_traits.h",
-  "//ui/events/mojo/latency_info_struct_traits.h",
+  "//ui/latency/mojo/latency_info_struct_traits.h",
 ]
 public_deps = [
   "//cc",
@@ -30,8 +30,8 @@ public_deps = [
   "//gpu/ipc/common:interfaces",
   "//mojo/common:common_custom_types",
   "//skia/public/interfaces",
-  "//ui/events/mojo:interfaces",
   "//ui/gfx/geometry/mojo",
   "//ui/gfx/mojo",
+  "//ui/latency/mojo:interfaces",
 ]
 type_mappings = [ "cc.mojom.CompositorFrame=cc::CompositorFrame[move_only]" ]

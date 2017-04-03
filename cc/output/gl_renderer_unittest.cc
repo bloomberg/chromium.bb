@@ -39,8 +39,8 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/transform.h"
+#include "ui/latency/latency_info.h"
 
 using testing::_;
 using testing::AnyNumber;

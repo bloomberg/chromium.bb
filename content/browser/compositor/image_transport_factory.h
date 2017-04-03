@@ -12,8 +12,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/latency/latency_info.h"
 
 namespace gfx {
 enum class SwapResult;

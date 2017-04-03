@@ -30,8 +30,8 @@
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/latency/latency_info.h"
 
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>

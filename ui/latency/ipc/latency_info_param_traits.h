@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_
-#define UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_
+#ifndef UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_H_
+#define UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_H_
 
 #include "base/pickle.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace IPC {
 template <>
@@ -21,4 +21,4 @@ struct ParamTraits<ui::LatencyInfo> {
 };
 }  // namespace IPC
 
-#endif // UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_H_
+#endif  // UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_H_

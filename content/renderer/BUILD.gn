@@ -504,6 +504,7 @@ target(link_target_type, "renderer") {
     "//ui/events/blink",
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
+    "//ui/latency",
     "//ui/native_theme",
     "//ui/surface",
     "//v8",

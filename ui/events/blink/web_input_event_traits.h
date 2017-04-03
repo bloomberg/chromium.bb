@@ -6,7 +6,7 @@
 #define UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace blink {
 class WebGestureEvent;

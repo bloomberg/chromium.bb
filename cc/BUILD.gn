@@ -491,6 +491,7 @@ cc_component("cc") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
+    "//ui/latency",
   ]
 
   defines = [ "CC_IMPLEMENTATION=1" ]
@@ -680,6 +681,7 @@ cc_static_library("test_support") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:test_support",
+    "//ui/latency",
   ]
   if (!is_android) {
     data_deps = [

@@ -19,9 +19,9 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/latency/latency_info.h"
 
 namespace gfx {
 class ColorSpace;

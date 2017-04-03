@@ -3,7 +3,7 @@ include_rules = [
   "+mojo/common",
   "+mojo/public",
   "+skia/public",
-  "+ui/events/ipc",
-  "+ui/events/mojo",
   "+ui/gfx/geometry/mojo",
+  "+ui/latency/ipc",
+  "+ui/latency/mojo",
 ]

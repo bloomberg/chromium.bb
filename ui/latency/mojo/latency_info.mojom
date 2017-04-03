@@ -100,7 +100,7 @@ struct LatencyComponentPair {
   LatencyComponent value;
 };
 
-// See ui/events/latency_info.h
+// See ui/latency/latency_info.h
 struct LatencyInfo {
   string trace_name;
   array<LatencyComponentPair> latency_components;

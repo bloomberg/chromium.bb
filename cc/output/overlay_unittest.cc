@@ -37,9 +37,9 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/latency/latency_info.h"
 
 using testing::_;
 using testing::Mock;

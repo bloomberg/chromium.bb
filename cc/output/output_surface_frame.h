@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "cc/cc_export.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/latency/latency_info.h"
 
 namespace cc {
 

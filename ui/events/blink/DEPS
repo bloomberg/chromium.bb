@@ -19,5 +19,4 @@ include_rules = [
   "+ui/display/win",
   "+ui/gfx",
   "+ui/gfx/geometry",
-  "+ui/events"
 ]

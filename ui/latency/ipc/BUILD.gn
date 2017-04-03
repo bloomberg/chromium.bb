@@ -11,10 +11,13 @@ source_set("ipc") {
     "latency_info_param_traits_macros.h",
   ]
 
+  public_deps = [
+    "//ui/latency",
+  ]
+
   deps = [
     "//base",
     "//ipc",
-    "//ui/events:events_base",
     "//ui/gfx/ipc/geometry",
   ]
 }

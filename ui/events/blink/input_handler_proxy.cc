@@ -29,8 +29,8 @@
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/latency/latency_info.h"
 
 using blink::WebFloatPoint;
 using blink::WebFloatSize;

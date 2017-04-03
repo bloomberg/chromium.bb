@@ -24,10 +24,10 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
-#include "ui/events/ipc/latency_info_param_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
+#include "ui/latency/ipc/latency_info_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CC_IPC_EXPORT

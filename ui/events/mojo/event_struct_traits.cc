@@ -8,7 +8,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/mojo/event_constants.mojom.h"
-#include "ui/events/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {
 namespace {

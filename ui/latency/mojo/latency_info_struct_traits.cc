@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojo/latency_info_struct_traits.h"
 
 #include "ipc/ipc_message_utils.h"
 

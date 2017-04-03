@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "cc/output/swap_promise.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace cc {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_LATENCY_INFO_H_
-#define UI_EVENTS_LATENCY_INFO_H_
+#ifndef UI_LATENCY_LATENCY_INFO_H_
+#define UI_LATENCY_LATENCY_INFO_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,6 @@
 
 #include "base/containers/small_map.h"
 #include "base/time/time.h"
-#include "ui/events/events_base_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
 #if !defined(OS_IOS)
@@ -113,7 +112,7 @@ enum SourceEventType {
   SOURCE_EVENT_TYPE_LAST = OTHER,
 };
 
-class EVENTS_BASE_EXPORT LatencyInfo {
+class LatencyInfo {
  public:
   struct LatencyComponent {
     // Nondecreasing number that can be used to determine what events happened
@@ -259,4 +258,4 @@ class EVENTS_BASE_EXPORT LatencyInfo {
 
 }  // namespace ui
 
-#endif  // UI_EVENTS_LATENCY_INFO_H_
+#endif  // UI_LATENCY_LATENCY_INFO_H_

@@ -42,9 +42,9 @@
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/latency_info.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
+#include "ui/latency/latency_info.h"
 
 // Helper class with methods used to mock -[NSEvent phase], used by
 // |MockScrollWheelEventWithPhase()|.

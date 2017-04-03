@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/direct_renderer.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace cc {
 

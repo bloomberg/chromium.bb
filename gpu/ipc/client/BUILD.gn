@@ -52,10 +52,10 @@ source_set("ipc_client_sources") {
     "//gpu/config:config_sources",
     "//gpu/ipc/common:ipc_common_sources",
     "//ui/base/",
-    "//ui/events/ipc",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
     "//ui/gl",
+    "//ui/latency/ipc",
     "//url/ipc:url_ipc",
   ]
   public_deps = [

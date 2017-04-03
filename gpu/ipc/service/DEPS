@@ -3,7 +3,7 @@ include_rules = [
   "+ui/accelerated_widget_mac",
   "+ui/base",
   "+ui/display",
-  "+ui/events",
+  "+ui/latency",
   "+ui/ozone",
   "+ui/platform_window",
 ]

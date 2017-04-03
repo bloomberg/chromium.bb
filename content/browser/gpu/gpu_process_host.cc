@@ -72,9 +72,9 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/display/display_switches.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/latency/latency_info.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"

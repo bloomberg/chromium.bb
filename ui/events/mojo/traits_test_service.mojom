@@ -5,18 +5,8 @@
 module ui.mojom;
 
 import "ui/events/mojo/event.mojom";
-import "ui/events/mojo/latency_info.mojom";
 
 interface TraitsTestService {
   [Sync]
   EchoEvent(Event e) => (Event pass);
-
-  [Sync]
-  EchoLatencyComponent(LatencyComponent l) => (LatencyComponent pass);
-
-  [Sync]
-  EchoLatencyComponentId(LatencyComponentId l) => (LatencyComponentId pass);
-
-  [Sync]
-  EchoLatencyInfo(LatencyInfo l) => (LatencyInfo pass);
 };

@@ -6,14 +6,12 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "event.mojom",
-    "event_constants.mojom",
-    "keyboard_codes.mojom",
+    "latency_info.mojom",
   ]
 
   public_deps = [
-    "//ui/gfx/mojo",
-    "//ui/latency/mojo:interfaces",
+    "//mojo/common:common_custom_types",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 

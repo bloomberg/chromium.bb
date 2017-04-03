@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace blink {
 class WebInputEvent;

@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace ui {
 class ContextProviderCommandBuffer;

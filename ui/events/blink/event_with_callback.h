@@ -8,7 +8,7 @@
 #include <list>
 
 #include "ui/events/blink/input_handler_proxy.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace ui {
 

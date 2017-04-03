@@ -1,0 +1,43 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+source_set("latency") {
+  sources = [
+    "latency_info.cc",
+    "latency_info.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/gfx",
+  ]
+}
+
+test("latency_unittests") {
+  sources = [
+    "latency_info_unittest.cc",
+  ]
+
+  deps = [
+    ":latency",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (!is_ios) {
+    sources += [
+      "ipc/latency_info_param_traits_unittest.cc",
+      "mojo/struct_traits_unittest",
+    ]
+    deps += [
+      "//ipc:test_support",
+      "//ui/latency/ipc",
+    ]
+  }
+}

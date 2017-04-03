@@ -19,8 +19,8 @@
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/color_space.h"
+#include "ui/latency/latency_info.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;

@@ -29,12 +29,12 @@
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
+#include "ui/latency/latency_info.h"
 #include "url/gurl.h"
 
 struct GPUCreateCommandBufferConfig;

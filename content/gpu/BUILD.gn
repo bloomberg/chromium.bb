@@ -72,10 +72,10 @@ target(link_target_type, "gpu_sources") {
     "//services/ui/gpu",
     "//services/ui/gpu/interfaces",
     "//skia",
-    "//ui/events/ipc",
     "//ui/gfx/ipc",
     "//ui/gl",
     "//ui/gl/init",
+    "//ui/latency/ipc",
   ]
 
   if (is_android) {

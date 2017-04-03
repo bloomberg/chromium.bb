@@ -13,7 +13,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/gestures/motion_event_aura.h"
-#include "ui/events/latency_info.h"
+#include "ui/latency/latency_info.h"
 
 namespace aura {
 class Window;

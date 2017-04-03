@@ -1,4 +1,4 @@
-# dot -Tpdf ui/events/latency_info.dot > latency_info.pdf
+# dot -Tpdf ui/latency/latency_info.dot > latency_info.pdf
 
 digraph g {
   node [shape=box];

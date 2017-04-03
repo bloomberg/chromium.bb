@@ -2,5 +2,5 @@ include_rules = [
   "+mojo/public",
   "+services/ui/public/interfaces",
   "+ui/events",
-  "+ui/gfx/geometry/mojo",
+  "+ui/latency/mojo",
 ]

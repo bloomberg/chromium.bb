@@ -37,6 +37,7 @@ source_set("blink") {
     "//ui/events:gesture_detection",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/latency",
   ]
 
   if (is_win) {

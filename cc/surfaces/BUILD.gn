@@ -87,8 +87,8 @@ cc_component("surfaces") {
     "//gpu/command_buffer/common",
     "//gpu/vulkan:features",
     "//skia",
-    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/latency",
   ]
 }

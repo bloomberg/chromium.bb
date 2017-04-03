@@ -2,40 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/ipc/latency_info_param_traits_macros.h"
-
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
+#include "ui/latency/ipc/latency_info_param_traits_macros.h"
 
 // Generate param traits size methods.
 #include "ipc/param_traits_size_macros.h"
 namespace IPC {
-#undef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
-#include "ui/events/ipc/latency_info_param_traits_macros.h"
+#undef UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#include "ui/latency/ipc/latency_info_param_traits_macros.h"
 }
 
 // Generate param traits write methods.
 #include "ipc/param_traits_write_macros.h"
 namespace IPC {
-#undef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
-#include "ui/events/ipc/latency_info_param_traits_macros.h"
+#undef UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#include "ui/latency/ipc/latency_info_param_traits_macros.h"
 }  // namespace IPC
 
 // Generate param traits read methods.
 #include "ipc/param_traits_read_macros.h"
 namespace IPC {
-#undef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
-#include "ui/events/ipc/latency_info_param_traits_macros.h"
+#undef UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#include "ui/latency/ipc/latency_info_param_traits_macros.h"
 }  // namespace IPC
 
 // Generate param traits log methods.
 #include "ipc/param_traits_log_macros.h"
 namespace IPC {
-#undef UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
-#include "ui/events/ipc/latency_info_param_traits_macros.h"
+#undef UI_LATENCY_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_
+#include "ui/latency/ipc/latency_info_param_traits_macros.h"
 }  // namespace IPC
 
 // Implemetation for ParamTraits<ui::LatencyInfo>.
-#include "ui/events/ipc/latency_info_param_traits.h"
+#include "ui/latency/ipc/latency_info_param_traits.h"
 
 namespace IPC {
 
@@ -78,7 +77,7 @@ bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
     return false;
   for (size_t i = 0; i < input_coordinates_size; i++) {
     if (!ReadParam(m, iter, &input_coordinates))
-        return false;
+      return false;
     if (!p->AddInputCoordinate(input_coordinates))
       return false;
   }
@@ -93,8 +92,7 @@ bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
   return true;
 }
 
-void ParamTraits<ui::LatencyInfo>::Log(const param_type& p,
-                                       std::string* l) {
+void ParamTraits<ui::LatencyInfo>::Log(const param_type& p, std::string* l) {
   LogParam(p.trace_name_, l);
   l->append(" ");
   LogParam(p.latency_components_, l);

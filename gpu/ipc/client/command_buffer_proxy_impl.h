@@ -31,9 +31,9 @@
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_listener.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gpu_preference.h"
+#include "ui/latency/latency_info.h"
 
 struct GPUCommandBufferConsoleMessage;
 struct GPUCreateCommandBufferConfig;

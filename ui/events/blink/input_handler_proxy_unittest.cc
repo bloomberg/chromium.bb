@@ -34,9 +34,9 @@
 #include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/latency/latency_info.h"
 
 using blink::WebActiveWheelFlingParameters;
 using blink::WebFloatPoint;

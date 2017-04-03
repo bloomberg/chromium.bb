@@ -7,9 +7,9 @@
 
 #include "ipc/ipc_message_macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/events/ipc/latency_info_param_traits.h"
-#include "ui/events/ipc/latency_info_param_traits_macros.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
+#include "ui/latency/ipc/latency_info_param_traits.h"
+#include "ui/latency/ipc/latency_info_param_traits_macros.h"
 
 namespace ui {
 
