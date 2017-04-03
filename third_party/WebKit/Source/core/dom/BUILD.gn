@@ -10,6 +10,8 @@ blink_core_sources("dom") {
   sources = [
     "AXObjectCache.cpp",
     "AXObjectCache.h",
+    "AccessibleNode.cpp",
+    "AccessibleNode.h",
     "AnimationWorkletProxyClient.h",
     "Attr.cpp",
     "Attr.h",

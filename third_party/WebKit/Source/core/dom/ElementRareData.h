@@ -22,9 +22,11 @@
 #ifndef ElementRareData_h
 #define ElementRareData_h
 
+#include <memory>
 #include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/css/cssom/InlineStylePropertyMap.h"
+#include "core/dom/AccessibleNode.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DatasetDOMStringMap.h"
@@ -39,7 +41,6 @@
 #include "core/html/ClassList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include <memory>
 
 namespace blink {
 
@@ -153,6 +154,15 @@ class ElementRareData : public NodeRareData {
     return m_customElementDefinition.get();
   }
 
+  AccessibleNode* accessibleNode() const { return m_accessibleNode.get(); }
+  AccessibleNode* ensureAccessibleNode(Element* ownerElement) {
+    if (!m_accessibleNode) {
+      m_accessibleNode = new AccessibleNode(ownerElement);
+      ScriptWrappableVisitor::writeBarrier(this, m_accessibleNode);
+    }
+    return m_accessibleNode;
+  }
+
   AttrNodeList& ensureAttrNodeList();
   AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
   void removeAttrNodeList() { m_attrNodeList.clear(); }
@@ -209,6 +219,8 @@ class ElementRareData : public NodeRareData {
   Member<CustomElementDefinition> m_customElementDefinition;
 
   Member<PseudoElementData> m_pseudoElementData;
+
+  Member<AccessibleNode> m_accessibleNode;
 
   explicit ElementRareData(LayoutObject*);
 };

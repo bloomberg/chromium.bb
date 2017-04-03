@@ -53,6 +53,8 @@ class Node;
 class LayoutObject;
 class ScrollableArea;
 
+enum class AOMStringProperty;
+
 typedef unsigned AXID;
 
 enum AccessibilityRole {
@@ -598,6 +600,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
 
   AXID axObjectID() const { return m_id; }
+
+  // Wrappers that retrieve either an Accessibility Object Model property,
+  // or the equivalent ARIA attribute, in that order.
+  // TODO(dmazzoni): Add equivalents for other types of properties besides
+  // just strings.
+  const AtomicString& getAOMPropertyOrARIAAttribute(AOMStringProperty) const;
 
   virtual void getSparseAXAttributes(AXSparseAttributeClient&) const {}
 

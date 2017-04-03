@@ -123,6 +123,9 @@ interface Element : Node {
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedRole;
     [RuntimeEnabled=ComputedAccessibilityInfo] readonly attribute DOMString? computedName;
 
+    // Accessibility Object Model
+    [RuntimeEnabled=AccessibilityObjectModel] readonly attribute AccessibleNode? accessibleNode;
+
     // Event handler attributes
     attribute EventHandler onbeforecopy;
     attribute EventHandler onbeforecut;
