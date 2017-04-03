@@ -165,6 +165,7 @@ Programming with liblouis
 
 * Overview (library)::
 * Data structure of liblouis tables::
+* How tables are found::
 * Deprecation of the logging system::
 * lou_version::
 * lou_translateString::
@@ -1749,6 +1750,11 @@ Print the version number, then exit successfully.
 
 @end table
 
+Most test programs let you specify one or multiple tables to use.
+These tables are usually found in standard locations in the file
+system or local to where the command is executed. @xref{How tables are
+found} for a description on how the tables are located.
+
 @menu
 * lou_debug::
 * lou_trace::
@@ -2358,6 +2364,7 @@ the doctest directory in the source distribution.
 @menu
 * Overview (library)::
 * Data structure of liblouis tables::
+* How tables are found::
 * Deprecation of the logging system::
 * lou_version::
 * lou_translateString::
@@ -2516,6 +2523,26 @@ Finally is the @code{ruleArea}, an array of variable size to which
 various structures are mapped and to which almost everything else
 points.
 
+@node How tables are found
+@section How tables are found
+@cindex Table search path
+@cindex LOUIS_TABLEPATH
+liblouis knows where to find all the tables that have been distributed
+with it. So you can just give a table name such as @code{en-us-g2.ctb}
+and liblouis will load it. You can also give a table name which
+includes a path. If this is the first table in a list, all the tables
+in the list must be on the same path. You can specify a path on which
+liblouis will look for table names by setting the environment variable
+@env{LOUIS_TABLEPATH}. This environment variable can contain one or
+more paths separated by commas. On receiving a table name liblouis
+first checks to see if it can be found on any of these paths. If not,
+it then checks to see if it can be found in the current directory, or,
+if the first (or only) name in a table list, if it contains a
+path name, can be found on that path. If not, it checks to see if it
+can be found on the path where the distributed tables have been
+installed. If a table has already been loaded and compiled this
+path-checking is skipped.
+
 @node Deprecation of the logging system
 @section Deprecation of the logging system
 
@@ -2572,25 +2599,11 @@ translation table.
 
 @anchor{translation-tables}
 The @code{tableList} parameter points to a list of translation tables
-separated by commas. If only one table is given, no comma should be
-used after it. It is these tables which control just how the
-translation is made, whether in Grade 2, Grade 1, or something else.
-
-liblouis knows where to find all the tables that have been distributed
-with it. So you can just give a table name such as @code{en-us-g2.ctb}
-and liblouis will load it. You can also give a table name which
-includes a path. If this is the first table in a list, all the tables
-in the list must be on the same path. You can specify a path on which
-liblouis will look for table names by setting the environment variable
-@code{LOUIS_TABLEPATH}. This environment variable can contain one or
-more paths separated by commas. On receiving a table name liblouis
-first checks to see if it can be found on any of these paths. If not,
-it then checks to see if it can be found in the current directory, or,
-if the first (or only) name in a table list, if it contains a
-path name, can be found on that path. If not, it checks to see if it
-can be found on the path where the distributed tables have been
-installed. If a table has already been loaded and compiled this
-path-checking is skipped.
+separated by commas. @xref{How tables are found} for a description on
+how the tables are located in the file system. If only one table is
+given, no comma should be used after it. It is these tables which
+control just how the translation is made, whether in Grade 2, Grade 1,
+or something else.
 
 The tables in a list are all compiled into the same internal table.
 The list is then regarded as the name of this table. As explained in
