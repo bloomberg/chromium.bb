@@ -288,7 +288,7 @@ int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
                                               int dir) {
   int i;
   v128 sum;
-  v128 p;
+  v128 p0, p1;
   v128 cmp;
   v128 row;
   v128 res;
@@ -302,53 +302,53 @@ int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
   thresh = v128_dup_16(threshold);
   for (i = 0; i < 8; i++) {
     sum = v128_zero();
-    row = v128_load_unaligned(&in[i * OD_FILT_BSTRIDE]);
+    row = v128_load_aligned(&in[i * OD_FILT_BSTRIDE]);
 
-    /*p = in[i*OD_FILT_BSTRIDE + offset] - row*/
-    p = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + off1]), row);
-    /*if (abs(p) < thresh) sum += taps[k]*p*/
-    cmp = od_cmplt_abs_epi16(p, thresh);
-    p = v128_add_16(p, v128_shl_n_16(p, 1));
-    p = v128_and(p, cmp);
-    sum = v128_add_16(sum, p);
+    /*p0 = in[i*OD_FILT_BSTRIDE + offset] - row*/
+    p0 = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + off1]), row);
+    /*p0 = abs(p0) < thresh ? p0 : 0*/
+    cmp = od_cmplt_abs_epi16(p0, thresh);
+    p0 = v128_and(p0, cmp);
 
-    /*p = in[i*OD_FILT_BSTRIDE - offset] - row*/
-    p = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - off1]), row);
-    /*if (abs(p) < thresh) sum += taps[k]*p1*/
-    cmp = od_cmplt_abs_epi16(p, thresh);
-    p = v128_add_16(p, v128_shl_n_16(p, 1));
-    p = v128_and(p, cmp);
-    sum = v128_add_16(sum, p);
+    /*p1 = in[i*OD_FILT_BSTRIDE - offset] - row*/
+    p1 = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - off1]), row);
+    /*p1 = abs(p1) < thresh ? p1 : 0*/
+    cmp = od_cmplt_abs_epi16(p1, thresh);
+    p1 = v128_and(p1, cmp);
+    /*sum += 3*(p0 + p1)*/
+    p0 = v128_add_16(p0, p1);
+    p0 = v128_add_16(p0, v128_shl_n_16(p0, 1));
+    sum = v128_add_16(sum, p0);
 
-    /*p = in[i*OD_FILT_BSTRIDE + offset] - row*/
-    p = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + off2]), row);
-    /*if (abs(p) < thresh) sum += taps[k]*p*/
-    cmp = od_cmplt_abs_epi16(p, thresh);
-    p = v128_shl_n_16(p, 1);
-    p = v128_and(p, cmp);
-    sum = v128_add_16(sum, p);
+    /*p0 = in[i*OD_FILT_BSTRIDE + offset] - row*/
+    p0 = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + off2]), row);
+    /*p0 = abs(p0) < thresh ? p0 : 0*/
+    cmp = od_cmplt_abs_epi16(p0, thresh);
+    p0 = v128_and(p0, cmp);
 
-    /*p = in[i*OD_FILT_BSTRIDE - offset] - row*/
-    p = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - off2]), row);
-    /*if (abs(p) < thresh) sum += taps[k]*p1*/
-    cmp = od_cmplt_abs_epi16(p, thresh);
-    p = v128_shl_n_16(p, 1);
-    p = v128_and(p, cmp);
-    sum = v128_add_16(sum, p);
+    /*p1 = in[i*OD_FILT_BSTRIDE - offset] - row*/
+    p1 = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - off2]), row);
+    /*p1 = abs(p1) < thresh ? p1 : 0*/
+    cmp = od_cmplt_abs_epi16(p1, thresh);
+    p1 = v128_and(p1, cmp);
+    /* sum += 2*(p0 + p1)*/
+    p0 = v128_shl_n_16(v128_add_16(p0, p1), 1);
+    sum = v128_add_16(sum, p0);
 
-    /*p = in[i*OD_FILT_BSTRIDE + offset] - row*/
-    p = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + off3]), row);
-    /*if (abs(p) < thresh) sum += taps[k]*p*/
-    cmp = od_cmplt_abs_epi16(p, thresh);
-    p = v128_and(p, cmp);
-    sum = v128_add_16(sum, p);
+    /*p0 = in[i*OD_FILT_BSTRIDE + offset] - row*/
+    p0 = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE + off3]), row);
+    /*p0 = abs(p0) < thresh ? p0 : 0*/
+    cmp = od_cmplt_abs_epi16(p0, thresh);
+    p0 = v128_and(p0, cmp);
 
-    /*p = in[i*OD_FILT_BSTRIDE - offset] - row*/
-    p = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - off3]), row);
-    /*if (abs(p) < thresh) sum += taps[k]*p1*/
-    cmp = od_cmplt_abs_epi16(p, thresh);
-    p = v128_and(p, cmp);
-    sum = v128_add_16(sum, p);
+    /*p1 = in[i*OD_FILT_BSTRIDE - offset] - row*/
+    p1 = v128_sub_16(v128_load_unaligned(&in[i * OD_FILT_BSTRIDE - off3]), row);
+    /*p1 = abs(p1) < thresh ? p1 : 0*/
+    cmp = od_cmplt_abs_epi16(p1, thresh);
+    p1 = v128_and(p1, cmp);
+    /*sum += (p0 + p1)*/
+    p0 = v128_add_16(p0, p1);
+    sum = v128_add_16(sum, p0);
 
     /*res = row + ((sum + 8) >> 4)*/
     res = v128_add_16(sum, v128_dup_16(8));
