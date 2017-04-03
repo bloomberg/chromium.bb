@@ -3122,9 +3122,6 @@ drm_output_set_mode(struct weston_output *base,
 	output->base.native_mode = output->base.current_mode;
 	output->base.native_scale = output->base.current_scale;
 
-	output->base.mm_width = output->connector->mmWidth;
-	output->base.mm_height = output->connector->mmHeight;
-
 	return 0;
 }
 
@@ -3187,12 +3184,6 @@ drm_output_enable(struct weston_output *base)
 
 	output->base.gamma_size = output->original_crtc->gamma_size;
 	output->base.set_gamma = drm_output_set_gamma;
-
-	output->base.subpixel = drm_subpixel_to_wayland(output->connector->subpixel);
-
-	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
-	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
-		output->base.connection_internal = true;
 
 	weston_plane_init(&output->cursor_plane, b->compositor,
 			  INT32_MIN, INT32_MIN);
@@ -3393,6 +3384,15 @@ create_output_for_connector(struct drm_backend *b,
 	output->base.make = (char *)make;
 	output->base.model = (char *)model;
 	output->base.serial_number = (char *)serial_number;
+	output->base.subpixel = drm_subpixel_to_wayland(output->connector->subpixel);
+
+	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
+	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
+		output->base.connection_internal = true;
+
+	output->base.mm_width = output->connector->mmWidth;
+	output->base.mm_height = output->connector->mmHeight;
+
 	drmModeFreeObjectProperties(props);
 
 	for (i = 0; i < output->connector->count_modes; i++) {
