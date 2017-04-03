@@ -678,7 +678,15 @@ IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_FocusEvent) {
   TestHelper("testFocusEvent", "web_view/focus", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_FocusTracksEmbedder) {
+// Flaky on Mac and Linux - https://crbug.com/707648
+#if defined(OS_MACOSX) || defined(OS_LINUX)
+#define MAYBE_Focus_FocusTracksEmbedder DISABLED_Focus_FocusTracksEmbedder
+#else
+#define MAYBE_Focus_FocusTracksEmbedder Focus_FocusTracksEmbedder
+#endif
+
+IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest,
+                       MAYBE_Focus_FocusTracksEmbedder) {
   content::WebContents* embedder_web_contents = NULL;
 
   std::unique_ptr<ExtensionTestMessageListener> done_listener(
@@ -1063,8 +1071,11 @@ IN_PROC_BROWSER_TEST_F(WebViewPopupInteractiveTest,
 // Drag and drop inside a webview is currently only enabled for linux and mac,
 // but the tests don't work on anything except chromeos for now. This is because
 // of simulating mouse drag code's dependency on platforms.
+
+// Flaky: https://crbug.com/700483
 #if defined(OS_CHROMEOS) && !defined(USE_OZONE)
-IN_PROC_BROWSER_TEST_P(WebViewDragDropInteractiveTest, DragDropWithinWebView) {
+IN_PROC_BROWSER_TEST_P(WebViewDragDropInteractiveTest,
+                       DISABLED_DragDropWithinWebView) {
   LoadAndLaunchPlatformApp("web_view/dnd_within_webview", "connected");
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
 
@@ -1186,7 +1197,15 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest,
 // Now we need to make sure TextInputTypeChanged fires properly for the guest's
 // view upon step #3. We simply read the input type's state after #3 to
 // make sure it's not TEXT_INPUT_TYPE_NONE.
-IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, Focus_FocusRestored) {
+
+// Flaky on Linux - https://crbug.com/702572
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_Focus_FocusRestored DISABLED_Focus_FocusRestored
+#else
+#define MAYBE_Focus_FocusRestored Focus_FocusRestored
+#endif
+
+IN_PROC_BROWSER_TEST_P(WebViewFocusInteractiveTest, MAYBE_Focus_FocusRestored) {
   TestHelper("testFocusRestored", "web_view/focus", NO_TEST_SERVER);
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
