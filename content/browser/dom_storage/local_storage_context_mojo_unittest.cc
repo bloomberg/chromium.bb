@@ -62,11 +62,6 @@ void GetCallback(const base::Closure& callback,
 
 void NoOpGet(bool success, const std::vector<uint8_t>& value) {}
 
-std::vector<uint8_t> String16ToUint8Vector(const base::string16& input) {
-  const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
-  return std::vector<uint8_t>(data, data + input.size() * sizeof(base::char16));
-}
-
 class TestLevelDBObserver : public mojom::LevelDBObserver {
  public:
   struct Observation {
@@ -602,11 +597,11 @@ TEST_F(LocalStorageContextMojoTest, Migration) {
   bool success = false;
   std::vector<uint8_t> result;
   wrapper->Get(
-      String16ToUint8Vector(key),
+      LocalStorageContextMojo::MigrateString(key),
       base::Bind(&GetCallback, run_loop.QuitClosure(), &success, &result));
   run_loop.Run();
   EXPECT_TRUE(success);
-  EXPECT_EQ(String16ToUint8Vector(value), result);
+  EXPECT_EQ(LocalStorageContextMojo::MigrateString(value), result);
 
   // Origin1 should no longer exist in old storage.
   area = local->OpenStorageArea(origin1.GetURL());

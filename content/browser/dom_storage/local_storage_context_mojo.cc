@@ -68,11 +68,6 @@ std::vector<uint8_t> CreateMetaDataKey(const url::Origin& origin) {
 
 void NoOpSuccess(bool success) {}
 
-std::vector<uint8_t> String16ToUint8Vector(const base::string16& input) {
-  const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
-  return std::vector<uint8_t>(data, data + input.size() * sizeof(base::char16));
-}
-
 void MigrateStorageHelper(
     base::FilePath db_path,
     const scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
@@ -83,8 +78,8 @@ void MigrateStorageHelper(
   db.ReadAllValues(&map);
   auto values = base::MakeUnique<LevelDBWrapperImpl::ValueMap>();
   for (const auto& it : map) {
-    (*values)[String16ToUint8Vector(it.first)] =
-        String16ToUint8Vector(it.second.string());
+    (*values)[LocalStorageContextMojo::MigrateString(it.first)] =
+        LocalStorageContextMojo::MigrateString(it.second.string());
   }
   reply_task_runner->PostTask(FROM_HERE,
                               base::Bind(callback, base::Passed(&values)));
@@ -293,6 +288,19 @@ LocalStorageContextMojo::DatabaseRequestForTesting() {
       MakeIsolatedRequest(&database_);
   OnDatabaseOpened(true, leveldb::mojom::DatabaseError::OK);
   return request;
+}
+
+// static
+std::vector<uint8_t> LocalStorageContextMojo::MigrateString(
+    const base::string16& input) {
+  static const uint8_t kUTF16Format = 0;
+
+  const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
+  std::vector<uint8_t> result;
+  result.reserve(input.size() * sizeof(base::char16) + 1);
+  result.push_back(kUTF16Format);
+  result.insert(result.end(), data, data + input.size() * sizeof(base::char16));
+  return result;
 }
 
 void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {

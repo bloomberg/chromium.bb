@@ -51,6 +51,9 @@ class CONTENT_EXPORT LocalStorageContextMojo {
 
   leveldb::mojom::LevelDBDatabaseAssociatedRequest DatabaseRequestForTesting();
 
+  // Converts a string from the old storage format to the new storage format.
+  static std::vector<uint8_t> MigrateString(const base::string16& input);
+
  private:
   friend class MojoDOMStorageBrowserTest;
 

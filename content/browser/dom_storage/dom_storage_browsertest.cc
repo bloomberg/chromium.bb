@@ -116,4 +116,30 @@ IN_PROC_BROWSER_TEST_F(MojoDOMStorageBrowserTest, MAYBE_DataPersists) {
   SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
 }
 
+class DOMStorageMigrationBrowserTest : public DOMStorageBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    // Only enable mojo local storage if this is not a PRE_ test.
+    const testing::TestInfo* test =
+        testing::UnitTest::GetInstance()->current_test_info();
+    if (!base::StartsWith(test->name(), "PRE_", base::CompareCase::SENSITIVE))
+      command_line->AppendSwitch(switches::kMojoLocalStorage);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, PRE_DataMigrates) {
+  SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
+}
+
+// http://crbug.com/654704 PRE_ tests aren't supported on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_DataMigrates DISABLED_DataMigrates
+#else
+#define MAYBE_DataMigrates DataMigrates
+#endif
+IN_PROC_BROWSER_TEST_F(DOMStorageMigrationBrowserTest, MAYBE_DataMigrates) {
+  SimpleTest(GetTestUrl("dom_storage", "verify_data.html"), kNotIncognito);
+}
+
 }  // namespace content
