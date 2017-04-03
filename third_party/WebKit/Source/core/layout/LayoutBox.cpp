@@ -1063,7 +1063,7 @@ LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* layoutObject) {
       !(layoutObject->isBox() && toLayoutBox(layoutObject)->canAutoscroll())) {
     // Do not start autoscroll when the node is inside a fixed-position element.
     if (layoutObject->isBox() && toLayoutBox(layoutObject)->hasLayer() &&
-        toLayoutBox(layoutObject)->layer()->sticksToViewport()) {
+        toLayoutBox(layoutObject)->layer()->fixedToViewport()) {
       return nullptr;
     }
 

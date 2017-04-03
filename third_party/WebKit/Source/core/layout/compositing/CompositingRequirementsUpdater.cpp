@@ -247,8 +247,7 @@ void CompositingRequirementsUpdater::updateRecursive(
   layer->stackingNode()->updateLayerListsIfNeeded();
 
   CompositingReasons reasonsToComposite = CompositingReasonNone;
-  CompositingReasons directReasons =
-      m_compositingReasonFinder.directReasons(layer);
+  CompositingReasons directReasons = CompositingReasonNone;
 
   // Video is special. It's the only PaintLayer type that can both have
   // PaintLayer children and whose children can't use its backing to render
@@ -260,14 +259,15 @@ void CompositingRequirementsUpdater::updateRecursive(
 
   bool hasCompositedScrollingAncestor =
       layer->ancestorScrollingLayer() &&
-      (m_compositingReasonFinder.directReasons(
-           layer->ancestorScrollingLayer()) &
+      (m_compositingReasonFinder.directReasons(layer->ancestorScrollingLayer(),
+                                               false) &
        CompositingReasonOverflowScrollingTouch);
 
   // TODO(chrishtr): use |hasCompositedScrollingAncestor| instead.
-  if (currentRecursionData.m_hasCompositedScrollingAncestor &&
-      layer->layoutObject().styleRef().hasViewportConstrainedPosition())
-    directReasons |= CompositingReasonScrollDependentPosition;
+  const bool ignoreLCDText =
+      currentRecursionData.m_hasCompositedScrollingAncestor;
+  directReasons |=
+      m_compositingReasonFinder.directReasons(layer, ignoreLCDText);
 
   bool canBeComposited = compositor->canBeComposited(layer);
   if (canBeComposited) {

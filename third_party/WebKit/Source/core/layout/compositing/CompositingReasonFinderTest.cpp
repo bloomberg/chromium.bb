@@ -61,6 +61,56 @@ TEST_F(CompositingReasonFinderTest, PromoteOpaqueFixedPosition) {
   EXPECT_EQ(NotComposited, paintLayer->compositingState());
 }
 
+TEST_F(CompositingReasonFinderTest, OnlyAnchoredStickyPositionPromoted) {
+  setBodyInnerHTML(
+      "<style>"
+      ".scroller {contain: paint; width: 400px; height: 400px; overflow: auto; "
+      "will-change: transform;}"
+      ".sticky { position: sticky; width: 10px; height: 10px;}</style>"
+      "<div class='scroller'>"
+      "  <div id='sticky-top' class='sticky' style='top: 0px;'></div>"
+      "  <div id='sticky-no-anchor' class='sticky'></div>"
+      "  <div style='height: 2000px;'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_EQ(PaintsIntoOwnBacking,
+            toLayoutBoxModelObject(getLayoutObjectByElementId("sticky-top"))
+                ->layer()
+                ->compositingState());
+  EXPECT_EQ(NotComposited, toLayoutBoxModelObject(
+                               getLayoutObjectByElementId("sticky-no-anchor"))
+                               ->layer()
+                               ->compositingState());
+}
+
+TEST_F(CompositingReasonFinderTest, OnlyScrollingStickyPositionPromoted) {
+  setBodyInnerHTML(
+      "<style>.scroller {width: 400px; height: 400px; overflow: auto; "
+      "will-change: transform;}"
+      ".sticky { position: sticky; top: 0; width: 10px; height: 10px;}"
+      "</style>"
+      "<div class='scroller'>"
+      "  <div id='sticky-scrolling' class='sticky'></div>"
+      "  <div style='height: 2000px;'></div>"
+      "</div>"
+      "<div class='scroller'>"
+      "  <div id='sticky-no-scrolling' class='sticky'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+
+  EXPECT_EQ(
+      PaintsIntoOwnBacking,
+      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky-scrolling"))
+          ->layer()
+          ->compositingState());
+  EXPECT_EQ(
+      NotComposited,
+      toLayoutBoxModelObject(getLayoutObjectByElementId("sticky-no-scrolling"))
+          ->layer()
+          ->compositingState());
+}
+
 // Tests that a transform on the fixed or an ancestor will prevent promotion
 // TODO(flackr): Allow integer transforms as long as all of the ancestor
 // transforms are also integer.

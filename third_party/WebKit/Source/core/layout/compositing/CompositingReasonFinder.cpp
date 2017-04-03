@@ -37,7 +37,8 @@ bool CompositingReasonFinder::isMainFrame() const {
 }
 
 CompositingReasons CompositingReasonFinder::directReasons(
-    const PaintLayer* layer) const {
+    const PaintLayer* layer,
+    bool ignoreLCDText) const {
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return CompositingReasonNone;
 
@@ -48,7 +49,7 @@ CompositingReasons CompositingReasonFinder::directReasons(
       CompositingReasonComboAllDirectStyleDeterminedReasons;
 
   return styleDeterminedDirectCompositingReasons |
-         nonStyleDeterminedDirectReasons(layer);
+         nonStyleDeterminedDirectReasons(layer, ignoreLCDText);
 }
 
 // This information doesn't appear to be incorporated into CompositingReasons.
@@ -141,7 +142,8 @@ bool CompositingReasonFinder::requiresCompositingForTransform(
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
-    const PaintLayer* layer) const {
+    const PaintLayer* layer,
+    bool ignoreLCDText) const {
   CompositingReasons directReasons = CompositingReasonNone;
   LayoutObject& layoutObject = layer->layoutObject();
 
@@ -159,9 +161,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
       directReasons |= CompositingReasonOverflowScrollingParent;
   }
 
-  // TODO(flackr): Rename functions and variables to include sticky position
-  // (i.e. ScrollDependentPosition rather than PositionFixed).
-  if (requiresCompositingForScrollDependentPosition(layer))
+  if (requiresCompositingForScrollDependentPosition(layer, ignoreLCDText))
     directReasons |= CompositingReasonScrollDependentPosition;
 
   directReasons |= layoutObject.additionalCompositingReasons();
@@ -214,12 +214,14 @@ bool CompositingReasonFinder::requiresCompositingForTransformAnimation(
 }
 
 bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
-    const PaintLayer* layer) const {
+    const PaintLayer* layer,
+    bool ignoreLCDText) const {
   if (layer->layoutObject().style()->position() != EPosition::kFixed &&
       layer->layoutObject().style()->position() != EPosition::kSticky)
     return false;
 
-  if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger) &&
+  if (!(ignoreLCDText ||
+        (m_compositingTriggers & ViewportConstrainedPositionedTrigger)) &&
       (!RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled() ||
        !layer->backgroundIsKnownToBeOpaqueInRect(
            LayoutRect(layer->boundingBoxForCompositing())) ||
@@ -229,11 +231,17 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
   // Don't promote fixed position elements that are descendants of a non-view
   // container, e.g. transformed elements.  They will stay fixed wrt the
   // container rather than the enclosing frame.
-  if (layer->sticksToViewport())
-    return m_layoutView.frameView()->isScrollable();
+  EPosition position = layer->layoutObject().style()->position();
+  if (position == EPosition::kFixed)
+    return layer->fixedToViewport() && m_layoutView.frameView()->isScrollable();
+  DCHECK(position == EPosition::kSticky);
 
-  return layer->layoutObject().style()->position() == EPosition::kSticky &&
-         layer->ancestorOverflowLayer()->scrollsOverflow();
+  // Don't promote sticky position elements that cannot move with scrolls.
+  if (!layer->sticksToScroller())
+    return false;
+  if (layer->ancestorOverflowLayer()->isRootLayer())
+    return m_layoutView.frameView()->isScrollable();
+  return layer->ancestorOverflowLayer()->scrollsOverflow();
 }
 
 }  // namespace blink

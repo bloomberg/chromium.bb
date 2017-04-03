@@ -69,6 +69,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/BoxReflectionUtils.h"
 #include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/ObjectPaintInvalidator.h"
@@ -327,9 +328,17 @@ void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus() {
   }
 }
 
-bool PaintLayer::sticksToViewport() const {
-  if (layoutObject().style()->position() != EPosition::kFixed &&
-      layoutObject().style()->position() != EPosition::kSticky)
+bool PaintLayer::sticksToScroller() const {
+  return layoutObject().style()->position() == EPosition::kSticky &&
+         ancestorOverflowLayer()
+             ->getScrollableArea()
+             ->stickyConstraintsMap()
+             .at(const_cast<PaintLayer*>(this))
+             .anchorEdges();
+}
+
+bool PaintLayer::fixedToViewport() const {
+  if (layoutObject().style()->position() != EPosition::kFixed)
     return false;
 
   // TODO(pdr): This approach of calculating the nearest scroll node is O(n).
@@ -339,31 +348,23 @@ bool PaintLayer::sticksToViewport() const {
     const auto* viewBorderBoxProperties =
         layoutObject().view()->localBorderBoxProperties();
     const ScrollPaintPropertyNode* ancestorTargetScrollNode;
-    if (layoutObject().style()->position() == EPosition::kFixed) {
-      ancestorTargetScrollNode =
-          viewBorderBoxProperties->transform()->findEnclosingScrollNode();
-    } else {
-      ancestorTargetScrollNode = layoutObject()
-                                     .view()
-                                     ->contentsProperties()
-                                     ->transform()
-                                     ->findEnclosingScrollNode();
-    }
+    ancestorTargetScrollNode =
+        viewBorderBoxProperties->transform()->findEnclosingScrollNode();
 
     const auto* transform =
         layoutObject().localBorderBoxProperties()->transform();
     return transform->findEnclosingScrollNode() == ancestorTargetScrollNode;
   }
 
-  return (layoutObject().style()->position() == EPosition::kFixed &&
-          layoutObject().containerForFixedPosition() ==
-              layoutObject().view()) ||
-         (layoutObject().style()->position() == EPosition::kSticky &&
-          (!ancestorScrollingLayer() || ancestorScrollingLayer() == root()));
+  return layoutObject().containerForFixedPosition() == layoutObject().view();
 }
 
 bool PaintLayer::scrollsWithRespectTo(const PaintLayer* other) const {
-  if (sticksToViewport() != other->sticksToViewport())
+  if (fixedToViewport() != other->fixedToViewport())
+    return true;
+  // If either element sticks we cannot trivially determine that the layers do
+  // not scroll with respect to each other.
+  if (sticksToScroller() || other->sticksToScroller())
     return true;
   return ancestorScrollingLayer() != other->ancestorScrollingLayer();
 }

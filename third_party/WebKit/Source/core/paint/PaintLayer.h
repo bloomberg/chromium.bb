@@ -621,7 +621,13 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool isInTopLayer() const;
 
-  bool sticksToViewport() const;
+  // Returns true if the layer is sticky position and may stick to its
+  // ancestor overflow layer.
+  bool sticksToScroller() const;
+
+  // Returns true if the layer is fixed position and will not move with
+  // scrolling.
+  bool fixedToViewport() const;
   bool scrollsWithRespectTo(const PaintLayer*) const;
 
   void addLayerHitTestRects(LayerHitTestRects&) const;

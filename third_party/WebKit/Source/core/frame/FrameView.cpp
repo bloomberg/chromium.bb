@@ -5010,7 +5010,7 @@ bool FrameView::hasVisibleSlowRepaintViewportConstrainedObjects() const {
     // Whether the Layer sticks to the viewport is a tree-depenent
     // property and our viewportConstrainedObjects collection is maintained
     // with only LayoutObject-level information.
-    if (!layer->sticksToViewport())
+    if (!layer->fixedToViewport() && !layer->sticksToScroller())
       continue;
 
     // If the whole subtree is invisible, there's no reason to scroll on

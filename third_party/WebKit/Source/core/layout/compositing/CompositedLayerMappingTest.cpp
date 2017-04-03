@@ -1645,6 +1645,47 @@ TEST_P(CompositedLayerMappingTest,
             IntPoint(constraint.parentRelativeStickyBoxOffset));
 }
 
+TEST_P(CompositedLayerMappingTest, StickyPositionNotSquashed) {
+  setBodyInnerHTML(
+      "<style>"
+      "#scroller { overflow: auto; height: 200px; }"
+      "#sticky1, #sticky2, #sticky3 {position: sticky; top: 0; width: 50px;"
+      "    height: 50px; background: rgba(0, 128, 0, 0.5);}"
+      "#sticky1 {backface-visibility: hidden;}"
+      ".spacer {height: 2000px;}"
+      "</style>"
+      "<div id='scroller'>"
+      "  <div id='sticky1'></div>"
+      "  <div id='sticky2'></div>"
+      "  <div id='sticky3'></div>"
+      "  <div class='spacer'></div>"
+      "</div>");
+
+  PaintLayer* sticky1 =
+      toLayoutBlock(getLayoutObjectByElementId("sticky1"))->layer();
+  PaintLayer* sticky2 =
+      toLayoutBlock(getLayoutObjectByElementId("sticky2"))->layer();
+  PaintLayer* sticky3 =
+      toLayoutBlock(getLayoutObjectByElementId("sticky3"))->layer();
+  EXPECT_EQ(PaintsIntoOwnBacking, sticky1->compositingState());
+  EXPECT_EQ(NotComposited, sticky2->compositingState());
+  EXPECT_EQ(NotComposited, sticky3->compositingState());
+
+  PaintLayer* scroller =
+      toLayoutBlock(getLayoutObjectByElementId("scroller"))->layer();
+  PaintLayerScrollableArea* scrollableArea = scroller->getScrollableArea();
+  scrollableArea->scrollToAbsolutePosition(
+      FloatPoint(scrollableArea->scrollPosition().y(), 100));
+  document().view()->updateAllLifecyclePhases();
+
+  // Now that sticky2 and sticky3 overlap sticky1 they will be promoted, but
+  // they should not be squashed into the same layer because they scroll with
+  // respect to each other.
+  EXPECT_EQ(PaintsIntoOwnBacking, sticky1->compositingState());
+  EXPECT_EQ(PaintsIntoOwnBacking, sticky2->compositingState());
+  EXPECT_EQ(PaintsIntoOwnBacking, sticky3->compositingState());
+}
+
 TEST_P(CompositedLayerMappingTest, StickyPositionNestedStickyContentOffset) {
   setBodyInnerHTML(
       "<style>.composited { will-change: transform; }"

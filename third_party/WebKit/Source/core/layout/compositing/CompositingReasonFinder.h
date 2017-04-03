@@ -26,11 +26,14 @@ class CORE_EXPORT CompositingReasonFinder {
   explicit CompositingReasonFinder(LayoutView&);
 
   CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject&) const;
-  CompositingReasons directReasons(const PaintLayer*) const;
+
+  // Returns the direct reasons for compositing the given layer. If
+  // |ignoreLCDText| is true promotion will not try to preserve subpixel text
+  // rendering (i.e. partially transparent layers will be promoted).
+  CompositingReasons directReasons(const PaintLayer*, bool ignoreLCDText) const;
 
   void updateTriggers();
 
-  bool hasOverflowScrollTrigger() const;
   bool requiresCompositingForScrollableFrame() const;
   static bool requiresCompositingForAnimation(const ComputedStyle&);
   static bool requiresCompositingForOpacityAnimation(const ComputedStyle&);
@@ -44,8 +47,10 @@ class CORE_EXPORT CompositingReasonFinder {
  private:
   bool isMainFrame() const;
 
-  CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*) const;
-  bool requiresCompositingForScrollDependentPosition(const PaintLayer*) const;
+  CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*,
+                                                     bool ignoreLCDText) const;
+  bool requiresCompositingForScrollDependentPosition(const PaintLayer*,
+                                                     bool ignoreLCDText) const;
 
   LayoutView& m_layoutView;
   CompositingTriggerFlags m_compositingTriggers;

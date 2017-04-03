@@ -127,14 +127,14 @@ TEST_P(PaintLayerTest, ScrollsWithViewportRelativePosition) {
   setBodyInnerHTML("<div id='target' style='position: relative'></div>");
 
   PaintLayer* layer = getPaintLayerByElementId("target");
-  EXPECT_FALSE(layer->sticksToViewport());
+  EXPECT_FALSE(layer->fixedToViewport());
 }
 
 TEST_P(PaintLayerTest, ScrollsWithViewportFixedPosition) {
   setBodyInnerHTML("<div id='target' style='position: fixed'></div>");
 
   PaintLayer* layer = getPaintLayerByElementId("target");
-  EXPECT_TRUE(layer->sticksToViewport());
+  EXPECT_TRUE(layer->fixedToViewport());
 }
 
 TEST_P(PaintLayerTest, ScrollsWithViewportFixedPositionInsideTransform) {
@@ -149,7 +149,7 @@ TEST_P(PaintLayerTest, ScrollsWithViewportFixedPositionInsideTransform) {
       "</div>"
       "<div style='width: 10px; height: 1000px'></div>");
   PaintLayer* layer = getPaintLayerByElementId("target");
-  EXPECT_FALSE(layer->sticksToViewport());
+  EXPECT_FALSE(layer->fixedToViewport());
 }
 
 TEST_P(PaintLayerTest,
@@ -163,41 +163,53 @@ TEST_P(PaintLayerTest,
   // In SPv2 mode, we correctly determine that the frame doesn't scroll at all,
   // and so return true.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-    EXPECT_TRUE(layer->sticksToViewport());
+    EXPECT_TRUE(layer->fixedToViewport());
   else
-    EXPECT_FALSE(layer->sticksToViewport());
+    EXPECT_FALSE(layer->fixedToViewport());
 }
 
-TEST_P(PaintLayerTest, ScrollsWithViewportStickyPosition) {
+TEST_P(PaintLayerTest, SticksToScrollerStickyPosition) {
+  setBodyInnerHTML(
+      "<div style='transform: translateZ(0)'>"
+      "  <div id='target' style='position: sticky; top: 0;'></div>"
+      "</div>"
+      "<div style='width: 10px; height: 1000px'></div>");
+
+  PaintLayer* layer = getPaintLayerByElementId("target");
+  EXPECT_TRUE(layer->sticksToScroller());
+}
+
+TEST_P(PaintLayerTest, SticksToScrollerNoAnchor) {
   setBodyInnerHTML(
       "<div style='transform: translateZ(0)'>"
       "  <div id='target' style='position: sticky'></div>"
       "</div>"
       "<div style='width: 10px; height: 1000px'></div>");
 
-  PaintLayer* layer = getPaintLayerByElementId("target");
-  EXPECT_TRUE(layer->sticksToViewport());
+  PaintLayer* layer =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("target"))->layer();
+  EXPECT_FALSE(layer->sticksToScroller());
 }
 
-TEST_P(PaintLayerTest, ScrollsWithViewportStickyPositionNoScroll) {
+TEST_P(PaintLayerTest, SticksToScrollerStickyPositionNoScroll) {
   setBodyInnerHTML(
       "<div style='transform: translateZ(0)'>"
-      "  <div id='target' style='position: sticky'></div>"
+      "  <div id='target' style='position: sticky; top: 0;'></div>"
       "</div>");
 
   PaintLayer* layer = getPaintLayerByElementId("target");
-  EXPECT_TRUE(layer->sticksToViewport());
+  EXPECT_TRUE(layer->sticksToScroller());
 }
 
-TEST_P(PaintLayerTest, ScrollsWithViewportStickyPositionInsideScroller) {
+TEST_P(PaintLayerTest, SticksToScrollerStickyPositionInsideScroller) {
   setBodyInnerHTML(
       "<div style='overflow:scroll; width: 100px; height: 100px;'>"
-      "  <div id='target' style='position: sticky'></div>"
+      "  <div id='target' style='position: sticky; top: 0;'></div>"
       "  <div style='width: 50px; height: 1000px;'></div>"
       "</div>");
 
   PaintLayer* layer = getPaintLayerByElementId("target");
-  EXPECT_FALSE(layer->sticksToViewport());
+  EXPECT_TRUE(layer->sticksToScroller());
 }
 
 TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
