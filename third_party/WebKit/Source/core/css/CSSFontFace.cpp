@@ -44,7 +44,7 @@ void CSSFontFace::addSource(CSSFontFaceSource* source) {
 
 void CSSFontFace::setSegmentedFontFace(
     CSSSegmentedFontFace* segmentedFontFace) {
-  ASSERT(!m_segmentedFontFace);
+  DCHECK(!m_segmentedFontFace);
   m_segmentedFontFace = segmentedFontFace;
 }
 
@@ -151,7 +151,7 @@ void CSSFontFace::load() {
 void CSSFontFace::load(const FontDescription& fontDescription) {
   if (loadStatus() == FontFace::Unloaded)
     setLoadStatus(FontFace::Loading);
-  ASSERT(loadStatus() == FontFace::Loading);
+  DCHECK_EQ(loadStatus(), FontFace::Loading);
 
   while (!m_sources.isEmpty()) {
     Member<CSSFontFaceSource>& source = m_sources.front();
@@ -175,7 +175,7 @@ void CSSFontFace::load(const FontDescription& fontDescription) {
 }
 
 void CSSFontFace::setLoadStatus(FontFace::LoadStatusType newStatus) {
-  ASSERT(m_fontFace);
+  DCHECK(m_fontFace);
   if (newStatus == FontFace::Error)
     m_fontFace->setError();
   else

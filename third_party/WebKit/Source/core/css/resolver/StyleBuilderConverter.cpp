@@ -210,7 +210,7 @@ static bool convertFontFamilyName(
 FontDescription::FamilyDescription StyleBuilderConverter::convertFontFamily(
     StyleResolverState& state,
     const CSSValue& value) {
-  ASSERT(value.isValueList());
+  DCHECK(value.isValueList());
 
   FontDescription::FamilyDescription desc(FontDescription::NoFamily);
   FontFamily* currFamily = nullptr;
@@ -285,7 +285,7 @@ static float computeFontSize(StyleResolverState& state,
         ->toCalcValue(state.fontSizeConversionData())
         ->evaluate(parentSize.value);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -306,7 +306,7 @@ FontDescription::Size StyleBuilderConverter::convertFontSize(
       return FontDescription::smallerSize(parentSize);
     if (valueID == CSSValueLarger)
       return FontDescription::largerSize(parentSize);
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return FontBuilder::initialSize();
   }
 
@@ -330,7 +330,7 @@ float StyleBuilderConverter::convertFontSizeAdjust(StyleResolverState& state,
     return FontBuilder::initialSizeAdjust();
 
   const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  ASSERT(primitiveValue.isNumber());
+  DCHECK(primitiveValue.isNumber());
   return primitiveValue.getFloatValue();
 }
 
@@ -438,7 +438,7 @@ StyleBuilderConverter::convertFontVariantLigatures(StyleResolverState&,
           ligatures.contextual = FontDescription::EnabledLigaturesState;
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
           break;
       }
     }
@@ -492,7 +492,7 @@ FontVariantNumeric StyleBuilderConverter::convertFontVariantNumeric(
         variantNumeric.setSlashedZero(FontVariantNumeric::SlashedZeroOn);
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
   }
@@ -548,7 +548,7 @@ StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(
         alignmentData.setPosition(identifierValue.convertTo<ContentPosition>());
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return alignmentData;
   }
@@ -571,7 +571,7 @@ GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&,
                                                         const CSSValue& value) {
   const CSSValueList& list = toCSSValueList(value);
 
-  ASSERT(list.length() >= 1);
+  DCHECK_GE(list.length(), 1u);
   const CSSIdentifierValue& first = toCSSIdentifierValue(list.item(0));
   const CSSIdentifierValue* second =
       list.length() == 2 ? &toCSSIdentifierValue(list.item(1)) : nullptr;
@@ -590,7 +590,7 @@ GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&,
         return AutoFlowColumnDense;
       return AutoFlowRowDense;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ComputedStyle::initialGridAutoFlow();
   }
 }
@@ -614,7 +614,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&,
   }
 
   const CSSValueList& values = toCSSValueList(value);
-  ASSERT(values.length());
+  DCHECK(values.length());
 
   bool isSpanPosition = false;
   // The specification makes the <integer> optional, in which case it default to
@@ -643,7 +643,7 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&,
     ++it;
   }
 
-  ASSERT(it == values.end());
+  DCHECK_EQ(it, values.end());
   if (isSpanPosition)
     position.setSpanPosition(gridLineNumber, gridLineName);
   else
@@ -676,7 +676,7 @@ static void convertGridLineNamesList(
     size_t currentNamedGridLine,
     NamedGridLinesMap& namedGridLines,
     OrderedNamedGridLines& orderedNamedGridLines) {
-  ASSERT(value.isGridLineNamesValue());
+  DCHECK(value.isGridLineNamesValue());
 
   for (auto& namedGridLineValue : toCSSValueList(value)) {
     String namedGridLine = toCSSCustomIdentValue(*namedGridLineValue).value();
@@ -727,11 +727,11 @@ void StyleBuilderConverter::convertGridTrackList(
     }
 
     if (currValue->isGridAutoRepeatValue()) {
-      ASSERT(autoRepeatTrackSizes.isEmpty());
+      DCHECK(autoRepeatTrackSizes.isEmpty());
       size_t autoRepeatIndex = 0;
       CSSValueID autoRepeatID =
           toCSSGridAutoRepeatValue(currValue.get())->autoRepeatID();
-      ASSERT(autoRepeatID == CSSValueAutoFill ||
+      DCHECK(autoRepeatID == CSSValueAutoFill ||
              autoRepeatID == CSSValueAutoFit);
       autoRepeatType = autoRepeatID == CSSValueAutoFill ? AutoFill : AutoFit;
       for (auto autoRepeatValue : toCSSValueList(*currValue)) {
@@ -755,13 +755,13 @@ void StyleBuilderConverter::convertGridTrackList(
 
   // The parser should have rejected any <track-list> without any <track-size>
   // as this is not conformant to the syntax.
-  ASSERT(!trackSizes.isEmpty() || !autoRepeatTrackSizes.isEmpty());
+  DCHECK(!trackSizes.isEmpty() || !autoRepeatTrackSizes.isEmpty());
 }
 
 void StyleBuilderConverter::convertOrderedNamedGridLinesMapToNamedGridLinesMap(
     const OrderedNamedGridLines& orderedNamedGridLines,
     NamedGridLinesMap& namedGridLines) {
-  ASSERT(namedGridLines.size() == 0);
+  DCHECK_EQ(namedGridLines.size(), 0u);
 
   if (orderedNamedGridLines.size() == 0)
     return;
@@ -848,7 +848,7 @@ Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state,
     case CSSValueAuto:
       return Length(Auto);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return Length();
   }
 }
@@ -915,7 +915,7 @@ float StyleBuilderConverter::convertNumberOrPercentage(
     StyleResolverState& state,
     const CSSValue& value) {
   const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  ASSERT(primitiveValue.isNumber() || primitiveValue.isPercentage());
+  DCHECK(primitiveValue.isNumber() || primitiveValue.isPercentage());
   if (primitiveValue.isNumber())
     return primitiveValue.getFloatValue();
   return primitiveValue.getFloatValue() / 100.0f;
@@ -932,7 +932,7 @@ StyleOffsetRotation StyleBuilderConverter::convertOffsetRotate(
   StyleOffsetRotation result(0, OffsetRotationFixed);
 
   const CSSValueList& list = toCSSValueList(value);
-  ASSERT(list.length() == 1 || list.length() == 2);
+  DCHECK(list.length() == 1 || list.length() == 2);
   for (const auto& item : list) {
     if (item->isIdentifierValue() &&
         toCSSIdentifierValue(*item).getValueID() == CSSValueAuto) {
@@ -999,7 +999,7 @@ EPaintOrder StyleBuilderConverter::convertPaintOrder(
         return orderTypeList.length() > 1 ? PaintOrderMarkersStrokeFill
                                           : PaintOrderMarkersFillStroke;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return PaintOrderNormal;
     }
   }
@@ -1132,7 +1132,7 @@ ShapeValue* StyleBuilderConverter::convertShapeValue(StyleResolverState& state,
   if (shape)
     return ShapeValue::createShapeValue(shape.release(), cssBox);
 
-  ASSERT(cssBox != BoxMissing);
+  DCHECK_NE(cssBox, BoxMissing);
   return ShapeValue::createBoxShapeValue(cssBox);
 }
 
@@ -1279,7 +1279,7 @@ PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::convertTranslate(
     return nullptr;
   }
   const CSSValueList& list = toCSSValueList(value);
-  ASSERT(list.length() <= 3);
+  DCHECK_LE(list.length(), 3u);
   Length tx = convertLength(state, list.item(0));
   Length ty(0, Fixed);
   double tz = 0;
@@ -1300,7 +1300,7 @@ Rotation StyleBuilderConverter::convertRotation(const CSSValue& value) {
   }
 
   const CSSValueList& list = toCSSValueList(value);
-  ASSERT(list.length() == 1 || list.length() == 4);
+  DCHECK(list.length() == 1 || list.length() == 4);
   double x = 0;
   double y = 0;
   double z = 1;
@@ -1335,7 +1335,7 @@ PassRefPtr<ScaleTransformOperation> StyleBuilderConverter::convertScale(
   }
 
   const CSSValueList& list = toCSSValueList(value);
-  ASSERT(list.length() <= 3);
+  DCHECK_LE(list.length(), 3u);
   double sx = toCSSPrimitiveValue(list.item(0)).getDoubleValue();
   double sy = 1;
   double sz = 1;

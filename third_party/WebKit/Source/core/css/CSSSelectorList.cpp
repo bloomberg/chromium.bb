@@ -62,7 +62,7 @@ CSSSelectorList CSSSelectorList::adoptSelectorVector(
          selector = selector->tagHistory())
       ++flattenedSize;
   }
-  ASSERT(flattenedSize);
+  DCHECK(flattenedSize);
 
   CSSSelectorList list;
   list.m_selectorArray =
@@ -80,14 +80,14 @@ CSSSelectorList CSSSelectorList::adoptSelectorVector(
       WTF::Partitions::fastFree(currentSelector);
 
       current = current->tagHistory();
-      ASSERT(!list.m_selectorArray[arrayIndex].isLastInSelectorList());
+      DCHECK(!list.m_selectorArray[arrayIndex].isLastInSelectorList());
       if (current)
         list.m_selectorArray[arrayIndex].setNotLastInTagHistory();
       ++arrayIndex;
     }
-    ASSERT(list.m_selectorArray[arrayIndex - 1].isLastInTagHistory());
+    DCHECK(list.m_selectorArray[arrayIndex - 1].isLastInTagHistory());
   }
-  ASSERT(flattenedSize == arrayIndex);
+  DCHECK_EQ(flattenedSize, arrayIndex);
   list.m_selectorArray[arrayIndex - 1].setLastInSelectorList();
   selectorVector.clear();
 
@@ -104,7 +104,7 @@ unsigned CSSSelectorList::computeLength() const {
 }
 
 void CSSSelectorList::deleteSelectors() {
-  ASSERT(m_selectorArray);
+  DCHECK(m_selectorArray);
 
   bool finished = false;
   for (CSSSelector* s = m_selectorArray; !finished; ++s) {

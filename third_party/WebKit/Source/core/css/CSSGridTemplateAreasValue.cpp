@@ -42,8 +42,8 @@ CSSGridTemplateAreasValue::CSSGridTemplateAreasValue(
       m_gridAreaMap(gridAreaMap),
       m_rowCount(rowCount),
       m_columnCount(columnCount) {
-  ASSERT(m_rowCount);
-  ASSERT(m_columnCount);
+  DCHECK(m_rowCount);
+  DCHECK(m_columnCount);
 }
 
 static String stringForPosition(const NamedGridAreaMap& gridAreaMap,

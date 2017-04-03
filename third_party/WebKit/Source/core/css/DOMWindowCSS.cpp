@@ -52,7 +52,7 @@ bool DOMWindowCSS::supports(const String& property, const String& value) {
         .didParse;
   }
 
-  ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
+  DCHECK(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
 
   // This will return false when !important is present
   MutableStylePropertySet* dummyStyle =

@@ -95,8 +95,8 @@ void CSSKeyframesRule::setName(const String& name) {
 }
 
 void CSSKeyframesRule::appendRule(const String& ruleText) {
-  ASSERT(m_childRuleCSSOMWrappers.size() ==
-         m_keyframesRule->keyframes().size());
+  DCHECK_EQ(m_childRuleCSSOMWrappers.size(),
+            m_keyframesRule->keyframes().size());
 
   CSSStyleSheet* styleSheet = parentStyleSheet();
   CSSParserContext* context =
@@ -113,8 +113,8 @@ void CSSKeyframesRule::appendRule(const String& ruleText) {
 }
 
 void CSSKeyframesRule::deleteRule(const String& s) {
-  ASSERT(m_childRuleCSSOMWrappers.size() ==
-         m_keyframesRule->keyframes().size());
+  DCHECK_EQ(m_childRuleCSSOMWrappers.size(),
+            m_keyframesRule->keyframes().size());
 
   int i = m_keyframesRule->findKeyframeIndex(s);
   if (i < 0)
@@ -161,8 +161,8 @@ CSSKeyframeRule* CSSKeyframesRule::item(unsigned index) const {
   if (index >= length())
     return nullptr;
 
-  ASSERT(m_childRuleCSSOMWrappers.size() ==
-         m_keyframesRule->keyframes().size());
+  DCHECK_EQ(m_childRuleCSSOMWrappers.size(),
+            m_keyframesRule->keyframes().size());
   Member<CSSKeyframeRule>& rule = m_childRuleCSSOMWrappers[index];
   if (!rule)
     rule = new CSSKeyframeRule(m_keyframesRule->keyframes()[index].get(),
@@ -190,7 +190,7 @@ CSSRuleList* CSSKeyframesRule::cssRules() const {
 }
 
 void CSSKeyframesRule::reattach(StyleRuleBase* rule) {
-  ASSERT(rule);
+  DCHECK(rule);
   m_keyframesRule = toStyleRuleKeyframes(rule);
 }
 

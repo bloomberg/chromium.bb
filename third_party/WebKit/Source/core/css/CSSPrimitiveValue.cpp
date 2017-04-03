@@ -169,7 +169,7 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const {
 CSSPrimitiveValue::CSSPrimitiveValue(double num, UnitType type)
     : CSSValue(PrimitiveClass) {
   init(type);
-  ASSERT(std::isfinite(num));
+  DCHECK(std::isfinite(num));
   m_value.num = num;
 }
 
@@ -178,7 +178,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
   switch (length.type()) {
     case Percent:
       init(UnitType::Percentage);
-      ASSERT(std::isfinite(length.percent()));
+      DCHECK(std::isfinite(length.percent()));
       m_value.num = length.percent();
       break;
     case Fixed:
@@ -213,7 +213,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     case DeviceWidth:
     case DeviceHeight:
     case MaxSizeNone:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }
@@ -231,7 +231,7 @@ void CSSPrimitiveValue::init(CSSCalcValue* c) {
 CSSPrimitiveValue::~CSSPrimitiveValue() {}
 
 double CSSPrimitiveValue::computeSeconds() const {
-  ASSERT(isTime() ||
+  DCHECK(isTime() ||
          (isCalculated() && cssCalcValue()->category() == CalcTime));
   UnitType currentType =
       isCalculated() ? cssCalcValue()->expressionNode()->typeWithCalcResolved()
@@ -240,12 +240,12 @@ double CSSPrimitiveValue::computeSeconds() const {
     return getDoubleValue();
   if (currentType == UnitType::Milliseconds)
     return getDoubleValue() / 1000;
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
 double CSSPrimitiveValue::computeDegrees() const {
-  ASSERT(isAngle() ||
+  DCHECK(isAngle() ||
          (isCalculated() && cssCalcValue()->category() == CalcAngle));
   UnitType currentType =
       isCalculated() ? cssCalcValue()->expressionNode()->typeWithCalcResolved()
@@ -260,7 +260,7 @@ double CSSPrimitiveValue::computeDegrees() const {
     case UnitType::Turns:
       return turn2deg(getDoubleValue());
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 }
@@ -327,7 +327,8 @@ double CSSPrimitiveValue::computeLengthDouble(
 
 void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray,
                                               double multiplier) const {
-  ASSERT(lengthArray.values.size() == LengthUnitTypeCount);
+  DCHECK_EQ(lengthArray.values.size(),
+            static_cast<unsigned>(LengthUnitTypeCount));
 
   if (type() == UnitType::Calc) {
     cssCalcValue()->accumulateLengthArray(lengthArray, multiplier);
@@ -401,7 +402,7 @@ Length CSSPrimitiveValue::convertToLength(
     return computeLength<Length>(conversionData);
   if (isPercentage())
     return Length(getDoubleValue(), Percent);
-  ASSERT(isCalculated());
+  DCHECK(isCalculated());
   return Length(cssCalcValue()->toCalcValue(conversionData));
 }
 
@@ -505,7 +506,7 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::lengthUnitTypeToUnitType(
     case LengthUnitTypeCount:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CSSPrimitiveValue::UnitType::Unknown;
 }
 
@@ -590,13 +591,13 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type) {
     case UnitType::CalcPercentageWithLengthAndNumber:
       break;
   };
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "";
 }
 
 String CSSPrimitiveValue::customCSSText() const {
   if (m_hasCachedCSSText) {
-    ASSERT(cssTextCache().contains(this));
+    DCHECK(cssTextCache().contains(this));
     return cssTextCache().at(this);
   }
 
@@ -647,11 +648,11 @@ String CSSPrimitiveValue::customCSSText() const {
     case UnitType::CalcPercentageWithLength:
     case UnitType::CalcLengthWithNumber:
     case UnitType::CalcPercentageWithLengthAndNumber:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 
-  ASSERT(!cssTextCache().contains(this));
+  DCHECK(!cssTextCache().contains(this));
   cssTextCache().set(this, text);
   m_hasCachedCSSText = true;
   return text;

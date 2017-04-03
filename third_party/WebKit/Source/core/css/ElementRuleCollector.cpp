@@ -69,12 +69,12 @@ const MatchResult& ElementRuleCollector::matchedResult() const {
 }
 
 StyleRuleList* ElementRuleCollector::matchedStyleRuleList() {
-  ASSERT(m_mode == SelectorChecker::CollectingStyleRules);
+  DCHECK_EQ(m_mode, SelectorChecker::CollectingStyleRules);
   return m_styleRuleList.release();
 }
 
 CSSRuleList* ElementRuleCollector::matchedCSSRuleList() {
-  ASSERT(m_mode == SelectorChecker::CollectingCSSRules);
+  DCHECK_EQ(m_mode, SelectorChecker::CollectingCSSRules);
   return m_cssRuleList.release();
 }
 
@@ -186,13 +186,13 @@ void ElementRuleCollector::collectMatchingRules(
     const MatchRequest& matchRequest,
     CascadeOrder cascadeOrder,
     bool matchingTreeBoundaryRules) {
-  ASSERT(matchRequest.ruleSet);
-  ASSERT(m_context.element());
+  DCHECK(matchRequest.ruleSet);
+  DCHECK(m_context.element());
 
   Element& element = *m_context.element();
   const AtomicString& pseudoId = element.shadowPseudoId();
   if (!pseudoId.isEmpty()) {
-    ASSERT(element.isStyledElement());
+    DCHECK(element.isStyledElement());
     collectMatchingRulesForList(
         matchRequest.ruleSet->shadowPseudoElementRules(pseudoId), cascadeOrder,
         matchRequest);
@@ -285,7 +285,7 @@ void ElementRuleCollector::appendCSSOMWrapperForRule(
     cssRule = findStyleRule(parentStyleSheet, rule);
   else
     cssRule = rule->createCSSOMWrapper();
-  ASSERT(!parentStyleSheet || cssRule);
+  DCHECK(!parentStyleSheet || cssRule);
   ensureRuleList()->rules().push_back(cssRule);
 }
 

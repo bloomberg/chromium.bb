@@ -74,7 +74,7 @@ static CSSValue* basicShapeRadiusToCSSValue(const ComputedStyle& style,
       return CSSIdentifierValue::create(CSSValueFarthestSide);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -202,7 +202,7 @@ static BasicShapeCenterCoordinate convertToCenterCoordinate(
       offset = Length(50, Percent);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       direction = BasicShapeCenterCoordinate::TopLeft;
       break;
   }
@@ -223,7 +223,7 @@ static BasicShapeRadius cssValueToBasicShapeRadius(
       case CSSValueFarthestSide:
         return BasicShapeRadius(BasicShapeRadius::FarthestSide);
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
   }
@@ -293,7 +293,7 @@ PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState& state,
 
     basicShape = std::move(rect);
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
 
   return basicShape.release();

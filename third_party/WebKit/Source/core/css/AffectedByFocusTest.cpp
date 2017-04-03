@@ -43,7 +43,7 @@ class AffectedByFocusTest : public ::testing::Test {
 void AffectedByFocusTest::SetUp() {
   m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
   m_document = &m_dummyPageHolder->document();
-  ASSERT(m_document);
+  DCHECK(m_document);
 }
 
 void AffectedByFocusTest::setHtmlInnerHTML(const char* htmlContent) {
@@ -59,14 +59,15 @@ void AffectedByFocusTest::checkElements(ElementResult expected[],
   for (; element && i < expectedCount;
        element = Traversal<HTMLElement>::next(*element), ++i) {
     ASSERT_TRUE(element->hasTagName(expected[i].tag));
-    ASSERT(element->computedStyle());
+    DCHECK(element->computedStyle());
     ASSERT_EQ(expected[i].affectedBy,
               element->computedStyle()->affectedByFocus());
     ASSERT_EQ(expected[i].childrenOrSiblingsAffectedBy,
               element->childrenOrSiblingsAffectedByFocus());
   }
 
-  ASSERT(!element && i == expectedCount);
+  DCHECK(!element);
+  DCHECK_EQ(i, expectedCount);
 }
 
 // A global :focus rule in html.css currently causes every single element to be

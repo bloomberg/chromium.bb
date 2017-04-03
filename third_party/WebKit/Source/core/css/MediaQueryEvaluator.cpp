@@ -269,7 +269,7 @@ static bool displayModeMediaFeatureEval(const MediaQueryExpValue& value,
     case CSSValueBrowser:
       return mode == WebDisplayModeBrowser;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -664,7 +664,7 @@ static bool anyHoverMediaFeatureEval(const MediaQueryExpValue& value,
     case CSSValueHover:
       return availableHoverTypes & HoverTypeHover;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -726,7 +726,7 @@ static bool anyPointerMediaFeatureEval(const MediaQueryExpValue& value,
     case CSSValueNone:
       return availablePointers & PointerTypeNone;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }

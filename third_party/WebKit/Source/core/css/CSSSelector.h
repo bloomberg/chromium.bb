@@ -308,14 +308,14 @@ class CORE_EXPORT CSSSelector {
   }
   void setRelation(RelationType relation) {
     m_relation = relation;
-    ASSERT(static_cast<RelationType>(m_relation) ==
-           relation);  // using a bitfield.
+    DCHECK_EQ(static_cast<RelationType>(m_relation),
+              relation);  // using a bitfield.
   }
 
   MatchType match() const { return static_cast<MatchType>(m_match); }
   void setMatch(MatchType match) {
     m_match = match;
-    ASSERT(static_cast<MatchType>(m_match) == match);  // using a bitfield.
+    DCHECK_EQ(static_cast<MatchType>(m_match), match);  // using a bitfield.
   }
 
   bool isLastInSelectorList() const { return m_isLastInSelectorList; }
@@ -363,8 +363,8 @@ class CORE_EXPORT CSSSelector {
 
   void setPseudoType(PseudoType pseudoType) {
     m_pseudoType = pseudoType;
-    ASSERT(static_cast<PseudoType>(m_pseudoType) ==
-           pseudoType);  // using a bitfield.
+    DCHECK_EQ(static_cast<PseudoType>(m_pseudoType),
+              pseudoType);  // using a bitfield.
   }
 
   unsigned specificityForOneSelector() const;
@@ -412,14 +412,14 @@ class CORE_EXPORT CSSSelector {
 };
 
 inline const QualifiedName& CSSSelector::attribute() const {
-  ASSERT(isAttributeSelector());
-  ASSERT(m_hasRareData);
+  DCHECK(isAttributeSelector());
+  DCHECK(m_hasRareData);
   return m_data.m_rareData->m_attribute;
 }
 
 inline CSSSelector::AttributeMatchType CSSSelector::attributeMatch() const {
-  ASSERT(isAttributeSelector());
-  ASSERT(m_hasRareData);
+  DCHECK(isAttributeSelector());
+  DCHECK(m_hasRareData);
   return m_data.m_rareData->m_bits.m_attributeMatch;
 }
 
@@ -433,7 +433,7 @@ inline bool CSSSelector::isASCIILower(const AtomicString& value) {
 
 inline void CSSSelector::setValue(const AtomicString& value,
                                   bool matchLowerCase = false) {
-  ASSERT(m_match != Tag);
+  DCHECK_NE(m_match, static_cast<unsigned>(Tag));
   if (matchLowerCase && !m_hasRareData && !isASCIILower(value)) {
     createRareData();
   }
@@ -509,12 +509,12 @@ inline CSSSelector::~CSSSelector() {
 }
 
 inline const QualifiedName& CSSSelector::tagQName() const {
-  ASSERT(m_match == Tag);
+  DCHECK_EQ(m_match, static_cast<unsigned>(Tag));
   return *reinterpret_cast<const QualifiedName*>(&m_data.m_tagQName);
 }
 
 inline const AtomicString& CSSSelector::value() const {
-  ASSERT(m_match != Tag);
+  DCHECK_NE(m_match, static_cast<unsigned>(Tag));
   if (m_hasRareData)
     return m_data.m_rareData->m_matchingValue;
   // AtomicString is really just a StringImpl* so the cast below is safe.
@@ -523,7 +523,7 @@ inline const AtomicString& CSSSelector::value() const {
 }
 
 inline const AtomicString& CSSSelector::serializingValue() const {
-  ASSERT(m_match != Tag);
+  DCHECK_NE(m_match, static_cast<unsigned>(Tag));
   if (m_hasRareData)
     return m_data.m_rareData->m_serializingValue;
   // AtomicString is really just a StringImpl* so the cast below is safe.

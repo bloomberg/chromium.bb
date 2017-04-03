@@ -16,7 +16,7 @@ SizesCalcParser::SizesCalcParser(CSSParserTokenRange range,
 }
 
 float SizesCalcParser::result() const {
-  ASSERT(m_isValid);
+  DCHECK(m_isValid);
   return m_result;
 }
 
@@ -130,7 +130,7 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
       case EOFToken:
         break;
       case CommentToken:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
       case CDOToken:
       case CDCToken:
       case AtKeywordToken:

@@ -53,7 +53,7 @@ ImmutableStylePropertySet* ImmutableStylePropertySet::create(
     const CSSProperty* properties,
     unsigned count,
     CSSParserMode cssParserMode) {
-  ASSERT(count <= MaxArraySize);
+  DCHECK_LE(count, static_cast<unsigned>(MaxArraySize));
   void* slot = ThreadHeap::allocate<StylePropertySet>(
       sizeForImmutableStylePropertySetWithPropertyCount(count));
   return new (slot) ImmutableStylePropertySet(properties, count, cssParserMode);
@@ -110,10 +110,10 @@ static bool isPropertyMatch(const StylePropertyMetadata& metadata,
                             const CSSValue&,
                             uint16_t id,
                             CSSPropertyID propertyID) {
-  ASSERT(id == propertyID);
+  DCHECK_EQ(id, propertyID);
   bool result = metadata.m_propertyID == id;
   // Only enabled properties should be part of the style.
-  ASSERT(!result || CSSPropertyMetadata::isEnabledProperty(propertyID));
+  DCHECK(!result || CSSPropertyMetadata::isEnabledProperty(propertyID));
   return result;
 }
 
@@ -121,7 +121,7 @@ static bool isPropertyMatch(const StylePropertyMetadata& metadata,
                             const CSSValue& value,
                             uint16_t id,
                             const AtomicString& customPropertyName) {
-  ASSERT(id == CSSPropertyVariable);
+  DCHECK_EQ(id, CSSPropertyVariable);
   return metadata.m_propertyID == id &&
          toCSSCustomPropertyDeclaration(value).name() == customPropertyName;
 }
@@ -486,7 +486,7 @@ CSSProperty* MutableStylePropertySet::findCSSPropertyWithID(
     // customPropertyName here.
     foundPropertyIndex = findPropertyIndex(customPropertyName);
   } else {
-    ASSERT(customPropertyName.isNull());
+    DCHECK(customPropertyName.isNull());
     foundPropertyIndex = findPropertyIndex(propertyID);
   }
   if (foundPropertyIndex == -1)
@@ -550,9 +550,9 @@ CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration() {
   // FIXME: get rid of this weirdness of a CSSStyleDeclaration inside of a
   // style property set.
   if (m_cssomWrapper) {
-    ASSERT(
+    DCHECK(
         !static_cast<CSSStyleDeclaration*>(m_cssomWrapper.get())->parentRule());
-    ASSERT(!m_cssomWrapper->parentElement());
+    DCHECK(!m_cssomWrapper->parentElement());
     return m_cssomWrapper.get();
   }
   m_cssomWrapper = new PropertySetCSSStyleDeclaration(*this);

@@ -154,14 +154,14 @@ CSSParserToken CSSTokenizer::plusOrFullStop(UChar cc) {
 }
 
 CSSParserToken CSSTokenizer::asterisk(UChar cc) {
-  ASSERT(cc == '*');
+  DCHECK_EQ(cc, '*');
   if (consumeIfNext('='))
     return CSSParserToken(SubstringMatchToken);
   return CSSParserToken(DelimiterToken, '*');
 }
 
 CSSParserToken CSSTokenizer::lessThan(UChar cc) {
-  ASSERT(cc == '<');
+  DCHECK_EQ(cc, '<');
   if (m_input.peekWithoutReplacement(0) == '!' &&
       m_input.peekWithoutReplacement(1) == '-' &&
       m_input.peekWithoutReplacement(2) == '-') {
@@ -223,21 +223,21 @@ CSSParserToken CSSTokenizer::hash(UChar cc) {
 }
 
 CSSParserToken CSSTokenizer::circumflexAccent(UChar cc) {
-  ASSERT(cc == '^');
+  DCHECK_EQ(cc, '^');
   if (consumeIfNext('='))
     return CSSParserToken(PrefixMatchToken);
   return CSSParserToken(DelimiterToken, '^');
 }
 
 CSSParserToken CSSTokenizer::dollarSign(UChar cc) {
-  ASSERT(cc == '$');
+  DCHECK_EQ(cc, '$');
   if (consumeIfNext('='))
     return CSSParserToken(SuffixMatchToken);
   return CSSParserToken(DelimiterToken, '$');
 }
 
 CSSParserToken CSSTokenizer::verticalLine(UChar cc) {
-  ASSERT(cc == '|');
+  DCHECK_EQ(cc, '|');
   if (consumeIfNext('='))
     return CSSParserToken(DashMatchToken);
   if (consumeIfNext('|'))
@@ -246,14 +246,14 @@ CSSParserToken CSSTokenizer::verticalLine(UChar cc) {
 }
 
 CSSParserToken CSSTokenizer::tilde(UChar cc) {
-  ASSERT(cc == '~');
+  DCHECK_EQ(cc, '~');
   if (consumeIfNext('='))
     return CSSParserToken(IncludeMatchToken);
   return CSSParserToken(DelimiterToken, '~');
 }
 
 CSSParserToken CSSTokenizer::commercialAt(UChar cc) {
-  ASSERT(cc == '@');
+  DCHECK_EQ(cc, '@');
   if (nextCharsAreIdentifier())
     return CSSParserToken(AtKeywordToken, consumeName());
   return CSSParserToken(DelimiterToken, '@');
@@ -323,7 +323,7 @@ CSSParserToken CSSTokenizer::nextToken() {
 // http://www.w3.org/TR/css3-syntax/#consume-a-number
 // http://www.w3.org/TR/css3-syntax/#convert-a-string-to-a-number
 CSSParserToken CSSTokenizer::consumeNumber() {
-  ASSERT(nextCharsAreNumber());
+  DCHECK(nextCharsAreNumber());
 
   NumericValueType type = IntegerValueType;
   NumericSign sign = NoSign;
@@ -605,7 +605,7 @@ StringView CSSTokenizer::consumeName() {
 // http://dev.w3.org/csswg/css-syntax/#consume-an-escaped-code-point
 UChar32 CSSTokenizer::consumeEscape() {
   UChar cc = consume();
-  ASSERT(!isNewLine(cc));
+  DCHECK(!isNewLine(cc));
   if (isASCIIHexDigit(cc)) {
     unsigned consumedHexDigits = 1;
     StringBuilder hexChars;
@@ -619,7 +619,7 @@ UChar32 CSSTokenizer::consumeEscape() {
     consumeSingleWhitespaceIfNext();
     bool ok = false;
     UChar32 codePoint = hexChars.toString().toUIntStrict(&ok, 16);
-    ASSERT(ok);
+    DCHECK(ok);
     if (codePoint == 0 || (0xD800 <= codePoint && codePoint <= 0xDFFF) ||
         codePoint > 0x10FFFF)
       return replacementCharacter;

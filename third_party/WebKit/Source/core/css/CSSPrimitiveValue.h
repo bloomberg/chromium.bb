@@ -250,7 +250,7 @@ class CORE_EXPORT CSSPrimitiveValue : public CSSValue {
   }
 
   CSSCalcValue* cssCalcValue() const {
-    ASSERT(isCalculated());
+    DCHECK(isCalculated());
     return m_value.calc;
   }
 

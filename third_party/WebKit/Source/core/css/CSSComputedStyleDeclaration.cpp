@@ -345,7 +345,7 @@ bool CSSComputedStyleDeclaration::isMonospaceFont() const {
 }
 const ComputedStyle* CSSComputedStyleDeclaration::computeComputedStyle() const {
   Node* styledNode = this->styledNode();
-  ASSERT(styledNode);
+  DCHECK(styledNode);
   return styledNode->ensureComputedStyle(
       styledNode->isPseudoElement() ? PseudoIdNone : m_pseudoElementSpecifier);
 }
@@ -499,7 +499,7 @@ String CSSComputedStyleDeclaration::getPropertyValue(
       return value->cssText();
     return String();
   }
-  ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
+  DCHECK(CSSPropertyMetadata::isEnabledProperty(propertyID));
   return getPropertyValue(propertyID);
 }
 

@@ -51,7 +51,7 @@ class CSSCustomPropertyDeclaration : public CSSValue {
         m_name(name),
         m_value(nullptr),
         m_valueId(id) {
-    ASSERT(id == CSSValueInherit || id == CSSValueInitial ||
+    DCHECK(id == CSSValueInherit || id == CSSValueInitial ||
            id == CSSValueUnset);
   }
 

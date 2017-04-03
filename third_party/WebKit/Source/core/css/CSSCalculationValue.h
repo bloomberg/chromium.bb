@@ -95,7 +95,7 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
  protected:
   CSSCalcExpressionNode(CalculationCategory category, bool isInteger)
       : m_category(category), m_isInteger(isInteger) {
-    ASSERT(category != CalcOther);
+    DCHECK_NE(category, CalcOther);
   }
 
   CalculationCategory m_category;

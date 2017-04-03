@@ -30,7 +30,7 @@ TEST(CSSPageRule, selectorText) {
 
   const char* cssRule = "@page :left { size: auto; }";
   helper.addCSSRules(cssRule);
-  ASSERT(helper.cssRules());
+  DCHECK(helper.cssRules());
   EXPECT_EQ(1u, helper.cssRules()->length());
 
   CSSPageRule* pageRule = toCSSPageRule(helper.cssRules()->item(0));

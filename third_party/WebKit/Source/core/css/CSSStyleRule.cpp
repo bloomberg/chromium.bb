@@ -65,11 +65,11 @@ String CSSStyleRule::generateSelectorText() const {
 
 String CSSStyleRule::selectorText() const {
   if (hasCachedSelectorText()) {
-    ASSERT(selectorTextCache().contains(this));
+    DCHECK(selectorTextCache().contains(this));
     return selectorTextCache().at(this);
   }
 
-  ASSERT(!selectorTextCache().contains(this));
+  DCHECK(!selectorTextCache().contains(this));
   String text = generateSelectorText();
   selectorTextCache().set(this, text);
   setHasCachedSelectorText(true);
@@ -108,7 +108,7 @@ String CSSStyleRule::cssText() const {
 }
 
 void CSSStyleRule::reattach(StyleRuleBase* rule) {
-  ASSERT(rule);
+  DCHECK(rule);
   m_styleRule = toStyleRule(rule);
   if (m_propertiesCSSOMWrapper)
     m_propertiesCSSOMWrapper->reattach(m_styleRule->mutableProperties());

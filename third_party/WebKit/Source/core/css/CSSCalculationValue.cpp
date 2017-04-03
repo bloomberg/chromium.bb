@@ -122,7 +122,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::QuirkyEms:
       return false;
   };
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -190,7 +190,7 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
             m_value->computeLength<double>(conversionData) * multiplier);
         break;
       case CalcPercent:
-        ASSERT(m_value->isPercentage());
+        DCHECK(m_value->isPercentage());
         value.percent = clampTo<float>(value.percent +
                                        m_value->getDoubleValue() * multiplier);
         break;
@@ -203,14 +203,14 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
                                           conversionData.zoom() * multiplier);
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 
   double doubleValue() const override {
     if (hasDoubleValue(typeWithCalcResolved()))
       return m_value->getDoubleValue();
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
   }
 
@@ -230,16 +230,16 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
       case CalcLengthNumber:
       case CalcPercentLengthNumber:
       case CalcOther:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
   }
 
   void accumulateLengthArray(CSSLengthArray& lengthArray,
                              double multiplier) const override {
-    ASSERT(category() != CalcNumber);
+    DCHECK_NE(category(), CalcNumber);
     m_value->accumulateLengthArray(lengthArray, multiplier);
   }
 
@@ -345,7 +345,7 @@ static CalculationCategory determineCategory(
       return leftCategory;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CalcOther;
 }
 
@@ -363,8 +363,8 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   static CSSCalcExpressionNode* create(CSSCalcExpressionNode* leftSide,
                                        CSSCalcExpressionNode* rightSide,
                                        CalcOperator op) {
-    ASSERT(leftSide->category() != CalcOther &&
-           rightSide->category() != CalcOther);
+    DCHECK_NE(leftSide->category(), CalcOther);
+    DCHECK_NE(rightSide->category(), CalcOther);
 
     CalculationCategory newCategory =
         determineCategory(*leftSide, *rightSide, op);
@@ -380,7 +380,8 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
       CalcOperator op) {
     CalculationCategory leftCategory = leftSide->category();
     CalculationCategory rightCategory = rightSide->category();
-    ASSERT(leftCategory != CalcOther && rightCategory != CalcOther);
+    DCHECK_NE(leftCategory, CalcOther);
+    DCHECK_NE(rightCategory, CalcOther);
 
     bool isInteger = isIntegerResult(leftSide, rightSide, op);
 
@@ -430,7 +431,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
       }
     } else {
       // Simplify multiplying or dividing by a number for simplifiable types.
-      ASSERT(op == CalcMultiply || op == CalcDivide);
+      DCHECK(op == CalcMultiply || op == CalcDivide);
       CSSCalcExpressionNode* numberSide = getNumberSide(leftSide, rightSide);
       if (!numberSide)
         return create(leftSide, rightSide, op);
@@ -475,8 +476,8 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
                                                 -multiplier);
         break;
       case CalcMultiply:
-        ASSERT((m_leftSide->category() == CalcNumber) !=
-               (m_rightSide->category() == CalcNumber));
+        DCHECK_NE((m_leftSide->category() == CalcNumber),
+                  (m_rightSide->category() == CalcNumber));
         if (m_leftSide->category() == CalcNumber)
           m_rightSide->accumulatePixelsAndPercent(
               conversionData, value, multiplier * m_leftSide->doubleValue());
@@ -485,12 +486,12 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
               conversionData, value, multiplier * m_rightSide->doubleValue());
         break;
       case CalcDivide:
-        ASSERT(m_rightSide->category() == CalcNumber);
+        DCHECK_EQ(m_rightSide->category(), CalcNumber);
         m_leftSide->accumulatePixelsAndPercent(
             conversionData, value, multiplier / m_rightSide->doubleValue());
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 
@@ -517,8 +518,8 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
         m_rightSide->accumulateLengthArray(lengthArray, -multiplier);
         break;
       case CalcMultiply:
-        ASSERT((m_leftSide->category() == CalcNumber) !=
-               (m_rightSide->category() == CalcNumber));
+        DCHECK_NE((m_leftSide->category() == CalcNumber),
+                  (m_rightSide->category() == CalcNumber));
         if (m_leftSide->category() == CalcNumber)
           m_rightSide->accumulateLengthArray(
               lengthArray, multiplier * m_leftSide->doubleValue());
@@ -527,12 +528,12 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
               lengthArray, multiplier * m_rightSide->doubleValue());
         break;
       case CalcDivide:
-        ASSERT(m_rightSide->category() == CalcNumber);
+        DCHECK_EQ(m_rightSide->category(), CalcNumber);
         m_leftSide->accumulateLengthArray(
             lengthArray, multiplier / m_rightSide->doubleValue());
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 
@@ -579,8 +580,8 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
   CSSPrimitiveValue::UnitType typeWithCalcResolved() const override {
     switch (m_category) {
       case CalcNumber:
-        ASSERT(m_leftSide->category() == CalcNumber &&
-               m_rightSide->category() == CalcNumber);
+        DCHECK_EQ(m_leftSide->category(), CalcNumber);
+        DCHECK_EQ(m_rightSide->category(), CalcNumber);
         return CSSPrimitiveValue::UnitType::Number;
       case CalcLength:
       case CalcPercent: {
@@ -607,7 +608,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
       case CalcOther:
         return CSSPrimitiveValue::UnitType::Unknown;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return CSSPrimitiveValue::UnitType::Unknown;
   }
 

@@ -96,7 +96,7 @@ bool consumeSlashIncludingWhitespace(CSSParserTokenRange& range) {
 }
 
 CSSParserTokenRange consumeFunction(CSSParserTokenRange& range) {
-  ASSERT(range.peek().type() == FunctionToken);
+  DCHECK_EQ(range.peek().type(), FunctionToken);
   CSSParserTokenRange contents = range.consumeBlock();
   range.consumeWhitespace();
   contents.consumeWhitespace();
@@ -428,7 +428,7 @@ StringView consumeUrlAsStringView(CSSParserTokenRange& range) {
     const CSSParserToken& next = urlArgs.consumeIncludingWhitespace();
     if (next.type() == BadStringToken || !urlArgs.atEnd())
       return StringView();
-    ASSERT(next.type() == StringToken);
+    DCHECK_EQ(next.type(), StringToken);
     range = urlRange;
     range.consumeWhitespace();
     return next.value();
@@ -457,7 +457,7 @@ static int clampRGBComponent(const CSSPrimitiveValue& value) {
 static bool parseRGBParameters(CSSParserTokenRange& range,
                                RGBA32& result,
                                bool parseAlpha) {
-  ASSERT(range.peek().functionId() == CSSValueRgb ||
+  DCHECK(range.peek().functionId() == CSSValueRgb ||
          range.peek().functionId() == CSSValueRgba);
   CSSParserTokenRange args = consumeFunction(range);
   CSSPrimitiveValue* colorParameter = consumeInteger(args);
@@ -497,7 +497,7 @@ static bool parseRGBParameters(CSSParserTokenRange& range,
 static bool parseHSLParameters(CSSParserTokenRange& range,
                                RGBA32& result,
                                bool parseAlpha) {
-  ASSERT(range.peek().functionId() == CSSValueHsl ||
+  DCHECK(range.peek().functionId() == CSSValueHsl ||
          range.peek().functionId() == CSSValueHsla);
   CSSParserTokenRange args = consumeFunction(range);
   CSSPrimitiveValue* hslValue = consumeNumber(args, ValueRangeAll);

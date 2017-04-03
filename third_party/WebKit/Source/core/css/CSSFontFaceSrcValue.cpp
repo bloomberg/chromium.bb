@@ -112,8 +112,9 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document) const {
 
 void CSSFontFaceSrcValue::restoreCachedResourceIfNeeded(
     Document* document) const {
-  ASSERT(m_fetched);
-  ASSERT(document && document->fetcher());
+  DCHECK(m_fetched);
+  DCHECK(document);
+  DCHECK(document->fetcher());
 
   const String resourceURL = document->completeURL(m_absoluteResource);
   DCHECK_EQ(m_shouldCheckContentSecurityPolicy,

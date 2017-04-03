@@ -174,7 +174,7 @@ class CORE_EXPORT StyleSheetContents
   bool didLoadErrorOccur() const { return m_didLoadErrorOccur; }
 
   RuleSet& ruleSet() {
-    ASSERT(m_ruleSet);
+    DCHECK(m_ruleSet);
     return *m_ruleSet.get();
   }
   RuleSet& ensureRuleSet(const MediaQueryEvaluator&, AddRuleFlags);

@@ -65,7 +65,7 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(
 
 CSSSupportsParser::SupportsResult CSSSupportsParser::consumeNegation(
     CSSParserTokenRange range) {
-  ASSERT(range.peek().type() == IdentToken);
+  DCHECK_EQ(range.peek().type(), IdentToken);
   if (!equalIgnoringASCIICase(range.consume().value(), "not"))
     return Invalid;
   if (range.consumeIncludingWhitespace().type() != WhitespaceToken)

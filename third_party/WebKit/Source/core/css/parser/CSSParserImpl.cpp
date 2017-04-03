@@ -328,7 +328,7 @@ std::unique_ptr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(
 }
 
 bool CSSParserImpl::supportsDeclaration(CSSParserTokenRange& range) {
-  ASSERT(m_parsedProperties.isEmpty());
+  DCHECK(m_parsedProperties.isEmpty());
   consumeDeclaration(range, StyleRule::Style);
   bool result = !m_parsedProperties.isEmpty();
   m_parsedProperties.clear();
@@ -380,7 +380,7 @@ static CSSParserImpl::AllowedRulesType computeNewAllowedRules(
   if (!rule || allowedRules == CSSParserImpl::KeyframeRules ||
       allowedRules == CSSParserImpl::NoRules)
     return allowedRules;
-  ASSERT(allowedRules <= CSSParserImpl::RegularRules);
+  DCHECK_LE(allowedRules, CSSParserImpl::RegularRules);
   if (rule->isCharsetRule() || rule->isImportRule())
     return CSSParserImpl::AllowImportRules;
   if (rule->isNamespaceRule())
@@ -404,7 +404,7 @@ bool CSSParserImpl::consumeRuleList(CSSParserTokenRange range,
       allowedRules = KeyframeRules;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   bool seenRule = false;
@@ -444,7 +444,7 @@ bool CSSParserImpl::consumeRuleList(CSSParserTokenRange range,
 
 StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range,
                                             AllowedRulesType allowedRules) {
-  ASSERT(range.peek().type() == AtKeywordToken);
+  DCHECK_EQ(range.peek().type(), AtKeywordToken);
   const StringView name = range.consumeIncludingWhitespace().value();
   const CSSParserToken* preludeStart = &range.peek();
   while (!range.atEnd() && range.peek().type() != LeftBraceToken &&
@@ -478,7 +478,7 @@ StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range,
     return nullptr;  // Parse error, no at-rules with blocks supported inside
                      // declaration lists
 
-  ASSERT(allowedRules <= RegularRules);
+  DCHECK_LE(allowedRules, RegularRules);
 
   switch (id) {
     case CSSAtRuleMedia:
@@ -518,7 +518,7 @@ StyleRuleBase* CSSParserImpl::consumeQualifiedRule(
   if (allowedRules == KeyframeRules)
     return consumeKeyframeStyleRule(prelude, block);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -750,7 +750,7 @@ StyleRulePage* CSSParserImpl::consumePageRule(CSSParserTokenRange prelude,
 }
 
 void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude) {
-  ASSERT(RuntimeEnabledFeatures::cssApplyAtRulesEnabled());
+  DCHECK(RuntimeEnabledFeatures::cssApplyAtRulesEnabled());
 
   const CSSParserToken& ident = prelude.consumeIncludingWhitespace();
   if (!prelude.atEnd() || !CSSVariableParser::isValidVariableName(ident))
@@ -828,7 +828,7 @@ StyleRule* CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude,
 
 void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range,
                                            StyleRule::RuleType ruleType) {
-  ASSERT(m_parsedProperties.isEmpty());
+  DCHECK(m_parsedProperties.isEmpty());
 
   bool useObserver = m_observerWrapper && (ruleType == StyleRule::Style ||
                                            ruleType == StyleRule::Keyframe);
@@ -889,7 +889,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range,
                                        StyleRule::RuleType ruleType) {
   CSSParserTokenRange rangeCopy = range;  // For inspector callbacks
 
-  ASSERT(range.peek().type() == IdentToken);
+  DCHECK_EQ(range.peek().type(), IdentToken);
   const CSSParserToken& token = range.consumeIncludingWhitespace();
   CSSPropertyID unresolvedProperty = token.parseAsUnresolvedCSSPropertyID();
   if (range.consume().type() != ColonToken)

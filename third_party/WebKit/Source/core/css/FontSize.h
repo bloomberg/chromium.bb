@@ -50,7 +50,7 @@ class FontSize {
   // function returns
   // values from '1' to '8'.
   static unsigned keywordSize(CSSValueID valueID) {
-    ASSERT(isValidValueID(valueID));
+    DCHECK(isValidValueID(valueID));
     return valueID - CSSValueXxSmall + 1;
   }
 

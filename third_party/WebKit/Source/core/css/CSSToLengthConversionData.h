@@ -108,7 +108,8 @@ class CORE_EXPORT CSSToLengthConversionData {
 
   void setFontSizes(const FontSizes& fontSizes) { m_fontSizes = fontSizes; }
   void setZoom(float zoom) {
-    ASSERT(std::isfinite(zoom) && zoom > 0);
+    DCHECK(std::isfinite(zoom));
+    DCHECK_GT(zoom, 0);
     m_zoom = zoom;
   }
 

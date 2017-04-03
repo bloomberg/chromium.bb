@@ -35,12 +35,13 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
 MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     Document& document)
     : MediaValuesCached::MediaValuesCachedData() {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   LocalFrame* frame = MediaValues::frameFrom(document);
   // TODO(hiroshige): Clean up |frame->view()| conditions.
-  ASSERT(!frame || frame->view());
+  DCHECK(!frame || frame->view());
   if (frame && frame->view()) {
-    ASSERT(frame->document() && !frame->document()->layoutViewItem().isNull());
+    DCHECK(frame->document());
+    DCHECK(!frame->document()->layoutViewItem().isNull());
 
     // In case that frame is missing (e.g. for images that their document does
     // not have a frame)

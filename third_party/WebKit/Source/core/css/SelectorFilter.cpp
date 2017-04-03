@@ -64,10 +64,10 @@ static inline void collectElementIdentifierHashes(
 }
 
 void SelectorFilter::pushParentStackFrame(Element& parent) {
-  ASSERT(m_ancestorIdentifierFilter);
-  ASSERT(m_parentStack.isEmpty() ||
+  DCHECK(m_ancestorIdentifierFilter);
+  DCHECK(m_parentStack.isEmpty() ||
          m_parentStack.back().element == parent.parentOrShadowHostElement());
-  ASSERT(!m_parentStack.isEmpty() || !parent.parentOrShadowHostElement());
+  DCHECK(!m_parentStack.isEmpty() || !parent.parentOrShadowHostElement());
   m_parentStack.push_back(ParentStackFrame(parent));
   ParentStackFrame& parentFrame = m_parentStack.back();
   // Mix tags, class names and ids into some sort of weird bouillabaisse.
@@ -79,8 +79,8 @@ void SelectorFilter::pushParentStackFrame(Element& parent) {
 }
 
 void SelectorFilter::popParentStackFrame() {
-  ASSERT(!m_parentStack.isEmpty());
-  ASSERT(m_ancestorIdentifierFilter);
+  DCHECK(!m_parentStack.isEmpty());
+  DCHECK(m_ancestorIdentifierFilter);
   const ParentStackFrame& parentFrame = m_parentStack.back();
   size_t count = parentFrame.identifierHashes.size();
   for (size_t i = 0; i < count; ++i)
@@ -93,16 +93,16 @@ void SelectorFilter::popParentStackFrame() {
 }
 
 void SelectorFilter::pushParent(Element& parent) {
-  ASSERT(parent.document().inStyleRecalc());
-  ASSERT(parent.inActiveDocument());
+  DCHECK(parent.document().inStyleRecalc());
+  DCHECK(parent.inActiveDocument());
   if (m_parentStack.isEmpty()) {
-    ASSERT(parent == parent.document().documentElement());
-    ASSERT(!m_ancestorIdentifierFilter);
+    DCHECK_EQ(parent, parent.document().documentElement());
+    DCHECK(!m_ancestorIdentifierFilter);
     m_ancestorIdentifierFilter = WTF::wrapUnique(new IdentifierFilter);
     pushParentStackFrame(parent);
     return;
   }
-  ASSERT(m_ancestorIdentifierFilter);
+  DCHECK(m_ancestorIdentifierFilter);
   // We may get invoked for some random elements in some wacky cases during
   // style resolve. Pause maintaining the stack in this case.
   if (m_parentStack.back().element != parent.parentOrShadowHostElement())
@@ -111,8 +111,8 @@ void SelectorFilter::pushParent(Element& parent) {
 }
 
 void SelectorFilter::popParent(Element& parent) {
-  ASSERT(parent.document().inStyleRecalc());
-  ASSERT(parent.inActiveDocument());
+  DCHECK(parent.document().inStyleRecalc());
+  DCHECK(parent.inActiveDocument());
   // Note that we may get invoked for some random elements in some wacky cases
   // during style resolve. Pause maintaining the stack in this case.
   if (!parentStackIsConsistent(&parent))

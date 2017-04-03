@@ -45,7 +45,7 @@ static inline bool comparePageRules(const StyleRulePage* r1,
 bool PageRuleCollector::isLeftPage(const ComputedStyle* rootElementStyle,
                                    int pageIndex) const {
   bool isFirstPageLeft = false;
-  ASSERT(rootElementStyle);
+  DCHECK(rootElementStyle);
   if (!rootElementStyle->isLeftToRightDirection())
     isFirstPageLeft = true;
 

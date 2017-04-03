@@ -96,7 +96,7 @@ class MatchedPropertiesCache {
 
  public:
   MatchedPropertiesCache();
-  ~MatchedPropertiesCache() { ASSERT(m_cache.isEmpty()); }
+  ~MatchedPropertiesCache() { DCHECK(m_cache.isEmpty()); }
 
   const CachedMatchedProperties* find(unsigned hash,
                                       const StyleResolverState&,

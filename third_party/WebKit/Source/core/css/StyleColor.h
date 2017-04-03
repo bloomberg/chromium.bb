@@ -47,7 +47,7 @@ class StyleColor {
 
   bool isCurrentColor() const { return m_currentColor; }
   Color getColor() const {
-    ASSERT(!isCurrentColor());
+    DCHECK(!isCurrentColor());
     return m_color;
   }
 

@@ -218,7 +218,7 @@ MediaQueryExp::MediaQueryExp(const String& mediaFeature,
 MediaQueryExp* MediaQueryExp::createIfValid(
     const String& mediaFeature,
     const Vector<CSSParserToken, 4>& tokenList) {
-  ASSERT(!mediaFeature.isNull());
+  DCHECK(!mediaFeature.isNull());
 
   MediaQueryExpValue expValue;
   String lowerMediaFeature = attemptStaticStringCreation(mediaFeature.lower());

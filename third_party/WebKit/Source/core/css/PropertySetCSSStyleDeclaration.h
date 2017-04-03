@@ -94,7 +94,7 @@ class PropertySetCSSStyleDeclaration
 
  protected:
   MutableStylePropertySet& propertySet() const final {
-    ASSERT(m_propertySet);
+    DCHECK(m_propertySet);
     return *m_propertySet;
   }
 

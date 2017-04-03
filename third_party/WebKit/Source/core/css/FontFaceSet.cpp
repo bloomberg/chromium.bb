@@ -257,7 +257,7 @@ ScriptPromise FontFaceSet::ready(ScriptState* scriptState) {
 FontFaceSet* FontFaceSet::addForBinding(ScriptState*,
                                         FontFace* fontFace,
                                         ExceptionState&) {
-  ASSERT(fontFace);
+  DCHECK(fontFace);
   if (!inActiveDocumentContext())
     return this;
   if (m_nonCSSConnectedFaces.contains(fontFace))
@@ -290,7 +290,7 @@ void FontFaceSet::clearForBinding(ScriptState*, ExceptionState&) {
 bool FontFaceSet::deleteForBinding(ScriptState*,
                                    FontFace* fontFace,
                                    ExceptionState&) {
-  ASSERT(fontFace);
+  DCHECK(fontFace);
   if (!inActiveDocumentContext())
     return false;
   HeapListHashSet<Member<FontFace>>::iterator it =
@@ -310,7 +310,7 @@ bool FontFaceSet::deleteForBinding(ScriptState*,
 bool FontFaceSet::hasForBinding(ScriptState*,
                                 FontFace* fontFace,
                                 ExceptionState&) const {
-  ASSERT(fontFace);
+  DCHECK(fontFace);
   if (!inActiveDocumentContext())
     return false;
   return m_nonCSSConnectedFaces.contains(fontFace) ||

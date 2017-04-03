@@ -54,7 +54,7 @@ static_assert(sizeof(CSSSelector) == sizeof(SameSizeAsCSSSelector),
               "CSSSelector should stay small");
 
 void CSSSelector::createRareData() {
-  ASSERT(m_match != Tag);
+  DCHECK_NE(m_match, static_cast<unsigned>(Tag));
   if (m_hasRareData)
     return;
   AtomicString value(m_data.m_value);
@@ -108,7 +108,7 @@ inline unsigned CSSSelector::specificityForOneSelector() const {
           // during matching.
           return 0;
         case PseudoNot:
-          ASSERT(selectorList());
+          DCHECK(selectorList());
           return selectorList()->first()->specificity();
         // FIXME: PseudoAny should base the specificity on the sub-selectors.
         // See http://lists.w3.org/Archives/Public/www-style/2010Sep/0530.html
@@ -388,11 +388,11 @@ const static NameToPseudoStruct pseudoTypeWithArgumentsMap[] = {
 class NameToPseudoCompare {
  public:
   NameToPseudoCompare(const AtomicString& key) : m_key(key) {
-    ASSERT(m_key.is8Bit());
+    DCHECK(m_key.is8Bit());
   }
 
   bool operator()(const NameToPseudoStruct& entry, const NameToPseudoStruct&) {
-    ASSERT(entry.string);
+    DCHECK(entry.string);
     const char* key = reinterpret_cast<const char*>(m_key.characters8());
     // If strncmp returns 0, then either the keys are equal, or |m_key| sorts
     // before |entry|.
@@ -487,7 +487,7 @@ PseudoId CSSSelector::parsePseudoId(const String& name) {
 
 void CSSSelector::updatePseudoType(const AtomicString& value,
                                    bool hasArguments) {
-  ASSERT(m_match == PseudoClass || m_match == PseudoElement ||
+  DCHECK(m_match == PseudoClass || m_match == PseudoElement ||
          m_match == PagePseudoClass);
 
   setValue(value);
@@ -691,7 +691,7 @@ String CSSSelector::selectorText(const String& rightSide) const {
           str.append(')');
           break;
         case PseudoNot:
-          ASSERT(cs->selectorList());
+          DCHECK(cs->selectorList());
           break;
         case PseudoHost:
         case PseudoHostContext:
@@ -774,7 +774,7 @@ String CSSSelector::selectorText(const String& rightSide) const {
       case IndirectAdjacent:
         return tagHistory->selectorText(" ~ " + str.toString() + rightSide);
       case SubSelector:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
       case ShadowPseudo:
       case ShadowSlot:
         return tagHistory->selectorText(str.toString() + rightSide);
@@ -884,7 +884,7 @@ unsigned CSSSelector::computeLinkMatchType() const {
       case PseudoNot: {
         // :not(:visited) is equivalent to :link. Parser enforces that :not
         // can't nest.
-        ASSERT(current->selectorList());
+        DCHECK(current->selectorList());
         for (const CSSSelector* subSelector = current->selectorList()->first();
              subSelector; subSelector = subSelector->tagHistory()) {
           PseudoType subType = subSelector->getPseudoType();
@@ -922,7 +922,7 @@ void CSSSelector::setNth(int a, int b) {
 }
 
 bool CSSSelector::matchNth(int count) const {
-  ASSERT(m_hasRareData);
+  DCHECK(m_hasRareData);
   return m_data.m_rareData->matchNth(count);
 }
 

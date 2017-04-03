@@ -38,7 +38,7 @@ inline SelectorFilterParentScope::SelectorFilterParentScope(Element& parent)
       m_pushed(false),
       m_previous(s_currentScope),
       m_resolver(parent.document().styleResolver()) {
-  ASSERT(parent.document().inStyleRecalc());
+  DCHECK(parent.document().inStyleRecalc());
   s_currentScope = this;
 }
 

@@ -19,7 +19,7 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType blockType)
 // Just a helper used for Delimiter tokens.
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar c)
     : m_type(type), m_blockType(NotBlock), m_delimiter(c) {
-  ASSERT(m_type == DelimiterToken);
+  DCHECK_EQ(m_type, static_cast<unsigned>(DelimiterToken));
 }
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type,
@@ -39,7 +39,7 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type,
       m_numericValueType(numericValueType),
       m_numericSign(sign),
       m_unit(static_cast<unsigned>(CSSPrimitiveValue::UnitType::Number)) {
-  ASSERT(type == NumberToken);
+  DCHECK_EQ(type, NumberToken);
   m_numericValue =
       clampTo<double>(numericValue, -std::numeric_limits<float>::max(),
                       std::numeric_limits<float>::max());
@@ -60,44 +60,44 @@ CSSParserToken::CSSParserToken(HashTokenType type, StringView value)
 }
 
 void CSSParserToken::convertToDimensionWithUnit(StringView unit) {
-  ASSERT(m_type == NumberToken);
+  DCHECK_EQ(m_type, static_cast<unsigned>(NumberToken));
   m_type = DimensionToken;
   initValueFromStringView(unit);
   m_unit = static_cast<unsigned>(CSSPrimitiveValue::stringToUnitType(unit));
 }
 
 void CSSParserToken::convertToPercentage() {
-  ASSERT(m_type == NumberToken);
+  DCHECK_EQ(m_type, static_cast<unsigned>(NumberToken));
   m_type = PercentageToken;
   m_unit = static_cast<unsigned>(CSSPrimitiveValue::UnitType::Percentage);
 }
 
 UChar CSSParserToken::delimiter() const {
-  ASSERT(m_type == DelimiterToken);
+  DCHECK_EQ(m_type, static_cast<unsigned>(DelimiterToken));
   return m_delimiter;
 }
 
 NumericSign CSSParserToken::numericSign() const {
   // This is valid for DimensionToken and PercentageToken, but only used
   // in <an+b> parsing on NumberTokens.
-  ASSERT(m_type == NumberToken);
+  DCHECK_EQ(m_type, static_cast<unsigned>(NumberToken));
   return static_cast<NumericSign>(m_numericSign);
 }
 
 NumericValueType CSSParserToken::numericValueType() const {
-  ASSERT(m_type == NumberToken || m_type == PercentageToken ||
+  DCHECK(m_type == NumberToken || m_type == PercentageToken ||
          m_type == DimensionToken);
   return static_cast<NumericValueType>(m_numericValueType);
 }
 
 double CSSParserToken::numericValue() const {
-  ASSERT(m_type == NumberToken || m_type == PercentageToken ||
+  DCHECK(m_type == NumberToken || m_type == PercentageToken ||
          m_type == DimensionToken);
   return m_numericValue;
 }
 
 CSSPropertyID CSSParserToken::parseAsUnresolvedCSSPropertyID() const {
-  ASSERT(m_type == IdentToken);
+  DCHECK_EQ(m_type, static_cast<unsigned>(IdentToken));
   return unresolvedCSSPropertyID(value());
 }
 
@@ -278,7 +278,7 @@ void CSSParserToken::serialize(StringBuilder& builder) const {
 
     case EOFToken:
     case CommentToken:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return;
   }
 }

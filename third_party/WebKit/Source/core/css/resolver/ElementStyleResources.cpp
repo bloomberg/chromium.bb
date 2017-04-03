@@ -137,7 +137,7 @@ StyleImage* ElementStyleResources::loadPendingImage(
     return imageSetValue->cacheImage(*m_document, m_deviceScaleFactor,
                                      crossOrigin);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -251,7 +251,7 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style) {
               CrossOriginAttributeAnonymous));
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 }

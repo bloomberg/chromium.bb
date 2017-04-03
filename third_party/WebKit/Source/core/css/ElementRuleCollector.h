@@ -60,7 +60,7 @@ class MatchedRule {
       : m_ruleData(ruleData),
         m_specificity(specificity),
         m_parentStyleSheet(parentStyleSheet) {
-    ASSERT(m_ruleData);
+    DCHECK(m_ruleData);
     static const unsigned BitsForPositionInRuleData = 18;
     static const unsigned BitsForStyleSheetIndex = 32;
     m_position = ((uint64_t)cascadeOrder

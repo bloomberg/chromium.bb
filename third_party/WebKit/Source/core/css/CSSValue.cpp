@@ -609,7 +609,7 @@ DEFINE_TRACE(CSSValue) {
       toCSSPendingSubstitutionValue(this)->traceAfterDispatch(visitor);
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 }  // namespace blink

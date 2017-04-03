@@ -35,7 +35,7 @@ class CSSGlobalRuleSet {
   void update(Document&);
 
   const RuleFeatureSet& ruleFeatureSet() const {
-    RELEASE_ASSERT(m_features.isAlive());
+    CHECK(m_features.isAlive());
     return m_features;
   }
   RuleSet* siblingRuleSet() const { return m_siblingRuleSet; }

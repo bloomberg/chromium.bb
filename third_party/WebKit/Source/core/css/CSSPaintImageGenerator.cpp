@@ -16,7 +16,7 @@ CSSPaintImageGenerator::CSSPaintImageGeneratorCreateFunction s_createFunction =
 // static
 void CSSPaintImageGenerator::init(
     CSSPaintImageGeneratorCreateFunction createFunction) {
-  ASSERT(!s_createFunction);
+  DCHECK(!s_createFunction);
   s_createFunction = createFunction;
 }
 
@@ -24,7 +24,7 @@ void CSSPaintImageGenerator::init(
 CSSPaintImageGenerator* CSSPaintImageGenerator::create(const String& name,
                                                        Document& document,
                                                        Observer* observer) {
-  ASSERT(s_createFunction);
+  DCHECK(s_createFunction);
   return s_createFunction(name, document, observer);
 }
 

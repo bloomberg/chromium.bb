@@ -22,12 +22,12 @@ CSSParserTokenRange CSSParserTokenRange::makeSubRange(
     first = m_last;
   if (last == &staticEOFToken)
     last = m_last;
-  ASSERT(first <= last);
+  DCHECK_LE(first, last);
   return CSSParserTokenRange(first, last);
 }
 
 CSSParserTokenRange CSSParserTokenRange::consumeBlock() {
-  ASSERT(peek().getBlockType() == CSSParserToken::BlockStart);
+  DCHECK_EQ(peek().getBlockType(), CSSParserToken::BlockStart);
   const CSSParserToken* start = &peek() + 1;
   unsigned nestingLevel = 0;
   do {

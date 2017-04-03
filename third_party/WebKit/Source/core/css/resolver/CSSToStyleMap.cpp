@@ -305,7 +305,7 @@ void CSSToStyleMap::mapFillMaskSourceType(StyleResolverState&,
     case CSSValueAuto:
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   layer->setMaskSourceType(type);
@@ -332,7 +332,7 @@ Timing::PlaybackDirection CSSToStyleMap::mapAnimationDirection(
     case CSSValueAlternateReverse:
       return Timing::PlaybackDirection::ALTERNATE_REVERSE;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return CSSAnimationData::initialDirection();
   }
 }
@@ -357,7 +357,7 @@ Timing::FillMode CSSToStyleMap::mapAnimationFillMode(const CSSValue& value) {
     case CSSValueBoth:
       return Timing::FillMode::BOTH;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return CSSAnimationData::initialFillMode();
   }
 }
@@ -442,7 +442,7 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(
         return StepsTimingFunction::preset(
             StepsTimingFunction::StepPosition::END);
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return CSSTimingData::initialTimingFunction();
     }
   }

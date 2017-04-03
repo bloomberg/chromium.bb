@@ -49,7 +49,7 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
   }
 
   bool equals(const CSSValuePair& other) const {
-    ASSERT(m_identicalValuesPolicy == other.m_identicalValuesPolicy);
+    DCHECK_EQ(m_identicalValuesPolicy, other.m_identicalValuesPolicy);
     return dataEquivalent(m_first, other.m_first) &&
            dataEquivalent(m_second, other.m_second);
   }
@@ -64,8 +64,8 @@ class CORE_EXPORT CSSValuePair : public CSSValue {
         m_first(first),
         m_second(second),
         m_identicalValuesPolicy(identicalValuesPolicy) {
-    ASSERT(m_first);
-    ASSERT(m_second);
+    DCHECK(m_first);
+    DCHECK(m_second);
   }
 
   Member<const CSSValue> m_first;

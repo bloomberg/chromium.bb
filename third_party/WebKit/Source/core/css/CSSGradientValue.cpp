@@ -214,7 +214,7 @@ static void replaceColorHintsWithColorStops(
 
     // The current index of the stops vector.
     size_t x = i + indexOffset;
-    ASSERT(x >= 1);
+    DCHECK_GE(x, 1u);
 
     // offsetLeft          offset                            offsetRight
     //   |-------------------|---------------------------------|
@@ -230,7 +230,8 @@ static void replaceColorHintsWithColorStops(
     Color leftColor = stops[x - 1].color;
     Color rightColor = stops[x + 1].color;
 
-    ASSERT(offsetLeft <= offset && offset <= offsetRight);
+    DCHECK_LE(offsetLeft, offset);
+    DCHECK_LE(offset, offsetRight);
 
     if (WebCoreFloatNearlyEqual(leftDist, rightDist)) {
       stops.erase(x);
@@ -288,7 +289,7 @@ static Color resolveStopColor(const CSSValue& stopColor,
 
 void CSSGradientValue::addDeprecatedStops(GradientDesc& desc,
                                           const LayoutObject& object) {
-  ASSERT(m_gradientType == CSSDeprecatedLinearGradient ||
+  DCHECK(m_gradientType == CSSDeprecatedLinearGradient ||
          m_gradientType == CSSDeprecatedRadialGradient);
 
   if (!m_stopsSorted) {
@@ -330,7 +331,7 @@ static bool requiresStopsNormalization(const Vector<GradientStop>& stops,
 // gradient.
 static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
                                  CSSGradientValue::GradientDesc& desc) {
-  ASSERT(stops.size() > 1);
+  DCHECK_GT(stops.size(), 1u);
 
   const float firstOffset = stops.front().offset;
   const float lastOffset = stops.back().offset;
@@ -351,14 +352,15 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
     return false;
   }
 
-  ASSERT(span > 0);
+  DCHECK_GT(span, 0);
 
   for (size_t i = 0; i < stops.size(); ++i) {
     const float normalizedOffset = (stops[i].offset - firstOffset) / span;
 
     // stop offsets should be monotonically increasing in [0 , 1]
-    ASSERT(normalizedOffset >= 0 && normalizedOffset <= 1);
-    ASSERT(i == 0 ||
+    DCHECK_GE(normalizedOffset, 0);
+    DCHECK_LE(normalizedOffset, 1);
+    DCHECK(i == 0 ||
            normalizedOffset >= (stops[i - 1].offset - firstOffset) / span);
 
     desc.stops.emplace_back(normalizedOffset, stops[i].color);
@@ -378,7 +380,7 @@ static void clampNegativeOffsets(Vector<GradientStop>& stops) {
       if (i > 0) {
         // We found the negative -> positive offset transition: compute an
         // interpolated color value for 0 and use it with the last clamped stop.
-        ASSERT(lastNegativeOffset < 0);
+        DCHECK_LT(lastNegativeOffset, 0);
         float lerpRatio =
             -lastNegativeOffset / (currentOffset - lastNegativeOffset);
         stops[i - 1].color =
@@ -399,7 +401,7 @@ static void adjustGradientPointsForOffsetRange(
     CSSGradientValue::GradientDesc& desc,
     float firstOffset,
     float lastOffset) {
-  ASSERT(firstOffset <= lastOffset);
+  DCHECK_LE(firstOffset, lastOffset);
 
   const FloatPoint p0 = desc.p0;
   const FloatPoint p1 = desc.p1;
@@ -415,18 +417,18 @@ static void adjustGradientRadiiForOffsetRange(
     CSSGradientValue::GradientDesc& desc,
     float firstOffset,
     float lastOffset) {
-  ASSERT(firstOffset <= lastOffset);
+  DCHECK_LE(firstOffset, lastOffset);
 
   // Radial offsets are relative to the [0 , endRadius] segment.
   float adjustedR0 = desc.r1 * firstOffset;
   float adjustedR1 = desc.r1 * lastOffset;
-  ASSERT(adjustedR0 <= adjustedR1);
-
+  DCHECK_LE(adjustedR0, adjustedR1);
   // Unlike linear gradients (where we can adjust the points arbitrarily),
   // we cannot let our radii turn negative here.
   if (adjustedR0 < 0) {
     // For the non-repeat case, this can never happen: clampNegativeOffsets()
     // ensures we don't have to deal with negative offsets at this point.
+
     DCHECK_EQ(desc.spreadMethod, SpreadMethodRepeat);
 
     // When in repeat mode, we deal with it by repositioning both radii in the
@@ -438,8 +440,8 @@ static void adjustGradientRadiiForOffsetRange(
     adjustedR0 += shiftToPositive;
     adjustedR1 += shiftToPositive;
   }
-  ASSERT(adjustedR0 >= 0);
-  ASSERT(adjustedR1 >= adjustedR0);
+  DCHECK_GE(adjustedR0, 0);
+  DCHECK_GE(adjustedR1, adjustedR0);
 
   desc.r0 = adjustedR0;
   desc.r1 = adjustedR1;
@@ -499,7 +501,7 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
       } else if (stop.m_offset->isAngle()) {
         stops[i].offset = stop.m_offset->computeDegrees() / 360.0f;
       } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         stops[i].offset = 0;
       }
       stops[i].specified = true;
@@ -532,7 +534,8 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
     }
   }
 
-  ASSERT(stops.front().specified && stops.back().specified);
+  DCHECK(stops.front().specified);
+  DCHECK(stops.back().specified);
 
   // If any color-stop still does not have a position, then, for each run of
   // adjacent color-stops without positions, set their positions so that they
@@ -565,7 +568,7 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
     }
   }
 
-  ASSERT(stops.size() == m_stops.size());
+  DCHECK_EQ(stops.size(), m_stops.size());
   if (hasHints) {
     replaceColorHintsWithColorStops(stops, m_stops);
   }
@@ -858,7 +861,7 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(
     const CSSToLengthConversionData& conversionData,
     const IntSize& size,
     const LayoutObject& object) {
-  ASSERT(!size.isEmpty());
+  DCHECK(!size.isEmpty());
 
   FloatPoint firstPoint;
   FloatPoint secondPoint;
@@ -916,7 +919,7 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(
           secondPoint.setY(size.height());
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
   }
 
@@ -1150,7 +1153,7 @@ FloatSize radiusToSide(const FloatPoint& point,
   if (shape == CircleEndShape)
     return compare(dx, dy) ? FloatSize(dx, dx) : FloatSize(dy, dy);
 
-  ASSERT(shape == EllipseEndShape);
+  DCHECK_EQ(shape, EllipseEndShape);
   return FloatSize(dx, dy);
 }
 
@@ -1192,7 +1195,7 @@ FloatSize radiusToCorner(const FloatPoint& point,
   if (shape == CircleEndShape)
     return FloatSize(distance, distance);
 
-  ASSERT(shape == EllipseEndShape);
+  DCHECK_EQ(shape, EllipseEndShape);
   // If the end shape is an ellipse, the gradient-shape has the same ratio of
   // width to height that it would if closest-side or farthest-side were
   // specified, as appropriate.
@@ -1209,7 +1212,7 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(
     const CSSToLengthConversionData& conversionData,
     const IntSize& size,
     const LayoutObject& object) {
-  ASSERT(!size.isEmpty());
+  DCHECK(!size.isEmpty());
 
   FloatPoint firstPoint =
       computeEndPoint(m_firstX.get(), m_firstY.get(), conversionData, size);

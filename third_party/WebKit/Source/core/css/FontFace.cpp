@@ -366,7 +366,7 @@ String FontFace::status() const {
 
 void FontFace::setLoadStatus(LoadStatusType status) {
   m_status = status;
-  ASSERT(m_status != Error || m_error);
+  DCHECK(m_status != Error || m_error);
 
   // When promises are resolved with 'thenables', instead of the object being
   // returned directly, the 'then' method is executed (the resolver tries to
@@ -543,7 +543,7 @@ FontTraits FontFace::traits() const {
       case CSSValueBolder:
         break;
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
   }
@@ -599,8 +599,8 @@ void FontFace::initCSSFontFace(Document* document, const CSSValue* src) {
 
   // Each item in the src property's list is a single CSSFontFaceSource. Put
   // them all into a CSSFontFace.
-  ASSERT(src);
-  ASSERT(src->isValueList());
+  DCHECK(src);
+  DCHECK(src->isValueList());
   const CSSValueList* srcList = toCSSValueList(src);
   int srcLength = srcList->length();
 

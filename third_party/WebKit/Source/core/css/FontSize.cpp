@@ -141,7 +141,8 @@ static int inline rowFromMediumFontSizeInRange(const Settings* settings,
 float FontSize::fontSizeForKeyword(const Document* document,
                                    unsigned keyword,
                                    bool isMonospace) {
-  ASSERT(keyword >= 1 && keyword <= 8);
+  DCHECK_GE(keyword, 1u);
+  DCHECK_LE(keyword, 8u);
   const Settings* settings = document->settings();
   if (!settings)
     return 1.0f;

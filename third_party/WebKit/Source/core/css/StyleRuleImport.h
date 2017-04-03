@@ -42,7 +42,7 @@ class StyleRuleImport : public StyleRuleBase {
 
   StyleSheetContents* parentStyleSheet() const { return m_parentStyleSheet; }
   void setParentStyleSheet(StyleSheetContents* sheet) {
-    ASSERT(sheet);
+    DCHECK(sheet);
     m_parentStyleSheet = sheet;
   }
   void clearParentStyleSheet() { m_parentStyleSheet = nullptr; }

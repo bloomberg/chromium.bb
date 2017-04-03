@@ -140,7 +140,7 @@ class SelectorChecker {
 
   bool match(const SelectorCheckingContext& context,
              MatchResult& result) const {
-    ASSERT(context.selector);
+    DCHECK(context.selector);
     return matchSelector(context, result) == SelectorMatches;
   }
 

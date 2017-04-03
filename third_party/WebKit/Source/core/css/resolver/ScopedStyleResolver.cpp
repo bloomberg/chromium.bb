@@ -113,7 +113,7 @@ void ScopedStyleResolver::collectFeaturesTo(
       m_deviceDependentMediaQueryResults);
 
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-    ASSERT(m_authorStyleSheets[i]->ownerNode());
+    DCHECK(m_authorStyleSheets[i]->ownerNode());
     StyleSheetContents* contents = m_authorStyleSheets[i]->contents();
     if (contents->hasOneClient() ||
         visitedSharedStyleSheetContents.insert(contents).isNewEntry)
@@ -211,7 +211,7 @@ void ScopedStyleResolver::collectMatchingAuthorRules(
     ElementRuleCollector& collector,
     CascadeOrder cascadeOrder) {
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-    ASSERT(m_authorStyleSheets[i]->ownerNode());
+    DCHECK(m_authorStyleSheets[i]->ownerNode());
     MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(),
                               &m_scope->rootNode(), m_authorStyleSheets[i], i);
     collector.collectMatchingRules(matchRequest, cascadeOrder);
@@ -222,7 +222,7 @@ void ScopedStyleResolver::collectMatchingShadowHostRules(
     ElementRuleCollector& collector,
     CascadeOrder cascadeOrder) {
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
-    ASSERT(m_authorStyleSheets[i]->ownerNode());
+    DCHECK(m_authorStyleSheets[i]->ownerNode());
     MatchRequest matchRequest(&m_authorStyleSheets[i]->contents()->ruleSet(),
                               &m_scope->rootNode(), m_authorStyleSheets[i], i);
     collector.collectMatchingShadowHostRules(matchRequest, cascadeOrder);
@@ -245,7 +245,7 @@ void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector) {
   // Only consider the global author RuleSet for @page rules, as per the HTML5
   // spec.
-  ASSERT(m_scope->rootNode().isDocumentNode());
+  DCHECK(m_scope->rootNode().isDocumentNode());
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
     collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());
 }

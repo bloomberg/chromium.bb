@@ -62,11 +62,11 @@ class StyleAttributeMutationScope {
     ++s_scopeCount;
 
     if (s_scopeCount != 1) {
-      ASSERT(s_currentDecl == decl);
+      DCHECK_EQ(s_currentDecl, decl);
       return;
     }
 
-    ASSERT(!s_currentDecl);
+    DCHECK(!s_currentDecl);
     s_currentDecl = decl;
 
     if (!s_currentDecl->parentElement())

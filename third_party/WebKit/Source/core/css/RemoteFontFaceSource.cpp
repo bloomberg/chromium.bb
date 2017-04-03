@@ -177,7 +177,7 @@ void RemoteFontFaceSource::fontLoadLongLimitExceeded(FontResource*) {
 }
 
 void RemoteFontFaceSource::switchToSwapPeriod() {
-  ASSERT(m_period == BlockPeriod);
+  DCHECK_EQ(m_period, BlockPeriod);
   m_period = SwapPeriod;
 
   pruneTable();
@@ -192,7 +192,7 @@ void RemoteFontFaceSource::switchToSwapPeriod() {
 void RemoteFontFaceSource::switchToFailurePeriod() {
   if (m_period == BlockPeriod)
     switchToSwapPeriod();
-  ASSERT(m_period == SwapPeriod);
+  DCHECK_EQ(m_period, SwapPeriod);
   m_period = FailurePeriod;
 }
 
@@ -242,7 +242,7 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(
       FontCache::fontCache()->getNonRetainedLastResortFallbackFont(
           fontDescription);
   if (!temporaryFont) {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
   RefPtr<CSSCustomFontData> cssFontData = CSSCustomFontData::create(

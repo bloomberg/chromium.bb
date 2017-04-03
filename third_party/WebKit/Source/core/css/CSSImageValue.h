@@ -58,7 +58,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
 
   bool isCachePending() const { return !m_cachedImage; }
   StyleImage* cachedImage() const {
-    ASSERT(!isCachePending());
+    DCHECK(!isCachePending());
     return m_cachedImage.get();
   }
   StyleImage* cacheImage(

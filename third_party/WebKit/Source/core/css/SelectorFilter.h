@@ -91,7 +91,7 @@ class SelectorFilter {
 template <unsigned maximumIdentifierCount>
 inline bool SelectorFilter::fastRejectSelector(
     const unsigned* identifierHashes) const {
-  ASSERT(m_ancestorIdentifierFilter);
+  DCHECK(m_ancestorIdentifierFilter);
   for (unsigned n = 0; n < maximumIdentifierCount && identifierHashes[n]; ++n) {
     if (!m_ancestorIdentifierFilter->mayContain(identifierHashes[n]))
       return true;

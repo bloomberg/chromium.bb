@@ -257,7 +257,7 @@ float ViewportStyleResolver::viewportArgumentValue(CSSPropertyID id) const {
 }
 
 Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) {
-  ASSERT(id == CSSPropertyMaxHeight || id == CSSPropertyMinHeight ||
+  DCHECK(id == CSSPropertyMaxHeight || id == CSSPropertyMinHeight ||
          id == CSSPropertyMaxWidth || id == CSSPropertyMinWidth);
 
   const CSSValue* value = m_propertySet->getPropertyCSSValue(id);

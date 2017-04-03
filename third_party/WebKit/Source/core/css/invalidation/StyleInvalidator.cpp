@@ -287,7 +287,7 @@ void StyleInvalidator::pushInvalidationSetsForContainerNode(
   DCHECK(pendingInvalidations);
 
   for (const auto& invalidationSet : pendingInvalidations->siblings()) {
-    RELEASE_ASSERT(invalidationSet->isAlive());
+    CHECK(invalidationSet->isAlive());
     siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
   }
 
@@ -296,7 +296,7 @@ void StyleInvalidator::pushInvalidationSetsForContainerNode(
 
   if (!pendingInvalidations->descendants().isEmpty()) {
     for (const auto& invalidationSet : pendingInvalidations->descendants()) {
-      RELEASE_ASSERT(invalidationSet->isAlive());
+      CHECK(invalidationSet->isAlive());
       recursionData.pushInvalidationSet(*invalidationSet);
     }
     if (UNLIKELY(*s_tracingEnabled)) {

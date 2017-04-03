@@ -17,7 +17,7 @@ CSSCustomIdentValue::CSSCustomIdentValue(const AtomicString& str)
 
 CSSCustomIdentValue::CSSCustomIdentValue(CSSPropertyID id)
     : CSSValue(CustomIdentClass), m_string(), m_propertyId(id) {
-  ASSERT(isKnownPropertyID());
+  DCHECK(isKnownPropertyID());
 }
 
 String CSSCustomIdentValue::customCSSText() const {

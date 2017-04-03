@@ -68,7 +68,7 @@ unsigned indexOfShorthandForLonghand(
     if (shorthands.at(i).id() == shorthandID)
       return i;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

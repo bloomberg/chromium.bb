@@ -203,7 +203,8 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component,
     // and have a relation of ShadowPseudo between them. Therefore we should
     // never be a situation where extractValuesforSelector finsd id and
     // className in addition to custom pseudo.
-    ASSERT(id.isEmpty() && className.isEmpty());
+    DCHECK(id.isEmpty());
+    DCHECK(className.isEmpty());
     addToRuleSet(customPseudoElementName,
                  ensurePendingRules()->shadowPseudoElementRules, ruleData);
     return true;
@@ -323,7 +324,7 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet,
                                 AddRuleFlags addRuleFlags) {
   TRACE_EVENT0("blink", "RuleSet::addRulesFromSheet");
 
-  ASSERT(sheet);
+  DCHECK(sheet);
 
   const HeapVector<Member<StyleRuleImport>>& importRules = sheet->importRules();
   for (unsigned i = 0; i < importRules.size(); ++i) {

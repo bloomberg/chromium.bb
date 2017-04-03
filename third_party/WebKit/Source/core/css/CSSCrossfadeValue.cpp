@@ -41,7 +41,7 @@ static bool subimageIsPending(CSSValue* value) {
   if (value->isImageGeneratorValue())
     return toCSSImageGeneratorValue(value)->isPending();
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 
   return false;
 }
@@ -54,7 +54,7 @@ static bool subimageKnownToBeOpaque(CSSValue* value,
   if (value->isImageGeneratorValue())
     return toCSSImageGeneratorValue(value)->knownToBeOpaque(layoutObject);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 
   return false;
 }
@@ -80,7 +80,7 @@ static ImageResourceContent* cachedImageForCSSValue(CSSValue* value,
     return nullptr;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 
   return nullptr;
 }

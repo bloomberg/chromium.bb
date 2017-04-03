@@ -40,9 +40,9 @@ CSSImageGeneratorValue::~CSSImageGeneratorValue() {}
 
 void CSSImageGeneratorValue::addClient(const LayoutObject* layoutObject,
                                        const IntSize& size) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   if (m_clients.isEmpty()) {
-    ASSERT(!m_keepAlive);
+    DCHECK(!m_keepAlive);
     m_keepAlive = this;
   }
 
@@ -65,7 +65,7 @@ CSSImageGeneratorValue* CSSImageGeneratorValue::valueWithURLsMadeAbsolute() {
 }
 
 void CSSImageGeneratorValue::removeClient(const LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
+  DCHECK(layoutObject);
   LayoutObjectSizeCountMap::iterator it = m_clients.find(layoutObject);
   SECURITY_DCHECK(it != m_clients.end());
 
@@ -82,7 +82,7 @@ void CSSImageGeneratorValue::removeClient(const LayoutObject* layoutObject) {
     m_clients.erase(layoutObject);
 
   if (m_clients.isEmpty()) {
-    ASSERT(m_keepAlive);
+    DCHECK(m_keepAlive);
     m_keepAlive.clear();
   }
 }
@@ -128,7 +128,7 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(
     case ConicGradientClass:
       return toCSSConicGradientValue(this)->image(layoutObject, size);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return nullptr;
 }
@@ -146,7 +146,7 @@ bool CSSImageGeneratorValue::isFixedSize() const {
     case ConicGradientClass:
       return toCSSConicGradientValue(this)->isFixedSize();
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return false;
 }
@@ -166,7 +166,7 @@ IntSize CSSImageGeneratorValue::fixedSize(const LayoutObject& layoutObject,
     case ConicGradientClass:
       return toCSSConicGradientValue(this)->fixedSize(layoutObject);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return IntSize();
 }
@@ -184,7 +184,7 @@ bool CSSImageGeneratorValue::isPending() const {
     case ConicGradientClass:
       return toCSSConicGradientValue(this)->isPending();
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return false;
 }
@@ -203,7 +203,7 @@ bool CSSImageGeneratorValue::knownToBeOpaque(
     case ConicGradientClass:
       return toCSSConicGradientValue(this)->knownToBeOpaque(layoutObject);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return false;
 }
@@ -226,7 +226,7 @@ void CSSImageGeneratorValue::loadSubimages(const Document& document) {
       toCSSConicGradientValue(this)->loadSubimages(document);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 

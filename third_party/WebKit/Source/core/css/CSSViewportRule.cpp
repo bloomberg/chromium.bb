@@ -67,7 +67,7 @@ String CSSViewportRule::cssText() const {
 }
 
 void CSSViewportRule::reattach(StyleRuleBase* rule) {
-  ASSERT(rule);
+  DCHECK(rule);
   m_viewportRule = toStyleRuleViewport(rule);
   if (m_propertiesCSSOMWrapper)
     m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());

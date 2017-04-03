@@ -63,7 +63,8 @@ ActiveSheetsChange compareActiveStyleSheets(
                                      : ActiveSheetsChanged;
   }
 
-  DCHECK(index < oldStyleSheetCount && index < newStyleSheetCount);
+  DCHECK_LT(index, oldStyleSheetCount);
+  DCHECK_LT(index, newStyleSheetCount);
 
   // Both the new and old active stylesheet vectors have stylesheets following
   // the common prefix. Figure out which were added or removed by sorting the

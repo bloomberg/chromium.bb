@@ -79,7 +79,7 @@ CSSValueList* CSSValueList::copy() const {
       newList = createSlashSeparated();
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   newList->m_values = m_values;
   return newList;
@@ -99,7 +99,7 @@ String CSSValueList::customCSSText() const {
       separator = " / ";
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 
   unsigned size = m_values.size();

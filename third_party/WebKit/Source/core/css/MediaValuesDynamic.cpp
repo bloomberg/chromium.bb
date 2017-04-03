@@ -30,7 +30,7 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame)
       m_viewportDimensionsOverridden(false),
       m_viewportWidthOverride(0),
       m_viewportHeightOverride(0) {
-  ASSERT(m_frame);
+  DCHECK(m_frame);
 }
 
 MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame,
@@ -41,7 +41,7 @@ MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame,
       m_viewportDimensionsOverridden(overriddenViewportDimensions),
       m_viewportWidthOverride(viewportWidth),
       m_viewportHeightOverride(viewportHeight) {
-  ASSERT(m_frame);
+  DCHECK(m_frame);
 }
 
 MediaValues* MediaValuesDynamic::copy() const {

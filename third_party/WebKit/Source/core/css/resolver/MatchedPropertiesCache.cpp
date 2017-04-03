@@ -60,13 +60,13 @@ const CachedMatchedProperties* MatchedPropertiesCache::find(
     unsigned hash,
     const StyleResolverState& styleResolverState,
     const MatchedPropertiesVector& properties) {
-  ASSERT(hash);
+  DCHECK(hash);
 
   Cache::iterator it = m_cache.find(hash);
   if (it == m_cache.end())
     return nullptr;
   CachedMatchedProperties* cacheItem = it->value.get();
-  ASSERT(cacheItem);
+  DCHECK(cacheItem);
 
   size_t size = properties.size();
   if (size != cacheItem->matchedProperties.size())
@@ -85,7 +85,7 @@ void MatchedPropertiesCache::add(const ComputedStyle& style,
                                  const ComputedStyle& parentStyle,
                                  unsigned hash,
                                  const MatchedPropertiesVector& properties) {
-  ASSERT(hash);
+  DCHECK(hash);
   Cache::AddResult addResult = m_cache.insert(hash, nullptr);
   if (addResult.isNewEntry)
     addResult.storedValue->value = new CachedMatchedProperties;

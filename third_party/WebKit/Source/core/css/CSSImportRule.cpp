@@ -78,7 +78,7 @@ CSSStyleSheet* CSSImportRule::styleSheet() const {
 
 void CSSImportRule::reattach(StyleRuleBase*) {
   // FIXME: Implement when enabling caching for stylesheets with import rules.
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 DEFINE_TRACE(CSSImportRule) {

@@ -78,7 +78,7 @@ void countAtRule(const CSSParserContext* context, CSSAtRuleID ruleId) {
     case CSSAtRuleInvalid:
     // fallthrough
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return;
   }
   context->count(feature);

@@ -48,7 +48,7 @@ bool StyleMedia::matchMedium(const String& query) const {
     return false;
 
   Document* document = frame()->document();
-  ASSERT(document);
+  DCHECK(document);
   Element* documentElement = document->documentElement();
   if (!documentElement)
     return false;

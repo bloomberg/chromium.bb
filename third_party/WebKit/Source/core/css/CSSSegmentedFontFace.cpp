@@ -127,7 +127,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(
       continue;
     if (RefPtr<SimpleFontData> faceFontData =
             (*it)->cssFontFace()->getFontData(requestedFontDescription)) {
-      ASSERT(!faceFontData->isSegmented());
+      DCHECK(!faceFontData->isSegmented());
       if (faceFontData->isCustomFont()) {
         fontData->appendFace(adoptRef(new FontDataForRangeSet(
             std::move(faceFontData), (*it)->cssFontFace()->ranges())));

@@ -164,33 +164,33 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   const RuleFeatureSet& features() const { return m_features; }
 
   const HeapTerminatedArray<RuleData>* idRules(const AtomicString& key) const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return m_idRules.at(key);
   }
   const HeapTerminatedArray<RuleData>* classRules(
       const AtomicString& key) const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return m_classRules.at(key);
   }
   const HeapTerminatedArray<RuleData>* tagRules(const AtomicString& key) const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return m_tagRules.at(key);
   }
   const HeapTerminatedArray<RuleData>* shadowPseudoElementRules(
       const AtomicString& key) const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return m_shadowPseudoElementRules.at(key);
   }
   const HeapVector<RuleData>* linkPseudoClassRules() const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return &m_linkPseudoClassRules;
   }
   const HeapVector<RuleData>* cuePseudoRules() const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return &m_cuePseudoRules;
   }
   const HeapVector<RuleData>* focusPseudoClassRules() const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return &m_focusPseudoClassRules;
   }
   const HeapVector<RuleData>* placeholderPseudoRules() const {
@@ -198,15 +198,15 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     return &m_placeholderPseudoRules;
   }
   const HeapVector<RuleData>* universalRules() const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return &m_universalRules;
   }
   const HeapVector<RuleData>* shadowHostRules() const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return &m_shadowHostRules;
   }
   const HeapVector<Member<StyleRulePage>>& pageRules() const {
-    ASSERT(!m_pendingRules);
+    DCHECK(!m_pendingRules);
     return m_pageRules;
   }
   const HeapVector<Member<StyleRuleFontFace>>& fontFaceRules() const {

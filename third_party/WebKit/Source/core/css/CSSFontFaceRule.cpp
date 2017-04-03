@@ -54,7 +54,7 @@ String CSSFontFaceRule::cssText() const {
 }
 
 void CSSFontFaceRule::reattach(StyleRuleBase* rule) {
-  ASSERT(rule);
+  DCHECK(rule);
   m_fontFaceRule = toStyleRuleFontFace(rule);
   if (m_propertiesCSSOMWrapper)
     m_propertiesCSSOMWrapper->reattach(m_fontFaceRule->mutableProperties());

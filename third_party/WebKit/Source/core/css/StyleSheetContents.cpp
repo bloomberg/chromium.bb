@@ -101,7 +101,7 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
       m_isUsedFromTextCache(false),
       m_parserContext(o.m_parserContext) {
   // FIXME: Copy import rules.
-  ASSERT(o.m_importRules.isEmpty());
+  DCHECK(o.m_importRules.isEmpty());
 
   for (unsigned i = 0; i < m_namespaceRules.size(); ++i) {
     m_namespaceRules[i] =
@@ -168,7 +168,7 @@ bool StyleSheetContents::isCacheableForStyleElement() const {
 void StyleSheetContents::parserAppendRule(StyleRuleBase* rule) {
   if (rule->isImportRule()) {
     // Parser enforces that @import rules come before anything else
-    ASSERT(m_childRules.isEmpty());
+    DCHECK(m_childRules.isEmpty());
     StyleRuleImport* importRule = toStyleRuleImport(rule);
     if (importRule->mediaQueries())
       setHasMediaQueries();
@@ -181,7 +181,7 @@ void StyleSheetContents::parserAppendRule(StyleRuleBase* rule) {
   if (rule->isNamespaceRule()) {
     // Parser enforces that @namespace rules come before all rules other than
     // import/charset rules
-    ASSERT(m_childRules.isEmpty());
+    DCHECK(m_childRules.isEmpty());
     StyleRuleNamespace& namespaceRule = toStyleRuleNamespace(*rule);
     parserAddNamespace(namespaceRule.prefix(), namespaceRule.uri());
     m_namespaceRules.push_back(&namespaceRule);
@@ -219,7 +219,7 @@ unsigned StyleSheetContents::ruleCount() const {
 
 void StyleSheetContents::clearRules() {
   for (unsigned i = 0; i < m_importRules.size(); ++i) {
-    ASSERT(m_importRules.at(i)->parentStyleSheet() == this);
+    DCHECK_EQ(m_importRules.at(i)->parentStyleSheet(), this);
     m_importRules[i]->clearParentStyleSheet();
   }
   m_importRules.clear();
@@ -229,7 +229,7 @@ void StyleSheetContents::clearRules() {
 
 bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule,
                                            unsigned index) {
-  ASSERT(m_isMutable);
+  DCHECK(m_isMutable);
   SECURITY_DCHECK(index <= ruleCount());
 
   if (index < m_importRules.size() ||
@@ -289,7 +289,7 @@ bool StyleSheetContents::wrapperInsertRule(StyleRuleBase* rule,
 }
 
 bool StyleSheetContents::wrapperDeleteRule(unsigned index) {
-  ASSERT(m_isMutable);
+  DCHECK(m_isMutable);
   SECURITY_DCHECK(index < ruleCount());
 
   if (index < m_importRules.size()) {
@@ -317,7 +317,7 @@ bool StyleSheetContents::wrapperDeleteRule(unsigned index) {
 
 void StyleSheetContents::parserAddNamespace(const AtomicString& prefix,
                                             const AtomicString& uri) {
-  ASSERT(!uri.isNull());
+  DCHECK(!uri.isNull());
   if (prefix.isNull()) {
     m_defaultNamespace = uri;
     return;
@@ -423,7 +423,7 @@ void StyleSheetContents::checkLoaded() {
     return;
   }
 
-  ASSERT(this == rootStyleSheet());
+  DCHECK_EQ(this, rootStyleSheet());
   if (m_loadingClients.isEmpty())
     return;
 
@@ -454,7 +454,7 @@ void StyleSheetContents::checkLoaded() {
 }
 
 void StyleSheetContents::notifyLoadedSheet(const CSSStyleSheetResource* sheet) {
-  ASSERT(sheet);
+  DCHECK(sheet);
   m_didLoadErrorOccur |= sheet->errorOccurred();
   // updateLayoutIgnorePendingStyleSheets can cause us to create the RuleSet on
   // this sheet before its imports have loaded. So clear the RuleSet when the
@@ -530,7 +530,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(
       case StyleRuleBase::Charset:
       case StyleRuleBase::Import:
       case StyleRuleBase::Namespace:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
       case StyleRuleBase::Page:
       case StyleRuleBase::Keyframes:
       case StyleRuleBase::Keyframe:
@@ -543,7 +543,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(
 }
 
 bool StyleSheetContents::hasFailedOrCanceledSubresources() const {
-  ASSERT(isCacheableForResource());
+  DCHECK(isCacheableForResource());
   return childRulesHaveFailedOrCanceledSubresources(m_childRules);
 }
 
@@ -564,8 +564,8 @@ StyleSheetContents* StyleSheetContents::parentStyleSheet() const {
 }
 
 void StyleSheetContents::registerClient(CSSStyleSheet* sheet) {
-  ASSERT(!m_loadingClients.contains(sheet) &&
-         !m_completedClients.contains(sheet));
+  DCHECK(!m_loadingClients.contains(sheet));
+  DCHECK(!m_completedClients.contains(sheet));
 
   // InspectorCSSAgent::buildObjectForRule creates CSSStyleSheet without any
   // owner node.
@@ -591,7 +591,7 @@ void StyleSheetContents::unregisterClient(CSSStyleSheet* sheet) {
 }
 
 void StyleSheetContents::clientLoadCompleted(CSSStyleSheet* sheet) {
-  ASSERT(m_loadingClients.contains(sheet) || !sheet->ownerDocument());
+  DCHECK(m_loadingClients.contains(sheet) || !sheet->ownerDocument());
   m_loadingClients.erase(sheet);
   // In m_ownerNode->sheetLoaded, the CSSStyleSheet might be detached.
   // (i.e. clearOwnerNode was invoked.)
@@ -602,7 +602,7 @@ void StyleSheetContents::clientLoadCompleted(CSSStyleSheet* sheet) {
 }
 
 void StyleSheetContents::clientLoadStarted(CSSStyleSheet* sheet) {
-  ASSERT(m_completedClients.contains(sheet));
+  DCHECK(m_completedClients.contains(sheet));
   m_completedClients.erase(sheet);
   m_loadingClients.insert(sheet);
 }

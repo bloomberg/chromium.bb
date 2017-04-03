@@ -40,8 +40,9 @@ CSSPropertyID StylePropertyMetadata::shorthandID() const {
   Vector<StylePropertyShorthand, 4> shorthands;
   getMatchingShorthandsForLonghand(static_cast<CSSPropertyID>(m_propertyID),
                                    &shorthands);
-  ASSERT(shorthands.size() && m_indexInShorthandsVector >= 0 &&
-         m_indexInShorthandsVector < shorthands.size());
+  DCHECK(shorthands.size());
+  DCHECK_GE(m_indexInShorthandsVector, 0u);
+  DCHECK_LT(m_indexInShorthandsVector, shorthands.size());
   return shorthands.at(m_indexInShorthandsVector).id();
 }
 

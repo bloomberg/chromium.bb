@@ -43,7 +43,7 @@ bool classifyBlock(CSSParserTokenRange range,
       continue;
     }
 
-    ASSERT(range.peek().getBlockType() != CSSParserToken::BlockEnd);
+    DCHECK_NE(range.peek().getBlockType(), CSSParserToken::BlockEnd);
 
     const CSSParserToken& token = range.consume();
     switch (token.type()) {

@@ -33,7 +33,7 @@ bool CSSVariableResolver::resolveFallback(CSSParserTokenRange range,
                                           bool& resultIsAnimationTainted) {
   if (range.atEnd())
     return false;
-  ASSERT(range.peek().type() == CommaToken);
+  DCHECK_EQ(range.peek().type(), CommaToken);
   range.consume();
   return resolveTokenRange(range, disallowAnimationTainted, result,
                            resultIsAnimationTainted);
@@ -91,7 +91,7 @@ CSSVariableData* CSSVariableResolver::valueForCustomProperty(
 PassRefPtr<CSSVariableData> CSSVariableResolver::resolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variableData) {
-  ASSERT(variableData.needsVariableResolution());
+  DCHECK(variableData.needsVariableResolution());
 
   bool disallowAnimationTainted = false;
   bool isAnimationTainted = variableData.isAnimationTainted();
@@ -105,7 +105,7 @@ PassRefPtr<CSSVariableData> CSSVariableResolver::resolveCustomProperty(
   // The old variable data holds onto the backing string the new resolved
   // CSSVariableData relies on. Ensure it will live beyond us overwriting the
   // RefPtr in StyleInheritedVariables.
-  ASSERT(variableData.refCount() > 1);
+  DCHECK_GT(variableData.refCount(), 1);
 
   if (!success || !m_cycleStartPoints.isEmpty()) {
     m_cycleStartPoints.erase(name);
@@ -121,10 +121,10 @@ bool CSSVariableResolver::resolveVariableReference(
     Vector<CSSParserToken>& result,
     bool& resultIsAnimationTainted) {
   range.consumeWhitespace();
-  ASSERT(range.peek().type() == IdentToken);
+  DCHECK_EQ(range.peek().type(), IdentToken);
   AtomicString variableName =
       range.consumeIncludingWhitespace().value().toAtomicString();
-  ASSERT(range.atEnd() || (range.peek().type() == CommaToken));
+  DCHECK(range.atEnd() || (range.peek().type() == CommaToken));
 
   CSSVariableData* variableData = valueForCustomProperty(variableName);
   if (!variableData ||
@@ -198,7 +198,7 @@ const CSSValue* CSSVariableResolver::resolveVariableReferences(
     CSSPropertyID id,
     const CSSValue& value,
     bool disallowAnimationTainted) {
-  ASSERT(!isShorthandProperty(id));
+  DCHECK(!isShorthandProperty(id));
 
   if (value.isPendingSubstitutionValue()) {
     return resolvePendingSubstitutions(state, id,

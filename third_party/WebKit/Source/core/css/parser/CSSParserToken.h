@@ -115,7 +115,7 @@ class CORE_EXPORT CSSParserToken {
   NumericValueType numericValueType() const;
   double numericValue() const;
   HashTokenType getHashTokenType() const {
-    ASSERT(m_type == HashToken);
+    DCHECK_EQ(m_type, static_cast<unsigned>(HashToken));
     return m_hashTokenType;
   }
   BlockType getBlockType() const { return static_cast<BlockType>(m_blockType); }
@@ -123,11 +123,11 @@ class CORE_EXPORT CSSParserToken {
     return static_cast<CSSPrimitiveValue::UnitType>(m_unit);
   }
   UChar32 unicodeRangeStart() const {
-    ASSERT(m_type == UnicodeRangeToken);
+    DCHECK_EQ(m_type, static_cast<unsigned>(UnicodeRangeToken));
     return m_unicodeRange.start;
   }
   UChar32 unicodeRangeEnd() const {
-    ASSERT(m_type == UnicodeRangeToken);
+    DCHECK_EQ(m_type, static_cast<unsigned>(UnicodeRangeToken));
     return m_unicodeRange.end;
   }
   CSSValueID id() const;

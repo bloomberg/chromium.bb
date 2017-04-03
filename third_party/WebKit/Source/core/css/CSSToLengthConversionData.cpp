@@ -41,7 +41,7 @@ CSSToLengthConversionData::FontSizes::FontSizes(float em,
                                                 const Font* font)
     : m_em(em), m_rem(rem), m_font(font) {
   // FIXME: Improve RAII of StyleResolverState to use const Font&.
-  ASSERT(m_font);
+  DCHECK(m_font);
 }
 
 CSSToLengthConversionData::FontSizes::FontSizes(const ComputedStyle* style,
@@ -51,7 +51,7 @@ CSSToLengthConversionData::FontSizes::FontSizes(const ComputedStyle* style,
                 &style->font()) {}
 
 float CSSToLengthConversionData::FontSizes::ex() const {
-  ASSERT(m_font);
+  DCHECK(m_font);
   const SimpleFontData* fontData = m_font->primaryFont();
   DCHECK(fontData);
 
@@ -176,7 +176,7 @@ double CSSToLengthConversionData::zoomedComputedPixels(
       return value * chFontSize();
 
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
 }

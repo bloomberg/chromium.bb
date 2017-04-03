@@ -93,7 +93,7 @@ bool CSSImageSetValue::isCachePending(float deviceScaleFactor) const {
 }
 
 StyleImage* CSSImageSetValue::cachedImage(float deviceScaleFactor) const {
-  ASSERT(!isCachePending(deviceScaleFactor));
+  DCHECK(!isCachePending(deviceScaleFactor));
   return m_cachedImage.get();
 }
 

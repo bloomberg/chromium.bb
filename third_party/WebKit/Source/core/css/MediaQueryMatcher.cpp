@@ -38,7 +38,7 @@ MediaQueryMatcher* MediaQueryMatcher::create(Document& document) {
 
 MediaQueryMatcher::MediaQueryMatcher(Document& document)
     : m_document(&document) {
-  ASSERT(m_document);
+  DCHECK(m_document);
 }
 
 MediaQueryMatcher::~MediaQueryMatcher() {}
@@ -56,7 +56,7 @@ MediaQueryEvaluator* MediaQueryMatcher::createEvaluator() const {
 }
 
 bool MediaQueryMatcher::evaluate(const MediaQuerySet* media) {
-  ASSERT(!m_document || m_document->frame() || !m_evaluator);
+  DCHECK(!m_document || m_document->frame() || !m_evaluator);
 
   if (!media)
     return false;

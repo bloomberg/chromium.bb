@@ -212,9 +212,9 @@ bool isSimpleSelectorValidAfterPseudoElement(
     return false;
   CSSSelector::PseudoType pseudo = simpleSelector.pseudoType();
   if (pseudo == CSSSelector::PseudoNot) {
-    ASSERT(simpleSelector.selectorList());
-    ASSERT(simpleSelector.selectorList()->first());
-    ASSERT(!simpleSelector.selectorList()->first()->tagHistory());
+    DCHECK(simpleSelector.selectorList());
+    DCHECK(simpleSelector.selectorList()->first());
+    DCHECK(!simpleSelector.selectorList()->first()->tagHistory());
     pseudo = simpleSelector.selectorList()->first()->getPseudoType();
   }
   return isPseudoClassValidAfterPseudoElement(pseudo, compoundPseudoElement);
@@ -346,7 +346,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range,
 
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeId(
     CSSParserTokenRange& range) {
-  ASSERT(range.peek().type() == HashToken);
+  DCHECK_EQ(range.peek().type(), HashToken);
   if (range.peek().getHashTokenType() != HashTokenId)
     return nullptr;
   std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::create();
@@ -358,8 +358,8 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeId(
 
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeClass(
     CSSParserTokenRange& range) {
-  ASSERT(range.peek().type() == DelimiterToken);
-  ASSERT(range.peek().delimiter() == '.');
+  DCHECK_EQ(range.peek().type(), DelimiterToken);
+  DCHECK_EQ(range.peek().delimiter(), '.');
   range.consume();
   if (range.peek().type() != IdentToken)
     return nullptr;
@@ -372,7 +372,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeClass(
 
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeAttribute(
     CSSParserTokenRange& range) {
-  ASSERT(range.peek().type() == LeftBracketToken);
+  DCHECK_EQ(range.peek().type(), LeftBracketToken);
   CSSParserTokenRange block = range.consumeBlock();
   block.consumeWhitespace();
 
@@ -420,7 +420,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumeAttribute(
 
 std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumePseudo(
     CSSParserTokenRange& range) {
-  ASSERT(range.peek().type() == ColonToken);
+  DCHECK_EQ(range.peek().type(), ColonToken);
   range.consume();
 
   int colons = 1;

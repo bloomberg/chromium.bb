@@ -154,10 +154,10 @@ StyleRuleBase* StyleRuleBase::copy() const {
       return toStyleRuleNamespace(this)->copy();
     case Charset:
     case Keyframe:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -195,7 +195,7 @@ CSSRule* StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet,
       break;
     case Keyframe:
     case Charset:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
   if (parentRule)

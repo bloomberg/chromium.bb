@@ -88,10 +88,10 @@ static EDisplay equivalentBlockDisplay(EDisplay display) {
     case EDisplay::kTableCaption:
       return EDisplay::kBlock;
     case EDisplay::kNone:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return display;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return EDisplay::kBlock;
 }
 

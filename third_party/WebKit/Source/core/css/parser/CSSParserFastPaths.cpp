@@ -105,7 +105,7 @@ static inline bool parseSimpleLength(const CharacterType* characters,
 static CSSValue* parseSimpleLengthValue(CSSPropertyID propertyId,
                                         const String& string,
                                         CSSParserMode cssParserMode) {
-  ASSERT(!string.isEmpty());
+  DCHECK(!string.isEmpty());
   bool acceptsNegativeNumbers = false;
 
   // In @viewport, width and height are shorthands, not simple length values.
@@ -472,7 +472,7 @@ static bool fastParseColorInternal(RGBA32& rgb,
 
 CSSValue* CSSParserFastPaths::parseColor(const String& string,
                                          CSSParserMode parserMode) {
-  ASSERT(!string.isEmpty());
+  DCHECK(!string.isEmpty());
   CSSValueID valueID = cssValueKeywordID(string);
   if (StyleColor::isColorKeyword(valueID)) {
     if (!isValueAllowedInMode(valueID, parserMode))
@@ -633,7 +633,7 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
              valueID == CSSValueHorizontal || valueID == CSSValueVertical ||
              valueID == CSSValueAuto;
     case CSSPropertyScrollBehavior:
-      ASSERT(RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
+      DCHECK(RuntimeEnabledFeatures::cssomSmoothScrollEnabled());
       return valueID == CSSValueAuto || valueID == CSSValueSmooth;
     case CSSPropertyShapeRendering:
       return valueID == CSSValueAuto || valueID == CSSValueOptimizeSpeed ||
@@ -666,12 +666,12 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
     case CSSPropertyTextCombineUpright:
       return valueID == CSSValueNone || valueID == CSSValueAll;
     case CSSPropertyTextDecorationStyle:
-      ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+      DCHECK(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
       return valueID == CSSValueSolid || valueID == CSSValueDouble ||
              valueID == CSSValueDotted || valueID == CSSValueDashed ||
              valueID == CSSValueWavy;
     case CSSPropertyTextJustify:
-      ASSERT(RuntimeEnabledFeatures::css3TextEnabled());
+      DCHECK(RuntimeEnabledFeatures::css3TextEnabled());
       return valueID == CSSValueInterWord || valueID == CSSValueDistribute ||
              valueID == CSSValueAuto || valueID == CSSValueNone;
     case CSSPropertyTextOrientation:
@@ -831,11 +831,11 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
       return valueID == CSSValueNormal || valueID == CSSValueBreakAll ||
              valueID == CSSValueKeepAll || valueID == CSSValueBreakWord;
     case CSSPropertyScrollSnapType:
-      ASSERT(RuntimeEnabledFeatures::cssScrollSnapPointsEnabled());
+      DCHECK(RuntimeEnabledFeatures::cssScrollSnapPointsEnabled());
       return valueID == CSSValueNone || valueID == CSSValueMandatory ||
              valueID == CSSValueProximity;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
 }
@@ -960,7 +960,7 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId) {
 static CSSValue* parseKeywordValue(CSSPropertyID propertyId,
                                    const String& string,
                                    CSSParserMode parserMode) {
-  ASSERT(!string.isEmpty());
+  DCHECK(!string.isEmpty());
 
   if (!CSSParserFastPaths::isKeywordPropertyID(propertyId)) {
     // All properties accept the values of "initial" and "inherit".
@@ -1191,7 +1191,7 @@ static CSSValueList* parseSimpleTransformList(const CharType* chars,
 
 static CSSValue* parseSimpleTransform(CSSPropertyID propertyID,
                                       const String& string) {
-  ASSERT(!string.isEmpty());
+  DCHECK(!string.isEmpty());
 
   if (propertyID != CSSPropertyTransform)
     return nullptr;

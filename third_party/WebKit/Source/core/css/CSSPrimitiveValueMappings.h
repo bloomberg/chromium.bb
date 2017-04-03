@@ -57,31 +57,31 @@ namespace blink {
 // TODO(sashab): Move these to CSSPrimitiveValue.h.
 template <>
 inline short CSSPrimitiveValue::convertTo() const {
-  ASSERT(isNumber());
+  DCHECK(isNumber());
   return clampTo<short>(getDoubleValue());
 }
 
 template <>
 inline unsigned short CSSPrimitiveValue::convertTo() const {
-  ASSERT(isNumber());
+  DCHECK(isNumber());
   return clampTo<unsigned short>(getDoubleValue());
 }
 
 template <>
 inline int CSSPrimitiveValue::convertTo() const {
-  ASSERT(isNumber());
+  DCHECK(isNumber());
   return clampTo<int>(getDoubleValue());
 }
 
 template <>
 inline unsigned CSSPrimitiveValue::convertTo() const {
-  ASSERT(isNumber());
+  DCHECK(isNumber());
   return clampTo<unsigned>(getDoubleValue());
 }
 
 template <>
 inline float CSSPrimitiveValue::convertTo() const {
-  ASSERT(isNumber());
+  DCHECK(isNumber());
   return clampTo<float>(getDoubleValue());
 }
 
@@ -100,7 +100,7 @@ inline LineClampValue CSSPrimitiveValue::convertTo() const {
   if (type() == UnitType::Percentage)
     return LineClampValue(clampTo<int>(m_value.num), LineClampPercentage);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LineClampValue();
 }
 
@@ -139,7 +139,7 @@ inline CSSReflectionDirection CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ReflectionBelow;
 }
 
@@ -162,7 +162,7 @@ inline ColumnFill CSSIdentifierValue::convertTo() const {
     return ColumnFillBalance;
   if (m_valueID == CSSValueAuto)
     return ColumnFillAuto;
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ColumnFillBalance;
 }
 
@@ -185,7 +185,7 @@ inline ColumnSpan CSSIdentifierValue::convertTo() const {
     case CSSValueAll:
       return ColumnSpanAll;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     // fall-through
     case CSSValueNone:
       return ColumnSpanNone;
@@ -284,7 +284,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(CompositeOperator e)
       m_valueID = CSSValuePlusLighter;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }
@@ -320,7 +320,7 @@ inline CompositeOperator CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CompositeClear;
 }
 
@@ -509,7 +509,7 @@ inline EBackfaceVisibility CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return BackfaceVisibilityHidden;
 }
 
@@ -542,7 +542,7 @@ inline EFillAttachment CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ScrollBackgroundAttachment;
 }
 
@@ -583,7 +583,7 @@ inline EFillBox CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return BorderFillBox;
 }
 
@@ -621,7 +621,7 @@ inline EFillRepeat CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return RepeatFill;
 }
 
@@ -659,7 +659,7 @@ inline EBoxPack CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return BoxPackJustify;
 }
 
@@ -702,7 +702,7 @@ inline EBoxAlignment CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return BSTRETCH;
 }
 
@@ -730,7 +730,7 @@ inline EBoxDecorationBreak CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return BoxDecorationBreakSlice;
 }
 
@@ -768,7 +768,7 @@ inline BackgroundEdgeOrigin CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TopEdge;
 }
 
@@ -796,7 +796,7 @@ inline EBoxSizing CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return EBoxSizing::kBorderBox;
 }
 
@@ -824,7 +824,7 @@ inline EBoxLines CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SINGLE;
 }
 
@@ -854,7 +854,7 @@ inline EBoxOrient CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return HORIZONTAL;
 }
 
@@ -892,7 +892,7 @@ inline EFlexDirection CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FlowRow;
 }
 
@@ -925,7 +925,7 @@ inline EFlexWrap CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FlexNoWrap;
 }
 
@@ -958,7 +958,7 @@ inline EFloat CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return EFloat::kNone;
 }
 
@@ -1034,7 +1034,7 @@ inline LineBreak CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return LineBreakAuto;
 }
 
@@ -1110,7 +1110,7 @@ inline EPosition CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return EPosition::kStatic;
 }
 
@@ -1152,7 +1152,7 @@ inline EResize CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return RESIZE_NONE;
 }
 
@@ -1180,7 +1180,7 @@ inline ETableLayout CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ETableLayout::kAuto;
 }
 
@@ -1233,7 +1233,7 @@ inline TextAlignLast CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextAlignLastAuto;
 }
 
@@ -1271,7 +1271,7 @@ inline TextJustify CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextJustifyAuto;
 }
 
@@ -1292,7 +1292,7 @@ inline TextDecoration CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextDecorationNone;
 }
 
@@ -1313,7 +1313,7 @@ inline TextDecorationStyle CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextDecorationStyleSolid;
 }
 
@@ -1345,7 +1345,7 @@ inline TextUnderlinePosition CSSIdentifierValue::convertTo() const {
 
   // FIXME: Implement support for 'under left' and 'under right' values.
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextUnderlinePositionAuto;
 }
 
@@ -1398,7 +1398,7 @@ inline ETextSecurity CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TSNONE;
 }
 
@@ -1433,7 +1433,7 @@ inline EUserDrag CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return DRAG_AUTO;
 }
 
@@ -1466,7 +1466,7 @@ inline EUserModify CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return READ_ONLY;
 }
 
@@ -1501,7 +1501,7 @@ inline EUserSelect CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SELECT_TEXT;
 }
 
@@ -1566,7 +1566,7 @@ inline EVerticalAlign CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return EVerticalAlign::kTop;
 }
 
@@ -1604,7 +1604,7 @@ inline EWordBreak CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return NormalWordBreak;
 }
 
@@ -1632,7 +1632,7 @@ inline EOverflowWrap CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return NormalOverflowWrap;
 }
 
@@ -1661,7 +1661,7 @@ inline TextCombine CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextCombineNone;
 }
 
@@ -1689,7 +1689,7 @@ inline RubyPosition CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return RubyPositionBefore;
 }
 
@@ -1717,7 +1717,7 @@ inline TextEmphasisPosition CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextEmphasisPositionOver;
 }
 
@@ -1745,7 +1745,7 @@ inline TextOverflow CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextOverflowClip;
 }
 
@@ -1773,7 +1773,7 @@ inline TextEmphasisFill CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextEmphasisFillFilled;
 }
 
@@ -1799,7 +1799,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisMark mark)
     case TextEmphasisMarkNone:
     case TextEmphasisMarkAuto:
     case TextEmphasisMarkCustom:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       m_valueID = CSSValueNone;
       break;
   }
@@ -1824,7 +1824,7 @@ inline TextEmphasisMark CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextEmphasisMarkNone;
 }
 
@@ -1859,7 +1859,7 @@ inline TextOrientation CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TextOrientationMixed;
 }
 
@@ -1878,7 +1878,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontDescription::Kerning kerning)
       return;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   m_valueID = CSSValueAuto;
 }
 
@@ -1895,7 +1895,7 @@ inline FontDescription::Kerning CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FontDescription::AutoKerning;
 }
 
@@ -1935,7 +1935,7 @@ inline ObjectFit CSSIdentifierValue::convertTo() const {
     case CSSValueScaleDown:
       return ObjectFitScaleDown;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return ObjectFitFill;
   }
 }
@@ -1955,7 +1955,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(EFillSizeType fillSize)
       break;
     case SizeLength:
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -1977,7 +1977,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontSmoothingMode smoothing)
       return;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   m_valueID = CSSValueAuto;
 }
 
@@ -1996,7 +1996,7 @@ inline FontSmoothingMode CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return AutoSmoothing;
 }
 
@@ -2033,7 +2033,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontWeight weight)
       return;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   m_valueID = CSSValueNormal;
 }
 
@@ -2066,7 +2066,7 @@ inline FontWeight CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FontWeightNormal;
 }
 
@@ -2085,7 +2085,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontStyle italic)
       return;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   m_valueID = CSSValueNormal;
 }
 
@@ -2101,7 +2101,7 @@ inline FontStyle CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FontStyleNormal;
 }
 
@@ -2138,7 +2138,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(FontStretch stretch)
       return;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   m_valueID = CSSValueNormal;
 }
 
@@ -2167,7 +2167,7 @@ inline FontStretch CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return FontStretchNormal;
 }
 
@@ -2205,7 +2205,7 @@ inline TextRenderingMode CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return AutoTextRendering;
 }
 
@@ -2245,7 +2245,7 @@ inline EOrder CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return EOrder::kLogical;
 }
 
@@ -2281,7 +2281,7 @@ inline ESpeak CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SpeakNormal;
 }
 
@@ -2379,7 +2379,7 @@ inline WebBlendMode CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return WebBlendModeNormal;
 }
 
@@ -2412,7 +2412,7 @@ inline LineCap CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ButtCap;
 }
 
@@ -2445,7 +2445,7 @@ inline LineJoin CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return MiterJoin;
 }
 
@@ -2473,7 +2473,7 @@ inline WindRule CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return RULE_NONZERO;
 }
 
@@ -2551,7 +2551,7 @@ inline EAlignmentBaseline CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return AB_AUTO;
 }
 
@@ -2594,7 +2594,7 @@ inline EImageRendering CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ImageRenderingAuto;
 }
 
@@ -2622,7 +2622,7 @@ inline ETransformStyle3D CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TransformStyle3DFlat;
 }
 
@@ -2655,7 +2655,7 @@ inline EBufferedRendering CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return BR_AUTO;
 }
 
@@ -2688,7 +2688,7 @@ inline EColorInterpolation CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CI_AUTO;
 }
 
@@ -2721,7 +2721,7 @@ inline EColorRendering CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CR_AUTO;
 }
 
@@ -2799,7 +2799,7 @@ inline EDominantBaseline CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return DB_AUTO;
 }
 
@@ -2837,7 +2837,7 @@ inline EShapeRendering CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return SR_AUTO;
 }
 
@@ -2870,7 +2870,7 @@ inline ETextAnchor CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TA_START;
 }
 
@@ -2898,7 +2898,7 @@ inline EVectorEffect CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return VE_NONE;
 }
 
@@ -2916,7 +2916,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(EPaintOrderType e)
       m_valueID = CSSValueMarkers;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       m_valueID = CSSValueFill;
       break;
   }
@@ -2935,7 +2935,7 @@ inline EPaintOrderType CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return PT_NONE;
 }
 
@@ -2963,7 +2963,7 @@ inline EMaskType CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return MT_LUMINANCE;
 }
 
@@ -2994,7 +2994,7 @@ inline TouchAction CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return TouchActionNone;
 }
 
@@ -3022,7 +3022,7 @@ inline EIsolation CSSIdentifierValue::convertTo() const {
       break;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return IsolationAuto;
 }
 
@@ -3044,7 +3044,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(CSSBoxType cssBox)
       break;
     case BoxMissing:
       // The missing box should convert to a null primitive value.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -3062,7 +3062,7 @@ inline CSSBoxType CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ContentBox;
 }
 
@@ -3153,7 +3153,7 @@ inline ItemPosition CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ItemPositionAuto;
 }
 
@@ -3222,7 +3222,7 @@ inline ContentPosition CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ContentPositionNormal;
 }
 
@@ -3263,7 +3263,7 @@ inline ContentDistributionType CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ContentDistributionStretch;
 }
 
@@ -3294,7 +3294,7 @@ inline OverflowAlignment CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return OverflowAlignmentUnsafe;
 }
 
@@ -3311,7 +3311,7 @@ inline CSSIdentifierValue::CSSIdentifierValue(ScrollBehavior behavior)
     case ScrollBehaviorInstant:
       // Behavior 'instant' is only allowed in ScrollOptions arguments passed to
       // CSSOM scroll APIs.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
 }
 
@@ -3325,7 +3325,7 @@ inline ScrollBehavior CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ScrollBehaviorAuto;
 }
 
@@ -3357,7 +3357,7 @@ inline ScrollSnapType CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ScrollSnapTypeNone;
 }
 
@@ -3409,7 +3409,7 @@ inline Containment CSSIdentifierValue::convertTo() const {
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return ContainsNone;
 }
 

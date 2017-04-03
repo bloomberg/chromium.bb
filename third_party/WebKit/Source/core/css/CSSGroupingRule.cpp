@@ -51,7 +51,7 @@ CSSGroupingRule::~CSSGroupingRule() {}
 unsigned CSSGroupingRule::insertRule(const String& ruleString,
                                      unsigned index,
                                      ExceptionState& exceptionState) {
-  ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
+  DCHECK_EQ(m_childRuleCSSOMWrappers.size(), m_groupRule->childRules().size());
 
   if (index > m_groupRule->childRules().size()) {
     exceptionState.throwDOMException(
@@ -99,7 +99,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString,
 
 void CSSGroupingRule::deleteRule(unsigned index,
                                  ExceptionState& exceptionState) {
-  ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
+  DCHECK_EQ(m_childRuleCSSOMWrappers.size(), m_groupRule->childRules().size());
 
   if (index >= m_groupRule->childRules().size()) {
     exceptionState.throwDOMException(
@@ -133,7 +133,7 @@ unsigned CSSGroupingRule::length() const {
 CSSRule* CSSGroupingRule::item(unsigned index) const {
   if (index >= length())
     return nullptr;
-  ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
+  DCHECK_EQ(m_childRuleCSSOMWrappers.size(), m_groupRule->childRules().size());
   Member<CSSRule>& rule = m_childRuleCSSOMWrappers[index];
   if (!rule)
     rule = m_groupRule->childRules()[index]->createCSSOMWrapper(
@@ -149,7 +149,7 @@ CSSRuleList* CSSGroupingRule::cssRules() const {
 }
 
 void CSSGroupingRule::reattach(StyleRuleBase* rule) {
-  ASSERT(rule);
+  DCHECK(rule);
   m_groupRule = static_cast<StyleRuleGroup*>(rule);
   for (unsigned i = 0; i < m_childRuleCSSOMWrappers.size(); ++i) {
     if (m_childRuleCSSOMWrappers[i])

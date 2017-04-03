@@ -121,7 +121,7 @@ static CSSValueList* createPositionListForLayer(CSSPropertyID propertyID,
   positionList->append(
       *zoomAdjustedPixelValueForLength(layer.xPosition(), style));
   if (layer.isBackgroundYOriginSet()) {
-    ASSERT(propertyID == CSSPropertyBackgroundPosition ||
+    DCHECK(propertyID == CSSPropertyBackgroundPosition ||
            propertyID == CSSPropertyWebkitMaskPosition);
     positionList->append(
         *CSSIdentifierValue::create(layer.backgroundYOrigin()));
@@ -519,7 +519,7 @@ static CSSValueList* valueForItemPositionWithOverflowAlignment(
   if (data.position() >= ItemPositionCenter &&
       data.overflow() != OverflowAlignmentDefault)
     result->append(*CSSIdentifierValue::create(data.overflow()));
-  ASSERT(result->length() <= 2);
+  DCHECK_LE(result->length(), 2u);
   return result;
 }
 
@@ -534,7 +534,7 @@ static CSSValueList* valuesForGridShorthand(
     const CSSValue* value = ComputedStyleCSSValueMapping::get(
         shorthand.properties()[i], style, layoutObject, styledNode,
         allowVisitedStyle);
-    ASSERT(value);
+    DCHECK(value);
     list->append(*value);
   }
   return list;
@@ -551,7 +551,7 @@ static CSSValueList* valuesForShorthandProperty(
     const CSSValue* value = ComputedStyleCSSValueMapping::get(
         shorthand.properties()[i], style, layoutObject, styledNode,
         allowVisitedStyle);
-    ASSERT(value);
+    DCHECK(value);
     list->append(*value);
   }
   return list;
@@ -600,7 +600,7 @@ static CSSValue* valuesForFontVariantProperty(const ComputedStyle& style,
         const CSSValue* value = ComputedStyleCSSValueMapping::get(
             fontVariantShorthand().properties()[i], style, layoutObject,
             styledNode, allowVisitedStyle);
-        ASSERT(value);
+        DCHECK(value);
         if (value->isIdentifierValue() &&
             toCSSIdentifierValue(value)->getValueID() == CSSValueNone) {
           list->append(*expandNoneLigaturesValue());
@@ -632,7 +632,7 @@ static CSSValueList* valuesForBackgroundShorthand(
       const CSSValue* value = ComputedStyleCSSValueMapping::get(
           CSSPropertyBackgroundColor, style, layoutObject, styledNode,
           allowVisitedStyle);
-      ASSERT(value);
+      DCHECK(value);
       beforeSlash->append(*value);
     }
     beforeSlash->append(currLayer->image()
@@ -689,8 +689,8 @@ valueForContentPositionAndDistributionWithOverflowAlignment(
        data.distribution() != ContentDistributionDefault) &&
       data.overflow() != OverflowAlignmentDefault)
     result->append(*CSSIdentifierValue::create(data.overflow()));
-  ASSERT(result->length() > 0);
-  ASSERT(result->length() <= 3);
+  DCHECK_GT(result->length(), 0u);
+  DCHECK_LE(result->length(), 3u);
   return result;
 }
 
@@ -908,7 +908,7 @@ static CSSValue* specifiedValueForGridTrackSize(const GridTrackSize& trackSize,
       return fitContentTrackBreadth;
     }
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -1145,7 +1145,7 @@ static CSSValue* valueForTextDecorationStyle(
       return CSSIdentifierValue::create(CSSValueWavy);
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CSSInitialValue::create();
 }
 
@@ -1187,7 +1187,7 @@ static CSSValue* touchActionFlagsToCSSValue(TouchAction touchAction) {
       list->append(*CSSIdentifierValue::create(CSSValuePinchZoom));
   }
 
-  ASSERT(list->length());
+  DCHECK(list->length());
   return list;
 }
 
@@ -1232,7 +1232,7 @@ static CSSValue* valueForAnimationDirection(
     case Timing::PlaybackDirection::ALTERNATE_REVERSE:
       return CSSIdentifierValue::create(CSSValueAlternateReverse);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }
@@ -1262,7 +1262,7 @@ static CSSValue* valueForAnimationFillMode(Timing::FillMode fillMode) {
     case Timing::FillMode::BOTH:
       return CSSIdentifierValue::create(CSSValueBoth);
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
   }
 }
@@ -1277,7 +1277,7 @@ static CSSValue* valueForAnimationIterationCount(double iterationCount) {
 static CSSValue* valueForAnimationPlayState(EAnimPlayState playState) {
   if (playState == AnimPlayStatePlaying)
     return CSSIdentifierValue::create(CSSValueRunning);
-  ASSERT(playState == AnimPlayStatePaused);
+  DCHECK_EQ(playState, AnimPlayStatePaused);
   return CSSIdentifierValue::create(CSSValuePaused);
 }
 
@@ -1304,7 +1304,7 @@ static CSSValue* createTimingFunctionValue(
             valueId = CSSValueEaseInOut;
             break;
           default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return nullptr;
         }
         return CSSIdentifierValue::create(valueId);
@@ -1465,7 +1465,7 @@ static CSSValue* createTransitionPropertyValue(
     return CSSIdentifierValue::create(CSSValueNone);
   if (property.propertyType == CSSTransitionData::TransitionUnknownProperty)
     return CSSCustomIdentValue::create(property.propertyString);
-  ASSERT(property.propertyType == CSSTransitionData::TransitionKnownProperty);
+  DCHECK_EQ(property.propertyType, CSSTransitionData::TransitionKnownProperty);
   return CSSCustomIdentValue::create(
       getPropertyNameAtomicString(property.unresolvedProperty));
 }
@@ -1494,7 +1494,7 @@ CSSValueID valueForQuoteType(const QuoteType quoteType) {
     case OPEN_QUOTE:
       return CSSValueOpenQuote;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return CSSValueInvalid;
 }
 
@@ -1505,7 +1505,7 @@ static CSSValue* valueForContentData(const ComputedStyle& style) {
     if (contentData->isCounter()) {
       const CounterContent* counter =
           toCounterContentData(contentData)->counter();
-      ASSERT(counter);
+      DCHECK(counter);
       CSSCustomIdentValue* identifier =
           CSSCustomIdentValue::create(counter->identifier());
       CSSStringValue* separator = CSSStringValue::create(counter->separator());
@@ -1521,7 +1521,7 @@ static CSSValue* valueForContentData(const ComputedStyle& style) {
       list->append(*CSSCounterValue::create(identifier, listStyle, separator));
     } else if (contentData->isImage()) {
       const StyleImage* image = toImageContentData(contentData)->image();
-      ASSERT(image);
+      DCHECK(image);
       list->append(*image->computedCSSValue());
     } else if (contentData->isText()) {
       list->append(
@@ -1530,7 +1530,7 @@ static CSSValue* valueForContentData(const ComputedStyle& style) {
       const QuoteType quoteType = toQuoteContentData(contentData)->quote();
       list->append(*CSSIdentifierValue::create(valueForQuoteType(quoteType)));
     } else {
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
     }
   }
   return list;
@@ -1576,7 +1576,7 @@ static CSSValue* valueForShape(const ComputedStyle& style,
     return CSSIdentifierValue::create(CSSValueNone);
   }
 
-  ASSERT(shapeValue->type() == ShapeValue::Shape);
+  DCHECK_EQ(shapeValue->type(), ShapeValue::Shape);
 
   CSSValueList* list = CSSValueList::createSpaceSeparated();
   list->append(*valueForBasicShape(style, shapeValue->shape()));
@@ -1705,7 +1705,7 @@ static CSSValue* paintOrderToCSSValueList(const SVGComputedStyle& svgStyle) {
         break;
       case PT_NONE:
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
   }
@@ -1855,7 +1855,7 @@ CSSValue* ComputedStyleCSSValueMapping::valueForFilter(
         break;
       }
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
     list->append(*filterValue);
@@ -2448,7 +2448,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
           list->append(*CSSIdentifierValue::create(CSSValueColumn));
           break;
         default:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
       }
 
       switch (style.getGridAutoFlow()) {
@@ -2506,7 +2506,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
                                     styledNode, allowVisitedStyle);
     case CSSPropertyGridTemplateAreas:
       if (!style.namedGridAreaRowCount()) {
-        ASSERT(!style.namedGridAreaColumnCount());
+        DCHECK(!style.namedGridAreaColumnCount());
         return CSSIdentifierValue::create(CSSValueNone);
       }
 
@@ -2798,7 +2798,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
         case TextEmphasisMarkCustom:
           return CSSStringValue::create(style.textEmphasisCustomMark());
         case TextEmphasisMarkAuto:
-          ASSERT_NOT_REACHED();
+          NOTREACHED();
         // Fall through
         case TextEmphasisMarkDot:
         case TextEmphasisMarkCircle:
@@ -2873,7 +2873,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
           return zoomAdjustedPixelValueForLength(style.getVerticalAlignLength(),
                                                  style);
       }
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
     case CSSPropertyVisibility:
       return CSSIdentifierValue::create(style.visibility());
@@ -3435,7 +3435,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitMaxLogicalWidth:
     case CSSPropertyWebkitMaxLogicalHeight:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
 
     // Unimplemented @font-face properties.
@@ -3557,7 +3557,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
           return zoomAdjustedPixelValueForLength(svgStyle.baselineShiftValue(),
                                                  style);
       }
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
     }
     case CSSPropertyBufferedRendering:
@@ -3682,19 +3682,19 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
         list->append(*CSSIdentifierValue::create(CSSValuePaint));
       if (style.containsSize())
         list->append(*CSSIdentifierValue::create(CSSValueSize));
-      ASSERT(list->length());
+      DCHECK(list->length());
       return list;
     }
     case CSSPropertyVariable:
       // Variables are retrieved via get(AtomicString).
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
     case CSSPropertyAll:
       return nullptr;
     default:
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

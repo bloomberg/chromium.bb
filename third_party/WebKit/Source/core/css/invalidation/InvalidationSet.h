@@ -166,7 +166,7 @@ class CORE_EXPORT InvalidationSet {
   explicit InvalidationSet(InvalidationType);
 
   ~InvalidationSet() {
-    RELEASE_ASSERT(m_isAlive);
+    CHECK(m_isAlive);
     m_isAlive = false;
   }
 

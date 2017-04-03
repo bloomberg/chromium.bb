@@ -52,7 +52,7 @@ class CORE_EXPORT CSSFontFace final
       : m_ranges(adoptRef(new UnicodeRangeSet(ranges))),
         m_segmentedFontFace(nullptr),
         m_fontFace(fontFace) {
-    ASSERT(m_fontFace);
+    DCHECK(m_fontFace);
   }
 
   FontFace* fontFace() const { return m_fontFace; }

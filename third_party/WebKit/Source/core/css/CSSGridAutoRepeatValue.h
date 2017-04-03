@@ -39,7 +39,7 @@ class CSSGridAutoRepeatValue : public CSSValueList {
  private:
   CSSGridAutoRepeatValue(CSSValueID id)
       : CSSValueList(GridAutoRepeatClass, SpaceSeparator), m_autoRepeatID(id) {
-    ASSERT(id == CSSValueAutoFill || id == CSSValueAutoFit);
+    DCHECK(id == CSSValueAutoFill || id == CSSValueAutoFit);
   }
 
   const CSSValueID m_autoRepeatID;

@@ -330,13 +330,13 @@ TransformOperations TransformBuilder::createTransformOperations(
       }
       case TransformOperation::Perspective: {
         double p = firstValue.computeLength<double>(conversionData);
-        ASSERT(p >= 0);
+        DCHECK_GE(p, 0);
         operations.operations().push_back(
             PerspectiveTransformOperation::create(p));
         break;
       }
       default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
     }
   }

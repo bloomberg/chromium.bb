@@ -31,12 +31,16 @@ MediaValues* MediaValues::createDynamicIfFrameExists(LocalFrame* frame) {
 }
 
 double MediaValues::calculateViewportWidth(LocalFrame* frame) {
-  ASSERT(frame && frame->view() && frame->document());
+  DCHECK(frame);
+  DCHECK(frame->view());
+  DCHECK(frame->document());
   return frame->view()->viewportSizeForMediaQueries().width();
 }
 
 double MediaValues::calculateViewportHeight(LocalFrame* frame) {
-  ASSERT(frame && frame->view() && frame->document());
+  DCHECK(frame);
+  DCHECK(frame->view());
+  DCHECK(frame->document());
   return frame->view()->viewportSizeForMediaQueries().height();
 }
 
@@ -59,7 +63,8 @@ int MediaValues::calculateDeviceHeight(LocalFrame* frame) {
 }
 
 bool MediaValues::calculateStrictMode(LocalFrame* frame) {
-  ASSERT(frame && frame->document());
+  DCHECK(frame);
+  DCHECK(frame->document());
   return !frame->document()->inQuirksMode();
 }
 
@@ -68,7 +73,9 @@ float MediaValues::calculateDevicePixelRatio(LocalFrame* frame) {
 }
 
 int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) {
-  ASSERT(frame && frame->page() && frame->page()->mainFrame());
+  DCHECK(frame);
+  DCHECK(frame->page());
+  DCHECK(frame->page()->mainFrame());
   if (!frame->page()->mainFrame()->isLocalFrame() ||
       frame->page()->chromeClient().screenInfo().isMonochrome)
     return 0;
@@ -76,7 +83,9 @@ int MediaValues::calculateColorBitsPerComponent(LocalFrame* frame) {
 }
 
 int MediaValues::calculateMonochromeBitsPerComponent(LocalFrame* frame) {
-  ASSERT(frame && frame->page() && frame->page()->mainFrame());
+  DCHECK(frame);
+  DCHECK(frame->page());
+  DCHECK(frame->page()->mainFrame());
   if (!frame->page()->mainFrame()->isLocalFrame() ||
       !frame->page()->chromeClient().screenInfo().isMonochrome)
     return 0;
@@ -88,14 +97,14 @@ int MediaValues::calculateDefaultFontSize(LocalFrame* frame) {
 }
 
 const String MediaValues::calculateMediaType(LocalFrame* frame) {
-  ASSERT(frame);
+  DCHECK(frame);
   if (!frame->view())
     return emptyAtom;
   return frame->view()->mediaType();
 }
 
 WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) {
-  ASSERT(frame);
+  DCHECK(frame);
   WebDisplayMode mode = frame->page()->settings().getDisplayModeOverride();
 
   if (mode != WebDisplayModeUndefined)
@@ -108,8 +117,9 @@ WebDisplayMode MediaValues::calculateDisplayMode(LocalFrame* frame) {
 }
 
 bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) {
-  ASSERT(frame && !frame->contentLayoutItem().isNull() &&
-         frame->contentLayoutItem().compositor());
+  DCHECK(frame);
+  DCHECK(!frame->contentLayoutItem().isNull());
+  DCHECK(frame->contentLayoutItem().compositor());
   bool threeDEnabled = false;
   if (LayoutViewItem view = frame->contentLayoutItem())
     threeDEnabled = view.compositor()->hasAcceleratedCompositing();
@@ -117,32 +127,38 @@ bool MediaValues::calculateThreeDEnabled(LocalFrame* frame) {
 }
 
 PointerType MediaValues::calculatePrimaryPointerType(LocalFrame* frame) {
-  ASSERT(frame && frame->settings());
+  DCHECK(frame);
+  DCHECK(frame->settings());
   return frame->settings()->getPrimaryPointerType();
 }
 
 int MediaValues::calculateAvailablePointerTypes(LocalFrame* frame) {
-  ASSERT(frame && frame->settings());
+  DCHECK(frame);
+  DCHECK(frame->settings());
   return frame->settings()->getAvailablePointerTypes();
 }
 
 HoverType MediaValues::calculatePrimaryHoverType(LocalFrame* frame) {
-  ASSERT(frame && frame->settings());
+  DCHECK(frame);
+  DCHECK(frame->settings());
   return frame->settings()->getPrimaryHoverType();
 }
 
 int MediaValues::calculateAvailableHoverTypes(LocalFrame* frame) {
-  ASSERT(frame && frame->settings());
+  DCHECK(frame);
+  DCHECK(frame->settings());
   return frame->settings()->getAvailableHoverTypes();
 }
 
 DisplayShape MediaValues::calculateDisplayShape(LocalFrame* frame) {
-  DCHECK(frame && frame->page());
+  DCHECK(frame);
+  DCHECK(frame->page());
   return frame->page()->chromeClient().screenInfo().displayShape;
 }
 
 ColorSpaceGamut MediaValues::calculateColorGamut(LocalFrame* frame) {
-  DCHECK(frame && frame->page());
+  DCHECK(frame);
+  DCHECK(frame->page());
   return ColorSpaceUtilities::getColorSpaceGamut(
       frame->page()->chromeClient().screenInfo());
 }
@@ -214,7 +230,7 @@ LocalFrame* MediaValues::frameFrom(Document& document) {
   Document* executingDocument = document.importsController()
                                     ? document.importsController()->master()
                                     : &document;
-  ASSERT(executingDocument);
+  DCHECK(executingDocument);
   return executingDocument->frame();
 }
 
