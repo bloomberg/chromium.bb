@@ -32,38 +32,64 @@
 
 namespace blink {
 
+const Length& LengthBox::logicalLeft(WritingMode writingMode,
+                                     const Length& left,
+                                     const Length& top) {
+  return isHorizontalWritingMode(writingMode) ? left : top;
+}
+
+const Length& LengthBox::logicalRight(WritingMode writingMode,
+                                      const Length& right,
+                                      const Length& bottom) {
+  return isHorizontalWritingMode(writingMode) ? right : bottom;
+}
+
+const Length& LengthBox::before(WritingMode writingMode,
+                                const Length& top,
+                                const Length& left,
+                                const Length& right) {
+  switch (writingMode) {
+    case WritingMode::kHorizontalTb:
+      return top;
+    case WritingMode::kVerticalLr:
+      return left;
+    case WritingMode::kVerticalRl:
+      return right;
+  }
+  NOTREACHED();
+  return top;
+}
+
+const Length& LengthBox::after(WritingMode writingMode,
+                               const Length& bottom,
+                               const Length& left,
+                               const Length& right) {
+  switch (writingMode) {
+    case WritingMode::kHorizontalTb:
+      return bottom;
+    case WritingMode::kVerticalLr:
+      return right;
+    case WritingMode::kVerticalRl:
+      return left;
+  }
+  NOTREACHED();
+  return bottom;
+}
+
 const Length& LengthBox::logicalLeft(WritingMode writingMode) const {
-  return isHorizontalWritingMode(writingMode) ? m_left : m_top;
+  return LengthBox::logicalLeft(writingMode, m_left, m_top);
 }
 
 const Length& LengthBox::logicalRight(WritingMode writingMode) const {
-  return isHorizontalWritingMode(writingMode) ? m_right : m_bottom;
+  return LengthBox::logicalRight(writingMode, m_right, m_bottom);
 }
 
 const Length& LengthBox::before(WritingMode writingMode) const {
-  switch (writingMode) {
-    case WritingMode::kHorizontalTb:
-      return m_top;
-    case WritingMode::kVerticalLr:
-      return m_left;
-    case WritingMode::kVerticalRl:
-      return m_right;
-  }
-  ASSERT_NOT_REACHED();
-  return m_top;
+  return LengthBox::before(writingMode, m_top, m_left, m_right);
 }
 
 const Length& LengthBox::after(WritingMode writingMode) const {
-  switch (writingMode) {
-    case WritingMode::kHorizontalTb:
-      return m_bottom;
-    case WritingMode::kVerticalLr:
-      return m_right;
-    case WritingMode::kVerticalRl:
-      return m_left;
-  }
-  ASSERT_NOT_REACHED();
-  return m_bottom;
+  return LengthBox::after(writingMode, m_bottom, m_left, m_right);
 }
 
 const Length& LengthBox::start(WritingMode writingMode,

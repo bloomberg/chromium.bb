@@ -47,7 +47,10 @@ class CORE_EXPORT StyleSurroundData : public RefCounted<StyleSurroundData> {
   bool operator==(const StyleSurroundData&) const;
   bool operator!=(const StyleSurroundData& o) const { return !(*this == o); }
 
-  LengthBox offset;
+  Length m_left;
+  Length m_right;
+  Length m_top;
+  Length m_bottom;
   LengthBox margin;
   LengthBox padding;
   BorderData border;

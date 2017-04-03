@@ -27,13 +27,17 @@ StyleSurroundData::StyleSurroundData() : margin(Fixed), padding(Fixed) {}
 
 StyleSurroundData::StyleSurroundData(const StyleSurroundData& o)
     : RefCounted<StyleSurroundData>(),
-      offset(o.offset),
+      m_left(o.m_left),
+      m_right(o.m_right),
+      m_top(o.m_top),
+      m_bottom(o.m_bottom),
       margin(o.margin),
       padding(o.padding),
       border(o.border) {}
 
 bool StyleSurroundData::operator==(const StyleSurroundData& o) const {
-  return offset == o.offset && margin == o.margin && padding == o.padding &&
+  return m_left == o.m_left && m_right == o.m_right && m_top == o.m_top &&
+         m_bottom == o.m_bottom && margin == o.margin && padding == o.padding &&
          border == o.border;
 }
 

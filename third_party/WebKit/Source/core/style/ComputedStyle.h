@@ -642,20 +642,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static Length initialOffset() { return Length(); }
 
   // left
-  const Length& left() const { return m_surround->offset.left(); }
-  void setLeft(const Length& v) { SET_VAR(m_surround, offset.m_left, v); }
+  const Length& left() const { return m_surround->m_left; }
+  void setLeft(const Length& v) { SET_VAR(m_surround, m_left, v); }
 
   // right
-  const Length& right() const { return m_surround->offset.right(); }
-  void setRight(const Length& v) { SET_VAR(m_surround, offset.m_right, v); }
+  const Length& right() const { return m_surround->m_right; }
+  void setRight(const Length& v) { SET_VAR(m_surround, m_right, v); }
 
   // top
-  const Length& top() const { return m_surround->offset.top(); }
-  void setTop(const Length& v) { SET_VAR(m_surround, offset.m_top, v); }
+  const Length& top() const { return m_surround->m_top; }
+  void setTop(const Length& v) { SET_VAR(m_surround, m_top, v); }
 
   // bottom
-  const Length& bottom() const { return m_surround->offset.bottom(); }
-  void setBottom(const Length& v) { SET_VAR(m_surround, offset.m_bottom, v); }
+  const Length& bottom() const { return m_surround->m_bottom; }
+  void setBottom(const Length& v) { SET_VAR(m_surround, m_bottom, v); }
 
   // box-shadow (aka -webkit-box-shadow)
   static ShadowList* initialBoxShadow() { return 0; }
@@ -3067,16 +3067,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Offset utility functions.
   // Accessors for positioned object edges that take into account writing mode.
   const Length& logicalLeft() const {
-    return m_surround->offset.logicalLeft(getWritingMode());
+    return LengthBox::logicalLeft(getWritingMode(), left(), top());
   }
   const Length& logicalRight() const {
-    return m_surround->offset.logicalRight(getWritingMode());
+    return LengthBox::logicalRight(getWritingMode(), right(), bottom());
   }
   const Length& logicalTop() const {
-    return m_surround->offset.before(getWritingMode());
+    return LengthBox::before(getWritingMode(), top(), left(), right());
   }
   const Length& logicalBottom() const {
-    return m_surround->offset.after(getWritingMode());
+    return LengthBox::after(getWritingMode(), bottom(), left(), right());
+  }
+  bool offsetEqual(const ComputedStyle& other) const {
+    return left() == other.left() && right() == other.right() &&
+           top() == other.top() && bottom() == other.bottom();
   }
 
   // Whether or not a positioned element requires normal flow x/y to be computed

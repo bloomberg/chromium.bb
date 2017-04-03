@@ -542,7 +542,7 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
   }
 
   if (!diff.needsFullLayout() && position() != EPosition::kStatic &&
-      m_surround->offset != other.m_surround->offset) {
+      !offsetEqual(other)) {
     // Optimize for the case where a positioned layer is moving but not changing
     // size.
     if (dependenceOnContentHeightHasChanged(*this, other))
@@ -594,8 +594,7 @@ bool ComputedStyle::scrollAnchorDisablingPropertyChanged(
   }
 
   if (m_surround.get() != other.m_surround.get()) {
-    if (m_surround->margin != other.m_surround->margin ||
-        m_surround->offset != other.m_surround->offset ||
+    if (m_surround->margin != other.m_surround->margin || !offsetEqual(other) ||
         m_surround->padding != other.m_surround->padding)
       return true;
   }

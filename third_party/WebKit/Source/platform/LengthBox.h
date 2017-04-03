@@ -53,6 +53,22 @@ class PLATFORM_EXPORT LengthBox {
         m_top(Length(t, Fixed)),
         m_bottom(Length(b, Fixed)) {}
 
+  // For use in ComputedStyle.h
+  static const Length& logicalLeft(WritingMode,
+                                   const Length& left,
+                                   const Length& top);
+  static const Length& logicalRight(WritingMode,
+                                    const Length& right,
+                                    const Length& bottom);
+  static const Length& before(WritingMode,
+                              const Length& top,
+                              const Length& left,
+                              const Length& right);
+  static const Length& after(WritingMode,
+                             const Length& bottom,
+                             const Length& left,
+                             const Length& right);
+
   const Length& left() const { return m_left; }
   const Length& right() const { return m_right; }
   const Length& top() const { return m_top; }
