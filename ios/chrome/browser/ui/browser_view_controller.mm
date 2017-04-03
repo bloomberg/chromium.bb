@@ -1237,7 +1237,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (void)viewWillDisappear:(BOOL)animated {
   self.viewVisible = NO;
   [self updateDialogPresenterActiveState];
-  [[_model currentTab] updateFullscreenWithToolbarVisible:YES];
   [[_model currentTab] wasHidden];
   [_bookmarkInteractionController dismissSnackbar];
   if (IsIPadIdiom()) {
