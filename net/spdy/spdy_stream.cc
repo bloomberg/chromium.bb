@@ -560,15 +560,17 @@ void SpdyStream::OnPaddingConsumed(size_t len) {
 void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
                                       size_t frame_size) {
   // PRIORITY writes are allowed at any time and do not trigger a state update.
-  if (frame_type == PRIORITY) {
+  if (frame_type == SpdyFrameType::PRIORITY) {
     return;
   }
 
   DCHECK_NE(type_, SPDY_PUSH_STREAM);
-  CHECK(frame_type == HEADERS || frame_type == DATA) << frame_type;
+  CHECK(frame_type == SpdyFrameType::HEADERS ||
+        frame_type == SpdyFrameType::DATA)
+      << frame_type;
 
-  int result =
-      (frame_type == HEADERS) ? OnHeadersSent() : OnDataSent(frame_size);
+  int result = (frame_type == SpdyFrameType::HEADERS) ? OnHeadersSent()
+                                                      : OnDataSent(frame_size);
   if (result == ERR_IO_PENDING) {
     // The write operation hasn't completed yet.
     return;
@@ -588,7 +590,7 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
   {
     base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
     write_handler_guard_ = true;
-    if (frame_type == HEADERS) {
+    if (frame_type == SpdyFrameType::HEADERS) {
       delegate_->OnHeadersSent();
     } else {
       delegate_->OnDataSent();
@@ -701,7 +703,7 @@ int SpdyStream::SendRequestHeaders(SpdyHeaderBlock request_headers,
   request_headers_valid_ = true;
   url_from_header_block_ = GetUrlFromHeaderBlock(request_headers_);
   pending_send_status_ = send_status;
-  session_->EnqueueStreamWrite(GetWeakPtr(), HEADERS,
+  session_->EnqueueStreamWrite(GetWeakPtr(), SpdyFrameType::HEADERS,
                                std::unique_ptr<SpdyBufferProducer>(
                                    new HeadersBufferProducer(GetWeakPtr())));
   return ERR_IO_PENDING;
@@ -871,7 +873,7 @@ void SpdyStream::QueueNextDataFrame() {
   }
 
   session_->EnqueueStreamWrite(
-      GetWeakPtr(), DATA,
+      GetWeakPtr(), SpdyFrameType::DATA,
       std::unique_ptr<SpdyBufferProducer>(
           new SimpleBufferProducer(std::move(data_buffer))));
 }
