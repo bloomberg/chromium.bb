@@ -58,16 +58,7 @@ set ERRORLEVEL=1
 goto :END
 
 :GIT_CHECK
-
-:: must explicitly use FIND_EXE to prevent this from grabbing e.g. gnuwin32 or
-:: msys versions.
-set FIND_EXE=%SYSTEMROOT%\System32\find.exe
-
-:: Check to see if we're on a 32 or 64 bit system
-:: (parens) are necessary, otherwise batch puts an extra space after 32.
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i "x86" > NUL && (set OS_BITS=32) || (set OS_BITS=64)
-
-"%WIN_TOOLS_ROOT_DIR%\python.bat" "%~dp0git_bootstrap.py" --bits "%OS_BITS%"
+"%WIN_TOOLS_ROOT_DIR%\python.bat" "%~dp0git_bootstrap.py"
 goto :END
 
 :returncode

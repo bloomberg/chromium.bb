@@ -6,6 +6,7 @@ import argparse
 import fnmatch
 import logging
 import os
+import platform
 import shutil
 import subprocess
 import sys
@@ -24,6 +25,11 @@ def _check_call(argv, **kwargs):
   """Wrapper for subprocess.check_call that adds logging."""
   logging.info('running %r', argv)
   subprocess.check_call(argv, **kwargs)
+
+
+def get_os_bitness():
+  """Returns bitness of operating system as int."""
+  return 64 if platform.machine().endswith('64') else 32
 
 
 def get_target_git_version():
@@ -148,8 +154,9 @@ def install_git(args, git_version, git_directory):
 
 def main(argv):
   parser = argparse.ArgumentParser()
-  parser.add_argument('--bits', type=int, choices=(32,64), default=64,
-                      help='Bitness of the client to install.')
+  parser.add_argument('--bits', type=int, choices=(32,64),
+                      help='Bitness of the client to install. Default on this'
+                      ' system: %(default)s', default=get_os_bitness())
   parser.add_argument('--cipd-client',
                       help='Path to CIPD client binary. default: %(default)s',
                       default=os.path.join(ROOT_DIR, 'cipd'+BAT_EXT))
