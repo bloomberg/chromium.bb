@@ -1215,9 +1215,10 @@ void RenderTextHarfBuzz::EnsureLayout() {
             FROM_HERE_WITH_EXPLICIT_FUNCTION("441028 HarfBuzzLineBreaker")));
 
     internal::TextRunList* run_list = GetRunList();
+    const int height = std::max(font_list().GetHeight(), min_line_height());
     HarfBuzzLineBreaker line_breaker(
-        display_rect().width(), font_list().GetBaseline(),
-        std::max(font_list().GetHeight(), min_line_height()),
+        display_rect().width(),
+        DetermineBaselineCenteringText(height, font_list()), height,
         word_wrap_behavior(), GetDisplayText(),
         multiline() ? &GetLineBreaks() : nullptr, *run_list);
 

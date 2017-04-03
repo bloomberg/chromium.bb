@@ -680,6 +680,10 @@ class GFX_EXPORT RenderText {
                                  size_t caret_pos,
                                  LogicalCursorDirection caret_affinity);
 
+  // Returns the baseline, with which the text best appears vertically centered.
+  static int DetermineBaselineCenteringText(const int display_height,
+                                            const FontList& font_list);
+
  private:
   friend class test::RenderTextTestApi;
 

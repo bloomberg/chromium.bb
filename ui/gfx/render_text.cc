@@ -66,29 +66,6 @@ const SkScalar kDiagonalStrikeMarginOffset = (SK_Scalar1 / 4);
 // re-calculation of baseline.
 const int kInvalidBaseline = INT_MAX;
 
-// Returns the baseline, with which the text best appears vertically centered.
-int DetermineBaselineCenteringText(const Rect& display_rect,
-                                   const FontList& font_list) {
-  const int display_height = display_rect.height();
-  const int font_height = font_list.GetHeight();
-  // Lower and upper bound of baseline shift as we try to show as much area of
-  // text as possible.  In particular case of |display_height| == |font_height|,
-  // we do not want to shift the baseline.
-  const int min_shift = std::min(0, display_height - font_height);
-  const int max_shift = std::abs(display_height - font_height);
-  const int baseline = font_list.GetBaseline();
-  const int cap_height = font_list.GetCapHeight();
-  const int internal_leading = baseline - cap_height;
-  // Some platforms don't support getting the cap height, and simply return
-  // the entire font ascent from GetCapHeight().  Centering the ascent makes
-  // the font look too low, so if GetCapHeight() returns the ascent, center
-  // the entire font height instead.
-  const int space =
-      display_height - ((internal_leading != 0) ? cap_height : font_height);
-  const int baseline_shift = space / 2 - internal_leading;
-  return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
-}
-
 int round(float value) {
   return static_cast<int>(floor(value + 0.5f));
 }
@@ -838,8 +815,10 @@ int RenderText::GetContentWidth() {
 }
 
 int RenderText::GetBaseline() {
-  if (baseline_ == kInvalidBaseline)
-    baseline_ = DetermineBaselineCenteringText(display_rect(), font_list());
+  if (baseline_ == kInvalidBaseline) {
+    baseline_ =
+        DetermineBaselineCenteringText(display_rect().height(), font_list());
+  }
   DCHECK_NE(kInvalidBaseline, baseline_);
   return baseline_;
 }
@@ -1398,6 +1377,28 @@ bool RenderText::RangeContainsCaret(const Range& range,
   size_t adjacent = (caret_affinity == CURSOR_BACKWARD) ?
       caret_pos - 1 : caret_pos + 1;
   return range.Contains(Range(caret_pos, adjacent));
+}
+
+// static
+int RenderText::DetermineBaselineCenteringText(const int display_height,
+                                               const FontList& font_list) {
+  const int font_height = font_list.GetHeight();
+  // Lower and upper bound of baseline shift as we try to show as much area of
+  // text as possible.  In particular case of |display_height| == |font_height|,
+  // we do not want to shift the baseline.
+  const int min_shift = std::min(0, display_height - font_height);
+  const int max_shift = std::abs(display_height - font_height);
+  const int baseline = font_list.GetBaseline();
+  const int cap_height = font_list.GetCapHeight();
+  const int internal_leading = baseline - cap_height;
+  // Some platforms don't support getting the cap height, and simply return
+  // the entire font ascent from GetCapHeight().  Centering the ascent makes
+  // the font look too low, so if GetCapHeight() returns the ascent, center
+  // the entire font height instead.
+  const int space =
+      display_height - ((internal_leading != 0) ? cap_height : font_height);
+  const int baseline_shift = space / 2 - internal_leading;
+  return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
