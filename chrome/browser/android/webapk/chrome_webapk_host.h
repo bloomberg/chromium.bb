@@ -17,7 +17,7 @@ enum class GooglePlayInstallState {
   SUPPORTED = 0,
   DISABLED_OTHER = 1,
   NO_PLAY_SERVICES = 2,
-  DISABLED_BY_VARIATIONS = 3,
+  // Deprecated: DISABLED_BY_VARIATIONS = 3,
   DISABLED_BY_PLAY = 4,
   MAX = 5
 };

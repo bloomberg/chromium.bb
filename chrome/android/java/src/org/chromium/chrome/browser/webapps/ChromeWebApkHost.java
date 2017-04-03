@@ -58,10 +58,6 @@ public class ChromeWebApkHost {
 
     /** Computes the GooglePlayInstallState. */
     private static int computeGooglePlayInstallState() {
-        if (!isGooglePlayInstallEnabledByChromeFeature()) {
-            return GooglePlayInstallState.DISABLED_BY_VARIATIONS;
-        }
-
         if (!ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                     ContextUtils.getApplicationContext(),
                     new UserRecoverableErrorHandler.Silent())) {
@@ -84,15 +80,6 @@ public class ChromeWebApkHost {
      */
     private static boolean canUseGooglePlayToInstallWebApk() {
         return getGooglePlayInstallState() == GooglePlayInstallState.SUPPORTED;
-    }
-
-    /**
-     * Returns whether Google Play install is enabled by Chrome. Does not check whether installing
-     * from Google Play is possible.
-     */
-    public static boolean isGooglePlayInstallEnabledByChromeFeature() {
-        return isEnabled() && LibraryLoader.isInitialized()
-                && nativeCanUseGooglePlayToInstallWebApk();
     }
 
     /**
@@ -164,7 +151,6 @@ public class ChromeWebApkHost {
         }
     }
 
-    private static native boolean nativeCanUseGooglePlayToInstallWebApk();
     private static native boolean nativeCanLaunchRendererInWebApkProcess();
     private static native boolean nativeCanInstallFromUnknownSources();
 }
