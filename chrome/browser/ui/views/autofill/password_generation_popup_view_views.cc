@@ -177,16 +177,17 @@ void PasswordGenerationPopupViewViews::CreatePasswordView() {
 }
 
 gfx::Size PasswordGenerationPopupViewViews::GetPreferredSizeOfPasswordView() {
-  int height = kPopupBorderThickness;
+  int width = controller_->GetMinimumWidth();
+  if (password_view_)
+    width = std::max(width, password_view_->GetMinimumSize().width());
+  int height = help_label_->GetHeightForWidth(width);
   if (controller_->display_password()) {
     // Add divider height as well.
     height +=
         PasswordGenerationPopupController::kPopupPasswordSectionHeight + 1;
   }
-  int width = controller_->GetMinimumWidth();
-  int popup_width = width - 2 * kPopupBorderThickness;
-  height += help_label_->GetHeightForWidth(popup_width);
-  return gfx::Size(width, height + kPopupBorderThickness);
+  return gfx::Size(width + 2 * kPopupBorderThickness,
+                   height + 2 * kPopupBorderThickness);
 }
 
 void PasswordGenerationPopupViewViews::Show() {
