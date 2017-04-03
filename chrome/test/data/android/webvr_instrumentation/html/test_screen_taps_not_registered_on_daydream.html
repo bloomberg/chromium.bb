@@ -15,7 +15,7 @@ Daydream View
     <script>
       var t = async_test("Screen taps not registered when in VR w/ DD View");
       window.addEventListener("vrdisplaypresentchange",
-          () => {finishJavascriptStep();}, false);
+          () => {finishJavaScriptStep();}, false);
       var numTaps = 0;
       webglCanvas.addEventListener("click", () => {numTaps++;}, false);
 
@@ -23,7 +23,7 @@ Daydream View
         t.step( () => {
           assert_equals(numTaps, 0, "No initial taps");
         });
-        finishJavascriptStep();
+        finishJavaScriptStep();
       }
 
       function stepVerifyNoAdditionalTaps() {

@@ -47,11 +47,11 @@ import java.util.concurrent.TimeoutException;
  *       match what we expect for that test
  * - Repeat:
  *   - Run any necessary Java-side code, e.g. trigger a user action
- *   - Trigger the next Javascript test step and wait for it to finish
+ *   - Trigger the next JavaScript test step and wait for it to finish
  *
- * The Javascript code will automatically process test results once all
+ * The JavaScript code will automatically process test results once all
  * testharness.js tests are done, just like in layout tests. Once the results
- * are processed, the Javascript code will automatically signal the Java code,
+ * are processed, the JavaScript code will automatically signal the Java code,
  * which can then grab the results and pass/fail the instrumentation test.
  */
 @CommandLineFlags.Add("enable-webvr")
@@ -87,19 +87,12 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     /**
      * Blocks until the promise returned by nagivator.getVRDisplays() resolves,
      * then checks whether a VRDisplay was actually found.
-     * @param webContents The WebContents to run the Javascript through
+     * @param webContents The WebContents to run the JavaScript through
      * @return Whether a VRDisplay was found
      */
     private boolean vrDisplayFound(WebContents webContents) {
-        pollJavascriptBoolean(POLL_TIMEOUT_SHORT_MS, "vrDisplayPromiseDone", webContents);
-        String result = "null";
-        try {
-            result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "vrDisplay", POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | TimeoutException e) {
-            return false;
-        }
-        return !result.equals("null");
+        pollJavaScriptBoolean("vrDisplayPromiseDone", POLL_TIMEOUT_SHORT_MS, webContents);
+        return !runJavaScriptOrFail("vrDisplay", POLL_TIMEOUT_SHORT_MS, webContents).equals("null");
     }
 
     /**
@@ -112,12 +105,12 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
-     * Taps in the middle of the screen then waits for the Javascript step to finish.
-     * @param webContents The WebContents for the tab the Javascript step is in
+     * Taps in the middle of the screen then waits for the JavaScript step to finish.
+     * @param webContents The WebContents for the tab the JavaScript step is in
      */
     private void enterVrTapAndWait(WebContents webContents) {
         enterVrTap();
-        waitOnJavascriptStep(webContents);
+        waitOnJavaScriptStep(webContents);
     }
 
     /**
@@ -128,13 +121,32 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
     }
 
     /**
-     * Simulate an NFC scan and wait for the Javascript code in the given
+     * Simulate an NFC scan and wait for the JavaScript code in the given
      * WebContents to signal that it is done with the step.
-     * @param webContents The WebContents for the Javascript that will be polled
+     * @param webContents The WebContents for the JavaScript that will be polled
      */
     private void simNfcScanAndWait(WebContents webContents) {
         simNfcScan();
-        waitOnJavascriptStep(webContents);
+        waitOnJavaScriptStep(webContents);
+    }
+
+    /**
+     * Helper function to run the given JavaScript, return the return value,
+     * and fail if a timeout/interrupt occurs so we don't have to catch or
+     * declare exceptions all the time.
+     * @param js The JavaScript to run
+     * @param timeout The timeout in milliseconds before a failure
+     * @param webContents The WebContents object to run the JavaScript in
+     * @return The return value of the JavaScript
+     */
+    private String runJavaScriptOrFail(String js, int timeout, WebContents webContents) {
+        try {
+            return JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                    webContents, js, timeout, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException | TimeoutException e) {
+            fail("Fatal interruption or timeout running JavaScript: " + js);
+        }
+        return "Not reached";
     }
 
     /**
@@ -143,24 +155,10 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * @return "Passed" if test passed, String with failure reason otherwise
      */
     private String checkResults(WebContents webContents) {
-        String result = "false";
-        try {
-            result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "testPassed", POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | TimeoutException e) {
-            // Do nothing - if it times out, the test will be marked as failed
-        }
-        if (result.equals("true")) {
+        if (runJavaScriptOrFail("testPassed", POLL_TIMEOUT_SHORT_MS, webContents).equals("true")) {
             return "Passed";
         }
-
-        try {
-            result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "resultString", POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | TimeoutException e) {
-            result = "Unable to retrieve failure reason";
-        }
-        return result;
+        return runJavaScriptOrFail("resultString", POLL_TIMEOUT_SHORT_MS, webContents);
     }
 
     /**
@@ -169,20 +167,19 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * @param webContents The WebContents for the tab to check test results in
      */
     private void endTest(WebContents webContents) {
-        String result = checkResults(webContents);
-        assertEquals("Passed", result);
+        assertEquals("Passed", checkResults(webContents));
     }
 
     /**
-     * Polls the provided Javascript boolean until the timeout is reached or
+     * Polls the provided JavaScript boolean until the timeout is reached or
      * the boolean is true.
+     * @param boolName The name of the JavaScript boolean or expression to poll
      * @param timeoutMs The polling timeout in milliseconds
-     * @param boolName The name of the Javascript boolean to poll
-     * @param webContents The WebContents to run the Javascript through
+     * @param webContents The WebContents to run the JavaScript through
      * @return True if the boolean evaluated to true, false if timed out
      */
-    private boolean pollJavascriptBoolean(
-            int timeoutMs, final String boolName, final WebContents webContents) {
+    private boolean pollJavaScriptBoolean(
+            final String boolName, int timeoutMs, final WebContents webContents) {
         try {
             CriteriaHelper.pollInstrumentationThread(Criteria.equals(true, new Callable<Boolean>() {
                 @Override
@@ -198,33 +195,33 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
                 }
             }), timeoutMs, POLL_CHECK_INTERVAL_LONG_MS);
         } catch (AssertionError e) {
-            Log.d(TAG, "pollJavascriptBoolean() timed out");
+            Log.d(TAG, "pollJavaScriptBoolean() timed out");
             return false;
         }
         return true;
     }
 
     /**
-     * Waits for a Javascript step to finish, asserting that the step finished
+     * Waits for a JavaScript step to finish, asserting that the step finished
      * instead of timing out.
-     * @param webContents The WebContents for the tab the Javascript step is in
+     * @param webContents The WebContents for the tab the JavaScript step is in
      */
-    private void waitOnJavascriptStep(WebContents webContents) {
-        assertTrue("Polling Javascript boolean javascriptDone succeeded",
-                pollJavascriptBoolean(POLL_TIMEOUT_LONG_MS, "javascriptDone", webContents));
+    private void waitOnJavaScriptStep(WebContents webContents) {
+        assertTrue("Polling JavaScript boolean javascriptDone succeeded",
+                pollJavaScriptBoolean("javascriptDone", POLL_TIMEOUT_LONG_MS, webContents));
         // Reset the synchronization boolean
-        JavaScriptUtils.executeJavaScript(webContents, "javascriptDone = false");
+        runJavaScriptOrFail("javascriptDone = false", POLL_TIMEOUT_SHORT_MS, webContents);
     }
 
     /**
-     * Executes a Javascript step function using the given WebContents.
-     * @param stepFunction The Javascript step function to call
-     * @param webContents The WebContents for the tab the Javascript is in
+     * Executes a JavaScript step function using the given WebContents.
+     * @param stepFunction The JavaScript step function to call
+     * @param webContents The WebContents for the tab the JavaScript is in
      */
     private void executeStepAndWait(String stepFunction, WebContents webContents) {
         // Run the step and block
         JavaScriptUtils.executeJavaScript(webContents, stepFunction);
-        waitOnJavascriptStep(webContents);
+        waitOnJavaScriptStep(webContents);
     }
 
     /**
@@ -298,7 +295,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
         executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
         // Tap and wait to enter VR
         enterVrTapAndWait(mWebContents);
-        // Tap and wait for Javascript to receive it
+        // Tap and wait for JavaScript to receive it
         enterVrTapAndWait(mWebContents);
         endTest(mWebContents);
     }

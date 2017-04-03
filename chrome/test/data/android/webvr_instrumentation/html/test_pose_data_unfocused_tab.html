@@ -26,7 +26,7 @@ Tests that WebVR doesn't update frame data when the tab is not focused
             assert_true(fd.pose != null,
                 "frame data's pose is non-null");
           });
-          finishJavascriptStep();
+          finishJavaScriptStep();
         }
         // Make sure at least one rAF call has happened so we get valid data
         window.requestAnimationFrame(onAnimationFrame);

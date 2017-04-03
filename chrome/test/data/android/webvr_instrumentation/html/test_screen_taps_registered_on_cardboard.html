@@ -15,7 +15,7 @@ Cardboard
     <script>
       var t = async_test("Screen taps registered when in VR w/ Cardboard");
       window.addEventListener("vrdisplaypresentchange",
-          () => {finishJavascriptStep();}, false);
+          () => {finishJavaScriptStep();}, false);
       var numTaps = 0;
       webglCanvas.addEventListener("click",
           () => {
@@ -30,7 +30,7 @@ Cardboard
         t.step( () => {
           assert_equals(numTaps, 0, "No initial taps");
         });
-        finishJavascriptStep();
+        finishJavaScriptStep();
       }
     </script>
   </body>

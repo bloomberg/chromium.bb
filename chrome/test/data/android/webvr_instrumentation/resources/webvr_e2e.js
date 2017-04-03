@@ -8,7 +8,7 @@ var asyncCounter = 0;
 var javascriptDone = false;
 var vrDisplayPromiseDone = false;
 
-function finishJavascriptStep() {
+function finishJavaScriptStep() {
   javascriptDone = true;
 }
 
@@ -38,5 +38,5 @@ add_completion_callback( (tests, harness_status) => {
   checkResultsForFailures(tests, harness_status);
   console.debug("Test result: " + (testPassed ? "Pass" : "Fail"));
   console.debug("Test result string: " + resultString);
-  finishJavascriptStep();
+  finishJavaScriptStep();
 });
