@@ -477,7 +477,7 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetTarget()->GetExperimental()->CreateTarget(
         target::CreateTargetParams::Builder()
-            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetUrl("about://blank")
             .SetBrowserContextId(context_id_one_)
             .Build(),
         base::Bind(&TargetDomainCreateTwoContexts::OnCreateTargetOneResult,
@@ -485,7 +485,7 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetTarget()->GetExperimental()->CreateTarget(
         target::CreateTargetParams::Builder()
-            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetUrl("about://blank")
             .SetBrowserContextId(context_id_two_)
             .Build(),
         base::Bind(&TargetDomainCreateTwoContexts::OnCreateTargetTwoResult,
@@ -525,19 +525,42 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
 
   void OnAttachedToTargetOne(
       std::unique_ptr<target::AttachToTargetResult> result) {
-    devtools_client_->GetTarget()->GetExperimental()->SendMessageToTarget(
-        target::SendMessageToTargetParams::Builder()
-            .SetTargetId(page_id_one_)
-            .SetMessage("{\"id\":101, \"method\": \"Page.enable\"}")
-            .Build());
+    StopNavigationOnTarget(101, page_id_one_);
   }
 
   void OnAttachedToTargetTwo(
       std::unique_ptr<target::AttachToTargetResult> result) {
+    StopNavigationOnTarget(102, page_id_two_);
+  }
+
+  void StopNavigationOnTarget(int message_id, std::string target_id) {
+    // Avoid triggering Page.loadEventFired for about://blank if loading hasn't
+    // finished yet.
     devtools_client_->GetTarget()->GetExperimental()->SendMessageToTarget(
         target::SendMessageToTargetParams::Builder()
-            .SetTargetId(page_id_two_)
-            .SetMessage("{\"id\":102, \"method\": \"Page.enable\"}")
+            .SetTargetId(target_id)
+            .SetMessage("{\"id\":" + std::to_string(message_id) +
+                        ", \"method\": \"Page.stopLoading\"}")
+            .Build());
+  }
+
+  void EnablePageOnTarget(int message_id, std::string target_id) {
+    devtools_client_->GetTarget()->GetExperimental()->SendMessageToTarget(
+        target::SendMessageToTargetParams::Builder()
+            .SetTargetId(target_id)
+            .SetMessage("{\"id\":" + std::to_string(message_id) +
+                        ", \"method\": \"Page.enable\"}")
+            .Build());
+  }
+
+  void NavigateTarget(int message_id, std::string target_id) {
+    devtools_client_->GetTarget()->GetExperimental()->SendMessageToTarget(
+        target::SendMessageToTargetParams::Builder()
+            .SetTargetId(target_id)
+            .SetMessage(
+                "{\"id\":" + std::to_string(message_id) +
+                ", \"method\": \"Page.navigate\", \"params\": {\"url\": \"" +
+                embedded_test_server()->GetURL("/hello.html").spec() + "\"}}")
             .Build());
   }
 
@@ -548,7 +571,7 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
     devtools_client_->GetTarget()->GetExperimental()->SendMessageToTarget(
         target::SendMessageToTargetParams::Builder()
             .SetTargetId(page_id_one_)
-            .SetMessage("{\"id\":201, \"method\": \"Runtime.evaluate\", "
+            .SetMessage("{\"id\":401, \"method\": \"Runtime.evaluate\", "
                         "\"params\": {\"expression\": "
                         "\"document.cookie = 'foo=bar';\"}}")
             .Build());
@@ -562,6 +585,7 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
     if (!message || !message->GetAsDictionary(&message_dict)) {
       return;
     }
+
     std::string method;
     if (message_dict->GetString("method", &method) &&
         method == "Page.loadEventFired") {
@@ -573,24 +597,50 @@ class TargetDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
       MaybeSetCookieOnPageOne();
       return;
     }
+
+    int message_id = 0;
+    if (!message_dict->GetInteger("id", &message_id))
+      return;
     const base::DictionaryValue* result_dict;
     if (message_dict->GetDictionary("result", &result_dict)) {
-      // There's a nested result. We want the inner one.
-      if (!result_dict->GetDictionary("result", &result_dict))
-        return;
-      std::string value;
-      if (params.GetTargetId() == page_id_one_) {
+      if (message_id == 101) {
+        // 101: Page.stopNavigation on target one.
+        EXPECT_EQ(page_id_one_, params.GetTargetId());
+        EnablePageOnTarget(201, page_id_one_);
+      } else if (message_id == 102) {
+        // 102: Page.stopNavigation on target two.
+        EXPECT_EQ(page_id_two_, params.GetTargetId());
+        EnablePageOnTarget(202, page_id_two_);
+      } else if (message_id == 201) {
+        // 201: Page.enable on target one.
+        EXPECT_EQ(page_id_one_, params.GetTargetId());
+        NavigateTarget(301, page_id_one_);
+      } else if (message_id == 202) {
+        // 202: Page.enable on target two.
+        EXPECT_EQ(page_id_two_, params.GetTargetId());
+        NavigateTarget(302, page_id_two_);
+      } else if (message_id == 401) {
+        // 401: Runtime.evaluate on target one.
+        EXPECT_EQ(page_id_one_, params.GetTargetId());
+
         // TODO(alexclarke): Make some better bindings
         // for Target.SendMessageToTarget.
         devtools_client_->GetTarget()->GetExperimental()->SendMessageToTarget(
             target::SendMessageToTargetParams::Builder()
                 .SetTargetId(page_id_two_)
-                .SetMessage("{\"id\":202, \"method\": \"Runtime.evaluate\", "
+                .SetMessage("{\"id\":402, \"method\": \"Runtime.evaluate\", "
                             "\"params\": {\"expression\": "
                             "\"document.cookie;\"}}")
                 .Build());
-      } else if (params.GetTargetId() == page_id_two_ &&
-                 result_dict->GetString("value", &value)) {
+      } else if (message_id == 402) {
+        // 402: Runtime.evaluate on target two.
+        EXPECT_EQ(page_id_two_, params.GetTargetId());
+
+        // There's a nested result. We want the inner one.
+        EXPECT_TRUE(result_dict->GetDictionary("result", &result_dict));
+
+        std::string value;
+        EXPECT_TRUE(result_dict->GetString("value", &value));
         EXPECT_EQ("", value) << "Page 2 should not share cookies from page one";
 
         devtools_client_->GetTarget()->GetExperimental()->CloseTarget(
