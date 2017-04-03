@@ -9,7 +9,6 @@
 <link rel="import" href="../controls/controlled_radio_button.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
-<link rel="import" href="../controls/settings_input.html">
 <link rel="import" href="../controls/settings_radio_group.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../route.html">
@@ -18,6 +17,7 @@
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 <link rel="import" href="appearance_fonts_page.html">
+<link rel="import" href="home_url_input.html">
 
 <dom-module id="settings-appearance-page">
   <template>
@@ -124,13 +124,9 @@
                 <!-- TODO(dbeam): this can show double indicators when both
                      homepage and whether to use the NTP as the homepage are
                      managed. -->
-                <settings-input id="customHomePage" pref="{{prefs.homepage}}"
-                    label="$i18n{enterCustomWebAddress}"
-                    can-tab="[[!prefs.homepage_is_newtabpage.value]]"
-                    no-extension-indicator
-                    error-message="$i18n{notValidWebAddress}"
-                    on-input="validate_" invalid="{{isHomeUrlInvalid_}}">
-                </settings-input>
+                <home-url-input id="customHomePage" pref="{{prefs.homepage}}"
+                    can-tab="[[!prefs.homepage_is_newtabpage.value]]">
+                </home-url-input>
               </controlled-radio-button>
               <template is="dom-if" if="[[prefs.homepage.extensionId]]">
                 <extension-controlled-indicator

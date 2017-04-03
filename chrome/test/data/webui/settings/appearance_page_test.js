@@ -75,8 +75,8 @@ TestAppearanceBrowserProxy.prototype = {
   },
 
   /** @override */
-  validateStartupPage: function(value) {
-    this.methodCalled('validateStartupPage');
+  validateStartupPage: function(url) {
+    this.methodCalled('validateStartupPage', url);
     return Promise.resolve(this.isHomeUrlValid_);
   },
 
@@ -250,34 +250,43 @@ suite('AppearanceHandler', function() {
 
     assertTrue(!!appearancePage.$$('.list-frame'));
   });
+});
+
+suite('HomeUrlInput', function() {
+  var homeUrlInput;
+
+  setup(function() {
+    appearanceBrowserProxy = new TestAppearanceBrowserProxy();
+    settings.AppearanceBrowserProxyImpl.instance_ = appearanceBrowserProxy;
+    PolymerTest.clearBody();
+
+    homeUrlInput = document.createElement('home-url-input');
+    homeUrlInput.set(
+        'pref', {type: chrome.settingsPrivate.PrefType.URL, value: 'test'});
+
+    document.body.appendChild(homeUrlInput);
+    Polymer.dom.flush();
+  });
 
   test('home button urls', function() {
-    appearancePage.set('prefs', {
-      browser: {show_home_button: {value: true}},
-      homepage: {type: chrome.settingsPrivate.PrefType.URL, value: 'test'}
-    });
+    assertFalse(homeUrlInput.invalid);
+    assertEquals(homeUrlInput.value, 'test');
 
-    Polymer.dom.flush();
-
-    var input = appearancePage.$$('#customHomePage');
-    assertTrue(!!input);
-    assertFalse(input.invalid);
-    assertEquals(input.value, 'test');
-
-    input.value = '@@@';
+    homeUrlInput.value = '@@@';
     appearanceBrowserProxy.setValidStartupPageResponse(false);
-    input.fire('input');
+    homeUrlInput.$.input.fire('input');
 
     return appearanceBrowserProxy.whenCalled('validateStartupPage')
-        .then(function() {
+        .then(function(url) {
+          assertEquals(homeUrlInput.value, url);
           Polymer.dom.flush();
-          assertEquals(input.value, '@@@');
-          assertTrue(input.invalid);
+          assertEquals(homeUrlInput.value, '@@@');  // Value hasn't changed.
+          assertTrue(homeUrlInput.invalid);
 
           // Should reset to default value on change event.
-          input.$$('paper-input').fire('change');
+          homeUrlInput.$.input.fire('change');
           Polymer.dom.flush();
-          assertEquals(input.value, 'test');
+          assertEquals(homeUrlInput.value, 'test');
         });
   });
 });

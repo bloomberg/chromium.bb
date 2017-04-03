@@ -52,5 +52,18 @@
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'home_url_input',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_indicator_behavior',
+        '<(DEPTH)/ui/webui/resources/cr_elements/policy/compiled_resources2.gyp:cr_policy_pref_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(EXTERNS_GYP):settings_private',
+        '../controls/compiled_resources2.gyp:pref_control_behavior',
+        'appearance_browser_proxy',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

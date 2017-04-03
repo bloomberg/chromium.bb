@@ -125,6 +125,12 @@
                  file="appearance_page/appearance_page.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_APPEARANCE_HOME_URL_INPUT_HTML"
+                 file="appearance_page/home_url_input.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_APPEARANCE_HOME_URL_INPUT_JS"
+                 file="appearance_page/home_url_input.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_BASIC_PAGE_JS"
                  file="basic_page/basic_page.js"
                  preprocess="true"
@@ -400,12 +406,6 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_DROPDOWN_MENU_JS"
                  file="controls/settings_dropdown_menu.js"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_INPUT_HTML"
-                 file="controls/settings_input.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_INPUT_JS"
-                 file="controls/settings_input.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_PREF_CONTROL_BEHAVIOR_HTML"
                  file="controls/pref_control_behavior.html"

@@ -4,11 +4,11 @@
 
 /**
  * @fileoverview
- * `settings-input` is a single-line text field for user input associated
- * with a pref value.
+ * `home-url-input` is a single-line text field intending to be used with
+ * prefs.homepage
  */
 Polymer({
-  is: 'settings-input',
+  is: 'home-url-input',
 
   behaviors: [CrPolicyPrefBehavior, PrefControlBehavior],
 
@@ -20,28 +20,28 @@ Polymer({
      */
     pref: {observer: 'prefChanged_'},
 
+    /* Set to true to disable editing the input. */
+    disabled: {type: Boolean, value: false, reflectToAttribute: true},
+
+    canTab: Boolean,
+
+    invalid: {type: Boolean, value: false},
+
     /* The current value of the input, reflected to/from |pref|. */
     value: {
       type: String,
       value: '',
       notify: true,
     },
+  },
 
-    /* Set to true to disable editing the input. */
-    disabled: {type: Boolean, value: false, reflectToAttribute: true},
+  /** @private {?settings.AppearanceBrowserProxy} */
+  browserProxy_: null,
 
-    canTab: Boolean,
-
-    invalid: {
-      type: Boolean,
-      value: false,
-      notify: true,
-    },
-
-    /* Properties for paper-input. This is not strictly necessary.
-     * Though it does define the types for the closure compiler. */
-    errorMessage: {type: String},
-    label: {type: String},
+  /** @override */
+  created: function() {
+    this.browserProxy_ = settings.AppearanceBrowserProxyImpl.getInstance();
+    this.noExtensionIndicator = true;  // Prevent double indicator.
   },
 
   /**
@@ -125,5 +125,17 @@ Polymer({
    */
   isDisabled_: function(disabled) {
     return disabled || this.isPrefEnforced();
+  },
+
+  /** @private */
+  validate_: function() {
+    if (this.value == '') {
+      this.invalid = false;
+      return;
+    }
+
+    this.browserProxy_.validateStartupPage(this.value).then(function(isValid) {
+      this.invalid = !isValid;
+    }.bind(this));
   },
 });

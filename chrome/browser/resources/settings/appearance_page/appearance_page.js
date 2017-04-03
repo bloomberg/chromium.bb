@@ -52,9 +52,6 @@ Polymer({
       },
     },
 
-    /** @private */
-    isHomeUrlInvalid_: Boolean,
-
     /**
      * List of options for the page zoom drop-down menu.
      * @type {!Array<number>}
@@ -274,23 +271,5 @@ Polymer({
    */
   zoomValuesEqual_: function(zoom1, zoom2) {
     return Math.abs(zoom1 - zoom2) <= 0.001;
-  },
-
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  validate_: function(event) {
-    var inputElement = Polymer.dom(event).localTarget;
-
-    if (inputElement.value == '') {
-      this.isHomeUrlInvalid_ = false;
-      return;
-    }
-
-    this.browserProxy_.validateStartupPage(inputElement.value)
-        .then(function(isValid) {
-          this.isHomeUrlInvalid_ = !isValid;
-        }.bind(this));
   },
 });

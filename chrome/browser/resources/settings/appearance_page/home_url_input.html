@@ -3,9 +3,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
-<link rel="import" href="pref_control_behavior.html">
+<link rel="import" href="../controls/pref_control_behavior.html">
+<link rel="import" href="appearance_browser_proxy.html">
 
-<dom-module id="settings-input">
+<dom-module id="home-url-input">
   <template>
     <style>
       :host {
@@ -15,11 +16,12 @@
       }
     </style>
     <div id="outerDiv" class="layout horizontal center">
-      <paper-input id="input" value="{{value}}" no-label-float label="[[label]]"
-          error-message="[[errorMessage]]" on-change="onChange_"
-          on-keydown="onKeydown_" disabled="[[isDisabled_(disabled, pref.*)]]"
-          stop-keyboard-event-propagation invalid="{{invalid}}"
-          tabindex$="[[getTabindex_(canTab)]]">
+      <paper-input id="input" value="{{value}}" no-label-float
+          label="$i18n{enterCustomWebAddress}" error-message="$i18n{notValid}"
+          on-change="onChange_" on-keydown="onKeydown_" on-input="validate_"
+          invalid="{{invalid}}" tabindex$="[[getTabindex_(canTab)]]"
+          disabled="[[isDisabled_(disabled, pref.*)]]"
+          stop-keyboard-event-propagation>
       </paper-input>
       <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]">
         <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
@@ -27,5 +29,5 @@
       </template>
     </div>
   </template>
-  <script src="settings_input.js"></script>
+  <script src="home_url_input.js"></script>
 </dom-module>
