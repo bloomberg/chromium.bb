@@ -194,6 +194,7 @@ STATIC_ASSERT_ENUM(WebAXEventValueChanged, AXObjectCache::AXValueChanged);
 STATIC_ASSERT_ENUM(WebAXRoleAbbr, AbbrRole);
 STATIC_ASSERT_ENUM(WebAXRoleAlertDialog, AlertDialogRole);
 STATIC_ASSERT_ENUM(WebAXRoleAlert, AlertRole);
+STATIC_ASSERT_ENUM(WebAXRoleAnchor, AnchorRole);
 STATIC_ASSERT_ENUM(WebAXRoleAnnotation, AnnotationRole);
 STATIC_ASSERT_ENUM(WebAXRoleApplication, ApplicationRole);
 STATIC_ASSERT_ENUM(WebAXRoleArticle, ArticleRole);

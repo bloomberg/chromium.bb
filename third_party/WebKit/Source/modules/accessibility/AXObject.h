@@ -62,6 +62,7 @@ enum AccessibilityRole {
   AbbrRole,  // No mapping to ARIA role.
   AlertDialogRole,
   AlertRole,
+  AnchorRole,      // No mapping to ARIA role.
   AnnotationRole,  // No mapping to ARIA role.
   ApplicationRole,
   ArticleRole,
@@ -639,6 +640,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool isInputImage() const { return false; }
   bool isLandmarkRelated() const;
   virtual bool isLink() const { return false; }
+  virtual bool isInPageLinkTarget() const { return false; }
   virtual bool isList() const { return false; }
   virtual bool isMenu() const { return false; }
   virtual bool isMenuButton() const { return false; }

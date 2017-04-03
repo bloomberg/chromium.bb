@@ -80,6 +80,7 @@ enum WebAXRole {
   WebAXRoleAbbr,
   WebAXRoleAlertDialog,
   WebAXRoleAlert,
+  WebAXRoleAnchor,
   WebAXRoleAnnotation,
   WebAXRoleApplication,
   WebAXRoleArticle,

@@ -5338,6 +5338,9 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_ALERT_DIALOG:
       ia_role = ROLE_SYSTEM_DIALOG;
       break;
+    case ui::AX_ROLE_ANCHOR:
+      ia_role = ROLE_SYSTEM_LINK;
+      break;
     case ui::AX_ROLE_APPLICATION:
       ia_role = ROLE_SYSTEM_APPLICATION;
       break;

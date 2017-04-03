@@ -34,6 +34,8 @@ std::string RoleToString(blink::WebAXRole role) {
       return result.append("AlertDialog");
     case blink::WebAXRoleAlert:
       return result.append("Alert");
+    case blink::WebAXRoleAnchor:
+      return result.append("Anchor");
     case blink::WebAXRoleAnnotation:
       return result.append("Annotation");
     case blink::WebAXRoleApplication:

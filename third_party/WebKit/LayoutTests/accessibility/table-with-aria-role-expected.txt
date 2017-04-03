@@ -9,3 +9,6 @@ AXRole: AXButton
 ------------
 
 AXRole: AXMenu
+------------
+
+AXRole: AXDiv

@@ -529,6 +529,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ui::AX_ROLE_ALERT:
       message_id = IDS_AX_ROLE_ALERT;
       break;
+    case ui::AX_ROLE_ANCHOR:
+      // No role description.
+      break;
     case ui::AX_ROLE_ANNOTATION:
       // No role description.
       break;

@@ -96,13 +96,13 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
   this.runWithLoadedTree(
     function() {/*!
       <div id="live" aria-live="polite" aria-atomic="true">
-        <div id="a"></div><div id="b">Bravo</div><div id="c"></div>
+        <div></div><div>Bravo</div><div></div>
       </div>
       <button id="go">Go</button>
       <script>
         document.getElementById('go').addEventListener('click', function() {
-          document.getElementById('c').textContent = 'Charlie';
-          document.getElementById('a').textContent = 'Alpha';
+          document.querySelectorAll('div div')[2].textContent = 'Charlie';
+          document.querySelectorAll('div div')[0].textContent = 'Alpha';
         }, false);
       </script>
     */},

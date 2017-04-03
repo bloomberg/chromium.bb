@@ -111,6 +111,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   bool isImageButton() const;
   bool isInputImage() const final;
   bool isLink() const override;
+  bool isInPageLinkTarget() const override;
   bool isMenu() const final;
   bool isMenuButton() const final;
   bool isMeter() const final;

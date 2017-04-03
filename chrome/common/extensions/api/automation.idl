@@ -67,6 +67,7 @@
     abbr,
     alertDialog,
     alert,
+    anchor,
     annotation,
     application,
     article,

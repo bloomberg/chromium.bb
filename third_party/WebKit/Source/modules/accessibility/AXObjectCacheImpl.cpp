@@ -1177,10 +1177,14 @@ void AXObjectCacheImpl::handleLayoutComplete(Document* document) {
 }
 
 void AXObjectCacheImpl::handleScrolledToAnchor(const Node* anchorNode) {
-  // The anchor node may not be accessible. Post the notification for the
-  // first accessible object.
-  postPlatformNotification(firstAccessibleObjectFromNode(anchorNode),
-                           AXScrolledToAnchor);
+  if (!anchorNode)
+    return;
+  AXObject* obj = getOrCreate(anchorNode->layoutObject());
+  if (!obj)
+    return;
+  if (obj->accessibilityIsIgnored())
+    obj = obj->parentObjectUnignored();
+  postPlatformNotification(obj, AXScrolledToAnchor);
 }
 
 void AXObjectCacheImpl::handleScrollPositionChanged(FrameView* frameView) {

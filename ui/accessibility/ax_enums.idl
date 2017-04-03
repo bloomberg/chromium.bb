@@ -80,6 +80,7 @@
     abbr,
     alert_dialog,
     alert,
+    anchor,
     annotation,
     application,
     article,

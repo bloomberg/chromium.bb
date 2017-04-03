@@ -1,11 +1,11 @@
 rootWebArea
-++link name='Empty anchor' inPageLinkTargetId=staticText
+++link name='Empty anchor' inPageLinkTargetId=anchor
 ++++staticText name='Empty anchor'
 ++++++inlineTextBox name='Empty anchor'
-++link name='Anchor with content' inPageLinkTargetId=staticText
+++link name='Anchor with content' inPageLinkTargetId=anchor
 ++++staticText name='Anchor with content'
 ++++++inlineTextBox name='Anchor with content'
-++link name='Anchor with ID' inPageLinkTargetId=staticText
+++link name='Anchor with ID' inPageLinkTargetId=anchor
 ++++staticText name='Anchor with ID'
 ++++++inlineTextBox name='Anchor with ID'
 ++link name='Empty span' inPageLinkTargetId=staticText
@@ -18,14 +18,17 @@ rootWebArea
 ++++staticText name='Paragraph with content'
 ++++++inlineTextBox name='Paragraph with content'
 ++paragraph
+++++anchor
 ++++staticText name='After empty anchor'
 ++++++inlineTextBox name='After empty anchor'
 ++paragraph
-++++staticText name='Anchor with content'
-++++++inlineTextBox name='Anchor with content'
+++++anchor name='Anchor with content'
+++++++staticText name='Anchor with content'
+++++++++inlineTextBox name='Anchor with content'
 ++paragraph
-++++staticText name='Anchor with ID'
-++++++inlineTextBox name='Anchor with ID'
+++++anchor name='Anchor with ID'
+++++++staticText name='Anchor with ID'
+++++++++inlineTextBox name='Anchor with ID'
 ++paragraph
 ++++staticText name='After empty span'
 ++++++inlineTextBox name='After empty span'

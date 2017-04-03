@@ -143,6 +143,7 @@ const InternalRoleEntry internalRoles[] = {
     {AbbrRole, "Abbr"},
     {AlertDialogRole, "AlertDialog"},
     {AlertRole, "Alert"},
+    {AnchorRole, "Anchor"},
     {AnnotationRole, "Annotation"},
     {ApplicationRole, "Application"},
     {ArticleRole, "Article"},
@@ -1730,6 +1731,7 @@ bool AXObject::includesARIAWidgetRole(const String& role) {
 
 bool AXObject::nameFromContents() const {
   switch (roleValue()) {
+    case AnchorRole:
     case ButtonRole:
     case CheckBoxRole:
     case DirectoryRole:

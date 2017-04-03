@@ -589,6 +589,12 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(
   if (m_layoutObject->isBR())
     return false;
 
+  if (isLink())
+    return false;
+
+  if (isInPageLinkTarget())
+    return false;
+
   if (m_layoutObject->isText()) {
     // Static text beneath MenuItems and MenuButtons are just reported along
     // with the menu item, so it's ignored on an individual level.
@@ -635,9 +641,6 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(
   // always.
   if (getNode() &&
       (getNode()->hasTagName(headerTag) || getNode()->hasTagName(footerTag)))
-    return false;
-
-  if (isLink())
     return false;
 
   // all controls are accessible

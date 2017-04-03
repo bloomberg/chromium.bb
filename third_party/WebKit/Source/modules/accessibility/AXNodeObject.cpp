@@ -41,6 +41,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLDListElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLImageElement.h"
@@ -462,11 +463,17 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
   if (!getNode())
     return UnknownRole;
 
-  // HTMLAnchorElement sets isLink only when it has hrefAttr.
-  // We assume that it is also LinkRole if it has event listners even though it
-  // doesn't have hrefAttr.
-  if (getNode()->isLink() || (isHTMLAnchorElement(*getNode()) && isClickable()))
+  // |HTMLAnchorElement| sets isLink only when it has hrefAttr.
+  if (getNode()->isLink())
     return LinkRole;
+
+  if (isHTMLAnchorElement(*getNode())) {
+    // We assume that an anchor element is LinkRole if it has event listners
+    // even though it doesn't have hrefAttr.
+    if (isClickable())
+      return LinkRole;
+    return AnchorRole;
+  }
 
   if (isHTMLButtonElement(*getNode()))
     return buttonRoleType();
@@ -662,9 +669,8 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
   if (isHTMLHRElement(*getNode()))
     return SplitterRole;
 
-  if (isFieldset()) {
+  if (isFieldset())
     return GroupRole;
-  }
 
   return UnknownRole;
 }
@@ -981,6 +987,28 @@ bool AXNodeObject::isInputImage() const {
 
 bool AXNodeObject::isLink() const {
   return roleValue() == LinkRole;
+}
+
+// It is not easily possible to find out if an element is the target of an
+// in-page link.
+// As a workaround, we check if the element is a sectioning element with an ID,
+// or an anchor with a name.
+bool AXNodeObject::isInPageLinkTarget() const {
+  if (!m_node || !m_node->isElementNode())
+    return false;
+  Element* element = toElement(m_node);
+  // We exclude elements that are in the shadow DOM.
+  if (element->containingShadowRoot())
+    return false;
+
+  if (isHTMLAnchorElement(element)) {
+    HTMLAnchorElement* htmlElement = toHTMLAnchorElement(element);
+    return htmlElement->hasName() || htmlElement->hasID();
+  }
+
+  if (element->hasID() && (isLandmarkRelated() || isHTMLDivElement(element)))
+    return true;
+  return false;
 }
 
 bool AXNodeObject::isMenu() const {

@@ -95,6 +95,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_ALERT;
     case blink::WebAXRoleAlertDialog:
       return ui::AX_ROLE_ALERT_DIALOG;
+    case blink::WebAXRoleAnchor:
+      return ui::AX_ROLE_ANCHOR;
     case blink::WebAXRoleAnnotation:
       return ui::AX_ROLE_ANNOTATION;
     case blink::WebAXRoleApplication:
