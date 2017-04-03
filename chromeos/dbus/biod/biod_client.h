@@ -1,0 +1,121 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMEOS_DBUS_BIOD_BIOD_CLIENT_H_
+#define CHROMEOS_DBUS_BIOD_BIOD_CLIENT_H_
+
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "base/callback.h"
+#include "base/macros.h"
+#include "base/observer_list.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/dbus_client.h"
+#include "chromeos/dbus/dbus_client_implementation_type.h"
+#include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+
+namespace chromeos {
+
+// Each time the sensor detects a scan, an object containing all the users, each
+// with the labels of all the matched stored biometrics is returned. The users
+// are unique identifiers which are assigned by Chrome. The labels represent the
+// names the user gave their biometric.
+using AuthScanMatches =
+    std::unordered_map<std::string, std::vector<std::string>>;
+
+// BiodClient is used to communicate with a biod D-Bus manager
+// interface.
+class CHROMEOS_EXPORT BiodClient : public DBusClient {
+ public:
+  // Interface for observing changes from the biometrics manager.
+  class Observer {
+   public:
+    // Called when biometrics manager powers up or is restarted.
+    virtual void BiodServiceRestarted() {}
+
+    // Called whenever a user attempts a scan during enrollment. |scan_result|
+    // tells whether the scan was succesful. |enroll_session_complete| tells
+    // whether enroll session is complete and is now over.
+    virtual void BiodEnrollScanDoneReceived(biod::ScanResult scan_result,
+                                            bool enroll_session_complete) {}
+
+    // Called when an authentication scan is performed. If the scan is
+    // successful, |matches| will equal all the enrollment IDs that match the
+    // scan, and the labels of the matched fingeprints.
+    virtual void BiodAuthScanDoneReceived(biod::ScanResult scan_result,
+                                          const AuthScanMatches& matches) {}
+
+    // Called during an enrollment or authentication session to indicate a
+    // failure. Any enrollment that was underway is thrown away and auth will
+    // no longer be happening.
+    virtual void BiodSessionFailedReceived() {}
+
+   protected:
+    virtual ~Observer() {}
+  };
+
+  ~BiodClient() override;
+
+  // Adds and removes the observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Returns true if this object has the given observer.
+  virtual bool HasObserver(const Observer* observer) const = 0;
+
+  // UserRecordsCallback is used for the GetRecordsForUser method. It receives
+  // one argument which contains a list of the stored records' object paths for
+  // a given user.
+  using UserRecordsCallback =
+      base::Callback<void(const std::vector<dbus::ObjectPath>&)>;
+
+  // BiometricTypeCallback is used for the GetType method. It receives
+  // one argument which states the type of biometric.
+  using BiometricTypeCallback = base::Callback<void(biod::BiometricType)>;
+
+  // Starts the biometric enroll session. |callback| is called with the object
+  // path of the current enroll session after the method succeeds. |user_id|
+  // contains the unique identifier for the owner of the biometric. |label| is
+  // the the human readable label the user gave the biometric.
+  virtual void StartEnrollSession(const std::string& user_id,
+                                  const std::string& label,
+                                  const ObjectPathCallback& callback) = 0;
+
+  // Gets all the records registered with this biometric. |callback| is called
+  // with all the object paths of the records with |user_id| after this method
+  // succeeds. |user_id| contains the unique identifier for the owner of the
+  // biometric.
+  virtual void GetRecordsForUser(const std::string& user_id,
+                                 const UserRecordsCallback& callback) = 0;
+
+  // Irreversibly destroys all records registered.
+  virtual void DestroyAllRecords() = 0;
+
+  // Starts the biometric auth session. |callback| is called with the object
+  // path of the auth session after the method succeeds.
+  virtual void StartAuthSession(const ObjectPathCallback& callback) = 0;
+
+  // Requests the type of biometric. |callback| is called with the biometric
+  // type after the method succeeds.
+  virtual void RequestType(const BiometricTypeCallback& callback) = 0;
+
+  // Creates the instance.
+  static BiodClient* Create(DBusClientImplementationType type);
+
+ protected:
+  friend class BiodClientTest;
+
+  // Create() should be used instead.
+  BiodClient();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BiodClient);
+};
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_DBUS_BIOD_BIOD_CLIENT_H_
