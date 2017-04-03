@@ -19,6 +19,7 @@ class NativeViewAccessibilityWin : public NativeViewAccessibilityBase {
   // NativeViewAccessibilityBase:
   gfx::NativeViewAccessible GetParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  gfx::RectF GetBoundsInScreen() const override;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWin);
 };

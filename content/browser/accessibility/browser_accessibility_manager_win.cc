@@ -233,6 +233,18 @@ void BrowserAccessibilityManagerWin::FireFocusEvent(
   BrowserAccessibilityManager::FireFocusEvent(source, node);
 }
 
+gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {
+  // We have to take the device scale factor into account on Windows.
+  BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
+  if (delegate) {
+    gfx::Rect bounds = delegate->AccessibilityGetViewBounds();
+    if (device_scale_factor() > 0.0 && device_scale_factor() != 1.0)
+      bounds = ScaleToEnclosingRect(bounds, device_scale_factor());
+    return bounds;
+  }
+  return gfx::Rect();
+}
+
 void BrowserAccessibilityManagerWin::OnNodeCreated(ui::AXTree* tree,
                                                    ui::AXNode* node) {
   DCHECK(node);

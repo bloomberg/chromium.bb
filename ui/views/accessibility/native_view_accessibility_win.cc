@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/base/layout.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -61,6 +62,14 @@ gfx::NativeViewAccessible NativeViewAccessibilityWin::GetParent() {
 gfx::AcceleratedWidget
 NativeViewAccessibilityWin::GetTargetForNativeAccessibilityEvent() {
   return HWNDForView(view_);
+}
+
+gfx::RectF NativeViewAccessibilityWin::GetBoundsInScreen() const {
+  gfx::RectF bounds = gfx::RectF(view_->GetBoundsInScreen());
+  gfx::NativeView native_view = view_->GetWidget()->GetNativeView();
+  float device_scale = ui::GetScaleFactorForNativeView(native_view);
+  bounds.Scale(device_scale);
+  return bounds;
 }
 
 }  // namespace views

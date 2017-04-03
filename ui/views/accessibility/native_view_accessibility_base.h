@@ -69,6 +69,9 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   // tree.
   Widget* parent_widget_;
 
+ protected:
+  virtual gfx::RectF GetBoundsInScreen() const;
+
  private:
   void PopulateChildWidgetVector(std::vector<Widget*>* result_child_widgets);
 

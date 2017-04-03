@@ -207,7 +207,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void ShowContextMenu(const BrowserAccessibility& node);
 
   // Retrieve the bounds of the parent View in screen coordinates.
-  gfx::Rect GetViewBounds();
+  virtual gfx::Rect GetViewBounds();
 
   // Fire an event telling native assistive technology to move focus to the
   // given find in page result.

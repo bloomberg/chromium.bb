@@ -62,7 +62,7 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   }
 
   view_->GetAccessibleNodeData(&data_);
-  data_.location = gfx::RectF(view_->GetBoundsInScreen());
+  data_.location = GetBoundsInScreen();
   base::string16 description;
   view_->GetTooltipText(gfx::Point(), &description);
   data_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
@@ -223,6 +223,10 @@ void NativeViewAccessibilityBase::SetParentWidget(Widget* parent_widget) {
     parent_widget_->RemoveObserver(this);
   parent_widget_ = parent_widget;
   parent_widget_->AddObserver(this);
+}
+
+gfx::RectF NativeViewAccessibilityBase::GetBoundsInScreen() const {
+  return gfx::RectF(view_->GetBoundsInScreen());
 }
 
 void NativeViewAccessibilityBase::PopulateChildWidgetVector(

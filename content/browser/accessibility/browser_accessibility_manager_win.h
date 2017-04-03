@@ -54,6 +54,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireFocusEvent(
       BrowserAccessibilityEvent::Source source,
       BrowserAccessibility* node) override;
+  gfx::Rect GetViewBounds() override;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.
