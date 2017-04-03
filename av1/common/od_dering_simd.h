@@ -214,9 +214,9 @@ static INLINE v128 od_cmplt_abs_epi16(v128 in, v128 threshold) {
   return v128_cmplt_s16(v128_abs_s16(in), threshold);
 }
 
-int SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
-                                              const uint16_t *in, int threshold,
-                                              int dir) {
+void SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
+                                               const uint16_t *in,
+                                               int threshold, int dir) {
   int i;
   v128 sum;
   v128 p;
@@ -225,11 +225,9 @@ int SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
   v128 res;
   v128 tmp;
   v128 thresh;
-  v128 total_abs;
   int off1, off2;
   off1 = OD_DIRECTION_OFFSETS_TABLE[dir][0];
   off2 = OD_DIRECTION_OFFSETS_TABLE[dir][1];
-  total_abs = v128_zero();
   thresh = v128_dup_16(threshold);
   for (i = 0; i < 4; i += 2) {
     sum = v128_zero();
@@ -275,17 +273,15 @@ int SIMD_FUNC(od_filter_dering_direction_4x4)(uint16_t *y, int ystride,
     /*res = row + ((sum + 8) >> 4)*/
     res = v128_add_16(sum, v128_dup_16(8));
     res = v128_shr_n_s16(res, 4);
-    total_abs = v128_add_16(total_abs, v128_abs_s16(res));
     res = v128_add_16(row, res);
     v64_store_aligned(&y[i * ystride], v128_low_v64(res));
     v64_store_aligned(&y[(i + 1) * ystride], v128_high_v64(res));
   }
-  return (int)((v128_dotp_s16(total_abs, v128_dup_16(1)) + 2) >> 2);
 }
 
-int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
-                                              const uint16_t *in, int threshold,
-                                              int dir) {
+void SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
+                                               const uint16_t *in,
+                                               int threshold, int dir) {
   int i;
   v128 sum;
   v128 p0, p1;
@@ -293,12 +289,10 @@ int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
   v128 row;
   v128 res;
   v128 thresh;
-  v128 total_abs;
   int off1, off2, off3;
   off1 = OD_DIRECTION_OFFSETS_TABLE[dir][0];
   off2 = OD_DIRECTION_OFFSETS_TABLE[dir][1];
   off3 = OD_DIRECTION_OFFSETS_TABLE[dir][2];
-  total_abs = v128_zero();
   thresh = v128_dup_16(threshold);
   for (i = 0; i < 8; i++) {
     sum = v128_zero();
@@ -353,11 +347,9 @@ int SIMD_FUNC(od_filter_dering_direction_8x8)(uint16_t *y, int ystride,
     /*res = row + ((sum + 8) >> 4)*/
     res = v128_add_16(sum, v128_dup_16(8));
     res = v128_shr_n_s16(res, 4);
-    total_abs = v128_add_16(total_abs, v128_abs_s16(res));
     res = v128_add_16(row, res);
     v128_store_unaligned(&y[i * ystride], res);
   }
-  return (int)((v128_dotp_s16(total_abs, v128_dup_16(1)) + 8) >> 4);
 }
 
 void SIMD_FUNC(copy_8x8_16bit_to_8bit)(uint8_t *dst, int dstride,

@@ -27,8 +27,8 @@ using libaom_test::ACMRandom;
 
 namespace {
 
-typedef int (*dering_dir_t)(uint16_t *y, int ystride, const uint16_t *in,
-                            int threshold, int dir);
+typedef void (*dering_dir_t)(uint16_t *y, int ystride, const uint16_t *in,
+                             int threshold, int dir);
 
 typedef std::tr1::tuple<dering_dir_t, dering_dir_t, int> dering_dir_param_t;
 
@@ -52,10 +52,11 @@ class CDEFDeringDirTest : public ::testing::TestWithParam<dering_dir_param_t> {
 typedef CDEFDeringDirTest CDEFDeringSpeedTest;
 
 void test_dering(int bsize, int iterations,
-                 int (*dering)(uint16_t *y, int ystride, const uint16_t *in,
-                               int threshold, int dir),
-                 int (*ref_dering)(uint16_t *y, int ystride, const uint16_t *in,
-                                   int threshold, int dir)) {
+                 void (*dering)(uint16_t *y, int ystride, const uint16_t *in,
+                                int threshold, int dir),
+                 void (*ref_dering)(uint16_t *y, int ystride,
+                                    const uint16_t *in, int threshold,
+                                    int dir)) {
   const int size = 8;
   const int ysize = size + 2 * OD_FILT_VBORDER;
   ACMRandom rnd(ACMRandom::DeterministicSeed());
@@ -69,7 +70,6 @@ void test_dering(int bsize, int iterations,
   int boundary, depth, bits, level, count, errdepth = 0, errthreshold = 0,
                                            errboundary = 0;
   unsigned int pos = 0;
-  int ref_res = 0, res = 0;
 
   for (boundary = 0; boundary < 16; boundary++) {
     for (depth = 8; depth <= 12; depth += 2) {
@@ -105,18 +105,16 @@ void test_dering(int bsize, int iterations,
             for (dir = 0; dir < 8; dir++) {
               for (threshold = 0; threshold < 64 << (depth - 8) && !error;
                    threshold += !error << (depth - 8)) {
-                ref_res = ref_dering(
-                    ref_d, size,
-                    s + OD_FILT_HBORDER + OD_FILT_VBORDER * OD_FILT_BSTRIDE,
-                    threshold, dir);
+                ref_dering(ref_d, size, s + OD_FILT_HBORDER +
+                                            OD_FILT_VBORDER * OD_FILT_BSTRIDE,
+                           threshold, dir);
                 // If dering and ref_dering are the same, we're just testing
                 // speed
                 if (dering != ref_dering)
-                  ASM_REGISTER_STATE_CHECK(
-                      res =
-                          dering(d, size, s + OD_FILT_HBORDER +
-                                              OD_FILT_VBORDER * OD_FILT_BSTRIDE,
-                                 threshold, dir));
+                  ASM_REGISTER_STATE_CHECK(dering(
+                      d, size,
+                      s + OD_FILT_HBORDER + OD_FILT_VBORDER * OD_FILT_BSTRIDE,
+                      threshold, dir));
                 if (ref_dering != dering) {
                   for (pos = 0; pos < sizeof(d) / sizeof(*d) && !error; pos++) {
                     error = ref_d[pos] != d[pos];
@@ -124,7 +122,6 @@ void test_dering(int bsize, int iterations,
                     errthreshold = threshold;
                     errboundary = boundary;
                   }
-                  error |= res != ref_res;
                 }
               }
             }
@@ -140,7 +137,6 @@ void test_dering(int bsize, int iterations,
                       << "First error at " << pos % size << "," << pos / size
                       << " (" << (int16_t)ref_d[pos] << " : " << (int16_t)d[pos]
                       << ") " << std::endl
-                      << "return: " << res << " : " << ref_res << std::endl
                       << "threshold: " << errthreshold << std::endl
                       << "depth: " << errdepth << std::endl
                       << "size: " << bsize << std::endl
@@ -149,12 +145,12 @@ void test_dering(int bsize, int iterations,
 }
 
 void test_dering_speed(int bsize, int iterations,
-                       int (*dering)(uint16_t *y, int ystride,
-                                     const uint16_t *in, int threshold,
-                                     int dir),
-                       int (*ref_dering)(uint16_t *y, int ystride,
-                                         const uint16_t *in, int threshold,
-                                         int dir)) {
+                       void (*dering)(uint16_t *y, int ystride,
+                                      const uint16_t *in, int threshold,
+                                      int dir),
+                       void (*ref_dering)(uint16_t *y, int ystride,
+                                          const uint16_t *in, int threshold,
+                                          int dir)) {
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
 

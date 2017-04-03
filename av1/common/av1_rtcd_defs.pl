@@ -626,8 +626,8 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
   add_proto qw/void aom_clpf_block/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
   add_proto qw/void aom_clpf_hblock/, "uint8_t *dst, const uint16_t *src, int dstride, int sstride, int sizex, int sizey, unsigned int strength, unsigned int bd";
   add_proto qw/int od_dir_find8/, "const od_dering_in *img, int stride, int32_t *var, int coeff_shift";
-  add_proto qw/int od_filter_dering_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
-  add_proto qw/int od_filter_dering_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
+  add_proto qw/void od_filter_dering_direction_4x4/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
+  add_proto qw/void od_filter_dering_direction_8x8/, "uint16_t *y, int ystride, const uint16_t *in, int threshold, int dir";
 
   add_proto qw/void copy_8x8_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";
   add_proto qw/void copy_4x4_16bit_to_8bit/, "uint8_t *dst, int dstride, const uint16_t *src, int sstride";

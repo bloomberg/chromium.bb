@@ -39,9 +39,9 @@ typedef struct {
   unsigned char bx;
 } dering_list;
 
-typedef int (*od_filter_dering_direction_func)(uint16_t *y, int ystride,
-                                               const uint16_t *in,
-                                               int threshold, int dir);
+typedef void (*od_filter_dering_direction_func)(uint16_t *y, int ystride,
+                                                const uint16_t *in,
+                                                int threshold, int dir);
 void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                 dering_list *dlist, int dering_count,
                                 BLOCK_SIZE bsize);

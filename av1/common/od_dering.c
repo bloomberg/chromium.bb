@@ -113,14 +113,13 @@ int od_dir_find8_c(const uint16_t *img, int stride, int32_t *var,
 }
 
 /* Smooth in the direction detected. */
-int od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
-                                     const uint16_t *in, int threshold,
-                                     int dir) {
+void od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
+                                      const uint16_t *in, int threshold,
+                                      int dir) {
   int i;
   int j;
   int k;
   static const int taps[3] = { 3, 2, 1 };
-  int total_abs = 0;
   for (i = 0; i < 8; i++) {
     for (j = 0; j < 8; j++) {
       int16_t sum;
@@ -139,23 +138,20 @@ int od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
         if (abs(p1) < threshold) sum += taps[k] * p1;
       }
       sum = (sum + 8) >> 4;
-      total_abs += abs(sum);
       yy = xx + sum;
       y[i * ystride + j] = yy;
     }
   }
-  return (total_abs + 8) >> 4;
 }
 
 /* Smooth in the direction detected. */
-int od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
-                                     const uint16_t *in, int threshold,
-                                     int dir) {
+void od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
+                                      const uint16_t *in, int threshold,
+                                      int dir) {
   int i;
   int j;
   int k;
   static const int taps[2] = { 4, 1 };
-  int total_abs = 0;
   for (i = 0; i < 4; i++) {
     for (j = 0; j < 4; j++) {
       int16_t sum;
@@ -174,12 +170,10 @@ int od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
         if (abs(p1) < threshold) sum += taps[k] * p1;
       }
       sum = (sum + 8) >> 4;
-      total_abs += abs(sum);
       yy = xx + sum;
       y[i * ystride + j] = yy;
     }
   }
-  return (total_abs + 2) >> 2;
 }
 
 /* This table approximates x^0.16 with the index being log2(x). It is clamped
