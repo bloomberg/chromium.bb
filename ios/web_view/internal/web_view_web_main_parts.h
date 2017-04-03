@@ -5,9 +5,9 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_PARTS_H_
 #define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_PARTS_H_
 
-#include "ios/web/public/app/web_main_parts.h"
-
 #include <memory>
+
+#include "ios/web/public/app/web_main_parts.h"
 
 @protocol CWVDelegate;
 

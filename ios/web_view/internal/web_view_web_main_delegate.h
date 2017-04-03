@@ -6,6 +6,7 @@
 #define IOS_WEB_VIEW_INTERNAL_WEB_VIEW_WEB_MAIN_DELEGATE_H_
 
 #include <memory>
+
 #include "base/macros.h"
 #include "ios/web/public/app/web_main_delegate.h"
 

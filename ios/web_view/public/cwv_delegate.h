@@ -4,7 +4,7 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_DELEGATE_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_DELEGATE_H_
 
-#include "cwv_export.h"
+#import <ChromeWebView/cwv_export.h>
 
 @class NSString;
 

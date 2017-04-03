@@ -4,9 +4,8 @@
 #ifndef IOS_WEB_VIEW_SHELL_SHELL_DELEGATE_H_
 #define IOS_WEB_VIEW_SHELL_SHELL_DELEGATE_H_
 
-#import <UIKit/UIKit.h>
-
 #import <ChromeWebView/ChromeWebView.h>
+#import <UIKit/UIKit.h>
 
 // Shell-specific implementation of CWVDelegate.
 @interface ShellDelegate : NSObject<CWVDelegate>

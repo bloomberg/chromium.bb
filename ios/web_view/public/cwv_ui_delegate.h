@@ -5,10 +5,9 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_UI_DELEGATE_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_UI_DELEGATE_H_
 
+#import <ChromeWebView/cwv_export.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
-
-#include "cwv_export.h"
 
 @class CWVHTMLElement;
 @class CWVWebView;

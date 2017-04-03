@@ -4,9 +4,8 @@
 
 #import "ios/web_view/shell/translate_controller.h"
 
+#import <ChromeWebView/ChromeWebView.h>
 #import <UIKit/UIKit.h>
-
-#import "ios/web_view/public/cwv_translate_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

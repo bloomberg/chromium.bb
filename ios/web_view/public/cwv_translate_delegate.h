@@ -5,9 +5,8 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_DELEGATE_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATE_DELEGATE_H_
 
+#import <ChromeWebView/cwv_export.h>
 #import <Foundation/Foundation.h>
-
-#include "cwv_export.h"
 
 @protocol CWVTranslateManager;
 

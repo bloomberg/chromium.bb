@@ -4,9 +4,8 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_H_
 
+#import <ChromeWebView/cwv_export.h>
 #import <UIKit/UIKit.h>
-
-#include "cwv_export.h"
 
 @class CWVWebViewConfiguration;
 @protocol CWVUIDelegate;
