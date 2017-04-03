@@ -141,6 +141,12 @@ void FakeGCMClient::Register(
                             registration_id));
 }
 
+bool FakeGCMClient::ValidateRegistration(
+    const linked_ptr<RegistrationInfo>& registration_info,
+    const std::string& registration_id) {
+  return true;
+}
+
 void FakeGCMClient::Unregister(
     const linked_ptr<RegistrationInfo>& registration_info) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());

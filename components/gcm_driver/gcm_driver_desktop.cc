@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_account_mapper.h"
@@ -105,6 +106,8 @@ class GCMDriverDesktop::IOWorker : public GCMClient::Delegate {
                 const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options);
+  bool ValidateRegistration(std::unique_ptr<RegistrationInfo> registration_info,
+                            const std::string& registration_id);
   void DeleteToken(const std::string& app_id,
                    const std::string& authorized_entity,
                    const std::string& scope);
@@ -335,6 +338,15 @@ void GCMDriverDesktop::IOWorker::Register(
   gcm_client_->Register(make_linked_ptr<RegistrationInfo>(gcm_info.release()));
 }
 
+bool GCMDriverDesktop::IOWorker::ValidateRegistration(
+    std::unique_ptr<RegistrationInfo> registration_info,
+    const std::string& registration_id) {
+  DCHECK(io_thread_->RunsTasksOnCurrentThread());
+
+  return gcm_client_->ValidateRegistration(
+      make_linked_ptr(registration_info.release()), registration_id);
+}
+
 void GCMDriverDesktop::IOWorker::Unregister(const std::string& app_id) {
   DCHECK(io_thread_->RunsTasksOnCurrentThread());
 
@@ -558,6 +570,55 @@ GCMDriverDesktop::GCMDriverDesktop(
 }
 
 GCMDriverDesktop::~GCMDriverDesktop() {
+}
+
+void GCMDriverDesktop::ValidateRegistration(
+    const std::string& app_id,
+    const std::vector<std::string>& sender_ids,
+    const std::string& registration_id,
+    const ValidateRegistrationCallback& callback) {
+  DCHECK(!app_id.empty());
+  DCHECK(!sender_ids.empty() && sender_ids.size() <= kMaxSenders);
+  DCHECK(!registration_id.empty());
+  DCHECK(!callback.is_null());
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
+  if (result != GCMClient::SUCCESS) {
+    // Can't tell whether the registration is valid or not, so don't run the
+    // callback (let it hang indefinitely).
+    return;
+  }
+
+  // Only validating current state, so ignore pending register_callbacks_.
+
+  auto gcm_info = base::MakeUnique<GCMRegistrationInfo>();
+  gcm_info->app_id = app_id;
+  gcm_info->sender_ids = sender_ids;
+  // Normalize the sender IDs by making them sorted.
+  std::sort(gcm_info->sender_ids.begin(), gcm_info->sender_ids.end());
+
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoValidateRegistration,
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&gcm_info),
+                   registration_id, callback));
+    return;
+  }
+
+  DoValidateRegistration(std::move(gcm_info), registration_id, callback);
+}
+
+void GCMDriverDesktop::DoValidateRegistration(
+    std::unique_ptr<RegistrationInfo> registration_info,
+    const std::string& registration_id,
+    const ValidateRegistrationCallback& callback) {
+  base::PostTaskAndReplyWithResult(
+      io_thread_.get(), FROM_HERE,
+      base::Bind(&GCMDriverDesktop::IOWorker::ValidateRegistration,
+                 base::Unretained(io_worker_.get()),
+                 base::Passed(&registration_info), registration_id),
+      callback);
 }
 
 void GCMDriverDesktop::Shutdown() {
@@ -892,6 +953,43 @@ void GCMDriverDesktop::DoGetToken(
                  authorized_entity,
                  scope,
                  options));
+}
+
+void GCMDriverDesktop::ValidateToken(const std::string& app_id,
+                                     const std::string& authorized_entity,
+                                     const std::string& scope,
+                                     const std::string& token,
+                                     const ValidateTokenCallback& callback) {
+  DCHECK(!app_id.empty());
+  DCHECK(!authorized_entity.empty());
+  DCHECK(!scope.empty());
+  DCHECK(!token.empty());
+  DCHECK(!callback.is_null());
+  DCHECK(ui_thread_->RunsTasksOnCurrentThread());
+
+  GCMClient::Result result = EnsureStarted(GCMClient::IMMEDIATE_START);
+  if (result != GCMClient::SUCCESS) {
+    // Can't tell whether the registration is valid or not, so don't run the
+    // callback (let it hang indefinitely).
+    return;
+  }
+
+  // Only validating current state, so ignore pending get_token_callbacks_.
+
+  auto instance_id_info = base::MakeUnique<InstanceIDTokenInfo>();
+  instance_id_info->app_id = app_id;
+  instance_id_info->authorized_entity = authorized_entity;
+  instance_id_info->scope = scope;
+
+  if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
+    delayed_task_controller_->AddTask(
+        base::Bind(&GCMDriverDesktop::DoValidateRegistration,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(&instance_id_info), token, callback));
+    return;
+  }
+
+  DoValidateRegistration(std::move(instance_id_info), token, callback);
 }
 
 void GCMDriverDesktop::DeleteToken(const std::string& app_id,

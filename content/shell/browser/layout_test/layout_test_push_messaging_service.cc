@@ -75,7 +75,7 @@ void LayoutTestPushMessagingService::SubscribeFromDocument(
     int renderer_id,
     int render_frame_id,
     const PushSubscriptionOptions& options,
-    const PushMessagingService::RegisterCallback& callback) {
+    const RegisterCallback& callback) {
   SubscribeFromWorker(requesting_origin, service_worker_registration_id,
                       options, callback);
 }
@@ -84,7 +84,7 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const PushSubscriptionOptions& options,
-    const PushMessagingService::RegisterCallback& callback) {
+    const RegisterCallback& callback) {
   if (GetPermissionStatus(requesting_origin, options.user_visible_only) ==
       blink::WebPushPermissionStatusGranted) {
     std::vector<uint8_t> p256dh(
@@ -102,17 +102,18 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
   }
 }
 
-void LayoutTestPushMessagingService::GetEncryptionInfo(
+void LayoutTestPushMessagingService::GetSubscriptionInfo(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,
-    const EncryptionInfoCallback& callback) {
+    const std::string& subscription_id,
+    const SubscriptionInfoCallback& callback) {
   std::vector<uint8_t> p256dh(
         kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
   std::vector<uint8_t> auth(
         kAuthentication, kAuthentication + arraysize(kAuthentication));
 
-  callback.Run(true /* success */, p256dh, auth);
+  callback.Run(true /* is_valid */, p256dh, auth);
 }
 
 blink::WebPushPermissionStatus
@@ -129,6 +130,7 @@ bool LayoutTestPushMessagingService::SupportNonVisibleMessages() {
 }
 
 void LayoutTestPushMessagingService::Unsubscribe(
+    PushUnregistrationReason reason,
     const GURL& requesting_origin,
     int64_t service_worker_registration_id,
     const std::string& sender_id,

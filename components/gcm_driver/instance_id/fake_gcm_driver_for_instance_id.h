@@ -47,6 +47,11 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
                 const GetTokenCallback& callback) override;
+  void ValidateToken(const std::string& app_id,
+                     const std::string& authorized_entity,
+                     const std::string& scope,
+                     const std::string& token,
+                     const ValidateTokenCallback& callback) override;
   void DeleteToken(const std::string& app_id,
                    const std::string& authorized_entity,
                    const std::string& scope,

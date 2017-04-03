@@ -66,12 +66,6 @@ class PushMessagingManager : public mojom::PushMessaging {
       const std::vector<std::string>& push_registration_id,
       ServiceWorkerStatusCode service_worker_status);
 
-  void DidGetEncryptionKeys(const RegisterData& data,
-                            const std::string& push_registration_id,
-                            bool success,
-                            const std::vector<uint8_t>& p256dh,
-                            const std::vector<uint8_t>& auth);
-
   void DidGetSenderIdFromStorage(const RegisterData& data,
                                  const std::vector<std::string>& sender_id,
                                  ServiceWorkerStatusCode service_worker_status);
@@ -116,13 +110,6 @@ class PushMessagingManager : public mojom::PushMessaging {
       const std::vector<std::string>& push_subscription_id_and_sender_info,
       ServiceWorkerStatusCode service_worker_status);
 
-  void DidGetSubscriptionKeys(const GetSubscriptionCallback& callback,
-                              const GURL& endpoint,
-                              const std::string& sender_info,
-                              bool success,
-                              const std::vector<uint8_t>& p256dh,
-                              const std::vector<uint8_t>& auth);
-
   // Helper methods on either thread -------------------------------------------
 
   // Creates an endpoint for |subscription_id| with either the default protocol,
@@ -132,6 +119,10 @@ class PushMessagingManager : public mojom::PushMessaging {
 
   // Inner core of this message filter which lives on the UI thread.
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
+
+  // Can be used on the IO thread as the |this| parameter when binding a
+  // callback that will be called on the UI thread (an IO -> UI -> UI chain).
+  base::WeakPtr<Core> ui_core_weak_ptr_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 

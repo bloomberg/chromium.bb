@@ -69,12 +69,9 @@ function replaceServiceWorker() {
 
 function removeManifest() {
   var element = document.querySelector('link[rel="manifest"]');
-  if (element) {
+  if (element)
     element.parentNode.removeChild(element);
-    sendResultToTest('manifest removed');
-  } else {
-    sendResultToTest('unable to find manifest element');
-  }
+  sendResultToTest('manifest removed');
 }
 
 function swapManifestNoSenderId() {

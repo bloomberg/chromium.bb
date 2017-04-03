@@ -121,6 +121,15 @@ void InstanceIDAndroid::GetToken(
       base::android::ToJavaArrayOfStrings(env, options_strings));
 }
 
+void InstanceIDAndroid::ValidateToken(const std::string& authorized_entity,
+                                      const std::string& scope,
+                                      const std::string& token,
+                                      const ValidateTokenCallback& callback) {
+  // gcm_driver doesn't store tokens on Android, so assume it's valid.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, true /* is_valid */));
+}
+
 void InstanceIDAndroid::DeleteTokenImpl(const std::string& authorized_entity,
                                         const std::string& scope,
                                         const DeleteTokenCallback& callback) {

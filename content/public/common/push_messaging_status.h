@@ -61,12 +61,16 @@ enum PushRegistrationStatus {
   // already exists.
   PUSH_REGISTRATION_STATUS_SENDER_ID_MISMATCH = 13,
 
+  // Registration failed because storage was corrupt. It will be retried
+  // automatically after unsubscribing to fix the corruption.
+  PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT = 14,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_REGISTRATION_STATUS_LAST below.
 
-  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_SENDER_ID_MISMATCH
+  PUSH_REGISTRATION_STATUS_LAST = PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT
 };
 
 // Push unregistration reason for reporting in UMA. Enum values can be added,
@@ -96,13 +100,20 @@ enum PushUnregistrationReason {
   // Unregistering because the service worker was unregistered.
   PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED = 7,
 
+  // Website called subscribe API and the stored subscription was corrupt, so
+  // it is being unsubscribed in order to attempt a clean subscription.
+  PUSH_UNREGISTRATION_REASON_SUBSCRIBE_STORAGE_CORRUPT = 8,
+
+  // Website called getSubscription API and the stored subscription was corrupt.
+  PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT = 9,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_UNREGISTRATION_REASON_LAST below.
 
   PUSH_UNREGISTRATION_REASON_LAST =
-      PUSH_UNREGISTRATION_REASON_SERVICE_WORKER_UNREGISTERED
+      PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT
 };
 
 // Push unregistration success/error codes for internal use & reporting in UMA.
@@ -161,16 +172,18 @@ enum PushGetRegistrationStatus {
   // incognito, but we tell JS registration not found to not reveal incognito.
   PUSH_GETREGISTRATION_STATUS_INCOGNITO_REGISTRATION_NOT_FOUND = 4,
 
-  // Registration failed because the public key could not be retrieved.
-  PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE = 5,
+  // Getting the registration failed because public key could not be retrieved.
+  // PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE = 5,
+
+  // Getting the registration failed because storage was corrupt.
+  PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT = 6,
 
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_GETREGISTRATION_STATUS_LAST below.
 
-  PUSH_GETREGISTRATION_STATUS_LAST =
-      PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE
+  PUSH_GETREGISTRATION_STATUS_LAST = PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT
 };
 
 // Push message event success/error codes for internal use & reporting in UMA.

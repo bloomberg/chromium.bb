@@ -62,6 +62,7 @@ blink::WebPushError PushRegistrationStatusToWebPushError(
     case PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED:
     case PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE:
     case PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING:
+    case PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT:
       error_type = blink::WebPushError::ErrorTypeAbort;
       break;
   }

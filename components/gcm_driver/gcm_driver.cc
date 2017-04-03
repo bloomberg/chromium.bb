@@ -16,12 +16,6 @@
 
 namespace gcm {
 
-namespace {
-
-const size_t kMaxSenders = 100;
-
-}  // namespace
-
 InstanceIDHandler::InstanceIDHandler() {
 }
 

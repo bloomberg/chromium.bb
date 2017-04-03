@@ -25,6 +25,11 @@ class FakeGCMDriver : public GCMDriver {
   ~FakeGCMDriver() override;
 
   // GCMDriver overrides:
+  void ValidateRegistration(
+      const std::string& app_id,
+      const std::vector<std::string>& sender_ids,
+      const std::string& registration_id,
+      const ValidateRegistrationCallback& callback) override;
   void OnSignedIn() override;
   void OnSignedOut() override;
   void AddConnectionObserver(GCMConnectionObserver* observer) override;

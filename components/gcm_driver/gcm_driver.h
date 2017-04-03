@@ -32,12 +32,13 @@ struct AccountMapping;
 // Provides the InstanceID support via GCMDriver.
 class InstanceIDHandler {
  public:
-  typedef base::Callback<void(const std::string& token,
-                              GCMClient::Result result)> GetTokenCallback;
-  typedef base::Callback<void(GCMClient::Result result)> DeleteTokenCallback;
-  typedef base::Callback<void(const std::string& instance_id,
-                              const std::string& extra_data)>
-      GetInstanceIDDataCallback;
+  using GetTokenCallback =
+      base::Callback<void(const std::string& token, GCMClient::Result result)>;
+  using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
+  using DeleteTokenCallback = base::Callback<void(GCMClient::Result result)>;
+  using GetInstanceIDDataCallback =
+      base::Callback<void(const std::string& instance_id,
+                          const std::string& extra_data)>;
 
   InstanceIDHandler();
   virtual ~InstanceIDHandler();
@@ -48,6 +49,11 @@ class InstanceIDHandler {
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
                         const GetTokenCallback& callback) = 0;
+  virtual void ValidateToken(const std::string& app_id,
+                             const std::string& authorized_entity,
+                             const std::string& scope,
+                             const std::string& token,
+                             const ValidateTokenCallback& callback) = 0;
   virtual void DeleteToken(const std::string& app_id,
                            const std::string& authorized_entity,
                            const std::string& scope,
@@ -71,16 +77,21 @@ class InstanceIDHandler {
 // Bridge between GCM users in Chrome and the platform-specific implementation.
 class GCMDriver {
  public:
-  typedef std::map<std::string, GCMAppHandler*> GCMAppHandlerMap;
-  typedef base::Callback<void(const std::string& registration_id,
-                              GCMClient::Result result)> RegisterCallback;
-  typedef base::Callback<void(const std::string& message_id,
-                              GCMClient::Result result)> SendCallback;
-  typedef base::Callback<void(const std::string&, const std::string&)>
-      GetEncryptionInfoCallback;
-  typedef base::Callback<void(GCMClient::Result result)> UnregisterCallback;
-  typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
-      GetGCMStatisticsCallback;
+  // Max number of sender IDs that can be passed to |Register| on desktop.
+  constexpr static size_t kMaxSenders = 100;
+
+  using GCMAppHandlerMap = std::map<std::string, GCMAppHandler*>;
+  using RegisterCallback =
+      base::Callback<void(const std::string& registration_id,
+                          GCMClient::Result result)>;
+  using ValidateRegistrationCallback = base::Callback<void(bool is_valid)>;
+  using UnregisterCallback = base::Callback<void(GCMClient::Result result)>;
+  using SendCallback = base::Callback<void(const std::string& message_id,
+                                           GCMClient::Result result)>;
+  using GetEncryptionInfoCallback =
+      base::Callback<void(const std::string&, const std::string&)>;
+  using GetGCMStatisticsCallback =
+      base::Callback<void(const GCMClient::GCMStatistics& stats)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
@@ -98,13 +109,21 @@ class GCMDriver {
   // the GCM server. On Android, only a single sender ID is supported, but
   // instead multiple simultaneous registrations are allowed.
   // |app_id|: application ID.
-  // |sender_ids|: list of IDs of the servers that are allowed to send the
-  //               messages to the application. These IDs are assigned by the
-  //               Google API Console.
+  // |sender_ids|: list of IDs of the servers allowed to send messages to the
+  //               application. The IDs are assigned by the Google API Console.
+  //               Max number of IDs is 1 on Android, |kMaxSenders| on desktop.
   // |callback|: to be called once the asynchronous operation is done.
   void Register(const std::string& app_id,
                 const std::vector<std::string>& sender_ids,
                 const RegisterCallback& callback);
+
+  // Checks that the provided |sender_ids| and |registration_id| matches the
+  // stored registration info for |app_id|.
+  virtual void ValidateRegistration(
+      const std::string& app_id,
+      const std::vector<std::string>& sender_ids,
+      const std::string& registration_id,
+      const ValidateRegistrationCallback& callback) = 0;
 
   // Unregisters all sender_ids for an app. Only works on non-Android. Will also
   // remove any encryption keys associated with the |app_id|.

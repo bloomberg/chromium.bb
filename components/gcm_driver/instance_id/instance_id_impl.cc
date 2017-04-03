@@ -134,6 +134,36 @@ void InstanceIDImpl::DoGetToken(
                                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void InstanceIDImpl::ValidateToken(const std::string& authorized_entity,
+                                   const std::string& scope,
+                                   const std::string& token,
+                                   const ValidateTokenCallback& callback) {
+  DCHECK(!authorized_entity.empty());
+  DCHECK(!scope.empty());
+  DCHECK(!token.empty());
+
+  if (!delayed_task_controller_.CanRunTaskWithoutDelay()) {
+    delayed_task_controller_.AddTask(base::Bind(
+        &InstanceIDImpl::DoValidateToken, weak_ptr_factory_.GetWeakPtr(),
+        authorized_entity, scope, token, callback));
+    return;
+  }
+
+  DoValidateToken(authorized_entity, scope, token, callback);
+}
+
+void InstanceIDImpl::DoValidateToken(const std::string& authorized_entity,
+                                     const std::string& scope,
+                                     const std::string& token,
+                                     const ValidateTokenCallback& callback) {
+  if (id_.empty()) {
+    callback.Run(false /* is_valid */);
+    return;
+  }
+
+  Handler()->ValidateToken(app_id(), authorized_entity, scope, token, callback);
+}
+
 void InstanceIDImpl::DeleteTokenImpl(const std::string& authorized_entity,
                                      const std::string& scope,
                                      const DeleteTokenCallback& callback) {

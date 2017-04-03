@@ -101,6 +101,12 @@ static_assert(
             content::mojom::PushRegistrationStatus::SENDER_ID_MISMATCH),
     "PushRegistrationStatus enums must match, SENDER_ID_MISMATCH");
 
+static_assert(
+    content::PushRegistrationStatus::PUSH_REGISTRATION_STATUS_STORAGE_CORRUPT ==
+        static_cast<content::PushRegistrationStatus>(
+            content::mojom::PushRegistrationStatus::STORAGE_CORRUPT),
+    "PushRegistrationStatus enums must match, STORAGE_CORRUPT");
+
 static_assert(content::PushRegistrationStatus::PUSH_REGISTRATION_STATUS_LAST ==
                   static_cast<content::PushRegistrationStatus>(
                       content::mojom::PushRegistrationStatus::LAST),
@@ -185,10 +191,10 @@ static_assert(
 
 static_assert(
     content::PushGetRegistrationStatus::
-            PUSH_GETREGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE ==
+            PUSH_GETREGISTRATION_STATUS_STORAGE_CORRUPT ==
         static_cast<content::PushGetRegistrationStatus>(
-            content::mojom::PushGetRegistrationStatus::PUBLIC_KEY_UNAVAILABLE),
-    "PushGetRegistrationStatus enums must match, PUBLIC_KEY_UNAVAILABLE");
+            content::mojom::PushGetRegistrationStatus::STORAGE_CORRUPT),
+    "PushGetRegistrationStatus enums must match, STORAGE_CORRUPT");
 
 static_assert(
     content::PushGetRegistrationStatus::PUSH_GETREGISTRATION_STATUS_LAST ==

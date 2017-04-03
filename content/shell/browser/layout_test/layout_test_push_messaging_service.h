@@ -26,28 +26,27 @@ class LayoutTestPushMessagingService : public PushMessagingService {
 
   // PushMessagingService implementation:
   GURL GetEndpoint(bool standard_protocol) const override;
-  void SubscribeFromDocument(
-      const GURL& requesting_origin,
-      int64_t service_worker_registration_id,
-      int renderer_id,
-      int render_frame_id,
-      const PushSubscriptionOptions& options,
-      const PushMessagingService::RegisterCallback& callback) override;
-  void SubscribeFromWorker(
-      const GURL& requesting_origin,
-      int64_t service_worker_registration_id,
-      const PushSubscriptionOptions& options,
-      const PushMessagingService::RegisterCallback& callback) override;
-  void GetEncryptionInfo(
-      const GURL& origin,
-      int64_t service_worker_registration_id,
-      const std::string& sender_id,
-      const PushMessagingService::EncryptionInfoCallback& callback) override;
+  void SubscribeFromDocument(const GURL& requesting_origin,
+                             int64_t service_worker_registration_id,
+                             int renderer_id,
+                             int render_frame_id,
+                             const PushSubscriptionOptions& options,
+                             const RegisterCallback& callback) override;
+  void SubscribeFromWorker(const GURL& requesting_origin,
+                           int64_t service_worker_registration_id,
+                           const PushSubscriptionOptions& options,
+                           const RegisterCallback& callback) override;
+  void GetSubscriptionInfo(const GURL& origin,
+                           int64_t service_worker_registration_id,
+                           const std::string& sender_id,
+                           const std::string& subscription_id,
+                           const SubscriptionInfoCallback& callback) override;
   blink::WebPushPermissionStatus GetPermissionStatus(const GURL& origin,
                                                      bool user_visible)
       override;
   bool SupportNonVisibleMessages() override;
-  void Unsubscribe(const GURL& requesting_origin,
+  void Unsubscribe(PushUnregistrationReason reason,
+                   const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,
                    const UnregisterCallback& callback) override;

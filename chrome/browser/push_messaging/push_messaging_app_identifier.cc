@@ -74,12 +74,31 @@ bool PushMessagingAppIdentifier::UseInstanceID(const std::string& app_id) {
 PushMessagingAppIdentifier PushMessagingAppIdentifier::Generate(
     const GURL& origin,
     int64_t service_worker_registration_id) {
+  // All new push subscriptions use Instance ID tokens.
+  return GenerateInternal(origin, service_worker_registration_id,
+                          true /* use_instance_id */);
+}
+
+// static
+PushMessagingAppIdentifier PushMessagingAppIdentifier::LegacyGenerateForTesting(
+    const GURL& origin,
+    int64_t service_worker_registration_id) {
+  return GenerateInternal(origin, service_worker_registration_id,
+                          false /* use_instance_id */);
+}
+
+// static
+PushMessagingAppIdentifier PushMessagingAppIdentifier::GenerateInternal(
+    const GURL& origin,
+    int64_t service_worker_registration_id,
+    bool use_instance_id) {
   // Use uppercase GUID for consistency with GUIDs Push has already sent to GCM.
   // Also allows detecting case mangling; see code commented "crbug.com/461867".
   std::string guid = base::ToUpperASCII(base::GenerateGUID());
-  // All new push subscriptions are Instance ID tokens.
-  guid.replace(guid.size() - kGuidSuffixLength, kGuidSuffixLength,
-               kInstanceIDGuidSuffix);
+  if (use_instance_id) {
+    guid.replace(guid.size() - kGuidSuffixLength, kGuidSuffixLength,
+                 kInstanceIDGuidSuffix);
+  }
   CHECK(!guid.empty());
   std::string app_id =
       kPushMessagingAppIdentifierPrefix + origin.spec() + kSeparator + guid;

@@ -78,6 +78,16 @@ void FakeGCMDriverForInstanceID::GetToken(
       FROM_HERE, base::Bind(callback, token, gcm::GCMClient::SUCCESS));
 }
 
+void FakeGCMDriverForInstanceID::ValidateToken(
+    const std::string& app_id,
+    const std::string& authorized_entity,
+    const std::string& scope,
+    const std::string& token,
+    const ValidateTokenCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, true /* is_valid */));
+}
+
 void FakeGCMDriverForInstanceID::DeleteToken(
     const std::string& app_id,
     const std::string& authorized_entity,

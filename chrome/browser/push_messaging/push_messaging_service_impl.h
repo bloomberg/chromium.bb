@@ -83,11 +83,13 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                            int64_t service_worker_registration_id,
                            const content::PushSubscriptionOptions& options,
                            const RegisterCallback& callback) override;
-  void GetEncryptionInfo(const GURL& origin,
-                         int64_t service_worker_registration_id,
-                         const std::string& sender_id,
-                         const EncryptionInfoCallback& callback) override;
-  void Unsubscribe(const GURL& requesting_origin,
+  void GetSubscriptionInfo(const GURL& origin,
+                           int64_t service_worker_registration_id,
+                           const std::string& sender_id,
+                           const std::string& subscription_id,
+                           const SubscriptionInfoCallback& callback) override;
+  void Unsubscribe(content::PushUnregistrationReason reason,
+                   const GURL& requesting_origin,
                    int64_t service_worker_registration_id,
                    const std::string& sender_id,
                    const UnregisterCallback&) override;
@@ -170,9 +172,14 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const std::string& p256dh,
       const std::string& auth_secret);
 
-  // GetEncryptionInfo method --------------------------------------------------
+  // GetSubscriptionInfo methods -----------------------------------------------
 
-  void DidGetEncryptionInfo(const EncryptionInfoCallback& callback,
+  void DidValidateSubscription(const std::string& app_id,
+                               const std::string& sender_id,
+                               const SubscriptionInfoCallback& callback,
+                               bool is_valid);
+
+  void DidGetEncryptionInfo(const SubscriptionInfoCallback& callback,
                             const std::string& p256dh,
                             const std::string& auth_secret) const;
 

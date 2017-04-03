@@ -51,17 +51,18 @@ class InstanceID {
 
   // Asynchronous callbacks. Must not synchronously delete |this| (using
   // InstanceIDDriver::RemoveInstanceID).
-  typedef base::Callback<void(const std::string& app_id,
-                              bool update_id)> TokenRefreshCallback;
-  typedef base::Callback<void(const std::string& id)> GetIDCallback;
-  typedef base::Callback<void(const base::Time& creation_time)>
-      GetCreationTimeCallback;
-  typedef base::Callback<void(const std::string& token,
-                              Result result)> GetTokenCallback;
-  typedef base::Callback<void(const std::string&, const std::string&)>
-      GetEncryptionInfoCallback;
-  typedef base::Callback<void(Result result)> DeleteTokenCallback;
-  typedef base::Callback<void(Result result)> DeleteIDCallback;
+  using TokenRefreshCallback =
+      base::Callback<void(const std::string& app_id, bool update_id)>;
+  using GetIDCallback = base::Callback<void(const std::string& id)>;
+  using GetCreationTimeCallback =
+      base::Callback<void(const base::Time& creation_time)>;
+  using GetTokenCallback =
+      base::Callback<void(const std::string& token, Result result)>;
+  using ValidateTokenCallback = base::Callback<void(bool is_valid)>;
+  using GetEncryptionInfoCallback =
+      base::Callback<void(const std::string&, const std::string&)>;
+  using DeleteTokenCallback = base::Callback<void(Result result)>;
+  using DeleteIDCallback = base::Callback<void(Result result)>;
 
   static const int kInstanceIDByteLength = 8;
 
@@ -99,6 +100,13 @@ class InstanceID {
                         const std::string& scope,
                         const std::map<std::string, std::string>& options,
                         const GetTokenCallback& callback) = 0;
+
+  // Checks that the provided |token| matches the stored token for (|app_id()|,
+  // |authorized_entity|, |scope|).
+  virtual void ValidateToken(const std::string& authorized_entity,
+                             const std::string& scope,
+                             const std::string& token,
+                             const ValidateTokenCallback& callback) = 0;
 
   // Get the public encryption key and authentication secret associated with a
   // GCM-scoped token. If encryption info is not yet associated, it will be

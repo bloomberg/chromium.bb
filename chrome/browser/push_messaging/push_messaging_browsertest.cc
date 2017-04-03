@@ -28,6 +28,8 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service.h"
+#include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
@@ -51,6 +53,7 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
+#include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_subscription_options.h"
@@ -107,6 +110,14 @@ void DidRegister(base::Closure done_callback,
                  content::PushRegistrationStatus status) {
   EXPECT_EQ(content::PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
             status);
+  done_callback.Run();
+}
+
+void InstanceIDResultCallback(base::Closure done_callback,
+                              instance_id::InstanceID::Result* out_result,
+                              instance_id::InstanceID::Result result) {
+  DCHECK(out_result);
+  *out_result = result;
   done_callback.Run();
 }
 
@@ -243,6 +254,11 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   void EndpointToToken(const std::string& endpoint,
                        bool standard_protocol = true,
                        std::string* out_token = nullptr);
+
+  // Deletes an Instance ID from the GCM Store but keeps the push subscription
+  // stored in the PushMessagingAppIdentifier map and Service Worker DB.
+  // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.
+  void DeleteInstanceIDAsIfGCMStoreReset(const std::string& app_id);
 
   PushMessagingAppIdentifier GetAppIdentifierForServiceWorkerRegistration(
       int64_t service_worker_registration_id);
@@ -386,8 +402,8 @@ void PushMessagingBrowserTest::LegacySubscribeSuccessfully(
   GURL requesting_origin = https_server()->GetURL("/").GetOrigin();
   int64_t service_worker_registration_id = 0LL;
   PushMessagingAppIdentifier app_identifier =
-      PushMessagingAppIdentifier::Generate(requesting_origin,
-                                           service_worker_registration_id);
+      PushMessagingAppIdentifier::LegacyGenerateForTesting(
+          requesting_origin, service_worker_registration_id);
   push_service_->IncreasePushSubscriptionCount(1, true /* is_pending */);
 
   std::string subscription_id;
@@ -442,6 +458,31 @@ PushMessagingBrowserTest::GetAppIdentifierForServiceWorkerRegistration(
           GetBrowser()->profile(), origin, service_worker_registration_id);
   EXPECT_FALSE(app_identifier.is_null());
   return app_identifier;
+}
+
+void PushMessagingBrowserTest::DeleteInstanceIDAsIfGCMStoreReset(
+    const std::string& app_id) {
+  // Delete the Instance ID directly, keeping the push subscription stored in
+  // the PushMessagingAppIdentifier map and the Service Worker database. This
+  // simulates the GCM Store getting reset but failing to clear push
+  // subscriptions, either because the store got reset before
+  // 93ec793ac69a542b2213297737178a55d069fd0d (Chrome 56), or because a race
+  // condition (e.g. shutdown) prevents PushMessagingServiceImpl::OnStoreReset
+  // from clearing all subscriptions.
+  instance_id::InstanceIDProfileService* instance_id_profile_service =
+      instance_id::InstanceIDProfileServiceFactory::GetForProfile(
+          GetBrowser()->profile());
+  DCHECK(instance_id_profile_service);
+  instance_id::InstanceIDDriver* instance_id_driver =
+      instance_id_profile_service->driver();
+  DCHECK(instance_id_driver);
+  instance_id::InstanceID::Result delete_result =
+      instance_id::InstanceID::UNKNOWN_ERROR;
+  base::RunLoop run_loop;
+  instance_id_driver->GetInstanceID(app_id)->DeleteID(base::Bind(
+      &InstanceIDResultCallback, run_loop.QuitClosure(), &delete_result));
+  run_loop.Run();
+  ASSERT_EQ(instance_id::InstanceID::SUCCESS, delete_result);
 }
 
 void PushMessagingBrowserTest::SendMessageAndWaitUntilHandled(
@@ -1764,6 +1805,93 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
           GetBrowser()->profile(), origin,
           0LL /* service_worker_registration_id */);
   EXPECT_TRUE(app_identifier.is_null());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       InvalidGetSubscriptionUnsubscribes) {
+  std::string script_result;
+
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully());
+
+  GURL origin = https_server()->GetURL("/").GetOrigin();
+  PushMessagingAppIdentifier app_identifier1 =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  ASSERT_FALSE(app_identifier1.is_null());
+
+  ASSERT_NO_FATAL_FAILURE(
+      DeleteInstanceIDAsIfGCMStoreReset(app_identifier1.app_id()));
+
+  // Push messaging should not yet be aware of the InstanceID being deleted.
+  histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 0);
+  // We should still be able to look up the app id.
+  PushMessagingAppIdentifier app_identifier2 =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  EXPECT_FALSE(app_identifier2.is_null());
+  EXPECT_EQ(app_identifier1.app_id(), app_identifier2.app_id());
+
+  // Now call PushManager.getSubscription(). It should return null.
+  ASSERT_TRUE(RunScript("hasSubscription()", &script_result));
+  EXPECT_EQ("false - not subscribed", script_result);
+
+  // This should have unsubscribed the push subscription.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.UnregistrationReason",
+      content::PUSH_UNREGISTRATION_REASON_GET_SUBSCRIPTION_STORAGE_CORRUPT, 1);
+  // We should no longer be able to look up the app id.
+  PushMessagingAppIdentifier app_identifier3 =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  EXPECT_TRUE(app_identifier3.is_null());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, InvalidSubscribeUnsubscribes) {
+  std::string script_result;
+
+  std::string token1;
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token1));
+
+  GURL origin = https_server()->GetURL("/").GetOrigin();
+  PushMessagingAppIdentifier app_identifier1 =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  ASSERT_FALSE(app_identifier1.is_null());
+
+  ASSERT_NO_FATAL_FAILURE(
+      DeleteInstanceIDAsIfGCMStoreReset(app_identifier1.app_id()));
+
+  // Push messaging should not yet be aware of the InstanceID being deleted.
+  histogram_tester_.ExpectTotalCount("PushMessaging.UnregistrationReason", 0);
+  // We should still be able to look up the app id.
+  PushMessagingAppIdentifier app_identifier2 =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  EXPECT_FALSE(app_identifier2.is_null());
+  EXPECT_EQ(app_identifier1.app_id(), app_identifier2.app_id());
+
+  // Now call PushManager.subscribe() again. It should succeed, but with a
+  // *different* token, indicating that it unsubscribed and re-subscribed.
+  std::string token2;
+  ASSERT_NO_FATAL_FAILURE(SubscribeSuccessfully(true /* use_key */, &token2));
+  EXPECT_NE(token1, token2);
+
+  // This should have unsubscribed the original push subscription.
+  histogram_tester_.ExpectUniqueSample(
+      "PushMessaging.UnregistrationReason",
+      content::PUSH_UNREGISTRATION_REASON_SUBSCRIBE_STORAGE_CORRUPT, 1);
+  // Looking up the app id should return a different id.
+  PushMessagingAppIdentifier app_identifier3 =
+      PushMessagingAppIdentifier::FindByServiceWorker(
+          GetBrowser()->profile(), origin,
+          0LL /* service_worker_registration_id */);
+  EXPECT_FALSE(app_identifier3.is_null());
+  EXPECT_NE(app_identifier2.app_id(), app_identifier3.app_id());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,

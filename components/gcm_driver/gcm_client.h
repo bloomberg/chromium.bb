@@ -261,6 +261,13 @@ class GCMClient {
   virtual void Register(
       const linked_ptr<RegistrationInfo>& registration_info) = 0;
 
+  // Checks that the provided |registration_id| (aka token for Instance ID
+  // registrations) matches the stored registration info. Also checks sender IDs
+  // match for GCM registrations.
+  virtual bool ValidateRegistration(
+      const linked_ptr<RegistrationInfo>& registration_info,
+      const std::string& registration_id) = 0;
+
   // Unregisters from the server to stop accessing the provided service.
   // Delegate::OnUnregisterFinished will be called asynchronously upon
   // completion.
