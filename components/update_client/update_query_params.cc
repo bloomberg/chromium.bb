@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/update_client/update_query_params_delegate.h"
+#include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -127,6 +128,11 @@ const char* UpdateQueryParams::GetNaclArch() {
 // comment in the .h file about possible return values from this function.
 #error "You need to add support for your architecture here"
 #endif
+}
+
+// static
+std::string UpdateQueryParams::GetProdVersion() {
+  return version_info::GetVersionNumber();
 }
 
 // static

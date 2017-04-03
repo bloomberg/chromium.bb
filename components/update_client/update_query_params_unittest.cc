@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/stringprintf.h"
 #include "components/update_client/update_query_params.h"
+#include "base/strings/stringprintf.h"
 #include "components/update_client/update_query_params_delegate.h"
+#include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
@@ -41,7 +42,14 @@ void TestParams(UpdateQueryParams::ProdId prod_id, bool extra_params) {
     EXPECT_TRUE(Contains(params, "cat=dog"));
 }
 
+void TestProdVersion() {
+  EXPECT_EQ(version_info::GetVersionNumber(),
+            UpdateQueryParams::GetProdVersion());
+}
+
 TEST(UpdateQueryParamsTest, GetParams) {
+  TestProdVersion();
+
   TestParams(UpdateQueryParams::CRX, false);
   TestParams(UpdateQueryParams::CHROME, false);
 

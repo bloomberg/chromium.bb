@@ -44,6 +44,16 @@ class ManifestFetchData {
     ACTIVE,
   };
 
+  // What is the priority of the update request.
+  enum FetchPriority {
+    // Used for update requests not initiated by a user, for example regular
+    // extension updates started by the scheduler.
+    BACKGROUND,
+
+    // Used for on-demate update requests i.e. requests initiated by a users.
+    FOREGROUND,
+  };
+
   struct PingData {
     // The number of days it's been since our last rollcall or active ping,
     // respectively. These are calculated based on the start of day from the
@@ -74,22 +84,27 @@ class ManifestFetchData {
                     int request_id,
                     const std::string& brand_code,
                     const std::string& base_query_params,
-                    PingMode ping_mode);
+                    PingMode ping_mode,
+                    FetchPriority fetch_priority);
   ~ManifestFetchData();
 
   // Returns true if this extension information was successfully added. If the
-  // return value is false it means the full_url would have become too long, and
+  // return value is false it means the full_url would have become too long or
+  // the request type is not compatible the current request type, and
   // this ManifestFetchData object remains unchanged.
   bool AddExtension(const std::string& id,
                     const std::string& version,
                     const PingData* ping_data,
                     const std::string& update_url_data,
-                    const std::string& install_source);
+                    const std::string& install_source,
+                    FetchPriority fetch_priority);
 
   const GURL& base_url() const { return base_url_; }
   const GURL& full_url() const { return full_url_; }
   const std::set<std::string>& extension_ids() const { return extension_ids_; }
   const std::set<int>& request_ids() const { return request_ids_; }
+  bool foreground_check() const { return fetch_priority_ == FOREGROUND; }
+  FetchPriority fetch_priority() const { return fetch_priority_; }
 
   // Returns true if the given id is included in this manifest fetch.
   bool Includes(const std::string& extension_id) const;
@@ -131,6 +146,9 @@ class ManifestFetchData {
   // The ping mode for this fetch. This determines whether or not ping data
   // (and possibly extra metrics) will be included in the fetch query.
   const PingMode ping_mode_;
+
+  // The priority of the update.
+  FetchPriority fetch_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestFetchData);
 };

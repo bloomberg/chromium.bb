@@ -48,6 +48,9 @@ class UpdateQueryParams {
   // "arm", and "mips32".
   static const char* GetNaclArch();
 
+  // Returns the current version of Chrome/Chromium.
+  static std::string GetProdVersion();
+
   // Use this delegate.
   static void SetDelegate(UpdateQueryParamsDelegate* delegate);
 

@@ -527,6 +527,7 @@ ExtensionFunction::ResponseAction DeveloperPrivateAutoUpdateFunction::Run() {
       ExtensionSystem::Get(browser_context())->extension_service()->updater();
   if (updater) {
     ExtensionUpdater::CheckParams params;
+    params.fetch_priority = ManifestFetchData::FetchPriority::FOREGROUND;
     params.install_immediately = true;
     updater->CheckNow(params);
   }

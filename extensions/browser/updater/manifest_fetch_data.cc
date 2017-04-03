@@ -41,11 +41,13 @@ ManifestFetchData::ManifestFetchData(const GURL& update_url,
                                      int request_id,
                                      const std::string& brand_code,
                                      const std::string& base_query_params,
-                                     PingMode ping_mode)
+                                     PingMode ping_mode,
+                                     FetchPriority fetch_priority)
     : base_url_(update_url),
       full_url_(update_url),
       brand_code_(brand_code),
-      ping_mode_(ping_mode) {
+      ping_mode_(ping_mode),
+      fetch_priority_(fetch_priority) {
   std::string query =
       full_url_.has_query() ? full_url_.query() + "&" : std::string();
   query += base_query_params;
@@ -85,10 +87,15 @@ bool ManifestFetchData::AddExtension(const std::string& id,
                                      const std::string& version,
                                      const PingData* ping_data,
                                      const std::string& update_url_data,
-                                     const std::string& install_source) {
+                                     const std::string& install_source,
+                                     FetchPriority fetch_priority) {
   if (extension_ids_.find(id) != extension_ids_.end()) {
     NOTREACHED() << "Duplicate extension id " << id;
     return false;
+  }
+
+  if (fetch_priority_ != FOREGROUND) {
+    fetch_priority_ = fetch_priority;
   }
 
   // Compute the string we'd append onto the full_url_, and see if it fits.
@@ -173,6 +180,9 @@ bool ManifestFetchData::DidPing(const std::string& extension_id,
 
 void ManifestFetchData::Merge(const ManifestFetchData& other) {
   DCHECK(full_url() == other.full_url());
+  if (fetch_priority_ != FOREGROUND) {
+    fetch_priority_ = other.fetch_priority_;
+  }
   request_ids_.insert(other.request_ids_.begin(), other.request_ids_.end());
 }
 
