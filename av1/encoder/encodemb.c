@@ -1105,10 +1105,6 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   const int dst_stride = pd->dst.stride;
   uint8_t *dst =
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-#if CONFIG_PVQ
-  int tx_blk_size;
-  int i, j;
-#endif
 
   av1_predict_intra_block_facade(xd, plane, block_raster_idx, blk_col, blk_row,
                                  tx_size);
@@ -1133,27 +1129,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   if (!x->pvq_skip[plane]) *(args->skip) = 0;
 
   if (x->pvq_skip[plane]) return;
-
-  // transform block size in pixels
-  tx_blk_size = tx_size_wide[tx_size];
-
-// Since av1 does not have separate function which does inverse transform
-// but av1_inv_txfm_add_*x*() also does addition of predicted image to
-// inverse transformed image,
-// pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-#if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++)
-        CONVERT_TO_SHORTPTR(dst)[j * dst_stride + i] = 0;
-  } else {
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-    for (j = 0; j < tx_blk_size; j++)
-      for (i = 0; i < tx_blk_size; i++) dst[j * dst_stride + i] = 0;
-#if CONFIG_AOM_HIGHBITDEPTH
-  }
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-#endif  // #if CONFIG_PVQ
+#endif  // CONFIG_PVQ
   av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
                               *eob);
 #if !CONFIG_PVQ

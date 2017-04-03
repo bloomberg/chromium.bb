@@ -1419,8 +1419,10 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     *out_sse = this_sse >> shift;
   } else {
     const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+#if !CONFIG_PVQ || CONFIG_DAALA_DIST
     const int bsw = block_size_wide[tx_bsize];
     const int bsh = block_size_high[tx_bsize];
+#endif
     const int src_stride = x->plane[plane].src.stride;
     const int dst_stride = xd->plane[plane].dst.stride;
     // Scale the transform block index to pixel unit.
@@ -1460,6 +1462,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
+#if !CONFIG_PVQ
 #if CONFIG_AOM_HIGHBITDEPTH
       if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
@@ -1467,16 +1470,10 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       } else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
       {
-#if !CONFIG_PVQ
         aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0, NULL, 0,
                           bsw, bsh);
-#else
-        int i, j;
-
-        for (j = 0; j < bsh; j++)
-          for (i = 0; i < bsw; i++) recon[j * MAX_TX_SIZE + i] = 0;
-#endif  // !CONFIG_PVQ
       }
+#endif  // !CONFIG_PVQ
 
       const int block_raster_idx =
           av1_block_index_to_raster_order(tx_size, block);

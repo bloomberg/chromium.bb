@@ -2785,6 +2785,25 @@ void av1_inverse_transform_block(MACROBLOCKD *xd, const tran_low_t *dqcoeff,
                                  const TX_TYPE tx_type, const TX_SIZE tx_size,
                                  uint8_t *dst, int stride, int eob) {
   if (!eob) return;
+#if CONFIG_PVQ
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  const int txb_width = block_size_wide[tx_bsize];
+  const int txb_height = block_size_high[tx_bsize];
+  int r, c;
+#if CONFIG_AOM_HIGHBITDEPTH
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
+    for (r = 0; r < txb_height; r++)
+      for (c = 0; c < txb_width; c++)
+        CONVERT_TO_SHORTPTR(dst)[r * stride + c] = 0;
+  } else {
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    for (r = 0; r < txb_height; r++)
+      for (c = 0; c < txb_width; c++) dst[r * stride + c] = 0;
+#if CONFIG_AOM_HIGHBITDEPTH
+  }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_PVQ
   INV_TXFM_PARAM inv_txfm_param;
   inv_txfm_param.tx_type = tx_type;
   inv_txfm_param.tx_size = tx_size;

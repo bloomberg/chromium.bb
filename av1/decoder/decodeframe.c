@@ -496,22 +496,6 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
     eob = av1_pvq_decode_helper(xd, pvq_ref_coeff, dqcoeff, quant, plane,
                                 tx_size, tx_type, xdec, ac_dc_coded);
 
-// Since av1 does not have separate inverse transform
-// but also contains adding to predicted image,
-// pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-#if CONFIG_AOM_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      for (j = 0; j < tx_blk_size; j++)
-        for (i = 0; i < tx_blk_size; i++)
-          CONVERT_TO_SHORTPTR(dst)[j * pd->dst.stride + i] = 0;
-    } else {
-#endif
-      for (j = 0; j < tx_blk_size; j++)
-        for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
-#if CONFIG_AOM_HIGHBITDEPTH
-    }
-#endif
-
     inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);
   }
