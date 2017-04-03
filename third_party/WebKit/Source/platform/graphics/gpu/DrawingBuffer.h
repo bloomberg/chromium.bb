@@ -168,7 +168,7 @@ class PLATFORM_EXPORT DrawingBuffer
   }
 
   // Returns false if the contents had previously been marked as changed and
-  // have not yet been committed.
+  // have not yet been resolved.
   bool markContentsChanged();
   void setBufferClearNeeded(bool);
   bool bufferClearNeeded() const;
@@ -342,8 +342,11 @@ class PLATFORM_EXPORT DrawingBuffer
   // The same as reset(), but leaves GL state dirty.
   bool resizeFramebufferInternal(const IntSize&);
 
-  // The same as commit(), but leaves GL state dirty.
+  // The same as resolveAndBindForReadAndDraw(), but leaves GL state dirty.
   void resolveMultisampleFramebufferInternal();
+
+  // Resolves m_multisampleFBO into m_fbo, if multisampling.
+  void resolveIfNeeded();
 
   bool prepareTextureMailboxInternal(
       cc::TextureMailbox* outMailbox,
@@ -481,9 +484,9 @@ class PLATFORM_EXPORT DrawingBuffer
   // buffer.
   bool m_contentsChanged = true;
 
-  // True if commit() has been called since the last time markContentsChanged()
-  // had been called.
-  bool m_contentsChangeCommitted = false;
+  // True if resolveIfNeeded() has been called since the last time
+  // markContentsChanged() had been called.
+  bool m_contentsChangeResolved = false;
   bool m_bufferClearNeeded = false;
 
   // Whether the client wants a depth or stencil buffer.

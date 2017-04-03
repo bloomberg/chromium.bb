@@ -169,8 +169,8 @@ DrawingBuffer::~DrawingBuffer() {
 }
 
 bool DrawingBuffer::markContentsChanged() {
-  if (m_contentsChangeCommitted || !m_contentsChanged) {
-    m_contentsChangeCommitted = false;
+  if (m_contentsChangeResolved || !m_contentsChanged) {
+    m_contentsChangeResolved = false;
     m_contentsChanged = true;
     return true;
   }
@@ -285,8 +285,7 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
     (*m_newMailboxCallback)();
 
   // Resolve the multisampled buffer into m_backColorBuffer texture.
-  if (m_antiAliasingMode != None)
-    resolveMultisampleFramebufferInternal();
+  resolveIfNeeded();
 
   if (m_softwareRendering && !forceGpuResult) {
     return finishPrepareTextureMailboxSoftware(outMailbox, outReleaseCallback);
@@ -696,8 +695,7 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
   ScopedStateRestorer scopedStateRestorer(this);
 
   if (m_contentsChanged) {
-    if (m_antiAliasingMode != None)
-      resolveMultisampleFramebufferInternal();
+    resolveIfNeeded();
     m_gl->Flush();
   }
 
@@ -972,7 +970,7 @@ bool DrawingBuffer::resizeFramebufferInternal(const IntSize& newSize) {
 void DrawingBuffer::resolveAndBindForReadAndDraw() {
   {
     ScopedStateRestorer scopedStateRestorer(this);
-    resolveMultisampleFramebufferInternal();
+    resolveIfNeeded();
   }
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 }
@@ -980,7 +978,7 @@ void DrawingBuffer::resolveAndBindForReadAndDraw() {
 void DrawingBuffer::resolveMultisampleFramebufferInternal() {
   DCHECK(m_stateRestorer);
   m_stateRestorer->setFramebufferBindingDirty();
-  if (wantExplicitResolve() && !m_contentsChangeCommitted) {
+  if (wantExplicitResolve() && !m_contentsChangeResolved) {
     m_stateRestorer->setClearStateDirty();
     m_gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, m_multisampleFBO);
     m_gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, m_fbo);
@@ -1010,7 +1008,12 @@ void DrawingBuffer::resolveMultisampleFramebufferInternal() {
   m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   if (m_antiAliasingMode == ScreenSpaceAntialiasing)
     m_gl->ApplyScreenSpaceAntialiasingCHROMIUM();
-  m_contentsChangeCommitted = true;
+}
+
+void DrawingBuffer::resolveIfNeeded() {
+  if (m_antiAliasingMode != None)
+    resolveMultisampleFramebufferInternal();
+  m_contentsChangeResolved = true;
 }
 
 void DrawingBuffer::restoreFramebufferBindings() {
