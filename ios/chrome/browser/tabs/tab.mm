@@ -199,6 +199,13 @@ enum class RendererTerminationTabState {
   BACKGROUND_TAB_BACKGROUND_APP,
   TERMINATION_TAB_STATE_COUNT
 };
+
+// Returns true if the application is in the background or inactive state.
+bool IsApplicationStateNotActive(UIApplicationState state) {
+  return (state == UIApplicationStateBackground ||
+          state == UIApplicationStateInactive);
+}
+
 }  // namespace
 
 @interface Tab ()<CRWWebStateObserver,
@@ -1911,6 +1918,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
+  UIApplicationState state = [UIApplication sharedApplication].applicationState;
+  BOOL applicationIsNotActive = IsApplicationStateNotActive(state);
   if (browserState_ && !browserState_->IsOffTheRecord()) {
     // Report the crash.
     GetApplicationContext()
@@ -1921,8 +1930,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     RendererTerminationTabState tab_state =
         visible_ ? RendererTerminationTabState::FOREGROUND_TAB_FOREGROUND_APP
                  : RendererTerminationTabState::BACKGROUND_TAB_FOREGROUND_APP;
-    if ([UIApplication sharedApplication].applicationState ==
-        UIApplicationStateBackground) {
+    if (applicationIsNotActive) {
       tab_state =
           visible_ ? RendererTerminationTabState::FOREGROUND_TAB_BACKGROUND_APP
                    : RendererTerminationTabState::BACKGROUND_TAB_BACKGROUND_APP;
@@ -1935,11 +1943,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       [parentTabModel_ tabUsageRecorder]->RendererTerminated(self, visible_);
   }
 
-  BOOL applicationIsBackgrounded =
-      [UIApplication sharedApplication].applicationState ==
-      UIApplicationStateBackground;
   if (visible_) {
-    if (!applicationIsBackgrounded) {
+    if (!applicationIsNotActive) {
       base::WeakNSObject<Tab> weakSelf(self);
       base::scoped_nsobject<SadTabView> sadTabView(
           [[SadTabView alloc] initWithReloadHandler:^{
@@ -1963,7 +1968,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Note: Given that the tab is visible, calling |requirePageReload| will not
   // work when the app becomes active because there is nothing to trigger
   // a view redisplay in that scenario.
-  requireReloadAfterBecomingActive_ = visible_ && applicationIsBackgrounded;
+  requireReloadAfterBecomingActive_ = visible_ && applicationIsNotActive;
   [self.dialogDelegate cancelDialogForTab:self];
 }
 
