@@ -214,10 +214,25 @@ enum AudioFormat {
 };
 
 // Surface formats based on FOURCC labels, see: http://www.fourcc.org/yuv.php
+// Values are chosen to be consistent with Chromium's VideoPixelFormat values.
 enum VideoFormat {
   kUnknownVideoFormat = 0,  // Unknown format value. Used for error reporting.
-  kYv12,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
-  kI420  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+  kYv12 = 1,                // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
+  kI420 = 2,                // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+
+  // In the following formats, each sample uses 16-bit in storage, while the
+  // sample value is stored in the least significant N bits where N is
+  // specified by the number after "P". For example, for YUV420P9, each Y, U,
+  // and V sample is stored in the least significant 9 bits in a 2-byte block.
+  kYUV420P9 = 16,
+  kYUV420P10 = 17,
+  kYUV422P9 = 18,
+  kYUV422P10 = 19,
+  kYUV444P9 = 20,
+  kYUV444P10 = 21,
+  kYUV420P12 = 22,
+  kYUV422P12 = 23,
+  kYUV444P12 = 24,
 };
 
 struct Size {
