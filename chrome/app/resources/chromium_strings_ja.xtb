@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox の設定は現在ブラウザが実行されているため使用できません。設定をインポートするには、作業内容を保存し、Firefox のウィンドウをすべて閉じてから、[続行] をクリックしてください。</translation>
 <translation id="3852700440713538496">Chromium をタスクバーにピン留めする</translation>
-<translation id="3883381313049582448">Chromium で生成されたパスワードを使用する</translation>
 <translation id="3889543394854987837">Chromium を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="390894725198123737">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chromium ユーザーからアクセスされたり同期されたりする可能性があります。</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5906655207909574370">端末を再起動して更新を完了してください。</translation>
-<translation id="5942225298871134766">Chromium ではこのパスワードが <ph name="SAVED_PASSWORD_LINK" /> で保存され、次回の入力時に使用されます。</translation>
 <translation id="5942520288919337908">「<ph name="EXTENSION_NAME" />」を Chromium に追加しました。</translation>
 <translation id="59625444380784159">連絡先から詳細を取得すると、Chromium でのフォームの記入が楽になります。</translation>
 <translation id="5987687638152509985">同期を開始するには、Chromium を更新します</translation>

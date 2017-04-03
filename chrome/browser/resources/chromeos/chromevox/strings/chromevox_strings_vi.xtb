@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Cuộn từ đầu đến cuối hoặc từ cuối đến đầu bên trong một trang, hộp thoại hoặc vùng chứa khác</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">khóa truy cập:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Thay đổi bảng chữ nổi 6 chấm hiện tại bằng cách chọn một tùy chọn từ danh sách bên dưới.</translation>
 <translation id="2169714232367507776">Nhấp vào mục hiện tại</translation>
 <translation id="2179452035581866348">ChromeVox sử dụng âm thanh để cung cấp cho bạn thông tin bổ sung và cần thiết. Bạn có thể sử dụng những âm thanh này để điều hướng nhanh hơn bằng cách tìm hiểu ý nghĩa của mỗi âm thanh. Khi cảm thấy thoải mái hơn, bạn có thể tắt mô tả dài dòng trong bài phát biểu và dựa vào chúng để biết thông tin cần thiết về trang. Dưới đây là danh sách đầy đủ các âm thanh và ý nghĩa của chúng.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{dấu đóng ngoặc}other{# dấu đóng ngoặc}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{dấu tab}other{# dấu tab}}</translation>
 <translation id="2972078295414139404">Không có liên kết đã truy cập trước nào.</translation>
 <translation id="2972205263822847197">Mẹo sử dụng công cụ</translation>
-<translation id="2978549349327282388">Cột:</translation>
 <translation id="2998131015536248178">Ký tự trước</translation>
 <translation id="2999559350546931576">Giảm độ cao</translation>
 <translation id="2999945368667127852">Không có tiện ích phương tiện tiếp theo nào.</translation>
@@ -564,7 +562,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5968607524793740041">Hiển thị menu ngữ cảnh</translation>
 <translation id="5983179082906765664">Tăng mức độ chi tiết của điều hướng</translation>
 <translation id="5999630716831179808">Giọng nói</translation>
-<translation id="6000417740266304866">Thay đổi bảng chữ nổi 8 chấm hiện tại bằng cách chọn một tùy chọn từ danh sách bên dưới.</translation>
 <translation id="6006050241733874051">Biểu mẫu</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{dấu gạch chéo ngược}other{# dấu gạch chéo ngược}}</translation>
 <translation id="6037602951055904232">Xoay về phía trước</translation>
@@ -606,7 +603,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="6444046323172968959">Hộp thoại thông báo</translation>
 <translation id="6459511626086141404">Sơ đồ bàn phím phẳng</translation>
 <translation id="6468049171101508116">Nút tiếp theo</translation>
-<translation id="6491972999578897419">Thay đổi giọng nói hiện tại bằng cách chọn tùy chọn từ danh sách bên dưới.</translation>
 <translation id="6493991254603208962">Giảm độ sáng</translation>
 <translation id="6508059270146105198">Di chuyển màn hình chữ nổi xuống cuối trang</translation>
 <translation id="6536864053412760904">Mã thông báo toán học ML</translation>
@@ -759,7 +755,6 @@ Nếu bạn đã hoàn tất hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="820417203470636242">Ô trống.</translation>
 <translation id="8215202828671303819">Đa chọn</translation>
 <translation id="8224171046658870249">Đã chuyển sang ChromeVox Next</translation>
-<translation id="8259358278692921574">Hàng:</translation>
 <translation id="8276439074553447000">Nhảy tới mục có thể đặt tiêu điểm trước</translation>
 <translation id="8278417001922463147">Không có bài viết trước nào.</translation>
 <translation id="8283603667300770666">Trường biểu mẫu tiếp theo</translation>

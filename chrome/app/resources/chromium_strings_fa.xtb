@@ -86,7 +86,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">‏متأسفانه تنظیمات Chromium شما هنگام باز بودن مرورگر در دسترس نیست. برای وارد کردن این تنظیمات در Chromium، کارهای خود را ذخیره کنید و همه پنجره‌های Firefox را ببندید. سپس "ادامه" را کلیک کنید.</translation>
 <translation id="3852700440713538496">‏Chromium به نوار وظیفه شما پین شود</translation>
-<translation id="3883381313049582448">‏استفاده از گذرواژه ایجاد شده توسط Chromium</translation>
 <translation id="3889543394854987837">‏برای باز کردن Chromium و شروع به مرور، روی نامتان کلیک کنید.</translation>
 <translation id="390894725198123737">‏در Mac ممکن است گذرواژه‌ها در Keychain شما ذخیره شوند و سایر کاربران Chromium که این حساب OS X را دارند به آن دسترسی داشته باشند یا بتوانند همگام‌سازی کنند.</translation>
 <translation id="4050175100176540509">بهبودهای امنیتی مهم و ویژگی‌های جدید در جدیدترین نسخه در دسترس است.</translation>
@@ -145,7 +144,6 @@
 <translation id="5877064549588274448">کانال تغییر کرد. برای اعمال تغییرات دستگاه خود را مجدداً راه‌اندازی کنید.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5906655207909574370">تقریباً به‌روز شده است! برای تمام کردن به‌روزرسانی، دستگاهتان را دوباره راه‌اندازی کنید.</translation>
-<translation id="5942225298871134766">‏Chromium این مورد را با <ph name="SAVED_PASSWORD_LINK" /> ذخیره می‌کند و دفعه بعد که به آن نیاز داشتید، آن را به خاطر دارد.</translation>
 <translation id="5942520288919337908">‏<ph name="EXTENSION_NAME" /> به Chromium اضافه شده است.</translation>
 <translation id="59625444380784159">‏جزئیات مخاطبین شما می‌تواند به شما کمک کند فرم‌ها را سریع‌تر در Chromium تکمیل کنید.</translation>
 <translation id="5987687638152509985">‏به‌روزرسانی Chromium برای شروع همگام‌سازی</translation>

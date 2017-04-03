@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1006017844123154345">Mở trực tuyến</translation>
-<translation id="1056898198331236512">Cảnh báo</translation>
 <translation id="10614374240317010">Không bao giờ được lưu</translation>
 <translation id="1061441684050139317">Chrome cần quyền truy cập micrô để chia sẻ micrô với trang web này.</translation>
 <translation id="1080790410959514870">Bạn đang đăng xuất tài khoản do <ph name="DOMAIN_NAME" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome được lưu trữ trên thiết bị này nhưng dữ liệu sẽ vẫn còn trong tài khoản Google của bạn.</translation>
@@ -41,6 +40,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1384959399684842514">Đã tạm dừng quá trình tải xuống</translation>
 <translation id="1389974829397082527">Không có dấu trang ở đây</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> đề xuất của Chrome</translation>
 <translation id="1404122904123200417">Được nhúng trong <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Không theo dõi”</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
@@ -322,6 +322,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="473775607612524610">Cập nhật</translation>
 <translation id="4738836084190194332">Đồng bộ hóa lần cuối: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Mở tab mới</translation>
+<translation id="4750394297954878236">Đề xuất</translation>
 <translation id="4759238208242260848">Tải xuống</translation>
 <translation id="4766369052440583386">Trình tiết kiệm dữ liệu bật</translation>
 <translation id="4797039098279997504">Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="5424588387303617268">Còn trống <ph name="GIGABYTES" /> GB</translation>
 <translation id="5435775191620395718">Hiển thị lịch sử từ thiết bị này. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Chuyển đến thanh địa chỉ</translation>
-<translation id="544291274896356069">Rời khỏi chế độ ẩn danh nếu liên kết này đã được mở trong một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="5447201525962359567">Tất cả bộ nhớ trang web, bao gồm cookie và các dữ liệu được lưu trữ cục bộ khác</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
@@ -405,6 +405,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="5530766185686772672">Đóng tab ẩn danh</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5565871407246142825">Thẻ tín dụng</translation>
+<translation id="5568069709869097550">Không thể đăng nhập</translation>
 <translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Chỉnh sửa địa chỉ</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
@@ -507,6 +508,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6583199322650523874">Đánh dấu trang hiện tại</translation>
 <translation id="6600954340915313787">Đã sao chép vào Chrome</translation>
 <translation id="6612358246767739896">Nội dung được bảo vệ</translation>
+<translation id="662080504995468778">Ở lại</translation>
 <translation id="6627583120233659107">Chỉnh sửa thư mục</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6656545060687952787">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK" />Cập nhật quyền<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7128222689758636196">Cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7138678301420049075">Khác</translation>
+<translation id="7144878232160441200">Thử lại</translation>
 <translation id="7180611975245234373">Làm mới</translation>
 <translation id="7189372733857464326">Đợi Dịch vụ của Google Play cập nhật xong</translation>
 <translation id="7191430249889272776">Tab được mở dưới nền.</translation>

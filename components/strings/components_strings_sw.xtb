@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Je, unataka Chromium ihifadhi kadi hii?</translation>
 <translation id="4171400957073367226">Sahihi mbaya ya uthibitishaji</translation>
-<translation id="4176463684765177261">Kimelemazwa</translation>
 <translation id="4196861286325780578">Rudia hatua</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kuangalia mipangilio ya kinga-mtandao na kinga-virusi<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{hamna}=1{Programu 1 ($1)}=2{Programu 2 ($1, $2)}other{Programu # ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">matokeo ya utafutaji</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> haikukubali cheti chako cha kuingia katika akaunti, au huenda hukutoa cheti.</translation>
 <translation id="443673843213245140">Matumizi ya proksi yamelemazwa lakini usanidi wa proksi wazi umebainishwa.</translation>
-<translation id="4446242550670694251">Sasa unaweza kuvinjari kwa faragha, na watu wengine wanaotumia kifaa hiki hawataona shughuli zako.</translation>
 <translation id="4492190037599258964">Matokeo ya utafutaji wa '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Hitilafu ya uthibitishaji: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kuwasiliana na msimamizi wa mfumo</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Mapendekezo ya Wazazi</translation>
 <translation id="587760065310675640">Anwani ya mahali bidhaa zitakapopelekwa haitumiki. Chagua anwani tofauti.</translation>
 <translation id="5901630391730855834">Manjano</translation>
-<translation id="59174027418879706">Imewashwa</translation>
 <translation id="5926846154125914413">Utapoteza idhini ya kufikia maudhui ya kulipiwa kutoka kwenye tovuti nyingine.</translation>
 <translation id="5959728338436674663">Tuma kiotomatiki <ph name="BEGIN_WHITEPAPER_LINK" />maelezo ya mfumo na maudhui kadha ya ukurasa<ph name="END_WHITEPAPER_LINK" /> kwa Google ili kusaidia kugundua programu na tovuti hatari. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Juma</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Ukurasa wa 1}other{Ukurasa wa #}}</translation>
 <translation id="6017514345406065928">Kijani</translation>
 <translation id="6040143037577758943">Funga</translation>
-<translation id="604124094241169006">Otomatiki</translation>
 <translation id="6042308850641462728">Zaidi</translation>
 <translation id="6060685159320643512">Tahadhari, majaribio haya yanaweza kusumbua</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{hamna}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
         mtandao ambavyo huenda unavitumia.</translation>
 <translation id="614940544461990577">Jaribu:</translation>
 <translation id="6151417162996330722">Cheti cha seva kina muda sahihi ambao ni mrefu sana.</translation>
-<translation id="615643356032862689">Faili na alamisho ulizopakua zitahifadhiwa.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
 <translation id="6177128806592000436">Muunganisho wako kwenye tovuti hii si salama</translation>
 <translation id="6203231073485539293">Angalia muunganisho wako wa Intaneti</translation>
@@ -795,9 +790,7 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8543181531796978784">Unaweza <ph name="BEGIN_ERROR_LINK" />kuripoti tatizo la ugunduzi<ph name="END_ERROR_LINK" /> au, ikiwa unaelewa kiwango cha hatari kinachoweza kutokea, <ph name="BEGIN_LINK" />tembelea tovuti hii isiyo salama<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tafsiri imeshindwa kwa sababu lugha ya ukurasa isingeweza kuthibitishwa.</translation>
 <translation id="8559762987265718583">Muunganisho wa faragha kwenye <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> hauwezi kupatikana kwa sababu tarehe na wakati wa kifaa chako (<ph name="DATE_AND_TIME" />) si sahihi.</translation>
-<translation id="8570229484593575558">Maelezo haya |hayatahifadhiwa|:#Historia yako ya kuvinjari#Mambo uliyotafuta#Data ya vidakuzi</translation>
 <translation id="8571890674111243710">Inatafsiri ukurasa katika <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Shughuli zako |huenda bado zinaonekana| na:#Tovuti unazotembelea#Mwajiri wako#Mtoa huduma wako wa intaneti</translation>
 <translation id="858637041960032120">Ongeza simu
 </translation>
 <translation id="859285277496340001">Cheti hakibainishi utaratibu wa kuangalia iwapo kimekataliwa.</translation>
@@ -810,7 +803,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8738058698779197622">Ili kutambua muunganisho salama, saa yako inahitaji kuwekwa sahihi. Hii ni kwa sababu vyeti ambavyo tovuti hutumia kujitambua ni sahihi kwa vipindi mahususi pekee. Kwa kuwa saa ya kifaa chako si sahihi, Chromium haiwezi kuthibitisha vyeti hivi.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;anwani ya DNS&lt;/abbr&gt; haikupatikana. Tatizo linachunguzwa.</translation>
 <translation id="8790007591277257123">Rudia kufuta</translation>
-<translation id="8798099450830957504">Chaguo Msingi</translation>
 <translation id="8800988563907321413">Mapendekezo ya maudhui ya uhamishaji wa karibu yataonekana hapa</translation>
 <translation id="8820817407110198400">Alamisho</translation>
 <translation id="883848425547221593">Alamisho Zingine</translation>

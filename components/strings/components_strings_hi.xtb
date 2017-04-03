@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">क्या आप चाहते हैं कि क्रोमियम इस कार्ड को सहेजे?</translation>
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
-<translation id="4176463684765177261">अक्षम</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल और एंटीवायरस कॉन्फ़िगरेशन की जांच करें<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{कोई नहीं}=1{1 ऐप्लिकेशन ($1)}=2{2 ऐप्लिकेशन ($1, $2)}one{# ऐप्लिकेशन ($1, $2, $3)}other{# ऐप्लिकेशन ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">खोज परिणाम</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ने आपका लॉगिन प्रमाणपत्र स्वीकार नहीं किया है या हो सकता है कि प्रमाणपत्र उपलब्ध नहीं कराया गया हो.</translation>
 <translation id="443673843213245140">प्रॉक्‍सी का उपयोग अक्षम है लेकिन कोई स्‍पष्ट प्रॉक्‍सी कॉन्फ़िगरेशन निर्दिष्ट किया गया है.</translation>
-<translation id="4446242550670694251">अब आप निजी रूप से ब्राउज़ कर सकते हैं और इस डिवाइस का उपयोग करने वाले दूसरे लोगों को आपकी गतिविधि दिखाई नहीं देगी.</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' के खोज परिणाम</translation>
 <translation id="4506176782989081258">सत्‍यापन गड़बड़ी: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">सिस्टम व्यवस्थापक से संपर्क करें</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">अभिभावक सुझाव</translation>
 <translation id="587760065310675640">असमर्थित शिपिंग पता. कोई दूसरा पता चुनें.</translation>
 <translation id="5901630391730855834">पीला</translation>
-<translation id="59174027418879706">सक्षम किया गया</translation>
 <translation id="5926846154125914413">आप कुछ साइटों से प्रीमियम सामग्री की एक्सेस खो सकते हैं.</translation>
 <translation id="5959728338436674663">Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टम संबंधी जानकारी और पेज सामग्री<ph name="END_WHITEPAPER_LINK" /> अपने आप भेजें ताकि खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता मिल सके. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">सप्ताह</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{पेज 1}one{पेज #}other{पेज #}}</translation>
 <translation id="6017514345406065928">हरा</translation>
 <translation id="6040143037577758943">बंद करें</translation>
-<translation id="604124094241169006">स्वचालित</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6060685159320643512">सावधान, ये प्रयोग नुकसान पहुंचा सकते हैं</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{कोई नहीं}=1{1}one{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     डिवाइस को रीबूट करें.</translation>
 <translation id="614940544461990577">यह आज़माकर देखें:</translation>
 <translation id="6151417162996330722">सर्वर प्रमाणपत्र की मान्‍यता अवधि बहुत लंबी है.</translation>
-<translation id="615643356032862689">डाउनलोड की गई फ़ाइलें और बुकमार्क रखे जाएंगे.</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
 <translation id="6177128806592000436">इस साइट से आपका कनेक्‍शन सुरक्षित नहीं है</translation>
 <translation id="6203231073485539293">अपना इंटरनेट कनेक्शन जांचें</translation>
@@ -793,9 +788,7 @@
 <translation id="8543181531796978784">आप <ph name="BEGIN_ERROR_LINK" />पहचान संबंधी समस्‍या की रिपोर्ट<ph name="END_ERROR_LINK" /> कर सकते हैं या यदि आप अपनी सुरक्षा से जुड़े जोखिमों को समझते हैं, तो <ph name="BEGIN_LINK" />इस असुरक्षित साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="8553075262323480129">अनुवाद विफल हो गया क्योंकि पेज की भाषा निर्धारित नहीं की जा सकी.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
-<translation id="8570229484593575558">यह जानकारी |सहेजी नहीं जाएगी|:#आपका ब्राउज़िंग इतिहास#आपकी खोजें#कुकी डेटा</translation>
 <translation id="8571890674111243710">पेज का अनुवाद <ph name="LANGUAGE" /> में कर रहा है...</translation>
-<translation id="8584539743998202583">आपकी गतिविधि |इन्हें अभी भी दिखाई दे सकती है|:#जिन वेबसाइटों पर आप जाते हैं#आपका नियोक्ता#आपका इंटरनेट सेवा प्रदाता</translation>
 <translation id="858637041960032120">फ़ोन नंबर जोड़ें
 </translation>
 <translation id="859285277496340001">प्रमाणपत्र यह जांचने के लिए कोई तंत्र निर्दिष्‍ट नहीं करता कि इसे रद्द कर दिया गया है या नहीं.</translation>
@@ -808,7 +801,6 @@
 <translation id="8738058698779197622">सुरक्षित कनेक्‍शन स्‍थापित करने के लिए, आपकी घड़ी को ठीक से सेट किए जाने की आवश्‍यकता है. ऐसा इसलिए क्‍योंकि वेबसाइटों द्वारा स्‍वयं की पहचान करने के लिए उपयोग किए जाने वाले प्रमाण पत्र केवल विशिष्‍ट समयावधियों के लिए ही मान्‍य होते हैं. चूंकि आपके डिवाइस की घड़ी गलत है, इसलिए क्रोमियम इन प्रमाणपत्रों को सत्‍यापित नहीं कर सकता.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> का &lt;abbr id="dnsDefinition"&gt;DNS पता&lt;/abbr&gt; प्राप्त नहीं किया जा सका. समस्या का निदान किया जा रहा है.</translation>
 <translation id="8790007591277257123">&amp;हटाना फिर से करें</translation>
-<translation id="8798099450830957504">सामान्य</translation>
 <translation id="8800988563907321413">आपके आस-पास के सुझाव यहां दिखाई देंगे</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
 <translation id="883848425547221593">अन्य बुकमार्क</translation>

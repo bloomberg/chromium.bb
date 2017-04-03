@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Na žalost, vaše postavke preglednika Mozilla Firefox nisu dostupne dok je taj preglednik aktivan. Da biste uvezli te postavke u Chromium, spremite svoj rad i zatvorite sve prozore Firefoxa. Zatim kliknite "Nastavak".</translation>
 <translation id="3852700440713538496">Prikvačite Chromium na programsku traku</translation>
-<translation id="3883381313049582448">Upotrijebite zaporku koju generira Chromium</translation>
 <translation id="3889543394854987837">Kliknite svoje ime da biste otvorili Chromium i počeli s pregledavanjem.</translation>
 <translation id="390894725198123737">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromiuma koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Kanal je promijenjen. Ponovo pokrenite uređaj za primjenu promjena.</translation>
 <translation id="5895138241574237353">Ponovno pokreni</translation>
 <translation id="5906655207909574370">Ažuriranje će uskoro biti gotovo. Za dovršetak ponovo pokrenite uređaj.</translation>
-<translation id="5942225298871134766">Chromium će spremiti tu zaporku u vaš <ph name="SAVED_PASSWORD_LINK" /> i zapamtiti je za sljedeći put.</translation>
 <translation id="5942520288919337908">Proširenje <ph name="EXTENSION_NAME" /> dodano je u Chromium.</translation>
 <translation id="59625444380784159">Pojedinosti iz vaših kontakata mogu vam pomoći brže ispuniti obrasce na Chromiumu.</translation>
 <translation id="5987687638152509985">Ažurirajte Chromium da bi se pokrenula sinkronizacija</translation>

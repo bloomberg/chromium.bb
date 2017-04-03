@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Ombryd tekst fra begyndelsen til enden eller enden til begyndelsen af en side, dialogboks eller anden container.</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">hurtigtast:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Skift det aktuelle 6-punkts braillealfabet ved at vælge en indstilling på listen nedenfor.</translation>
 <translation id="2169714232367507776">Klik på aktuelt element</translation>
 <translation id="2179452035581866348">ChromeVox bruger lyde til at give dig vigtige yderligere oplysninger. Du kan navigere hurtigere ved at lære, hvad de enkelte lyde betyder. Når du får mere styr på lydenes betydning, kan du slå detaljerede talebeskrivelser fra og bruge dem til at give dig vigtige oplysninger om siden. Her er hele listen over lyde og deres betydning.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{højre parentes}one{# højre parentes}other{# højre parenteser}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabulator}one{# tabulatorer}other{# tabulatorer}}</translation>
 <translation id="2972078295414139404">Intet tidligere besøgt link.</translation>
 <translation id="2972205263822847197">Værktøjstip</translation>
-<translation id="2978549349327282388">Kolonner:</translation>
 <translation id="2998131015536248178">Forrige tegn</translation>
 <translation id="2999559350546931576">Skru ned for toneleje</translation>
 <translation id="2999945368667127852">Der er ikke flere mediewidgets.</translation>
@@ -564,7 +562,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="5968607524793740041">Vis genvejsmenu</translation>
 <translation id="5983179082906765664">Øg detaljegraden for navigation</translation>
 <translation id="5999630716831179808">Stemmer</translation>
-<translation id="6000417740266304866">Skift det aktuelle 8-punkts braillealfabet ved at vælge en indstilling på listen nedenfor.</translation>
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstreg}one{ # omvendte skråstreger}other{# omvendte skråstreger}}</translation>
 <translation id="6037602951055904232">Panorer fremad</translation>
@@ -606,7 +603,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="6444046323172968959">Underretningsdialogboks</translation>
 <translation id="6459511626086141404">Flad tasteoversigt</translation>
 <translation id="6468049171101508116">Knappen Næste</translation>
-<translation id="6491972999578897419">Skift aktuel stemme ved at vælge en indstilling på listen nedenfor.</translation>
 <translation id="6493991254603208962">Lysstyrke ned</translation>
 <translation id="6508059270146105198">Flyt braille-visningen til bunden af siden</translation>
 <translation id="6536864053412760904">Math ML-token</translation>
@@ -759,7 +755,6 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="820417203470636242">Tom celle.</translation>
 <translation id="8215202828671303819">Valg af flere</translation>
 <translation id="8224171046658870249">Skiftet til ChromeVox Next</translation>
-<translation id="8259358278692921574">Rækker:</translation>
 <translation id="8276439074553447000">Gå til forrige element, der kan fokuseres på</translation>
 <translation id="8278417001922463147">Ingen tidligere artikel.</translation>
 <translation id="8283603667300770666">Næste formularfelt</translation>

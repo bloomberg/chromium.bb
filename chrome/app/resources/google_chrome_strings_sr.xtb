@@ -19,7 +19,6 @@
 <translation id="1434626383986940139">Chrome Canary апликације</translation>
 <translation id="1457721931618994305">Ажурирање Google Chrome-а...</translation>
 <translation id="1469002951682717133">Покретач Chrome апликација</translation>
-<translation id="1475773083554142432">Chrome ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK" /> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="1480489203462860648">Испробајте га, већ је инсталиран</translation>
 <translation id="1553358976309200471">Ажурирај Chrome</translation>
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
@@ -183,7 +182,6 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="6235018212288296708">Правило за долазни саобраћај за Google Chrome да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6236285698028833233">Google Chrome је престао да се ажурира и не подржава више ову верзију оперативног система.</translation>
 <translation id="6291549208091401781">Google Chrome је већ инсталиран за све кориснике на рачунару.</translation>
-<translation id="629218512217695915">Користите лозинку коју је Chrome генерисао</translation>
 <translation id="6338556085225130112">Ажурирање Google Chrome-а</translation>
 <translation id="6368958679917195344">Chrome OС je могућ захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтвер отвореног кода<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Овај рачунар ће ускоро престати да добија ажурирања за Google Chrome јер Mac OS X 10.6, 10.7 и 10.8 више неће бити подржани.</translation>

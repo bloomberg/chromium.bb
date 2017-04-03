@@ -357,7 +357,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Ar norite, kad „Chromium“ išsaugotų šią kortelę?</translation>
 <translation id="4171400957073367226">Netinkamas patvirtinimo parašas</translation>
-<translation id="4176463684765177261">Neleista</translation>
 <translation id="4196861286325780578">&amp;Perkelti dar kartą</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Patikrinti užkardos ir antivirusinės sistemos konfigūracijas<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{nėra}=1{1 programa („$1“)}=2{2 programos („$1“, „$2“)}one{# programa („$1“, „$2“, „$3“)}few{# programos („$1“, „$2“, „$3“)}many{# programos („$1“, „$2“, „$3“)}other{# programų („$1“, „$2“, „$3“)}}</translation>
@@ -384,7 +383,6 @@
 <translation id="4406896451731180161">paieškos rezultatai</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> nepriėmė jūsų prisijungimo sertifikato arba prisijungimo sertifikatas nebuvo pateiktas.</translation>
 <translation id="443673843213245140">Įgaliotojo serverio naudojimas neleidžiamas, bet nurodyta aiški įgaliotojo serverio konfigūracija.</translation>
-<translation id="4446242550670694251">Dabar galite naršyti privačiai, o kiti šį įrenginį naudojantys žmonės nematys jūsų veiklos.</translation>
 <translation id="4492190037599258964">„<ph name="SEARCH_STRING" />“ paieškos rezultatai</translation>
 <translation id="4506176782989081258">Tikrinimo klaida: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Susisiekti su sistemos administratoriumi</translation>
@@ -524,7 +522,6 @@
 <translation id="5872918882028971132">Pasiūlymai tėvams</translation>
 <translation id="587760065310675640">Nepalaikomas pristatymo adresas. Pasirinkite kitą adresą.</translation>
 <translation id="5901630391730855834">Geltona</translation>
-<translation id="59174027418879706">Įgalinta</translation>
 <translation id="5926846154125914413">Galite prarasti prieigą prie aukščiausios kokybės turinio iš kelių svetainių.</translation>
 <translation id="5959728338436674663">Automatiškai siųsti tam tikrą <ph name="BEGIN_WHITEPAPER_LINK" />sistemos informaciją ir puslapio turinį<ph name="END_WHITEPAPER_LINK" /> į sistemą „Google“ siekiant padėti aptikti pavojingas programas ir svetaines. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Savaitė</translation>
@@ -537,7 +534,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{1 puslapis}one{# puslapis}few{# puslapiai}many{# puslapio}other{# puslapių}}</translation>
 <translation id="6017514345406065928">Žalia</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
-<translation id="604124094241169006">Automatinis</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{nėra}=1{1}one{#}few{#}many{#}other{#}}</translation>
@@ -545,7 +541,6 @@
         naudojamus tinklo įrenginius.</translation>
 <translation id="614940544461990577">Pabandykite atlikti toliau nurodytus veiksmus.</translation>
 <translation id="6151417162996330722">Serverio sertifikato galiojimo laikotarpis per ilgas.</translation>
-<translation id="615643356032862689">Atsiųsti failai ir žymės bus išsaugoti.</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6177128806592000436">Ryšys su šia svetaine nėra saugus</translation>
 <translation id="6203231073485539293">Patikrinkite interneto ryšį</translation>
@@ -796,9 +791,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8543181531796978784">Galite <ph name="BEGIN_ERROR_LINK" />pranešti apie aptikimo problemą<ph name="END_ERROR_LINK" /> arba, jei suprantate saugos riziką, galite <ph name="BEGIN_LINK" />apsilankyti šioje nesaugioje svetainėje<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Išversti negalima, nes nepavyko nustatyti puslapio kalbos.</translation>
 <translation id="8559762987265718583">Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.</translation>
-<translation id="8570229484593575558">Ši informacija |nebus išsaugota|:#Naršymo istorija#Paieškos#Slapukų duomenys</translation>
 <translation id="8571890674111243710">Puslapis verčiamas į <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Veiklą |vis tiek gali peržiūrėti|:#lankomos svetainės;#darbdavys;#interneto paslaugų teikėjas.</translation>
 <translation id="858637041960032120">Pridėti tel. nr.
 </translation>
 <translation id="859285277496340001">Sertifikatas nenurodo mechanizmo, skirto patikrinti, ar jis buvo panaikintas.</translation>
@@ -811,7 +804,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8738058698779197622">Jei norite užmegzti saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikalaujama todėl, kad svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikrą laikotarpį. Kadangi įrenginio laikrodis nustatytas netinkamai, „Chromium“ negali tinkamai patvirtinti sertifikatų.</translation>
 <translation id="8740359287975076522">Nepavyko rasti <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS adreso&lt;/abbr&gt;. Nustatoma problema.</translation>
 <translation id="8790007591277257123">&amp;Ištrinti dar kartą</translation>
-<translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8800988563907321413">Netoliese esantys pasiūlymai jums rodomi čia</translation>
 <translation id="8820817407110198400">Žymės</translation>
 <translation id="883848425547221593">Kitos žymės</translation>

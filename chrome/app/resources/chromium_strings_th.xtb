@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">ขออภัย ไม่สามารถใช้การตั้งค่า Mozilla Firefox ของคุณขณะที่เบราว์เซอร์กำลังทำงานอยู่ หากต้องการนำเข้าการตั้งค่าเหล่านี้เข้าใน Chromium ให้บันทึกงานของคุณและปิดหน้าต่าง Firefox ทั้งหมด แล้วคลิก "ดำเนินการต่อ"</translation>
 <translation id="3852700440713538496">ตรึง Chromium กับแถบงาน</translation>
-<translation id="3883381313049582448">ใช้รหัสผ่านที่ Chromium สร้างขึ้น</translation>
 <translation id="3889543394854987837">คลิกชื่อของคุณเพื่อเปิด Chromium และเริ่มท่องเว็บ</translation>
 <translation id="390894725198123737">สำหรับ Mac ระบบจะบันทึกรหัสผ่านไว้ใน Keychain และผู้ใช้ Chromium คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและคุณลักษณะใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">เปลี่ยนช่องแล้ว รีสตาร์ทอุปกรณ์เพื่อใช้การเปลี่ยนแปลง</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5906655207909574370">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว รีสตาร์ทอุปกรณ์เพื่อให้การอัปเดตเสร็จสิ้น</translation>
-<translation id="5942225298871134766">Chromium จะเก็บข้อมูลนี้ไว้กับ <ph name="SAVED_PASSWORD_LINK" /> และจดจำไว้สำหรับครั้งถัดไปที่คุณต้องการใช้</translation>
 <translation id="5942520288919337908">เพิ่ม <ph name="EXTENSION_NAME" /> ลงใน Chromium แล้ว</translation>
 <translation id="59625444380784159">รายละเอียดจากรายชื่อติดต่อของคุณช่วยให้คุณสามารถกรอกฟอร์มได้อย่างรวดเร็วขึ้นใน Chromium</translation>
 <translation id="5987687638152509985">อัปเดต Chromium เพื่อเริ่มการซิงค์</translation>

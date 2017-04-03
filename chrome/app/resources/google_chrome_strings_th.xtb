@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">แอป Chrome Canary</translation>
 <translation id="1457721931618994305">กำลังอัปเดต Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
-<translation id="1475773083554142432">Chrome จะเก็บข้อมูลนี้ไว้กับ <ph name="SAVED_PASSWORD_LINK" /> และจดจำไว้สำหรับครั้งถัดไปที่คุณต้องการใช้</translation>
 <translation id="1480489203462860648">ลองใช้ ติดตั้งไว้แล้ว</translation>
 <translation id="1553358976309200471">อัปเดต Chrome</translation>
 <translation id="1587223624401073077">Google Chrome ใช้กล้องของคุณอยู่</translation>
@@ -176,7 +175,6 @@
 <translation id="6235018212288296708">กฎขาเข้าสำหรับ Google Chrome เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="6236285698028833233">Google Chrome ได้หยุดการอัปเดต และไม่สนับสนุนระบบปฏิบัติการเวอร์ชันนี้อีกต่อไป</translation>
 <translation id="6291549208091401781">มีการติดตั้ง Google Chrome สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
-<translation id="629218512217695915">ใช้รหัสผ่านที่ Chrome สร้างขึ้น</translation>
 <translation id="6338556085225130112">กำลังอัปเดต Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS เกิดขึ้นได้ด้วยการสนับสนุนจาก<ph name="BEGIN_LINK_CROS_OSS" />ซอฟต์แวร์โอเพนซอร์ส<ph name="END_LINK_CROS_OSS" />เพิ่มเติม</translation>
 <translation id="6400076122676892962">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Mac OS X 10.6, 10.7 และ 10.8 อีกต่อไป</translation>

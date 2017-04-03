@@ -77,7 +77,6 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="2381405137052800939">Základní nastavení</translation>
 <translation id="2386793615875593361">Vybrána 1 fotka</translation>
 <translation id="2435457462613246316">Zobrazit heslo</translation>
-<translation id="2467815441875554965">Kontextové vyhledávání</translation>
 <translation id="2572712655377361602">Přístup k vašim fotkám blokují zásady zařízení.</translation>
 <translation id="2584132361465095047">Přidat účet...</translation>
 <translation id="2593774076813182497">Stránku nelze vytisknout.</translation>
@@ -146,7 +145,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3608436266458100337">Režim čtečky</translation>
 <translation id="3638472932233958418">Přednačítat stránky</translation>
 <translation id="3691593122358196899">Záložka přidána do složky <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Pokud je tento příznak aktivován, bude omnibox zahrnovat návrhy webových stránek, které jsou vysílány zařízeními v okolí.</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3771033907050503522">Anonymní karty</translation>
 <translation id="3783017676699494206">Uložit obrázek</translation>
@@ -264,6 +262,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6324669097367352121">Nastavení přihlášení</translation>
 <translation id="6337234675334993532">Šifrování</translation>
 <translation id="633809752005859102">Něco se hodně pokazilo. Na řešení pracujeme.</translation>
+<translation id="6342069812937806050">Právě teď</translation>
 <translation id="6344783595350022745">Smazat text</translation>
 <translation id="6362362396625799311">Žádné anonymní karty</translation>
 <translation id="6380866119319257197">Pokud heslovou frázi zapomenete nebo toto nastavení budete chtít změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
@@ -308,7 +307,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="7189598951263744875">Sdílet...</translation>
 <translation id="7203585745079012652">Vyslovovat odpovědi</translation>
 <translation id="722055596168483966">Přizpůsobení služeb Google</translation>
-<translation id="7222245588540287464">Určuje, zda je aktivní kontextové vyhledávání, nebo nikoliv.</translation>
 <translation id="7336264872878993241">Staženo <ph name="PERCENT" /> %</translation>
 <translation id="7346909386216857016">OK, rozumím</translation>
 <translation id="7400418766976504921">Adresa URL</translation>

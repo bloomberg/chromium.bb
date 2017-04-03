@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Leider sind Ihre Mozilla Firefox-Einstellungen nicht verfügbar, wenn dieser Browser ausgeführt wird. Speichern Sie Ihre Arbeit und schließen Sie alle Firefox-Fenster, um die Einstellungen in Chromium zu importieren. Klicken Sie anschließend auf "Weiter".</translation>
 <translation id="3852700440713538496">Chromium an Ihre Taskleiste anheften</translation>
-<translation id="3883381313049582448">Von Chromium generiertes Passwort verwenden</translation>
 <translation id="3889543394854987837">Klicken Sie auf Ihren Namen, um Chromium zu öffnen und im Web zu surfen.</translation>
 <translation id="390894725198123737">Auf einem Mac können Passwörter in Ihrem Schlüsselbund gespeichert und von anderen Chromium-Nutzern über dieses OS X-Konto abgerufen oder synchronisiert werden.</translation>
 <translation id="4050175100176540509">Wichtige Sicherheitsverbesserungen und neue Funktionen sind in der aktuellen Version verfügbar.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Kanal wurde geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5906655207909574370">Fast fertig! Starten Sie Ihr Gerät neu, um die Aktualisierung abzuschließen.</translation>
-<translation id="5942225298871134766">Chromium speichert dies in <ph name="SAVED_PASSWORD_LINK" />, damit es bei Bedarf verfügbar ist.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> wurde zu Chromium hinzugefügt.</translation>
 <translation id="59625444380784159">Mithilfe von Angaben aus Ihren Kontakten können Sie Formulare in Chromium schneller ausfüllen.</translation>
 <translation id="5987687638152509985">Aktualisieren Sie Chromium, um die Synchronisierung zu starten</translation>

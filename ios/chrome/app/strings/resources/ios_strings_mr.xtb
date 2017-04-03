@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">मूलतत्त्वे</translation>
 <translation id="2386793615875593361">1 निवडले</translation>
 <translation id="2435457462613246316">संकेतशब्द दर्शवा</translation>
-<translation id="2467815441875554965">संदर्भीय शोध</translation>
 <translation id="2572712655377361602">डिव्हाइस धोरणाने आपल्या फोटोंंमधील प्रवेश अवरोधित केला</translation>
 <translation id="2584132361465095047">खाते जोडा...</translation>
 <translation id="2593774076813182497">या पृष्ठाचे मुद्रण केले जाऊ शकत नाही.</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">वाचक मोड</translation>
 <translation id="3638472932233958418">वेबपृष्ठे प्रीलोड करा</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> मध्ये बुकमार्क केले</translation>
-<translation id="3692781555820666866">सक्षम केलेले असताना, आपल्या जवळपास असलेले डिव्हाइसेस प्रसारित करतात त्या वेबपृष्ठांसाठी सूचना विविधोपयोगी क्षेत्रात समाविष्‍ट केल्या जातील.</translation>
 <translation id="3738139272394829648">शोधण्यासाठी स्विच करा</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3783017676699494206">प्रतिमा जतन करा</translation>
@@ -265,6 +263,7 @@
 <translation id="6324669097367352121">साइन इन सेटिंग्ज</translation>
 <translation id="6337234675334993532">कूटबद्धीकरण</translation>
 <translation id="633809752005859102">खरोखर काहीतरी चूक झाली. आम्ही त्यावर कार्य करू.</translation>
+<translation id="6342069812937806050">आत्ताच</translation>
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
 <translation id="6362362396625799311">कोणतेही गुप्त टॅब नाहीत</translation>
 <translation id="6380866119319257197">आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
@@ -309,7 +308,6 @@
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
 <translation id="722055596168483966">Google सेेव वैयक्तिकृत करा</translation>
-<translation id="7222245588540287464">संदर्भीय शोध सक्षम केला आहे किंवा नाही.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> टक्के डाउनलोड केले</translation>
 <translation id="7346909386216857016">ठीक, समजले</translation>
 <translation id="7400418766976504921">URL</translation>

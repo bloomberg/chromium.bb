@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">您希望 Chromium 儲存這張信用卡嗎？</translation>
 <translation id="4171400957073367226">驗證簽名無效</translation>
-<translation id="4176463684765177261">已停用</translation>
 <translation id="4196861286325780578">重做移動(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />檢查防火牆和防毒軟體設定<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{無}=1{1 個應用程式 ($1)}=2{2 個應用程式 ($1、$2)}other{# 個應用程式 ($1、$2、$3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">搜尋結果</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受你的登入憑證，或是你可能未提供登入憑證。</translation>
 <translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
-<translation id="4446242550670694251">現在你可以進行私密瀏覽，共用這部裝置的其他使用者不會看到你的活動。</translation>
 <translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」的搜尋結果</translation>
 <translation id="4506176782989081258">驗證錯誤：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">與系統管理員聯絡</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">家長建議</translation>
 <translation id="587760065310675640">目前選取的是不支援的運送地址，請改用其他地址。</translation>
 <translation id="5901630391730855834">黃色</translation>
-<translation id="59174027418879706">已啟用</translation>
 <translation id="5926846154125914413">您可能無法再存取部分網站的付費內容。</translation>
 <translation id="5959728338436674663">自動傳送部分<ph name="BEGIN_WHITEPAPER_LINK" />系統資訊和網頁內容<ph name="END_WHITEPAPER_LINK" />給 Google，協助偵測危險的應用程式和網站。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">週</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{第 1 頁}other{第 # 頁}}</translation>
 <translation id="6017514345406065928">綠色</translation>
 <translation id="6040143037577758943">關閉</translation>
-<translation id="604124094241169006">自動</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">請注意，這些實驗性功能可能對電腦有害</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{無}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     數據機或其他網路裝置。</translation>
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6151417162996330722">伺服器憑證的有效期限太長。</translation>
-<translation id="615643356032862689">系統會保留你下載的檔案和新增的書籤。</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6177128806592000436">你與這個網站的連線不安全</translation>
 <translation id="6203231073485539293">檢查網際網路連線</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />回報偵測問題<ph name="END_ERROR_LINK" />。或者在您瞭解安全性風險後，仍然可以<ph name="BEGIN_LINK" />前往這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
 <translation id="8559762987265718583">您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。</translation>
-<translation id="8570229484593575558">系統|不會儲存|以下資訊：#你的瀏覽紀錄#你的搜尋查詢#Cookie 資料</translation>
 <translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">以下各方|可能仍會看到|你的活動：#你造訪的網站#你的雇主#你的網際網路服務供應商</translation>
 <translation id="858637041960032120">新增電話號碼</translation>
 <translation id="859285277496340001">憑證未指定負責檢查其本身是否已遭到撤銷的機制。</translation>
 <translation id="8620436878122366504">你的家長尚未核准這個網站</translation>
@@ -809,7 +802,6 @@
 <translation id="8738058698779197622">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
-<translation id="8798099450830957504">預設</translation>
 <translation id="8800988563907321413">這裡會顯示系統建議你瀏覽的鄰近網頁</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883848425547221593">其他書籤</translation>

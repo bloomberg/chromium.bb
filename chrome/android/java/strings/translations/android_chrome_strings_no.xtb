@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1006017844123154345">Åpne på nettet</translation>
-<translation id="1056898198331236512">Advarsel</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
 <translation id="1061441684050139317">Chrome må ha tilgang til mikrofonen for å kunne dele den med dette nettstedet.</translation>
 <translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME" />. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
@@ -41,6 +40,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1384959399684842514">Nedlasting stanset midlertidig</translation>
 <translation id="1389974829397082527">Det er ingen bokmerker her</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome-forslag</translation>
 <translation id="1404122904123200417">Innbygd i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">«Ingen sporing»</translation>
 <translation id="1407135791313364759">Åpne alle</translation>
@@ -322,6 +322,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4738836084190194332">Sist synkronisert: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Åpne en ny fane</translation>
+<translation id="4750394297954878236">Forslag</translation>
 <translation id="4759238208242260848">Nedlastinger</translation>
 <translation id="4766369052440583386">Datasparing er på</translation>
 <translation id="4797039098279997504">Trykk for å gå tilbake til <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB er tilgjengelig</translation>
 <translation id="5435775191620395718">Viser loggen fra denne enheten. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Gå til adressefeltet</translation>
-<translation id="544291274896356069">Inkognitomodus forlates hvis denne linken åpnes i et eksternt program. Vil du fortsette?</translation>
 <translation id="5447201525962359567">All nettstedslagring, inkludert informasjonskapsler og andre lokalt lagrede data</translation>
 <translation id="5456381639095306749">Last ned siden</translation>
 <translation id="548278423535722844">Åpne i en kartapp</translation>
@@ -405,6 +405,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5530766185686772672">Lukk inkognitofaner</translation>
 <translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5565871407246142825">Kredittkort</translation>
+<translation id="5568069709869097550">Kan ikke logge på</translation>
 <translation id="5578795271662203820">Søk etter dette bildet i <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Rediger adresse</translation>
 <translation id="5596627076506792578">Flere alternativer</translation>
@@ -507,6 +508,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6583199322650523874">Sett den aktive siden som bokmerke</translation>
 <translation id="6600954340915313787">Kopiert til Chrome</translation>
 <translation id="6612358246767739896">Beskyttet innhold</translation>
+<translation id="662080504995468778">Bli her</translation>
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="6656545060687952787">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK" />Oppdater tillatelsene<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
+<translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>

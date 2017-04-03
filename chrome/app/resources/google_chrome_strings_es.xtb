@@ -19,7 +19,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1434626383986940139">Aplicaciones de Chrome Canary</translation>
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
-<translation id="1475773083554142432">Chrome almacenará esta contraseña en <ph name="SAVED_PASSWORD_LINK" /> y la recordará la próxima vez que la necesites.</translation>
 <translation id="1480489203462860648">Probarlo (ya instalado)</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1587223624401073077">Google Chrome está utilizando la cámara.</translation>
@@ -183,7 +182,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="6235018212288296708">Regla entrante para que Google Chrome permita tráfico mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome ha dejado de actualizarse y ya no admite la versión de tu sistema operativo.</translation>
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios de tu ordenador.</translation>
-<translation id="629218512217695915">Utilizar contraseña generada por Chrome</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS" />software libre<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6400076122676892962">Este ordenador pronto dejará de recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 dejarán de ser compatibles.</translation>

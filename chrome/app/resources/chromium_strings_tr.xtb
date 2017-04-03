@@ -85,7 +85,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Chromium'a içe aktarmak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Sonra Devam'ı tıklatın.</translation>
 <translation id="3852700440713538496">Chromium'u görev çubuğunuza sabitleme</translation>
-<translation id="3883381313049582448">Chromium tarafından oluşturulan şifreyi kullan</translation>
 <translation id="3889543394854987837">Chromium'u açmak ve göz atmaya başlamak için adınızı tıklayın.</translation>
 <translation id="390894725198123737">Mac bilgisayarlarda şifreler Keychain uygulamanızda saklanabilir ve bu OS X hesabını paylaşan diğer Chromium kullanıcıları bu şifrelere erişilebilir veya şifreleri senkronize edilebilir.</translation>
 <translation id="4050175100176540509">Son sürümde güvenlikle ilgili önemli iyileştirmeler ve yeni özellikler mevcuttur.</translation>
@@ -144,7 +143,6 @@
 <translation id="5877064549588274448">Kanal değişti. Değişikliklerin uygulanması için cihazınızı yeniden başlatın.</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
 <translation id="5906655207909574370">Az kaldı! Güncellemeyi tamamlamak için cihazınızı yeniden başlatın.</translation>
-<translation id="5942225298871134766">Chromium bunu <ph name="SAVED_PASSWORD_LINK" /> bölümüne kaydeder ve tekrar ihtiyacınız olduğunda hatırlar.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> Chromium'a eklendi.</translation>
 <translation id="59625444380784159">Kişilerinizde kayıtlı bilgiler, Chromium'da formları daha hızlı bir şekilde doldurmanıza yardımcı olabilir.</translation>
 <translation id="5987687638152509985">Senkronizasyonu başlatmak için Chromium'u güncelleyin</translation>

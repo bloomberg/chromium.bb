@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Do you want Chromium to save this card?</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
-<translation id="4176463684765177261">Disabled</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{none}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">search results</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> didn’t accept your login certificate, or one may not have been provided.</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
-<translation id="4446242550670694251">Now you can browse in private and other people who use this device won’t see your activity.</translation>
 <translation id="4492190037599258964">Search results for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contacting the system admin</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Parent Suggestions</translation>
 <translation id="587760065310675640">Unsupported delivery address. Select a different address.</translation>
 <translation id="5901630391730855834">Yellow</translation>
-<translation id="59174027418879706">Enabled</translation>
 <translation id="5926846154125914413">You may lose access to premium content from some sites.</translation>
 <translation id="5959728338436674663">Automatically send some <ph name="BEGIN_WHITEPAPER_LINK" />system information and page content<ph name="END_WHITEPAPER_LINK" /> to Google to help detect dangerous apps and sites. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Week</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}other{Page #}}</translation>
 <translation id="6017514345406065928">Green</translation>
 <translation id="6040143037577758943">Close</translation>
-<translation id="604124094241169006">Automatic</translation>
 <translation id="6042308850641462728">More</translation>
 <translation id="6060685159320643512">Careful, these experiments may bite</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{none}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
-<translation id="615643356032862689">Downloaded files and bookmarks will be kept.</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6177128806592000436">Your connection to this site is not secure</translation>
 <translation id="6203231073485539293">Check your Internet connection</translation>
@@ -795,9 +790,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8543181531796978784">You can <ph name="BEGIN_ERROR_LINK" />report a detection problem<ph name="END_ERROR_LINK" /> or, if you understand the risks to your security, <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
 <translation id="8559762987265718583">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
-<translation id="8570229484593575558">This information |won’t be saved|:#Your browsing history#Your searches#Cookie data</translation>
 <translation id="8571890674111243710">Translating page into <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Your activity |might still be visible| to:#Websites you visit#Your employer#Your internet service provider</translation>
 <translation id="858637041960032120">Add phone no.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
@@ -809,7 +802,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; could not be found. Diagnosing the problem.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
-<translation id="8798099450830957504">Default</translation>
 <translation id="8800988563907321413">Your nearby suggestions appear here</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883848425547221593">Other Bookmarks</translation>

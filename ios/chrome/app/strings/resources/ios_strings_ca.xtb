@@ -77,7 +77,6 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2381405137052800939">Informació bàsica</translation>
 <translation id="2386793615875593361">1 seleccionada</translation>
 <translation id="2435457462613246316">Mostra la contrasenya</translation>
-<translation id="2467815441875554965">Cerca contextual</translation>
 <translation id="2572712655377361602">Una política del dispositiu ha bloquejat l'accés a les vostres fotos</translation>
 <translation id="2584132361465095047">Afegiu un compte…</translation>
 <translation id="2593774076813182497">Aquesta pàgina no es pot imprimir.</translation>
@@ -146,7 +145,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="3608436266458100337">Mode de lector</translation>
 <translation id="3638472932233958418">Càrrega prèvia de pàgines web</translation>
 <translation id="3691593122358196899">Adreça d'interès afegida a <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Quan s'activi, l'omnibox inclourà suggeriments de pàgines web emeses pels dispositius que tinguis a prop.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
 <translation id="3771033907050503522">Pestanyes d'incògnit</translation>
 <translation id="3783017676699494206">Desa la imatge</translation>
@@ -264,6 +262,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6324669097367352121">Configuració d'inici de sessió</translation>
 <translation id="6337234675334993532">Encriptació</translation>
 <translation id="633809752005859102">S'ha produït un error. Estem treballant per solucionar-lo.</translation>
+<translation id="6342069812937806050">Ara mateix</translation>
 <translation id="6344783595350022745">Esborra el text</translation>
 <translation id="6362362396625799311">No hi ha cap pestanya d'incògnit</translation>
 <translation id="6380866119319257197">Si oblideu la frase de contrasenya o voleu canviar aquesta configuració, <ph name="BEGIN_LINK" />restabliu la sincronització<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="7189598951263744875">Comparteix...</translation>
 <translation id="7203585745079012652">Pronuncia les respostes</translation>
 <translation id="722055596168483966">Personalitzeu els serveis de Google</translation>
-<translation id="7222245588540287464">Si la Cerca contextual està activada o no ho està.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> per cent baixat</translation>
 <translation id="7346909386216857016">D'acord</translation>
 <translation id="7400418766976504921">URL</translation>

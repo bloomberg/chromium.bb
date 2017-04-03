@@ -78,7 +78,6 @@
 <translation id="2381405137052800939">ساده</translation>
 <translation id="2386793615875593361">۱ مورد انتخاب شد</translation>
 <translation id="2435457462613246316">نمایش گذرواژه</translation>
-<translation id="2467815441875554965">جستجوی زمینه‌ای</translation>
 <translation id="2572712655377361602">خط‌مشی دستگاه دسترسی به عکس‌هایتان را مسدود کرد</translation>
 <translation id="2584132361465095047">افزودن حساب…</translation>
 <translation id="2593774076813182497">این صفحه چاپ نمی‌شود.</translation>
@@ -147,7 +146,6 @@
 <translation id="3608436266458100337">حالت خواننده</translation>
 <translation id="3638472932233958418">صفحات وب از پیش بارگیری شده</translation>
 <translation id="3691593122358196899">نشانک به <ph name="FOLDER_TITLE" /> اضافه شد</translation>
-<translation id="3692781555820666866">‏omnibox، درصورت فعال بودن، پیشنهاداتی برای پخش صفحه‌های وب توسط دستگاه‌های نزدیک شما ارائه می‌دهد.</translation>
 <translation id="3738139272394829648">لمس کردن برای جستجو</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
 <translation id="3783017676699494206">ذخیره تصویر</translation>
@@ -256,7 +254,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6184086493125982861">نمایش برگه‌ها</translation>
 <translation id="6187302354554850004">آخرین همگام‌سازی: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">خوانده‌نشده</translation>
-<translation id="6196207969502475924">جستجوی صوتی</translation>
+<translation id="6196207969502475924">جستجوی گفتاری</translation>
 <translation id="6254066287920239840">پیوندها به‌جای مرورگر در برنامه باز شوند.</translation>
 <translation id="6255097610484507482">ویرایش کارت اعتباری</translation>
 <translation id="6308436439357671616">این کار به شما اجازه می‌دهد عکس بگیرید و آن‌ها را بارگذاری کنید.</translation>
@@ -265,6 +263,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6324669097367352121">تنظیمات ورود به سیستم</translation>
 <translation id="6337234675334993532">رمزگذاری</translation>
 <translation id="633809752005859102">یک مشکل جدی روی داد. برای رفع آن تلاش خواهیم کرد.</translation>
+<translation id="6342069812937806050">فقط اکنون</translation>
 <translation id="6344783595350022745">پاک‌کردن نوشتار</translation>
 <translation id="6362362396625799311">برگه ناشناسی موجود نیست</translation>
 <translation id="6380866119319257197">اگر عبارت عبورتان را فراموش کردید یا می‌خواهید این تنظیم را تغییر دهید، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
@@ -309,7 +308,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7203585745079012652">پاسخ گفتاری</translation>
 <translation id="722055596168483966">‏شخصی‌سازی خدمات Google</translation>
-<translation id="7222245588540287464">آیا جستجوی متنی فعال است یا نه.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>

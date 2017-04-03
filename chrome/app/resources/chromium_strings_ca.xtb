@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" />: Chromium</translation>
 <translation id="3849925841547750267">Lamentablement, la vostra configuració de Mozilla Firefox no està disponible mentre el navegador estigui en funcionament. Per importar la configuració a Chromium, deseu el treball i tanqueu totes les finestres de Firefox. A continuació, feu clic a Continua.</translation>
 <translation id="3852700440713538496">Ancora Chromium a la barra de tasques</translation>
-<translation id="3883381313049582448">Utilitza la contrasenya generada per Chromium</translation>
 <translation id="3889543394854987837">Feu clic al vostre nom per obrir Chromium i començar a navegar.</translation>
 <translation id="390894725198123737">En un Mac, és possible que les contrasenyes es desin a Keychain i que altres usuaris de Chromium que comparteixin aquest compte d'OS X puguin accedir-hi i sincronitzar-les.</translation>
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="5906655207909574370">Gairebé heu acabat. Reinicieu el dispositiu per completar l'actualització.</translation>
-<translation id="5942225298871134766">Chromium desarà la contrasenya amb <ph name="SAVED_PASSWORD_LINK" /> i la recordarà la propera vegada que la necessiteu.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> s'ha afegit a Chromium.</translation>
 <translation id="59625444380784159">Disposar de detalls dels vostres contactes us pot ajudar a emplenar formularis amb més rapidesa a Chromium.</translation>
 <translation id="5987687638152509985">Actualitza Chromium per iniciar la sincronització</translation>

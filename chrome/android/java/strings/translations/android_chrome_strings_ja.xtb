@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1006017844123154345">オンライン版を開く</translation>
-<translation id="1056898198331236512">警告</translation>
 <translation id="10614374240317010">未保存</translation>
 <translation id="1061441684050139317">このサイトとマイクを共有するには Chrome にマイクへのアクセスを許可する必要があります。</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> により管理されているアカウントからログアウトします。このデバイスに保存されている Chrome データは削除されますが、Google アカウントではデータが保持されます。</translation>
@@ -41,6 +40,7 @@
 <translation id="1383876407941801731">検索</translation>
 <translation id="1384959399684842514">ダウンロードを一時停止しました</translation>
 <translation id="1389974829397082527">ブックマークはありません</translation>
+<translation id="1402229579576898974">Chrome での <ph name="NUMBER_OF_SUGGESTIONS" /> 件の候補</translation>
 <translation id="1404122904123200417">埋め込み先: <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「トラッキング拒否」</translation>
 <translation id="1407135791313364759">すべて開く</translation>
@@ -322,6 +322,7 @@
 <translation id="473775607612524610">アップデート</translation>
 <translation id="4738836084190194332">最終同期: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">新しいタブを開く</translation>
+<translation id="4750394297954878236">候補</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4766369052440583386">データセーバー ON</translation>
 <translation id="4797039098279997504">タップすると <ph name="URL_OF_THE_CURRENT_TAB" /> に戻ります</translation>
@@ -393,7 +394,6 @@
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB 使用可能</translation>
 <translation id="5435775191620395718">この端末の履歴を表示しています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">アドレスバーに移動する</translation>
-<translation id="544291274896356069">このリンクを外部アプリケーションで開くと、シークレット モードが解除されます。続行しますか？</translation>
 <translation id="5447201525962359567">すべてのサイトのストレージ（Cookie やローカルに保存した他のデータを含む）</translation>
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
@@ -405,6 +405,7 @@
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5565871407246142825">クレジットカード</translation>
+<translation id="5568069709869097550">ログインできない</translation>
 <translation id="5578795271662203820">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
@@ -507,6 +508,7 @@
 <translation id="6583199322650523874">現在のページをブックマークする</translation>
 <translation id="6600954340915313787">Chrome にコピー済み</translation>
 <translation id="6612358246767739896">保護されたコンテンツ</translation>
+<translation id="662080504995468778">とどまる</translation>
 <translation id="6627583120233659107">フォルダを編集</translation>
 <translation id="6643016212128521049">クリア</translation>
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
 <translation id="7128222689758636196">現在の検索エンジンを許可する</translation>
 <translation id="7138678301420049075">その他</translation>
+<translation id="7144878232160441200">再読み込み</translation>
 <translation id="7180611975245234373">更新</translation>
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>

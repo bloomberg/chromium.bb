@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Infelizmente, as suas definições do Mozilla Firefox não estão disponíveis enquanto esse navegador estiver em execução. Para importar essas definições para o Chromium, guarde o seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em Continuar.</translation>
 <translation id="3852700440713538496">Afixar o Chromium na barra de tarefas</translation>
-<translation id="3883381313049582448">Utilizar palavra-passe gerada pelo Chromium</translation>
 <translation id="3889543394854987837">Clique no seu nome para abrir o Chromium e começar a navegar.</translation>
 <translation id="390894725198123737">No Mac, as palavras-passe podem ser guardadas no Porta-chaves e podem ser sincronizadas ou acedidas por outros utilizadores do Chromium que partilhem esta conta OS X.</translation>
 <translation id="4050175100176540509">Estão disponíveis na versão mais recente melhorias de segurança importantes e novas funcionalidades.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906655207909574370">Quase atualizado! Reinicie o dispositivo para concluir a atualização.</translation>
-<translation id="5942225298871134766">O Chromium armazena esta informação com o <ph name="SAVED_PASSWORD_LINK" /> e lembra-a da próxima vez que precisar.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> foi adicionada ao Chromium.</translation>
 <translation id="59625444380784159">Os detalhes dos seus contactos podem ajudar a preencher formulários mais rapidamente no Chromium.</translation>
 <translation id="5987687638152509985">Atualize o Chromium para iniciar a sincronização</translation>

@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Voulez-vous que cette carte soit enregistrée dans Chromium ?</translation>
 <translation id="4171400957073367226">Signature de validation non valide.</translation>
-<translation id="4176463684765177261">Désactivé</translation>
 <translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Vérifier les configurations du pare-feu et de l'antivirus<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{aucune}=1{1 application ($1)}=2{2 applications ($1, $2)}one{# application ($1, $2 $3)}other{# applications ($1, $2 $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">résultats de recherche</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> n'a pas accepté votre certificat de connexion, ou vous ne l'avez pas fourni.</translation>
 <translation id="443673843213245140">L'utilisation d'un proxy est désactivée, mais une configuration de proxy explicite est spécifiée.</translation>
-<translation id="4446242550670694251">Vous pouvez désormais parcourir le Web de manière anonyme, et les autres utilisateurs de cet appareil ne verront pas votre activité.</translation>
 <translation id="4492190037599258964">Résultats de recherche pour "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Contacter l'administrateur système</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Suggestions des parents</translation>
 <translation id="587760065310675640">Adresse de destination non acceptée. Sélectionnez une autre adresse.</translation>
 <translation id="5901630391730855834">Jaune</translation>
-<translation id="59174027418879706">Activée</translation>
 <translation id="5926846154125914413">Vous risquez de ne plus avoir accès au contenu premium de certains sites.</translation>
 <translation id="5959728338436674663">Envoyer automatiquement <ph name="BEGIN_WHITEPAPER_LINK" />des informations système et du contenu de page<ph name="END_WHITEPAPER_LINK" /> à Google afin de faciliter la détection d'applications et de sites dangereux. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Semaine</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017514345406065928">Vert</translation>
 <translation id="6040143037577758943">Fermer</translation>
-<translation id="604124094241169006">Automatique</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="6060685159320643512">Attention, ces fonctionnalités expérimentales peuvent mordre.</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{aucun}=1{1}one{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     ou tout autre périphérique réseau utilisé.</translation>
 <translation id="614940544461990577">Essayez les suggestions ci-dessous :</translation>
 <translation id="6151417162996330722">La durée de validité du certificat du serveur est trop longue.</translation>
-<translation id="615643356032862689">Les fichiers téléchargés et les favoris seront conservés.</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6177128806592000436">Votre connexion à ce site n'est pas sécurisée.</translation>
 <translation id="6203231073485539293">Vérifiez votre connexion Internet</translation>
@@ -795,9 +790,7 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8543181531796978784">Vous pouvez <ph name="BEGIN_ERROR_LINK" />signaler un problème de détection<ph name="END_ERROR_LINK" />. Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site dangereux<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
 <translation id="8559762987265718583">Impossible d'établir une connexion privée à <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> : la date et l'heure de votre appareil (<ph name="DATE_AND_TIME" />) sont incorrectes.</translation>
-<translation id="8570229484593575558">Les informations suivantes |ne seront pas enregistrées| :#Votre historique de navigation#Vos recherches#Les données des cookies</translation>
 <translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Votre activité |peut rester visible| pour :#les sites Web que vous consultez ;#votre employeur ;#votre fournisseur d'accès à Internet.</translation>
 <translation id="858637041960032120">Saisir num tél</translation>
 <translation id="859285277496340001">Le certificat n'indique aucun mécanisme permettant de vérifier s'il a été révoqué.</translation>
 <translation id="8620436878122366504">Tes parents ne l'ont pas encore autorisé</translation>
@@ -809,7 +802,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8738058698779197622">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Si l'horloge de votre appareil est incorrecte, Chromium n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="8740359287975076522">L'&lt;abbr id="dnsDefinition"&gt;adresse DNS&lt;/abbr&gt; de <ph name="HOST_NAME" /> est introuvable. Identification du problème…</translation>
 <translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
-<translation id="8798099450830957504">Par défaut</translation>
 <translation id="8800988563907321413">Vos suggestions à proximité s'affichent ici</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="883848425547221593">Autres favoris</translation>

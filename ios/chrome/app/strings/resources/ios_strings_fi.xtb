@@ -77,7 +77,6 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2381405137052800939">Perusasetukset</translation>
 <translation id="2386793615875593361">1 valittu</translation>
 <translation id="2435457462613246316">Näytä salasana</translation>
-<translation id="2467815441875554965">Kontekstihaku</translation>
 <translation id="2572712655377361602">Laitekäytäntö esti pääsyn kuviisi.</translation>
 <translation id="2584132361465095047">Lisää tili…</translation>
 <translation id="2593774076813182497">Tätä sivua ei voi tulostaa.</translation>
@@ -146,7 +145,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="3608436266458100337">Lukijatila</translation>
 <translation id="3638472932233958418">Esilataa verkkosivut</translation>
 <translation id="3691593122358196899">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Kun tämä on käytössä, omniboxissa näytetään ehdotuksia lähellä olevien laitteiden lähettämistä verkkosivuista.</translation>
 <translation id="3738139272394829648">Koskettamalla hakeminen</translation>
 <translation id="3771033907050503522">Incognito</translation>
 <translation id="3783017676699494206">Tallenna kuva</translation>
@@ -264,6 +262,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6324669097367352121">Kirjautumisen aset.</translation>
 <translation id="6337234675334993532">Salaus</translation>
 <translation id="633809752005859102">Jotain meni pahasti vikaan. Pyrimme korjaamaan tilanteen.</translation>
+<translation id="6342069812937806050">Valmistui juuri</translation>
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6362362396625799311">Ei incognito-välilehtiä</translation>
 <translation id="6380866119319257197">Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
@@ -308,7 +307,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7189598951263744875">Jaa...</translation>
 <translation id="7203585745079012652">Puhu vastaukset</translation>
 <translation id="722055596168483966">Muokkaa Google-palveluita</translation>
-<translation id="7222245588540287464">Onko kontekstihaku käytössä.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosenttia ladattu</translation>
 <translation id="7346909386216857016">OK!</translation>
 <translation id="7400418766976504921">URL-osoite</translation>

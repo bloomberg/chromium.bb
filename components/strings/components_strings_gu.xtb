@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">શું તમે ઇચ્છો છો કે Chromium આ કાર્ડ સાચવે?</translation>
 <translation id="4171400957073367226">ખોટી ચકાસણી સહી</translation>
-<translation id="4176463684765177261">અક્ષમ કરેલું</translation>
 <translation id="4196861286325780578">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ફાયરવોલ અને એન્ટીવાઇરસ ગોઠવણી તપાસીને<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{કોઈ નહીં}=1{1 ઍપ્લિકેશન ($1)}=2{2 ઍપ્લિકેશન ($1, $2)}one{# ઍપ્લિકેશન ($1, $2, $3)}other{# ઍપ્લિકેશન ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">શોધ પરિણામો</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> એ તમારું લોગિન પ્રમાણપત્ર સ્વીકાર્યું ન હતું અથવા કદાચ કોઈ એક પ્રદાન કરવામાં આવ્યું નથી.</translation>
 <translation id="443673843213245140">પ્રોક્સીનો ઉપયોગ અક્ષમ કરેલો છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી ઉલ્લેખિત છે.</translation>
-<translation id="4446242550670694251">હવે તમે ખાનગીપણે બ્રાઉઝ કરી શકો છો અને આ ઉપકરણનો ઉપયોગ કરી રહેલ અન્ય લોકોને તમારી પ્રવૃત્તિ દેખાશે નહીં.</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' માટે  શોધ પરિણામ</translation>
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરીને</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">પેરેન્ટ સૂચનો</translation>
 <translation id="587760065310675640">વિતરણ માટેનું સરનામું અસમર્થિત. એક અલગ સરનામું પસંદ કરો.</translation>
 <translation id="5901630391730855834">પીળો</translation>
-<translation id="59174027418879706">સક્ષમ</translation>
 <translation id="5926846154125914413">તમે કેટલીક સાઇટ્સની પ્રીમિયમ સામગ્રીની ઍક્સેસ ગુમાવી શકો છો.</translation>
 <translation id="5959728338436674663">જોખમી અ‍ૅપ્લિકેશનો અને સાઇટ્સ શોધવામાં સહાય કરવા માટે Google ને કેટલીક <ph name="BEGIN_WHITEPAPER_LINK" />સિસ્ટમ માહિતી અને પૃષ્ઠ સામગ્રી<ph name="END_WHITEPAPER_LINK" /> આપમેળે મોકલો. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">અઠવાડિયું</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{પૃષ્ઠ 1}one{પૃષ્ઠ #}other{પૃષ્ઠ #}}</translation>
 <translation id="6017514345406065928">લીલો</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
-<translation id="604124094241169006">સ્વચલિત</translation>
 <translation id="6042308850641462728">વધુ</translation>
 <translation id="6060685159320643512">સાવચેતી રાખો, આ પ્રયોગો નુકસાનકારક હોઈ શકે છે</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{કોઈ નહીં}=1{1}one{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     અથવા અન્ય નેટવર્ક ઉપકરણોને રીબૂટ કરો.</translation>
 <translation id="614940544461990577">પ્રયાસ કરો:</translation>
 <translation id="6151417162996330722">સર્વર પ્રમાણપત્ર પાસે ખૂબ લાંબી હોય એવી માન્યતા અવધિ છે.</translation>
-<translation id="615643356032862689">ડાઉનલોડ કરેલ ફાઇલો અને બુકમાર્ક રાખવામાં આવશે.</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6177128806592000436">આ સાઇટ પરનું તમારું કનેક્શન સુરક્ષિત નથી</translation>
 <translation id="6203231073485539293">તમારું ઇન્ટરનેટ કનેક્શન તપાસો</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">તમે <ph name="BEGIN_ERROR_LINK" />શોધ સમસ્યાની જાણ<ph name="END_ERROR_LINK" /> કરી શકો છો અથવા જો તમે તમારી સુરક્ષા અંગેનાં જોખમોને સમજતાં હોવ, તો <ph name="BEGIN_LINK" />આ અસુરક્ષિત સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
 <translation id="8553075262323480129">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠની ભાષા નિર્ધારિત થઈ શકી નથી.</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.</translation>
-<translation id="8570229484593575558">આ માહિતી |સાચવવામાં આવશે નહીં|:#તમારો બ્રાઉઝિંગ ઇતિહાસ#તમારી શોધ#કુકી ડેટા</translation>
 <translation id="8571890674111243710">પૃષ્ઠને <ph name="LANGUAGE" /> માં અનુવાદિત કરી રહ્યું છે...</translation>
-<translation id="8584539743998202583">તમારી પ્રવૃત્તિ આમને |હજીપણ દૃશ્યક્ષમ હોઈ શકે છે|:#તમે મુલાકાત લો છો તે વેબસાઇટ#તમારા નિયોક્તા#તમારા ઇન્ટરનેટ સેવા પ્રદાતા</translation>
 <translation id="858637041960032120">ફોન નંબર ઉમેરો</translation>
 <translation id="859285277496340001">પ્રમાણપત્રને રદ કરવામાં આવ્યું છે કે નહિ તે તપાસવા માટે કોઈપણ મેકેનિઝમ નિર્દિષ્ટ કરતું નથી.</translation>
 <translation id="8620436878122366504">તમારા માતાપિતાએ તેને હજી સુધી મંજૂર કરેલ નથી</translation>
@@ -809,7 +802,6 @@
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
-<translation id="8798099450830957504">ડિફૉલ્ટ</translation>
 <translation id="8800988563907321413">તમારા નજીકના સૂચનો અહીં દેખાય છે</translation>
 <translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>

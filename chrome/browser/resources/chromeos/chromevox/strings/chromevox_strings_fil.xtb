@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">I-wrap mula sa simula hanggang dulo o mula dulo hanggang simula sa loob ng page, dialog o iba pang container</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Palitan ang kasalukuyang talahanayan ng 6 dot braille sa pamamagitan ng pagpili ng opsyon sa listahan sa ibaba.</translation>
 <translation id="2169714232367507776">Mag-click sa kasalukuyang item</translation>
 <translation id="2179452035581866348">Ang ChromeVox ay gumagamit ng mga tunog upang mabigyan ka ng mahahalaga at karagdagang impormasyon. Maaari mong gamitin ang mga tunog na ito upang mag-navigate nang mas mabilis sa pamamagitan ng pag-alam sa kahulugan ng bawat tunog. Kapag naging mas kumportable ka na, maaari mong i-off ang mga masalitang paglalarawan sa pananalita at gamitin ang mga ito para sa mahahalagang impormasyon tungkol sa page. Narito ang kumpletong listahan ng mga tunog at ang kahulugan ng mga ito.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{close paren}one{# close paren}other{# na close paren}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tab}one{# tab}other{# na tab}}</translation>
 <translation id="2972078295414139404">Walang nakaraang binisitang link.</translation>
 <translation id="2972205263822847197">Tool tip</translation>
-<translation id="2978549349327282388">Mga Column:</translation>
 <translation id="2998131015536248178">Nakaraang Character</translation>
 <translation id="2999559350546931576">Babaan ang pitch</translation>
 <translation id="2999945368667127852">Walang susunod na widget ng media.</translation>
@@ -564,7 +562,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="5968607524793740041">Ipakita ang menu ng konteksto</translation>
 <translation id="5983179082906765664">Paramihin ang granularity ng nabigasyon</translation>
 <translation id="5999630716831179808">Mga Boses</translation>
-<translation id="6000417740266304866">Palitan ang kasalukuyang talahanayan ng 8 dot braille sa pamamagitan ng pagpili ng opsyon sa listahan sa ibaba.</translation>
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{backslash}one{# backslash}other{# na backslash}}</translation>
 <translation id="6037602951055904232">I-pan paharap</translation>
@@ -606,7 +603,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="6444046323172968959">Dialog ng alerto</translation>
 <translation id="6459511626086141404">Flat na keymap</translation>
 <translation id="6468049171101508116">Susunod na button</translation>
-<translation id="6491972999578897419">Palitan ang kasalukuyang boses sa pamamagitan ng pagpili ng opsyon sa listahan sa ibaba.</translation>
 <translation id="6493991254603208962">Babaan ang brightness</translation>
 <translation id="6508059270146105198">Ilipat ang display ng braille sa ibaba ng page</translation>
 <translation id="6536864053412760904">Math ML Token</translation>
@@ -759,7 +755,6 @@ Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="820417203470636242">Walang lamang cell.</translation>
 <translation id="8215202828671303819">Maramihang pagpili</translation>
 <translation id="8224171046658870249">Lumipat sa ChromeVox Next</translation>
-<translation id="8259358278692921574">Mga Row:</translation>
 <translation id="8276439074553447000">Lumaktaw sa nakaraang napo-focus na item</translation>
 <translation id="8278417001922463147">Walang nakaraang artikulo.</translation>
 <translation id="8283603667300770666">Susunod na field ng form</translation>

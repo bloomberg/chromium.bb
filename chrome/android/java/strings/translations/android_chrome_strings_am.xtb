@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1006017844123154345">መስመር ላይ ክፈት</translation>
-<translation id="1056898198331236512">ማስጠንቀቂያ</translation>
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
 <translation id="1061441684050139317">Chrome እሱን ለዚህ ጣቢያ ለማጋራት የማይክሮፎን መዳረሻ ያስፈልገዋል።</translation>
 <translation id="1080790410959514870">በ <ph name="DOMAIN_NAME" />ከሚቀናበር መለያ ዘግተው እየወጡ ነው። ይሄ በዚህ መሣሪያ ላይ የተከማቸውን የChrome ውሂብ ይሰርዘዋል፣ ነገር ግን ውሂቡ በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
@@ -41,6 +40,7 @@
 <translation id="1383876407941801731">ፍለጋ </translation>
 <translation id="1384959399684842514">የሚወርደው ላፍታ ቆሟል</translation>
 <translation id="1389974829397082527">እዚህ ምንም ዕልባቶች የሉም</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> የChrome አስተያየት ጥቆማዎች</translation>
 <translation id="1404122904123200417">በ<ph name="WEBSITE_URL" /> ውስጥ ተካትቷል</translation>
 <translation id="1406000523432664303">«አትከታተል»</translation>
 <translation id="1407135791313364759">ሁሉንም ክፈት</translation>
@@ -322,6 +322,7 @@
 <translation id="473775607612524610">አዘምን</translation>
 <translation id="4738836084190194332">የተመሳሰለበት የመጨረሻው ጊዜ፦ <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">አዲስ ትር ክፈት</translation>
+<translation id="4750394297954878236">የአስተያየት ጥቆማዎች</translation>
 <translation id="4759238208242260848">የወረዱ</translation>
 <translation id="4766369052440583386">ውሂብ ቆጣቢ በርቷል</translation>
 <translation id="4797039098279997504">ወደ <ph name="URL_OF_THE_CURRENT_TAB" /> ለመመለስ ይንኩ</translation>
@@ -393,7 +394,6 @@
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> ጊባ ይገኛል</translation>
 <translation id="5435775191620395718">ታሪክን ከዚህ መሣሪያ በማሳየት ላይ። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">ወደ የአድራሻው አሞሌ ዘልለህ ሂድ</translation>
-<translation id="544291274896356069">ይህ አገናኝ በውጫዊ መተግበሪያ ከተከፈተ ከማንነት የማያሳውቅ ሁነታ ይወጣል። ይቀጥሉ?</translation>
 <translation id="5447201525962359567">ኩኪዎች እና ሌላ በአከባቢያዊ የተከማቸ ውሂብን ጨምሮ ሁሉም የጣቢያ ማከማቻ</translation>
 <translation id="5456381639095306749">ገጽ አውርድ</translation>
 <translation id="548278423535722844">በካርታዎች መተግበሪያ ውስጥ ይክፈቱ</translation>
@@ -405,6 +405,7 @@
 <translation id="5530766185686772672">ማንነት የማያሳውቁ ትሮችን ዝጋ</translation>
 <translation id="5556459405103347317">ዳግም ጫን</translation>
 <translation id="5565871407246142825">ክሬዲት ካርዶች</translation>
+<translation id="5568069709869097550">መግባት አልተቻለም</translation>
 <translation id="5578795271662203820">ይህንን ምስል <ph name="SEARCH_ENGINE" /> ላይ ይፈልጉት</translation>
 <translation id="5595485650161345191">አድራሻ አርትዕ</translation>
 <translation id="5596627076506792578">ተጨማሪ አማራጮች</translation>
@@ -507,6 +508,7 @@
 <translation id="6583199322650523874">የአሁኑን ገጽ ዕልባት አድርግበት</translation>
 <translation id="6600954340915313787">ወደ Chrome ተቀድቷል</translation>
 <translation id="6612358246767739896">ጥበቃ የሚደረግለት ይዘት</translation>
+<translation id="662080504995468778">ቆይ</translation>
 <translation id="6627583120233659107">አቃፊ አርትዕ</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="6656545060687952787">Chrome መሣሪያዎችን ለመቃኘት የአካባቢ መዳረሻ ያስፈልገዋል። <ph name="BEGIN_LINK" />ፍቃዶችን ያዘምኑ<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@
 <translation id="7063006564040364415">ከማመሳሰያ አገልጋዩ ጋር መገናኘት አልተቻለም።</translation>
 <translation id="7128222689758636196">አሁን ላለው የፍለጋ ፕሮግራም ፍቀድ</translation>
 <translation id="7138678301420049075">ሌላ</translation>
+<translation id="7144878232160441200">እንደገና ሞክር</translation>
 <translation id="7180611975245234373">አድስ</translation>
 <translation id="7189372733857464326">የGoogle Play አገልግሎቶች አዘምኖ እስኪጨርስ በመጠበቅ ላይ</translation>
 <translation id="7191430249889272776">ትር ጀርባ ላይ ተከፍቷል።</translation>

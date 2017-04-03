@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Voleu que Chromium desi aquesta targeta?</translation>
 <translation id="4171400957073367226">La signatura de verificació és incorrecta</translation>
-<translation id="4176463684765177261">Desactivat</translation>
 <translation id="4196861286325780578">&amp;Refés el moviment</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comproveu la configuració del tallafoc i de l'antivirus<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{cap}=1{1 aplicació ($1)}=2{2 aplicacions ($1, $2)}other{# aplicacions ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">resultats de la cerca</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> no ha acceptat el certificat d'inici de sessió o pot ser que no se n'hagi proporcionat cap.</translation>
 <translation id="443673843213245140">L'ús d'un servidor intermediari no està activat, però s'ha especificat una configuració explícita d'un servidor intermediari.</translation>
-<translation id="4446242550670694251">Ara pots navegar de manera privada i les altres persones que utilitzin aquest dispositiu no veuran la teva activitat.</translation>
 <translation id="4492190037599258964">Resultats de la cerca per a "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Error de validació: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contacteu amb l'administrador del sistema</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Suggeriments per als responsables</translation>
 <translation id="587760065310675640">L'adreça d'enviament no s'admet. Selecciona'n una altra.</translation>
 <translation id="5901630391730855834">Groc</translation>
-<translation id="59174027418879706">Activada</translation>
 <translation id="5926846154125914413">Pot ser que perdis l'accés al contingut prèmium d'alguns llocs.</translation>
 <translation id="5959728338436674663">Envia automàticament algunes <ph name="BEGIN_WHITEPAPER_LINK" />dades del sistema i contingut de les pàgines<ph name="END_WHITEPAPER_LINK" /> a Google per ajudar a detectar les aplicacions i els llocs perillosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Setmana</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Pàgina 1}other{Pàgina #}}</translation>
 <translation id="6017514345406065928">Verd</translation>
 <translation id="6040143037577758943">Tanca</translation>
-<translation id="604124094241169006">Automàtic</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="6060685159320643512">Compte! Aquests experiments mosseguen</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{cap}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
         dispositius de xarxa que feu servir.</translation>
 <translation id="614940544461990577">Proveu aquestes solucions:</translation>
 <translation id="6151417162996330722">El període de validesa del certificat del servidor és massa gran.</translation>
-<translation id="615643356032862689">Les adreces d'interès i els fitxers baixats es mantindran.</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6177128806592000436">La teva connexió amb aquest lloc no és segura</translation>
 <translation id="6203231073485539293">Comprovació de la connexió a Internet</translation>
@@ -795,9 +790,7 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8543181531796978784">Podeu <ph name="BEGIN_ERROR_LINK" />informar d'un problema de detecció<ph name="END_ERROR_LINK" /> o, si enteneu els riscos que això comporta per a la vostra seguretat, <ph name="BEGIN_LINK" />visiteu aquest lloc no segur<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">S'ha produït un error en fer la traducció perquè no s'ha pogut determinar l'idioma de la pàgina.</translation>
 <translation id="8559762987265718583">No es pot establir una connexió privada amb <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> perquè la data i l'hora (<ph name="DATE_AND_TIME" />) del dispositiu són incorrectes.</translation>
-<translation id="8570229484593575558">Aquesta informació |no es desarà|:#L'historial de navegació#Les cerques#Dades de les galetes</translation>
 <translation id="8571890674111243710">S'està traduint la pàgina a l'idioma <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">És possible que la teva activitat |continuï sent visible| en:#Els llocs web que visitis#La teva empresa#El proveïdor de serveis d'Internet</translation>
 <translation id="858637041960032120">Afegeix un número de telèfon</translation>
 <translation id="859285277496340001">El certificat no especifica un mecanisme per comprovar si s'ha revocat.</translation>
 <translation id="8620436878122366504">Els teus pares encara no ho han aprovat</translation>
@@ -809,7 +802,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="8738058698779197622">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chromium no pot verificar aquests certificats.</translation>
 <translation id="8740359287975076522">No s'ha trobat l'&lt;abbr id="dnsDefinition"&gt;adreça DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. S'està diagnosticant el problema.</translation>
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>
-<translation id="8798099450830957504">Predeterminat</translation>
 <translation id="8800988563907321413">Els suggeriments més propers es mostren aquí</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="883848425547221593">Altres adreces d'interès</translation>

@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Radbryt från början till slut eller från slut till början på en sida, i en dialogruta eller i en annan behållare</translation>
 <translation id="2119965627982867824">snurrknapp</translation>
 <translation id="2121067395472282800">snabbtangent:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Ändra den aktuella tabellen för punktskrift med sex punkter genom att välja ett alternativ i listan nedan.</translation>
 <translation id="2169714232367507776">Klicka på det aktuella objektet</translation>
 <translation id="2179452035581866348">ChromeVox använder ljud för att ge dig mer och viktig information. Genom att lära dig vad de olika ljuden innebär kan du navigera snabbare. När du har vant dig vid ljuden kan du inaktivera upplästa utförliga beskrivningar och förlita dig på dem när det gäller viktig information om sidan. Här är en fullständig lista över ljuden och vad de innebär.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{högerparentes}other{# högerparenteser}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabbtecken}other{# tabbtecken}}</translation>
 <translation id="2972078295414139404">Det finns inga länkar som har besökts tidigare.</translation>
 <translation id="2972205263822847197">Beskrivning</translation>
-<translation id="2978549349327282388">Kolumner:</translation>
 <translation id="2998131015536248178">Föregående tecken</translation>
 <translation id="2999559350546931576">Minska tonhöjden</translation>
 <translation id="2999945368667127852">Det finns ingen annan mediewidget.</translation>
@@ -564,7 +562,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="5968607524793740041">Visa snabbmeny</translation>
 <translation id="5983179082906765664">Öka navigeringens granularitet</translation>
 <translation id="5999630716831179808">Röster</translation>
-<translation id="6000417740266304866">Ändra den aktuella tabellen för punktskrift med åtta punkter genom att välja ett alternativ i listan nedan.</translation>
 <translation id="6006050241733874051">Formulär</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{bakstreck}other{# bakstreck}}</translation>
 <translation id="6037602951055904232">Panorera framåt</translation>
@@ -606,7 +603,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="6444046323172968959">Varningsdialogruta</translation>
 <translation id="6459511626086141404">Platt tangentuppsättning</translation>
 <translation id="6468049171101508116">Nästa knapp</translation>
-<translation id="6491972999578897419">Ändra den nuvarande rösten genom att välja ett alternativ i listan nedan.</translation>
 <translation id="6493991254603208962">minska ljusstyrkan</translation>
 <translation id="6508059270146105198">Flytta punktskriftsskärmen till sidans slut</translation>
 <translation id="6536864053412760904">Math ML-token</translation>
@@ -759,7 +755,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="820417203470636242">Tom cell.</translation>
 <translation id="8215202828671303819">Flerval</translation>
 <translation id="8224171046658870249">Bytte till ChromeVox Next</translation>
-<translation id="8259358278692921574">Rader:</translation>
 <translation id="8276439074553447000">Hoppa till föregående fokuserbara objekt</translation>
 <translation id="8278417001922463147">Det finns ingen föregående artikel.</translation>
 <translation id="8283603667300770666">Nästa formulärfält</translation>

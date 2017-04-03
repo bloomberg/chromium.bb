@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏هل تريد من Chromium حفظ هذه البطاقة؟</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
-<translation id="4176463684765177261">معطل</translation>
 <translation id="4196861286325780578">إ&amp;عادة النقل</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />التحقق من عمليات تهيئة الجدار الناري وبرامج مكافحة الفيروسات<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{لا شيء}=1{تطبيق واحد ($1)}=2{تطبيقان (2) ($1، $2)}few{# تطبيقات ($1، $2، $3)}many{# تطبيقًا ($1، $2، $3)}other{# تطبيق ($1، $2، $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">نتائج البحث</translation>
 <translation id="4432688616882109544">لم يقبل <ph name="HOST_NAME" /> شهادة تسجيل الدخول أو من المحتمل ألا يكون قد تم تقديم واحدة.</translation>
 <translation id="443673843213245140">تم تعطيل استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
-<translation id="4446242550670694251">يمكنك الآن التصفح بشكلٍ سري، ولن يتمكن الأشخاص الآخرين الذين يستخدمون هذا الجهاز من مشاهدة نشاطك.</translation>
 <translation id="4492190037599258964">نتائج البحث عن '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">خطأ في عملية التحقق: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">الاتصال بمشرف النظام</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">اقتراحات الآباء</translation>
 <translation id="587760065310675640">عنوان الشحن غير مدعوم. حدّد عنوانًا آخر.</translation>
 <translation id="5901630391730855834">أصفر</translation>
-<translation id="59174027418879706">تم التمكين</translation>
 <translation id="5926846154125914413">قد تفقد إمكانية الدخول إلى محتوى متميز من بعض المواقع.</translation>
 <translation id="5959728338436674663">‏يمكنك إرسال بعض <ph name="BEGIN_WHITEPAPER_LINK" />معلومات النظام ومحتوى الصفحة<ph name="END_WHITEPAPER_LINK" /> إلى Google تلقائيًا للمساعدة في اكتشاف التطبيقات والمواقع الضارة. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">الأسبوع</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحة 1}zero{صفحة #}two{صفحة #}few{صفحة #}many{صفحة #}other{صفحة #}}</translation>
 <translation id="6017514345406065928">أخضر</translation>
 <translation id="6040143037577758943">إغلاق</translation>
-<translation id="604124094241169006">تلقائي</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="6060685159320643512">احذر، هذه التجارب غير مضمونة النتائج</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{لا شيء}=1{1}two{#}few{#}many{#}other{#}}</translation>
@@ -544,7 +540,6 @@
         أخرى ربما تستخدمها.</translation>
 <translation id="614940544461990577">جرّب:</translation>
 <translation id="6151417162996330722">فترة صلاحية شهادة الخادم طويلة جدًا.</translation>
-<translation id="615643356032862689">سيتم الاحتفاظ بالملفات والإشارات المرجعية التي تم تنزيلها.</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6177128806592000436">إن اتصالك بهذا الموقع غير آمن</translation>
 <translation id="6203231073485539293">التحقق من اتصالك بالإنترنت</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">أخفقت الترجمة لتعذر تحديد لغة الصفحة.</translation>
 <translation id="8559762987265718583">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت للجهاز (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
-<translation id="8570229484593575558">هذه المعلومات |لن يتم الاحتفاظ بها|:#سجل تصفحك#عمليات بحثك#بيانات ملف تعريف الارتباط</translation>
 <translation id="8571890674111243710">جارٍ ترجمة الصفحة إلى <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">نشاطك |قد يظل مرئيًا| إلى:#مواقع الويب التي زرتها#صاحب العمل#مزوّد خدمة الإنترنت</translation>
 <translation id="858637041960032120">إضافة رقم هاتف
 </translation>
 <translation id="859285277496340001">لا تحدد الشهادة آلية للتحقق مما إذا كانت الشهادة قد تم إبطالها.</translation>
@@ -810,7 +803,6 @@
 <translation id="8738058698779197622">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chromium من التحقق من هذه الشهادات.</translation>
 <translation id="8740359287975076522">‏تعذر العثور على &lt;/abbr&gt;عنوان نظام أسماء النطاقات (DNS)‏&lt;abbr id="dnsDefinition"&gt; لـ <ph name="HOST_NAME" />. جارٍ تشخيص المشكلة.</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
-<translation id="8798099450830957504">الافتراضي</translation>
 <translation id="8800988563907321413">تظهر اقتراحاتك "المجاورة" هنا</translation>
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="883848425547221593">إشارات أخرى</translation>

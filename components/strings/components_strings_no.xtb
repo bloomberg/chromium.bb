@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Vil du at Chromium skal lagre dette kortet?</translation>
 <translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
-<translation id="4176463684765177261">Deaktivert</translation>
 <translation id="4196861286325780578">&amp;Flytt likevel</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sjekk brannmur- og antiviruskonfigurasjonen<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ingen}=1{1 app ($1)}=2{2 apper ($1, $2)}other{# apper ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">søkeresultater</translation>
 <translation id="4432688616882109544">Enten godtok ikke <ph name="HOST_NAME" /> påloggingssertifikatet ditt, eller så ble det ikke oppgitt.</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
-<translation id="4446242550670694251">Nå kan du surfe privat, og andre som bruker denne enheten, ser ikke aktiviteten din.</translation>
 <translation id="4492190037599258964">Søkeresultater for «<ph name="SEARCH_STRING" />»</translation>
 <translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kontakt systemadministratoren</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Overordnede forslag</translation>
 <translation id="587760065310675640">Fraktadressen støttes ikke. Velg en annen adresse.</translation>
 <translation id="5901630391730855834">Gul</translation>
-<translation id="59174027418879706">Aktivert</translation>
 <translation id="5926846154125914413">Det kan hende du mister tilgang til premium-innhold fra enkelte nettsteder.</translation>
 <translation id="5959728338436674663">Send automatisk noe <ph name="BEGIN_WHITEPAPER_LINK" />systeminformasjon og sideinnhold<ph name="END_WHITEPAPER_LINK" /> til Google for å bidra til å oppdage farlige apper og nettsteder. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Uke</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Side 1}other{Side #}}</translation>
 <translation id="6017514345406065928">Grønn</translation>
 <translation id="6040143037577758943">Lukk</translation>
-<translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6060685159320643512">Vær forsiktig. Disse eksperimentene kan bite</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ingen}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
      du bruker, på nytt.</translation>
 <translation id="614940544461990577">Prøv dette:</translation>
 <translation id="6151417162996330722">Tjenersertifikatet har en gyldighetsperiode som er for lang.</translation>
-<translation id="615643356032862689">Nedlastede filer og bokmerker beholdes.</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6177128806592000436">Tilkoblingen til dette nettstedet er ikke sikker</translation>
 <translation id="6203231073485539293">Kontrollér Internett-tilkoblingen</translation>
@@ -795,9 +790,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et påvisningsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår sikkerhetsrisikoen, <ph name="BEGIN_LINK" />gå til dette usikre nettstedet<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
 <translation id="8559762987265718583">En privat tilkobling til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kunne ikke etableres fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) er feil på enheten.</translation>
-<translation id="8570229484593575558">Denne informasjonen |lagres ikke|:#nettleserloggen din#søkene dine#data fra informasjonskapsler</translation>
 <translation id="8571890674111243710">Oversett siden til <ph name="LANGUAGE" /></translation>
-<translation id="8584539743998202583">Aktiviteten din |kan fortsatt være synlig| for#nettsteder du besøker#arbeidsgiveren din#Internett-leverandøren din</translation>
 <translation id="858637041960032120">Legg til telefonnummer</translation>
 <translation id="859285277496340001">Sertifikatet spesifiserer ikke en mekanisme for å kontrollere hvorvidt det har blitt tilbakekalt.</translation>
 <translation id="8620436878122366504">Foreldrene dine har ikke godkjent det ennå</translation>
@@ -809,7 +802,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; til <ph name="HOST_NAME" /> ble ikke funnet. Problemet diagnostiseres.</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
-<translation id="8798099450830957504">Standard</translation>
 <translation id="8800988563907321413">Forslagene dine om ting like ved vises her</translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="883848425547221593">Andre bokmerker</translation>

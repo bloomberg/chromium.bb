@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Chrome Canary-alkalmazások</translation>
 <translation id="1457721931618994305">A Google Chrome frissítése...</translation>
 <translation id="1469002951682717133">Chrome Alkalmazásindító</translation>
-<translation id="1475773083554142432">A Chrome tárolja ezt a(z) <ph name="SAVED_PASSWORD_LINK" /> segítségével, és emlékezni fog, amikor legközelebb szükség lesz rá.</translation>
 <translation id="1480489203462860648">Próbálja ki, már telepítve van</translation>
 <translation id="1553358976309200471">A Chrome böngésző frissítése</translation>
 <translation id="1587223624401073077">A Google Chrome használja a kamerát.</translation>
@@ -175,7 +174,6 @@ További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-ma
 <translation id="6235018212288296708">Bejövő szabály a Google Chrome-hoz az mDNS forgalom engedélyezése céljából.</translation>
 <translation id="6236285698028833233">A Google Chrome a továbbiakban nem frissül, és már nem támogatja az Ön operációs rendszerének ezen verzióját.</translation>
 <translation id="6291549208091401781">A Google Chrome már telepítve van az összes felhasználó számára a számítógépen.</translation>
-<translation id="629218512217695915">Chrome által generált jelszó használata</translation>
 <translation id="6338556085225130112">A Google Chrome frissítése</translation>
 <translation id="6368958679917195344">A Chrome OS-hez egyéb <ph name="BEGIN_LINK_CROS_OSS" />nyílt forráskódú szoftver<ph name="END_LINK_CROS_OSS" /> is hozzájárult.</translation>
 <translation id="6400076122676892962">Ez a számítógép hamarosan nem fog több Google Chrome-frissítést kapni, mert a böngésző nem fogja támogatni a Mac OS X 10.6, 10.7 és 10.8 rendszereket.</translation>

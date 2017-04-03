@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Quebra do começo ao fim ou do fim ao começo dentro de uma página, caixa de diálogo ou outro contêiner</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Para alterar a tabela de braille de seis pontos atual, selecione uma opção na lista a seguir.</translation>
 <translation id="2169714232367507776">Clicar no item atual</translation>
 <translation id="2179452035581866348">O ChromeVox utiliza sons para fornecer informações adicionais e essenciais. Use esses sons para navegar mais rapidamente, aprendendo o que cada som significa. Quando se sentir mais confortável, desative as descrições detalhadas na fala e use-as para receber informações essenciais sobre a página. Veja esta lista completa de sons e o que eles significam.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parêntese de fechamento}one{# parênteses de fechamento}other{# parênteses de fechamento}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabulação}one{# tabulações}other{# tabulações}}</translation>
 <translation id="2972078295414139404">Não há link anterior visitado.</translation>
 <translation id="2972205263822847197">Dica</translation>
-<translation id="2978549349327282388">Colunas:</translation>
 <translation id="2998131015536248178">Caractere anterior</translation>
 <translation id="2999559350546931576">Diminuir tom de voz</translation>
 <translation id="2999945368667127852">Nenhum widget de mídia a seguir.</translation>
@@ -564,7 +562,6 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="5968607524793740041">Mostrar menu de contexto</translation>
 <translation id="5983179082906765664">Aumentar granularidade de navegação</translation>
 <translation id="5999630716831179808">Vozes</translation>
-<translation id="6000417740266304866">Para alterar a tabela de braille de oito pontos atual, selecione uma opção na lista a seguir.</translation>
 <translation id="6006050241733874051">Formulário</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra invertida}one{# barras invertidas}other{# barras invertidas}}</translation>
 <translation id="6037602951055904232">Mover para a frente</translation>
@@ -606,7 +603,6 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="6444046323172968959">Diálogo de alerta</translation>
 <translation id="6459511626086141404">Keymap plano</translation>
 <translation id="6468049171101508116">Próximo botão</translation>
-<translation id="6491972999578897419">Alterar a voz atual, selecionando uma opção na lista abaixo.</translation>
 <translation id="6493991254603208962">Diminuir o brilho</translation>
 <translation id="6508059270146105198">Mover exibição braille para o fim da página</translation>
 <translation id="6536864053412760904">Token Math ML</translation>
@@ -759,7 +755,6 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="820417203470636242">Célula vazia.</translation>
 <translation id="8215202828671303819">Seleção múltipla</translation>
 <translation id="8224171046658870249">Alternar para ChromeVox Next</translation>
-<translation id="8259358278692921574">Linhas:</translation>
 <translation id="8276439074553447000">Ir para o item focalizável anterior</translation>
 <translation id="8278417001922463147">Não há artigos anteriores.</translation>
 <translation id="8283603667300770666">Próximo campo do formulário</translation>

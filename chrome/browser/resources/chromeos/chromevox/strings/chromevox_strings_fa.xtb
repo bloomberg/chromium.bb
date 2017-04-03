@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">بسته‌بندی داخل یک صفحه، کادر گفتگو یا محتوی دیگر از ابتدا تا انتها یا از انتها تا ابتدا</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">کلید دسترسی: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">با انتخاب گزینه‌ای از فهرست زیر، جدول بریل ۶ نقطه‌ای فعلی را تغییر دهید.</translation>
 <translation id="2169714232367507776">کلیک روی مورد کنونی</translation>
 <translation id="2179452035581866348">‏ChromeVox با استفاده از آواها اطلاعات ضروری و تکمیلی را به شما می‌دهد. با یادگیری معنای هر آوا، می‌توانید از این آواها برای پیمایش سریع‌تر استفاده کنید. همین‌که احساس راحتی کردید، می‌توانید توضیحات مفصل صوتی را خاموش کنید و برای کسب اطلاعات ضروری درباره صفحه به آنها تکیه کنید. اینجا فهرست کاملی از آواها و معنایشان آورده شده است.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{پرانتز بسته}one{# پرانتز بسته}other{# پرانتز بسته}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{علامت جهش}one{# علامت جهش}other{# علامت جهش}}</translation>
 <translation id="2972078295414139404">پیوند بازدید شده قبلی وجود ندارد.</translation>
 <translation id="2972205263822847197">راهنمای ابزار</translation>
-<translation id="2978549349327282388">ستون‌ها:</translation>
 <translation id="2998131015536248178">نویسه قبلی</translation>
 <translation id="2999559350546931576">کاهش گام</translation>
 <translation id="2999945368667127852">ابزارک رسانه‌ای بعدی دیگری وجود ندارد</translation>
@@ -564,7 +562,6 @@
 <translation id="5968607524793740041">نمایش منوی بافت</translation>
 <translation id="5983179082906765664">افزایش جزئیات پیمایش</translation>
 <translation id="5999630716831179808">صداها</translation>
-<translation id="6000417740266304866">با انتخاب گزینه‌ای از فهرست زیر، جدول بریل ۸ نقطه‌ای فعلی را تغییر دهید.</translation>
 <translation id="6006050241733874051">فرم</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{اریب وارو}one{# اریب وارو}other{# اریب وارو}}</translation>
 <translation id="6037602951055904232">حرکت به جلو</translation>
@@ -606,7 +603,6 @@
 <translation id="6444046323172968959">گفتگوی هشدار</translation>
 <translation id="6459511626086141404">نقشه کلید مسطح</translation>
 <translation id="6468049171101508116">دکمه بعدی</translation>
-<translation id="6491972999578897419">صدای کنونی را با انتخاب یک گزینه از فهرست زیر تغییر دهید.</translation>
 <translation id="6493991254603208962">کم کردن روشنایی</translation>
 <translation id="6508059270146105198">انتقال صفحه‌نمایش بریل به پایین صفحه</translation>
 <translation id="6536864053412760904">‏کد ML ریاضی</translation>
@@ -759,7 +755,6 @@
 <translation id="820417203470636242">سلول خالی است.</translation>
 <translation id="8215202828671303819">چند انتخاب</translation>
 <translation id="8224171046658870249">‏به ChromeVox Next تغییر وضعیت داد</translation>
-<translation id="8259358278692921574">ردیف‌ها:</translation>
 <translation id="8276439074553447000">پرش به مورد قابل فوکوس قبلی</translation>
 <translation id="8278417001922463147">مقاله قبلی وجود ندارد.</translation>
 <translation id="8283603667300770666">فیلد بعدی فرم</translation>

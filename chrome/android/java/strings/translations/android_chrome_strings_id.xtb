@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1006017844123154345">Buka versi Online</translation>
-<translation id="1056898198331236512">Peringatan</translation>
 <translation id="10614374240317010">Jangan pernah disimpan</translation>
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME" />. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
@@ -41,6 +40,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1384959399684842514">Download dijeda</translation>
 <translation id="1389974829397082527">Tidak ada bookmark di sini</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> saran Chrome</translation>
 <translation id="1404122904123200417">Tersemat dalam <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“Jangan Lacak”</translation>
 <translation id="1407135791313364759">Buka semua</translation>
@@ -322,6 +322,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="473775607612524610">Mutakhirkan</translation>
 <translation id="4738836084190194332">Terakhir disinkronkan: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Membuka tab baru</translation>
+<translation id="4750394297954878236">Saran</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4766369052440583386">Penghemat Data aktif</translation>
 <translation id="4797039098279997504">Sentuh untuk kembali ke <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tersedia</translation>
 <translation id="5435775191620395718">Menampilkan riwayat dari perangkat ini. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Beralih ke bilah alamat</translation>
-<translation id="544291274896356069">Mode penyamaran akan ditutup jika tautan ini dibuka di aplikasi eksternal. Lanjutkan?</translation>
 <translation id="5447201525962359567">Semua penyimpanan situs, termasuk cookie dan data lain yang tersimpan secara lokal</translation>
 <translation id="5456381639095306749">Download laman</translation>
 <translation id="548278423535722844">Buka di aplikasi peta</translation>
@@ -405,6 +405,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5530766185686772672">Tutup tab penyamaran</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5565871407246142825">Kartu kredit</translation>
+<translation id="5568069709869097550">Tidak dapat sign in</translation>
 <translation id="5578795271662203820">Telusuri <ph name="SEARCH_ENGINE" /> untuk gambar ini</translation>
 <translation id="5595485650161345191">Edit alamat</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
@@ -507,6 +508,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6583199322650523874">Membookmark halaman saat ini</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
+<translation id="662080504995468778">Tinggal</translation>
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7063006564040364415">Tidak dapat menyambung ke server sinkronisasi.</translation>
 <translation id="7128222689758636196">Mengizinkan mesin telusur saat ini</translation>
 <translation id="7138678301420049075">Lainnya</translation>
+<translation id="7144878232160441200">Coba lagi</translation>
 <translation id="7180611975245234373">Segarkan</translation>
 <translation id="7189372733857464326">Menunggu Layanan Google Play selesai di-update</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>

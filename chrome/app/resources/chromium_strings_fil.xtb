@@ -89,7 +89,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Sa kasamaang palad, hindi available ang mga setting ng iyong Mozilla Firefox habang tumatakbo ang browser na iyon. Upang i-import sa Chromium ang mga setting na iyon, i-save ang iyong gawa at isara ang lahat ng window sa Firefox. Pagkatapos, i-click ang Magpatuloy.</translation>
 <translation id="3852700440713538496">I-pin ang Chromium sa iyong taskbar</translation>
-<translation id="3883381313049582448">Gumamit ng password na binuo ng Chromium</translation>
 <translation id="3889543394854987837">I-click ang iyong pangalan upang buksan ang Chromium at simulan ang pagba-browse.</translation>
 <translation id="390894725198123737">Sa Mac, maaaring ma-save ang mga password sa iyong Keychain at ma-access o ma-sync ng ibang mga user ng Chromium na nagbabahagi ng OS X account na ito.</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
@@ -148,7 +147,6 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
 <translation id="5895138241574237353">I-restart</translation>
 <translation id="5906655207909574370">Halos napapanahon na! I-restart ang iyong device upang tapusin ang pag-a-update.</translation>
-<translation id="5942225298871134766">Iiimbak ito ng Chromium gamit ang <ph name="SAVED_PASSWORD_LINK" /> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
 <translation id="5942520288919337908">Naidagdag na sa Chromium ang <ph name="EXTENSION_NAME" />.</translation>
 <translation id="59625444380784159">Ang mga detalye mula sa iyong mga contact ay maaaring makatulong sa iyong sumagot ng mga form nang mas mabilis sa Chromium.</translation>
 <translation id="5987687638152509985">I-update ang Chromium upang simulan ang pag-sync</translation>

@@ -85,7 +85,7 @@
 <translation id="6364916375976753737">التمرير إلى اليمين</translation>
 <translation id="6394627529324717982">فاصلة</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{قبل ثانية واحدة}zero{ قبل # من الثواني}two{ قبل ثانيتين (#)}few{قبل # ثوانٍ}many{قبل # ثانية}other{قبل # من الثواني}}</translation>
-<translation id="6528179044667508675">الرجاء عدم الإزعاج</translation>
+<translation id="6528179044667508675">عدم الإزعاج</translation>
 <translation id="6612467943526193239">‏للخروج من المعايرة، اضغط على Esc.</translation>
 <translation id="6620110761915583480">حفظ الملف</translation>
 <translation id="6699343763173986273">المقطع الصوتي التالي للوسائط</translation>
@@ -111,7 +111,7 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>
-<translation id="7850320739366109486">الرجاء عدم الإزعاج</translation>
+<translation id="7850320739366109486">عدم الإزعاج</translation>
 <translation id="7907591526440419938">فتح ملف</translation>
 <translation id="8106081041558092062">{HOURS,plural, =1{قبل ساعة واحدة}zero{قبل # من الساعات}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # من الساعات}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{يتبقى ثانية واحدة}zero{يتبقى # من الثواني}two{يتبقى ثانيتان (#)}few{يتبقى # ثوانٍ}many{يتبقى # ثانية}other{يتبقى # من الثواني}}</translation>

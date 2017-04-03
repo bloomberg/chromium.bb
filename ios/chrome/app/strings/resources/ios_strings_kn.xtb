@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">ಪ್ರಾಥಮಿಕ ಸಂಗತಿಗಳು</translation>
 <translation id="2386793615875593361">1 ಆಯ್ಕೆಮಾಡಿದೆ</translation>
 <translation id="2435457462613246316">ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತೋರಿಸಿ</translation>
-<translation id="2467815441875554965">ಸಾಂದರ್ಭಿಕ ಹುಡುಕಾಟ</translation>
 <translation id="2572712655377361602">ಸಾಧನದ ನೀತಿಯೊಂದು ನಿಮ್ಮ ಫೋಟೋಗಳಿಗೆ ಪ್ರವೇಶವನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ</translation>
 <translation id="2584132361465095047">ಖಾತೆ ಸೇರಿಸಿ...</translation>
 <translation id="2593774076813182497">ಈ ಪುಟವನ್ನು ಮುದ್ರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">ರೀಡರ್ ಮೋಡ್</translation>
 <translation id="3638472932233958418">ವೆಬ್ ಪುಟಗಳನ್ನು ಪೂರ್ವಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ಗೆ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="3692781555820666866">ಸಕ್ರಿಯಗೊಳಿಸಿದಾಗ, ನಿಮಗೆ ಹತ್ತಿರದಲ್ಲಿರುವ ಸಾಧನಗಳ ಮೂಲಕ ವೆಬ್ ಪುಟಗಳ ಪ್ರಸಾರಕ್ಕೆ ಆಮ್ನಿಬಾಕ್ಸ್‌‌ ಸಲಹೆಗಳನ್ನು ಒಳಗೊಂಡಿರುತ್ತದೆ.</translation>
 <translation id="3738139272394829648">ಹುಡುಕಲು ಸ್ಪರ್ಶಿಸು</translation>
 <translation id="3771033907050503522">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="3783017676699494206">ಚಿತ್ರವನ್ನು ಉಳಿಸಿ</translation>
@@ -264,6 +262,7 @@
 <translation id="6324669097367352121">ಸೈನ್ ಇನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="6337234675334993532">ಎನ್‌ಕ್ರಿಪ್ಶನ್</translation>
 <translation id="633809752005859102">ನಿಜವಾಗಿಯೂ ಯಾವುದೋ ತಪ್ಪು ಸಂಭವಿಸಿದೆ. ನಾವು ಅದರ ಕುರಿತು ಕ್ರಮ ಕೈಗೊಳ್ಳುತ್ತೇವೆ.</translation>
+<translation id="6342069812937806050">ಇದೀಗ</translation>
 <translation id="6344783595350022745">ಪಠ್ಯವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6362362396625799311">ಯಾವುದೇ ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳಿಲ್ಲ</translation>
 <translation id="6380866119319257197">ನಿಮ್ಮ ಪಾಸ್‍‍ಫ್ರೇಸ್‍‍ ಅನ್ನು ನೀವು ಮರೆತರೆ ಅಥವಾ ಈ ಸೆಟ್ಟಿಂಗ್ ಬದಲಾಯಿಸಲು ಬಯಸಿದರೆ, <ph name="BEGIN_LINK" />ಸಿಂಕ್ ಮರುಹೊಂದಿಸಿ<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@
 <translation id="7189598951263744875">ಹಂಚಿ...</translation>
 <translation id="7203585745079012652">ಉತ್ತರಗಳನ್ನು ಮತ್ತೆ ಮಾತನಾಡಿ</translation>
 <translation id="722055596168483966">Google ಸೇವೆಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಿ</translation>
-<translation id="7222245588540287464">ಸಂದರ್ಭೋಚಿತ ಹುಡುಕಾಟವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿರಲಿ ಅಥವಾ ಇಲ್ಲದಿರಲಿ.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ಪ್ರತಿಶತ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7346909386216857016">ಸರಿ, ಅರ್ಥವಾಯಿತು</translation>
 <translation id="7400418766976504921">URL</translation>

@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Vill du att Chromium sparar det här kortet?</translation>
 <translation id="4171400957073367226">Felaktig verifieringssignatur</translation>
-<translation id="4176463684765177261">Inaktiverad</translation>
 <translation id="4196861286325780578">&amp;Gör om Flytta</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />kontrollera konfigureringarna för brandväggen och antivirusprogram<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{inga}=1{1 app ($1)}=2{2 appar ($1, $2)}other{# appar ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">sökresultat</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> godkände inte inloggningscertifikatet eller så har inget inloggningscertifikat angetts.</translation>
 <translation id="443673843213245140">Användning av proxy är inaktiverad men en explicit proxykonfiguration har angetts.</translation>
-<translation id="4446242550670694251">Nu kan du surfa privat. Din aktivitet visas inte för andra som använder enheten.</translation>
 <translation id="4492190037599258964">Sökresultat för "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Valideringsfel: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">kontakta systemadministratören</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Föräldratips</translation>
 <translation id="587760065310675640">Leveransadressen stöds inte. Välj en annan adress.</translation>
 <translation id="5901630391730855834">Gul</translation>
-<translation id="59174027418879706">Aktiverat</translation>
 <translation id="5926846154125914413">Du kan förlora tillgång till premiuminnehåll från vissa webbplatser.</translation>
 <translation id="5959728338436674663">Skicka automatiskt viss <ph name="BEGIN_WHITEPAPER_LINK" />information om systemet och innehåll på sidan<ph name="END_WHITEPAPER_LINK" /> för att hjälpa Google att identifiera skadliga appar och webbplatser. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Vecka</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Sida 1}other{Sida #}}</translation>
 <translation id="6017514345406065928">Grön</translation>
 <translation id="6040143037577758943">Stäng</translation>
-<translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6060685159320643512">Försiktigt, experimenten kan vara skadliga</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{inga}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     som används.</translation>
 <translation id="614940544461990577">Testa att</translation>
 <translation id="6151417162996330722">Servercertifikatet har för lång giltighetstid.</translation>
-<translation id="615643356032862689">Nedladdade filer och bokmärken sparas.</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6177128806592000436">Anslutningen till webbplatsen är inte säker</translation>
 <translation id="6203231073485539293">Kontrollera internetanslutningen</translation>
@@ -795,9 +790,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportera ett identifieringsproblem<ph name="END_ERROR_LINK" /> eller <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" /> om du är medveten om säkerhetsriskerna.</translation>
 <translation id="8553075262323480129">Det gick inte att översätta eftersom det inte gick att avgöra vilket språk som användes på sidan.</translation>
 <translation id="8559762987265718583">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom enhetens datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
-<translation id="8570229484593575558">Den här informationen sparas inte|:#din webbhistorik#dina sökningar#cookiedata.</translation>
 <translation id="8571890674111243710">Översätter sidan till <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Din aktivitet |kanske fortfarande är synlig| för#webbplatser som du besöker#din arbetsgivare#din internetleverantör.</translation>
 <translation id="858637041960032120">Ange telefonnr
 </translation>
 <translation id="859285277496340001">Certifikatet har inte någon specificerad mekanism för att kontrollera om det har återkallats.</translation>
@@ -810,7 +803,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8738058698779197622">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig endast är giltiga under vissa tidsperioder. Chromium kan inte verifiera certifikaten eftersom klockan på enheten inte stämmer.</translation>
 <translation id="8740359287975076522">Det gick inte att hitta <ph name="HOST_NAME" />s &lt;abbr id="dnsDefinition"&gt;DNS-adress&lt;/abbr&gt;. Diagnostiserar problemet.</translation>
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
-<translation id="8798099450830957504">Standard</translation>
 <translation id="8800988563907321413">Förslag på webbsidor i närheten visas här</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="883848425547221593">Övriga bokmärken</translation>

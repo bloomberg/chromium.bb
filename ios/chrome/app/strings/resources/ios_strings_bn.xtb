@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">প্রাথমিক বিষয়াদি</translation>
 <translation id="2386793615875593361">১টি নির্বাচিত</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
-<translation id="2467815441875554965">প্রাসঙ্গিক অনুসন্ধান</translation>
 <translation id="2572712655377361602">একটি ডিভাইস নীতি আপনার ফটোতে অ্যাক্সেস অবরুদ্ধ করেছে</translation>
 <translation id="2584132361465095047">অ্যাকাউন্ট যোগ করুন...</translation>
 <translation id="2593774076813182497">এই পৃষ্ঠাটির প্রিন্ট করা যাবে না৷</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">পাঠক মোড</translation>
 <translation id="3638472932233958418">পূর্বলোড ওয়েবপৃষ্ঠা</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> এ বুকমার্ক করা হয়েছে</translation>
-<translation id="3692781555820666866">সক্ষম করা হলে, বহুউপযোগী ক্ষেত্র আপনার আশেপাশের ডিভাইসের জন্য ওয়েব পৃষ্ঠা সমপ্রচারগুলির পরামর্শ অন্তর্ভুক্ত করা হবে।</translation>
 <translation id="3738139272394829648">স্পর্শের মাধ্যমে অনুসন্ধান</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="3783017676699494206">চিত্র সংরক্ষণ করুন</translation>
@@ -265,6 +263,7 @@
 <translation id="6324669097367352121">প্রবেশ করুন সেটিংস</translation>
 <translation id="6337234675334993532">এনক্রিপশন</translation>
 <translation id="633809752005859102">সত্যিই কিছু ভুল রয়েছে৷ আমরা এটির উপরে কাজ করব৷</translation>
+<translation id="6342069812937806050">এখনই</translation>
 <translation id="6344783595350022745">পাঠ্য সাফ করুন</translation>
 <translation id="6362362396625799311">কোনো ছদ্মবেশী ট্যাব নেই</translation>
 <translation id="6380866119319257197">আপনি যদি আপনার পাসফ্রেজ ভুলে যান বা এই সেটিং পরিবর্তন করতে চান, তাহলে <ph name="BEGIN_LINK" />সিঙ্ক পুনরায় সেট করুন<ph name="END_LINK" /></translation>
@@ -309,7 +308,6 @@
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
 <translation id="722055596168483966">Google পরিষেবাগুলিকে ব্যক্তিগত করুন</translation>
-<translation id="7222245588540287464">প্রাসঙ্গিক অনুসন্ধান সক্ষম থাকবে কিনা৷</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনলোড হয়েছে</translation>
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
 <translation id="7400418766976504921">URL</translation>

@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium にこのカードを保存しますか？</translation>
 <translation id="4171400957073367226">確認用の署名に問題があります</translation>
-<translation id="4176463684765177261">無効</translation>
 <translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{なし}=1{1 個のアプリ（$1）}=2{2 個のアプリ（$1、$2）}other{# 個のアプリ（$1、$2、$3）}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">検索結果</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> でログイン証明書が承認されなかったか、ログイン証明書が提示されていない可能性があります。</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
-<translation id="4446242550670694251">シークレット モードです。あなたのアクティビティは、この端末を使用する他のユーザーには表示されません。</translation>
 <translation id="4492190037599258964">「<ph name="SEARCH_STRING" />」の検索結果</translation>
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">システム管理者に問い合わせる</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">保護者からのおすすめ</translation>
 <translation id="587760065310675640">サポートされていない配送先住所です。別の住所を選択してください。</translation>
 <translation id="5901630391730855834">黄</translation>
-<translation id="59174027418879706">有効</translation>
 <translation id="5926846154125914413">一部のサイトのプレミアム コンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5959728338436674663">危険なアプリやサイトの検出に役立てるために一部の<ph name="BEGIN_WHITEPAPER_LINK" />システム情報やページのコンテンツ<ph name="END_WHITEPAPER_LINK" />を Google に自動送信する。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">週</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{ページ 1}other{ページ #}}</translation>
 <translation id="6017514345406065928">緑</translation>
 <translation id="6040143037577758943">閉じる</translation>
-<translation id="604124094241169006">自動設定</translation>
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="6060685159320643512">これらの試験運用版は問題が発生する可能性があるため、ご利用の際には十分ご注意ください</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{なし}=1{1 件}other{# 件}}</translation>
@@ -544,7 +540,6 @@
     再起動してください。</translation>
 <translation id="614940544461990577">次をお試しください:</translation>
 <translation id="6151417162996330722">サーバー証明書の有効期限が長すぎます。</translation>
-<translation id="615643356032862689">ダウンロードしたファイルとブックマークは保持されます。</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6177128806592000436">このサイトへの接続は保護されていません</translation>
 <translation id="6203231073485539293">インターネット接続を確認してください</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />検出の問題をご報告<ph name="END_ERROR_LINK" />ください。<ph name="BEGIN_LINK" />安全でないこのサイトにアクセス<ph name="END_LINK" />する場合は、セキュリティ上のリスクがあることをご承知おきください。</translation>
 <translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
 <translation id="8559762987265718583">デバイスの日時（<ph name="DATE_AND_TIME" />）が正しくないため、<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> へのプライベート接続を確立できません。</translation>
-<translation id="8570229484593575558">次の情報は|保存されません|。#閲覧履歴#検索内容#Cookie データ</translation>
 <translation id="8571890674111243710">ページを<ph name="LANGUAGE" />に翻訳しています...</translation>
-<translation id="8584539743998202583">ただし、次の他者によってアクティビティが|確認される可能性はあります|。#アクセス先のウェブサイト#雇用主#ご利用のインターネット サービス プロバイダ</translation>
 <translation id="858637041960032120">電話番号を追加
 </translation>
 <translation id="859285277496340001">この証明書には、取り消されたかどうかを確認する方法が指定されていません。</translation>
@@ -810,7 +803,6 @@
 <translation id="8738058698779197622">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chromium ではこれらの証明書を確認できません。</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> の &lt;abbr id="dnsDefinition"&gt;DNS アドレス&lt;/abbr&gt;が見つかりませんでした。問題を診断しています。</translation>
 <translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
-<translation id="8798099450830957504">既定</translation>
 <translation id="8800988563907321413">周辺のおすすめの場所がここに表示されます</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="883848425547221593">その他のブックマーク</translation>

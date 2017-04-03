@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Kahjuks ei ole Mozilla Firefoxi seaded saadaval, kui brauser töötab. Seadete Chromiumi importimiseks salvestage töö ja sulgege kõik Firefoxi aknad. Seejärel klõpsake käsul Jätka.</translation>
 <translation id="3852700440713538496">Chromiumi kinnitamine tegumiribale</translation>
-<translation id="3883381313049582448">Kasuta Chromiumi loodud parooli</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="390894725198123737">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chromiumi kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5895138241574237353">Taaskäivitamine</translation>
 <translation id="5906655207909574370">Seade on peaaegu ajakohane. Värskenduse lõpuleviimiseks taaskäivitage seade.</translation>
-<translation id="5942225298871134766">Chromium salvestab selle funktsiooniga <ph name="SAVED_PASSWORD_LINK" /> ja peab seda meeles, kui seda järgmine kord vajate.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> on Chromiumi lisatud.</translation>
 <translation id="59625444380784159">Kontaktide üksikasjad aitavad Chromiumis kiiremini vorme täita.</translation>
 <translation id="5987687638152509985">Sünkroonimise alustamiseks värskendage Chromiumi</translation>

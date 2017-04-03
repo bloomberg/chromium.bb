@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">¿Quieres que Chromium guarde esta tarjeta?</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida</translation>
-<translation id="4176463684765177261">Inhabilitado</translation>
 <translation id="4196861286325780578">&amp;Rehacer movimiento</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar la configuración del cortafuegos y del antivirus<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ninguna}=1{Una aplicación ($1)}=2{Dos aplicaciones ($1, $2)}other{# aplicaciones ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">resultados de la búsqueda</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> no ha aceptado el certificado de inicio de sesión o es posible que no se haya proporcionado ninguno.</translation>
 <translation id="443673843213245140">Se ha inhabilitado el uso de un servidor proxy, pero se han especificado ajustes de proxy explícitos.</translation>
-<translation id="4446242550670694251">Ahora puedes navegar en privado para que los demás usuarios de este dispositivo no puedan ver tu actividad.</translation>
 <translation id="4492190037599258964">Resultados de búsqueda de "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Error de validación: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Ponerte en contacto con el administrador del sistema</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Sugerencias de padres</translation>
 <translation id="587760065310675640">Dirección de envío no admitida. Selecciona otra dirección.</translation>
 <translation id="5901630391730855834">Amarillo</translation>
-<translation id="59174027418879706">Habilitada</translation>
 <translation id="5926846154125914413">Es posible que dejes de tener acceso al contenido premium de algunos sitios web.</translation>
 <translation id="5959728338436674663">Enviar automáticamente <ph name="BEGIN_WHITEPAPER_LINK" />información del sistema y contenido de las páginas<ph name="END_WHITEPAPER_LINK" /> a Google para facilitar la detección de aplicaciones y sitios web peligrosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Semana</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6040143037577758943">Cerrar</translation>
-<translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="6060685159320643512">¡Atención! Estos experimentos pueden ser peligrosos</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ninguna}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     de red que estés utilizando.</translation>
 <translation id="614940544461990577">Prueba a:</translation>
 <translation id="6151417162996330722">El certificado del servidor tiene un período de validez demasiado largo.</translation>
-<translation id="615643356032862689">No se eliminarán los archivos descargados ni los marcadores añadidos.</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6177128806592000436">Tu conexión con este sitio web no es segura</translation>
 <translation id="6203231073485539293">Comprueba tu conexión a Internet</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">Puedes <ph name="BEGIN_ERROR_LINK" />informar de un problema de detección<ph name="END_ERROR_LINK" /> o, si comprendes los riesgos que conlleva esta acción para tu seguridad, <ph name="BEGIN_LINK" />accede a este sitio web no seguro<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">La traducción no se ha realizado correctamente porque no se ha podido determinar el idioma de la página.</translation>
 <translation id="8559762987265718583">No se puede establecer una conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora de tu dispositivo (<ph name="DATE_AND_TIME" />) no son correctas.</translation>
-<translation id="8570229484593575558">La siguiente información |no se guardará|:#Tu historial de navegación#Tus búsquedas#Los datos de cookies</translation>
 <translation id="8571890674111243710">Traduciendo página a <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Es posible que tu actividad |todavía sea visible| para:#Los sitios web que visites#Tu empresa#Tu proveedor de servicios de Internet</translation>
 <translation id="858637041960032120">Añade un teléfono</translation>
 <translation id="859285277496340001">El certificado no especifica ningún mecanismo para comprobar si se ha revocado.</translation>
 <translation id="8620436878122366504">Tus padres aún no lo han aprobado</translation>
@@ -809,7 +802,6 @@
 <translation id="8738058698779197622">Para establecer una conexión segura, tu reloj debe estar correctamente configurado. Esto se debe a que los certificados utilizados por los sitios web para identificarse son solo válidos durante períodos específicos de tiempo. Dado que la hora de tu dispositivo no es correcta, Chromium no puede verificar estos certificados.</translation>
 <translation id="8740359287975076522">No se ha podido encontrar la &lt;abbr id="dnsDefinition"&gt;dirección DNS&lt;/abbr&gt; de la página <ph name="HOST_NAME" />. Se está diagnosticando el problema.</translation>
 <translation id="8790007591277257123">&amp;Rehacer eliminación</translation>
-<translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800988563907321413">Las sugerencias de la sección Cercanas aparecen aquí</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883848425547221593">Otros marcadores</translation>

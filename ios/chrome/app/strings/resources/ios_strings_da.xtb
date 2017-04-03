@@ -77,7 +77,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2381405137052800939">Grundlæggende</translation>
 <translation id="2386793615875593361">1 valgt</translation>
 <translation id="2435457462613246316">Vis adgangskode</translation>
-<translation id="2467815441875554965">Kontekstuel søgning</translation>
 <translation id="2572712655377361602">En enhedspolitik har blokeret adgangen til dine billeder</translation>
 <translation id="2584132361465095047">Tilføj konto...</translation>
 <translation id="2593774076813182497">Denne side kan ikke udskrives.</translation>
@@ -146,7 +145,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3608436266458100337">Læser-tilstand</translation>
 <translation id="3638472932233958418">Forudindlæs websider</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Når Fysisk web er aktiveret, medtager omnifeltet websideforslag, som enheder i nærheden af dig udsender.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3783017676699494206">Gem billede</translation>
@@ -264,6 +262,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6324669097367352121">Loginindstillinger</translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="633809752005859102">Der gik noget helt galt. Vi arbejder på sagen.</translation>
+<translation id="6342069812937806050">Lige nu</translation>
 <translation id="6344783595350022745">Ryd tekst</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
 <translation id="6380866119319257197">Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
 <translation id="722055596168483966">Tilpas Google-tjenester</translation>
-<translation id="7222245588540287464">Uanset om Kontekstuel søgning er aktiveret.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">Webadresse</translation>

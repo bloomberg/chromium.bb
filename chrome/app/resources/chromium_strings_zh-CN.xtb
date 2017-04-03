@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="3852700440713538496">将 Chromium 固定到任务栏</translation>
-<translation id="3883381313049582448">使用由Chromium生成的密码</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
 <translation id="390894725198123737">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐号的其他 Chromium 用户都能够访问或同步处理这些密码。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5906655207909574370">即将更新到最新版本！重新启动您的设备即可完成更新。</translation>
-<translation id="5942225298871134766">Chromium 将通过<ph name="SAVED_PASSWORD_LINK" />存储此密码，并会在您下次需要时自动填充此密码。</translation>
 <translation id="5942520288919337908">“<ph name="EXTENSION_NAME" />”已添加到 Chromium。</translation>
 <translation id="59625444380784159">通讯录中的详细信息有助于您在Chromium中更快速地填写表单。</translation>
 <translation id="5987687638152509985">更新 Chromium 以开始同步</translation>

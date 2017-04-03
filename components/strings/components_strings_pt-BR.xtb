@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Deseja que o Chromium salve este cartão?</translation>
 <translation id="4171400957073367226">Assinatura de verificação inválida</translation>
-<translation id="4176463684765177261">Desativado</translation>
 <translation id="4196861286325780578">&amp;Refazer mover</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações do antivírus e firewall<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{nenhum}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">resultados da pesquisa</translation>
 <translation id="4432688616882109544">O certificado de login não foi aceito por <ph name="HOST_NAME" /> ou não foi fornecido.</translation>
 <translation id="443673843213245140">O uso de um proxy está desativado, mas uma configuração explícita de proxy é especificada.</translation>
-<translation id="4446242550670694251">Agora você pode navegar com privacidade, e outras pessoas que usarem este dispositivo não verão sua atividade.</translation>
 <translation id="4492190037599258964">Resultados de pesquisa para "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Entrar em contato com o administrador do sistema</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Sugestões para pais</translation>
 <translation id="587760065310675640">Endereço de entrega não aceito. Selecione um endereço diferente.</translation>
 <translation id="5901630391730855834">Amarelo</translation>
-<translation id="59174027418879706">Ativada</translation>
 <translation id="5926846154125914413">É possível que você perca o acesso a conteúdos premier de alguns sites.</translation>
 <translation id="5959728338436674663">Enviar automaticamente <ph name="BEGIN_WHITEPAPER_LINK" />algumas informações do sistema e conteúdos de página<ph name="END_WHITEPAPER_LINK" /> ao Google para ajudar a detectar sites e apps perigosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Semana</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}one{Página #}other{Página #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6040143037577758943">Fechar</translation>
-<translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6060685159320643512">Tome cuidado, esses experimentos podem morder</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{nenhum}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     dispositivos de rede que você estiver usando.</translation>
 <translation id="614940544461990577">Tente:</translation>
 <translation id="6151417162996330722">O certificado do servidor tem um período de validade excessivamente longo.</translation>
-<translation id="615643356032862689">Os arquivos e favoritos transferidos por download serão mantidos.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177128806592000436">Sua conexão com esse site não é segura</translation>
 <translation id="6203231073485539293">Verifique sua conexão com a Internet</translation>
@@ -795,9 +790,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8543181531796978784">Você pode <ph name="BEGIN_ERROR_LINK" />denunciar um problema de detecção<ph name="END_ERROR_LINK" /> ou, se entende os riscos à sua segurança, <ph name="BEGIN_LINK" />acessar este site não seguro<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
 <translation id="8559762987265718583">Não é possível estabelecer uma conexão privada com <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
-<translation id="8570229484593575558">Estas informações |não serão salvas|:#Seu histórico de navegação#Suas pesquisas#Dados de cookies</translation>
 <translation id="8571890674111243710">Traduzindo página para <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Sua atividade |ainda pode ficar visível| para:#Websites acessados#Seu empregador#Seu provedor de acesso à Internet</translation>
 <translation id="858637041960032120">Ad. nº. telefone
 </translation>
 <translation id="859285277496340001">O certificado não especifica um mecanismo para verificar se ele foi revogado.</translation>
@@ -810,7 +803,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8738058698779197622">Para estabelecer uma conexão segura, o relógio precisa ser ajustado corretamente. Isso ocorre porque os certificados que os websites usam para se identificar são válidos apenas por períodos específicos. Como o relógio do seu dispositivo está incorreto, o Chromium não pode verificar esses certificados.</translation>
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Diagnosticando o problema.</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
-<translation id="8798099450830957504">Padrão</translation>
 <translation id="8800988563907321413">As sugestões de itens nas proximidades são exibidas aqui</translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="883848425547221593">Outros favoritos</translation>

@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">কোনো পৃষ্ঠা, ডায়ালগ, বা অন্যান্য কন্টেনারে শুরু থেকে শেষ বা শেষ থেকে শুরু মোড়ান।</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">অ্যাক্সেস কী:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">নীচের তালিকা থেকে একটি বিকল্প নির্বাচন করে বর্তমান ৬ ডট ব্রেইল সারণিটি পরিবর্তন করুন।</translation>
 <translation id="2169714232367507776">বর্তমান আইটেমে ক্লিক করুন</translation>
 <translation id="2179452035581866348">আপনাকে অপরিহার্য ও অতিরিক্ত তথ্য দিতে ChromeVox সাউন্ড ব্যবহার করে। প্রতিটি সাউন্ড কি বোঝায় তা শিখে নিলে আপনি আরো দ্রুত নেভিগেট করতে পারবেন। আপনি এতে স্বাচ্ছন্দ বোধ করলে, স্পিচে ভারবোস বর্ণনা বন্ধ করে দিতে পারেন এবং কোনো পৃষ্ঠার অপরিহার্য তথ্যের জন্য এই সাউন্ডগুলির উপর নির্ভর করতে পারেন। এখানে সাউন্ডগুলির পুরো তালিকা এবং সেগুলির কোনটির কি কাজ তা দেখতে পাচ্ছেন।</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{ডান বন্ধনী}one{#টি ডান বন্ধনী}other{#টি ডান বন্ধনী}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{ট্যাব}one{#টি ট্যাব}other{#টি ট্যাব}}</translation>
 <translation id="2972078295414139404">কোনো পূর্ববর্তী ঘুরে দেখা লিঙ্ক নেই</translation>
 <translation id="2972205263822847197">টুল টিপ</translation>
-<translation id="2978549349327282388">কলামগুলি:</translation>
 <translation id="2998131015536248178">পূর্ববর্তী অক্ষর</translation>
 <translation id="2999559350546931576">পিচ কমান</translation>
 <translation id="2999945368667127852">কোনো পরবর্তী মিডিয়া উইজেট নেই৷</translation>
@@ -564,7 +562,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="5968607524793740041">প্রসঙ্গ মেনু দেখান</translation>
 <translation id="5983179082906765664">নেভিগেশন গ্র্যানুলারিটি বাড়ান</translation>
 <translation id="5999630716831179808">ভয়েসগুলি</translation>
-<translation id="6000417740266304866">নীচের তালিকা থেকে একটি বিকল্প নির্বাচন করে বর্তমান ৮ ডট ব্রেইল সারণিটি পরিবর্তন করুন।</translation>
 <translation id="6006050241733874051">রূপ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ব্যাকস্ল্যাশ}one{#টি ব্যাকস্ল্যাশ}other{#টি ব্যাকস্ল্যাশ}}</translation>
 <translation id="6037602951055904232">প্যান ফরোয়ার্ড</translation>
@@ -606,7 +603,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="6444046323172968959">সতর্কতা কথোপকথন</translation>
 <translation id="6459511626086141404">ফ্ল্যাট কীম্যাপ</translation>
 <translation id="6468049171101508116">পরবর্তী বোতাম</translation>
-<translation id="6491972999578897419">নিচের তালিকা থেকে একটি বিকল্প নির্বাচনের মাধ্যমে বর্তমান ভয়েসটি পরিবর্তন করুন৷</translation>
 <translation id="6493991254603208962">উজ্জ্বলতা কমান</translation>
 <translation id="6508059270146105198">পৃষ্ঠার নীচের দিকে ব্রেইল প্রদর্শন সরান</translation>
 <translation id="6536864053412760904">গাণিতিক ML টোকেন</translation>
@@ -759,7 +755,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="820417203470636242">ফাঁকা কক্ষ৷</translation>
 <translation id="8215202828671303819">একাধিক নির্বাচন</translation>
 <translation id="8224171046658870249">ChromeVox Next এ পাল্টানো হয়েছে</translation>
-<translation id="8259358278692921574">সারিগুলি:</translation>
 <translation id="8276439074553447000">পূর্ববর্তী ফোকাসযোগ্য আইটেমে জাম্প করুন</translation>
 <translation id="8278417001922463147">এর পূর্বে কোনো নিবন্ধ নেই৷</translation>
 <translation id="8283603667300770666">পরবর্তী ফর্ম ক্ষেত্র</translation>

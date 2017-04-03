@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Приложения в ранната версия на Chrome</translation>
 <translation id="1457721931618994305">Google Chrome се актуализира...</translation>
 <translation id="1469002951682717133">Стартов панел с приложения за Chrome</translation>
-<translation id="1475773083554142432">Chrome ще съхрани това при <ph name="SAVED_PASSWORD_LINK" /> и ще си го спомни следващия път, когато ви е необходимо.</translation>
 <translation id="1480489203462860648">Изпробвайте браузъра – вече е инсталиран</translation>
 <translation id="1553358976309200471">Актуализиране на Chrome</translation>
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
@@ -177,7 +176,6 @@
 <translation id="6235018212288296708">Правило за Google Chrome за допускане на входящия трафик за mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome спря да се актуализира и вече не поддържа тази версия на операционната ви система.</translation>
 <translation id="6291549208091401781">Google Chrome вече е инсталиран за всички потребители на компютъра ви.</translation>
-<translation id="629218512217695915">Използвайте парола, генерирана от Chrome</translation>
 <translation id="6338556085225130112">Google Chrome се актуализира</translation>
 <translation id="6368958679917195344">Chrome OS е възможна благодарение на допълнителен <ph name="BEGIN_LINK_CROS_OSS" />софтуер с отворен код<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече няма да се поддържат.</translation>

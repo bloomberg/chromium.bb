@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">അടിസ്ഥാനങ്ങൾ</translation>
 <translation id="2386793615875593361">1 തിരഞ്ഞെടുത്തു</translation>
 <translation id="2435457462613246316">പാസ്‌വേഡ് കാണിക്കുക</translation>
-<translation id="2467815441875554965">സാന്ദർഭിക തിരയൽ</translation>
 <translation id="2572712655377361602">ഒരു ഉപകരണ നയം, നിങ്ങളുടെ ഫോട്ടോകളിലേക്കുള്ള ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="2584132361465095047">അക്കൗണ്ട് ചേർക്കുക...</translation>
 <translation id="2593774076813182497">ഈ പേജ് പ്രിന്റുചെയ്യാനാവില്ല.</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">റീഡർ മോഡ്</translation>
 <translation id="3638472932233958418">മുമ്പ് ലോഡുചെയ്‌ത വെബ്‌പേജുകൾ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ഫോൾഡറിലേക്ക് ബുക്ക്മാർക്ക് ചെയ്‌തു</translation>
-<translation id="3692781555820666866">പ്രവർത്തനക്ഷമമായിരിക്കുമ്പോൾ ഒ‌മ്‌നി‌ബോക്‌സ്, നിങ്ങൾക്ക് സമീപമുള്ള ഉപകരണങ്ങൾ ഉപയോഗിച്ച് വെബ് പേജുകളുടെ നിർദ്ദേശങ്ങൾ ഉൾപ്പെടുത്തും.</translation>
 <translation id="3738139272394829648">തിരയാൻ സ്‌പർശിക്കുക</translation>
 <translation id="3771033907050503522">ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="3783017676699494206">ഇമേജ് സംരക്ഷിക്കുക</translation>
@@ -264,6 +262,7 @@
 <translation id="6324669097367352121">സൈൻ ഇൻ ക്രമീകരണങ്ങൾ</translation>
 <translation id="6337234675334993532">എന്‍ക്രിപ്ഷന്‍</translation>
 <translation id="633809752005859102">ശരിക്കും എന്തോ കുഴപ്പം സംഭവിച്ചു. ഞങ്ങൾ അത് പരിഹരിക്കും.</translation>
+<translation id="6342069812937806050">ഇപ്പോള്‍‌</translation>
 <translation id="6344783595350022745">വാചകം മായ്‌ക്കുക</translation>
 <translation id="6362362396625799311">ആൾമാറാട്ട ടാബുകളൊന്നുമില്ല</translation>
 <translation id="6380866119319257197">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റുചെയ്യുക<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@
 <translation id="7189598951263744875">പങ്കിടുക...</translation>
 <translation id="7203585745079012652">മറുപടിയായി ഉത്തരങ്ങൾ പറയുക</translation>
 <translation id="722055596168483966">Google സേവനങ്ങൾ വ്യക്തിപരമാക്കുക</translation>
-<translation id="7222245588540287464">സാന്ദർഭിക തിരയൽ പ്രവർത്തനക്ഷമമാക്കിയിട്ടുണ്ടോ ഇല്ലയോ എന്നത്.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ശതമാനം ഡൗൺലോഡുചെയ്‌തു</translation>
 <translation id="7346909386216857016">ശരി, മനസ്സിലായി!</translation>
 <translation id="7400418766976504921">URL</translation>

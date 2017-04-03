@@ -77,7 +77,6 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2381405137052800939">Pagrindiniai</translation>
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
 <translation id="2435457462613246316">Rodyti slaptažodį</translation>
-<translation id="2467815441875554965">Kontekstinė paieška</translation>
 <translation id="2572712655377361602">Pagal įrenginio politiką prieiga prie nuotraukų buvo užblokuota</translation>
 <translation id="2584132361465095047">Pridėti paskyrą...</translation>
 <translation id="2593774076813182497">Šio psl. atsp. negalima.</translation>
@@ -146,7 +145,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3608436266458100337">Skait. režimas</translation>
 <translation id="3638472932233958418">Iš anksto įk. tinkl.</translation>
 <translation id="3691593122358196899">Sukurta „<ph name="FOLDER_TITLE" />“ žymė</translation>
-<translation id="3692781555820666866">Kai įgalinta, „omnibox“ juosta apims netoli jūsų esančių įrenginių tinklalapių transliacijos pasiūlymus.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3771033907050503522">Inkognito skirt.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
@@ -264,6 +262,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6324669097367352121">Prisijungimo nustat.</translation>
 <translation id="6337234675334993532">Šifruotė</translation>
 <translation id="633809752005859102">Kažkas tikrai nepavyko. Pasistengsime tai ištaisyti.</translation>
+<translation id="6342069812937806050">Ką tik</translation>
 <translation id="6344783595350022745">Išvalyti tekstą</translation>
 <translation id="6362362396625799311">Nėra inkognito skirtukų</translation>
 <translation id="6380866119319257197">Jei pamiršote slaptafr. arba norite pakeisti šį nust., <ph name="BEGIN_LINK" />iš naujo nust. sinchr.<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7189598951263744875">Bendrinti...</translation>
 <translation id="7203585745079012652">Sakyti atsakymus</translation>
 <translation id="722055596168483966">„Google“ paslaugų suasmeninimas</translation>
-<translation id="7222245588540287464">Nesvarbu, ar Kontekstinė paieška yra įgalinta.</translation>
 <translation id="7336264872878993241">Atsisiųsta <ph name="PERCENT" /> proc.</translation>
 <translation id="7346909386216857016">Gerai, supratau</translation>
 <translation id="7400418766976504921">URL adresas</translation>

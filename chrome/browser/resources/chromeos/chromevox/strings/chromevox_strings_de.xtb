@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Auf einer Seite, in einem Dialog oder in einem anderen Container vom Anfang zum Ende oder vom Ende zum Anfang springen</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">Zugriffsschlüssel: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">Ändern Sie die aktuelle 6-Punkt-Brailletabelle durch Auswählen einer Option aus der unten stehenden Liste.</translation>
 <translation id="2169714232367507776">Auf aktuelles Element klicken</translation>
 <translation id="2179452035581866348">Mit ChromeVox erhalten Sie wichtige und zusätzliche Informationen mithilfe von Tönen. Wenn Sie sich merken, was die einzelnen Töne bedeuten, können Sie sie zur schnelleren Navigation verwenden. Sobald Sie mit dem Gerät vertraut sind, können Sie die ausführlichen gesprochenen Beschreibungen deaktivieren und Töne nutzen, um wichtige Informationen zur Seite zu erhalten. Nachfolgend finden Sie eine vollständige Liste der Töne und ihrer Bedeutung.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{runde Klammer zu}other{# runde Klammern zu}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{Tabulatorzeichen}other{# Tabulatorzeichen}}</translation>
 <translation id="2972078295414139404">Kein vorheriger besuchter Link</translation>
 <translation id="2972205263822847197">Kurzinfo</translation>
-<translation id="2978549349327282388">Spalten:</translation>
 <translation id="2998131015536248178">Vorheriges Zeichen</translation>
 <translation id="2999559350546931576">Tonhöhe verringern</translation>
 <translation id="2999945368667127852">Kein weiteres Medien-Widget</translation>
@@ -564,7 +562,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="5968607524793740041">Kontextmenü anzeigen</translation>
 <translation id="5983179082906765664">Navigationsgenauigkeit erhöhen</translation>
 <translation id="5999630716831179808">Stimmen</translation>
-<translation id="6000417740266304866">Ändern Sie die aktuelle 8-Punkt-Brailletabelle durch Auswahl einer Option aus der unten stehenden Liste.</translation>
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{umgekehrter Schrägstrich}other{# umgekehrte Schrägstriche}}</translation>
 <translation id="6037602951055904232">Nach vorn verschieben</translation>
@@ -606,7 +603,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="6444046323172968959">Benachrichtigungsdialogfeld</translation>
 <translation id="6459511626086141404">Flache Tastaturbelegung</translation>
 <translation id="6468049171101508116">Nächste Schaltfläche</translation>
-<translation id="6491972999578897419">Ändern Sie die aktuelle Stimme, indem Sie eine Option aus der Liste unten auswählen.</translation>
 <translation id="6493991254603208962">Helligkeit verringern</translation>
 <translation id="6508059270146105198">Braillezeile ans Seitenende verschieben</translation>
 <translation id="6536864053412760904">MathML-Token</translation>
@@ -759,7 +755,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="820417203470636242">Leere Zelle</translation>
 <translation id="8215202828671303819">Mehrfachauswahl</translation>
 <translation id="8224171046658870249">Zu ChromeVox Next gewechselt</translation>
-<translation id="8259358278692921574">Zeilen:</translation>
 <translation id="8276439074553447000">Zum vorherigen fokussierbaren Element springen</translation>
 <translation id="8278417001922463147">Kein vorheriger Artikel</translation>
 <translation id="8283603667300770666">Nächstes Formularfeld</translation>

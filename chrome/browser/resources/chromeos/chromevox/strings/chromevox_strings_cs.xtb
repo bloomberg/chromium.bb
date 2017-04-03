@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Z konce stránky, dialogového okna nebo jiného kontejneru přejít na začátek a ze začátku přejít na konec.</translation>
 <translation id="2119965627982867824">číselník</translation>
 <translation id="2121067395472282800">přístupový klíč:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Změnit aktuální tabulku šestibodového Braillova písma na možnost ze seznamu níže.</translation>
 <translation id="2169714232367507776">Kliknout na aktuální položku</translation>
 <translation id="2179452035581866348">ChromeVox pomocí zvuků poskytuje základní a dodatečné informace. Pokud se naučíte, co jednotlivé zvuky znamenají, pomohou vám s rychlejší navigací. Až je budete lépe znát, můžete základní informace o stránce získávat z nich a podrobné hlasové popisy vypnout. Zde je úplný seznam zvuků a jejich významu.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{pravá závorka}few{# pravé závorky}many{# close parens}other{# pravých závorek}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabulátor}few{# tabulátory}many{# tabs}other{# tabulátorů}}</translation>
 <translation id="2972078295414139404">Žádný předchozí navštívený odkaz není.</translation>
 <translation id="2972205263822847197">Popisek</translation>
-<translation id="2978549349327282388">Sloupce:</translation>
 <translation id="2998131015536248178">Předchozí znak</translation>
 <translation id="2999559350546931576">Snížit výšku hlasu</translation>
 <translation id="2999945368667127852">Žádný další mediální widget není k dispozici.</translation>
@@ -564,7 +562,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="5968607524793740041">Zobrazit kontextovou nabídku</translation>
 <translation id="5983179082906765664">Zvýšit granularitu navigace</translation>
 <translation id="5999630716831179808">Hlasy</translation>
-<translation id="6000417740266304866">Změnit aktuální tabulku osmibodového Braillova písma na možnost ze seznamu níže.</translation>
 <translation id="6006050241733874051">Formulář</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{zpětné lomítko}few{# zpětná lomítka}many{# backslashes}other{# zpětných lomítek}}</translation>
 <translation id="6037602951055904232">Posunout dopředu</translation>
@@ -606,7 +603,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="6444046323172968959">Dialog upozornění</translation>
 <translation id="6459511626086141404">Plochá mapa kláves</translation>
 <translation id="6468049171101508116">Další tlačítko</translation>
-<translation id="6491972999578897419">Aktuální hlas můžete změnit výběrem některé z položek v následujícím seznamu.</translation>
 <translation id="6493991254603208962">Snížit jas</translation>
 <translation id="6508059270146105198">Přesunout zobrazení Brailleova písma na konec stránky</translation>
 <translation id="6536864053412760904">Token MathML</translation>
@@ -759,7 +755,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="820417203470636242">Prázdná buňka.</translation>
 <translation id="8215202828671303819">Vícenásobný výběr</translation>
 <translation id="8224171046658870249">Přepnuto na ChromeVox Next</translation>
-<translation id="8259358278692921574">Řádky:</translation>
 <translation id="8276439074553447000">Přejít na předchozí zaměřitelnou položku</translation>
 <translation id="8278417001922463147">Žádný předchozí článek.</translation>
 <translation id="8283603667300770666">Další pole formuláře</translation>

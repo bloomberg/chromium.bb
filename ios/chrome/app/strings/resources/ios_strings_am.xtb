@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">መሠረታዊ ነገሮች</translation>
 <translation id="2386793615875593361">1 ተመርጧል</translation>
 <translation id="2435457462613246316">የይለፍ ቃል አሳይ</translation>
-<translation id="2467815441875554965">አግባቡን ያጣቀሰ ፍለጋ</translation>
 <translation id="2572712655377361602">አንድ የመሣሪያ መመሪያ የፎቶዎችዎን መዳረሻ አግዷል</translation>
 <translation id="2584132361465095047">መለያ አክል…</translation>
 <translation id="2593774076813182497">ይህ ገጽ ሊታተም አይችልም።</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">የአንባቢ ሁነታ</translation>
 <translation id="3638472932233958418">ድረ-ገጾችን አስቀድመው ይጫኑ</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" /> ላይ ዕልባት ተደርጓል</translation>
-<translation id="3692781555820666866">በሚነቃበት ጊዜ፣ ኦምኒቦክሱ ከእርስዎ አቅራቢያ ባሉ መሣሪያዎች ለተሰራጩ የድር ገጾች የጥቆማ ሐሳቦችን ያካትታል።</translation>
 <translation id="3738139272394829648">ለመፈለግ ይንኩ</translation>
 <translation id="3771033907050503522">ማንነት የማያሳውቁ ትሮች</translation>
 <translation id="3783017676699494206">ምስሉን አስቀምጥ</translation>
@@ -264,6 +262,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6324669097367352121">የመግቢያ ቅንብሮች</translation>
 <translation id="6337234675334993532">ምስጠራ</translation>
 <translation id="633809752005859102">የሆነ ከበድ ያለ ችግር ተፈጥሯል። ችግሩን ለመቅረፍ እየሰራን ነው።</translation>
+<translation id="6342069812937806050">ልክ አሁን</translation>
 <translation id="6344783595350022745">ጽሑፍ አጽዳ</translation>
 <translation id="6362362396625799311">ምንም ማንነት የማያሳውቁ ትሮች የሉም</translation>
 <translation id="6380866119319257197">የእርስዎን የይለፍሐረግ ከረሱት ወይም ይህን ቅንብር መለወጥ ከፈለጉ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያስጀምሩ<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7189598951263744875">አጋራ...</translation>
 <translation id="7203585745079012652">መልሶችን ተመልሰህ ተናገር</translation>
 <translation id="722055596168483966">የGoogle አገልግሎቶችን ግላዊነት አላብስ</translation>
-<translation id="7222245588540287464">አግባቡን ያጣቀሰ ፍለጋ መንቃቱ ወይም አለመንቃቱ።</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> በመቶ ወርዷል</translation>
 <translation id="7346909386216857016">እሺ፣ ገባኝ</translation>
 <translation id="7400418766976504921">URL</translation>

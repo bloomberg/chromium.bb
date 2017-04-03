@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
 <translation id="1006017844123154345">باز کردن نسخه آنلاین</translation>
-<translation id="1056898198331236512">اخطار</translation>
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1061441684050139317">‏Chrome باید به میکروفون دسترسی داشته باشد تا آن را با این سایت به اشتراک بگذارد.</translation>
 <translation id="1080790410959514870">‏در حال خروج از حسابی هستید که توسط <ph name="DOMAIN_NAME" /> مدیریت می‌شود. این کار داده‌های Chrome ذخیره شده در این دستگاه را حذف خواهد کرد، اما داده‌ها در حساب Google شما باقی خواهد ماند.</translation>
@@ -41,6 +40,7 @@
 <translation id="1383876407941801731">جستجو</translation>
 <translation id="1384959399684842514">بارگیری موقتاً متوقف شد</translation>
 <translation id="1389974829397082527">نشانکی در اینجا وجود ندارد</translation>
+<translation id="1402229579576898974">‏<ph name="NUMBER_OF_SUGGESTIONS" /> پیشنهاد Chrome</translation>
 <translation id="1404122904123200417">جاسازی شده در <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">«ردیابی نشود»</translation>
 <translation id="1407135791313364759">باز کردن همه</translation>
@@ -250,7 +250,7 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">ادغام کردن داده‌های من</translation>
 <translation id="3931947361983910192">۴ هفته گذشته</translation>
-<translation id="393697183122708255">هیچ جستجوی فعال صوتی در دسترس نیست</translation>
+<translation id="393697183122708255">هیچ جستجوی گفتاری فعالی در دسترس نیست</translation>
 <translation id="3946611741043634542">‏با ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط و ضوابط<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome موافقت می‌کنید.</translation>
 <translation id="3950820424414687140">ورود به سیستم</translation>
 <translation id="395922942268463099">صفحه‌هایی که به‌طور منظم به‌روزرسانی می‌شوند</translation>
@@ -322,6 +322,7 @@
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4738836084190194332">آخرین همگام‌سازی: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">باز کردن برگه جدید</translation>
+<translation id="4750394297954878236">پیشنهادات</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4766369052440583386">صرفه‌جویی داده روشن است</translation>
 <translation id="4797039098279997504">برای برگشتن به <ph name="URL_OF_THE_CURRENT_TAB" />، لمس کنید</translation>
@@ -393,7 +394,6 @@
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> گیگابایت در دسترس</translation>
 <translation id="5435775191620395718">در حال نمایش سابقه از این دستگاه. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">رفتن به نوار نشانی</translation>
-<translation id="544291274896356069">اگر این پیوند در یک برنامه خارجی باز شود از حالت ناشناس خارج می‌شوید. ادامه می‌دهید؟</translation>
 <translation id="5447201525962359567">همه فضای ذخیره سایت‌ها، ازجمله کوکی‌ها و سایر داده‌های ذخیره‌شده در دستگاه</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
@@ -405,6 +405,7 @@
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5565871407246142825">کارت‌های اعتباری</translation>
+<translation id="5568069709869097550">ورود به سیستم ممکن نیست</translation>
 <translation id="5578795271662203820">جستجوی <ph name="SEARCH_ENGINE" /> برای این تصویر</translation>
 <translation id="5595485650161345191">ویرایش آدرس</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
@@ -506,6 +507,7 @@
 <translation id="6583199322650523874">نشانک گذاشتن صفحه کنونی</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
 <translation id="6612358246767739896">محتوای محافظت‌شده</translation>
+<translation id="662080504995468778">ماندن</translation>
 <translation id="6627583120233659107">ویرایش پوشه</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
@@ -555,6 +557,7 @@
 <translation id="7063006564040364415">اتصال به سرور همگام‌سازی ممکن نیست.</translation>
 <translation id="7128222689758636196">مجاز کردن موتور جستجوی کنونی</translation>
 <translation id="7138678301420049075">دیگر</translation>
+<translation id="7144878232160441200">سعی مجدد</translation>
 <translation id="7180611975245234373">بازخوانی</translation>
 <translation id="7189372733857464326">‏در انتظار «سرویس‌های Google Play» برای اتمام به‌روزرسانی است</translation>
 <translation id="7191430249889272776">برگه در پس‌زمینه باز شد.</translation>
@@ -721,7 +724,7 @@
 <translation id="9060538597317784206">‏مشاهده برنامه <ph name="APP_NAME" /> در فروشگاه Play.  رتبه‌بندی: <ph name="APP_RATING" /></translation>
 <translation id="9063523880881406963">خاموش کردن درخواست سایت رایانه‌ای</translation>
 <translation id="9065203028668620118">ویرایش</translation>
-<translation id="9070377983101773829">شروع جستجوی صوتی</translation>
+<translation id="9070377983101773829">شروع جستجوی گفتاری</translation>
 <translation id="9071742570345586758">‏برای مشاهده محتوای واقعیت مجازی، «سرویس‌های Google VR» را نصب کنید</translation>
 <translation id="9086455579313502267">دسترسی به شبکه امکان‌پذیر نیست</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> کیلوبایت بارگیری شد</translation>

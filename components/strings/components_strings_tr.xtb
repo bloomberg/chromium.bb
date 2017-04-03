@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium'un bu kartı kaydetmesini istiyor musunuz?</translation>
 <translation id="4171400957073367226">Geçersiz doğrulama imzası</translation>
-<translation id="4176463684765177261">Devre dışı</translation>
 <translation id="4196861286325780578">Taşımayı &amp;yeniden yap</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Güvenlik duvarı ve virüsten korunma yapılandırmalarını kontrol etme<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{yok}=1{1 uygulama ($1)}=2{2 uygulama ($1, $2)}other{# uygulama ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">arama sonuçları</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> giriş sertifikanızı kabul etmedi veya giriş sertifikası sağlanmamış olabilir.</translation>
 <translation id="443673843213245140">Proxy kullanımı devre dışı, ancak açık bir proxy yapılandırması belirtildi.</translation>
-<translation id="4446242550670694251">Artık gizli göz atabilirsiniz ve bu cihazı kullanan diğer kişiler etkinliğinizi görmez.</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' için arama sonuçları</translation>
 <translation id="4506176782989081258">Doğrulama hatası: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Sistem yöneticisiyle iletişime geçme</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Ebeveyn Önerileri</translation>
 <translation id="587760065310675640">Gönderim adresi desteklenmiyor. Farklı bir adres seçin.</translation>
 <translation id="5901630391730855834">Sarı</translation>
-<translation id="59174027418879706">Etkin</translation>
 <translation id="5926846154125914413">Bazı sitelerden alınan premium içeriğe erişiminizi kaybedebilirsiniz.</translation>
 <translation id="5959728338436674663">Tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak için Google'a bazı <ph name="BEGIN_WHITEPAPER_LINK" />sistem bilgilerini ve sayfa içeriklerini<ph name="END_WHITEPAPER_LINK" /> otomatik olarak gönder.<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Hafta</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{1. sayfa}other{#. sayfa}}</translation>
 <translation id="6017514345406065928">Yeşil</translation>
 <translation id="6040143037577758943">Kapat</translation>
-<translation id="604124094241169006">Otomatik</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="6060685159320643512">Dikkatli olun, bu deneyler canınızı yakabilir</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{yok}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     veya diğer ağ cihazlarını yeniden başlatın.</translation>
 <translation id="614940544461990577">Aşağıdakileri deneyin:</translation>
 <translation id="6151417162996330722">Sunucu sertifikasının geçerlilik dönemi çok uzun.</translation>
-<translation id="615643356032862689">İndirilen dosyalar ve yer işaretleri saklanacak.</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6177128806592000436">Bu siteye bağlantınız güvenli değil</translation>
 <translation id="6203231073485539293">İnternet bağlantınızı kontrol edin</translation>
@@ -795,9 +790,7 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />Bir tespit sorununu bildirebilir<ph name="END_ERROR_LINK" /> veya güvenliğiniz açısından riskleri anlıyorsanız <ph name="BEGIN_LINK" />güvenli olmayan bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Sayfanın dili belirlenemediğinden çeviri başarısız oldu.</translation>
 <translation id="8559762987265718583">Cihazınızın tarih ve saati (<ph name="DATE_AND_TIME" />) yanlış olduğundan <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> alan adına gizli bir bağlantı kurulamıyor.</translation>
-<translation id="8570229484593575558">Şu bilgiler |kaydedilmeyecek|:#Tarama geçmişiniz#Aramalarınız#Çerez verileri</translation>
 <translation id="8571890674111243710">Sayfa <ph name="LANGUAGE" /> diline çevriliyor...</translation>
-<translation id="8584539743998202583">Etkinlikleriniz şunlar tarafından |hâlâ görülebilir|:#Ziyaret ettiğiniz web siteleri#İşvereniniz#İnternet servis sağlayıcınız</translation>
 <translation id="858637041960032120">Telefon no ekle
 </translation>
 <translation id="859285277496340001">Sertifika, iptal edilip edilmediğinin denetlenebileceği bir mekanizma belirtmiyor.</translation>
@@ -810,7 +803,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8738058698779197622">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Chromium bu sertifikaları doğrulayamaz.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ana makinesinin &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt; bulunamadı. Sorun teşhis ediliyor.</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
-<translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8800988563907321413">Yakın çevrenizle ilgili öneriler burada görünür</translation>
 <translation id="8820817407110198400">Favoriler</translation>
 <translation id="883848425547221593">Diğer Yer İşaretleri</translation>

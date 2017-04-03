@@ -357,7 +357,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">¿Quieres que Chromium guarde esta tarjeta?</translation>
 <translation id="4171400957073367226">La firma de verificación no es válida.</translation>
-<translation id="4176463684765177261">Deshabilitado</translation>
 <translation id="4196861286325780578">&amp;Rehacer Mover</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Comprobar las configuraciones de firewall y antivirus<ph name="END_LINK" />.</translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ninguna}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
@@ -384,7 +383,6 @@
 <translation id="4406896451731180161">resultados de búsqueda</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> no aceptó tu certificado de acceso o es posible que no se haya proporcionado.</translation>
 <translation id="443673843213245140">Se inhabilitó el uso de un proxy, pero se especificó una configuración explícita de proxy.</translation>
-<translation id="4446242550670694251">Ahora puedes navegar de forma privada; las otras personas que usen este dispositivo no verán tu actividad.</translation>
 <translation id="4492190037599258964">Resultados de búsqueda de '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Error de validación: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Comunicarse con el administrador del sistema.</translation>
@@ -524,7 +522,6 @@
 <translation id="5872918882028971132">Sugerencias para padres</translation>
 <translation id="587760065310675640">La dirección de envío no es compatible. Selecciona otra dirección.</translation>
 <translation id="5901630391730855834">Amarillo</translation>
-<translation id="59174027418879706">Activado</translation>
 <translation id="5926846154125914413">Es posible que ya no puedas acceder al contenido premium de otros sitios.</translation>
 <translation id="5959728338436674663">Enviar automáticamente <ph name="BEGIN_WHITEPAPER_LINK" />determinado contenido de la página e información del sistema<ph name="END_WHITEPAPER_LINK" /> a Google para detectar apps y sitios peligrosos <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Semana</translation>
@@ -537,7 +534,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6040143037577758943">Cerrar</translation>
-<translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="6060685159320643512">Cuidado, estos experimentos pueden dañarte</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ninguna}=1{1}other{#}}</translation>
@@ -545,7 +541,6 @@
         de red que estés usando.</translation>
 <translation id="614940544461990577">Intenta:</translation>
 <translation id="6151417162996330722">El certificado de servidor tiene un período de validez demasiado extenso.</translation>
-<translation id="615643356032862689">Se mantendrán los archivos que descargues y los favoritos que agregues.</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6177128806592000436">Tu conexión con este sitio no es segura</translation>
 <translation id="6203231073485539293">Comprueba tu conexión a Internet.</translation>
@@ -796,9 +791,7 @@
 <translation id="8543181531796978784">Puedes <ph name="BEGIN_ERROR_LINK" />informar un problema de detección<ph name="END_ERROR_LINK" /> o, si comprendes los riesgos de seguridad, puedes <ph name="BEGIN_LINK" />visitar el sitio no seguro<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Falló la traducción debido a que no se pudo determinar el idioma de la página.</translation>
 <translation id="8559762987265718583">No se puede establecer una conexión privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque la fecha y la hora del dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
-<translation id="8570229484593575558">Esta información |no se guardará|:#tu historial de navegación#tus búsquedas#los datos de cookies</translation>
 <translation id="8571890674111243710">Traduciendo página a <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Es posible que tu actividad |no sea visible| para:#los sitios web que visitas#tu empleador#tu proveedor de servicios de Internet</translation>
 <translation id="858637041960032120">Agregar teléfono
 </translation>
 <translation id="859285277496340001">El certificado no especifica un mecanismo para verificar si ha sido revocado.</translation>
@@ -811,7 +804,6 @@
 <translation id="8738058698779197622">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Chromium no puede verificar estos certificados.</translation>
 <translation id="8740359287975076522">No se encontró <ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt;. Se está diagnosticando el problema.</translation>
 <translation id="8790007591277257123">&amp;Rehacer Eliminar</translation>
-<translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800988563907321413">Las sugerencias de la sección Cercanas aparecen aquí</translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="883848425547221593">Otros favoritos</translation>

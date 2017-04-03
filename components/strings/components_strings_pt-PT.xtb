@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Pretende que o Chromium guarde este cartão?</translation>
 <translation id="4171400957073367226">Assinatura de verificação incorreta</translation>
-<translation id="4176463684765177261">Desativado</translation>
 <translation id="4196861286325780578">&amp;Refazer movimentação</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações da firewall e de antivírus<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{nenhuma}=1{1 aplicação ($1)}=2{2 aplicações ($1, $2)}other{# aplicações ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">resultados da pesquisa</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> não aceitou o seu certificado de início de sessão ou este pode não ter sido fornecido.</translation>
 <translation id="443673843213245140">A utilização de um proxy está desativada, mas existe uma configuração de proxy explícita especificada.</translation>
-<translation id="4446242550670694251">Agora, pode navegar no modo privado e as outras pessoas que utilizarem este dispositivo não veem a sua atividade.</translation>
 <translation id="4492190037599258964">Resultados da pesquisa para "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contactar o administrador do sistema</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Sugestões superiores</translation>
 <translation id="587760065310675640">Morada para envio não suportada. Selecione uma morada diferente.</translation>
 <translation id="5901630391730855834">Amarelo</translation>
-<translation id="59174027418879706">Ativada</translation>
 <translation id="5926846154125914413">Pode perder o acesso ao conteúdo premium de alguns sites.</translation>
 <translation id="5959728338436674663">Enviar automaticamente algumas <ph name="BEGIN_WHITEPAPER_LINK" />informações do sistema e conteúdos de páginas<ph name="END_WHITEPAPER_LINK" /> para a Google de modo a ajudar a detetar aplicações e sites perigosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Semana</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6040143037577758943">Fechar</translation>
-<translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6060685159320643512">Tenha cuidado, estas experiências podem morder</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{nenhuma}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     dispositivos de rede que possa estar a utilizar.</translation>
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6151417162996330722">O certificado do servidor tem um período de validade demasiado longo.</translation>
-<translation id="615643356032862689">Os ficheiros transferidos e os marcadores serão mantidos.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177128806592000436">A sua ligação a este site não é segura</translation>
 <translation id="6203231073485539293">Verificar a ligação à Internet</translation>
@@ -795,9 +790,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8543181531796978784">Pode <ph name="BEGIN_ERROR_LINK" />comunicar um problema de deteção<ph name="END_ERROR_LINK" /> ou, se compreende os riscos para a sua segurança, <ph name="BEGIN_LINK" />aceda a este site não seguro<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
 <translation id="8559762987265718583">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
-<translation id="8570229484593575558">Estas informações |não serão guardadas|:#O histórico de navegação#As pesquisas#Dados de cookies</translation>
 <translation id="8571890674111243710">A traduzir a página para <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">A sua atividade |poderá continuar visível| para:#Os Websites que visita#A sua entidade empregadora#O seu fornecedor de serviços de Internet</translation>
 <translation id="858637041960032120">Adic. n.º telef.
 </translation>
 <translation id="859285277496340001">O certificado não indica um mecanismo para verificar se foi ou não revogado.</translation>
@@ -810,7 +803,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8738058698779197622">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Websites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Chromium não consegue validar estes certificados.</translation>
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Estamos a diagnosticar o problema.</translation>
 <translation id="8790007591277257123">&amp;Refazer eliminação</translation>
-<translation id="8798099450830957504">Predefinição</translation>
 <translation id="8800988563907321413">As sugestões próximas aparecem aqui</translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883848425547221593">Outros marcadores</translation>

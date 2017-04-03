@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Mulakan daripada permulaan kepada penghujung atau daripada penghujung kepada permulaan dalam halaman, dialog atau bekas lain</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">kekunci akses:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Tukar jadual semasa braille 6 titik dengan membuat pilihan daripada senarai di bawah.</translation>
 <translation id="2169714232367507776">Klik pada item semasa</translation>
 <translation id="2179452035581866348">ChromeVox menggunakan bunyi untuk memberi anda maklumat penting dan tambahan. Anda boleh menggunakan bunyi ini untuk menavigasi dengan lebih cepat dengan mempelajari maksud setiap bunyi. Apabila anda berasa lebih selesa, anda boleh mematikan huraian yang berjela-jela dalam pertuturan dan menggunakannya untuk maklumat penting tentang halaman. Berikut ialah senarai lengkap bunyi dan maksudnya.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{tanda kurung tutup}other{# tanda kurung tutup}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tab}other{# tab}}</translation>
 <translation id="2972078295414139404">Tiada pautan yang dilawati sebelumnya.</translation>
 <translation id="2972205263822847197">Petua alat</translation>
-<translation id="2978549349327282388">Lajur:</translation>
 <translation id="2998131015536248178">Aksara Sebelumnya</translation>
 <translation id="2999559350546931576">Kurangkan nada</translation>
 <translation id="2999945368667127852">Tiada widget media seterusnya.</translation>
@@ -564,7 +562,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="5968607524793740041">Paparkan menu konteks</translation>
 <translation id="5983179082906765664">Tingkatkan kebutiran navigasi</translation>
 <translation id="5999630716831179808">Suara</translation>
-<translation id="6000417740266304866">Tukar jadual semasa braille 8 titik dengan membuat pilihan daripada senarai di bawah.</translation>
 <translation id="6006050241733874051">Borang</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{garis condong songsang}other{# garis condong songsang}}</translation>
 <translation id="6037602951055904232">Sorot ke hadapan</translation>
@@ -606,7 +603,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="6444046323172968959">Dialog makluman</translation>
 <translation id="6459511626086141404">Peta kekunci datar</translation>
 <translation id="6468049171101508116">Butang seterusnya</translation>
-<translation id="6491972999578897419">Tukar suara semasa dengan membuat pilihan daripada senarai di bawah.</translation>
 <translation id="6493991254603208962">Kurangkan kecerahan</translation>
 <translation id="6508059270146105198">Alihkan paparan braille ke bahagian bawah halaman</translation>
 <translation id="6536864053412760904">Token ML Matematik</translation>
@@ -759,7 +755,6 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="820417203470636242">Sel kosong.</translation>
 <translation id="8215202828671303819">Berbilang pilihan</translation>
 <translation id="8224171046658870249">Anda telah bertukar kepada ChromeVox Next</translation>
-<translation id="8259358278692921574">Baris:</translation>
 <translation id="8276439074553447000">Langkau ke item boleh fokus sebelumnya</translation>
 <translation id="8278417001922463147">Tiada artikel sebelumnya.</translation>
 <translation id="8283603667300770666">Medan borang seterusnya</translation>

@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Paleiskite nuo pradžios iki pabaigos arba nuo pabaigos iki pradžios puslapyje, dialogo lange ar kitame sudėtiniame rodinyje</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">prieigos klavišas: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">Pakeisti dabartinę 6 taškų Brailio rašmenų lentelę pasirinkus parinktį iš toliau pateikiamo sąrašo.</translation>
 <translation id="2169714232367507776">Spustelėti dabartinį elementą</translation>
 <translation id="2179452035581866348">„ChromeVox“ naudoja garsus, kad pateiktų jums svarbiausią ir papildomą informaciją. Galite naudoti šiuos garsus, kad naršytumėte greičiau išmokę, ką reiškia kiekvienas garsas. Kai apsiprasite, galėsite išjungti daugiažodžius aprašus kalboje ir juos naudoti prireikus svarbiausios informacijos apie puslapį. Toliau pateiktas visas garsų sąrašas ir jų reikšmės.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{uždaromasis skliaustas}one{# uždaromasis skliaustas}few{# uždaromieji skliaustai}many{# close parens}other{# uždaromųjų skliaustų}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabuliavimo ženklas}one{# tabuliavimo ženklas}few{# tabuliavimo ženklai}many{# tabs}other{# tabuliavimo ženklų}}</translation>
 <translation id="2972078295414139404">Nėra ankstesnės aplankytos nuorodos.</translation>
 <translation id="2972205263822847197">Patarimas</translation>
-<translation id="2978549349327282388">Stulpeliai:</translation>
 <translation id="2998131015536248178">Ankstesnis simbolis</translation>
 <translation id="2999559350546931576">Sumažinti aukštį</translation>
 <translation id="2999945368667127852">Nėra kito medijų valdiklio.</translation>
@@ -564,7 +562,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="5968607524793740041">Rodyti kontekstinį meniu</translation>
 <translation id="5983179082906765664">Padidinti naršymo detalumą</translation>
 <translation id="5999630716831179808">Balsai</translation>
-<translation id="6000417740266304866">Pakeisti dabartinę 8 taškų Brailio rašmenų lentelę pasirinkus parinktį iš toliau pateikiamo sąrašo.</translation>
 <translation id="6006050241733874051">Forma</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kairinis brūkšnys}one{# kairinis brūkšnys}few{# kairiniai brūkšniai}many{# backslashes}other{# kairinių brūkšnių}}</translation>
 <translation id="6037602951055904232">Stumti pirmyn</translation>
@@ -606,7 +603,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="6444046323172968959">Įspėjimo dialogo langas</translation>
 <translation id="6459511626086141404">Plokščiasis klavišų žemėlapis</translation>
 <translation id="6468049171101508116">Kitas mygtukas</translation>
-<translation id="6491972999578897419">Pakeiskite dabartinį balsą pasirinkę parinktį iš toliau pateikto sąrašo.</translation>
 <translation id="6493991254603208962">šviesumo mažinimas</translation>
 <translation id="6508059270146105198">Perkelti Brailio rašmenų pateiktį į puslapio apačią</translation>
 <translation id="6536864053412760904">Matematikos žymėjimo kalbos prieigos raktas</translation>
@@ -759,7 +755,6 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="820417203470636242">Tuščias langelis.</translation>
 <translation id="8215202828671303819">Kelių elementų pasirinkimas</translation>
 <translation id="8224171046658870249">Perjungta į „ChromeVox Next“</translation>
-<translation id="8259358278692921574">Eilučių:</translation>
 <translation id="8276439074553447000">Pereiti prie ankstesni elemento, kurį galima fokusuoti</translation>
 <translation id="8278417001922463147">Nėra jokių ankstesnių straipsnių.</translation>
 <translation id="8283603667300770666">Kitas formos laukas</translation>

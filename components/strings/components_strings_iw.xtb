@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏האם תרצה ש-Chromium ישמור את הכרטיס הזה?</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
-<translation id="4176463684765177261">מושבת</translation>
 <translation id="4196861286325780578">&amp;ביצוע מחדש של העברה</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />לבדוק את תצורת האנטי-וירוס וחומת האש<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ללא}=1{אפליקציה אחת ($1)}=2{שתי אפליקציות ($1, $2)}many{# אפליקציות ($1, $2, $3)}other{# אפליקציות ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">תוצאות חיפוש</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> לא אישר את אישור ההתחברות שלך, או שלא סופק אישור התחברות.</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צויינה תצורת שרת Proxy מפורשת.</translation>
-<translation id="4446242550670694251">עכשיו באפשרותך לגלוש באופן פרטי, ואנשים אחרים שמשתמשים במכשיר הזה לא יראו את הפעילות שלך.</translation>
 <translation id="4492190037599258964">תוצאות החיפוש עבור '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">לפנות אל מנהל המערכת</translation>
@@ -528,7 +526,6 @@ Del</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
 <translation id="587760065310675640">כתובת משלוח לא נתמכת. בחר כתובת אחרת.</translation>
 <translation id="5901630391730855834">צהוב</translation>
-<translation id="59174027418879706">מופעל</translation>
 <translation id="5926846154125914413">אתה עשוי לאבד גישה אל תוכן פרמיום מאתרים מסוימים.</translation>
 <translation id="5959728338436674663">‏שלח באופן אוטומטי <ph name="BEGIN_WHITEPAPER_LINK" />חלק מפרטי המערכת ותוכן הדף<ph name="END_WHITEPAPER_LINK" /> אל Google כדי לעזור בזיהוי של אפליקציות ואתרים מסוכנים. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">שבוע</translation>
@@ -541,7 +538,6 @@ Del</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{דף 1}two{דף #}many{דף #}other{דף #}}</translation>
 <translation id="6017514345406065928">ירוק</translation>
 <translation id="6040143037577758943">סגור</translation>
-<translation id="604124094241169006">אוטומטי</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ללא}=1{אחת}two{שתיים}many{#}other{#}}</translation>
@@ -549,7 +545,6 @@ Del</translation>
   שאתה משתמש בהם.</translation>
 <translation id="614940544461990577">נסה:</translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
-<translation id="615643356032862689">לא תתבצע מחיקה של קבצים וסימניות שהורדת.</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6177128806592000436">החיבור שלך לאתר הזה לא מאובטח</translation>
 <translation id="6203231073485539293">בדוק את חיבור האינטרנט</translation>
@@ -800,9 +795,7 @@ Del</translation>
 <translation id="8543181531796978784">באפשרותך <ph name="BEGIN_ERROR_LINK" />לדווח על בעיית זיהוי<ph name="END_ERROR_LINK" /> או, אם אתה מבין את סיכוני האבטחה, <ph name="BEGIN_LINK" />להיכנס לאתר הזה, שאינו מאובטח<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במכשיר שלך שגויים.</translation>
-<translation id="8570229484593575558">‏לא תתבצע |שמירה של|:#היסטוריית הגלישה#החיפושים#נתונים של קובצי Cookie</translation>
 <translation id="8571890674111243710">מתרגם דף ל<ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">ייתכן שהפעילות |שלך תוצג| בפני:#אתרים שביקרת בהם#המעסיק שלך#ספק האינטרנט שלך</translation>
 <translation id="858637041960032120">הוסף מספר טלפון
 </translation>
 <translation id="859285277496340001">האישור אינו מציין מנגנון הבודק אם הוא נשלל.</translation>
@@ -815,7 +808,6 @@ Del</translation>
 <translation id="8738058698779197622">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Chromium לא יכול לאמת את האישורים האלו.</translation>
 <translation id="8740359287975076522">‏לא ניתן היה למצוא את &lt;abbr id="dnsDefinition"&gt;כתובת ה-DNS&lt;/abbr&gt; של <ph name="HOST_NAME" />. מאבחן את הבעיה.</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>
-<translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8800988563907321413">כאן מופיעות הצעות עבורך למקומות קרובים</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="883848425547221593">סימניות אחרות</translation>

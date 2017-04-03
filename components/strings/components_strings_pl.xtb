@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Czy Chromium ma zapisać tę kartę?</translation>
 <translation id="4171400957073367226">Nieprawidłowy podpis weryfikujący</translation>
-<translation id="4176463684765177261">Wyłączone</translation>
 <translation id="4196861286325780578">&amp;Ponów przeniesienie</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Sprawdź konfigurację zapory sieciowej i oprogramowania antywirusowego<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{brak}=1{1 aplikacja ($1)}=2{2 aplikacje ($1, $2)}few{# aplikacje ($1, $2, $3)}many{# aplikacji ($1, $2, $3)}other{# aplikacji ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">wyniki wyszukiwania</translation>
 <translation id="4432688616882109544">Serwer <ph name="HOST_NAME" /> nie zaakceptował lub nie otrzymał Twojego certyfikatu logowania.</translation>
 <translation id="443673843213245140">Korzystanie z serwera proxy jest wyłączone, ale podano konfigurację proxy.</translation>
-<translation id="4446242550670694251">Możesz teraz przeglądać w trybie prywatnym. Inne osoby korzystające z tego urządzenia nie zobaczą Twojej aktywności.</translation>
 <translation id="4492190037599258964">Wyniki wyszukiwania dla „<ph name="SEARCH_STRING" />”</translation>
 <translation id="4506176782989081258">Błąd sprawdzania poprawności: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Skontaktuj się z administratorem systemu</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Propozycje rodziców</translation>
 <translation id="587760065310675640">Nieobsługiwany adres wysyłki. Wybierz inny.</translation>
 <translation id="5901630391730855834">Żółty</translation>
-<translation id="59174027418879706">Włączone</translation>
 <translation id="5926846154125914413">Możesz stracić dostęp do płatnych treści na niektórych stronach.</translation>
 <translation id="5959728338436674663">Automatycznie wysyłaj do Google niektóre <ph name="BEGIN_WHITEPAPER_LINK" />informacje o systemie i część zawartości stron<ph name="END_WHITEPAPER_LINK" />, by pomóc w wykrywaniu niebezpiecznych aplikacji i witryn. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Tydzień</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Strona 1}few{Strona #}many{Strona #}other{Strona #}}</translation>
 <translation id="6017514345406065928">Zielony</translation>
 <translation id="6040143037577758943">Zamknij</translation>
-<translation id="604124094241169006">Automatyczne</translation>
 <translation id="6042308850641462728">Więcej</translation>
 <translation id="6060685159320643512">Ostrożnie, na tych eksperymentach można się sparzyć</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{brak}=1{1}few{#}many{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     i inne urządzenia sieciowe.</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
 <translation id="6151417162996330722">Certyfikat serwera ma za długi okres ważności.</translation>
-<translation id="615643356032862689">Pobrane pliki i zakładki zostaną zachowane.</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6177128806592000436">Twoje połączenie z tą witryną nie jest bezpieczne</translation>
 <translation id="6203231073485539293">Sprawdź połączenie z internetem</translation>
@@ -795,9 +790,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8543181531796978784">Możesz <ph name="BEGIN_ERROR_LINK" />zgłosić problem z wykrywaniem<ph name="END_ERROR_LINK" /> lub – jeśli rozumiesz zagrożenie – <ph name="BEGIN_LINK" />wejść na tę niebezpieczną stronę<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tłumaczenie nie powiodło się, ponieważ nie można określić języka strony.</translation>
 <translation id="8559762987265718583">Nie można nawiązać prywatnego połączenia z <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, ponieważ data i godzina (<ph name="DATE_AND_TIME" />) ustawione na urządzeniu są nieprawidłowe.</translation>
-<translation id="8570229484593575558">Te informacje |nie zostaną zapisane|:#historia przeglądania#wyszukiwania#dane w plikach cookie</translation>
 <translation id="8571890674111243710">Trwa tłumaczenie strony na język: <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Twoja aktywność |może być nadal widoczna| dla:#stron internetowych, które odwiedzasz#Twojego pracodawcy#dostawcy usług internetowych</translation>
 <translation id="858637041960032120">Dodaj numer telefonu</translation>
 <translation id="859285277496340001">Certyfikat nie określa mechanizmu do sprawdzania, czy został on unieważniony.</translation>
 <translation id="8620436878122366504">Twoi rodzice jeszcze na to nie zezwolili</translation>
@@ -809,7 +802,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8738058698779197622">Aby nawiązać bezpieczne połączenie, Twój zegar musi mieć ustawioną prawidłową godzinę. Jest to wymagane, ponieważ certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Ponieważ zegar Twojego urządzenia nie jest ustawiony prawidłowo, Chromium nie może zweryfikować tych certyfikatów.</translation>
 <translation id="8740359287975076522">Nie znaleziono &lt;abbr id="dnsDefinition"&gt;adresu DNS&lt;/abbr&gt; serwera <ph name="HOST_NAME" />. Diagnozujemy problem.</translation>
 <translation id="8790007591277257123">&amp;Ponów usunięcie</translation>
-<translation id="8798099450830957504">Domyślny</translation>
 <translation id="8800988563907321413">Tutaj wyświetlają się sugestie witryn w pobliżu</translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="883848425547221593">Inne zakładki</translation>

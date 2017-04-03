@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已选择 1 张</translation>
 <translation id="2435457462613246316">显示密码</translation>
-<translation id="2467815441875554965">环境相关搜索</translation>
 <translation id="2572712655377361602">设备政策已禁用对您的照片的访问权限</translation>
 <translation id="2584132361465095047">添加帐号…</translation>
 <translation id="2593774076813182497">此页面无法打印。</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">阅读器模式</translation>
 <translation id="3638472932233958418">预先加载网页</translation>
 <translation id="3691593122358196899">已将书签添加到“<ph name="FOLDER_TITLE" />”</translation>
-<translation id="3692781555820666866">启用此功能后，多功能框会推荐您附近的设备播报的网页。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
 <translation id="3771033907050503522">隐身标签页</translation>
 <translation id="3783017676699494206">保存图片</translation>
@@ -264,6 +262,7 @@
 <translation id="6324669097367352121">登录设置</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="633809752005859102">出错了，我们马上处理。</translation>
+<translation id="6342069812937806050">刚刚</translation>
 <translation id="6344783595350022745">明文</translation>
 <translation id="6362362396625799311">没有隐身标签页</translation>
 <translation id="6380866119319257197">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7203585745079012652">说出答案</translation>
 <translation id="722055596168483966">对 Google 服务进行个性化设置</translation>
-<translation id="7222245588540287464">是否启用环境相关搜索。</translation>
 <translation id="7336264872878993241">已下载<ph name="PERCENT" />%</translation>
 <translation id="7346909386216857016">知道了</translation>
 <translation id="7400418766976504921">网址</translation>

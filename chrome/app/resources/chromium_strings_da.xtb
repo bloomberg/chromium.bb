@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Dine indstillinger i Mozilla Firefox-indstillinger er desværre ikke tilgængelige, når browseren kører. Hvis du vil importere disse indstillinger til Chromium, skal du gemme dit arbejde og lukke alle Firefox-vinduer. Derefter klikker du på Fortsæt.</translation>
 <translation id="3852700440713538496">Fastgør Chromium til proceslinjen</translation>
-<translation id="3883381313049582448">Brug kodeord, der er genereret af Chromium</translation>
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>
 <translation id="390894725198123737">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chromium-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Kanalen er ændret. Genstart din enhed for at anvende ændringerne.</translation>
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="5906655207909574370">Næsten opdateret. Genstart din enhed for at afslutte opdateringen.</translation>
-<translation id="5942225298871134766">Chromium gemmer denne med <ph name="SAVED_PASSWORD_LINK" /> og husker den, næste gang du skal bruge den.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> er føjet til Chromium.</translation>
 <translation id="59625444380784159">Oplysninger om dine kontaktpersoner kan hjælpe dig med at udfylde formularer hurtigere i Chromium.</translation>
 <translation id="5987687638152509985">Opdater Chromium for at starte synkronisering</translation>

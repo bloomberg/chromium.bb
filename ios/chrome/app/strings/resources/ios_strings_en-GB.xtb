@@ -77,7 +77,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="2381405137052800939">Basics</translation>
 <translation id="2386793615875593361">1 selected</translation>
 <translation id="2435457462613246316">Show password</translation>
-<translation id="2467815441875554965">Contextual Search</translation>
 <translation id="2572712655377361602">A device policy blocked access to your photos</translation>
 <translation id="2584132361465095047">Add Account…</translation>
 <translation id="2593774076813182497">This page cannot be printed.</translation>
@@ -146,7 +145,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="3608436266458100337">Reader mode</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">When enabled, the omnibox will include suggestions for web pages broadcast by devices near you.</translation>
 <translation id="3738139272394829648">Touch to Search</translation>
 <translation id="3771033907050503522">Incognito Tabs</translation>
 <translation id="3783017676699494206">Save Image</translation>
@@ -264,6 +262,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6324669097367352121">Sign in settings</translation>
 <translation id="6337234675334993532">Encryption</translation>
 <translation id="633809752005859102">Something went really wrong. We'll work on that.</translation>
+<translation id="6342069812937806050">Just now</translation>
 <translation id="6344783595350022745">Clear Text</translation>
 <translation id="6362362396625799311">No Incognito Tabs</translation>
 <translation id="6380866119319257197">If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7189598951263744875">Share...</translation>
 <translation id="7203585745079012652">Speak Answers Back</translation>
 <translation id="722055596168483966">Personalise Google services</translation>
-<translation id="7222245588540287464">Whether or not Contextual Search is enabled.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="7400418766976504921">URL</translation>

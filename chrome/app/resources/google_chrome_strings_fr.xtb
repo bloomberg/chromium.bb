@@ -18,7 +18,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1434626383986940139">Applications Chrome Canary</translation>
 <translation id="1457721931618994305">Mise à jour de Google Chrome en cours…</translation>
 <translation id="1469002951682717133">Lanceur d'applications Google Chrome</translation>
-<translation id="1475773083554142432">Chrome stockera ce mot de passe avec <ph name="SAVED_PASSWORD_LINK" /> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
 <translation id="1480489203462860648">Essayez-le, il est déjà installé.</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
 <translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
@@ -183,7 +182,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6235018212288296708">Règle de trafic entrant pour Google Chrome autorisant le trafic mDNS</translation>
 <translation id="6236285698028833233">Google Chrome n'est plus mis à jour et n'est plus compatible avec la version actuelle de votre système d'exploitation.</translation>
 <translation id="6291549208091401781">Google Chrome est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
-<translation id="629218512217695915">Utiliser le mot de passe généré par Chrome</translation>
 <translation id="6338556085225130112">Mise à jour de Google Chrome...</translation>
 <translation id="6368958679917195344">Google Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels Open Source<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6400076122676892962">Cet ordinateur ne recevra bientôt plus les mises à jour de Google Chrome, car la compatibilité ne sera plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>

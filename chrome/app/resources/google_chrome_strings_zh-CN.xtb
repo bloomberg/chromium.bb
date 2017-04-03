@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Chrome Canary 应用</translation>
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
 <translation id="1469002951682717133">Chrome 应用启动器</translation>
-<translation id="1475773083554142432">Chrome 将通过<ph name="SAVED_PASSWORD_LINK" />存储此密码，并会在您下次需要时自动填充此密码。</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
@@ -176,7 +175,6 @@
 <translation id="6235018212288296708">Google Chrome的入站规则，允许mDNS流量。</translation>
 <translation id="6236285698028833233">Google Chrome 已停止更新，并且不再支持您的操作系统版本。</translation>
 <translation id="6291549208091401781">已为您计算机上的所有用户安装 Google Chrome。</translation>
-<translation id="629218512217695915">使用由Chrome生成的密码</translation>
 <translation id="6338556085225130112">正在更新 Google Chrome</translation>
 <translation id="6368958679917195344">Chrome 操作系统的问世还有其他<ph name="BEGIN_LINK_CROS_OSS" />开放源代码软件<ph name="END_LINK_CROS_OSS" />的一份功劳。</translation>
 <translation id="6400076122676892962">此计算机很快就不会再收到 Google Chrome 更新，因为 Mac OS X 10.6、10.7 和 10.8 将不再受支持。</translation>

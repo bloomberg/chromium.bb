@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Gå fra begynnelsen til slutten eller fra slutten til begynnelsen av en side, dialogboks eller annen beholder</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">tilgangsnøkkel: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">Endre den gjeldende tabellen for 6-punkts punktskrift ved å velge et alternativ fra listen nedenfor.</translation>
 <translation id="2169714232367507776">Klikk på det aktuelle elementet</translation>
 <translation id="2179452035581866348">ChromeVox bruker lyder for å gi deg viktig informasjon og tilleggsinformasjon. Hvis du lærer hva hver lyd betyr, kan du bruke dem til å navigere raskere. Når du er mer komfortabel, kan du slå av de omfattende beskrivelsene i tale og bruke dem for å få viktig informasjon om siden. Her er en komplett liste over lyder og hva de betyr.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{høyreparentes}other{# høyreparenteser}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabulator}other{# tabulatorer}}</translation>
 <translation id="2972078295414139404">Ingen tidligere besøkt link.</translation>
 <translation id="2972205263822847197">Verktøytips</translation>
-<translation id="2978549349327282388">Kolonner</translation>
 <translation id="2998131015536248178">Forrige tegn</translation>
 <translation id="2999559350546931576">Reduser stemmeleiet</translation>
 <translation id="2999945368667127852">Det finnes ingen neste mediamodul.</translation>
@@ -564,7 +562,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5968607524793740041">Vis den kontekstuelle menyen</translation>
 <translation id="5983179082906765664">Øk detaljnivået for navigeringen</translation>
 <translation id="5999630716831179808">Stemmer</translation>
-<translation id="6000417740266304866">Endre den gjeldende tabellen for 8-punkts punktskrift ved å velge et alternativ fra listen nedenfor.</translation>
 <translation id="6006050241733874051">Skjema</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstrek}other{# omvendte skråstreker}}</translation>
 <translation id="6037602951055904232">Panorer frem</translation>
@@ -606,7 +603,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6444046323172968959">Varseldialog</translation>
 <translation id="6459511626086141404">Flatt tastaturoppsett</translation>
 <translation id="6468049171101508116">Neste-knappen</translation>
-<translation id="6491972999578897419">Endre den gjeldende stemmen ved å velge et alternativ fra listen nedenfor.</translation>
 <translation id="6493991254603208962">Lysstyrke ned</translation>
 <translation id="6508059270146105198">Flytt leselisten til nederst på siden</translation>
 <translation id="6536864053412760904">MathML-token</translation>
@@ -759,7 +755,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="820417203470636242">Tom celle.</translation>
 <translation id="8215202828671303819">Flervalg</translation>
 <translation id="8224171046658870249">Byttet til ChromeVox Next</translation>
-<translation id="8259358278692921574">Rader:</translation>
 <translation id="8276439074553447000">Gå til forrige fokuserbare element</translation>
 <translation id="8278417001922463147">Ingen tidligere artikler.</translation>
 <translation id="8283603667300770666">Neste skjemafelt</translation>

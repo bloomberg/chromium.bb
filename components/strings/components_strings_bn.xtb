@@ -357,7 +357,6 @@
 <translation id="4148925816941278100">আমেরিকান এক্সপ্রেস</translation>
 <translation id="4169947484918424451">আপনি কি চান যে Chromium এই কার্ড সংরক্ষণ করুক?</translation>
 <translation id="4171400957073367226">খারাপ যাচাইকরণের স্বাক্ষর</translation>
-<translation id="4176463684765177261">অক্ষম</translation>
 <translation id="4196861286325780578">&amp;সরানোর কাজটি আবার করুন</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ফায়ারওয়াল এবং অ্যান্টিভাইরাস কনফিগারেশন পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{কিছুই নেই}=1{১টি অ্যাপ্লিকেশান ($1)}=2{২টি অ্যাপ্লিকেশান ($1, $2)}one{#টি অ্যাপ্লিকেশান ($1, $2, $3)}other{#টি অ্যাপ্লিকেশান ($1, $2, $3)}}</translation>
@@ -384,7 +383,6 @@
 <translation id="4406896451731180161">অনুসন্ধানের ফলাফলগুলি</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> আপনার লগইন শংসাপত্রটি স্বীকার করেনি, অথবা কোনো শংসাপত্র দেওয়া হয়নি।</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
-<translation id="4446242550670694251">এখন আপনি একান্তে ব্রাউজ করতে পারেন, এবং অন্য যেসব বক্তি এই ডিভাইস ব্যবহার করেন তারা আপনার কার্যকলাপ দেখতে পাবেন না।</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />'-এর অনুসন্ধান ফলাফল</translation>
 <translation id="4506176782989081258">যাচাইকরণের ত্রুটি: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">সিস্টেম প্রশাসকের সাথে যোগাযোগ করে দেখুন</translation>
@@ -524,7 +522,6 @@
 <translation id="5872918882028971132">মূল প্রস্তাবনাগুলি</translation>
 <translation id="587760065310675640">অসমর্থিত শিপিং ঠিকানা। আলাদা কোনো ঠিকানা নির্বাচন করুন।</translation>
 <translation id="5901630391730855834">হলুদ</translation>
-<translation id="59174027418879706">সক্ষম করা হযেছে</translation>
 <translation id="5926846154125914413">আপনি কিছু সাইট থেকে প্রিমিয়াম সামগ্রীতে অ্যাক্সেস হারাতে পারেন।</translation>
 <translation id="5959728338436674663">বিপজ্জনক অ্যাপ্লিকেশান ও সাইটগুলি সনাক্ত করতে Google এর কাছে কিছু<ph name="BEGIN_WHITEPAPER_LINK" /> সিস্টেম তথ্য ও পৃষ্ঠার সামগ্রী<ph name="END_WHITEPAPER_LINK" /> স্বয়ংক্রিয়ভাবে পাঠান। <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">সপ্তাহ</translation>
@@ -537,14 +534,12 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{পৃষ্ঠা ১}one{পৃষ্ঠা #}other{পৃষ্ঠা #}}</translation>
 <translation id="6017514345406065928">সবুজ</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
-<translation id="604124094241169006">স্বয়ংক্রিয়</translation>
 <translation id="6042308850641462728">আরো</translation>
 <translation id="6060685159320643512">সাবধান হন, এই পরীক্ষাগুলি সমস্যা সৃষ্টি করতে পারে</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{কিছুই নেই}=1{১}one{#}other{#}}</translation>
 <translation id="6146055958333702838">সব কেবল পরীক্ষা করুন এবং আপনি ব্যবহার করছেন এমন যেকোনো রাউটার, মডেম বা অন্যান্য নেটওয়ার্ক ডিভাইসগুলি আবার চালু করুন।</translation>
 <translation id="614940544461990577">এটি করে দেখুন:</translation>
 <translation id="6151417162996330722">সার্ভারের শংসাপত্রের বৈধতার সময়সীমা আছে যা খুবই দীর্ঘ।</translation>
-<translation id="615643356032862689">ডাউনলোড করা ফাইল এবং বুকমার্কগুলি রেখে দেওয়া হবে।</translation>
 <translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="6177128806592000436">এই সাইটে আপনার সংযোগ নিরাপদ নয়</translation>
 <translation id="6203231073485539293">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">আপনি <ph name="BEGIN_ERROR_LINK" />একটি সনাক্তকরণ সমস্যা প্রতিবেদন করতে পারেন<ph name="END_ERROR_LINK" /> অথবা, আপনি আপনার নিরাপত্তা ঝুঁকি বুঝতে পারলে, <ph name="BEGIN_LINK" />এই অনিরাপদ সাইটটি ঘুরে দেখুন<ph name="END_LINK" />।</translation>
 <translation id="8553075262323480129">পৃষ্ঠার ভাষা নির্ধারণ না করতে পারার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="8559762987265718583"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> এ একটি ব্যক্তিগত সংযোগ স্থাপন করা যায়নি কারণ আপনার ডিভাইসের তারিখ এবং সময় (<ph name="DATE_AND_TIME" />) সঠিক নয়৷</translation>
-<translation id="8570229484593575558">এই তথ্য |সংরক্ষণ করা হবে না|:#আপনার ব্রাউজিং ইতিহাস#আপনার অনুসন্ধান#কুকি ডেটা</translation>
 <translation id="8571890674111243710">পৃষ্ঠাটি<ph name="LANGUAGE" />তে অনুবাদ করুন...</translation>
-<translation id="8584539743998202583">আপনার কার্যকলাপ এদের কাছে |এখনও দৃশ্যমান হতে পারে|:#আপনি যেসব ওয়েবসাইট ঘুরে দেখেনt#আপনার নিয়োগকর্তা#আপনার ইন্টারনেট পরিষেবা প্রদানকারী</translation>
 <translation id="858637041960032120">ফোননম্বর জুড়ুন</translation>
 <translation id="859285277496340001">শংসাপত্রটি প্রত্যাহার করা হয়েছে কিনা তা যাচাই করতে শংসাপত্রটি কোনও কারিগরীকে নির্দিষ্ট করে না৷</translation>
 <translation id="8620436878122366504">আপনার পিতামাতা এখনও এটি অনুমোদন করেন নি</translation>
@@ -809,7 +802,6 @@
 <translation id="8738058698779197622">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে৷ নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের সনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে৷ যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Chromium সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারে না৷</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> এর &lt;abbr id="dnsDefinition"&gt;DNS ঠিকানা&lt;/abbr&gt; পাওয়া যায়নি। সমস্যা নির্ণয় করা হচ্ছে।</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে আবার করুন</translation>
-<translation id="8798099450830957504">ডিফল্ট</translation>
 <translation id="8800988563907321413">আপনার জন্য আশেপাশের প্রস্তাবনাগুলি এখানে দেখা যাবে</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="883848425547221593">অন্যান্য বুকমার্ক</translation>

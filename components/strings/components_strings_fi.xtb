@@ -357,7 +357,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Haluatko, että Chromium tallentaa tämän kortin?</translation>
 <translation id="4171400957073367226">Virheellinen vahvistusallekirjoitus.</translation>
-<translation id="4176463684765177261">Pois käytöstä</translation>
 <translation id="4196861286325780578">&amp;Toista siirto</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tarkista palomuurin ja virustorjuntaohjelmiston määritykset.<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ei yhtään}=1{1 sovellus ($1)}=2{2 sovellusta ($1 ja $2)}other{# sovellusta ($1, $2 $3)}}</translation>
@@ -384,7 +383,6 @@
 <translation id="4406896451731180161">hakutulokset</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ei hyväksynyt kirjautumisvarmennettasi, tai varmennetta ei annettu.</translation>
 <translation id="443673843213245140">Välityspalvelinta ei saa käyttää, mutta erilliset välityspalvelimen asetukset on määritetty.</translation>
-<translation id="4446242550670694251">Nyt voit selata verkkoa yksityisesti. Muut laitteen käyttäjät eivät näe tietoja toiminnastasi.</translation>
 <translation id="4492190037599258964">Hakutulokset kyselylle <ph name="SEARCH_STRING" /></translation>
 <translation id="4506176782989081258">Todennusvirhe: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Ota yhteyttä järjestelmänvalvojaan.</translation>
@@ -524,7 +522,6 @@
 <translation id="5872918882028971132">Ylätason ehdotukset</translation>
 <translation id="587760065310675640">Toimitusosoite ei kelpaa. Valitse toinen osoite.</translation>
 <translation id="5901630391730855834">Keltainen</translation>
-<translation id="59174027418879706">Käytössä</translation>
 <translation id="5926846154125914413">Saatat menettää joidenkin sivustojen maksullisen sisällön käyttöoikeuden.</translation>
 <translation id="5959728338436674663"><ph name="BEGIN_WHITEPAPER_LINK" />Lähetä automaattisesti<ph name="END_WHITEPAPER_LINK" /> joitain järjestelmän tietoja ja sivujen sisältöjä Googlelle auttaaksesi sitä havaitsemaan vaarallisia sovelluksia ja sivustoja. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Viikko</translation>
@@ -537,7 +534,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Sivu 1}other{Sivu #}}</translation>
 <translation id="6017514345406065928">Vihreä</translation>
 <translation id="6040143037577758943">Sulje</translation>
-<translation id="604124094241169006">Automaattinen</translation>
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="6060685159320643512">Varoitus, nämä kokeilut saattavat puraista</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ei yhtään}=1{1}other{#}}</translation>
@@ -545,7 +541,6 @@
     käytössä olevat verkkolaitteet.</translation>
 <translation id="614940544461990577">Kokeile seuraavia toimenpiteitä:</translation>
 <translation id="6151417162996330722">Palvelimen varmenteen voimassaoloaika on liian pitkä.</translation>
-<translation id="615643356032862689">Ladatut tiedostot ja kirjanmerkit säilyvät laitteella.</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6177128806592000436">Sivustoon ei ole muodostettu turvallista yhteyttä.</translation>
 <translation id="6203231073485539293">Tarkista internetyhteytesi</translation>
@@ -796,9 +791,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8543181531796978784">Voit <ph name="BEGIN_ERROR_LINK" />ilmoittaa löytyneestä ongelmasta<ph name="END_ERROR_LINK" /> tai <ph name="BEGIN_LINK" />siirtyä mahdollisesti haitalliselle sivustolle<ph name="END_LINK" />, jos ymmärrät tietoturvariskit.</translation>
 <translation id="8553075262323480129">Käännös epäonnistui, sillä sivun kieltä ei voitu määrittää.</translation>
 <translation id="8559762987265718583">Verkkotunnukseen <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ei voi muodostaa salattua yhteyttä, koska laitteesi aika ja päivämäärä (<ph name="DATE_AND_TIME" />) ovat virheelliset.</translation>
-<translation id="8570229484593575558">Seuraavia tietoja |ei tallenneta|:#selaushistoria#tekemäsi haut#evästeiden tiedot.</translation>
 <translation id="8571890674111243710">Käännetään sivua kielelle <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Seuraavat tahot |voivat ehkä nähdä| tietoja toiminnastasi:#käyttämäsi verkkosivustot#työnantajasi#internetpalveluntarjoajasi.</translation>
 <translation id="858637041960032120">Lisää puh.nro
 </translation>
 <translation id="859285277496340001">Varmenne ei määritä mekanismia, jonka avulla voitaisiin tarkistaa, onko varmenne kumottu.</translation>
@@ -811,7 +804,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8738058698779197622">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä ajanjaksoina. Chromium ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="8740359287975076522">Sivuston <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-osoitetta&lt;/abbr&gt; ei löydy. Ongelmaa diagnosoidaan.</translation>
 <translation id="8790007591277257123">&amp;Toista poisto</translation>
-<translation id="8798099450830957504">Oletus</translation>
 <translation id="8800988563907321413">Nearby-ehdotuksesi näkyvät tässä.</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="883848425547221593">Muut kirjanmerkit</translation>

@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">‏عذرًا، فإن إعدادات موزيلا فَيَرفُكس غير متاحة أثناء تشغيل هذا المتصفح. لاستيراد هذه الإعدادات إلى Chromium، قم بحفظ عملك وإغلاق جميع نوافذ فَيَرفُكس. بعد ذلك انقر على "استمرار".</translation>
 <translation id="3852700440713538496">‏تثبيت Chromium على شريط المهام</translation>
-<translation id="3883381313049582448">‏استخدام كلمة المرور التي تم إنشاؤها بواسطة Chromium</translation>
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
 <translation id="390894725198123737">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chromium الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5906655207909574370">أوشك التحديث على الانتهاء! أعِد تشغيل الجهاز لإنهاء التحديث.</translation>
-<translation id="5942225298871134766">‏سيُخزن Chromium هذا مع <ph name="SAVED_PASSWORD_LINK" /> وسيتذكره عندما تحتاج إليه في المرة القادمة.</translation>
 <translation id="5942520288919337908">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chromium.</translation>
 <translation id="59625444380784159">‏يمكن أن تساعد التفاصيل الواردة من جهات اتصالك في ملء النماذج بسرعة في Chromium.</translation>
 <translation id="5987687638152509985">‏تحديث Chromium لبدء المزامنة</translation>

@@ -77,7 +77,6 @@ Contohnya, sesetengah tapak web mungkin menyambut permintaan ini dengan memapark
 <translation id="2381405137052800939">Asas</translation>
 <translation id="2386793615875593361">1 dipilih</translation>
 <translation id="2435457462613246316">Paparkan kata laluan</translation>
-<translation id="2467815441875554965">Carian Kontekstual</translation>
 <translation id="2572712655377361602">Dasar peranti menyekat akses ke foto anda</translation>
 <translation id="2584132361465095047">Tambahkan Akaun...</translation>
 <translation id="2593774076813182497">Halaman ini tidak boleh dicetak.</translation>
@@ -146,7 +145,6 @@ Untuk membetulkan istilah carian anda, tekan lama untuk memilih. Untuk memperhal
 <translation id="3608436266458100337">Mod pembaca</translation>
 <translation id="3638472932233958418">Pramuat Halaman Web</translation>
 <translation id="3691593122358196899">Ditandai halaman ke <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Apabila didayakan, kotak omni akan menyertakan cadangan untuk halaman web yang disiarkan oleh peranti berdekatan anda.</translation>
 <translation id="3738139272394829648">Sentuh untuk Cari</translation>
 <translation id="3771033907050503522">Tab Inkognito</translation>
 <translation id="3783017676699494206">Simpan Imej</translation>
@@ -264,6 +262,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6324669097367352121">Tetapan log masuk</translation>
 <translation id="6337234675334993532">Penyulitan</translation>
 <translation id="633809752005859102">Ada sesuatu yang tidak kena. Kami akan membetulkannya.</translation>
+<translation id="6342069812937806050">Sebentar tadi</translation>
 <translation id="6344783595350022745">Padamkan Teks</translation>
 <translation id="6362362396625799311">Tiada Tab Inkognito</translation>
 <translation id="6380866119319257197">Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7189598951263744875">Kongsi...</translation>
 <translation id="7203585745079012652">Sebut Kembali Jawapan</translation>
 <translation id="722055596168483966">Peribadikan perkhidmatan Google</translation>
-<translation id="7222245588540287464">Sama ada Carian Kontekstual didayakan atau tidak.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> peratus dimuat turun</translation>
 <translation id="7346909386216857016">Ok, faham</translation>
 <translation id="7400418766976504921">URL</translation>

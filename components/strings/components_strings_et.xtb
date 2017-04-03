@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Kas soovite, et Chromium salvestaks selle kaardi?</translation>
 <translation id="4171400957073367226">Sobimatu kinnitusallkiri</translation>
-<translation id="4176463684765177261">Keelatud</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{mitte ühtegi}=1{1 rakendus ($1)}=2{2 rakendust ($1, $2)}other{# rakendust ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">otsingutulemused</translation>
 <translation id="4432688616882109544">Host <ph name="HOST_NAME" /> ei aktsepteerinud teie sisselogimise sertifikaati või te ei esitanud seda.</translation>
 <translation id="443673843213245140">Puhverserveri kasutamine on keelatud, kuid määratud on ka konkreetne puhverserveri konfigureerimine.</translation>
-<translation id="4446242550670694251">Nüüd saate sirvida privaatselt ja teised seadme kasutajad ei näe teie tegevusi.</translation>
 <translation id="4492190037599258964">Otsingutulemused „<ph name="SEARCH_STRING" />“ kohta</translation>
 <translation id="4506176782989081258">Valideerimisviga: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Võtke ühendust süsteemiadministraatoriga</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Vanema soovitused</translation>
 <translation id="587760065310675640">Toetamata tarneaadress. Valige muu aadress.</translation>
 <translation id="5901630391730855834">Kollane</translation>
-<translation id="59174027418879706">Lubatud</translation>
 <translation id="5926846154125914413">Võite kaotada juurdepääsu mõnede saitide tasulisele sisule.</translation>
 <translation id="5959728338436674663">Saatke Google'ile automaatselt <ph name="BEGIN_WHITEPAPER_LINK" />süsteemiteavet ja lehe sisu<ph name="END_WHITEPAPER_LINK" />, et aidata tuvastada ohtlikke rakendusi ja saite. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Nädal</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Lk 1}other{Lk #}}</translation>
 <translation id="6017514345406065928">Roheline</translation>
 <translation id="6040143037577758943">Sulge</translation>
-<translation id="604124094241169006">Automaatne</translation>
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="6060685159320643512">Ettevaatust, need katsed võivad hammustada.</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{mitte ühtegi}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     kasutuses olevad võrguseadmed.</translation>
 <translation id="614940544461990577">Proovige järgmist.</translation>
 <translation id="6151417162996330722">Serveri sertifikaadi kehtivusaeg on liiga pikk.</translation>
-<translation id="615643356032862689">Allalaaditud failid ja järjehoidjad hoitakse alles.</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6177128806592000436">Teie ühendus selle saidiga pole turvaline</translation>
 <translation id="6203231073485539293">Kontrollige Interneti-ühendust</translation>
@@ -795,9 +790,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8543181531796978784">Võite <ph name="BEGIN_ERROR_LINK" />teavitada tuvastusprobleemist<ph name="END_ERROR_LINK" />. Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tõlkimine nurjus, kuna lehe keelt ei õnnestunud määrata.</translation>
 <translation id="8559762987265718583">Privaatset ühendust ei saa domeeniga <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> luua, kuna seadme kuupäev ja kellaaeg (<ph name="DATE_AND_TIME" />) on valed.</translation>
-<translation id="8570229484593575558">Seda teavet |ei salvestata|:#teie sirvimisajalugu#teie otsingud#küpsisefailide andmed</translation>
 <translation id="8571890674111243710">Lehe tõlkimine <ph name="LANGUAGE" /> keelde...</translation>
-<translation id="8584539743998202583">Teie tegevused |võivad siiski olla nähtavad|:#külastatud veebisaitidele#teie tööandjale#teie Interneti-teenuse pakkujale</translation>
 <translation id="858637041960032120">Lisage telefoninumber</translation>
 <translation id="859285277496340001">Sertifikaat ei määratle mehhanismi enda võimaliku tühistamise kontrollimiseks.</translation>
 <translation id="8620436878122366504">Vanemad ei ole seda veel kinnitanud</translation>
@@ -809,7 +802,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8738058698779197622">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud. See on nii, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chromium neid sertifikaate kinnitada.</translation>
 <translation id="8740359287975076522">Hosti <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-aadressi&lt;/abbr&gt; ei leitud. Probleemi diagnoositakse.</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
-<translation id="8798099450830957504">Vaikimisi</translation>
 <translation id="8800988563907321413">Teie lähedalasuvad soovitused kuvatakse siin</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>
 <translation id="883848425547221593">Muud järjehoidjad</translation>

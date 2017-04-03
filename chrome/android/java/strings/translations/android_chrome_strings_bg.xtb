@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1006017844123154345">Отваряне онлайн</translation>
-<translation id="1056898198331236512">Предупреждение</translation>
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1061441684050139317">Chrome се нуждае от достъп до микрофона, за да го сподели с този сайт.</translation>
 <translation id="1080790410959514870">Излизате от профил, управляван от <ph name="DOMAIN_NAME" />. Съхраняваните на това устройство данни в Chrome ще се изтрият, но ще останат в профила ви в Google.</translation>
@@ -41,6 +40,7 @@
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1384959399684842514">Изтеглянето е на пауза</translation>
 <translation id="1389974829397082527">Тук няма отметки</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> предложения от Chrome</translation>
 <translation id="1404122904123200417">Вградено в/ъв <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Заявка „Do Not Track“</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
@@ -322,6 +322,7 @@
 <translation id="473775607612524610">Актуализиране</translation>
 <translation id="4738836084190194332">Последно синхронизиране: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Отваряне на нов раздел</translation>
+<translation id="4750394297954878236">Предложения</translation>
 <translation id="4759238208242260848">Изтегляния</translation>
 <translation id="4766369052440583386">Функцията Икономия на данни е включена</translation>
 <translation id="4797039098279997504">Докоснете, за да се върнете към <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@
 <translation id="5424588387303617268">Налични: <ph name="GIGABYTES" /> ГБ</translation>
 <translation id="5435775191620395718">Показва се историята от това устройство. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Преминаване към адресната лента</translation>
-<translation id="544291274896356069">Ще напуснете режим „инкогнито“, ако тази връзка се отвори във външно приложение. Искате ли да продължите?</translation>
 <translation id="5447201525962359567">Всички данни от сайтове, включително „бисквитки“ и друга локално съхранявана информация</translation>
 <translation id="5456381639095306749">Изтегляне на страницата</translation>
 <translation id="548278423535722844">Отваряне в приложение за карти</translation>
@@ -405,6 +405,7 @@
 <translation id="5530766185686772672">Раздели „инкогнито“: Затв.</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="5565871407246142825">Кредитни карти</translation>
+<translation id="5568069709869097550">Не може да се влезе</translation>
 <translation id="5578795271662203820">Търсене на изображението със: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
@@ -507,6 +508,7 @@
 <translation id="6583199322650523874">Запазване на отметка към текущата страница</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6612358246767739896">Защитено съдържание</translation>
+<translation id="662080504995468778">Оставане</translation>
 <translation id="6627583120233659107">Редактиране на папката</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6656545060687952787">Chrome се нуждае от достъп до местоположението, за да сканира за устройства. <ph name="BEGIN_LINK" />Актуализиране на разрешенията<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
 <translation id="7128222689758636196">Разрешаване за текущата търсеща машина</translation>
 <translation id="7138678301420049075">Друго</translation>
+<translation id="7144878232160441200">Нов опит</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7189372733857464326">Изчаква се актуализирането на услугите за Google Play да приключи</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>

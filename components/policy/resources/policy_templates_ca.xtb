@@ -2378,7 +2378,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
 Si es defineix aquesta política, la pantalla d'inici de sessió farà servir la cadena especificada al selector d'inici de sessió en funció de la foto per al compte local del dispositiu corresponent.
 
-Si la política no es defineix, <ph name="PRODUCT_OS_NAME" /> farà servir l'ID del compte de correu electrònic del compte local del dispositiu com a nom visible a la pantalla d'inici de sessió.
+Si la política no es defineix, <ph name="PRODUCT_OS_NAME" /> farà servir l'ID del compte de correu electrònic del compte local del dispositiu com a nom de visualització a la pantalla d'inici de sessió.
 
 Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8279832363395120715">Suprimeix les parts dels URL de tipus https:// que contenen informació confidencial i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.

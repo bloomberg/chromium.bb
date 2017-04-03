@@ -77,7 +77,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2381405137052800939">Thông tin cơ bản</translation>
 <translation id="2386793615875593361">Đã chọn 1 ảnh</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
-<translation id="2467815441875554965">Tìm kiếm theo ngữ cảnh</translation>
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
 <translation id="2584132361465095047">Thêm tài khoản...</translation>
 <translation id="2593774076813182497">Không thể in trang này.</translation>
@@ -146,7 +145,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="3608436266458100337">Chế độ đọc</translation>
 <translation id="3638472932233958418">Tải trước trang web</translation>
 <translation id="3691593122358196899">Đã đánh dấu trang vào <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Khi được bật, thanh địa chỉ sẽ bao gồm đề xuất cho những trang web mà các thiết bị ở gần bạn truyền phát.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3771033907050503522">Tab ẩn danh</translation>
 <translation id="3783017676699494206">Lưu hình ảnh</translation>
@@ -264,6 +262,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6324669097367352121">Cài đặt đăng nhập</translation>
 <translation id="6337234675334993532">Mã hóa</translation>
 <translation id="633809752005859102">Đã xảy ra sự cố nào đó. Chúng tôi sẽ xem xét vấn đề đó.</translation>
+<translation id="6342069812937806050">Vừa mới</translation>
 <translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="6362362396625799311">Không có tab ẩn danh nào</translation>
 <translation id="6380866119319257197">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
 <translation id="722055596168483966">Cá nhân hóa dịch vụ của Google</translation>
-<translation id="7222245588540287464">Dù tính năng Tìm kiếm theo ngữ cảnh đã bật hay chưa.</translation>
 <translation id="7336264872878993241">Đã tải xuống <ph name="PERCENT" /> phần trăm</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="7400418766976504921">URL</translation>

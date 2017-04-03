@@ -77,7 +77,6 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2381405137052800939">Alapok</translation>
 <translation id="2386793615875593361">1 kijelölve</translation>
 <translation id="2435457462613246316">Jelszó megjelenítése</translation>
-<translation id="2467815441875554965">Kontextusfüggő keresés</translation>
 <translation id="2572712655377361602">Egy eszközszabályzat letiltotta a fényképeihez való hozzáférést</translation>
 <translation id="2584132361465095047">Fiók hozzáadása...</translation>
 <translation id="2593774076813182497">Az oldal nem nyomtatható.</translation>
@@ -146,7 +145,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="3608436266458100337">Olvasási mód</translation>
 <translation id="3638472932233958418">Weboldalak előtöltése</translation>
 <translation id="3691593122358196899">Könyvjelzők közé téve itt: <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Ha engedélyezve van, a cím- és keresősáv javaslatokat jelenít meg a közeli eszközök által sugárzott weboldalakról.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3771033907050503522">Inkognitólapok</translation>
 <translation id="3783017676699494206">Kép mentése</translation>
@@ -264,6 +262,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="6324669097367352121">Bejelentkezési beállítások</translation>
 <translation id="6337234675334993532">Titkosítás</translation>
 <translation id="633809752005859102">Hiba történt. Dolgozunk a kijavításán.</translation>
+<translation id="6342069812937806050">Éppen most</translation>
 <translation id="6344783595350022745">Szöveg törlése</translation>
 <translation id="6362362396625799311">Nincsenek inkognitólapok</translation>
 <translation id="6380866119319257197">Ha elfelejti az összetett jelszót, vagy módosítani szeretné ezt a beállítást, <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7189598951263744875">Megosztás...</translation>
 <translation id="7203585745079012652">Mondja ki a válaszokat</translation>
 <translation id="722055596168483966">A Google-szolgáltatások személyre szabása</translation>
-<translation id="7222245588540287464">A Kontextusfüggő keresés engedélyezett-e vagy sem.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> százalék letöltve</translation>
 <translation id="7346909386216857016">Rendben, értem</translation>
 <translation id="7400418766976504921">URL</translation>

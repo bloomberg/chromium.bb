@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">在网页、对话框或其他容器中从开头跳至末尾或者从末尾跳至开头</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">快捷键：<ph name="KEY" /></translation>
-<translation id="2155457205053847599">从以下列表中选择某个选项，即可更改当前的6点式盲文表。</translation>
 <translation id="2169714232367507776">点击当前项</translation>
 <translation id="2179452035581866348">ChromeVox 会使用提示音为您提供基本信息和其他信息。您只需先了解一下每种提示音有何含义，即可使用这些提示音更快速地进行浏览。待熟练掌握这些提示音之后，您便可关闭语音提示中的详细说明，改为依靠这些提示音获取有关相应网页的基本信息。下面是各种提示音及其含义的完整列表。</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{1个右圆括号}other{#个右圆括号}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{1个制表符}other{#个制表符}}</translation>
 <translation id="2972078295414139404">不存在上一个访问过的链接。</translation>
 <translation id="2972205263822847197">提示</translation>
-<translation id="2978549349327282388">列数：</translation>
 <translation id="2998131015536248178">上一个字符</translation>
 <translation id="2999559350546931576">调低音高</translation>
 <translation id="2999945368667127852">不存在下一个媒体小部件。</translation>
@@ -564,7 +562,6 @@
 <translation id="5968607524793740041">显示上下文菜单</translation>
 <translation id="5983179082906765664">提高导航精细度</translation>
 <translation id="5999630716831179808">语音</translation>
-<translation id="6000417740266304866">从以下列表中选择某个选项，即可更改当前的8点式盲文表。</translation>
 <translation id="6006050241733874051">表单</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{1个反斜线符号}other{#个反斜线符号}}</translation>
 <translation id="6037602951055904232">向前平移</translation>
@@ -606,7 +603,6 @@
 <translation id="6444046323172968959">提醒对话框</translation>
 <translation id="6459511626086141404">降调按键映射</translation>
 <translation id="6468049171101508116">下一个按钮</translation>
-<translation id="6491972999578897419">从下面的列表中选择一个选项，即可更改当前语音。</translation>
 <translation id="6493991254603208962">调低亮度</translation>
 <translation id="6508059270146105198">将盲文显示移动到页底</translation>
 <translation id="6536864053412760904">数学标记语言令牌</translation>
@@ -759,7 +755,6 @@
 <translation id="820417203470636242">空白单元格。</translation>
 <translation id="8215202828671303819">多选</translation>
 <translation id="8224171046658870249">已切换到 ChromeVox Next</translation>
-<translation id="8259358278692921574">行数：</translation>
 <translation id="8276439074553447000">跳转到上一个可设置为焦点的项</translation>
 <translation id="8278417001922463147">不存在上一篇文章。</translation>
 <translation id="8283603667300770666">下一个表单字段</translation>

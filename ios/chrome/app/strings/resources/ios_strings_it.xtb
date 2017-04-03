@@ -77,7 +77,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2381405137052800939">Opzioni di base</translation>
 <translation id="2386793615875593361">Una selezionata</translation>
 <translation id="2435457462613246316">Mostra password</translation>
-<translation id="2467815441875554965">Ricerca contestuale</translation>
 <translation id="2572712655377361602">Una norma relativa ai dispositivi ha impedito l'accesso alle tue foto</translation>
 <translation id="2584132361465095047">Aggiungi account…</translation>
 <translation id="2593774076813182497">Impossibile stampare la pagina.</translation>
@@ -146,7 +145,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3608436266458100337">Modalità Reader</translation>
 <translation id="3638472932233958418">Precarica pagine web</translation>
 <translation id="3691593122358196899">Preferito aggiunto in: <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Quando è attivo, la omnibox include suggerimenti relativi alle pagine web trasmesse dai dispositivi nelle vicinanze.</translation>
 <translation id="3738139272394829648">Tocca per cercare</translation>
 <translation id="3771033907050503522">Schede di navigazione in incognito</translation>
 <translation id="3783017676699494206">Salva immagine</translation>
@@ -264,6 +262,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6324669097367352121">Impostazioni accesso</translation>
 <translation id="6337234675334993532">Crittografia</translation>
 <translation id="633809752005859102">Si è verificato un problema. Stiamo cercando una soluzione.</translation>
+<translation id="6342069812937806050">In questo momento</translation>
 <translation id="6344783595350022745">Cancella testo</translation>
 <translation id="6362362396625799311">Nessuna scheda in incognito</translation>
 <translation id="6380866119319257197">Se non ricordi la passphrase o vuoi modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7189598951263744875">Condividi...</translation>
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
 <translation id="722055596168483966">Personalizza i servizi Google</translation>
-<translation id="7222245588540287464">Se la Ricerca contestuale è attivata.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="7400418766976504921">URL</translation>

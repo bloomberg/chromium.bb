@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1006017844123154345">Deschide online</translation>
-<translation id="1056898198331236512">Avertisment</translation>
 <translation id="10614374240317010">Nu se salvează niciodată</translation>
 <translation id="1061441684050139317">Chrome are nevoie de acces la microfon pentru a-l acorda acestui site.</translation>
 <translation id="1080790410959514870">În prezent, te deconectezi de la un cont gestionat de <ph name="DOMAIN_NAME" />. Astfel, vor fi șterse datele Chrome stocate pe acest dispozitiv, dar datele vor rămâne în Contul Google.</translation>
@@ -41,6 +40,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1383876407941801731">Caută</translation>
 <translation id="1384959399684842514">Descărcare întreruptă</translation>
 <translation id="1389974829397082527">Dosarul nu conține marcaje</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> sugestii Chrome</translation>
 <translation id="1404122904123200417">Încorporat în <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Nu urmări”</translation>
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
@@ -322,6 +322,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4738836084190194332">Ultima sincronizare: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Deschide o filă nouă</translation>
+<translation id="4750394297954878236">Sugestii</translation>
 <translation id="4759238208242260848">Descărcări</translation>
 <translation id="4766369052440583386">Economizorul de date este activat</translation>
 <translation id="4797039098279997504">Atinge pentru a reveni la <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB disponibili</translation>
 <translation id="5435775191620395718">Se afișează istoricul de pe acest dispozitiv. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Accesează bara de adrese</translation>
-<translation id="544291274896356069">Vei părăsi modul incognito dacă acest link este deschis într-o aplicație externă. Continui?</translation>
 <translation id="5447201525962359567">Toată stocarea site-urilor, inclusiv cookie-urile și alte date stocate local</translation>
 <translation id="5456381639095306749">Descarcă pagina</translation>
 <translation id="548278423535722844">Deschide în aplicația Maps</translation>
@@ -405,6 +405,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5530766185686772672">Închide filele incognito</translation>
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5565871407246142825">Carduri de credit</translation>
+<translation id="5568069709869097550">Nu se poate conecta</translation>
 <translation id="5578795271662203820">Caută imaginea cu <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Editează adresa</translation>
 <translation id="5596627076506792578">Mai multe opțiuni</translation>
@@ -507,6 +508,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6583199322650523874">Marchează pagina curentă</translation>
 <translation id="6600954340915313787">Copiat în Chrome</translation>
 <translation id="6612358246767739896">Conținut protejat</translation>
+<translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6627583120233659107">Editați dosarul</translation>
 <translation id="6643016212128521049">Ștergeți</translation>
 <translation id="6656545060687952787">Chrome necesită accesul la locație pentru a căuta dispozitive. <ph name="BEGIN_LINK" />Actualizează permisiunile<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="7128222689758636196">Permite pentru motorul de căutare actual</translation>
 <translation id="7138678301420049075">Altele</translation>
+<translation id="7144878232160441200">Reîncearcă</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>

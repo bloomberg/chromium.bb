@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Csomagolás az elejétől a végéig vagy a végétől az elejéig egy oldalon, párbeszédpanelen vagy más tárolón belül</translation>
 <translation id="2119965627982867824">léptetőgomb</translation>
 <translation id="2121067395472282800">hozzáférési kulcs: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">A jelenlegi 6 pontos braille-táblázatot az alábbi lehetőségek egyikének kiválasztásával módosíthatja.</translation>
 <translation id="2169714232367507776">Kattintás az aktuális elemre</translation>
 <translation id="2179452035581866348">A ChromeVox hangok használatával tájékoztat a lényeges és a kiegészítő információkról. Ha megtanulja az egyes hangok jelentését, gyorsabban navigálhat azok alapján. Ha megszokja a visszajelzéseket, kikapcsolhatja a bővített hangos leírásokat, és a hangok alapján megtudhatja az oldallal kapcsolatos lényeges információkat. Megmutatjuk a hangok és jelentésük teljes listáját.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{berekesztő zárójel}other{# berekesztő zárójel}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabulátor}other{# tabulátor}}</translation>
 <translation id="2972078295414139404">Nincs előző felkeresett link.</translation>
 <translation id="2972205263822847197">Elemleírás</translation>
-<translation id="2978549349327282388">Oszlopok:</translation>
 <translation id="2998131015536248178">Előző karakter</translation>
 <translation id="2999559350546931576">Hangszín csökkentése</translation>
 <translation id="2999945368667127852">Nincs következő médiamodul.</translation>
@@ -564,7 +562,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="5968607524793740041">Helyi menü megjelenítése</translation>
 <translation id="5983179082906765664">Navigáció részletezettségének növelése</translation>
 <translation id="5999630716831179808">Hangok</translation>
-<translation id="6000417740266304866">A jelenlegi 8 pontos braille-táblázatot az alábbi lehetőségek egyikének kiválasztásával módosíthatja.</translation>
 <translation id="6006050241733874051">Űrlap</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{fordított törtvonal}other{# fordított törtvonal}}</translation>
 <translation id="6037602951055904232">Pászt előre</translation>
@@ -606,7 +603,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="6444046323172968959">Értesítő párbeszédpanel</translation>
 <translation id="6459511626086141404">Sima billentyűzetkiosztás</translation>
 <translation id="6468049171101508116">Tovább gomb</translation>
-<translation id="6491972999578897419">A jelenlegi hangot az alábbi listáról választva változtathatja meg.</translation>
 <translation id="6493991254603208962">fényerő csökkentése</translation>
 <translation id="6508059270146105198">A Braille-kijelző áthelyezése az oldal aljára</translation>
 <translation id="6536864053412760904">Matematikai „ML” token</translation>
@@ -759,7 +755,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="820417203470636242">Üres cella.</translation>
 <translation id="8215202828671303819">Többszörös kiválasztás</translation>
 <translation id="8224171046658870249">Átváltott a ChromeVox Nextre</translation>
-<translation id="8259358278692921574">Sorok:</translation>
 <translation id="8276439074553447000">Ugrás következő fókuszálható elemre</translation>
 <translation id="8278417001922463147">Nincs előző cikk.</translation>
 <translation id="8283603667300770666">Következő űrlapmező</translation>

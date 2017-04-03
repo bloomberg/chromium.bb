@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">ప్రాథమికాలు</translation>
 <translation id="2386793615875593361">1 ఎంచుకోబడింది</translation>
 <translation id="2435457462613246316">పాస్‌వర్డ్‌ను చూపించు</translation>
-<translation id="2467815441875554965">సందర్భానుసార శోధన</translation>
 <translation id="2572712655377361602">ఒక పరికర విధానం మీ ఫోటోలకు ప్రాప్యతను బ్లాక్ చేసింది</translation>
 <translation id="2584132361465095047">ఖాతాను జోడించు...</translation>
 <translation id="2593774076813182497">ఈ పేజీని ముద్రించడం సాధ్యపడదు.</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">రీడర్ మోడ్</translation>
 <translation id="3638472932233958418">వెబ్‌పేజీలను ముందే లోడ్ చేయి</translation>
 <translation id="3691593122358196899"><ph name="FOLDER_TITLE" />కి బుక్‌మార్క్ చేయబడింది</translation>
-<translation id="3692781555820666866">ప్రారంభించినప్పుడు, ఓమ్నిపెట్టె మీకు సమీపంలోని పరికరాల ద్వారా వెబ్ పేజీల ప్రసారం కోసం సూచనలను చేర్చుతుంది.</translation>
 <translation id="3738139272394829648">శోధించడానికి తాకండి</translation>
 <translation id="3771033907050503522">అజ్ఞాత ట్యాబ్‌లు</translation>
 <translation id="3783017676699494206">చిత్రాన్ని సేవ్ చేయి</translation>
@@ -264,6 +262,7 @@
 <translation id="6324669097367352121">సైన్ ఇన్ సెట్టింగ్‌లు</translation>
 <translation id="6337234675334993532">గుప్తీకరణ</translation>
 <translation id="633809752005859102">వాస్తవంగా ఏదో తప్పు జరిగింది. మేము దానిపై పని చేస్తాము.</translation>
+<translation id="6342069812937806050">ఇప్పుడే</translation>
 <translation id="6344783595350022745">వచనాన్ని క్లియర్ చేయి</translation>
 <translation id="6362362396625799311">అజ్ఞాత ట్యాబ్‌లు ఏవీ తెరిచి లేవు</translation>
 <translation id="6380866119319257197">మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@
 <translation id="7189598951263744875">భాగస్వామ్యం చేయి...</translation>
 <translation id="7203585745079012652">సమాధానాలను చదివి వినిపించు</translation>
 <translation id="722055596168483966">Google సేవలను వ్యక్తిగతీకరించండి</translation>
-<translation id="7222245588540287464">సందర్భానుసార శోధన ప్రారంభించబడాలో లేదో తెలపండి.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> శాతం డౌన్‌లోడ్ అయ్యింది</translation>
 <translation id="7346909386216857016">సరే, అర్థమైంది</translation>
 <translation id="7400418766976504921">URL</translation>

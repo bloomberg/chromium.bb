@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Bir sayfa, iletişim veya kapsayıcı içinde baştan sona veya sondan başa sarma</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">erişim tuşu:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">Aşağıdaki listeden bir seçenek belirleyerek mevcut 6 noktalı braille'i değiştirin.</translation>
 <translation id="2169714232367507776">Mevcut öğeyi tıkla</translation>
 <translation id="2179452035581866348">ChromeVox gerekli bilgilerin yanı sıra ek bilgiler sağlamak için sesleri kullanır. Hangi sesin ne anlama geldiğini öğrendiğinizde bu seslerden faydalanarak daha hızlı gezinebilirsiniz. Kullanmaya alıştıktan sonra konuşma formundaki ayrıntılı açıklamaları kapatabilir ve ses özelliğini, sayfayla ilgili gerekli bilgileri almak için kullanabilirsiniz. Aşağıda seslerin ve ne anlama geldiklerinin kapsamlı bir listesini bulabilirsiniz.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{kapa parantez}other{# kapa parantez}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{sekme}other{# sekme}}</translation>
 <translation id="2972078295414139404">Ziyaret edilmiş başka önceki bağlantı yok.</translation>
 <translation id="2972205263822847197">İpucu</translation>
-<translation id="2978549349327282388">Sütunlar:</translation>
 <translation id="2998131015536248178">Önceki Karakter</translation>
 <translation id="2999559350546931576">Sesi kalınlaştır</translation>
 <translation id="2999945368667127852">Sonraki medya widget'ı yok.</translation>
@@ -564,7 +562,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="5968607524793740041">İçerik menüsünü göster</translation>
 <translation id="5983179082906765664">Gezinme hassasiyetini artır</translation>
 <translation id="5999630716831179808">Sesler</translation>
-<translation id="6000417740266304866">Aşağıdaki listeden bir seçenek belirleyerek mevcut 8 noktalı braille'i değiştirin.</translation>
 <translation id="6006050241733874051">Form</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ters eğik çizgi}other{# ters eğik çizgi}}</translation>
 <translation id="6037602951055904232">İleri kaydır</translation>
@@ -606,7 +603,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="6444046323172968959">Uyarı iletişim kutusu</translation>
 <translation id="6459511626086141404">Düz tuş eşleme</translation>
 <translation id="6468049171101508116">Sonraki düğmesi</translation>
-<translation id="6491972999578897419">Aşağıdaki listeden bir seçeneği belirleyerek mevcut sesi değiştirin.</translation>
 <translation id="6493991254603208962">Parlaklığı azalt</translation>
 <translation id="6508059270146105198">Braille ekranını sayfanın altına taşı</translation>
 <translation id="6536864053412760904">Matematik ML Jetonu</translation>
@@ -759,7 +755,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="820417203470636242">Boş hücre.</translation>
 <translation id="8215202828671303819">Çoklu seçim</translation>
 <translation id="8224171046658870249">ChromeVox Next'e geçildi</translation>
-<translation id="8259358278692921574">Satırlar:</translation>
 <translation id="8276439074553447000">Odaklanabilir önceki öğeye atla</translation>
 <translation id="8278417001922463147">Önceki makale yok.</translation>
 <translation id="8283603667300770666">Sonraki form alanı</translation>

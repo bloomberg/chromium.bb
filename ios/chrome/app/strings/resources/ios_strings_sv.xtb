@@ -77,7 +77,6 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2381405137052800939">Grunderna</translation>
 <translation id="2386793615875593361">1 markerat foto</translation>
 <translation id="2435457462613246316">Visa lösenord</translation>
-<translation id="2467815441875554965">Kontextsökning</translation>
 <translation id="2572712655377361602">Åtkomsten till bilderna har blockerats av en enhetspolicy</translation>
 <translation id="2584132361465095047">Lägg till konto …</translation>
 <translation id="2593774076813182497">Sidan kan inte skrivas ut.</translation>
@@ -146,7 +145,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3608436266458100337">Läsläge</translation>
 <translation id="3638472932233958418">Läs in webbsidor i förväg</translation>
 <translation id="3691593122358196899">Bokmärkt i <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">När det här alternativet är aktiverat visas förslag på utsändningar av webbsidor från enheter i närheten.</translation>
 <translation id="3738139272394829648">Tryck för att söka</translation>
 <translation id="3771033907050503522">Inkognitoflikar</translation>
 <translation id="3783017676699494206">Spara bild</translation>
@@ -264,6 +262,7 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="6324669097367352121">Inloggningsinställn.</translation>
 <translation id="6337234675334993532">Kryptering</translation>
 <translation id="633809752005859102">Någonting gick fel. Vi jobbar på det.</translation>
+<translation id="6342069812937806050">Alldeles nyss</translation>
 <translation id="6344783595350022745">Rensa text</translation>
 <translation id="6362362396625799311">Inga inkognitoflikar</translation>
 <translation id="6380866119319257197">Om du glömmer lösenfrasen eller vill ändra inställningen <ph name="BEGIN_LINK" />återställer du synkroniseringen<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7203585745079012652">Läs upp svaren</translation>
 <translation id="722055596168483966">Anpassa Googles tjänster</translation>
-<translation id="7222245588540287464">Om kontextsökning är aktiverad eller inte.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent har laddats ned</translation>
 <translation id="7346909386216857016">OK, jag förstår</translation>
 <translation id="7400418766976504921">Webbadress</translation>

@@ -77,7 +77,6 @@ Por exemplo, alguns Websites poderão mostrar anúncios que não sejam baseados 
 <translation id="2381405137052800939">Noções básicas</translation>
 <translation id="2386793615875593361">1 selecionada</translation>
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
-<translation id="2467815441875554965">Pesquisa contextual</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta...</translation>
 <translation id="2593774076813182497">Não é pos. impr. página.</translation>
@@ -146,7 +145,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3608436266458100337">Modo de leitor</translation>
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Quando está ativada, a caixa geral inclui sugestões de páginas Web transmitidas por dispositivos perto de si.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3783017676699494206">Guardar Imagem</translation>
@@ -264,6 +262,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6324669097367352121">Definições de início de sessão</translation>
 <translation id="6337234675334993532">Encriptação</translation>
 <translation id="633809752005859102">Algo correu muito mal. Estamos a tratar do assunto.</translation>
+<translation id="6342069812937806050">Mesmo agora</translation>
 <translation id="6344783595350022745">Limpar Texto</translation>
 <translation id="6362362396625799311">Sem separadores de navegação anónima</translation>
 <translation id="6380866119319257197">Se se esquecer da frase de acesso ou pretender alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
 <translation id="722055596168483966">Personalizar os serviços Google</translation>
-<translation id="7222245588540287464">Se a Pesquisa contextual está ou não ativada.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento transferido</translation>
 <translation id="7346909386216857016">OK, compreendi</translation>
 <translation id="7400418766976504921">URL</translation>

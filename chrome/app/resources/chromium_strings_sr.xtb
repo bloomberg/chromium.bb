@@ -89,7 +89,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Нажалост, Mozilla Firefox подешавања нису доступна док тај прегледач ради. Да бисте увезли та подешавања у Chromium, сачувајте рад и затворите све Firefox прозоре. Затим кликните на Настави.</translation>
 <translation id="3852700440713538496">Закачите Chromium на траку задатака</translation>
-<translation id="3883381313049582448">Користите лозинку коју је Chromium генерисао</translation>
 <translation id="3889543394854987837">Кликните на име да бисте отворили Chromium и почните да прегледате.</translation>
 <translation id="390894725198123737">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chromium-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
@@ -148,7 +147,6 @@
 <translation id="5877064549588274448">Канал је промењен. Покрените поново уређај да бисте применили промене.</translation>
 <translation id="5895138241574237353">Покрени поново</translation>
 <translation id="5906655207909574370">Ажурирање је скоро готово! Поново покрените уређај да бисте довршили ажурирање.</translation>
-<translation id="5942225298871134766">Chromium ће сачувати ове податке у услузи <ph name="SAVED_PASSWORD_LINK" /> и сетиће их се када вам следећи пут буду потребни.</translation>
 <translation id="5942520288919337908">Додатак <ph name="EXTENSION_NAME" /> је додат у Chromium.</translation>
 <translation id="59625444380784159">Детаљи из контаката могу да вам помогну да брже попуњавате обрасце у Chromium-у.</translation>
 <translation id="5987687638152509985">Ажурирајте Chromium да бисте започели синхронизацију</translation>

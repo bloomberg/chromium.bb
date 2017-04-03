@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium ने हे कार्ड जतन करावे असे आपण इच्छिता?</translation>
 <translation id="4171400957073367226">खराब सत्यापन स्वाक्षरी</translation>
-<translation id="4176463684765177261">अक्षम</translation>
 <translation id="4196861286325780578">&amp;हलवा पुन्हा करा</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />फायरवॉल आणि अँटीव्हायरस कॉन्फिगरेशन तपासणे<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{काहीही नाही}=1{1 अ‍ॅप ($1)}=2{2 अ‍ॅप्स ($1, $2)}one{# अ‍ॅप्स ($1, $2, $3)}other{# अ‍ॅप्स ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">शोध परिणाम</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ने आपले लॉग इन प्रमाणपत्र स्वीकारले नाही किंवा कदाचित प्रदान केले गेले नसावे.</translation>
 <translation id="443673843213245140">प्रॉक्सीचा वापर अक्षम करण्‍यात आला आहे पण एक सुस्पष्‍ट प्रॉक्सी कॉन्‍फिगरेशन निर्दिष्‍ट करण्‍यात आले आहे.</translation>
-<translation id="4446242550670694251">आपण आता खाजगीमध्‍ये ब्राउझ करू शकता आणि हे डिव्हाइस वापरणारे अन्य लोक आपला क्रियाकलाप पाहणार नाहीत.</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' साठी शोध परिणाम</translation>
 <translation id="4506176782989081258">प्रमाणीकरण त्रुटी: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">सिस्टीम प्रशासकाशी संपर्क साधणे</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">पालक सूचना</translation>
 <translation id="587760065310675640">असमर्थित पाठविण्‍याचा पत्ता. भिन्न पत्ता निवडा.</translation>
 <translation id="5901630391730855834">पिवळा</translation>
-<translation id="59174027418879706">सक्षम केलेले</translation>
 <translation id="5926846154125914413">आपण काही साइट मधील प्रीमियम सामग्री मधील प्रवेश कदाचित गमवाल.</translation>
 <translation id="5959728338436674663">धोकादायक अॅप्स आणि साइट शोधण्यात मदत करण्‍यासाठी काही <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टीम माहिती आणि पृष्ठ सामग्री<ph name="END_WHITEPAPER_LINK" /> स्वयंचलितपणे Google कडे पाठवा. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">आठवडा</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{पृष्ठ 1}one{पृष्ठ #}other{पृष्ठे #}}</translation>
 <translation id="6017514345406065928">हिरवा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
-<translation id="604124094241169006">स्वयंचलित</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="6060685159320643512">सावधगिरी बाळगा, या प्रयोगांमुळे हानी होऊ शकते</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{काहीही नाही}=1{1}one{#}other{#}}</translation>
@@ -545,7 +541,6 @@
         अन्य नेटवर्क डिव्हाइसेस रीबूट करा.</translation>
 <translation id="614940544461990577">हे करून पहा:</translation>
 <translation id="6151417162996330722">सर्व्हर प्रमाणपत्रास वैधता कालावधी आहे जो खूप मोठा आहे.</translation>
-<translation id="615643356032862689">डाउनलोड केलेल्या फायली आणि बुकमार्क ठेवले जातील.</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6177128806592000436">या साइटवरील आपले कनेक्शन सुरक्षित नाही</translation>
 <translation id="6203231073485539293">आपले इंटरनेट कनेक्शन तपासा</translation>
@@ -796,9 +791,7 @@
 <translation id="8543181531796978784">आपण <ph name="BEGIN_ERROR_LINK" />ओळखण्‍याच्या समस्‍येचा अहवाल<ph name="END_ERROR_LINK" /> देऊ शकता किंवा आपल्‍या सुरक्षिततेस असणार्‍या जोखीम आपण समजत असल्‍यास, <ph name="BEGIN_LINK" />या असुरक्षित साइटला भेट द्या<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">भाषांतर करण्यात अयशस्वी कारण पृष्ठाची भाषा निर्धारित करणे शक्य नाही.</translation>
 <translation id="8559762987265718583">आपल्या डिव्हाइसची तारीख आणि वेळ (<ph name="DATE_AND_TIME" />) चुकीची असल्याने <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> सह खाजगी कनेक्शन स्थापित केले जाऊ शकले नाही.</translation>
-<translation id="8570229484593575558">ही माहिती |जतन केली जाणार नाही|:#आपला ब्राउझिंग इतिहास#आपले शोध#कुकी डेटा</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> मध्ये पृष्ठ अनुवादित करत आहे...</translation>
-<translation id="8584539743998202583">यांना आपला क्रियाकलाप |कदाचित अद्याप दृश्यमान| असेल:#आपण भेट देता त्या वेबसाइट#आपला नियोक्ता#आपला इंटरनेट सेवा प्रदाता</translation>
 <translation id="858637041960032120">फोन नंबर जोडा</translation>
 <translation id="859285277496340001">प्रमाणपत्र निरस्त झाले आहे किंवा नाही हे तपासण्यासाठी प्रणाली निर्दिष्ट करत नाही.</translation>
 <translation id="8620436878122366504">आपल्या पालकांनी अद्याप ती मंजूर केली नाही</translation>
@@ -810,7 +803,6 @@
 <translation id="8738058698779197622">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, आपले घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. कारण वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरतात ती प्रमाणपत्रे केवळ निर्दिष्‍ट केलेल्‍या कालावधीसाठी वैध असतात. आपल्‍या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Chromium ही प्रमाणपत्रे सत्यापित करू शकत नाही.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />चा &lt;abbr id="dnsDefinition"&gt;DNS पत्ता&lt;/abbr&gt; शोधणे शक्य झाले नाही. समस्येचे निराकरण करीत आहे.</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
-<translation id="8798099450830957504">डीफॉल्ट</translation>
 <translation id="8800988563907321413">आपल्या जवळपासच्या सूचना येथे दिसतात</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883848425547221593">अन्य बुकमार्क</translation>

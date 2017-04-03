@@ -89,7 +89,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chromium으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
 <translation id="3852700440713538496">Chromium을 작업 표시줄에 고정</translation>
-<translation id="3883381313049582448">Chromium에서 생성한 비밀번호 사용</translation>
 <translation id="3889543394854987837">Chromium을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
 <translation id="390894725198123737">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chromium 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
@@ -148,7 +147,6 @@
 <translation id="5877064549588274448">채널이 변경되었습니다. 변경사항을 적용하려면 기기를 다시 시작하세요.</translation>
 <translation id="5895138241574237353">다시 시작</translation>
 <translation id="5906655207909574370">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
-<translation id="5942225298871134766">Chromium은 <ph name="SAVED_PASSWORD_LINK" />을(를) 사용하여 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" />이(가) Chromium에 추가되었습니다.</translation>
 <translation id="59625444380784159">연락처 세부정보를 사용하면 Chromium에서 양식을 더욱 신속하게 작성할 수 있습니다.</translation>
 <translation id="5987687638152509985">동기화를 시작하려면 Chromium을 업데이트하세요.</translation>
@@ -260,7 +258,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9013087743919948559">Chromium에 추가</translation>
 <translation id="9019929317751753759">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />에 표시되지 않고 사용자가 모르게 추가되었을 수 있는 다음 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="9022552996538154597">Chromium에 로그인</translation>
-<translation id="9036189287518468038">Chromium 앱 실행기</translation>
+<translation id="9036189287518468038">Chromium 앱 런처</translation>
 <translation id="9089354809943900324">Chromium이 이전 버전임</translation>
 <translation id="911206726377975832">인터넷 사용정보도 삭제하시겠습니까?</translation>
 <translation id="918373042641772655"><ph name="USERNAME" />의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 Chromium 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK" />Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK" />에서 관리될 수 있습니다.</translation>

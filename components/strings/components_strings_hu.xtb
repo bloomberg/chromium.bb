@@ -354,7 +354,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Szeretné, hogy a Chromium mentse ezt a kártyát?</translation>
 <translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
-<translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />A tűzfal és a vírusirtó konfigurációjának ellenőrzése<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{nincsen}=1{1 alkalmazás ($1)}=2{2 alkalmazás ($1, $2)}other{# alkalmazás ($1, $2, $3)}}</translation>
@@ -381,7 +380,6 @@
 <translation id="4406896451731180161">keresési találat</translation>
 <translation id="4432688616882109544">A(z) <ph name="HOST_NAME" /> nem fogadta el az Ön bejelentkezési tanúsítványát, vagy nem talált ilyet.</translation>
 <translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
-<translation id="4446242550670694251">Most privát módon böngészhet, így az eszközt használó többi személy nem láthatja az Ön tevékenységeit.</translation>
 <translation id="4492190037599258964">Találatok a(z) „<ph name="SEARCH_STRING" />” kifejezésre</translation>
 <translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kapcsolatfelvétel a rendszergazdával</translation>
@@ -521,7 +519,6 @@
 <translation id="5872918882028971132">Szülői javaslatok</translation>
 <translation id="587760065310675640">Nem támogatott szállítási cím. Válasszon másik címet.</translation>
 <translation id="5901630391730855834">Sárga</translation>
-<translation id="59174027418879706">Engedélyezve</translation>
 <translation id="5926846154125914413">Elveszítheti hozzáférését az egyes webhelyek prémium tartalmaihoz.</translation>
 <translation id="5959728338436674663">Bizonyos <ph name="BEGIN_WHITEPAPER_LINK" />rendszer-információk és oldaltartalmak<ph name="END_WHITEPAPER_LINK" /> automatikus küldése a Google-nak a veszélyes alkalmazások és webhelyek felderítése érdekében. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Hét</translation>
@@ -534,7 +531,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{1. oldal}other{#. oldal}}</translation>
 <translation id="6017514345406065928">Zöld</translation>
 <translation id="6040143037577758943">Bezárás</translation>
-<translation id="604124094241169006">Automatikus</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="6060685159320643512">Óvatosan, ezek a kísérletek haraphatnak</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{nincsen}=1{1}other{#}}</translation>
@@ -542,7 +538,6 @@
     hálózati eszközt, amelyet használ.</translation>
 <translation id="614940544461990577">Próbálja ki a következőket:</translation>
 <translation id="6151417162996330722">A szervertanúsítvány érvényességi ideje túl hosszú.</translation>
-<translation id="615643356032862689">A letöltött fájlok és a mentett könyvjelzők megmaradnak.</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6177128806592000436">Kapcsolata a webhellyel nem biztonságos</translation>
 <translation id="6203231073485539293">Ellenőrizze az internetkapcsolatot</translation>
@@ -793,9 +788,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8543181531796978784">Lehetősége van arra, hogy <ph name="BEGIN_ERROR_LINK" />jelentse az észlelési problémát<ph name="END_ERROR_LINK" />, ha pedig tisztában van a biztonságát fenyegető kockázatokkal, <ph name="BEGIN_LINK" />felkeresheti a nem biztonságos webhelyet<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">A fordítás nem sikerült, mivel az oldal nyelvét nem lehet megállapítani.</translation>
 <translation id="8559762987265718583">Nem hozható létre privát kapcsolat a következővel: <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, mert az eszköz dátum- és időbeállítása helytelen (<ph name="DATE_AND_TIME" />).</translation>
-<translation id="8570229484593575558">A következő információk |nem lesznek mentve|:#A böngészési előzmények#A végrehajtott keresések#A cookie-k adatai</translation>
 <translation id="8571890674111243710">Oldal fordítása erre a nyelvre: <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Előfordulhat, hogy tevékenységeit |továbbra is láthatják|:#A felkeresett webhelyek#A munkaadója#Az internetszolgáltatója</translation>
 <translation id="858637041960032120">Szám hozzáadása
 </translation>
 <translation id="859285277496340001">Ez a tanúsítvány nem határoz meg olyan mechanizmust, amely ellenőrizné, hogy visszavonták-e.</translation>
@@ -808,7 +801,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8740359287975076522">A(z) <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-címe&lt;/abbr&gt; nem található. A probléma diagnosztizálása folyamatban van.</translation>
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
-<translation id="8798099450830957504">Alapértelmezett</translation>
 <translation id="8800988563907321413">A közeli javaslatok helye</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
 <translation id="883848425547221593">Egyéb könyvjelzők</translation>

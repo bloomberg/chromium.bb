@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Gusto mo bang i-save ng Chromium ang card na ito?</translation>
 <translation id="4171400957073367226">Hindi wasto ang signature sa pag-verify</translation>
-<translation id="4176463684765177261">Hindi Pinagana</translation>
 <translation id="4196861286325780578">&amp;Gawing muli ang paglilipat</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Suriin ang mga configuration ng firewall at antivirus<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{wala}=1{1 app ($1)}=2{2 app ($1, $2)}one{# app ($1, $2, $3)}other{# na app ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">mga resulta ng paghahanap</translation>
 <translation id="4432688616882109544">Hindi tinanggap ng <ph name="HOST_NAME" /> ang iyong certificate sa pag-log in o maaaring walang ibinigay.</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>
-<translation id="4446242550670694251">Makakapag-browse ka na ngayon nang pribado, at hindi makikita ng iba pang taong gumagamit ng device na ito ang iyong aktibidad.</translation>
 <translation id="4492190037599258964">Mga resulta ng paghahanap para sa '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Error sa pagpapatunay: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Makipag-ugnayan sa admin ng system</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Mga Suhestyon ng Magulang</translation>
 <translation id="587760065310675640">Hindi sinusuportahan ang address sa pagpapadala. Pumili ng ibang address.</translation>
 <translation id="5901630391730855834">Dilaw</translation>
-<translation id="59174027418879706">Naka-enable</translation>
 <translation id="5926846154125914413">Maaari kang mawalan ng access sa premium na content mula sa ilang site.</translation>
 <translation id="5959728338436674663">Awtomatikong magpadala ng ilang <ph name="BEGIN_WHITEPAPER_LINK" />impormasyon sa system at content ng page<ph name="END_WHITEPAPER_LINK" /> sa Google upang makatulong na tumukoy ng mapapanganib na app at site. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Linggo</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
 <translation id="6017514345406065928">Berde</translation>
 <translation id="6040143037577758943">Isara</translation>
-<translation id="604124094241169006">Awtomatiko</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="6060685159320643512">Mag-ingat, maaaring makahamak ang mga eksperimentong ito</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{wala}=1{1}one{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     pang mga network device na maaaring ginagamit mo.</translation>
 <translation id="614940544461990577">Subukang:</translation>
 <translation id="6151417162996330722">Masyadong mahaba ang panahon ng pagkakaroon ng bisa ng certificate ng server.</translation>
-<translation id="615643356032862689">Itatabi ang mga na-download na file at bookmark.</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6177128806592000436">Hindi ligtas ang iyong koneksyon sa site na ito</translation>
 <translation id="6203231073485539293">Suriin ang iyong koneksyon sa Internet</translation>
@@ -795,9 +790,7 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8543181531796978784">Maaari kang <ph name="BEGIN_ERROR_LINK" />mag-ulat ng problema sa pagtukoy<ph name="END_ERROR_LINK" /> o, kung nauunawaan mo ang mga panganib sa iyong seguridad, <ph name="BEGIN_LINK" />bisitahin ang hindi ligtas na site na ito<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Nabigo ang pag-translate dahil hindi matukoy ang wika ng pahina.</translation>
 <translation id="8559762987265718583">Hindi makapagtatag ng pribadong koneksyon sa <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> dahil mali ang petsa at oras ng iyong device (<ph name="DATE_AND_TIME" />).</translation>
-<translation id="8570229484593575558">|Hindi mase-save| ang impormasyong ito:#Ang iyong history ng pagba-browse#Ang mga paghahanap mo#Date ng cookie</translation>
 <translation id="8571890674111243710">Tina-translate ang pahina sa <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Ang iyong aktibidad ay |maaari pa ring makita| ng:#Mga website na binibisita mo#Iyong employer#Provider ng serbisyo mo sa internet</translation>
 <translation id="858637041960032120">Magdagdag ng numero ng telepono</translation>
 <translation id="859285277496340001">Hindi tumutukoy ang certificate na ito ng mekanismo upang masuri kung nabawi ito.</translation>
 <translation id="8620436878122366504">Hindi pa ito inaaprubahan ng iyong mga magulang</translation>
@@ -809,7 +802,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8738058698779197622">Upang makapagtatag ng secure na koneksyon, kailangang itakda nang tama ang iyong orasan. Ito ay dahil sa may-bisa lang ang mga certificate na ginagamit ng mga website upang tukuyin ang mga sarili ng mga ito sa loob ng mga partikular na tagal ng panahon. Dahil mali ang orasan ng iyong device, hindi ma-verify ng Chromium ang mga certificate na ito.</translation>
 <translation id="8740359287975076522">Hindi makita ang &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt; ng <ph name="HOST_NAME" />. Dina-diagnose ang problema.</translation>
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
-<translation id="8798099450830957504">Default</translation>
 <translation id="8800988563907321413">Lalabas dito ang iyong mga suhestyon na malapit</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="883848425547221593">Iba Pang Mga Bookmark</translation>

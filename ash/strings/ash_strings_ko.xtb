@@ -20,7 +20,7 @@
 <translation id="1426410128494586442">예</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
-<translation id="1510238584712386396">실행기</translation>
+<translation id="1510238584712386396">런처</translation>
 <translation id="1525508553941733066">닫기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
@@ -127,6 +127,7 @@
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4448844063988177157">Wi-Fi 네트워크를 검색하는 중...</translation>
+<translation id="4479639480957787382">이더넷</translation>
 <translation id="4481530544597605423">페어링 해제된 기기</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 연결하는 중...</translation>
 <translation id="4527045527269911712">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다.</translation>

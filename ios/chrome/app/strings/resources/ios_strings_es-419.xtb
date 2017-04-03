@@ -77,7 +77,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
-<translation id="2467815441875554965">Búsqueda contextual</translation>
 <translation id="2572712655377361602">Una política de dispositivo bloqueó el acceso a tus fotos</translation>
 <translation id="2584132361465095047">Agregar cuenta…</translation>
 <translation id="2593774076813182497">Página no imprimible</translation>
@@ -146,7 +145,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3608436266458100337">Modo de lectura</translation>
 <translation id="3638472932233958418">Precargar pág. web</translation>
 <translation id="3691593122358196899">Se agregó a favoritos en <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Cuando está habilitado, el cuadro multifunción incluirá sugerencias para páginas web que transmiten dispositivos cercanos.</translation>
 <translation id="3738139272394829648">Tocar para buscar</translation>
 <translation id="3771033907050503522">Pestañas de incógnito</translation>
 <translation id="3783017676699494206">Guardar imagen</translation>
@@ -264,6 +262,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="6324669097367352121">Config. acceso</translation>
 <translation id="6337234675334993532">Encriptación</translation>
 <translation id="633809752005859102">Se produjo un error. Trabajaremos para solucionarlo.</translation>
+<translation id="6342069812937806050">Recién</translation>
 <translation id="6344783595350022745">Borrar texto</translation>
 <translation id="6362362396625799311">No hay pestañas de incógnito</translation>
 <translation id="6380866119319257197">Si olvidas la frase de contraseña o quieres cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7203585745079012652">Decir las respuestas</translation>
 <translation id="722055596168483966">Personalizar los servicios de Google</translation>
-<translation id="7222245588540287464">Permite habilitar o inhabilitar la búsqueda contextual.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % descargado</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="7400418766976504921">URL</translation>

@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">คุณต้องการให้ Chromium บันทึกบัตรนี้ไหม</translation>
 <translation id="4171400957073367226">ลายเซ็นยืนยันไม่ถูกต้อง</translation>
-<translation id="4176463684765177261">ปิดการใช้งานแล้ว</translation>
 <translation id="4196861286325780578">&amp;ทำซ้ำการย้าย</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ตรวจสอบไฟร์วอลล์และการกำหนดค่าการป้องกันไวรัส<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ไม่มี}=1{1 แอป ($1)}=2{2 แอป ($1, $2)}other{# แอป ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">ผลการค้นหา</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> ไม่ยอมรับใบรับรองการเข้าสู่ระบบหรือไม่ได้ให้ใบรับรองไว้</translation>
 <translation id="443673843213245140">การใช้พร็อกซีถูกปิดใช้งาน แต่มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจน</translation>
-<translation id="4446242550670694251">ขณะนี้คุณสามารถท่องเว็บแบบเป็นส่วนตัวและผู้อื่นที่ใช้อุปกรณ์เครื่องนี้จะไม่เห็นกิจกรรมของคุณ</translation>
 <translation id="4492190037599258964">ผลการค้นหาคำว่า "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">ข้อผิดพลาดในการตรวจสอบ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">ติดต่อผู้ดูแลระบบ</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">คำแนะนำระดับบนสุด</translation>
 <translation id="587760065310675640">ที่อยู่สำหรับจัดส่งใช้ไม่ได้ โปรดเลือกที่อยู่อื่น</translation>
 <translation id="5901630391730855834">สีเหลือง</translation>
-<translation id="59174027418879706">เปิดใช้งานแล้ว</translation>
 <translation id="5926846154125914413">คุณอาจสูญเสียสิทธิ์การเข้าถึงเนื้อหาระดับพรีเมียมจากเว็บไซต์บางแห่ง</translation>
 <translation id="5959728338436674663">ส่ง<ph name="BEGIN_WHITEPAPER_LINK" />ข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บ<ph name="END_WHITEPAPER_LINK" />ไปยัง Google เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตรายโดยอัตโนมัติ<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">สัปดาห์</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{หน้า 1}other{หน้า #}}</translation>
 <translation id="6017514345406065928">สีเขียว</translation>
 <translation id="6040143037577758943">ปิด</translation>
-<translation id="604124094241169006">อัตโนมัติ</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="6060685159320643512">ระวัง การทดลองนี้อาจเป็นอันตราย</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ไม่มี}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     ที่คุณอาจใช้งานอยู่</translation>
 <translation id="614940544461990577">ลอง:</translation>
 <translation id="6151417162996330722">ใบรับรองเซิร์ฟเวอร์มีระยะเวลาที่สามารถใช้ได้นานเกินไป</translation>
-<translation id="615643356032862689">ระบบจะเก็บไฟล์ที่ดาวน์โหลดและบุ๊กมาร์กไว้</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="6177128806592000436">การเชื่อมต่อกับเว็บไซต์นี้ไม่ปลอดภัย</translation>
 <translation id="6203231073485539293">ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">คุณสามารถ<ph name="BEGIN_ERROR_LINK" />รายงานปัญหาในการตรวจหา<ph name="END_ERROR_LINK" />ได้ หรือหากคุณเข้าใจถึงความเสี่ยงต่อความปลอดภัยของคุณ คุณสามารถ<ph name="BEGIN_LINK" />เข้าชมเว็บไซต์ที่ไม่ปลอดภัย<ph name="END_LINK" />ได้</translation>
 <translation id="8553075262323480129">การแปลล้มเหลวเนื่องจากไม่สามารถระบุภาษาของหน้าเว็บนี้ได้</translation>
 <translation id="8559762987265718583">ไม่สามารถเริ่มการเชื่อมต่อส่วนตัวกับ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ได้เนื่องจากวันที่และเวลาของอุปกรณ์ (<ph name="DATE_AND_TIME" />) ไม่ถูกต้อง</translation>
-<translation id="8570229484593575558">ระบบ|จะไม่บันทึก|ข้อมูลนี้:#ประวัติการท่องเว็บ#การค้นหา#ข้อมูลคุกกี้</translation>
 <translation id="8571890674111243710">กำลังแปลหน้าเว็บนี้เป็นภาษา<ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">ผู้อื่น|อาจยังมองเห็น|กิจกรรมของคุณ:#เว็บไซต์ที่คุณเข้าชม#นายจ้าง#ผู้ให้บริการอินเทอร์เน็ต</translation>
 <translation id="858637041960032120">เพิ่มเบอร์โทร
 </translation>
 <translation id="859285277496340001">ใบรับรองไม่ระบุวิธีการตรวจสอบว่ามีการเพิกถอนไปแล้วหรือไม่</translation>
@@ -810,7 +803,6 @@
 <translation id="8738058698779197622">หากต้องเริ่มการเชื่อมต่อที่ปลอดภัย นาฬิกาจะต้องตั้งค่าไว้อย่างถูกต้อง เนื่องจากใบรับรองที่เว็บไซต์ใช้เพื่อระบุตนเองจะใช้ได้เฉพาะช่วงเวลาหนึ่งเท่านั้น นาฬิกาของอุปกรณ์ไม่ถูกต้อง Chromium จึงไม่สามารถยืนยันใบรับรองเหล่านี้ได้</translation>
 <translation id="8740359287975076522">ไม่พบ&lt;abbr id="dnsDefinition"&gt;ที่อยู่ DNS&lt;/abbr&gt; ของ <ph name="HOST_NAME" /> กำลังวินิจฉัยปัญหา</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
-<translation id="8798099450830957504">ค่าเริ่มต้น</translation>
 <translation id="8800988563907321413">คำแนะนำในบริเวณใกล้เคียงจะปรากฏที่นี่</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="883848425547221593">บุ๊กมาร์กอื่นๆ</translation>

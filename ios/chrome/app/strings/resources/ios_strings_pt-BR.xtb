@@ -78,7 +78,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="2381405137052800939">Conceitos básicos</translation>
 <translation id="2386793615875593361">Uma selecionada</translation>
 <translation id="2435457462613246316">Mostrar senha</translation>
-<translation id="2467815441875554965">Pesquisa contextual</translation>
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2584132361465095047">Adicionar conta…</translation>
 <translation id="2593774076813182497">Não é possível imprimir esta página.</translation>
@@ -146,7 +145,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="3608436266458100337">Modo leitor</translation>
 <translation id="3638472932233958418">Pré-carregar páginas da web</translation>
 <translation id="3691593122358196899">Adicionado como favorito em <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Quando ativada, a omnibox inclui sugestões de páginas da Web transmitidas por dispositivos perto de você.</translation>
 <translation id="3738139272394829648">Tocar para pesquisar</translation>
 <translation id="3771033907050503522">Guias anônimas</translation>
 <translation id="3783017676699494206">Salvar imagem</translation>
@@ -264,6 +262,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6324669097367352121">Configurações de login</translation>
 <translation id="6337234675334993532">Criptografia</translation>
 <translation id="633809752005859102">Algo deu errado. Estamos trabalhando para resolver isso.</translation>
+<translation id="6342069812937806050">Neste instante</translation>
 <translation id="6344783595350022745">Limpar texto</translation>
 <translation id="6362362396625799311">Não há guias anônimas</translation>
 <translation id="6380866119319257197">Se você esquecer a senha longa ou desejar alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7203585745079012652">Falar as respostas</translation>
 <translation id="722055596168483966">Personalizar os serviços do Google</translation>
-<translation id="7222245588540287464">Se a Pesquisa contextual está ou não ativada.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento baixados</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
 <translation id="7400418766976504921">URL</translation>

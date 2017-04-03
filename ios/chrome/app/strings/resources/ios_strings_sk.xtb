@@ -77,7 +77,6 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="2381405137052800939">Základy</translation>
 <translation id="2386793615875593361">Počet vybratých fotografií: 1</translation>
 <translation id="2435457462613246316">Zobraziť heslo</translation>
-<translation id="2467815441875554965">Kontextové vyhľadávanie</translation>
 <translation id="2572712655377361602">Pravidlá pre zariadenie zablokovali prístup k vašim fotkám</translation>
 <translation id="2584132361465095047">Pridať účet…</translation>
 <translation id="2593774076813182497">Túto stránku nie je možné vytlačiť.</translation>
@@ -146,7 +145,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="3608436266458100337">Režim čítačky</translation>
 <translation id="3638472932233958418">Predbežne načítavať webové stránky</translation>
 <translation id="3691593122358196899">Uložené ako záložka v priečinku <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Keď je tento príznak aktivovaný, všeobecné pole bude zahŕňať návrhy webových stránok, ktoré vysielajú zariadenia v okolí.</translation>
 <translation id="3738139272394829648">Vyhľadávanie klepnutím</translation>
 <translation id="3771033907050503522">Karty inkognito</translation>
 <translation id="3783017676699494206">Uložiť obrázok</translation>
@@ -264,6 +262,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6324669097367352121">Nastavenia prihlásenia</translation>
 <translation id="6337234675334993532">Šifrovanie</translation>
 <translation id="633809752005859102">Niečo sa vážne pokazilo. Na riešení pracujeme.</translation>
+<translation id="6342069812937806050">Práve teraz</translation>
 <translation id="6344783595350022745">Prehľadný text</translation>
 <translation id="6362362396625799311">Žiadne karty inkognito</translation>
 <translation id="6380866119319257197">Ak prístupovú frázu zabudnete alebo budete chcieť toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchronizáciu<ph name="END_LINK" />.</translation>
@@ -308,7 +307,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7189598951263744875">Zdieľať...</translation>
 <translation id="7203585745079012652">Vysloviť odpovede</translation>
 <translation id="722055596168483966">Prispôsobenie služieb Google</translation>
-<translation id="7222245588540287464">Určuje, či je alebo nie je povolené kontextové vyhľadávanie.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Ok, dobre</translation>
 <translation id="7400418766976504921">Webová adresa</translation>

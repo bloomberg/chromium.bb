@@ -75,7 +75,6 @@
 <translation id="2381405137052800939">พื้นฐาน</translation>
 <translation id="2386793615875593361">เลือก 1 รูป</translation>
 <translation id="2435457462613246316">แสดงรหัสผ่าน</translation>
-<translation id="2467815441875554965">การค้นหาตามบริบท</translation>
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
 <translation id="2584132361465095047">เพิ่มบัญชี…</translation>
 <translation id="2593774076813182497">หน้านี้ไม่สามารถพิมพ์ได้</translation>
@@ -144,7 +143,6 @@
 <translation id="3608436266458100337">โหมดผู้อ่าน</translation>
 <translation id="3638472932233958418">โหลดหน้าเว็บล่วงหน้า</translation>
 <translation id="3691593122358196899">เพิ่มบุ๊กมาร์กไปยัง <ph name="FOLDER_TITLE" /> แล้ว</translation>
-<translation id="3692781555820666866">เมื่อเปิดใช้ แถบอเนกประสงค์จะรวมคำแนะนำการเผยแพร่หน้าเว็บจากอุปกรณ์ใกล้เคียง</translation>
 <translation id="3738139272394829648">แตะเพื่อค้นหา</translation>
 <translation id="3771033907050503522">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="3783017676699494206">บันทึกภาพ</translation>
@@ -262,6 +260,7 @@
 <translation id="6324669097367352121">ตั้งค่าลงชื่อเข้าใช้</translation>
 <translation id="6337234675334993532">การเข้ารหัส</translation>
 <translation id="633809752005859102">มีบางสิ่งผิดปกติอย่างมาก เราจะแก้ไขปัญหานี้</translation>
+<translation id="6342069812937806050">เพิ่งเสร็จ</translation>
 <translation id="6344783595350022745">ข้อความที่ชัดเจน</translation>
 <translation id="6362362396625799311">ไม่มีแท็บที่ไม่ระบุตัวตน</translation>
 <translation id="6380866119319257197">หากคุณลืมรหัสผ่านหรือต้องการเปลี่ยนการตั้งค่านี้ โปรด<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" /></translation>
@@ -306,7 +305,6 @@
 <translation id="7189598951263744875">แชร์...</translation>
 <translation id="7203585745079012652">พูดคำตอบกลับ</translation>
 <translation id="722055596168483966">ปรับเปลี่ยนบริการ Google ในแบบของคุณ</translation>
-<translation id="7222245588540287464">ไม่ว่าจะเปิดค้นหาตามบริบทไว้หรือไม่ก็ตาม</translation>
 <translation id="7336264872878993241">ดาวน์โหลดแล้ว <ph name="PERCENT" /> เปอร์เซ็นต์</translation>
 <translation id="7346909386216857016">รับทราบ</translation>
 <translation id="7400418766976504921">URL</translation>

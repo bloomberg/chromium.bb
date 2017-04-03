@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Зберегти цю картку в Chromium?</translation>
 <translation id="4171400957073367226">Недійсний підпис для підтвердження</translation>
-<translation id="4176463684765177261">Вимкнено</translation>
 <translation id="4196861286325780578">&amp;Повторити переміщення</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />перевірити конфігурацію брандмауера й антивірусної програми<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{немає}=1{1 додаток ($1)}=2{2 додатки ($1, $2)}one{# додаток ($1, $2, $3)}few{# додатки ($1, $2, $3)}many{# додатків ($1, $2, $3)}other{# додатка ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">результати пошуку</translation>
 <translation id="4432688616882109544">Хост <ph name="HOST_NAME" /> не прийняв ваш сертифікат входу або ви не надали цей сертифікат.</translation>
 <translation id="443673843213245140">Використання проксі-сервера вимкнено, але чітко вказано налаштування проксі-сервера.</translation>
-<translation id="4446242550670694251">Тепер ви можете переглядати вміст анонімно. Інші користувачі вашого пристрою не бачитимуть даних про вашу активність.</translation>
 <translation id="4492190037599258964">Результати пошуку для запиту "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Помилка перевірки: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">зв’язатися із системним адміністратором</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Поради для батьків</translation>
 <translation id="587760065310675640">Адреса доставки не підтримується. Укажіть іншу адресу.</translation>
 <translation id="5901630391730855834">Жовтий</translation>
-<translation id="59174027418879706">Увімкнено</translation>
 <translation id="5926846154125914413">Ви можете втратити доступ до платного вмісту на деяких сайтах.</translation>
 <translation id="5959728338436674663">Автоматично надсилати в Google деяку <ph name="BEGIN_WHITEPAPER_LINK" />інформацію про систему та вміст сторінок<ph name="END_WHITEPAPER_LINK" />, щоб допомогти виявляти небезпечні додатки й сайти<ph name="PRIVACY_PAGE_LINK" />.</translation>
 <translation id="5966707198760109579">Тиждень</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Сторінка 1}one{Сторінка #}few{Сторінка #}many{Сторінка #}other{Сторінка #}}</translation>
 <translation id="6017514345406065928">Зелений</translation>
 <translation id="6040143037577758943">Закрити</translation>
-<translation id="604124094241169006">Автоматично</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="6060685159320643512">Обережно, ці експерименти ненадійні</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{немає}=1{1}one{#}few{#}many{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     пристрої, які ви використовуєте.</translation>
 <translation id="614940544461990577">Спробуйте:</translation>
 <translation id="6151417162996330722">Сертифікат сервера має задовгий термін дії.</translation>
-<translation id="615643356032862689">Завантажені файли та закладки буде збережено.</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="6177128806592000436">Ваше з’єднання з цим сайтом не захищене</translation>
 <translation id="6203231073485539293">Перевірте з’єднання з Інтернетом</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">Ви можете <ph name="BEGIN_ERROR_LINK" />повідомити про проблему з пошуком<ph name="END_ERROR_LINK" /> або <ph name="BEGIN_LINK" />перейти на цей незахищений сайт<ph name="END_LINK" /> (якщо розумієте, наскільки це небезпечно).</translation>
 <translation id="8553075262323480129">Помилка перекладу. Неможливо визначити мову сторінки.</translation>
 <translation id="8559762987265718583">Не вдається встановити конфіденційне з’єднання з <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, оскільки на пристрої встановлено неправильні дату й час (<ph name="DATE_AND_TIME" />).</translation>
-<translation id="8570229484593575558">Цю інформацію |не буде збережено|:#історія веб-перегляду#пошукові запити#дані файлів cookie</translation>
 <translation id="8571890674111243710">Виконується переклад сторінки такою мовою: <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Вашу активність |усе ще можуть бачити|:#веб-сайти, які ви відвідуєте#ваш роботодавець#ваш постачальник послуг Інтернету</translation>
 <translation id="858637041960032120">Додати тел.номер
 </translation>
 <translation id="859285277496340001">Сертифікат не вказує на механізм перевірки його відкликання.</translation>
@@ -810,7 +803,6 @@
 <translation id="8738058698779197622">Щоб установити безпечне з’єднання, потрібно правильно вказати час, оскільки сертифікати, які веб-сайти використовують для самоідентифікації дійсні лише протягом певного періоду часу. Час на вашому пристрої неправильний, тому Chromium не може перевірити сертифікати.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Адресу DNS&lt;/abbr&gt; хосту <ph name="HOST_NAME" /> не знайдено. Діагностика проблеми.</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
-<translation id="8798099450830957504">За умовчанням</translation>
 <translation id="8800988563907321413">Тут відображатимуться пропозиції</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883848425547221593">Інші закладки</translation>

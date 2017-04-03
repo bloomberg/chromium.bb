@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Ne pare rău, setările dvs. Mozilla Firefox nu sunt disponibile cât timp browserul respectiv rulează. Pentru a importa aceste setări în Chromium, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi dați clic pe Continuați.</translation>
 <translation id="3852700440713538496">Fixează Chromium pe bara de activități</translation>
-<translation id="3883381313049582448">Folosește parola generată de Chromium</translation>
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
 <translation id="390894725198123737">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care folosesc același cont de OS X.</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
 <translation id="5906655207909574370">Aproape actualizat! Repornește dispozitivul pentru a finaliza actualizarea.</translation>
-<translation id="5942225298871134766">Chromium o va stoca folosind <ph name="SAVED_PASSWORD_LINK" /> și o va reține pentru data următoare când ai nevoie.</translation>
 <translation id="5942520288919337908">Extensia <ph name="EXTENSION_NAME" /> a fost adăugată la Chromium.</translation>
 <translation id="59625444380784159">Detaliile din agendă vă pot ajuta să completați mai rapid formularele în Chromium.</translation>
 <translation id="5987687638152509985">Actualizează Chromium pentru a începe sincronizarea</translation>

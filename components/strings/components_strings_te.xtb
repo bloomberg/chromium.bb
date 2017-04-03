@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">అమెరికన్ ఎక్స్‌ప్రెస్</translation>
 <translation id="4169947484918424451">Chromium ఈ కార్డ్‌ను సేవ్ చేయాలని మీరు కోరుకుంటున్నారా?</translation>
 <translation id="4171400957073367226">ధృవీకరణ సంతకం చెల్లదు</translation>
-<translation id="4176463684765177261">ఆపివేయబడింది</translation>
 <translation id="4196861286325780578">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ఫైర్‌వాల్ మరియు యాంటీవైరస్ కాన్ఫిగరేషన్‌లను తనిఖీ చేయడం<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ఏదీ లేదు}=1{1 అనువర్తనం ($1)}=2{2 అనువర్తనాలు ($1, $2)}other{# అనువర్తనాలు ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">శోధన ఫలితాలు</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> మీ లాగిన్ ప్రమాణపత్రాన్ని ఆమోదించలేదు లేదా ఏదీ అందించి ఉండకపోవచ్చు.</translation>
 <translation id="443673843213245140">ప్రాక్సీని ఉపయోగించడం ఆపివేయబడింది కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ పేర్కొనబడింది.</translation>
-<translation id="4446242550670694251">ఇప్పుడు మీరు ప్రైవేట్‌గా బ్రౌజ్ చేయవచ్చు, అప్పుడు ఈ పరికరాన్ని ఉపయోగించే ఇతర వ్యక్తులకు మీ కార్యాచరణ కనిపించదు.</translation>
 <translation id="4492190037599258964"><ph name="SEARCH_STRING" />' కోసం శోధన ఫలితాలు</translation>
 <translation id="4506176782989081258">ధృవీకరణ లోపం: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">సిస్టమ్ నిర్వాహకుడిని సంప్రదించడం</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">తల్లి/తండ్రి సూచనలు</translation>
 <translation id="587760065310675640">షిప్పింగ్ చిరునామాకు మద్దతు లేదు. మరొక చిరునామాను ఎంచుకోండి.</translation>
 <translation id="5901630391730855834">పసుపు</translation>
-<translation id="59174027418879706">ప్రారంభించబడింది</translation>
 <translation id="5926846154125914413">మీరు కొన్ని సైట్‌ల నుండి ప్రీమియం కంటెంట్‌కి ప్రాప్యతను కోల్పోవచ్చు.</translation>
 <translation id="5959728338436674663">హానికరమైన అనువర్తనాలు మరియు సైట్‌లను గుర్తించడంలో సహాయపడటానికి కొంత <ph name="BEGIN_WHITEPAPER_LINK" />సిస్టమ్ సమాచారాన్ని మరియు పేజీ కంటెంట్<ph name="END_WHITEPAPER_LINK" />ను Googleకు స్వయంచాలకంగా పంపుతుంది. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">వారం</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{పేజీ 1}other{పేజీ #}}</translation>
 <translation id="6017514345406065928">ఆకుపచ్చ</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
-<translation id="604124094241169006">స్వయంచాలకంగా</translation>
 <translation id="6042308850641462728">మరింత</translation>
 <translation id="6060685159320643512">జాగ్రత్త, ఈ ప్రయోగాలు విఫలం కావచ్చు</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ఏదీ లేదు}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
         లేదా ఇతర నెట్‌వర్క్ పరికరాలను రీబూట్ చేయండి.</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
 <translation id="6151417162996330722">సర్వర్ ప్రమాణపత్రం చెల్లుబాటు వ్యవధి చాలా ఎక్కువ కాలం ఉంది.</translation>
-<translation id="615643356032862689">డౌన్‌లోడ్ చేయబడిన ఫైల్‌లు మరియు బుక్‌మార్క్‌లు అలాగే ఉంచబడతాయి.</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6177128806592000436">ఈ సైట్‌కి మీ కనెక్షన్ సురక్షితంగా లేదు</translation>
 <translation id="6203231073485539293">మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేయండి</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">మీరు <ph name="BEGIN_ERROR_LINK" />గుర్తింపు సమస్యను నివేదించవచ్చు<ph name="END_ERROR_LINK" /> లేదా మీకు మీ భద్రతకు పొంచి ఉన్న ప్రమాదాలు అర్థం అయ్యి ఉంటే, <ph name="BEGIN_LINK" />ఈ అసురక్షిత సైట్‌ను సందర్శించండి<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">పేజీ భాష నిర్థారించలేకపోయినందున అనువాదం విఫలమైంది.</translation>
 <translation id="8559762987265718583">మీ పరికరం తేదీ మరియు సమయం (<ph name="DATE_AND_TIME" />) తప్పుగా ఉన్నందున <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />కి ప్రైవేట్ కనెక్షన్ ఏర్పాటు చేయబడదు.</translation>
-<translation id="8570229484593575558">ఈ సమాచారం |సేవ్ చేయబడదు|:#మీ బ్రౌజింగ్ చరిత్ర#మీ శోధనలు#కుక్కీ డేటా</translation>
 <translation id="8571890674111243710">పేజీని <ph name="LANGUAGE" />కు అనువదిస్తోంది...</translation>
-<translation id="8584539743998202583">మీ కార్యాచరణ |ఇప్పటికీ వీటికి కనిపించవచ్చు|:#మీరు సందర్శించే వెబ్‌సైట్‌లు#మీ యజమాని#మీ ఇంటర్నెట్ సేవా ప్రదాత</translation>
 <translation id="858637041960032120">ఫోన్ నం. జోడిం.
 </translation>
 <translation id="859285277496340001">ఇది రద్దు చెయ్యబడిందా అని తనిఖీ చెయ్యడానికి ప్రమాణపత్రం విధానాన్ని పేర్కొనలేదు.</translation>
@@ -810,7 +803,6 @@
 <translation id="8738058698779197622">సురక్షిత కనెక్షన్‌ను ఏర్పాటు చేయడానికి, మీ గడియారాన్ని సరైన సమయానికి సెట్ చేయాలి. ఎందుకంటే వెబ్‌సైట్‌లు వాటిని గుర్తించడానికి ఉపయోగించే ప్రమాణపత్రాలు నిర్దిష్ట కాలవ్యవధుల్లో మాత్రమే చెల్లుబాటు అవుతాయి. మీ పరికరం యొక్క గడియారం సమయం తప్పుగా ఉన్నందున, Chromium ఈ ప్రమాణపత్రాలను ధృవీకరించడానికి వీలుపడలేదు.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS చిరునామా&lt;/abbr&gt; కనుగొనబడలేదు. సమస్యను నిర్ధారిస్తోంది.</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
-<translation id="8798099450830957504">డిఫాల్ట్</translation>
 <translation id="8800988563907321413">మీ సమీపంలోని సూచనలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="883848425547221593">ఇతర బుక్‌మార్క్‌లు:</translation>

@@ -355,7 +355,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Vai vēlaties, lai Chromium saglabātu šo karti?</translation>
 <translation id="4171400957073367226">Verifikācijas paraksts nav derīgs.</translation>
-<translation id="4176463684765177261">Atspējots</translation>
 <translation id="4196861286325780578">&amp;Atcelt pārvietošanas atsaukšanu</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Pārbaudiet ugunsmūri un pretvīrusu programmu konfigurācijas<ph name="END_LINK" />.</translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{nav}=1{1 lietotne ($1)}=2{2 lietotnes ($1, $2)}zero{# lietotnes ($1, $2, $3)}one{# lietotne ($1, $2, $3)}other{# lietotnes ($1, $2, $3)}}</translation>
@@ -382,7 +381,6 @@
 <translation id="4406896451731180161">meklēšanas rezultāti</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> nepieņēma jūsu pieteikšanās sertifikātu, vai arī pieteikšanās sertifikāts netika iesniegts.</translation>
 <translation id="443673843213245140">Starpniekservera lietošana ir atspējota, bet ir norādīta atklāta starpniekservera konfigurācija.</translation>
-<translation id="4446242550670694251">Tagad varat privāti pārlūkot saturu, un citas personas, kas izmanto šo ierīci, nevarēs redzēt jūsu darbības.</translation>
 <translation id="4492190037599258964">Vaicājuma “<ph name="SEARCH_STRING" />” meklēšanas rezultāti</translation>
 <translation id="4506176782989081258">Validācijas kļūda: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Sazinieties ar sistēmas administratoru.</translation>
@@ -522,7 +520,6 @@
 <translation id="5872918882028971132">Vecāku ieteikumi</translation>
 <translation id="587760065310675640">Neatbalstīta piegādes adrese. Atlasiet citu adresi.</translation>
 <translation id="5901630391730855834">Dzeltena</translation>
-<translation id="59174027418879706">Iespējots</translation>
 <translation id="5926846154125914413">Varat zaudēt piekļuvi maksas saturam no noteiktām vietnēm.</translation>
 <translation id="5959728338436674663">Automātiski sūtīt Google serveriem noteiktu <ph name="BEGIN_WHITEPAPER_LINK" />sistēmas informāciju un lapu saturu<ph name="END_WHITEPAPER_LINK" />, lai palīdzētu noteikt bīstamas lietotnes un vietnes. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Nedēļa</translation>
@@ -535,7 +532,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{1. lapa}zero{#. lapa}one{#. lapa}other{#. lapa}}</translation>
 <translation id="6017514345406065928">Zaļa</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
-<translation id="604124094241169006">Automātiski</translation>
 <translation id="6042308850641462728">Vairāk</translation>
 <translation id="6060685159320643512">Esiet uzmanīgs! Šie eksperimenti var jums kaitēt</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{nav}=1{1}zero{#}one{#}other{#}}</translation>
@@ -543,7 +539,6 @@
     izmantotās tīkla ierīces.</translation>
 <translation id="614940544461990577">Veiciet tālāk norādītās darbības.</translation>
 <translation id="6151417162996330722">Šī servera sertifikāta derīguma periods ir pārāk ilgs.</translation>
-<translation id="615643356032862689">Lejupielādētie faili un grāmatzīmes tiks saglabāti.</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6177128806592000436">Savienojums ar šo vietni nav drošs.</translation>
 <translation id="6203231073485539293">Interneta savienojuma pārbaude</translation>
@@ -794,9 +789,7 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8543181531796978784">Jūs varat <ph name="BEGIN_ERROR_LINK" />ziņot par noteikšanas problēmu<ph name="END_ERROR_LINK" /> vai, ja apzināties drošības riskus, <ph name="BEGIN_LINK" />apmeklēt šo nedrošo vietni<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Tulkošana neizdevās, jo lapas valoda nav nosakāma.</translation>
 <translation id="8559762987265718583">Nevar izveidot privātu savienojumu ar <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, jo jūsu ierīces datums un laiks (<ph name="DATE_AND_TIME" />) nav pareizs.</translation>
-<translation id="8570229484593575558">|Netiks saglabāta| šāda informācija:#jūsu pārlūkošanas vēsture;#jūsu meklētie vaicājumi;#sīkfailu dati.</translation>
 <translation id="8571890674111243710">Notiek lapas tulkošana uz <ph name="LANGUAGE" /> valodu...</translation>
-<translation id="8584539743998202583">Iespējams, jūsu darbības |joprojām būs redzamas|:#jūsu apmeklētajām vietnēm;#jūsu darba devējam;#jūsu interneta pakalpojumu sniedzējam.</translation>
 <translation id="858637041960032120">Piev. tālr. nr.
 </translation>
 <translation id="859285277496340001">Sertifikāts nenorāda mehānismu, ar kuru pārbaudīt, vai tas nav atsaukts.</translation>
@@ -809,7 +802,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8738058698779197622">Lai izveidotu drošu savienojumu, ir jāiestata pareizs pulksteņa laiks. Tas ir nepieciešams, jo sertifikāti, kurus vietnes izmanto, lai tiktu identificētas, ir derīgi tikai noteiktos laika periodos. Tā kā jūsu ierīces pulkstenis nav pareizi iestatīts, Chromium nevar verificēt šos sertifikātus.</translation>
 <translation id="8740359287975076522">Nevarēja atrast <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt;. Notiek problēmas diagnosticēšana.</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
-<translation id="8798099450830957504">Noklusējums</translation>
 <translation id="8800988563907321413">Šeit tiks parādīti funkcijas Tuvumā ieteikumi</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>
 <translation id="883848425547221593">Citas grāmatzīmes</translation>

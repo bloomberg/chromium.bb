@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Purtroppo le impostazioni di Mozilla Firefox non sono disponibili mentre il browser è in esecuzione. Per importare tali impostazioni in Chromium, salva il lavoro e chiudi tutte le finestre di Firefox. Dopodiché fai clic su Continua.</translation>
 <translation id="3852700440713538496">Aggiungi Chromium alla barra delle applicazioni</translation>
-<translation id="3883381313049582448">Utilizza la password generata da Chromium</translation>
 <translation id="3889543394854987837">Fai clic sul tuo nome per aprire Chromium e iniziare a navigare.</translation>
 <translation id="390894725198123737">Su Mac, le password possono essere salvate in Accesso Portachiavi e sono accessibili o sincronizzate da parte di altri utenti Chromium che utilizzano lo stesso account OS X.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Canale cambiato. Riavvia il dispositivo per applicare le modifiche.</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5906655207909574370">Aggiornamento quasi completato. Riavvia il dispositivo per terminare l'aggiornamento.</translation>
-<translation id="5942225298871134766">Chromium memorizzerà questa password con <ph name="SAVED_PASSWORD_LINK" /> e la ricorderà la prossima volta che ti servirà.</translation>
 <translation id="5942520288919337908">L'estensione <ph name="EXTENSION_NAME" /> è stata aggiunta a Chromium.</translation>
 <translation id="59625444380784159">I dati dei tuoi contatti possono consentirti di compilare più rapidamente i moduli in Chromium.</translation>
 <translation id="5987687638152509985">Aggiorna Chromium per avviare la sincronizzazione</translation>

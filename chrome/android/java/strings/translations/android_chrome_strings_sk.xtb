@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1006017844123154345">Otvoriť online</translation>
-<translation id="1056898198331236512">Upozornenie</translation>
 <translation id="10614374240317010">Neuložené</translation>
 <translation id="1061441684050139317">Na to, aby Chrome mohol s týmito webovými stránkami zdieľať mikrofón, musí mať k nemu prístup.</translation>
 <translation id="1080790410959514870">Odhlasujete sa z účtu spravovaného doménou <ph name="DOMAIN_NAME" />. Vymažú sa údaje prehliadača Chrome uložené na tomto zariadení, ale údaje uložené v účte Google zostanú zachované.</translation>
@@ -41,6 +40,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1384959399684842514">Sťahovanie bolo pozastavené</translation>
 <translation id="1389974829397082527">Žiadne záložky</translation>
+<translation id="1402229579576898974">Návrhy Chromu: <ph name="NUMBER_OF_SUGGESTIONS" /></translation>
 <translation id="1404122904123200417">Vložené na webe <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Nesledovať</translation>
 <translation id="1407135791313364759">Otvoriť všetko</translation>
@@ -322,6 +322,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4738836084190194332">Posledná synchronizácia: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Otvorenie novej karty</translation>
+<translation id="4750394297954878236">Návrhy</translation>
 <translation id="4759238208242260848">Stiahnuté</translation>
 <translation id="4766369052440583386">Šetrič dát je zapnutý</translation>
 <translation id="4797039098279997504">Klepnutím sa vrátite na kartu <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5424588387303617268">K dispozícii je <ph name="GIGABYTES" /> GB</translation>
 <translation id="5435775191620395718">Zobrazuje sa história z tohto zariadenia. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="5441522332038954058">Prechod na panel s adresou</translation>
-<translation id="544291274896356069">Ak tento odkaz otvoríte v externej aplikácii, opustíte režim inkognito. Chcete pokračovať?</translation>
 <translation id="5447201525962359567">Celé úložisko webu vrátane súborov cookie a ďalších lokálne uložených dát</translation>
 <translation id="5456381639095306749">Stránka sťahovania</translation>
 <translation id="548278423535722844">Otvorte v aplikácii pre mapy</translation>
@@ -405,6 +405,7 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5530766185686772672">Zavrieť karty inkognito</translation>
 <translation id="5556459405103347317">Obnoviť</translation>
 <translation id="5565871407246142825">Kreditné karty</translation>
+<translation id="5568069709869097550">Nedá sa prihlásiť</translation>
 <translation id="5578795271662203820">Hľadať obrázok v službe <ph name="SEARCH_ENGINE" /></translation>
 <translation id="5595485650161345191">Upraviť adresu</translation>
 <translation id="5596627076506792578">Ďalšie možnosti</translation>
@@ -507,6 +508,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6583199322650523874">Pridanie aktuálnej stránky medzi záložky</translation>
 <translation id="6600954340915313787">Skopírovaná do prehliadača Chrome</translation>
 <translation id="6612358246767739896">Chránený obsah</translation>
+<translation id="662080504995468778">Zostať</translation>
 <translation id="6627583120233659107">Upraviť priečinok</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6656545060687952787">Na to, aby mohol Chrome hľadať zariadenia, musí mať prístup k polohe. <ph name="BEGIN_LINK" />Aktualizovať povolenia<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7063006564040364415">Nepodarilo sa pripojiť k synchronizačnému serveru.</translation>
 <translation id="7128222689758636196">Povoliť pre aktuálny vyhľadávač</translation>
 <translation id="7138678301420049075">Iné</translation>
+<translation id="7144878232160441200">Skúsiť znova</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
 <translation id="7189372733857464326">Čaká sa na dokončenie aktualizácie služieb Google Play Services</translation>
 <translation id="7191430249889272776">Karta je otvorená na pozadí.</translation>

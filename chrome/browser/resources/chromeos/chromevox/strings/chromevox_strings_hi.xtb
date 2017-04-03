@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">किसी पेज, संवाद या अन्य कंटेनर के भीतर शुरुआत से अंत तक ले जाएं या अंत से शुरुआत तक ले जाएं</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">एक्सेस कुंजी:<ph name="KEY" /></translation>
-<translation id="2155457205053847599">नीचे दी गई सूची से कोई विकल्प चुनकर वर्तमान 6 बिंदु ब्रेल तालिका को बदलें.</translation>
 <translation id="2169714232367507776">वर्तमान आइटम पर क्लिक करें</translation>
 <translation id="2179452035581866348">ChromeVox आपको आवश्यक और अतिरिक्त जानकारी देने के लिए ध्वनियों का उपयोग करता है. हर ध्वनि का क्या अर्थ है, इसे सीखकर आप अधिक तेज़ी से नेविगेट करने के लिए इन ध्वनियों का उपयोग कर सकते हैं. अपने आपको सहज महसूस करने पर आप बोली में विस्तृत विवरणों को बंद कर सकते हैं और पेज के बारे में आवश्‍यक जानकारी के लिए उन पर विश्वास कर सकते हैं. यहां ध्वनियों की पूरी सूची और उनके अर्थ दिए गए हैं.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कोष्ठक}one{# बंद कोष्ठक}other{# बंद कोष्ठक}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{टैब}one{# टैब}other{# टैब}}</translation>
 <translation id="2972078295414139404">पहले देखा गया कोई लिंक नहीं.</translation>
 <translation id="2972205263822847197">टूल टिप</translation>
-<translation id="2978549349327282388">स्तंभ:</translation>
 <translation id="2998131015536248178">पिछला वर्ण</translation>
 <translation id="2999559350546931576">पिच घटाएं</translation>
 <translation id="2999945368667127852">कोई अगला मीडिया विजेट नहीं.</translation>
@@ -564,7 +562,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="5968607524793740041">प्रसंग मेनू दिखाएं</translation>
 <translation id="5983179082906765664">मार्गदर्शक विवरण का स्‍तर बढ़ाएं</translation>
 <translation id="5999630716831179808">ध्वनियां</translation>
-<translation id="6000417740266304866">नीचे दी गई सूची से कोई विकल्प चुनकर वर्तमान 8 बिंदु ब्रेल तालिका को बदलें.</translation>
 <translation id="6006050241733874051">फ़ॉर्म</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{बैकस्लैश}one{# बैकस्लैश}other{# बैकस्लैश}}</translation>
 <translation id="6037602951055904232">आगे की ओर पैन करें</translation>
@@ -606,7 +603,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="6444046323172968959">सूचना डॉयलॉग</translation>
 <translation id="6459511626086141404">फ़्लैट कीमैप</translation>
 <translation id="6468049171101508116">अगला बटन</translation>
-<translation id="6491972999578897419">नीचे दी गई सूची से विकल्प चुनकर वर्तमान ध्वनि बदलें.</translation>
 <translation id="6493991254603208962">स्‍क्रीन की रोशनी कम करें</translation>
 <translation id="6508059270146105198">ब्रेल प्रदर्शन को पेज के नीचे ले जाएं</translation>
 <translation id="6536864053412760904">गणित ML टोकन</translation>
@@ -759,7 +755,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="820417203470636242">खाली सेल.</translation>
 <translation id="8215202828671303819">एकाधिक चयन</translation>
 <translation id="8224171046658870249">ChromeVox Next पर स्विच किया गया</translation>
-<translation id="8259358278692921574">पंक्तियां:</translation>
 <translation id="8276439074553447000">पिछले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="8278417001922463147">कोई पिछला लेख नहीं.</translation>
 <translation id="8283603667300770666">अगला फ़ॉर्म फ़ील्‍ड</translation>

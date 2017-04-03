@@ -89,7 +89,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Lamentablemente, tu configuración de Mozilla Firefox no está disponible mientras el navegador se está ejecutando. Para importar la configuración a Chromium, guarda tu trabajo y cierra todas las ventanas de Firefox. A continuación, haz clic en Continuar.</translation>
 <translation id="3852700440713538496">Ancla Chromium a la barra de tareas</translation>
-<translation id="3883381313049582448">Utilizar contraseña generada por Chromium</translation>
 <translation id="3889543394854987837">Haz clic en tu nombre para abrir Chromium y empezar a navegar.</translation>
 <translation id="390894725198123737">En los ordenadores Mac, las contraseñas se pueden guardar en el llavero, y otros usuarios de Chromium que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
@@ -148,7 +147,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5877064549588274448">Se ha cambiado el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5906655207909574370">El dispositivo está casi actualizado. Reinícialo para completar la actualización.</translation>
-<translation id="5942225298871134766">Chromium almacenará esta contraseña en <ph name="SAVED_PASSWORD_LINK" /> y la recordará la próxima vez que la necesites.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> se ha añadido a Chromium.</translation>
 <translation id="59625444380784159">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chromium.</translation>
 <translation id="5987687638152509985">Actualiza Chromium para iniciar la sincronización</translation>

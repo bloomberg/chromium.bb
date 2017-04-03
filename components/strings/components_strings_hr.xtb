@@ -355,7 +355,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Želite li da Chromium spremi tu karticu?</translation>
 <translation id="4171400957073367226">Potpis za potvrdu nije ispravan.</translation>
-<translation id="4176463684765177261">Onemogućeno</translation>
 <translation id="4196861286325780578">&amp;Ponovi premještanje</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />provjerite vatrozid i konfiguraciju antivirusnog programa<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ništa}=1{1 aplikacija ($1)}=2{2 aplikacije ($1, $2)}one{# aplikacija ($1, $2, $3)}few{# aplikacije ($1, $2, $3)}other{# aplikacija ($1, $2, $3)}}</translation>
@@ -382,7 +381,6 @@
 <translation id="4406896451731180161">rezultati pretraživanja</translation>
 <translation id="4432688616882109544">Host <ph name="HOST_NAME" /> nije prihvatio vaš certifikat za prijavu ili certifikat nije poslan.</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
-<translation id="4446242550670694251">Sada možete pregledavati privatno i ostali korisnici ovog uređaja neće vidjeti vaše aktivnosti.</translation>
 <translation id="4492190037599258964">Rezultati pretraživanja za upit '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Pogreška pri provjeri valjanosti: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">kontaktirajte administratora sustava</translation>
@@ -522,7 +520,6 @@
 <translation id="5872918882028971132">Nadređeni prijedlozi</translation>
 <translation id="587760065310675640">Adresa za dostavu nije podržana. Odaberite drugu adresu.</translation>
 <translation id="5901630391730855834">Žuta</translation>
-<translation id="59174027418879706">Omogućeno</translation>
 <translation id="5926846154125914413">Možda ćete izgubiti pristup premium sadržaju s nekih web-lokacija.</translation>
 <translation id="5959728338436674663">Automatski šalji Googleu neke <ph name="BEGIN_WHITEPAPER_LINK" />podatke o sustavu i sadržaj stranice<ph name="END_WHITEPAPER_LINK" /> radi otkrivanja opasnih aplikacija i web-lokacija. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Tjedan</translation>
@@ -535,7 +532,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{1. stranica}one{#. stranica}few{#. stranica}other{#. stranica}}</translation>
 <translation id="6017514345406065928">Zelena</translation>
 <translation id="6040143037577758943">Zatvori</translation>
-<translation id="604124094241169006">Automatski</translation>
 <translation id="6042308850641462728">Više</translation>
 <translation id="6060685159320643512">Oprez, ovi eksperimenti mogu ugristi</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ništa}=1{1}one{#}few{#}other{#}}</translation>
@@ -543,7 +539,6 @@
         uređaje koje možda upotrebljavate.</translation>
 <translation id="614940544461990577">Pokušajte sljedeće:</translation>
 <translation id="6151417162996330722">Certifikat poslužitelja ima predugo razdoblje valjanosti.</translation>
-<translation id="615643356032862689">Preuzete će se datoteke i oznake zadržati.</translation>
 <translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6177128806592000436">Veza s web-lokacijom nije sigurna</translation>
 <translation id="6203231073485539293">Provjerite internetsku vezu</translation>
@@ -794,9 +789,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8543181531796978784">Možete <ph name="BEGIN_ERROR_LINK" />prijaviti problem s otkrivanjem<ph name="END_ERROR_LINK" /> ili, ako razumijete na koje je načine ugrožena vaša sigurnost, <ph name="BEGIN_LINK" />posjetite nesigurnu web-lokaciju<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Prijevod nije uspio jer nije bilo moguće odrediti jezik stranice.</translation>
 <translation id="8559762987265718583">Sigurnu vezu s domenom <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nije moguće uspostaviti jer datum i vrijeme (<ph name="DATE_AND_TIME" />) na vašem uređaju nisu točni.</translation>
-<translation id="8570229484593575558">Ove se informacije |neće spremiti|:#vaša povijest pregledavanja#vaša pretraživanja#podaci o kolačićima</translation>
 <translation id="8571890674111243710">Prijevod stranice na <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Vaše aktivnosti |i dalje mogu biti vidljive|:#web-lokacijama koje posjećujete#vašem poslodavcu#vašem davatelju internetskih usluga</translation>
 <translation id="858637041960032120">Dodaj tel. broj
 </translation>
 <translation id="859285277496340001">Certifikat ne navodi mehanizam za provjeru svojeg opoziva.</translation>
@@ -809,7 +802,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8738058698779197622">Za uspostavu sigurne veze sat mora biti točno postavljen. To je zato što certifikati koje web-lokacije upotrebljavaju za međusobnu identifikaciju vrijede samo određeno vrijeme. Budući da sat na vašem uređaju nije točan, Chromium ne može potvrditi te certifikate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS adresa&lt;/abbr&gt; hosta <ph name="HOST_NAME" /> nije pronađena. U tijeku je dijagnosticiranje problema.</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
-<translation id="8798099450830957504">Zadano</translation>
 <translation id="8800988563907321413">Ovdje se prikazuju prijedlozi u blizini za vas</translation>
 <translation id="8820817407110198400">Knjižne oznake</translation>
 <translation id="883848425547221593">Druge oznake</translation>

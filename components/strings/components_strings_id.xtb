@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Ingin Chromium menyimpan kartu ini?</translation>
 <translation id="4171400957073367226">Tanda tangan verifikasi tidak valid</translation>
-<translation id="4176463684765177261">Dinonaktifkan</translation>
 <translation id="4196861286325780578">&amp;Ulangi pemindahan</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Periksa konfigurasi antivirus dan firewall<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{tidak ada}=1{1 aplikasi ($1)}=2{2 aplikasi ($1, $2)}other{# aplikasi ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">hasil penelusuran</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> tidak menerima sertifikat masuk Anda, atau sertifikat masuk mungkin tidak diberikan.</translation>
 <translation id="443673843213245140">Penggunaan proxy dinonaktifkan tetapi konfigurasi proxy yang eksplisit ditentukan.</translation>
-<translation id="4446242550670694251">Anda kini dapat mengakses secara pribadi, dan orang lain yang menggunakan perangkat ini tidak akan melihat aktivitas Anda.</translation>
 <translation id="4492190037599258964">Telusuri hasil untuk '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Kesalahan validasi: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Hubungi admin sistem</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Saran Induk</translation>
 <translation id="587760065310675640">Alamat pengiriman tidak didukung. Pilih alamat lain.</translation>
 <translation id="5901630391730855834">Kuning</translation>
-<translation id="59174027418879706">Diaktifkan</translation>
 <translation id="5926846154125914413">Anda dapat kehilangan akses ke konten premium dari beberapa situs.</translation>
 <translation id="5959728338436674663">Kirim beberapa <ph name="BEGIN_WHITEPAPER_LINK" />informasi sistem dan konten halaman<ph name="END_WHITEPAPER_LINK" /> secara otomatis ke Google untuk membantu mendeteksi aplikasi dan situs berbahaya. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Minggu</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Halaman 1}other{Halaman #}}</translation>
 <translation id="6017514345406065928">Hijau</translation>
 <translation id="6040143037577758943">Tutup</translation>
-<translation id="604124094241169006">Otomatis</translation>
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="6060685159320643512">Hati-hati, eksperimen ini dapat menimbulkan masalah</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{tidak ada}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     jaringan lain yang mungkin Anda gunakan.</translation>
 <translation id="614940544461990577">Coba:</translation>
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>
-<translation id="615643356032862689">Bookmark dan file yang didownload akan dipertahankan.</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
 <translation id="6177128806592000436">Sambungan Anda ke situs ini tidak aman</translation>
 <translation id="6203231073485539293">Periksa sambungan internet Anda</translation>
@@ -795,9 +790,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8543181531796978784">Anda dapat <ph name="BEGIN_ERROR_LINK" />melaporkan masalah pendeteksian<ph name="END_ERROR_LINK" /> atau, jika memahami risiko bagi keamanan, Anda dapat <ph name="BEGIN_LINK" />mengunjungi situs yang tidak aman<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Terjemahan gagal karena bahasa laman tidak dapat ditentukan.</translation>
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>
-<translation id="8570229484593575558">Informasi ini |tidak akan disimpan|:#Riwayat penjelajahan Anda#Penelusuran Anda#Data cookie</translation>
 <translation id="8571890674111243710">Menerjemahkan laman ke <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Aktivitas Anda |mungkin tetap dapat terlihat| ke:#Situs yang Anda buka#Atasan Anda#Penyedia Layanan Internet Anda</translation>
 <translation id="858637041960032120">+ nomor telepon</translation>
 <translation id="859285277496340001">Sertifikat tidak menetapkan mekanisme untuk memeriksa apakah sertifikat telah ditarik.</translation>
 <translation id="8620436878122366504">Orang tuamu belum menyetujuinya</translation>
@@ -809,7 +802,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak dapat ditemukan. Mendiagnosis masalah.</translation>
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
-<translation id="8798099450830957504">Default</translation>
 <translation id="8800988563907321413">Saran terdekat muncul di sini</translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="883848425547221593">Bookmark Lain</translation>

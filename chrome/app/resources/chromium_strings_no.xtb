@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox-innstillingene dine er dessverre ikke tilgjengelige når den nettleseren brukes. Hvis du vil installere de innstillingene til Chromium, må du lagre arbeidet ditt og lukke alle Firefox-vinduer. Klikk deretter på Fortsett.</translation>
 <translation id="3852700440713538496">Fest Chromium til oppgavelinjen</translation>
-<translation id="3883381313049582448">Bruk passordet som genereres av Chromium</translation>
 <translation id="3889543394854987837">Klikk på navnet ditt for å åpne Chromium og starte surfingen.</translation>
 <translation id="390894725198123737">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="5906655207909574370">Nå er oppdateringen snart ferdig! Start enheten på nytt for å fullføre oppdateringen.</translation>
-<translation id="5942225298871134766">Chromium lagrer dette med <ph name="SAVED_PASSWORD_LINK" /> og husker det neste gang du trenger det.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> har blitt lagt til i Chromium.</translation>
 <translation id="59625444380784159">Informasjon fra kontaktene dine kan hjelpe deg med å fylle ut skjemaer raskere i Chromium.</translation>
 <translation id="5987687638152509985">Oppdater Chromium for å starte synkroniseringen</translation>

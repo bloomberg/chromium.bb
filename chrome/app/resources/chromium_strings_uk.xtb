@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">На жаль, ваші налаштування Mozilla Firefox недоступні, коли цей веб-переглядач працює. Щоб імпортувати ці налаштування в Chromium, збережіть свою роботу і закрийте всі вікна Firefox. Потім натисніть "Продовжити".</translation>
 <translation id="3852700440713538496">Як закріпити значок Chromium на панелі завдань</translation>
-<translation id="3883381313049582448">Використовувати пароль, згенерований Chromium</translation>
 <translation id="3889543394854987837">Натисніть своє ім’я, щоб відкрити Chromium і розпочати перегляд сайтів.</translation>
 <translation id="390894725198123737">В ОС Mac паролі можуть зберігатися в системі Keychain, де їх можуть застосовувати чи синхронізувати інші користувачі Chromium, які спільно користуються цим обліковим записом ОС X.</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Канал змінено. Перезапустіть пристрій, щоб застосувати зміни.</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="5906655207909574370">Майже оновлено. Перезапустіть пристрій, щоб завершити оновлення.</translation>
-<translation id="5942225298871134766">Chromium додасть його в <ph name="SAVED_PASSWORD_LINK" /> і запам’ятає для наступного разу.</translation>
 <translation id="5942520288919337908">Розширення <ph name="EXTENSION_NAME" /> додано в Chromium.</translation>
 <translation id="59625444380784159">Дані ваших контактів допоможуть швидше заповнювати форми в Chromium.</translation>
 <translation id="5987687638152509985">Щоб почати синхронізацію, оновіть Chromium</translation>

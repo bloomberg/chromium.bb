@@ -17,7 +17,6 @@
 <translation id="1434626383986940139">Aplikasi Chrome Canary</translation>
 <translation id="1457721931618994305">Memperbarui Google Chrome...</translation>
 <translation id="1469002951682717133">Peluncur Aplikasi Chrome</translation>
-<translation id="1475773083554142432">Chrome akan menyimpan ini dengan <ph name="SAVED_PASSWORD_LINK" /> dan mengingatnya saat Anda membutuhkannya lagi.</translation>
 <translation id="1480489203462860648">Cobalah, ini sudah dipasang</translation>
 <translation id="1553358976309200471">Perbarui browser Chrome</translation>
 <translation id="1587223624401073077">Google Chrome menggunakan kamera Anda.</translation>
@@ -38,7 +37,7 @@
 <translation id="1877026089748256423">Chrome terlalu lawas</translation>
 <translation id="2063848847527508675">Chrome OS harus dimulai ulang untuk menerapkan pembaruan.</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
-<translation id="2084710999043359739">Tambah ke Chrome</translation>
+<translation id="2084710999043359739">Tambahkan ke Chrome</translation>
 <translation id="2120620239521071941">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="216054706567564023">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda.</translation>
@@ -175,7 +174,6 @@ Periksa email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</
 <translation id="6235018212288296708">Inbound rule untuk Google Chrome guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="6236285698028833233">Google Chrome telah berhenti memperbarui dan tidak lagi mendukung versi sistem operasi Anda ini.</translation>
 <translation id="6291549208091401781">Google Chrome sudah terpasang untuk semua pengguna di komputer Anda.</translation>
-<translation id="629218512217695915">Gunakan sandi yang dibuat oleh Chrome</translation>
 <translation id="6338556085225130112">Memperbarui Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS terwujud karena <ph name="BEGIN_LINK_CROS_OSS" />perangkat lunak sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="6400076122676892962">Komputer ini akan segera berhenti menerima pembaruan Google Chrome karena Mac OS X 10.6, 10.7, dan 10.8 sudah tidak didukung.</translation>

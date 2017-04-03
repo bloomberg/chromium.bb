@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefoxin asetukset eivät ole käytettävissä selaimen ollessa käynnissä. Jos haluat tuoda ne Chromiumiin, tallenna työsi ja sulje Firefoxin kaikki ikkunat. Valitse sitten Jatka.</translation>
 <translation id="3852700440713538496">Chromiumin kiinnittäminen tehtäväpalkkiin</translation>
-<translation id="3883381313049582448">Käytä Chromiumin luomaa salasanaa</translation>
 <translation id="3889543394854987837">Avaa Chromium klikkaamalla nimeäsi ja aloita selaaminen.</translation>
 <translation id="390894725198123737">Macilla salasanat voidaan tallentaa Avainnippuusi, ja muut Chromium-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
 <translation id="5906655207909574370">Melkein ajan tasalla. Viimeistele päivitys käynnistämällä laite uudelleen.</translation>
-<translation id="5942225298871134766">Chromium tallentaa salasanan <ph name="SAVED_PASSWORD_LINK" /> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
 <translation id="5942520288919337908"><ph name="EXTENSION_NAME" /> on lisätty Chromiumiin.</translation>
 <translation id="59625444380784159">Yhteystietojesi avulla lomakkeiden täyttäminen Chromiumissa sujuu helpommin.</translation>
 <translation id="5987687638152509985">Aloita synkronointi päivittämällä Chromium.</translation>

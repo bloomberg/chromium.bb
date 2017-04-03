@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Dorești ca acest card să fie salvat în Chromium?</translation>
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
-<translation id="4176463684765177261">Dezactivat</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{niciuna}=1{1 aplicație ($1)}=2{2 aplicații ($1, $2)}few{# aplicații ($1, $2, $3)}other{# de aplicații ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">rezultate ale căutării</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> nu a acceptat certificatul de conectare sau un astfel de certificat nu a fost oferit.</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
-<translation id="4446242550670694251">Acum poți naviga în mod privat, iar celelalte persoane care folosesc acest dispozitiv nu îți vor vedea activitatea.</translation>
 <translation id="4492190037599258964">Rezultatele căutării pentru „<ph name="SEARCH_STRING" />”</translation>
 <translation id="4506176782989081258">Eroare de validare: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">să contactezi administratorul sistemului;</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Sugestii parentale</translation>
 <translation id="587760065310675640">Adresa de expediere nu este acceptată. Selectează o altă adresă.</translation>
 <translation id="5901630391730855834">Galben</translation>
-<translation id="59174027418879706">Activat</translation>
 <translation id="5926846154125914413">Este posibil să pierzi accesul la conținutul premium de pe anumite site-uri.</translation>
 <translation id="5959728338436674663">Trimite automat anumite <ph name="BEGIN_WHITEPAPER_LINK" />informații despre sistem și conținutul paginii<ph name="END_WHITEPAPER_LINK" /> la Google pentru a detecta aplicațiile și site-urile periculoase. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Săptămână</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}few{Pagina #}other{Pagina #}}</translation>
 <translation id="6017514345406065928">Verde</translation>
 <translation id="6040143037577758943">Închide</translation>
-<translation id="604124094241169006">Automat</translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6060685159320643512">Atenție, aceste experimente pot produce daune</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{niciuna}=1{1}few{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     dispozitive de rețea pe care le folosești.</translation>
 <translation id="614940544461990577">Încearcă:</translation>
 <translation id="6151417162996330722">Certificatul de server are o perioadă de validitate prea lungă.</translation>
-<translation id="615643356032862689">Se vor păstra fișierele descărcate și marcajele.</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6177128806592000436">Conexiunea la acest site nu este sigură</translation>
 <translation id="6203231073485539293">Verificați conexiunea la internet</translation>
@@ -795,9 +790,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8543181531796978784">Poți să <ph name="BEGIN_ERROR_LINK" />raportezi o problemă privind detectarea<ph name="END_ERROR_LINK" /> sau, dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site nesigur<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Traducerea nu a reușit, deoarece nu a putut fi stabilită limba paginii.</translation>
 <translation id="8559762987265718583">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
-<translation id="8570229484593575558">Aceste informații |nu vor fi salvate|:#istoricul de navigare;#căutările;#datele asociate cookie-urilor.</translation>
 <translation id="8571890674111243710">Se traduce pagina în <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">|Este posibil ca activitatea ta| să fie vizibilă pentru:#site-urile pe care le accesezi;#angajator;#furnizorul de servicii de internet.</translation>
 <translation id="858637041960032120">Adăugați telefon
 </translation>
 <translation id="859285277496340001">Certificatul nu specifică un mecanism pentru a verifica dacă acesta a fost revocat.</translation>
@@ -810,7 +803,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8738058698779197622">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chromium nu poate verifica aceste certificate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresa DNS&lt;/abbr&gt; pentru <ph name="HOST_NAME" /> nu a putut fi găsită. Se diagnostichează problema.</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
-<translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8800988563907321413">Sugestiile pentru În apropiere sunt afișate aici</translation>
 <translation id="8820817407110198400">Marcaje</translation>
 <translation id="883848425547221593">Alte marcaje</translation>

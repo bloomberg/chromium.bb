@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Skal Chromium gemme dette kort?</translation>
 <translation id="4171400957073367226">Ugyldig verifikationssignatur</translation>
-<translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollere firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ingen}=1{1 app ($1)}=2{2 apps ($1, $2)}one{# app ($1, $2, $3)}other{# apps ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">søgeresultater</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> accepterede ikke dit logincertifikat, eller der er ikke angivet et.</translation>
 <translation id="443673843213245140">Brug af en proxy er deaktiveret, men en eksplicit proxykonfiguration er angivet.</translation>
-<translation id="4446242550670694251">Nu kan du gå på nettet privat, og andre personer, som bruger denne enhed, kan ikke se din aktivitet.</translation>
 <translation id="4492190037599258964">Søgeresultater for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Valideringsfejl: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kontakte systemadministratoren</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Forslag fra forældre</translation>
 <translation id="587760065310675640">Forsendelsesadressen understøttes ikke. Vælg en anden adresse.</translation>
 <translation id="5901630391730855834">Gul</translation>
-<translation id="59174027418879706">Aktiveret</translation>
 <translation id="5926846154125914413">Du kan miste adgangen til Premium-indhold på visse websites.</translation>
 <translation id="5959728338436674663">Send automatisk <ph name="BEGIN_WHITEPAPER_LINK" />nogle systemoplysninger og noget sideindhold<ph name="END_WHITEPAPER_LINK" /> til Google som en hjælp til at registrere skadelige apps og websites. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Uge</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Side 1}one{Side #}other{Side #}}</translation>
 <translation id="6017514345406065928">Grøn</translation>
 <translation id="6040143037577758943">Luk</translation>
-<translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6060685159320643512">Vær forsigtig. Disse eksperimenter kan være farlige</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ingen}=1{1}one{#}other{#}}</translation>
@@ -544,7 +540,6 @@
     netværksenheder, du bruger.</translation>
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6151417162996330722">Servercertifikatet har en gyldighedsperiode, der er for lang.</translation>
-<translation id="615643356032862689">Downloadede filer og bogmærker beholdes.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="6177128806592000436">Din forbindelse til dette website er ikke sikker.</translation>
 <translation id="6203231073485539293">Kontrollér din internetforbindelse</translation>
@@ -795,9 +790,7 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8543181531796978784">Du kan <ph name="BEGIN_ERROR_LINK" />rapportere et registreringsproblem<ph name="END_ERROR_LINK" /> eller, hvis du forstår den sikkerhedsrisiko, du udsætter dig for, <ph name="BEGIN_LINK" />kan du gå til dette usikre website<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Oversættelsen mislykkedes, fordi sidens sprog ikke kunne fastslås.</translation>
 <translation id="8559762987265718583">Der kan ikke oprettes en privat forbindelse til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, da tid og dato (<ph name="DATE_AND_TIME" />) på din enhed er forkerte.</translation>
-<translation id="8570229484593575558">Disse oplysninger |gemmes ikke|:#Din browserhistorik#Dine søgninger#Cookiedata</translation>
 <translation id="8571890674111243710">Oversætter siden til <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Din aktivitet |er muligvis stadig synlig| for:#Websites, du besøger#Din arbejdsgiver#Din internetudbyder</translation>
 <translation id="858637041960032120">Tilføj tlf.nr.
 </translation>
 <translation id="859285277496340001">Certifikatet angiver ikke en mekanisme, der kontrollerer, om den har været tilbagekaldt.</translation>
@@ -810,7 +803,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8738058698779197622">For at kunne oprette en sikker forbindelse skal dit ur være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chromium ikke bekræfte disse certifikater.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; for <ph name="HOST_NAME" /> blev ikke fundet. Diagnosticerer problemet.</translation>
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
-<translation id="8798099450830957504">Standard</translation>
 <translation id="8800988563907321413">Her vises de forslag, der er tæt på dig</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="883848425547221593">Andre bogmærker</translation>

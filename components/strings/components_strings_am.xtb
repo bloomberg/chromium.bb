@@ -355,7 +355,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Chromium ይህን ካርድ እንዲያስቀምጥልዎት ይፈልጋሉ?</translation>
 <translation id="4171400957073367226">መጥፎ የማረጋገጫ ፊርማ</translation>
-<translation id="4176463684765177261">ተሰናክሏል</translation>
 <translation id="4196861286325780578">&amp;ውሰድን ድገም</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />የኬላ እና የጸረ-ቫይረስ ውቅረቶችን መፈተሽ<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{ምንም}=1{1 መተግበሪያ ($1)}=2{2 መተግበሪያዎች ($1፣ $2)}one{# መተግበሪያዎች ($1፣ $2፣ $3)}other{# መተግበሪያዎች ($1፣ $2፣ $3)}}</translation>
@@ -382,7 +381,6 @@
 <translation id="4406896451731180161">የፍለጋ ውጤቶች</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> የመግቢያ እውቅና ማረጋገጫዎን አልተቀበለም፣ ወይም ገና አልተሰጠዎት ይሆናል።</translation>
 <translation id="443673843213245140">የተኪ መጠቀም ተሰናክሏል ግን ግልጽ የሆነ የተኪ ውቅር ተገልጿል።</translation>
-<translation id="4446242550670694251">አሁን በግል ማሰስ ይችላሉ፣ እና ይህን መሣሪያ የሚጠቀሙ ሰዎች የእርስዎን እንቅስቃሴ አይመለከቱም።</translation>
 <translation id="4492190037599258964">የፍለጋ ውጤቶች ለ'<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">የማረጋገጥ ስህተት፦ <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">የሥርዓት አስተዳዳሪውን ማነጋገር</translation>
@@ -524,7 +522,6 @@ nil</translation>
 <translation id="5872918882028971132">የወላጅ አስተያየት ጥቆማዎች</translation>
 <translation id="587760065310675640">የማይደገፍ የመላኪያ አድራሻ። የተለየ አድራሻ ይምረጡ።</translation>
 <translation id="5901630391730855834">ቢጫ</translation>
-<translation id="59174027418879706">ነቅቷል</translation>
 <translation id="5926846154125914413">ከአንዳንድ ጣቢያዎች የመጣ የፕሪሚየም ይዘት መዳረሻ ሊያጡ ይችላሉ።</translation>
 <translation id="5959728338436674663">አደገኛ መተግበሪያዎችን እና ጣቢያዎችን ማግኘት እንዲያግዝ አንዳንድ <ph name="BEGIN_WHITEPAPER_LINK" />የሥርዓት መረጃ እና የገጽ ይዘት<ph name="END_WHITEPAPER_LINK" />ን በራስ-ሰር ወደ Google ይላኩ። <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">ሳምንት</translation>
@@ -537,7 +534,6 @@ nil</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{ገጽ 1}one{ገጽ #}other{ገጽ #}}</translation>
 <translation id="6017514345406065928">አረንጓዴ</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
-<translation id="604124094241169006">ራስ-ሰር</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="6060685159320643512">ይጠንቀቁ፣ እነዚህ ሙከራዎች ሊያስቸግሩ ይችላሉ</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{ምንም}=1{1}one{#}other{#}}</translation>
@@ -545,7 +541,6 @@ nil</translation>
         ሞደሞችን ወይም ሌላ አውታረ መረብ መሣሪያዎችን ዳግም ያስጀምሩ።</translation>
 <translation id="614940544461990577">ይሞክሩ፦</translation>
 <translation id="6151417162996330722">የአገልጋይ እውቅና ማረጋገጫው በጣም ረጅም የሆነ የማረጋገጫ ጊዜ አለው።</translation>
-<translation id="615643356032862689">የወረዱ ፋይሎች እና ዕልባቶች እንዳሉ ይቀመጣሉ።</translation>
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
 <translation id="6177128806592000436">ወደዚህ ጣቢያ ያልዎት ግንኙነት ደህንነቱ አስተማማኝ አይደለም</translation>
 <translation id="6203231073485539293">የበይነመረብ ግኑኝነትዎን ያረጋግጡ</translation>
@@ -796,9 +791,7 @@ nil</translation>
 <translation id="8543181531796978784"><ph name="BEGIN_ERROR_LINK" />የፈልጎ ማግኘት ችግርን ሪፖርት ማድረግ<ph name="END_ERROR_LINK" />፣ ወይም ደግሞ በእርስዎ ደህንነት ላይ ሊያስከትል የሚችለውን አደጋ ከተረዱ <ph name="BEGIN_LINK" />ይህን ደህንነቱ ያልተጠበቀ ጣቢያ መጎብኘት<ph name="END_LINK" /> ይችላሉ።</translation>
 <translation id="8553075262323480129">የገጹ ቋንቋ ሊታወቅ ስላልቻለ ትርጉሙ አልተሳካም።</translation>
 <translation id="8559762987265718583">የእርስዎ መሣሪያ ቀን (<ph name="DATE_AND_TIME" />) ልክ ስላልሆነ ወደ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> የግል ግንኙነት መመስረት አይቻልም።</translation>
-<translation id="8570229484593575558">ይህ መረጃ |አይቀመጥም|፦#የእርስዎ የአሰሳ ታሪክ#የእርስዎ ፍለጋዎች#የኩኪ ውሂብ</translation>
 <translation id="8571890674111243710">ገጽ ወደ <ph name="LANGUAGE" /> በመተርጎም ላይ...</translation>
-<translation id="8584539743998202583">የእርስዎ እንቅስቃሴ ለሚከተሉት |አሁንም የሚታዩ ሊሆኑ ይችላሉ|፦#እርስዎ የሚጎበኟቸው ጣቢያዎች#የእርስዎ አሠሪ#የእርስዎ የበይነመረብ አቅራቢ</translation>
 <translation id="858637041960032120">ስልክ ቁጥር ያክሉ
 </translation>
 <translation id="859285277496340001">የእውቅና ማረጋገጫው ተሽሮ እንደሆነ የሚታይበት ምንም ስልት አይገልጽም።</translation>
@@ -811,7 +804,6 @@ nil</translation>
 <translation id="8738058698779197622">ደህንነቱ የተጠበቀ ግንኙነት ለመመስረት፣ የእርስዎ ሰዓት በትክክል መቀናበር ያስፈልገዋል። ይህን የሆነበት ምክንያት የድር ጣቢያዎች ራሳቸውን ለማሳወቅ የሚጠቀሙባቸው የምስክር ወረቀቶች የሚሰሩት ለተወሰኑ ክፍለ ጊዜያቶች ብቻ ስለሆነ ነው። የእርስዎ መሣሪያ ሰዓት ልክ እንዳለመሆኑ መጠን Chromium እነዚህን ምስክር ወረቀቶች ሊያረጋግጣቸው አይችልም።</translation>
 <translation id="8740359287975076522">የ<ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;የዲኤንኤስ አድራሻ&lt;/abbr&gt; ሊገኝ አልተቻለም። ችግሩን በመመርመር ላይ።</translation>
 <translation id="8790007591277257123">&amp;ሰርዝን ድገም</translation>
-<translation id="8798099450830957504">እንደወረደ</translation>
 <translation id="8800988563907321413">በአቅራቢያዎ ያሉ የአስተያየት ጥቆማዎች እዚህ ይመጣሉ</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
 <translation id="883848425547221593">ሌላ እልባቶች</translation>

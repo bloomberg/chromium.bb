@@ -109,7 +109,6 @@
 <translation id="2110480898214777136">Vés del principi al final o viceversa dins d'una pàgina, d'un quadre de diàleg o d'un altre espai delimitat</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">clau d'accés: <ph name="KEY" /></translation>
-<translation id="2155457205053847599">Per canviar la taula actual de braille de sis punts, seleccioneu una de les opcions de la llista que hi ha a continuació.</translation>
 <translation id="2169714232367507776">Feu clic a l'element actual.</translation>
 <translation id="2179452035581866348">ChromeVox fa servir sons per donar-te informació essencial i addicional. Pots aprendre què signifiquen i així utilitzar-los per navegar més de pressa. Un cop t'hi familiaritzis, pots desactivar les descripcions en veu alta detallades i dependre dels sons per obtenir informació essencial de la pàgina. Aquí tens una llista completa dels sons i del que signifiquen.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parèntesi de tancament}other{# parèntesis de tancament}}</translation>
@@ -185,7 +184,6 @@
 <translation id="296951647852255825">{COUNT,plural, =1{tabulació}other{# tabulacions}}</translation>
 <translation id="2972078295414139404">No hi ha cap enllaç visitat anterior.</translation>
 <translation id="2972205263822847197">Descripció emergent</translation>
-<translation id="2978549349327282388">Columnes:</translation>
 <translation id="2998131015536248178">Caràcter anterior</translation>
 <translation id="2999559350546931576">Disminueix la presentació.</translation>
 <translation id="2999945368667127852">No hi ha cap widget multimèdia a continuació.</translation>
@@ -564,7 +562,6 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="5968607524793740041">Mostra el menú contextual</translation>
 <translation id="5983179082906765664">Augmenta la granularitat de la navegació</translation>
 <translation id="5999630716831179808">Veus</translation>
-<translation id="6000417740266304866">Per canviar la taula actual de braille de vuit punts, seleccioneu una de les opcions de la llista que hi ha a continuació.</translation>
 <translation id="6006050241733874051">Formulari</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra invertida}other{# barres invertides}}</translation>
 <translation id="6037602951055904232">Desplaça cap endavant.</translation>
@@ -606,7 +603,6 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="6444046323172968959">Diàleg d'alerta</translation>
 <translation id="6459511626086141404">Mapa de teclat pla</translation>
 <translation id="6468049171101508116">Botó següent</translation>
-<translation id="6491972999578897419">Podeu canviar la veu actual si seleccioneu una opció de la llista següent.</translation>
 <translation id="6493991254603208962">disminueix la brillantor</translation>
 <translation id="6508059270146105198">Mou la pantalla Braille a la part inferior de la pàgina.</translation>
 <translation id="6536864053412760904">Testimoni de MathML</translation>
@@ -759,7 +755,6 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="820417203470636242">Cel·la buida</translation>
 <translation id="8215202828671303819">Selecció múltiple</translation>
 <translation id="8224171046658870249">S'ha passat a ChromeVox Next</translation>
-<translation id="8259358278692921574">Files:</translation>
 <translation id="8276439074553447000">Vés a l'element enfocable anterior</translation>
 <translation id="8278417001922463147">No hi ha cap article anterior.</translation>
 <translation id="8283603667300770666">Camp de formulari següent</translation>

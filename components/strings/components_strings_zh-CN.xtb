@@ -353,7 +353,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">您希望 Chromium 保存此信用卡吗？</translation>
 <translation id="4171400957073367226">验证签名无效</translation>
-<translation id="4176463684765177261">已停用</translation>
 <translation id="4196861286325780578">恢复移动(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />检查防火墙和防病毒配置<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{无}=1{1 个应用 ($1)}=2{2 个应用（$1、$2）}other{# 个应用（$1、$2，$3）}}</translation>
@@ -380,7 +379,6 @@
 <translation id="4406896451731180161">搜索结果</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受您的登录证书，或者您可能没有提供登录证书。</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
-<translation id="4446242550670694251">现在您可以进行私密浏览，这样一来，使用此设备的其他用户将不会看到您的活动。</translation>
 <translation id="4492190037599258964">“<ph name="SEARCH_STRING" />”的搜索结果</translation>
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">联系系统管理员</translation>
@@ -520,7 +518,6 @@
 <translation id="5872918882028971132">家长建议</translation>
 <translation id="587760065310675640">不支持此送货地址。请选择一个不同的地址。</translation>
 <translation id="5901630391730855834">黄色</translation>
-<translation id="59174027418879706">已启用</translation>
 <translation id="5926846154125914413">您可能无法再访问某些网站上的付费内容。</translation>
 <translation id="5959728338436674663">自动向 Google 发送一些<ph name="BEGIN_WHITEPAPER_LINK" />系统信息和网页内容<ph name="END_WHITEPAPER_LINK" />，以帮助检测危险应用和网站。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">周</translation>
@@ -533,14 +530,12 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{第 1 页}other{第 # 页}}</translation>
 <translation id="6017514345406065928">绿色</translation>
 <translation id="6040143037577758943">关闭</translation>
-<translation id="604124094241169006">自动</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{无}=1{1 个}other{# 个}}</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
-<translation id="615643356032862689">书签和下载的文件将会保留下来。</translation>
 <translation id="6165508094623778733">了解详情</translation>
 <translation id="6177128806592000436">您与此网站之间建立的连接不安全</translation>
 <translation id="6203231073485539293">请检查您的互联网连接是否正常</translation>
@@ -791,9 +786,7 @@
 <translation id="8543181531796978784">您可以<ph name="BEGIN_ERROR_LINK" />报告检测问题<ph name="END_ERROR_LINK" />；或者，如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
-<translation id="8570229484593575558">系统|不会保存|以下信息：#您的浏览记录#您的搜索记录#Cookie 数据</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">以下各方|可能仍会看到|您的活动：#您访问的网站#您的雇主#您的互联网服务提供商</translation>
 <translation id="858637041960032120">添加电话号码
 </translation>
 <translation id="859285277496340001">证书未指定用于检查是否已吊销证书的机制。</translation>
@@ -806,7 +799,6 @@
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
-<translation id="8798099450830957504">默认</translation>
 <translation id="8800988563907321413">此处将显示系统建议您浏览的附近网页</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883848425547221593">其他书签</translation>

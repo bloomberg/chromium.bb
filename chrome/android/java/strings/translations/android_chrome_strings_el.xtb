@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1006017844123154345">Άνοιγμα στο διαδίκτυο</translation>
-<translation id="1056898198331236512">Προειδοποίηση</translation>
 <translation id="10614374240317010">Δεν έχει αποθηκευθεί ποτέ</translation>
 <translation id="1061441684050139317">Το Chrome χρειάζεται πρόσβαση στο μικρόφωνο προκειμένου να το μοιραστεί με αυτόν τον ιστότοπο.</translation>
 <translation id="1080790410959514870">Πρόκειται να αποσυνδεθείτε από έναν λογαριασμό που τελεί υπό τη διαχείριση του <ph name="DOMAIN_NAME" />. Με αυτόν τον τρόπο θα διαγραφούν τα δεδομένα του Chrome που είναι αποθηκευμένα σε αυτήν τη συσκευή, αλλά τα δεδομένα θα διατηρηθούν στο Λογαριασμό σας Google.</translation>
@@ -41,6 +40,7 @@
 <translation id="1383876407941801731">Αναζήτηση</translation>
 <translation id="1384959399684842514">Η λήψη διακόπηκε προσωρινά.</translation>
 <translation id="1389974829397082527">Δεν υπάρχουν σελιδοδείκτες εδώ</translation>
+<translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> προτάσεις από το Chrome</translation>
 <translation id="1404122904123200417">Ενσωματωμένο σε <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Να μην γίνεται εντοπισμός"</translation>
 <translation id="1407135791313364759">Άνοιγμα όλων</translation>
@@ -322,6 +322,7 @@
 <translation id="473775607612524610">Ενημέρωση</translation>
 <translation id="4738836084190194332">Τελευταίος συγχρονισμός: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Άνοιγμα νέας καρτέλας</translation>
+<translation id="4750394297954878236">Προτάσεις</translation>
 <translation id="4759238208242260848">Λήψεις</translation>
 <translation id="4766369052440583386">Η Εξοικονόμηση δεδομένων είναι ενεργή</translation>
 <translation id="4797039098279997504">Αγγίξτε για να επιστρέψετε στη διεύθυνση <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -393,7 +394,6 @@
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB διαθέσιμα</translation>
 <translation id="5435775191620395718">Εμφάνιση ιστορικού από αυτήν τη συσκευή. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" />.</translation>
 <translation id="5441522332038954058">Μετάβαση στη γραμμή διευθύνσεων</translation>
-<translation id="544291274896356069">Αποχώρηση από την κατάσταση ανώνυμης περιήγησης εάν αυτός ο σύνδεσμος έχει ανοίξει σε εξωτερική εφαρμογή. Συνέχεια;</translation>
 <translation id="5447201525962359567">Όλος ο αποθηκευτικός χώρος ιστότοπων, συμπεριλαμβανομένων των cookie και άλλων τοπικά αποθηκευμένων δεδομένων</translation>
 <translation id="5456381639095306749">Λήψη σελίδας</translation>
 <translation id="548278423535722844">Άνοιγμα σε εφαρμογή χαρτών</translation>
@@ -405,6 +405,7 @@
 <translation id="5530766185686772672">Κλείσιμο καρτ.ανών.περιήγ.</translation>
 <translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5565871407246142825">Πιστωτικές κάρτες</translation>
+<translation id="5568069709869097550">Δεν είναι δυνατή η σύνδεση</translation>
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE" /> για την εικόνα</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
 <translation id="5596627076506792578">Περισσότερες επιλογές</translation>
@@ -507,6 +508,7 @@
 <translation id="6583199322650523874">Προσθήκη σελιδοδείκτη στην τρέχουσα σελίδα</translation>
 <translation id="6600954340915313787">Αντιγράφηκε στο Chrome</translation>
 <translation id="6612358246767739896">Προστατευμένο περιεχόμενο</translation>
+<translation id="662080504995468778">Παραμονή</translation>
 <translation id="6627583120233659107">Επεξεργασία φακέλου</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6656545060687952787">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία, προκειμένου να κάνει σάρωση για συσκευές. <ph name="BEGIN_LINK" />Ενημέρωση δικαιωμάτων<ph name="END_LINK" /></translation>
@@ -556,6 +558,7 @@
 <translation id="7063006564040364415">Δεν ήταν δυνατή η σύνδεση στον διακομιστή συγχρονισμού.</translation>
 <translation id="7128222689758636196">Να επιτρέπεται για την τρέχουσα μηχανή αναζήτησης</translation>
 <translation id="7138678301420049075">Άλλο</translation>
+<translation id="7144878232160441200">Δοκιμάστε ξανά</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7189372733857464326">Αναμονή για ολοκλήρωση της ενημέρωσης των Υπηρεσιών Google Play</translation>
 <translation id="7191430249889272776">Η καρτέλα άνοιξε στο παρασκήνιο.</translation>

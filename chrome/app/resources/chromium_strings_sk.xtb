@@ -89,7 +89,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Nastavenia prehliadača Mozilla Firefox žiaľ nie sú k dispozícii, kým je prehliadač spustený. Ak chcete tieto nastavenia importovať do prehliadača Chromium, uložte svoju prácu a zatvorte všetky okná prehliadača Firefox. Následne kliknite na tlačidlo Pokračovať.</translation>
 <translation id="3852700440713538496">Pripnutie prehliadača Chromium na panel úloh</translation>
-<translation id="3883381313049582448">Použiť heslo vygenerované prehliadačom Chromium</translation>
 <translation id="3889543394854987837">Ak chcete otvoriť prehliadač Chromium a začať prehliadať, kliknite na svoje meno.</translation>
 <translation id="390894725198123737">Na počítačoch Mac sa heslá môžu ukladať do aplikácie Keychain. Ostatní používatelia prehliadača Chromium, ktorí zdieľajú tento účet systému OS X, k nim môžu pristupovať a môžu ich synchronizovať.</translation>
 <translation id="4050175100176540509">V najnovšej verzii sú k dispozícii dôležité vylepšenia zabezpečenia a nové funkcie.</translation>
@@ -148,7 +147,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5877064549588274448">Kanál sa zmenil. Ak chcete zmeny použiť, reštartujte zariadenie.</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5906655207909574370">Aktualizácia je takmer hotová! Dokončite ju reštartovaním zariadenia.</translation>
-<translation id="5942225298871134766">Chromium uloží toto heslo pomocou funkcie <ph name="SAVED_PASSWORD_LINK" /> a ponúkne vám ho, keď ho budete najbližšie potrebovať.</translation>
 <translation id="5942520288919337908">Rozšírenie <ph name="EXTENSION_NAME" /> bolo pridané do prehliadača Chromium.</translation>
 <translation id="59625444380784159">Podrobnosti z vašich kontaktov vám môžu pomôcť rýchlejšie vypĺňať formuláre v prehliadači Chromium.</translation>
 <translation id="5987687638152509985">Ak chcete spustiť synchronizáciu, aktualizujte Chromium</translation>

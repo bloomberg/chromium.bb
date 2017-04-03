@@ -77,7 +77,6 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2381405137052800939">Põhiteave</translation>
 <translation id="2386793615875593361">1 on valitud</translation>
 <translation id="2435457462613246316">Kuva parool</translation>
-<translation id="2467815441875554965">Kontekstipõhine otsing</translation>
 <translation id="2572712655377361602">Seadme reegel blokeeris juurdepääsu teie fotodele</translation>
 <translation id="2584132361465095047">Lisa konto …</translation>
 <translation id="2593774076813182497">Lehte ei saa printida.</translation>
@@ -146,7 +145,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="3608436266458100337">Lugejarežiim</translation>
 <translation id="3638472932233958418">Lehtede eellaadimine</translation>
 <translation id="3691593122358196899">Lisatud järjehoidjana kausta <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Kui funktsioon on lubatud, soovitab omnikastike veebilehti, mida levitavad lähedal asuvad seadmed.</translation>
 <translation id="3738139272394829648">Puudutage otsimiseks</translation>
 <translation id="3771033907050503522">Inkogn. vahelehed</translation>
 <translation id="3783017676699494206">Salvesta kujutis</translation>
@@ -264,6 +262,7 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="6324669097367352121">Sisselogimisseaded</translation>
 <translation id="6337234675334993532">Krüpteerimine</translation>
 <translation id="633809752005859102">Midagi läks väga valesti. Töötame selle kallal.</translation>
+<translation id="6342069812937806050">Äsja</translation>
 <translation id="6344783595350022745">Lihttekst</translation>
 <translation id="6362362396625799311">Inkognito vahelehti ei ole</translation>
 <translation id="6380866119319257197">Kui unustate parooli või soovite seda seadet muuta, <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="7189598951263744875">Jaga ...</translation>
 <translation id="7203585745079012652">Vastuste esitamine</translation>
 <translation id="722055596168483966">Google'i teenuste isikupärastamine</translation>
-<translation id="7222245588540287464">Olenemata sellest, kas kontekstipõhine otsing on lubatud.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> protsenti on alla laaditud</translation>
 <translation id="7346909386216857016">Selge, sain aru!</translation>
 <translation id="7400418766976504921">URL</translation>

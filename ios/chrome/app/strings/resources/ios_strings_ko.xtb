@@ -77,7 +77,6 @@
 <translation id="2381405137052800939">기본설정</translation>
 <translation id="2386793615875593361">1장 선택됨</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
-<translation id="2467815441875554965">문맥 검색</translation>
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
 <translation id="2584132361465095047">계정 추가...</translation>
 <translation id="2593774076813182497">이 페이지는 인쇄할 수 없습니다.</translation>
@@ -146,7 +145,6 @@
 <translation id="3608436266458100337">리더 모드</translation>
 <translation id="3638472932233958418">웹페이지 미리 로드하기</translation>
 <translation id="3691593122358196899">북마크를 <ph name="FOLDER_TITLE" />에 추가함</translation>
-<translation id="3692781555820666866">이 기능을 사용하도록 설정한 경우 내 주변에 있는 기기에서 브로드캐스트하는 웹페이지가 검색주소창에 추천 항목으로 표시됩니다.</translation>
 <translation id="3738139272394829648">터치하여 검색</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3783017676699494206">이미지 저장</translation>
@@ -264,6 +262,7 @@
 <translation id="6324669097367352121">로그인 설정</translation>
 <translation id="6337234675334993532">암호화</translation>
 <translation id="633809752005859102">문제가 발생했습니다. 조사해 보겠습니다.</translation>
+<translation id="6342069812937806050">완료됨</translation>
 <translation id="6344783595350022745">텍스트 삭제</translation>
 <translation id="6362362396625799311">시크릿 탭 없음</translation>
 <translation id="6380866119319257197">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
@@ -308,7 +307,6 @@
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7203585745079012652">음성 응답</translation>
 <translation id="722055596168483966">Google 서비스 맞춤설정</translation>
-<translation id="7222245588540287464">문맥 검색 사용 설정 여부입니다.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
 <translation id="7346909386216857016">확인</translation>
 <translation id="7400418766976504921">URL</translation>

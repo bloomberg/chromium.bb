@@ -357,7 +357,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Adakah anda mahu Chromium menyimpan kad ini?</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
-<translation id="4176463684765177261">Dilumpuhkan</translation>
 <translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Menyemak konfigurasi tembok api dan antivirus<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{tiada}=1{1 apl ($1)}=2{2 apl ($1, $2)}other{# apl ($1, $2, $3)}}</translation>
@@ -384,7 +383,6 @@
 <translation id="4406896451731180161">hasil carian</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> tidak menerima sijil log masuk anda atau sijil log masuk mungkin tidak diberikan.</translation>
 <translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
-<translation id="4446242550670694251">Kini, anda boleh menyemak imbas secara sulit dan orang lain yang menggunakan peranti ini tidak akan melihat aktiviti anda.</translation>
 <translation id="4492190037599258964">Hasil carian untuk '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Ralat pengesahan: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Menghubungi pentadbir sistem</translation>
@@ -524,7 +522,6 @@
 <translation id="5872918882028971132">Cadangan Ibu Bapa</translation>
 <translation id="587760065310675640">Alamat penghantaran tidak disokong. Pilih alamat lain.</translation>
 <translation id="5901630391730855834">Kuning</translation>
-<translation id="59174027418879706">Didayakan</translation>
 <translation id="5926846154125914413">Anda mungkin kehilangan akses kepada kandungan premium daripada sesetengah tapak web.</translation>
 <translation id="5959728338436674663">Hantar secara automatik beberapa <ph name="BEGIN_WHITEPAPER_LINK" />maklumat sistem dan kandungan halaman<ph name="END_WHITEPAPER_LINK" /> kepada Google untuk membantu anda mengesan apl dan tapak yang berbahaya. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Minggu</translation>
@@ -537,7 +534,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Halaman 1}other{Halaman #}}</translation>
 <translation id="6017514345406065928">Hijau</translation>
 <translation id="6040143037577758943">Tutup</translation>
-<translation id="604124094241169006">Automatik</translation>
 <translation id="6042308850641462728">Lagi</translation>
 <translation id="6060685159320643512">Berhati-hati, percubaan ini mungkin memudaratkan</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{tiada}=1{1}other{#}}</translation>
@@ -545,7 +541,6 @@
     rangkaian lain yang mungkin anda gunakan.</translation>
 <translation id="614940544461990577">Cuba:</translation>
 <translation id="6151417162996330722">Sijil pelayan mempunyai tempoh sah yang terlalu panjang.</translation>
-<translation id="615643356032862689">Fail yang dimuat turun dan penanda halaman akan disimpan.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6177128806592000436">Sambungan anda ke tapak ini tidak selamat</translation>
 <translation id="6203231073485539293">Semak sambungan Internet anda</translation>
@@ -796,9 +791,7 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8543181531796978784">Anda boleh <ph name="BEGIN_ERROR_LINK" />laporkan masalah pengesanan<ph name="END_ERROR_LINK" /> atau jika anda memahami risikonya kepada keselamatan anda, <ph name="BEGIN_LINK" />lawati tapak yang tidak selamat ini<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Gagal terjemahan kerana bahasa halaman tidak dapat ditentukan.</translation>
 <translation id="8559762987265718583">Sambungan peribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak boleh diwujudkan kerana tarikh dan masa peranti anda (<ph name="DATE_AND_TIME" />) tidak betul.</translation>
-<translation id="8570229484593575558">Maklumat ini |tidak akan disimpan|:#Sejarah penyemakan imbas anda#Carian anda#Data kuki</translation>
 <translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Aktiviti anda |mungkin masih dapat dilihat| kepada:#Tapak web yang anda lawati#Majikan anda#Penyedia perkhidmatan Internet anda</translation>
 <translation id="858637041960032120">Tambah no. tel.
 </translation>
 <translation id="859285277496340001">Sijil tidak menyatakan mekanisme untuk memeriksa sama ada ia telah dibatalkan.</translation>
@@ -811,7 +804,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8738058698779197622">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Ini kerana sijil yang digunakan oleh tapak web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Chromium tidak boleh mengesahkan sijil-sijil ini.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak ditemui. Masalah sedang didiagnosis.</translation>
 <translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>
-<translation id="8798099450830957504">Lalai</translation>
 <translation id="8800988563907321413">Cadangan berdekatan anda dipaparkan di sini</translation>
 <translation id="8820817407110198400">Penanda buku</translation>
 <translation id="883848425547221593">Penanda Halaman Lain</translation>

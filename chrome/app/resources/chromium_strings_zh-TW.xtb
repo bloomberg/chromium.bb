@@ -87,7 +87,6 @@
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">抱歉，我們無法在 Mozilla Firefox 執行時取得瀏覽器設定。如要將這些設定匯入 Chromium，請儲存您的工作並關閉所有 Firefox 視窗，然後按一下 [繼續]。</translation>
 <translation id="3852700440713538496">將 Chromium 固定至工作列</translation>
-<translation id="3883381313049582448">使用 Chromium 產生的密碼</translation>
 <translation id="3889543394854987837">按一下您的名稱即可開啟 Chromium 並開始瀏覽。</translation>
 <translation id="390894725198123737">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chromium 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
@@ -146,7 +145,6 @@
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
-<translation id="5942225298871134766">Chromium 會使用「<ph name="SAVED_PASSWORD_LINK" />」儲存此密碼，讓您在下次需要使用時套用。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME" />」加到 Chromium。</translation>
 <translation id="59625444380784159">利用您的通訊錄詳細資料，快速在 Chromium 中填寫表單。</translation>
 <translation id="5987687638152509985">如要開始同步處理，請更新 Chromium</translation>

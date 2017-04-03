@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">‏می‌خواهید Chromium این کارت را ذخیره کند؟</translation>
 <translation id="4171400957073367226">امضای تأیید نامناسب</translation>
-<translation id="4176463684765177261">غیرفعال شد</translation>
 <translation id="4196861286325780578">&amp;انجام مجدد انتقال</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />بررسی پیکربندی آنتی‌ویروس و دیوار آتش<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{هیچ‌}=1{۱ برنامه ($1)}=2{۲ برنامه ($1،‏ $2)}one{# برنامه ($1،‏ $2،‏ $3)}other{# برنامه ($1،‏ $2،‏ $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">نتایج جستجو</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> گواهی ورود به سیستمتان را نپذیرفت یا ممکن است گواهی‌ای ارائه نشده باشد.</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
-<translation id="4446242550670694251">اکنون می‌توانید به‌طور خصوصی مرور کنید و سایر افرادی که از این دستگاه استفاده می‌کنند فعالیت شما را نخواهند دید.</translation>
 <translation id="4492190037599258964">نتایج جستجو برای "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">خطای ارزیابی: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">تماس با سرپرست سیستم</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">پیشنهادات والدین</translation>
 <translation id="587760065310675640">نشانی تحویل کالا پشتیبانی نمی‌شود. نشانی دیگری انتخاب کنید.</translation>
 <translation id="5901630391730855834">زرد</translation>
-<translation id="59174027418879706">فعال شد</translation>
 <translation id="5926846154125914413">ممکن است دسترسی به محتوای ممتاز برخی از سایت‌ها را از دست بدهید.</translation>
 <translation id="5959728338436674663">‏ارسال خودکار برخی از <ph name="BEGIN_WHITEPAPER_LINK" />اطلاعات سیستم و محتوای صفحه<ph name="END_WHITEPAPER_LINK" /> به Google برای کمک به شناسایی برنامه‌ها و سایت‌های خطرناک. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">هفته</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{صفحه ۱}one{صفحه #}other{صفحه #}}</translation>
 <translation id="6017514345406065928">سبز</translation>
 <translation id="6040143037577758943">بستن</translation>
-<translation id="604124094241169006">خودکار</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="6060685159320643512">مراقب باشید، این آزمایشات ممکن است خطرناک باشند</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{هیچ‌}=1{۱}one{#}other{#}}</translation>
@@ -544,7 +540,6 @@
    شبکه‌ای را که ممکن است درحال استفاده از آن‌ها باشید مجدداً راه‌اندازی کنید.</translation>
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
 <translation id="6151417162996330722">دوره اعتبار گواهینامه سرور بسیار طولانی است.</translation>
-<translation id="615643356032862689">فایل‌ها و نشانک‌های بارگیری‌شده حفظ می‌شوند.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6177128806592000436">اتصال شما به این سایت امن نیست</translation>
 <translation id="6203231073485539293">اتصال اینترنتتان را بررسی کنید</translation>
@@ -795,9 +790,7 @@
 <translation id="8543181531796978784">می‌توانید <ph name="BEGIN_ERROR_LINK" />یک مشکل شناسایی‌شده را گزارش کنید<ph name="END_ERROR_LINK" /> یا اگر از خطراتی که امنیت شما را تهدید می‌کنند مطلع شدید، <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">ترجمه انجام نشد زیرا زبان صفحه تعیین نشد.</translation>
 <translation id="8559762987265718583">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> انجام نمی‌شود، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
-<translation id="8570229484593575558">این اطلاعات |ذخیره نخواهند شد|:#سابقه مرور شما#جستجوهای شما#داده‌های کوکی</translation>
 <translation id="8571890674111243710">ترجمه صفحه به <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">شاید فعالیت شما همچنان |برای این موارد قابل‌مشاهده باشد|:#وب‌سایت‌هایی که بازدید می‌کنید#کارفرمای شما#ارائه‌دهنده خدمات اینترنت شما</translation>
 <translation id="858637041960032120">افزودن شماره تلفن</translation>
 <translation id="859285277496340001">این مجوز هیچ مکانیزمی را برای بررسی اینکه آیا باطل شده یا نه مشخص نمی‌کند.</translation>
 <translation id="8620436878122366504">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
@@ -809,7 +802,6 @@
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="8740359287975076522">‏<ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;آدرس DNS&lt;/abbr&gt; پیدا نشد. درحال بررسی برای تشخیص مشکل.</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
-<translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8800988563907321413">پیشنهادات اطراف شما در اینجا نشان داده می‌شوند</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="883848425547221593">نشانک‌های دیگر</translation>

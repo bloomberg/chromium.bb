@@ -77,7 +77,6 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="2381405137052800939">Osnove</translation>
 <translation id="2386793615875593361">1 odabrana</translation>
 <translation id="2435457462613246316">Pokaži zaporku</translation>
-<translation id="2467815441875554965">Kontekstualno pretraživanje</translation>
 <translation id="2572712655377361602">Pravila za uređaje blokirala su pristup fotografijama</translation>
 <translation id="2584132361465095047">Dodaj račun…</translation>
 <translation id="2593774076813182497">Stranicu nije moguće ispisati.</translation>
@@ -146,7 +145,6 @@ Da biste prilagodili pojam za pretraživanje, dugo pritisnite za odabir. Da bist
 <translation id="3608436266458100337">Način čitača</translation>
 <translation id="3638472932233958418">Već učitane stranice</translation>
 <translation id="3691593122358196899">Oznaka dodana u mapu <ph name="FOLDER_TITLE" /></translation>
-<translation id="3692781555820666866">Kada je ta značajka omogućena, višenamjenski okvir uključit će prijedloge za web-stranice koje emitiraju uređaji u vašoj blizini.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3771033907050503522">Anonimne kartice</translation>
 <translation id="3783017676699494206">Spremi sliku</translation>
@@ -264,6 +262,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="6324669097367352121">Postavke prijave</translation>
 <translation id="6337234675334993532">Enkripcija</translation>
 <translation id="633809752005859102">Dogodila se velika pogreška. Poradit ćemo na tome.</translation>
+<translation id="6342069812937806050">Samo sad</translation>
 <translation id="6344783595350022745">Izbriši tekst</translation>
 <translation id="6362362396625799311">Nema anonimnih kartica</translation>
 <translation id="6380866119319257197">Ako zaboravite šifru ili želite promijeniti tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
@@ -308,7 +307,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7189598951263744875">Dijeli...</translation>
 <translation id="7203585745079012652">Izgovaranje odgovora</translation>
 <translation id="722055596168483966">Prilagođavanje Googleovih usluga</translation>
-<translation id="7222245588540287464">Je li omogućeno kontekstualno pretraživanje.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> posto preuzeto</translation>
 <translation id="7346909386216857016">Dobro, shvaćam</translation>
 <translation id="7400418766976504921">URL</translation>

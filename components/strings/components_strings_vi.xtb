@@ -356,7 +356,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Bạn có muốn Chromium lưu thẻ này không?</translation>
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
-<translation id="4176463684765177261">Đã bị vô hiệu</translation>
 <translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
 <translation id="4206349416402437184">{COUNT,plural, =0{không có gì}=1{1 ứng dụng ($1)}=2{2 ứng dụng ($1, $2)}other{# ứng dụng ($1, $2, $3)}}</translation>
@@ -383,7 +382,6 @@
 <translation id="4406896451731180161">kết quả tìm kiếm</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> không chấp nhận chứng chỉ đăng nhập của bạn hoặc có thể bạn chưa cung cấp chứng chỉ đăng nhập.</translation>
 <translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
-<translation id="4446242550670694251">Giờ đây, bạn có thể duyệt web ở chế độ riêng tư và những người khác sử dụng thiết bị này sẽ không thấy hoạt động của bạn.</translation>
 <translation id="4492190037599258964">Kết quả tìm kiếm cho '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Liên hệ với quản trị viên hệ thống</translation>
@@ -523,7 +521,6 @@
 <translation id="5872918882028971132">Đề xuất chính</translation>
 <translation id="587760065310675640">Địa chỉ giao hàng không được hỗ trợ. Hãy chọn một địa chỉ khác.</translation>
 <translation id="5901630391730855834">Vàng</translation>
-<translation id="59174027418879706">Đã bật</translation>
 <translation id="5926846154125914413">Bạn có thể mất quyền truy cập vào nội dung cao cấp từ một số trang web.</translation>
 <translation id="5959728338436674663">Tự động gửi một số <ph name="BEGIN_WHITEPAPER_LINK" />thông tin hệ thống và nội dung trang<ph name="END_WHITEPAPER_LINK" /> tới Google để giúp phát hiện các ứng dụng và trang web nguy hiểm. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5966707198760109579">Tuần</translation>
@@ -536,7 +533,6 @@
 <translation id="6016158022840135739">{COUNT,plural, =1{Trang 1}other{Trang #}}</translation>
 <translation id="6017514345406065928">Xanh lục</translation>
 <translation id="6040143037577758943">Đóng</translation>
-<translation id="604124094241169006">Tự động</translation>
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="6060685159320643512">Hãy cẩn thận, thử nghiệm này có thể gây lỗi</translation>
 <translation id="6108835911243775197">{COUNT,plural, =0{không có gì}=1{1}other{#}}</translation>
@@ -544,7 +540,6 @@
     mạng khác mà bạn có thể đang sử dụng.</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
 <translation id="6151417162996330722">Chứng chỉ máy chủ có thời gian hiệu lực quá dài.</translation>
-<translation id="615643356032862689">Các tệp đã tải xuống và dấu trang sẽ được giữ nguyên.</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6177128806592000436">Kết nối của bạn tới trang web này không an toàn</translation>
 <translation id="6203231073485539293">Kiểm tra kết nối Internet của bạn</translation>
@@ -795,9 +790,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8543181531796978784">Bạn có thể <ph name="BEGIN_ERROR_LINK" />báo cáo sự cố đã phát hiện<ph name="END_ERROR_LINK" /> hoặc nếu bạn hiểu rủi ro với bảo mật của mình, hãy <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
 <translation id="8559762987265718583">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên thiết bị của bạn không đúng.</translation>
-<translation id="8570229484593575558">Thông tin này |sẽ không được lưu|:#Lịch sử duyệt web của bạn#Tìm kiếm của bạn#Dữ liệu cookie</translation>
 <translation id="8571890674111243710">Đang dịch trang sang <ph name="LANGUAGE" />...</translation>
-<translation id="8584539743998202583">Hoạt động của bạn |có thể vẫn hiển thị| với:#Các trang web bạn truy cập#Chủ lao động của bạn#Nhà cung cấp dịch vụ Internet của bạn</translation>
 <translation id="858637041960032120">Thêm số đ.thoại
 </translation>
 <translation id="859285277496340001">Chứng chỉ không ghi rõ cơ chế kiểm tra xem chứng chỉ đã bị thu hồi hay chưa.</translation>
@@ -810,7 +803,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
-<translation id="8798099450830957504">Mặc định</translation>
 <translation id="8800988563907321413">Đề xuất ở gần bạn xuất hiện ở đây</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883848425547221593">Dấu trang Khác</translation>
