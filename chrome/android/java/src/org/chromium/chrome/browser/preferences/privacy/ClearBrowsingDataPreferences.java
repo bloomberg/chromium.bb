@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.SpinnerPreference;
 import org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataCounterBridge.BrowsingDataCounterCallback;
@@ -502,7 +503,7 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         mMaxImportantSites = BrowsingDataBridge.getMaxImportantSites();
         BrowsingDataBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
         getActivity().setTitle(R.string.clear_browsing_data_title);
-        addPreferencesFromResource(getPreferenceXmlId());
+        PreferenceUtils.addPreferencesFromResource(this, getPreferenceXmlId());
         DialogOption[] options = getDialogOptions();
         mItems = new Item[options.length];
         for (int i = 0; i < options.length; i++) {
