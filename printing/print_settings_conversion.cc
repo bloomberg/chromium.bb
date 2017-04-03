@@ -241,11 +241,10 @@ void PrintSettingsToJobSettingsDebug(const PrintSettings& settings,
   // common public constants. So just serialize in "debug" section.
   base::DictionaryValue* debug = new base::DictionaryValue;
   job_settings->Set("debug", debug);
-  debug->SetInteger("desiredDpi", settings.desired_dpi());
   debug->SetInteger("dpi", settings.dpi());
   debug->SetInteger("deviceUnitsPerInch", settings.device_units_per_inch());
   debug->SetBoolean("support_alpha_blend", settings.should_print_backgrounds());
-  debug->SetString("media_vendor_od", settings.requested_media().vendor_id);
+  debug->SetString("media_vendor_id", settings.requested_media().vendor_id);
   SetSizeToJobSettings(
       "media_size", settings.requested_media().size_microns, debug);
   SetMarginsToJobSettings("requested_custom_margins_in_points",

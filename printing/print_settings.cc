@@ -159,7 +159,6 @@ PrintSettings::~PrintSettings() {
 
 void PrintSettings::Clear() {
   ranges_.clear();
-  desired_dpi_ = 72;
   selection_only_ = false;
   margin_type_ = DEFAULT_MARGINS;
   title_.clear();

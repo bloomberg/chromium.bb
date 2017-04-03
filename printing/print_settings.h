@@ -156,8 +156,6 @@ class PRINTING_EXPORT PrintSettings {
   void set_duplex_mode(DuplexMode duplex_mode) { duplex_mode_ = duplex_mode; }
   DuplexMode duplex_mode() const { return duplex_mode_; }
 
-  int desired_dpi() const { return desired_dpi_; }
-
 #if defined(OS_WIN)
   void set_print_text_with_gdi(bool use_gdi) { print_text_with_gdi_ = use_gdi; }
   bool print_text_with_gdi() const { return print_text_with_gdi_; }

@@ -124,9 +124,6 @@ class MockPrinter {
   // Specifies dots per inch.
   double dpi_;
 
-  // Desired apparent dpi on paper.
-  int desired_dpi_;
-
   // Print selection.
   bool selection_only_;
 
