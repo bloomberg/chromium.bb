@@ -2533,7 +2533,8 @@ static void write_partition(const AV1_COMMON *const cm,
                                                 bsize)
                       : 0;
 #if CONFIG_UNPOISON_PARTITION_CTX
-  const aom_prob *const probs = ctx >= 0 ? cm->fc->partition_prob[ctx] : NULL;
+  const aom_prob *const probs =
+      ctx < PARTITION_CONTEXTS ? cm->fc->partition_prob[ctx] : NULL;
 #else
   const aom_prob *const probs = cm->fc->partition_prob[ctx];
 #endif

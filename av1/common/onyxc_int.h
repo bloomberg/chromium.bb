@@ -792,7 +792,7 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
   else if (!has_rows && has_cols)
     return PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES + bsl;
   else
-    return -1;  // Bogus context, forced SPLIT
+    return PARTITION_CONTEXTS;  // Bogus context, forced SPLIT
 #else
   const PARTITION_CONTEXT *above_ctx = xd->above_seg_context + mi_col;
   const PARTITION_CONTEXT *left_ctx =

@@ -398,42 +398,40 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
     if (cpi->sf.partition_search_type != VAR_BASED_PARTITION ||
         cm->frame_type == KEY_FRAME) {
-#if CONFIG_UNPOISON_PARTITION_CTX
-      cpi->partition_cost[0][PARTITION_NONE] = INT_MAX;
-      cpi->partition_cost[0][PARTITION_HORZ] = INT_MAX;
-      cpi->partition_cost[0][PARTITION_VERT] = INT_MAX;
-      cpi->partition_cost[0][PARTITION_SPLIT] = 0;
-#endif
 #if CONFIG_EXT_PARTITION_TYPES
       for (i = 0; i < PARTITION_PLOFFSET; ++i)
-        av1_cost_tokens(cpi->partition_cost[CONFIG_UNPOISON_PARTITION_CTX + i],
-                        cm->fc->partition_prob[i], av1_partition_tree);
+        av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],
+                        av1_partition_tree);
       for (; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-        av1_cost_tokens(cpi->partition_cost[CONFIG_UNPOISON_PARTITION_CTX + i],
-                        cm->fc->partition_prob[i], av1_ext_partition_tree);
+        av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],
+                        av1_ext_partition_tree);
 #else
       for (i = 0; i < PARTITION_CONTEXTS_PRIMARY; ++i)
-        av1_cost_tokens(cpi->partition_cost[CONFIG_UNPOISON_PARTITION_CTX + i],
-                        cm->fc->partition_prob[i], av1_partition_tree);
+        av1_cost_tokens(cpi->partition_cost[i], cm->fc->partition_prob[i],
+                        av1_partition_tree);
 #endif  // CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_UNPOISON_PARTITION_CTX
       for (; i < PARTITION_CONTEXTS_PRIMARY + PARTITION_BLOCK_SIZES; ++i) {
         aom_prob p = cm->fc->partition_prob[i][PARTITION_VERT];
         assert(p > 0);
-        cpi->partition_cost[1 + i][PARTITION_NONE] = INT_MAX;
-        cpi->partition_cost[1 + i][PARTITION_HORZ] = INT_MAX;
-        cpi->partition_cost[1 + i][PARTITION_VERT] = av1_cost_bit(p, 0);
-        cpi->partition_cost[1 + i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
+        cpi->partition_cost[i][PARTITION_NONE] = INT_MAX;
+        cpi->partition_cost[i][PARTITION_HORZ] = INT_MAX;
+        cpi->partition_cost[i][PARTITION_VERT] = av1_cost_bit(p, 0);
+        cpi->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
       }
       for (; i < PARTITION_CONTEXTS_PRIMARY + 2 * PARTITION_BLOCK_SIZES; ++i) {
         aom_prob p = cm->fc->partition_prob[i][PARTITION_HORZ];
         assert(p > 0);
-        cpi->partition_cost[1 + i][PARTITION_NONE] = INT_MAX;
-        cpi->partition_cost[1 + i][PARTITION_HORZ] = av1_cost_bit(p, 0);
-        cpi->partition_cost[1 + i][PARTITION_VERT] = INT_MAX;
-        cpi->partition_cost[1 + i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
+        cpi->partition_cost[i][PARTITION_NONE] = INT_MAX;
+        cpi->partition_cost[i][PARTITION_HORZ] = av1_cost_bit(p, 0);
+        cpi->partition_cost[i][PARTITION_VERT] = INT_MAX;
+        cpi->partition_cost[i][PARTITION_SPLIT] = av1_cost_bit(p, 1);
       }
-#endif
+      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_NONE] = INT_MAX;
+      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_HORZ] = INT_MAX;
+      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_VERT] = INT_MAX;
+      cpi->partition_cost[PARTITION_CONTEXTS][PARTITION_SPLIT] = 0;
+#endif  // CONFIG_UNPOISON_PARTITION_CTX
     }
 
     fill_mode_costs(cpi);
