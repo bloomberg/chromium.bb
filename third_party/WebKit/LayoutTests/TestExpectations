@@ -2616,7 +2616,7 @@ crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ Need
 # No mock Mojo interface for services yet
 crbug.com/659139 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
 crbug.com/659139 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
-crbug.com/659139 [ Mac ] shapedetection/detection-HTMLCanvasElement.html [ Skip ]
+#crbug.com/659139 [ Mac ] shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 crbug.com/659139 [ Mac ] shapedetection/detection-HTMLImageElement.html [ Skip ]
 crbug.com/659139 [ Mac ] shapedetection/detection-HTMLVideoElement.html [ Skip ]
 crbug.com/659139 [ Mac ] shapedetection/detection-ImageBitmap.html [ Skip ]
@@ -2681,6 +2681,11 @@ crbug.com/v8/5808 inspector/coverage/gutter-js.html  [ NeedsManualRebaseline ]
 crbug.com/v8/5808 inspector/coverage/multiple-instances-merge.html [ NeedsManualRebaseline ]
 
 crbug.com/700788 virtual/enable_wasm/http/tests/wasm/wasm_local_iframe_test.html [ Failure ]
+
+# Sheriff failures 2017-04-03
+# Should be [ Crash Pass ], but this has a commented out [ Skip ] expectation
+# for Mac earlier in the file, so just skip it everywhere.
+crbug.com/707689 shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 
 # Tests to be run only under virtual/experimental-canvas-features/
 crbug.com/682753 fast/canvas-experimental [ Skip ]
