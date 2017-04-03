@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 <style>
+@font-face {
+    font-family: Ahem;
+    src: url('../../../resources/Ahem.woff2') format('woff2');
+}
 div {
     text-align: justify;
     width: 400px;
     border: 1px solid black;
     font-family: Ahem;
 }
-
 </style>
-<script src="../../../resources/ahem.js"></script>
 <body>
 
 <p>This tests the combination of text-align: justify with different values of white-space.</p>
@@ -32,5 +34,13 @@ incididunt ex ea commodo consequat.    Dolore eu fugiat nulla pariatur. Excepteu
 cupidatat non proident.
 </div>
 
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        window.onload = function () {
+            document.fonts.ready.then(function () { testRunner.notifyDone(); });
+        };
+    }
+</script>
 </body>
 </html>

@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <style>
+@font-face {
+    font-family: Ahem;
+    src: url('../../../resources/Ahem.woff2') format('woff2');
+}
 body {
     font: 10px Ahem;
 }
@@ -32,3 +36,11 @@ body {
 <div>
     <p class="test">A B<span style="white-space:pre">		</span><br>C</p>
 </div>
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        window.onload = function () {
+            document.fonts.ready.then(function () { testRunner.notifyDone(); });
+        };
+    }
+</script>
