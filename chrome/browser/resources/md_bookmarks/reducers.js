@@ -53,6 +53,7 @@ cr.define('bookmarks', function() {
       case 'clear-search':
       case 'finish-search':
       case 'select-folder':
+      case 'deselect-items':
         return SelectionState.deselectAll(selection);
       case 'select-items':
         return SelectionState.selectItems(selection, action);

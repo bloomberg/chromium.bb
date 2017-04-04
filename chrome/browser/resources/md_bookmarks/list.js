@@ -28,6 +28,7 @@ Polymer({
   },
 
   listeners: {
+    'click': 'deselectItems_',
     'open-item-menu': 'onOpenItemMenu_',
   },
 
@@ -104,5 +105,10 @@ Polymer({
   /** @private */
   isEmptyList_: function() {
     return this.displayedList_.length == 0;
+  },
+
+  /** @private */
+  deselectItems_: function() {
+    this.dispatch(bookmarks.actions.deselectItems());
   },
 });

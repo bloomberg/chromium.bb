@@ -89,6 +89,7 @@ Polymer({
   onClick_: function(e) {
     this.dispatch(bookmarks.actions.selectItem(
         this.itemId, e.ctrlKey, e.shiftKey, this.getState()));
+    e.stopPropagation();
   },
 
   /**

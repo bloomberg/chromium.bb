@@ -98,6 +98,13 @@ cr.define('bookmarks.actions', function() {
     };
   }
 
+  /** @return {!Action} */
+  function deselectItems() {
+    return {
+      name: 'deselect-items',
+    };
+  }
+
   /**
    * @param {string} id
    * @param {boolean} add
@@ -164,6 +171,7 @@ cr.define('bookmarks.actions', function() {
   return {
     changeFolderOpen: changeFolderOpen,
     clearSearch: clearSearch,
+    deselectItems: deselectItems,
     editBookmark: editBookmark,
     moveBookmark: moveBookmark,
     refreshNodes: refreshNodes,

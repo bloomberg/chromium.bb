@@ -80,4 +80,9 @@ suite('<bookmarks-list>', function() {
     assertEquals('3', store.lastAction.anchor);
     assertDeepEquals(['3'], store.lastAction.items);
   });
+
+  test('deselects items on click outside of card', function() {
+    customClick(list);
+    assertEquals('deselect-items', store.lastAction.name);
+  });
 });

@@ -78,6 +78,15 @@ suite('selection state', function() {
     state = bookmarks.SelectionState.updateSelection(state, action);
     assertDeepEquals({}, state.items);
   });
+
+  test('deselect items', function() {
+    action = select(['1', '2', '3'], '3', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    action = bookmarks.actions.deselectItems();
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({}, state.items);
+  });
 });
 
 suite('closed folder state', function() {
