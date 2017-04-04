@@ -47,8 +47,8 @@ class _GitMetricCollector(object):
       'git/hash',
       description='Current Git commit hash.')
 
-  _commit_time_metric = ts_mon.GaugeMetric(
-      'git/commit_time',
+  _timestamp_metric = ts_mon.GaugeMetric(
+      'git/timestamp',
       description='Current Git commit time as seconds since Unix Epoch.')
 
   def __init__(self, gitdir, metric_path):
@@ -61,7 +61,7 @@ class _GitMetricCollector(object):
     """Collect metrics."""
     try:
       self._collect_commit_hash_metric()
-      self._collect_commit_time_metric()
+      self._collect_timestamp_metric()
     except subprocess.CalledProcessError as e:
       logger.warning('Error collecting git metrics for %s: %s',
                      self._gitdir, e)
@@ -71,11 +71,11 @@ class _GitMetricCollector(object):
     logger.debug('Collecting Git hash %r for %r', commit_hash, self._gitdir)
     self._commit_hash_metric.set(commit_hash, self._fields)
 
-  def _collect_commit_time_metric(self):
+  def _collect_timestamp_metric(self):
     commit_time = self._gitrepo.get_commit_time()
-    logger.debug('Collecting Git commit time %r for %r',
+    logger.debug('Collecting Git timestamp %r for %r',
                  commit_time, self._gitdir)
-    self._commit_time_metric.set(commit_time, self._fields)
+    self._timestamp_metric.set(commit_time, self._fields)
 
 
 _CHROMIUMOS_DIR = os.path.expanduser('~chromeos-test/chromiumos/')
