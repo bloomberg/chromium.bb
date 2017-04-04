@@ -56,7 +56,7 @@
    (list
     (concat "^"
 	    (regexp-opt
-	     '("numsign" "capsign" "firstwordital"
+	     '("numsign" "capsletter" "firstwordital"
 	       "lastworditalbefore" "lastworditalafter"
 	       "firstletterital" "lastletterital" "singleletterital"
 	       "firstwordbold" "lastwordboldbefore" "lastwordboldafter"
