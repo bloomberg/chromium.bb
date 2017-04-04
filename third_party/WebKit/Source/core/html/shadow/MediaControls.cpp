@@ -38,6 +38,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html/media/HTMLMediaElementControlsList.h"
 #include "core/html/shadow/MediaControlsMediaEventListener.h"
 #include "core/html/shadow/MediaControlsOrientationLockDelegate.h"
 #include "core/html/shadow/MediaControlsWindowEventListener.h"
@@ -88,7 +89,7 @@ static bool shouldShowFullscreenButton(const HTMLMediaElement& mediaElement) {
   if (!Fullscreen::fullscreenEnabled(mediaElement.document()))
     return false;
 
-  if (mediaElement.controlsList()->shouldHideFullscreen()) {
+  if (mediaElement.controlsListInternal()->shouldHideFullscreen()) {
     UseCounter::count(mediaElement.document(),
                       UseCounter::HTMLMediaElementControlsListNoFullscreen);
     return false;
@@ -108,7 +109,7 @@ static bool shouldShowCastButton(HTMLMediaElement& mediaElement) {
     return false;
 
   // The page disabled the button via the attribute.
-  if (mediaElement.controlsList()->shouldHideRemotePlayback()) {
+  if (mediaElement.controlsListInternal()->shouldHideRemotePlayback()) {
     UseCounter::count(mediaElement.document(),
                       UseCounter::HTMLMediaElementControlsListNoRemotePlayback);
     return false;

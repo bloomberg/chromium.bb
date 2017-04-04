@@ -41,10 +41,11 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLLabelElement.h"
-#include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/TimeRanges.h"
+#include "core/html/media/HTMLMediaElementControlsList.h"
+#include "core/html/media/HTMLMediaSource.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/input/EventHandler.h"
@@ -708,7 +709,7 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton() {
     return false;
 
   // The attribute disables the download button.
-  if (mediaElement().controlsList()->shouldHideDownload()) {
+  if (mediaElement().controlsListInternal()->shouldHideDownload()) {
     UseCounter::count(mediaElement().document(),
                       UseCounter::HTMLMediaElementControlsListNoDownload);
     return false;

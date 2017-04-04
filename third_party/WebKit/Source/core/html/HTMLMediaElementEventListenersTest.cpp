@@ -7,7 +7,7 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Fullscreen.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/html/MediaCustomControlsFullscreenDetector.h"
+#include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"

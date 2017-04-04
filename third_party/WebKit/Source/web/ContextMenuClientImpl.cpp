@@ -48,7 +48,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
-#include "core/html/MediaError.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"

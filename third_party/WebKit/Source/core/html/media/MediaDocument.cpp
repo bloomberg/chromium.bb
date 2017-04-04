@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/MediaDocument.h"
+#include "core/html/media/MediaDocument.h"
 
 #include "bindings/core/v8/AddEventListenerOptionsOrBoolean.h"
 #include "bindings/core/v8/ExceptionState.h"

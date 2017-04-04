@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLMediaSource.h"
+#include "core/html/media/HTMLMediaSource.h"
 
 namespace blink {
 

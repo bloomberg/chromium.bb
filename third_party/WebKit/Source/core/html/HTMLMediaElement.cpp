@@ -49,13 +49,14 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/AutoplayUmaHelper.h"
-#include "core/html/HTMLMediaSource.h"
 #include "core/html/HTMLSourceElement.h"
 #include "core/html/HTMLTrackElement.h"
-#include "core/html/MediaError.h"
-#include "core/html/MediaFragmentURIParser.h"
 #include "core/html/TimeRanges.h"
+#include "core/html/media/AutoplayUmaHelper.h"
+#include "core/html/media/HTMLMediaElementControlsList.h"
+#include "core/html/media/HTMLMediaSource.h"
+#include "core/html/media/MediaError.h"
+#include "core/html/media/MediaFragmentURIParser.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/AudioTrackList.h"
@@ -2435,7 +2436,11 @@ bool HTMLMediaElement::shouldShowControls(
   return false;
 }
 
-HTMLMediaElementControlsList* HTMLMediaElement::controlsList() const {
+DOMTokenList* HTMLMediaElement::controlsList() const {
+  return m_controlsList.get();
+}
+
+HTMLMediaElementControlsList* HTMLMediaElement::controlsListInternal() const {
   return m_controlsList.get();
 }
 

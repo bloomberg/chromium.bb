@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/MediaFragmentURIParser.h"
+#include "core/html/media/MediaFragmentURIParser.h"
 
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -116,9 +116,10 @@ void MediaFragmentURIParser::parseFragments() {
     String name = decodeURLEscapeSequences(
         fragmentString.substring(parameterStart, equalOffset - parameterStart));
     String value;
-    if (equalOffset != parameterEnd)
+    if (equalOffset != parameterEnd) {
       value = decodeURLEscapeSequences(fragmentString.substring(
           equalOffset + 1, parameterEnd - equalOffset - 1));
+    }
 
     //  b. Convert name and value to Unicode strings by interpreting them as
     //     UTF-8. If either name or value are not valid UTF-8 strings, then

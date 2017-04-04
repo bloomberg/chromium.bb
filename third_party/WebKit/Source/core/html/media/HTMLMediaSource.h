@@ -31,11 +31,11 @@
 #ifndef HTMLMediaSource_h
 #define HTMLMediaSource_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/html/URLRegistry.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 

@@ -37,7 +37,7 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Settings.h"
-#include "core/html/MediaCustomControlsFullscreenDetector.h"
+#include "core/html/media/MediaCustomControlsFullscreenDetector.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/LayoutImage.h"

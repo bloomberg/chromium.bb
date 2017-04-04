@@ -37,7 +37,6 @@
 #include "core/dom/SuspendableObject.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLMediaElementControlsList.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/Supplementable.h"
 #include "platform/WebTaskRunner.h"
@@ -58,6 +57,7 @@ class ElementVisibilityObserver;
 class EnumerationHistogram;
 class Event;
 class ExceptionState;
+class HTMLMediaElementControlsList;
 class HTMLSourceElement;
 class HTMLTrackElement;
 class KURL;
@@ -204,7 +204,8 @@ class CORE_EXPORT HTMLMediaElement
   // controls
   bool shouldShowControls(
       const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord) const;
-  HTMLMediaElementControlsList* controlsList() const;
+  DOMTokenList* controlsList() const;
+  HTMLMediaElementControlsList* controlsListInternal() const;
   void controlsListValueWasSet();
   double volume() const;
   void setVolume(double, ExceptionState& = ASSERT_NO_EXCEPTION);

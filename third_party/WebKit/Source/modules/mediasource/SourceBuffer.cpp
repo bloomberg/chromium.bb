@@ -41,7 +41,6 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/MediaError.h"
 #include "core/html/TimeRanges.h"
 #include "core/html/track/AudioTrack.h"
 #include "core/html/track/AudioTrackList.h"

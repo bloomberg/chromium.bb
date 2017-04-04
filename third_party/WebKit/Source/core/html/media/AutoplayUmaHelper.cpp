@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/AutoplayUmaHelper.h"
+#include "core/html/media/AutoplayUmaHelper.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/ElementVisibilityObserver.h"
@@ -232,13 +232,14 @@ void AutoplayUmaHelper::onVisibilityChangedForMutedVideoOffscreenDuration(
   if (isVisible == m_isVisible)
     return;
 
-  if (isVisible)
+  if (isVisible) {
     m_mutedVideoAutoplayOffscreenDurationMS +=
         static_cast<int64_t>(monotonicallyIncreasingTimeMS()) -
         m_mutedVideoAutoplayOffscreenStartTimeMS;
-  else
+  } else {
     m_mutedVideoAutoplayOffscreenStartTimeMS =
         static_cast<int64_t>(monotonicallyIncreasingTimeMS());
+  }
 
   m_isVisible = isVisible;
 }
@@ -326,10 +327,11 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
   if (!m_mutedVideoOffscreenDurationVisibilityObserver)
     return;
 
-  if (!m_isVisible)
+  if (!m_isVisible) {
     m_mutedVideoAutoplayOffscreenDurationMS +=
         static_cast<int64_t>(monotonicallyIncreasingTimeMS()) -
         m_mutedVideoAutoplayOffscreenStartTimeMS;
+  }
 
   // Since histograms uses int32_t, the duration needs to be limited to
   // std::numeric_limits<int32_t>::max().
