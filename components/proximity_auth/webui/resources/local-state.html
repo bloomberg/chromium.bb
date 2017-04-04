@@ -1,0 +1,120 @@
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-material/paper-material.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-button/paper-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html" rel="import">
+<link href="device-list.html" rel="import">
+
+<dom-module id="local-state">
+  <style>
+    paper-material {
+      background-color: white;
+    }
+
+    #card-row {
+      margin-top: 22px;
+    }
+
+    #enrollment-card {
+      margin-right: 30px;
+    }
+
+    .card-content {
+      margin: 24px 16px 0 16px;
+    }
+
+    .card-title {
+      font-size: 20px;
+    }
+
+    .card-subtitle {
+      color: #767676;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+
+    paper-button {
+      margin: 8px;
+    }
+
+    .card-icon {
+      color: green;
+      height: 90px;
+      margin: 16px 16px 0 0;
+      width: 90px;
+    }
+
+    .next-sync-icon {
+      color: black;
+      margin-right: 4px;
+    }
+
+    .next-refresh {
+      height: 40px;
+    }
+
+    iron-icon[error-icon] {
+      color: orange;
+    }
+  </style>
+
+  <template>
+    <div id="card-row" class="layout horizontal">
+
+      <!-- CryptAuth Enrollment Info Card -->
+      <paper-material id="enrollment-card" class="layout vertical flex">
+        <div class="layout horizontal">
+          <div class="card-content layout vertical flex">
+            <div class="card-title">Enrollment</div>
+            <div class="card-subtitle">
+              <span>[[getLastSyncTimeString_(enrollmentState_, "Never enrolled")]]</span>
+            </div>
+            <div class="next-refresh layout horizontal center flex">
+              <iron-icon class="next-sync-icon"
+                         icon="[[getNextSyncIcon_(enrollmentState_)]]">
+              </iron-icon>
+              <span>[[getNextEnrollmentString_(enrollmentState_)]]</span>
+            </div>
+          </div>
+          <iron-icon class="card-icon"
+                     icon="[[getIconForSuccess_(enrollmentState_)]]"
+                     error-icon$="[[enrollmentState_.recoveringFromFailure]]">
+          </iron-icon>
+        </div>
+        <paper-button class="self-start" on-click="forceEnrollment_">
+            Force Enroll
+        </paper-button>
+      </paper-material>
+
+      <!-- Device Sync Info Card -->
+      <paper-material id="device-card" class="layout vertical flex">
+        <div class="layout horizontal flex">
+          <div class="card-content layout vertical flex">
+            <div class="card-title">Device Sync</div>
+            <div class="card-subtitle">
+              <span>[[getLastSyncTimeString_(deviceSyncState_, "Never synced")]]</span>
+            </div>
+            <div class="layout horizontal center flex">
+              <iron-icon class="next-sync-icon"
+                         icon="[[getNextSyncIcon_(deviceSyncState_)]]">
+              </iron-icon>
+              <span>[[getNextEnrollmentString_(deviceSyncState_)]]</span>
+            </div>
+          </div>
+          <iron-icon class="card-icon"
+                     icon="[[getIconForSuccess_(deviceSyncState_)]]"
+                     error-icon$="[[deviceSyncState_.recoveringFromFailure]]">
+          </iron-icon>
+        </div>
+        <paper-button class="self-start" on-click="forceDeviceSync_">
+          Force Sync
+        </paper-button>
+      </paper-material>
+   </div>
+
+    <device-list label="Unlock Keys" devices="[[unlockKeys_]]"></device-list>
+  </template>
+  <script src="local-state.js"></script>
+</local-state>

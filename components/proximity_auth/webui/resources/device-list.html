@@ -1,0 +1,200 @@
+<link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-button/paper-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-material/paper-material.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
+
+<dom-module id="device-list">
+  <style>
+    .devices-label {
+      color: rgb(153, 153, 153);
+      font-size: 16px;
+      margin-top: 20px;
+      padding: 10px 22px;
+    }
+
+    paper-material {
+      background-color: white;
+    }
+
+    .item {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      height: 72px;
+    }
+
+    .name {
+      margin: 0 8px 2px 0;
+    }
+
+    .public-key {
+      color: #767676;
+      font-size: 13px;
+      height: 16px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 300px;
+    }
+
+    .phone-lock {
+      height: 16px;
+      width: 16px;
+      vertical-align: top;
+    }
+
+    .end-icon {
+      margin: 0 14px;
+    }
+
+    paper-icon-button, iron-icon {
+      opacity: 0.25;
+    }
+
+    paper-icon-button:hover, iron-icon:hover {
+      opacity: 1;
+    }
+
+    .ineligibility-icons {
+      margin: 0 22px;
+    }
+
+    .ineligibility-icon {
+      color: orange;
+      opacity: 0.5;
+    }
+
+    iron-tooltip::shadow .iron-tooltip {
+      font-size: 14px;
+      line-height: 18px;
+      padding: 8px 16px;
+    }
+
+    #unlock-key-dialog {
+      width: 500px;
+    }
+
+    #dialog-text {
+      color: #7E7E7E;
+    }
+
+    #dialog-buttons {
+      height: 36px;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      margin: 8px;
+      padding: 0px;
+      color: #377EF3;
+    }
+
+    #dialog-spinner {
+      width: 20px;
+      height: 20px;
+      padding-right: 14px;
+    }
+  </style>
+
+  <template>
+    <div class="devices-label">[[label]]</div>
+
+    <paper-dialog id="unlock-key-dialog"
+        no-cancel-on-outside-click="true"
+        with-backdrop="true"
+        no-cancel-on-esc-key="true">
+      <div id="dialog-text">
+        <span hidden$="[[deviceForDialog_.unlockKey]]">
+          Make <span>[[deviceForDialog_.friendlyDeviceName]]</span> an unlock
+          key.
+        </span>
+        <span hidden$="[[!deviceForDialog_.unlockKey]]">
+          Remove <span>[[deviceForDialog_.friendlyDeviceName]]</span> as an
+          unlock key.
+        </span>
+      </div>
+      <div id="dialog-buttons">
+        <paper-button dialog-dismiss disabled$="[[toggleUnlockKeyInProgress_]]">
+          Cancel
+        </paper-button>
+        <paper-button id="unlock-key-button" on-click="toggleUnlockKey_"
+            disabled$="[[toggleUnlockKeyInProgress_]]">
+          <span hidden$="[[deviceForDialog_.unlockKey]]">
+            Make Unlock Key
+          </span>
+          <span hidden$="[[!deviceForDialog_.unlockKey]]">
+            Remove Unlock Key
+          </span>
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-material>
+      <template is="dom-repeat" items="[[devices]]">
+        <div class="item layout horizontal center">
+          <paper-icon-button class="end-icon"
+              icon="[[getIconForUnlockKey_(item)]]"
+              on-click="showUnlockKeyDialog_">
+          </paper-icon-button>
+
+          <div class="info">
+            <div class="layout horizontal center">
+              <span class="name">[[item.friendlyDeviceName]]</span>
+              <core-tooltip position="top" hidden$="[[!item.remoteState]]">
+                <iron-icon icon="[[getIconForRemoteState_(item.remoteState)]]"
+                           class="phone-lock flex"></iron-icon>
+                <!--TODO(tengs): Reimplement the tooltip after it is ported to
+                                 Polymer 1.0-->
+                <div hidden>
+                  <div>
+                    User Present:
+                    <span>
+                      [[getUserPresenceText_(item.remoteState.userPresent)]]
+                    </span>
+                  </div>
+                  <div>
+                    Secure Screen Lock:
+                    <span>
+                      [[getScreenLockText_(item.remoteState.secureScreenLock)]]
+                    </span>
+                  </div>
+                  <div>
+                    Trust Agent:
+                    <span>
+                      [[getTrustAgentText_(item.remoteState.trustAgent)]]
+                    </span>
+                  </div>
+                </div>
+              </core-tooltip>
+            </div>
+            <div class="public-key">[[item.publicKey]]</div>
+          </div>
+
+          <div class="flex"></div>
+          <div class="ineligibility-icons"
+              hidden$="[[!item.ineligibilityReasons]]">
+            <template is="dom-repeat" items="[[item.ineligibilityReasons]]">
+              <core-tooltip label="[[prettifyReason_(item)]]" position="top">
+                <iron-icon icon="[[getIconForIneligibilityReason_(item)]]")
+                    class="ineligibility-icon">
+                </iron-icon>
+              </core-tooltip>
+            </template>
+          </div>
+          <paper-icon-button class="end-icon"
+              bluetooth-address="[[item.bluetoothAddress]]"
+              on-click="toggleConnection_"
+              icon="[[getIconForConnection_(item.connectionStatus)]]"
+              hidden$="{{!item.unlockKey}}">
+          </paper-icon-button>
+        </div>
+      </template>
+    </paper-material>
+  </template>
+  <script src="device-list.js"></script>
+</dom-module>

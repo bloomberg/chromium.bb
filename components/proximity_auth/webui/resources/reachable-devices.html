@@ -1,0 +1,26 @@
+<link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
+<link href="device-list.html" rel="import">
+
+<dom-module id="reachable-devices">
+  <style>
+    paper-spinner {
+      margin-top: 40px;
+    }
+  </style>
+
+  <template>
+    <div class="layout vertical">
+      <paper-spinner
+          hidden$="[[!requestInProgress_]]" class="self-center" active>
+      </paper-spinner>
+
+      <device-list
+          label="Reachable Phones" devices="[[reachableDevices_]]"
+          hidden$="[[!reachableDevices_.length]]">
+      </device-list>
+    </div>
+  </template>
+  <script src="reachable-devices.js"></script>
+</dom-module>

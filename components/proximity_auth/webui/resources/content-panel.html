@@ -1,0 +1,70 @@
+<link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-material/paper-material.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
+<link href="device-list.html" rel="import">
+<link href="eligible-devices.html" rel="import">
+<link href="local-state.html" rel="import">
+<link href="reachable-devices.html" rel="import">
+
+<dom-module id="content-panel">
+  <style>
+    :host {
+      background-color: #ececec;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #pages {
+      overflow-y: auto;
+    }
+
+    paper-tabs {
+      background-color: rgb(3, 169, 244);
+      box-shadow: 0 3px 2px rgba(0, 0, 0, 0.2);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      width: 100%;
+    }
+
+    local-state,
+    eligible-devices,
+    reachable-devices {
+      width: 80%;
+    }
+  </style>
+
+  <template>
+    <paper-tabs id="tabs" selected="{{selected_}}">
+      <paper-tab>LOCAL STATE</paper-tab>
+      <paper-tab>ELIGIBLE PHONES</paper-tab>
+      <paper-tab>REACHABLE PHONES</paper-tab>
+    </paper-tabs>
+
+    <neon-animated-pages id="pages" selected="[[selected_]]"
+        entry-animation="fade-in-animation"
+        exit-animation="fade-out-animation"
+        on-selected-item-changed="onSelectedPageChanged_"
+        class="flex">
+      <neon-animatable class="layout vertical center">
+        <local-state id="local-state" class="flex"></local-state>
+      </neon-animatable>
+
+      <neon-animatable class="layout vertical center">
+        <eligible-devices id="eligible-devices" class="flex"></eligible-devices>
+        </eligible-devices>
+      </neon-animatable>
+
+      <neon-animatable class="layout vertical center">
+        <reachable-devices id="reachable-devices" class="flex">
+        </reachable-devices>
+      </neon-animatable>
+    </neon-animated-pages>
+  </template>
+  <script src="content-panel.js"></script>
+</dom-module>

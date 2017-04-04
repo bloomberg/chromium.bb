@@ -57,8 +57,9 @@ LogBufferInterface = {
 };
 
 /**
- * Controller for the logs list element, updating it based on user input and
- * logs received from native code.
+ * Controller for the logs list UI, updating it based on user input and logs
+ * received from native code.
+ *
  */
 class LogsListController {
   constructor() {
@@ -98,6 +99,7 @@ class LogsListController {
     var source = directories[directories.length - 1] + ':' + log.line;
 
     var t = this.itemTemplate_.content;
+    console.log(t.querySelector('.log-item').attributes);
     t.querySelector('.log-item').attributes.severity.value = log.severity;
     t.querySelector('.item-time').textContent = log.time;
     t.querySelector('.item-source').textContent = source;

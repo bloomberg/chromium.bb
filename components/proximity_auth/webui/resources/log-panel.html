@@ -1,0 +1,85 @@
+<link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/iron-icons/communication-icons.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html" rel="import">
+<link href="chrome://resources/polymer/v1_0/polymer/polymer.html" rel="import">
+<link href="log-buffer.html" rel="import">
+
+<dom-module id="log-panel">
+  <style>
+    :host {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    paper-toolbar {
+      background-color: #069BDE;
+      box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);
+      height: 48px;
+      margin: 0;
+    }
+
+    paper-toolbar paper-icon-button {
+      padding: 0;
+    }
+
+    #list {
+      overflow-y: scroll;
+    }
+
+    .list-item {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+      font-family: monospace;
+      font-size: 12px;
+      padding: 15px 30px;
+    }
+
+    .list-item[severity="1"] {
+      background-color: #fffcef;
+      color: #312200;
+    }
+
+    .list-item[severity="2"] {
+      background-color: #fff1f1;
+      color: #ef0000;
+    }
+
+    .item-metadata {
+      color: #888888;
+      font-size: 10px;
+    }
+
+    .item-log {
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .list-item:hover .item-log {
+      overflow: auto;
+      text-overflow: clip;
+    }
+  </style>
+
+  <template>
+    <paper-toolbar class="layout horizontal end-justified center"
+                  on-click="clearLogs_">
+      <paper-icon-button icon="communication:clear-all"></paper-icon-button>
+    </paper-toolbar>
+
+    <log-buffer id='logBuffer' logs="{{logs}}"></log-buffer>
+    <div id="list" class="flex">
+      <template is="dom-repeat" items="[[logs]]">
+        <div class="list-item" severity$="[[item.severity]]">
+          <div class="item-metadata layout horizontal">
+            <div>[[item.time]]</div>
+            <div class="flex"></div>
+            <div>[[computeFileAndLine_(item)]]</div>
+          </div>
+          <pre class="item-log flex">[[item.text]]</pre>
+        </div>
+      </template>
+    </div>
+  </template>
+  <script src="log-panel.js"></script>
+</dom-module>

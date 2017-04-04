@@ -25,43 +25,42 @@ header {
   border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 
-.hidden {
-  display: none;
-}
 
 /** CSS for controls panel */
 #controls {
   width: 60%;
   display: flex;
   flex-direction: column;
-  overflow-y: hidden;
+  overflow-y: auto;
 }
 
 .logo {
-  font-size: 30px;
+  font-size: 40px;
   margin-right: 12px;
 }
 
 #controls-panel {
   padding: 40px;
-  overflow-y: auto;
 }
 
 .control {
-  padding: 20px;
   margin-bottom: 60px;
-  box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.2),
-              0 3px 10px 0 rgba(0, 0, 0, 0.2),
-              4px 4px 6px 0 rgba(0, 0, 0, 0.5)
 }
 
 .control-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   margin-bottom: 5px;
 }
 
-.control button {
+.input-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  padding-left: 12px;
+}
+
+.input-row button {
   border: 1px solid rgba(0,0,0,0.12);
   color: #fff;
   background-color: #7496c8;
@@ -69,16 +68,29 @@ header {
   cursor: pointer;
   font-size: 14px;
   height: 24px;
-  min-width: 80px;
+  width: 80px;
 }
 
-.control button:hover {
+.input-row button:hover {
   background-color: #446392;
 }
 
-.control button:active {
+.input-row button:active {
   background-color: #37496d;
 }
+
+.input-name {
+  font-size: 14px;
+  width: 100px;
+}
+
+.textinput {
+  min-width: 200px;
+  font-family: monospace;
+  margin: 0 5px;
+  font-size: 16px;
+}
+
 
 /** CSS for logs panel */
 #logs-panel {
@@ -113,16 +125,14 @@ header {
 #logs-list {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .log-item {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
   font-family: monospace;
   font-size: 12px;
-  padding: 12px 26px;
+  padding: 15px 30px;
 }
 
 .log-item[severity="1"] {
@@ -139,7 +149,6 @@ header {
   color: #888888;
   font-size: 10px;
   display: flex;
-  margin-bottom: 4px;
 }
 
 .item-metadata > .flex {
@@ -149,7 +158,4 @@ header {
 .item-text {
   margin: 0;
   display: inline-block;
-  width: 100%;
-  text-overflow: clip;
-  overflow-x: auto;
 }
