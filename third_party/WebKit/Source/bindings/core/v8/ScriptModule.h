@@ -37,7 +37,7 @@ class CORE_EXPORT ScriptModule final {
   ScriptValue instantiate(ScriptState*);
   void evaluate(ScriptState*);
 
-  bool isNull() const { return m_module->isEmpty(); }
+  bool isNull() const { return !m_module || m_module->isEmpty(); }
 
  private:
   ScriptModule(v8::Isolate*, v8::Local<v8::Module>);

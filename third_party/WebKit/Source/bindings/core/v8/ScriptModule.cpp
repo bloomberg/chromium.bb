@@ -23,9 +23,14 @@ ScriptModule ScriptModule::compile(v8::Isolate* isolate,
   v8::Local<v8::Module> module;
   if (!v8Call(V8ScriptRunner::compileModule(isolate, source, fileName), module,
               tryCatch)) {
-    // TODO(adamk): Signal failure somehow.
-    return ScriptModule(isolate, module);
+    // Compilation error is not used in Blink implementaion logic.
+    // Note: Error message is delivered to user (e.g. console) by message
+    // listeners set on v8::Isolate. See V8Initializer::initalizeMainThread().
+    // TODO(nhiroki): Revisit this when supporting modules on worker threads.
+    DCHECK(tryCatch.HasCaught());
+    return ScriptModule();
   }
+  DCHECK(!tryCatch.HasCaught());
   return ScriptModule(isolate, module);
 }
 
