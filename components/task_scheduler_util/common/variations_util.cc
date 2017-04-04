@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -16,12 +17,6 @@
 namespace task_scheduler_util {
 
 namespace {
-
-struct SchedulerCustomizableWorkerPoolParams {
-  base::SchedulerWorkerPoolParams::StandbyThreadPolicy standby_thread_policy;
-  int max_threads = 0;
-  base::TimeDelta detach_period;
-};
 
 #if !defined(OS_IOS)
 constexpr char kTaskSchedulerVariationParamsSwitch[] =
@@ -34,10 +29,12 @@ bool ContainsSeparator(const std::string& str) {
 }
 #endif  // !defined(OS_IOS)
 
-// Converts |pool_descriptor| to a SchedulerWorkerPoolVariableParams. Returns a
-// default SchedulerWorkerPoolVariableParams on failure.
+// Builds a SchedulerWorkerPoolParams from the pool descriptor in
+// |variation_params[variation_param_prefix + pool_name]| and
+// |backward_compatibility|. Returns an invalid SchedulerWorkerPoolParams on
+// failure.
 //
-// |pool_descriptor| is a semi-colon separated value string with the following
+// The pool descriptor is a semi-colon separated value string with the following
 // items:
 // 0. Minimum Thread Count (int)
 // 1. Maximum Thread Count (int)
@@ -46,10 +43,21 @@ bool ContainsSeparator(const std::string& str) {
 // 4. Detach Time in Milliseconds (int)
 // 5. Standby Thread Policy (string)
 // Additional values may appear as necessary and will be ignored.
-SchedulerCustomizableWorkerPoolParams StringToVariableWorkerPoolParams(
-    const base::StringPiece pool_descriptor) {
+std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
+    base::StringPiece variation_param_prefix,
+    base::StringPiece pool_name,
+    const std::map<std::string, std::string>& variation_params,
+    base::SchedulerBackwardCompatibility backward_compatibility =
+        base::SchedulerBackwardCompatibility::DISABLED) {
   using StandbyThreadPolicy =
       base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
+
+  auto pool_descriptor_it = variation_params.find(
+      base::JoinString({variation_param_prefix, pool_name}, ""));
+  if (pool_descriptor_it == variation_params.end())
+    return nullptr;
+  const auto& pool_descriptor = pool_descriptor_it->second;
+
   const std::vector<base::StringPiece> tokens = SplitStringPiece(
       pool_descriptor, ";", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   // Normally, we wouldn't initialize the values below because we don't read
@@ -62,65 +70,66 @@ SchedulerCustomizableWorkerPoolParams StringToVariableWorkerPoolParams(
   int detach_milliseconds = 0;
   // Checking for a size greater than the expected amount allows us to be
   // forward compatible if we add more variation values.
-  if (tokens.size() >= 5 && base::StringToInt(tokens[0], &min) &&
-      base::StringToInt(tokens[1], &max) &&
-      base::StringToDouble(tokens[2].as_string(), &cores_multiplier) &&
-      base::StringToInt(tokens[3], &offset) &&
-      base::StringToInt(tokens[4], &detach_milliseconds)) {
-    SchedulerCustomizableWorkerPoolParams params;
-    params.max_threads = base::RecommendedMaxNumberOfThreadsInPool(
-        min, max, cores_multiplier, offset);
-    params.detach_period =
-        base::TimeDelta::FromMilliseconds(detach_milliseconds);
-    params.standby_thread_policy = (tokens.size() >= 6 && tokens[5] == "lazy")
-                                       ? StandbyThreadPolicy::LAZY
-                                       : StandbyThreadPolicy::ONE;
-    return params;
+  if (tokens.size() < 5 || !base::StringToInt(tokens[0], &min) ||
+      !base::StringToInt(tokens[1], &max) ||
+      !base::StringToDouble(tokens[2].as_string(), &cores_multiplier) ||
+      !base::StringToInt(tokens[3], &offset) ||
+      !base::StringToInt(tokens[4], &detach_milliseconds)) {
+    DLOG(ERROR) << "Invalid Worker Pool Descriptor Format: " << pool_descriptor;
+    return nullptr;
   }
-  DLOG(ERROR) << "Invalid Worker Pool Descriptor: " << pool_descriptor;
-  return SchedulerCustomizableWorkerPoolParams();
+
+  auto params = base::MakeUnique<base::SchedulerWorkerPoolParams>(
+      (tokens.size() >= 6 && tokens[5] == "lazy") ? StandbyThreadPolicy::LAZY
+                                                  : StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(min, max, cores_multiplier,
+                                                offset),
+      base::TimeDelta::FromMilliseconds(detach_milliseconds),
+      backward_compatibility);
+
+  if (params->max_threads() <= 0) {
+    DLOG(ERROR) << "Invalid max threads in the Worker Pool Descriptor: "
+                << params->max_threads();
+    return nullptr;
+  }
+
+  if (params->suggested_reclaim_time() < base::TimeDelta()) {
+    DLOG(ERROR)
+        << "Invalid suggested reclaim time in the Worker Pool Descriptor:"
+        << params->suggested_reclaim_time();
+    return nullptr;
+  }
+
+  return params;
 }
 
 }  // namespace
 
-SchedulerImmutableWorkerPoolParams::SchedulerImmutableWorkerPoolParams(
-    const char* name,
-    base::ThreadPriority priority_hint,
-    base::SchedulerBackwardCompatibility backward_compatibility)
-    : name_(name),
-      priority_hint_(priority_hint),
-      backward_compatibility_(backward_compatibility) {}
+std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
+    base::StringPiece variation_param_prefix,
+    const std::map<std::string, std::string>& variation_params,
+    base::SchedulerBackwardCompatibility
+        foreground_blocking_backward_compatibility) {
+  const auto background_worker_pool_params = GetWorkerPoolParams(
+      variation_param_prefix, "Background", variation_params);
+  const auto background_blocking_worker_pool_params = GetWorkerPoolParams(
+      variation_param_prefix, "BackgroundBlocking", variation_params);
+  const auto foreground_worker_pool_params = GetWorkerPoolParams(
+      variation_param_prefix, "Foreground", variation_params);
+  const auto foreground_blocking_worker_pool_params = GetWorkerPoolParams(
+      variation_param_prefix, "ForegroundBlocking", variation_params,
+      foreground_blocking_backward_compatibility);
 
-std::vector<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
-    const std::vector<SchedulerImmutableWorkerPoolParams>&
-        constant_worker_pool_params_vector,
-    const std::map<std::string, std::string>& variation_params) {
-  std::vector<base::SchedulerWorkerPoolParams> worker_pool_params_vector;
-  for (const auto& constant_worker_pool_params :
-       constant_worker_pool_params_vector) {
-    const char* const worker_pool_name = constant_worker_pool_params.name();
-    auto it = variation_params.find(worker_pool_name);
-    if (it == variation_params.end()) {
-      // Non-branded builds don't have access to external worker pool
-      // configurations.
-      return std::vector<base::SchedulerWorkerPoolParams>();
-    }
-    const auto variable_worker_pool_params =
-        StringToVariableWorkerPoolParams(it->second);
-    if (variable_worker_pool_params.max_threads <= 0 ||
-        variable_worker_pool_params.detach_period <= base::TimeDelta()) {
-      DLOG(ERROR) << "Invalid Worker Pool Configuration: " << worker_pool_name
-                  << " [" << it->second << "]";
-      return std::vector<base::SchedulerWorkerPoolParams>();
-    }
-    worker_pool_params_vector.emplace_back(
-        worker_pool_name, constant_worker_pool_params.priority_hint(),
-        variable_worker_pool_params.standby_thread_policy,
-        variable_worker_pool_params.max_threads,
-        variable_worker_pool_params.detach_period,
-        constant_worker_pool_params.backward_compatibility());
+  if (!background_worker_pool_params ||
+      !background_blocking_worker_pool_params ||
+      !foreground_worker_pool_params ||
+      !foreground_blocking_worker_pool_params) {
+    return nullptr;
   }
-  return worker_pool_params_vector;
+
+  return base::MakeUnique<base::TaskScheduler::InitParams>(
+      *background_worker_pool_params, *background_blocking_worker_pool_params,
+      *foreground_worker_pool_params, *foreground_blocking_worker_pool_params);
 }
 
 #if !defined(OS_IOS)

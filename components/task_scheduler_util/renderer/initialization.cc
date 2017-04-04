@@ -4,13 +4,8 @@
 
 #include "components/task_scheduler_util/renderer/initialization.h"
 
-#include <map>
-#include <string>
-
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "base/task_scheduler/task_traits.h"
-#include "base/threading/platform_thread.h"
 #include "components/task_scheduler_util/common/variations_util.h"
 
 namespace task_scheduler_util {
@@ -27,24 +22,23 @@ enum WorkerPoolType : size_t {
 
 }  // namespace
 
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetRendererTaskSchedulerInitParamsFromCommandLine() {
+  return GetTaskSchedulerInitParams(
+      "Renderer", GetVariationParamsFromCommandLine(
+                      *base::CommandLine::ForCurrentProcess()));
+}
+
 std::vector<base::SchedulerWorkerPoolParams> GetRendererWorkerPoolParams() {
-  using ThreadPriority = base::ThreadPriority;
-  std::vector<SchedulerImmutableWorkerPoolParams> immutable_worker_pool_params;
-  DCHECK_EQ(BACKGROUND, immutable_worker_pool_params.size());
-  immutable_worker_pool_params.emplace_back("RendererBackground",
-                                            ThreadPriority::BACKGROUND);
-  DCHECK_EQ(BACKGROUND_BLOCKING, immutable_worker_pool_params.size());
-  immutable_worker_pool_params.emplace_back("RendererBackgroundBlocking",
-                                            ThreadPriority::BACKGROUND);
-  DCHECK_EQ(FOREGROUND, immutable_worker_pool_params.size());
-  immutable_worker_pool_params.emplace_back("RendererForeground",
-                                            ThreadPriority::NORMAL);
-  DCHECK_EQ(FOREGROUND_BLOCKING, immutable_worker_pool_params.size());
-  immutable_worker_pool_params.emplace_back("RendererForegroundBlocking",
-                                            ThreadPriority::NORMAL);
-  return GetWorkerPoolParams(immutable_worker_pool_params,
-                             GetVariationParamsFromCommandLine(
-                                 *base::CommandLine::ForCurrentProcess()));
+  const auto init_params = GetRendererTaskSchedulerInitParamsFromCommandLine();
+  if (!init_params)
+    return std::vector<base::SchedulerWorkerPoolParams>();
+
+  return std::vector<base::SchedulerWorkerPoolParams>{
+      init_params->background_worker_pool_params,
+      init_params->background_blocking_worker_pool_params,
+      init_params->foreground_worker_pool_params,
+      init_params->foreground_blocking_worker_pool_params};
 }
 
 size_t RendererWorkerPoolIndexForTraits(const base::TaskTraits& traits) {

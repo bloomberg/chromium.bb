@@ -7,9 +7,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/task_scheduler.h"
 
 namespace base {
 class TaskTraits;
@@ -17,13 +19,22 @@ class TaskTraits;
 
 namespace task_scheduler_util {
 
+// Gets a TaskScheduler::InitParams object to initialize TaskScheduler in the
+// browser based off variations. Returns nullptr on failure.
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetBrowserTaskSchedulerInitParamsFromVariations();
+
 // Gets a vector of SchedulerWorkerPoolParams to initialize TaskScheduler in the
 // browser based off variations. Returns an empty vector on failure.
+//
+// Deprecated. https://crbug.com/690706
 std::vector<base::SchedulerWorkerPoolParams>
 GetBrowserWorkerPoolParamsFromVariations();
 
 // Maps |traits| to the index of a browser worker pool vector provided by
 // GetBrowserWorkerPoolParamsFromVariations().
+//
+// Deprecated. https://crbug.com/690706
 size_t BrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits);
 
 // Redirects zero-to-many PostTask APIs to the browser task scheduler based off
