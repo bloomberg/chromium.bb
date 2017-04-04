@@ -4511,6 +4511,10 @@ static void
 weston_head_release(struct weston_head *head)
 {
 	weston_head_detach(head);
+
+	free(head->make);
+	free(head->model);
+	free(head->serial_number);
 }
 
 /** Store monitor make, model and serial number
@@ -4532,9 +4536,13 @@ weston_head_set_monitor_strings(struct weston_head *head,
 				const char *model,
 				const char *serialno)
 {
-	head->make = (char *)make;
-	head->model = (char *)model;
-	head->serial_number = (char *)serialno;
+	free(head->make);
+	free(head->model);
+	free(head->serial_number);
+
+	head->make = make ? strdup(make) : NULL;
+	head->model = model ? strdup(model) : NULL;
+	head->serial_number = serialno ? strdup(serialno) : NULL;
 }
 
 /** Store physical image size
