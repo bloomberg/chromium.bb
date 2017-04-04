@@ -1552,5 +1552,39 @@ TEST(GpuImageDecodeCacheTest, SmallCacheNormalWorkingSet) {
   }
 }
 
+TEST(GpuImageDecodeCacheTest, ClearCache) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  TestGpuImageDecodeCache cache(context_provider.get());
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  for (int i = 0; i < 10; ++i) {
+    sk_sp<SkImage> image = CreateImage(100, 100);
+    DrawImage draw_image(
+        image, SkIRect::MakeWH(image->width(), image->height()), quality,
+        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable));
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+    TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image);
+  }
+
+  // We should now have data image in our cache.
+  EXPECT_GT(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 10u);
+
+  // Tell our cache to clear resources.
+  cache.ClearCache();
+
+  // We should now have nothing in our cache.
+  EXPECT_EQ(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
+}
+
 }  // namespace
 }  // namespace cc

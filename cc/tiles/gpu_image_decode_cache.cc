@@ -584,6 +584,26 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
   }
 }
 
+void GpuImageDecodeCache::ClearCache() {
+  base::AutoLock lock(lock_);
+  for (auto it = persistent_cache_.begin(); it != persistent_cache_.end();) {
+    if (it->second->decode.ref_count != 0 ||
+        it->second->upload.ref_count != 0) {
+      ++it;
+      continue;
+    }
+
+    if (it->second->upload.image()) {
+      bytes_used_ -= it->second->size;
+      images_pending_deletion_.push_back(it->second->upload.image());
+      it->second->upload.SetImage(nullptr);
+      it->second->upload.budgeted = false;
+    }
+
+    it = persistent_cache_.Erase(it);
+  }
+}
+
 bool GpuImageDecodeCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {

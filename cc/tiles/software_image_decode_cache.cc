@@ -818,6 +818,11 @@ void SoftwareImageDecodeCache::ReduceCacheUsage() {
   ReduceCacheUsageUntilWithinLimit(max_items_in_cache_);
 }
 
+void SoftwareImageDecodeCache::ClearCache() {
+  base::AutoLock lock(lock_);
+  ReduceCacheUsageUntilWithinLimit(0);
+}
+
 void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key,
                                                  DecodeTaskType task_type) {
   base::AutoLock lock(lock_);

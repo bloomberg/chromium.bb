@@ -130,6 +130,7 @@ class CC_EXPORT SoftwareImageDecodeCache
   // Software doesn't keep outstanding images pinned, so this is a no-op.
   void SetShouldAggressivelyFreeResources(
       bool aggressively_free_resources) override {}
+  void ClearCache() override;
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.
@@ -142,6 +143,8 @@ class CC_EXPORT SoftwareImageDecodeCache
   // MemoryDumpProvider overrides.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
+
+  size_t GetNumCacheEntriesForTesting() const { return decoded_images_.size(); }
 
  private:
   // DecodedImage is a convenience storage for discardable memory. It can also

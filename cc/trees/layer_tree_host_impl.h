@@ -597,6 +597,8 @@ class CC_EXPORT LayerTreeHostImpl
                         const base::Callback<void(bool)>& embedder_callback);
   std::vector<base::Closure> TakeCompletedImageDecodeCallbacks();
 
+  void ClearImageCacheOnNavigation();
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

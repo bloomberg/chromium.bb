@@ -1446,5 +1446,32 @@ TEST(SoftwareImageDecodeCacheTest,
   cache.UnrefImage(draw_image_49);
 }
 
+TEST(SoftwareImageDecodeCacheTest, ClearCache) {
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  for (int i = 0; i < 10; ++i) {
+    sk_sp<SkImage> image = CreateImage(100, 100);
+    DrawImage draw_image(
+        image, SkIRect::MakeWH(image->width(), image->height()), quality,
+        CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable));
+    scoped_refptr<TileTask> task;
+    bool need_unref = cache.GetTaskForImageAndRef(
+        draw_image, ImageDecodeCache::TracingInfo(), &task);
+    EXPECT_TRUE(need_unref);
+    EXPECT_TRUE(task);
+    TestTileTaskRunner::ProcessTask(task.get());
+    cache.UnrefImage(draw_image);
+  }
+
+  EXPECT_EQ(10u, cache.GetNumCacheEntriesForTesting());
+
+  // Tell our cache to clear resources.
+  cache.ClearCache();
+
+  EXPECT_EQ(0u, cache.GetNumCacheEntriesForTesting());
+}
+
 }  // namespace
 }  // namespace cc

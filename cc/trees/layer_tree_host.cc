@@ -316,6 +316,11 @@ void LayerTreeHost::FinishCommitOnImplThread(
   sync_tree->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
 
+  if (did_navigate_) {
+    did_navigate_ = false;
+    host_impl->ClearImageCacheOnNavigation();
+  }
+
   sync_tree->set_ui_resource_request_queue(
       ui_resource_manager_->TakeUIResourcesRequests());
 
@@ -874,6 +879,7 @@ void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {
   ResetGpuRasterizationTracking();
 
   SetNeedsFullTreeSync();
+  did_navigate_ = true;
 }
 
 void LayerTreeHost::RegisterViewportLayers(

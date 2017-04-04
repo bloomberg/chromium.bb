@@ -128,6 +128,7 @@ class TestableCache : public ImageDecodeCache {
   void ReduceCacheUsage() override {}
   void SetShouldAggressivelyFreeResources(
       bool aggressively_free_resources) override {}
+  void ClearCache() override {}
 
   int number_of_refs() const { return number_of_refs_; }
   void SetTaskToUse(scoped_refptr<TileTask> task) { task_to_use_ = task; }

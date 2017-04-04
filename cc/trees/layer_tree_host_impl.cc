@@ -2345,6 +2345,11 @@ LayerTreeHostImpl::TakeCompletedImageDecodeCallbacks() {
   return result;
 }
 
+void LayerTreeHostImpl::ClearImageCacheOnNavigation() {
+  if (image_decode_cache_)
+    image_decode_cache_->ClearCache();
+}
+
 void LayerTreeHostImpl::DidChangeScrollbarVisibility() {
   // Need a commit since input handling for scrollbars is handled in Blink so
   // we need to communicate to Blink when the compositor shows/hides the

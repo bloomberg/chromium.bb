@@ -124,6 +124,7 @@ class CC_EXPORT GpuImageDecodeCache
   void ReduceCacheUsage() override;
   void SetShouldAggressivelyFreeResources(
       bool aggressively_free_resources) override;
+  void ClearCache() override;
 
   // MemoryDumpProvider overrides.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
