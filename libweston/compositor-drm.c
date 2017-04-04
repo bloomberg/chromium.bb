@@ -190,7 +190,15 @@ struct drm_output {
 	uint32_t gbm_format;
 
 	struct weston_plane fb_plane;
-	struct drm_fb *fb_current, *fb_pending;
+
+	/* The last framebuffer submitted to the kernel for this CRTC. */
+	struct drm_fb *fb_current;
+	/* The previously-submitted framebuffer, where the hardware has not
+	 * yet acknowledged display of fb_current. */
+	struct drm_fb *fb_last;
+	/* Framebuffer we are going to submit to the kernel when the current
+	 * repaint is flushed. */
+	struct drm_fb *fb_pending;
 
 	struct drm_fb *dumb[2];
 	pixman_image_t *image[2];
@@ -212,13 +220,21 @@ struct drm_sprite {
 
 	struct weston_plane plane;
 
-	struct drm_fb *fb_current, *fb_pending;
 	struct drm_output *output;
 	struct drm_backend *backend;
 
 	uint32_t possible_crtcs;
 	uint32_t plane_id;
 	uint32_t count_formats;
+
+	/* The last framebuffer submitted to the kernel for this plane. */
+	struct drm_fb *fb_current;
+	/* The previously-submitted framebuffer, where the hardware has not
+	 * yet acknowledged display of fb_current. */
+	struct drm_fb *fb_last;
+	/* Framebuffer we are going to submit to the kernel when the current
+	 * repaint is flushed. */
+	struct drm_fb *fb_pending;
 
 	int32_t src_x, src_y;
 	uint32_t src_w, src_h;
@@ -836,6 +852,8 @@ drm_output_repaint(struct weston_output *output_base,
 	if (output->disable_pending || output->destroy_pending)
 		return -1;
 
+	assert(!output->fb_last);
+
 	drm_output_render(output, damage);
 	if (!output->fb_pending)
 		return -1;
@@ -861,6 +879,10 @@ drm_output_repaint(struct weston_output *output_base,
 		goto err_pageflip;
 	}
 
+	output->fb_last = output->fb_current;
+	output->fb_current = output->fb_pending;
+	output->fb_pending = NULL;
+
 	output->page_flip_pending = 1;
 
 	if (output->pageflip_timer)
@@ -879,6 +901,8 @@ drm_output_repaint(struct weston_output *output_base,
 			.request.sequence = 1,
 		};
 
+		/* XXX: Set output much earlier, so we don't attempt to place
+		 *      planes on entirely the wrong output. */
 		if ((!s->fb_current && !s->fb_pending) ||
 		    !drm_sprite_crtc_supported(output, s))
 			continue;
@@ -910,6 +934,9 @@ drm_output_repaint(struct weston_output *output_base,
 		}
 
 		s->output = output;
+		s->fb_last = s->fb_current;
+		s->fb_current = s->fb_pending;
+		s->fb_pending = NULL;
 		output->vblank_pending = 1;
 	}
 
@@ -1023,9 +1050,9 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	drm_output_update_msc(output, frame);
 	output->vblank_pending = 0;
 
-	drm_fb_unref(s->fb_current);
-	s->fb_current = s->fb_pending;
-	s->fb_pending = NULL;
+	assert(s->fb_last || s->fb_current);
+	drm_fb_unref(s->fb_last);
+	s->fb_last = NULL;
 
 	if (!output->page_flip_pending) {
 		/* Stop the pageflip timer instead of rearming it here */
@@ -1057,9 +1084,8 @@ page_flip_handler(int fd, unsigned int frame,
 	 * we just want to page flip to the current buffer to get an accurate
 	 * timestamp */
 	if (output->page_flip_pending) {
-		drm_fb_unref(output->fb_current);
-		output->fb_current = output->fb_pending;
-		output->fb_pending = NULL;
+		drm_fb_unref(output->fb_last);
+		output->fb_last = NULL;
 	}
 
 	output->page_flip_pending = 0;
@@ -1593,10 +1619,16 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	output->base.current_mode->flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
-	/* reset rendering stuff. */
+	/* XXX: This drops our current buffer too early, before we've started
+	 *      displaying it. Ideally this should be much more atomic and
+	 *      integrated with a full repaint cycle, rather than doing a
+	 *      sledgehammer modeswitch first, and only later showing new
+	 *      content.
+	 */
 	drm_fb_unref(output->fb_current);
-	drm_fb_unref(output->fb_pending);
-	output->fb_current = output->fb_pending = NULL;
+	assert(!output->fb_last);
+	assert(!output->fb_pending);
+	output->fb_last = output->fb_current = NULL;
 
 	if (b->use_pixman) {
 		drm_output_fini_pixman(output);
@@ -2632,8 +2664,9 @@ drm_output_deinit(struct weston_output *base)
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 
-	/* output->fb_pending must not be set here;
+	/* output->fb_last and output->fb_pending must not be set here;
 	 * destroy_pending/disable_pending exist to guarantee exactly this. */
+	assert(!output->fb_last);
 	assert(!output->fb_pending);
 	drm_fb_unref(output->fb_current);
 	output->fb_current = NULL;
@@ -2823,6 +2856,7 @@ create_sprites(struct drm_backend *b)
 
 		sprite->possible_crtcs = plane->possible_crtcs;
 		sprite->plane_id = plane->plane_id;
+		sprite->fb_last = NULL;
 		sprite->fb_current = NULL;
 		sprite->fb_pending = NULL;
 		sprite->backend = b;
@@ -2854,8 +2888,9 @@ destroy_sprites(struct drm_backend *backend)
 				sprite->plane_id,
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
+		assert(!sprite->fb_last);
+		assert(!sprite->fb_pending);
 		drm_fb_unref(sprite->fb_current);
-		drm_fb_unref(sprite->fb_pending);
 		weston_plane_release(&sprite->plane);
 		free(sprite);
 	}
