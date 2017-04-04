@@ -16,14 +16,14 @@ struct CreateWindowOptions;
 }
 }
 
-class AppWindowCreateFunction : public AsyncExtensionFunction {
+class AppWindowCreateFunction : public UIThreadExtensionFunction {
  public:
   AppWindowCreateFunction();
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)
 
  protected:
   ~AppWindowCreateFunction() override {}
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   bool GetBoundsSpec(
@@ -34,7 +34,8 @@ class AppWindowCreateFunction : public AsyncExtensionFunction {
   AppWindow::Frame GetFrameFromString(const std::string& frame_string);
   bool GetFrameOptions(
       const extensions::api::app_window::CreateWindowOptions& options,
-      AppWindow::CreateParams* create_params);
+      AppWindow::CreateParams* create_params,
+      std::string* error);
   void UpdateFrameOptionsForChannel(AppWindow::CreateParams* create_params);
 };
 
