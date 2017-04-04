@@ -133,6 +133,7 @@ enum drm_fb_type {
 	BUFFER_CLIENT, /**< directly sourced from client */
 	BUFFER_PIXMAN_DUMB, /**< internal Pixman rendering */
 	BUFFER_GBM_SURFACE, /**< internal EGL rendering */
+	BUFFER_CURSOR, /**< internal cursor buffer */
 };
 
 struct drm_fb {
@@ -181,7 +182,7 @@ struct drm_output {
 	int disable_pending;
 
 	struct gbm_surface *gbm_surface;
-	struct gbm_bo *gbm_cursor_bo[2];
+	struct drm_fb *gbm_cursor_fb[2];
 	struct weston_plane cursor_plane;
 	struct weston_plane fb_plane;
 	struct weston_view *cursor_view;
@@ -361,7 +362,8 @@ drm_fb_destroy_gbm(struct gbm_bo *bo, void *data)
 {
 	struct drm_fb *fb = data;
 
-	assert(fb->type == BUFFER_GBM_SURFACE || fb->type == BUFFER_CLIENT);
+	assert(fb->type == BUFFER_GBM_SURFACE || fb->type == BUFFER_CLIENT ||
+	       fb->type == BUFFER_CURSOR);
 	drm_fb_destroy(fb);
 }
 
@@ -572,6 +574,7 @@ drm_fb_unref(struct drm_fb *fb)
 	case BUFFER_PIXMAN_DUMB:
 		drm_fb_destroy_dumb(fb);
 		break;
+	case BUFFER_CURSOR:
 	case BUFFER_CLIENT:
 		gbm_bo_destroy(fb->bo);
 		break;
@@ -1387,7 +1390,7 @@ drm_output_set_cursor(struct drm_output *output)
 		pixman_region32_fini(&output->cursor_plane.damage);
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
-		bo = output->gbm_cursor_bo[output->current_cursor];
+		bo = output->gbm_cursor_fb[output->current_cursor]->bo;
 
 		cursor_bo_update(b, bo, ev);
 		handle = gbm_bo_get_handle(bo).s32;
@@ -1970,6 +1973,48 @@ find_crtc_for_connector(struct drm_backend *b,
 	return ret;
 }
 
+static void drm_output_fini_cursor_egl(struct drm_output *output)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(output->gbm_cursor_fb); i++) {
+		drm_fb_unref(output->gbm_cursor_fb[i]);
+		output->gbm_cursor_fb[i] = NULL;
+	}
+}
+
+static int
+drm_output_init_cursor_egl(struct drm_output *output, struct drm_backend *b)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_LENGTH(output->gbm_cursor_fb); i++) {
+		struct gbm_bo *bo;
+
+		bo = gbm_bo_create(b->gbm, b->cursor_width, b->cursor_height,
+				   GBM_FORMAT_ARGB8888,
+				   GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE);
+		if (!bo)
+			goto err;
+
+		output->gbm_cursor_fb[i] =
+			drm_fb_get_from_bo(bo, b, GBM_FORMAT_ARGB8888,
+					   BUFFER_CURSOR);
+		if (!output->gbm_cursor_fb[i]) {
+			gbm_bo_destroy(bo);
+			goto err;
+		}
+	}
+
+	return 0;
+
+err:
+	weston_log("cursor buffers unavailable, using gl cursors\n");
+	b->cursors_are_broken = 1;
+	drm_output_fini_cursor_egl(output);
+	return -1;
+}
+
 /* Init output state that depends on gl or gbm */
 static int
 drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
@@ -1978,7 +2023,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 		output->gbm_format,
 		fallback_format_for(output->gbm_format),
 	};
-	int i, flags, n_formats = 1;
+	int n_formats = 1;
 
 	output->gbm_surface = gbm_surface_create(b->gbm,
 					     output->base.current_mode->width,
@@ -2004,21 +2049,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 		return -1;
 	}
 
-	flags = GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE;
-
-	for (i = 0; i < 2; i++) {
-		if (output->gbm_cursor_bo[i])
-			continue;
-
-		output->gbm_cursor_bo[i] =
-			gbm_bo_create(b->gbm, b->cursor_width, b->cursor_height,
-				GBM_FORMAT_ARGB8888, flags);
-	}
-
-	if (output->gbm_cursor_bo[0] == NULL || output->gbm_cursor_bo[1] == NULL) {
-		weston_log("cursor buffers unavailable, using gl cursors\n");
-		b->cursors_are_broken = 1;
-	}
+	drm_output_init_cursor_egl(output, b);
 
 	return 0;
 }
@@ -2028,6 +2059,7 @@ drm_output_fini_egl(struct drm_output *output)
 {
 	gl_renderer->output_destroy(&output->base);
 	gbm_surface_destroy(output->gbm_surface);
+	drm_output_fini_cursor_egl(output);
 }
 
 static int
