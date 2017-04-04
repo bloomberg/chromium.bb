@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 
 CONCURRENT_TASKS=4
@@ -69,6 +70,9 @@ def main():
         print ' '.join(cmd)
       failure = 'Failed to start crash service.'
       crash_service = subprocess.Popen(cmd)
+      # We add a delay here to give the crash service some time to create
+      # the pipe it uses to communicate with the content shell.
+      time.sleep(1)
     else:
       print "# Generate symbols."
       breakpad_tools_dir = os.path.join(
@@ -102,12 +106,6 @@ def main():
     else:
       with open(os.devnull, 'w') as devnull:
         subprocess.check_call(cmd, stdout=devnull, stderr=devnull)
-
-    if sys.platform == 'win32':
-      print "# Stopping crash service"
-      failure = 'Failed to stop crash service.'
-      crash_service.terminate()
-      crash_service = None
 
     print "# Retrieve crash dump."
     dmp_files = glob.glob(os.path.join(crash_dir, '*.dmp'))
@@ -180,6 +178,7 @@ def main():
   finally:
     if crash_service:
       crash_service.terminate()
+      crash_service.wait()
     try:
       shutil.rmtree(crash_dir)
     except:
