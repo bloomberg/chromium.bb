@@ -37,7 +37,7 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
   tri_view_->AddView(TriView::Container::START, date_view_);
 
   if (PowerStatus::Get()->IsBatteryPresent()) {
-    power_status_view_ = new ash::PowerStatusView(false);
+    power_status_view_ = new ash::PowerStatusView();
     std::unique_ptr<views::BoxLayout> box_layout =
         base::MakeUnique<views::BoxLayout>(views::BoxLayout::kHorizontal, 0, 0,
                                            0);

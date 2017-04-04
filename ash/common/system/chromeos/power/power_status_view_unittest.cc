@@ -10,8 +10,6 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
 using power_manager::PowerSupplyProperties;
@@ -26,7 +24,7 @@ class PowerStatusViewTest : public test::AshTestBase {
   // Overridden from testing::Test:
   void SetUp() override {
     test::AshTestBase::SetUp();
-    view_.reset(new PowerStatusView(false));
+    view_.reset(new PowerStatusView());
   }
 
   void TearDown() override {

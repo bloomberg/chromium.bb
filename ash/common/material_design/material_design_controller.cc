@@ -18,9 +18,4 @@ bool MaterialDesignController::IsSystemTrayMenuMaterial() {
   return true;
 }
 
-// static
-bool MaterialDesignController::UseMaterialDesignSystemIcons() {
-  return true;
-}
-
 }  // namespace ash

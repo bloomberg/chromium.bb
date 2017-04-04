@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/test/ash_test.h"
@@ -69,7 +68,7 @@ TEST_F(TrayBrightnessTest, DefaultViewVisibilityChangesDuringMaximizeMode) {
 }
 
 // Tests that when the detailed view is initially created that its
-// BrightnessView is created as visible for both MD and non MD modes.
+// BrightnessView is created as visible.
 TEST_F(TrayBrightnessTest, CreateDetailedView) {
   std::unique_ptr<views::View> tray(CreateDetailedView());
   EXPECT_TRUE(tray->visible());

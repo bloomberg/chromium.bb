@@ -4,8 +4,6 @@
 
 #include "ash/common/system/chromeos/power/power_status_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/tray_power.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -25,21 +23,24 @@
 
 namespace ash {
 
-// Padding between battery status text and battery icon on default view.
-const int kPaddingBetweenBatteryStatusAndIcon = 3;
-
-PowerStatusView::PowerStatusView(bool default_view_right_align)
-    : default_view_right_align_(default_view_right_align),
-      percentage_label_(new views::Label),
+PowerStatusView::PowerStatusView()
+    : percentage_label_(new views::Label),
       separator_label_(new views::Label),
       time_status_label_(new views::Label) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    SetFocusBehavior(FocusBehavior::ALWAYS);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
 
   percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
   separator_label_->SetEnabledColor(kHeaderTextColorNormal);
   separator_label_->SetText(base::ASCIIToUTF16(" - "));
-  LayoutView();
+
+  views::BoxLayout* layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 12, 0, kTrayPopupPaddingBetweenItems);
+  SetLayoutManager(layout);
+
+  AddChildView(percentage_label_);
+  AddChildView(separator_label_);
+  AddChildView(time_status_label_);
+
   PowerStatus::Get()->AddObserver(this);
   OnPowerStatusChanged();
 }
@@ -50,37 +51,6 @@ PowerStatusView::~PowerStatusView() {
 
 void PowerStatusView::OnPowerStatusChanged() {
   UpdateText();
-}
-
-void PowerStatusView::LayoutView() {
-  if (default_view_right_align_) {
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                             kPaddingBetweenBatteryStatusAndIcon);
-    SetLayoutManager(layout);
-
-    AddChildView(percentage_label_);
-    AddChildView(separator_label_);
-    AddChildView(time_status_label_);
-    AddChildView(new views::ImageView);
-
-    return;
-  }
-
-  // TODO(tdanderson): Tweak padding values for material design.
-  const bool material_design =
-      MaterialDesignController::IsSystemTrayMenuMaterial();
-  views::BoxLayout* layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, material_design ? 12 : 0, 0,
-      kTrayPopupPaddingBetweenItems);
-  SetLayoutManager(layout);
-
-  if (!material_design)
-    AddChildView(TrayPopupUtils::CreateMainImageView());
-
-  AddChildView(percentage_label_);
-  AddChildView(separator_label_);
-  AddChildView(time_status_label_);
 }
 
 void PowerStatusView::UpdateText() {
@@ -124,14 +94,12 @@ void PowerStatusView::UpdateText() {
   time_status_label_->SetVisible(!battery_time_status.empty());
   time_status_label_->SetText(battery_time_status);
 
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
+  accessible_name_ = PowerStatus::Get()->GetAccessibleNameString(true);
 
-    TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
-    style.SetupLabel(percentage_label_);
-    style.SetupLabel(separator_label_);
-    style.SetupLabel(time_status_label_);
-  }
+  TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SYSTEM_INFO);
+  style.SetupLabel(percentage_label_);
+  style.SetupLabel(separator_label_);
+  style.SetupLabel(time_status_label_);
 }
 
 void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {
@@ -151,9 +119,6 @@ void PowerStatusView::Layout() {
 }
 
 void PowerStatusView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
   node_data->role = ui::AX_ROLE_LABEL_TEXT;
   node_data->SetName(accessible_name_);
 }

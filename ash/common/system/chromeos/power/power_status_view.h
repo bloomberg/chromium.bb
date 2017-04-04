@@ -20,7 +20,7 @@ namespace ash {
 class ASH_EXPORT PowerStatusView : public views::View,
                                    public PowerStatus::Observer {
  public:
-  explicit PowerStatusView(bool default_view_right_align);
+  PowerStatusView();
   ~PowerStatusView() override;
 
   // views::View:
@@ -33,21 +33,15 @@ class ASH_EXPORT PowerStatusView : public views::View,
  private:
   friend class PowerStatusViewTest;
 
-  void LayoutView();
   void UpdateText();
 
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
 
-  // Layout default view UI items on the right side of system tray pop up item
-  // if true; otherwise, layout the UI items on the left side.
-  bool default_view_right_align_;
-
   views::Label* percentage_label_;
   views::Label* separator_label_;
   views::Label* time_status_label_;
 
-  // Only used in material design.
   base::string16 accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStatusView);

@@ -19,9 +19,6 @@ class ASH_EXPORT MaterialDesignController {
   // Returns true.
   static bool IsSystemTrayMenuMaterial();
 
-  // Returns true.
-  static bool UseMaterialDesignSystemIcons();
-
  private:
   // Declarations only. Do not allow construction of an object.
   MaterialDesignController();
