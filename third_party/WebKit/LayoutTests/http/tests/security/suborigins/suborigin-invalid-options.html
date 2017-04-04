@@ -16,24 +16,36 @@ var test_suborigin_options = [
   [ 'foobar \'b@d character$\'', 'Bad characters in option' ],
 ];
 
-for (option in test_suborigin_options) {
-  async_test(t => {
-      var id = option;
-      var iframe;
-      window.addEventListener('message', t.step_func(event => {
-          if (event.source != iframe.contentWindow)
-            return;
+var tests = [];
 
-          assert_equals(event.data, 'I am a secret');
-          t.done();
-        }));
-      iframe = document.createElement('iframe');
-      iframe.setAttribute('src',
-        'resources/reach-into-iframe.php?childsuborigin=' +
-        test_suborigin_options[id][0]);
-      document.body.appendChild(iframe);
-    }, test_suborigin_options[option][1]);
+function run_next_test() {
+  if (tests.length) {
+    tests.shift()();
+  }
 }
+
+function generate_test_case(option) {
+  var test = async_test(test_suborigin_options[option][1]);
+  var iframe;
+  window.addEventListener('message', test.step_func(event => {
+    if (event.source != iframe.contentWindow)
+      return;
+
+    assert_equals(event.data, 'I am a secret');
+    setTimeout(run_next_test, 0);
+    test.done();
+  }));
+  iframe = document.createElement('iframe');
+  iframe.setAttribute('src', 'resources/reach-into-iframe.php?childsuborigin=' +
+                                 test_suborigin_options[option][0]);
+  return () => { document.body.appendChild(iframe) };
+}
+
+for (option in test_suborigin_options) {
+  tests.push(generate_test_case(option));
+}
+
+run_next_test();
 </script>
 </body>
 </html>

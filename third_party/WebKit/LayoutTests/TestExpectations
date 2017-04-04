@@ -1794,7 +1794,6 @@ crbug.com/705125 http/tests/w3c/webperf/submission/Intel/user-timing/test_user_t
 crbug.com/705125 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/embeddedEnforcement/subsumption_algorithm-wildcards-in-hosts-ports.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-appcache.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.html [ Failure ]
-crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/suborigin-invalid-options.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/cancel.html [ Failure ]
 crbug.com/705125 virtual/mojo-loading/http/tests/streams/readable-streams/templated.html [ Failure ]
 
@@ -2546,7 +2545,6 @@ crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 crbug.com/664839 http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
-crbug.com/671475 http/tests/security/suborigins/suborigin-invalid-options.html [ Pass Failure ]
 crbug.com/663876 virtual/mojo-loading/http/tests/loading/doc-write-sync-third-party-script-block-effectively-2g.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-for-xhr.html [ Pass Failure ]
