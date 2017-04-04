@@ -27,7 +27,7 @@
     readonly attribute DOMString filename;
     readonly attribute DOMString description;
     readonly attribute unsigned long length;
-    getter MimeType? item([Default=Undefined] optional unsigned long index);
-    MimeType? namedItem([Default=Undefined] optional DOMString name);
-    [NotEnumerable, ImplementedAs=namedItem] getter MimeType ([Default=Undefined] optional DOMString name);
+    getter MimeType? item(unsigned long index);
+    MimeType? namedItem(DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter MimeType? (DOMString name);
 };

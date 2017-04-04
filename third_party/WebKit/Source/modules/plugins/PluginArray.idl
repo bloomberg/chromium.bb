@@ -24,8 +24,8 @@
     ImplementedAs=DOMPluginArray
 ] interface PluginArray {
     readonly attribute unsigned long length;
-    getter Plugin? item([Default=Undefined] optional unsigned long index);
-    Plugin? namedItem([Default=Undefined] optional DOMString name);
-    [NotEnumerable, ImplementedAs=namedItem] getter Plugin ([Default=Undefined] optional DOMString name);
+    getter Plugin? item(unsigned long index);
+    Plugin? namedItem(DOMString name);
+    [NotEnumerable, ImplementedAs=namedItem] getter Plugin? (DOMString name);
     void refresh([Default=Undefined] optional boolean reload);
 };
