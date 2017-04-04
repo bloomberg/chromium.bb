@@ -7257,6 +7257,11 @@ interface Worker : EventTarget
     method terminate
     setter onerror
     setter onmessage
+interface WritableStream
+    getter locked
+    method abort
+    method constructor
+    method getWriter
 interface XMLDocument : Document
     attribute @@toStringTag
     method constructor

@@ -678,6 +678,11 @@ interface WorkerNavigator
     getter storage
     getter userAgent
     method constructor
+interface WritableStream
+    getter locked
+    method abort
+    method constructor
+    method getWriter
 global object
     attribute console
     attribute internals
