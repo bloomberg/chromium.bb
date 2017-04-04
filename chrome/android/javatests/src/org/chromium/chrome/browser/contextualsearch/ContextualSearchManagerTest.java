@@ -1093,8 +1093,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests whether the contextual search panel hides when omnibox is clicked.
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
+    //@SmallTest
+    //@Feature({"ContextualSearch"})
+    @DisabledTest
     public void testHidesWhenOmniboxFocused() throws InterruptedException, TimeoutException {
         clickWordNode("intelligence");
 
