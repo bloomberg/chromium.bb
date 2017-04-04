@@ -318,22 +318,13 @@ public class InvalidationClientService extends AndroidListener {
     private void startClient() {
         byte[] clientName = InvalidationClientNameProvider.get().getInvalidatorClientName();
         Intent startIntent = AndroidListener.createStartIntent(this, CLIENT_TYPE, clientName);
-
-        if (shouldRestrictBackgroundServices()) {
-            Log.e(TAG, "Failed to start client");
-            return;
-        }
-        startService(startIntent);
+        startServiceIfPossible(startIntent);
         setIsClientStarted(true);
     }
 
     /** Stops the notification client. */
     private void stopClient() {
-        if (shouldRestrictBackgroundServices()) {
-            Log.e(TAG, "Failed to stop client");
-            return;
-        }
-        startService(AndroidListener.createStopIntent(this));
+        startServiceIfPossible(AndroidListener.createStopIntent(this));
         setIsClientStarted(false);
         setClientId(null);
     }
@@ -551,8 +542,17 @@ public class InvalidationClientService extends AndroidListener {
         sIsClientStarted = isStarted;
     }
 
-    private boolean shouldRestrictBackgroundServices() {
-        // Restricts the use of background services when not in foreground. See crbug.com/680812.
-        return BuildInfo.isAtLeastO() && !isChromeInForeground();
+    private void startServiceIfPossible(Intent intent) {
+        // The use of background services is restricted when the application is not in foreground
+        // for O. See crbug.com/680812.
+        if (BuildInfo.isAtLeastO()) {
+            try {
+                startService(intent);
+            } catch (IllegalStateException exception) {
+                Log.e(TAG, "Failed to start service from exception: ", exception);
+            }
+        } else {
+            startService(intent);
+        }
     }
 }

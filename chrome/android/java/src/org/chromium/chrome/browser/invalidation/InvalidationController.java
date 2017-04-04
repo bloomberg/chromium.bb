@@ -198,12 +198,7 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
                 typesToRegister);
         registerIntent.setClass(
                 mContext, InvalidationClientService.getRegisteredClass());
-
-        if (shouldRestrictBackgroundServices()) {
-            Log.e(TAG, "Failed to register types");
-            return;
-        }
-        mContext.startService(registerIntent);
+        startServiceIfPossible(registerIntent);
     }
 
     /**
@@ -230,33 +225,37 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
      * Starts the invalidation client without updating the registered invalidation types.
      */
     private void start() {
-        if (shouldRestrictBackgroundServices()) {
-            Log.e(TAG, "Failed to start invalidation client");
-            return;
-        }
-
         mStarted = true;
         mEnableSessionInvalidationsTimer.resume();
         Intent intent = new Intent(
                 mContext, InvalidationClientService.getRegisteredClass());
-        mContext.startService(intent);
+        startServiceIfPossible(intent);
     }
 
     /**
      * Stops the invalidation client.
      */
     public void stop() {
-        if (shouldRestrictBackgroundServices()) {
-            Log.e(TAG, "Failed to stop invalidation client");
-            return;
-        }
-
         mStarted = false;
         mEnableSessionInvalidationsTimer.pause();
         Intent intent = new Intent(
                 mContext, InvalidationClientService.getRegisteredClass());
         intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
-        mContext.startService(intent);
+        startServiceIfPossible(intent);
+    }
+
+    private void startServiceIfPossible(Intent intent) {
+        // The use of background services is restricted when the application is not in foreground
+        // for O. See crbug.com/680812.
+        if (BuildInfo.isAtLeastO()) {
+            try {
+                mContext.startService(intent);
+            } catch (IllegalStateException exception) {
+                Log.e(TAG, "Failed to start service from exception: ", exception);
+            }
+        } else {
+            mContext.startService(intent);
+        }
     }
 
     /**
@@ -356,11 +355,6 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         mEnableSessionInvalidationsTimer = new Timer();
 
         ApplicationStatus.registerApplicationStateListener(this);
-    }
-
-    private boolean shouldRestrictBackgroundServices() {
-        // Restricts the use of background services when not in foreground. See crbug.com/680812.
-        return BuildInfo.isAtLeastO() && !ApplicationStatus.hasVisibleActivities();
     }
 
     @Override
