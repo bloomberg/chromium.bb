@@ -146,6 +146,7 @@ struct drm_fb {
 
 	/* Used by gbm fbs */
 	struct gbm_bo *bo;
+	struct gbm_surface *gbm_surface;
 
 	/* Used by dumb fbs */
 	void *map;
@@ -546,7 +547,7 @@ drm_fb_set_buffer(struct drm_fb *fb, struct weston_buffer *buffer)
 }
 
 static void
-drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
+drm_fb_unref(struct drm_fb *fb)
 {
 	if (!fb)
 		return;
@@ -559,7 +560,7 @@ drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
 		gbm_bo_destroy(fb->bo);
 		break;
 	case BUFFER_GBM_SURFACE:
-		gbm_surface_release_buffer(output->gbm_surface, fb->bo);
+		gbm_surface_release_buffer(fb->gbm_surface, fb->bo);
 		break;
 	default:
 		assert(NULL);
@@ -695,6 +696,7 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 		gbm_surface_release_buffer(output->gbm_surface, bo);
 		return;
 	}
+	output->next->gbm_surface = output->gbm_surface;
 }
 
 static void
@@ -883,7 +885,7 @@ drm_output_repaint(struct weston_output *output_base,
 err_pageflip:
 	output->cursor_view = NULL;
 	if (output->next) {
-		drm_output_release_fb(output, output->next);
+		drm_fb_unref(output->next);
 		output->next = NULL;
 	}
 
@@ -988,7 +990,7 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	drm_output_update_msc(output, frame);
 	output->vblank_pending = 0;
 
-	drm_output_release_fb(output, s->current);
+	drm_fb_unref(s->current);
 	s->current = s->next;
 	s->next = NULL;
 
@@ -1022,7 +1024,7 @@ page_flip_handler(int fd, unsigned int frame,
 	 * we just want to page flip to the current buffer to get an accurate
 	 * timestamp */
 	if (output->page_flip_pending) {
-		drm_output_release_fb(output, output->current);
+		drm_fb_unref(output->current);
 		output->current = output->next;
 		output->next = NULL;
 	}
@@ -1559,8 +1561,8 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
 	/* reset rendering stuff. */
-	drm_output_release_fb(output, output->current);
-	drm_output_release_fb(output, output->next);
+	drm_fb_unref(output->current);
+	drm_fb_unref(output->next);
 	output->current = output->next = NULL;
 
 	if (b->use_pixman) {
@@ -2784,8 +2786,8 @@ destroy_sprites(struct drm_backend *backend)
 				sprite->plane_id,
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
-		drm_output_release_fb(output, sprite->current);
-		drm_output_release_fb(output, sprite->next);
+		drm_fb_unref(sprite->current);
+		drm_fb_unref(sprite->next);
 		weston_plane_release(&sprite->plane);
 		free(sprite);
 	}
