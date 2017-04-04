@@ -591,13 +591,13 @@ interface ImageBitmap
     method close
     method constructor
 interface ImageData
-    getter colorSettings
     getter data
     getter dataUnion
     getter height
     getter width
     method constructor
     method createImageData
+    method getColorSettings
 interface InstallEvent : ExtendableEvent
     method constructor
     method registerForeignFetch

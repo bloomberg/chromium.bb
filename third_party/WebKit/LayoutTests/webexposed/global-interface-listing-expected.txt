@@ -3768,13 +3768,13 @@ interface ImageCapture
     method takePhoto
 interface ImageData
     attribute @@toStringTag
-    getter colorSettings
     getter data
     getter dataUnion
     getter height
     getter width
     method constructor
     method createImageData
+    method getColorSettings
 interface InputDeviceCapabilities
     attribute @@toStringTag
     getter firesTouchEvents
