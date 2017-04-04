@@ -72,6 +72,7 @@ CONTENT_EXPORT
 extern const base::Feature kSendBeaconThrowForBlobWithNonSimpleType;
 
 #if defined(OS_ANDROID)
+CONTENT_EXPORT extern const base::Feature kAndroidAutofillAccessibility;
 CONTENT_EXPORT extern const base::Feature kNativeAndroidHistoryManager;
 CONTENT_EXPORT extern const base::Feature kImeThread;
 CONTENT_EXPORT extern const base::Feature kSeccompSandboxAndroid;

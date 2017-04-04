@@ -99,6 +99,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   jboolean IsNodeValid(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj,
                        jint id);
+
   void HitTest(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& obj,
                jint x,
@@ -221,6 +222,18 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   bool IsSlider(JNIEnv* env,
                 const base::android::JavaParamRef<jobject>& obj,
                 jint id);
+
+  // Accessibility methods to support navigation for autofill popup.
+  void OnAutofillPopupDisplayed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void OnAutofillPopupDismissed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsAutofillPopupNode(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint id);
 
   // Scrolls any scrollable container by about 80% of one page in the
   // given direction.

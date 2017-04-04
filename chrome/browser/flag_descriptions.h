@@ -296,6 +296,12 @@ extern const char kAccessibilityTabSwitcherName[];
 // Description of the flag to enable the accessibility tab switcher.
 extern const char kAccessibilityTabSwitcherDescription[];
 
+// Name of the flag to enable autofill accessibility.
+extern const char kAndroidAutofillAccessibilityName[];
+
+// Description of the flag to enable autofill accessibility.
+extern const char kAndroidAutofillAccessibilityDescription[];
+
 // Name of the flag to enable the physical web feature.
 extern const char kEnablePhysicalWebName[];
 

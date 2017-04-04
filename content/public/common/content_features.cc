@@ -267,6 +267,11 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
+// Autofill Accessibility in Android.
+// crbug.com/627860
+const base::Feature kAndroidAutofillAccessibility{
+    "AndroidAutofillAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // A browsing history manager implementation for Android.
 const base::Feature kNativeAndroidHistoryManager{
   "AndroidHistoryManager", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -289,6 +289,11 @@ const char kAccessibilityTabSwitcherName[] = "Accessibility Tab Switcher";
 const char kAccessibilityTabSwitcherDescription[] =
     "Enable the accessibility tab switcher for Android.";
 
+const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
+
+const char kAndroidAutofillAccessibilityDescription[] =
+    "Enable accessibility for autofill popup.";
+
 const char kEnablePhysicalWebName[] = "Enable the Physical Web.";
 
 const char kEnablePhysicalWebDescription[] =
