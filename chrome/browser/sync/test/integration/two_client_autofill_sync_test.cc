@@ -46,20 +46,12 @@ using bookmarks_helper::IndexedURLTitle;
 
 class TwoClientAutofillSyncTest : public SyncTest {
  public:
-  TwoClientAutofillSyncTest() : SyncTest(TWO_CLIENT) { count = 0; }
+  TwoClientAutofillSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientAutofillSyncTest() override {}
 
   bool TestUsesSelfNotifications() override { return false; }
 
-  // We do this so as to make a change that will trigger the autofill to sync.
-  // By default autofill does not sync unless there is some other change.
-  void MakeABookmarkChange(int profile) {
-    ASSERT_TRUE(
-        AddURL(profile, IndexedURLTitle(count), GURL(IndexedURL(count))));
-    ++count;
-  }
  private:
-  int count;
   DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillSyncTest);
 };
 
@@ -70,7 +62,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
   std::set<AutofillKey> keys;
   keys.insert(AutofillKey("name0", "value0"));
   AddKeys(0, keys);
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillKeysChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllKeys(0).size());
 
@@ -78,7 +69,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
   keys.clear();
   keys.insert(AutofillKey("name1", "value1-0"));
   AddKeys(1, keys);
-  MakeABookmarkChange(1);
   ASSERT_TRUE(AutofillKeysChecker(0, 1).Wait());
   ASSERT_EQ(2U, GetAllKeys(0).size());
 
@@ -86,20 +76,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, WebDataServiceSanity) {
   keys.clear();
   keys.insert(AutofillKey("name1", "value1-1"));
   AddKeys(0, keys);
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillKeysChecker(0, 1).Wait());
   ASSERT_EQ(3U, GetAllKeys(0).size());
 
   // Client1 removes a key.
   RemoveKey(1, AutofillKey("name1", "value1-0"));
-  MakeABookmarkChange(1);
   ASSERT_TRUE(AutofillKeysChecker(0, 1).Wait());
   ASSERT_EQ(2U, GetAllKeys(0).size());
 
   // Client0 removes the rest.
   RemoveKey(0, AutofillKey("name0", "value0"));
   RemoveKey(0, AutofillKey("name1", "value1-1"));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillKeysChecker(0, 1).Wait());
   ASSERT_EQ(0U, GetAllKeys(0).size());
 }
@@ -155,25 +142,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
 
   // Client0 adds a profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   // Client1 adds a profile.
   AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
-  MakeABookmarkChange(1);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
 
   // Client0 adds the same profile.
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
 
   // Client1 removes a profile.
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
-  MakeABookmarkChange(1);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
@@ -182,13 +165,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest,
                 GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Bart"));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   // Client1 removes remaining profile.
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
-  MakeABookmarkChange(1);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
@@ -230,7 +211,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
@@ -241,7 +221,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, AddMultipleProfiles) {
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
   AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
   AddProfile(0, CreateAutofillProfile(PROFILE_FRASIER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(3U, GetAllAutoFillProfiles(0).size());
 }
@@ -250,12 +229,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, DeleteProfile) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
-  MakeABookmarkChange(1);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(0U, GetAllAutoFillProfiles(0).size());
 }
@@ -275,7 +252,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
@@ -287,7 +263,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, UpdateFields) {
                 GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::EMAIL_ADDRESS),
                 base::ASCIIToUTF16("grrrl@TV.com"));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
@@ -296,19 +271,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ConflictingFields) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
+
   UpdateProfile(0,
                 GetAllAutoFillProfiles(0)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Lisa"));
-  MakeABookmarkChange(0);
   UpdateProfile(1,
                 GetAllAutoFillProfiles(1)[0]->guid(),
                 AutofillType(autofill::NAME_FIRST),
                 base::ASCIIToUTF16("Bart"));
-  MakeABookmarkChange(1);
+
+  // Don't care which write wins the conflict, only that the two clients agree.
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 }
@@ -317,7 +292,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
@@ -335,7 +309,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, MaxLength) {
                 AutofillType(autofill::ADDRESS_HOME_LINE1),
                 max_length_string);
 
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
 }
 
@@ -343,7 +316,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-  MakeABookmarkChange(0);
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 
@@ -366,7 +338,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
                 AutofillType(autofill::ADDRESS_HOME_LINE1),
                 exceeds_max_length_string);
 
-  MakeABookmarkChange(0);
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   EXPECT_FALSE(ProfilesMatch(0, 1));
 }
@@ -375,16 +346,18 @@ IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, ExceedsMaxLength) {
 IN_PROC_BROWSER_TEST_F(TwoClientAutofillSyncTest, NoCreditCardSync) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
-
   CreditCard card;
   card.SetRawInfo(autofill::CREDIT_CARD_NUMBER,
                   base::ASCIIToUTF16("6011111111111117"));
-  std::vector<CreditCard> credit_cards;
-  credit_cards.push_back(card);
+  std::vector<CreditCard> credit_cards{card};
   SetCreditCards(0, &credit_cards);
 
-  MakeABookmarkChange(0);
+  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+
+  // Because the credit card was created before the profile, if we wait for the
+  // profile to sync between both clients, it should give the credit card enough
+  // time to sync. We cannot directly wait/block for the credit card to sync
+  // because we're expecting it to not sync.
   ASSERT_TRUE(AutofillProfileChecker(0, 1).Wait());
   ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
 

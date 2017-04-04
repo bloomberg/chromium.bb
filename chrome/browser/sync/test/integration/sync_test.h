@@ -451,10 +451,6 @@ class SyncTest : public InProcessBrowserTest {
   // profile or not.
   bool use_verifier_;
 
-  // Indicates whether or not notifications were explicitly enabled/disabled.
-  // Defaults to true.
-  bool notifications_enabled_;
-
   // Indicates the need to create Gaia user account at runtime. This can only be
   // set if tests are run against external servers with support for user
   // creation via http requests.

@@ -215,7 +215,6 @@ SyncTest::SyncTest(TestType test_type)
       server_type_(SERVER_TYPE_UNDECIDED),
       num_clients_(-1),
       use_verifier_(true),
-      notifications_enabled_(true),
       create_gaia_account_at_runtime_(false) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
@@ -1120,7 +1119,6 @@ void SyncTest::DisableNotificationsImpl() {
 
 void SyncTest::DisableNotifications() {
   DisableNotificationsImpl();
-  notifications_enabled_ = false;
 }
 
 void SyncTest::EnableNotificationsImpl() {
@@ -1135,7 +1133,6 @@ void SyncTest::EnableNotificationsImpl() {
 
 void SyncTest::EnableNotifications() {
   EnableNotificationsImpl();
-  notifications_enabled_ = true;
 }
 
 void SyncTest::TriggerNotification(syncer::ModelTypeSet changed_types) {

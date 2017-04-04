@@ -100,10 +100,6 @@ int GetKeyCount(int profile);
 // |profile_a| and |profile_b|. Returns true if they match.
 bool ProfilesMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 
-// Compares the autofill profiles for all sync profiles, and returns true if
-// they all match.
-bool AllProfilesMatch() WARN_UNUSED_RESULT;
-
 // Creates a test autofill profile based on the persona specified in |type|.
 autofill::AutofillProfile CreateAutofillProfile(ProfileType type);
 
