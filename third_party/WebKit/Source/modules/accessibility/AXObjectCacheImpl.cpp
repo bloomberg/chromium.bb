@@ -262,7 +262,7 @@ bool nodeHasRole(Node* node, const String& role) {
   if (!node || !node->isElementNode())
     return false;
 
-  return equalIgnoringCase(toElement(node)->getAttribute(roleAttr), role);
+  return equalIgnoringASCIICase(toElement(node)->getAttribute(roleAttr), role);
 }
 
 AXObject* AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutObject) {
@@ -1090,8 +1090,8 @@ bool isNodeAriaVisible(Node* node) {
   if (!node->isElementNode())
     return false;
 
-  return equalIgnoringCase(toElement(node)->getAttribute(aria_hiddenAttr),
-                           "false");
+  return equalIgnoringASCIICase(toElement(node)->getAttribute(aria_hiddenAttr),
+                                "false");
 }
 
 void AXObjectCacheImpl::postPlatformNotification(AXObject* obj,

@@ -47,12 +47,12 @@ AXARIAGridCell* AXARIAGridCell::create(LayoutObject* layoutObject,
 
 bool AXARIAGridCell::isAriaColumnHeader() const {
   const AtomicString& role = getAttribute(HTMLNames::roleAttr);
-  return equalIgnoringCase(role, "columnheader");
+  return equalIgnoringASCIICase(role, "columnheader");
 }
 
 bool AXARIAGridCell::isAriaRowHeader() const {
   const AtomicString& role = getAttribute(HTMLNames::roleAttr);
-  return equalIgnoringCase(role, "rowheader");
+  return equalIgnoringASCIICase(role, "rowheader");
 }
 
 AXObject* AXARIAGridCell::parentTable() const {

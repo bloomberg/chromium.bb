@@ -96,7 +96,7 @@ class BoolAttributeSetter : public SparseAttributeSetter {
            AXSparseAttributeClient& attributeMap,
            const AtomicString& value) override {
     attributeMap.addBoolAttribute(m_attribute,
-                                  equalIgnoringCase(value, "true"));
+                                  equalIgnoringASCIICase(value, "true"));
   }
 };
 
@@ -300,7 +300,7 @@ bool AXNodeObject::computeAccessibilityIsIgnored(
   Element* element = getNode()->isElementNode() ? toElement(getNode())
                                                 : getNode()->parentElement();
   if (!getLayoutObject() && (!element || !element->isInCanvasSubtree()) &&
-      !equalIgnoringCase(getAttribute(aria_hiddenAttr), "false")) {
+      !equalIgnoringASCIICase(getAttribute(aria_hiddenAttr), "false")) {
     if (ignoredReasons)
       ignoredReasons->push_back(IgnoredReason(AXNotRendered));
     return true;
@@ -750,7 +750,7 @@ bool AXNodeObject::hasContentEditableAttributeSet() const {
     return false;
   // Both "true" (case-insensitive) and the empty string count as true.
   return contentEditableValue.isEmpty() ||
-         equalIgnoringCase(contentEditableValue, "true");
+         equalIgnoringASCIICase(contentEditableValue, "true");
 }
 
 bool AXNodeObject::isTextControl() const {
@@ -825,7 +825,7 @@ static Element* siblingWithAriaRole(String role, Node* node) {
        sibling = ElementTraversal::nextSibling(*sibling)) {
     const AtomicString& siblingAriaRole =
         AccessibleNode::getProperty(sibling, AOMStringProperty::kRole);
-    if (equalIgnoringCase(siblingAriaRole, role))
+    if (equalIgnoringASCIICase(siblingAriaRole, role))
       return sibling;
   }
 
@@ -1044,9 +1044,9 @@ bool AXNodeObject::isMeter() const {
 bool AXNodeObject::isMultiSelectable() const {
   const AtomicString& ariaMultiSelectable =
       getAttribute(aria_multiselectableAttr);
-  if (equalIgnoringCase(ariaMultiSelectable, "true"))
+  if (equalIgnoringASCIICase(ariaMultiSelectable, "true"))
     return true;
-  if (equalIgnoringCase(ariaMultiSelectable, "false"))
+  if (equalIgnoringASCIICase(ariaMultiSelectable, "false"))
     return false;
 
   return isHTMLSelectElement(getNode()) &&
@@ -1159,7 +1159,7 @@ bool AXNodeObject::isChecked() const {
     case MenuItemRadioRole:
     case RadioButtonRole:
     case SwitchRole:
-      if (equalIgnoringCase(
+      if (equalIgnoringASCIICase(
               getAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked),
               "true"))
         return true;
@@ -1211,9 +1211,9 @@ AccessibilityExpanded AXNodeObject::isExpanded() const {
   }
 
   const AtomicString& expanded = getAttribute(aria_expandedAttr);
-  if (equalIgnoringCase(expanded, "true"))
+  if (equalIgnoringASCIICase(expanded, "true"))
     return ExpandedExpanded;
-  if (equalIgnoringCase(expanded, "false"))
+  if (equalIgnoringASCIICase(expanded, "false"))
     return ExpandedCollapsed;
 
   return ExpandedUndefined;
@@ -1225,9 +1225,9 @@ bool AXNodeObject::isModal() const {
 
   if (hasAttribute(aria_modalAttr)) {
     const AtomicString& modal = getAttribute(aria_modalAttr);
-    if (equalIgnoringCase(modal, "true"))
+    if (equalIgnoringASCIICase(modal, "true"))
       return true;
-    if (equalIgnoringCase(modal, "false"))
+    if (equalIgnoringASCIICase(modal, "false"))
       return false;
   }
 
@@ -1248,8 +1248,8 @@ bool AXNodeObject::isPressed() const {
   // ARIA button with aria-pressed not undefined, then check for aria-pressed
   // attribute rather than getNode()->active()
   if (ariaRoleAttribute() == ToggleButtonRole) {
-    if (equalIgnoringCase(getAttribute(aria_pressedAttr), "true") ||
-        equalIgnoringCase(getAttribute(aria_pressedAttr), "mixed"))
+    if (equalIgnoringASCIICase(getAttribute(aria_pressedAttr), "true") ||
+        equalIgnoringASCIICase(getAttribute(aria_pressedAttr), "mixed"))
       return true;
     return false;
   }
@@ -1280,7 +1280,7 @@ bool AXNodeObject::isRequired() const {
       hasAttribute(requiredAttr))
     return toHTMLFormControlElement(n)->isRequired();
 
-  if (equalIgnoringCase(getAttribute(aria_requiredAttr), "true"))
+  if (equalIgnoringASCIICase(getAttribute(aria_requiredAttr), "true"))
     return true;
 
   return false;
@@ -1310,7 +1310,7 @@ bool AXNodeObject::canSetFocusAttribute() const {
 }
 
 bool AXNodeObject::canSetValueAttribute() const {
-  if (equalIgnoringCase(getAttribute(aria_readonlyAttr), "true"))
+  if (equalIgnoringASCIICase(getAttribute(aria_readonlyAttr), "true"))
     return false;
 
   if (isProgressIndicator() || isSlider())
@@ -1488,9 +1488,9 @@ AccessibilityOrientation AXNodeObject::orientation() const {
   const AtomicString& ariaOrientation =
       getAOMPropertyOrARIAAttribute(AOMStringProperty::kOrientation);
   AccessibilityOrientation orientation = AccessibilityOrientationUndefined;
-  if (equalIgnoringCase(ariaOrientation, "horizontal"))
+  if (equalIgnoringASCIICase(ariaOrientation, "horizontal"))
     orientation = AccessibilityOrientationHorizontal;
-  else if (equalIgnoringCase(ariaOrientation, "vertical"))
+  else if (equalIgnoringASCIICase(ariaOrientation, "vertical"))
     orientation = AccessibilityOrientationVertical;
 
   switch (roleValue()) {
@@ -1621,7 +1621,7 @@ RGBA32 AXNodeObject::colorValue() const {
 
   HTMLInputElement* input = toHTMLInputElement(getNode());
   const AtomicString& type = input->getAttribute(typeAttr);
-  if (!equalIgnoringCase(type, "color"))
+  if (!equalIgnoringASCIICase(type, "color"))
     return AXObject::colorValue();
 
   // HTMLInputElement::value always returns a string parseable by Color.
@@ -1636,19 +1636,20 @@ AriaCurrentState AXNodeObject::ariaCurrentState() const {
       getAOMPropertyOrARIAAttribute(AOMStringProperty::kCurrent);
   if (attributeValue.isNull())
     return AriaCurrentStateUndefined;
-  if (attributeValue.isEmpty() || equalIgnoringCase(attributeValue, "false"))
+  if (attributeValue.isEmpty() ||
+      equalIgnoringASCIICase(attributeValue, "false"))
     return AriaCurrentStateFalse;
-  if (equalIgnoringCase(attributeValue, "true"))
+  if (equalIgnoringASCIICase(attributeValue, "true"))
     return AriaCurrentStateTrue;
-  if (equalIgnoringCase(attributeValue, "page"))
+  if (equalIgnoringASCIICase(attributeValue, "page"))
     return AriaCurrentStatePage;
-  if (equalIgnoringCase(attributeValue, "step"))
+  if (equalIgnoringASCIICase(attributeValue, "step"))
     return AriaCurrentStateStep;
-  if (equalIgnoringCase(attributeValue, "location"))
+  if (equalIgnoringASCIICase(attributeValue, "location"))
     return AriaCurrentStateLocation;
-  if (equalIgnoringCase(attributeValue, "date"))
+  if (equalIgnoringASCIICase(attributeValue, "date"))
     return AriaCurrentStateDate;
-  if (equalIgnoringCase(attributeValue, "time"))
+  if (equalIgnoringASCIICase(attributeValue, "time"))
     return AriaCurrentStateTime;
   // An unknown value should return true.
   if (!attributeValue.isEmpty())
@@ -1660,13 +1661,13 @@ AriaCurrentState AXNodeObject::ariaCurrentState() const {
 InvalidState AXNodeObject::getInvalidState() const {
   const AtomicString& attributeValue =
       getAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
-  if (equalIgnoringCase(attributeValue, "false"))
+  if (equalIgnoringASCIICase(attributeValue, "false"))
     return InvalidStateFalse;
-  if (equalIgnoringCase(attributeValue, "true"))
+  if (equalIgnoringASCIICase(attributeValue, "true"))
     return InvalidStateTrue;
-  if (equalIgnoringCase(attributeValue, "spelling"))
+  if (equalIgnoringASCIICase(attributeValue, "spelling"))
     return InvalidStateSpelling;
-  if (equalIgnoringCase(attributeValue, "grammar"))
+  if (equalIgnoringASCIICase(attributeValue, "grammar"))
     return InvalidStateGrammar;
   // A yet unknown value.
   if (!attributeValue.isEmpty())
@@ -1996,7 +1997,7 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited,
     // true if any ancestor is hidden, but we need to be able to compute the
     // accessible name of object inside hidden subtrees (for example, if
     // aria-labelledby points to an object that's hidden).
-    if (equalIgnoringCase(child->getAttribute(aria_hiddenAttr), "true"))
+    if (equalIgnoringASCIICase(child->getAttribute(aria_hiddenAttr), "true"))
       continue;
 
     // If we're going between two layoutObjects that are in separate

@@ -54,14 +54,14 @@ bool AXTableCell::isTableHeaderCell() const {
 
 bool AXTableCell::isRowHeaderCell() const {
   const AtomicString& scope = getAttribute(scopeAttr);
-  return equalIgnoringCase(scope, "row") ||
-         equalIgnoringCase(scope, "rowgroup");
+  return equalIgnoringASCIICase(scope, "row") ||
+         equalIgnoringASCIICase(scope, "rowgroup");
 }
 
 bool AXTableCell::isColumnHeaderCell() const {
   const AtomicString& scope = getAttribute(scopeAttr);
-  return equalIgnoringCase(scope, "col") ||
-         equalIgnoringCase(scope, "colgroup");
+  return equalIgnoringASCIICase(scope, "col") ||
+         equalIgnoringASCIICase(scope, "colgroup");
 }
 
 bool AXTableCell::computeAccessibilityIsIgnored(
@@ -225,13 +225,13 @@ SortDirection AXTableCell::getSortDirection() const {
       getAOMPropertyOrARIAAttribute(AOMStringProperty::kSort);
   if (ariaSort.isEmpty())
     return SortDirectionUndefined;
-  if (equalIgnoringCase(ariaSort, "none"))
+  if (equalIgnoringASCIICase(ariaSort, "none"))
     return SortDirectionNone;
-  if (equalIgnoringCase(ariaSort, "ascending"))
+  if (equalIgnoringASCIICase(ariaSort, "ascending"))
     return SortDirectionAscending;
-  if (equalIgnoringCase(ariaSort, "descending"))
+  if (equalIgnoringASCIICase(ariaSort, "descending"))
     return SortDirectionDescending;
-  if (equalIgnoringCase(ariaSort, "other"))
+  if (equalIgnoringASCIICase(ariaSort, "other"))
     return SortDirectionOther;
   return SortDirectionUndefined;
 }

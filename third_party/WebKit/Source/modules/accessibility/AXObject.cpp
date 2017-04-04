@@ -596,7 +596,7 @@ AXObject* AXObject::leafNodeAncestor() const {
 
 const AXObject* AXObject::ariaHiddenRoot() const {
   for (const AXObject* object = this; object; object = object->parentObject()) {
-    if (equalIgnoringCase(object->getAttribute(aria_hiddenAttr), "true"))
+    if (equalIgnoringASCIICase(object->getAttribute(aria_hiddenAttr), "true"))
       return object;
   }
 
@@ -610,9 +610,9 @@ bool AXObject::isDescendantOfDisabledNode() const {
 
 const AXObject* AXObject::disabledAncestor() const {
   const AtomicString& disabled = getAttribute(aria_disabledAttr);
-  if (equalIgnoringCase(disabled, "true"))
+  if (equalIgnoringASCIICase(disabled, "true"))
     return this;
-  if (equalIgnoringCase(disabled, "false"))
+  if (equalIgnoringASCIICase(disabled, "false"))
     return 0;
 
   if (AXObject* parent = parentObject())
@@ -723,7 +723,7 @@ String AXObject::recursiveTextAlternative(const AXObject& axObj,
 }
 
 bool AXObject::isHiddenForTextAlternativeCalculation() const {
-  if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
+  if (equalIgnoringASCIICase(getAttribute(aria_hiddenAttr), "false"))
     return false;
 
   if (getLayoutObject())
@@ -955,10 +955,10 @@ AXSupportedAction AXObject::action() const {
 AccessibilityButtonState AXObject::checkboxOrRadioValue() const {
   const AtomicString& checkedAttribute =
       getAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked);
-  if (equalIgnoringCase(checkedAttribute, "true"))
+  if (equalIgnoringASCIICase(checkedAttribute, "true"))
     return ButtonStateOn;
 
-  if (equalIgnoringCase(checkedAttribute, "mixed")) {
+  if (equalIgnoringASCIICase(checkedAttribute, "mixed")) {
     // Only checkboxes should support the mixed state.
     AccessibilityRole role = ariaRoleAttribute();
     if (role == CheckBoxRole || role == MenuItemCheckBoxRole)
@@ -982,7 +982,7 @@ bool AXObject::isMultiline() const {
   if (!isNativeTextControl() && !isNonNativeTextControl())
     return false;
 
-  return equalIgnoringCase(getAttribute(aria_multilineAttr), "true");
+  return equalIgnoringASCIICase(getAttribute(aria_multilineAttr), "true");
 }
 
 bool AXObject::ariaPressedIsPresent() const {
@@ -1063,8 +1063,8 @@ int AXObject::indexInParent() const {
 
 bool AXObject::isLiveRegion() const {
   const AtomicString& liveRegion = liveRegionStatus();
-  return equalIgnoringCase(liveRegion, "polite") ||
-         equalIgnoringCase(liveRegion, "assertive");
+  return equalIgnoringASCIICase(liveRegion, "polite") ||
+         equalIgnoringASCIICase(liveRegion, "assertive");
 }
 
 AXObject* AXObject::liveRegionRoot() const {

@@ -296,7 +296,7 @@ void fillWidgetStates(AXObject& axObject,
     } else {
       const AtomicString& pressedAttr =
           axObject.getAttribute(HTMLNames::aria_pressedAttr);
-      if (equalIgnoringCase(pressedAttr, "mixed"))
+      if (equalIgnoringASCIICase(pressedAttr, "mixed"))
         properties.addItem(
             createProperty(AXWidgetStatesEnum::Pressed,
                            createValue("mixed", AXValueTypeEnum::Tristate)));

@@ -459,7 +459,7 @@ bool AXLayoutObject::isSelected() const {
     return false;
 
   const AtomicString& ariaSelected = getAttribute(aria_selectedAttr);
-  if (equalIgnoringCase(ariaSelected, "true"))
+  if (equalIgnoringASCIICase(ariaSelected, "true"))
     return true;
 
   AXObject* focusedObject = axObjectCache().focusedObject();
@@ -492,7 +492,7 @@ AXObjectInclusion AXLayoutObject::defaultObjectInclusion(
   if (m_layoutObject->style()->visibility() != EVisibility::kVisible) {
     // aria-hidden is meant to override visibility as the determinant in AX
     // hierarchy inclusion.
-    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "false"))
+    if (equalIgnoringASCIICase(getAttribute(aria_hiddenAttr), "false"))
       return DefaultBehavior;
 
     if (ignoredReasons)
@@ -1296,8 +1296,8 @@ AXObject* AXLayoutObject::ancestorForWhichThisIsAPresentationalChild() const {
 
 bool AXLayoutObject::supportsARIADragging() const {
   const AtomicString& grabbed = getAttribute(aria_grabbedAttr);
-  return equalIgnoringCase(grabbed, "true") ||
-         equalIgnoringCase(grabbed, "false");
+  return equalIgnoringASCIICase(grabbed, "true") ||
+         equalIgnoringASCIICase(grabbed, "false");
 }
 
 bool AXLayoutObject::supportsARIADropping() const {
@@ -2500,7 +2500,7 @@ bool AXLayoutObject::elementAttributeValue(
   if (!m_layoutObject)
     return false;
 
-  return equalIgnoringCase(getAttribute(attributeName), "true");
+  return equalIgnoringASCIICase(getAttribute(attributeName), "true");
 }
 
 }  // namespace blink
