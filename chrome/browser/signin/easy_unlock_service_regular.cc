@@ -187,7 +187,8 @@ void EasyUnlockServiceRegular::OnUserContextFromReauth(
     const chromeos::UserContext& user_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   short_lived_user_context_.reset(new chromeos::ShortLivedUserContext(
-      user_context, apps::AppLifetimeMonitorFactory::GetForProfile(profile()),
+      user_context,
+      apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile()),
       base::ThreadTaskRunnerHandle::Get().get()));
 
   OpenSetupApp();

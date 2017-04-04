@@ -38,7 +38,8 @@ class ShortLivedUserContext : public apps::AppLifetimeMonitor::Observer {
   void Reset();
 
   // apps::AppLifetimeMonitor::Observer:
-  void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
+  void OnAppDeactivated(content::BrowserContext* context,
+                        const std::string& app_id) override;
 
   std::unique_ptr<UserContext> user_context_;
 

@@ -15,7 +15,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 struct UnloadedExtensionInfo;
@@ -43,7 +45,7 @@ class AppLoadService : public KeyedService,
     base::FilePath current_dir;
   };
 
-  explicit AppLoadService(Profile* profile);
+  explicit AppLoadService(content::BrowserContext* context);
   ~AppLoadService() override;
 
   // KeyedService support:
@@ -68,7 +70,7 @@ class AppLoadService : public KeyedService,
   // the app has begun successfully.
   bool Load(const base::FilePath& extension_path);
 
-  static AppLoadService* Get(Profile* profile);
+  static AppLoadService* Get(content::BrowserContext* context);
 
  private:
   // content::NotificationObserver.
@@ -91,7 +93,7 @@ class AppLoadService : public KeyedService,
   // no action.
   std::map<std::string, PostReloadAction> post_reload_actions_;
   content::NotificationRegistrar registrar_;
-  Profile* profile_;
+  content::BrowserContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLoadService);
 };

@@ -8,18 +8,22 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace apps {
 
 class AppRestoreService;
 
 // Singleton that owns all AppRestoreServices and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up
+// BrowserContexts. Listens for the BrowserContext's destruction notification
+// and cleans up
 // the associated AppRestoreService.
 class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static AppRestoreService* GetForProfile(Profile* profile);
+  static AppRestoreService* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static AppRestoreServiceFactory* GetInstance();
 
@@ -31,7 +35,7 @@ class AppRestoreServiceFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+      content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
 };
 

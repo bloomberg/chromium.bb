@@ -14,7 +14,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace apps {
 
@@ -27,22 +29,25 @@ class AppLifetimeMonitor : public KeyedService,
   class Observer {
    public:
     // Called when the app starts running.
-    virtual void OnAppStart(Profile* profile, const std::string& app_id) {}
+    virtual void OnAppStart(content::BrowserContext* context,
+                            const std::string& app_id) {}
     // Called when the app becomes active to the user, i.e. the first window
     // becomes visible.
-    virtual void OnAppActivated(Profile* profile, const std::string& app_id) {}
+    virtual void OnAppActivated(content::BrowserContext* context,
+                                const std::string& app_id) {}
     // Called when the app becomes inactive to the user, i.e. the last window is
     // hidden or closed.
-    virtual void OnAppDeactivated(Profile* profile, const std::string& app_id) {
-    }
+    virtual void OnAppDeactivated(content::BrowserContext* context,
+                                  const std::string& app_id) {}
     // Called when the app stops running.
-    virtual void OnAppStop(Profile* profile, const std::string& app_id) {}
+    virtual void OnAppStop(content::BrowserContext* context,
+                           const std::string& app_id) {}
 
    protected:
     virtual ~Observer() {}
   };
 
-  explicit AppLifetimeMonitor(Profile* profile);
+  explicit AppLifetimeMonitor(content::BrowserContext* context);
   ~AppLifetimeMonitor() override;
 
   void AddObserver(Observer* observer);
@@ -71,7 +76,7 @@ class AppLifetimeMonitor : public KeyedService,
   void NotifyAppStop(const std::string& app_id);
 
   content::NotificationRegistrar registrar_;
-  Profile* profile_;
+  content::BrowserContext* context_;
   base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLifetimeMonitor);

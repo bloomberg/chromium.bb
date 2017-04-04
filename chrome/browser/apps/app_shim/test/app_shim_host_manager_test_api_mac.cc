@@ -37,7 +37,7 @@ void AppShimHostManagerTestApi::SetExtensionAppShimHandler(
   // profile destruction.
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    apps::AppLifetimeMonitorFactory::GetForProfile(profile)
+    apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile)
         ->RemoveObserver(handler.get());
   }
 }

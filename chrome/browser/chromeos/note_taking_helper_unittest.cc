@@ -35,6 +35,7 @@
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/api/app_runtime.h"
@@ -280,11 +281,11 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
 
  private:
   // Callback registered with the helper to record Chrome app launch requests.
-  void LaunchChromeApp(Profile* passed_profile,
+  void LaunchChromeApp(content::BrowserContext* passed_context,
                        const extensions::Extension* extension,
                        std::unique_ptr<app_runtime::ActionData> action_data,
                        const base::FilePath& path) {
-    EXPECT_EQ(profile(), passed_profile);
+    EXPECT_EQ(profile(), passed_context);
     EXPECT_EQ(app_runtime::ActionType::ACTION_TYPE_NEW_NOTE,
               action_data->action_type);
     launched_chrome_apps_.push_back(ChromeAppLaunchInfo{extension->id(), path});

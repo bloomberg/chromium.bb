@@ -16,7 +16,9 @@ namespace extensions {
 class Extension;
 }
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace apps {
 
@@ -28,7 +30,7 @@ class AppRestoreService : public KeyedService,
   // whether this new browser process launched due to a restart.
   static bool ShouldRestoreApps(bool is_browser_restart);
 
-  explicit AppRestoreService(Profile* profile);
+  explicit AppRestoreService(content::BrowserContext* context);
 
   // Restart apps that need to be restarted and clear the "running" preference
   // from apps to prevent them being restarted in subsequent restarts.
@@ -41,14 +43,18 @@ class AppRestoreService : public KeyedService,
   // Called to notify that the application has begun to exit.
   void OnApplicationTerminating();
 
-  static AppRestoreService* Get(Profile* profile);
+  static AppRestoreService* Get(content::BrowserContext* context);
 
  private:
   // AppLifetimeMonitor::Observer.
-  void OnAppStart(Profile* profile, const std::string& app_id) override;
-  void OnAppActivated(Profile* profile, const std::string& app_id) override;
-  void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
-  void OnAppStop(Profile* profile, const std::string& app_id) override;
+  void OnAppStart(content::BrowserContext* context,
+                  const std::string& app_id) override;
+  void OnAppActivated(content::BrowserContext* context,
+                      const std::string& app_id) override;
+  void OnAppDeactivated(content::BrowserContext* context,
+                        const std::string& app_id) override;
+  void OnAppStop(content::BrowserContext* context,
+                 const std::string& app_id) override;
 
   // KeyedService.
   void Shutdown() override;
@@ -62,7 +68,7 @@ class AppRestoreService : public KeyedService,
   void StartObservingAppLifetime();
   void StopObservingAppLifetime();
 
-  Profile* profile_;
+  content::BrowserContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(AppRestoreService);
 };

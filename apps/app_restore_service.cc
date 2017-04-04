@@ -8,8 +8,7 @@
 #include "apps/app_restore_service_factory.h"
 #include "apps/launcher.h"
 #include "apps/saved_files_service.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -34,15 +33,15 @@ bool AppRestoreService::ShouldRestoreApps(bool is_browser_restart) {
   return should_restore_apps;
 }
 
-AppRestoreService::AppRestoreService(Profile* profile)
-    : profile_(profile) {
+AppRestoreService::AppRestoreService(content::BrowserContext* context)
+    : context_(context) {
   StartObservingAppLifetime();
 }
 
 void AppRestoreService::HandleStartup(bool should_restore_apps) {
   const extensions::ExtensionSet& extensions =
-      ExtensionRegistry::Get(profile_)->enabled_extensions();
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+      ExtensionRegistry::Get(context_)->enabled_extensions();
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(context_);
 
   for (extensions::ExtensionSet::const_iterator it = extensions.begin();
       it != extensions.end(); ++it) {
@@ -55,7 +54,7 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
       if (should_restore_apps) {
         RestoreApp(it->get());
       } else {
-        SavedFilesService::Get(profile_)->ClearQueueIfNoRetainPermission(
+        SavedFilesService::Get(context_)->ClearQueueIfNoRetainPermission(
             extension);
       }
     }
@@ -63,7 +62,7 @@ void AppRestoreService::HandleStartup(bool should_restore_apps) {
 }
 
 bool AppRestoreService::IsAppRestorable(const std::string& extension_id) {
-  return ExtensionPrefs::Get(profile_)->IsExtensionRunning(extension_id);
+  return ExtensionPrefs::Get(context_)->IsExtensionRunning(extension_id);
 }
 
 void AppRestoreService::OnApplicationTerminating() {
@@ -73,26 +72,27 @@ void AppRestoreService::OnApplicationTerminating() {
 }
 
 // static
-AppRestoreService* AppRestoreService::Get(Profile* profile) {
-  return apps::AppRestoreServiceFactory::GetForProfile(profile);
+AppRestoreService* AppRestoreService::Get(content::BrowserContext* context) {
+  return apps::AppRestoreServiceFactory::GetForBrowserContext(context);
 }
 
-void AppRestoreService::OnAppStart(Profile* profile,
+void AppRestoreService::OnAppStart(content::BrowserContext* context,
                                    const std::string& app_id) {
   RecordAppStart(app_id);
 }
 
-void AppRestoreService::OnAppActivated(Profile* profile,
+void AppRestoreService::OnAppActivated(content::BrowserContext* context,
                                        const std::string& app_id) {
   RecordAppActiveState(app_id, true);
 }
 
-void AppRestoreService::OnAppDeactivated(Profile* profile,
+void AppRestoreService::OnAppDeactivated(content::BrowserContext* context,
                                          const std::string& app_id) {
   RecordAppActiveState(app_id, false);
 }
 
-void AppRestoreService::OnAppStop(Profile* profile, const std::string& app_id) {
+void AppRestoreService::OnAppStop(content::BrowserContext* context,
+                                  const std::string& app_id) {
   RecordAppStop(app_id);
 }
 
@@ -101,16 +101,16 @@ void AppRestoreService::Shutdown() {
 }
 
 void AppRestoreService::RecordAppStart(const std::string& extension_id) {
-  ExtensionPrefs::Get(profile_)->SetExtensionRunning(extension_id, true);
+  ExtensionPrefs::Get(context_)->SetExtensionRunning(extension_id, true);
 }
 
 void AppRestoreService::RecordAppStop(const std::string& extension_id) {
-  ExtensionPrefs::Get(profile_)->SetExtensionRunning(extension_id, false);
+  ExtensionPrefs::Get(context_)->SetExtensionRunning(extension_id, false);
 }
 
 void AppRestoreService::RecordAppActiveState(const std::string& id,
                                              bool is_active) {
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(context_);
 
   // If the extension isn't running then we will already have recorded whether
   // it is active or not.
@@ -121,19 +121,19 @@ void AppRestoreService::RecordAppActiveState(const std::string& id,
 }
 
 void AppRestoreService::RestoreApp(const Extension* extension) {
-  RestartPlatformApp(profile_, extension);
+  RestartPlatformApp(context_, extension);
 }
 
 void AppRestoreService::StartObservingAppLifetime() {
   AppLifetimeMonitor* app_lifetime_monitor =
-      AppLifetimeMonitorFactory::GetForProfile(profile_);
+      AppLifetimeMonitorFactory::GetForBrowserContext(context_);
   DCHECK(app_lifetime_monitor);
   app_lifetime_monitor->AddObserver(this);
 }
 
 void AppRestoreService::StopObservingAppLifetime() {
   AppLifetimeMonitor* app_lifetime_monitor =
-      AppLifetimeMonitorFactory::GetForProfile(profile_);
+      AppLifetimeMonitorFactory::GetForBrowserContext(context_);
   // This might be NULL in tests.
   if (app_lifetime_monitor)
     app_lifetime_monitor->RemoveObserver(this);

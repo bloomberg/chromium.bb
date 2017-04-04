@@ -22,7 +22,6 @@ include_rules = [
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/chromeos/login/users/user_manager.h",
   "+chrome/browser/lifetime/application_lifetime.h",
-  "+chrome/browser/profiles",
   "+chrome/common/chrome_switches.h",
 
   # For default app icon.
@@ -46,6 +45,7 @@ specific_include_rules = {
     "+chrome/browser/extensions/extension_error_reporter.h",
     "+chrome/browser/extensions/extension_test_message_listener.h",
     "+chrome/browser/extensions/test_extension_environment.h",
+    "+chrome/browser/profiles/profile_manager.h",
     "+chrome/browser/ui/browser.h",
     "+chrome/browser/ui/simple_message_box_internal.h",
     "+chrome/test/base/in_process_browser_test.h",

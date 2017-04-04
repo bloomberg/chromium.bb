@@ -178,10 +178,11 @@ class AppLifetimeMonitorObserver : public apps::AppLifetimeMonitor::Observer {
  public:
   AppLifetimeMonitorObserver(Profile* profile)
       : profile_(profile), activated_count_(0), deactivated_count_(0) {
-    apps::AppLifetimeMonitorFactory::GetForProfile(profile_)->AddObserver(this);
+    apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile_)
+        ->AddObserver(this);
   }
   ~AppLifetimeMonitorObserver() override {
-    apps::AppLifetimeMonitorFactory::GetForProfile(profile_)
+    apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile_)
         ->RemoveObserver(this);
   }
 
@@ -190,10 +191,12 @@ class AppLifetimeMonitorObserver : public apps::AppLifetimeMonitor::Observer {
 
  protected:
   // AppLifetimeMonitor::Observer overrides:
-  void OnAppActivated(Profile* profile, const std::string& app_id) override {
+  void OnAppActivated(content::BrowserContext* context,
+                      const std::string& app_id) override {
     ++activated_count_;
   }
-  void OnAppDeactivated(Profile* profile, const std::string& app_id) override {
+  void OnAppDeactivated(content::BrowserContext* context,
+                        const std::string& app_id) override {
     ++deactivated_count_;
   }
 

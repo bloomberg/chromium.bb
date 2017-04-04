@@ -103,7 +103,7 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
 
   // Callback used to launch a Chrome app.
   using LaunchChromeAppCallback = base::Callback<void(
-      Profile*,
+      content::BrowserContext* context,
       const extensions::Extension*,
       std::unique_ptr<extensions::api::app_runtime::ActionData>,
       const base::FilePath&)>;

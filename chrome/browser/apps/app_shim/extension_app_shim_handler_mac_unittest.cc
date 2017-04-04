@@ -41,7 +41,7 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   MOCK_METHOD2(GetWindows, AppWindowList(Profile*, const std::string&));
 
   MOCK_METHOD2(MaybeGetAppExtension,
-               const Extension*(Profile*, const std::string&));
+               const Extension*(content::BrowserContext*, const std::string&));
   MOCK_METHOD3(EnableExtension, void(Profile*,
                                      const std::string&,
                                      const base::Callback<void()>&));

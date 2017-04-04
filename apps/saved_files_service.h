@@ -17,7 +17,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
+
 class SavedFilesServiceUnitTest;
 FORWARD_DECLARE_TEST(SavedFilesServiceUnitTest, RetainTwoFilesTest);
 FORWARD_DECLARE_TEST(SavedFilesServiceUnitTest, EvictionTest);
@@ -59,10 +62,10 @@ struct SavedFileEntry {
 class SavedFilesService : public KeyedService,
                           public content::NotificationObserver {
  public:
-  explicit SavedFilesService(Profile* profile);
+  explicit SavedFilesService(content::BrowserContext* context);
   ~SavedFilesService() override;
 
-  static SavedFilesService* Get(Profile* profile);
+  static SavedFilesService* Get(content::BrowserContext* context);
 
   // Registers a file entry with the saved files service, making it eligible to
   // be put into the queue. File entries that are in the retained files queue at
@@ -130,7 +133,7 @@ class SavedFilesService : public KeyedService,
   std::map<std::string, std::unique_ptr<SavedFiles>>
       extension_id_to_saved_files_;
   content::NotificationRegistrar registrar_;
-  Profile* profile_;
+  content::BrowserContext* context_;
 
   DISALLOW_COPY_AND_ASSIGN(SavedFilesService);
 };

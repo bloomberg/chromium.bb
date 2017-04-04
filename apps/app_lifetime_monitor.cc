@@ -4,7 +4,7 @@
 
 #include "apps/app_lifetime_monitor.h"
 
-#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -19,8 +19,8 @@ using extensions::AppWindowRegistry;
 using extensions::Extension;
 using extensions::ExtensionHost;
 
-AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
-    : profile_(profile) {
+AppLifetimeMonitor::AppLifetimeMonitor(content::BrowserContext* context)
+    : context_(context) {
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                  content::NotificationService::AllSources());
@@ -29,7 +29,7 @@ AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
                  content::NotificationService::AllSources());
 
   AppWindowRegistry* app_window_registry =
-      AppWindowRegistry::Factory::GetForBrowserContext(profile_,
+      AppWindowRegistry::Factory::GetForBrowserContext(context_,
                                                        false /* create */);
   DCHECK(app_window_registry);
   app_window_registry->AddObserver(this);
@@ -94,7 +94,7 @@ void AppLifetimeMonitor::OnAppWindowShown(AppWindow* app_window,
 
 void AppLifetimeMonitor::Shutdown() {
   AppWindowRegistry* app_window_registry =
-      AppWindowRegistry::Factory::GetForBrowserContext(profile_,
+      AppWindowRegistry::Factory::GetForBrowserContext(context_,
                                                        false /* create */);
   if (app_window_registry)
     app_window_registry->RemoveObserver(this);
@@ -117,22 +117,22 @@ bool AppLifetimeMonitor::HasOtherVisibleAppWindows(
 
 void AppLifetimeMonitor::NotifyAppStart(const std::string& app_id) {
   for (auto& observer : observers_)
-    observer.OnAppStart(profile_, app_id);
+    observer.OnAppStart(context_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyAppActivated(const std::string& app_id) {
   for (auto& observer : observers_)
-    observer.OnAppActivated(profile_, app_id);
+    observer.OnAppActivated(context_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyAppDeactivated(const std::string& app_id) {
   for (auto& observer : observers_)
-    observer.OnAppDeactivated(profile_, app_id);
+    observer.OnAppDeactivated(context_, app_id);
 }
 
 void AppLifetimeMonitor::NotifyAppStop(const std::string& app_id) {
   for (auto& observer : observers_)
-    observer.OnAppStop(profile_, app_id);
+    observer.OnAppStop(context_, app_id);
 }
 
 }  // namespace apps

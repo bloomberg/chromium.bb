@@ -13,11 +13,14 @@
 #include "extensions/common/constants.h"
 
 class GURL;
-class Profile;
 
 namespace base {
 class CommandLine;
 class FilePath;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace extensions {
@@ -32,12 +35,12 @@ struct ActionData;
 namespace apps {
 
 // Launches the platform app |app|. Creates appropriate launch data for the
-// |command_line| fields present. |app| and |profile| must not be NULL. An empty
+// |command_line| fields present. |app| and |context| must not be NULL. An empty
 // |command_line| means there is no launch data. If non-empty,
 // |current_directory| is used to expand any relative paths on the command line.
 // |source| is one of the enumerated values which trace how the app is launched.
 void LaunchPlatformAppWithCommandLine(
-    Profile* profile,
+    content::BrowserContext* context,
     const extensions::Extension* app,
     const base::CommandLine& command_line,
     const base::FilePath& current_directory,
@@ -49,7 +52,7 @@ void LaunchPlatformAppWithCommandLine(
 // As above but includes |launch_id|, an id that can be passed to
 // an app when launched in order to support multiple shelf items per app.
 void LaunchPlatformAppWithCommandLineAndLaunchId(
-    Profile* profile,
+    content::BrowserContext* context,
     const extensions::Extension* app,
     const std::string& launch_id,
     const base::CommandLine& command_line,
@@ -61,7 +64,7 @@ void LaunchPlatformAppWithCommandLineAndLaunchId(
 
 // Launches the platform app |app| by issuing an onLaunched event with the
 // contents of |file_path| available through the launch data.
-void LaunchPlatformAppWithPath(Profile* profile,
+void LaunchPlatformAppWithPath(content::BrowserContext* context,
                                const extensions::Extension* app,
                                const base::FilePath& file_path);
 
@@ -69,13 +72,13 @@ void LaunchPlatformAppWithPath(Profile* profile,
 // is an optional argument and if present contains the file that the app should
 // open w.r.t. the given action.
 void LaunchPlatformAppWithAction(
-    Profile* profile,
+    content::BrowserContext* context,
     const extensions::Extension* app,
     std::unique_ptr<extensions::api::app_runtime::ActionData> action_data,
     const base::FilePath& file_path);
 
 // Launches the platform app |app|. |source| tells us how the app is launched.
-void LaunchPlatformApp(Profile* profile,
+void LaunchPlatformApp(content::BrowserContext* context,
                        const extensions::Extension* app,
                        extensions::AppLaunchSource source);
 
@@ -84,7 +87,7 @@ void LaunchPlatformApp(Profile* profile,
 // the id of the file_handlers item in the manifest that resulted in a match
 // that triggered this launch.
 void LaunchPlatformAppWithFileHandler(
-    Profile* profile,
+    content::BrowserContext* context,
     const extensions::Extension* app,
     const std::string& handler_id,
     const std::vector<base::FilePath>& file_paths);
@@ -93,13 +96,14 @@ void LaunchPlatformAppWithFileHandler(
 // available through the launch data. |handler_id| corresponds to the id of the
 // file_handlers item in the manifest that resulted in a match that triggered
 // this launch.
-void LaunchPlatformAppWithUrl(Profile* profile,
+void LaunchPlatformAppWithUrl(content::BrowserContext* context,
                               const extensions::Extension* app,
                               const std::string& handler_id,
                               const GURL& url,
                               const GURL& referrer_url);
 
-void RestartPlatformApp(Profile* profile, const extensions::Extension* app);
+void RestartPlatformApp(content::BrowserContext* context,
+                        const extensions::Extension* app);
 
 }  // namespace apps
 

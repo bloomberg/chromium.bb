@@ -5,8 +5,8 @@
 #include "apps/app_load_service_factory.h"
 
 #include "apps/app_load_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -16,9 +16,10 @@
 namespace apps {
 
 // static
-AppLoadService* AppLoadServiceFactory::GetForProfile(Profile* profile) {
+AppLoadService* AppLoadServiceFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<AppLoadService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 AppLoadServiceFactory* AppLoadServiceFactory::GetInstance() {
@@ -40,8 +41,8 @@ AppLoadServiceFactory::~AppLoadServiceFactory() {
 }
 
 KeyedService* AppLoadServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new AppLoadService(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new AppLoadService(context);
 }
 
 bool AppLoadServiceFactory::ServiceIsNULLWhileTesting() const {

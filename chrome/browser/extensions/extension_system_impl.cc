@@ -335,8 +335,8 @@ void ExtensionSystemImpl::Shared::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
-  CHECK(apps::AppRestoreServiceFactory::GetForProfile(profile_));
-  apps::AppRestoreServiceFactory::GetForProfile(profile_)
+  CHECK(apps::AppRestoreServiceFactory::GetForBrowserContext(profile_));
+  apps::AppRestoreServiceFactory::GetForBrowserContext(profile_)
       ->OnApplicationTerminating();
 }
 

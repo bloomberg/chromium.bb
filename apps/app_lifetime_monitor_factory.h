@@ -8,18 +8,21 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace apps {
 
 class AppLifetimeMonitor;
 
 // Singleton that owns all AppLifetimeMonitors and associates them with
-// Profiles. Listens for the Profile's destruction notification and cleans up
-// the associated AppLifetimeMonitor.
+// BrowserContexts. Listens for the BrowserContext's destruction notification
+// and cleans up the associated AppLifetimeMonitor.
 class AppLifetimeMonitorFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static AppLifetimeMonitor* GetForProfile(Profile* profile);
+  static AppLifetimeMonitor* GetForBrowserContext(
+      content::BrowserContext* context);
 
   static AppLifetimeMonitorFactory* GetInstance();
 
@@ -31,7 +34,7 @@ class AppLifetimeMonitorFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+      content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;

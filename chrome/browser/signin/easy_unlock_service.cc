@@ -107,14 +107,14 @@ class EasyUnlockService::BluetoothDetector
   explicit BluetoothDetector(EasyUnlockService* service)
       : service_(service),
         weak_ptr_factory_(this) {
-    apps::AppLifetimeMonitorFactory::GetForProfile(service_->profile())
+    apps::AppLifetimeMonitorFactory::GetForBrowserContext(service_->profile())
         ->AddObserver(this);
   }
 
   ~BluetoothDetector() override {
     if (adapter_.get())
       adapter_->RemoveObserver(this);
-    apps::AppLifetimeMonitorFactory::GetForProfile(service_->profile())
+    apps::AppLifetimeMonitorFactory::GetForBrowserContext(service_->profile())
         ->RemoveObserver(this);
   }
 
@@ -149,13 +149,15 @@ class EasyUnlockService::BluetoothDetector
   }
 
   // apps::AppLifetimeMonitor::Observer:
-  void OnAppDeactivated(Profile* profile, const std::string& app_id) override {
+  void OnAppDeactivated(content::BrowserContext* context,
+                        const std::string& app_id) override {
     // TODO(tengs): Refactor the lifetime management to EasyUnlockAppManager.
     if (app_id == extension_misc::kEasyUnlockAppId)
       TurnOffBluetoothDiscoverability();
   }
 
-  void OnAppStop(Profile* profile, const std::string& app_id) override {
+  void OnAppStop(content::BrowserContext* context,
+                 const std::string& app_id) override {
     // TODO(tengs): Refactor the lifetime management to EasyUnlockAppManager.
     if (app_id == extension_misc::kEasyUnlockAppId)
       TurnOffBluetoothDiscoverability();

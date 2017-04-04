@@ -8,7 +8,9 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace apps {
 
@@ -16,7 +18,7 @@ class AppLoadService;
 
 class AppLoadServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static AppLoadService* GetForProfile(Profile* profile);
+  static AppLoadService* GetForBrowserContext(content::BrowserContext* context);
 
   static AppLoadServiceFactory* GetInstance();
 

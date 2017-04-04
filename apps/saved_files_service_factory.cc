@@ -5,15 +5,16 @@
 #include "apps/saved_files_service_factory.h"
 
 #include "apps/saved_files_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 
 namespace apps {
 
 // static
-SavedFilesService* SavedFilesServiceFactory::GetForProfile(Profile* profile) {
+SavedFilesService* SavedFilesServiceFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<SavedFilesService*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -29,8 +30,8 @@ SavedFilesServiceFactory::SavedFilesServiceFactory()
 SavedFilesServiceFactory::~SavedFilesServiceFactory() {}
 
 KeyedService* SavedFilesServiceFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new SavedFilesService(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  return new SavedFilesService(context);
 }
 
 }  // namespace apps

@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "components/crx_file/id_util.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -196,9 +197,9 @@ AppWindowList ExtensionAppShimHandler::Delegate::GetWindows(
 }
 
 const Extension* ExtensionAppShimHandler::Delegate::MaybeGetAppExtension(
-    Profile* profile,
+    content::BrowserContext* context,
     const std::string& extension_id) {
-  return ExtensionAppShimHandler::MaybeGetAppExtension(profile, extension_id);
+  return ExtensionAppShimHandler::MaybeGetAppExtension(context, extension_id);
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -296,12 +297,12 @@ void ExtensionAppShimHandler::SetHostedAppHidden(Profile* profile,
 
 // static
 const Extension* ExtensionAppShimHandler::MaybeGetAppExtension(
-    Profile* profile,
+    content::BrowserContext* context,
     const std::string& extension_id) {
-  if (!profile)
+  if (!context)
     return NULL;
 
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
   return extension &&
@@ -661,7 +662,8 @@ void ExtensionAppShimHandler::Observe(
       if (profile->IsOffTheRecord())
         return;
 
-      AppLifetimeMonitorFactory::GetForProfile(profile)->AddObserver(this);
+      AppLifetimeMonitorFactory::GetForBrowserContext(profile)->AddObserver(
+          this);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
@@ -669,7 +671,8 @@ void ExtensionAppShimHandler::Observe(
       if (profile->IsOffTheRecord())
         return;
 
-      AppLifetimeMonitorFactory::GetForProfile(profile)->RemoveObserver(this);
+      AppLifetimeMonitorFactory::GetForBrowserContext(profile)->RemoveObserver(
+          this);
       // Shut down every shim associated with this profile.
       for (HostMap::iterator it = hosts_.begin(); it != hosts_.end(); ) {
         // Increment the iterator first as OnAppClosed may call back to
@@ -703,15 +706,16 @@ void ExtensionAppShimHandler::Observe(
   }
 }
 
-void ExtensionAppShimHandler::OnAppStart(Profile* profile,
+void ExtensionAppShimHandler::OnAppStart(content::BrowserContext* context,
                                          const std::string& app_id) {}
 
-void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
+void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
                                              const std::string& app_id) {
-  const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
+  const Extension* extension = delegate_->MaybeGetAppExtension(context, app_id);
   if (!extension)
     return;
 
+  Profile* profile = static_cast<Profile*>(context);
   Host* host = FindHost(profile, app_id);
   if (host) {
     host->OnAppLaunchComplete(APP_SHIM_LAUNCH_SUCCESS);
@@ -722,9 +726,9 @@ void ExtensionAppShimHandler::OnAppActivated(Profile* profile,
   delegate_->LaunchShim(profile, extension);
 }
 
-void ExtensionAppShimHandler::OnAppDeactivated(Profile* profile,
+void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,
                                                const std::string& app_id) {
-  Host* host = FindHost(profile, app_id);
+  Host* host = FindHost(static_cast<Profile*>(context), app_id);
   if (host)
     host->OnAppClosed();
 
@@ -732,7 +736,7 @@ void ExtensionAppShimHandler::OnAppDeactivated(Profile* profile,
     delegate_->MaybeTerminate();
 }
 
-void ExtensionAppShimHandler::OnAppStop(Profile* profile,
+void ExtensionAppShimHandler::OnAppStop(content::BrowserContext* context,
                                         const std::string& app_id) {}
 
 // The BrowserWindow may be NULL when this is called.

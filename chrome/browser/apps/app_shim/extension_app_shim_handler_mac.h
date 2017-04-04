@@ -27,6 +27,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 class AppWindow;
 class Extension;
@@ -56,7 +60,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
         const std::string& extension_id);
 
     virtual const extensions::Extension* MaybeGetAppExtension(
-        Profile* profile,
+        content::BrowserContext* context,
         const std::string& extension_id);
     virtual void EnableExtension(Profile* profile,
                                  const std::string& extension_id,
@@ -84,7 +88,7 @@ class ExtensionAppShimHandler : public AppShimHandler,
                           bool hidden);
 
   static const extensions::Extension* MaybeGetAppExtension(
-      Profile* profile,
+      content::BrowserContext* context,
       const std::string& extension_id);
 
   static const extensions::Extension* MaybeGetAppForBrowser(Browser* browser);
@@ -125,10 +129,14 @@ class ExtensionAppShimHandler : public AppShimHandler,
   void OnShimQuit(Host* host) override;
 
   // AppLifetimeMonitor::Observer overrides:
-  void OnAppStart(Profile* profile, const std::string& app_id) override;
-  void OnAppActivated(Profile* profile, const std::string& app_id) override;
-  void OnAppDeactivated(Profile* profile, const std::string& app_id) override;
-  void OnAppStop(Profile* profile, const std::string& app_id) override;
+  void OnAppStart(content::BrowserContext* context,
+                  const std::string& app_id) override;
+  void OnAppActivated(content::BrowserContext* context,
+                      const std::string& app_id) override;
+  void OnAppDeactivated(content::BrowserContext* context,
+                        const std::string& app_id) override;
+  void OnAppStop(content::BrowserContext* context,
+                 const std::string& app_id) override;
 
   // content::NotificationObserver overrides:
   void Observe(int type,

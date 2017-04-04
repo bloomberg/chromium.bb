@@ -48,7 +48,7 @@ void ShortLivedUserContext::Reset() {
   }
 }
 
-void ShortLivedUserContext::OnAppDeactivated(Profile* profile,
+void ShortLivedUserContext::OnAppDeactivated(content::BrowserContext* context,
                                              const std::string& app_id) {
   if (app_id == extension_misc::kEasyUnlockAppId)
     Reset();
