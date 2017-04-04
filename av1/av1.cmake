@@ -165,6 +165,16 @@ set(AOM_AV1_COMMON_SSE4_1_INTRIN
 set(AOM_AV1_COMMON_AVX2_INTRIN
     "${AOM_ROOT}/av1/common/x86/hybrid_inv_txfm_avx2.c")
 
+set(AOM_AV1_COMMON_DSPR2_INTRIN
+    "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans16_dspr2.c"
+    "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans4_dspr2.c"
+    "${AOM_ROOT}/av1/common/mips/dspr2/av1_itrans8_dspr2.c")
+
+set(AOM_AV1_COMMON_MSA_INTRIN
+    "${AOM_ROOT}/av1/common/mips/msa/av1_idct16x16_msa.c"
+    "${AOM_ROOT}/av1/common/mips/msa/av1_idct4x4_msa.c"
+    "${AOM_ROOT}/av1/common/mips/msa/av1_idct8x8_msa.c")
+
 set(AOM_AV1_ENCODER_SSE2_ASM
     "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
     "${AOM_ROOT}/av1/encoder/x86/error_sse2.asm"
@@ -187,6 +197,14 @@ set(AOM_AV1_ENCODER_AVX2_INTRIN
 
 set(AOM_AV1_ENCODER_NEON_INTRIN
     "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c")
+
+set(AOM_AV1_ENCODER_MSA_INTRIN
+    "${AOM_ROOT}/av1/encoder/mips/msa/error_msa.c"
+    "${AOM_ROOT}/av1/encoder/mips/msa/fdct16x16_msa.c"
+    "${AOM_ROOT}/av1/encoder/mips/msa/fdct4x4_msa.c"
+    "${AOM_ROOT}/av1/encoder/mips/msa/fdct8x8_msa.c"
+    "${AOM_ROOT}/av1/encoder/mips/msa/fdct_msa.h"
+    "${AOM_ROOT}/av1/encoder/mips/msa/temporal_filter_msa.c")
 
 if (CONFIG_ACCOUNTING)
   set(AOM_AV1_COMMON_SOURCES
@@ -471,6 +489,19 @@ function (setup_av1_targets)
                                     "AOM_AV1_ENCODER_NEON_INTRIN")
     endif ()
   endif ()
+
+  if (HAVE_DSPR2)
+    add_intrinsics_object_library("" "dspr2" "aom_av1_common"
+                                  "AOM_AV1_COMMON_DSPR2_INTRIN")
+  endif ()
+
+  if (HAVE_MSA)
+    add_intrinsics_object_library("" "msa" "aom_av1_common"
+                                  "AOM_AV1_COMMON_MSA_INTRIN")
+    add_intrinsics_object_library("" "msa" "aom_av1_encoder"
+                                  "AOM_AV1_ENCODER_MSA_INTRIN")
+  endif ()
+
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)

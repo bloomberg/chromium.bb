@@ -119,6 +119,59 @@ if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
       "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.c")
 endif ()
 
+set(AOM_DSP_COMMON_INTRIN_DSPR2
+    "${AOM_ROOT}/aom_dsp/mips/common_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/common_dspr2.h"
+    "${AOM_ROOT}/aom_dsp/mips/convolve2_avg_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve2_avg_horiz_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve2_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve2_horiz_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve2_vert_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve8_avg_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve8_avg_horiz_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve8_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve8_horiz_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve8_vert_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/convolve_common_dspr2.h"
+    "${AOM_ROOT}/aom_dsp/mips/intrapred16_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/intrapred4_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/intrapred8_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/inv_txfm_dspr2.h"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_filters_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_filters_dspr2.h"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_macros_dspr2.h"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_masks_dspr2.h"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_horiz_dspr2.c"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_mb_vert_dspr2.c")
+
+set(AOM_DSP_COMMON_INTRIN_MSA
+    "${AOM_ROOT}/aom_dsp/mips/add_noise_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_horiz_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_avg_vert_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_horiz_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_vert_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve_avg_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve_copy_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/aom_convolve_msa.h"
+    "${AOM_ROOT}/aom_dsp/mips/fwd_dct32x32_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/fwd_txfm_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/fwd_txfm_msa.h"
+    "${AOM_ROOT}/aom_dsp/mips/idct16x16_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/idct32x32_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/idct4x4_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/idct8x8_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/intrapred_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/inv_txfm_msa.h"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_16_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_4_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_8_msa.c"
+    "${AOM_ROOT}/aom_dsp/mips/loopfilter_msa.h"
+    "${AOM_ROOT}/aom_dsp/mips/macros_msa.h"
+    "${AOM_ROOT}/aom_dsp/mips/txfm_macros_msa.h")
+
 if (CONFIG_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_ASM_SSE2
       ${AOM_DSP_COMMON_ASM_SSE2}
@@ -127,6 +180,14 @@ if (CONFIG_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_INTRIN_SSE2
       ${AOM_DSP_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c")
+else ()
+  set(AOM_DSP_COMMON_INTRIN_DSPR2
+      ${AOM_DSP_COMMON_INTRIN_DSPR2}
+      "${AOM_ROOT}/aom_dsp/mips/itrans16_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/itrans32_cols_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/itrans32_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/itrans4_dspr2.c"
+      "${AOM_ROOT}/aom_dsp/mips/itrans8_dspr2.c")
 endif ()
 
 if (CONFIG_ANS)
@@ -262,6 +323,13 @@ if (CONFIG_ENCODERS)
     set(AOM_DSP_ENCODER_AVX_ASM_X86_64
         ${AOM_DSP_ENCODER_AVX_ASM_X86_64}
         "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
+
+    set(AOM_DSP_ENCODER_INTRIN_MSA
+        "${AOM_ROOT}/aom_dsp/mips/avg_msa.c"
+        "${AOM_ROOT}/aom_dsp/mips/sad_msa.c"
+        "${AOM_ROOT}/aom_dsp/mips/subtract_msa.c"
+        "${AOM_ROOT}/aom_dsp/mips/variance_msa.c"
+        "${AOM_ROOT}/aom_dsp/mips/sub_pixel_variance_msa.c")
 
     if (CONFIG_HIGHBITDEPTH)
       set(AOM_DSP_ENCODER_INTRIN_SSE2
@@ -425,6 +493,21 @@ function (setup_aom_dsp_targets)
     add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}" "neon"
                                   "aom_dsp_common" "AOM_DSP_COMMON_INTRIN_NEON")
   endif ()
+
+  if (HAVE_DSPR2)
+    add_intrinsics_object_library("" "dspr2" "aom_dsp_common"
+                                  "AOM_DSP_COMMON_INTRIN_DSPR2")
+  endif ()
+
+  if (HAVE_MSA)
+    add_intrinsics_object_library("" "msa" "aom_dsp_common"
+                                  "AOM_DSP_COMMON_INTRIN_MSA")
+    if (CONFIG_ENCODERS)
+      add_intrinsics_object_library("" "msa" "aom_dsp_encoder"
+                                    "AOM_DSP_ENCODER_INTRIN_MSA")
+    endif ()
+  endif ()
+
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
