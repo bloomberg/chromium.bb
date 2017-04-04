@@ -23,6 +23,7 @@ import android.support.test.filters.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -174,8 +175,9 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
     /**
      * Verifies granting permission via the infobar.
      */
-    @MediumTest
-    @Feature({"Browser", "Notifications"})
+    //@MediumTest
+    // Feature({"Browser", "Notifications"})
+    @DisabledTest
     public void testPermissionGranted() throws Exception {
         // Notifications permission should initially be prompt, and showing should fail.
         assertEquals("\"default\"", runJavaScriptCodeInCurrentTab("Notification.permission"));

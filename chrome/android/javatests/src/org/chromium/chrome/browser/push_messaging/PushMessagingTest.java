@@ -19,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -116,9 +117,10 @@ public class PushMessagingTest
     /**
      * Verifies that PushManager.subscribe() fails if permission is dismissed or blocked.
      */
-    @MediumTest
-    @Feature({"Browser", "PushMessaging"})
-    @CommandLineFlags.Add("disable-features=ModalPermissionPrompts")
+    //@MediumTest
+    //@Feature({"Browser", "PushMessaging"})
+    //@CommandLineFlags.Add("disable-features=ModalPermissionPrompts")
+    @DisabledTest
     public void testPushPermissionDenied() throws InterruptedException, TimeoutException {
         // Notifications permission should initially be prompt.
         assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
