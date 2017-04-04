@@ -127,11 +127,19 @@ struct drm_mode {
 	drmModeModeInfo mode_info;
 };
 
+enum drm_fb_type {
+	BUFFER_INVALID = 0, /**< never used */
+	BUFFER_CLIENT, /**< directly sourced from client */
+	BUFFER_PIXMAN_DUMB, /**< internal Pixman rendering */
+	BUFFER_GBM_SURFACE, /**< internal EGL rendering */
+};
+
 struct drm_fb {
+	enum drm_fb_type type;
+
 	uint32_t fb_id, stride, handle, size;
 	int width, height;
 	int fd;
-	int is_client_buffer;
 	struct weston_buffer_reference buffer_ref;
 
 	/* Used by gbm fbs */
@@ -367,6 +375,7 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	if (ret)
 		goto err_fb;
 
+	fb->type = BUFFER_PIXMAN_DUMB;
 	fb->handle = create_arg.handle;
 	fb->stride = create_arg.pitch;
 	fb->size = create_arg.size;
@@ -429,6 +438,8 @@ drm_fb_destroy_dumb(struct drm_fb *fb)
 {
 	struct drm_mode_destroy_dumb destroy_arg;
 
+	assert(fb->type == BUFFER_PIXMAN_DUMB);
+
 	if (!fb->map)
 		return;
 
@@ -447,20 +458,23 @@ drm_fb_destroy_dumb(struct drm_fb *fb)
 }
 
 static struct drm_fb *
-drm_fb_get_from_bo(struct gbm_bo *bo,
-		   struct drm_backend *backend, uint32_t format)
+drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
+		   uint32_t format, enum drm_fb_type type)
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
 	uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
 	int ret;
 
-	if (fb)
+	if (fb) {
+		assert(fb->type == type);
 		return fb;
+	}
 
 	fb = zalloc(sizeof *fb);
 	if (fb == NULL)
 		return NULL;
 
+	fb->type = type;
 	fb->bo = bo;
 
 	fb->width = gbm_bo_get_width(bo);
@@ -517,9 +531,7 @@ static void
 drm_fb_set_buffer(struct drm_fb *fb, struct weston_buffer *buffer)
 {
 	assert(fb->buffer_ref.buffer == NULL);
-
-	fb->is_client_buffer = 1;
-
+	assert(fb->type == BUFFER_CLIENT);
 	weston_buffer_reference(&fb->buffer_ref, buffer);
 }
 
@@ -529,15 +541,19 @@ drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
 	if (!fb)
 		return;
 
-	if (fb->map &&
-            (fb != output->dumb[0] && fb != output->dumb[1])) {
-		drm_fb_destroy_dumb(fb);
-	} else if (fb->bo) {
-		if (fb->is_client_buffer)
-			gbm_bo_destroy(fb->bo);
-		else
-			gbm_surface_release_buffer(output->gbm_surface,
-						   fb->bo);
+	switch (fb->type) {
+	case BUFFER_PIXMAN_DUMB:
+		/* nothing: pixman buffers are destroyed manually */
+		break;
+	case BUFFER_CLIENT:
+		gbm_bo_destroy(fb->bo);
+		break;
+	case BUFFER_GBM_SURFACE:
+		gbm_surface_release_buffer(output->gbm_surface, fb->bo);
+		break;
+	default:
+		assert(NULL);
+		break;
 	}
 }
 
@@ -636,7 +652,7 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 		return NULL;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, b, format);
+	output->next = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
 	if (!output->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
@@ -662,7 +678,8 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, b, output->gbm_format);
+	output->next = drm_fb_get_from_bo(bo, b, output->gbm_format,
+					  BUFFER_GBM_SURFACE);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->gbm_surface, bo);
@@ -1158,7 +1175,7 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 		return NULL;
 	}
 
-	s->next = drm_fb_get_from_bo(bo, b, format);
+	s->next = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
 	if (!s->next) {
 		gbm_bo_destroy(bo);
 		return NULL;
