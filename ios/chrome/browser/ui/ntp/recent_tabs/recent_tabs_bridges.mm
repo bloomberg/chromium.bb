@@ -6,6 +6,10 @@
 
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace recent_tabs {
 
 #pragma mark - ClosedTabsObserverBridge

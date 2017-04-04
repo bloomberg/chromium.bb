@@ -4,13 +4,17 @@
 
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_view_controller.h"
 
-#import "base/mac/scoped_nsobject.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_panel_controller.h"
 #import "ios/chrome/browser/ui/ntp/recent_tabs/views/panel_bar_view.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // A UIViewController that forces the status bar to be visible.
 @interface RecentTabsWrapperViewController : UIViewController
@@ -25,25 +29,24 @@
 @end
 
 @implementation RecentTabsPanelViewController {
-  base::scoped_nsobject<RecentTabsPanelController> _recentTabsController;
-  base::scoped_nsobject<PanelBarView> _panelBarView;
+  RecentTabsPanelController* _recentTabsController;
+  PanelBarView* _panelBarView;
 }
 
 + (UIViewController*)controllerToPresentForBrowserState:
                          (ios::ChromeBrowserState*)browserState
                                                  loader:(id<UrlLoader>)loader {
-  UIViewController* controller =
-      [[[RecentTabsWrapperViewController alloc] init] autorelease];
-  RecentTabsPanelViewController* rtpvc = [[[RecentTabsPanelViewController alloc]
-      initWithLoader:loader
-        browserState:browserState] autorelease];
+  UIViewController* controller = [[RecentTabsWrapperViewController alloc] init];
+  RecentTabsPanelViewController* rtpvc =
+      [[RecentTabsPanelViewController alloc] initWithLoader:loader
+                                               browserState:browserState];
   [controller addChildViewController:rtpvc];
 
-  PanelBarView* panelBarView = [[[PanelBarView alloc] init] autorelease];
-  rtpvc->_panelBarView.reset([panelBarView retain]);
+  PanelBarView* panelBarView = [[PanelBarView alloc] init];
+  rtpvc->_panelBarView = panelBarView;
   [panelBarView setCloseTarget:rtpvc action:@selector(didFinish)];
-  base::scoped_nsobject<UIImageView> shadow(
-      [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)]);
+  UIImageView* shadow =
+      [[UIImageView alloc] initWithImage:NativeImage(IDR_IOS_TOOLBAR_SHADOW)];
 
   [panelBarView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [rtpvc.view setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -73,16 +76,15 @@
 - (void)dealloc {
   [_recentTabsController dismissKeyboard];
   [_recentTabsController dismissModals];
-  [super dealloc];
 }
 
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _recentTabsController.reset([[RecentTabsPanelController alloc]
-        initWithLoader:loader
-          browserState:browserState]);
+    _recentTabsController =
+        [[RecentTabsPanelController alloc] initWithLoader:loader
+                                             browserState:browserState];
     if ([self respondsToSelector:@selector(edgesForExtendedLayout)])
       self.edgesForExtendedLayout = UIRectEdgeNone;
   }

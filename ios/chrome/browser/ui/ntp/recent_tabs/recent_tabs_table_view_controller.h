@@ -43,8 +43,7 @@ class ChromeBrowserState;
 @interface RecentTabsTableViewController
     : UITableViewController<UIGestureRecognizerDelegate>
 
-@property(nonatomic, assign) id<RecentTabsTableViewControllerDelegate>
-    delegate;  // weak
+@property(nonatomic, weak) id<RecentTabsTableViewControllerDelegate> delegate;
 
 // Designated initializer. The controller opens link with |loader|.
 // |browserState|

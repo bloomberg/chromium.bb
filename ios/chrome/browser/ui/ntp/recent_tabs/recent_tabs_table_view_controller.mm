@@ -6,9 +6,7 @@
 
 #include <memory>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -42,6 +40,10 @@
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_state/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -87,13 +89,13 @@ enum CellType {
   // The service that manages the recently closed tabs.
   sessions::TabRestoreService* _tabRestoreService;  // weak
   // Loader used to open new tabs.
-  id<UrlLoader> _loader;  // weak
+  __weak id<UrlLoader> _loader;
   // The sync state.
   SessionsSyncUserState _sessionState;
   // The synced sessions.
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
   // Handles displaying the context menu for all form factors.
-  base::scoped_nsobject<ContextMenuCoordinator> _contextMenuCoordinator;
+  ContextMenuCoordinator* _contextMenuCoordinator;
 }
 // Returns the type of the section at index |section|.
 - (SectionType)sectionType:(NSInteger)section;
@@ -168,7 +170,6 @@ enum CellType {
 
 - (void)dealloc {
   [self.tableView removeObserver:self forKeyPath:@"contentSize"];
-  [super dealloc];
 }
 
 - (void)viewDidLoad {
@@ -177,11 +178,11 @@ enum CellType {
   [self.tableView setSeparatorColor:[UIColor clearColor]];
   [self.tableView setDataSource:self];
   [self.tableView setDelegate:self];
-  base::scoped_nsobject<UILongPressGestureRecognizer> longPress(
+  UILongPressGestureRecognizer* longPress =
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
-                  action:@selector(handleLongPress:)]);
-  longPress.get().delegate = self;
+                  action:@selector(handleLongPress:)];
+  longPress.delegate = self;
   [self.tableView addGestureRecognizer:longPress];
 
   [self.tableView addObserver:self
@@ -384,8 +385,8 @@ enum CellType {
   UIViewController* rootViewController =
       self.tableView.window.rootViewController;
   ProceduralBlock openHistory = ^{
-    base::scoped_nsobject<GenericChromeCommand> openHistory(
-        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_HISTORY]);
+    GenericChromeCommand* openHistory =
+        [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_HISTORY];
     [rootViewController chromeExecuteCommand:openHistory];
   };
   // Dismiss modal, if shown, and open history.
@@ -599,19 +600,19 @@ enum CellType {
     // Get view coordinates in local space.
     CGPoint viewCoordinate = [longPressGesture locationInView:self.tableView];
     params.location = viewCoordinate;
-    params.view.reset([self.tableView retain]);
+    params.view.reset(self.tableView);
 
     // Present sheet/popover using controller that is added to view hierarchy.
     UIViewController* topController = [params.view window].rootViewController;
     while (topController.presentedViewController)
       topController = topController.presentedViewController;
 
-    _contextMenuCoordinator.reset([[ContextMenuCoordinator alloc]
-        initWithBaseViewController:topController
-                            params:params]);
+    _contextMenuCoordinator =
+        [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
+                                                            params:params];
 
     // Fill the sheet/popover with buttons.
-    base::WeakNSObject<RecentTabsTableViewController> weakSelf(self);
+    __weak RecentTabsTableViewController* weakSelf = self;
 
     // "Open all tabs" button.
     NSString* openAllButtonLabel =
@@ -732,63 +733,60 @@ enum CellType {
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cell =
-      [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                              reuseIdentifier:nil] autorelease];
+      [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                             reuseIdentifier:nil];
   UIView* contentView = cell.contentView;
 
-  base::scoped_nsobject<UIView> subview;
+  UIView* subview;
   CellType cellType = [self cellType:indexPath];
   switch (cellType) {
     case CELL_CLOSED_TAB_SECTION_HEADER: {
       BOOL collapsed = [self sectionIsCollapsed:kRecentlyClosedCollapsedKey];
-      subview.reset([[GenericSectionHeaderView alloc]
+      subview = [[GenericSectionHeaderView alloc]
                 initWithType:recent_tabs::RECENTLY_CLOSED_TABS_SECTION_HEADER
-          sectionIsCollapsed:collapsed]);
+          sectionIsCollapsed:collapsed];
       [subview setTag:kSectionHeader];
       break;
     }
     case CELL_CLOSED_TAB_DATA: {
-      base::scoped_nsobject<SessionTabDataView> genericTabData(
-          [[SessionTabDataView alloc] initWithFrame:CGRectZero]);
+      SessionTabDataView* genericTabData =
+          [[SessionTabDataView alloc] initWithFrame:CGRectZero];
       [genericTabData
           updateWithTabRestoreEntry:[self tabRestoreEntryAtIndex:indexPath]
                        browserState:_browserState];
-      subview.reset([genericTabData.get() retain]);
+      subview = genericTabData;
       break;
     }
     case CELL_SHOW_FULL_HISTORY:
-      subview.reset([[ShowFullHistoryView alloc] initWithFrame:CGRectZero]);
+      subview = [[ShowFullHistoryView alloc] initWithFrame:CGRectZero];
       break;
     case CELL_SEPARATOR:
-      subview.reset(
-          [[RecentlyClosedSectionFooter alloc] initWithFrame:CGRectZero]);
+      subview = [[RecentlyClosedSectionFooter alloc] initWithFrame:CGRectZero];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
       break;
     case CELL_OTHER_DEVICES_SECTION_HEADER: {
       BOOL collapsed = [self sectionIsCollapsed:kOtherDeviceCollapsedKey];
-      subview.reset([[GenericSectionHeaderView alloc]
+      subview = [[GenericSectionHeaderView alloc]
                 initWithType:recent_tabs::OTHER_DEVICES_SECTION_HEADER
-          sectionIsCollapsed:collapsed]);
+          sectionIsCollapsed:collapsed];
       [subview setTag:kSectionHeader];
       break;
     }
     case CELL_OTHER_DEVICES_SIGNED_OUT:
-      subview.reset([[SignedOutView alloc] initWithFrame:CGRectZero]);
+      subview = [[SignedOutView alloc] initWithFrame:CGRectZero];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
       break;
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_OFF:
-      subview.reset([[SignedInSyncOffView alloc] initWithFrame:CGRectZero
-                                                  browserState:_browserState]);
+      subview = [[SignedInSyncOffView alloc] initWithFrame:CGRectZero
+                                              browserState:_browserState];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
       break;
     case CELL_OTHER_DEVICES_SIGNED_IN_SYNC_ON_NO_SESSIONS:
-      subview.reset(
-          [[SignedInSyncOnNoSessionsView alloc] initWithFrame:CGRectZero]);
+      subview = [[SignedInSyncOnNoSessionsView alloc] initWithFrame:CGRectZero];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
       break;
     case CELL_OTHER_DEVICES_SYNC_IN_PROGRESS:
-      subview.reset(
-          [[SignedInSyncInProgressView alloc] initWithFrame:CGRectZero]);
+      subview = [[SignedInSyncInProgressView alloc] initWithFrame:CGRectZero];
       [cell setSelectionStyle:UITableViewCellSelectionStyleNone];
       break;
     case CELL_SESSION_SECTION_HEADER: {
@@ -796,20 +794,20 @@ enum CellType {
           [self sessionAtIndexPath:indexPath];
       NSString* key = [self keyForDistantSession:distantSession];
       BOOL collapsed = [self sectionIsCollapsed:key];
-      base::scoped_nsobject<SessionSectionHeaderView> sessionSectionHeader(
+      SessionSectionHeaderView* sessionSectionHeader =
           [[SessionSectionHeaderView alloc] initWithFrame:CGRectZero
-                                       sectionIsCollapsed:collapsed]);
+                                       sectionIsCollapsed:collapsed];
       [sessionSectionHeader updateWithSession:distantSession];
-      subview.reset(sessionSectionHeader.release());
+      subview = sessionSectionHeader;
       [subview setTag:kSectionHeader];
       break;
     }
     case CELL_SESSION_TAB_DATA: {
-      base::scoped_nsobject<SessionTabDataView> genericTabData(
-          [[SessionTabDataView alloc] initWithFrame:CGRectZero]);
+      SessionTabDataView* genericTabData =
+          [[SessionTabDataView alloc] initWithFrame:CGRectZero];
       [genericTabData updateWithDistantTab:[self distantTabAtIndex:indexPath]
                               browserState:_browserState];
-      subview.reset([genericTabData.get() retain]);
+      subview = genericTabData;
       break;
     }
   }
@@ -820,7 +818,7 @@ enum CellType {
   // Sets constraints on the subview.
   [subview setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  NSDictionary* viewsDictionary = @{ @"view" : subview.get() };
+  NSDictionary* viewsDictionary = @{ @"view" : subview };
   // This set of constraints should match the constraints set on the
   // RecentlyClosedSectionFooter.
   // clang-format off
@@ -930,8 +928,7 @@ enum CellType {
 - (UIView*)tableView:(UITableView*)tableView
     viewForHeaderInSection:(NSInteger)section {
   if ([self sectionType:section] == CLOSED_TAB_SECTION) {
-    return [[[RecentlyTabsTopSpacingHeader alloc] initWithFrame:CGRectZero]
-        autorelease];
+    return [[RecentlyTabsTopSpacingHeader alloc] initWithFrame:CGRectZero];
   }
   return nil;
 }
