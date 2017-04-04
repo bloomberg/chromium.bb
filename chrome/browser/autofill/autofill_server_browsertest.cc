@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   // Load the test page. Expect a query request upon loading the page.
   const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
   const char kFormHtml[] =
-      "<form id='test_form'>"
+      "<form id='test_form' action='about:blank'>"
       "  <input id='one'>"
       "  <input id='two' autocomplete='off'>"
       "  <input id='three'>"

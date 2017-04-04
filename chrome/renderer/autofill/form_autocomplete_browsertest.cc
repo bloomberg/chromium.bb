@@ -206,8 +206,10 @@ class FormAutocompleteTest : public ChromeRenderViewTest {
 // messages with the form fields.
 TEST_F(FormAutocompleteTest, NormalFormSubmit) {
   // Load a form.
-  LoadHTML("<html><form id='myForm'><input name='fname' value='Rick'/>"
-           "<input name='lname' value='Deckard'/></form></html>");
+  LoadHTML(
+      "<html><form id='myForm' action='about:blank'>"
+      "<input name='fname' value='Rick'/>"
+      "<input name='lname' value='Deckard'/></form></html>");
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
@@ -593,10 +595,11 @@ TEST_F(FormAutocompleteTest, InteractingInDifferentForms_FocusNoLongerOnForm) {
 // WillSubmitForm and FormSubmitted messages.
 TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
   // Load a form.
-  LoadHTML("<html><form id='myForm' autocomplete='off'>"
-           "<input name='fname' value='Rick'/>"
-           "<input name='lname' value='Deckard'/>"
-           "</form></html>");
+  LoadHTML(
+      "<html><form id='myForm' autocomplete='off' action='about:blank'>"
+      "<input name='fname' value='Rick'/>"
+      "<input name='lname' value='Deckard'/>"
+      "</form></html>");
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
@@ -609,10 +612,11 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffFormSubmit) {
 // Tests that fields with autocomplete off are submitted.
 TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
   // Load a form.
-  LoadHTML("<html><form id='myForm'>"
-           "<input name='fname' value='Rick'/>"
-           "<input name='lname' value='Deckard' autocomplete='off'/>"
-           "</form></html>");
+  LoadHTML(
+      "<html><form id='myForm' action='about:blank'>"
+      "<input name='fname' value='Rick'/>"
+      "<input name='lname' value='Deckard' autocomplete='off'/>"
+      "</form></html>");
 
   // Submit the form.
   ExecuteJavaScriptForTests("document.getElementById('myForm').submit();");
@@ -626,8 +630,10 @@ TEST_F(FormAutocompleteTest, AutoCompleteOffInputSubmit) {
 // off generates WillSubmitForm and FormSubmitted messages.
 // Note: We previously did the opposite, for bug http://crbug.com/36520
 TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
-  LoadHTML("<html><form id='myForm'><input name='fname' value='Rick'/>"
-           "<input name='lname' value='Deckard'/></form></html>");
+  LoadHTML(
+      "<html><form id='myForm' action='about:blank'>"
+      "<input name='fname' value='Rick'/>"
+      "<input name='lname' value='Deckard'/></form></html>");
 
   WebElement element =
       GetMainFrame()->document().getElementById(blink::WebString("myForm"));
