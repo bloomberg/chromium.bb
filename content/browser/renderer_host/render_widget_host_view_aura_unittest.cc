@@ -355,14 +355,19 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
   size_t processed_touch_event_count_;
 };
 
-class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura {
+class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura,
+                                         public ui::CompositorLockDelegate {
  public:
   explicit FakeDelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view)
-      : DelegatedFrameHostClientAura(render_widget_host_view) {}
+      : DelegatedFrameHostClientAura(render_widget_host_view),
+        weak_ptr_factory_(this) {}
   ~FakeDelegatedFrameHostClientAura() override = default;
 
   void DisableResizeLock() { can_create_resize_lock_ = false; }
+
+  bool resize_locked() const { return resize_locked_; }
+  bool compositor_locked() const { return compositor_locked_; }
 
  private:
   // DelegatedFrameHostClientAura implementation.
@@ -374,10 +379,26 @@ class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura {
   // DelegatedFrameHostClientAura, to prevent the lock from timing out.
   std::unique_ptr<ui::CompositorLock> GetCompositorLock(
       ui::CompositorLockClient* client) override {
-    return base::MakeUnique<ui::CompositorLock>(nullptr, nullptr);
+    resize_locked_ = compositor_locked_ = true;
+    return base::MakeUnique<ui::CompositorLock>(nullptr,
+                                                weak_ptr_factory_.GetWeakPtr());
+  }
+  // CompositorResizeLockClient implemention. Overrides from
+  // // DelegatedFrameHostClientAura.
+  void CompositorResizeLockEnded() override {
+    resize_locked_ = false;
+    DelegatedFrameHostClientAura::CompositorResizeLockEnded();
+  }
+
+  // ui::CompositorLockDelegate implemention.
+  void RemoveCompositorLock(ui::CompositorLock*) override {
+    compositor_locked_ = false;
   }
 
   bool can_create_resize_lock_ = true;
+  bool resize_locked_ = false;
+  bool compositor_locked_ = false;
+  base::WeakPtrFactory<FakeDelegatedFrameHostClientAura> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDelegatedFrameHostClientAura);
 };
@@ -442,8 +463,15 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   void ResetCompositor() { GetDelegatedFrameHost()->ResetCompositor(); }
 
-  const ui::MotionEventAura& pointer_state_for_test() {
+  const ui::MotionEventAura& pointer_state() {
     return event_handler()->pointer_state();
+  }
+
+  bool resize_locked() const {
+    return delegated_frame_host_client_->resize_locked();
+  }
+  bool compositor_locked() const {
+    return delegated_frame_host_client_->compositor_locked();
   }
 
   gfx::Size last_frame_size_;
@@ -679,9 +707,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                       WebInputEventTraits::GetUniqueTouchEventId(*event));
   }
 
-  const ui::MotionEventAura& pointer_state() {
-    return view_->pointer_state_for_test();
-  }
+  const ui::MotionEventAura& pointer_state() { return view_->pointer_state(); }
 
   void EnableRafAlignedTouchInput() {
     feature_list_.InitFromCommandLine(
@@ -2289,9 +2315,14 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+
   // Lock the compositor. Now we should drop frames.
   view_rect = gfx::Rect(150, 150);
   view_->SetSize(view_rect.size());
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_TRUE(view_->compositor_locked());
 
   // This frame is dropped.
   gfx::Rect dropped_damage_rect_1(10, 20, 30, 40);
@@ -2310,6 +2341,9 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
 
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_TRUE(view_->compositor_locked());
+
   // Unlock the compositor. This frame should damage everything.
   frame_size = view_rect.size();
 
@@ -2319,8 +2353,14 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
   view_->SubmitCompositorFrame(
       kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, frame_size, new_damage_rect));
+  // The swap unlocks the compositor.
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
   testing::Mock::VerifyAndClearExpectations(&observer);
+  // The UI commit unlocks for further resize.
   view_->RunOnCompositingDidCommit();
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
 
   // A partial damage frame, this should not be dropped.
   EXPECT_CALL(observer,
@@ -2330,15 +2370,21 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
       MakeDelegatedFrame(1.f, frame_size, partial_view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
   view_->RunOnCompositingDidCommit();
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
 
-
-  // Resize to something empty.
+  // Resize to something empty. This doesn't lock anything since it's not
+  // visible anymore anyways.
   view_rect = gfx::Rect(100, 0);
   view_->SetSize(view_rect.size());
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
 
   // We're never expecting empty frames, resize to something non-empty.
   view_rect = gfx::Rect(100, 100);
   view_->SetSize(view_rect.size());
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_TRUE(view_->compositor_locked());
 
   // This frame should not be dropped.
   EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
@@ -2346,7 +2392,90 @@ TEST_F(RenderWidgetHostViewAuraTest, SkippedDelegatedFrames) {
       kArbitraryLocalSurfaceId,
       MakeDelegatedFrame(1.f, view_rect.size(), view_rect));
   testing::Mock::VerifyAndClearExpectations(&observer);
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
   view_->RunOnCompositingDidCommit();
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+
+  view_->window_->RemoveObserver(&observer);
+}
+
+// If resize races with a renderer frame, we should lock for the right size.
+TEST_F(RenderWidgetHostViewAuraTest, ResizeAfterReceivingFrame) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+
+  MockWindowObserver observer;
+  view_->window_->AddObserver(&observer);
+
+  // A frame of initial size.
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, view_rect));
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+  view_->RunOnCompositingDidCommit();
+
+  // A frame of initial size arrives, but we don't commit in the UI yet.
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, _));
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+
+  // Resize, and lock the compositor. Now we should drop frames of the old size.
+  view_rect = gfx::Rect(150, 150);
+  view_->SetSize(view_rect.size());
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_TRUE(view_->compositor_locked());
+
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // If the CompositorLock times out in the meantime, a commit would happen.
+  // Verify that if a commit occurs, the lock remains and we reject frames
+  // of the wrong size still.
+  view_->RunOnCompositingDidCommit();
+
+  EXPECT_TRUE(view_->resize_locked());
+  // In this case we lied about it and the CompositorLock is still active.
+  EXPECT_TRUE(view_->compositor_locked());
+
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(_, _)).Times(0);
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // A frame arrives of the new size, which will be accepted.
+  frame_size = view_rect.size();
+  EXPECT_CALL(observer, OnDelegatedFrameDamage(view_->window_, _));
+  view_->SubmitCompositorFrame(
+      kArbitraryLocalSurfaceId,
+      MakeDelegatedFrame(1.f, frame_size, gfx::Rect(frame_size)));
+  // Receiving the frame unlocks the compositor so it can commit.
+  EXPECT_TRUE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  // When the frame of the correct size is committed, the CompositorResizeLock
+  // is released.
+  view_->RunOnCompositingDidCommit();
+  EXPECT_FALSE(view_->resize_locked());
+  EXPECT_FALSE(view_->compositor_locked());
 
   view_->window_->RemoveObserver(&observer);
 }
@@ -2430,6 +2559,11 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
     delegates_.back()->set_widget_host(hosts[i]);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
+    // Prevent frames from being skipped due to resize, this test does not
+    // run a UI compositor so the DelegatedFrameHost doesn't get the chance
+    // to release its resize lock once it receives a frame of the expected
+    // size.
+    views[i]->DisableResizeLock();
     views[i]->InitAsChild(nullptr);
     aura::client::ParentWindowWithContext(
         views[i]->GetNativeView(),

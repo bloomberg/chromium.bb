@@ -41,6 +41,7 @@ void CompositorResizeLock::UnlockCompositor() {
 }
 
 void CompositorResizeLock::CompositorLockTimedOut() {
+  timed_out_ = true;
   UnlockCompositor();
   if (client_) {
     client_->CompositorResizeLockEnded();

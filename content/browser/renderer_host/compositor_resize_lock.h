@@ -46,6 +46,8 @@ class CONTENT_EXPORT CompositorResizeLock
   // prevent locking from happening.
   void UnlockCompositor();
 
+  bool timed_out() const { return timed_out_; }
+
   const gfx::Size& expected_size() const { return expected_size_; }
 
  private:
@@ -56,6 +58,7 @@ class CONTENT_EXPORT CompositorResizeLock
   const gfx::Size expected_size_;
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
   bool unlocked_ = false;
+  bool timed_out_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorResizeLock);
 };

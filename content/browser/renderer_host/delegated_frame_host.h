@@ -69,7 +69,6 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual bool DelegatedFrameCanCreateResizeLock() const = 0;
   virtual std::unique_ptr<CompositorResizeLock>
   DelegatedFrameHostCreateResizeLock() = 0;
-  virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
   virtual void DelegatedFrameHostSendReclaimCompositorResources(
       bool is_swap_ack,
@@ -205,12 +204,11 @@ class CONTENT_EXPORT DelegatedFrameHost
   RenderWidgetHostViewFrameSubscriber* frame_subscriber() const {
     return frame_subscriber_.get();
   }
-  bool ShouldCreateResizeLock();
   void LockResources();
   void UnlockResources();
   void RequestCopyOfOutput(std::unique_ptr<cc::CopyOutputRequest> request);
 
-  bool ShouldSkipFrame(gfx::Size size_in_dip) const;
+  bool ShouldSkipFrame(const gfx::Size& size_in_dip);
 
   // Lazily grab a resize lock if the aura window size doesn't match the current
   // frame size, to give time to the renderer.
@@ -294,23 +292,14 @@ class CONTENT_EXPORT DelegatedFrameHost
   // compositor, as well as the UI for a short time to give a chance to the
   // renderer of producing a frame of the right size.
   std::unique_ptr<CompositorResizeLock> resize_lock_;
+  bool create_resize_lock_after_commit_ = false;
+  bool allow_one_renderer_frame_during_resize_lock_ = false;
 
   // Keeps track of the current frame size.
   gfx::Size current_frame_size_in_dip_;
 
   // This lock is for waiting for a front surface to become available to draw.
   std::unique_ptr<ui::CompositorLock> released_front_lock_;
-
-  enum CanLockCompositorState {
-    YES_CAN_LOCK,
-    // We locked, so at some point we'll need to kick a frame.
-    YES_DID_LOCK,
-    // No. A lock timed out, we need to kick a new frame before locking again.
-    NO_PENDING_RENDERER_FRAME,
-    // No. We've got a frame, but it hasn't been committed.
-    NO_PENDING_COMMIT,
-  };
-  CanLockCompositorState can_lock_compositor_;
 
   base::TimeTicks last_draw_ended_;
 

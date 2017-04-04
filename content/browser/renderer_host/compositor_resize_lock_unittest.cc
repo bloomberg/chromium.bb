@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/compositor_resize_lock.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/test/fake_compositor_lock.h"
@@ -126,6 +128,46 @@ TEST(CompositorResizeLockTest, EndAfterTimeout) {
     resize_client.CauseTimeout();
     EXPECT_TRUE(resize_client.unlocked());
     EXPECT_TRUE(resize_client.ended());
+  }
+}
+
+class CallbackClient : public FakeCompositorResizeLockClient {
+ public:
+  CallbackClient() = default;
+
+  void CompositorResizeLockEnded() override {
+    std::move(resize_lock_ended_).Run();
+  }
+
+  void set_resize_lock_ended(base::OnceClosure c) {
+    resize_lock_ended_ = std::move(c);
+  }
+
+ private:
+  base::OnceClosure resize_lock_ended_;
+};
+
+TEST(CompositorResizeLockTest, TimeoutSetBeforeClientTold) {
+  CallbackClient resize_client;
+  gfx::Size resize_to(10, 11);
+
+  {
+    CompositorResizeLock resize_lock(&resize_client, resize_to);
+    resize_lock.Lock();
+
+    // When the resize lock times out, it should report that before telling
+    // the client about that.
+    bool saw_resize_lock_end = false;
+    auto resize_lock_ended = [](CompositorResizeLock* resize_lock, bool* saw) {
+      EXPECT_TRUE(resize_lock->timed_out());
+      *saw = true;
+    };
+    resize_client.set_resize_lock_ended(
+        base::BindOnce(resize_lock_ended, &resize_lock, &saw_resize_lock_end));
+
+    // A timeout tells the client that the lock ended.
+    resize_client.CauseTimeout();
+    EXPECT_TRUE(saw_resize_lock_end);
   }
 }
 

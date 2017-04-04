@@ -432,10 +432,6 @@ BrowserCompositorMac::DelegatedFrameHostCreateResizeLock() {
   return nullptr;
 }
 
-void BrowserCompositorMac::DelegatedFrameHostResizeLockWasReleased() {
-  NOTREACHED();
-}
-
 void BrowserCompositorMac::DelegatedFrameHostSendReclaimCompositorResources(
     bool is_swap_ack,
     const cc::ReturnedResourceArray& resources) {

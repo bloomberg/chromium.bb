@@ -36,7 +36,6 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
   bool DelegatedFrameCanCreateResizeLock() const override;
   std::unique_ptr<CompositorResizeLock> DelegatedFrameHostCreateResizeLock()
       override;
-  void DelegatedFrameHostResizeLockWasReleased() override;
   void DelegatedFrameHostSendReclaimCompositorResources(
       bool is_swap_ack,
       const cc::ReturnedResourceArray& resources) override;

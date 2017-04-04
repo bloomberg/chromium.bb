@@ -73,10 +73,6 @@ DelegatedFrameHostClientAura::DelegatedFrameHostCreateResizeLock() {
   return base::MakeUnique<CompositorResizeLock>(this, desired_size);
 }
 
-void DelegatedFrameHostClientAura::DelegatedFrameHostResizeLockWasReleased() {
-  render_widget_host_view_->host_->WasResized();
-}
-
 void DelegatedFrameHostClientAura::
     DelegatedFrameHostSendReclaimCompositorResources(
         bool is_swap_ack,
@@ -97,13 +93,14 @@ bool DelegatedFrameHostClientAura::IsAutoResizeEnabled() const {
 std::unique_ptr<ui::CompositorLock>
 DelegatedFrameHostClientAura::GetCompositorLock(
     ui::CompositorLockClient* client) {
-  auto* host = render_widget_host_view_->window_->GetHost();
-  return host->compositor()->GetCompositorLock(client);
+  auto* window_host = render_widget_host_view_->window_->GetHost();
+  return window_host->compositor()->GetCompositorLock(client);
 }
 
 void DelegatedFrameHostClientAura::CompositorResizeLockEnded() {
-  auto* host = render_widget_host_view_->window_->GetHost();
-  host->dispatcher()->ReleasePointerMoves();
+  auto* window_host = render_widget_host_view_->window_->GetHost();
+  window_host->dispatcher()->ReleasePointerMoves();
+  render_widget_host_view_->host_->WasResized();
 }
 
 }  // namespace content
