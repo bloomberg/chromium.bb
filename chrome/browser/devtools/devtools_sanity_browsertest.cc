@@ -1946,16 +1946,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
 
 // This test enables switches::kUseGpuInTests which causes false positives
 // with MemorySanitizer.
-// Flaky on Linux and Windows https://crbug.com/624215
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_TestLatencyInfoInstrumentation \
-  DISABLED_TestLatencyInfoInstrumentation
-#else
-#define MAYBE_TestLatencyInfoInstrumentation TestLatencyInfoInstrumentation
-#endif
+// Flaky on multiple platforms https://crbug.com/624215
 IN_PROC_BROWSER_TEST_F(DevToolsPixelOutputTests,
-                       MAYBE_TestLatencyInfoInstrumentation) {
+                       DISABLED_TestLatencyInfoInstrumentation) {
   WebContents* web_contents = GetInspectedTab();
   OpenDevToolsWindow(kLatencyInfoTestPage, false);
   DispatchAndWait("startTimeline");
