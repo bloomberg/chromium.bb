@@ -108,6 +108,12 @@ Polymer({
     },
   },
 
+  /**
+   * The element to return focus to, when the currntly active dialog is closed.
+   * @private {?HTMLElement}
+   */
+  activeDialogAnchor_: null,
+
   observers: ['configureWidget_(category, categorySubtype)'],
 
   ready: function() {
@@ -215,8 +221,9 @@ Polymer({
     dialog.open(this.categorySubtype);
 
     dialog.addEventListener('close', function() {
+      this.$.addSite.focus();
       dialog.remove();
-    });
+    }.bind(this));
   },
 
   /**
@@ -435,6 +442,8 @@ Polymer({
   onEditExceptionDialogClosed_: function() {
     this.showEditExceptionDialog_ = false;
     this.actionMenuSite_ = null;
+    this.activeDialogAnchor_.focus();
+    this.activeDialogAnchor_ = null;
   },
 
   /** @private */
@@ -474,16 +483,18 @@ Polymer({
    * @private
    */
   onShowActionMenuTap_: function(e) {
+    this.activeDialogAnchor_ = /** @type {!HTMLElement} */ (
+        Polymer.dom(/** @type {!Event} */ (e)).localTarget);
+
     this.actionMenuSite_ = e.model.item;
     /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]')).showAt(
-            /** @type {!Element} */ (
-                Polymer.dom(/** @type {!Event} */ (e)).localTarget));
+        this.$$('dialog[is=cr-action-menu]')).showAt(this.activeDialogAnchor_);
   },
 
   /** @private */
   closeActionMenu_: function() {
     this.actionMenuSite_ = null;
+    this.activeDialogAnchor_ = null;
     var actionMenu = /** @type {!CrActionMenuElement} */ (
         this.$$('dialog[is=cr-action-menu]'));
     if (actionMenu.open)

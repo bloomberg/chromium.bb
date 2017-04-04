@@ -83,6 +83,11 @@ Polymer({
     this.$.confirmDeleteDialog.close();
   },
 
+  /** @private */
+  onConfirmDeleteDialogClosed_: function() {
+    this.$.removeShowingSites.focus();
+  },
+
   /**
    * Shows a dialog to confirm the deletion of multiple sites.
    * @param {!Event} e
