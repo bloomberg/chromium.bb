@@ -16,27 +16,22 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/template_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
 TEST(ValuesTest, TestNothrow) {
-  // TODO(crbug.com/554293): Replace this with
-  // std::is_nothrow_move_constructible when all platforms have them in the std
-  // namespace.
-  static_assert(std::is_nothrow_constructible<Value, Value&&>::value,
+  static_assert(std::is_nothrow_move_constructible<Value>::value,
                 "IsNothrowMoveConstructible");
-  // TODO(crbug.com/554293): Replace this with
-  // std::is_nothrow_default_constructible when all platforms have them in the
-  // std namespace.
-  static_assert(std::is_nothrow_constructible<Value>::value,
+  static_assert(std::is_nothrow_default_constructible<Value>::value,
                 "IsNothrowDefaultConstructible");
   static_assert(std::is_nothrow_constructible<Value, std::string&&>::value,
                 "IsNothrowMoveConstructibleFromString");
   static_assert(
       std::is_nothrow_constructible<Value, std::vector<char>&&>::value,
       "IsNothrowMoveConstructibleFromBlob");
+  static_assert(std::is_nothrow_move_assignable<Value>::value,
+                "IsNothrowMoveAssignable");
 }
 
 // Group of tests for the value constructors.
