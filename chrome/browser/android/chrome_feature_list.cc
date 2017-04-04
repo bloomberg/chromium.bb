@@ -72,6 +72,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleWrapper,
     &kTabsInCBD,
     &kTabReparenting,
+    &kVideoPersistence,
     &kWebPaymentsModifiers,
     &kWebPaymentsSingleAppUiSkip,
     &kWebVRCardboardSupport,
@@ -188,6 +189,9 @@ const base::Feature kUseNewDoodleApi{"UseNewDoodleApi",
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kVideoPersistence{"VideoPersistence",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

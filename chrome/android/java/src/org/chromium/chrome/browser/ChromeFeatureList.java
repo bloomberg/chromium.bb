@@ -152,6 +152,7 @@ public abstract class ChromeFeatureList {
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String TAB_REPARENTING = "TabReparenting";
+    public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String VR_SHELL = "VrShell";
     public static final String WEB_PAYMENTS = "WebPayments";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
