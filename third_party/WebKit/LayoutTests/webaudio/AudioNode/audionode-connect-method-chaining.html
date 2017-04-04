@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script> 
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
 </head>
 
 <body>
@@ -30,12 +30,11 @@
     ];
 
 
-    function verifyReturnedNode(config) {
-      Should('The return value of ' + config.desc +
+    function verifyReturnedNode(should, config) {
+      should(config.destination === config.returned,
+          'The return value of ' + config.desc +
           ' matches the destination ' +
-          config.returned.constructor.name,
-          config.destination === config.returned
-        )
+          config.returned.constructor.name)
         .beEqualTo(true);
     }
 
@@ -44,12 +43,12 @@
     // 1) .connect(GainNode)
     // 2) .connect(BiquadFilterNode, output)
     // 3) .connect(ChannelMergerNode, output, input)
-    function testConnectMethod(context, options) {
+    function testConnectMethod(context, should, options) {
       var source = context['create' + options.name].apply(context, options.args);
       var sourceName = source.constructor.name;
 
       var destination1 = context.createGain();
-      verifyReturnedNode({
+      verifyReturnedNode(should, {
         source: source,
         destination: destination1,
         returned: source.connect(destination1),
@@ -57,7 +56,7 @@
       });
 
       var destination2 = context.createBiquadFilter();
-      verifyReturnedNode({
+      verifyReturnedNode(should, {
         source: source,
         destination: destination2,
         returned: source.connect(destination2, 0),
@@ -65,7 +64,7 @@
       });
 
       var destination3 = context.createChannelMerger();
-      verifyReturnedNode({
+      verifyReturnedNode(should, {
         source: source,
         destination: destination3,
         returned: source.connect(destination3, 0, 1),
@@ -77,36 +76,36 @@
     var audit = Audit.createTaskRunner();
 
     // Task: testing entries from the dictionary.
-    audit.defineTask('from-dictionary', function (done) {
+    audit.define('from-dictionary', (task, should) =>  {
       var context = new AudioContext();
 
       for (var i = 0; i < nodeDictionary.length; i++)
-        testConnectMethod(context, nodeDictionary[i]);
+        testConnectMethod(context, should, nodeDictionary[i]);
 
-      done();
+      task.done();
     });
 
     // Task: testing Media* nodes.
-    audit.defineTask('media-group', function (done) {
+    audit.define('media-group', (task, should) =>  {
       var context = new AudioContext();
 
       // Test MediaElementSourceNode needs an <audio> element.
       var mediaElement = document.createElement('audio');
-      testConnectMethod(context, { name: 'MediaElementSource', args: [mediaElement] });
+      testConnectMethod(context, should, { name: 'MediaElementSource', args: [mediaElement] });
 
-      testConnectMethod(context, { name: 'MediaStreamDestination' });
+      testConnectMethod(context, should, { name: 'MediaStreamDestination' });
 
       // MediaStreamSourceNode requires 'stream' object to be constructed, which
       // is a part of MediaStreamDestinationNode.
       var streamDestination = context.createMediaStreamDestination();
       var stream = streamDestination.stream;
-      testConnectMethod(context, { name: 'MediaStreamSource', args: [stream] });
+      testConnectMethod(context, should, { name: 'MediaStreamSource', args: [stream] });
 
-      done();
+      task.done();
     });
 
     // Task: test the exception thrown by invalid operation.
-    audit.defineTask('invalid-operation', function (done) {
+    audit.define('invalid-operation', (task, should) =>  {
       var contextA = new AudioContext();
       var contextB = new AudioContext();
       var gain1 = contextA.createGain();
@@ -114,22 +113,22 @@
 
       // Test if the first connection throws correctly. The first gain node does
       // not have the second output, so it should throw.
-      Should('Connecting with an invalid output', function () {
+      should(function () {
         gain1.connect(gain2, 1).connect(contextA.destination);
-      }).throw('IndexSizeError');
+      }, 'Connecting with an invalid output').throw('IndexSizeError');
 
       // Test if the second connection throws correctly. The contextB's
       // destination is not compatible with the nodes from contextA, thus the
       // first connection succeeds but the second one should throw.
-      Should('Connecting to a node from the different context', function () {
+      should(function () {
         gain1.connect(gain2).connect(contextB.destination);
-      }).throw('InvalidAccessError');
+      }, 'Connecting to a node from the different context').throw('InvalidAccessError');
 
-      done();
+      task.done();
     });
 
     // Task: verify if the method chaining actually works.
-    audit.defineTask('verification', function (done) {
+    audit.define('verification', (task, should) =>  {
       // We pick the lowest sample rate allowed to run the test efficiently.
       var context = new OfflineAudioContext(1, 128, 3000);
 
@@ -148,24 +147,12 @@
       source.start();
 
       context.startRendering().then(function (buffer) {
-        Should('The output of chained connection of gain nodes', buffer.getChannelData(0))
+        should(buffer.getChannelData(0), 'The output of chained connection of gain nodes')
           .beConstantValueOf(0.125);
-      }).then(done);
+      }).then(() => task.done());
     });
 
-    audit.defineTask('finish', function (done) {
-      done();
-    });
-
-    audit.runTasks(
-      'from-dictionary',
-      'media-group',
-      'invalid-operation',
-      'verification',
-      'finish'
-    );
-
-    successfullyParsed = true;
+    audit.run();
   </script>
 </body>
 

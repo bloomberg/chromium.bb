@@ -5,7 +5,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
   </head>
 
   <body>
@@ -17,42 +17,43 @@
 
       var audit = Audit.createTaskRunner();
 
-      audit.defineTask("interp", function (taskDone) {
+      audit.define("interp", (task, should) => {
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var node = context.createGain();
 
         // Set a new interpretation and verify that it changed.
         node.channelInterpretation = "discrete";
         var value = node.channelInterpretation;
-        Should("node.channelInterpretation", value).beEqualTo("discrete");
+        should(value, "node.channelInterpretation").beEqualTo("discrete");
         node.connect(context.destination);
 
         context.startRendering().then(function (buffer) {
           // After rendering, the value should have been changed.
-          Should("After rendering node.channelInterpretation",
-              node.channelInterpretation)
+          should(node.channelInterpretation,
+             "After rendering node.channelInterpretation")
             .beEqualTo("discrete");
-        }).then(taskDone);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("mode", function (taskDone) {
+      audit.define("mode", (task, should) => {
         var context = new OfflineAudioContext(1, renderFrames, sampleRate);
         var node = context.createGain();
 
         // Set a new mode and verify that it changed.
         node.channelCountMode = "explicit";
         var value = node.channelCountMode;
-        Should("node.channelCountMode", value).beEqualTo("explicit");
+        should(value, "node.channelCountMode").beEqualTo("explicit");
         node.connect(context.destination);
 
         context.startRendering().then(function (buffer) {
           // After rendering, the value should have been changed.
-          Should("After rendering node.channelCountMode",
-              node.channelCountMode)
+          should(node.channelCountMode,
+            "After rendering node.channelCountMode")
             .beEqualTo("explicit");
-        }).then(taskDone);
+        }).then(() => task.done());
       });
-      audit.runTasks();
+
+      audit.run();
     </script>
   </body>
 </html>
