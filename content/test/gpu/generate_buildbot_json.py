@@ -1083,6 +1083,44 @@ COMMON_GTESTS = {
     'android_args': ['--enable-xml-result-parsing']
   },
 
+  'angle_deqp_gles3_gles_tests': {
+    'tester_configs': [
+      {
+        # Run this on the FYI waterfall and optional tryservers.
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # Run on Nexus 5X swarmed bots.
+        'build_configs': ['android-chromium'],
+        'swarming_dimension_sets': [
+          # Nexus 5X
+          {
+            'device_type': 'bullhead',
+            'device_os': 'M',
+            'os': 'Android'
+          }
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+        ],
+      },
+    ],
+    'test': 'angle_deqp_gles3_tests',
+    # Only pass the display type to desktop. The Android runner doesn't support
+    # passing args to the executable but only one display type is supported on
+    # Android anyways.
+    'desktop_args': [
+      '--test-launcher-batch-limit=400',
+      '--deqp-egl-display-type=angle-gles'
+    ],
+    'android_args': [
+      '--enable-xml-result-parsing',
+      '--shard-timeout=300'
+    ],
+  },
+
   'angle_deqp_gles3_d3d11_tests': {
     'tester_configs': [
       {
