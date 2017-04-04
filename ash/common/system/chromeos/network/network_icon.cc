@@ -7,7 +7,6 @@
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/macros.h"
@@ -21,7 +20,6 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -483,17 +481,13 @@ gfx::ImageSkia* ConnectingWirelessImage(ImageType image_type,
 }
 
 gfx::ImageSkia ConnectingVpnImage(double animation) {
-  int index = animation * nextafter(static_cast<float>(kNumFadeImages), 0);
-  static gfx::ImageSkia* s_vpn_images[kNumFadeImages];
-  if (!s_vpn_images[index]) {
-    // Lazily cache images.
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    // TODO(estade): update this icon to MD. See crbug.com/690176
-    gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_VPN);
-    s_vpn_images[index] = new gfx::ImageSkia(
-        gfx::ImageSkiaOperations::CreateTransparentImage(*icon, animation));
-  }
-  return *s_vpn_images[index];
+  float floored_animation_value =
+      std::floor(animation * kNumFadeImages) / kNumFadeImages;
+  return gfx::CreateVectorIcon(
+      kNetworkVpnIcon,
+      gfx::Tween::ColorValueBetween(
+          floored_animation_value,
+          SkColorSetA(kMenuIconColor, kConnectingImageAlpha), kMenuIconColor));
 }
 
 Badge ConnectingVpnBadge(double animation, IconType icon_type) {
