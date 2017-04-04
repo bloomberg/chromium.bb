@@ -38,7 +38,7 @@ TestFingerprintBrowserProxy.prototype = {
     if (complete)
       this.fingerprintsList_.push('New Label');
 
-    cr.webUIListenerCallback('on-scan-received', {
+    cr.webUIListenerCallback('on-fingerprint-scan-received', {
       result: result, isComplete: complete
     });
   },
@@ -129,7 +129,7 @@ suite('settings-fingerprint-list', function() {
     });
   });
 
-  // Verify running through the enrolling workflow
+  // Verify running through the enroll session workflow
   // (settings-setup-fingerprint-dialog) works as expected.
   test('EnrollingFingerprint', function() {
     assertFalse(dialog.$.dialog.open);

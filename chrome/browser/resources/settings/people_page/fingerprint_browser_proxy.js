@@ -19,6 +19,16 @@ settings.FingerprintResultType = {
 };
 
 /**
+ * An object describing a attempt from the fingerprint hardware. The structure
+ * of this data must be kept in sync with C++ FingerprintHandler.
+ * @typedef {{
+ *   result: settings.FingerprintResultType,
+ *   indexes: !Array<number>,
+ * }}
+ */
+settings.FingerprintAttempt;
+
+/**
  * An object describing a scan from the fingerprint hardware. The structure of
  * this data must be kept in sync with C++ FingerprintHandler.
  * @typedef {{

@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_FINGERPRINT_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_FINGERPRINT_HANDLER_H_
 
-#include "base/strings/string16.h"
+#include <unordered_map>
+
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+
+class Profile;
 
 namespace base {
 class ListValue;
@@ -18,7 +21,7 @@ namespace settings {
 // Chrome OS fingerprint setup settings page UI handler.
 class FingerprintHandler : public ::settings::SettingsPageUIHandler {
  public:
-  FingerprintHandler();
+  explicit FingerprintHandler(Profile* profile);
   ~FingerprintHandler() override;
 
   // SettingsPageUIHandler overrides:
@@ -27,6 +30,9 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler {
   void OnJavascriptDisallowed() override;
 
  private:
+  using AttemptMatches =
+      std::unordered_map<std::string, std::vector<std::string>>;
+
   void HandleGetFingerprintsList(const base::ListValue* args);
   void HandleGetNumFingerprints(const base::ListValue* args);
   void HandleStartEnroll(const base::ListValue* args);
@@ -41,8 +47,14 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler {
   // service. This is used to help manual testing in the meantime.
   void HandleFakeScanComplete(const base::ListValue* args);
 
+  // Signals.
+  void OnAttemptReceived(int result, const AttemptMatches& matches);
+  void OnScanReceived(int result, bool is_complete);
+
+  Profile* profile_;  // unowned
+
   // TODO(sammiequon): Remove this when HandleFakeScanComplete is removed.
-  std::vector<base::string16> fingerprints_list_;
+  std::vector<std::string> fingerprints_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FingerprintHandler);
 };

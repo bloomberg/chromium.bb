@@ -5,12 +5,17 @@
 (function() {
 'use strict';
 
+/**
+ * The duration in ms of a background flash when a user touches the fingerprint
+ * sensor on this page.
+ * @const {number}
+ */
+var FLASH_DURATION_MS = 500;
+
 Polymer({
   is: 'settings-fingerprint-list',
 
-  behaviors: [
-    I18nBehavior,
-  ],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /**
@@ -30,8 +35,40 @@ Polymer({
 
   /** @override */
   attached: function() {
+    this.addWebUIListener(
+        'on-fingerprint-attempt-received', this.onAttemptReceived_.bind(this));
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
     this.updateFingerprintsList_();
+  },
+
+  /**
+   * Sends a ripple when the user taps the sensor with a registered fingerprint.
+   * @param {!settings.FingerprintAttempt} fingerprintAttempt
+   * @private
+   */
+  onAttemptReceived_: function(fingerprintAttempt) {
+    /** @type {NodeList<!HTMLElement>} */ var listItems =
+        this.$.fingerprintsList.querySelectorAll('.list-item');
+    /** @type {Array<number>} */ var filteredIndexes =
+        fingerprintAttempt.indexes.filter(function(index) {
+          return index >= 0 && index < listItems.length;
+        });
+
+    // Flash the background and produce a ripple for each list item that
+    // corresponds to the attempted finger.
+    filteredIndexes.forEach(function(index) {
+      var listItem = listItems[index];
+      var ripple = listItem.querySelector('paper-ripple');
+
+      // Activate the ripple.
+      if (ripple)
+        ripple.simulatedRipple();
+
+      // Flash the background.
+      listItem.animate({
+        backgroundColor: ['var(--google-grey-300)', 'white'],
+      }, FLASH_DURATION_MS);
+    });
   },
 
   /** @private */
@@ -43,7 +80,7 @@ Polymer({
   /**
    * @param {!settings.FingerprintInfo} fingerprintInfo
    * @private
-   * */
+   */
   onFingerprintsChanged_: function(fingerprintInfo) {
     this.fingerprints_ = fingerprintInfo.fingerprintsList;
     this.$.fingerprintsList.notifyResize();

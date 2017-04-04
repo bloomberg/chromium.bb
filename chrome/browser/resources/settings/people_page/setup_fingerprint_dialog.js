@@ -50,10 +50,7 @@ Polymer({
      * @type {!settings.FingerprintSetupStep}
      * @private
      */
-    step_: {
-      type: Number,
-      value: settings.FingerprintSetupStep.LOCATE_SCANNER
-    },
+    step_: {type: Number, value: settings.FingerprintSetupStep.LOCATE_SCANNER},
   },
 
   /**
@@ -77,8 +74,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('on-scan-received',
-        this.onScanReceived_.bind(this));
+    this.addWebUIListener(
+        'on-fingerprint-scan-received', this.onScanReceived_.bind(this));
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
   },
 
