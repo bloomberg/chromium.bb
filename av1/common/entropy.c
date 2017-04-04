@@ -5677,6 +5677,10 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   AVERAGE_TILE_CDFS(intra_filter_cdf)
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
+
+#if CONFIG_NEW_MULTISYMBOL
+  AVERAGE_TILE_CDFS(skip_cdfs)
+#endif
 }
 
 void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,

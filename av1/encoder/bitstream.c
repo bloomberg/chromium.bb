@@ -548,7 +548,13 @@ static int write_skip(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     return 1;
   } else {
     const int skip = mi->mbmi.skip;
+#if CONFIG_NEW_MULTISYMBOL
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+    const int ctx = av1_get_skip_context(xd);
+    aom_write_symbol(w, skip, ec_ctx->skip_cdfs[ctx], 2);
+#else
     aom_write(w, skip, av1_get_skip_prob(cm, xd));
+#endif
     return skip;
   }
 }
@@ -675,6 +681,7 @@ static void update_delta_lf_probs(AV1_COMMON *cm, aom_writer *w,
 #endif  // CONFIG_EXT_DELTA_Q
 #endif  // CONFIG_DELTA_Q
 
+#if !CONFIG_NEW_MULTISYMBOL
 static void update_skip_probs(AV1_COMMON *cm, aom_writer *w,
                               FRAME_COUNTS *counts) {
   int k;
@@ -688,6 +695,7 @@ static void update_skip_probs(AV1_COMMON *cm, aom_writer *w,
                               probwt);
   }
 }
+#endif
 
 #if !CONFIG_EC_ADAPT
 static void update_switchable_interp_probs(AV1_COMMON *cm, aom_writer *w,
@@ -4845,7 +4853,9 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   update_txfm_partition_probs(cm, header_bc, counts, probwt);
 #endif
 
+#if !CONFIG_NEW_MULTISYMBOL
   update_skip_probs(cm, header_bc, counts);
+#endif
 #if !CONFIG_EC_ADAPT && CONFIG_DELTA_Q
   update_delta_q_probs(cm, header_bc, counts);
 #if CONFIG_EXT_DELTA_Q

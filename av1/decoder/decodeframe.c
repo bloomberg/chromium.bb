@@ -2302,7 +2302,16 @@ static int read_skip(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
     return 1;
   } else {
     const int ctx = av1_get_skip_context(xd);
+#if CONFIG_NEW_MULTISYMBOL
+#if CONFIG_EC_ADAPT
+    FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+#else
+    FRAME_CONTEXT *ec_ctx = cm->fc;
+#endif
+    const int skip = aom_read_symbol(r, ec_ctx->skip_cdfs[ctx], 2, ACCT_STR);
+#else
     const int skip = aom_read(r, cm->fc->skip_probs[ctx], ACCT_STR);
+#endif
     FRAME_COUNTS *counts = xd->counts;
     if (counts) ++counts->skip[ctx][skip];
     return skip;
@@ -4931,7 +4940,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
   FRAME_CONTEXT *const fc = cm->fc;
   aom_reader r;
-  int k, i;
+  int i;
 #if !CONFIG_EC_ADAPT || \
     (CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION || CONFIG_EXT_INTER)
   int j;
@@ -4973,11 +4982,13 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_LV_MAP
 
 #if CONFIG_VAR_TX
-  for (k = 0; k < TXFM_PARTITION_CONTEXTS; ++k)
-    av1_diff_update_prob(&r, &fc->txfm_partition_prob[k], ACCT_STR);
+  for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
+    av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
 #endif  // CONFIG_VAR_TX
-  for (k = 0; k < SKIP_CONTEXTS; ++k)
-    av1_diff_update_prob(&r, &fc->skip_probs[k], ACCT_STR);
+#if !CONFIG_NEW_MULTISYMBOL
+  for (i = 0; i < SKIP_CONTEXTS; ++i)
+    av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);
+#endif
 
 #if CONFIG_DELTA_Q && !CONFIG_EC_ADAPT
 #if CONFIG_EXT_DELTA_Q
@@ -4998,11 +5009,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if !CONFIG_EC_ADAPT
   if (cm->seg.enabled && cm->seg.update_map) {
     if (cm->seg.temporal_update) {
-      for (k = 0; k < PREDICTION_PROBS; k++)
-        av1_diff_update_prob(&r, &cm->fc->seg.pred_probs[k], ACCT_STR);
+      for (i = 0; i < PREDICTION_PROBS; i++)
+        av1_diff_update_prob(&r, &cm->fc->seg.pred_probs[i], ACCT_STR);
     }
-    for (k = 0; k < MAX_SEGMENTS - 1; k++)
-      av1_diff_update_prob(&r, &cm->fc->seg.tree_probs[k], ACCT_STR);
+    for (i = 0; i < MAX_SEGMENTS - 1; i++)
+      av1_diff_update_prob(&r, &cm->fc->seg.tree_probs[i], ACCT_STR);
   }
 
   for (j = 0; j < INTRA_MODES; j++) {
@@ -5041,6 +5052,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
     av1_copy(cm->fc->kf_y_cdf, av1_kf_y_mode_cdf);
 #if !CONFIG_EC_ADAPT
+    int k;
     for (k = 0; k < INTRA_MODES; k++)
       for (j = 0; j < INTRA_MODES; j++)
         for (i = 0; i < INTRA_MODES - 1; ++i)
