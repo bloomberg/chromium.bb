@@ -30,8 +30,6 @@
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"
 
-using namespace WTF::Unicode;
-
 namespace blink {
 
 namespace {
