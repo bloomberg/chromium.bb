@@ -106,7 +106,6 @@ void InvertBubbleView::Init() {
   close_->set_listener(this);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
   for (int i = 0; i < 4; i++) {

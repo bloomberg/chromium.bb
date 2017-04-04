@@ -1502,8 +1502,6 @@ split_static_library("ui") {
       "views/harmony/harmony_layout_delegate.h",
       "views/harmony/layout_delegate.cc",
       "views/harmony/layout_delegate.h",
-      "views/layout_utils.cc",
-      "views/layout_utils.h",
       "views/location_bar/location_bar_bubble_delegate_view.cc",
       "views/location_bar/location_bar_bubble_delegate_view.h",
       "views/login_handler_views.cc",

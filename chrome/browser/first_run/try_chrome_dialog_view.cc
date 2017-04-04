@@ -101,7 +101,6 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
       views::Background::CreateSolidBackground(0xfc, 0xfc, 0xfc));
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(root_view);
-  root_view->SetLayoutManager(layout);
   views::ColumnSet* columns;
 
   // First row: [icon][pad][text][pad][button].

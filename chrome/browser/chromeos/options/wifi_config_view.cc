@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/options/passphrase_textfield.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/login/login_state.h"
@@ -936,7 +935,7 @@ void WifiConfigView::Init(bool show_8021x) {
       ParseUIProperty(&passphrase_ui_data_, network, ::onc::wifi::kPassphrase);
   }
 
-  views::GridLayout* layout = layout_utils::CreatePanelLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   LayoutDelegate* delegate = LayoutDelegate::Get();
 
   const int column_view_set_id = 0;

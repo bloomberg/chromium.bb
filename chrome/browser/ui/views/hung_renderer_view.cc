@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/logging_chrome.h"
@@ -422,7 +421,7 @@ void HungRendererDialogView::Init() {
   using views::GridLayout;
   using views::ColumnSet;
 
-  GridLayout* layout = layout_utils::CreatePanelLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   LayoutDelegate* delegate = LayoutDelegate::Get();
 
   const int double_column_set_id = 0;

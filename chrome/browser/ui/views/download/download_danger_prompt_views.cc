@@ -95,7 +95,6 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
   contents_view_ = new views::View;
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(contents_view_);
-  contents_view_->SetLayoutManager(layout);
 
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,

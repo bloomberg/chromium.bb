@@ -46,7 +46,6 @@ void UninstallView::SetupControls() {
   using views::GridLayout;
 
   GridLayout* layout = GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   // Message to confirm uninstallation.
   int column_set_id = 0;

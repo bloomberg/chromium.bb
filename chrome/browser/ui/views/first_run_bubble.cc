@@ -62,7 +62,6 @@ void FirstRunBubble::Init() {
       l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT), {original_font_list});
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
   layout->SetInsets(kTopInset, kLeftInset, kBottomInset, kRightInset);
 
   views::ColumnSet* columns = layout->AddColumnSet(0);

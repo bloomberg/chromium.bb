@@ -81,7 +81,6 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
       make_default_(NULL),
       report_crashes_(NULL) {
   GridLayout* layout = GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   const int related_y = views::kRelatedControlVerticalSpacing;
 

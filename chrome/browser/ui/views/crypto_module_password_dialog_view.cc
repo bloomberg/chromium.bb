@@ -122,7 +122,6 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
   password_entry_->set_controller(this);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   views::ColumnSet* reason_column_set = layout->AddColumnSet(0);
   reason_column_set->AddColumn(

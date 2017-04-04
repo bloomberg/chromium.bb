@@ -136,6 +136,8 @@ gfx::Insets ViewsDelegate::GetInsetsMetric(InsetsMetric metric) const {
                          kButtonHEdgeMarginNew);
     case InsetsMetric::BUBBLE_DIALOG:
       return gfx::Insets(kPanelVertMargin, kPanelHorizMargin);
+    case InsetsMetric::PANEL:
+      return gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew);
     case InsetsMetric::VECTOR_IMAGE_BUTTON_PADDING:
       return gfx::Insets(kVectorButtonExtraTouchSize);
   }

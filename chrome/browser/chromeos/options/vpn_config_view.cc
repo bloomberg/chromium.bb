@@ -15,7 +15,6 @@
 #include "chrome/browser/chromeos/net/shill_error.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/login/login_state.h"
@@ -504,7 +503,7 @@ void VPNConfigView::Init() {
         GetNetworkState(service_path_);
     DCHECK(vpn && vpn->type() == shill::kTypeVPN);
   }
-  layout_ = layout_utils::CreatePanelLayout(this);
+  layout_ = views::GridLayout::CreatePanel(this);
   LayoutDelegate* delegate = LayoutDelegate::Get();
 
   // Observer any changes to the certificate list.

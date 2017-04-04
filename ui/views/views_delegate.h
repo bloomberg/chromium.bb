@@ -71,6 +71,8 @@ enum class InsetsMetric {
   DIALOG_BUTTON,
   // The insets that should be applied around a dialog's frame view.
   DIALOG_FRAME_VIEW,
+  // The margins that should be applied around a panel GridLayout.
+  PANEL,
   // Padding to add to vector image buttons to increase their click and touch
   // target size.
   VECTOR_IMAGE_BUTTON_PADDING,

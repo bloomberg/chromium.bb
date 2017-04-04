@@ -202,7 +202,6 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Use GridLayout inside the prompt bar because StyledLabel requires it.
   views::GridLayout* prompt_layout = views::GridLayout::CreatePanel(prompt_bar);
-  prompt_bar->SetLayoutManager(prompt_layout);
   prompt_layout->AddColumnSet(0)->AddColumn(
       views::GridLayout::FILL, views::GridLayout::CENTER, 100,
       views::GridLayout::USE_PREF, 0, 0);

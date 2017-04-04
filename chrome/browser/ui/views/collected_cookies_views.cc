@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/views/cookie_info_view.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -389,7 +388,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout = layout_utils::CreatePanelLayout(pane);
+  GridLayout* layout = GridLayout::CreatePanel(pane);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -455,7 +454,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
   using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout = layout_utils::CreatePanelLayout(pane);
+  GridLayout* layout = GridLayout::CreatePanel(pane);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);

@@ -143,7 +143,6 @@ void AppInfoView::PrepareDescriptionLabel(const base::string16& description) {
 
 void AppInfoView::SetupLayout() {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   static const int kColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
@@ -281,7 +280,6 @@ void CreateApplicationShortcutView::InitControls(DialogLayout dialog_layout) {
 
   // Layout controls
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   static const int kHeaderColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -341,7 +340,7 @@ void BookmarkEditorView::Init() {
     new_folder_button_->SetEnabled(false);
   }
 
-  GridLayout* layout = layout_utils::CreatePanelLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   LayoutDelegate* delegate = LayoutDelegate::Get();
 
   const int labels_column_set_id = 0;

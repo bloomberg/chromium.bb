@@ -20,7 +20,6 @@ ConfirmBubbleViews::ConfirmBubbleViews(
     std::unique_ptr<ConfirmBubbleModel> model)
     : model_(std::move(model)), link_(NULL) {
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
 
   // Use a fixed maximum message width, so longer messages will wrap.
   const int kMaxMessageWidth = 400;

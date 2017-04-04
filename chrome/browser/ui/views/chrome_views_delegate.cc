@@ -231,6 +231,11 @@ gfx::Insets ChromeViewsDelegate::GetInsetsMetric(
     case views::InsetsMetric::BUBBLE_DIALOG:
       return gfx::Insets(layout_delegate->GetMetric(
           LayoutDelegate::Metric::PANEL_CONTENT_MARGIN));
+    case views::InsetsMetric::PANEL:
+      return gfx::Insets(layout_delegate->GetMetric(
+                             LayoutDelegate::Metric::PANEL_CONTENT_MARGIN),
+                         layout_delegate->GetMetric(
+                             LayoutDelegate::Metric::DIALOG_BUTTON_MARGIN));
     case views::InsetsMetric::VECTOR_IMAGE_BUTTON_PADDING:
       return gfx::Insets(layout_delegate->GetMetric(
           LayoutDelegate::Metric::VECTOR_IMAGE_BUTTON_PADDING));

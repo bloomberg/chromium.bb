@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/login_view.h"
 
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/layout_utils.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/label.h"
@@ -41,7 +40,7 @@ LoginView::LoginView(const base::string16& authority,
   authority_label_->SetAllowCharacterBreak(true);
 
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout = layout_utils::CreatePanelLayout(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
 
   // Add the column set for the information message at the top of the dialog
   // box.
