@@ -19,7 +19,7 @@ class Decryptor;
 class MEDIA_EXPORT CdmContext {
  public:
   // Indicates an invalid CDM ID. See GetCdmId() for details.
-  static const int kInvalidCdmId;
+  enum { kInvalidCdmId = 0 };
 
   virtual ~CdmContext();
 
