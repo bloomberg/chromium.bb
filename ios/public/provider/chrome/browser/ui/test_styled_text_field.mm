@@ -4,6 +4,10 @@
 
 #import "ios/public/provider/chrome/browser/ui/test_styled_text_field.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation TestStyledTextField
 @synthesize placeholderStyle = _placeholderStyle;
 @synthesize textValidator = _textValidator;
