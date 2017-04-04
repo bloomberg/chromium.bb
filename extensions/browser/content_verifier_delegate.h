@@ -77,6 +77,9 @@ class ContentVerifierDelegate {
   // an extension did not match its expected hash.
   virtual void VerifyFailed(const std::string& extension_id,
                             ContentVerifyJob::FailureReason reason) = 0;
+
+  // Called when ExtensionSystem is shutting down.
+  virtual void Shutdown() = 0;
 };
 
 }  // namespace extensions

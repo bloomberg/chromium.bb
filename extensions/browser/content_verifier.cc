@@ -84,6 +84,7 @@ void ContentVerifier::Start() {
 
 void ContentVerifier::Shutdown() {
   shutdown_ = true;
+  delegate_->Shutdown();
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

@@ -24,6 +24,8 @@ class BackoffEntry;
 
 namespace extensions {
 
+class PolicyExtensionReinstaller;
+
 class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
  public:
   static Mode GetDefaultMode();
@@ -41,13 +43,7 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
       const extensions::Extension* extension) override;
   void VerifyFailed(const std::string& extension_id,
                     ContentVerifyJob::FailureReason reason) override;
-
- protected:
-  FRIEND_TEST_ALL_PREFIXES(ContentVerifierPolicyTest, Backoff);
-  // For tests, overrides the default action to take to initiate policy
-  // force-reinstalls.
-  static void set_policy_reinstall_action_for_test(
-      base::Callback<void(base::TimeDelta delay)>* action);
+  void Shutdown() override;
 
  private:
   content::BrowserContext* context_;
@@ -62,6 +58,8 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
   // For reporting metrics in BOOTSTRAP mode, when an extension would be
   // disabled if content verification was in ENFORCE mode.
   std::set<std::string> would_be_disabled_ids_;
+
+  std::unique_ptr<PolicyExtensionReinstaller> policy_extension_reinstaller_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentVerifierDelegate);
 };

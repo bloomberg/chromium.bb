@@ -106,6 +106,10 @@ bool PendingExtensionManager::IsPolicyReinstallForCorruptionExpected(
   return base::ContainsKey(expected_policy_reinstalls_, id);
 }
 
+bool PendingExtensionManager::HasAnyPolicyReinstallForCorruption() const {
+  return !expected_policy_reinstalls_.empty();
+}
+
 bool PendingExtensionManager::AddFromSync(
     const std::string& id,
     const GURL& update_url,

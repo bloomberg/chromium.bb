@@ -1327,6 +1327,9 @@ void ExtensionService::CheckForUpdatesSoon() {
 // Errors are reported through ExtensionErrorReporter. Success is not
 // reported.
 void ExtensionService::CheckForExternalUpdates() {
+  if (external_updates_disabled_for_test_)
+    return;
+
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::CheckForExternalUpdates");
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.CheckForExternalUpdatesTime");

@@ -76,6 +76,9 @@ class PendingExtensionManager {
   // Are we expecting a reinstall of the extension with |id| due to corruption?
   bool IsPolicyReinstallForCorruptionExpected(const ExtensionId& id) const;
 
+  // Whether or not there are any corrupted policy extensions.
+  bool HasAnyPolicyReinstallForCorruption() const;
+
   // Adds an extension in a pending state; the extension with the
   // given info will be installed on the next auto-update cycle.
   // Return true if the extension was added.  Will return false

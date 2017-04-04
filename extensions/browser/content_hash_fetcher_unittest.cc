@@ -85,6 +85,9 @@ class ContentHashFetcherWaiter {
 // Used in setting up the behavior of our ContentHashFetcher.
 class MockDelegate : public ContentVerifierDelegate {
  public:
+  MockDelegate() {}
+  ~MockDelegate() override {}
+
   ContentVerifierDelegate::Mode ShouldBeVerified(
       const Extension& extension) override {
     return ContentVerifierDelegate::ENFORCE_STRICT;
@@ -113,6 +116,11 @@ class MockDelegate : public ContentVerifierDelegate {
                     ContentVerifyJob::FailureReason reason) override {
     ADD_FAILURE() << "Unexpected call for this test";
   }
+
+  void Shutdown() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 class ContentHashFetcherTest : public ExtensionsTest {

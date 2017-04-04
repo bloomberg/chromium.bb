@@ -449,6 +449,10 @@ class ExtensionService
     external_updates_finished_callback_ = callback;
   }
 
+  void set_external_updates_disabled_for_test(bool value) {
+    external_updates_disabled_for_test_ = value;
+  }
+
  private:
   // Loads extensions specified via a command line flag/switch.
   void LoadExtensionsFromCommandLineFlag(const char* switch_name);
@@ -676,6 +680,9 @@ class ExtensionService
   // updating additional extensions and allows in-progress installations to
   // decide to abort.
   bool browser_terminating_ = false;
+
+  // If set, call to CheckForExternalUpdates() will bail out.
+  bool external_updates_disabled_for_test_ = false;
 
   // Set to true if this is the first time this ExtensionService has run.
   // Used for specially handling external extensions that are installed the

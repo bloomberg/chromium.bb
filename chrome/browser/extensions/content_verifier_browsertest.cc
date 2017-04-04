@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -775,14 +776,36 @@ namespace {
 // us track the delay for each consecutive reinstall.
 class DelayTracker {
  public:
-  DelayTracker() {}
+  DelayTracker()
+      : action_(base::Bind(&DelayTracker::ReinstallAction,
+                           base::Unretained(this))) {
+    PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(&action_);
+  }
+
+  ~DelayTracker() {
+    PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
+  }
 
   const std::vector<base::TimeDelta>& calls() { return calls_; }
 
-  void ReinstallAction(base::TimeDelta delay) { calls_.push_back(delay); }
+  void ReinstallAction(const base::Closure& callback, base::TimeDelta delay) {
+    saved_callback_ = callback;
+    calls_.push_back(delay);
+  }
+
+  void Proceed() {
+    ASSERT_TRUE(saved_callback_);
+    ASSERT_TRUE(!saved_callback_->is_null());
+    // Run() will set |saved_callback_| again, so use a temporary: |callback|.
+    base::Closure callback = saved_callback_.value();
+    saved_callback_.reset();
+    callback.Run();
+  }
 
  private:
   std::vector<base::TimeDelta> calls_;
+  base::Optional<base::Closure> saved_callback_;
+  PolicyExtensionReinstaller::ReinstallCallback action_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayTracker);
 };
@@ -792,7 +815,6 @@ class DelayTracker {
 IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   ExtensionSystem* system = ExtensionSystem::Get(profile());
-  ExtensionService* service = system->extension_service();
   ContentVerifier* verifier = system->content_verifier();
 
   // Wait for the extension to be installed by the policy we set up in
@@ -805,9 +827,6 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
   // Setup to intercept reinstall action, so we can see what the delay would
   // have been for the real action.
   DelayTracker delay_tracker;
-  base::Callback<void(base::TimeDelta)> action = base::Bind(
-      &DelayTracker::ReinstallAction, base::Unretained(&delay_tracker));
-  ChromeContentVerifierDelegate::set_policy_reinstall_action_for_test(&action);
 
   // Do 4 iterations of disabling followed by reinstall.
   const size_t iterations = 4;
@@ -815,19 +834,63 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
     RegistryObserver registry_observer(registry);
     verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
     EXPECT_TRUE(registry_observer.WaitForUnload(id_));
-    // Trigger reinstall manually (since we overrode default reinstall action).
-    service->CheckForExternalUpdates();
+    // Resolve the request to |delay_tracker|, so the reinstallation can
+    // proceed.
+    delay_tracker.Proceed();
     EXPECT_TRUE(registry_observer.WaitForInstall(id_));
   }
   const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
 
+  // After |delay_tracker| resolves the 4 (|iterations|) reinstallation
+  // requests, it will get an additional request (right away) for retrying
+  // reinstallation.
+  // Note: the additional request in non-test environment will arrive with
+  // a (backoff) delay. But during test, |delay_tracker| issues the request
+  // immediately.
+  ASSERT_EQ(iterations, calls.size() - 1);
   // Assert that the first reinstall action happened with a delay of 0, and
   // then kept growing each additional time.
-  ASSERT_EQ(iterations, calls.size());
   EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
   for (size_t i = 1; i < delay_tracker.calls().size(); i++) {
     EXPECT_LT(calls[i - 1], calls[i]);
   }
+}
+
+// Tests that if CheckForExternalUpdates() fails, then we retry reinstalling
+// corrupted policy extensions. For example: if network is unavailable,
+// CheckForExternalUpdates() will fail.
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, FailedUpdateRetries) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionService* service = system->extension_service();
+  ContentVerifier* verifier = system->content_verifier();
+
+  // Wait for the extension to be installed by the policy we set up in
+  // SetUpInProcessBrowserTestFixture.
+  if (!registry->GetInstalledExtension(id_)) {
+    RegistryObserver registry_observer(registry);
+    EXPECT_TRUE(registry_observer.WaitForInstall(id_));
+  }
+
+  DelayTracker delay_tracker;
+  service->set_external_updates_disabled_for_test(true);
+  RegistryObserver registry_observer(registry);
+  verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+  EXPECT_TRUE(registry_observer.WaitForUnload(id_));
+
+  const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
+  ASSERT_EQ(1u, calls.size());
+  EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
+
+  delay_tracker.Proceed();
+
+  // Remove the override and set ExtensionService to update again. The extension
+  // should be now installed.
+  PolicyExtensionReinstaller::set_policy_reinstall_action_for_test(nullptr);
+  service->set_external_updates_disabled_for_test(false);
+  delay_tracker.Proceed();
+
+  EXPECT_TRUE(registry_observer.WaitForInstall(id_));
 }
 
 }  // namespace extensions

@@ -21,6 +21,7 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/policy_extension_reinstaller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_prefs.h"
@@ -45,32 +46,6 @@ namespace {
 const char kContentVerificationExperimentName[] =
     "ExtensionContentVerification";
 
-const net::BackoffEntry::Policy kPolicyReinstallBackoffPolicy = {
-    // num_errors_to_ignore
-    1,
-
-    // initial_delay_ms (note that we set 'always_use_initial_delay' to false
-    // below)
-    100,
-
-    // multiply_factor
-    2,
-
-    // jitter_factor
-    0.1,
-
-    // maximum_backoff_ms (30 minutes)
-    1000 * 60 * 30,
-
-    // entry_lifetime_ms (6 hours)
-    1000 * 60 * 60 * 6,
-
-    // always_use_initial_delay
-    false,
-};
-
-base::Callback<void(base::TimeDelta delay)>* g_reinstall_action_for_test =
-    nullptr;
 
 }  // namespace
 
@@ -135,7 +110,10 @@ ContentVerifierDelegate::Mode ChromeContentVerifierDelegate::GetDefaultMode() {
 
 ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
     content::BrowserContext* context)
-    : context_(context), default_mode_(GetDefaultMode()) {}
+    : context_(context),
+      default_mode_(GetDefaultMode()),
+      policy_extension_reinstaller_(
+          base::MakeUnique<PolicyExtensionReinstaller>(context_)) {}
 
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }
@@ -216,28 +194,8 @@ void ChromeContentVerifierDelegate::VerifyFailed(
                       << extension->path().value();
       pending_manager->ExpectPolicyReinstallForCorruption(extension_id);
       service->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
-
-      net::BackoffEntry* backoff_entry = nullptr;
-      auto iter = policy_reinstall_backoff_.find(extension_id);
-      if (iter != policy_reinstall_backoff_.end()) {
-        backoff_entry = iter->second.get();
-      } else {
-        auto new_backoff_entry =
-            base::MakeUnique<net::BackoffEntry>(&kPolicyReinstallBackoffPolicy);
-        backoff_entry = new_backoff_entry.get();
-        policy_reinstall_backoff_[extension_id] = std::move(new_backoff_entry);
-      }
-      backoff_entry->InformOfRequest(false);
-
-      base::TimeDelta reinstall_delay = backoff_entry->GetTimeUntilRelease();
-      if (g_reinstall_action_for_test) {
-        g_reinstall_action_for_test->Run(reinstall_delay);
-      } else {
-        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-            FROM_HERE, base::Bind(&ExtensionService::CheckForExternalUpdates,
-                                  service->AsWeakPtr()),
-            reinstall_delay);
-      }
+      // Attempt to reinstall.
+      policy_extension_reinstaller_->NotifyExtensionDisabledDueToCorruption();
       return;
     }
     DLOG(WARNING) << "Disabling extension " << extension_id << " ('"
@@ -256,10 +214,11 @@ void ChromeContentVerifierDelegate::VerifyFailed(
   }
 }
 
-// static
-void ChromeContentVerifierDelegate::set_policy_reinstall_action_for_test(
-    base::Callback<void(base::TimeDelta delay)>* action) {
-  g_reinstall_action_for_test = action;
+void ChromeContentVerifierDelegate::Shutdown() {
+  // Shut down |policy_extension_reinstaller_| on its creation thread. |this|
+  // can be destroyed through InfoMap on IO thread, we do not want to destroy
+  // |policy_extension_reinstaller_| there.
+  policy_extension_reinstaller_.reset();
 }
 
 }  // namespace extensions

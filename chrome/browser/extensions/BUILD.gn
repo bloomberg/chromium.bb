@@ -715,6 +715,8 @@ static_library("extensions") {
     "permissions_updater.h",
     "plugin_manager.cc",
     "plugin_manager.h",
+    "policy_extension_reinstaller.cc",
+    "policy_extension_reinstaller.h",
     "policy_handlers.cc",
     "policy_handlers.h",
     "proxy_overridden_bubble_delegate.cc",
