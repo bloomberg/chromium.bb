@@ -2545,9 +2545,6 @@ desktop_surface_committed(struct weston_desktop_surface *desktop_surface,
 		if (shsurf->resize_edges & WL_SHELL_SURFACE_RESIZE_TOP)
 			sy = shsurf->last_height - surface->height;
 
-		shsurf->last_width = surface->width;
-		shsurf->last_height = surface->height;
-
 		weston_view_to_global_float(shsurf->view, 0, 0, &from_x, &from_y);
 		weston_view_to_global_float(shsurf->view, sx, sy, &to_x, &to_y);
 		x = shsurf->view->geometry.x + to_x - from_x;
@@ -2555,6 +2552,9 @@ desktop_surface_committed(struct weston_desktop_surface *desktop_surface,
 
 		weston_view_set_position(shsurf->view, x, y);
 	}
+
+	shsurf->last_width = surface->width;
+	shsurf->last_height = surface->height;
 
 	/* XXX: would a fullscreen surface need the same handling? */
 	if (surface->output) {
