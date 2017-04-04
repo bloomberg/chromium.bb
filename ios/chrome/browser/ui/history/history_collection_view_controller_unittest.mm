@@ -6,12 +6,18 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
+#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/ui/history/history_entry.h"
 #import "ios/chrome/browser/ui/history/history_service_facade.h"
 #import "ios/chrome/browser/ui/history/history_service_facade_delegate.h"
@@ -40,6 +46,16 @@ HistoryServiceFacade::QueryResult QueryResultWithVisits(
   return result;
 }
 
+std::unique_ptr<KeyedService> BuildMockSyncSetupService(
+    web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  syncer::SyncService* sync_service =
+      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
+  return base::MakeUnique<SyncSetupServiceMock>(sync_service,
+                                                browser_state->GetPrefs());
+}
+
 }  // namespace
 
 @interface HistoryCollectionViewController (
@@ -59,7 +75,11 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
     builder.AddTestingFactory(
         AuthenticationServiceFactory::GetInstance(),
         AuthenticationServiceFake::CreateAuthenticationService);
+    builder.AddTestingFactory(SyncSetupServiceFactory::GetInstance(),
+                              &BuildMockSyncSetupService);
     mock_browser_state_ = builder.Build();
+    sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
+        SyncSetupServiceFactory::GetForBrowserState(mock_browser_state_.get()));
     mock_delegate_ = [OCMockObject
         niceMockForProtocol:@protocol(HistoryCollectionViewControllerDelegate)];
     mock_url_loader_ = [OCMockObject niceMockForProtocol:@protocol(UrlLoader)];
@@ -82,6 +102,7 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
   id<HistoryCollectionViewControllerDelegate> mock_delegate_;
   HistoryCollectionViewController* history_collection_view_controller_;
   bool privacy_settings_opened_;
+  SyncSetupServiceMock* sync_setup_service_mock_;
   DISALLOW_COPY_AND_ASSIGN(HistoryCollectionViewControllerTest);
 };
 
@@ -89,6 +110,25 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
 // received.
 TEST_F(HistoryCollectionViewControllerTest, HasHistoryEntries) {
   GURL url_1("http://test1");
+  HistoryServiceFacade::QueryResult query_result =
+      QueryResultWithVisits({{url_1, base::Time::Now()}});
+  [history_collection_view_controller_ historyServiceFacade:nil
+                                      didReceiveQueryResult:query_result];
+  EXPECT_TRUE([history_collection_view_controller_ hasHistoryEntries]);
+}
+
+// Tests that local history items are shown when sync is enabled,
+// HISTORY_DELETE_DIRECTIVES is enabled, and sync_returned is false.
+// This ensures that when HISTORY_DELETE_DIRECTIVES is disabled,
+// only local device history items are shown.
+TEST_F(HistoryCollectionViewControllerTest, HasHistoryEntriesWhenSyncEnabled) {
+  GURL url_1("http://test1");
+  EXPECT_CALL(*sync_setup_service_mock_, IsSyncEnabled())
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*sync_setup_service_mock_,
+              IsDataTypeEnabled(syncer::HISTORY_DELETE_DIRECTIVES))
+      .WillRepeatedly(testing::Return(false));
+
   HistoryServiceFacade::QueryResult query_result =
       QueryResultWithVisits({{url_1, base::Time::Now()}});
   [history_collection_view_controller_ historyServiceFacade:nil
