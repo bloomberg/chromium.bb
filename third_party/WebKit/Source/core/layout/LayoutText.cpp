@@ -380,7 +380,8 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
   start = std::min(start, static_cast<unsigned>(INT_MAX));
   end = std::min(end, static_cast<unsigned>(INT_MAX));
 
-  bool hasCheckedBoxInRange = false;
+  // This function is always called in sequence that this check should work.
+  bool hasCheckedBoxInRange = !rects.isEmpty();
 
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     // Note: box->end() returns the index of the last character, not the index
@@ -503,7 +504,8 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
   start = std::min(std::max(caretMinOffset, start), caretMaxOffset);
   end = std::min(std::max(caretMinOffset, end), caretMaxOffset);
 
-  bool hasCheckedBoxInRange = false;
+  // This function is always called in sequence that this check should work.
+  bool hasCheckedBoxInRange = !quads.isEmpty();
 
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     // Note: box->end() returns the index of the last character, not the index

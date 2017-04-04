@@ -239,4 +239,14 @@ TEST_F(RangeTest, ExpandNotCrash) {
   range->expand("", ASSERT_NO_EXCEPTION);
 }
 
+TEST_F(RangeTest, MultipleTextQuads) {
+  setBodyContent("<div><p id='one'>one</p><p id='two'>two</p></div>");
+  Position start(document().getElementById("one")->firstChild(), 0);
+  Position end(document().getElementById("two")->firstChild(), 3);
+  Range* range = Range::create(document(), start, end);
+  Vector<FloatQuad> quads;
+  range->textQuads(quads);
+  EXPECT_EQ(2u, quads.size());
+}
+
 }  // namespace blink
