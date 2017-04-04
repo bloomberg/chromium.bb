@@ -937,7 +937,7 @@ drm_output_repaint(struct weston_output *output_base,
 		s->fb_last = s->fb_current;
 		s->fb_current = s->fb_pending;
 		s->fb_pending = NULL;
-		output->vblank_pending = 1;
+		output->vblank_pending++;
 	}
 
 	return 0;
@@ -1048,13 +1048,14 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 			 WP_PRESENTATION_FEEDBACK_KIND_HW_CLOCK;
 
 	drm_output_update_msc(output, frame);
-	output->vblank_pending = 0;
+	output->vblank_pending--;
+	assert(output->vblank_pending >= 0);
 
 	assert(s->fb_last || s->fb_current);
 	drm_fb_unref(s->fb_last);
 	s->fb_last = NULL;
 
-	if (!output->page_flip_pending) {
+	if (!output->page_flip_pending && !output->vblank_pending) {
 		/* Stop the pageflip timer instead of rearming it here */
 		if (output->pageflip_timer)
 			wl_event_source_timer_update(output->pageflip_timer, 0);
