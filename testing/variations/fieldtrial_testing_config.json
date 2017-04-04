@@ -293,7 +293,6 @@
                 {
                     "name": "Default",
                     "params": {
-                        "RedirectNonUINonIOBrowserThreads": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
                 },
