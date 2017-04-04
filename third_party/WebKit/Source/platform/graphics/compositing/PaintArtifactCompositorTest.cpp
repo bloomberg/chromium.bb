@@ -18,6 +18,7 @@
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
@@ -119,7 +120,9 @@ class PaintArtifactCompositorTestWithPropertyTrees
   }
 
   void update(const PaintArtifact& artifact) {
-    m_paintArtifactCompositor->update(artifact, nullptr, false);
+    std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+    m_paintArtifactCompositor->update(artifact, nullptr, false,
+                                      *geometryMapper);
     m_webLayerTreeView->layerTreeHost()->LayoutAndUpdateLayers();
   }
 
@@ -1442,10 +1445,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
   paintChunk2.properties = defaultPaintChunkProperties();
   paintChunk2.bounds = FloatRect(0, 0, 100, 100);
 
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+
   {
     PaintArtifactCompositor::PendingLayer pendingLayer2(paintChunk2, false);
-    EXPECT_TRUE(
-        PaintArtifactCompositor::mightOverlap(pendingLayer, pendingLayer2));
+    EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(
+        pendingLayer, pendingLayer2, *geometryMapper));
   }
 
   RefPtr<TransformPaintPropertyNode> transform =
@@ -1456,8 +1461,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
   {
     paintChunk2.properties.propertyTreeState.setTransform(transform.get());
     PaintArtifactCompositor::PendingLayer pendingLayer2(paintChunk2, false);
-    EXPECT_TRUE(
-        PaintArtifactCompositor::mightOverlap(pendingLayer, pendingLayer2));
+    EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(
+        pendingLayer, pendingLayer2, *geometryMapper));
   }
 
   RefPtr<TransformPaintPropertyNode> transform2 =
@@ -1468,12 +1473,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
   {
     paintChunk2.properties.propertyTreeState.setTransform(transform2.get());
     PaintArtifactCompositor::PendingLayer pendingLayer2(paintChunk2, false);
-    EXPECT_FALSE(
-        PaintArtifactCompositor::mightOverlap(pendingLayer, pendingLayer2));
+    EXPECT_FALSE(PaintArtifactCompositor::mightOverlap(
+        pendingLayer, pendingLayer2, *geometryMapper));
   }
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
@@ -1493,7 +1500,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   chunk2.properties.backfaceHidden = true;
   chunk2.knownToBeOpaque = true;
   chunk2.bounds = FloatRect(10, 20, 30, 40);
-  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false));
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false),
+                     *geometryMapper);
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   // Bounds not equal to one PaintChunk.
@@ -1505,7 +1513,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   chunk3.properties.backfaceHidden = true;
   chunk3.knownToBeOpaque = true;
   chunk3.bounds = FloatRect(-5, -25, 20, 20);
-  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk3, false));
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk3, false),
+                     *geometryMapper);
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
@@ -1533,7 +1542,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
   chunk2.properties.propertyTreeState = chunk1.properties.propertyTreeState;
   chunk2.properties.propertyTreeState.setTransform(transform);
   chunk2.bounds = FloatRect(0, 0, 50, 60);
-  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false));
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false),
+                     *geometryMapper);
 
   EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 70, 85), pendingLayer.bounds);
 }
@@ -1542,6 +1553,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
 // The test is disabled because opaque rect mapping is not implemented yet.
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
        PendingLayerKnownOpaque_DISABLED) {
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
@@ -1556,7 +1569,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   chunk2.properties.propertyTreeState = chunk1.properties.propertyTreeState;
   chunk2.bounds = FloatRect(0, 0, 25, 35);
   chunk2.knownToBeOpaque = true;
-  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false));
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false),
+                     *geometryMapper);
 
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
@@ -1565,7 +1579,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   chunk3.properties.propertyTreeState = chunk1.properties.propertyTreeState;
   chunk3.bounds = FloatRect(0, 0, 50, 60);
   chunk3.knownToBeOpaque = true;
-  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk3, false));
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk3, false),
+                     *geometryMapper);
 
   // Chunk 3 covers the entire layer, so now it's opaque.
   EXPECT_TRUE(pendingLayer.knownToBeOpaque);

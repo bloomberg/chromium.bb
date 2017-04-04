@@ -270,7 +270,8 @@ PaintArtifactCompositor::compositedLayerForPendingLayer(
     gfx::Vector2dF& layerOffset,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
     RasterInvalidationTrackingMap<const PaintChunk>* trackingMap,
-    bool storeDebugInfo) {
+    bool storeDebugInfo,
+    GeometryMapper& geometryMapper) {
   DCHECK(pendingLayer.paintChunks.size());
   const PaintChunk& firstPaintChunk = *pendingLayer.paintChunks[0];
   DCHECK(firstPaintChunk.size());
@@ -290,9 +291,9 @@ PaintArtifactCompositor::compositedLayerForPendingLayer(
 
   layerOffset = ccCombinedBounds.OffsetFromOrigin();
   scoped_refptr<cc::DisplayItemList> displayList =
-      PaintChunksToCcLayer::convert(pendingLayer.paintChunks,
-                                    pendingLayer.propertyTreeState, layerOffset,
-                                    paintArtifact.getDisplayItemList());
+      PaintChunksToCcLayer::convert(
+          pendingLayer.paintChunks, pendingLayer.propertyTreeState, layerOffset,
+          paintArtifact.getDisplayItemList(), geometryMapper);
   contentLayerClient->SetDisplayList(std::move(displayList));
   contentLayerClient->SetPaintableRegion(gfx::Rect(ccCombinedBounds.size()));
 
@@ -352,13 +353,15 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
   paintChunks.push_back(&firstPaintChunk);
 }
 
-void PaintArtifactCompositor::PendingLayer::merge(const PendingLayer& guest) {
+void PaintArtifactCompositor::PendingLayer::merge(
+    const PendingLayer& guest,
+    GeometryMapper& geometryMapper) {
   DCHECK(!isForeign && !guest.isForeign);
   DCHECK_EQ(backfaceHidden, guest.backfaceHidden);
 
   paintChunks.appendVector(guest.paintChunks);
   FloatRect guestBoundsInHome = guest.bounds;
-  GeometryMapper::localToAncestorVisualRect(
+  geometryMapper.localToAncestorVisualRect(
       guest.propertyTreeState, propertyTreeState, guestBoundsInHome);
   FloatRect oldBounds = bounds;
   bounds.unite(guestBoundsInHome);
@@ -383,10 +386,10 @@ bool PaintArtifactCompositor::PendingLayer::canMerge(
 }
 
 void PaintArtifactCompositor::PendingLayer::upcast(
-    const PropertyTreeState& newState) {
+    const PropertyTreeState& newState,
+    GeometryMapper& geometryMapper) {
   DCHECK(!isForeign);
-  GeometryMapper::localToAncestorVisualRect(propertyTreeState, newState,
-                                            bounds);
+  geometryMapper.localToAncestorVisualRect(propertyTreeState, newState, bounds);
 
   propertyTreeState = newState;
   // TODO(crbug.com/701991): Upgrade GeometryMapper.
@@ -448,17 +451,18 @@ static const EffectPaintPropertyNode* strictChildOfAlongPath(
 }
 
 bool PaintArtifactCompositor::mightOverlap(const PendingLayer& layerA,
-                                           const PendingLayer& layerB) {
+                                           const PendingLayer& layerB,
+                                           GeometryMapper& geometryMapper) {
   PropertyTreeState rootPropertyTreeState(TransformPaintPropertyNode::root(),
                                           ClipPaintPropertyNode::root(),
                                           EffectPaintPropertyNode::root());
 
   FloatRect boundsA = layerA.bounds;
-  GeometryMapper::localToAncestorVisualRect(layerA.propertyTreeState,
-                                            rootPropertyTreeState, boundsA);
+  geometryMapper.localToAncestorVisualRect(layerA.propertyTreeState,
+                                           rootPropertyTreeState, boundsA);
   FloatRect boundsB = layerB.bounds;
-  GeometryMapper::localToAncestorVisualRect(layerB.propertyTreeState,
-                                            rootPropertyTreeState, boundsB);
+  geometryMapper.localToAncestorVisualRect(layerB.propertyTreeState,
+                                           rootPropertyTreeState, boundsB);
 
   return boundsA.intersects(boundsB);
 }
@@ -489,6 +493,7 @@ bool PaintArtifactCompositor::canDecompositeEffect(
 void PaintArtifactCompositor::layerizeGroup(
     const PaintArtifact& paintArtifact,
     Vector<PendingLayer>& pendingLayers,
+    GeometryMapper& geometryMapper,
     const EffectPaintPropertyNode& currentGroup,
     Vector<PaintChunk>::const_iterator& chunkIt) {
   size_t firstLayerInCurrentGroup = pendingLayers.size();
@@ -534,7 +539,8 @@ void PaintArtifactCompositor::layerizeGroup(
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
       size_t firstLayerInSubgroup = pendingLayers.size();
-      layerizeGroup(paintArtifact, pendingLayers, *subgroup, chunkIt);
+      layerizeGroup(paintArtifact, pendingLayers, geometryMapper, *subgroup,
+                    chunkIt);
       // Now the chunk iterator stepped over the subgroup we just saw.
       // If the subgroup generated 2 or more layers then the subgroup must be
       // composited to satisfy grouping requirement.
@@ -548,9 +554,10 @@ void PaintArtifactCompositor::layerizeGroup(
       PendingLayer& subgroupLayer = pendingLayers[firstLayerInSubgroup];
       if (!canDecompositeEffect(subgroup, subgroupLayer))
         continue;
-      subgroupLayer.upcast(PropertyTreeState(subgroup->localTransformSpace(),
-                                             subgroup->outputClip(),
-                                             &currentGroup));
+      subgroupLayer.upcast(
+          PropertyTreeState(subgroup->localTransformSpace(),
+                            subgroup->outputClip(), &currentGroup),
+          geometryMapper);
     }
     // At this point pendingLayers.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
@@ -564,11 +571,11 @@ void PaintArtifactCompositor::layerizeGroup(
          candidateIndex-- > firstLayerInCurrentGroup;) {
       PendingLayer& candidateLayer = pendingLayers[candidateIndex];
       if (candidateLayer.canMerge(newLayer)) {
-        candidateLayer.merge(newLayer);
+        candidateLayer.merge(newLayer, geometryMapper);
         pendingLayers.pop_back();
         break;
       }
-      if (mightOverlap(newLayer, candidateLayer))
+      if (mightOverlap(newLayer, candidateLayer, geometryMapper))
         break;
     }
   }
@@ -576,18 +583,20 @@ void PaintArtifactCompositor::layerizeGroup(
 
 void PaintArtifactCompositor::collectPendingLayers(
     const PaintArtifact& paintArtifact,
-    Vector<PendingLayer>& pendingLayers) {
+    Vector<PendingLayer>& pendingLayers,
+    GeometryMapper& geometryMapper) {
   Vector<PaintChunk>::const_iterator cursor =
       paintArtifact.paintChunks().begin();
-  layerizeGroup(paintArtifact, pendingLayers, *EffectPaintPropertyNode::root(),
-                cursor);
+  layerizeGroup(paintArtifact, pendingLayers, geometryMapper,
+                *EffectPaintPropertyNode::root(), cursor);
   DCHECK_EQ(paintArtifact.paintChunks().end(), cursor);
 }
 
 void PaintArtifactCompositor::update(
     const PaintArtifact& paintArtifact,
     RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations,
-    bool storeDebugInfo) {
+    bool storeDebugInfo,
+    GeometryMapper& geometryMapper) {
 #ifndef NDEBUG
   storeDebugInfo = true;
 #endif
@@ -613,7 +622,7 @@ void PaintArtifactCompositor::update(
                                           sPropertyTreeSequenceNumber);
 
   Vector<PendingLayer, 0> pendingLayers;
-  collectPendingLayers(paintArtifact, pendingLayers);
+  collectPendingLayers(paintArtifact, pendingLayers, geometryMapper);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> newContentLayerClients;
   newContentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
@@ -621,7 +630,7 @@ void PaintArtifactCompositor::update(
     gfx::Vector2dF layerOffset;
     scoped_refptr<cc::Layer> layer = compositedLayerForPendingLayer(
         paintArtifact, pendingLayer, layerOffset, newContentLayerClients,
-        rasterChunkInvalidations, storeDebugInfo);
+        rasterChunkInvalidations, storeDebugInfo, geometryMapper);
 
     const auto* transform = pendingLayer.propertyTreeState.transform();
     int transformId =

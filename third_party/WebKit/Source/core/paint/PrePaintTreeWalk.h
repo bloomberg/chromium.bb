@@ -12,8 +12,8 @@
 namespace blink {
 
 class FrameView;
+class GeometryMapper;
 class LayoutObject;
-class PropertyTreeState;
 struct PrePaintTreeWalkContext;
 
 // This class walks the whole layout tree, beginning from the root FrameView,
@@ -21,7 +21,8 @@ struct PrePaintTreeWalkContext;
 // perform actual actions.  It expects to be invoked in InPrePaint phase.
 class PrePaintTreeWalk {
  public:
-  PrePaintTreeWalk() {}
+  PrePaintTreeWalk(GeometryMapper& geometryMapper)
+      : m_geometryMapper(geometryMapper) {}
   void walk(FrameView& rootFrame);
 
  private:
@@ -49,6 +50,7 @@ class PrePaintTreeWalk {
 
   PaintPropertyTreeBuilder m_propertyTreeBuilder;
   PaintInvalidator m_paintInvalidator;
+  GeometryMapper& m_geometryMapper;
 };
 
 }  // namespace blink

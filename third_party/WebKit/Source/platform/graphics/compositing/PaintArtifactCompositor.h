@@ -25,6 +25,7 @@ class Vector2dF;
 
 namespace blink {
 
+class GeometryMapper;
 class JSONObject;
 class PaintArtifact;
 class WebLayer;
@@ -55,7 +56,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   void update(
       const PaintArtifact&,
       RasterInvalidationTrackingMap<const PaintChunk>* paintChunkInvalidations,
-      bool storeDebugInfo);
+      bool storeDebugInfo,
+      GeometryMapper&);
 
   // The root layer of the tree managed by this object.
   cc::Layer* rootLayer() const { return m_rootLayer.get(); }
@@ -95,14 +97,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
     // chunks after chunks in this layer, with appropriate space conversion
     // applied. The merged layer must have a property tree state that's deeper
     // than this layer, i.e. can "upcast" to this layer's state.
-    void merge(const PendingLayer& guest);
+    void merge(const PendingLayer& guest, GeometryMapper&);
     bool canMerge(const PendingLayer& guest) const;
     // Mutate this layer's property tree state to a more general (shallower)
     // state, thus the name "upcast". The concrete effect of this is to
     // "decomposite" some of the properties, so that fewer properties will be
     // applied by the compositor, and more properties will be applied internally
     // to the chunks as Skia commands.
-    void upcast(const PropertyTreeState&);
+    void upcast(const PropertyTreeState&, GeometryMapper&);
     FloatRect bounds;
     Vector<const PaintChunk*> paintChunks;
     bool knownToBeOpaque;
@@ -118,7 +120,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
   void collectPendingLayers(const PaintArtifact&,
-                            Vector<PendingLayer>& pendingLayers);
+                            Vector<PendingLayer>& pendingLayers,
+                            GeometryMapper&);
   // This is the internal recursion of collectPendingLayers. This function
   // loops over the list of paint chunks, scoped by an isolated group
   // (i.e. effect node). Inside of the loop, chunks are tested for overlap
@@ -138,9 +141,12 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   // can be satisfied (and the effect node has no direct reason).
   static void layerizeGroup(const PaintArtifact&,
                             Vector<PendingLayer>& pendingLayers,
+                            GeometryMapper&,
                             const EffectPaintPropertyNode&,
                             Vector<PaintChunk>::const_iterator& chunkCursor);
-  static bool mightOverlap(const PendingLayer&, const PendingLayer&);
+  static bool mightOverlap(const PendingLayer&,
+                           const PendingLayer&,
+                           GeometryMapper&);
   static bool canDecompositeEffect(const EffectPaintPropertyNode*,
                                    const PendingLayer&);
 
@@ -156,7 +162,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
       gfx::Vector2dF& layerOffset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
       RasterInvalidationTrackingMap<const PaintChunk>*,
-      bool storeDebugInfo);
+      bool storeDebugInfo,
+      GeometryMapper&);
 
   // Finds a client among the current vector of clients that matches the paint
   // chunk's id, or otherwise allocates a new one.

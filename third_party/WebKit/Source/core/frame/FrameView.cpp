@@ -2870,6 +2870,19 @@ void FrameView::updateGeometriesIfNeeded() {
   updateGeometries();
 }
 
+GeometryMapper& FrameView::geometryMapper() {
+  DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
+  DCHECK(lifecycle().state() >= DocumentLifecycle::InPrePaint);
+
+  if (m_frame->isLocalRoot()) {
+    if (!m_geometryMapper)
+      m_geometryMapper = GeometryMapper::create();
+    return *m_geometryMapper.get();
+  }
+
+  return frame().localFrameRoot()->view()->geometryMapper();
+}
+
 void FrameView::updateAllLifecyclePhases() {
   frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(
       DocumentLifecycle::PaintClean);
@@ -3137,7 +3150,7 @@ void FrameView::prePaint() {
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.PrePaint.UpdateTime");
-    PrePaintTreeWalk().walk(*this);
+    PrePaintTreeWalk(geometryMapper()).walk(*this);
   }
 
   forAllNonThrottledFrameViews([](FrameView& frameView) {
@@ -3245,10 +3258,11 @@ void FrameView::pushPaintArtifactToCompositor() {
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
 
+  DCHECK(m_geometryMapper.get());
   m_paintArtifactCompositor->update(
       m_paintController->paintArtifact(),
       m_paintController->paintChunksRasterInvalidationTrackingMap(),
-      m_isStoringCompositedLayerDebugInfo);
+      m_isStoringCompositedLayerDebugInfo, *m_geometryMapper);
 }
 
 std::unique_ptr<JSONObject> FrameView::compositedLayersAsJSON(

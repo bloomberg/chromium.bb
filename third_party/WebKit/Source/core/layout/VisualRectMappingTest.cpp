@@ -7,7 +7,6 @@
 #include "core/layout/PaintInvalidationState.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreePrinter.h"
-#include "platform/graphics/paint/GeometryMapper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -44,7 +43,7 @@ class VisualRectMappingTest : public RenderingTest {
     FloatRect geometryMapperRect(localRect);
     if (object.paintProperties() || object.localBorderBoxProperties()) {
       geometryMapperRect.moveBy(FloatPoint(object.paintOffset()));
-      GeometryMapper::sourceToDestinationVisualRect(
+      document().view()->geometryMapper().sourceToDestinationVisualRect(
           *object.localBorderBoxProperties(), *ancestor.contentsProperties(),
           geometryMapperRect);
       geometryMapperRect.moveBy(-FloatPoint(ancestor.paintOffset()));

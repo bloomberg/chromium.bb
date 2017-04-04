@@ -69,6 +69,7 @@ class Element;
 class ElementVisibilityObserver;
 class Frame;
 class FloatSize;
+class GeometryMapper;
 class JSONArray;
 class JSONObject;
 class LayoutItem;
@@ -830,6 +831,9 @@ class CORE_EXPORT FrameView final
   void setAnimationTimeline(std::unique_ptr<CompositorAnimationTimeline>);
   void setAnimationHost(std::unique_ptr<CompositorAnimationHost>);
 
+  // Returns the GeometryMapper associated with the root local frame.
+  GeometryMapper& geometryMapper();
+
   void crossOriginStatusChanged();
 
   // The visual viewport can supply scrollbars which affect the existence of
@@ -1218,6 +1222,8 @@ class CORE_EXPORT FrameView final
   // TODO(kenrb): Remove these when https://crbug.com/680606 is resolved.
   std::unique_ptr<CompositorAnimationTimeline> m_animationTimeline;
   std::unique_ptr<CompositorAnimationHost> m_animationHost;
+
+  std::unique_ptr<GeometryMapper> m_geometryMapper;
 
   Member<PrintContext> m_printContext;
 

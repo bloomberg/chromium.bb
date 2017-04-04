@@ -100,6 +100,7 @@ void PaintArtifact::replay(const FloatRect& bounds,
                            const PropertyTreeState& replayState) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
   DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
   Vector<const PaintChunk*> pointerPaintChunks;
   pointerPaintChunks.reserveInitialCapacity(paintChunks().size());
 
@@ -109,7 +110,8 @@ void PaintArtifact::replay(const FloatRect& bounds,
     pointerPaintChunks.push_back(&chunk);
   scoped_refptr<cc::DisplayItemList> displayItemList =
       PaintChunksToCcLayer::convert(pointerPaintChunks, replayState,
-                                    gfx::Vector2dF(), getDisplayItemList());
+                                    gfx::Vector2dF(), getDisplayItemList(),
+                                    *geometryMapper);
   canvas.drawDisplayItemList(displayItemList);
 }
 

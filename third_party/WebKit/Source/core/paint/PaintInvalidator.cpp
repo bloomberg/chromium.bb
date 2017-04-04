@@ -17,7 +17,6 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
-#include "platform/graphics/paint/GeometryMapper.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -128,7 +127,7 @@ LayoutRect PaintInvalidator::mapLocalRectToVisualRectInBacking(
           context.m_treeBuilderContext.current.clip, nullptr);
 
       FloatRect floatRect(rect);
-      GeometryMapper::sourceToDestinationVisualRect(
+      context.m_geometryMapper.sourceToDestinationVisualRect(
           currentTreeState, *containerContentsProperties, floatRect);
       result = LayoutRect(floatRect);
     }
@@ -183,7 +182,7 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
         context.paintInvalidationContainer->contentsProperties()->transform();
     if (context.m_treeBuilderContext.current.transform != containerTransform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
-      GeometryMapper::sourceToDestinationRect(
+      context.m_geometryMapper.sourceToDestinationRect(
           context.m_treeBuilderContext.current.transform, containerTransform,
           rect);
       point = LayoutPoint(rect.location());

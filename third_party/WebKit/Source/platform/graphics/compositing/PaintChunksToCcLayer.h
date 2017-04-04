@@ -20,6 +20,7 @@ class Vector2dF;
 namespace blink {
 
 class DisplayItemList;
+class GeometryMapper;
 struct PaintChunk;
 class PropertyTreeState;
 
@@ -29,7 +30,8 @@ class PLATFORM_EXPORT PaintChunksToCcLayer {
       const Vector<const PaintChunk*>&,
       const PropertyTreeState& layerState,
       const gfx::Vector2dF& layerOffset,
-      const DisplayItemList&);
+      const DisplayItemList&,
+      GeometryMapper&);
 };
 
 }  // namespace blink

@@ -78,12 +78,13 @@ void PaintPropertyTreeBuilderTest::TearDown() {
 #define CHECK_VISUAL_RECT(expected, sourceObject, ancestorObject, slopFactor) \
   do {                                                                        \
     if ((sourceObject)->hasLayer() && (ancestorObject)->hasLayer()) {         \
+      auto geometryMapper = GeometryMapper::create();                         \
       LayoutRect source((sourceObject)->localVisualRect());                   \
       source.moveBy((sourceObject)->paintOffset());                           \
       const auto& contentsProperties =                                        \
           *(ancestorObject)->contentsProperties();                            \
       FloatRect actualFloatRect(source);                                      \
-      GeometryMapper::sourceToDestinationVisualRect(                          \
+      geometryMapper->sourceToDestinationVisualRect(                          \
           *(sourceObject)->localBorderBoxProperties(), contentsProperties,    \
           actualFloatRect);                                                   \
       LayoutRect actual(actualFloatRect);                                     \

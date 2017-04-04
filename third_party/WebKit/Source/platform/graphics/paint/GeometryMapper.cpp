@@ -9,21 +9,6 @@
 
 namespace blink {
 
-const TransformationMatrix& GeometryMapper::identityMatrix() {
-  DEFINE_STATIC_LOCAL(TransformationMatrix, identity, (TransformationMatrix()));
-  return identity;
-}
-
-const FloatClipRect& GeometryMapper::infiniteClip() {
-  DEFINE_STATIC_LOCAL(FloatClipRect, infinite, (FloatClipRect()));
-  return infinite;
-}
-
-FloatClipRect& GeometryMapper::tempRect() {
-  DEFINE_STATIC_LOCAL(FloatClipRect, temp, (FloatClipRect()));
-  return temp;
-}
-
 void GeometryMapper::sourceToDestinationVisualRect(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
@@ -273,11 +258,10 @@ const FloatClipRect& GeometryMapper::sourceToDestinationClipRectInternal(
   if (!result2.isInfinite()) {
     FloatRect rect = result2.rect();
     ancestorToLocalRect(lcaTransform, destinationState.transform(), rect);
-    FloatClipRect& temp = tempRect();
-    temp.setRect(rect);
+    m_tempRect.setRect(rect);
     if (result2.hasRadius())
-      temp.setHasRadius();
-    return temp;
+      m_tempRect.setHasRadius();
+    return m_tempRect;
   }
   return result2;
 }
@@ -290,7 +274,7 @@ const FloatClipRect& GeometryMapper::localToAncestorClipRectInternal(
   FloatClipRect clip;
   if (descendant == ancestorClip) {
     success = true;
-    return infiniteClip();
+    return m_infiniteClip;
   }
 
   const ClipPaintPropertyNode* clipNode = descendant;
@@ -312,7 +296,7 @@ const FloatClipRect& GeometryMapper::localToAncestorClipRectInternal(
   }
   if (!clipNode) {
     success = false;
-    return infiniteClip();
+    return m_infiniteClip;
   }
 
   // Iterate down from the top intermediate node found in the previous loop,
@@ -323,7 +307,7 @@ const FloatClipRect& GeometryMapper::localToAncestorClipRectInternal(
     const TransformationMatrix& transformMatrix = localToAncestorMatrixInternal(
         (*it)->localTransformSpace(), ancestorTransform, success);
     if (!success)
-      return infiniteClip();
+      return m_infiniteClip;
     FloatRect mappedRect = transformMatrix.mapRect((*it)->clipRect().rect());
     clip.intersect(mappedRect);
     if ((*it)->clipRect().isRounded())
@@ -357,7 +341,7 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
     bool& success) {
   if (localTransformNode == ancestorTransformNode) {
     success = true;
-    return identityMatrix();
+    return m_identity;
   }
 
   const TransformPaintPropertyNode* transformNode = localTransformNode;
@@ -380,7 +364,7 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrixInternal(
   }
   if (!transformNode) {
     success = false;
-    return identityMatrix();
+    return m_identity;
   }
 
   // Iterate down from the top intermediate node found in the previous loop,
