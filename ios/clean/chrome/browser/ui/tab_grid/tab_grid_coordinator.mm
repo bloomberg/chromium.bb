@@ -49,7 +49,7 @@
     web::WebState::CreateParams webStateCreateParams(browser->browser_state());
     std::unique_ptr<web::WebState> webState =
         web::WebState::Create(webStateCreateParams);
-    self.webStateList.InsertWebState(0, webState.release());
+    self.webStateList.InsertWebState(0, std::move(webState));
   }
   self.webStateList.ActivateWebStateAt(0);
 }
@@ -114,8 +114,7 @@
 }
 
 - (void)closeTabGridTabAtIndex:(int)index {
-  std::unique_ptr<web::WebState> closedWebState(
-      self.webStateList.DetachWebStateAt(index));
+  self.webStateList.DetachWebStateAt(index);
 }
 
 - (void)createAndShowNewTabInTabGrid {
@@ -124,7 +123,7 @@
   std::unique_ptr<web::WebState> webState =
       web::WebState::Create(webStateCreateParams);
   self.webStateList.InsertWebState(self.webStateList.count(),
-                                   webState.release());
+                                   std::move(webState));
   [self showTabGridTabAtIndex:self.webStateList.count() - 1];
 }
 

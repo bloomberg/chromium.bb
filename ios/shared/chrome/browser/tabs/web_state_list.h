@@ -22,17 +22,10 @@ namespace web {
 class WebState;
 }
 
-// Manages a list of WebStates. May owns the WebState depending on the ownership
-// setting (initialised during construction, should eventually always be "owned"
-// once ownership of Tab is sane, see http://crbug.com/546222 for progress).
+// Manages a list of WebStates.
 class WebStateList {
  public:
-  enum WebStateOwnership {
-    WebStateBorrowed,
-    WebStateOwned,
-  };
-
-  WebStateList(WebStateListDelegate* delegate, WebStateOwnership ownership);
+  explicit WebStateList(WebStateListDelegate* delegate);
   ~WebStateList();
 
   // Returns whether the model is empty or not.
@@ -85,13 +78,13 @@ class WebStateList {
                                      bool use_group) const;
 
   // Inserts the specified WebState at the specified index.
-  void InsertWebState(int index, web::WebState* web_state);
+  void InsertWebState(int index, std::unique_ptr<web::WebState> web_state);
 
   // Inserts the specified WebState at the best position in the WebStateList
   // given the specified transition, opener, etc. It defaults to inserting the
   // WebState at the end of the list.
   void AppendWebState(ui::PageTransition transition,
-                      web::WebState* web_state,
+                      std::unique_ptr<web::WebState> web_state,
                       WebStateOpener opener);
 
   // Moves the WebState at the specified index to another index.
@@ -100,12 +93,19 @@ class WebStateList {
   // Replaces the WebState at the specified index with new WebState. Returns
   // the old WebState at that index to the caller (abandon ownership of the
   // returned WebState).
-  web::WebState* ReplaceWebStateAt(int index,
-                                   web::WebState* web_state) WARN_UNUSED_RESULT;
+  std::unique_ptr<web::WebState> ReplaceWebStateAt(
+      int index,
+      std::unique_ptr<web::WebState> web_state);
 
   // Detaches the WebState at the specified index. Returns the detached WebState
   // to the caller (abandon ownership of the returned WebState).
-  web::WebState* DetachWebStateAt(int index) WARN_UNUSED_RESULT;
+  std::unique_ptr<web::WebState> DetachWebStateAt(int index);
+
+  // Closes and destroys the WebState at the specified index.
+  void CloseWebStateAt(int index);
+
+  // Closes and destroys all WebStates.
+  void CloseAllWebStates();
 
   // Makes the WebState at the specified index the active WebState.
   void ActivateWebStateAt(int index);
@@ -142,10 +142,6 @@ class WebStateList {
 
   // The WebStateList delegate.
   WebStateListDelegate* delegate_;
-
-  // Whether this WebStateList owns the WebState it hosts.
-  // TODO(crbug.com/546222): remove once this is always "owned".
-  const WebStateOwnership web_state_ownership_;
 
   // Wrappers to the WebStates hosted by the WebStateList.
   std::vector<std::unique_ptr<WebStateWrapper>> web_state_wrappers_;

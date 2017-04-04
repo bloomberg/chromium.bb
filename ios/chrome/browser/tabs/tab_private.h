@@ -26,9 +26,18 @@ class WebStateImpl;
 // Replaces the existing |externalAppLauncher_|.
 - (void)replaceExternalAppLauncher:(id)externalAppLauncher;
 
+- (FormInputAccessoryViewController*)inputAccessoryViewController;
+
+// Returns the Tab owning TabModel.
 - (TabModel*)parentTabModel;
 
-- (FormInputAccessoryViewController*)inputAccessoryViewController;
+@end
+
+@interface Tab (Private)
+
+// Attaches tab helper-like objects for AttachTabHelpers. Those objects should
+// be converted in real tab helpers and created by AttachTabHelpers.
+- (void)attachTabHelpers;
 
 @end
 

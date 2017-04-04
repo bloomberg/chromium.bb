@@ -84,13 +84,12 @@ class ToolbarModelImplIOSTest : public PlatformTest {
 
     // Create a WebStateList that will always return the test WebState as
     // the active WebState.
-    web_state_list_ = base::MakeUnique<WebStateList>(
-        &web_state_list_delegate_, WebStateList::WebStateOwned);
+    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
     std::unique_ptr<ToolbarTestWebState> web_state =
         base::MakeUnique<ToolbarTestWebState>();
     web_state->SetBrowserState(chrome_browser_state_.get());
     web_state_ = web_state.get();
-    web_state_list_->InsertWebState(0, web_state.release());
+    web_state_list_->InsertWebState(0, std::move(web_state));
     web_state_list_->ActivateWebStateAt(0);
 
     toolbarModelDelegate_.reset(

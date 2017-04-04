@@ -16,12 +16,15 @@
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -38,9 +41,6 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
-
-using web::WebStateImpl;
-
 
 @interface TabModel (VisibleForTesting)
 - (SessionWindowIOS*)windowForSavingSession;
@@ -1064,19 +1064,27 @@ TEST_F(TabModelTest, MoveTabs) {
   [tab_model_ removeObserver:tab_model_observer.get()];
 }
 
-TEST_F(TabModelTest, SetParentModel) {
-  // Create a tab without a parent model and make sure it doesn't crash.  Then
-  // set its parent TabModel and make sure that works as well.
-  base::scoped_nsobject<Tab> tab([[Tab alloc]
-      initWithBrowserState:chrome_browser_state_.get()
-                    opener:nil
-               openedByDOM:NO
-                     model:nil]);
-  EXPECT_TRUE([tab parentTabModel] == nil);
-  [tab_model_ insertTab:tab atIndex:0];
-  [tab setParentTabModel:tab_model_.get()];
-  EXPECT_FALSE([tab parentTabModel] == nil);
-  [tab_model_ closeTabAtIndex:0];
+TEST_F(TabModelTest, ParentTabModel) {
+  std::unique_ptr<web::WebState> web_state = web::WebState::Create(
+      web::WebState::CreateParams(chrome_browser_state_.get()));
+  AttachTabHelpers(web_state.get());
+
+  Tab* tab = LegacyTabHelper::GetTabForWebState(web_state.get());
+  EXPECT_NSEQ(nil, [tab parentTabModel]);
+
+  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state));
+  EXPECT_NSEQ(tab_model_.get(), [tab parentTabModel]);
+}
+
+TEST_F(TabModelTest, TabCreatedOnInsertion) {
+  std::unique_ptr<web::WebState> web_state = web::WebState::Create(
+      web::WebState::CreateParams(chrome_browser_state_.get()));
+
+  EXPECT_NSEQ(nil, LegacyTabHelper::GetTabForWebState(web_state.get()));
+
+  web::WebState* web_state_ptr = web_state.get();
+  [tab_model_ webStateList]->InsertWebState(0, std::move(web_state));
+  EXPECT_NSNE(nil, LegacyTabHelper::GetTabForWebState(web_state_ptr));
 }
 
 TEST_F(TabModelTest, PersistSelectionChange) {

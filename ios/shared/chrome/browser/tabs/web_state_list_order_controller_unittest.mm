@@ -4,6 +4,8 @@
 
 #import "ios/shared/chrome/browser/tabs/web_state_list_order_controller.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #import "ios/shared/chrome/browser/tabs/fake_web_state_list_delegate.h"
@@ -35,7 +37,7 @@ class FakeNavigationManager : public web::TestNavigationManager {
 class WebStateListOrderControllerTest : public PlatformTest {
  public:
   WebStateListOrderControllerTest()
-      : web_state_list_(&web_state_list_delegate_, WebStateList::WebStateOwned),
+      : web_state_list_(&web_state_list_delegate_),
         order_controller_(&web_state_list_) {}
 
  protected:
@@ -43,15 +45,13 @@ class WebStateListOrderControllerTest : public PlatformTest {
   WebStateList web_state_list_;
   WebStateListOrderController order_controller_;
 
-  // This method should return std::unique_ptr<> however, due to the complex
-  // ownership of Tab, WebStateList currently uses raw pointers. Change this
-  // once Tab ownership is sane, see http://crbug.com/546222 for progress.
-  web::WebState* CreateWebState() {
+  std::unique_ptr<web::WebState> CreateWebState() {
     auto test_web_state = base::MakeUnique<web::TestWebState>();
     test_web_state->SetCurrentURL(GURL(kURL));
     test_web_state->SetNavigationManager(
         base::MakeUnique<FakeNavigationManager>());
-    return test_web_state.release();
+    // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
+    return std::move(test_web_state);
   }
 
  private:

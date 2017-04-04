@@ -311,6 +311,7 @@ source_set("ui_internal") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ios/web:user_agent",

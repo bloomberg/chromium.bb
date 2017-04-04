@@ -519,7 +519,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [self disableOverscrollActions];
   [_webViewScrollViewProxy removeObserver:self];
   _webViewScrollViewProxy.reset();
-  [webController removeObserver:self];
 }
 
 #pragma mark - Private

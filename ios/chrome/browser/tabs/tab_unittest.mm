@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/ios/block_types.h"
+#import "base/ios/weak_nsobject.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -23,7 +24,9 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
@@ -94,9 +97,6 @@ const char kValidFilenameUrl[] = "http://www.hostname.com/filename.pdf";
 
 - (void)closeTabAtIndex:(NSUInteger)index {
   [tabsForTesting_ removeObjectAtIndex:index];
-}
-
-- (void)didCloseTab:(Tab*)closedTab {
 }
 @end
 
@@ -194,18 +194,17 @@ class TabTest : public BlockCleanupTest {
     mock_web_controller_ =
         [OCMockObject niceMockForClass:[CRWWebController class]];
     web::WebState::CreateParams create_params(browser_state);
-    auto web_state_impl = base::MakeUnique<WebStateImpl>(create_params);
-    web_state_impl->SetWebController(mock_web_controller_);
-    web_state_impl->GetNavigationManagerImpl().InitializeSession();
-    web_state_impl_ = web_state_impl.get();
+    web_state_impl_ = base::MakeUnique<WebStateImpl>(create_params);
+    web_state_impl_->SetWebController(mock_web_controller_);
+    web_state_impl_->GetNavigationManagerImpl().InitializeSession();
+    web::WebStateImpl* web_state_impl = web_state_impl_.get();
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
-        andReturnValue:OCMOCK_VALUE(web_state_impl_)] webStateImpl];
+        andReturnValue:OCMOCK_VALUE(web_state_impl)] webStateImpl];
     web_controller_view_.reset([[UIView alloc] init]);
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturn:web_controller_view_.get()] view];
-    tab_.reset([[Tab alloc] initWithWebState:std::move(web_state_impl)
-                                       model:nil
-                            attachTabHelpers:NO]);
+    LegacyTabHelper::CreateForWebState(web_state_impl_.get());
+    tab_.reset(LegacyTabHelper::GetTabForWebState(web_state_impl_.get()));
     web::NavigationManager::WebLoadParams load_params(
         GURL("chrome://version/"));
     [[tab_ webController] loadWithParams:load_params];
@@ -221,13 +220,13 @@ class TabTest : public BlockCleanupTest {
   }
 
   void TearDown() override {
-    [tab_ close];
-
+    // Ensure that the Tab is destroyed before the autorelease pool is cleared.
+    web_state_impl_.reset();
     BlockCleanupTest::TearDown();
   }
 
   void BrowseTo(const GURL& userUrl, const GURL& redirectUrl, NSString* title) {
-    DCHECK_EQ(tab_.get().webState, web_state_impl_);
+    DCHECK_EQ(tab_.get().webState, web_state_impl_.get());
 
     [tab_ webWillAddPendingURL:userUrl transition:ui::PAGE_TRANSITION_TYPED];
     web_state_impl_->OnProvisionalNavigationStarted(userUrl);
@@ -255,7 +254,7 @@ class TabTest : public BlockCleanupTest {
   }
 
   void BrowseToNewTab() {
-    DCHECK_EQ(tab_.get().webState, web_state_impl_);
+    DCHECK_EQ(tab_.get().webState, web_state_impl_.get());
     const GURL url(kNewTabUrl);
     // TODO(crbug.com/661992): This will not work with a mock CRWWebController.
     // The only test that uses it is currently disabled.
@@ -320,13 +319,13 @@ class TabTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<Tab> tab_;
-  web::WebStateImpl* web_state_impl_;
+  std::unique_ptr<web::WebStateImpl> web_state_impl_;
   history::HistoryService* history_service_;  // weak
   CRWWebController* mock_web_controller_;     // weak
   base::scoped_nsobject<UIView> web_controller_view_;
   base::scoped_nsobject<ArrayTabModel> tabModel_;
   base::scoped_nsobject<id> mock_external_app_launcher_;
+  base::WeakNSObject<Tab> tab_;
 };
 
 TEST_F(TabTest, AddToHistoryWithRedirect) {

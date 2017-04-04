@@ -41,8 +41,7 @@ const char* const kURLs[] = {kURL0, kURL1, kURL2};
 class WebStateListFastEnumerationHelperTest : public PlatformTest {
  public:
   WebStateListFastEnumerationHelperTest()
-      : web_state_list_(&web_state_list_delegate_,
-                        WebStateList::WebStateOwned) {}
+      : web_state_list_(&web_state_list_delegate_) {}
 
   NSArray* ArrayFromWebStateList() {
     id<WebStateProxyFactory> proxy =
@@ -69,7 +68,7 @@ class WebStateListFastEnumerationHelperTest : public PlatformTest {
       test_web_state->SetCurrentURL(GURL(urls[index]));
 
       web_state_list_.InsertWebState(web_state_list_.count(),
-                                     test_web_state.release());
+                                     std::move(test_web_state));
     }
   }
 

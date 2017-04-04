@@ -96,4 +96,12 @@
                        atIndex:static_cast<NSUInteger>(atIndex)];
 }
 
+- (void)webStateList:(WebStateList*)webStateList
+    willDetachWebState:(web::WebState*)webState
+               atIndex:(int)atIndex {
+  DCHECK_GE(atIndex, 0);
+  [_tabModelObservers tabModel:_tabModel
+                 willRemoveTab:LegacyTabHelper::GetTabForWebState(webState)];
+}
+
 @end

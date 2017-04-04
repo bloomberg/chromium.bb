@@ -128,8 +128,7 @@ using web::WebStateImpl;
   if ((self = [super
            initWithRepresentedObject:[OCMockObject
                                          niceMockForClass:[TabModel class]]])) {
-    _webStateList = base::MakeUnique<WebStateList>(&_webStateListDelegate,
-                                                   WebStateList::WebStateOwned);
+    _webStateList = base::MakeUnique<WebStateList>(&_webStateListDelegate);
   }
   return self;
 }

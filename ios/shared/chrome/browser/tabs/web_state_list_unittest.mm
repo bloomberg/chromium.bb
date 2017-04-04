@@ -23,25 +23,6 @@ namespace {
 const char kURL0[] = "https://chromium.org/0";
 const char kURL1[] = "https://chromium.org/1";
 const char kURL2[] = "https://chromium.org/2";
-const char kSupportsUserDataDeathGuardKey = '\0';
-
-// A base::SupportsUserData::Data that tracks whether a base::SupportsUserData
-// has been deleted (the fact is recorded in a provided pointer as part of the
-// object destruction).
-class SupportsUserDataDeathGuard : public base::SupportsUserData::Data {
- public:
-  explicit SupportsUserDataDeathGuard(bool* object_was_destroyed)
-      : object_was_destroyed_(object_was_destroyed) {
-    *object_was_destroyed_ = false;
-  }
-
-  ~SupportsUserDataDeathGuard() override { *object_was_destroyed_ = true; }
-
- private:
-  bool* object_was_destroyed_;
-
-  DISALLOW_COPY_AND_ASSIGN(SupportsUserDataDeathGuard);
-};
 
 // WebStateList observer that records which events have been called by the
 // WebStateList.
@@ -143,9 +124,7 @@ class FakeNavigationManager : public web::TestNavigationManager {
 
 class WebStateListTest : public PlatformTest {
  public:
-  WebStateListTest()
-      : web_state_list_(&web_state_list_delegate_,
-                        WebStateList::WebStateOwned) {
+  WebStateListTest() : web_state_list_(&web_state_list_delegate_) {
     web_state_list_.AddObserver(&observer_);
   }
 
@@ -156,15 +135,13 @@ class WebStateListTest : public PlatformTest {
   WebStateList web_state_list_;
   WebStateListTestObserver observer_;
 
-  // This method should return std::unique_ptr<> however, due to the complex
-  // ownership of Tab, WebStateList currently uses raw pointers. Change this
-  // once Tab ownership is sane, see http://crbug.com/546222 for progress.
-  web::WebState* CreateWebState(const char* url) {
+  std::unique_ptr<web::WebState> CreateWebState(const char* url) {
     auto test_web_state = base::MakeUnique<web::TestWebState>();
     test_web_state->SetCurrentURL(GURL(url));
     test_web_state->SetNavigationManager(
         base::MakeUnique<FakeNavigationManager>());
-    return test_web_state.release();
+    // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
+    return std::move(test_web_state);
   }
 
  private:
@@ -339,8 +316,7 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexBegining) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 
   observer_.ResetStatistics();
-  std::unique_ptr<web::WebState> old_web_state(
-      web_state_list_.DetachWebStateAt(0));
+  web_state_list_.DetachWebStateAt(0);
 
   EXPECT_TRUE(observer_.web_state_detached_called());
   EXPECT_EQ(2, web_state_list_.count());
@@ -360,8 +336,7 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexMiddle) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 
   observer_.ResetStatistics();
-  std::unique_ptr<web::WebState> old_web_state(
-      web_state_list_.DetachWebStateAt(1));
+  web_state_list_.DetachWebStateAt(1);
 
   EXPECT_TRUE(observer_.web_state_detached_called());
   EXPECT_EQ(2, web_state_list_.count());
@@ -381,47 +356,12 @@ TEST_F(WebStateListTest, DetachWebStateAtIndexLast) {
   EXPECT_EQ(kURL2, web_state_list_.GetWebStateAt(2)->GetVisibleURL().spec());
 
   observer_.ResetStatistics();
-  std::unique_ptr<web::WebState> old_web_state(
-      web_state_list_.DetachWebStateAt(2));
+  web_state_list_.DetachWebStateAt(2);
 
   EXPECT_TRUE(observer_.web_state_detached_called());
   EXPECT_EQ(2, web_state_list_.count());
   EXPECT_EQ(kURL0, web_state_list_.GetWebStateAt(0)->GetVisibleURL().spec());
   EXPECT_EQ(kURL1, web_state_list_.GetWebStateAt(1)->GetVisibleURL().spec());
-}
-
-TEST_F(WebStateListTest, OwnershipBorrowed) {
-  bool web_state_was_killed = false;
-  auto test_web_state = base::MakeUnique<web::TestWebState>();
-  test_web_state->SetUserData(
-      &kSupportsUserDataDeathGuardKey,
-      base::MakeUnique<SupportsUserDataDeathGuard>(&web_state_was_killed));
-
-  FakeWebStateListDelegate web_state_list_delegate;
-  auto web_state_list = base::MakeUnique<WebStateList>(
-      &web_state_list_delegate, WebStateList::WebStateBorrowed);
-  web_state_list->InsertWebState(0, test_web_state.get());
-  EXPECT_FALSE(web_state_was_killed);
-
-  web_state_list.reset();
-  EXPECT_FALSE(web_state_was_killed);
-}
-
-TEST_F(WebStateListTest, OwnershipOwned) {
-  bool web_state_was_killed = false;
-  auto test_web_state = base::MakeUnique<web::TestWebState>();
-  test_web_state->SetUserData(
-      &kSupportsUserDataDeathGuardKey,
-      base::MakeUnique<SupportsUserDataDeathGuard>(&web_state_was_killed));
-
-  FakeWebStateListDelegate web_state_list_delegate;
-  auto web_state_list = base::MakeUnique<WebStateList>(
-      &web_state_list_delegate, WebStateList::WebStateOwned);
-  web_state_list->InsertWebState(0, test_web_state.release());
-  EXPECT_FALSE(web_state_was_killed);
-
-  web_state_list.reset();
-  EXPECT_TRUE(web_state_was_killed);
 }
 
 TEST_F(WebStateListTest, OpenersEmptyList) {

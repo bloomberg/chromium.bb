@@ -121,8 +121,6 @@ class TabStripControllerTest : public PlatformTest {
     [[[tab2 stub] andReturn:@"Tab Title 2"] title];
     [[[tab1 stub] andReturn:nil] favicon];
     [[[tab2 stub] andReturn:nil] favicon];
-    [[tab1 stub] close];
-    [[tab2 stub] close];
 
     tabModel_ = tabModel;
     tab1_ = tab1;

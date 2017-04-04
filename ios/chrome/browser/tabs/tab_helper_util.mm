@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
 #import "ios/chrome/browser/web/network_activity_indicator_tab_helper.h"
@@ -37,7 +38,9 @@
 #import "ios/web/public/web_state/web_state.h"
 
 void AttachTabHelpers(web::WebState* web_state) {
+  LegacyTabHelper::CreateForWebState(web_state);
   Tab* tab = LegacyTabHelper::GetTabForWebState(web_state);
+  DCHECK(tab);
 
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(web_state->GetBrowserState());
@@ -81,4 +84,8 @@ void AttachTabHelpers(web::WebState* web_state) {
 
   // Allow the embedder to attach tab helpers.
   ios::GetChromeBrowserProvider()->AttachTabHelpers(web_state, tab);
+
+  // Allow the Tab to attach tab helper like objects (all those objects should
+  // really be tab helpers and created above).
+  [tab attachTabHelpers];
 }

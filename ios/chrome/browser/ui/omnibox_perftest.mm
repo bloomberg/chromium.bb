@@ -74,11 +74,10 @@ class OmniboxPerfTest : public PerfTest {
 
     // Create a WebStateList that will always return the test WebState as
     // the active WebState.
-    web_state_list_ = base::MakeUnique<WebStateList>(
-        &web_state_list_delegate_, WebStateList::WebStateOwned);
+    web_state_list_ = base::MakeUnique<WebStateList>(&web_state_list_delegate_);
     std::unique_ptr<web::TestWebState> web_state =
         base::MakeUnique<web::TestWebState>();
-    web_state_list_->InsertWebState(0, web_state.release());
+    web_state_list_->InsertWebState(0, std::move(web_state));
 
     // Creates the Toolbar for testing and sizes it to the width of the screen.
     toolbar_model_delegate_.reset(
@@ -204,7 +203,6 @@ class OmniboxPerfTest : public PerfTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;
-  web::WebState* web_state_;
   std::unique_ptr<ToolbarModelDelegateIOS> toolbar_model_delegate_;
   std::unique_ptr<ToolbarModelIOS> toolbar_model_ios_;
   base::scoped_nsobject<WebToolbarController> toolbar_;

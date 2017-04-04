@@ -9,6 +9,7 @@ source_set("tabs") {
     "tab_delegate.h",
     "tab_dialog_delegate.h",
     "tab_headers_delegate.h",
+    "tab_helper_util.h",
     "tab_model.h",
     "tab_model_list.h",
     "tab_model_observer.h",
@@ -117,8 +118,9 @@ source_set("tabs_internal") {
 source_set("tabs_internal_arc") {
   sources = [
     "legacy_tab_helper.mm",
-    "tab_helper_util.h",
     "tab_helper_util.mm",
+    "tab_model_closing_web_state_observer.h",
+    "tab_model_closing_web_state_observer.mm",
     "tab_model_list.mm",
     "tab_model_observers.h",
     "tab_model_observers.mm",
@@ -138,6 +140,7 @@ source_set("tabs_internal_arc") {
     "//components/history/core/browser",
     "//components/history/ios/browser",
     "//components/keyed_service/core",
+    "//components/sessions",
     "//components/signin/ios/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
@@ -159,6 +162,7 @@ source_set("tabs_internal_arc") {
     "//ios/public/provider/chrome/browser",
     "//ios/shared/chrome/browser/tabs",
     "//ios/web",
+    "//url",
   ]
   libs = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -191,6 +195,7 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
+    "//ios/shared/chrome/browser/tabs",
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web:test_support",

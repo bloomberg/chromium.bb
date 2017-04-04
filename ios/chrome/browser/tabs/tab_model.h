@@ -195,26 +195,11 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
                         atIndex:(NSUInteger)index
                    inBackground:(BOOL)inBackground;
 
-// Inserts a new tab at the given |index| with the session history specified by
-// |webState|. Does not go through the order controller as this is generally
-// used only for restoring a previous session and the index is fixed.
-- (Tab*)insertTabWithWebState:(std::unique_ptr<web::WebState>)webState
-                      atIndex:(NSUInteger)index;
-
-// Inserts |tab| at the given |index|. Broadcasts the proper notifications about
-// the change. The receiver should be set as the parentTabModel for |tab|; this
-// method doesn't check that.
-- (void)insertTab:(Tab*)tab atIndex:(NSUInteger)index;
-
 // Moves |tab| to the given |index|. |index| must be valid for this tab model
 // (must be less than the current number of tabs). |tab| must already be in this
 // tab model. If |tab| is already at |index|, this method does nothing and will
 // not notify observers.
 - (void)moveTab:(Tab*)tab toIndex:(NSUInteger)index;
-
-// Replaces |oldTab| in the model with |newTab|. Closes the oldTab when
-// replacing it in the model.
-- (void)replaceTab:(Tab*)oldTab withTab:(Tab*)newTab;
 
 // Closes the tab at the given |index|. |index| must be valid.
 - (void)closeTabAtIndex:(NSUInteger)index;
@@ -269,8 +254,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // At this point the tab model will no longer ever be active, and will likely be
 // deallocated soon.
 - (void)browserStateDestroyed;
-// Called by the Tab to inform its parent that it has been closed.
-- (void)didCloseTab:(Tab*)closedTab;
 // Called by |tab| to inform the model that a navigation has taken place.
 // TODO(crbug.com/661983): once more of the navigation state has moved into WC,
 // replace this with WebStateObserver.

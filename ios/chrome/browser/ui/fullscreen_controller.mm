@@ -713,10 +713,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   }
 }
 
-- (void)webControllerWillClose:(CRWWebController*)webController {
-  [webController removeObserver:self];
-}
-
 #pragma mark -
 #pragma mark CRWWebViewScrollViewObserver
 

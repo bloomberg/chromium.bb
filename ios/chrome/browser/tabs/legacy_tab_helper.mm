@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 
 #import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_private.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,10 +14,12 @@
 DEFINE_WEB_STATE_USER_DATA_KEY(LegacyTabHelper);
 
 // static
-void LegacyTabHelper::CreateForWebState(web::WebState* web_state, Tab* tab) {
+void LegacyTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   DCHECK(!FromWebState(web_state));
-  web_state->SetUserData(UserDataKey(), new LegacyTabHelper(web_state, tab));
+  web_state->SetUserData(UserDataKey(),
+                         std::unique_ptr<base::SupportsUserData::Data>(
+                             new LegacyTabHelper(web_state)));
 }
 
 // static
@@ -28,7 +31,5 @@ Tab* LegacyTabHelper::GetTabForWebState(web::WebState* web_state) {
 
 LegacyTabHelper::~LegacyTabHelper() = default;
 
-LegacyTabHelper::LegacyTabHelper(web::WebState* web_state, Tab* tab)
-    : tab_(tab) {
-  DCHECK_EQ(web_state, tab.webState);
-}
+LegacyTabHelper::LegacyTabHelper(web::WebState* web_state)
+    : tab_([[Tab alloc] initWithWebState:web_state]) {}

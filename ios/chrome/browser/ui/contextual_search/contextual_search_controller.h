@@ -22,6 +22,7 @@ class WebState;
 class GURL;
 @class Tab;
 @class TouchToSearchPermissionsMediator;
+struct WebStateOpener;
 
 namespace ContextualSearch {
 // Possible reason for panel state changes.
@@ -50,8 +51,10 @@ enum StateChangeReason {
 @class ContextualSearchResultsView;
 
 @protocol ContextualSearchTabProvider<NSObject>
-// Disassociate the internal Tab object from this view and return it.
-- (Tab*)releaseTab;
+// Disassociate the internal WebState from this view and return it.
+- (std::unique_ptr<web::WebState>)releaseWebState;
+// Information about the opener of the internal WebState.
+- (WebStateOpener)webStateOpener;
 @end
 
 @protocol ContextualSearchControllerDelegate<NSObject>

@@ -23,14 +23,15 @@
 // Wrapper around a WebState stored in a WebStateList.
 class WebStateList::WebStateWrapper {
  public:
-  explicit WebStateWrapper(web::WebState* web_state);
+  explicit WebStateWrapper(std::unique_ptr<web::WebState> web_state);
   ~WebStateWrapper();
 
-  web::WebState* web_state() const { return web_state_; }
+  web::WebState* web_state() const { return web_state_.get(); }
 
   // Replaces the wrapped WebState (and clear associated state) and returns the
   // old WebState after forfeiting ownership.
-  web::WebState* ReplaceWebState(web::WebState* web_state);
+  std::unique_ptr<web::WebState> ReplaceWebState(
+      std::unique_ptr<web::WebState> web_state);
 
   // Gets and sets information about this WebState opener. The navigation index
   // is used to detect navigation changes during the same session.
@@ -45,23 +46,23 @@ class WebStateList::WebStateWrapper {
                    bool use_group) const;
 
  private:
-  web::WebState* web_state_;
+  std::unique_ptr<web::WebState> web_state_;
   WebStateOpener opener_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateWrapper);
 };
 
-WebStateList::WebStateWrapper::WebStateWrapper(web::WebState* web_state)
-    : web_state_(web_state), opener_(nullptr) {
+WebStateList::WebStateWrapper::WebStateWrapper(
+    std::unique_ptr<web::WebState> web_state)
+    : web_state_(std::move(web_state)), opener_(nullptr) {
   DCHECK(web_state_);
 }
 
 WebStateList::WebStateWrapper::~WebStateWrapper() = default;
 
-web::WebState* WebStateList::WebStateWrapper::ReplaceWebState(
-    web::WebState* web_state) {
-  DCHECK(web_state);
-  DCHECK_NE(web_state, web_state_);
+std::unique_ptr<web::WebState> WebStateList::WebStateWrapper::ReplaceWebState(
+    std::unique_ptr<web::WebState> web_state) {
+  DCHECK_NE(web_state.get(), web_state_.get());
   std::swap(web_state, web_state_);
   opener_ = WebStateOpener(nullptr);
   return web_state;
@@ -80,24 +81,14 @@ bool WebStateList::WebStateWrapper::WasOpenedBy(const web::WebState* opener,
   return opener_.navigation_index == opener_navigation_index;
 }
 
-WebStateList::WebStateList(WebStateListDelegate* delegate,
-                           WebStateOwnership ownership)
+WebStateList::WebStateList(WebStateListDelegate* delegate)
     : delegate_(delegate),
-      web_state_ownership_(ownership),
       order_controller_(base::MakeUnique<WebStateListOrderController>(this)) {
   DCHECK(delegate_);
 }
 
 WebStateList::~WebStateList() {
-  // Once WebStateList owns the WebState and has a CloseWebStateAt() method,
-  // then change this to close all the WebState. See http://crbug.com/546222
-  // for progress.
-  if (web_state_ownership_ == WebStateOwned) {
-    for (auto& web_state_wrapper : web_state_wrappers_) {
-      web::WebState* web_state = web_state_wrapper->web_state();
-      delete web_state;
-    }
-  }
+  CloseAllWebStates();
 }
 
 bool WebStateList::ContainsIndex(int index) const {
@@ -146,29 +137,32 @@ int WebStateList::GetIndexOfLastWebStateOpenedBy(const web::WebState* opener,
   return GetIndexOfNthWebStateOpenedBy(opener, start_index, use_group, INT_MAX);
 }
 
-void WebStateList::InsertWebState(int index, web::WebState* web_state) {
+void WebStateList::InsertWebState(int index,
+                                  std::unique_ptr<web::WebState> web_state) {
   DCHECK(ContainsIndex(index) || index == count());
-  delegate_->WillAddWebState(web_state);
+  delegate_->WillAddWebState(web_state.get());
 
-  web_state_wrappers_.insert(web_state_wrappers_.begin() + index,
-                             base::MakeUnique<WebStateWrapper>(web_state));
+  web::WebState* web_state_ptr = web_state.get();
+  web_state_wrappers_.insert(
+      web_state_wrappers_.begin() + index,
+      base::MakeUnique<WebStateWrapper>(std::move(web_state)));
 
   if (active_index_ >= index)
     ++active_index_;
 
   for (auto& observer : observers_)
-    observer.WebStateInsertedAt(this, web_state, index);
+    observer.WebStateInsertedAt(this, web_state_ptr, index);
 }
 
 void WebStateList::AppendWebState(ui::PageTransition transition,
-                                  web::WebState* web_state,
+                                  std::unique_ptr<web::WebState> web_state,
                                   WebStateOpener opener) {
   int index =
       order_controller_->DetermineInsertionIndex(transition, opener.opener);
   if (index < 0 || count() < index)
     index = count();
 
-  InsertWebState(index, web_state);
+  InsertWebState(index, std::move(web_state));
 
   if (opener.opener)
     SetOpenerOfWebStateAt(index, opener);
@@ -201,32 +195,37 @@ void WebStateList::MoveWebStateAt(int from_index, int to_index) {
     observer.WebStateMoved(this, web_state, from_index, to_index);
 }
 
-web::WebState* WebStateList::ReplaceWebStateAt(int index,
-                                               web::WebState* web_state) {
+std::unique_ptr<web::WebState> WebStateList::ReplaceWebStateAt(
+    int index,
+    std::unique_ptr<web::WebState> web_state) {
   DCHECK(ContainsIndex(index));
-  delegate_->WillAddWebState(web_state);
+  delegate_->WillAddWebState(web_state.get());
 
   ClearOpenersReferencing(index);
 
-  auto& web_state_wrapper = web_state_wrappers_[index];
-  web::WebState* old_web_state = web_state_wrapper->ReplaceWebState(web_state);
+  web::WebState* web_state_ptr = web_state.get();
+  std::unique_ptr<web::WebState> old_web_state =
+      web_state_wrappers_[index]->ReplaceWebState(std::move(web_state));
 
   for (auto& observer : observers_)
-    observer.WebStateReplacedAt(this, old_web_state, web_state, index);
+    observer.WebStateReplacedAt(this, old_web_state.get(), web_state_ptr,
+                                index);
 
-  delegate_->WebStateDetached(old_web_state);
+  delegate_->WebStateDetached(old_web_state.get());
   return old_web_state;
 }
 
-web::WebState* WebStateList::DetachWebStateAt(int index) {
+std::unique_ptr<web::WebState> WebStateList::DetachWebStateAt(int index) {
   DCHECK(ContainsIndex(index));
   int new_active_index = order_controller_->DetermineNewActiveIndex(index);
 
-  web::WebState* old_web_state = web_state_wrappers_[index]->web_state();
+  web::WebState* web_state = web_state_wrappers_[index]->web_state();
   for (auto& observer : observers_)
-    observer.WillDetachWebStateAt(this, old_web_state, index);
+    observer.WillDetachWebStateAt(this, web_state, index);
 
   ClearOpenersReferencing(index);
+  std::unique_ptr<web::WebState> detached_web_state =
+      web_state_wrappers_[index]->ReplaceWebState(nullptr);
   web_state_wrappers_.erase(web_state_wrappers_.begin() + index);
 
   // Update the active index to prevent observer from seeing an invalid WebState
@@ -239,13 +238,27 @@ web::WebState* WebStateList::DetachWebStateAt(int index) {
     active_index_ = new_active_index;
 
   for (auto& observer : observers_)
-    observer.WebStateDetachedAt(this, old_web_state, index);
+    observer.WebStateDetachedAt(this, web_state, index);
 
   if (active_web_state_was_closed)
-    NotifyIfActiveWebStateChanged(old_web_state, false);
+    NotifyIfActiveWebStateChanged(web_state, false);
 
-  delegate_->WebStateDetached(old_web_state);
-  return old_web_state;
+  delegate_->WebStateDetached(web_state);
+  return detached_web_state;
+}
+
+void WebStateList::CloseWebStateAt(int index) {
+  auto detached_web_state = DetachWebStateAt(index);
+
+  for (auto& observer : observers_)
+    observer.WillCloseWebStateAt(this, detached_web_state.get(), index);
+
+  detached_web_state.reset();
+}
+
+void WebStateList::CloseAllWebStates() {
+  while (!empty())
+    CloseWebStateAt(count() - 1);
 }
 
 void WebStateList::ActivateWebStateAt(int index) {

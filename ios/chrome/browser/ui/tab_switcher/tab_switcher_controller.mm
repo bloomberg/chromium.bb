@@ -50,7 +50,6 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/referrer.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -843,56 +842,25 @@ enum class SnapshotViewOption {
                            atIndex:(NSUInteger)position
                         transition:(ui::PageTransition)transition
                           tabModel:(TabModel*)tabModel {
-  web::NavigationManager::WebLoadParams params(URL);
-  params.referrer = web::Referrer();
-  params.transition_type = transition;
+  NSUInteger tabIndex = position;
+  if (position > tabModel.count)
+    tabIndex = tabModel.count;
 
-  DCHECK(tabModel.browserState);
+  web::NavigationManager::WebLoadParams loadParams(URL);
+  loadParams.transition_type = transition;
 
-  base::scoped_nsobject<Tab> tab([[Tab alloc]
-      initWithBrowserState:tabModel.browserState
-                    opener:nil
-               openedByDOM:NO
-                     model:tabModel]);
-  [tab webController].webUsageEnabled = tabModel.webUsageEnabled;
+  Tab* tab = [tabModel insertTabWithLoadParams:loadParams
+                                        opener:nil
+                                   openedByDOM:NO
+                                       atIndex:tabIndex
+                                  inBackground:NO];
 
-  ProceduralBlock dismissWithNewTab = ^{
-    NSUInteger tabIndex = position;
-    if (position > tabModel.count)
-      tabIndex = tabModel.count;
-    [tabModel insertTab:tab atIndex:tabIndex];
-
-    if (tabModel.tabUsageRecorder)
-      tabModel.tabUsageRecorder->TabCreatedForSelection(tab);
-
-    [[tab webController] loadWithParams:params];
-
-    if (tabModel.webUsageEnabled) {
-      [tab setWebUsageEnabled:tabModel.webUsageEnabled];
-      [[tab webController] triggerPendingLoad];
-    }
-
-    NSDictionary* userInfo = @{
-      kTabModelTabKey : tab,
-      kTabModelOpenInBackgroundKey : @(NO),
-    };
-
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kTabModelNewTabWillOpenNotification
-                      object:self
-                    userInfo:userInfo];
-
-    [tabModel setCurrentTab:tab];
-
-    [self
-        tabSwitcherDismissWithModel:tabModel
+  [self tabSwitcherDismissWithModel:tabModel
                            animated:YES
                      withCompletion:^{
                        [self.delegate tabSwitcherDismissTransitionDidEnd:self];
                      }];
-  };
 
-  dismissWithNewTab();
   return tab;
 }
 
@@ -1242,7 +1210,13 @@ enum class SnapshotViewOption {
   DCHECK(tab);
   const TabSwitcherSessionType panelSessionType =
       tabSwitcherPanelController.sessionType;
-  [tab close];
+  TabModel* tabModel =
+      panelSessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION
+          ? [_tabSwitcherModel otrTabModel]
+          : [_tabSwitcherModel mainTabModel];
+  DCHECK_NE(NSNotFound, static_cast<NSInteger>([tabModel indexOfTab:tab]));
+  [tabModel closeTab:tab];
+
   if (panelSessionType == TabSwitcherSessionType::OFF_THE_RECORD_SESSION) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabSwitcherCloseIncognitoTab"));

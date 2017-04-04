@@ -20,8 +20,8 @@ Browser::Browser(ios::ChromeBrowserState* browser_state)
   DCHECK(browser_state_);
   web_state_list_delegate_ =
       base::MakeUnique<BrowserWebStateListDelegate>(this);
-  web_state_list_ = base::MakeUnique<WebStateList>(
-      web_state_list_delegate_.get(), WebStateList::WebStateOwned);
+  web_state_list_ =
+      base::MakeUnique<WebStateList>(web_state_list_delegate_.get());
 }
 
 Browser::~Browser() = default;

@@ -172,6 +172,8 @@
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_controller_delegate.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list.h"
+#import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -3663,19 +3665,27 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 
   if (url == [_preloadController prerenderedURL]) {
+    std::unique_ptr<web::WebState> newWebState =
+        [_preloadController releasePrerenderContents];
+    DCHECK(newWebState);
+
     Tab* oldTab = [_model currentTab];
-    Tab* newTab = [_preloadController releasePrerenderContents];
+    Tab* newTab = LegacyTabHelper::GetTabForWebState(newWebState.get());
     DCHECK(oldTab);
     DCHECK(newTab);
+
     bool canPruneItems =
         [newTab navigationManager]->CanPruneAllButLastCommittedItem();
+
     if (oldTab && newTab && canPruneItems) {
       [oldTab recordStateInHistory];
       [newTab navigationManager]->CopyStateFromAndPrune(
           [oldTab navigationManager]);
       [[newTab nativeAppNavigationController]
           copyStateFrom:[oldTab nativeAppNavigationController]];
-      [_model replaceTab:oldTab withTab:newTab];
+
+      [_model webStateList]->ReplaceWebStateAt([_model indexOfTab:oldTab],
+                                               std::move(newWebState));
 
       // Set isPrerenderTab to NO after replacing the tab. This will allow the
       // BrowserViewController to detect that a pre-rendered tab is switched in,
@@ -3683,7 +3693,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       newTab.isPrerenderTab = NO;
 
       [self tabLoadComplete:newTab withSuccess:newTab.loadFinished];
-
       return;
     }
   }
@@ -4666,15 +4675,20 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // transitioning panel and remove it.
   void (^completion)(BOOL) = ^(BOOL finished) {
     _contextualSearchMask.alpha = 0;
-    Tab* newTab = [tabProvider releaseTab];
-    DCHECK(newTab);
-    DCHECK([newTab navigationManager]);
-    // Add the new tab to the tab model.
-    [newTab setParentTabModel:_model];
-    // Insert the new tab one after the current tab.
-    Tab* currentTab = [_model currentTab];
-    NSUInteger index = [_model indexOfTab:currentTab];
-    [_model insertTab:newTab atIndex:index + 1];
+    std::unique_ptr<web::WebState> webState = [tabProvider releaseWebState];
+    DCHECK(webState);
+    DCHECK(webState->GetNavigationManager());
+
+    Tab* newTab = LegacyTabHelper::GetTabForWebState(webState.get());
+    WebStateList* webStateList = [_model webStateList];
+
+    // Insert the new tab after the current tab.
+    DCHECK_NE(webStateList->active_index(), WebStateList::kInvalidIndex);
+    DCHECK_NE(webStateList->active_index(), INT_MAX);
+    int insertion_index = webStateList->active_index() + 1;
+    webStateList->InsertWebState(insertion_index, std::move(webState));
+    webStateList->SetOpenerOfWebStateAt(insertion_index,
+                                        [tabProvider webStateOpener]);
 
     // Set isPrerenderTab to NO after inserting the tab. This will allow the
     // BrowserViewController to detect that a pre-rendered tab is switched in,
@@ -4682,6 +4696,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     // tab is made the current tab.
     // This also enables contextual search (if otherwise applicable) on
     // |newTab|.
+
     newTab.isPrerenderTab = NO;
     [_model setCurrentTab:newTab];
 
