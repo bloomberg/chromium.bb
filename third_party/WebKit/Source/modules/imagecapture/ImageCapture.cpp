@@ -295,6 +295,7 @@ void ImageCapture::setMediaTrackConstraints(
       mojoPoint->y = point.y();
       settings->points_of_interest.push_back(std::move(mojoPoint));
     }
+    m_currentConstraints.setPointsOfInterest(constraints.pointsOfInterest());
   }
 
   // TODO(mcasas): support ConstrainDoubleRange where applicable.
@@ -377,6 +378,9 @@ void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
   if (m_capabilities.hasFocusMode())
     settings.setFocusMode(m_capabilities.focusMode()[0]);
 
+  if (!m_currentPointsOfInterest.isEmpty())
+    settings.setPointsOfInterest(m_currentPointsOfInterest);
+
   if (m_capabilities.hasExposureCompensation()) {
     settings.setExposureCompensation(
         m_capabilities.exposureCompensation()->current());
@@ -399,9 +403,6 @@ void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
     settings.setZoom(m_capabilities.zoom()->current());
   if (m_capabilities.hasTorch())
     settings.setTorch(m_capabilities.torch());
-
-  // TODO(mcasas): add |torch| when the mojom interface is updated,
-  // https://crbug.com/700607.
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
@@ -432,7 +433,7 @@ void ImageCapture::onPhotoCapabilities(
     resolver->reject(DOMException::create(UnknownError, "platform error"));
   } else {
     // Update the local capabilities cache.
-    onCapabilitiesUpdate(capabilities.Clone());
+    onCapabilitiesUpdateInternal(*capabilities);
 
     PhotoCapabilities* caps = PhotoCapabilities::create();
 
@@ -485,59 +486,70 @@ void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver,
 
 void ImageCapture::onCapabilitiesUpdate(
     media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
-  if (capabilities.is_null())
-    return;
+  if (!capabilities.is_null())
+    onCapabilitiesUpdateInternal(*capabilities);
+}
 
+void ImageCapture::onCapabilitiesUpdateInternal(
+    const media::mojom::blink::PhotoCapabilities& capabilities) {
   // TODO(mcasas): adapt the mojo interface to return a list of supported Modes
   // when moving these out of PhotoCapabilities, https://crbug.com/700607.
   m_capabilities.setWhiteBalanceMode(
-      WTF::Vector<WTF::String>({toString(capabilities->white_balance_mode)}));
+      WTF::Vector<WTF::String>({toString(capabilities.white_balance_mode)}));
   m_capabilities.setExposureMode(
-      WTF::Vector<WTF::String>({toString(capabilities->exposure_mode)}));
+      WTF::Vector<WTF::String>({toString(capabilities.exposure_mode)}));
   m_capabilities.setFocusMode(
-      WTF::Vector<WTF::String>({toString(capabilities->focus_mode)}));
+      WTF::Vector<WTF::String>({toString(capabilities.focus_mode)}));
+
+  if (!capabilities.points_of_interest.isEmpty()) {
+    m_currentPointsOfInterest.clear();
+    for (const auto& point : capabilities.points_of_interest) {
+      Point2D webPoint;
+      webPoint.setX(point->x);
+      webPoint.setY(point->y);
+      m_currentPointsOfInterest.push_back(mojo::Clone(webPoint));
+    }
+  }
 
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,
   // https://crbug.com/700180.
-  if (capabilities->exposure_compensation->max !=
-      capabilities->exposure_compensation->min) {
-    m_capabilities.setExposureCompensation(MediaSettingsRange::create(
-        std::move(capabilities->exposure_compensation)));
+  if (capabilities.exposure_compensation->max !=
+      capabilities.exposure_compensation->min) {
+    m_capabilities.setExposureCompensation(
+        MediaSettingsRange::create(*capabilities.exposure_compensation.get()));
   }
-  if (capabilities->color_temperature->max !=
-      capabilities->color_temperature->min) {
+  if (capabilities.color_temperature->max !=
+      capabilities.color_temperature->min) {
     m_capabilities.setColorTemperature(
-        MediaSettingsRange::create(std::move(capabilities->color_temperature)));
+        MediaSettingsRange::create(*capabilities.color_temperature.get()));
   }
-  if (capabilities->iso->max != capabilities->iso->min) {
-    m_capabilities.setIso(
-        MediaSettingsRange::create(std::move(capabilities->iso)));
-  }
+  if (capabilities.iso->max != capabilities.iso->min)
+    m_capabilities.setIso(MediaSettingsRange::create(*capabilities.iso.get()));
 
-  if (capabilities->brightness->max != capabilities->brightness->min) {
+  if (capabilities.brightness->max != capabilities.brightness->min) {
     m_capabilities.setBrightness(
-        MediaSettingsRange::create(std::move(capabilities->brightness)));
+        MediaSettingsRange::create(*capabilities.brightness.get()));
   }
-  if (capabilities->contrast->max != capabilities->contrast->min) {
+  if (capabilities.contrast->max != capabilities.contrast->min) {
     m_capabilities.setContrast(
-        MediaSettingsRange::create(std::move(capabilities->contrast)));
+        MediaSettingsRange::create(*capabilities.contrast.get()));
   }
-  if (capabilities->saturation->max != capabilities->saturation->min) {
+  if (capabilities.saturation->max != capabilities.saturation->min) {
     m_capabilities.setSaturation(
-        MediaSettingsRange::create(std::move(capabilities->saturation)));
+        MediaSettingsRange::create(*capabilities.saturation.get()));
   }
-  if (capabilities->sharpness->max != capabilities->sharpness->min) {
+  if (capabilities.sharpness->max != capabilities.sharpness->min) {
     m_capabilities.setSharpness(
-        MediaSettingsRange::create(std::move(capabilities->sharpness)));
+        MediaSettingsRange::create(*capabilities.sharpness.get()));
   }
 
-  if (capabilities->zoom->max != capabilities->zoom->min) {
+  if (capabilities.zoom->max != capabilities.zoom->min) {
     m_capabilities.setZoom(
-        MediaSettingsRange::create(std::move(capabilities->zoom)));
+        MediaSettingsRange::create(*capabilities.zoom.get()));
   }
 
-  m_capabilities.setTorch(capabilities->torch);
+  m_capabilities.setTorch(capabilities.torch);
 
   // TODO(mcasas): do |torch| when the mojom interface is updated,
   // https://crbug.com/700607.
@@ -554,6 +566,7 @@ DEFINE_TRACE(ImageCapture) {
   visitor->trace(m_streamTrack);
   visitor->trace(m_capabilities);
   visitor->trace(m_currentConstraints);
+  visitor->trace(m_currentPointsOfInterest);
   visitor->trace(m_serviceRequests);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);

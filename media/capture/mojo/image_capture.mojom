@@ -29,6 +29,7 @@ struct PhotoCapabilities {
   MeteringMode white_balance_mode;
   MeteringMode exposure_mode;
   MeteringMode focus_mode;
+  array<Point2D> points_of_interest;
 
   Range exposure_compensation;
   Range color_temperature;

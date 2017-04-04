@@ -63,21 +63,33 @@ async_test(function(t) {
                     meteringModeNames[theMock.options().focus_mode],
                     'focusMode');
 
+      assert_equals(constraints.advanced[0].pointsOfInterest.length,
+                    theMock.options().points_of_interest.length,
+                    'pointsOfInterest');
+      for (i = 0; i < constraints.advanced[0].pointsOfInterest.length; ++i) {
+        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].x,
+                             theMock.options().points_of_interest[i].x, 0.01,
+                             'pointsOfInterest x');
+        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].y,
+                             theMock.options().points_of_interest[i].y, 0.01,
+                             'pointsOfInterest y');
+      }
+
       assert_equals(constraints.advanced[0].exposureCompensation,
                     theMock.options().exposure_compensation,
-                    'exposure_compensation');
+                    'exposureCompensation');
       assert_equals(constraints.advanced[0].colorTemperature,
-                    theMock.options().color_temperature, 'color_temperature');
+                    theMock.options().color_temperature, 'colorTemperature');
       assert_equals(constraints.advanced[0].iso, theMock.options().iso, 'iso');
 
       assert_equals(constraints.advanced[0].brightness,
-                    theMock.options().brightness, 'brightness value');
+                    theMock.options().brightness, 'brightness');
       assert_equals(constraints.advanced[0].contrast,
-                    theMock.options().contrast, 'constrast value');
+                    theMock.options().contrast, 'constrast');
       assert_equals(constraints.advanced[0].saturation,
-                    theMock.options().saturation, 'saturation value');
+                    theMock.options().saturation, 'saturation');
       assert_equals(constraints.advanced[0].sharpness,
-                    theMock.options().sharpness, 'sharpness value');
+                    theMock.options().sharpness, 'sharpness');
 
       assert_equals(constraints.advanced[0].torch, theMock.options().torch,
                     'torch');

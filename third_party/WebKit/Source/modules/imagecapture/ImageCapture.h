@@ -77,6 +77,9 @@ class MODULES_EXPORT ImageCapture final
   void onSetOptions(ScriptPromiseResolver*, bool);
   void onTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
   void onCapabilitiesUpdate(media::mojom::blink::PhotoCapabilitiesPtr);
+
+  void onCapabilitiesUpdateInternal(
+      const media::mojom::blink::PhotoCapabilities&);
   void onServiceConnectionError();
 
   Member<MediaStreamTrack> m_streamTrack;
@@ -85,6 +88,8 @@ class MODULES_EXPORT ImageCapture final
 
   MediaTrackCapabilities m_capabilities;
   MediaTrackConstraintSet m_currentConstraints;
+
+  HeapVector<Point2D> m_currentPointsOfInterest;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 };

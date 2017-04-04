@@ -66,10 +66,21 @@ async_test(function(t) {
       assert_equals(constraints.advanced[0].focusMode, settings.focusMode,
                     'focusMode');
 
+      assert_equals(constraints.advanced[0].pointsOfInterest.length,
+                    settings.pointsOfInterest.length, 'pointsOfInterest');
+      for (i = 0; i < constraints.advanced[0].pointsOfInterest.length; ++i) {
+        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].x,
+                             settings.pointsOfInterest[i].x, 0.01,
+                             'pointsOfInterest x');
+        assert_approx_equals(constraints.advanced[0].pointsOfInterest[i].y,
+                             settings.pointsOfInterest[i].y, 0.01,
+                             'pointsOfInterest y');
+      }
+
       assert_equals(constraints.advanced[0].exposureCompensation,
-                    settings.exposureCompensation, 'exposure_compensation');
+                    settings.exposureCompensation, 'exposureCompensation');
       assert_equals(constraints.advanced[0].colorTemperature,
-                    settings.colorTemperature, 'color_temperature');
+                    settings.colorTemperature, 'colorTemperature');
       assert_equals(constraints.advanced[0].iso, settings.iso, 'iso');
 
       assert_equals(constraints.advanced[0].brightness, settings.brightness,

@@ -33,7 +33,7 @@ let mockImageCaptureReady = define(
           contrast : { min : 2.0, max : 9.0, current : 5.0, step : 1.0 },
           saturation : { min : 3.0, max : 8.0, current : 6.0, step : 1.0 },
           sharpness : { min : 4.0, max : 7.0, current : 7.0, step : 1.0 },
-          points_of_interest : [],
+          points_of_interest : [{x : 0.4, y : 0.6}],
       }};
       this.settings_ = null;
       this.bindingSet_ = new bindings.BindingSet(imageCapture.ImageCapture);

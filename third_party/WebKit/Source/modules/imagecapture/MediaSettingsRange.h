@@ -22,8 +22,11 @@ class MediaSettingsRange final : public GarbageCollected<MediaSettingsRange>,
     return new MediaSettingsRange(max, min, current, step);
   }
   static MediaSettingsRange* create(media::mojom::blink::RangePtr range) {
-    return MediaSettingsRange::create(range->max, range->min, range->current,
-                                      range->step);
+    return MediaSettingsRange::create(*range);
+  }
+  static MediaSettingsRange* create(const media::mojom::blink::Range& range) {
+    return MediaSettingsRange::create(range.max, range.min, range.current,
+                                      range.step);
   }
 
   double max() const { return m_max; }
