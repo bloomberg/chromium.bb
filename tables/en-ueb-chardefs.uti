@@ -84,6 +84,7 @@ display " 5
 punctuation " 6-2356
 # The "?" symbol is mostly handled below,
 # but the pattern needs to be defined before prepunc and postpunc can be used.
+display ? 1456
 nofor punctuation ? 236
 nofor punctuation " 356
 nofor prepunc " 236
@@ -132,7 +133,6 @@ math = 5-2356
 display > 345
 punctuation > 4-345
 #   requires grade one indicator when by itself
-display ? 1456
 punctuation ? 56-236
 postpunc ? 236
 display @ 47

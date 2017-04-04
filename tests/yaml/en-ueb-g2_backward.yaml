@@ -27,3 +27,5 @@ tests:
   - [⠐⠝, name]
   - [⠰⠃, \\56/b]
   - [⠁⠰⠝, ation]
+  # #309: Ensure correct back-translation to "this".
+  - [⠹, this]

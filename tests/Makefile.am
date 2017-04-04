@@ -165,6 +165,7 @@ dist_yaml_TESTS =				\
 	yaml/en-ueb-g1_backward.yaml		\
 	yaml/en-ueb-g1_harness.yaml		\
 	yaml/en-ueb-g2_backward.yaml		\
+	yaml/en-ueb-g2_backward_no_dis.yaml	\
 	yaml/en-ueb-g2-dictionary_harness.yaml	\
 	yaml/en-ueb-math.yaml			\
 	yaml/en-ueb-symbols_harness.yaml	\
