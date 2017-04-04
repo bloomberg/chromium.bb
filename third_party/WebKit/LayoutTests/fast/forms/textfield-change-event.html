@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<input id="input" type="text" onchange="changeHandler()">
+<input id="number" type="number" onchange="changeHandler()">
+<textarea id="textarea" onchange="changeHandler()"></textarea>
+
+<script>
+var changeEventCounter = 0;
+function changeHandler() {
+  changeEventCounter++;
+  element.value = '';
+}
+
+function elementDesc(element) {
+  if (element.tagName == 'TEXTAREA')
+    return 'TEXTAREA';
+  return 'INPUT[type=' + element.type + ']';
+}
+
+function testValueUpdateOnChange(element, userInput) {
+  test(() => {
+    changeEventCounter = 0;
+    element.focus();
+    document.execCommand('InsertText', false, userInput);
+    assert_equals(element.value, userInput);
+    element.blur();
+    assert_equals(changeEventCounter, 1);
+    assert_equals(element.value, '');
+
+    element.focus();
+    document.execCommand('InsertText', false, userInput);
+    assert_equals(element.value, userInput);
+    element.blur();
+    assert_equals(changeEventCounter, 2);
+  }, elementDesc(element) + ': Updating value in a CHANGE event handler');
+}
+
+function testValueUpdateWithoutUserEdit(element, jsInput) {
+  test(() => {
+    changeEventCounter = 0;
+    element.value = '';
+    element.focus();
+    element.value = jsInput;
+    element.blur();
+    assert_equals(changeEventCounter, 0);
+  }, elementDesc(element) + ': Updating value while element is focused');
+}
+
+function testValueUpdateAfterUserEdit(element, userInput, jsInput) {
+  test(() => {
+    changeEventCounter = 0;
+    element.value = '0';
+    element.focus();
+    document.execCommand('InsertText', false, userInput);
+    element.value = jsInput;
+    element.blur();
+    assert_equals(changeEventCounter, 1);
+  }, elementDesc(element) + ': Updating value after a user edit');
+}
+
+var element = document.getElementById('input');
+testValueUpdateOnChange(element, 'foo bar');
+testValueUpdateWithoutUserEdit(element, 'FOO BAR');
+testValueUpdateAfterUserEdit(element, 'foo bar', 'FOO BAR');
+
+element = document.getElementById('number');
+testValueUpdateOnChange(element, '123');
+testValueUpdateWithoutUserEdit(element, '999');
+testValueUpdateAfterUserEdit(element, '123', '999');
+
+element = document.getElementById('textarea');
+testValueUpdateOnChange(element, 'foo bar');
+testValueUpdateWithoutUserEdit(element, 'FOO BAR');
+testValueUpdateAfterUserEdit(element, 'foo bar', 'FOO BAR');
+</script>
+</body>
