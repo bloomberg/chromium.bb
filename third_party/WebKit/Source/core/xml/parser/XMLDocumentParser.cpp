@@ -26,7 +26,6 @@
 
 #include "core/xml/parser/XMLDocumentParser.h"
 
-#include <libxml/catalog.h>
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
@@ -572,12 +571,13 @@ static void finishParsing(xmlParserCtxtPtr ctxt) {
   #error "Use parseChunk instead to select the correct encoding."
 
 static bool isLibxmlDefaultCatalogFile(const String& urlString) {
-  // On non-Windows platforms libxml asks for this URL, the
-  // "XML_XML_DEFAULT_CATALOG", on initialization.
+  // On non-Windows platforms libxml with catalogs enabled asks for
+  // this URL, the "XML_XML_DEFAULT_CATALOG", on initialization.
   if (urlString == "file:///etc/xml/catalog")
     return true;
 
-  // On Windows, libxml computes a URL relative to where its DLL resides.
+  // On Windows, libxml with catalogs enabled computes a URL relative
+  // to where its DLL resides.
   if (urlString.startsWith("file:///", TextCaseASCIIInsensitive) &&
       urlString.endsWith("/etc/catalog", TextCaseASCIIInsensitive))
     return true;
@@ -587,10 +587,9 @@ static bool isLibxmlDefaultCatalogFile(const String& urlString) {
 static bool shouldAllowExternalLoad(const KURL& url) {
   String urlString = url.getString();
 
-  // This isn't really necessary now that initializeLibXMLIfNecessary
-  // disables catalog support in libxml, but keeping it for defense in depth.
-  if (isLibxmlDefaultCatalogFile(url))
-    return false;
+  // libxml should not be configured with catalogs enabled, so it
+  // should not be asking to load default catalogs.
+  CHECK(!isLibxmlDefaultCatalogFile(url));
 
   // The most common DTD. There isn't much point in hammering www.w3c.org by
   // requesting this URL for every XHTML document.
@@ -697,10 +696,6 @@ static void initializeLibXMLIfNecessary() {
   if (didInit)
     return;
 
-  // We don't want libxml to try and load catalogs.
-  // FIXME: It's not nice to set global settings in libxml, embedders of Blink
-  // could be trying to use libxml themselves.
-  xmlCatalogSetDefaults(XML_CATA_ALLOW_NONE);
   xmlInitParser();
   xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
   xmlRegisterOutputCallbacks(matchFunc, openFunc, writeFunc, closeFunc);
