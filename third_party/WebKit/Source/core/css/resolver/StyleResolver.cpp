@@ -826,15 +826,27 @@ PseudoElement* StyleResolver::createPseudoElement(Element* parent,
 
 PseudoElement* StyleResolver::createPseudoElementIfNeeded(Element& parent,
                                                           PseudoId pseudoId) {
+  if (!parent.canGeneratePseudoElement(pseudoId))
+    return nullptr;
+
   LayoutObject* parentLayoutObject = parent.layoutObject();
+  if (!parentLayoutObject) {
+    DCHECK(parent.hasDisplayContentsStyle());
+    parentLayoutObject = LayoutTreeBuilderTraversal::parentLayoutObject(parent);
+  }
+
   if (!parentLayoutObject)
     return nullptr;
+
+  ComputedStyle* parentStyle = parent.mutableComputedStyle();
+  DCHECK(parentStyle);
 
   // The first letter pseudo element has to look up the tree and see if any
   // of the ancestors are first letter.
   if (pseudoId < FirstInternalPseudoId && pseudoId != PseudoIdFirstLetter &&
-      !parentLayoutObject->style()->hasPseudoStyle(pseudoId))
+      !parentStyle->hasPseudoStyle(pseudoId)) {
     return nullptr;
+  }
 
   if (pseudoId == PseudoIdBackdrop && !parent.isInTopLayer())
     return nullptr;
@@ -847,7 +859,6 @@ PseudoElement* StyleResolver::createPseudoElementIfNeeded(Element& parent,
   if (!canHaveGeneratedChildren(*parentLayoutObject))
     return nullptr;
 
-  ComputedStyle* parentStyle = parentLayoutObject->mutableStyle();
   if (ComputedStyle* cachedStyle =
           parentStyle->getCachedPseudoStyle(pseudoId)) {
     if (!pseudoElementLayoutObjectIsNeeded(cachedStyle))
@@ -855,7 +866,8 @@ PseudoElement* StyleResolver::createPseudoElementIfNeeded(Element& parent,
     return createPseudoElement(&parent, pseudoId);
   }
 
-  StyleResolverState state(document(), &parent, parentStyle, parentStyle);
+  StyleResolverState state(document(), &parent, parentStyle,
+                           parentLayoutObject->style());
   if (!pseudoStyleForElementInternal(parent, pseudoId, parentStyle, state))
     return nullptr;
   RefPtr<ComputedStyle> style = state.takeStyle();

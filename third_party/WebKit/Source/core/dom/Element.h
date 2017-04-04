@@ -636,6 +636,7 @@ class CORE_EXPORT Element : public ContainerNode {
   PassRefPtr<ComputedStyle> getUncachedPseudoStyle(
       const PseudoStyleRequest&,
       const ComputedStyle* parentStyle = nullptr);
+  bool canGeneratePseudoElement(PseudoId) const;
 
   virtual bool matchesDefaultPseudoClass() const { return false; }
   virtual bool matchesEnabledPseudoClass() const { return false; }

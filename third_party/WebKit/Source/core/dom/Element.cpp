@@ -2016,9 +2016,13 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
       // https://codereview.chromium.org/30453002/
       layoutObject->setStyleInternal(newStyle.get());
     }
-  } else if (localChange != NoChange &&
-             shouldStoreNonLayoutObjectComputedStyle(*newStyle)) {
-    storeNonLayoutObjectComputedStyle(newStyle);
+  } else {
+    if (localChange != NoChange) {
+      if (shouldStoreNonLayoutObjectComputedStyle(*newStyle))
+        storeNonLayoutObjectComputedStyle(newStyle);
+      else if (hasRareData())
+        elementRareData()->clearComputedStyle();
+    }
   }
 
   if (getStyleChangeType() >= SubtreeStyleChange)
@@ -3192,14 +3196,20 @@ const ComputedStyle* Element::ensureComputedStyle(
           elementStyle->getCachedPseudoStyle(pseudoElementSpecifier))
     return pseudoElementStyle;
 
-  // TODO(ecobos): Passing two times elementStyle may be wrong, though we don't
-  // support display: contents elements' pseudo-elements yet, so this is not a
-  // problem for now.
+  const ComputedStyle* layoutParentStyle = elementStyle;
+  if (hasDisplayContentsStyle()) {
+    LayoutObject* parentLayoutObject =
+        LayoutTreeBuilderTraversal::parentLayoutObject(*this);
+    if (parentLayoutObject)
+      layoutParentStyle = parentLayoutObject->style();
+  }
+
   RefPtr<ComputedStyle> result =
       document().ensureStyleResolver().pseudoStyleForElement(
-          this, PseudoStyleRequest(pseudoElementSpecifier,
-                                   PseudoStyleRequest::ForComputedStyle),
-          elementStyle, elementStyle);
+          this,
+          PseudoStyleRequest(pseudoElementSpecifier,
+                             PseudoStyleRequest::ForComputedStyle),
+          elementStyle, layoutParentStyle);
   DCHECK(result);
   return elementStyle->addCachedPseudoStyle(result.release());
 }
@@ -3295,8 +3305,9 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change) {
     // continuously create and destroy PseudoElements when
     // LayoutObject::isChildAllowed on our parent returns false for the
     // PseudoElement's layoutObject for each style recalc.
-    if (!layoutObject() || !pseudoElementLayoutObjectIsNeeded(
-                               pseudoStyle(PseudoStyleRequest(pseudoId))))
+    if (!canGeneratePseudoElement(pseudoId) ||
+        !pseudoElementLayoutObjectIsNeeded(
+            pseudoStyle(PseudoStyleRequest(pseudoId))))
       elementRareData()->setPseudoElement(pseudoId, nullptr);
   } else if (pseudoId == PseudoIdFirstLetter && element &&
              change >= UpdatePseudoElements &&
@@ -3421,6 +3432,14 @@ PassRefPtr<ComputedStyle> Element::getUncachedPseudoStyle(
 
   return document().ensureStyleResolver().pseudoStyleForElement(
       this, request, parentStyle, parentStyle);
+}
+// For display: contents elements, we still need to generate ::before and
+// ::after, but the rest of the pseudo-elements should only be used for elements
+// with an actual layout object.
+bool Element::canGeneratePseudoElement(PseudoId pseudoId) const {
+  if (hasDisplayContentsStyle())
+    return pseudoId == PseudoIdBefore || pseudoId == PseudoIdAfter;
+  return !!layoutObject();
 }
 
 bool Element::matches(const AtomicString& selectors,
