@@ -17,6 +17,7 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
@@ -1043,6 +1044,10 @@ void PaintPropertyTreeBuilder::updatePaintOffset(
 void PaintPropertyTreeBuilder::updateForObjectLocationAndSize(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
+#if DCHECK_IS_ON()
+  FindPaintOffsetNeedingUpdateScope checkScope(object, context);
+#endif
+
   if (object.isBoxModelObject()) {
     updatePaintOffset(toLayoutBoxModelObject(object), context);
     updatePaintOffsetTranslation(toLayoutBoxModelObject(object), context);

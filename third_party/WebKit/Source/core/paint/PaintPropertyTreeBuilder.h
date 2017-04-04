@@ -25,6 +25,9 @@ struct PaintPropertyTreeBuilderContext {
   USING_FAST_MALLOC(PaintPropertyTreeBuilderContext);
 
  public:
+  // Initializes all property tree nodes to the roots.
+  PaintPropertyTreeBuilderContext();
+
   // State that propagates on the containing block chain (and so is adjusted
   // when an absolute or fixed position object is encountered).
   struct ContainingBlockContext {
@@ -90,8 +93,11 @@ struct PaintPropertyTreeBuilderContext {
   // property tree changes (i.e., a node is added or removed).
   bool forceSubtreeUpdate;
 
-  // Initializes all property tree nodes to the roots.
-  PaintPropertyTreeBuilderContext();
+#if DCHECK_IS_ON()
+  // When DCHECK_IS_ON() we create PaintPropertyTreeBuilderContext even if not
+  // needed. See FindPaintOffsetAndVisualRectNeedingUpdate.h.
+  bool isActuallyNeeded = true;
+#endif
 };
 
 // Creates paint property tree nodes for special things in the layout tree.
