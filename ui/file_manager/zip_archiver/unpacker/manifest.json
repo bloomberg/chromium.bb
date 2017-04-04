@@ -1,0 +1,54 @@
+{
+  "name": "__MSG_name__",
+  "version": "0.76",
+  "manifest_version": 2,
+  "minimum_chrome_version": "44.0.2400.0",
+  "description": "__MSG_description__",
+  "default_locale": "en",
+  "display_in_launcher": false,
+  "permissions": [
+    "alwaysOnTopWindows",
+    "fileSystemProvider",
+    {"fileSystem": ["retainEntries", "write", "directory"]},
+    "notifications",
+    "storage"
+  ],
+  "file_system_provider_capabilities": {
+    "multipleMounts": true,
+    "source": "file"
+  },
+  "file_handlers": {
+    "add": {
+      "types":["application/zip"],
+      "extensions": ["zip"],
+      "verb": "add_to"
+    },
+    "pack": {
+      "types": ["*"],
+      "include_directories": true,
+      "verb": "pack_with"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "64": "icons/icon64.png",
+    "96": "icons/icon96.png",
+    "128": "icons/icon128.png"
+  },
+  "app": {
+    "background": {
+      "scripts": [
+        "js/unpacker.js",
+        "js/app.js",
+        "js/background.js",
+        "js/compressor.js",
+        "js/decompressor.js",
+        "js/passphrase-manager.js",
+        "js/request.js",
+        "js/types.js",
+        "js/volume.js"
+      ]
+    }
+  }
+}

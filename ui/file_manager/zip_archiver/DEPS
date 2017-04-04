@@ -1,0 +1,6 @@
+include_rules = [
+  "+ppapi",
+  "+third_party/zlib",
+  "+native_client_sdk/src/libraries/ppapi_simple",
+  "+testing/gtest"
+]

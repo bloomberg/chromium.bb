@@ -1,0 +1,24 @@
+<link rel="import" href="../third-party/polymer.html">
+
+<polymer-element name="passphrase-dialog">
+  <template>
+    <link rel="stylesheet" href="../css/passphrase-dialog.css">
+    <h3>{{ 'passphraseTitle' | i18n }}</h3>
+    <paper-input-decorator label="{{ 'passphraseInputLabel' | i18n }}">
+      <input is="core-input" type="password" id="input" autofocus>
+    </paper-input-decorator>
+    <div id="bar">
+      <paper-checkbox id="remember"
+          label="{{ 'passphraseRemember' | i18n }}"></paper-checkbox>
+      <div id="buttons">
+        <paper-button on-click="{{cancel}}" id="cancelButton">
+            {{ 'passphraseCancel' | i18n }}
+        </paper-button>
+        <paper-button on-click="{{accept}}" id="acceptButton">
+            {{ 'passphraseAccept' | i18n }}
+        </paper-button>
+      </div>
+    </div>
+  </template>
+  <script src="../js/passphrase-dialog.js"></script>
+</polymer-element>
