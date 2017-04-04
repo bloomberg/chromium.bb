@@ -2308,12 +2308,6 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   [self reconfigureBookmarkBar];
 }
 
-- (void)beingDeleted:(BookmarkModel*)model {
-  // The browser may be being torn down; little is safe to do.  As an
-  // example, it may not be safe to clear the pasteboard.
-  // http://crbug.com/38665
-}
-
 - (void)nodeAdded:(BookmarkModel*)model
            parent:(const BookmarkNode*)newParent index:(int)newIndex {
   // If a context menu is open, close it.

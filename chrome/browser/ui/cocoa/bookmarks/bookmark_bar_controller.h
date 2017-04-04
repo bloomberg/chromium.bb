@@ -414,7 +414,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // the rest of Chromium.  Internal to BookmarkBarController.
 @interface BookmarkBarController(BridgeRedirect)
 - (void)loaded:(bookmarks::BookmarkModel*)model;
-- (void)beingDeleted:(bookmarks::BookmarkModel*)model;
 - (void)nodeAdded:(bookmarks::BookmarkModel*)model
            parent:(const bookmarks::BookmarkNode*)oldParent index:(int)index;
 - (void)nodeChanged:(bookmarks::BookmarkModel*)model

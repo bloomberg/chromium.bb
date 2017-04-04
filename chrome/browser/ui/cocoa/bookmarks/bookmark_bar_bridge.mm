@@ -51,9 +51,11 @@ void BookmarkBarBridge::BookmarkModelLoaded(BookmarkModel* model,
 }
 
 void BookmarkBarBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
-  [controller_ beingDeleted:model];
   model_->RemoveObserver(this);
   model_ = nullptr;
+  // The browser may be being torn down; little is safe to do.  As an
+  // example, it may not be safe to clear the pasteboard.
+  // http://crbug.com/38665
 }
 
 void BookmarkBarBridge::BookmarkNodeMoved(BookmarkModel* model,

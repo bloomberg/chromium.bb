@@ -31,59 +31,46 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 // Oddly, we are our own delegate.
 @interface FakeBookmarkBarController : BookmarkBarController {
  @public
-  base::scoped_nsobject<NSMutableArray> callbacks_;
+  std::vector<SEL> called_selectors_;
   std::vector<OpenInfo> opens_;
 }
 @end
 
 @implementation FakeBookmarkBarController
 
-- (id)initWithBrowser:(Browser*)browser {
-  if ((self = [super initWithBrowser:browser
-                        initialWidth:100  // arbitrary
-                            delegate:nil])) {
-    callbacks_.reset([[NSMutableArray alloc] init]);
-  }
-  return self;
-}
-
 - (void)loaded:(BookmarkModel*)model {
-  [callbacks_ addObject:[NSNumber numberWithInt:0]];
-}
-
-- (void)beingDeleted:(BookmarkModel*)model {
-  [callbacks_ addObject:[NSNumber numberWithInt:1]];
+  called_selectors_.push_back(_cmd);
 }
 
 - (void)nodeMoved:(BookmarkModel*)model
         oldParent:(const BookmarkNode*)oldParent oldIndex:(int)oldIndex
         newParent:(const BookmarkNode*)newParent newIndex:(int)newIndex {
-  [callbacks_ addObject:[NSNumber numberWithInt:2]];
+  called_selectors_.push_back(_cmd);
 }
 
 - (void)nodeAdded:(BookmarkModel*)model
            parent:(const BookmarkNode*)oldParent index:(int)index {
-  [callbacks_ addObject:[NSNumber numberWithInt:3]];
+  called_selectors_.push_back(_cmd);
 }
 
 - (void)nodeChanged:(BookmarkModel*)model
                node:(const BookmarkNode*)node {
-  [callbacks_ addObject:[NSNumber numberWithInt:4]];
+  called_selectors_.push_back(_cmd);
 }
 
 - (void)nodeFaviconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
-  [callbacks_ addObject:[NSNumber numberWithInt:5]];
+  called_selectors_.push_back(_cmd);
 }
 
 - (void)nodeChildrenReordered:(BookmarkModel*)model
                          node:(const BookmarkNode*)node {
-  [callbacks_ addObject:[NSNumber numberWithInt:6]];
+  called_selectors_.push_back(_cmd);
 }
 
 - (void)nodeRemoved:(BookmarkModel*)model
              parent:(const BookmarkNode*)oldParent index:(int)index {
-  [callbacks_ addObject:[NSNumber numberWithInt:7]];
+  called_selectors_.push_back(_cmd);
 }
 
 // Save the request.
@@ -110,26 +97,33 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
       [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);
 
   base::scoped_nsobject<FakeBookmarkBarController> controller(
-      [[FakeBookmarkBarController alloc] initWithBrowser:browser()]);
+      [[FakeBookmarkBarController alloc] initWithBrowser:browser()
+                                            initialWidth:100  // arbitrary
+                                                delegate:nil]);
   EXPECT_TRUE(controller.get());
   std::unique_ptr<BookmarkBarBridge> bridge(
       new BookmarkBarBridge(profile(), controller.get(), model));
   EXPECT_TRUE(bridge.get());
 
   bridge->BookmarkModelLoaded(NULL, false);
-  bridge->BookmarkModelBeingDeleted(NULL);
+  // |BookmarkModelBeingDeleted| is a no-op.
   bridge->BookmarkNodeMoved(NULL, NULL, 0, NULL, 0);
   bridge->BookmarkNodeAdded(NULL, NULL, 0);
   bridge->BookmarkNodeChanged(NULL, NULL);
   bridge->BookmarkNodeFaviconChanged(NULL, NULL);
   bridge->BookmarkNodeChildrenReordered(NULL, NULL);
   bridge->BookmarkNodeRemoved(NULL, NULL, 0, NULL, std::set<GURL>());
-
-  // 8 calls above plus an initial Loaded() in init routine makes 9
-  EXPECT_TRUE([controller.get()->callbacks_ count] == 9);
-
-  for (int x = 1; x < 9; x++) {
-    NSNumber* num = [NSNumber numberWithInt:x-1];
-    EXPECT_NSEQ(num, [controller.get()->callbacks_ objectAtIndex:x]);
-  }
+  // 7 calls above plus an initial Loaded() in init routine makes 8.
+  EXPECT_EQ(controller.get()->called_selectors_.size(), 8U);
+  std::vector<SEL> expected_selectors = {
+    @selector(loaded:),  // initial from init
+    @selector(loaded:),
+    @selector(nodeMoved:oldParent:oldIndex:newParent:newIndex:),
+    @selector(nodeAdded:parent:index:),
+    @selector(nodeChanged:node:),
+    @selector(nodeFaviconLoaded:node:),
+    @selector(nodeChildrenReordered:node:),
+    @selector(nodeRemoved:parent:index:)
+  };
+  EXPECT_EQ(controller.get()->called_selectors_, expected_selectors);
 }
