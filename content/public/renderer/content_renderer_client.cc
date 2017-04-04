@@ -222,6 +222,11 @@ GURL ContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return GURL();
 }
 
+std::unique_ptr<base::TaskScheduler::InitParams>
+ContentRendererClient::GetTaskSchedulerInitParams() {
+  return nullptr;
+}
+
 bool ContentRendererClient::AllowMediaSuspend() {
   return true;
 }

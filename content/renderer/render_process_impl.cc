@@ -25,8 +25,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/initialization_util.h"
-#include "base/task_scheduler/task_traits.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "content/child/site_isolation_stats_gatherer.h"
 #include "content/public/common/bindings_policy.h"
@@ -42,14 +40,6 @@
 #endif
 
 namespace {
-
-enum WorkerPoolType : size_t {
-  BACKGROUND = 0,
-  BACKGROUND_BLOCKING,
-  FOREGROUND,
-  FOREGROUND_BLOCKING,
-  WORKER_POOL_COUNT  // Always last.
-};
 
 const base::Feature kV8_ES2015_TailCalls_Feature {
   "V8_ES2015_TailCalls", base::FEATURE_DISABLED_BY_DEFAULT
@@ -82,49 +72,32 @@ void SetV8FlagIfHasSwitch(const char* switch_name, const char* v8_flag) {
   }
 }
 
-std::vector<base::SchedulerWorkerPoolParams>
-GetDefaultSchedulerWorkerPoolParams() {
+std::unique_ptr<base::TaskScheduler::InitParams>
+GetDefaultTaskSchedulerInitParams() {
   using StandbyThreadPolicy =
       base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
-  using ThreadPriority = base::ThreadPriority;
+
   constexpr int kMaxNumThreadsInBackgroundPool = 1;
   constexpr int kMaxNumThreadsInBackgroundBlockingPool = 1;
   constexpr int kMaxNumThreadsInForegroundPoolLowerBound = 2;
   constexpr int kMaxNumThreadsInForegroundBlockingPool = 1;
   constexpr auto kSuggestedReclaimTime = base::TimeDelta::FromSeconds(30);
 
-  std::vector<base::SchedulerWorkerPoolParams> params_vector;
-  params_vector.emplace_back("RendererBackground", ThreadPriority::BACKGROUND,
-                             StandbyThreadPolicy::LAZY,
-                             kMaxNumThreadsInBackgroundPool,
-                             kSuggestedReclaimTime);
-  params_vector.emplace_back(
-      "RendererBackgroundBlocking", ThreadPriority::BACKGROUND,
-      StandbyThreadPolicy::LAZY, kMaxNumThreadsInBackgroundBlockingPool,
-      kSuggestedReclaimTime);
-  params_vector.emplace_back("RendererForeground", ThreadPriority::NORMAL,
-                             StandbyThreadPolicy::LAZY,
-                             std::max(kMaxNumThreadsInForegroundPoolLowerBound,
-                                      base::SysInfo::NumberOfProcessors()),
-                             kSuggestedReclaimTime);
-  params_vector.emplace_back("RendererForegroundBlocking",
-                             ThreadPriority::NORMAL, StandbyThreadPolicy::LAZY,
-                             kMaxNumThreadsInForegroundBlockingPool,
-                             kSuggestedReclaimTime);
-  DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
-  return params_vector;
-}
-
-// Returns the worker pool index for |traits| defaulting to FOREGROUND or
-// FOREGROUND_BLOCKING on any other priorities based off of worker pools defined
-// in GetDefaultSchedulerWorkerPoolParams().
-size_t DefaultRendererWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
-  const bool is_background =
-      traits.priority() == base::TaskPriority::BACKGROUND;
-  if (traits.may_block() || traits.with_base_sync_primitives())
-    return is_background ? BACKGROUND_BLOCKING : FOREGROUND_BLOCKING;
-
-  return is_background ? BACKGROUND : FOREGROUND;
+  return base::MakeUnique<base::TaskScheduler::InitParams>(
+      base::SchedulerWorkerPoolParams(StandbyThreadPolicy::LAZY,
+                                      kMaxNumThreadsInBackgroundPool,
+                                      kSuggestedReclaimTime),
+      base::SchedulerWorkerPoolParams(StandbyThreadPolicy::LAZY,
+                                      kMaxNumThreadsInBackgroundBlockingPool,
+                                      kSuggestedReclaimTime),
+      base::SchedulerWorkerPoolParams(
+          StandbyThreadPolicy::LAZY,
+          std::max(kMaxNumThreadsInForegroundPoolLowerBound,
+                   base::SysInfo::NumberOfProcessors()),
+          kSuggestedReclaimTime),
+      base::SchedulerWorkerPoolParams(StandbyThreadPolicy::LAZY,
+                                      kMaxNumThreadsInForegroundBlockingPool,
+                                      kSuggestedReclaimTime));
 }
 
 }  // namespace
@@ -132,11 +105,8 @@ size_t DefaultRendererWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
 namespace content {
 
 RenderProcessImpl::RenderProcessImpl(
-    const std::vector<base::SchedulerWorkerPoolParams>& worker_pool_params,
-    base::TaskScheduler::WorkerPoolIndexForTraitsCallback
-        worker_pool_index_for_traits_callback)
-    : RenderProcess(worker_pool_params,
-                    std::move(worker_pool_index_for_traits_callback)),
+    std::unique_ptr<base::TaskScheduler::InitParams> task_scheduler_init_params)
+    : RenderProcess("Renderer", std::move(task_scheduler_init_params)),
       enabled_bindings_(0) {
 #if defined(OS_WIN)
   // HACK:  See http://b/issue?id=1024307 for rationale.
@@ -204,24 +174,13 @@ RenderProcessImpl::~RenderProcessImpl() {
 }
 
 std::unique_ptr<RenderProcess> RenderProcessImpl::Create() {
-  std::vector<base::SchedulerWorkerPoolParams> worker_pool_params_vector;
-  base::TaskScheduler::WorkerPoolIndexForTraitsCallback
-      worker_pool_index_for_traits_callback;
-  content::GetContentClient()->renderer()->GetTaskSchedulerInitializationParams(
-      &worker_pool_params_vector, &worker_pool_index_for_traits_callback);
-
-  if (worker_pool_params_vector.empty()) {
-    worker_pool_params_vector = GetDefaultSchedulerWorkerPoolParams();
-    worker_pool_index_for_traits_callback =
-        base::Bind(&DefaultRendererWorkerPoolIndexForTraits);
-  }
-
-  DCHECK(!worker_pool_params_vector.empty());
-  DCHECK(worker_pool_index_for_traits_callback);
+  auto task_scheduler_init_params =
+      content::GetContentClient()->renderer()->GetTaskSchedulerInitParams();
+  if (!task_scheduler_init_params)
+    task_scheduler_init_params = GetDefaultTaskSchedulerInitParams();
 
   return base::WrapUnique(
-      new RenderProcessImpl(worker_pool_params_vector,
-                            std::move(worker_pool_index_for_traits_callback)));
+      new RenderProcessImpl(std::move(task_scheduler_init_params)));
 }
 
 void RenderProcessImpl::AddBindings(int bindings) {

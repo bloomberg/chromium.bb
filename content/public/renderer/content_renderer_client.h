@@ -29,7 +29,6 @@ class SkBitmap;
 
 namespace base {
 class FilePath;
-class SchedulerWorkerPoolParams;
 }
 
 namespace blink {
@@ -359,12 +358,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // An empty URL is returned if the URL is not overriden.
   virtual GURL OverrideFlashEmbedWithHTML(const GURL& url);
 
-  // Provides parameters for initializing the global task scheduler. If
-  // |params_vector| is left empty, default parameters are used.
-  virtual void GetTaskSchedulerInitializationParams(
-      std::vector<base::SchedulerWorkerPoolParams>* params_vector,
-      base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
-          index_to_traits_callback) {}
+  // Provides parameters for initializing the global task scheduler. Default
+  // params are used if this returns nullptr.
+  virtual std::unique_ptr<base::TaskScheduler::InitParams>
+  GetTaskSchedulerInitParams();
 
   // Returns true if the media pipeline can be suspended, or false otherwise.
   virtual bool AllowMediaSuspend();

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "content/renderer/render_process.h"
 
@@ -34,10 +33,8 @@ class RenderProcessImpl : public RenderProcess {
   int GetEnabledBindings() const override;
 
  private:
-  RenderProcessImpl(
-      const std::vector<base::SchedulerWorkerPoolParams>& worker_pool_params,
-      base::TaskScheduler::WorkerPoolIndexForTraitsCallback
-          worker_pool_index_for_traits_callback);
+  RenderProcessImpl(std::unique_ptr<base::TaskScheduler::InitParams>
+                        task_scheduler_init_params);
 
   // Bitwise-ORed set of extra bindings that have been enabled anywhere in this
   // process.  See BindingsPolicy for details.

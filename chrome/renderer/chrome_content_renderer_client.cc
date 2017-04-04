@@ -1519,14 +1519,8 @@ GURL ChromeContentRendererClient::OverrideFlashEmbedWithHTML(const GURL& url) {
   return corrected_url.ReplaceComponents(r);
 }
 
-void ChromeContentRendererClient::GetTaskSchedulerInitializationParams(
-    std::vector<base::SchedulerWorkerPoolParams>* params_vector,
-    base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
-        index_to_traits_callback) {
-  DCHECK(params_vector);
-  DCHECK(index_to_traits_callback);
-  // If this call fails, content will fall back to the default params.
-  *params_vector = task_scheduler_util::GetRendererWorkerPoolParams();
-  *index_to_traits_callback =
-      base::Bind(&task_scheduler_util::RendererWorkerPoolIndexForTraits);
+std::unique_ptr<base::TaskScheduler::InitParams>
+ChromeContentRendererClient::GetTaskSchedulerInitParams() {
+  return task_scheduler_util::
+      GetRendererTaskSchedulerInitParamsFromCommandLine();
 }
