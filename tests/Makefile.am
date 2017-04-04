@@ -132,6 +132,7 @@ XFAIL_TESTS +=					\
 dist_yaml_TESTS =				\
 	yaml/ar-ar-g1_harness.yaml		\
 	yaml/ar-fa_harness.yaml			\
+	yaml/begcaps_endcaps.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/chr-us-g1_harness.yaml		\
 	yaml/da-dk-g08.yaml			\
@@ -198,6 +199,7 @@ dist_yaml_TESTS =				\
 	yaml/multipass-forward.yaml		\
 	yaml/multipass.yaml			\
 	yaml/nl-NL-g0_harness.yaml		\
+	yaml/new_emph.yaml			\
 	yaml/nl-g0_harness.yaml			\
 	yaml/no_8dot_harness.yaml		\
 	yaml/no_g1_harness.yaml			\

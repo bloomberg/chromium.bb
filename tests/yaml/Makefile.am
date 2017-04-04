@@ -1,6 +1,7 @@
 EXTRA_DIST =					\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\
+	begcaps_endcaps.yaml			\
 	capsnocont.yaml				\
 	chr-us-g1_harness.yaml			\
 	da-dk-g08-back.yaml			\
@@ -68,6 +69,7 @@ EXTRA_DIST =					\
 	multipass-forward.yaml			\
 	multipass.yaml				\
 	nl-NL-g0_harness.yaml			\
+	new_emph.yaml				\
 	nl-g0_harness.yaml			\
 	no_8dot_harness.yaml			\
 	no_g1_harness.yaml			\
