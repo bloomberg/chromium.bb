@@ -1014,7 +1014,6 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
 
   // Associate with active job to |server_id| if such exists.
   if (HasActiveJob(server_id)) {
-    active_requests_[request] = server_id;
     job_requests_map_[server_id].insert(request);
     return ERR_IO_PENDING;
   }
@@ -1058,7 +1057,6 @@ int QuicStreamFactory::Create(const QuicServerId& server_id,
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
-    active_requests_[request] = server_id;
     job_requests_map_[server_id].insert(request);
     Job* job_ptr = job.get();
     active_jobs_[server_id][job_ptr] = std::move(job);
@@ -1170,7 +1168,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     RequestSet::iterator it = job_requests_map_[server_id].begin();
     QuicStreamRequest* request = *it;
     job_requests_map_[server_id].erase(it);
-    active_requests_.erase(request);
     // Even though we're invoking callbacks here, we don't need to worry
     // about |this| being deleted, because the factory is owned by the
     // profile which can not be deleted via callbacks.
@@ -1283,11 +1280,10 @@ void QuicStreamFactory::OnTimeoutWithOpenStreams() {
 }
 
 void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
-  RequestMap::iterator request_it = active_requests_.find(request);
-  DCHECK(request_it != active_requests_.end());
-  const QuicServerId& server_id = request_it->second;
-  job_requests_map_[server_id].erase(request);
-  active_requests_.erase(request_it);
+  ServerIDRequestsMap::iterator requests_it =
+      job_requests_map_.find(request->server_id());
+  DCHECK(requests_it != job_requests_map_.end());
+  requests_it->second.erase(request);
 }
 
 void QuicStreamFactory::CloseAllSessions(int error, QuicErrorCode quic_error) {

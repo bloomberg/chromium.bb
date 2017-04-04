@@ -425,7 +425,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<QuicChromiumClientSession*, IPEndPoint> SessionPeerIPMap;
   typedef std::map<Job*, std::unique_ptr<Job>> JobSet;
   typedef std::map<QuicServerId, JobSet> JobMap;
-  typedef std::map<QuicStreamRequest*, QuicServerId> RequestMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<QuicServerId, RequestSet> ServerIDRequestsMap;
   typedef std::map<QuicServerId, std::unique_ptr<CertVerifierJob>>
@@ -573,8 +572,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicCryptoClientConfig crypto_config_;
 
   JobMap active_jobs_;
+  // Map from QuicServerId to a set of non-owning QuicStreamRequest pointers.
   ServerIDRequestsMap job_requests_map_;
-  RequestMap active_requests_;
 
   CertVerifierJobMap active_cert_verifier_jobs_;
 
