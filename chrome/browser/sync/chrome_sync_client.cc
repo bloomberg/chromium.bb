@@ -551,6 +551,10 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
           ->GetSyncBridge()
           ->AsWeakPtr();
 #endif  // defined(OS_CHROMEOS)
+    case syncer::TYPED_URLS:
+      // TODO(gangwu):implement TypedURLSyncBridge and return real
+      // TypedURLSyncBridge here.
+      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
     default:
       NOTREACHED();
       return WeakPtr<syncer::ModelTypeSyncBridge>();

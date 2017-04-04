@@ -234,6 +234,10 @@ URLDatabase* HistoryService::InMemoryDatabase() {
   return in_memory_backend_ ? in_memory_backend_->db() : nullptr;
 }
 
+TypedURLSyncBridge* HistoryService::GetTypedURLSyncBridge() const {
+  return history_backend_->GetTypedURLSyncBridge();
+}
+
 TypedUrlSyncableService* HistoryService::GetTypedUrlSyncableService() const {
   return history_backend_->GetTypedUrlSyncableService();
 }

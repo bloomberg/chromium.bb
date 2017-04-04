@@ -23,6 +23,8 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/history/core/browser/history_model_worker.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/history/core/browser/typed_url_sync_bridge.h"
+#include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -136,7 +138,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   favicon::FaviconService* GetFaviconService() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     return ios::FaviconServiceFactory::GetForBrowserState(
-        browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+        browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
   }
 
   history::HistoryService* GetHistoryService() override {
@@ -190,10 +192,9 @@ void IOSChromeSyncClient::Initialize() {
 
   web_data_service_ =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(
-          browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-  // TODO(crbug.com/558320) Is EXPLICIT_ACCESS appropriate here?
+          browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
   password_store_ = IOSChromePasswordStoreFactory::GetForBrowserState(
-      browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+      browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
@@ -243,7 +244,7 @@ bookmarks::BookmarkModel* IOSChromeSyncClient::GetBookmarkModel() {
 favicon::FaviconService* IOSChromeSyncClient::GetFaviconService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return ios::FaviconServiceFactory::GetForBrowserState(
-      browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+      browser_state_, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
 history::HistoryService* IOSChromeSyncClient::GetHistoryService() {
@@ -392,6 +393,10 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       return autofill::AutocompleteSyncBridge::FromWebDataService(
                  web_data_service_.get())
           ->AsWeakPtr();
+    case syncer::TYPED_URLS:
+      // TODO(gangwu):implement TypedURLSyncBridge and return real
+      // TypedURLSyncBridge here.
+      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();

@@ -46,4 +46,8 @@ const base::Feature kSyncUSSDeviceInfo{"EnableSyncUSSDeviceInfo",
 const base::Feature kSyncUSSAutocomplete{"SyncUSSAutocomplete",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables USS implementation of typed URL datatype.
+const base::Feature kSyncUSSTypedURL{"SyncUSSTypedURL",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

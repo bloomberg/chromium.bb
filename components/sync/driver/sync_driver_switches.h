@@ -22,6 +22,7 @@ extern const char kSyncShortNudgeDelayForTest[];
 extern const base::Feature kSyncClearDataOnPassphraseEncryption;
 extern const base::Feature kSyncUSSDeviceInfo;
 extern const base::Feature kSyncUSSAutocomplete;
+extern const base::Feature kSyncUSSTypedURL;
 
 }  // namespace switches
 

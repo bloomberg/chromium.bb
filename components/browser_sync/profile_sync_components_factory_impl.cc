@@ -209,9 +209,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // TypedUrl sync is enabled by default.  Register unless explicitly disabled,
   // or if saving history is disabled.
   if (!disabled_types.Has(syncer::TYPED_URLS) && !history_disabled) {
-    sync_service->RegisterDataTypeController(
-        base::MakeUnique<TypedUrlDataTypeController>(
-            error_callback, sync_client_, history_disabled_pref_));
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
+      // TODO(gangwu): Register controller here once typed url controller
+      // implemented.
+    } else {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<TypedUrlDataTypeController>(
+              error_callback, sync_client_, history_disabled_pref_));
+    }
   }
 
   // Delete directive sync is enabled by default.  Register unless full history

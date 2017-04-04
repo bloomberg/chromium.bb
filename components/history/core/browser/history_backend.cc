@@ -15,6 +15,8 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -39,8 +41,10 @@
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/browser/page_usage_data.h"
+#include "components/history/core/browser/typed_url_sync_bridge.h"
 #include "components/history/core/browser/typed_url_syncable_service.h"
 #include "components/history/core/browser/url_utils.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "sql/error_delegate_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -52,9 +56,11 @@
 #include "base/ios/scoped_critical_action.h"
 #endif
 
+using base::debug::DumpWithoutCrashing;
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
+using syncer::ModelTypeChangeProcessor;
 
 /* The HistoryBackend consists of two components:
 
@@ -211,7 +217,18 @@ void HistoryBackend::Init(
   if (!force_fail)
     InitImpl(history_database_params);
   delegate_->DBLoaded();
-  typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSTypedURL)) {
+    typed_url_sync_bridge_ = base::MakeUnique<TypedURLSyncBridge>(
+        this,
+        base::BindRepeating(
+            &ModelTypeChangeProcessor::Create,
+            // TODO(gangwu): use ReportUnrecoverableError before launch.
+            base::BindRepeating(base::IgnoreResult(&DumpWithoutCrashing))));
+  } else {
+    typed_url_syncable_service_ =
+        base::MakeUnique<TypedUrlSyncableService>(this);
+  }
+
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
 }
@@ -1034,6 +1051,10 @@ void HistoryBackend::QueryURL(const GURL& url,
 
 TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
   return typed_url_syncable_service_.get();
+}
+
+TypedURLSyncBridge* HistoryBackend::GetTypedURLSyncBridge() const {
+  return typed_url_sync_bridge_.get();
 }
 
 // Statistics ------------------------------------------------------------------
