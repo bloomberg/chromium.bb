@@ -71,7 +71,8 @@ install-libweston_moduleLTLIBRARIES install-moduleLTLIBRARIES: install-libLTLIBR
 
 lib_LTLIBRARIES = libweston-@LIBWESTON_MAJOR@.la
 libweston_@LIBWESTON_MAJOR@_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
-libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
+libweston_@LIBWESTON_MAJOR@_la_CFLAGS = $(AM_CFLAGS) \
+	$(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS) $(LIBDRM_CFLAGS)
 libweston_@LIBWESTON_MAJOR@_la_LIBADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) -lm $(CLOCK_GETTIME_LIBS) \
 	$(LIBINPUT_BACKEND_LIBS) libshared.la
@@ -105,6 +106,8 @@ libweston_@LIBWESTON_MAJOR@_la_SOURCES =			\
 	libweston/timeline-object.h			\
 	libweston/linux-dmabuf.c			\
 	libweston/linux-dmabuf.h			\
+	libweston/pixel-formats.c			\
+	libweston/pixel-formats.h			\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
