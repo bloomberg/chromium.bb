@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8PerContextData.h"
 #include "core/dom/ScriptModuleResolver.h"
 #include "core/testing/DummyModulator.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -83,6 +84,17 @@ TEST(ScriptModuleTest, compileFail) {
   ScriptModule module =
       ScriptModule::compile(scope.isolate(), "123 = 456", "foo.js");
   ASSERT_TRUE(module.isNull());
+}
+
+TEST(ScriptModuleTest, moduleRequests) {
+  V8TestingScope scope;
+  ScriptModule module = ScriptModule::compile(
+      scope.isolate(), "import 'a'; import 'b'; export const c = 'c';",
+      "foo.js");
+  ASSERT_FALSE(module.isNull());
+
+  auto requests = module.moduleRequests(scope.getScriptState());
+  EXPECT_THAT(requests, ::testing::ContainerEq<Vector<String>>({"a", "b"}));
 }
 
 TEST(ScriptModuleTest, instantiateNoDeps) {

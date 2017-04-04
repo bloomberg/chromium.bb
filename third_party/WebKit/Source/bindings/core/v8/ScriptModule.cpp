@@ -62,6 +62,23 @@ void ScriptModule::evaluate(ScriptState* scriptState) {
   }
 }
 
+Vector<String> ScriptModule::moduleRequests(ScriptState* scriptState) {
+  if (isNull())
+    return Vector<String>();
+
+  v8::Local<v8::Module> module = m_module->newLocal(scriptState->isolate());
+
+  Vector<String> ret;
+
+  int length = module->GetModuleRequestsLength();
+  ret.reserveInitialCapacity(length);
+  for (int i = 0; i < length; ++i) {
+    v8::Local<v8::String> v8Name = module->GetModuleRequest(i);
+    ret.push_back(toCoreString(v8Name));
+  }
+  return ret;
+}
+
 v8::MaybeLocal<v8::Module> ScriptModule::resolveModuleCallback(
     v8::Local<v8::Context> context,
     v8::Local<v8::String> specifier,

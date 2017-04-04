@@ -10,6 +10,7 @@
 #include "core/CoreExport.h"
 #include "v8/include/v8.h"
 #include "wtf/Allocator.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -36,6 +37,8 @@ class CORE_EXPORT ScriptModule final {
   // Returns exception, if any.
   ScriptValue instantiate(ScriptState*);
   void evaluate(ScriptState*);
+
+  Vector<String> moduleRequests(ScriptState*);
 
   bool isNull() const { return !m_module || m_module->isEmpty(); }
 
