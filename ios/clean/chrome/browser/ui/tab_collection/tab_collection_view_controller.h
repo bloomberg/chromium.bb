@@ -13,7 +13,8 @@
 
 // Controller for a scrolling view displaying square cells that represent
 // the user's open tabs.
-@interface TabCollectionViewController : UIViewController<TabCollectionConsumer>
+@interface TabCollectionViewController
+    : UIViewController<TabCollectionConsumer, UICollectionViewDataSource>
 // A collection view of tabs.
 @property(nonatomic, weak, readonly) UICollectionView* tabs;
 // Data source for the tabs to be displayed.

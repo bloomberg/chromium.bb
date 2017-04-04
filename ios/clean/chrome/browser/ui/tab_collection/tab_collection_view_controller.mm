@@ -14,8 +14,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabCollectionViewController ()<UICollectionViewDataSource,
-                                          UICollectionViewDelegate,
+@interface TabCollectionViewController ()<UICollectionViewDelegate,
                                           SessionCellDelegate>
 @property(nonatomic, readwrite) UICollectionView* tabs;
 @end

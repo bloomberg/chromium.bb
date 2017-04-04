@@ -24,10 +24,14 @@ source_set("tab_strip") {
 
 source_set("tab_strip_ui") {
   sources = [
+    "tab_strip_toolbar.h",
+    "tab_strip_toolbar.mm",
     "tab_strip_view_controller.h",
     "tab_strip_view_controller.mm",
   ]
   deps = [
+    "//ios/chrome/browser/ui/icons",
+    "//ios/clean/chrome/browser/ui/actions",
     "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/tab_collection:tab_collection_ui",
     "//ios/shared/chrome/browser/ui/commands",
