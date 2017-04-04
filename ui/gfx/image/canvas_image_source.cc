@@ -21,7 +21,7 @@ CanvasImageSource::CanvasImageSource(const gfx::Size& size, bool is_opaque)
 gfx::ImageSkiaRep CanvasImageSource::GetImageForScale(float scale) {
   gfx::Canvas canvas(size_, scale, is_opaque_);
   Draw(&canvas);
-  return canvas.ExtractImageRep();
+  return gfx::ImageSkiaRep(canvas.GetBitmap(), scale);
 }
 
 }  // namespace gfx
