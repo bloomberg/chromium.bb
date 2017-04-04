@@ -1065,35 +1065,10 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 }
 
 #if CONFIG_WARPED_MOTION
-void calc_projection_samples(MB_MODE_INFO *const mbmi,
-#if CONFIG_GLOBAL_MOTION
-                             MACROBLOCKD *xd,
-#endif
-                             int x, int y, int *pts_inref) {
-  if (mbmi->motion_mode == WARPED_CAUSAL
-#if CONFIG_GLOBAL_MOTION
-      || (mbmi->mode == ZEROMV &&
-          xd->global_motion[mbmi->ref_frame[0]].wmtype > TRANSLATION)
-#endif
-          ) {
-    int ipts[2] = { x, y }, ipts_inref[2];
-    WarpedMotionParams *wm =
-#if CONFIG_GLOBAL_MOTION
-        (mbmi->motion_mode != WARPED_CAUSAL)
-            ? &xd->global_motion[mbmi->ref_frame[0]]
-            :
-#endif
-            &mbmi->wm_params[0];
-
-    project_points(wm, ipts, ipts_inref, 1, 2, 2, 0, 0);
-    pts_inref[0] =
-        ROUND_POWER_OF_TWO_SIGNED(ipts_inref[0], WARPEDPIXEL_PREC_BITS - 3);
-    pts_inref[1] =
-        ROUND_POWER_OF_TWO_SIGNED(ipts_inref[1], WARPEDPIXEL_PREC_BITS - 3);
-  } else {
-    pts_inref[0] = (x * 8) + mbmi->mv[0].as_mv.col;
-    pts_inref[1] = (y * 8) + mbmi->mv[0].as_mv.row;
-  }
+void calc_projection_samples(MB_MODE_INFO *const mbmi, int x, int y,
+                             int *pts_inref) {
+  pts_inref[0] = (x * 8) + mbmi->mv[0].as_mv.col;
+  pts_inref[1] = (y * 8) + mbmi->mv[0].as_mv.row;
 }
 
 // Note: Samples returned are at 1/8-pel precision
@@ -1128,11 +1103,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
         pts[0] = (x * 8);
         pts[1] = (y * 8);
-        calc_projection_samples(mbmi,
-#if CONFIG_GLOBAL_MOTION
-                                xd,
-#endif
-                                x, y, pts_inref);
+        calc_projection_samples(mbmi, x, y, pts_inref);
         pts += 2;
         pts_inref += 2;
         np++;
@@ -1163,11 +1134,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
         pts[0] = (x * 8);
         pts[1] = (y * 8);
-        calc_projection_samples(mbmi,
-#if CONFIG_GLOBAL_MOTION
-                                xd,
-#endif
-                                x, y, pts_inref);
+        calc_projection_samples(mbmi, x, y, pts_inref);
         pts += 2;
         pts_inref += 2;
         np++;
@@ -1194,11 +1161,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
 
       pts[0] = (x * 8);
       pts[1] = (y * 8);
-      calc_projection_samples(mbmi,
-#if CONFIG_GLOBAL_MOTION
-                              xd,
-#endif
-                              x, y, pts_inref);
+      calc_projection_samples(mbmi, x, y, pts_inref);
       pts += 2;
       pts_inref += 2;
       np++;
