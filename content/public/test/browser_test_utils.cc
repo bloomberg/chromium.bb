@@ -656,7 +656,7 @@ void SimulateGestureFlingSequence(WebContents* web_contents,
 
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap(
-      blink::WebGestureEvent::GestureTap, blink::WebInputEvent::ControlKey,
+      blink::WebGestureEvent::GestureTap, 0,
       ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   tap.sourceDevice = blink::WebGestureDeviceTouchpad;
   tap.x = point.x();

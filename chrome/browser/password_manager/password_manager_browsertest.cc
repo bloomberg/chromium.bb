@@ -1142,43 +1142,46 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckElementValue("username_field", "temp");
 }
 
-// The following test is limited to Aura, because
-// RenderWidgetHostViewGuest::ProcessAckedTouchEvent is, and
-// ProcessAckedTouchEvent is what triggers the translation of touch events to
-// gesture events.
-// Disabled: http://crbug.com/346297
-#if defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       DISABLED_PasswordValueAccessibleOnSubmit) {
+                       PasswordValueAccessibleOnSubmit) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("admin");
+  signin_form.password_value = base::ASCIIToUTF16("random_secret");
+  password_store->AddLogin(signin_form);
+
   NavigateToFile("/password/form_and_link.html");
 
-  // Fill in the credentials, and make sure they are saved.
-  NavigationObserver form_submit_observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill_and_submit =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random_secret';"
-      "document.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  form_submit_observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
+  // Get the position of the 'submit' button.
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      RenderFrameHost(),
+      "var submitRect = document.getElementById('input_submit_button')"
+      ".getBoundingClientRect();"));
 
-  // Reload the original page to have the saved credentials autofilled.
-  NavigationObserver reload_observer(WebContents());
-  NavigateToFile("/password/form_and_link.html");
-  reload_observer.Wait();
+  int top;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
+      RenderFrameHost(), "window.domAutomationController.send(submitRect.top);",
+      &top));
+  int left;
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
+      RenderFrameHost(),
+      "window.domAutomationController.send(submitRect.left);", &left));
 
   NavigationObserver submit_observer(WebContents());
-  // Submit the form via a tap on the submit button. The button is placed at 0,
-  // 100, and has height 300 and width 700.
-  content::SimulateTapAt(WebContents(), gfx::Point(350, 250));
+  // Submit the form via a tap on the submit button.
+  content::SimulateTapAt(WebContents(), gfx::Point(left + 1, top + 1));
   submit_observer.Wait();
   std::string query = WebContents()->GetURL().query();
-  EXPECT_NE(std::string::npos, query.find("random_secret")) << query;
+  EXPECT_THAT(query, testing::HasSubstr("random_secret"));
 }
-#endif
 
 // Test fix for crbug.com/338650.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
