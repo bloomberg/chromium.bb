@@ -117,7 +117,15 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   unsigned int ColorValue();
   std::string FontFamily();
   float FontSize();
+  std::string Autocomplete();
+  std::string Current();
+  std::string Invalid();
+  std::string KeyShortcuts();
+  std::string Live();
   std::string Orientation();
+  std::string Relevant();
+  std::string RoleDescription();
+  std::string Sort();
   int PosInSet();
   int SetSize();
   int ClickPointX();

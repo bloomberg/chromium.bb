@@ -953,7 +953,8 @@ AXSupportedAction AXObject::action() const {
 }
 
 AccessibilityButtonState AXObject::checkboxOrRadioValue() const {
-  const AtomicString& checkedAttribute = getAttribute(aria_checkedAttr);
+  const AtomicString& checkedAttribute =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked);
   if (equalIgnoringCase(checkedAttribute, "true"))
     return ButtonStateOn;
 

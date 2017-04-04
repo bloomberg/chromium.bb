@@ -28,6 +28,7 @@
 
 #include "modules/accessibility/AXTableCell.h"
 
+#include "core/dom/AccessibleNode.h"
 #include "core/layout/LayoutTableCell.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableRow.h"
@@ -220,7 +221,8 @@ SortDirection AXTableCell::getSortDirection() const {
   if (roleValue() != RowHeaderRole && roleValue() != ColumnHeaderRole)
     return SortDirectionUndefined;
 
-  const AtomicString& ariaSort = getAttribute(aria_sortAttr);
+  const AtomicString& ariaSort =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kSort);
   if (ariaSort.isEmpty())
     return SortDirectionUndefined;
   if (equalIgnoringCase(ariaSort, "none"))

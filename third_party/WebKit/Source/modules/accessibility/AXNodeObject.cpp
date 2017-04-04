@@ -823,7 +823,8 @@ static Element* siblingWithAriaRole(String role, Node* node) {
 
   for (Element* sibling = ElementTraversal::firstChild(*parent); sibling;
        sibling = ElementTraversal::nextSibling(*sibling)) {
-    const AtomicString& siblingAriaRole = sibling->getAttribute(roleAttr);
+    const AtomicString& siblingAriaRole =
+        AccessibleNode::getProperty(sibling, AOMStringProperty::kRole);
     if (equalIgnoringCase(siblingAriaRole, role))
       return sibling;
   }
@@ -927,6 +928,23 @@ void AXNodeObject::getSparseAXAttributes(
     SparseAttributeSetter* setter = axSparseAttributeSetterMap.at(attr.name());
     if (setter)
       setter->run(*this, sparseAttributeClient, attr.value());
+  }
+
+  // TODO(dmazzoni): Efficiently iterate over AccessibleNode properties that are
+  // set and merge the two loops somehow.
+  if (toElement(node)->existingAccessibleNode()) {
+    AtomicString keyShortcuts =
+        getAOMPropertyOrARIAAttribute(AOMStringProperty::kKeyShortcuts);
+    if (!keyShortcuts.isNull()) {
+      axSparseAttributeSetterMap.at(aria_keyshortcutsAttr)
+          ->run(*this, sparseAttributeClient, keyShortcuts);
+    }
+    AtomicString roleDescription =
+        getAOMPropertyOrARIAAttribute(AOMStringProperty::kRoleDescription);
+    if (!roleDescription.isNull()) {
+      axSparseAttributeSetterMap.at(aria_roledescriptionAttr)
+          ->run(*this, sparseAttributeClient, roleDescription);
+    }
   }
 }
 
@@ -1141,7 +1159,9 @@ bool AXNodeObject::isChecked() const {
     case MenuItemRadioRole:
     case RadioButtonRole:
     case SwitchRole:
-      if (equalIgnoringCase(getAttribute(aria_checkedAttr), "true"))
+      if (equalIgnoringCase(
+              getAOMPropertyOrARIAAttribute(AOMStringProperty::kChecked),
+              "true"))
         return true;
       return false;
     default:
@@ -1403,7 +1423,7 @@ String AXNodeObject::ariaAutoComplete() const {
     return String();
 
   const AtomicString& ariaAutoComplete =
-      getAttribute(aria_autocompleteAttr).lower();
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete).lower();
 
   if (ariaAutoComplete == "inline" || ariaAutoComplete == "list" ||
       ariaAutoComplete == "both")
@@ -1465,7 +1485,8 @@ AXObject* AXNodeObject::inPageLinkTarget() const {
 }
 
 AccessibilityOrientation AXNodeObject::orientation() const {
-  const AtomicString& ariaOrientation = getAttribute(aria_orientationAttr);
+  const AtomicString& ariaOrientation =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kOrientation);
   AccessibilityOrientation orientation = AccessibilityOrientationUndefined;
   if (equalIgnoringCase(ariaOrientation, "horizontal"))
     orientation = AccessibilityOrientationHorizontal;
@@ -1611,10 +1632,10 @@ RGBA32 AXNodeObject::colorValue() const {
 }
 
 AriaCurrentState AXNodeObject::ariaCurrentState() const {
-  if (!hasAttribute(aria_currentAttr))
-    return AXObject::ariaCurrentState();
-
-  const AtomicString& attributeValue = getAttribute(aria_currentAttr);
+  const AtomicString& attributeValue =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kCurrent);
+  if (attributeValue.isNull())
+    return AriaCurrentStateUndefined;
   if (attributeValue.isEmpty() || equalIgnoringCase(attributeValue, "false"))
     return AriaCurrentStateFalse;
   if (equalIgnoringCase(attributeValue, "true"))
@@ -1637,20 +1658,19 @@ AriaCurrentState AXNodeObject::ariaCurrentState() const {
 }
 
 InvalidState AXNodeObject::getInvalidState() const {
-  if (hasAttribute(aria_invalidAttr)) {
-    const AtomicString& attributeValue = getAttribute(aria_invalidAttr);
-    if (equalIgnoringCase(attributeValue, "false"))
-      return InvalidStateFalse;
-    if (equalIgnoringCase(attributeValue, "true"))
-      return InvalidStateTrue;
-    if (equalIgnoringCase(attributeValue, "spelling"))
-      return InvalidStateSpelling;
-    if (equalIgnoringCase(attributeValue, "grammar"))
-      return InvalidStateGrammar;
-    // A yet unknown value.
-    if (!attributeValue.isEmpty())
-      return InvalidStateOther;
-  }
+  const AtomicString& attributeValue =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
+  if (equalIgnoringCase(attributeValue, "false"))
+    return InvalidStateFalse;
+  if (equalIgnoringCase(attributeValue, "true"))
+    return InvalidStateTrue;
+  if (equalIgnoringCase(attributeValue, "spelling"))
+    return InvalidStateSpelling;
+  if (equalIgnoringCase(attributeValue, "grammar"))
+    return InvalidStateGrammar;
+  // A yet unknown value.
+  if (!attributeValue.isEmpty())
+    return InvalidStateOther;
 
   if (getNode() && getNode()->isElementNode() &&
       toElement(getNode())->isFormControlElement()) {
@@ -1701,7 +1721,7 @@ int AXNodeObject::setSize() const {
 
 String AXNodeObject::ariaInvalidValue() const {
   if (getInvalidState() == InvalidStateOther)
-    return getAttribute(aria_invalidAttr);
+    return getAOMPropertyOrARIAAttribute(AOMStringProperty::kInvalid);
 
   return String();
 }
@@ -1710,7 +1730,8 @@ String AXNodeObject::valueDescription() const {
   if (!supportsRangeValue())
     return String();
 
-  return getAttribute(aria_valuetextAttr).getString();
+  return getAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText)
+      .getString();
 }
 
 float AXNodeObject::valueForRange() const {
@@ -1874,7 +1895,8 @@ String AXNodeObject::textAlternative(bool recursive,
       return text();
 
     if (isRange()) {
-      const AtomicString& ariaValuetext = getAttribute(aria_valuetextAttr);
+      const AtomicString& ariaValuetext =
+          getAOMPropertyOrARIAAttribute(AOMStringProperty::kValueText);
       if (!ariaValuetext.isNull())
         return ariaValuetext.getString();
       return String::number(valueForRange());
@@ -2737,7 +2759,7 @@ String AXNodeObject::nativeTextAlternative(
       source.type = nameFrom;
     }
     const AtomicString& ariaPlaceholder =
-        htmlElement->fastGetAttribute(aria_placeholderAttr);
+        getAOMPropertyOrARIAAttribute(AOMStringProperty::kPlaceholder);
     if (!ariaPlaceholder.isEmpty()) {
       textAlternative = ariaPlaceholder;
       if (nameSources) {

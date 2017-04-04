@@ -13,12 +13,29 @@
 
 namespace blink {
 
+class AXObjectCache;
 class Element;
+class QualifiedName;
 
 // All of the properties of AccessibleNode that have type "string".
 // TODO(dmazzoni): Add similar enums for all of the properties with
 // type bool, float, reference, and reference list.
-enum class AOMStringProperty { kRole, kLabel };
+enum class AOMStringProperty {
+  kAutocomplete,
+  kChecked,
+  kCurrent,
+  kInvalid,
+  kKeyShortcuts,
+  kLabel,
+  kLive,
+  kOrientation,
+  kPlaceholder,
+  kRelevant,
+  kRole,
+  kRoleDescription,
+  kSort,
+  kValueText
+};
 
 // Accessibility Object Model node
 // Explainer: https://github.com/WICG/aom/blob/master/explainer.md
@@ -36,16 +53,54 @@ class CORE_EXPORT AccessibleNode
   // otherwise returns the equivalent ARIA attribute.
   static const AtomicString& getProperty(Element*, AOMStringProperty);
 
-  AtomicString role() const;
-  void setRole(const AtomicString&);
+  AtomicString autocomplete() const;
+  void setAutocomplete(const AtomicString&);
+
+  AtomicString checked() const;
+  void setChecked(const AtomicString&);
+
+  AtomicString current() const;
+  void setCurrent(const AtomicString&);
+
+  AtomicString invalid() const;
+  void setInvalid(const AtomicString&);
+
+  AtomicString keyShortcuts() const;
+  void setKeyShortcuts(const AtomicString&);
 
   AtomicString label() const;
   void setLabel(const AtomicString&);
+
+  AtomicString live() const;
+  void setLive(const AtomicString&);
+
+  AtomicString orientation() const;
+  void setOrientation(const AtomicString&);
+
+  AtomicString placeholder() const;
+  void setPlaceholder(const AtomicString&);
+
+  AtomicString relevant() const;
+  void setRelevant(const AtomicString&);
+
+  AtomicString role() const;
+  void setRole(const AtomicString&);
+
+  AtomicString roleDescription() const;
+  void setRoleDescription(const AtomicString&);
+
+  AtomicString sort() const;
+  void setSort(const AtomicString&);
+
+  AtomicString valueText() const;
+  void setValueText(const AtomicString&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   void setStringProperty(AOMStringProperty, const AtomicString&);
+  void notifyAttributeChanged(const blink::QualifiedName&);
+  AXObjectCache* getAXObjectCache();
 
   Vector<std::pair<AOMStringProperty, AtomicString>> m_stringProperties;
 

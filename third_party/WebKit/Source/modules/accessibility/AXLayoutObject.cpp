@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/InputTypeNames.h"
+#include "core/dom/AccessibleNode.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -1326,7 +1327,8 @@ const AtomicString& AXLayoutObject::liveRegionStatus() const {
   DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusPolite, ("polite"));
   DEFINE_STATIC_LOCAL(const AtomicString, liveRegionStatusOff, ("off"));
 
-  const AtomicString& liveRegionStatus = getAttribute(aria_liveAttr);
+  const AtomicString& liveRegionStatus =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kLive);
   // These roles have implicit live region status.
   if (liveRegionStatus.isEmpty()) {
     switch (roleValue()) {
@@ -1350,7 +1352,8 @@ const AtomicString& AXLayoutObject::liveRegionStatus() const {
 const AtomicString& AXLayoutObject::liveRegionRelevant() const {
   DEFINE_STATIC_LOCAL(const AtomicString, defaultLiveRegionRelevant,
                       ("additions text"));
-  const AtomicString& relevant = getAttribute(aria_relevantAttr);
+  const AtomicString& relevant =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kRelevant);
 
   // Default aria-relevant = "additions text".
   if (relevant.isEmpty())

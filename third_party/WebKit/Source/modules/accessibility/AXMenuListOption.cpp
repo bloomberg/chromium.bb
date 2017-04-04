@@ -26,6 +26,7 @@
 #include "modules/accessibility/AXMenuListOption.h"
 
 #include "SkMatrix44.h"
+#include "core/dom/AccessibleNode.h"
 #include "modules/accessibility/AXMenuListPopup.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
@@ -47,7 +48,8 @@ void AXMenuListOption::detach() {
 }
 
 AccessibilityRole AXMenuListOption::roleValue() const {
-  const AtomicString& ariaRole = getAttribute(roleAttr);
+  const AtomicString& ariaRole =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (ariaRole.isEmpty())
     return MenuListOptionRole;
 

@@ -614,7 +614,15 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("colorValue", &WebAXObjectProxy::ColorValue)
       .SetProperty("fontFamily", &WebAXObjectProxy::FontFamily)
       .SetProperty("fontSize", &WebAXObjectProxy::FontSize)
+      .SetProperty("autocomplete", &WebAXObjectProxy::Autocomplete)
+      .SetProperty("current", &WebAXObjectProxy::Current)
+      .SetProperty("invalid", &WebAXObjectProxy::Invalid)
+      .SetProperty("keyShortcuts", &WebAXObjectProxy::KeyShortcuts)
+      .SetProperty("live", &WebAXObjectProxy::Live)
       .SetProperty("orientation", &WebAXObjectProxy::Orientation)
+      .SetProperty("relevant", &WebAXObjectProxy::Relevant)
+      .SetProperty("roleDescription", &WebAXObjectProxy::RoleDescription)
+      .SetProperty("sort", &WebAXObjectProxy::Sort)
       .SetProperty("posInSet", &WebAXObjectProxy::PosInSet)
       .SetProperty("setSize", &WebAXObjectProxy::SetSize)
       .SetProperty("clickPointX", &WebAXObjectProxy::ClickPointX)
@@ -1074,6 +1082,65 @@ float WebAXObjectProxy::FontSize() {
   return accessibility_object_.fontSize();
 }
 
+std::string WebAXObjectProxy::Autocomplete() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.ariaAutoComplete().utf8();
+}
+
+std::string WebAXObjectProxy::Current() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  switch (accessibility_object_.ariaCurrentState()) {
+    case blink::WebAXAriaCurrentStateFalse:
+      return "false";
+    case blink::WebAXAriaCurrentStateTrue:
+      return "true";
+    case blink::WebAXAriaCurrentStatePage:
+      return "page";
+    case blink::WebAXAriaCurrentStateStep:
+      return "step";
+    case blink::WebAXAriaCurrentStateLocation:
+      return "location";
+    case blink::WebAXAriaCurrentStateDate:
+      return "date";
+    case blink::WebAXAriaCurrentStateTime:
+      return "time";
+    default:
+      return std::string();
+  }
+}
+
+std::string WebAXObjectProxy::Invalid() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  switch (accessibility_object_.invalidState()) {
+    case blink::WebAXInvalidStateFalse:
+      return "false";
+    case blink::WebAXInvalidStateTrue:
+      return "true";
+    case blink::WebAXInvalidStateSpelling:
+      return "spelling";
+    case blink::WebAXInvalidStateGrammar:
+      return "grammar";
+    case blink::WebAXInvalidStateOther:
+      return "other";
+    default:
+      return std::string();
+  }
+}
+
+std::string WebAXObjectProxy::KeyShortcuts() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.getSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .string_attributes[blink::WebAXStringAttribute::AriaKeyShortcuts]
+      .utf8();
+}
+
+std::string WebAXObjectProxy::Live() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.liveRegionStatus().utf8();
+}
+
 std::string WebAXObjectProxy::Orientation() {
   accessibility_object_.updateLayoutAndCheckValidity();
   if (accessibility_object_.orientation() == blink::WebAXOrientationVertical)
@@ -1083,6 +1150,34 @@ std::string WebAXObjectProxy::Orientation() {
     return "AXOrientation: AXHorizontalOrientation";
 
   return std::string();
+}
+
+std::string WebAXObjectProxy::Relevant() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return accessibility_object_.liveRegionRelevant().utf8();
+}
+
+std::string WebAXObjectProxy::RoleDescription() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  SparseAttributeAdapter attribute_adapter;
+  accessibility_object_.getSparseAXAttributes(attribute_adapter);
+  return attribute_adapter
+      .string_attributes[blink::WebAXStringAttribute::AriaRoleDescription]
+      .utf8();
+}
+
+std::string WebAXObjectProxy::Sort() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  switch (accessibility_object_.sortDirection()) {
+    case blink::WebAXSortDirectionAscending:
+      return "ascending";
+    case blink::WebAXSortDirectionDescending:
+      return "descending";
+    case blink::WebAXSortDirectionOther:
+      return "other";
+    default:
+      return std::string();
+  }
 }
 
 int WebAXObjectProxy::PosInSet() {

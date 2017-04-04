@@ -29,6 +29,7 @@
 #include "modules/accessibility/AXImageMapLink.h"
 
 #include "SkMatrix44.h"
+#include "core/dom/AccessibleNode.h"
 #include "core/dom/ElementTraversal.h"
 #include "modules/accessibility/AXLayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
@@ -68,7 +69,8 @@ AXObject* AXImageMapLink::computeParent() const {
 }
 
 AccessibilityRole AXImageMapLink::roleValue() const {
-  const AtomicString& ariaRole = getAttribute(roleAttr);
+  const AtomicString& ariaRole =
+      getAOMPropertyOrARIAAttribute(AOMStringProperty::kRole);
   if (!ariaRole.isEmpty())
     return AXObject::ariaRoleToWebCoreRole(ariaRole);
 
