@@ -7,7 +7,6 @@ source_set("actions") {
     "settings_actions.h",
     "tab_grid_actions.h",
     "tab_strip_actions.h",
-    "tools_menu_actions.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

@@ -19,6 +19,7 @@ source_set("tools") {
     "//ios/clean/chrome/browser/ui/animators",
     "//ios/clean/chrome/browser/ui/presenters",
     "//ios/shared/chrome/browser/coordinator_context",
+    "//ios/shared/chrome/browser/ui/browser_list",
     "//ios/shared/chrome/browser/ui/coordinators",
   ]
 }
@@ -40,7 +41,7 @@ source_set("tools_ui") {
     "//base",
     "//base:i18n",
     "//ios/chrome/browser/ui",
-    "//ios/clean/chrome/browser/ui/actions",
+    "//ios/clean/chrome/browser/ui/commands",
     "//ios/clean/chrome/browser/ui/toolbar:toolbar_components_ui",
     "//ios/third_party/material_roboto_font_loader_ios",
   ]

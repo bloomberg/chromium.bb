@@ -10,7 +10,7 @@
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_consumer.h"
 
-@protocol ToolbarCommands;
+@protocol ToolsMenuCommands;
 @protocol NavigationCommands;
 
 // View controller for a toolbar, which will show a horizontal row of
@@ -22,7 +22,7 @@
     : UIViewController<ZoomTransitionDelegate, ToolbarConsumer>
 
 // The dispatcher for this view controller
-@property(nonatomic, weak) id<ToolbarCommands, NavigationCommands> dispatcher;
+@property(nonatomic, weak) id<ToolsMenuCommands, NavigationCommands> dispatcher;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_CONTROLLER_H_

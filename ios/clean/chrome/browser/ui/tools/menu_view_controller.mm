@@ -8,7 +8,7 @@
 #import "base/logging.h"
 #import "base/macros.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
-#import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button.h"
 #import "ios/clean/chrome/browser/ui/tools/menu_overflow_controls_stackview.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_menu_item.h"
@@ -32,6 +32,7 @@ const CGFloat kMenuItemHeight = 48;
 @implementation MenuViewController
 @synthesize menuItems = _menuItems;
 @synthesize toolbarOverflowStackView = _toolbarOverflowStackView;
+@synthesize dispatcher = _dispatcher;
 
 - (void)loadView {
   CGRect frame;
@@ -56,7 +57,7 @@ const CGFloat kMenuItemHeight = 48;
     [menuButton.titleLabel
         setFont:[[MDFRobotoFontLoader sharedInstance] regularFontOfSize:16]];
     [menuButton.titleLabel setTextAlignment:NSTextAlignmentNatural];
-    [menuButton addTarget:nil
+    [menuButton addTarget:self
                    action:@selector(closeToolsMenu:)
          forControlEvents:UIControlEventTouchUpInside];
     if (item.action) {
@@ -101,6 +102,12 @@ const CGFloat kMenuItemHeight = 48;
     [menu.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [menu.topAnchor constraintEqualToAnchor:self.view.topAnchor],
   ]];
+}
+
+#pragma mark - ToolsMenuCommands
+
+- (void)closeToolsMenu:(id)sender {
+  [self.dispatcher closeToolsMenu];
 }
 
 #pragma mark - Tools Consumer

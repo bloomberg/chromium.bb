@@ -4,7 +4,7 @@
 
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
-#import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
@@ -19,7 +19,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface ToolbarCoordinator ()<ToolbarCommands>
+@interface ToolbarCoordinator ()<ToolsMenuCommands>
 @property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
 @property(nonatomic, strong) ToolbarViewController* viewController;
 @property(nonatomic, strong) ToolbarMediator* mediator;
@@ -68,15 +68,13 @@
 
 - (void)stop {
   [super stop];
-  CommandDispatcher* dispatcher = self.browser->dispatcher();
-  [dispatcher stopDispatchingToTarget:self];
+  [self.browser->dispatcher() stopDispatchingToTarget:self];
 }
 
-#pragma mark - ToolbarCommands
+#pragma mark - ToolsMenuCommands Implementation
 
 - (void)showToolsMenu {
   ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
-  toolsCoordinator.toolbarCommandHandler = self;
   [self addChildCoordinator:toolsCoordinator];
   [toolsCoordinator start];
   self.toolsMenuCoordinator = toolsCoordinator;

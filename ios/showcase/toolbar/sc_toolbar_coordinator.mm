@@ -5,7 +5,7 @@
 #import "ios/showcase/toolbar/sc_toolbar_coordinator.h"
 
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 
@@ -28,7 +28,7 @@ CGFloat kToolbarHeight = 50.0f;
 
 - (void)start {
   self.alerter = [[ProtocolAlerter alloc] initWithProtocols:@[
-    @protocol(ToolbarCommands), @protocol(NavigationCommands)
+    @protocol(ToolsMenuCommands), @protocol(NavigationCommands)
   ]];
   self.alerter.baseViewController = self.baseViewController;
 
@@ -44,7 +44,7 @@ CGFloat kToolbarHeight = 50.0f;
   ToolbarViewController* toolbarViewController =
       [[ToolbarViewController alloc] init];
   toolbarViewController.dispatcher =
-      static_cast<id<ToolbarCommands, NavigationCommands>>(self.alerter);
+      static_cast<id<ToolsMenuCommands, NavigationCommands>>(self.alerter);
   [containerViewController addChildViewController:toolbarViewController];
   toolbarViewController.view.frame = containerView.frame;
   [containerView addSubview:toolbarViewController.view];

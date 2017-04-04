@@ -9,6 +9,7 @@
 #import "ios/clean/chrome/browser/ui/tools/menu_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_mediator.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
+#import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,7 +21,6 @@
 @end
 
 @implementation ToolsCoordinator
-@synthesize toolbarCommandHandler = _toolbarCommandHandler;
 @synthesize menuViewController = _menuViewController;
 @synthesize mediator = _mediator;
 
@@ -30,6 +30,8 @@
   self.menuViewController = [[MenuViewController alloc] init];
   self.menuViewController.modalPresentationStyle = UIModalPresentationCustom;
   self.menuViewController.transitioningDelegate = self;
+  self.menuViewController.dispatcher =
+      static_cast<id>(self.browser->dispatcher());
   _mediator = [[ToolsMediator alloc] initWithConsumer:self.menuViewController];
 
   [self.context.baseViewController presentViewController:self.menuViewController
@@ -73,7 +75,7 @@ presentationControllerForPresentedViewController:(UIViewController*)presented
       [[MenuPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
-  menuPresentation.toolbarCommandHandler = self.toolbarCommandHandler;
+  menuPresentation.dispatcher = static_cast<id>(self.browser->dispatcher());
   return menuPresentation;
 }
 

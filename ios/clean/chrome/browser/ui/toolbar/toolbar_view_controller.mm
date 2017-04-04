@@ -7,9 +7,8 @@
 #import "base/mac/foundation_util.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_grid_actions.h"
 #import "ios/clean/chrome/browser/ui/actions/tab_strip_actions.h"
-#import "ios/clean/chrome/browser/ui/actions/tools_menu_actions.h"
 #import "ios/clean/chrome/browser/ui/commands/navigation_commands.h"
-#import "ios/clean/chrome/browser/ui/commands/toolbar_commands.h"
+#import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_button+factory.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_component_options.h"
 
@@ -24,7 +23,7 @@ CGFloat kVerticalMargin = 5.0f;
 CGFloat kHorizontalMargin = 8.0f;
 }  // namespace
 
-@interface ToolbarViewController ()<ToolsMenuActions>
+@interface ToolbarViewController ()
 @property(nonatomic, strong) UITextField* omnibox;
 @property(nonatomic, strong) UIStackView* stackView;
 @property(nonatomic, strong) ToolbarButton* backButton;
@@ -139,14 +138,14 @@ CGFloat kHorizontalMargin = 8.0f;
   self.toolsMenuButton = [ToolbarButton toolsMenuToolbarButton];
   self.toolsMenuButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
                                         ToolbarComponentVisibilityRegularWidth;
-  [self.toolsMenuButton addTarget:nil
+  [self.toolsMenuButton addTarget:self
                            action:@selector(showToolsMenu:)
                  forControlEvents:UIControlEventTouchUpInside];
 
   // Share button.
   self.shareButton = [ToolbarButton shareToolbarButton];
   self.shareButton.visibilityMask = ToolbarComponentVisibilityRegularWidth;
-  [self.shareButton addTarget:nil
+  [self.shareButton addTarget:self
                        action:@selector(showShareMenu:)
              forControlEvents:UIControlEventTouchUpInside];
 
@@ -207,7 +206,7 @@ CGFloat kHorizontalMargin = 8.0f;
                   fromView:self.toolsMenuButton];
 }
 
-#pragma mark - ToolsMenuActions
+#pragma mark - Private Methods
 
 - (void)showToolsMenu:(id)sender {
   [self.dispatcher showToolsMenu];
@@ -217,7 +216,9 @@ CGFloat kHorizontalMargin = 8.0f;
   [self.dispatcher closeToolsMenu];
 }
 
-#pragma mark - NavigationActions
+- (void)showShareMenu:(id)sender {
+  [self.dispatcher showShareMenu];
+}
 
 - (void)goBack:(id)sender {
   [self.dispatcher goBack];
@@ -251,10 +252,6 @@ CGFloat kHorizontalMargin = 8.0f;
 
 #pragma mark - Helper Methods
 
-// PLACEHOLDER: We are not sure yet how WebState changes will affect Toolbar
-// Buttons, but the VC will eventually set the flag on the ToolbarButton
-// indicating it could or not it should be hidden. Once this is done we will
-// update all the ToolbarButtons visibility.
 // Updates all Buttons visibility to match any recent WebState change.
 - (void)updateAllButtonsVisibility {
   for (UIView* view in self.stackView.arrangedSubviews) {

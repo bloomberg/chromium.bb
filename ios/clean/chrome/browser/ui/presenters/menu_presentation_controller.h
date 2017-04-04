@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol ToolbarCommands;
+@protocol ToolsMenuCommands;
 
 // A presentation controller for presenting a "menu" interface: a (usually)
 // rectangular presentation that covers part of the window, and which doesn't
@@ -21,7 +21,8 @@
 // the region the menu appears in. Otherwise a default rectangular area is
 // controller's view.
 @interface MenuPresentationController : UIPresentationController
-@property(nonatomic, assign) id<ToolbarCommands> toolbarCommandHandler;
+// The dispatcher for this presentation controller.
+@property(nonatomic, weak) id<ToolsMenuCommands> dispatcher;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_PRESENTERS_MENU_PRESENTATION_CONTROLLER_H_

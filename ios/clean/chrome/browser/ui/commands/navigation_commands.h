@@ -6,7 +6,7 @@
 #define IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_NAVIGATION_COMMANDS_H_
 
 // Commands relating to web page navigation.
-@protocol NavigationCommands
+@protocol NavigationCommands<NSObject>
 @optional
 // Goes back to the previous visited page.
 - (void)goBack;

@@ -8,7 +8,7 @@ source_set("commands") {
     "settings_commands.h",
     "tab_grid_commands.h",
     "tab_strip_commands.h",
-    "toolbar_commands.h",
+    "tools_menu_commands.h",
   ]
   deps = [
     "//base",
