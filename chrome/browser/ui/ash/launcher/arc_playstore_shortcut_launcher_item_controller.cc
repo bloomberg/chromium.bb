@@ -27,8 +27,18 @@ void ArcPlaystoreShortcutLauncherItemController::ItemSelected(
     int64_t display_id,
     ash::ShelfLaunchSource source,
     const ItemSelectedCallback& callback) {
-  playstore_launcher_ = base::MakeUnique<ArcAppLauncher>(
-      controller()->profile(), arc::kPlayStoreAppId, true, true);
-  callback.Run(ash::SHELF_ACTION_NONE,
-               GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
+  if (!playstore_launcher_) {
+    // Play Store launch request has never been scheduled.
+    std::unique_ptr<ArcAppLauncher> playstore_launcher =
+        base::MakeUnique<ArcAppLauncher>(
+            controller()->profile(), arc::kPlayStoreAppId,
+            true /* landscape_layout */, true /* deferred_launch_allowed */);
+    // ArcAppLauncher may launch Play Store in case it exists already. In this
+    // case this instance of ArcPlaystoreShortcutLauncherItemController may be
+    // deleted. If Play Store does not exist at this moment, then let
+    // |playstore_launcher_| wait until it appears.
+    if (!playstore_launcher->app_launched())
+      playstore_launcher_ = std::move(playstore_launcher);
+  }
+  callback.Run(ash::SHELF_ACTION_NONE, base::nullopt);
 }

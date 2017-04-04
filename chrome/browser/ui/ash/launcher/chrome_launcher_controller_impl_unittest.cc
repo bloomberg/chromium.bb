@@ -4171,6 +4171,34 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
 }
 
+TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {
+  // Add ARC host app to enable Play Store default app.
+  extension_service_->AddExtension(arc_support_host_.get());
+  arc_test_.SetUp(profile());
+  ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
+  EXPECT_TRUE(prefs->IsRegistered(arc::kPlayStoreAppId));
+
+  InitLauncherController();
+
+  EnablePlayStore(true);
+
+  // Pin Play Store. It should be pinned but not scheduled for deferred launch.
+  launcher_controller_->PinAppWithID(arc::kPlayStoreAppId);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
+  EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(
+      arc::kPlayStoreAppId));
+
+  // Simulate click. This should schedule Play Store for deferred launch.
+  LauncherItemController* item_controller =
+      launcher_controller_->GetLauncherItemController(
+          launcher_controller_->GetShelfIDForAppID(arc::kPlayStoreAppId));
+  EXPECT_TRUE(item_controller);
+  SelectItem(item_controller);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(arc::kPlayStoreAppId));
+  EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(
+      arc::kPlayStoreAppId));
+}
+
 // Checks the case when several app items have the same ordinal position (which
 // is valid case).
 TEST_F(ChromeLauncherControllerImplTest, CheckPositionConflict) {
