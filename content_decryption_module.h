@@ -218,7 +218,7 @@ enum AudioFormat {
 enum VideoFormat {
   kUnknownVideoFormat = 0,  // Unknown format value. Used for error reporting.
   kYv12 = 1,                // 12bpp YVU planar 1x1 Y, 2x2 VU samples.
-  kI420 = 2,                // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+  kI420 = 2,                // 12bpp YUV planar 1x1 Y, 2x2 UV samples.
 
   // In the following formats, each sample uses 16-bit in storage, while the
   // sample value is stored in the least significant N bits where N is
