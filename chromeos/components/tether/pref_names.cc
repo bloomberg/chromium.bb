@@ -20,7 +20,9 @@ const char kActiveHostStatus[] = "tether.active_host_status";
 
 const char kActiveHostDeviceId[] = "tether.active_host_device_id";
 
-const char kWifiNetworkId[] = "tether.wifi_network_id";
+const char kTetherNetworkGuid[] = "tether.tether_network_id";
+
+const char kWifiNetworkGuid[] = "tether.wifi_network_id";
 
 }  // namespace prefs
 

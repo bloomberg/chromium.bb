@@ -30,9 +30,13 @@ extern const char kActiveHostStatus[];
 // this key is "".
 extern const char kActiveHostDeviceId[];
 
-// The Wi-Fi network ID of the active host. If there is no active host, the
+// The tether network GUID of the active host. If there is no active host, the
 // value at this key is "".
-extern const char kWifiNetworkId[];
+extern const char kTetherNetworkGuid[];
+
+// The Wi-Fi network GUID of the active host. If there is no active host, the
+// value at this key is "".
+extern const char kWifiNetworkGuid[];
 
 }  // namespace prefs
 

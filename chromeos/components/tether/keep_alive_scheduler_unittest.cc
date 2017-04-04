@@ -19,7 +19,8 @@ namespace tether {
 
 namespace {
 
-const char kWifiNetworkId[] = "wifiNetworkId";
+const char kTetherNetworkGuid[] = "tetherNetworkGuid";
+const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 
 class OperationDeletedHandler {
  public:
@@ -130,14 +131,16 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_OneActiveHost) {
   VerifyTimerRunning(false /* is_running */);
 
   // Start connecting to a device. No operation should be started.
-  fake_active_host_->SetActiveHostConnecting(test_devices_[0].GetDeviceId());
+  fake_active_host_->SetActiveHostConnecting(test_devices_[0].GetDeviceId(),
+                                             std::string(kTetherNetworkGuid));
   EXPECT_FALSE(fake_operation_factory_->num_created());
   EXPECT_FALSE(fake_operation_factory_->num_deleted());
   VerifyTimerRunning(false /* is_running */);
 
   // Connect to the device; the operation should be started.
   fake_active_host_->SetActiveHostConnected(test_devices_[0].GetDeviceId(),
-                                            std::string(kWifiNetworkId));
+                                            std::string(kTetherNetworkGuid),
+                                            std::string(kWifiNetworkGuid));
   EXPECT_EQ(1u, fake_operation_factory_->num_created());
   EXPECT_EQ(test_devices_[0],
             fake_operation_factory_->last_created()->remote_device());
@@ -177,14 +180,16 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_MultipleActiveHosts) {
   VerifyTimerRunning(false /* is_running */);
 
   // Start connecting to a device. No operation should be started.
-  fake_active_host_->SetActiveHostConnecting(test_devices_[0].GetDeviceId());
+  fake_active_host_->SetActiveHostConnecting(test_devices_[0].GetDeviceId(),
+                                             std::string(kTetherNetworkGuid));
   EXPECT_FALSE(fake_operation_factory_->num_created());
   EXPECT_FALSE(fake_operation_factory_->num_deleted());
   VerifyTimerRunning(false /* is_running */);
 
   // Connect to the device; the operation should be started.
   fake_active_host_->SetActiveHostConnected(test_devices_[0].GetDeviceId(),
-                                            std::string(kWifiNetworkId));
+                                            std::string(kTetherNetworkGuid),
+                                            std::string(kWifiNetworkGuid));
   EXPECT_EQ(1u, fake_operation_factory_->num_created());
   EXPECT_EQ(test_devices_[0],
             fake_operation_factory_->last_created()->remote_device());
@@ -199,14 +204,16 @@ TEST_F(KeepAliveSchedulerTest, TestSendTickle_MultipleActiveHosts) {
   VerifyTimerRunning(false /* is_running */);
 
   // Start connecting to a different. No operation should be started.
-  fake_active_host_->SetActiveHostConnecting(test_devices_[1].GetDeviceId());
+  fake_active_host_->SetActiveHostConnecting(test_devices_[1].GetDeviceId(),
+                                             std::string(kTetherNetworkGuid));
   EXPECT_EQ(1u, fake_operation_factory_->num_created());
   EXPECT_EQ(1u, fake_operation_factory_->num_deleted());
   VerifyTimerRunning(false /* is_running */);
 
   // Connect to the second device; the operation should be started.
   fake_active_host_->SetActiveHostConnected(test_devices_[1].GetDeviceId(),
-                                            std::string(kWifiNetworkId));
+                                            std::string(kTetherNetworkGuid),
+                                            std::string(kWifiNetworkGuid));
   EXPECT_EQ(2u, fake_operation_factory_->num_created());
   EXPECT_EQ(test_devices_[1],
             fake_operation_factory_->last_created()->remote_device());

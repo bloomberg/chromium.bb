@@ -25,24 +25,28 @@ class FakeActiveHost : public ActiveHost {
 
   // ActiveHost:
   void SetActiveHostDisconnected() override;
-  void SetActiveHostConnecting(
-      const std::string& active_host_device_id) override;
+  void SetActiveHostConnecting(const std::string& active_host_device_id,
+                               const std::string& tether_network_guid) override;
   void SetActiveHostConnected(const std::string& active_host_device_id,
-                              const std::string& wifi_network_id) override;
+                              const std::string& tether_network_guid,
+                              const std::string& wifi_network_guid) override;
   void GetActiveHost(
       const ActiveHost::ActiveHostCallback& active_host_callback) override;
   ActiveHostStatus GetActiveHostStatus() const override;
   std::string GetActiveHostDeviceId() const override;
-  std::string GetWifiNetworkId() const override;
+  std::string GetTetherNetworkGuid() const override;
+  std::string GetWifiNetworkGuid() const override;
 
  private:
   void SetActiveHost(ActiveHostStatus active_host_status,
                      const std::string& active_host_device_id,
-                     const std::string& wifi_network_id);
+                     const std::string& tether_network_guid,
+                     const std::string& wifi_network_guid);
 
   ActiveHost::ActiveHostStatus active_host_status_;
   std::string active_host_device_id_;
-  std::string wifi_network_id_;
+  std::string tether_network_guid_;
+  std::string wifi_network_guid_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeActiveHost);
 };

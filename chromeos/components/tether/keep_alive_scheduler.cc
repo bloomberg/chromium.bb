@@ -34,12 +34,10 @@ KeepAliveScheduler::~KeepAliveScheduler() {
 }
 
 void KeepAliveScheduler::OnActiveHostChanged(
-    ActiveHost::ActiveHostStatus active_host_status,
-    std::unique_ptr<cryptauth::RemoteDevice> active_host_device,
-    const std::string& wifi_network_id) {
-  if (active_host_status == ActiveHost::ActiveHostStatus::DISCONNECTED) {
-    DCHECK(!active_host_device);
-    DCHECK(wifi_network_id.empty());
+    const ActiveHost::ActiveHostChangeInfo& change_info) {
+  if (change_info.new_status == ActiveHost::ActiveHostStatus::DISCONNECTED) {
+    DCHECK(!change_info.new_active_host);
+    DCHECK(change_info.new_wifi_network_guid.empty());
 
     keep_alive_operation_.reset();
     active_host_device_.reset();
@@ -47,9 +45,9 @@ void KeepAliveScheduler::OnActiveHostChanged(
     return;
   }
 
-  if (active_host_status == ActiveHost::ActiveHostStatus::CONNECTED) {
-    DCHECK(active_host_device);
-    active_host_device_ = std::move(active_host_device);
+  if (change_info.new_status == ActiveHost::ActiveHostStatus::CONNECTED) {
+    DCHECK(change_info.new_active_host);
+    active_host_device_ = change_info.new_active_host;
     timer_->Start(FROM_HERE,
                   base::TimeDelta::FromMinutes(kKeepAliveIntervalMinutes),
                   base::Bind(&KeepAliveScheduler::SendKeepAliveTickle,

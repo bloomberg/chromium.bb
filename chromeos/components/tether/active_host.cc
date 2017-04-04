@@ -18,6 +18,60 @@ namespace chromeos {
 
 namespace tether {
 
+bool operator==(const ActiveHost::ActiveHostChangeInfo& first,
+                const ActiveHost::ActiveHostChangeInfo& second) {
+  bool new_devices_equal;
+  if (first.new_active_host) {
+    new_devices_equal = second.new_active_host &&
+                        *first.new_active_host == *second.new_active_host;
+  } else {
+    new_devices_equal = !second.new_active_host;
+  }
+
+  return first.new_status == second.new_status &&
+         first.old_status == second.old_status && new_devices_equal &&
+         first.old_active_host_id == second.old_active_host_id &&
+         first.new_tether_network_guid == second.new_tether_network_guid &&
+         first.old_tether_network_guid == second.old_tether_network_guid &&
+         first.new_wifi_network_guid == second.new_wifi_network_guid &&
+         first.old_wifi_network_guid == second.old_wifi_network_guid;
+}
+
+ActiveHost::ActiveHostChangeInfo::ActiveHostChangeInfo()
+    : new_status(ActiveHostStatus::DISCONNECTED),
+      old_status(ActiveHostStatus::DISCONNECTED) {}
+
+ActiveHost::ActiveHostChangeInfo::ActiveHostChangeInfo(
+    ActiveHostStatus new_status,
+    ActiveHostStatus old_status,
+    std::shared_ptr<cryptauth::RemoteDevice> new_active_host,
+    std::string old_active_host_id,
+    std::string new_tether_network_guid,
+    std::string old_tether_network_guid,
+    std::string new_wifi_network_guid,
+    std::string old_wifi_network_guid)
+    : new_status(new_status),
+      old_status(old_status),
+      new_active_host(new_active_host),
+      old_active_host_id(old_active_host_id),
+      new_tether_network_guid(new_tether_network_guid),
+      old_tether_network_guid(old_tether_network_guid),
+      new_wifi_network_guid(new_wifi_network_guid),
+      old_wifi_network_guid(old_wifi_network_guid) {}
+
+ActiveHost::ActiveHostChangeInfo::ActiveHostChangeInfo(
+    const ActiveHostChangeInfo& other)
+    : new_status(other.new_status),
+      old_status(other.old_status),
+      new_active_host(other.new_active_host),
+      old_active_host_id(other.old_active_host_id),
+      new_tether_network_guid(other.new_tether_network_guid),
+      old_tether_network_guid(other.old_tether_network_guid),
+      new_wifi_network_guid(other.new_wifi_network_guid),
+      old_wifi_network_guid(other.old_wifi_network_guid) {}
+
+ActiveHost::ActiveHostChangeInfo::~ActiveHostChangeInfo() {}
+
 ActiveHost::ActiveHost(TetherHostFetcher* tether_host_fetcher,
                        PrefService* pref_service)
     : tether_host_fetcher_(tether_host_fetcher),
@@ -32,30 +86,34 @@ void ActiveHost::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kActiveHostStatus,
       static_cast<int>(ActiveHostStatus::DISCONNECTED));
   registry->RegisterStringPref(prefs::kActiveHostDeviceId, "");
-  registry->RegisterStringPref(prefs::kWifiNetworkId, "");
+  registry->RegisterStringPref(prefs::kTetherNetworkGuid, "");
+  registry->RegisterStringPref(prefs::kWifiNetworkGuid, "");
 }
 
 void ActiveHost::SetActiveHostDisconnected() {
   SetActiveHost(ActiveHostStatus::DISCONNECTED, "" /* active_host_device_id */,
-                "" /* wifi_network_id */);
+                "" /* tether_network_guid */, "" /* wifi_network_guid */);
 }
 
 void ActiveHost::SetActiveHostConnecting(
-    const std::string& active_host_device_id) {
+    const std::string& active_host_device_id,
+    const std::string& tether_network_guid) {
   DCHECK(!active_host_device_id.empty());
 
   SetActiveHost(ActiveHostStatus::CONNECTING, active_host_device_id,
-                "" /* wifi_network_id */);
+                tether_network_guid, "" /* wifi_network_guid */);
 }
 
 void ActiveHost::SetActiveHostConnected(
     const std::string& active_host_device_id,
-    const std::string& wifi_network_id) {
+    const std::string& tether_network_guid,
+    const std::string& wifi_network_guid) {
   DCHECK(!active_host_device_id.empty());
-  DCHECK(!wifi_network_id.empty());
+  DCHECK(!tether_network_guid.empty());
+  DCHECK(!wifi_network_guid.empty());
 
   SetActiveHost(ActiveHostStatus::CONNECTED, active_host_device_id,
-                wifi_network_id);
+                tether_network_guid, wifi_network_guid);
 }
 
 void ActiveHost::GetActiveHost(const ActiveHostCallback& active_host_callback) {
@@ -63,7 +121,8 @@ void ActiveHost::GetActiveHost(const ActiveHostCallback& active_host_callback) {
 
   if (status == ActiveHostStatus::DISCONNECTED) {
     active_host_callback.Run(status, nullptr /* active_host */,
-                             "" /* wifi_network_id */);
+                             "" /* tether_network_guid */,
+                             "" /* wifi_network_guid */);
     return;
   }
 
@@ -85,8 +144,12 @@ std::string ActiveHost::GetActiveHostDeviceId() const {
   return pref_service_->GetString(prefs::kActiveHostDeviceId);
 }
 
-std::string ActiveHost::GetWifiNetworkId() const {
-  return pref_service_->GetString(prefs::kWifiNetworkId);
+std::string ActiveHost::GetWifiNetworkGuid() const {
+  return pref_service_->GetString(prefs::kWifiNetworkGuid);
+}
+
+std::string ActiveHost::GetTetherNetworkGuid() const {
+  return pref_service_->GetString(prefs::kTetherNetworkGuid);
 }
 
 void ActiveHost::AddObserver(Observer* observer) {
@@ -99,12 +162,17 @@ void ActiveHost::RemoveObserver(Observer* observer) {
 
 void ActiveHost::SetActiveHost(ActiveHostStatus active_host_status,
                                const std::string& active_host_device_id,
-                               const std::string& wifi_network_id) {
-  bool status_changed = GetActiveHostStatus() != active_host_status;
-  bool device_changed = GetActiveHostDeviceId() != active_host_device_id;
-  bool network_id_changed = GetWifiNetworkId() != wifi_network_id;
+                               const std::string& tether_network_guid,
+                               const std::string& wifi_network_guid) {
+  ActiveHostStatus old_status = GetActiveHostStatus();
+  std::string old_device_id = GetActiveHostDeviceId();
+  std::string old_tether_network_guid = GetTetherNetworkGuid();
+  std::string old_wifi_network_guid = GetWifiNetworkGuid();
 
-  if (!status_changed && !device_changed && !network_id_changed) {
+  if (old_status == active_host_status &&
+      old_device_id == active_host_device_id &&
+      old_tether_network_guid == tether_network_guid &&
+      old_wifi_network_guid == wifi_network_guid) {
     // If nothing has changed, return early.
     return;
   }
@@ -113,29 +181,34 @@ void ActiveHost::SetActiveHost(ActiveHostStatus active_host_status,
                      base::Value(static_cast<int>(active_host_status)));
   pref_service_->Set(prefs::kActiveHostDeviceId,
                      base::Value(active_host_device_id));
-  pref_service_->Set(prefs::kWifiNetworkId, base::Value(wifi_network_id));
+  pref_service_->Set(prefs::kTetherNetworkGuid,
+                     base::Value(tether_network_guid));
+  pref_service_->Set(prefs::kWifiNetworkGuid, base::Value(wifi_network_guid));
 
   // Now, send an active host changed update.
   GetActiveHost(base::Bind(&ActiveHost::SendActiveHostChangedUpdate,
-                           weak_ptr_factory_.GetWeakPtr()));
+                           weak_ptr_factory_.GetWeakPtr(), old_status,
+                           old_device_id, old_tether_network_guid,
+                           old_wifi_network_guid));
 }
 
 void ActiveHost::OnTetherHostFetched(
     const ActiveHostCallback& active_host_callback,
-    std::unique_ptr<cryptauth::RemoteDevice> remote_device) {
-  if (GetActiveHostDeviceId().empty() || !remote_device) {
+    std::unique_ptr<cryptauth::RemoteDevice> active_host) {
+  if (GetActiveHostDeviceId().empty() || !active_host) {
     DCHECK(GetActiveHostStatus() == ActiveHostStatus::DISCONNECTED);
-    DCHECK(GetWifiNetworkId().empty());
+    DCHECK(GetTetherNetworkGuid().empty());
+    DCHECK(GetWifiNetworkGuid().empty());
 
     // If the active host became disconnected while the tether host was being
     // fetched, forward this information to the callback.
-    active_host_callback.Run(ActiveHostStatus::DISCONNECTED,
-                             nullptr /* active_host */,
-                             "" /* wifi_network_id */);
+    active_host_callback.Run(
+        ActiveHostStatus::DISCONNECTED, nullptr /* active_host */,
+        "" /* wifi_network_guid */, "" /* tether_network_guid */);
     return;
   }
 
-  if (GetActiveHostDeviceId() != remote_device->GetDeviceId()) {
+  if (GetActiveHostDeviceId() != active_host->GetDeviceId()) {
     // If the active host has changed while the tether host was being fetched,
     // perform the fetch again.
     GetActiveHost(active_host_callback);
@@ -143,29 +216,43 @@ void ActiveHost::OnTetherHostFetched(
   }
 
   if (GetActiveHostStatus() == ActiveHostStatus::CONNECTING) {
-    DCHECK(GetWifiNetworkId().empty());
+    DCHECK(!GetTetherNetworkGuid().empty());
+    DCHECK(GetWifiNetworkGuid().empty());
     active_host_callback.Run(ActiveHostStatus::CONNECTING,
-                             std::move(remote_device),
-                             "" /* wifi_network_id */);
+                             std::move(active_host),
+                             GetTetherNetworkGuid() /* tether_network_guid */,
+                             "" /* wifi_network_guid */);
     return;
   }
 
   DCHECK(GetActiveHostStatus() == ActiveHostStatus::CONNECTED);
-  DCHECK(!GetWifiNetworkId().empty());
-  active_host_callback.Run(ActiveHostStatus::CONNECTED,
-                           std::move(remote_device), GetWifiNetworkId());
+  DCHECK(!GetTetherNetworkGuid().empty());
+  DCHECK(!GetWifiNetworkGuid().empty());
+  active_host_callback.Run(ActiveHostStatus::CONNECTED, std::move(active_host),
+                           GetTetherNetworkGuid(), GetWifiNetworkGuid());
 }
 
 void ActiveHost::SendActiveHostChangedUpdate(
-    ActiveHostStatus active_host_status,
-    std::unique_ptr<cryptauth::RemoteDevice> active_host,
-    const std::string& wifi_network_id) {
+    ActiveHostStatus old_status,
+    const std::string& old_active_host_id,
+    const std::string& old_tether_network_guid,
+    const std::string& old_wifi_network_guid,
+    ActiveHostStatus new_status,
+    std::shared_ptr<cryptauth::RemoteDevice> new_active_host,
+    const std::string& new_tether_network_guid,
+    const std::string& new_wifi_network_guid) {
+  ActiveHostChangeInfo info;
+  info.new_status = new_status;
+  info.old_status = old_status;
+  info.new_active_host = new_active_host;
+  info.old_active_host_id = old_active_host_id;
+  info.old_tether_network_guid = old_tether_network_guid;
+  info.new_tether_network_guid = new_tether_network_guid;
+  info.new_wifi_network_guid = new_wifi_network_guid;
+  info.old_wifi_network_guid = old_wifi_network_guid;
+
   for (auto& observer : observer_list_) {
-    std::unique_ptr<cryptauth::RemoteDevice> unique_remote_device =
-        active_host ? base::MakeUnique<cryptauth::RemoteDevice>(*active_host)
-                    : nullptr;
-    observer.OnActiveHostChanged(
-        active_host_status, std::move(unique_remote_device), wifi_network_id);
+    observer.OnActiveHostChanged(info);
   }
 }
 

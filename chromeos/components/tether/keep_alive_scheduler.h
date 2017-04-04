@@ -29,9 +29,8 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   virtual ~KeepAliveScheduler();
 
   // ActiveHost::Observer:
-  void OnActiveHostChanged(ActiveHost::ActiveHostStatus active_host_status,
-                           std::unique_ptr<cryptauth::RemoteDevice> active_host,
-                           const std::string& wifi_network_id) override;
+  void OnActiveHostChanged(
+      const ActiveHost::ActiveHostChangeInfo& change_info) override;
 
   // KeepAliveOperation::Observer:
   void OnOperationFinished() override;
@@ -51,7 +50,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   BleConnectionManager* connection_manager_;
 
   std::unique_ptr<base::Timer> timer_;
-  std::unique_ptr<cryptauth::RemoteDevice> active_host_device_;
+  std::shared_ptr<cryptauth::RemoteDevice> active_host_device_;
   std::unique_ptr<KeepAliveOperation> keep_alive_operation_;
 
   base::WeakPtrFactory<KeepAliveScheduler> weak_ptr_factory_;

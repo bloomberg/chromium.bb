@@ -37,12 +37,47 @@ class ActiveHost {
     CONNECTED = 2
   };
 
+  struct ActiveHostChangeInfo {
+    ActiveHostChangeInfo();
+    ActiveHostChangeInfo(
+        ActiveHostStatus new_status,
+        ActiveHostStatus old_status,
+        std::shared_ptr<cryptauth::RemoteDevice> new_active_host,
+        std::string old_active_host_id,
+        std::string new_tether_network_guid,
+        std::string old_tether_network_guid,
+        std::string new_wifi_network_guid,
+        std::string old_wifi_network_guid);
+    ActiveHostChangeInfo(const ActiveHostChangeInfo& other);
+
+    virtual ~ActiveHostChangeInfo();
+
+    friend bool operator==(const ActiveHostChangeInfo& first,
+                           const ActiveHostChangeInfo& second);
+
+    ActiveHostStatus new_status;
+    ActiveHostStatus old_status;
+
+    // |new_active_host| will be null if |new_status| is DISCONNECTED.
+    std::shared_ptr<cryptauth::RemoteDevice> new_active_host;
+    // |old_active_host_id| will be "" if |old_status| is DISCONNECTED.
+    std::string old_active_host_id;
+
+    // |new_tether_network_guid| will be "" if |new_status| is DISCONNECTED.
+    std::string new_tether_network_guid;
+    // |old_tether_network_guid| will be "" if |old_status| is DISCONNECTED.
+    std::string old_tether_network_guid;
+
+    // |new_wifi_network_guid| will be "" if |new_status| is not CONNECTED.
+    std::string new_wifi_network_guid;
+    // |old_wifi_network_guid| will be "" if |old_status| is not CONNECTED.
+    std::string old_wifi_network_guid;
+  };
+
   class Observer {
    public:
     virtual void OnActiveHostChanged(
-        ActiveHostStatus active_host_status,
-        std::unique_ptr<cryptauth::RemoteDevice> active_host_device,
-        const std::string& wifi_network_id) = 0;
+        const ActiveHostChangeInfo& active_host_change_info) = 0;
   };
 
   ActiveHost(TetherHostFetcher* tether_host_fetcher, PrefService* pref_service);
@@ -56,51 +91,63 @@ class ActiveHost {
   virtual void SetActiveHostDisconnected();
 
   // Sets the active host to be the device with ID |active_host_device_id| and
-  // records that the there is an active attempt to connect to that host (i.e.,
-  // the host is not yet connected but it is in the process of connecting).
-  virtual void SetActiveHostConnecting(
-      const std::string& active_host_device_id);
+  // the associated tether network GUID to |tether_network_guid| and records
+  // that the there is an active attempt to connect to that host (i.e., the host
+  // is not yet connected but it is in the process of connecting).
+  virtual void SetActiveHostConnecting(const std::string& active_host_device_id,
+                                       const std::string& tether_network_guid);
 
   // Sets the active host to be the device with ID |active_host_device_id| and
   // that the local device is connected to that device on the mobile hotspot
-  // with Wi-Fi network ID |wifi_network_id|.
+  // with tether network GUID |tether_network_guid| and Wi-Fi network GUID
+  // |wifi_network_guid|.
   virtual void SetActiveHostConnected(const std::string& active_host_device_id,
-                                      const std::string& wifi_network_id);
+                                      const std::string& tether_network_guid,
+                                      const std::string& wifi_network_guid);
 
   // Gets the active host and associated metadata asynchronously. If
   // the active host status is...
   //     DISCONNECTED: The callback's |active_host| parameter will be nullptr
-  //                   and |wifi_network_id| parameter will be "".
-  //     CONNECTING: The callback's |wifi_network_id| will be "".
-  //     CONNECTED: All three parameter  will be present.
+  //                   and |wifi_network_guid| and |tether_network_guid|
+  //                   parameters will be "".
+  //     CONNECTING: The callback's |wifi_network_guid| parameter will be "".
+  //     CONNECTED: All four parameters  will be present.
   using ActiveHostCallback =
       base::Callback<void(ActiveHostStatus active_host_status,
-                          std::unique_ptr<cryptauth::RemoteDevice> active_host,
-                          const std::string& wifi_network_id)>;
+                          std::shared_ptr<cryptauth::RemoteDevice> active_host,
+                          const std::string& tether_network_guid,
+                          const std::string& wifi_network_guid)>;
   virtual void GetActiveHost(const ActiveHostCallback& active_host_callback);
 
   // Synchronous getter methods which do not return a full RemoteDevice object.
   virtual ActiveHostStatus GetActiveHostStatus() const;
   virtual std::string GetActiveHostDeviceId() const;
-  virtual std::string GetWifiNetworkId() const;
+  virtual std::string GetWifiNetworkGuid() const;
+  virtual std::string GetTetherNetworkGuid() const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  protected:
   void SendActiveHostChangedUpdate(
-      ActiveHostStatus active_host_status,
-      std::unique_ptr<cryptauth::RemoteDevice> active_host,
-      const std::string& wifi_network_id);
+      ActiveHostStatus old_status,
+      const std::string& old_active_host_id,
+      const std::string& old_tether_network_guid,
+      const std::string& old_wifi_network_guid,
+      ActiveHostStatus new_status,
+      std::shared_ptr<cryptauth::RemoteDevice> new_active_host,
+      const std::string& new_tether_network_guid,
+      const std::string& new_wifi_network_guid);
 
  private:
   void SetActiveHost(ActiveHostStatus active_host_status,
                      const std::string& active_host_device_id,
-                     const std::string& wifi_network_id);
+                     const std::string& tether_network_guid,
+                     const std::string& wifi_network_guid);
 
   void OnTetherHostFetched(
       const ActiveHostCallback& active_host_callback,
-      std::unique_ptr<cryptauth::RemoteDevice> remote_device);
+      std::unique_ptr<cryptauth::RemoteDevice> active_host);
 
   TetherHostFetcher* tether_host_fetcher_;
   PrefService* pref_service_;
