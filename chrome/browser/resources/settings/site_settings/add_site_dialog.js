@@ -25,6 +25,9 @@ Polymer({
      */
     contentSetting: String,
 
+    /** @private */
+    isIncognitoActive_: Boolean,
+
     /**
      * The site to add an exception for.
      * @private
@@ -44,8 +47,9 @@ Polymer({
    *     Block list.
    */
   open: function(type) {
-    this.addWebUIListener('onIncognitoStatusChanged',
-        this.onIncognitoStatusChanged_.bind(this));
+    this.addWebUIListener('onIncognitoStatusChanged', function(isActive) {
+      this.isIncognitoActive_ = isActive;
+    }.bind(this));
     this.browserProxy.updateIncognitoStatus();
     this.$.dialog.showModal();
   },
@@ -72,19 +76,6 @@ Polymer({
   /** @private */
   onCancelTap_: function() {
     this.$.dialog.cancel();
-  },
-
-  /**
-   * A handler for when we get notified of the current profile creating or
-   * destroying their incognito counterpart.
-   * @param {boolean} incognitoEnabled Whether the current profile has an
-   *     incognito profile.
-   * @private
-   */
-  onIncognitoStatusChanged_: function(incognitoEnabled) {
-    this.$.incognito.disabled = !incognitoEnabled;
-    if (!incognitoEnabled)
-      this.$.incognito.checked = false;
   },
 
   /**
