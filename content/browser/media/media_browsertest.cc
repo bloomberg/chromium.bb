@@ -152,13 +152,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
 #endif
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-// Crashes on Mac http://crbug.com/621857
-#if defined(OS_MACOSX)
-#define MAYBE_VideoBearMp4 DISABLED_VideoBearMp4
-#else
-#define MAYBE_VideoBearMp4 VideoBearMp4
-#endif
-IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearMp4) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4) {
   PlayVideo("bear.mp4", GetParam());
 }
 
@@ -173,13 +167,7 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
 }
 #endif  // !defined(OS_ANDROID)
 
-// Crashes on Mac only.  http://crbug.com/621857
-#if defined(OS_MACOSX)
-#define MAYBE_VideoBearSilentMp4 DISABLED_VideoBearSilentMp4
-#else
-#define MAYBE_VideoBearSilentMp4 VideoBearSilentMp4
-#endif
-IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearSilentMp4) {
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentMp4) {
   PlayVideo("bear_silent.mp4", GetParam());
 }
 
