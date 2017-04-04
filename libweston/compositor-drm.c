@@ -172,23 +172,25 @@ struct drm_output {
 	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
 	drmModePropertyPtr dpms_prop;
-	uint32_t gbm_format;
 
 	enum dpms_enum dpms;
+	struct backlight *backlight;
 
 	int vblank_pending;
 	int page_flip_pending;
 	int destroy_pending;
 	int disable_pending;
 
-	struct gbm_surface *gbm_surface;
 	struct drm_fb *gbm_cursor_fb[2];
 	struct weston_plane cursor_plane;
-	struct weston_plane fb_plane;
 	struct weston_view *cursor_view;
 	int current_cursor;
-	struct drm_fb *current, *next;
-	struct backlight *backlight;
+
+	struct gbm_surface *gbm_surface;
+	uint32_t gbm_format;
+
+	struct weston_plane fb_plane;
+	struct drm_fb *fb_current, *fb_pending;
 
 	struct drm_fb *dumb[2];
 	pixman_image_t *image[2];
@@ -210,7 +212,7 @@ struct drm_sprite {
 
 	struct weston_plane plane;
 
-	struct drm_fb *current, *next;
+	struct drm_fb *fb_current, *fb_pending;
 	struct drm_output *output;
 	struct drm_backend *backend;
 
@@ -682,13 +684,13 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 		return NULL;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
-	if (!output->next) {
+	output->fb_pending = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
+	if (!output->fb_pending) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	drm_fb_set_buffer(output->next, buffer);
+	drm_fb_set_buffer(output->fb_pending, buffer);
 
 	return &output->fb_plane;
 }
@@ -708,14 +710,14 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, b, output->gbm_format,
-					  BUFFER_GBM_SURFACE);
-	if (!output->next) {
+	output->fb_pending = drm_fb_get_from_bo(bo, b, output->gbm_format,
+						BUFFER_GBM_SURFACE);
+	if (!output->fb_pending) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->gbm_surface, bo);
 		return;
 	}
-	output->next->gbm_surface = output->gbm_surface;
+	output->fb_pending->gbm_surface = output->gbm_surface;
 }
 
 static void
@@ -734,7 +736,7 @@ drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
 
 	output->current_image ^= 1;
 
-	output->next = drm_fb_ref(output->dumb[output->current_image]);
+	output->fb_pending = drm_fb_ref(output->dumb[output->current_image]);
 	pixman_renderer_output_set_buffer(&output->base,
 					  output->image[output->current_image]);
 
@@ -821,16 +823,16 @@ drm_output_repaint(struct weston_output *output_base,
 	if (output->disable_pending || output->destroy_pending)
 		return -1;
 
-	if (!output->next)
+	if (!output->fb_pending)
 		drm_output_render(output, damage);
-	if (!output->next)
+	if (!output->fb_pending)
 		return -1;
 
 	mode = container_of(output->base.current_mode, struct drm_mode, base);
-	if (!output->current ||
-	    output->current->stride != output->next->stride) {
+	if (!output->fb_current ||
+	    output->fb_current->stride != output->fb_pending->stride) {
 		ret = drmModeSetCrtc(backend->drm.fd, output->crtc_id,
-				     output->next->fb_id, 0, 0,
+				     output->fb_pending->fb_id, 0, 0,
 				     &output->connector_id, 1,
 				     &mode->mode_info);
 		if (ret) {
@@ -841,7 +843,7 @@ drm_output_repaint(struct weston_output *output_base,
 	}
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id,
-			    output->next->fb_id,
+			    output->fb_pending->fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		weston_log("queueing pageflip failed: %m\n");
 		goto err_pageflip;
@@ -865,12 +867,12 @@ drm_output_repaint(struct weston_output *output_base,
 			.request.sequence = 1,
 		};
 
-		if ((!s->current && !s->next) ||
+		if ((!s->fb_current && !s->fb_pending) ||
 		    !drm_sprite_crtc_supported(output, s))
 			continue;
 
-		if (s->next && !backend->sprites_hidden)
-			fb_id = s->next->fb_id;
+		if (s->fb_pending && !backend->sprites_hidden)
+			fb_id = s->fb_pending->fb_id;
 
 		ret = drmModeSetPlane(backend->drm.fd, s->plane_id,
 				      output->crtc_id, fb_id, flags,
@@ -903,9 +905,9 @@ drm_output_repaint(struct weston_output *output_base,
 
 err_pageflip:
 	output->cursor_view = NULL;
-	if (output->next) {
-		drm_fb_unref(output->next);
-		output->next = NULL;
+	if (output->fb_pending) {
+		drm_fb_unref(output->fb_pending);
+		output->fb_pending = NULL;
 	}
 
 	return -1;
@@ -931,7 +933,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	if (output->disable_pending || output->destroy_pending)
 		return;
 
-	if (!output->current) {
+	if (!output->fb_current) {
 		/* We can't page flip if there's no mode set */
 		goto finish_frame;
 	}
@@ -965,7 +967,7 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	/* Immediate query didn't provide valid timestamp.
 	 * Use pageflip fallback.
 	 */
-	fb_id = output->current->fb_id;
+	fb_id = output->fb_current->fb_id;
 
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id, fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
@@ -1009,9 +1011,9 @@ vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	drm_output_update_msc(output, frame);
 	output->vblank_pending = 0;
 
-	drm_fb_unref(s->current);
-	s->current = s->next;
-	s->next = NULL;
+	drm_fb_unref(s->fb_current);
+	s->fb_current = s->fb_pending;
+	s->fb_pending = NULL;
 
 	if (!output->page_flip_pending) {
 		/* Stop the pageflip timer instead of rearming it here */
@@ -1043,9 +1045,9 @@ page_flip_handler(int fd, unsigned int frame,
 	 * we just want to page flip to the current buffer to get an accurate
 	 * timestamp */
 	if (output->page_flip_pending) {
-		drm_fb_unref(output->current);
-		output->current = output->next;
-		output->next = NULL;
+		drm_fb_unref(output->fb_current);
+		output->fb_current = output->fb_pending;
+		output->fb_pending = NULL;
 	}
 
 	output->page_flip_pending = 0;
@@ -1147,7 +1149,7 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 		if (!drm_sprite_crtc_supported(output, s))
 			continue;
 
-		if (!s->next) {
+		if (!s->fb_pending) {
 			found = 1;
 			break;
 		}
@@ -1206,13 +1208,13 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 		return NULL;
 	}
 
-	s->next = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
-	if (!s->next) {
+	s->fb_pending = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
+	if (!s->fb_pending) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	drm_fb_set_buffer(s->next, ev->surface->buffer_ref.buffer);
+	drm_fb_set_buffer(s->fb_pending, ev->surface->buffer_ref.buffer);
 
 	box = pixman_region32_extents(&ev->transform.boundingbox);
 	s->plane.x = box->x1;
@@ -1580,9 +1582,9 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
 
 	/* reset rendering stuff. */
-	drm_fb_unref(output->current);
-	drm_fb_unref(output->next);
-	output->current = output->next = NULL;
+	drm_fb_unref(output->fb_current);
+	drm_fb_unref(output->fb_pending);
+	output->fb_current = output->fb_pending = NULL;
 
 	if (b->use_pixman) {
 		drm_output_fini_pixman(output);
@@ -2618,11 +2620,11 @@ drm_output_deinit(struct weston_output *base)
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
 
-	/* output->next must not be set here;
+	/* output->fb_pending must not be set here;
 	 * destroy_pending/disable_pending exist to guarantee exactly this. */
-	assert(!output->next);
-	drm_fb_unref(output->current);
-	output->current = NULL;
+	assert(!output->fb_pending);
+	drm_fb_unref(output->fb_current);
+	output->fb_current = NULL;
 
 	if (b->use_pixman)
 		drm_output_fini_pixman(output);
@@ -2809,8 +2811,8 @@ create_sprites(struct drm_backend *b)
 
 		sprite->possible_crtcs = plane->possible_crtcs;
 		sprite->plane_id = plane->plane_id;
-		sprite->current = NULL;
-		sprite->next = NULL;
+		sprite->fb_current = NULL;
+		sprite->fb_pending = NULL;
 		sprite->backend = b;
 		sprite->count_formats = plane->count_formats;
 		memcpy(sprite->formats, plane->formats,
@@ -2840,8 +2842,8 @@ destroy_sprites(struct drm_backend *backend)
 				sprite->plane_id,
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
-		drm_fb_unref(sprite->current);
-		drm_fb_unref(sprite->next);
+		drm_fb_unref(sprite->fb_current);
+		drm_fb_unref(sprite->fb_pending);
 		weston_plane_release(&sprite->plane);
 		free(sprite);
 	}
@@ -3277,7 +3279,7 @@ recorder_frame_notify(struct wl_listener *listener, void *data)
 	if (!output->recorder)
 		return;
 
-	ret = drmPrimeHandleToFD(b->drm.fd, output->current->handle,
+	ret = drmPrimeHandleToFD(b->drm.fd, output->fb_current->handle,
 				 DRM_CLOEXEC, &fd);
 	if (ret) {
 		weston_log("[libva recorder] "
@@ -3286,7 +3288,7 @@ recorder_frame_notify(struct wl_listener *listener, void *data)
 	}
 
 	ret = vaapi_recorder_frame(output->recorder, fd,
-				   output->current->stride);
+				   output->fb_current->stride);
 	if (ret < 0) {
 		weston_log("[libva recorder] aborted: %m\n");
 		recorder_destroy(output);
