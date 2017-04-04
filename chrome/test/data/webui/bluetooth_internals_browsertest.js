@@ -307,8 +307,8 @@ BluetoothInternalsTest.prototype = {
   },
 };
 
-// Flaky on Mac & Linux in Debug. See crbug.com/707824
-GEN('#if !defined(NDEBUG) && (defined(OS_MACOSX) || defined(OS_LINUX))');
+// Flaky on Debug and ASAN. See crbug.com/707530
+GEN('#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER)');
 GEN('#define MAYBE_Startup_BluetoothInternals ' +
     'DISABLED_Startup_BluetoothInternals');
 GEN('#else');
