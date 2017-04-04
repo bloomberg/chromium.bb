@@ -186,6 +186,7 @@ DOMWindow* createWindow(const String& urlString,
                           ? KURL(ParsedURLString, emptyString)
                           : firstFrame.document()->completeURL(urlString);
   if (!completedURL.isEmpty() && !completedURL.isValid()) {
+    UseCounter::count(activeFrame, UseCounter::WindowOpenWithInvalidURL);
     // Don't expose client code to invalid URLs.
     callingWindow.printErrorMessage(
         "Unable to open a window with invalid URL '" +
