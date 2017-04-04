@@ -537,29 +537,21 @@ bool AddTransformNodeIfNeeded(
                        scroll_child_has_different_target || is_sticky ||
                        is_at_boundary_of_3d_rendering_context;
 
-  LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
-  DCHECK(is_root || transform_parent);
-
   int parent_index = TransformTree::kRootNodeId;
-  if (transform_parent)
-    parent_index = transform_parent->transform_tree_index();
-
-  int source_index = parent_index;
-
+  int source_index = TransformTree::kRootNodeId;
   gfx::Vector2dF source_offset;
+
+  LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
+  DCHECK_EQ(is_root, !transform_parent);
+
   if (transform_parent) {
-    if (ScrollParent(layer)) {
-      LayerType* source = Parent(layer);
-      source_offset += source->offset_to_transform_parent();
-      source_index = source->transform_tree_index();
-    } else if (!is_fixed) {
-      source_offset = transform_parent->offset_to_transform_parent();
-    } else {
-      source_offset = data_from_ancestor.transform_tree_parent
-                          ->offset_to_transform_parent();
-      source_index =
-          data_from_ancestor.transform_tree_parent->transform_tree_index();
-    }
+    parent_index = transform_parent->transform_tree_index();
+    // Because Blink still provides positions with respect to the parent layer,
+    // we track both a parent TransformNode (which is the parent in the
+    // TransformTree) and a 'source' TransformNode (which is the TransformNode
+    // for the parent in the Layer tree).
+    source_index = Parent(layer)->transform_tree_index();
+    source_offset = Parent(layer)->offset_to_transform_parent();
   }
 
   if (IsContainerForFixedPositionLayers(layer) || is_root) {
