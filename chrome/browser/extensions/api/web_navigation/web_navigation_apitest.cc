@@ -728,7 +728,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessAbort) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcessFragment) {
+// crbug.com/708139.
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_CrossProcessFragment) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // See crossProcessFragment/f.html.
