@@ -64,6 +64,11 @@ enum ImageDataStorageFormat {
   kFloat32ArrayStorageFormat,
 };
 
+enum StorageFormatSource {
+  kStorageFormatFromColorSettings,
+  kStorageFormatFromBufferType,
+};
+
 constexpr const char* kUint8ClampedArrayStorageFormatName = "uint8";
 constexpr const char* kUint16ArrayStorageFormatName = "uint16";
 constexpr const char* kFloat32ArrayStorageFormatName = "float32";
@@ -74,11 +79,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static ImageData* create(const IntSize&,
-                           const ImageDataColorSettings* = nullptr);
-  static ImageData* create(const IntSize&,
-                           DOMArrayBufferView*,
-                           const ImageDataColorSettings* = nullptr);
+  static ImageData* create(const IntSize&);
+  static ImageData* create(const IntSize&, DOMUint8ClampedArray*);
 
   static ImageData* create(unsigned width, unsigned height, ExceptionState&);
   static ImageData* create(DOMUint8ClampedArray*,
@@ -89,6 +91,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                            unsigned height,
                            ExceptionState&);
 
+  static ImageData* createForTest(const IntSize&);
+
   ImageData* createImageData(unsigned width,
                              unsigned height,
                              const ImageDataColorSettings&,
@@ -96,25 +100,10 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   ImageData* createImageData(ImageDataArray&,
                              unsigned width,
                              unsigned height,
-                             ImageDataColorSettings&,
+                             const ImageDataColorSettings&,
                              ExceptionState&);
 
-  static ImageData* createForTest(const IntSize&);
-  static ImageData* createForTest(const IntSize&,
-                                  DOMArrayBufferView*,
-                                  const ImageDataColorSettings* = nullptr);
-  static sk_sp<SkColorSpace> getSkColorSpaceForTest(const CanvasColorSpace&,
-                                                    const CanvasPixelFormat&);
-
-  static CanvasColorSpace canvasColorSpace(const String&);
-  static String canvasColorSpaceName(const CanvasColorSpace&);
-  static ImageDataStorageFormat imageDataStorageFormat(const String&);
-  static unsigned storageFormatDataSize(const String&);
-  static DOMArrayBufferView*
-  convertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
-      WTF::ArrayBufferContents&,
-      CanvasPixelFormat,
-      ImageDataStorageFormat);
+  static ImageDataStorageFormat getImageDataStorageFormat(const String&);
 
   IntSize size() const { return m_size; }
   int width() const { return m_size.width(); }
@@ -132,10 +121,7 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
     result = m_colorSettings;
   };
 
-  sk_sp<SkColorSpace> skColorSpace();
-  bool imageDataInCanvasColorSettings(const CanvasColorSpace&,
-                                      const CanvasPixelFormat&,
-                                      std::unique_ptr<uint8_t[]>&);
+  sk_sp<SkColorSpace> getSkColorSpace();
 
   // ImageBitmapSource implementation
   IntSize bitmapSourceSize() const override { return m_size; }
@@ -152,19 +138,18 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
       const WrapperTypeInfo*,
       v8::Local<v8::Object> wrapper) override;
 
-  static bool validateConstructorArguments(
-      const unsigned&,
-      const IntSize* = nullptr,
-      const unsigned& = 0,
-      const unsigned& = 0,
-      const DOMArrayBufferView* = nullptr,
-      const ImageDataColorSettings* = nullptr,
-      ExceptionState* = nullptr);
+  static bool validateConstructorArguments(const unsigned&,
+                                           const IntSize* = nullptr,
+                                           const unsigned& = 0,
+                                           const unsigned& = 0,
+                                           const DOMArrayBufferView* = nullptr,
+                                           ExceptionState* = nullptr);
 
  private:
   ImageData(const IntSize&,
             DOMArrayBufferView*,
-            const ImageDataColorSettings* = nullptr);
+            const ImageDataColorSettings* = nullptr,
+            StorageFormatSource = kStorageFormatFromColorSettings);
 
   IntSize m_size;
   ImageDataColorSettings m_colorSettings;
@@ -177,24 +162,6 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
       const unsigned&,
       ImageDataStorageFormat,
       ExceptionState* = nullptr);
-
-  static DOMUint8ClampedArray* allocateAndValidateUint8ClampedArray(
-      const unsigned&,
-      ExceptionState* = nullptr);
-
-  static DOMUint16Array* allocateAndValidateUint16Array(
-      const unsigned&,
-      ExceptionState* = nullptr);
-
-  static DOMFloat32Array* allocateAndValidateFloat32Array(
-      const unsigned&,
-      ExceptionState* = nullptr);
-
-  static DOMFloat32Array* convertFloat16ArrayToFloat32Array(const uint16_t*,
-                                                            unsigned);
-
-  static sk_sp<SkColorSpace> getSkColorSpace(const CanvasColorSpace&,
-                                             const CanvasPixelFormat&);
 };
 
 }  // namespace blink

@@ -545,7 +545,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
     // Transform the source pixel and check if the pixel from image bitmap has
     // the same color information.
     std::unique_ptr<SkColorSpaceXform> colorSpaceXform = SkColorSpaceXform::New(
-        imageData->skColorSpace().get(), colorSpace.get());
+        imageData->getSkColorSpace().get(), colorSpace.get());
     std::unique_ptr<uint8_t[]> transformedPixel(
         new uint8_t[imageInfo.bytesPerPixel()]());
     colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
