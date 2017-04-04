@@ -28,6 +28,7 @@ import describe
 import file_format
 import helpers
 import map2size
+import match_util
 import models
 
 
@@ -58,6 +59,7 @@ class _Session(object):
         'Print': self._PrintFunc,
         'Write': self._WriteFunc,
         'Diff': models.Diff,
+        'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
     }
     self._variables.update(extra_vars)
 
@@ -83,7 +85,6 @@ class _Session(object):
     else:
       describe.WriteLines(lines, sys.stdout.write)
 
-
   def _WriteFunc(self, obj, path, verbose=False):
     """Same as Print(), but writes to a file.
 
@@ -96,13 +97,14 @@ class _Session(object):
       lines = describe.GenerateLines(obj, verbose=verbose)
       describe.WriteLines(lines, file_obj.write)
 
-
   def _CreateBanner(self):
     symbol_info_keys = sorted(m for m in dir(models.SizeInfo) if m[0] != '_')
-    symbol_group_keys = sorted(m for m in dir(models.SymbolGroup)
-                               if m[0] != '_')
+    symbol_keys = sorted(m for m in dir(models.Symbol) if m[0] != '_')
+    symbol_group_keys = [m for m in dir(models.SymbolGroup) if m[0] != '_']
     symbol_diff_keys = sorted(m for m in dir(models.SymbolDiff)
                               if m[0] != '_' and m not in symbol_group_keys)
+    symbol_group_keys = sorted(m for m in symbol_group_keys
+                               if m not in symbol_keys)
     functions = sorted(k for k in self._variables if k[0].isupper())
     variables = sorted(k for k in self._variables if k[0].islower())
     return '\n'.join([
@@ -113,20 +115,34 @@ class _Session(object):
         'import models',
         'help(models)',
         '',
+        '# Show all attributes of all symbols & per-section totals:',
+        'Print(size_info, verbose=True)',
+        '',
         '# Show two levels of .text, grouped by first two subdirectories',
-        'text_syms = size_info1.symbols.WhereInSection("t")',
+        'text_syms = symbols.WhereInSection("t")',
         'by_path = text_syms.GroupBySourcePath(depth=2)',
         'Print(by_path.WhereBiggerThan(1024))',
         '',
         '# Show all non-vtable generated symbols',
-        'generated_syms = size_info1.symbols.WhereIsGenerated()',
-        'Print(generated_syms.WhereNameMatches("vtable").Inverted())',
+        'generated_syms = symbols.WhereIsGenerated()',
+        'Print(generated_syms.WhereNameMatches(r"vtable").Inverted())',
+        '',
+        '# Show all symbols that have "print" in their name or path, except',
+        '# those within components/.',
+        '# Note: Could have also used Inverted(), as above.',
+        '# Note: Use "help(ExpandRegex)" for more about what {{_print_}} does.',
+        'print_syms = symbols.WhereMatches(r"{{_print_}}")',
+        'Print(print_syms - print_syms.WherePathMatches(r"^components/"))',
+        '',
+        '# Diff two .size files:',
+        'Print(Diff(size_info1, size_info2))',
         '',
         '*' * 80,
         'Here is some quick reference:',
         '',
         'SizeInfo: %s' % ', '.join(symbol_info_keys),
-        'SymbolGroup: %s' % ', '.join(symbol_group_keys),
+        'Symbol: %s' % ', '.join(symbol_keys),
+        'SymbolGroup (extends Symbol): %s' % ', '.join(symbol_group_keys),
         'SymbolDiff (extends SymbolGroup): %s' % ', '.join(symbol_diff_keys),
         '',
         'Functions: %s' % ', '.join('%s()' % f for f in functions),
@@ -160,22 +176,29 @@ class _Session(object):
 def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('inputs', nargs='*',
-                      help='Input .size/.map files to load. They will be '
-                           'mapped to variables as: size_info1, size_info2,'
-                           ' etc.')
+                      help='Input .size/.map files to load. For a single file, '
+                           'it will be mapped to variables as: size_info & '
+                           'symbols (where symbols = size_info.symbols). For '
+                           'multiple inputs, the names will be size_info1, '
+                           'symbols1, etc.')
   parser.add_argument('--query',
                       help='Print the result of the given snippet. Example: '
-                           'size_info1.symbols.WhereInSection("d").'
+                           'symbols.WhereInSection("d").'
                            'WhereBiggerThan(100)')
   map2size.AddOptions(parser)
   args = helpers.AddCommonOptionsAndParseArgs(parser, argv)
 
-  info_variables = {}
+  variables = {}
   for i, path in enumerate(args.inputs):
     size_info = map2size.AnalyzeWithArgs(args, path)
-    info_variables['size_info%d' % (i + 1)] = size_info
+    if len(args.inputs) == 1:
+      variables['size_info'] = size_info
+      variables['symbols'] = size_info.symbols
+    else:
+      variables['size_info%d' % (i + 1)] = size_info
+      variables['symbols%d' % (i + 1)] = size_info.symbols
 
-  session = _Session(info_variables)
+  session = _Session(variables)
 
   if args.query:
     logging.info('Running query from command-line.')

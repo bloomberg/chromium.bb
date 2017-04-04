@@ -1,7 +1,7 @@
 Section r has 44.6% of 2641188 bytes accounted for from 7 symbols. 3286464 bytes are unaccounted for. Padding accounts for 14 bytes
 + Without 2 merge sections and 0 anonymous entries (accounting for 2641042 bytes):
 + Section r has 0.0% of 146 bytes accounted for from 5 symbols. 5927506 bytes are unaccounted for. Padding accounts for 14 bytes
-Section b has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 bytes are unaccounted for. Padding accounts for 196 bytes
+Section b has 0.0% of 0 bytes accounted for from 6 symbols. 1300456 bytes are unaccounted for. Padding accounts for 196 bytes
 Section d has 0.0% of 388 bytes accounted for from 13 symbols. 1956628 bytes are unaccounted for. Padding accounts for 0 bytes
 Section t has 0.0% of 10578 bytes accounted for from 13 symbols. 35890134 bytes are unaccounted for. Padding accounts for 12 bytes
 + Without 2 merge sections and 0 anonymous entries (accounting for 9758 bytes):
@@ -23,8 +23,8 @@ Section t has 0.0% of 10578 bytes accounted for from 13 symbols. 35890134 bytes 
 .data.rel.ro.local@2c176f0(size=56,padding=0,name=ChromeMainDelegate [vtable],path=third_party/icu/ucnv_ext.c,anon=0)
 .data.rel.ro.local@2c17728(size=24,padding=0,name=chrome::mojom::FieldTrialRecorderRequestValidator [vtable],path=third_party/icu/ucnv_ext.c,anon=0)
 .data.rel.ro.local@2c17740(size=24,padding=0,name=chrome::mojom::FieldTrialRecorderProxy [vtable],path=third_party/container.c,anon=0)
-.data.rel.ro.local@2cd84e0(size=16,padding=0,name=.Lswitch.table.45,path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/(libcontroller_api_impl.a_controller_api_impl.o),anon=0)
-.data.rel.ro.local@2cd84f0(size=8,padding=0,name=kSystemClassPrefixes,path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/(libport_android_jni.a_jni_utils.o),anon=1)
+.data.rel.ro.local@2cd84e0(size=16,padding=0,name=.Lswitch.table.45,path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o,anon=0)
+.data.rel.ro.local@2cd84f0(size=8,padding=0,name=kSystemClassPrefixes,path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o,anon=1)
 .rodata@266e600(size=1965409,padding=0,name=** merge strings,path=,anon=0)
 .rodata@284e364(size=8,padding=3,name=,path=base/page_allocator.cc,anon=0)
 .rodata@284e370(size=40,padding=4,name=Name,path=base/page_allocator.cc,anon=0)

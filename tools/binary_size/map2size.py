@@ -95,6 +95,10 @@ def _NormalizeNames(symbol_group):
       symbol.full_name = symbol.name
       symbol.name = re.sub(r'\(.*\)', '', symbol.full_name)
 
+    # Don't bother storing both if they are the same.
+    if symbol.full_name == symbol.name:
+      symbol.full_name = ''
+
   logging.debug('Found name prefixes of: %r', found_prefixes)
 
 
@@ -109,9 +113,9 @@ def _NormalizeObjectPaths(symbol_group):
       # Convert ../../third_party/... -> third_party/...
       path = path[6:]
     if path.endswith(')'):
-      # Convert foo/bar.a(baz.o) -> foo/bar.a/(baz.o)
+      # Convert foo/bar.a(baz.o) -> foo/bar.a/baz.o
       start_idx = path.index('(')
-      path = os.path.join(path[:start_idx], path[start_idx:])
+      path = os.path.join(path[:start_idx], path[start_idx + 1:-1])
     symbol.object_path = path
 
 
@@ -148,17 +152,16 @@ def _RemoveDuplicatesAndCalculatePadding(symbol_group):
 
   Symbols must already be sorted by |address|.
   """
-  to_remove = set()
-  all_symbols = symbol_group.symbols
-  for i, symbol in enumerate(all_symbols[1:]):
-    prev_symbol = all_symbols[i]
+  to_remove = []
+  for i, symbol in enumerate(symbol_group[1:]):
+    prev_symbol = symbol_group[i]
     if prev_symbol.section_name != symbol.section_name:
       continue
     if symbol.address > 0 and prev_symbol.address > 0:
       # Fold symbols that are at the same address (happens in nm output).
       if symbol.address == prev_symbol.address:
         symbol.size = max(prev_symbol.size, symbol.size)
-        to_remove.add(i + 1)
+        to_remove.add(symbol)
         continue
       # Even with symbols at the same address removed, overlaps can still
       # happen. In this case, padding will be negative (and this is fine).
@@ -185,8 +188,7 @@ def _RemoveDuplicatesAndCalculatePadding(symbol_group):
   # Map files have no overlaps, so worth special-casing the no-op case.
   if to_remove:
     logging.info('Removing %d overlapping symbols', len(to_remove))
-    symbol_group.symbols = (
-        [s for i, s in enumerate(all_symbols) if i not in to_remove])
+    symbol_group -= models.SymbolGroup(to_remove)
 
 
 def AddOptions(parser):

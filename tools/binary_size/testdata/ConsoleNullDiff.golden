@@ -1,4 +1,4 @@
-Metadata: time=Unknown tag=
+Metadata: mapfile mtime=Unknown 	tag=
 Section Sizes (Total=0 bytes):
 .bss: 0 bytes (not included in totals)
 .data: 0 bytes (0.0%)
@@ -9,4 +9,5 @@ Section Sizes (Total=0 bytes):
 
 0 symbols added (+), 0 changed (~), 0 removed (-), 45 unchanged (not shown)
 Showing 0 symbols with total size: 0 bytes
+.text=0 bytes    .rodata=0 bytes    other=0 bytes    total=0 bytes
 First columns are: running total, type, size

@@ -45,7 +45,6 @@ Starts a Python interpreter where you can run custom queries.
       * Per-class / namespace size (no way to distinguish class vs namespace).
       * Per-Chrome package (Chrome-specific grouping. e.g. name prefixes).
       * CSV output (for pasting into a spreadsheet).
-      * Allow Print() to not sort.
   1. More create_html_breakdown.py features:
       * Break down by other groupings (e.g. create from nested `SymbolGroups`)
   1. More `map2size.py` features:

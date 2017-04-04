@@ -8,6 +8,8 @@ import copy
 import os
 import re
 
+import match_util
+
 
 SECTION_TO_SECTION_NAME = {
     'b': '.bss',
@@ -89,7 +91,6 @@ class Symbol(BaseSymbol):
       'is_anonymous',
       'object_path',
       'name',
-      'flags',
       'padding',
       'section_name',
       'source_path',
@@ -123,44 +124,76 @@ class SymbolGroup(BaseSymbol):
 
   SymbolGroups are immutable. All filtering / sorting will return new
   SymbolGroups objects.
+
+  Overrides many __functions__. E.g. the following are all valid:
+  * len(group)
+  * iter(group)
+  * group[0]
+  * group['0x1234']  # By symbol address
+  * without_group2 = group1 - group2
+  * unioned = group1 + group2
   """
 
   __slots__ = (
-      'symbols',
-      'filtered_symbols',
+      '_padding',
+      '_size',
+      '_symbols',
+      '_filtered_symbols',
       'name',
       'section_name',
+      'is_sorted',
   )
 
   def __init__(self, symbols, filtered_symbols=None, name=None,
-               section_name=None):
-    self.symbols = symbols
-    self.filtered_symbols = filtered_symbols or []
+               section_name=None, is_sorted=False):
+    self._padding = None
+    self._size = None
+    self._symbols = symbols
+    self._filtered_symbols = filtered_symbols or []
     self.name = name or ''
     self.section_name = section_name or '.*'
+    self.is_sorted = is_sorted
 
   def __repr__(self):
     return 'Group(name=%s,count=%d,size=%d)' % (
         self.name, len(self), self.size)
 
   def __iter__(self):
-    return iter(self.symbols)
+    return iter(self._symbols)
 
   def __len__(self):
-    return len(self.symbols)
+    return len(self._symbols)
 
-  def __getitem__(self, index):
-    return self.symbols[index]
+  def __eq__(self, other):
+    return self._symbols == other._symbols
+
+  def __getitem__(self, key):
+    """|key| can be an index or an address.
+
+    Raises if multiple symbols map to the address.
+    """
+    if isinstance(key, slice):
+      return self._symbols.__getitem__(key)
+    if isinstance(key, basestring) or key > len(self._symbols):
+      found = self.WhereAddressInRange(key)
+      if len(found) != 1:
+        raise KeyError('%d symbols found at address %s.' % (len(found), key))
+      return found[0]
+    return self._symbols[key]
 
   def __sub__(self, other):
-    other_ids = set(id(s) for s in other)
+    if other.IsGroup():
+      other_ids = set(id(s) for s in other)
+    else:
+      other_ids = set((id(other),))
     new_symbols = [s for s in self if id(s) not in other_ids]
     return self._CreateTransformed(new_symbols, section_name=self.section_name)
 
   def __add__(self, other):
     self_ids = set(id(s) for s in self)
-    new_symbols = self.symbols + [s for s in other if id(s) not in self_ids]
-    return self._CreateTransformed(new_symbols, section_name=self.section_name)
+    new_symbols = self._symbols + [s for s in other if id(s) not in self_ids]
+    return self._CreateTransformed(new_symbols, section_name=self.section_name,
+                                   is_sorted=False)
 
   @property
   def address(self):
@@ -180,21 +213,27 @@ class SymbolGroup(BaseSymbol):
 
   @property
   def size(self):
-    if self.IsBss():
-      return sum(s.size for s in self)
-    return sum(s.size for s in self if not s.IsBss())
+    if self._size is None:
+      if self.IsBss():
+        self._size = sum(s.size for s in self)
+      self._size = sum(s.size for s in self if not s.IsBss())
+    return self._size
 
   @property
   def padding(self):
-    return sum(s.padding for s in self)
+    if self._padding is None:
+      self._padding = sum(s.padding for s in self)
+    return self._padding
 
   def IsGroup(self):
     return True
 
   def _CreateTransformed(self, symbols, filtered_symbols=None, name=None,
-                         section_name=None):
+                         section_name=None, is_sorted=None):
+    if is_sorted is None:
+      is_sorted = self.is_sorted
     return SymbolGroup(symbols, filtered_symbols=filtered_symbols, name=name,
-                       section_name=section_name)
+                       section_name=section_name, is_sorted=is_sorted)
 
   def Sorted(self, cmp_func=None, key=None, reverse=False):
     # Default to sorting by abs(size) then name.
@@ -202,10 +241,10 @@ class SymbolGroup(BaseSymbol):
       cmp_func = lambda a, b: cmp((a.IsBss(), abs(b.size), a.name),
                                   (b.IsBss(), abs(a.size), b.name))
 
-    new_symbols = sorted(self.symbols, cmp_func, key, reverse)
-    return self._CreateTransformed(new_symbols,
-                                   filtered_symbols=self.filtered_symbols,
-                                   section_name=self.section_name)
+    new_symbols = sorted(self._symbols, cmp_func, key, reverse)
+    return self._CreateTransformed(
+        new_symbols, filtered_symbols=self._filtered_symbols,
+        section_name=self.section_name, is_sorted=True)
 
   def SortedByName(self, reverse=False):
     return self.Sorted(key=(lambda s:s.name), reverse=reverse)
@@ -241,30 +280,57 @@ class SymbolGroup(BaseSymbol):
     return self.Filter(lambda s: s.IsGenerated())
 
   def WhereNameMatches(self, pattern):
-    regex = re.compile(pattern)
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
     return self.Filter(lambda s: regex.search(s.name))
 
   def WhereObjectPathMatches(self, pattern):
-    regex = re.compile(pattern)
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
     return self.Filter(lambda s: regex.search(s.object_path))
 
   def WhereSourcePathMatches(self, pattern):
-    regex = re.compile(pattern)
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
     return self.Filter(lambda s: regex.search(s.source_path))
 
   def WherePathMatches(self, pattern):
-    regex = re.compile(pattern)
-    return self.Filter(lambda s: regex.search(s.source_path or s.object_path))
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
+    return self.Filter(lambda s: (regex.search(s.source_path) or
+                                  regex.search(s.object_path)))
 
-  def WhereAddressInRange(self, start, end):
-    return self.Filter(lambda s: s.address >= start and s.address <= end)
+  def WhereMatches(self, pattern):
+    """Looks for |pattern| within all paths & names."""
+    regex = re.compile(match_util.ExpandRegexIdentifierPlaceholder(pattern))
+    return self.Filter(lambda s: (regex.search(s.source_path) or
+                                  regex.search(s.object_path) or
+                                  regex.search(s.full_name or '') or
+                                  regex.search(s.name)))
+
+  def WhereAddressInRange(self, start, end=None):
+    """Searches for addesses within [start, end).
+
+    Args may be ints or hex strings. Default value for |end| is |start| + 1.
+    """
+    if isinstance(start, basestring):
+      start = int(start, 16)
+    if end is None:
+      end = start + 1
+    return self.Filter(lambda s: s.address >= start and s.address < end)
 
   def WhereHasAnyAttribution(self):
     return self.Filter(lambda s: s.name or s.source_path or s.object_path)
 
   def Inverted(self):
-    return self._CreateTransformed(self.filtered_symbols,
-                                   filtered_symbols=self.symbols)
+    """Returns the symbols that were filtered out by the previous filter.
+
+    Applies only when the previous call was a filter.
+
+    Example:
+        # Symbols that do not have "third_party" in their path.
+        symbols.WherePathMatches(r'third_party').Inverted()
+        # Symbols within third_party that do not contain the string "foo".
+        symbols.WherePathMatches(r'third_party').WhereMatches('foo').Inverted()
+    """
+    return self._CreateTransformed(
+        self._filtered_symbols, filtered_symbols=self._symbols, is_sorted=False)
 
   def GroupBy(self, func, min_count=0):
     """Returns a SymbolGroup of SymbolGroups, indexed by |func|.
@@ -292,14 +358,16 @@ class SymbolGroup(BaseSymbol):
     min_count = abs(min_count)
     for token, symbols in symbols_by_token.iteritems():
       if len(symbols) >= min_count:
-        new_syms.append(self._CreateTransformed(symbols, name=token,
-                                                section_name=self.section_name))
+        new_syms.append(self._CreateTransformed(
+            symbols, name=token, section_name=self.section_name,
+            is_sorted=False))
       elif include_singles:
         new_syms.extend(symbols)
       else:
         filtered_symbols.extend(symbols)
-    return self._CreateTransformed(new_syms, filtered_symbols=filtered_symbols,
-                                   section_name=self.section_name)
+    return self._CreateTransformed(
+        new_syms, filtered_symbols=filtered_symbols,
+        section_name=self.section_name, is_sorted=False)
 
   def GroupBySectionName(self):
     return self.GroupBy(lambda s: s.section_name)
@@ -402,18 +470,18 @@ class SymbolDiff(SymbolGroup):
         self.unchanged_count, self.size)
 
   def _CreateTransformed(self, symbols, filtered_symbols=None, name=None,
-                         section_name=None):
+                         section_name=None, is_sorted=None):
     ret = SymbolDiff.__new__(SymbolDiff)
     # Printing sorts, so fast-path the same symbols case.
-    if len(symbols) == len(self.symbols):
+    if len(symbols) == len(self._symbols):
       ret._added_ids = self._added_ids
       ret._removed_ids = self._removed_ids
     else:
       ret._added_ids = set(id(s) for s in symbols if self.IsAdded(s))
       ret._removed_ids = set(id(s) for s in symbols if self.IsRemoved(s))
-    super(SymbolDiff, ret).__init__(symbols, filtered_symbols=filtered_symbols,
-                                    name=name, section_name=section_name)
-
+    super(SymbolDiff, ret).__init__(
+        symbols, filtered_symbols=filtered_symbols, name=name,
+        section_name=section_name, is_sorted=is_sorted)
     return ret
 
   @property

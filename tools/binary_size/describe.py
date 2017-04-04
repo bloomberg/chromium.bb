@@ -10,6 +10,25 @@ import time
 import models
 
 
+def _PrettySize(size):
+  # Arbitrarily chosen cut-off.
+  if abs(size) < 2000:
+    return '%d bytes' % size
+  # Always show 3 digits.
+  size /= 1024.0
+  if abs(size) < 10:
+    return '%.2fkb' % size
+  elif abs(size) < 100:
+    return '%.1fkb' % size
+  elif abs(size) < 1024:
+    return '%dkb' % size
+  size /= 1024.0
+  if abs(size) < 10:
+    return '%.2fmb' % size
+  # We shouldn't be seeing sizes > 100mb.
+  return '%.1fmb' % size
+
+
 class Describer(object):
   def __init__(self, verbose=False):
     self.verbose = verbose
@@ -32,31 +51,63 @@ class Describer(object):
   def _DescribeSymbol(self, sym):
     # SymbolGroups are passed here when we don't want to expand them.
     if sym.IsGroup():
-      yield '{} {:<8} {} (count={})'.format(sym.section, sym.size, sym.name,
-                                            len(sym))
+      if self.verbose:
+        yield ('{} {:<8} {} (count={})  padding={}  '
+               'size_without_padding={}').format(
+                    sym.section, sym.size, sym.name, len(sym), sym.padding,
+                    sym.size_without_padding)
+      else:
+        yield '{} {:<8} {} (count={})'.format(sym.section, sym.size, sym.name,
+                                              len(sym))
       return
 
-    yield '{}@0x{:<8x}  {:<7} {}'.format(
-        sym.section, sym.address, sym.size,
-        sym.source_path or sym.object_path or '{no path}')
-    if sym.name:
-      yield '{:22}{}'.format('', sym.name)
+    if self.verbose:
+      yield '{}@0x{:<8x}  size={}  padding={}  size_without_padding={}'.format(
+          sym.section, sym.address, sym.size, sym.padding,
+          sym.size_without_padding)
+      yield '    source_path={} \tobject_path={}'.format(
+          sym.source_path, sym.object_path)
+      if sym.full_name:
+        yield '    full_name={} \tis_anonymous={}'.format(
+            sym.full_name, sym.is_anonymous)
+      if sym.name:
+        yield '    name={} \tis_anonymous={}'.format(
+            sym.name, sym.is_anonymous)
+    else:
+      yield '{}@0x{:<8x}  {:<7} {}'.format(
+          sym.section, sym.address, sym.size,
+          sym.source_path or sym.object_path or '{no path}')
+      if sym.name:
+        yield '    {}'.format(sym.name)
 
   def _DescribeSymbolGroup(self, group, prefix_func=None):
-    yield 'Showing {:,} symbols with total size: {:} bytes'.format(
-        len(group), group.size)
+    total_size = group.size
+    yield 'Showing {:,} symbols with total size: {} bytes'.format(
+        len(group), total_size)
+    code_syms = group.WhereInSection('t')
+    code_size = code_syms.size
+    ro_size = code_syms.Inverted().WhereInSection('r').size
+    yield '.text={:<10} .rodata={:<10} other={:<10} total={}'.format(
+        _PrettySize(code_size), _PrettySize(ro_size),
+        _PrettySize(total_size - code_size - ro_size),
+        _PrettySize(total_size))
     yield 'First columns are: running total, type, size'
 
     running_total = 0
     prefix = ''
+    sorted_syms = group if group.is_sorted else group.Sorted()
 
-    for s in group.Sorted():
+    prefix = ''
+    for s in sorted_syms:
       if group.IsBss() or not s.IsBss():
         running_total += s.size
-      if prefix_func:
-        prefix = prefix_func(s)
       for l in self._DescribeSymbol(s):
-        yield '{}{:8} {}'.format(prefix, running_total, l)
+        if l[:4].isspace():
+          yield '{} {}'.format(' ' * (8 + len(prefix)), l)
+        else:
+          if prefix_func:
+            prefix = prefix_func(s)
+          yield '{}{:8} {}'.format(prefix, running_total, l)
 
   def _DescribeSymbolDiff(self, diff):
     template = ('{} symbols added (+), {} changed (~), {} removed (-), '
@@ -144,7 +195,7 @@ def DescribeSizeInfoMetadata(size_info):
   time_str = 'Unknown'
   if size_info.timestamp:
     time_str = _UtcToLocal(size_info.timestamp).strftime('%Y-%m-%d %H:%M:%S')
-  return 'time=%s tag=%s' % (time_str, size_info.tag)
+  return 'mapfile mtime=%s \ttag=%s' % (time_str, size_info.tag)
 
 
 def GenerateLines(obj, verbose=False):

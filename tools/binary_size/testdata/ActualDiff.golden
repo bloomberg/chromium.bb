@@ -1,4 +1,4 @@
-Metadata: time=Unknown tag=
+Metadata: mapfile mtime=Unknown 	tag=
 Section Sizes (Total=0 bytes):
 .bss: 0 bytes (not included in totals)
 .data: 0 bytes (0.0%)
@@ -7,12 +7,149 @@ Section Sizes (Total=0 bytes):
 .rodata: 0 bytes (0.0%)
 .text: 0 bytes (0.0%)
 
-1 symbols added (+), 1 changed (~), 1 removed (-), 42 unchanged (not shown)
-Showing 3 symbols with total size: 0 bytes
+1 symbols added (+), 1 changed (~), 1 removed (-), 42 unchanged (=)
+Showing 45 symbols with total size: 0 bytes
+.text=0 bytes    .rodata=0 bytes    other=0 bytes    total=0 bytes
 First columns are: running total, type, size
-+        0 b@0x0         262144  third_party/fft_float.cc
-+        0                       ff_cos_131072
-~        0 b@0x0         -10     third_party/fft_fixed.cc
-~        0                       ff_cos_131072_fixed
--        0 b@0x2dffe84   -4      third_party/icu/ucnv_ext.c
--        0                       g_AnimationFrameTimeHistogram_clazz
+=        0 r@0x284e364   size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+=        0 r@0x0         size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** aggregate padding of delta symbols 	is_anonymous=False
+=        0 d@0x0         size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** aggregate padding of delta symbols 	is_anonymous=False
+=        0 d@0x0         size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** aggregate padding of delta symbols 	is_anonymous=False
+=        0 d@0x0         size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** aggregate padding of delta symbols 	is_anonymous=False
+=        0 t@0x0         size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** aggregate padding of delta symbols 	is_anonymous=False
+=        0 r@0x266e600   size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** merge strings 	is_anonymous=False
+=        0 r@0x284e518   size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** merge strings 	is_anonymous=False
+=        0 t@0x28d9aa    size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=** symbol gap 0 	is_anonymous=False
+=        0 t@0x2a0034    size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=** symbol gap 1 	is_anonymous=False
+=        0 d@0x2cd84e0   size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o
+               name=.Lswitch.table.45 	is_anonymous=False
+=        0 d@0x2c176f0   size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=ChromeMainDelegate [vtable] 	is_anonymous=False
+=        0 d@0x2cd8500   size=0  padding=0  size_without_padding=0
+               source_path=third_party/paint.cc 	object_path=third_party/WebKit.a/PaintChunker.o
+               name=ChromeMainDelegateAndroid [vtable] 	is_anonymous=False
+=        0 r@0x284e370   size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=Name 	is_anonymous=False
+=        0 d@0x2de70a0   size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=base::android::g_renderer_histogram_code 	is_anonymous=True
+=        0 r@0x28f3480   size=0  padding=0  size_without_padding=0
+               source_path=third_party/paint.cc 	object_path=third_party/WebKit.a/PaintChunker.o
+               full_name=blink::CSSValueKeywordsHash::findValueImpl(char const*, unsigned int)::value_word_list 	is_anonymous=True
+               name=blink::CSSValueKeywordsHash::findValueImpl::value_word_list 	is_anonymous=True
+=        0 t@0x2a0020    size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&) 	is_anonymous=False
+               name=blink::ContiguousContainerBase::ContiguousContainerBase 	is_anonymous=False
+=        0 t@0x2a0000    size=0  padding=0  size_without_padding=0
+               source_path=third_party/paint.cc 	object_path=third_party/WebKit.a/PaintChunker.o
+               full_name=blink::ContiguousContainerBase::shrinkToFit() 	is_anonymous=False
+               name=blink::ContiguousContainerBase::shrinkToFit 	is_anonymous=False
+=        0 t@0x2a1000    size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               full_name=blink::PaintChunker::releasePaintChunks() 	is_anonymous=True
+               name=blink::PaintChunker::releasePaintChunks 	is_anonymous=True
+=        0 d@0x2c17740   size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=chrome::mojom::FieldTrialRecorderProxy [vtable] 	is_anonymous=False
+=        0 d@0x2c17728   size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=chrome::mojom::FieldTrialRecorderRequestValidator [vtable] 	is_anonymous=False
+=        0 r@0x284e398   size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=chrome::mojom::FilePatcher::Name_ 	is_anonymous=False
+=        0 t@0x28d964    size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               full_name=extFromUUseMapping(signed char, unsigned int, int) 	is_anonymous=False
+               name=extFromUUseMapping 	is_anonymous=False
+=        0 t@0x28d98a    size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               full_name=extFromUUseMapping(aj, int) 	is_anonymous=False
+               name=extFromUUseMapping 	is_anonymous=False
+=        0 d@0x2de7000   size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=google::protobuf::internal::pLinuxKernelCmpxchg 	is_anonymous=False
+=        0 d@0x2de7004   size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=google::protobuf::internal::pLinuxKernelMemoryBarrier 	is_anonymous=False
+=        0 r@0x28f3450   size=0  padding=0  size_without_padding=0
+               source_path=third_party/paint.cc 	object_path=third_party/WebKit.a/PaintChunker.o
+               name=kAnimationFrameTimeHistogramClassPath 	is_anonymous=True
+=        0 d@0x2cd8550   size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=kMethodsAnimationFrameTimeHistogram 	is_anonymous=False
+=        0 d@0x2cd84f0   size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
+               name=kSystemClassPrefixes 	is_anonymous=True
+=        0 d@0x2cd8538   size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=mojo::MessageReceiver [vtable] 	is_anonymous=False
+=        0 d@0x2de7008   size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=rel._ZN4base7androidL22kBaseRegisteredMethodsE 	is_anonymous=False
+=        0 d@0x2de70a4   size=0  padding=0  size_without_padding=0
+               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               name=rel.local._ZN4base7android12_GLOBAL__N_124g_library_version_numberE 	is_anonymous=False
+=        0 t@0x28f1c8    size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=startup._GLOBAL__sub_I_SkDeviceProfile.cpp 	is_anonymous=False
+=        0 t@0x28f1e0    size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=startup._GLOBAL__sub_I_SkDiscardableMemoryPool.cpp 	is_anonymous=False
+=        0 t@0x28d910    size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=startup._GLOBAL__sub_I_bbr_sender.cc 	is_anonymous=False
+=        0 t@0x28d948    size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=startup._GLOBAL__sub_I_pacing_sender.cc 	is_anonymous=False
+=        0 t@0x28d900    size=0  padding=0  size_without_padding=0
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               name=startup._GLOBAL__sub_I_page_allocator.cc 	is_anonymous=False
+=        0 t@0x28f000    size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               full_name=ucnv_extMatchFromU(int const*, int, unsigned short const*, int, unsigned short const*, int, unsigned int*, signed char, signed char) 	is_anonymous=False
+               name=ucnv_extMatchFromU 	is_anonymous=False
+-        0 b@0x0         size=-262144  padding=0  size_without_padding=-262144
+               source_path=third_party/fft_float.cc 	object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o
+               name=ff_cos_131072 	is_anonymous=False
+~        0 b@0x0         size=-10  padding=0  size_without_padding=-10
+               source_path=third_party/fft_float.cc 	object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o
+               name=ff_cos_65536 	is_anonymous=False
++        0 b@0x2dffe84   size=4  padding=0  size_without_padding=4
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=g_AnimationFrameTimeHistogram_clazz 	is_anonymous=True
+=        0 b@0x0         size=0  padding=0  size_without_padding=0
+               source_path= 	object_path=
+               name=** aggregate padding of delta symbols 	is_anonymous=False
+=        0 b@0x2dffe80   size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               full_name=SaveHistogram(_JNIEnv*, base::android::JavaParamRef<_jobject*> const&, base::android::JavaParamRef<_jstring*> const&, base::android::JavaParamRef<_jlongArray*> const&, int)::atomic_histogram_pointer 	is_anonymous=False
+               name=SaveHistogram::atomic_histogram_pointer 	is_anonymous=False
+=        0 b@0x0         size=0  padding=0  size_without_padding=0
+               source_path=third_party/fft_fixed.cc 	object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_fixed.o
+               name=ff_cos_131072_fixed 	is_anonymous=False
+=        0 b@0x2dffda0   size=0  padding=0  size_without_padding=0
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               name=g_chrome_content_browser_client 	is_anonymous=False

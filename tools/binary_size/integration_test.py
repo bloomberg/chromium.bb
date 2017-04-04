@@ -84,11 +84,11 @@ class IntegrationTest(unittest.TestCase):
   def test_ActualDiff(self):
     map1 = self._GetParsedMap()
     map2 = self._GetParsedMap()
-    map1.symbols.symbols.pop(-1)
-    map2.symbols.symbols.pop(0)
+    map1.symbols -= map1.symbols[0]
+    map2.symbols -= map2.symbols[-1]
     map1.symbols[1].size -= 10
     diff = models.Diff(map1, map2)
-    return describe.GenerateLines(diff)
+    return describe.GenerateLines(diff, verbose=True)
 
   @_CompareWithGolden
   def test_SymbolGroupMethods(self):
@@ -96,10 +96,10 @@ class IntegrationTest(unittest.TestCase):
     global_syms = all_syms.WhereNameMatches('GLOBAL')
     # Tests Filter(), Inverted(), and __sub__().
     non_global_syms = global_syms.Inverted()
-    self.assertEqual(non_global_syms.symbols, (all_syms - global_syms).symbols)
+    self.assertEqual(non_global_syms, (all_syms - global_syms))
     # Tests Sorted() and __add__().
-    self.assertEqual(all_syms.Sorted().symbols,
-                     (global_syms + non_global_syms).Sorted().symbols)
+    self.assertEqual(all_syms.Sorted(),
+                     (global_syms + non_global_syms).Sorted())
     # Tests GroupByNamespace() and __len__().
     return itertools.chain(
         ['GroupByNamespace()'],
