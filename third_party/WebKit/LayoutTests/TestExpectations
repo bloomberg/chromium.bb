@@ -429,8 +429,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 
 #### fast/block/float
 #### Total: 209
-#### Passed: 29
-#### Skipped: 176
+#### Passed: 28
+#### Skipped: 177
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -545,6 +545,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-00
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-002.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-003.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-004.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-006.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-wrap-inside-inline-007.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/formatting-context-changes.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/in-margin.html [ Skip ]

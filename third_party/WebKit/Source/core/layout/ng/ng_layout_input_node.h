@@ -25,9 +25,9 @@ class CORE_EXPORT NGLayoutInputNode
  public:
   enum NGLayoutInputNodeType { kLegacyBlock = 0, kLegacyInline = 1 };
 
-  bool IsInline() { return type_ == kLegacyInline; }
+  bool IsInline() const { return type_ == kLegacyInline; }
 
-  bool IsBlock() { return type_ == kLegacyBlock; }
+  bool IsBlock() const { return type_ == kLegacyBlock; }
 
   virtual ~NGLayoutInputNode(){};
 

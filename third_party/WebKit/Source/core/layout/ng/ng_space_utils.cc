@@ -4,6 +4,10 @@
 
 #include "core/layout/ng/ng_space_utils.h"
 
+#include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_layout_input_node.h"
+#include "core/layout/ng/ng_writing_mode.h"
+
 namespace blink {
 namespace {
 
@@ -25,8 +29,8 @@ bool IsOutOfFlowPositioned(const EPosition& position) {
 
 }  // namespace
 
-bool IsNewFormattingContextForBlockLevelChild(const NGConstraintSpace& space,
-                                              const ComputedStyle& style) {
+bool IsNewFormattingContextForBlockLevelChild(const ComputedStyle& parent_style,
+                                              const NGLayoutInputNode& node) {
   // TODO(layout-dev): This doesn't capture a few cases which can't be computed
   // directly from style yet:
   //  - The child is a <fieldset>.
@@ -34,6 +38,10 @@ bool IsNewFormattingContextForBlockLevelChild(const NGConstraintSpace& space,
   //    in a multi-col formatting context).
   //    (https://drafts.csswg.org/css-multicol-1/#valdef-column-span-all)
 
+  if (node.IsInline())
+    return false;
+
+  const ComputedStyle& style = node.Style();
   if (style.isFloating() || IsOutOfFlowPositioned(style.position()))
     return true;
 
@@ -49,7 +57,7 @@ bool IsNewFormattingContextForBlockLevelChild(const NGConstraintSpace& space,
       display == EDisplay::kWebkitBox)
     return true;
 
-  if (space.WritingMode() != FromPlatformWritingMode(style.getWritingMode()))
+  if (parent_style.getWritingMode() != style.getWritingMode())
     return true;
 
   return false;
@@ -85,14 +93,13 @@ WTF::Optional<LayoutUnit> GetClearanceOffset(
   return WTF::nullopt;
 }
 
-bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
+bool ShouldShrinkToFit(const ComputedStyle& parent_style,
                        const ComputedStyle& style) {
-  NGWritingMode child_writing_mode =
-      FromPlatformWritingMode(style.getWritingMode());
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr
-  bool is_in_parallel_flow =
-      IsParallelWritingMode(parent_space.WritingMode(), child_writing_mode);
+  bool is_in_parallel_flow = IsParallelWritingMode(
+      FromPlatformWritingMode(parent_style.getWritingMode()),
+      FromPlatformWritingMode(style.getWritingMode()));
 
   return style.display() == EDisplay::kInlineBlock || style.isFloating() ||
          !is_in_parallel_flow;

@@ -79,6 +79,37 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   RefPtr<ComputedStyle> style_;
 };
 
+class FragmentChildIterator {
+  STACK_ALLOCATED();
+
+ public:
+  explicit FragmentChildIterator(const NGPhysicalBoxFragment* parent) {
+    SetParent(parent);
+  }
+  void SetParent(const NGPhysicalBoxFragment* parent) {
+    parent_ = parent;
+    index_ = 0;
+  }
+
+  const NGPhysicalBoxFragment* NextChild() {
+    if (!parent_)
+      return nullptr;
+    if (index_ >= parent_->Children().size())
+      return nullptr;
+    while (parent_->Children()[index_]->Type() !=
+           NGPhysicalFragment::kFragmentBox) {
+      ++index_;
+      if (index_ >= parent_->Children().size())
+        return nullptr;
+    }
+    return toNGPhysicalBoxFragment(parent_->Children()[index_++].get());
+  }
+
+ private:
+  const NGPhysicalBoxFragment* parent_;
+  unsigned index_;
+};
+
 TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
   setBodyInnerHTML(R"HTML(
     <div id="box" style="width:30px; height:40px"></div>
@@ -589,6 +620,62 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_CollapsingMarginsCase6) {
 
   const NGPhysicalFragment* child2 = frag->Children()[1].get();
   EXPECT_EQ(kHeight + std::max(kMarginBottom, kMarginTop), child2->TopOffset());
+}
+
+// Verifies that a child with clearance - which does nothing - still shifts its
+// parent's offset.
+TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase7) {
+  setBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      outline: solid purple 1px;
+      width: 200px;
+    }
+    #zero {
+      outline: solid red 1px;
+      margin-top: 10px;
+    }
+    #float {
+      background: yellow;
+      float: right;
+      width: 20px;
+      height: 20px;
+    }
+    #inflow {
+      background: blue;
+      clear: left;
+      height: 20px;
+      margin-top: 20px;
+    }
+    </style>
+    <div id="zero">
+      <div id="float"></div>
+    </div>
+    <div id="inflow"></div>
+  )HTML");
+
+  RefPtr<NGPhysicalBoxFragment> fragment;
+  std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
+      document().getElementsByTagName("html")->item(0));
+
+  FragmentChildIterator iterator(fragment.get());
+
+  // body
+  const NGPhysicalBoxFragment* child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(20)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(8), LayoutUnit(20)), child->Offset());
+
+  // #zero
+  iterator.SetParent(child);
+  child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(0)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(0)), child->Offset());
+
+  // #inflow
+  child = iterator.NextChild();
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(20)), child->Size());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(0), LayoutUnit(0)), child->Offset());
 }
 
 // Verifies that a box's size includes its borders and padding, and that
@@ -1132,37 +1219,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
 
   EXPECT_EQ(LayoutUnit(kWidthChild2), frag->Width());
 }
-
-class FragmentChildIterator {
-  STACK_ALLOCATED();
-
- public:
-  explicit FragmentChildIterator(const NGPhysicalBoxFragment* parent) {
-    SetParent(parent);
-  }
-  void SetParent(const NGPhysicalBoxFragment* parent) {
-    parent_ = parent;
-    index_ = 0;
-  }
-
-  const NGPhysicalBoxFragment* NextChild() {
-    if (!parent_)
-      return nullptr;
-    if (index_ >= parent_->Children().size())
-      return nullptr;
-    while (parent_->Children()[index_]->Type() !=
-           NGPhysicalFragment::kFragmentBox) {
-      ++index_;
-      if (index_ >= parent_->Children().size())
-        return nullptr;
-    }
-    return toNGPhysicalBoxFragment(parent_->Children()[index_++].get());
-  }
-
- private:
-  const NGPhysicalBoxFragment* parent_;
-  unsigned index_;
-};
 
 // TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
 // is checked in.

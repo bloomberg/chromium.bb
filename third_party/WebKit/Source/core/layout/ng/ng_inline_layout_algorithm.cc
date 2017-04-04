@@ -33,15 +33,17 @@ namespace blink {
 namespace {
 
 RefPtr<NGConstraintSpace> CreateConstraintSpaceForFloat(
-    const ComputedStyle& style,
-    const NGConstraintSpace& parent_space,
+    const ComputedStyle& parent_style,
+    const NGBlockNode& child,
     NGConstraintSpaceBuilder* space_builder) {
   DCHECK(space_builder) << "space_builder cannot be null here";
+  const ComputedStyle& style = child.Style();
+
   bool is_new_bfc =
-      IsNewFormattingContextForBlockLevelChild(parent_space, style);
+      IsNewFormattingContextForBlockLevelChild(parent_style, child);
   return space_builder->SetIsNewFormattingContext(is_new_bfc)
       .SetTextDirection(style.direction())
-      .SetIsShrinkToFit(ShouldShrinkToFit(parent_space, style))
+      .SetIsShrinkToFit(ShouldShrinkToFit(parent_style, style))
       .ToConstraintSpace(FromPlatformWritingMode(style.getWritingMode()));
 }
 
@@ -324,9 +326,8 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
     LayoutObject* layout_object) {
   NGBlockNode* node = new NGBlockNode(layout_object);
 
-  RefPtr<NGConstraintSpace> float_space = CreateConstraintSpaceForFloat(
-      node->Style(), ConstraintSpace(), &space_builder_);
-
+  RefPtr<NGConstraintSpace> float_space =
+      CreateConstraintSpaceForFloat(Node()->Style(), *node, &space_builder_);
   // TODO(glebl): add the fragmentation support:
   // same writing mode - get the inline size ComputeInlineSizeForFragment to
   // determine if it fits on this line, then perform layout with the correct

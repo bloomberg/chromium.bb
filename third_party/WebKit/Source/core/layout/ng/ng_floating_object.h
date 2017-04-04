@@ -55,6 +55,10 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   // would be attached.
   LayoutUnit left_offset;
 
+  bool IsLeft() const { return exclusion_type == NGExclusion::kFloatLeft; }
+
+  bool IsRight() const { return exclusion_type == NGExclusion::kFloatRight; }
+
   String ToString() const {
     return String::format("Type: '%d' Fragment: '%s'", exclusion_type,
                           fragment->ToString().ascii().data());
