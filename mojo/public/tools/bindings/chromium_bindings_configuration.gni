@@ -32,6 +32,7 @@ _typemap_imports = [
   "//services/resource_coordinator/public/cpp/typemaps.gni",
   "//services/service_manager/public/cpp/typemaps.gni",
   "//services/ui/gpu/interfaces/typemaps.gni",
+  "//services/ui/public/interfaces/cursor/typemaps.gni",
   "//services/ui/public/interfaces/ime/typemaps.gni",
   "//services/video_capture/public/interfaces/typemaps.gni",
   "//skia/public/interfaces/typemaps.gni",

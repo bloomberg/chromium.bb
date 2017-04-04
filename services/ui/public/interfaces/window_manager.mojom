@@ -6,7 +6,7 @@ module ui.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
-import "services/ui/public/interfaces/cursor.mojom";
+import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";

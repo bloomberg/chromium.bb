@@ -10,7 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window_observer.h"
 

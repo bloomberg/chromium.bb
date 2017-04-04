@@ -9,7 +9,7 @@ import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
-import "services/ui/public/interfaces/cursor.mojom";
+import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
 import "services/ui/public/interfaces/window_manager.mojom";

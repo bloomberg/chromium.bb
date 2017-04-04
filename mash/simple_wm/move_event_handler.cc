@@ -5,7 +5,7 @@
 #include "mash/simple_wm/move_event_handler.h"
 
 #include "mash/simple_wm/move_loop.h"
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

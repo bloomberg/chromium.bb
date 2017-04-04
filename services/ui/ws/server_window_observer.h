@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 
 namespace gfx {

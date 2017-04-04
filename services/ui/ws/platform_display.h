@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "services/ui/display/viewport_metrics.h"
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 

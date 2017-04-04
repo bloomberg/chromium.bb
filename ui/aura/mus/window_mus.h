@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
 

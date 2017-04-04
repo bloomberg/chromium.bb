@@ -10,7 +10,7 @@
 #include "cc/output/copy_output_request.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/window_manager_access_policy.h"

@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws/drag_cursor_updater.h"
 #include "services/ui/ws/modal_window_controller.h"

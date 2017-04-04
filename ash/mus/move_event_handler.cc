@@ -6,7 +6,7 @@
 
 #include "ash/common/wm_window.h"
 #include "ash/mus/bridge/workspace_event_handler_mus.h"
-#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/class_property.h"

@@ -9,7 +9,6 @@ mojom("interfaces") {
   sources = [
     "accessibility_manager.mojom",
     "clipboard.mojom",
-    "cursor.mojom",
     "display_manager.mojom",
     "event_matcher.mojom",
     "gpu.mojom",
@@ -34,6 +33,7 @@ mojom("interfaces") {
     ":constants",
     "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
+    "//services/ui/public/interfaces/cursor",
     "//services/ui/public/interfaces/display",
     "//services/ui/public/interfaces/ime",
     "//skia/public/interfaces",
@@ -56,6 +56,7 @@ test("ui_struct_traits_unittests") {
   testonly = true
 
   sources = [
+    "cursor/cursor_struct_traits_unittest.cc",
     "ime/ime_struct_traits_unittest.cc",
   ]
 
@@ -63,7 +64,9 @@ test("ui_struct_traits_unittests") {
     "//base",
     "//base/test:test_support",
     "//mojo/edk/test:run_all_unittests",
+    "//services/ui/public/interfaces/cursor",
     "//services/ui/public/interfaces/ime:test_interfaces",
+    "//skia/public/interfaces",
     "//testing/gtest",
     "//ui/display/types",
     "//ui/gfx:test_support",
