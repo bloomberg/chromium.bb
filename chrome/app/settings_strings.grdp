@@ -636,7 +636,7 @@
       You have certificates on file that identify these servers
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_NO_CERTIFICATES" desc="Message displayed by the certificate manager, indicating that there are no certificates for a given certificate category.">
-      You have no certificates
+      You have no certificates in this category
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES" desc="Label for the authorities tab in certificate manager.">
       Authorities
