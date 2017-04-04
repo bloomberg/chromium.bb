@@ -322,7 +322,7 @@ void QuicCryptoClientStream::DoSendCHLO(
     out.set_minimum_size(
         static_cast<size_t>(max_packet_size - kFramingOverhead));
     next_state_ = STATE_RECV_REJ;
-    CryptoUtils::HashHandshakeMessage(out, &chlo_hash_);
+    CryptoUtils::HashHandshakeMessage(out, &chlo_hash_, Perspective::IS_CLIENT);
     SendHandshakeMessage(out);
     return;
   }
@@ -350,7 +350,7 @@ void QuicCryptoClientStream::DoSendCHLO(
     CloseConnectionWithDetails(error, error_details);
     return;
   }
-  CryptoUtils::HashHandshakeMessage(out, &chlo_hash_);
+  CryptoUtils::HashHandshakeMessage(out, &chlo_hash_, Perspective::IS_CLIENT);
   channel_id_sent_ = (channel_id_key_.get() != nullptr);
   if (cached->proof_verify_details()) {
     proof_handler_->OnProofVerifyDetailsAvailable(

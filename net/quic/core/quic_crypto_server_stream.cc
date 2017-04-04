@@ -154,7 +154,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     return;
   }
 
-  CryptoUtils::HashHandshakeMessage(message, &chlo_hash_);
+  CryptoUtils::HashHandshakeMessage(message, &chlo_hash_,
+                                    Perspective::IS_SERVER);
 
   std::unique_ptr<ValidateCallback> cb(new ValidateCallback(this));
   DCHECK(validate_client_hello_cb_ == nullptr);
@@ -341,8 +342,8 @@ void QuicCryptoServerStream::FinishSendServerConfigUpdate(
   }
 
   QUIC_DVLOG(1) << "Server: Sending server config update: "
-                << message.DebugString();
-  const QuicData& data = message.GetSerialized();
+                << message.DebugString(Perspective::IS_SERVER);
+  const QuicData& data = message.GetSerialized(Perspective::IS_SERVER);
   WriteOrBufferData(QuicStringPiece(data.data(), data.length()), false,
                     nullptr);
 

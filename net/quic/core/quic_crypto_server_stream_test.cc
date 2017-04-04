@@ -128,9 +128,10 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
     client_session_.reset(client_session);
   }
 
-  void ConstructHandshakeMessage() {
+  void ConstructHandshakeMessage(Perspective perspective) {
     CryptoFramer framer;
-    message_data_.reset(framer.ConstructHandshakeMessage(message_));
+    message_data_.reset(
+        framer.ConstructHandshakeMessage(message_, perspective));
   }
 
   int CompleteCryptoHandshake() {
@@ -366,7 +367,7 @@ TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {
       *server_connection_,
       CloseConnection(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE, _, _));
   message_.set_tag(kCHLO);
-  ConstructHandshakeMessage();
+  ConstructHandshakeMessage(Perspective::IS_CLIENT);
   server_stream()->OnStreamFrame(
       QuicStreamFrame(kCryptoStreamId, /*fin=*/false, /*offset=*/0,
                       message_data_->AsStringPiece()));
@@ -376,7 +377,7 @@ TEST_P(QuicCryptoServerStreamTest, BadMessageType) {
   Initialize();
 
   message_.set_tag(kSHLO);
-  ConstructHandshakeMessage();
+  ConstructHandshakeMessage(Perspective::IS_SERVER);
   EXPECT_CALL(*server_connection_,
               CloseConnection(QUIC_INVALID_CRYPTO_MESSAGE_TYPE, _, _));
   server_stream()->OnStreamFrame(
@@ -449,7 +450,7 @@ TEST_P(QuicCryptoServerStreamTest, SendSCUPAfterHandshakeComplete) {
 TEST_P(QuicCryptoServerStreamTest, DoesPeerSupportStatelessRejects) {
   Initialize();
 
-  ConstructHandshakeMessage();
+  ConstructHandshakeMessage(Perspective::IS_CLIENT);
   QuicConfig stateless_reject_config = DefaultQuicConfigStatelessRejects();
   stateless_reject_config.ToHandshakeMessage(&message_);
   EXPECT_TRUE(

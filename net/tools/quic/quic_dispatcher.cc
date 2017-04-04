@@ -956,8 +956,9 @@ void QuicDispatcher::ProcessStatelessRejectorState(
       StatelessConnectionTerminator terminator(rejector->connection_id(),
                                                &framer_, helper(),
                                                time_wait_list_manager_.get());
-      terminator.RejectConnection(
-          rejector->reply().GetSerialized().AsStringPiece());
+      terminator.RejectConnection(rejector->reply()
+                                      .GetSerialized(Perspective::IS_SERVER)
+                                      .AsStringPiece());
       OnConnectionRejectedStatelessly();
       fate = kFateTimeWait;
       break;
