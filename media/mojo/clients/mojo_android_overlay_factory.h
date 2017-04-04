@@ -6,6 +6,7 @@
 #define MEDIA_BASE_MOJO_ANDROID_OVERLAY_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "media/base/android/android_overlay_factory.h"
 #include "media/mojo/interfaces/android_overlay.mojom.h"
 
@@ -21,6 +22,7 @@ namespace media {
 class MojoAndroidOverlayFactory : public AndroidOverlayFactory {
  public:
   MojoAndroidOverlayFactory(
+      const base::UnguessableToken& routing_token,
       service_manager::mojom::InterfaceProvider* interface_provider);
   ~MojoAndroidOverlayFactory() override;
 
@@ -29,6 +31,7 @@ class MojoAndroidOverlayFactory : public AndroidOverlayFactory {
 
  private:
   service_manager::mojom::InterfaceProvider* const interface_provider_;
+  base::UnguessableToken routing_token_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAndroidOverlayFactory);
 };

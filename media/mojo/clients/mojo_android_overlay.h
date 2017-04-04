@@ -6,6 +6,7 @@
 #define MEDIA_BASE_MOJO_ANDROID_OVERLAY_H_
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "media/base/android/android_overlay.h"
 #include "media/mojo/interfaces/android_overlay.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -24,7 +25,8 @@ class MojoAndroidOverlay : public AndroidOverlay,
  public:
   MojoAndroidOverlay(
       service_manager::mojom::InterfaceProvider* interface_provider,
-      const AndroidOverlay::Config& config);
+      const AndroidOverlay::Config& config,
+      const base::UnguessableToken& routing_token);
 
   ~MojoAndroidOverlay() override;
 

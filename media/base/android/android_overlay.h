@@ -8,7 +8,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/unguessable_token.h"
 #include "media/base/media_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -54,9 +53,6 @@ class MEDIA_EXPORT AndroidOverlay {
     Config();
     Config(const Config&);
     ~Config();
-
-    // Implementation-specific token.
-    base::UnguessableToken routing_token;
 
     gfx::Rect rect;
 

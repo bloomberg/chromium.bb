@@ -96,7 +96,6 @@ class MojoAndroidOverlayTest : public ::testing::Test {
 
   void SetUp() override {
     // Set up default config.
-    config_.routing_token = base::UnguessableToken::Create();
     config_.rect = gfx::Rect(100, 200, 300, 400);
     config_.ready_cb = base::Bind(&MockClientCallbacks::OnReady,
                                   base::Unretained(&callbacks_));
@@ -119,8 +118,9 @@ class MojoAndroidOverlayTest : public ::testing::Test {
         .Times(1);
     EXPECT_CALL(mock_provider_, OverlayCreated());
 
+    base::UnguessableToken routing_token = base::UnguessableToken::Create();
     overlay_client_.reset(
-        new MojoAndroidOverlay(&interface_provider_, config_));
+        new MojoAndroidOverlay(&interface_provider_, config_, routing_token));
     base::RunLoop().RunUntilIdle();
   }
 

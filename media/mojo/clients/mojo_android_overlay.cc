@@ -11,7 +11,8 @@ namespace media {
 
 MojoAndroidOverlay::MojoAndroidOverlay(
     service_manager::mojom::InterfaceProvider* interface_provider,
-    const AndroidOverlay::Config& config)
+    const AndroidOverlay::Config& config,
+    const base::UnguessableToken& routing_token)
     : interface_provider_(interface_provider), config_(config) {
   // Connect to the provider service.
   mojom::AndroidOverlayProviderPtr provider_ptr;
@@ -22,7 +23,7 @@ MojoAndroidOverlay::MojoAndroidOverlay(
   // too, but since we want to retain |config_| anyway, we do it here.
   mojom::AndroidOverlayConfigPtr mojo_config =
       mojom::AndroidOverlayConfig::New();
-  mojo_config->routing_token = config_.routing_token;
+  mojo_config->routing_token = routing_token;
   mojo_config->rect = config_.rect;
 
   mojom::AndroidOverlayClientPtr ptr;
