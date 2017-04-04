@@ -79,11 +79,13 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
         // would be taken from the leftmost/rightmost column, then we can
         // skip the expensive horizontal filter.
         if (ix4 <= -7) {
-          tmp[k + 7] =
-              _mm_set1_epi16(ref[iy * stride] * (1 << WARPEDPIXEL_FILTER_BITS));
+          tmp[k + 7] = _mm_set1_epi16(
+              ref[iy * stride] *
+              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         } else if (ix4 >= width + 6) {
-          tmp[k + 7] = _mm_set1_epi16(ref[iy * stride + (width - 1)] *
-                                      (1 << WARPEDPIXEL_FILTER_BITS));
+          tmp[k + 7] = _mm_set1_epi16(
+              ref[iy * stride + (width - 1)] *
+              (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)));
         } else {
           int sx = sx4 + alpha * (-4) + beta * k +
                    // Include rounding and offset here
@@ -119,6 +121,9 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
           // coeffs 6 7 6 7 6 7 6 7 for pixels 0, 2, 4, 6
           __m128i coeff_6 = _mm_unpackhi_epi64(tmp_12, tmp_14);
 
+          __m128i round_const =
+              _mm_set1_epi32((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1);
+
           // Calculate filtered results
           __m128i src_0 = _mm_unpacklo_epi8(src, zero);
           __m128i res_0 = _mm_madd_epi16(src_0, coeff_0);
@@ -131,6 +136,8 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
 
           __m128i res_even = _mm_add_epi32(_mm_add_epi32(res_0, res_4),
                                            _mm_add_epi32(res_2, res_6));
+          res_even = _mm_srai_epi32(_mm_add_epi32(res_even, round_const),
+                                    HORSHEAR_REDUCE_PREC_BITS);
 
           // Filter odd-index pixels
           __m128i tmp_1 = filter[(sx + 1 * alpha) >> WARPEDDIFF_PREC_BITS];
@@ -159,6 +166,8 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
 
           __m128i res_odd = _mm_add_epi32(_mm_add_epi32(res_1, res_5),
                                           _mm_add_epi32(res_3, res_7));
+          res_odd = _mm_srai_epi32(_mm_add_epi32(res_odd, round_const),
+                                   HORSHEAR_REDUCE_PREC_BITS);
 
           // Combine results into one register.
           // We store the columns in the order 0, 2, 4, 6, 1, 3, 5, 7
@@ -240,12 +249,12 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
 
         // Round and pack into 8 bits
         __m128i round_const =
-            _mm_set1_epi32((1 << (2 * WARPEDPIXEL_FILTER_BITS)) >> 1);
+            _mm_set1_epi32((1 << VERSHEAR_REDUCE_PREC_BITS) >> 1);
 
         __m128i res_lo_round = _mm_srai_epi32(
-            _mm_add_epi32(res_lo, round_const), 2 * WARPEDPIXEL_FILTER_BITS);
+            _mm_add_epi32(res_lo, round_const), VERSHEAR_REDUCE_PREC_BITS);
         __m128i res_hi_round = _mm_srai_epi32(
-            _mm_add_epi32(res_hi, round_const), 2 * WARPEDPIXEL_FILTER_BITS);
+            _mm_add_epi32(res_hi, round_const), VERSHEAR_REDUCE_PREC_BITS);
 
         __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
         __m128i res_8bit = _mm_packus_epi16(res_16bit, res_16bit);

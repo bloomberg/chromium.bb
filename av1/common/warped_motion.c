@@ -916,6 +916,7 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
               else
                 sum += ref[iy * stride + ix + m - 3] * coeffs[m];
             }
+            sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
             tmp[(k + 7) * 8 + (l + 4)] = sum;
           }
         }
@@ -933,8 +934,7 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
               sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
             }
             sum = clip_pixel_highbd(
-                ROUND_POWER_OF_TWO_SIGNED(sum, 2 * WARPEDPIXEL_FILTER_BITS),
-                bd);
+                ROUND_POWER_OF_TWO_SIGNED(sum, VERSHEAR_REDUCE_PREC_BITS), bd);
             if (ref_frm)
               *p = ROUND_POWER_OF_TWO_SIGNED(*p + sum, 1);
             else
@@ -1116,7 +1116,8 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           // (once border extension is taken into account)
           for (l = 0; l < 8; ++l) {
             tmp[(k + 7) * 8 + l] =
-                ref[iy * stride] * (1 << WARPEDPIXEL_FILTER_BITS);
+                ref[iy * stride] *
+                (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS));
           }
         } else if (ix4 >= width + 6) {
           // In this case, the leftmost pixel sampled is in column
@@ -1125,7 +1126,8 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           // (once border extension is taken into account)
           for (l = 0; l < 8; ++l) {
             tmp[(k + 7) * 8 + l] =
-                ref[iy * stride + (width - 1)] * (1 << WARPEDPIXEL_FILTER_BITS);
+                ref[iy * stride + (width - 1)] *
+                (1 << (WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS));
           }
         } else {
           // If we get here, then
@@ -1148,6 +1150,7 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
             for (m = 0; m < 8; ++m) {
               sum += ref[iy * stride + ix + m] * coeffs[m];
             }
+            sum = ROUND_POWER_OF_TWO(sum, HORSHEAR_REDUCE_PREC_BITS);
             tmp[(k + 7) * 8 + (l + 4)] = saturate_int16(sum);
             sx += alpha;
           }
@@ -1169,8 +1172,7 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
-          sum =
-              clip_pixel(ROUND_POWER_OF_TWO(sum, 2 * WARPEDPIXEL_FILTER_BITS));
+          sum = clip_pixel(ROUND_POWER_OF_TWO(sum, VERSHEAR_REDUCE_PREC_BITS));
           if (ref_frm)
             *p = ROUND_POWER_OF_TWO(*p + sum, 1);
           else
@@ -1199,7 +1201,6 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
     const int32_t gamma = wm->gamma;
     const int32_t delta = wm->delta;
 
-    // printf("%d %d %d %d\n", mat[2], mat[3], mat[4], mat[5]);
     av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
                     ref_frm, alpha, beta, gamma, delta);

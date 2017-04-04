@@ -53,6 +53,11 @@ typedef struct mv32 {
 // Precision of filter taps
 #define WARPEDPIXEL_FILTER_BITS 7
 
+// Precision bits reduction after horizontal shear
+#define HORSHEAR_REDUCE_PREC_BITS 5
+#define VERSHEAR_REDUCE_PREC_BITS \
+  (2 * WARPEDPIXEL_FILTER_BITS - HORSHEAR_REDUCE_PREC_BITS)
+
 #define WARPEDDIFF_PREC_BITS (WARPEDMODEL_PREC_BITS - WARPEDPIXEL_PREC_BITS)
 
 /* clang-format off */
