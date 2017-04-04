@@ -410,7 +410,7 @@ memset(map, 0, creq.size);
   <refsect1>
     <title>Reporting Bugs</title>
     <para>Bugs in this manual should be reported to
-      https://bugs.freedesktop.org/enter_bug.cgi?product=DRI&component=libdrm
+      https://bugs.freedesktop.org/enter_bug.cgi?product=DRI&amp;component=libdrm
       under the "DRI" product, component "libdrm"</para>
   </refsect1>
 
