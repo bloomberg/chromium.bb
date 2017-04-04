@@ -8,6 +8,7 @@ import android.webkit.WebViewDatabase;
 
 import org.chromium.android_webview.AwFormDatabase;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 
 import java.util.concurrent.Callable;
@@ -97,6 +98,8 @@ final class WebViewDatabaseAdapter extends WebViewDatabase {
 
     @Override
     public boolean hasFormData() {
+        if (BuildInfo.isAtLeastO()) return false;
+
         if (checkNeedsPost()) {
             return mFactory.runOnUiThreadBlocking(new Callable<Boolean>() {
                 @Override
@@ -111,6 +114,8 @@ final class WebViewDatabaseAdapter extends WebViewDatabase {
 
     @Override
     public void clearFormData() {
+        if (BuildInfo.isAtLeastO()) return;
+
         if (checkNeedsPost()) {
             mFactory.addTask(new Runnable() {
                 @Override

@@ -17,6 +17,7 @@ import android.webkit.WebSettings.LayoutAlgorithm;
 import android.webkit.WebSettings.PluginState;
 import android.webkit.WebSettings.ZoomDensity;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -104,7 +105,7 @@ public class AwSettings {
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
-    private boolean mAutoCompleteEnabled = true;
+    private boolean mAutoCompleteEnabled = !BuildInfo.isAtLeastO();
     private boolean mFullscreenSupported;
     private boolean mSupportZoom = true;
     private boolean mBuiltInZoomControls;

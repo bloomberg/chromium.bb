@@ -10,6 +10,7 @@ import android.webkit.WebSettings.RenderPriority;
 import android.webkit.WebSettings.ZoomDensity;
 
 import org.chromium.android_webview.AwSettings;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
@@ -136,11 +137,15 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public void setSaveFormData(boolean save) {
+        if (BuildInfo.isAtLeastO()) return;
+
         mAwSettings.setSaveFormData(save);
     }
 
     @Override
     public boolean getSaveFormData() {
+        if (BuildInfo.isAtLeastO()) return false;
+
         return mAwSettings.getSaveFormData();
     }
 
