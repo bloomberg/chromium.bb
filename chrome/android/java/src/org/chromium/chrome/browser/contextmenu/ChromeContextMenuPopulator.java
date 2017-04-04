@@ -25,6 +25,8 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -480,11 +482,20 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         if (mMode == CUSTOM_TAB_MODE) {
-            if (ChromePreferenceManager.getInstance().getCachedChromeDefaultBrowser()) {
-                disabledOptions.add(ContextMenuItem.OPEN_IN_BROWSER_ID);
-            } else {
-                disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
-                disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
+            try {
+                URI uri = new URI(getUrl(params));
+                if (UrlUtilities.isInternalScheme(uri)) {
+                    disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
+                    disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
+                    disabledOptions.add(ContextMenuItem.OPEN_IN_BROWSER_ID);
+                } else if (ChromePreferenceManager.getInstance().getCachedChromeDefaultBrowser()) {
+                    disabledOptions.add(ContextMenuItem.OPEN_IN_BROWSER_ID);
+                } else {
+                    disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
+                    disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
+                }
+            } catch (URISyntaxException e) {
+                return disabledOptions;
             }
         }
 
