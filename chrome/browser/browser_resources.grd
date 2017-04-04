@@ -13,6 +13,11 @@
         <structure name="IDR_APP_LIST_START_PAGE_HTML" file="resources\app_list\start_page.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
       </if>
+      <if expr="is_win">
+        <structure name="IDR_CLEANUP_TOOL_HTML" file="resources\cleanup_tool\cleanup.html" type="chrome_html" />
+        <structure name="IDR_CLEANUP_TOOL_TOOLBAR_HTML" file="resources\cleanup_tool\toolbar.html" type="chrome_html" />
+        <structure name="IDR_CLEANUP_TOOL_TOOLBAR_JS" file="resources\cleanup_tool\toolbar.js" type="chrome_html" />
+      </if>
       <if expr="enable_extensions">
         <structure name="IDR_EXTENSIONS_HTML" file="resources\extensions\extensions.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_MD_EXTENSIONS_EXTENSIONS_HTML" file="resources\md_extensions\extensions.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
@@ -123,9 +128,6 @@
       </if>
       <if expr="enable_app_list">
         <include name="IDR_CHROME_APP_MANIFEST" file="resources\chrome_app\manifest.json" type="BINDATA" />
-      </if>
-      <if expr="is_win">
-        <include name="IDR_CLEANUP_TOOL_HTML" file="resources\cleanup_tool\main.html" type="chrome_html" />
       </if>
       <if expr="enable_printing">
         <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />

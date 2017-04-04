@@ -3074,6 +3074,8 @@ split_static_library("ui") {
       "views/settings_reset_prompt_dialog.h",
       "views/uninstall_view.cc",
       "views/uninstall_view.h",
+      "webui/cleanup_tool/cleanup_action_handler.cc",
+      "webui/cleanup_tool/cleanup_action_handler.h",
       "webui/cleanup_tool/cleanup_tool_ui.cc",
       "webui/cleanup_tool/cleanup_tool_ui.h",
       "webui/conflicts_ui.cc",

@@ -14,6 +14,7 @@
 class CleanupToolUI : public content::WebUIController {
  public:
   explicit CleanupToolUI(content::WebUI* web_ui);
+  ~CleanupToolUI() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CleanupToolUI);
