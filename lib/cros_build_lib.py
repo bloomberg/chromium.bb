@@ -995,6 +995,24 @@ def GroupByKey(input_iter, key):
   return split_dict
 
 
+def GroupNamedtuplesByKey(input_iter, key):
+  """Split an iterable of namedtuples, based on value of a key.
+
+  Args:
+    input_iter: An iterable of namedtuples.
+    key: A string specifying the key name to split by.
+
+  Returns:
+    A dictionary, mapping from each unique value for |key| that
+    was encountered in |input_iter| to a list of entries that had
+    that value.
+  """
+  split_dict = {}
+  for entry in input_iter:
+    split_dict.setdefault(getattr(entry, key, None), []).append(entry)
+  return split_dict
+
+
 def GetInput(prompt):
   """Helper function to grab input from a user.   Makes testing easier."""
   return raw_input(prompt)

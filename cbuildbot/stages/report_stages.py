@@ -313,10 +313,11 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
     slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
     slave_failures = db.GetSlaveFailures(
         build_id, buildbucket_ids=slave_buildbucket_ids)
-    failures_by_build = cros_build_lib.GroupByKey(slave_failures, 'build_id')
+    failures_by_build = cros_build_lib.GroupNamedtuplesByKey(
+        slave_failures, 'build_id')
     for build_id, build_failures in sorted(failures_by_build.items()):
-      failures_by_stage = cros_build_lib.GroupByKey(build_failures,
-                                                    'build_stage_id')
+      failures_by_stage = cros_build_lib.GroupNamedtuplesByKey(
+          build_failures, 'build_stage_id')
       # Surface a link to each slave stage that failed, in stage_id sorted
       # order.
       for stage_id in sorted(failures_by_stage):
@@ -326,17 +327,17 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
         # might not have been printed to buildbot yet.
         # TODO(akeshet) revisit this approach, if we seem to be suppressing
         # useful information as a result of it.
-        if (failure['stage_status'] != constants.BUILDER_STATUS_FAILED or
-            failure['build_status'] == constants.BUILDER_STATUS_INFLIGHT):
+        if (failure.stage_status != constants.BUILDER_STATUS_FAILED or
+            failure.build_status == constants.BUILDER_STATUS_INFLIGHT):
           continue
-        waterfall_url = constants.WATERFALL_TO_DASHBOARD[failure['waterfall']]
+        waterfall_url = constants.WATERFALL_TO_DASHBOARD[failure.waterfall]
         slave_stage_url = tree_status.ConstructBuildStageURL(
             waterfall_url,
-            failure['builder_name'],
-            failure['build_number'],
-            failure['stage_name'])
-        logging.PrintBuildbotLink('%s %s' % (failure['build_config'],
-                                             failure['stage_name']),
+            failure.builder_name,
+            failure.build_number,
+            failure.stage_name)
+        logging.PrintBuildbotLink('%s %s' % (failure.build_config,
+                                             failure.stage_name),
                                   slave_stage_url)
 
 

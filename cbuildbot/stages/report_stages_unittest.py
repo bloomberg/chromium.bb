@@ -26,6 +26,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
 from chromite.lib import failures_lib
+from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gs_unittest
 from chromite.lib import metadata_lib
 from chromite.lib import metrics
@@ -124,17 +125,17 @@ class SlaveFailureSummaryStageTest(
 
   def testPerformStage(self):
     """Tests that stage runs without syntax errors."""
-    fake_failure = {
-        'build_id': 10,
-        'build_stage_id': 11,
-        'waterfall': constants.WATERFALL_EXTERNAL,
-        'builder_name': 'builder_name',
-        'build_number': 12,
-        'build_config': 'build-config',
-        'stage_name': 'FailingStage',
-        'stage_status': constants.BUILDER_STATUS_FAILED,
-        'build_status': constants.BUILDER_STATUS_FAILED,
-        }
+    fake_failure = (
+        failure_message_lib_unittest.StageFailureHelper.CreateStageFailure(
+            build_id=10,
+            build_stage_id=11,
+            waterfall=constants.WATERFALL_EXTERNAL,
+            builder_name='builder_name',
+            build_number=12,
+            build_config='build-config',
+            stage_name='FailingStage',
+            stage_status=constants.BUILDER_STATUS_FAILED,
+            build_status=constants.BUILDER_STATUS_FAILED))
     self.PatchObject(self.db, 'GetSlaveFailures', return_value=[fake_failure])
     self.PatchObject(logging, 'PrintBuildbotLink')
     self.RunStage()
