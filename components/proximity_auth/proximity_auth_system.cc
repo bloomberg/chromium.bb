@@ -8,7 +8,7 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
-#include "components/proximity_auth/unlock_manager.h"
+#include "components/proximity_auth/unlock_manager_impl.h"
 
 namespace proximity_auth {
 
@@ -25,7 +25,17 @@ ProximityAuthSystem::ProximityAuthSystem(
     ProximityAuthClient* proximity_auth_client)
     : proximity_auth_client_(proximity_auth_client),
       unlock_manager_(
-          new UnlockManager(screenlock_type, proximity_auth_client)),
+          new UnlockManagerImpl(screenlock_type, proximity_auth_client)),
+      suspended_(false),
+      started_(false),
+      weak_ptr_factory_(this) {}
+
+ProximityAuthSystem::ProximityAuthSystem(
+    ScreenlockType screenlock_type,
+    ProximityAuthClient* proximity_auth_client,
+    std::unique_ptr<UnlockManager> unlock_manager)
+    : proximity_auth_client_(proximity_auth_client),
+      unlock_manager_(std::move(unlock_manager)),
       suspended_(false),
       started_(false),
       weak_ptr_factory_(this) {}
@@ -116,6 +126,13 @@ void ProximityAuthSystem::ResumeAfterWakeUpTimeout() {
   }
 }
 
+std::unique_ptr<RemoteDeviceLifeCycle>
+ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
+    const cryptauth::RemoteDevice& remote_device) {
+  return std::unique_ptr<RemoteDeviceLifeCycle>(
+      new RemoteDeviceLifeCycleImpl(remote_device, proximity_auth_client_));
+}
+
 void ProximityAuthSystem::OnLifeCycleStateChanged(
     RemoteDeviceLifeCycle::State old_state,
     RemoteDeviceLifeCycle::State new_state) {
@@ -134,8 +151,11 @@ void ProximityAuthSystem::OnScreenDidUnlock(
 }
 
 void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
+  if (!account_id.is_valid())
+    return;
+
   // Update the current RemoteDeviceLifeCycle to the focused user.
-  if (account_id.is_valid() && remote_device_life_cycle_ &&
+  if (remote_device_life_cycle_ &&
       remote_device_life_cycle_->GetRemoteDevice().user_id !=
           account_id.GetUserEmail()) {
     PA_LOG(INFO) << "Focused user changed, destroying life cycle for "
@@ -157,8 +177,7 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
   if (!suspended_) {
     PA_LOG(INFO) << "Creating RemoteDeviceLifeCycle for focused user: "
                  << account_id.Serialize();
-    remote_device_life_cycle_.reset(
-        new RemoteDeviceLifeCycleImpl(remote_device, proximity_auth_client_));
+    remote_device_life_cycle_ = CreateRemoteDeviceLifeCycle(remote_device);
     unlock_manager_->SetRemoteDeviceLifeCycle(remote_device_life_cycle_.get());
     remote_device_life_cycle_->AddObserver(this);
     remote_device_life_cycle_->Start();

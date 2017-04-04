@@ -42,8 +42,9 @@ static_library("proximity_auth") {
     "switches.h",
     "throttled_bluetooth_connection_finder.cc",
     "throttled_bluetooth_connection_finder.h",
-    "unlock_manager.cc",
     "unlock_manager.h",
+    "unlock_manager_impl.cc",
+    "unlock_manager_impl.h",
   ]
 
   deps = [
@@ -72,6 +73,10 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_lock_handler.cc",
+    "fake_lock_handler.h",
+    "fake_remote_device_life_cycle.cc",
+    "fake_remote_device_life_cycle.h",
     "mock_proximity_auth_client.cc",
     "mock_proximity_auth_client.h",
   ]
@@ -100,7 +105,7 @@ source_set("unit_tests") {
     "remote_device_life_cycle_impl_unittest.cc",
     "remote_status_update_unittest.cc",
     "throttled_bluetooth_connection_finder_unittest.cc",
-    "unlock_manager_unittest.cc",
+    "unlock_manager_impl_unittest.cc",
   ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

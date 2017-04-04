@@ -64,7 +64,18 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
   // Called when the system wakes up from a suspended state.
   void OnSuspendDone();
 
- private:
+ protected:
+  // Constructor which allows passing in a custom |unlock_manager_|.
+  // Exposed for testing.
+  ProximityAuthSystem(ScreenlockType screenlock_type,
+                      ProximityAuthClient* proximity_auth_client,
+                      std::unique_ptr<UnlockManager> unlock_manager);
+
+  // Creates the RemoteDeviceLifeCycle for |remote_device|.
+  // Exposed for testing.
+  virtual std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
+      const cryptauth::RemoteDevice& remote_device);
+
   // RemoteDeviceLifeCycle::Observer:
   void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
                                RemoteDeviceLifeCycle::State new_state) override;
@@ -76,6 +87,7 @@ class ProximityAuthSystem : public RemoteDeviceLifeCycle::Observer,
       ScreenlockBridge::LockHandler::ScreenType screen_type) override;
   void OnFocusedUserChanged(const AccountId& account_id) override;
 
+ private:
   // Resumes |remote_device_life_cycle_| after device wakes up and waits a
   // timeout.
   void ResumeAfterWakeUpTimeout();

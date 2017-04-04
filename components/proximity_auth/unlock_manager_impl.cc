@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/proximity_auth/unlock_manager.h"
+#include "components/proximity_auth/unlock_manager_impl.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -80,7 +80,7 @@ metrics::RemoteSecuritySettingsState GetRemoteSecuritySettingsState(
 
 }  // namespace
 
-UnlockManager::UnlockManager(
+UnlockManagerImpl::UnlockManagerImpl(
     ProximityAuthSystem::ScreenlockType screenlock_type,
     ProximityAuthClient* proximity_auth_client)
     : screenlock_type_(screenlock_type),
@@ -104,12 +104,12 @@ UnlockManager::UnlockManager(
 
   if (device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
     device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&UnlockManager::OnBluetoothAdapterInitialized,
+        base::Bind(&UnlockManagerImpl::OnBluetoothAdapterInitialized,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-UnlockManager::~UnlockManager() {
+UnlockManagerImpl::~UnlockManagerImpl() {
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
 
@@ -123,7 +123,7 @@ UnlockManager::~UnlockManager() {
     bluetooth_adapter_->RemoveObserver(this);
 }
 
-bool UnlockManager::IsUnlockAllowed() {
+bool UnlockManagerImpl::IsUnlockAllowed() {
   return (remote_screenlock_state_ &&
           *remote_screenlock_state_ == RemoteScreenlockState::UNLOCKED &&
           life_cycle_ &&
@@ -134,7 +134,7 @@ bool UnlockManager::IsUnlockAllowed() {
            (GetMessenger() && GetMessenger()->SupportsSignIn())));
 }
 
-void UnlockManager::SetRemoteDeviceLifeCycle(
+void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
     RemoteDeviceLifeCycle* life_cycle) {
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
@@ -150,7 +150,7 @@ void UnlockManager::SetRemoteDeviceLifeCycle(
   UpdateLockScreen();
 }
 
-void UnlockManager::OnLifeCycleStateChanged() {
+void UnlockManagerImpl::OnLifeCycleStateChanged() {
   RemoteDeviceLifeCycle::State state = life_cycle_->GetState();
   PA_LOG(INFO) << "[Unlock] RemoteDeviceLifeCycle state changed: "
                << static_cast<int>(state);
@@ -165,7 +165,7 @@ void UnlockManager::OnLifeCycleStateChanged() {
   UpdateLockScreen();
 }
 
-void UnlockManager::OnUnlockEventSent(bool success) {
+void UnlockManagerImpl::OnUnlockEventSent(bool success) {
   if (!is_attempting_auth_) {
     PA_LOG(ERROR) << "[Unlock] Sent easy_unlock event, but no auth attempted.";
     return;
@@ -174,7 +174,7 @@ void UnlockManager::OnUnlockEventSent(bool success) {
   AcceptAuthAttempt(success);
 }
 
-void UnlockManager::OnRemoteStatusUpdate(
+void UnlockManagerImpl::OnRemoteStatusUpdate(
     const RemoteStatusUpdate& status_update) {
   PA_LOG(INFO) << "[Unlock] Status Update: ("
                << "user_present=" << status_update.user_presence << ", "
@@ -191,7 +191,7 @@ void UnlockManager::OnRemoteStatusUpdate(
   SetWakingUpState(false);
 }
 
-void UnlockManager::OnDecryptResponse(const std::string& decrypted_bytes) {
+void UnlockManagerImpl::OnDecryptResponse(const std::string& decrypted_bytes) {
   if (!is_attempting_auth_) {
     PA_LOG(ERROR) << "[Unlock] Decrypt response received but not attempting "
                   << "auth.";
@@ -207,7 +207,7 @@ void UnlockManager::OnDecryptResponse(const std::string& decrypted_bytes) {
   }
 }
 
-void UnlockManager::OnUnlockResponse(bool success) {
+void UnlockManagerImpl::OnUnlockResponse(bool success) {
   if (!is_attempting_auth_) {
     PA_LOG(ERROR) << "[Unlock] Unlock response received but not attempting "
                   << "auth.";
@@ -222,23 +222,23 @@ void UnlockManager::OnUnlockResponse(bool success) {
     AcceptAuthAttempt(false);
 }
 
-void UnlockManager::OnDisconnected() {
+void UnlockManagerImpl::OnDisconnected() {
   GetMessenger()->RemoveObserver(this);
 }
 
-void UnlockManager::OnScreenDidLock(
+void UnlockManagerImpl::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   OnScreenLockedOrUnlocked(true);
 }
 
-void UnlockManager::OnScreenDidUnlock(
+void UnlockManagerImpl::OnScreenDidUnlock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   OnScreenLockedOrUnlocked(false);
 }
 
-void UnlockManager::OnFocusedUserChanged(const AccountId& account_id) {}
+void UnlockManagerImpl::OnFocusedUserChanged(const AccountId& account_id) {}
 
-void UnlockManager::OnScreenLockedOrUnlocked(bool is_locked) {
+void UnlockManagerImpl::OnScreenLockedOrUnlocked(bool is_locked) {
   // TODO(tengs): Chrome will only start connecting to the phone when
   // the screen is locked, for privacy reasons. We should reinvestigate
   // this behaviour if we want automatic locking.
@@ -253,29 +253,29 @@ void UnlockManager::OnScreenLockedOrUnlocked(bool is_locked) {
   UpdateProximityMonitorState();
 }
 
-void UnlockManager::OnBluetoothAdapterInitialized(
+void UnlockManagerImpl::OnBluetoothAdapterInitialized(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   bluetooth_adapter_ = adapter;
   bluetooth_adapter_->AddObserver(this);
 }
 
-void UnlockManager::AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                                          bool present) {
+void UnlockManagerImpl::AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                                              bool present) {
   UpdateLockScreen();
 }
 
-void UnlockManager::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
-                                          bool powered) {
+void UnlockManagerImpl::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
+                                              bool powered) {
   UpdateLockScreen();
 }
 
 #if defined(OS_CHROMEOS)
-void UnlockManager::SuspendDone(const base::TimeDelta& sleep_duration) {
+void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
   SetWakingUpState(true);
 }
 #endif  // defined(OS_CHROMEOS)
 
-void UnlockManager::OnAuthAttempted(
+void UnlockManagerImpl::OnAuthAttempted(
     ScreenlockBridge::LockHandler::AuthType auth_type) {
   if (is_attempting_auth_) {
     PA_LOG(INFO) << "[Unlock] Already attempting auth.";
@@ -302,7 +302,7 @@ void UnlockManager::OnAuthAttempted(
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&UnlockManager::AcceptAuthAttempt,
+      base::Bind(&UnlockManagerImpl::AcceptAuthAttempt,
                  reject_auth_attempt_weak_ptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromSeconds(kAuthAttemptTimeoutSecs));
 
@@ -319,13 +319,13 @@ void UnlockManager::OnAuthAttempted(
   }
 }
 
-std::unique_ptr<ProximityMonitor> UnlockManager::CreateProximityMonitor(
+std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
     const cryptauth::RemoteDevice& remote_device) {
   return base::MakeUnique<ProximityMonitorImpl>(
       remote_device, base::WrapUnique(new base::DefaultTickClock()));
 }
 
-void UnlockManager::SendSignInChallenge() {
+void UnlockManagerImpl::SendSignInChallenge() {
   if (!life_cycle_ || !GetMessenger() || !GetMessenger()->GetSecureContext()) {
     PA_LOG(ERROR) << "Not ready to send sign-in challenge";
     return;
@@ -335,16 +335,16 @@ void UnlockManager::SendSignInChallenge() {
   proximity_auth_client_->GetChallengeForUserAndDevice(
       remote_device.user_id, remote_device.public_key,
       GetMessenger()->GetSecureContext()->GetChannelBindingData(),
-      base::Bind(&UnlockManager::OnGotSignInChallenge,
+      base::Bind(&UnlockManagerImpl::OnGotSignInChallenge,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void UnlockManager::OnGotSignInChallenge(const std::string& challenge) {
+void UnlockManagerImpl::OnGotSignInChallenge(const std::string& challenge) {
   PA_LOG(INFO) << "Got sign-in challenge, sending for decryption...";
   GetMessenger()->RequestDecryption(challenge);
 }
 
-ScreenlockState UnlockManager::GetScreenlockState() {
+ScreenlockState UnlockManagerImpl::GetScreenlockState() {
   if (!life_cycle_ ||
       life_cycle_->GetState() == RemoteDeviceLifeCycle::State::STOPPED)
     return ScreenlockState::INACTIVE;
@@ -411,7 +411,7 @@ ScreenlockState UnlockManager::GetScreenlockState() {
   return ScreenlockState::NO_PHONE;
 }
 
-void UnlockManager::UpdateLockScreen() {
+void UnlockManagerImpl::UpdateLockScreen() {
   UpdateProximityMonitorState();
 
   ScreenlockState new_state = GetScreenlockState();
@@ -422,7 +422,7 @@ void UnlockManager::UpdateLockScreen() {
   screenlock_state_ = new_state;
 }
 
-void UnlockManager::UpdateProximityMonitorState() {
+void UnlockManagerImpl::UpdateProximityMonitorState() {
   if (!proximity_monitor_)
     return;
 
@@ -435,7 +435,7 @@ void UnlockManager::UpdateProximityMonitorState() {
   }
 }
 
-void UnlockManager::SetWakingUpState(bool is_waking_up) {
+void UnlockManagerImpl::SetWakingUpState(bool is_waking_up) {
   is_waking_up_ = is_waking_up;
 
   // Clear the waking up state after a timeout.
@@ -443,7 +443,7 @@ void UnlockManager::SetWakingUpState(bool is_waking_up) {
   if (is_waking_up_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&UnlockManager::SetWakingUpState,
+        base::Bind(&UnlockManagerImpl::SetWakingUpState,
                    clear_waking_up_state_weak_ptr_factory_.GetWeakPtr(), false),
         base::TimeDelta::FromSeconds(kWakingUpDurationSecs));
   }
@@ -451,7 +451,7 @@ void UnlockManager::SetWakingUpState(bool is_waking_up) {
   UpdateLockScreen();
 }
 
-void UnlockManager::AcceptAuthAttempt(bool should_accept) {
+void UnlockManagerImpl::AcceptAuthAttempt(bool should_accept) {
   if (!is_attempting_auth_)
     return;
 
@@ -472,8 +472,9 @@ void UnlockManager::AcceptAuthAttempt(bool should_accept) {
   }
 }
 
-UnlockManager::RemoteScreenlockState
-UnlockManager::GetScreenlockStateFromRemoteUpdate(RemoteStatusUpdate update) {
+UnlockManagerImpl::RemoteScreenlockState
+UnlockManagerImpl::GetScreenlockStateFromRemoteUpdate(
+    RemoteStatusUpdate update) {
   switch (update.secure_screen_lock_state) {
     case SECURE_SCREEN_LOCK_DISABLED:
       return RemoteScreenlockState::DISABLED;
@@ -492,7 +493,7 @@ UnlockManager::GetScreenlockStateFromRemoteUpdate(RemoteStatusUpdate update) {
   return RemoteScreenlockState::UNKNOWN;
 }
 
-Messenger* UnlockManager::GetMessenger() {
+Messenger* UnlockManagerImpl::GetMessenger() {
   // TODO(tengs): We should use a weak pointer to hold the Messenger instance
   // instead.
   if (!life_cycle_)
