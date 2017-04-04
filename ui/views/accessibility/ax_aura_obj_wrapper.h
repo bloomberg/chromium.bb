@@ -35,11 +35,6 @@ class VIEWS_EXPORT AXAuraObjWrapper {
   virtual int32_t GetID() = 0;
 
   // Actions.
-  virtual void DoDefault() {}
-  virtual void Focus() {}
-  virtual void MakeVisible() {}
-  virtual void SetSelection(int32_t start, int32_t end) {}
-  virtual void ShowContextMenu() {}
   virtual bool HandleAccessibleAction(const ui::AXActionData& action);
 };
 

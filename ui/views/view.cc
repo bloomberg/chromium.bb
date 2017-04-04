@@ -23,6 +23,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -36,6 +37,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/transform_recorder.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -1398,6 +1400,41 @@ bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
 // Accessibility----------------------------------------------------------------
 
 bool View::HandleAccessibleAction(const ui::AXActionData& action_data) {
+  switch (action_data.action) {
+    case ui::AX_ACTION_BLUR:
+      if (HasFocus()) {
+        GetFocusManager()->ClearFocus();
+        return true;
+      }
+      break;
+    case ui::AX_ACTION_DO_DEFAULT: {
+      const gfx::Point center = GetLocalBounds().CenterPoint();
+      OnMousePressed(ui::MouseEvent(
+          ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      OnMouseReleased(ui::MouseEvent(
+          ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
+          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+      return true;
+    }
+    case ui::AX_ACTION_FOCUS:
+      if (IsAccessibilityFocusable()) {
+        RequestFocus();
+        return true;
+      }
+      break;
+    case ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE:
+      ScrollRectToVisible(GetLocalBounds());
+      return true;
+    case ui::AX_ACTION_SHOW_CONTEXT_MENU:
+      ShowContextMenu(GetBoundsInScreen().CenterPoint(),
+                      ui::MENU_SOURCE_KEYBOARD);
+      return true;
+    default:
+      // Some actions are handled by subclasses of View.
+      break;
+  }
+
   return false;
 }
 

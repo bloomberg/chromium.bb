@@ -253,8 +253,11 @@ STDMETHODIMP AXPlatformNodeWin::accHitTest(
 
 HRESULT AXPlatformNodeWin::accDoDefaultAction(VARIANT var_id) {
   COM_OBJECT_VALIDATE_VAR_ID(var_id);
-  delegate_->DoDefaultAction();
-  return S_OK;
+  AXActionData data;
+  data.action = ui::AX_ACTION_DO_DEFAULT;
+  if (delegate_->AccessibilityPerformAction(data))
+    return S_OK;
+  return E_FAIL;
 }
 
 STDMETHODIMP AXPlatformNodeWin::accLocation(

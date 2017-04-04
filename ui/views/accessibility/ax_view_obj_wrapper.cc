@@ -63,34 +63,6 @@ int32_t AXViewObjWrapper::GetID() {
   return AXAuraObjCache::GetInstance()->GetID(view_);
 }
 
-void AXViewObjWrapper::DoDefault() {
-  gfx::Rect rect = view_->GetLocalBounds();
-  gfx::Point center = rect.CenterPoint();
-  view_->OnMousePressed(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  view_->OnMouseReleased(ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-}
-
-void AXViewObjWrapper::Focus() {
-  view_->RequestFocus();
-}
-
-void AXViewObjWrapper::MakeVisible() {
-  view_->ScrollRectToVisible(view_->GetLocalBounds());
-}
-
-void AXViewObjWrapper::SetSelection(int32_t start, int32_t end) {
-  // TODO(dtseng): Implement.
-}
-
-void AXViewObjWrapper::ShowContextMenu() {
-  view_->ShowContextMenu(view_->bounds().CenterPoint(),
-                         ui::MENU_SOURCE_KEYBOARD);
-}
-
 bool AXViewObjWrapper::HandleAccessibleAction(const ui::AXActionData& action) {
   return view_->HandleAccessibleAction(action);
 }

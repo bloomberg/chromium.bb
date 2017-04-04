@@ -111,8 +111,6 @@ class AuraLinuxApplication
     return false;
   }
 
-  void DoDefaultAction() override {}
-
  private:
   friend struct base::DefaultSingletonTraits<AuraLinuxApplication>;
 

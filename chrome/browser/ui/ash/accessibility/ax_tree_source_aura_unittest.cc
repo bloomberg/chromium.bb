@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/aura/accessibility/ax_tree_source_aura.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
@@ -119,7 +120,10 @@ TEST_F(AXTreeSourceAuraTest, DoDefault) {
 
   // Click and verify focus.
   ASSERT_FALSE(textfield_->HasFocus());
-  textfield_wrapper->DoDefault();
+  ui::AXActionData action_data;
+  action_data.action = ui::AX_ACTION_DO_DEFAULT;
+  action_data.target_node_id = textfield_wrapper->GetID();
+  textfield_wrapper->HandleAccessibleAction(action_data);
   ASSERT_TRUE(textfield_->HasFocus());
 }
 
@@ -132,7 +136,10 @@ TEST_F(AXTreeSourceAuraTest, Focus) {
 
   // Focus and verify.
   ASSERT_FALSE(textfield_->HasFocus());
-  textfield_wrapper->Focus();
+  ui::AXActionData action_data;
+  action_data.action = ui::AX_ACTION_FOCUS;
+  action_data.target_node_id = textfield_wrapper->GetID();
+  textfield_wrapper->HandleAccessibleAction(action_data);
   ASSERT_TRUE(textfield_->HasFocus());
 }
 

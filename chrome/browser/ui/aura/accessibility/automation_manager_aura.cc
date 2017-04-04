@@ -85,55 +85,7 @@ void AutomationManagerAura::PerformAction(
     const ui::AXActionData& data) {
   CHECK(enabled_);
 
-  if (current_tree_->HandleAccessibleAction(data)) {
-    // This accessible action is handled by custom action implemented by the
-    // target view.
-    return;
-  }
-
-  switch (data.action) {
-    case ui::AX_ACTION_DO_DEFAULT:
-      current_tree_->DoDefault(data.target_node_id);
-      break;
-    case ui::AX_ACTION_FOCUS:
-      current_tree_->Focus(data.target_node_id);
-      break;
-    case ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE:
-      current_tree_->MakeVisible(data.target_node_id);
-      break;
-    case ui::AX_ACTION_SET_SELECTION:
-      if (data.anchor_node_id != data.focus_node_id) {
-        NOTREACHED();
-        return;
-      }
-      current_tree_->SetSelection(
-          data.anchor_node_id, data.anchor_offset, data.focus_offset);
-      break;
-    case ui::AX_ACTION_SHOW_CONTEXT_MENU:
-      current_tree_->ShowContextMenu(data.target_node_id);
-      break;
-    case ui::AX_ACTION_SET_ACCESSIBILITY_FOCUS:
-      // Sent by ChromeVox but doesn't need to be handled by aura.
-      break;
-    case ui::AX_ACTION_SET_SEQUENTIAL_FOCUS_NAVIGATION_STARTING_POINT:
-      // Sent by ChromeVox but doesn't need to be handled by aura.
-      break;
-    case ui::AX_ACTION_BLUR:
-    case ui::AX_ACTION_DECREMENT:
-    case ui::AX_ACTION_GET_IMAGE_DATA:
-    case ui::AX_ACTION_HIT_TEST:
-    case ui::AX_ACTION_INCREMENT:
-    case ui::AX_ACTION_REPLACE_SELECTED_TEXT:
-    case ui::AX_ACTION_SCROLL_TO_POINT:
-    case ui::AX_ACTION_SET_SCROLL_OFFSET:
-    case ui::AX_ACTION_SET_VALUE:
-      // Not implemented yet.
-      NOTREACHED();
-      break;
-    case ui::AX_ACTION_NONE:
-      NOTREACHED();
-      break;
-  }
+  current_tree_->HandleAccessibleAction(data);
 }
 
 void AutomationManagerAura::OnChildWindowRemoved(

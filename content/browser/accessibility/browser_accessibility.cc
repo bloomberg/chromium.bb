@@ -1281,8 +1281,4 @@ bool BrowserAccessibility::AccessibilityPerformAction(
   return false;
 }
 
-void BrowserAccessibility::DoDefaultAction() {
-  NOTREACHED();
-}
-
 }  // namespace content

@@ -70,6 +70,13 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
         label_accessibility_.get());
   }
 
+  bool SetFocused(NativeViewAccessibilityBase* view_accessibility,
+                  bool focused) {
+    ui::AXActionData data;
+    data.action = focused ? ui::AX_ACTION_FOCUS : ui::AX_ACTION_BLUR;
+    return view_accessibility->AccessibilityPerformAction(data);
+  }
+
  protected:
   views::Widget* widget_;
   TestButton* button_;
@@ -117,17 +124,17 @@ TEST_F(NativeViewAccessibilityTest, WritableFocus) {
   button_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());
   EXPECT_EQ(nullptr, button_accessibility()->GetFocus());
-  EXPECT_TRUE(button_accessibility()->SetFocused(true));
+  EXPECT_TRUE(SetFocused(button_accessibility(), true));
   EXPECT_EQ(button_, button_->GetFocusManager()->GetFocusedView());
   EXPECT_EQ(button_->GetNativeViewAccessible(),
             button_accessibility()->GetFocus());
-  EXPECT_TRUE(button_accessibility()->SetFocused(false));
+  EXPECT_TRUE(SetFocused(button_accessibility(), false));
   EXPECT_EQ(nullptr, button_->GetFocusManager()->GetFocusedView());
   EXPECT_EQ(nullptr, button_accessibility()->GetFocus());
 
   // If not focusable at all, SetFocused() should return false.
   button_->SetEnabled(false);
-  EXPECT_FALSE(button_accessibility()->SetFocused(true));
+  EXPECT_FALSE(SetFocused(button_accessibility(), true));
 }
 
 // Subclass of NativeViewAccessibility that destroys itself when its

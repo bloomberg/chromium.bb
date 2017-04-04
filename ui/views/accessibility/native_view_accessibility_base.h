@@ -36,9 +36,6 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   gfx::NativeViewAccessible GetNativeObject() override;
   void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
 
-  // Focuses or unfocuses a View.
-  bool SetFocused(bool focused);
-
   // ui::AXPlatformNodeDelegate
   const ui::AXNodeData& GetData() const override;
   int GetChildCount() override;
@@ -50,7 +47,6 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
-  void DoDefaultAction() override;
 
   // WidgetObserver
   void OnWidgetDestroying(Widget* widget) override;

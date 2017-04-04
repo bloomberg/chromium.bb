@@ -122,8 +122,6 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
   return true;
 }
 
-void TestAXNodeWrapper::DoDefaultAction() {}
-
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),

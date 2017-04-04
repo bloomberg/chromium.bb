@@ -81,13 +81,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Actions.
   //
 
-  // Calls one of the methods below to perform an accessibility action,
-  // switching on the ui::AXAction provided in |data|.
+  // Perform an accessibility action, switching on the ui::AXAction
+  // provided in |data|.
   virtual bool AccessibilityPerformAction(const ui::AXActionData& data) = 0;
-
-  // Perform the default action, e.g. click a button, follow a link, or
-  // toggle a checkbox.
-  virtual void DoDefaultAction() = 0;
 };
 
 }  // namespace ui

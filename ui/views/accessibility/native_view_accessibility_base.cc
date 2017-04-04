@@ -36,17 +36,6 @@ void NativeViewAccessibilityBase::NotifyAccessibilityEvent(
   ax_node_->NotifyAccessibilityEvent(event_type);
 }
 
-bool NativeViewAccessibilityBase::SetFocused(bool focused) {
-  if (!ui::AXNodeData::IsFlagSet(GetData().state, ui::AX_STATE_FOCUSABLE))
-    return false;
-
-  if (focused)
-    view_->RequestFocus();
-  else if (view_->HasFocus())
-    view_->GetFocusManager()->ClearFocus();
-  return true;
-}
-
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
@@ -179,36 +168,7 @@ NativeViewAccessibilityBase::GetTargetForNativeAccessibilityEvent() {
 
 bool NativeViewAccessibilityBase::AccessibilityPerformAction(
     const ui::AXActionData& data) {
-  switch (data.action) {
-    // Handle accessible actions that apply to all Views here.
-    case ui::AX_ACTION_DO_DEFAULT:
-      DoDefaultAction();
-      return true;
-    case ui::AX_ACTION_FOCUS:
-      return SetFocused(true);
-    case ui::AX_ACTION_BLUR:
-      return SetFocused(false);
-
-    case ui::AX_ACTION_NONE:
-      NOTREACHED();
-      break;
-
-    // All other actions can potentially be dealt with by the View itself.
-    default:
-      return view_->HandleAccessibleAction(data);
-      break;
-  }
-  return false;
-}
-
-void NativeViewAccessibilityBase::DoDefaultAction() {
-  gfx::Point center = view_->GetLocalBounds().CenterPoint();
-  view_->OnMousePressed(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  view_->OnMouseReleased(ui::MouseEvent(
-      ui::ET_MOUSE_RELEASED, center, center, ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  return view_->HandleAccessibleAction(data);
 }
 
 void NativeViewAccessibilityBase::OnWidgetDestroying(Widget* widget) {

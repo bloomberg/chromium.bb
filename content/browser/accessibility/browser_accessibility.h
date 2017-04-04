@@ -377,7 +377,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
-  void DoDefaultAction() override;
 
  protected:
   using AXPlatformPositionInstance = AXPlatformPosition::AXPositionInstance;
