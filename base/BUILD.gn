@@ -1906,7 +1906,6 @@ if (is_ios || is_mac) {
 
 test("base_unittests") {
   sources = [
-    "allocator/allocator_interception_mac_unittest.mm",
     "allocator/malloc_zone_functions_mac_unittest.cc",
     "allocator/tcmalloc_unittest.cc",
     "android/application_status_listener_unittest.cc",
