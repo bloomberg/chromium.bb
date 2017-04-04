@@ -56,7 +56,7 @@ void ReleaseSpareCompositors() {
 // in terms of time and resources).
 class RecyclableCompositorMac : public ui::CompositorObserver {
  public:
-  virtual ~RecyclableCompositorMac();
+  ~RecyclableCompositorMac() override;
 
   // Create a compositor, or recycle a preexisting one.
   static std::unique_ptr<RecyclableCompositorMac> Create();
