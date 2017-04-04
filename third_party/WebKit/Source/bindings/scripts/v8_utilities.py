@@ -386,9 +386,10 @@ def measure_as(definition_or_member, interface):
 def origin_trial_enabled_function_name(definition_or_member):
     """Returns the name of the OriginTrials enabled function.
 
-    An exception is raised if both the OriginTrialEnabled and RuntimeEnabled
-    extended attributes are applied to the same IDL member. Only one of the
-    two attributes can be applied to any member - they are mutually exclusive.
+    An exception is raised if OriginTrialEnabled is used in conjunction with any
+    of the following (which must be mutually exclusive with origin trials):
+      - RuntimeEnabled
+      - SecureContext
 
     The returned function checks if the IDL member should be enabled.
     Given extended attribute OriginTrialEnabled=FeatureName, return:
@@ -402,8 +403,14 @@ def origin_trial_enabled_function_name(definition_or_member):
 
     if is_origin_trial_enabled and 'RuntimeEnabled' in extended_attributes:
         raise Exception('[OriginTrialEnabled] and [RuntimeEnabled] must '
-                        'not be specified on the same definition: '
-                        '%s.%s' % (definition_or_member.idl_name, definition_or_member.name))
+                        'not be specified on the same definition: %s'
+                        % definition_or_member.name)
+
+    if is_origin_trial_enabled and 'SecureContext' in extended_attributes:
+        raise Exception('[OriginTrialEnabled] and [SecureContext] must '
+                        'not be specified on the same definition '
+                        '(see https://crbug.com/695123 for workaround): %s'
+                        % definition_or_member.name)
 
     if is_origin_trial_enabled:
         trial_name = extended_attributes['OriginTrialEnabled']
@@ -413,8 +420,8 @@ def origin_trial_enabled_function_name(definition_or_member):
 
     if is_feature_policy_enabled and 'RuntimeEnabled' in extended_attributes:
         raise Exception('[FeaturePolicy] and [RuntimeEnabled] must '
-                        'not be specified on the same definition: '
-                        '%s.%s' % (definition_or_member.idl_name, definition_or_member.name))
+                        'not be specified on the same definition: %s'
+                        % definition_or_member.name)
 
     if is_feature_policy_enabled:
         includes.add('bindings/core/v8/ScriptState.h')
