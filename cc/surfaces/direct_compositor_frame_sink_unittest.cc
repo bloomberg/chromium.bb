@@ -186,10 +186,6 @@ TEST_F(DirectCompositorFrameSinkTest,
 
 class TestBeginFrameObserver : public BeginFrameObserverBase {
  public:
-  explicit TestBeginFrameObserver(BeginFrameSource* source) : source_(source) {}
-
-  void FinishFrame() { source_->DidFinishFrame(this, ack()); }
-
   const BeginFrameAck& ack() const { return ack_; }
 
  private:
@@ -201,7 +197,6 @@ class TestBeginFrameObserver : public BeginFrameObserverBase {
 
   void OnBeginFrameSourcePausedChanged(bool paused) override{};
 
-  BeginFrameSource* source_;
   BeginFrameAck ack_;
 };
 
@@ -213,10 +208,13 @@ TEST_F(DirectCompositorFrameSinkTest, AcknowledgesBeginFramesWithDamage) {
 
 TEST_F(DirectCompositorFrameSinkTest, AcknowledgesBeginFramesWithoutDamage) {
   // Request a BeginFrame from the CompositorFrameSinkClient.
-  TestBeginFrameObserver observer(begin_frame_source_.get());
+  TestBeginFrameObserver observer;
   compositor_frame_sink_client_.begin_frame_source()->AddObserver(&observer);
   task_runner_->RunUntilIdle();
-  observer.FinishFrame();
+  EXPECT_LE(BeginFrameArgs::kStartingFrameNumber,
+            observer.ack().sequence_number);
+  compositor_frame_sink_client_.begin_frame_source()->DidFinishFrame(
+      &observer, observer.ack());
   compositor_frame_sink_client_.begin_frame_source()->RemoveObserver(&observer);
 
   // Verify that the frame sink acknowledged the last BeginFrame.

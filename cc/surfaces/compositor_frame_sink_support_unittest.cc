@@ -964,6 +964,8 @@ TEST_F(CompositorFrameSinkSupportTest,
 }
 
 TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+
   // Request BeginFrames.
   display_support().SetNeedsBeginFrame(true);
 
@@ -978,8 +980,18 @@ TEST_F(CompositorFrameSinkSupportTest, PassesOnBeginFrameAcks) {
   display_support().BeginFrameDidNotSwap(ack);
   EXPECT_EQ(ack, begin_frame_source()->LastAckForObserver(&display_support()));
 
-  // TODO(eseckler): Check that the support forwards the BeginFrameAck attached
+  // Issue another BeginFrame.
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2);
+  begin_frame_source()->TestOnBeginFrame(args);
+
+  // Check that the support forwards the BeginFrameAck attached
   // to a CompositorFrame to the BeginFrameSource.
+  BeginFrameAck ack2(0, 2, 2, true);
+  CompositorFrame frame = MakeCompositorFrame();
+  frame.metadata.begin_frame_ack = ack2;
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          std::move(frame));
+  EXPECT_EQ(ack2, begin_frame_source()->LastAckForObserver(&display_support()));
 }
 
 // Checks whether the resources are returned before we send an ack.

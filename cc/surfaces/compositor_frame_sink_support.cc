@@ -72,7 +72,11 @@ void CompositorFrameSinkSupport::BeginFrameDidNotSwap(
   // TODO(eseckler): While a pending CompositorFrame exists (see TODO below), we
   // should not acknowledge immediately. Instead, we should update the ack that
   // will be sent to DisplayScheduler when the pending frame is activated.
-  DCHECK_LE(BeginFrameArgs::kStartingFrameNumber, ack.sequence_number);
+  if (ack.sequence_number < BeginFrameArgs::kStartingFrameNumber) {
+    DLOG(ERROR) << "Received BeginFrameDidNotSwap with invalid BeginFrameAck.";
+    return;
+  }
+
   // |has_damage| is not transmitted, but false by default.
   DCHECK(!ack.has_damage);
   if (begin_frame_source_)
@@ -94,6 +98,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   // |has_damage| is not transmitted.
   frame.metadata.begin_frame_ack.has_damage = true;
 
+  BeginFrameAck ack = frame.metadata.begin_frame_ack;
   surface_factory_.SubmitCompositorFrame(
       local_surface_id, std::move(frame),
       base::Bind(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
@@ -105,7 +110,7 @@ void CompositorFrameSinkSupport::SubmitCompositorFrame(
   // that we need to stay an active BFO while a CompositorFrame is pending.
   // See https://crbug.com/703079.
   if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this, frame.metadata.begin_frame_ack);
+    begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void CompositorFrameSinkSupport::UpdateSurfaceReferences(
