@@ -1040,6 +1040,13 @@ hooks = [
     ],
   },
   {
+    # Pull sanitizer-instrumented third-party libraries if requested via
+    # GYP_DEFINES.
+    'name': 'instrumented_libraries',
+    'pattern': '\\.sha1',
+    'action': ['python', 'src/third_party/instrumented_libraries/scripts/download_binaries.py'],
+  },
+  {
     # Pull doclava binaries if building for Android.
     'name': 'doclava',
     'pattern': '.',
