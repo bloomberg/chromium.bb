@@ -822,22 +822,31 @@ void DisplayManager::UpdateDisplaysWith(
     NotifyMetricsChanged(updated_display, metrics);
   }
 
+  uint32_t primary_metrics = 0;
+
   if (notify_primary_change) {
     // This happens when a primary display has moved to anther display without
     // bounds change.
     const Display& primary = screen_->GetPrimaryDisplay();
     if (primary.id() != old_primary.id()) {
-      uint32_t metrics = DisplayObserver::DISPLAY_METRIC_PRIMARY;
+      primary_metrics = DisplayObserver::DISPLAY_METRIC_PRIMARY;
       if (primary.size() != old_primary.size()) {
-        metrics |= (DisplayObserver::DISPLAY_METRIC_BOUNDS |
-                    DisplayObserver::DISPLAY_METRIC_WORK_AREA);
+        primary_metrics |= (DisplayObserver::DISPLAY_METRIC_BOUNDS |
+                            DisplayObserver::DISPLAY_METRIC_WORK_AREA);
       }
       if (primary.device_scale_factor() != old_primary.device_scale_factor())
-        metrics |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
-
-      NotifyMetricsChanged(primary, metrics);
+        primary_metrics |= DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
     }
   }
+
+  bool mirror_mode = IsInMirrorMode();
+  if (mirror_mode != mirror_mode_for_metrics_) {
+    primary_metrics |= DisplayObserver::DISPLAY_METRIC_MIRROR_STATE;
+    mirror_mode_for_metrics_ = mirror_mode;
+  }
+
+  if (delegate_ && primary_metrics)
+    NotifyMetricsChanged(screen_->GetPrimaryDisplay(), primary_metrics);
 
   bool must_clear_window = false;
 #if defined(USE_X11) && defined(OS_CHROMEOS)

@@ -24,6 +24,7 @@ class DISPLAY_EXPORT DisplayObserver {
     DISPLAY_METRIC_DEVICE_SCALE_FACTOR = 1 << 2,
     DISPLAY_METRIC_ROTATION = 1 << 3,
     DISPLAY_METRIC_PRIMARY = 1 << 4,
+    DISPLAY_METRIC_MIRROR_STATE = 1 << 5,
   };
 
   // Called when |new_display| has been added.

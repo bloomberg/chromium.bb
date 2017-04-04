@@ -471,6 +471,9 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   int64_t mirroring_display_id_ = kInvalidDisplayId;
   Displays software_mirroring_display_list_;
 
+  // Cached mirror mode for metrics changed notification.
+  bool mirror_mode_for_metrics_ = false;
+
   // User preference for rotation lock of the internal display.
   bool registered_internal_display_rotation_lock_ = false;
 
