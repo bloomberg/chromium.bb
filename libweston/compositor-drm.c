@@ -883,6 +883,7 @@ drm_output_repaint(struct weston_output *output_base,
 	output->fb_current = output->fb_pending;
 	output->fb_pending = NULL;
 
+	assert(!output->page_flip_pending);
 	output->page_flip_pending = 1;
 
 	if (output->pageflip_timer)
@@ -1008,6 +1009,9 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	 */
 	fb_id = output->fb_current->fb_id;
 
+	assert(!output->page_flip_pending);
+	assert(!output->fb_last);
+
 	if (drmModePageFlip(backend->drm.fd, output->crtc_id, fb_id,
 			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
 		weston_log("queueing pageflip failed: %m\n");
@@ -1017,6 +1021,9 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	if (output->pageflip_timer)
 		wl_event_source_timer_update(output->pageflip_timer,
 		                             backend->pageflip_timeout);
+
+	output->fb_last = drm_fb_ref(output->fb_current);
+	output->page_flip_pending = 1;
 
 	return;
 
@@ -1081,15 +1088,11 @@ page_flip_handler(int fd, unsigned int frame,
 
 	drm_output_update_msc(output, frame);
 
-	/* We don't set page_flip_pending on start_repaint_loop, in that case
-	 * we just want to page flip to the current buffer to get an accurate
-	 * timestamp */
-	if (output->page_flip_pending) {
-		drm_fb_unref(output->fb_last);
-		output->fb_last = NULL;
-	}
-
+	assert(output->page_flip_pending);
 	output->page_flip_pending = 0;
+
+	drm_fb_unref(output->fb_last);
+	output->fb_last = NULL;
 
 	if (output->destroy_pending)
 		drm_output_destroy(&output->base);
