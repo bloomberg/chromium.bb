@@ -695,11 +695,12 @@ drm_output_prepare_scanout_view(struct drm_output *output,
 	return &output->fb_plane;
 }
 
-static void
+static struct drm_fb *
 drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 {
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct gbm_bo *bo;
+	struct drm_fb *ret;
 
 	output->base.compositor->renderer->repaint_output(&output->base,
 							  damage);
@@ -707,20 +708,21 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 	bo = gbm_surface_lock_front_buffer(output->gbm_surface);
 	if (!bo) {
 		weston_log("failed to lock front buffer: %m\n");
-		return;
+		return NULL;
 	}
 
-	output->fb_pending = drm_fb_get_from_bo(bo, b, output->gbm_format,
-						BUFFER_GBM_SURFACE);
-	if (!output->fb_pending) {
+	ret = drm_fb_get_from_bo(bo, b, output->gbm_format, BUFFER_GBM_SURFACE);
+	if (!ret) {
 		weston_log("failed to get drm_fb for bo\n");
 		gbm_surface_release_buffer(output->gbm_surface, bo);
-		return;
+		return NULL;
 	}
-	output->fb_pending->gbm_surface = output->gbm_surface;
+	ret->gbm_surface = output->gbm_surface;
+
+	return ret;
 }
 
-static void
+static struct drm_fb *
 drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
 {
 	struct weston_compositor *ec = output->base.compositor;
@@ -736,7 +738,6 @@ drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
 
 	output->current_image ^= 1;
 
-	output->fb_pending = drm_fb_ref(output->dumb[output->current_image]);
 	pixman_renderer_output_set_buffer(&output->base,
 					  output->image[output->current_image]);
 
@@ -744,6 +745,8 @@ drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
 
 	pixman_region32_fini(&total_damage);
 	pixman_region32_fini(&previous_damage);
+
+	return drm_fb_ref(output->dumb[output->current_image]);
 }
 
 static void
@@ -751,6 +754,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 {
 	struct weston_compositor *c = output->base.compositor;
 	struct drm_backend *b = to_drm_backend(c);
+	struct drm_fb *fb;
 
 	/* If we already have a client buffer promoted to scanout, then we don't
 	 * want to render. */
@@ -758,9 +762,13 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 		return;
 
 	if (b->use_pixman)
-		drm_output_render_pixman(output, damage);
+		fb = drm_output_render_pixman(output, damage);
 	else
-		drm_output_render_gl(output, damage);
+		fb = drm_output_render_gl(output, damage);
+
+	if (!fb)
+		return;
+	output->fb_pending = fb;
 
 	pixman_region32_subtract(&c->primary_plane.damage,
 				 &c->primary_plane.damage, damage);
