@@ -1,8 +1,8 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/layers/layer_iterator.h"
+#include "cc/layers/effect_tree_layer_list_iterator.h"
 
 #include <vector>
 
@@ -15,11 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
 
-using ::testing::Mock;
-using ::testing::_;
-using ::testing::AtLeast;
-using ::testing::AnyNumber;
-
 namespace cc {
 namespace {
 
@@ -30,75 +25,66 @@ class TestLayerImpl : public LayerImpl {
   }
   ~TestLayerImpl() override {}
 
-  int count_representing_target_surface_;
-  int count_representing_contributing_surface_;
-  int count_representing_itself_;
+  int count_;
 
  private:
   explicit TestLayerImpl(LayerTreeImpl* tree, int id)
-      : LayerImpl(tree, id),
-        count_representing_target_surface_(-1),
-        count_representing_contributing_surface_(-1),
-        count_representing_itself_(-1) {
+      : LayerImpl(tree, id), count_(-1) {
     SetBounds(gfx::Size(100, 100));
     SetPosition(gfx::PointF());
     SetDrawsContent(true);
   }
 };
 
-#define EXPECT_COUNT(layer, target, contrib, itself)                           \
-  EXPECT_EQ(target, layer->count_representing_target_surface_);                \
-  EXPECT_EQ(contrib, layer->count_representing_contributing_surface_);         \
-  EXPECT_EQ(itself, layer->count_representing_itself_);
+#define EXPECT_COUNT(layer, target, contrib, itself)                      \
+  if (layer->GetRenderSurface()) {                                        \
+    EXPECT_EQ(target, target_surface_count_[layer->effect_tree_index()]); \
+    EXPECT_EQ(contrib,                                                    \
+              contributing_surface_count_[layer->effect_tree_index()]);   \
+  }                                                                       \
+  EXPECT_EQ(itself, layer->count_);
 
-void ResetCounts(LayerImplList* render_surface_layer_list) {
-  for (unsigned surface_index = 0;
-       surface_index < render_surface_layer_list->size();
-       ++surface_index) {
-    TestLayerImpl* render_surface_layer = static_cast<TestLayerImpl*>(
-        render_surface_layer_list->at(surface_index));
-    RenderSurfaceImpl* render_surface =
-        render_surface_layer->GetRenderSurface();
-
-    render_surface_layer->count_representing_target_surface_ = -1;
-    render_surface_layer->count_representing_contributing_surface_ = -1;
-    render_surface_layer->count_representing_itself_ = -1;
-
-    for (unsigned layer_index = 0;
-         layer_index < render_surface->layer_list().size();
-         ++layer_index) {
-      TestLayerImpl* layer = static_cast<TestLayerImpl*>(
-          render_surface->layer_list()[layer_index]);
-
-      layer->count_representing_target_surface_ = -1;
-      layer->count_representing_contributing_surface_ = -1;
-      layer->count_representing_itself_ = -1;
-    }
-  }
-}
-
-void IterateFrontToBack(LayerImplList* render_surface_layer_list) {
-  ResetCounts(render_surface_layer_list);
-  int count = 0;
-  for (LayerIterator it = LayerIterator::Begin(render_surface_layer_list);
-       it != LayerIterator::End(render_surface_layer_list); ++it, ++count) {
-    TestLayerImpl* layer = static_cast<TestLayerImpl*>(*it);
-    if (it.represents_target_render_surface())
-      layer->count_representing_target_surface_ = count;
-    if (it.represents_contributing_render_surface())
-      layer->count_representing_contributing_surface_ = count;
-    if (it.represents_itself())
-      layer->count_representing_itself_ = count;
-  }
-}
-
-class LayerIteratorTest : public testing::Test {
+class EffectTreeLayerListIteratorTest : public testing::Test {
  public:
-  LayerIteratorTest()
+  EffectTreeLayerListIteratorTest()
       : host_impl_(&task_runner_provider_, &task_graph_runner_), id_(1) {}
 
   std::unique_ptr<TestLayerImpl> CreateLayer() {
     return TestLayerImpl::Create(host_impl_.active_tree(), id_++);
+  }
+
+  void IterateFrontToBack() {
+    ResetCounts();
+    int count = 0;
+    for (EffectTreeLayerListIterator it(host_impl_.active_tree());
+         it.state() != EffectTreeLayerListIterator::State::END; ++it, ++count) {
+      switch (it.state()) {
+        case EffectTreeLayerListIterator::State::LAYER:
+          static_cast<TestLayerImpl*>(it.current_layer())->count_ = count;
+          break;
+        case EffectTreeLayerListIterator::State::TARGET_SURFACE:
+          target_surface_count_[it.target_render_surface()->EffectTreeIndex()] =
+              count;
+          break;
+        case EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE:
+          contributing_surface_count_[it.current_render_surface()
+                                          ->EffectTreeIndex()] = count;
+          break;
+        default:
+          NOTREACHED();
+      }
+    }
+  }
+
+  void ResetCounts() {
+    for (LayerImpl* layer : *host_impl_.active_tree()) {
+      static_cast<TestLayerImpl*>(layer)->count_ = -1;
+    }
+
+    target_surface_count_ = std::vector<int>(
+        host_impl_.active_tree()->property_trees()->effect_tree.size(), -1);
+    contributing_surface_count_ = std::vector<int>(
+        host_impl_.active_tree()->property_trees()->effect_tree.size(), -1);
   }
 
  protected:
@@ -107,15 +93,31 @@ class LayerIteratorTest : public testing::Test {
   FakeLayerTreeHostImpl host_impl_;
 
   int id_;
+
+  // Tracks when each render surface is visited as a target surface or
+  // contributing surface. Indexed by effect node id.
+  std::vector<int> target_surface_count_;
+  std::vector<int> contributing_surface_count_;
 };
 
-TEST_F(LayerIteratorTest, EmptyTree) {
-  LayerImplList render_surface_layer_list;
+TEST_F(EffectTreeLayerListIteratorTest, TreeWithNoDrawnLayers) {
+  std::unique_ptr<TestLayerImpl> root_layer = CreateLayer();
+  root_layer->SetDrawsContent(false);
 
-  IterateFrontToBack(&render_surface_layer_list);
+  TestLayerImpl* root_ptr = root_layer.get();
+
+  host_impl_.active_tree()->SetRootLayerForTesting(std::move(root_layer));
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root_ptr, root_ptr->bounds(), &render_surface_layer_list);
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+
+  IterateFrontToBack();
+  EXPECT_COUNT(root_ptr, 0, -1, -1);
 }
 
-TEST_F(LayerIteratorTest, SimpleTree) {
+TEST_F(EffectTreeLayerListIteratorTest, SimpleTree) {
   std::unique_ptr<TestLayerImpl> root_layer = CreateLayer();
   std::unique_ptr<TestLayerImpl> first = CreateLayer();
   std::unique_ptr<TestLayerImpl> second = CreateLayer();
@@ -140,7 +142,7 @@ TEST_F(LayerIteratorTest, SimpleTree) {
       root_ptr, root_ptr->bounds(), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  IterateFrontToBack(&render_surface_layer_list);
+  IterateFrontToBack();
   EXPECT_COUNT(root_ptr, 5, -1, 4);
   EXPECT_COUNT(first_ptr, -1, -1, 3);
   EXPECT_COUNT(second_ptr, -1, -1, 2);
@@ -148,7 +150,7 @@ TEST_F(LayerIteratorTest, SimpleTree) {
   EXPECT_COUNT(fourth_ptr, -1, -1, 0);
 }
 
-TEST_F(LayerIteratorTest, ComplexTree) {
+TEST_F(EffectTreeLayerListIteratorTest, ComplexTree) {
   std::unique_ptr<TestLayerImpl> root_layer = CreateLayer();
   std::unique_ptr<TestLayerImpl> root1 = CreateLayer();
   std::unique_ptr<TestLayerImpl> root2 = CreateLayer();
@@ -185,7 +187,7 @@ TEST_F(LayerIteratorTest, ComplexTree) {
       root_ptr, root_ptr->bounds(), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  IterateFrontToBack(&render_surface_layer_list);
+  IterateFrontToBack();
   EXPECT_COUNT(root_ptr, 9, -1, 8);
   EXPECT_COUNT(root1_ptr, -1, -1, 7);
   EXPECT_COUNT(root2_ptr, -1, -1, 6);
@@ -197,7 +199,7 @@ TEST_F(LayerIteratorTest, ComplexTree) {
   EXPECT_COUNT(root3_ptr, -1, -1, 0);
 }
 
-TEST_F(LayerIteratorTest, ComplexTreeMultiSurface) {
+TEST_F(EffectTreeLayerListIteratorTest, ComplexTreeMultiSurface) {
   std::unique_ptr<TestLayerImpl> root_layer = CreateLayer();
   std::unique_ptr<TestLayerImpl> root1 = CreateLayer();
   std::unique_ptr<TestLayerImpl> root2 = CreateLayer();
@@ -238,7 +240,7 @@ TEST_F(LayerIteratorTest, ComplexTreeMultiSurface) {
       root_ptr, root_ptr->bounds(), &render_surface_layer_list);
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-  IterateFrontToBack(&render_surface_layer_list);
+  IterateFrontToBack();
   EXPECT_COUNT(root_ptr, 14, -1, 13);
   EXPECT_COUNT(root1_ptr, -1, -1, 12);
   EXPECT_COUNT(root2_ptr, 10, 11, -1);

@@ -38,9 +38,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerTreeImpl* layer_tree_impl,
       surface_property_changed_(false),
       ancestor_property_changed_(false),
       contributes_to_drawn_surface_(false),
-      nearest_occlusion_immune_ancestor_(nullptr),
-      target_render_surface_layer_index_history_(0),
-      current_layer_index_history_(0) {
+      nearest_occlusion_immune_ancestor_(nullptr) {
   damage_tracker_ = DamageTracker::Create();
 }
 
@@ -80,7 +78,7 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   const FilterOperations& filters = Filters();
   if (!filters.IsEmpty()) {
     surface_content_rect =
-        filters.MapRect(surface_content_rect, FiltersTransform().matrix());
+        filters.MapRect(surface_content_rect, SurfaceScale().matrix());
   }
   gfx::RectF drawable_content_rect = MathUtil::MapClippedRect(
       draw_transform(), gfx::RectF(surface_content_rect));
@@ -134,11 +132,11 @@ gfx::PointF RenderSurfaceImpl::FiltersOrigin() const {
   return OwningEffectNode()->filters_origin;
 }
 
-gfx::Transform RenderSurfaceImpl::FiltersTransform() const {
-  gfx::Transform filters_transform;
-  filters_transform.Scale(OwningEffectNode()->surface_contents_scale.x(),
-                          OwningEffectNode()->surface_contents_scale.y());
-  return filters_transform;
+gfx::Transform RenderSurfaceImpl::SurfaceScale() const {
+  gfx::Transform surface_scale;
+  surface_scale.Scale(OwningEffectNode()->surface_contents_scale.x(),
+                      OwningEffectNode()->surface_contents_scale.y());
+  return surface_scale;
 }
 
 const FilterOperations& RenderSurfaceImpl::BackgroundFilters() const {
@@ -194,8 +192,8 @@ gfx::Rect RenderSurfaceImpl::CalculateExpandedClipForFilters(
     const gfx::Transform& target_to_surface) {
   gfx::Rect clip_in_surface_space =
       MathUtil::ProjectEnclosingClippedRect(target_to_surface, clip_rect());
-  gfx::Rect expanded_clip_in_surface_space = Filters().MapRectReverse(
-      clip_in_surface_space, FiltersTransform().matrix());
+  gfx::Rect expanded_clip_in_surface_space =
+      Filters().MapRectReverse(clip_in_surface_space, SurfaceScale().matrix());
   gfx::Rect expanded_clip_in_target_space = MathUtil::MapEnclosingClippedRect(
       draw_transform(), expanded_clip_in_surface_space);
   return expanded_clip_in_target_space;

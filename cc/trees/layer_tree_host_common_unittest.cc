@@ -20,10 +20,10 @@
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/layer_iterator.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/output/copy_output_request.h"
@@ -6140,15 +6140,16 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     int count_represents_target_render_surface = 0;
     int count_represents_contributing_render_surface = 0;
     int count_represents_itself = 0;
-    LayerIterator end = LayerIterator::End(&render_surface_layer_list);
-    for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list);
-         it != end; ++it) {
-      if (it.represents_target_render_surface())
+    for (EffectTreeLayerListIterator it(host_impl.active_tree());
+         it.state() != EffectTreeLayerListIterator::State::END; ++it) {
+      if (it.state() == EffectTreeLayerListIterator::State::TARGET_SURFACE) {
         count_represents_target_render_surface++;
-      if (it.represents_contributing_render_surface())
+      } else if (it.state() ==
+                 EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
         count_represents_contributing_render_surface++;
-      if (it.represents_itself())
+      } else {
         count_represents_itself++;
+      }
     }
 
     // Two render surfaces.
@@ -6171,15 +6172,16 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     int count_represents_target_render_surface = 0;
     int count_represents_contributing_render_surface = 0;
     int count_represents_itself = 0;
-    LayerIterator end = LayerIterator::End(&render_surface_layer_list);
-    for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list);
-         it != end; ++it) {
-      if (it.represents_target_render_surface())
+    for (EffectTreeLayerListIterator it(host_impl.active_tree());
+         it.state() != EffectTreeLayerListIterator::State::END; ++it) {
+      if (it.state() == EffectTreeLayerListIterator::State::TARGET_SURFACE) {
         count_represents_target_render_surface++;
-      if (it.represents_contributing_render_surface())
+      } else if (it.state() ==
+                 EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
         count_represents_contributing_render_surface++;
-      if (it.represents_itself())
+      } else {
         count_represents_itself++;
+      }
     }
 
     // Only root layer has a render surface.
@@ -8331,20 +8333,18 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 }
 
-static void GatherDrawnLayers(const LayerImplList* rsll,
+static void GatherDrawnLayers(LayerTreeImpl* tree_impl,
                               std::set<LayerImpl*>* drawn_layers) {
-  for (LayerIterator it = LayerIterator::Begin(rsll),
-                     end = LayerIterator::End(rsll);
-       it != end; ++it) {
-    LayerImpl* layer = *it;
-    if (it.represents_itself())
-      drawn_layers->insert(layer);
+  for (EffectTreeLayerListIterator it(tree_impl);
+       it.state() != EffectTreeLayerListIterator::State::END; ++it) {
+    if (it.state() == EffectTreeLayerListIterator::State::LAYER)
+      drawn_layers->insert(it.current_layer());
 
-    if (!it.represents_contributing_render_surface())
+    if (it.state() != EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE)
       continue;
 
-    if (layer->GetRenderSurface()->MaskLayer())
-      drawn_layers->insert(layer->GetRenderSurface()->MaskLayer());
+    if (it.current_render_surface()->MaskLayer())
+      drawn_layers->insert(it.current_render_surface()->MaskLayer());
   }
 }
 
@@ -8393,7 +8393,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   std::set<LayerImpl*> expected;
   std::set<LayerImpl*> actual;
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   // If we force render surface, but none of the layers are in the layer list,
@@ -8411,7 +8411,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   expected.clear();
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   // However, if we say that this layer also draws content, it will appear in
@@ -8430,7 +8430,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   expected.insert(grand_child1_raw);
 
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   // Now child is forced to have a render surface, and one if its children draws
@@ -8453,7 +8453,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   expected.insert(grand_child2_raw);
 
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   // Add a mask layer to child.
@@ -8480,7 +8480,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   expected.insert(child_raw->test_properties()->mask_layer);
 
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
@@ -8498,7 +8498,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   expected.insert(child_raw->test_properties()->mask_layer);
 
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -8518,7 +8518,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
 
   expected.clear();
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   // Child itself draws means that we should have the child and the mask in the
@@ -8539,7 +8539,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   expected.insert(child_raw);
   expected.insert(child_raw->test_properties()->mask_layer);
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 
   child_raw->test_properties()->SetMaskLayer(nullptr);
@@ -8568,7 +8568,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   expected.insert(grand_child2_raw);
 
   actual.clear();
-  GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
+  GatherDrawnLayers(host_impl.active_tree(), &actual);
   EXPECT_EQ(expected, actual);
 }
 
@@ -10255,12 +10255,14 @@ TEST_F(LayerTreeHostCommonTest, SubtreeIsHiddenTest) {
   test->test_properties()->force_render_surface = true;
 
   ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(test->IsHidden());
+  EXPECT_EQ(0.f,
+            test->GetRenderSurface()->OwningEffectNode()->screen_space_opacity);
 
   hidden->test_properties()->hide_layer_and_subtree = false;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
-  EXPECT_FALSE(test->IsHidden());
+  EXPECT_EQ(1.f,
+            test->GetRenderSurface()->OwningEffectNode()->screen_space_opacity);
 }
 
 TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {

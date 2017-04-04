@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/cc_export.h"
-#include "cc/layers/layer_iterator.h"
+#include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/trees/occlusion.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -41,12 +41,12 @@ class CC_EXPORT OcclusionTracker {
       const gfx::Transform& draw_transform) const;
 
   const RenderSurfaceImpl* OcclusionSurfaceForContributingSurface() const;
-  // Called at the beginning of each step in the LayerIterator's front-to-back
-  // traversal.
-  void EnterLayer(const LayerIteratorPosition& layer_iterator);
-  // Called at the end of each step in the LayerIterator's front-to-back
-  // traversal.
-  void LeaveLayer(const LayerIteratorPosition& layer_iterator);
+  // Called at the beginning of each step in EffectTreeLayerListIterator's
+  // front-to-back traversal.
+  void EnterLayer(const EffectTreeLayerListIterator::Position& iterator);
+  // Called at the end of each step in EffectTreeLayerListIterator's
+  // front-to-back traversal.
+  void LeaveLayer(const EffectTreeLayerListIterator::Position& iterator);
 
   // Gives the region of the screen that is not occluded by something opaque.
   Region ComputeVisibleRegionInScreen(const LayerTreeImpl* layer_tree) const;
@@ -82,20 +82,20 @@ class CC_EXPORT OcclusionTracker {
   std::vector<StackObject> stack_;
 
  private:
-  // Called when visiting a layer representing itself. If the target was not
-  // already current, then this indicates we have entered a new surface subtree.
-  void EnterRenderTarget(const LayerImpl* new_target);
+  // Called when visiting a layer. If the target was not already current, then
+  // this indicates we have entered a new surface subtree.
+  void EnterRenderTarget(const RenderSurfaceImpl* new_target_surface);
 
-  // Called when visiting a layer representing a target surface. This indicates
-  // we have visited all the layers within the surface, and we may perform any
-  // surface-wide operations.
-  void FinishedRenderTarget(const LayerImpl* finished_target);
+  // Called when visiting a target surface. This indicates we have visited all
+  // the layers within the surface, and we may perform any surface-wide
+  // operations.
+  void FinishedRenderTarget(const RenderSurfaceImpl* finished_target_surface);
 
-  // Called when visiting a layer representing a contributing surface. This
-  // indicates that we are leaving our current surface, and entering the new
-  // one. We then perform any operations required for merging results from the
-  // child subtree into its parent.
-  void LeaveToRenderTarget(const LayerImpl* new_target);
+  // Called when visiting a contributing surface. This indicates that we are
+  // leaving our current surface, and entering the new one. We then perform any
+  // operations required for merging results from the child subtree into its
+  // parent.
+  void LeaveToRenderTarget(const RenderSurfaceImpl* new_target_surface);
 
   // Add the layer's occlusion to the tracked state.
   void MarkOccludedBehindLayer(const LayerImpl* layer);

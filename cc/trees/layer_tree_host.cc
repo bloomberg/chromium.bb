@@ -38,7 +38,6 @@
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_iterator.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"

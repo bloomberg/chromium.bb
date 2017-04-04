@@ -28,7 +28,6 @@ class DamageTracker;
 class FilterOperations;
 class Occlusion;
 class LayerImpl;
-class LayerIterator;
 class LayerTreeImpl;
 
 struct AppendQuadsData;
@@ -131,7 +130,7 @@ class CC_EXPORT RenderSurfaceImpl {
   const FilterOperations& Filters() const;
   const FilterOperations& BackgroundFilters() const;
   gfx::PointF FiltersOrigin() const;
-  gfx::Transform FiltersTransform() const;
+  gfx::Transform SurfaceScale() const;
 
   bool HasCopyRequest() const;
 
@@ -155,13 +154,13 @@ class CC_EXPORT RenderSurfaceImpl {
   void set_effect_tree_index(int index) { effect_tree_index_ = index; }
   int EffectTreeIndex() const;
 
+  const EffectNode* OwningEffectNode() const;
+
  private:
   void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect CalculateClippedAccumulatedContentRect();
   gfx::Rect CalculateExpandedClipForFilters(
       const gfx::Transform& target_to_surface);
-
-  const EffectNode* OwningEffectNode() const;
 
   LayerTreeImpl* layer_tree_impl_;
   int stable_effect_id_;
@@ -208,12 +207,6 @@ class CC_EXPORT RenderSurfaceImpl {
   const RenderSurfaceImpl* nearest_occlusion_immune_ancestor_;
 
   std::unique_ptr<DamageTracker> damage_tracker_;
-
-  // For LayerIteratorActions
-  int target_render_surface_layer_index_history_;
-  size_t current_layer_index_history_;
-
-  friend class LayerIterator;
 
   DISALLOW_COPY_AND_ASSIGN(RenderSurfaceImpl);
 };

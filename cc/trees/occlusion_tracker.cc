@@ -56,23 +56,26 @@ OcclusionTracker::OcclusionSurfaceForContributingSurface() const {
   return (stack_.size() < 2) ? nullptr : stack_[stack_.size() - 2].target;
 }
 
-void OcclusionTracker::EnterLayer(const LayerIteratorPosition& layer_iterator) {
-  LayerImpl* render_target = layer_iterator.target_render_surface_layer;
+void OcclusionTracker::EnterLayer(
+    const EffectTreeLayerListIterator::Position& iterator) {
+  RenderSurfaceImpl* render_target = iterator.target_render_surface;
 
-  if (layer_iterator.represents_itself)
+  if (iterator.state == EffectTreeLayerListIterator::State::LAYER)
     EnterRenderTarget(render_target);
-  else if (layer_iterator.represents_target_render_surface)
+  else if (iterator.state == EffectTreeLayerListIterator::State::TARGET_SURFACE)
     FinishedRenderTarget(render_target);
 }
 
-void OcclusionTracker::LeaveLayer(const LayerIteratorPosition& layer_iterator) {
-  LayerImpl* render_target = layer_iterator.target_render_surface_layer;
+void OcclusionTracker::LeaveLayer(
+    const EffectTreeLayerListIterator::Position& iterator) {
+  RenderSurfaceImpl* render_target = iterator.target_render_surface;
 
-  if (layer_iterator.represents_itself)
-    MarkOccludedBehindLayer(layer_iterator.current_layer);
+  if (iterator.state == EffectTreeLayerListIterator::State::LAYER)
+    MarkOccludedBehindLayer(iterator.current_layer);
   // TODO(danakj): This should be done when entering the contributing surface,
   // but in a way that the surface's own occlusion won't occlude itself.
-  else if (layer_iterator.represents_contributing_render_surface)
+  else if (iterator.state ==
+           EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE)
     LeaveToRenderTarget(render_target);
 }
 
@@ -117,9 +120,9 @@ static SimpleEnclosedRegion TransformSurfaceOpaqueRegion(
   return transformed_region;
 }
 
-void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
-  DCHECK(new_target->GetRenderSurface());
-  RenderSurfaceImpl* new_target_surface = new_target->GetRenderSurface();
+void OcclusionTracker::EnterRenderTarget(
+    const RenderSurfaceImpl* new_target_surface) {
+  DCHECK(new_target_surface);
   if (!stack_.empty() && stack_.back().target == new_target_surface)
     return;
 
@@ -153,7 +156,7 @@ void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
           &inverse_new_target_screen_space_transform);
 
   bool entering_root_target =
-      new_target->layer_tree_impl()->IsRootLayer(new_target);
+      new_target_surface->render_target() == new_target_surface;
 
   bool copy_outside_occlusion_forward =
       stack_.size() > 1 &&
@@ -177,22 +180,26 @@ void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
           gfx::Rect(), old_target_to_new_target_transform));
 }
 
-void OcclusionTracker::FinishedRenderTarget(const LayerImpl* finished_target) {
+void OcclusionTracker::FinishedRenderTarget(
+    const RenderSurfaceImpl* finished_target_surface) {
   // Make sure we know about the target surface.
-  EnterRenderTarget(finished_target);
+  EnterRenderTarget(finished_target_surface);
 
-  RenderSurfaceImpl* surface = finished_target->GetRenderSurface();
+  bool is_hidden =
+      finished_target_surface->OwningEffectNode()->screen_space_opacity == 0.f;
 
   // Readbacks always happen on render targets so we only need to check
   // for readbacks here.
   bool target_is_only_for_copy_request =
-      surface->HasCopyRequest() && finished_target->IsHidden();
+      finished_target_surface->HasCopyRequest() && is_hidden;
 
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
-  if (surface->MaskLayer() || surface->draw_opacity() < 1 ||
-      !surface->UsesDefaultBlendMode() || target_is_only_for_copy_request ||
-      surface->Filters().HasFilterThatAffectsOpacity()) {
+  if (finished_target_surface->HasMask() ||
+      finished_target_surface->draw_opacity() < 1 ||
+      !finished_target_surface->UsesDefaultBlendMode() ||
+      target_is_only_for_copy_request ||
+      finished_target_surface->Filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
     stack_.back().occlusion_from_inside_target.Clear();
   }
@@ -252,13 +259,13 @@ static void ReduceOcclusionBelowSurface(
   }
 }
 
-void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
+void OcclusionTracker::LeaveToRenderTarget(
+    const RenderSurfaceImpl* new_target_surface) {
   DCHECK(!stack_.empty());
   size_t last_index = stack_.size() - 1;
-  DCHECK(new_target->GetRenderSurface());
-  RenderSurfaceImpl* new_surface = new_target->GetRenderSurface();
+  DCHECK(new_target_surface);
   bool surface_will_be_at_top_after_pop =
-      stack_.size() > 1 && stack_[last_index - 1].target == new_surface;
+      stack_.size() > 1 && stack_[last_index - 1].target == new_target_surface;
 
   // We merge the screen occlusion from the current RenderSurfaceImpl subtree
   // out to its parent target RenderSurfaceImpl. The target occlusion can be
@@ -285,23 +292,24 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
         surface_occlusion.GetUnoccludedContentRect(old_surface->content_rect());
   }
 
+  bool is_root = new_target_surface->render_target() == new_target_surface;
   if (surface_will_be_at_top_after_pop) {
     // Merge the top of the stack down.
     stack_[last_index - 1].occlusion_from_inside_target.Union(
         old_occlusion_from_inside_target_in_new_target);
     // TODO(danakj): Strictly this should subtract the inside target occlusion
     // before union.
-    if (!new_target->layer_tree_impl()->IsRootLayer(new_target)) {
+    if (!is_root) {
       stack_[last_index - 1].occlusion_from_outside_target.Union(
           old_occlusion_from_outside_target_in_new_target);
     }
     stack_.pop_back();
   } else {
     // Replace the top of the stack with the new pushed surface.
-    stack_.back().target = new_surface;
+    stack_.back().target = new_target_surface;
     stack_.back().occlusion_from_inside_target =
         old_occlusion_from_inside_target_in_new_target;
-    if (!new_target->layer_tree_impl()->IsRootLayer(new_target)) {
+    if (!is_root) {
       stack_.back().occlusion_from_outside_target =
           old_occlusion_from_outside_target_in_new_target;
     } else {

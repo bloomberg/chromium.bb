@@ -416,8 +416,6 @@ class CC_EXPORT LayerImpl {
 
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
 
-  bool IsHidden() const;
-
   float GetIdealContentsScale() const;
 
   bool was_ever_ready_since_last_transform_animation() const {

@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/layer_iterator.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/layer_utils.h"
 #include "cc/layers/render_surface_impl.h"
@@ -64,7 +63,7 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
     SaveScreenSpaceRects(render_surface_layer_list);
 
   if (debug_state.show_layer_animation_bounds_rects)
-    SaveLayerAnimationBoundsRects(render_surface_layer_list);
+    SaveLayerAnimationBoundsRects(tree_impl);
 }
 
 void DebugRectHistory::SavePaintRects(LayerTreeImpl* tree_impl) {
@@ -217,12 +216,9 @@ void DebugRectHistory::SaveNonFastScrollableRectsCallback(LayerImpl* layer) {
   }
 }
 
-void DebugRectHistory::SaveLayerAnimationBoundsRects(
-    const LayerImplList& render_surface_layer_list) {
-  LayerIterator end = LayerIterator::End(&render_surface_layer_list);
-  for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list);
-       it != end; ++it) {
-    if (!it.represents_itself())
+void DebugRectHistory::SaveLayerAnimationBoundsRects(LayerTreeImpl* tree_impl) {
+  for (auto it = tree_impl->rbegin(); it != tree_impl->rend(); ++it) {
+    if (!(*it)->is_drawn_render_surface_layer_list_member())
       continue;
 
     // TODO(avallee): Figure out if we should show something for a layer who's

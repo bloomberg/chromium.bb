@@ -87,8 +87,7 @@ class DebugRectHistory {
   void SaveScrollEventHandlerRectsCallback(LayerImpl* layer);
   void SaveNonFastScrollableRects(LayerTreeImpl* layer);
   void SaveNonFastScrollableRectsCallback(LayerImpl* layer);
-  void SaveLayerAnimationBoundsRects(
-      const LayerImplList& render_surface_layer_list);
+  void SaveLayerAnimationBoundsRects(LayerTreeImpl* tree_impl);
 
   std::vector<DebugRect> debug_rects_;
 

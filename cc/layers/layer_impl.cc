@@ -944,11 +944,6 @@ const RenderSurfaceImpl* LayerImpl::render_target() const {
   return GetEffectTree().GetRenderSurface(render_target_effect_tree_index());
 }
 
-bool LayerImpl::IsHidden() const {
-  EffectNode* node = GetEffectTree().Node(effect_tree_index_);
-  return node->screen_space_opacity == 0.f;
-}
-
 float LayerImpl::GetIdealContentsScale() const {
   float page_scale = IsAffectedByPageScale()
                          ? layer_tree_impl()->current_page_scale_factor()

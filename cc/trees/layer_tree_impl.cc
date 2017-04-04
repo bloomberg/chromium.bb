@@ -24,9 +24,9 @@
 #include "cc/debug/traced_value.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scrollbar_animation_controller.h"
+#include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_iterator.h"
 #include "cc/layers/layer_list_iterator.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
@@ -1127,24 +1127,23 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
     occlusion_tracker.set_minimum_tracking_size(
         settings().minimum_occlusion_tracking_size);
 
-    // LayerIterator is used here instead of CallFunctionForEveryLayer to only
-    // UpdateTilePriorities on layers that will be visible (and thus have valid
-    // draw properties) and not because any ordering is required.
-    LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
-    for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
-         it != end; ++it) {
+    for (EffectTreeLayerListIterator it(this);
+         it.state() != EffectTreeLayerListIterator::State::END; ++it) {
       occlusion_tracker.EnterLayer(it);
 
-      if (it.represents_itself()) {
-        it->draw_properties().occlusion_in_content_space =
-            occlusion_tracker.GetCurrentOcclusionForLayer(it->DrawTransform());
+      if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
+        LayerImpl* layer = it.current_layer();
+        layer->draw_properties().occlusion_in_content_space =
+            occlusion_tracker.GetCurrentOcclusionForLayer(
+                layer->DrawTransform());
       }
 
-      if (it.represents_contributing_render_surface()) {
+      if (it.state() ==
+          EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
         const RenderSurfaceImpl* occlusion_surface =
             occlusion_tracker.OcclusionSurfaceForContributingSurface();
         gfx::Transform draw_transform;
-        RenderSurfaceImpl* render_surface = it->GetRenderSurface();
+        RenderSurfaceImpl* render_surface = it.current_render_surface();
         if (occlusion_surface) {
           // We are calculating transform between two render surfaces. So, we
           // need to apply the surface contents scale at target and remove the
@@ -1168,7 +1167,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         if (LayerImpl* mask = render_surface->MaskLayer()) {
           mask->draw_properties().occlusion_in_content_space =
               occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                  draw_transform * it->DrawTransform());
+                  draw_transform * render_surface->SurfaceScale());
         }
       }
 
@@ -1528,12 +1527,10 @@ void LayerTreeImpl::SetNeedsRedraw() {
 
 void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
-  LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
-  for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
-       it != end; ++it) {
-    if (!it.represents_itself())
-      continue;
+  for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
     LayerImpl* layer_impl = *it;
+    if (!layer_impl->is_drawn_render_surface_layer_list_member())
+      continue;
     layer_impl->GetAllPrioritizedTilesForTracing(prioritized_tiles);
   }
 }
@@ -1543,10 +1540,8 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("source_frame_number", source_frame_number_);
 
   state->BeginArray("render_surface_layer_list");
-  LayerIterator end = LayerIterator::End(&render_surface_layer_list_);
-  for (LayerIterator it = LayerIterator::Begin(&render_surface_layer_list_);
-       it != end; ++it) {
-    if (!it.represents_itself())
+  for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
+    if (!(*it)->is_drawn_render_surface_layer_list_member())
       continue;
     TracedValue::AppendIDRef(*it, state);
   }

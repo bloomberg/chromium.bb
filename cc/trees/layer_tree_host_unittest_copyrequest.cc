@@ -8,7 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/layers/layer_iterator.h"
+#include "cc/layers/effect_tree_layer_list_iterator.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/direct_renderer.h"
@@ -1227,14 +1227,12 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
 
     bool saw_root = false;
     bool saw_child = false;
-    for (LayerIterator it =
-             LayerIterator::Begin(frame_data->render_surface_layer_list);
-         it != LayerIterator::End(frame_data->render_surface_layer_list);
-         ++it) {
-      if (it.represents_itself()) {
-        if (*it == root)
+    for (EffectTreeLayerListIterator it(host_impl->active_tree());
+         it.state() != EffectTreeLayerListIterator::State::END; ++it) {
+      if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
+        if (it.current_layer() == root)
           saw_root = true;
-        else if (*it == child)
+        else if (it.current_layer() == child)
           saw_child = true;
         else
           NOTREACHED();

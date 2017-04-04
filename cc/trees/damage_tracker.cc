@@ -128,8 +128,8 @@ void DamageTracker::UpdateDamageTrackingState(
     gfx::Rect damage_rect;
     bool is_rect_valid = damage_for_this_update.GetAsRect(&damage_rect);
     if (is_rect_valid) {
-      damage_rect = filters.MapRect(
-          damage_rect, target_surface->FiltersTransform().matrix());
+      damage_rect =
+          filters.MapRect(damage_rect, target_surface->SurfaceScale().matrix());
       damage_for_this_update = DamageAccumulator();
       damage_for_this_update.Union(damage_rect);
     }

@@ -12,13 +12,8 @@
 
 namespace cc {
 
-class LayerImpl;
-
-// Unlike LayerIterator and friends, these iterators are not intended to permit
-// traversing the RSLL. Rather, they visit a collection of LayerImpls in
-// stacking order. All recursive walks over the LayerImpl tree should be
-// switched to use these classes instead as the concept of a LayerImpl tree is
-// deprecated.
+// This visits a tree of layers in drawing order. For LayerImpls, this is only
+// useful for tests, since there's no LayerImpl tree outside unit tests.
 template <typename LayerType>
 class CC_EXPORT LayerListIterator {
  public:
