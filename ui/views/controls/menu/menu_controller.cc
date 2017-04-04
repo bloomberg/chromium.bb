@@ -18,6 +18,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -1242,15 +1245,17 @@ void MenuController::StartDrag(SubmenuView* source,
   View::ConvertPointFromScreen(item, &press_loc);
   gfx::Point widget_loc(press_loc);
   View::ConvertPointToWidget(item, &widget_loc);
-  std::unique_ptr<gfx::Canvas> canvas(GetCanvasForDragImage(
-      source->GetWidget(), gfx::Size(item->width(), item->height())));
-  item->PaintButton(canvas.get(), MenuItemView::PB_FOR_DRAG);
+
+  float raster_scale = ScaleFactorForDragFromWidget(source->GetWidget());
+  gfx::Canvas canvas(item->size(), raster_scale, false /* opaque */);
+  item->PaintButton(&canvas, MenuItemView::PB_FOR_DRAG);
+  gfx::ImageSkia image(gfx::ImageSkiaRep(canvas.GetBitmap(), raster_scale));
 
   OSExchangeData data;
   item->GetDelegate()->WriteDragData(item, &data);
-  drag_utils::SetDragImageOnDataObject(*canvas,
-                                       press_loc.OffsetFromOrigin(),
+  drag_utils::SetDragImageOnDataObject(image, press_loc.OffsetFromOrigin(),
                                        &data);
+
   StopScrolling();
   int drag_ops = item->GetDelegate()->GetDragOperations(item);
   did_initiate_drag_ = true;

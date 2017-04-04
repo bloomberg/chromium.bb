@@ -5,8 +5,6 @@
 #include "ui/views/drag_utils.h"
 
 #include "ui/base/layout.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -18,12 +16,6 @@ float ScaleFactorForDragFromWidget(const Widget* widget) {
     device_scale = ui::GetScaleFactorForNativeView(view);
   }
   return device_scale;
-}
-
-gfx::Canvas* GetCanvasForDragImage(const Widget* widget,
-                                   const gfx::Size& canvas_size) {
-  float device_scale = ScaleFactorForDragFromWidget(widget);
-  return new gfx::Canvas(canvas_size, device_scale, false);
 }
 
 }  // namespace views
