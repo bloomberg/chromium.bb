@@ -79,7 +79,9 @@ SerializableUserDataImpl::SerializableUserDataImpl()
 SerializableUserDataImpl::~SerializableUserDataImpl() {}
 
 SerializableUserDataImpl::SerializableUserDataImpl(NSDictionary* data)
-    : data_([data copy]) {}
+    : data_([data copy]) {
+  DCHECK(data_);
+}
 
 void SerializableUserDataImpl::Encode(NSCoder* coder) {
   [coder encodeObject:data_ forKey:kSerializedUserDataKey];
@@ -88,8 +90,16 @@ void SerializableUserDataImpl::Encode(NSCoder* coder) {
 void SerializableUserDataImpl::Decode(NSCoder* coder) {
   NSMutableDictionary* data =
       [[coder decodeObjectForKey:kSerializedUserDataKey] mutableCopy];
+  if (!data) {
+    // Sessions saved with version M-57 or ealier do not have a serialized
+    // user data. Ensure that |data| is non-null.
+    // TODO(crbug.com/661633): remove this once migration from version M-57
+    // or earlier is no longer supported.
+    data = [NSMutableDictionary dictionary];
+  }
   [data addEntriesFromDictionary:GetDecodedLegacyValues(coder)];
   data_.reset([data copy]);
+  DCHECK(data_);
 }
 
 NSDictionary* SerializableUserDataImpl::GetDecodedLegacyValues(NSCoder* coder) {
@@ -99,7 +109,7 @@ NSDictionary* SerializableUserDataImpl::GetDecodedLegacyValues(NSCoder* coder) {
     NSString* new_key = [legacy_key_conversions_ objectForKey:legacy_key];
     legacy_values[new_key] = value;
   }
-  return legacy_values;
+  return [legacy_values copy];
 }
 
 // static
@@ -137,6 +147,7 @@ void SerializableUserDataManagerImpl::AddSerializableUserData(
     SerializableUserDataImpl* data_impl =
         static_cast<SerializableUserDataImpl*>(data);
     data_.reset([data_impl->data() mutableCopy]);
+    DCHECK(data_);
   }
 }
 
