@@ -1147,7 +1147,7 @@ def GeneralTemplates(site_config, ge_build_config):
       rootfs_verification=False,
       paygen=False,
       signer_tests=False,
-      images=remove_images(['recovery', 'factory_install']),
+      images=remove_images(['dev', 'test', 'recovery', 'factory_install']),
   )
 
   # This adds Chrome branding.
