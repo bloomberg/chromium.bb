@@ -138,6 +138,8 @@ enum drm_fb_type {
 struct drm_fb {
 	enum drm_fb_type type;
 
+	int refcnt;
+
 	uint32_t fb_id, stride, handle, size;
 	const struct pixel_format_info *format;
 	int width, height;
@@ -378,6 +380,8 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	if (!fb)
 		return NULL;
 
+	fb->refcnt = 1;
+
 	fb->format = pixel_format_get_info(format);
 	if (!fb->format) {
 		weston_log("failed to look up format 0x%lx\n",
@@ -461,6 +465,13 @@ err_fb:
 }
 
 static struct drm_fb *
+drm_fb_ref(struct drm_fb *fb)
+{
+	fb->refcnt++;
+	return fb;
+}
+
+static struct drm_fb *
 drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		   uint32_t format, enum drm_fb_type type)
 {
@@ -470,7 +481,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 
 	if (fb) {
 		assert(fb->type == type);
-		return fb;
+		return drm_fb_ref(fb);
 	}
 
 	fb = zalloc(sizeof *fb);
@@ -478,6 +489,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		return NULL;
 
 	fb->type = type;
+	fb->refcnt = 1;
 	fb->bo = bo;
 
 	fb->width = gbm_bo_get_width(bo);
@@ -552,9 +564,13 @@ drm_fb_unref(struct drm_fb *fb)
 	if (!fb)
 		return;
 
+	assert(fb->refcnt > 0);
+	if (--fb->refcnt > 0)
+		return;
+
 	switch (fb->type) {
 	case BUFFER_PIXMAN_DUMB:
-		/* nothing: pixman buffers are destroyed manually */
+		drm_fb_destroy_dumb(fb);
 		break;
 	case BUFFER_CLIENT:
 		gbm_bo_destroy(fb->bo);
@@ -715,7 +731,7 @@ drm_output_render_pixman(struct drm_output *output, pixman_region32_t *damage)
 
 	output->current_image ^= 1;
 
-	output->next = output->dumb[output->current_image];
+	output->next = drm_fb_ref(output->dumb[output->current_image]);
 	pixman_renderer_output_set_buffer(&output->base,
 					  output->image[output->current_image]);
 
@@ -2060,7 +2076,7 @@ drm_output_init_pixman(struct drm_output *output, struct drm_backend *b)
 err:
 	for (i = 0; i < ARRAY_LENGTH(output->dumb); i++) {
 		if (output->dumb[i])
-			drm_fb_destroy_dumb(output->dumb[i]);
+			drm_fb_unref(output->dumb[i]);
 		if (output->image[i])
 			pixman_image_unref(output->image[i]);
 
@@ -2080,8 +2096,8 @@ drm_output_fini_pixman(struct drm_output *output)
 	pixman_region32_fini(&output->previous_damage);
 
 	for (i = 0; i < ARRAY_LENGTH(output->dumb); i++) {
-		drm_fb_destroy_dumb(output->dumb[i]);
 		pixman_image_unref(output->image[i]);
+		drm_fb_unref(output->dumb[i]);
 		output->dumb[i] = NULL;
 		output->image[i] = NULL;
 	}
@@ -2569,6 +2585,12 @@ drm_output_deinit(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
+
+	/* output->next must not be set here;
+	 * destroy_pending/disable_pending exist to guarantee exactly this. */
+	assert(!output->next);
+	drm_fb_unref(output->current);
+	output->current = NULL;
 
 	if (b->use_pixman)
 		drm_output_fini_pixman(output);
