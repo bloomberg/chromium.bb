@@ -320,11 +320,11 @@ public class ChromeDownloadDelegate {
      */
     @CalledByNative
     private void enqueueAndroidDownloadManagerRequest(String url, String userAgent,
-            String contentDisposition, String mimeType, String cookie, String referrer) {
+            String fileName, String mimeType, String cookie, String referrer) {
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setUrl(url)
                 .setUserAgent(userAgent)
-                .setContentDisposition(contentDisposition)
+                .setFileName(fileName)
                 .setMimeType(mimeType)
                 .setCookie(cookie)
                 .setReferrer(referrer)

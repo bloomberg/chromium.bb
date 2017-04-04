@@ -267,11 +267,15 @@ void DownloadController::StartAndroidDownloadInternal(
     return;
   }
 
-  ChromeDownloadDelegate::FromWebContents(web_contents)->
-      EnqueueDownloadManagerRequest(
-          info.url.spec(), info.user_agent,
-          info.content_disposition, info.original_mime_type,
-          info.cookie, info.referer);
+  base::string16 filename =
+      net::GetSuggestedFilename(info.url, info.content_disposition,
+                                std::string(),  // referrer_charset
+                                std::string(),  // suggested_name
+                                info.original_mime_type, default_file_name_);
+  ChromeDownloadDelegate::FromWebContents(web_contents)
+      ->EnqueueDownloadManagerRequest(info.url.spec(), info.user_agent,
+                                      filename, info.original_mime_type,
+                                      info.cookie, info.referer);
 }
 
 bool DownloadController::HasFileAccessPermission(

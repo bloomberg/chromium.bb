@@ -216,15 +216,12 @@ public class DownloadManagerDelegate {
                 int status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
                 if (status == DownloadManager.STATUS_SUCCESSFUL) {
                     downloadStatus = DownloadManagerService.DOWNLOAD_STATUS_COMPLETE;
-                    if (mDownloadItem.getDownloadInfo().getFileName() == null) {
-                        DownloadInfo info =
-                                DownloadInfo.Builder
-                                        .fromDownloadInfo(mDownloadItem.getDownloadInfo())
-                                        .setFileName(c.getString(
-                                                c.getColumnIndex(DownloadManager.COLUMN_TITLE)))
-                                        .build();
-                        mDownloadItem.setDownloadInfo(info);
-                    }
+                    DownloadInfo info =
+                            DownloadInfo.Builder.fromDownloadInfo(mDownloadItem.getDownloadInfo())
+                                    .setFileName(c.getString(
+                                            c.getColumnIndex(DownloadManager.COLUMN_TITLE)))
+                                    .build();
+                    mDownloadItem.setDownloadInfo(info);
                     if (mShowNotifications) {
                         canResolve = DownloadManagerService.isOMADownloadDescription(
                                 mDownloadItem.getDownloadInfo())

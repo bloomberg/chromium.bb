@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildInfo;
@@ -27,11 +29,14 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         public final DownloadInfo downloadInfo;
         public final int notificationId;
         public final long systemDownloadId;
+        public final boolean usesAndroidDownloadManager;
 
-        ActionDataInfo(DownloadInfo downloadInfo, int notificationId, long systemDownloadId) {
+        ActionDataInfo(DownloadInfo downloadInfo, int notificationId, long systemDownloadId,
+                boolean usesAndroidDownloadManager) {
             this.downloadInfo = downloadInfo;
             this.notificationId = notificationId;
             this.systemDownloadId = systemDownloadId;
+            this.usesAndroidDownloadManager = usesAndroidDownloadManager;
         }
     }
 
@@ -48,6 +53,11 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         final ActionDataInfo download = (ActionDataInfo) actionData;
         if (download.downloadInfo.isOfflinePage()) {
             OfflinePageDownloadBridge.openDownloadedPage(download.downloadInfo.getContentId());
+            return;
+        }
+        if (download.usesAndroidDownloadManager) {
+            mContext.startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK));
             return;
         }
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService();
@@ -69,9 +79,11 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
      * @param notificationId Notification Id of the successful download.
      * @param downloadId Id of the download from Android DownloadManager.
      * @param canBeResolved Whether the download can be resolved to any activity.
+     * @param usesAndroidDownloadManager Whether the download uses Android DownloadManager.
      */
     public void onDownloadSucceeded(
-            DownloadInfo downloadInfo, int notificationId, long downloadId, boolean canBeResolved) {
+            DownloadInfo downloadInfo, int notificationId, long downloadId, boolean canBeResolved,
+            boolean usesAndroidDownloadManager) {
         if (getSnackbarManager() == null) return;
         Snackbar snackbar;
         if (getActivity() instanceof CustomTabActivity) {
@@ -87,8 +99,9 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         snackbar.setDuration(SNACKBAR_DURATION_IN_MILLISECONDS).setSingleLine(false);
         ActionDataInfo info = null;
-        if (canBeResolved || downloadInfo.isOfflinePage()) {
-            info = new ActionDataInfo(downloadInfo, notificationId, downloadId);
+        if (canBeResolved || downloadInfo.isOfflinePage() || usesAndroidDownloadManager) {
+            info = new ActionDataInfo(downloadInfo, notificationId, downloadId,
+                    usesAndroidDownloadManager);
         }
         // Show downloads app if the download cannot be resolved to any activity.
         snackbar.setAction(

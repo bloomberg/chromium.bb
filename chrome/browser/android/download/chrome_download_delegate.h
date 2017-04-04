@@ -25,7 +25,7 @@ class ChromeDownloadDelegate
   // TODO(qinmin): consolidate this with the static function above.
   void EnqueueDownloadManagerRequest(const std::string& url,
                                      const std::string& user_agent,
-                                     const std::string& content_disposition,
+                                     const base::string16& file_name,
                                      const std::string& mime_type,
                                      const std::string& cookie,
                                      const std::string& referer);
