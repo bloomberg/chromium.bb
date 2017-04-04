@@ -162,6 +162,50 @@ struct drm_edid {
 	char serial_number[13];
 };
 
+/**
+ * A plane represents one buffer, positioned within a CRTC, and stacked
+ * relative to other planes on the same CRTC.
+ *
+ * Each CRTC has a 'primary plane', which use used to display the classic
+ * framebuffer contents, as accessed through the legacy drmModeSetCrtc
+ * call (which combines setting the CRTC's actual physical mode, and the
+ * properties of the primary plane).
+ *
+ * The cursor plane also has its own alternate legacy API.
+ *
+ * Other planes are used opportunistically to display content we do not
+ * wish to blit into the primary plane. These non-primary/cursor planes
+ * are referred to as 'sprites'.
+ */
+struct drm_plane {
+	struct wl_list link;
+
+	struct weston_plane base;
+
+	struct drm_output *output;
+	struct drm_backend *backend;
+
+	uint32_t possible_crtcs;
+	uint32_t plane_id;
+	uint32_t count_formats;
+
+	/* The last framebuffer submitted to the kernel for this plane. */
+	struct drm_fb *fb_current;
+	/* The previously-submitted framebuffer, where the hardware has not
+	 * yet acknowledged display of fb_current. */
+	struct drm_fb *fb_last;
+	/* Framebuffer we are going to submit to the kernel when the current
+	 * repaint is flushed. */
+	struct drm_fb *fb_pending;
+
+	int32_t src_x, src_y;
+	uint32_t src_w, src_h;
+	uint32_t dest_x, dest_y;
+	uint32_t dest_w, dest_h;
+
+	uint32_t formats[];
+};
+
 struct drm_output {
 	struct weston_output base;
 	drmModeConnector *connector;
@@ -209,39 +253,6 @@ struct drm_output {
 	struct wl_listener recorder_frame_listener;
 
 	struct wl_event_source *pageflip_timer;
-};
-
-/*
- * An output has a primary display plane plus zero or more sprites for
- * blending display contents.
- */
-struct drm_sprite {
-	struct wl_list link;
-
-	struct weston_plane plane;
-
-	struct drm_output *output;
-	struct drm_backend *backend;
-
-	uint32_t possible_crtcs;
-	uint32_t plane_id;
-	uint32_t count_formats;
-
-	/* The last framebuffer submitted to the kernel for this plane. */
-	struct drm_fb *fb_current;
-	/* The previously-submitted framebuffer, where the hardware has not
-	 * yet acknowledged display of fb_current. */
-	struct drm_fb *fb_last;
-	/* Framebuffer we are going to submit to the kernel when the current
-	 * repaint is flushed. */
-	struct drm_fb *fb_pending;
-
-	int32_t src_x, src_y;
-	uint32_t src_w, src_h;
-	uint32_t dest_x, dest_y;
-	uint32_t dest_w, dest_h;
-
-	uint32_t formats[];
 };
 
 static struct gl_renderer_interface *gl_renderer;
@@ -306,9 +317,9 @@ static void
 drm_output_update_msc(struct drm_output *output, unsigned int seq);
 
 static int
-drm_sprite_crtc_supported(struct drm_output *output, struct drm_sprite *sprite)
+drm_plane_crtc_supported(struct drm_output *output, struct drm_plane *plane)
 {
-	return !!(sprite->possible_crtcs & (1 << output->pipe));
+	return !!(plane->possible_crtcs & (1 << output->pipe));
 }
 
 static struct drm_output *
@@ -845,7 +856,7 @@ drm_output_repaint(struct weston_output *output_base,
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_backend *backend =
 		to_drm_backend(output->base.compositor);
-	struct drm_sprite *s;
+	struct drm_plane *s;
 	struct drm_mode *mode;
 	int ret = 0;
 
@@ -905,7 +916,7 @@ drm_output_repaint(struct weston_output *output_base,
 		/* XXX: Set output much earlier, so we don't attempt to place
 		 *      planes on entirely the wrong output. */
 		if ((!s->fb_current && !s->fb_pending) ||
-		    !drm_sprite_crtc_supported(output, s))
+		    !drm_plane_crtc_supported(output, s))
 			continue;
 
 		if (s->fb_pending && !backend->sprites_hidden)
@@ -1048,7 +1059,7 @@ static void
 vblank_handler(int fd, unsigned int frame, unsigned int sec, unsigned int usec,
 	       void *data)
 {
-	struct drm_sprite *s = (struct drm_sprite *)data;
+	struct drm_plane *s = (struct drm_plane *)data;
 	struct drm_output *output = s->output;
 	struct timespec ts;
 	uint32_t flags = WP_PRESENTATION_FEEDBACK_KIND_HW_COMPLETION |
@@ -1115,7 +1126,7 @@ page_flip_handler(int fd, unsigned int frame,
 }
 
 static uint32_t
-drm_output_check_sprite_format(struct drm_sprite *s,
+drm_output_check_plane_format(struct drm_plane *p,
 			       struct weston_view *ev, struct gbm_bo *bo)
 {
 	uint32_t i, format;
@@ -1136,8 +1147,8 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 		pixman_region32_fini(&r);
 	}
 
-	for (i = 0; i < s->count_formats; i++)
-		if (s->formats[i] == format)
+	for (i = 0; i < p->count_formats; i++)
+		if (p->formats[i] == format)
 			return format;
 
 	return 0;
@@ -1151,7 +1162,7 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 	struct drm_backend *b = to_drm_backend(ec);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_resource *buffer_resource;
-	struct drm_sprite *s;
+	struct drm_plane *p;
 	struct linux_dmabuf_buffer *dmabuf;
 	int found = 0;
 	struct gbm_bo *bo;
@@ -1187,11 +1198,11 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 	if (ev->alpha != 1.0f)
 		return NULL;
 
-	wl_list_for_each(s, &b->sprite_list, link) {
-		if (!drm_sprite_crtc_supported(output, s))
+	wl_list_for_each(p, &b->sprite_list, link) {
+		if (!drm_plane_crtc_supported(output, p))
 			continue;
 
-		if (!s->fb_pending) {
+		if (!p->fb_pending) {
 			found = 1;
 			break;
 		}
@@ -1244,23 +1255,23 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 	if (!bo)
 		return NULL;
 
-	format = drm_output_check_sprite_format(s, ev, bo);
+	format = drm_output_check_plane_format(p, ev, bo);
 	if (format == 0) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	s->fb_pending = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
-	if (!s->fb_pending) {
+	p->fb_pending = drm_fb_get_from_bo(bo, b, format, BUFFER_CLIENT);
+	if (!p->fb_pending) {
 		gbm_bo_destroy(bo);
 		return NULL;
 	}
 
-	drm_fb_set_buffer(s->fb_pending, ev->surface->buffer_ref.buffer);
+	drm_fb_set_buffer(p->fb_pending, ev->surface->buffer_ref.buffer);
 
 	box = pixman_region32_extents(&ev->transform.boundingbox);
-	s->plane.x = box->x1;
-	s->plane.y = box->y1;
+	p->base.x = box->x1;
+	p->base.y = box->y1;
 
 	/*
 	 * Calculate the source & dest rects properly based on actual
@@ -1277,10 +1288,10 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 				       output->base.transform,
 				       output->base.current_scale,
 				       *box);
-	s->dest_x = tbox.x1;
-	s->dest_y = tbox.y1;
-	s->dest_w = tbox.x2 - tbox.x1;
-	s->dest_h = tbox.y2 - tbox.y1;
+	p->dest_x = tbox.x1;
+	p->dest_y = tbox.y1;
+	p->dest_w = tbox.x2 - tbox.x1;
+	p->dest_h = tbox.y2 - tbox.y1;
 	pixman_region32_fini(&dest_rect);
 
 	pixman_region32_init(&src_rect);
@@ -1317,13 +1328,13 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 				       viewport->buffer.scale,
 				       tbox);
 
-	s->src_x = tbox.x1 << 8;
-	s->src_y = tbox.y1 << 8;
-	s->src_w = (tbox.x2 - tbox.x1) << 8;
-	s->src_h = (tbox.y2 - tbox.y1) << 8;
+	p->src_x = tbox.x1 << 8;
+	p->src_y = tbox.y1 << 8;
+	p->src_w = (tbox.x2 - tbox.x1) << 8;
+	p->src_h = (tbox.y2 - tbox.y1) << 8;
 	pixman_region32_fini(&src_rect);
 
-	return &s->plane;
+	return &p->base;
 }
 
 static struct weston_plane *
@@ -2832,71 +2843,71 @@ err:
 static void
 create_sprites(struct drm_backend *b)
 {
-	struct drm_sprite *sprite;
-	drmModePlaneRes *plane_res;
-	drmModePlane *plane;
+	struct drm_plane *plane;
+	drmModePlaneRes *kplane_res;
+	drmModePlane *kplane;
 	uint32_t i;
 
-	plane_res = drmModeGetPlaneResources(b->drm.fd);
-	if (!plane_res) {
+	kplane_res = drmModeGetPlaneResources(b->drm.fd);
+	if (!kplane_res) {
 		weston_log("failed to get plane resources: %s\n",
 			strerror(errno));
 		return;
 	}
 
-	for (i = 0; i < plane_res->count_planes; i++) {
-		plane = drmModeGetPlane(b->drm.fd, plane_res->planes[i]);
-		if (!plane)
+	for (i = 0; i < kplane_res->count_planes; i++) {
+		kplane = drmModeGetPlane(b->drm.fd, kplane_res->planes[i]);
+		if (!kplane)
 			continue;
 
-		sprite = zalloc(sizeof(*sprite) + ((sizeof(uint32_t)) *
-						   plane->count_formats));
-		if (!sprite) {
+		plane = zalloc(sizeof(*plane) + ((sizeof(uint32_t)) *
+						  kplane->count_formats));
+		if (!plane) {
 			weston_log("%s: out of memory\n",
 				__func__);
-			drmModeFreePlane(plane);
+			drmModeFreePlane(kplane);
 			continue;
 		}
 
-		sprite->possible_crtcs = plane->possible_crtcs;
-		sprite->plane_id = plane->plane_id;
-		sprite->fb_last = NULL;
-		sprite->fb_current = NULL;
-		sprite->fb_pending = NULL;
-		sprite->backend = b;
-		sprite->count_formats = plane->count_formats;
-		memcpy(sprite->formats, plane->formats,
-		       plane->count_formats * sizeof(plane->formats[0]));
-		drmModeFreePlane(plane);
-		weston_plane_init(&sprite->plane, b->compositor, 0, 0);
-		weston_compositor_stack_plane(b->compositor, &sprite->plane,
+		plane->possible_crtcs = kplane->possible_crtcs;
+		plane->plane_id = kplane->plane_id;
+		plane->fb_last = NULL;
+		plane->fb_current = NULL;
+		plane->fb_pending = NULL;
+		plane->backend = b;
+		plane->count_formats = kplane->count_formats;
+		memcpy(plane->formats, kplane->formats,
+		       kplane->count_formats * sizeof(kplane->formats[0]));
+		drmModeFreePlane(kplane);
+		weston_plane_init(&plane->base, b->compositor, 0, 0);
+		weston_compositor_stack_plane(b->compositor, &plane->base,
 					      &b->compositor->primary_plane);
 
-		wl_list_insert(&b->sprite_list, &sprite->link);
+		wl_list_insert(&b->sprite_list, &plane->link);
 	}
 
-	drmModeFreePlaneResources(plane_res);
+	drmModeFreePlaneResources(kplane_res);
 }
 
 static void
 destroy_sprites(struct drm_backend *backend)
 {
-	struct drm_sprite *sprite, *next;
+	struct drm_plane *plane, *next;
 	struct drm_output *output;
 
 	output = container_of(backend->compositor->output_list.next,
 			      struct drm_output, base.link);
 
-	wl_list_for_each_safe(sprite, next, &backend->sprite_list, link) {
+	wl_list_for_each_safe(plane, next, &backend->sprite_list, link) {
 		drmModeSetPlane(backend->drm.fd,
-				sprite->plane_id,
+				plane->plane_id,
 				output->crtc_id, 0, 0,
 				0, 0, 0, 0, 0, 0, 0, 0);
-		assert(!sprite->fb_last);
-		assert(!sprite->fb_pending);
-		drm_fb_unref(sprite->fb_current);
-		weston_plane_release(&sprite->plane);
-		free(sprite);
+		assert(!plane->fb_last);
+		assert(!plane->fb_pending);
+		drm_fb_unref(plane->fb_current);
+		weston_plane_release(&plane->base);
+		free(plane);
 	}
 }
 
@@ -3102,7 +3113,7 @@ session_notify(struct wl_listener *listener, void *data)
 {
 	struct weston_compositor *compositor = data;
 	struct drm_backend *b = to_drm_backend(compositor);
-	struct drm_sprite *sprite;
+	struct drm_plane *sprite;
 	struct drm_output *output;
 
 	if (compositor->session_active) {
