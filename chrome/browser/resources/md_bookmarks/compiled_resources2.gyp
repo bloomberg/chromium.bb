@@ -38,15 +38,7 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'edit_dialog',
-      'dependencies': [
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
-        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-input/compiled_resources2.gyp:paper-input-extracted',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
-        '<(EXTERNS_GYP):chrome_extensions',
-        'types',
-      ],
+      'target_name': 'constants',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
@@ -56,6 +48,18 @@
         '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):metrics_private',
         'store',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
+    },
+    {
+      'target_name': 'edit_dialog',
+      'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior/compiled_resources2.gyp:iron-a11y-keys-behavior-extracted',
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-input/compiled_resources2.gyp:paper-input-extracted',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(EXTERNS_GYP):chrome_extensions',
         'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
@@ -149,6 +153,7 @@
       'target_name': 'types',
       'dependencies': [
         '<(EXTERNS_GYP):chrome_extensions',
+        'constants',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },

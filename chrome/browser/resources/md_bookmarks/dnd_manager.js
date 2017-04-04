@@ -2,22 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Enumeration of valid drop locations relative to an element. These are
- * bit masks to allow combining multiple locations in a single value.
- * @enum {number}
- * @const
- */
-var DropPosition = {
-  NONE: 0,
-  ABOVE: 1,
-  ON: 2,
-  BELOW: 4,
-};
-
-/** @typedef {{element: BookmarkElement, position: DropPosition}} */
-var DropDestination;
-
 cr.define('bookmarks', function() {
   /**
    * @param {BookmarkElement} element
@@ -494,7 +478,7 @@ cr.define('bookmarks', function() {
       var state = bookmarks.Store.getInstance().data;
 
       // We cannot drop between Bookmarks bar and Other bookmarks.
-      if (getBookmarkNode(overElement).parentId == bookmarks.util.ROOT_NODE_ID)
+      if (getBookmarkNode(overElement).parentId == ROOT_NODE_ID)
         return DropPosition.NONE;
 
       var isOverFolderNode = isBookmarkFolderNode(overElement);

@@ -95,6 +95,5 @@ cr.define('bookmarks.util', function() {
     hasChildFolders: hasChildFolders,
     isShowingSearch: isShowingSearch,
     normalizeNodes: normalizeNodes,
-    ROOT_NODE_ID: '0',
   };
 });

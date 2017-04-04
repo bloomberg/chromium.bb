@@ -16,6 +16,11 @@ Polymer({
       observer: 'searchTermChanged_',
     },
 
+    closedFoldersState_: {
+      type: Object,
+      observer: 'closedFoldersStateChanged_',
+    },
+
     /** @private */
     sidebarWidth_: String,
   },
@@ -32,12 +37,21 @@ Polymer({
       return store.search.term;
     });
 
+    this.watch('closedFoldersState_', function(store) {
+      return store.closedFolders;
+    });
+
     chrome.bookmarks.getTree(function(results) {
       var nodeList = bookmarks.util.normalizeNodes(results[0]);
       var initialState = bookmarks.util.createEmptyState();
       initialState.nodes = nodeList;
-      initialState.selectedFolder =
-          nodeList[bookmarks.util.ROOT_NODE_ID].children[0];
+      initialState.selectedFolder = nodeList[ROOT_NODE_ID].children[0];
+      var closedFoldersString =
+          window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY];
+      initialState.closedFolders = closedFoldersString ?
+          /** @type {!Object<string,boolean>} */ (
+              JSON.parse(closedFoldersString)) :
+          {};
 
       bookmarks.Store.getInstance().init(initialState);
       bookmarks.ApiListener.init();
@@ -87,6 +101,7 @@ Polymer({
     this.sidebarWidth_ = this.$.sidebar.getComputedStyleValue('width');
   },
 
+  /** @private */
   searchTermChanged_: function() {
     if (!this.searchTerm_)
       return;
@@ -97,5 +112,11 @@ Polymer({
       });
       this.dispatch(bookmarks.actions.setSearchResults(ids));
     }.bind(this));
+  },
+
+  /** @private */
+  closedFoldersStateChanged_: function() {
+    window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY] =
+        JSON.stringify(this.closedFoldersState_);
   },
 });

@@ -7,6 +7,7 @@ cr.define('bookmarks', function() {
     this.data = Object.assign(bookmarks.util.createEmptyState(), data);
     this.lastAction_ = null;
     this.observers_ = [];
+    this.acceptInit_ = false;
   };
 
   TestStore.prototype = {
@@ -14,7 +15,12 @@ cr.define('bookmarks', function() {
       this.observers_.push(client);
     },
 
-    init: function() {},
+    init: function(state) {
+      if (this.acceptInit_) {
+        this.data = state;
+        this.acceptInit_ = false;
+      }
+    },
 
     removeObserver: function(client) {},
 
@@ -36,6 +42,11 @@ cr.define('bookmarks', function() {
       // Instead, we could perform a deep clone in here to ensure that every
       // StoreClient is updated.
       this.observers_.forEach((client) => client.onStateChanged(this.data));
+    },
+
+    // Call in order to accept data from an init call to the TestStore once.
+    acceptInitOnce: function() {
+      this.acceptInit_ = true;
     },
   };
 
