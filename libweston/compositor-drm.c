@@ -1241,6 +1241,7 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct wl_shm_buffer *shmbuf;
+	float x, y;
 
 	if (b->cursors_are_broken)
 		return NULL;
@@ -1279,6 +1280,9 @@ drm_output_prepare_cursor_view(struct drm_output *output,
 		return NULL;
 
 	output->cursor_view = ev;
+	weston_view_to_global_float(ev, 0, 0, &x, &y);
+	output->cursor_plane.x = x;
+	output->cursor_plane.y = y;
 
 	return &output->cursor_plane;
 }
@@ -1324,24 +1328,17 @@ static void
 drm_output_set_cursor(struct drm_output *output)
 {
 	struct weston_view *ev = output->cursor_view;
-	struct weston_buffer *buffer;
 	struct drm_backend *b = to_drm_backend(output->base.compositor);
 	EGLint handle;
 	struct gbm_bo *bo;
 	float x, y;
 
-	output->cursor_view = NULL;
 	if (ev == NULL) {
 		drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
-		output->cursor_plane.x = INT32_MIN;
-		output->cursor_plane.y = INT32_MIN;
 		return;
 	}
 
-	buffer = ev->surface->buffer_ref.buffer;
-
-	if (buffer &&
-	    pixman_region32_not_empty(&output->cursor_plane.damage)) {
+	if (pixman_region32_not_empty(&output->cursor_plane.damage)) {
 		pixman_region32_fini(&output->cursor_plane.damage);
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
@@ -1356,22 +1353,14 @@ drm_output_set_cursor(struct drm_output *output)
 		}
 	}
 
-	weston_view_to_global_float(ev, 0, 0, &x, &y);
+	x = (output->cursor_plane.x - output->base.x) *
+		output->base.current_scale;
+	y = (output->cursor_plane.y - output->base.y) *
+		output->base.current_scale;
 
-	/* From global to output space, output transform is guaranteed to be
-	 * NORMAL by drm_output_prepare_cursor_view().
-	 */
-	x = (x - output->base.x) * output->base.current_scale;
-	y = (y - output->base.y) * output->base.current_scale;
-
-	if (output->cursor_plane.x != x || output->cursor_plane.y != y) {
-		if (drmModeMoveCursor(b->drm.fd, output->crtc_id, x, y)) {
-			weston_log("failed to move cursor: %m\n");
-			b->cursors_are_broken = 1;
-		}
-
-		output->cursor_plane.x = x;
-		output->cursor_plane.y = y;
+	if (drmModeMoveCursor(b->drm.fd, output->crtc_id, x, y)) {
+		weston_log("failed to move cursor: %m\n");
+		b->cursors_are_broken = 1;
 	}
 }
 
@@ -1399,6 +1388,10 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	 */
 	pixman_region32_init(&overlap);
 	primary = &output_base->compositor->primary_plane;
+
+	output->cursor_view = NULL;
+	output->cursor_plane.x = INT32_MIN;
+	output->cursor_plane.y = INT32_MIN;
 
 	wl_list_for_each_safe(ev, next, &output_base->compositor->view_list, link) {
 		struct weston_surface *es = ev->surface;
