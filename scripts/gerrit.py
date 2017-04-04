@@ -12,8 +12,9 @@ with the prefix "UserAct".
 from __future__ import print_function
 
 import inspect
-import pprint
+import json
 import re
+import sys
 
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -150,7 +151,7 @@ def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
 
 
 def PrintCls(opts, cls, lims=None, show_approvals=True):
-  """Pretty print all results."""
+  """Print all results based on the requested format."""
   if opts.raw:
     pfx = ''
     # Special case internal Chrome GoB as that is what most devs use.
@@ -159,6 +160,9 @@ def PrintCls(opts, cls, lims=None, show_approvals=True):
       pfx = site_config.params.INTERNAL_CHANGE_PREFIX
     for cl in cls:
       print('%s%s' % (pfx, cl['number']))
+
+  elif opts.json:
+    json.dump(cls, sys.stdout)
 
   else:
     if lims is None:
@@ -444,7 +448,12 @@ def UserActDeletedraft(opts, *args):
 def UserActAccount(opts):
   """Get user account information."""
   helper, _ = GetGerrit(opts)
-  pprint.PrettyPrinter().pprint(helper.GetAccount())
+  acct = helper.GetAccount()
+  if opts.json:
+    json.dump(acct, sys.stdout)
+  else:
+    print('account_id:%i  %s <%s>' %
+          (acct['_account_id'], acct['name'], acct['email']))
 
 
 def main(argv):
@@ -474,6 +483,7 @@ Scripting:
 ready.
   $ gerrit ready `gerrit --raw -i mine` 1   # Mark *ALL* of your internal CLs \
 ready.
+  $ gerrit --json search 'assignee:self'    # Dump all pending CLs in JSON.
 
 Actions:"""
   indent = max([len(x) - len(act_pfx) for x in actions])
@@ -498,6 +508,8 @@ Actions:"""
                       help='Key to sort on (number, project)')
   parser.add_argument('--raw', default=False, action='store_true',
                       help='Return raw results (suitable for scripting)')
+  parser.add_argument('--json', default=False, action='store_true',
+                      help='Return results in JSON (suitable for scripting)')
   parser.add_argument('-n', '--dry-run', default=False, action='store_true',
                       dest='dryrun',
                       help='Show what would be done, but do not make changes')
