@@ -11,7 +11,7 @@
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_info.h"
-#include "ash/common/system/chromeos/network/network_list_md.h"
+#include "ash/common/system/chromeos/network/network_list.h"
 #include "ash/common/system/chromeos/network/network_list_view_base.h"
 #include "ash/common/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/common/system/chromeos/network/vpn_list_view.h"
@@ -79,9 +79,9 @@ namespace {
 const int kRequestScanDelaySeconds = 10;
 
 // TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
-void SetupConnectedItemMd(HoverHighlightView* container,
-                          const base::string16& text,
-                          const gfx::ImageSkia& image) {
+void SetupConnectedItem(HoverHighlightView* container,
+                        const base::string16& text,
+                        const gfx::ImageSkia& image) {
   container->AddIconAndLabels(
       image, text,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED));
@@ -91,9 +91,9 @@ void SetupConnectedItemMd(HoverHighlightView* container,
 }
 
 // TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
-void SetupConnectingItemMd(HoverHighlightView* container,
-                           const base::string16& text,
-                           const gfx::ImageSkia& image) {
+void SetupConnectingItem(HoverHighlightView* container,
+                         const base::string16& text,
+                         const gfx::ImageSkia& image) {
   container->AddIconAndLabels(
       image, text,
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING));
@@ -495,9 +495,9 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
     const NetworkInfo& info) {
   HoverHighlightView* container = new HoverHighlightView(this);
   if (info.connected)
-    SetupConnectedItemMd(container, info.label, info.image);
+    SetupConnectedItem(container, info.label, info.image);
   else if (info.connecting)
-    SetupConnectingItemMd(container, info.label, info.image);
+    SetupConnectingItem(container, info.label, info.image);
   else
     container->AddIconAndLabel(info.image, info.label, info.highlight);
   container->set_tooltip(info.tooltip);
@@ -518,9 +518,9 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
   HoverHighlightView* container = static_cast<HoverHighlightView*>(view);
   DCHECK(!container->has_children());
   if (info.connected)
-    SetupConnectedItemMd(container, info.label, info.image);
+    SetupConnectedItem(container, info.label, info.image);
   else if (info.connecting)
-    SetupConnectingItemMd(container, info.label, info.image);
+    SetupConnectingItem(container, info.label, info.image);
   else
     container->AddIconAndLabel(info.image, info.label, info.highlight);
   views::View* controlled_icon = CreateControlledByExtensionView(info);

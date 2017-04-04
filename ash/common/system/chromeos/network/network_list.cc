@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/common/system/chromeos/network/network_list_md.h"
+#include "ash/common/system/chromeos/network/network_list.h"
 
 #include <stddef.h>
 
