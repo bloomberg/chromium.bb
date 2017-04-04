@@ -21,6 +21,7 @@ import owners
 ben = 'ben@example.com'
 brett = 'brett@example.com'
 darin = 'darin@example.com'
+jochen = 'jochen@example.com'
 john = 'john@example.com'
 ken = 'ken@example.com'
 peter = 'peter@example.com'
@@ -41,6 +42,7 @@ def test_repo():
   return filesystem_mock.MockFileSystem(files={
     '/DEPS': '',
     '/OWNERS': owners_file(ken, peter, tom),
+    '/build/OWNERS.status': '%s: bar' % jochen,
     '/base/vlog.h': '',
     '/chrome/OWNERS': owners_file(ben, brett),
     '/chrome/browser/OWNERS': owners_file(brett),
@@ -57,6 +59,10 @@ def test_repo():
     '/content/baz/froboz.h': '',
     '/content/baz/ugly.cc': '',
     '/content/baz/ugly.h': '',
+    '/content/common/OWNERS': owners_file(jochen),
+    '/content/common/common.cc': '',
+    '/content/foo/OWNERS': owners_file(jochen, comment='foo'),
+    '/content/foo/foo.cc': '',
     '/content/views/OWNERS': owners_file(ben, john, owners.EVERYONE,
                                          noparent=True),
     '/content/views/pie.h': '',
@@ -67,7 +73,7 @@ class OutputInterceptedOwnersFinder(owners_finder.OwnersFinder):
   def __init__(self, files, local_root,
                fopen, os_path, disable_color=False):
     super(OutputInterceptedOwnersFinder, self).__init__(
-      files, local_root, None,
+      files, local_root, os_path.join('build', 'OWNERS.status'), None,
       fopen, os_path, disable_color=disable_color)
     self.output = []
     self.indentation_stack = []
@@ -232,6 +238,17 @@ class OwnersFinderTests(_BaseTestCase):
     self.assertEqual(finder.output,
                      [darin + ' is commented as:', ['foo (at content)']])
 
+  def test_print_global_comments(self):
+    finder = self.ownersFinder(['content/common/common.cc'])
+    finder.print_comments(jochen)
+    self.assertEqual(finder.output,
+                     [jochen + ' is commented as:', ['bar (global status)']])
+
+    finder = self.ownersFinder(['content/foo/foo.cc'])
+    finder.print_comments(jochen)
+    self.assertEqual(finder.output,
+                     [jochen + ' is commented as:', ['bar (global status)',
+                                                     'foo (at content/foo)']])
 
 if __name__ == '__main__':
   unittest.main()

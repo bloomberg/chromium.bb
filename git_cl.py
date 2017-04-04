@@ -3244,7 +3244,8 @@ class ChangeDescription(object):
         reviewers.append(name)
     if add_owners_tbr:
       owners_db = owners.Database(change.RepositoryRoot(),
-        fopen=file, os_path=os.path)
+                                  change.GetOwnersStatusFile(),
+                                  fopen=file, os_path=os.path)
       all_reviewers = set(tbr_names + reviewers)
       missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
                                                      all_reviewers)
@@ -3462,6 +3463,9 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('project', 'PROJECT', unset_error_ok=True)
   SetProperty('run-post-upload-hook', 'RUN_POST_UPLOAD_HOOK',
               unset_error_ok=True)
+
+  if 'OWNERS_STATUS_FILE' in keyvals:
+    SetProperty('owners-status-file', 'OWNERS_STATUS_FILE', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -5512,8 +5516,9 @@ def CMDowners(parser, args):
   return owners_finder.OwnersFinder(
       [f.LocalPath() for f in
           cl.GetChange(base_branch, None).AffectedFiles()],
-      change.RepositoryRoot(), author,
-      fopen=file, os_path=os.path,
+      change.RepositoryRoot(),
+      change.GetOwnersStatusFile(),
+      author, fopen=file, os_path=os.path,
       disable_color=options.no_color).run()
 
 
