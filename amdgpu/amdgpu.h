@@ -1059,6 +1059,24 @@ int amdgpu_query_gds_info(amdgpu_device_handle dev,
 			struct amdgpu_gds_resource_info *gds_info);
 
 /**
+ * Query information about sensor.
+ *
+ * The return size is query-specific and depends on the "sensor_type"
+ * parameter. No more than "size" bytes is returned.
+ *
+ * \param   dev         - \c [in] Device handle. See #amdgpu_device_initialize()
+ * \param   sensor_type - \c [in] AMDGPU_INFO_SENSOR_*
+ * \param   size        - \c [in] Size of the returned value.
+ * \param   value       - \c [out] Pointer to the return value.
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_query_sensor_info(amdgpu_device_handle dev, unsigned sensor_type,
+			     unsigned size, void *value);
+
+/**
  * Read a set of consecutive memory-mapped registers.
  * Not all registers are allowed to be read by userspace.
  *

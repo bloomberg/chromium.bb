@@ -318,3 +318,18 @@ int amdgpu_query_gds_info(amdgpu_device_handle dev,
 
 	return 0;
 }
+
+int amdgpu_query_sensor_info(amdgpu_device_handle dev, unsigned sensor_type,
+			     unsigned size, void *value)
+{
+	struct drm_amdgpu_info request;
+
+	memset(&request, 0, sizeof(request));
+	request.return_pointer = (uintptr_t)value;
+	request.return_size = size;
+	request.query = AMDGPU_INFO_SENSOR;
+	request.sensor_info.type = sensor_type;
+
+	return drmCommandWrite(dev->fd, DRM_AMDGPU_INFO, &request,
+			       sizeof(struct drm_amdgpu_info));
+}
