@@ -130,11 +130,14 @@ class ChromePasswordManagerClient
   // content::WebContentsObserver overrides.
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID)
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
+#endif
 
   // Given |bounds| in the renderers coordinate system, return the same bounds
   // in the screens coordinate system.
@@ -171,8 +174,11 @@ class ChromePasswordManagerClient
 
   password_manager::PasswordManager password_manager_;
 
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID)
   password_manager::PasswordReuseDetectionManager
       password_reuse_detection_manager_;
+#endif
 
   password_manager::ContentPasswordManagerDriverFactory* driver_factory_;
 

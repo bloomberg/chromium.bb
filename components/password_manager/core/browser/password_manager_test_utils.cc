@@ -104,8 +104,11 @@ MockPasswordStoreObserver::MockPasswordStoreObserver() {}
 
 MockPasswordStoreObserver::~MockPasswordStoreObserver() {}
 
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 MockPasswordReuseDetectorConsumer::MockPasswordReuseDetectorConsumer() {}
 
 MockPasswordReuseDetectorConsumer::~MockPasswordReuseDetectorConsumer() {}
+#endif
 
 }  // namespace password_manager

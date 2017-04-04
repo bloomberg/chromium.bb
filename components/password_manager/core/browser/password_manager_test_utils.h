@@ -83,6 +83,8 @@ class MockPasswordStoreObserver : public PasswordStore::Observer {
   MOCK_METHOD1(OnLoginsChanged, void(const PasswordStoreChangeList& changes));
 };
 
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
  public:
   MockPasswordReuseDetectorConsumer();
@@ -91,6 +93,7 @@ class MockPasswordReuseDetectorConsumer : public PasswordReuseDetectorConsumer {
   MOCK_METHOD4(OnReuseFound,
                void(const base::string16&, const std::string&, int, int));
 };
+#endif
 
 }  // namespace password_manager
 

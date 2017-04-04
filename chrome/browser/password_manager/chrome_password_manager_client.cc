@@ -177,7 +177,10 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       password_manager_(this),
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID)
       password_reuse_detection_manager_(this),
+#endif
       driver_factory_(nullptr),
       credential_manager_impl_(web_contents, this),
       password_manager_client_bindings_(web_contents, this),
@@ -201,7 +204,8 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   ReportMetrics(*saving_and_filling_passwords_enabled_, this, profile_);
   driver_factory_->RequestSendLoggingAvailability();
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if (defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)) && \
+    !defined(OS_ANDROID) && !defined(OS_IOS)
   if (CanSetPasswordProtectionService()) {
     password_reuse_detection_manager_.SetPasswordProtectionService(
         g_browser_process->safe_browsing_service()
@@ -427,6 +431,8 @@ void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
     popup_controller_->HideAndDestroy();
 }
 
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -450,6 +456,7 @@ void ChromePasswordManagerClient::OnInputEvent(
       static_cast<const blink::WebKeyboardEvent&>(event);
   password_reuse_detection_manager_.OnKeyPressed(key_event.text);
 }
+#endif
 
 PrefService* ChromePasswordManagerClient::GetPrefs() {
   return profile_->GetPrefs();

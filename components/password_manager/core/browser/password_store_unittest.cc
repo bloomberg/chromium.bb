@@ -844,6 +844,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliatedRealms) {
   }
 }
 
+// TODO(crbug.com/706392): Fix password reuse detection for Android.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   static constexpr PasswordFormData kTestCredentials[] = {
       {PasswordForm::SCHEME_HTML, "https://www.google.com",
@@ -899,5 +901,6 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
   OSCryptMocker::TearDown();
 #endif
 }
+#endif
 
 }  // namespace password_manager

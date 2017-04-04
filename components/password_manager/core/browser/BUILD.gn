@@ -8,6 +8,9 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
+# TODO(crbug.com/706392): Fix password reuse detection for Android.
+password_reuse_detection_support = !is_android && !is_ios
+
 static_library("browser") {
   sources = [
     "affiliated_match_helper.cc",
@@ -99,12 +102,6 @@ static_library("browser") {
     "password_manager_settings_migration_experiment.h",
     "password_manager_util.cc",
     "password_manager_util.h",
-    "password_reuse_detection_manager.cc",
-    "password_reuse_detection_manager.h",
-    "password_reuse_detector.cc",
-    "password_reuse_detector.h",
-    "password_reuse_detector_consumer.cc",
-    "password_reuse_detector_consumer.h",
     "password_store.cc",
     "password_store.h",
     "password_store_change.cc",
@@ -134,6 +131,17 @@ static_library("browser") {
     "webdata/password_web_data_service_win.cc",
     "webdata/password_web_data_service_win.h",
   ]
+
+  if (password_reuse_detection_support) {
+    sources += [
+      "password_reuse_detection_manager.cc",
+      "password_reuse_detection_manager.h",
+      "password_reuse_detector.cc",
+      "password_reuse_detector.h",
+      "password_reuse_detector_consumer.cc",
+      "password_reuse_detector_consumer.h",
+    ]
+  }
 
   public_deps = [
     "//base",
@@ -296,8 +304,6 @@ source_set("unit_tests") {
     "password_manager_settings_migration_experiment_unittest.cc",
     "password_manager_unittest.cc",
     "password_manager_util_unittest.cc",
-    "password_reuse_detection_manager_unittest.cc",
-    "password_reuse_detector_unittest.cc",
     "password_store_default_unittest.cc",
     "password_store_origin_unittest.h",
     "password_store_unittest.cc",
@@ -312,6 +318,12 @@ source_set("unit_tests") {
   }
   if (is_ios) {
     sources += [ "login_database_ios_unittest.cc" ]
+  }
+  if (password_reuse_detection_support) {
+    sources += [
+      "password_reuse_detection_manager_unittest.cc",
+      "password_reuse_detector_unittest.cc",
+    ]
   }
   deps = [
     ":test_support",
