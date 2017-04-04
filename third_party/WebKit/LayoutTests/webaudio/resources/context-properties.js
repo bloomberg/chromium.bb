@@ -72,42 +72,33 @@ let OfflineAudioContextOwnProperties = [
  * @param  {Function} should                  |Should| assertion function.
  * @return {Map}                              Verification result map.
  */
-function verifyPrototypeOwnProperties (targetPrototype, populatedList, should) {
+function verifyPrototypeOwnProperties(targetPrototype, populatedList, should) {
   let propertyMap = new Map();
   let generatedList = Object.getOwnPropertyNames(targetPrototype);
 
   for (let index in populatedList) {
-    propertyMap.set(populatedList[index], {
-      actual: false,
-      expected: true
-    });
+    propertyMap.set(populatedList[index], {actual: false, expected: true});
   }
 
   for (let index in generatedList) {
     if (propertyMap.has(generatedList[index])) {
       propertyMap.get(generatedList[index]).actual = true;
     } else {
-      propertyMap.set(generatedList[index], {
-        actual: true,
-        expected: false
-      });
+      propertyMap.set(generatedList[index], {actual: true, expected: false});
     }
   }
 
-  // TODO(hongchan): replace the Should assertion when the new test infra lands.
   for (let [property, result] of propertyMap) {
+    let prefix = 'The property "' + property + '"';
     if (result.expected && result.actual) {
       // The test meets the expectation.
-      should('The property "' + property + '"')
-          ._testPassed('was expected and found successfully', false);
+      should(true, prefix).message('was expected and found successfully', '');
     } else if (result.expected && !result.actual) {
       // The expected property is missing.
-      should('The property "' + property + '" was expected but not found.')
-          ._testFailed('', false);
+      should(false, prefix).message('', 'was expected but not found.');
     } else if (!result.expected && result.actual) {
       // Something unexpected was found.
-      should('The property "' + property + '" was not expected but found.')
-          ._testFailed('', false);
+      should(false, prefix).message('', 'was not expected but found.');
     }
   }
 }

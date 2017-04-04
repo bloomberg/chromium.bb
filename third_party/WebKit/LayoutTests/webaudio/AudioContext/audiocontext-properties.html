@@ -5,7 +5,7 @@
   <script src="../../resources/testharness.js"></script>
   <script src="../../resources/testharnessreport.js"></script>
   <script src="../resources/audit-util.js"></script>
-  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/audit.js"></script>
   <script src="../resources/context-properties.js"></script>
 </head>
 <body>
@@ -15,15 +15,14 @@
 
     // Cross-checking two sets of properties: a programmatically generated set
     // and a pre-populated set.
-    audit.defineTask('crosschecking-properties', function (taskDone) {
+    audit.define('crosschecking-properties', (task, should) => {
       verifyPrototypeOwnProperties(AudioContext.prototype,
                                    AudioContextOwnProperties,
-                                   Should);
-      taskDone();
+                                   should);
+      task.done();
     });
 
-
-    audit.runTasks();
+    audit.run();
   </script>
 </body>
 </html>
