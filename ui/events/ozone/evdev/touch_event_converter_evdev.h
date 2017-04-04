@@ -112,6 +112,12 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   int pressure_min_;
   int pressure_max_;  // Used to normalize pressure values.
 
+  // Input range for tilt.
+  int tilt_x_min_;
+  int tilt_x_range_;
+  int tilt_y_min_;
+  int tilt_y_range_;
+
   // Input range for x-axis.
   float x_min_tuxels_;
   float x_num_tuxels_;

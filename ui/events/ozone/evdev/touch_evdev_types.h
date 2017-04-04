@@ -48,6 +48,8 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   float radius_y = 0;
   float pressure = 0;
   int tool_code = 0;
+  float tilt_x = 0;
+  float tilt_y = 0;
   ui::EventPointerType reported_tool_type =
       ui::EventPointerType::POINTER_TYPE_TOUCH;
 

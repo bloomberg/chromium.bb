@@ -46,6 +46,11 @@ struct TouchCalibration {
   int bezel_bottom;
 };
 
+// Convert tilt from [min, min + num_values) to [-90deg, +90deg)
+float ScaleTilt(int value, int min_value, int num_values) {
+  return 180.f * (value - min_value) / num_values - 90.f;
+}
+
 void GetTouchCalibration(TouchCalibration* cal) {
   std::vector<std::string> parts = base::SplitString(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -139,6 +144,11 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
     x_num_tuxels_ = info.GetAbsMaximum(ABS_X) - x_min_tuxels_ + 1;
     y_min_tuxels_ = info.GetAbsMinimum(ABS_Y);
     y_num_tuxels_ = info.GetAbsMaximum(ABS_Y) - y_min_tuxels_ + 1;
+    tilt_x_min_ = info.GetAbsMinimum(ABS_TILT_X);
+    tilt_y_min_ = info.GetAbsMinimum(ABS_TILT_Y);
+    tilt_x_range_ = info.GetAbsMaximum(ABS_TILT_X) - tilt_x_min_ + 1;
+    tilt_y_range_ = info.GetAbsMaximum(ABS_TILT_Y) - tilt_y_min_ + 1;
+
     touch_points_ = 1;
     major_max_ = 0;
     current_slot_ = 0;
@@ -202,6 +212,8 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
     events_[0].radius_y = 0;
     events_[0].pressure = 0;
     events_[0].tool_code = 0;
+    events_[0].tilt_x = 0;
+    events_[0].tilt_y = 0;
     events_[0].cancelled = false;
   }
   if (cancelled_state)
@@ -412,6 +424,16 @@ void TouchEventConverterEvdev::ProcessAbs(const input_event& input) {
         return;
       }
       break;
+    case ABS_TILT_X:
+      if (!has_mt_) {
+        events_[0].tilt_x = ScaleTilt(input.value, tilt_x_min_, tilt_x_range_);
+      }
+      break;
+    case ABS_TILT_Y:
+      if (!has_mt_) {
+        events_[0].tilt_y = ScaleTilt(input.value, tilt_y_min_, tilt_y_range_);
+      }
+      break;
     default:
       DVLOG(5) << "unhandled code for EV_ABS: " << input.code;
       return;
@@ -471,8 +493,7 @@ void TouchEventConverterEvdev::ReportTouchEvent(
     base::TimeTicks timestamp) {
   ui::PointerDetails details(event.reported_tool_type, /* pointer_id*/ 0,
                              event.radius_x, event.radius_y, event.pressure,
-                             /* tilt_x */ 0.0f, /* tilt_y */ 0.0f,
-                             /* force */ 0.f);
+                             event.tilt_x, event.tilt_y);
   dispatcher_->DispatchTouchEvent(
       TouchEventParams(input_device_.id, event.slot, event_type,
                        gfx::PointF(event.x, event.y), details, timestamp));
