@@ -50,7 +50,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.
   SharedPersistent<v8::Object>* pluginWrapper();
-  FrameViewBase* pluginWidget() const;
+  PluginView* pluginWidget() const;
   bool canProcessDrag() const;
   const String& url() const { return m_url; }
 

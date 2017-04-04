@@ -153,8 +153,7 @@ bool HTMLPlugInElement::requestObjectInternal(
 }
 
 bool HTMLPlugInElement::canProcessDrag() const {
-  return pluginWidget() && pluginWidget()->isPluginView() &&
-         toPluginView(pluginWidget())->canProcessDrag();
+  return pluginWidget() && pluginWidget()->canProcessDrag();
 }
 
 bool HTMLPlugInElement::canStartSelection() const {
@@ -334,7 +333,7 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper() {
   // return the cached allocated Bindings::Instance. Not supporting this
   // edge-case is OK.
   if (!m_pluginWrapper) {
-    FrameViewBase* plugin;
+    PluginView* plugin;
 
     if (m_persistedPlugin)
       plugin = m_persistedPlugin.get();
@@ -342,14 +341,16 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper() {
       plugin = pluginWidget();
 
     if (plugin)
-      m_pluginWrapper = frame->script().createPluginWrapper(plugin);
+      m_pluginWrapper = frame->script().createPluginWrapper(*plugin);
   }
   return m_pluginWrapper.get();
 }
 
-FrameViewBase* HTMLPlugInElement::pluginWidget() const {
-  if (LayoutPart* layoutPart = layoutPartForJSBindings())
-    return layoutPart->frameViewBase();
+PluginView* HTMLPlugInElement::pluginWidget() const {
+  LayoutPart* layoutPart = layoutPartForJSBindings();
+  if (layoutPart && layoutPart->frameViewBase() &&
+      layoutPart->frameViewBase()->isPluginView())
+    return toPluginView(layoutPart->frameViewBase());
   return nullptr;
 }
 
@@ -424,8 +425,7 @@ bool HTMLPlugInElement::isKeyboardFocusable() const {
   if (HTMLFrameOwnerElement::isKeyboardFocusable())
     return true;
   return document().isActive() && pluginWidget() &&
-         pluginWidget()->isPluginView() &&
-         toPluginView(pluginWidget())->supportsKeyboardFocus();
+         pluginWidget()->supportsKeyboardFocus();
 }
 
 bool HTMLPlugInElement::hasCustomFocusLogic() const {

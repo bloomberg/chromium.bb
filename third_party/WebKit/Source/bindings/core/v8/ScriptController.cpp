@@ -182,15 +182,9 @@ void ScriptController::disableEval(const String& errorMessage) {
 }
 
 PassRefPtr<SharedPersistent<v8::Object>> ScriptController::createPluginWrapper(
-    FrameViewBase* frameViewBase) {
-  DCHECK(frameViewBase);
-
-  if (!frameViewBase->isPluginView())
-    return nullptr;
-
+    PluginView& plugin) {
   v8::HandleScope handleScope(isolate());
-  v8::Local<v8::Object> scriptableObject =
-      toPluginView(frameViewBase)->scriptableObject(isolate());
+  v8::Local<v8::Object> scriptableObject = plugin.scriptableObject(isolate());
 
   if (scriptableObject.IsEmpty())
     return nullptr;

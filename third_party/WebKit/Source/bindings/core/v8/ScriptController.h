@@ -48,9 +48,9 @@ namespace blink {
 
 class DOMWrapperWorld;
 class Element;
-class FrameViewBase;
 class KURL;
 class LocalFrame;
+class PluginView;
 class ScriptSourceCode;
 class SecurityOrigin;
 
@@ -114,7 +114,7 @@ class CORE_EXPORT ScriptController final
   // ignored when evaluating resources injected into the DOM.
   bool shouldBypassMainWorldCSP();
 
-  PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(FrameViewBase*);
+  PassRefPtr<SharedPersistent<v8::Object>> createPluginWrapper(PluginView&);
 
   void enableEval();
   void disableEval(const String& errorMessage);
