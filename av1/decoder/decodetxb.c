@@ -49,7 +49,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
   const int16_t *scan = scan_order->scan;
-  const int seg_eob = 16 << (tx_size << 1);
+  const int seg_eob = tx_size_2d[tx_size];
   int c = 0;
   int update_eob = -1;
   const int16_t *const dequant = xd->plane[plane].seg_dequant[mbmi->segment_id];

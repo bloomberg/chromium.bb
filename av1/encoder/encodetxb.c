@@ -79,7 +79,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   int c;
   int is_nz;
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
-  const int seg_eob = 16 << (tx_size << 1);
+  const int seg_eob = tx_size_2d[tx_size];
   uint8_t txb_mask[32 * 32] = { 0 };
   uint16_t update_eob = 0;
 
@@ -255,7 +255,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   int c, cost;
-  const int seg_eob = AOMMIN(eob, (16 << (tx_size << 1)) - 1);
+  const int seg_eob = AOMMIN(eob, tx_size_2d[tx_size] - 1);
   int txb_skip_ctx = txb_ctx->txb_skip_ctx;
   aom_prob *nz_map = xd->fc->nz_map[tx_size][plane_type];
 
