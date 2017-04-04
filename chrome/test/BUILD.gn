@@ -4437,7 +4437,6 @@ test("unit_tests") {
       "../browser/media/router/presentation_media_sinks_observer_unittest.cc",
       "../browser/media/router/presentation_request_unittest.cc",
       "../browser/media/router/presentation_service_delegate_impl_unittest.cc",
-      "../utility/media_router/dial_device_description_parser_impl_unittest.cc",
     ]
     deps += [ "//chrome/browser/media/router:test_support" ]
     if (!is_android) {
@@ -4467,6 +4466,7 @@ test("unit_tests") {
         "../browser/ui/webui/media_router/media_router_web_ui_test.h",
         "../browser/ui/webui/media_router/media_router_webui_message_handler_unittest.cc",
         "../browser/ui/webui/media_router/query_result_manager_unittest.cc",
+        "../utility/media_router/dial_device_description_parser_impl_unittest.cc",
       ]
     }
   }

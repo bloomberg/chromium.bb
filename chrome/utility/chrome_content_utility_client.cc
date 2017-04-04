@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/common/file_patcher.mojom.h"
-#include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "chrome/utility/utility_message_handler.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/safe_json/utility/safe_json_parser_mojo_impl.h"
@@ -31,11 +30,11 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/resource_usage_reporter.mojom.h"
+#include "chrome/utility/media_router/dial_device_description_parser_impl.h"
 #include "chrome/utility/profile_import_handler.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 #include "net/proxy/proxy_resolver_v8.h"
-#endif
+#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/zip_file_creator.mojom.h"
@@ -279,7 +278,9 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
       base::Bind(CreateProxyResolverFactory));
   registry->AddInterface(base::Bind(CreateResourceUsageReporter));
   registry->AddInterface(base::Bind(&ProfileImportHandler::Create));
-#endif
+  registry->AddInterface(
+      base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create));
+#endif  // !defined(OS_ANDROID)
   registry->AddInterface(base::Bind(&payments::PaymentManifestParser::Create));
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
@@ -292,10 +293,6 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
 #if defined(FULL_SAFE_BROWSING)
   registry->AddInterface(base::Bind(&SafeArchiveAnalyzerImpl::Create));
 #endif
-#if defined(ENABLE_MEDIA_ROUTER)
-  registry->AddInterface(
-      base::Bind(&media_router::DialDeviceDescriptionParserImpl::Create));
-#endif  // defined(ENABLE_MEDIA_ROUTER)
 }
 
 // static
