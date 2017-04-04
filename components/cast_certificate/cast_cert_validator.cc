@@ -155,9 +155,8 @@ class CertVerificationContextImpl : public CertVerificationContext {
 };
 
 // Helper that extracts the Common Name from a certificate's subject field. On
-// success |common_name| contains the text for the attribute (unescaped, so
-// will depend on the encoding used, but for Cast device certs it should
-// be ASCII).
+// success |common_name| contains the text for the attribute (UTF-8, but for
+// Cast device certs it should be ASCII).
 bool GetCommonNameFromSubject(const net::der::Input& subject_tlv,
                               std::string* common_name) {
   net::RDNSequence rdn_sequence;
@@ -167,7 +166,7 @@ bool GetCommonNameFromSubject(const net::der::Input& subject_tlv,
   for (const net::RelativeDistinguishedName& rdn : rdn_sequence) {
     for (const auto& atv : rdn) {
       if (atv.type == net::TypeCommonNameOid()) {
-        return atv.ValueAsStringUnsafe(common_name);
+        return atv.ValueAsString(common_name);
       }
     }
   }
