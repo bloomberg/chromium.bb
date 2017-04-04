@@ -228,6 +228,45 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
 }
 
+// Test that having a custom callback without an extension-provided callback
+// doesn't crash.
+TEST_F(APIRequestHandlerTest, CustomCallbackArgumentsWithEmptyCallback) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  APIRequestHandler request_handler(
+      base::Bind(&DoNothingWithRequest),
+      base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
+      APILastError(APILastError::GetParent()));
+
+  v8::Local<v8::Function> custom_callback =
+      FunctionFromString(context, kEchoArgs);
+  ASSERT_FALSE(custom_callback.IsEmpty());
+
+  v8::Local<v8::Function> empty_callback;
+  int request_id = request_handler.StartRequest(
+      context, "method", base::MakeUnique<base::ListValue>(), empty_callback,
+      custom_callback, binding::RequestThread::UI);
+  EXPECT_THAT(request_handler.GetPendingRequestIdsForTesting(),
+              testing::UnorderedElementsAre(request_id));
+
+  request_handler.CompleteRequest(request_id, base::ListValue(), std::string());
+
+  EXPECT_TRUE(did_run_js());
+  v8::Local<v8::Value> result =
+      GetPropertyFromObject(context->Global(), context, "result");
+  ASSERT_FALSE(result.IsEmpty());
+  ASSERT_TRUE(result->IsArray());
+  ArgumentList args;
+  ASSERT_TRUE(gin::Converter<ArgumentList>::FromV8(isolate(), result, &args));
+  ASSERT_EQ(3u, args.size());
+  EXPECT_EQ("\"method\"", V8ToString(args[0], context));
+  EXPECT_EQ("{}", V8ToString(args[1], context));
+  EXPECT_TRUE(args[2]->IsUndefined());
+
+  EXPECT_TRUE(request_handler.GetPendingRequestIdsForTesting().empty());
+}
+
 // Test user gestures being curried around for API requests.
 TEST_F(APIRequestHandlerTest, UserGestureTest) {
   v8::HandleScope handle_scope(isolate());

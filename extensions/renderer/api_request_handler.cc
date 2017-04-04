@@ -72,7 +72,11 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
       // bindings to get away from some of those. For now, just pass in an empty
       // object (most APIs don't rely on it).
       v8::Local<v8::Object> request = v8::Object::New(isolate);
-      callback_args = {gin::StringToSymbol(isolate, method), request, callback};
+      v8::Local<v8::Value> callback_to_pass = callback;
+      if (callback_to_pass.IsEmpty())
+        callback_to_pass = v8::Undefined(isolate);
+      callback_args = {gin::StringToSymbol(isolate, method), request,
+                       callback_to_pass};
       callback = custom_callback;
     }
 
