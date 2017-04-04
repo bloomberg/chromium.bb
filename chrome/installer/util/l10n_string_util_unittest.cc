@@ -65,7 +65,7 @@ TEST(GetBaseMessageIdForMode, GoogleStringIds) {
   for (int mode_index = 0; mode_index < install_static::NUM_INSTALL_MODES;
        ++mode_index) {
     SCOPED_TRACE(testing::Message() << "install mode index: " << mode_index);
-    ASSERT_EQ(1, mode_to_strings.count(mode_index));
+    ASSERT_EQ(1U, mode_to_strings.count(mode_index));
     const auto& mode_strings = mode_to_strings[mode_index];
     ASSERT_EQ(mode_strings.size(), input_ids.size());
 
