@@ -72,6 +72,8 @@ class FailingHostResolver : public MockHostResolverBase {
   }
 };
 
+// TODO(xunjieli): This should just use HangingHostResolver from
+// mock_host_resolver.h
 class HangingResolver : public MockHostResolverBase {
  public:
   HangingResolver() : MockHostResolverBase(false /*use_caching*/) {}
@@ -899,8 +901,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
 TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
-  HangingResolver* resolver = new HangingResolver();
-  session_deps_.host_resolver.reset(resolver);
+  auto failing_resolver = base::MakeUnique<MockHostResolver>();
+  failing_resolver->set_ondemand_mode(true);
+  failing_resolver->rules()->AddSimulatedFailure("*google.com");
+  session_deps_.host_resolver = std::move(failing_resolver);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -948,10 +952,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCP) {
   // OnStreamFailed will post a task to resume the main job immediately but
   // won't call Resume() on the main job since it's been resumed already.
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
-  job_controller_->OnStreamFailed(job_factory_.alternative_job(),
-                                  ERR_NETWORK_CHANGED, SSLConfig());
+  // Now unblock Resolver so that alternate job (and QuicStreamFactory::Job) can
+  // be cleaned up.
+  session_deps_.host_resolver->ResolveAllPending();
   EXPECT_EQ(1u, test_task_runner->GetPendingTaskCount());
   test_task_runner->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(job_controller_->alternative_job());
 }
 
 // Test that main job is blocked for kMaxDelayTimeForMainJob(3s) if
@@ -964,8 +970,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPWithLargeSrtt) {
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
   // The max delay time should be in sync with .cc file.
   base::TimeDelta kMaxDelayTimeForMainJob = base::TimeDelta::FromSeconds(3);
-  HangingResolver* resolver = new HangingResolver();
-  session_deps_.host_resolver.reset(resolver);
+  auto failing_resolver = base::MakeUnique<MockHostResolver>();
+  failing_resolver->set_ondemand_mode(true);
+  failing_resolver->rules()->AddSimulatedFailure("*google.com");
+  session_deps_.host_resolver = std::move(failing_resolver);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1005,6 +1013,13 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPWithLargeSrtt) {
   // main job is resumed.
   test_task_runner->FastForwardBy(kMaxDelayTimeForMainJob);
   EXPECT_FALSE(test_task_runner->HasPendingTask());
+
+  // Now unblock Resolver so that alternate job (and QuicStreamFactory::Job) can
+  // be cleaned up.
+  session_deps_.host_resolver->ResolveAllPending();
+  EXPECT_EQ(1u, test_task_runner->GetPendingTaskCount());
+  test_task_runner->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(job_controller_->alternative_job());
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
@@ -1013,8 +1028,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // could verify the main job is resumed with appropriate delay.
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
 
-  HangingResolver* resolver = new HangingResolver();
-  session_deps_.host_resolver.reset(resolver);
+  auto failing_resolver = base::MakeUnique<MockHostResolver>();
+  failing_resolver->set_ondemand_mode(true);
+  failing_resolver->rules()->AddSimulatedFailure("*google.com");
+  session_deps_.host_resolver = std::move(failing_resolver);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -1052,8 +1069,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   // |alternative_job| fails but should not report status to Request.
   EXPECT_CALL(request_delegate_, OnStreamFailed(_, _)).Times(0);
-  job_controller_->OnStreamFailed(job_factory_.alternative_job(),
-                                  ERR_NETWORK_CHANGED, SSLConfig());
+  // Now unblock Resolver to fail the alternate job.
+  session_deps_.host_resolver->ResolveAllPending();
   EXPECT_EQ(2u, test_task_runner->GetPendingTaskCount());
 
   // Verify the main job will be resumed immediately.
@@ -1069,6 +1086,7 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_CALL(*job_factory_.main_job(), Resume()).Times(0);
   test_task_runner->FastForwardBy(base::TimeDelta::FromMicroseconds(15));
   EXPECT_FALSE(test_task_runner->HasPendingTask());
+  EXPECT_FALSE(job_controller_->alternative_job());
 }
 
 // Verifies that the alternative proxy server job is not created if the URL
@@ -1132,9 +1150,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
   // could verify the main job is resumed with appropriate delay.
   base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
 
-  // Using hanging resolver will cause the alternative job to hang indefinitely.
-  HangingResolver* resolver = new HangingResolver();
-  session_deps_.host_resolver.reset(resolver);
+  auto failing_resolver = base::MakeUnique<MockHostResolver>();
+  failing_resolver->set_ondemand_mode(true);
+  failing_resolver->rules()->AddSimulatedFailure("*myproxy.org");
+  session_deps_.host_resolver = std::move(failing_resolver);
 
   UseAlternativeProxy();
 
@@ -1183,6 +1202,13 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, DelayedTCPAlternativeProxy) {
   EXPECT_TRUE(test_proxy_delegate()->alternative_proxy_server().is_valid());
   EXPECT_EQ(1, test_proxy_delegate()->get_alternative_proxy_invocations());
   EXPECT_FALSE(test_task_runner->HasPendingTask());
+
+  // Now unblock Resolver so that alternate job (and QuicStreamFactory::Job) can
+  // be cleaned up.
+  session_deps_.host_resolver->ResolveAllPending();
+  EXPECT_EQ(1u, test_task_runner->GetPendingTaskCount());
+  test_task_runner->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(job_controller_->alternative_job());
 }
 
 // Verifies that the alternative proxy server job fails immediately, and the

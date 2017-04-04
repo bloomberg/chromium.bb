@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
@@ -279,7 +280,7 @@ class QuicStreamFactory::CertVerifierJob {
     UMA_HISTOGRAM_TIMES("Net.QuicSession.CertVerifierJob.CompleteTime",
                         base::TimeTicks::Now() - start_time_);
     if (!callback_.is_null())
-      callback_.Run(OK);
+      base::ResetAndReturn(&callback_).Run(OK);
   }
 
   const QuicServerId& server_id() const { return server_id_; }
@@ -412,6 +413,8 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       weak_factory_(this) {}
 
 QuicStreamFactory::Job::~Job() {
+  DCHECK(callback_.is_null());
+
   // If disk cache has a pending WaitForDataReadyCallback, cancel that callback.
   if (server_info_)
     server_info_->ResetWaitForDataReadyCallback();
@@ -466,9 +469,8 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
 
 void QuicStreamFactory::Job::OnIOComplete(int rv) {
   rv = DoLoop(rv);
-  if (rv != ERR_IO_PENDING && !callback_.is_null()) {
-    callback_.Run(rv);
-  }
+  if (rv != ERR_IO_PENDING && !callback_.is_null())
+    base::ResetAndReturn(&callback_).Run(rv);
 }
 
 void QuicStreamFactory::Job::RunAuxilaryJob() {
@@ -704,7 +706,7 @@ void QuicStreamRequest::SetSession(QuicChromiumClientSession* session) {
 
 void QuicStreamRequest::OnRequestComplete(int rv) {
   factory_ = nullptr;
-  callback_.Run(rv);
+  base::ResetAndReturn(&callback_).Run(rv);
 }
 
 base::TimeDelta QuicStreamRequest::GetTimeDelayForWaitingJob() const {
