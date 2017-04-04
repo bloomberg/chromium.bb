@@ -490,6 +490,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     disabledOptions.add(ContextMenuItem.OPEN_IN_BROWSER_ID);
                 } else if (ChromePreferenceManager.getInstance().getCachedChromeDefaultBrowser()) {
                     disabledOptions.add(ContextMenuItem.OPEN_IN_BROWSER_ID);
+                    if (!mDelegate.isIncognitoSupported()) {
+                        disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
+                    }
                 } else {
                     disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_CHROME_TAB);
                     disabledOptions.add(ContextMenuItem.OPEN_IN_CHROME_INCOGNITO_TAB);
