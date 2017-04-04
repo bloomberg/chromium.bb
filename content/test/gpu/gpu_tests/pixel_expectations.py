@@ -68,6 +68,3 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
     self.Skip('Pixel_OffscreenCanvasWebGLDefaultWorker',
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=706647)
-
-    # TODO(jbauman): Remove once windows 10 reference images are generated.
-    self.Fail('*', ['win10'], bug=704389)
