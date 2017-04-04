@@ -54,6 +54,7 @@
 #include "gl-renderer.h"
 #include "weston-egl-ext.h"
 #include "pixman-renderer.h"
+#include "pixel-formats.h"
 #include "libbacklight.h"
 #include "libinput-seat.h"
 #include "launcher-util.h"
@@ -138,6 +139,7 @@ struct drm_fb {
 	enum drm_fb_type type;
 
 	uint32_t fb_id, stride, handle, size;
+	const struct pixel_format_info *format;
 	int width, height;
 	int fd;
 	struct weston_buffer_reference buffer_ref;
@@ -344,7 +346,6 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 {
 	struct drm_fb *fb;
 	int ret;
-	uint32_t bpp, depth;
 
 	struct drm_mode_create_dumb create_arg;
 	struct drm_mode_destroy_dumb destroy_arg;
@@ -354,20 +355,21 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	if (!fb)
 		return NULL;
 
-	switch (format) {
-		case GBM_FORMAT_XRGB8888:
-			bpp = 32;
-			depth = 24;
-			break;
-		case GBM_FORMAT_RGB565:
-			bpp = depth = 16;
-			break;
-		default:
-			return NULL;
+	fb->format = pixel_format_get_info(format);
+	if (!fb->format) {
+		weston_log("failed to look up format 0x%lx\n",
+			   (unsigned long) format);
+		goto err_fb;
+	}
+
+	if (!fb->format->depth || !fb->format->bpp) {
+		weston_log("format 0x%lx is not compatible with dumb buffers\n",
+			   (unsigned long) format);
+		goto err_fb;
 	}
 
 	memset(&create_arg, 0, sizeof create_arg);
-	create_arg.bpp = bpp;
+	create_arg.bpp = fb->format->bpp;
 	create_arg.width = width;
 	create_arg.height = height;
 
@@ -393,7 +395,8 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 		offsets[0] = 0;
 
 		ret = drmModeAddFB2(b->drm.fd, width, height,
-				    format, handles, pitches, offsets,
+				    fb->format->format,
+				    handles, pitches, offsets,
 				    &fb->fb_id, 0);
 		if (ret) {
 			weston_log("addfb2 failed: %m\n");
@@ -402,7 +405,8 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	}
 
 	if (ret) {
-		ret = drmModeAddFB(b->drm.fd, width, height, depth, bpp,
+		ret = drmModeAddFB(b->drm.fd, width, height,
+				   fb->format->depth, fb->format->bpp,
 				   fb->stride, fb->handle, &fb->fb_id);
 	}
 
@@ -481,8 +485,15 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 	fb->height = gbm_bo_get_height(bo);
 	fb->stride = gbm_bo_get_stride(bo);
 	fb->handle = gbm_bo_get_handle(bo).u32;
+	fb->format = pixel_format_get_info(format);
 	fb->size = fb->stride * fb->height;
 	fb->fd = backend->drm.fd;
+
+	if (!fb->format) {
+		weston_log("couldn't look up format 0x%lx\n",
+			   (unsigned long) format);
+		goto err_free;
+	}
 
 	if (backend->min_width > fb->width ||
 	    fb->width > backend->max_width ||
@@ -509,9 +520,10 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		}
 	}
 
-	if (ret)
+	if (ret && fb->format->depth && fb->format->bpp)
 		ret = drmModeAddFB(backend->drm.fd, fb->width, fb->height,
-				   24, 32, fb->stride, fb->handle, &fb->fb_id);
+				   fb->format->depth, fb->format->bpp,
+				   fb->stride, fb->handle, &fb->fb_id);
 
 	if (ret) {
 		weston_log("failed to create kms fb: %m\n");
