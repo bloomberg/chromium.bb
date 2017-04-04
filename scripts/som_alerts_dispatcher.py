@@ -124,8 +124,13 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
   STAGE_IGNORE_STATUSES = frozenset([constants.BUILDER_STATUS_PASSED,
                                      constants.BUILDER_STATUS_PLANNED,
                                      constants.BUILDER_STATUS_SKIPPED])
+  ABORTED_IGNORE_STATUSES = frozenset([constants.BUILDER_STATUS_INFLIGHT,
+                                       constants.BUILDER_STATUS_FORGIVEN])
   if (stage['build_id'] != build['id'] or
       stage['status'] in STAGE_IGNORE_STATUSES):
+    return None
+  if (build['status'] == constants.BUILDER_STATUS_ABORTED and
+      stage['status'] in ABORTED_IGNORE_STATUSES):
     return None
 
   logging.info('    stage %s (id %d): %s', stage['name'], stage['id'],
@@ -253,11 +258,13 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
   # Highlight the problematic stages.
   stages = []
   for stage in slave_stages:
-    alert_stage = GenerateAlertStage(build, stage, exceptions,
-                                     buildinfo,
+    alert_stage = GenerateAlertStage(build, stage, exceptions, buildinfo,
                                      logdog_client)
     if alert_stage:
       stages.append(alert_stage)
+
+  if build['status'] == constants.BUILDER_STATUS_ABORTED and len(stages) == 0:
+    return None
 
   # Add the alert to the summary.
   key = '%s:%s:%d' % (build['waterfall'], build['build_config'],
