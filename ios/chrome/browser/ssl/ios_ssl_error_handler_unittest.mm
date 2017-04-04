@@ -35,6 +35,10 @@ class IOSSSLErrorHandlerTest : public web::WebTestWithWebState {
     web::WebTestWithWebState::SetUp();
     ASSERT_TRUE(cert_);
     ASSERT_FALSE(web_state()->IsShowingWebInterstitial());
+
+    // Transient item can only be added for pending non-app-specific loads.
+    AddPendingItem(GURL(kTestHostName),
+                   ui::PageTransition::PAGE_TRANSITION_TYPED);
   }
   web::BrowserState* GetBrowserState() override { return browser_state_.get(); }
 

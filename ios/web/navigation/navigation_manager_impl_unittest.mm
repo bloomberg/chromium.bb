@@ -681,6 +681,44 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
   EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
 }
 
+// Tests that adding transient item for a pending item with mobile user agent
+// type results in a transient item with mobile user agent type.
+TEST_F(NavigationManagerTest, AddTransientItemForMobilePendingItem) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  navigation_manager()->GetPendingItem()->SetUserAgentType(
+      UserAgentType::MOBILE);
+
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
+  ASSERT_TRUE(navigation_manager()->GetTransientItem());
+  EXPECT_EQ(UserAgentType::MOBILE,
+            navigation_manager()->GetTransientItem()->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::MOBILE,
+            navigation_manager()->GetPendingItem()->GetUserAgentType());
+}
+
+// Tests that adding transient item for a pending item with desktop user agent
+// type results in a transient item with desktop user agent type.
+TEST_F(NavigationManagerTest, AddTransientItemForDesktopPendingItem) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  ASSERT_TRUE(navigation_manager()->GetPendingItem());
+  navigation_manager()->GetPendingItem()->SetUserAgentType(
+      UserAgentType::DESKTOP);
+
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com"));
+  ASSERT_TRUE(navigation_manager()->GetTransientItem());
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetTransientItem()->GetUserAgentType());
+  EXPECT_EQ(UserAgentType::DESKTOP,
+            navigation_manager()->GetPendingItem()->GetUserAgentType());
+}
+
 // Tests that calling |Reload| with web::ReloadType::NORMAL is no-op when there
 // are no transient, pending and committed items.
 TEST_F(NavigationManagerTest, ReloadEmptyWithNormalType) {
