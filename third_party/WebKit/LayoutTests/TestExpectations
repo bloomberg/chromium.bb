@@ -79,9 +79,6 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 # when we swith to swiftshader.
 crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
 
-crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
-crbug.com/591500 [ Win10 ] virtual/disable-spinvalidation/compositing/squashing/squashing-print.html [ Failure ]
-
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
