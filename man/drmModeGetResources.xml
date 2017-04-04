@@ -116,8 +116,8 @@ typedef struct _drmModeRes {
   <refsect1>
     <title>Reporting Bugs</title>
     <para>Bugs in this function should be reported to
-          http://bugs.freedesktop.org under the "Mesa" product, with "Other"
-          as the component.</para>
+      https://bugs.freedesktop.org/enter_bug.cgi?product=DRI&component=libdrm
+      under the "DRI" product, component "libdrm"</para>
   </refsect1>
 
   <refsect1>
