@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -27,6 +28,8 @@ ChromiumUrlRequest::ChromiumUrlRequest(
   url_fetcher_ = net::URLFetcher::Create(GURL(url), request_type, this);
   url_fetcher_->SetRequestContext(url_context.get());
   url_fetcher_->SetReferrer("https://chrome.google.com/remotedesktop");
+  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_COOKIES);
 }
 
 ChromiumUrlRequest::~ChromiumUrlRequest() {}
