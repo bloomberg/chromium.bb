@@ -2965,7 +2965,7 @@ void seat_release(wl_client* client, wl_resource* resource) {
 const struct wl_seat_interface seat_implementation = {
     seat_get_pointer, seat_get_keyboard, seat_get_touch, seat_release};
 
-const uint32_t seat_version = 5;
+const uint32_t seat_version = 6;
 
 void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
   wl_resource* resource = wl_resource_create(

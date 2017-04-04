@@ -147,8 +147,13 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       return;
   }
   if (send_details) {
-    delegate_->OnTouchShape(touch_pointer_id, event->pointer_details().radius_x,
-                            event->pointer_details().radius_y);
+    // Some devices do not report radius_y/minor. We assume a circular shape
+    // in that case.
+    float major = event->pointer_details().radius_x * 2.0f;
+    float minor = event->pointer_details().radius_y * 2.0f;
+    if (!minor)
+      minor = major;
+    delegate_->OnTouchShape(touch_pointer_id, major, minor);
 
     if (stylus_delegate_ &&
         event->pointer_details().pointer_type !=

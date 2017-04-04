@@ -164,23 +164,24 @@ TEST_F(TouchTest, OnTouchShape) {
     testing::InSequence sequence;
     EXPECT_CALL(delegate, OnTouchDown(window.surface(), testing::_, testing::_,
                                       gfx::PointF()));
-    EXPECT_CALL(delegate, OnTouchShape(testing::_, 1, 1));
+    EXPECT_CALL(delegate, OnTouchShape(testing::_, 20, 10));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate,
                 OnTouchMotion(testing::_, testing::_, gfx::PointF(5, 5)));
-    EXPECT_CALL(delegate, OnTouchShape(testing::_, 1, 1));
+    EXPECT_CALL(delegate, OnTouchShape(testing::_, 20, 10));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate,
                 OnTouchMotion(testing::_, testing::_, gfx::PointF(10, 10)));
-    EXPECT_CALL(delegate, OnTouchShape(testing::_, 20, 10));
+    EXPECT_CALL(delegate, OnTouchShape(testing::_, 20, 20));
     EXPECT_CALL(delegate, OnTouchFrame());
     EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
     EXPECT_CALL(delegate, OnTouchFrame());
   }
   generator.set_current_location(window.origin());
+  generator.SetTouchRadius(10, 5);
   generator.PressTouch();
   generator.MoveTouchBy(5, 5);
-  generator.SetTouchRadius(20, 10);
+  generator.SetTouchRadius(10, 0);  // Minor not supported
   generator.MoveTouchBy(5, 5);
   generator.ReleaseTouch();
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
