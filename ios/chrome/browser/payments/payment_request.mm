@@ -50,9 +50,17 @@ payments::CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   return currency_formatter_.get();
 }
 
-void PaymentRequest::AddCreditCard(const autofill::CreditCard& credit_card) {
+autofill::CreditCard* PaymentRequest::AddCreditCard(
+    const autofill::CreditCard& credit_card) {
   credit_card_cache_.insert(credit_card_cache_.begin(), credit_card);
-  credit_cards_.insert(credit_cards_.begin(), &credit_card_cache_.front());
+
+  // Reconstruct the vector of references to the cached credit cards because the
+  // old references may be invalid as a result of the previous operation.
+  credit_cards_.clear();
+  credit_cards_.reserve(credit_card_cache_.size());
+  for (auto& credit_card : credit_card_cache_)
+    credit_cards_.push_back(&credit_card);
+  return credit_cards_.front();
 }
 
 void PaymentRequest::PopulateProfileCache() {

@@ -74,7 +74,9 @@ TEST(PaymentRequestTest, AddCreditCard) {
   EXPECT_EQ(0U, payment_request.credit_cards().size());
 
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
-  payment_request.AddCreditCard(credit_card);
+  autofill::CreditCard* added_credit_card =
+      payment_request.AddCreditCard(credit_card);
+
   ASSERT_EQ(1U, payment_request.credit_cards().size());
-  EXPECT_EQ(credit_card, *payment_request.credit_cards()[0]);
+  EXPECT_EQ(credit_card, *added_credit_card);
 }

@@ -15,7 +15,7 @@
 // validation.
 @interface EditorField : NSObject
 
-// Autofill type for the field. Corresponds to autofill::ServerFieldType
+// Autofill type for the field.
 @property(nonatomic, assign) AutofillUIType autofillUIType;
 // Label for the field.
 @property(nonatomic, copy) NSString* label;

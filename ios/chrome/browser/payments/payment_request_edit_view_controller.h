@@ -15,6 +15,14 @@
 @class EditorField;
 @class PaymentRequestEditViewController;
 
+// Data source protocol for PaymentRequestEditViewController.
+@protocol PaymentRequestEditViewControllerDataSource<NSObject>
+
+// Returns the list of field definitions for the editor.
+- (NSArray<EditorField*>*)editorFields;
+
+@end
+
 // Delegate protocol for PaymentRequestEditViewController.
 @protocol PaymentRequestEditViewControllerDelegate<NSObject>
 
@@ -36,8 +44,8 @@
 @protocol PaymentRequestEditViewControllerValidator<NSObject>
 
 // Returns the validation error string for |value| which has the type
-// |autofillUIType|. |required| indicates whether this is a required field. If
-// there are no validation errors, an empty string is returned.
+// |autofillUIType|. |required| indicates whether this is a required field.
+// Returns nil if there are no validation errors.
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
                                 validateValue:(NSString*)value
@@ -52,6 +60,10 @@
 // when the value of its respective text field is invalid.
 @interface PaymentRequestEditViewController : CollectionViewController
 
+// The data source for this view controller.
+@property(nonatomic, weak) id<PaymentRequestEditViewControllerDataSource>
+    dataSource;
+
 // The delegate to be notified when the user returns or finishes editing the
 // fields.
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerDelegate>
@@ -61,15 +73,6 @@
 // controller is the validator.
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerValidator>
     validatorDelegate;
-
-// Initializes this instance with a list of field definitions for the editor.
-- (instancetype)initWithEditorFields:(NSArray<EditorField*>*)fields
-    NS_DESIGNATED_INITIALIZER;
-
-- (instancetype)init NS_UNAVAILABLE;
-
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style
-    NS_UNAVAILABLE;
 
 @end
 

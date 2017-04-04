@@ -7,6 +7,12 @@
 
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller.h"
 
+// Use these as the starting values for section identifier and item type enums
+// in subclasses. These values are chosen to prevent overlapping with the
+// section identifier and item type enums of this class.
+const NSInteger kSectionIdentifierEnumStart = kSectionIdentifierEnumZero + 20;
+const NSInteger kItemTypeEnumStart = kItemTypeEnumZero + 100;
+
 // Internal API for subclasses of PaymentRequestEditViewController.
 @interface PaymentRequestEditViewController (Internal)
 

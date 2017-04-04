@@ -11,7 +11,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PaymentMethodSelectionCoordinator ()
+@interface PaymentMethodSelectionCoordinator () {
+  CreditCardEditCoordinator* _creditCardEditCoordinator;
+}
 
 @property(nonatomic, strong)
     PaymentMethodSelectionViewController* viewController;
@@ -44,6 +46,8 @@
 - (void)stop {
   [[self baseViewController].navigationController
       popViewControllerAnimated:YES];
+  [_creditCardEditCoordinator stop];
+  _creditCardEditCoordinator = nil;
   _viewController = nil;
 }
 
@@ -77,6 +81,33 @@
                        paymentMethodSelectionCoordinator:strongSelf
                                   didSelectPaymentMethod:paymentMethod];
                  });
+}
+
+- (void)paymentMethodSelectionViewControllerDidSelectAddCard:
+    (PaymentMethodSelectionViewController*)controller {
+  _creditCardEditCoordinator = [[CreditCardEditCoordinator alloc]
+      initWithBaseViewController:_viewController];
+  [_creditCardEditCoordinator setPaymentRequest:_paymentRequest];
+  [_creditCardEditCoordinator setDelegate:self];
+  [_creditCardEditCoordinator start];
+}
+
+#pragma mark - CreditCardEditCoordinatorDelegate
+
+- (void)creditCardEditCoordinator:(CreditCardEditCoordinator*)coordinator
+       didFinishEditingCreditCard:(autofill::CreditCard*)creditCard {
+  [_creditCardEditCoordinator stop];
+  _creditCardEditCoordinator = nil;
+
+  // Inform |_delegate| that this card has been selected.
+  [_delegate paymentMethodSelectionCoordinator:self
+                        didSelectPaymentMethod:creditCard];
+}
+
+- (void)creditCardEditCoordinatorDidCancel:
+    (CreditCardEditCoordinator*)coordinator {
+  [_creditCardEditCoordinator stop];
+  _creditCardEditCoordinator = nil;
 }
 
 @end

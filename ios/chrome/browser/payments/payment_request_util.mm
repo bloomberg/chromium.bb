@@ -72,7 +72,7 @@ NSString* GetShippingSectionTitle(const PaymentRequest& payment_request) {
       return l10n_util::GetNSString(IDS_PAYMENTS_PICKUP_SUMMARY_LABEL);
     default:
       NOTREACHED();
-      return @"";
+      return nil;
   }
 }
 
@@ -87,7 +87,7 @@ NSString* GetShippingAddressSelectorTitle(
       return l10n_util::GetNSString(IDS_PAYMENTS_PICKUP_ADDRESS_LABEL);
     default:
       NOTREACHED();
-      return @"";
+      return nil;
   }
 }
 
@@ -105,7 +105,7 @@ NSString* GetShippingAddressSelectorInfoMessage(
           IDS_PAYMENTS_SELECT_PICKUP_ADDRESS_FOR_PICKUP_METHODS);
     default:
       NOTREACHED();
-      return @"";
+      return nil;
   }
 }
 
@@ -123,7 +123,7 @@ NSString* GetShippingAddressSelectorErrorMessage(
       return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_PICKUP_ADDRESS);
     default:
       NOTREACHED();
-      return @"";
+      return nil;
   }
 }
 
@@ -138,7 +138,7 @@ NSString* GetShippingOptionSelectorTitle(
       return l10n_util::GetNSString(IDS_PAYMENTS_PICKUP_OPTION_LABEL);
     default:
       NOTREACHED();
-      return @"";
+      return nil;
   }
 }
 
@@ -156,7 +156,7 @@ NSString* GetShippingOptionSelectorErrorMessage(
       return l10n_util::GetNSString(IDS_PAYMENTS_UNSUPPORTED_PICKUP_OPTION);
     default:
       NOTREACHED();
-      return @"";
+      return nil;
   }
 }
 

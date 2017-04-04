@@ -172,9 +172,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
         paymentMethodSelectionViewController:self
                       didSelectPaymentMethod:_paymentRequest
                                                  ->credit_cards()[index]];
+  } else if (item.type == ItemTypeAddMethod) {
+    [_delegate paymentMethodSelectionViewControllerDidSelectAddCard:self];
   }
-  // TODO(crbug.com/602666): Present a credit card addition UI when
-  // itemType == ItemTypeAddMethod.
 }
 
 #pragma mark MDCCollectionViewStylingDelegate

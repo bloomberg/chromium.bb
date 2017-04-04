@@ -31,6 +31,10 @@ class CreditCard;
 - (void)paymentMethodSelectionViewControllerDidReturn:
     (PaymentMethodSelectionViewController*)controller;
 
+// Notifies the delegate that the user has chosen to add a new credit card.
+- (void)paymentMethodSelectionViewControllerDidSelectAddCard:
+    (PaymentMethodSelectionViewController*)controller;
+
 @end
 
 // View controller responsible for presenting the available payment methods for

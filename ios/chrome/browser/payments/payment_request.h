@@ -32,6 +32,10 @@ class PaymentRequest {
                  autofill::PersonalDataManager* personal_data_manager);
   ~PaymentRequest();
 
+  autofill::PersonalDataManager* GetPersonalDataManager() const {
+    return personal_data_manager_;
+  }
+
   // Returns the payment details from |web_payment_request_|.
   const web::PaymentDetails& payment_details() const {
     return web_payment_request_.details;
@@ -96,8 +100,10 @@ class PaymentRequest {
     return supported_card_networks_;
   }
 
-  // Adds |credit_card| to the list of cached credit cards.
-  void AddCreditCard(const autofill::CreditCard& credit_card);
+  // Adds |credit_card| to the list of cached credit cards and returns a pointer
+  // to the cached copy.
+  virtual autofill::CreditCard* AddCreditCard(
+      const autofill::CreditCard& credit_card);
 
   // Returns the available autofill credit cards for this user that match a
   // supported type specified in |web_payment_request_|.

@@ -92,14 +92,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation PaymentRequestEditViewController
 
+@synthesize dataSource = _dataSource;
 @synthesize editorDelegate = _editorDelegate;
 @synthesize validatorDelegate = _validatorDelegate;
 
-- (instancetype)initWithEditorFields:(NSArray<EditorField*>*)fields {
-  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
+  self = [super initWithStyle:style];
   if (self) {
-    _fields = fields;
-
     // Set self as the validator delegate.
     _validatorDelegate = self;
 
@@ -133,6 +132,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
   }
   return self;
+}
+
+- (void)setDataSource:
+    (id<PaymentRequestEditViewControllerDataSource>)dataSource {
+  _dataSource = dataSource;
+  _fields = [dataSource editorFields];
 }
 
 #pragma mark - PaymentRequestEditViewControllerActions methods
@@ -360,11 +365,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                 validateValue:(NSString*)value
                                autofillUIType:(AutofillUIType)autofillUIType
                                      required:(BOOL)required {
-  if (required && value.length == 0) {
+  if (required && !value.length) {
     return l10n_util::GetNSString(
         IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
-  return @"";
+  return nil;
 }
 
 #pragma mark - Helper methods
@@ -430,9 +435,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                 required:field.isRequired];
     [self addOrRemoveErrorMessage:errorMessage
           inSectionWithIdentifier:field.sectionIdentifier];
-    if (errorMessage.length != 0) {
+    if (errorMessage.length)
       return NO;
-    }
 
     field.value = item.textFieldValue;
   }
@@ -464,7 +468,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
               sectionIdentifier:sectionIdentifier]) {
     NSIndexPath* indexPath = [model indexPathForItemType:ItemTypeErrorMessage
                                        sectionIdentifier:sectionIdentifier];
-    if (errorMessage.length == 0) {
+    if (!errorMessage.length) {
       // Remove the item at the index path.
       [model removeItemWithType:ItemTypeErrorMessage
           fromSectionWithIdentifier:sectionIdentifier];
@@ -476,7 +480,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       item.text = errorMessage;
       [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
     }
-  } else if (errorMessage.length != 0) {
+  } else if (errorMessage.length) {
     // Insert an item at the index path.
     PaymentsTextItem* errorMessageItem =
         [[PaymentsTextItem alloc] initWithType:ItemTypeErrorMessage];
