@@ -4,6 +4,7 @@
 
 #import "ios/shared/chrome/browser/ui/commands/command_dispatcher.h"
 
+#include <objc/runtime.h>
 #include <unordered_map>
 #include <vector>
 
@@ -25,8 +26,31 @@
   _forwardingTargets[selector] = target;
 }
 
+- (void)startDispatchingToTarget:(id)target forProtocol:(Protocol*)protocol {
+  unsigned int methodCount;
+  objc_method_description* requiredInstanceMethods =
+      protocol_copyMethodDescriptionList(protocol, YES /* isRequiredMethod */,
+                                         YES /* isInstanceMethod */,
+                                         &methodCount);
+  for (unsigned int i = 0; i < methodCount; i++) {
+    [self startDispatchingToTarget:target
+                       forSelector:requiredInstanceMethods[i].name];
+  }
+}
+
 - (void)stopDispatchingForSelector:(SEL)selector {
   _forwardingTargets.erase(selector);
+}
+
+- (void)stopDispatchingForProtocol:(Protocol*)protocol {
+  unsigned int methodCount;
+  objc_method_description* requiredInstanceMethods =
+      protocol_copyMethodDescriptionList(protocol, YES /* isRequiredMethod */,
+                                         YES /* isInstanceMethod */,
+                                         &methodCount);
+  for (unsigned int i = 0; i < methodCount; i++) {
+    [self stopDispatchingForSelector:requiredInstanceMethods[i].name];
+  }
 }
 
 // |-stopDispatchingToTarget| should be called much less often than

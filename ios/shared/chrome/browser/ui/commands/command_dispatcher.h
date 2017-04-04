@@ -19,6 +19,16 @@
 // Removes forwarding registration for the given |selector|.
 - (void)stopDispatchingForSelector:(SEL)selector;
 
+// Registers the given |target| to receive forwarded messages for the methods of
+// the given |protocol|. Only required instance methods are registered. The
+// other definitions in the protocol are ignored.
+- (void)startDispatchingToTarget:(id)target forProtocol:(Protocol*)protocol;
+
+// Removes forwarding registration for the given |selector|. Only dispatching to
+// required instance methods is removed. The other definitions in the protocol
+// are ignored.
+- (void)stopDispatchingForProtocol:(Protocol*)protocol;
+
 // Removes all forwarding registrations for the given |target|.
 - (void)stopDispatchingToTarget:(id)target;
 

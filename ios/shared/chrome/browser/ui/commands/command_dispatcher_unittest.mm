@@ -15,11 +15,19 @@
 
 #pragma mark - Test handlers
 
+@protocol ShowProtocol<NSObject>
+- (void)show;
+- (void)showMore;
+@end
+
 // A handler with methods that take no arguments.
-@interface CommandDispatcherTestSimpleTarget : NSObject
+@interface CommandDispatcherTestSimpleTarget : NSObject<ShowProtocol>
 
 // Will be set to YES when the |-show| method is called.
 @property(nonatomic, assign) BOOL showCalled;
+
+// Will be set to YES when the |-showMore| method is called.
+@property(nonatomic, assign) BOOL showMoreCalled;
 
 // Will be set to YES when the |-hide| method is called.
 @property(nonatomic, assign) BOOL hideCalled;
@@ -28,7 +36,6 @@
 - (void)resetProperties;
 
 // Handler methods.
-- (void)show;
 - (void)hide;
 
 @end
@@ -36,15 +43,21 @@
 @implementation CommandDispatcherTestSimpleTarget
 
 @synthesize showCalled = _showCalled;
+@synthesize showMoreCalled = _showMoreCalled;
 @synthesize hideCalled = _hideCalled;
 
 - (void)resetProperties {
   self.showCalled = NO;
+  self.showMoreCalled = NO;
   self.hideCalled = NO;
 }
 
 - (void)show {
   self.showCalled = YES;
+}
+
+- (void)showMore {
+  self.showMoreCalled = YES;
 }
 
 - (void)hide {
@@ -184,6 +197,21 @@ TEST(CommandDispatcherTest, MultipleTargets) {
   EXPECT_TRUE(hideTarget.hideCalled);
 }
 
+// Tests handlers registered via protocols.
+TEST(CommandDispatcherTest, ProtocolRegistration) {
+  id dispatcher = [[CommandDispatcher alloc] init];
+  CommandDispatcherTestSimpleTarget* target =
+      [[CommandDispatcherTestSimpleTarget alloc] init];
+
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(ShowProtocol)];
+
+  [dispatcher show];
+  EXPECT_TRUE(target.showCalled);
+  [dispatcher showMore];
+  EXPECT_TRUE(target.showCalled);
+}
+
 // Tests that handlers are no longer forwarded messages after selector
 // deregistration.
 TEST(CommandDispatcherTest, SelectorDeregistration) {
@@ -211,6 +239,52 @@ TEST(CommandDispatcherTest, SelectorDeregistration) {
 
   [dispatcher hide];
   EXPECT_FALSE(target.showCalled);
+  EXPECT_TRUE(target.hideCalled);
+}
+
+// Tests that handlers are no longer forwarded messages after protocol
+// deregistration.
+TEST(CommandDispatcherTest, ProtocolDeregistration) {
+  id dispatcher = [[CommandDispatcher alloc] init];
+  CommandDispatcherTestSimpleTarget* target =
+      [[CommandDispatcherTestSimpleTarget alloc] init];
+
+  [dispatcher startDispatchingToTarget:target
+                           forProtocol:@protocol(ShowProtocol)];
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(hide)];
+
+  [dispatcher show];
+  EXPECT_TRUE(target.showCalled);
+  EXPECT_FALSE(target.showMoreCalled);
+  EXPECT_FALSE(target.hideCalled);
+  [target resetProperties];
+  [dispatcher showMore];
+  EXPECT_FALSE(target.showCalled);
+  EXPECT_TRUE(target.showMoreCalled);
+  EXPECT_FALSE(target.hideCalled);
+
+  [target resetProperties];
+  [dispatcher stopDispatchingForProtocol:@protocol(ShowProtocol)];
+  bool exception_caught = false;
+  @try {
+    [dispatcher show];
+  } @catch (NSException* exception) {
+    EXPECT_EQ(NSInvalidArgumentException, [exception name]);
+    exception_caught = true;
+  }
+  EXPECT_TRUE(exception_caught);
+  exception_caught = false;
+  @try {
+    [dispatcher showMore];
+  } @catch (NSException* exception) {
+    EXPECT_EQ(NSInvalidArgumentException, [exception name]);
+    exception_caught = true;
+  }
+  EXPECT_TRUE(exception_caught);
+
+  [dispatcher hide];
+  EXPECT_FALSE(target.showCalled);
+  EXPECT_FALSE(target.showMoreCalled);
   EXPECT_TRUE(target.hideCalled);
 }
 
