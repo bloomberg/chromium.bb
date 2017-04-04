@@ -328,16 +328,38 @@ drm_output_find_by_connector(struct drm_backend *b, uint32_t connector_id)
 }
 
 static void
-drm_fb_destroy_callback(struct gbm_bo *bo, void *data)
+drm_fb_destroy(struct drm_fb *fb)
+{
+	if (fb->fb_id != 0)
+		drmModeRmFB(fb->fd, fb->fb_id);
+	weston_buffer_reference(&fb->buffer_ref, NULL);
+	free(fb);
+}
+
+static void
+drm_fb_destroy_dumb(struct drm_fb *fb)
+{
+	struct drm_mode_destroy_dumb destroy_arg;
+
+	assert(fb->type == BUFFER_PIXMAN_DUMB);
+
+	if (fb->map && fb->size > 0)
+		munmap(fb->map, fb->size);
+
+	memset(&destroy_arg, 0, sizeof(destroy_arg));
+	destroy_arg.handle = fb->handle;
+	drmIoctl(fb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_arg);
+
+	drm_fb_destroy(fb);
+}
+
+static void
+drm_fb_destroy_gbm(struct gbm_bo *bo, void *data)
 {
 	struct drm_fb *fb = data;
 
-	if (fb->fb_id)
-		drmModeRmFB(fb->fd, fb->fb_id);
-
-	weston_buffer_reference(&fb->buffer_ref, NULL);
-
-	free(data);
+	assert(fb->type == BUFFER_GBM_SURFACE || fb->type == BUFFER_CLIENT);
+	drm_fb_destroy(fb);
 }
 
 static struct drm_fb *
@@ -437,30 +459,6 @@ err_fb:
 	return NULL;
 }
 
-static void
-drm_fb_destroy_dumb(struct drm_fb *fb)
-{
-	struct drm_mode_destroy_dumb destroy_arg;
-
-	assert(fb->type == BUFFER_PIXMAN_DUMB);
-
-	if (!fb->map)
-		return;
-
-	if (fb->fb_id)
-		drmModeRmFB(fb->fd, fb->fb_id);
-
-	weston_buffer_reference(&fb->buffer_ref, NULL);
-
-	munmap(fb->map, fb->size);
-
-	memset(&destroy_arg, 0, sizeof(destroy_arg));
-	destroy_arg.handle = fb->handle;
-	drmIoctl(fb->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_arg);
-
-	free(fb);
-}
-
 static struct drm_fb *
 drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		   uint32_t format, enum drm_fb_type type)
@@ -530,7 +528,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		goto err_free;
 	}
 
-	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_callback);
+	gbm_bo_set_user_data(bo, fb, drm_fb_destroy_gbm);
 
 	return fb;
 
