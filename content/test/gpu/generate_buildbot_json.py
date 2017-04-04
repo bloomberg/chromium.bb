@@ -252,32 +252,6 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win7 Release (Intel)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:041a',
-          'os': 'Windows-2008ServerR2-SP1'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
-    'Win7 Release (NVIDIA GeForce 730)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '10de:0f02',
-          'os': 'Windows-2008ServerR2-SP1'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'win',
-    },
     'Win10 Release (Intel HD 530)': {
       'swarming_dimensions': [
         {
@@ -501,32 +475,6 @@ FYI_WATERFALL = {
       ],
       'build_config': 'Release',
       'swarming': True,
-      'os_type': 'linux',
-    },
-    'Linux Release (Intel Graphics Stack)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:041a',
-          'os': 'Ubuntu'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
-      'os_type': 'linux',
-    },
-    'Linux Release (NVIDIA GeForce 730)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '10de:0f02',
-          'os': 'Ubuntu'
-        },
-      ],
-      'build_config': 'Release',
-      # This bot is a one-off and doesn't have similar slaves in the
-      # swarming pool.
-      'swarming': False,
       'os_type': 'linux',
     },
     'Linux Release (NVIDIA Quadro P400)': {
