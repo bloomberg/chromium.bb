@@ -79,6 +79,10 @@
 #include "content/public/common/content_descriptors.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/allocator/allocator_interception_mac.h"
+#endif
+
 using tracked_objects::ThreadData;
 
 namespace content {
@@ -547,6 +551,14 @@ void ChildThreadImpl::Init(const Options& options) {
     if (base::StringToInt(connection_override, &temp))
       connection_timeout = temp;
   }
+
+#if defined(OS_MACOSX)
+  if (base::CommandLine::InitializedForCurrentProcess() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHeapProfiling)) {
+    base::allocator::PeriodicallyShimNewMallocZones();
+  }
+#endif
 
   message_loop_->task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChildThreadImpl::EnsureConnected,
