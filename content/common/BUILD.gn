@@ -596,6 +596,7 @@ mojom("mojo_bindings") {
     "indexed_db/indexed_db.mojom",
     "leveldb_wrapper.mojom",
     "media/media_devices.mojom",
+    "media/renderer_audio_output_stream_factory.mojom",
     "memory_coordinator.mojom",
     "native_types.mojom",
     "push_messaging.mojom",
