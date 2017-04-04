@@ -58,8 +58,7 @@ void ComponentUpdaterPingManagerTest::RunThreadsUntilIdle() {
   base::RunLoop().RunUntilIdle();
 }
 
-// Test is flaky: http://crbug.com/349547
-TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
+TEST_F(ComponentUpdaterPingManagerTest, PingManagerTest) {
   std::unique_ptr<InterceptorFactory> interceptor_factory(
       new InterceptorFactory(base::ThreadTaskRunnerHandle::Get()));
   URLRequestPostInterceptor* interceptor =
