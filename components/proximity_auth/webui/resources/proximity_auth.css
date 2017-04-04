@@ -1,18 +1,96 @@
-/* Copyright 2015 The Chromium Authors. All rights reserved.
+/* Copyright 2017 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-html, body {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  font-family: "Roboto", sans-serif;
+table {
+  margin-left: 10px;
 }
 
-#logs {
-  width: 40%;
-  border-left: 1px solid rgba(0,0,0,0.12);
+td {
+  padding-right: 30px;
+}
+
+td[state='in-progress'] {
+  color: orange;
+}
+
+td[state='failure'] {
+  color: red;
+}
+
+tr.subrow {
+  font-size: 14px;
+}
+
+tr.subrow td:first-of-type {
+  text-align: right;
+}
+
+.flex {
+  flex: 1;
+}
+
+.remote-device {
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.remote-device:hover {
+  background-color: #eee;
+}
+
+.device-connection-status {
+  font-size: 24px;
+  margin-right: 10px;
+}
+
+.device-connection-status[state='connecting'] {
+  color: orange;
+}
+
+.device-connection-status[state='connected'] {
+  color: green;
+}
+
+.device-info {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+}
+
+.device-name {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.device-attributes {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.device-public-key {
+  font-size: 10px;
+  color: #666;
+}
+
+.device-info-subtitle, .device-eid {
+  font-family: monospace;
+  font-size: 10px;
+  color: #666;
+}
+
+.remote-device button {
+  margin-left: 4px;
+}
+
+#eligible-devices-list[device-count='0'],
+#ineligible-devices-list[device-count='0'] {
+  display: none;
 }

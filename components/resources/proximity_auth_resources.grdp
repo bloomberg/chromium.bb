@@ -1,47 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
-  <include name="IDR_PROXIMITY_AUTH_UI_HTML" file="../proximity_auth/webui/resources/proximity_auth.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_UI_CSS" file="../proximity_auth/webui/resources/proximity_auth.css" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_LOG_PANEL_HTML"
-           file="../proximity_auth/webui/resources/log-panel.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_LOG_PANEL_JS"
-           file="../proximity_auth/webui/resources/log-panel.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_CONTENT_PANEL_HTML"
-           file="../proximity_auth/webui/resources/content-panel.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_CONTENT_PANEL_JS"
-           file="../proximity_auth/webui/resources/content-panel.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_LOCAL_STATE_HTML"
-           file="../proximity_auth/webui/resources/local-state.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_LOCAL_STATE_JS"
-           file="../proximity_auth/webui/resources/local-state.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_DEVICE_LIST_HTML"
-           file="../proximity_auth/webui/resources/device-list.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_DEVICE_LIST_JS"
-           file="../proximity_auth/webui/resources/device-list.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_LOG_BUFFER_HTML"
-           file="../proximity_auth/webui/resources/log-buffer.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_LOG_BUFFER_JS"
-           file="../proximity_auth/webui/resources/log-buffer.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_HTML"
-           file="../proximity_auth/webui/resources/eligible-devices.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_ELIGIBLE_DEVICES_JS"
-           file="../proximity_auth/webui/resources/eligible-devices.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_REACHABLE_DEVICES_HTML"
-           file="../proximity_auth/webui/resources/reachable-devices.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_REACHABLE_DEVICES_JS"
-           file="../proximity_auth/webui/resources/reachable-devices.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_CRYPTAUTH_INTERFACE_JS"
-           file="../proximity_auth/webui/resources/cryptauth_interface.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <!-- Shared resources. -->
+  <include name="IDR_PROXIMITY_AUTH_INDEX_HTML"
+           file="../proximity_auth/webui/resources/index.html"
+           flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_COMMON_CSS"
+           file="../proximity_auth/webui/resources/common.css" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_LOGS_JS"
+           file="../proximity_auth/webui/resources/logs.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_WEBUI_JS"
+           file="../proximity_auth/webui/resources/webui.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+
+  <!-- Resources for ProximityAuth debug page. -->
+  <include name="IDR_PROXIMITY_AUTH_PROXIMITY_AUTH_HTML"
+           file="../proximity_auth/webui/resources/proximity_auth.html"
+           flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_PROXIMITY_AUTH_CSS"
+           file="../proximity_auth/webui/resources/proximity_auth.css" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_PROXIMITY_AUTH_JS"
+           file="../proximity_auth/webui/resources/proximity_auth.js"
+           flattenhtml="true" allowexternalscript="true" type="BINDATA" />
 
   <!-- Resources for Pollux debug page. -->
-  <include name="IDR_PROXIMITY_AUTH_POLLUX_DEBUG_HTML"
-          file="../proximity_auth/webui/resources/pollux/pollux_debug.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_POLLUX_DEBUG_CSS"
-           file="../proximity_auth/webui/resources/pollux/pollux_debug.css" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_POLLUX_DEBUG_JS"
-           file="../proximity_auth/webui/resources/pollux/pollux_debug.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_POLLUX_LOGS_CONTROLLER_JS"
-           file="../proximity_auth/webui/resources/pollux/logs_controller.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-  <include name="IDR_PROXIMITY_AUTH_POLLUX_WEBUI_JS"
-           file="../proximity_auth/webui/resources/pollux/webui.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_HTML"
+          file="../proximity_auth/webui/resources/pollux.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_CSS"
+           file="../proximity_auth/webui/resources/pollux.css" type="BINDATA" />
+  <include name="IDR_PROXIMITY_AUTH_POLLUX_JS"
+           file="../proximity_auth/webui/resources/pollux.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
 </grit-part>
