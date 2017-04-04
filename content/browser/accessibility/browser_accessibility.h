@@ -328,6 +328,53 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   base::string16 GetFontFamily() const;
   base::string16 GetLanguage() const;
+
+  // Returns the table or ARIA grid if inside one.
+  BrowserAccessibility* GetTable() const;
+
+  // If inside a table or ARIA grid, returns the cell found at the given index.
+  // Indices are in row major order and each cell is counted once regardless of
+  // its span.
+  BrowserAccessibility* GetTableCell(int index) const;
+
+  // If inside a table or ARIA grid, returns the cell at the given row and
+  // column (0-based). Works correctly with cells that span multiple rows or
+  // columns.
+  BrowserAccessibility* GetTableCell(int row, int column) const;
+
+  // If inside a table or ARIA grid, returns the zero-based index of the cell.
+  // Indices are in row major order and each cell is counted once regardless of
+  // its span. Returns -1 if the cell is not found or if not inside a table.
+  int GetTableCellIndex() const;
+
+  // If inside a table or ARIA grid, returns the physical column number for the
+  // current cell. In contrast to logical columns, physical columns always start
+  // from 0 and have no gaps in their numbering. Logical columns can be set
+  // using aria-colindex.
+  int GetTableColumn() const;
+
+  // If inside a table or ARIA grid, returns the number of physical columns,
+  // otherwise returns 0.
+  int GetTableColumnCount() const;
+
+  // If inside a table or ARIA grid, returns the number of physical columns that
+  // this cell spans. If not a cell, returns 0.
+  int GetTableColumnSpan() const;
+
+  // If inside a table or ARIA grid, returns the physical row number for the
+  // current cell. In contrast to logical rows, physical rows always start from
+  // 0 and have no gaps in their numbering. Logical rows can be set using
+  // aria-rowindex.
+  int GetTableRow() const;
+
+  // If inside a table or ARIA grid, returns the number of physical rows,
+  // otherwise returns 0.
+  int GetTableRowCount() const;
+
+  // If inside a table or ARIA grid, returns the number of physical rows that
+  // this cell spans. If not a cell, returns 0.
+  int GetTableRowSpan() const;
+
   virtual base::string16 GetText() const;
 
   // Returns true if the bit corresponding to the given state enum is 1.

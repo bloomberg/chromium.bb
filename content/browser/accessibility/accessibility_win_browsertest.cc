@@ -1905,4 +1905,102 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   ASSERT_NE(nullptr, manager->GetParentHWND());
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         kAccessibilityModeComplete,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "/accessibility/html/table-spans.html"));
+  waiter.WaitForNotification();
+
+  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.get());
+  // There are two tables in this test file. Use only the first one.
+  ASSERT_EQ(2u, document_children.size());
+
+  base::win::ScopedComPtr<IAccessible2> table;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.get(), document_children[0].AsInput())
+          .get(),
+      table.Receive()));
+  LONG role = 0;
+  ASSERT_HRESULT_SUCCEEDED(table->role(&role));
+  ASSERT_EQ(ROLE_SYSTEM_TABLE, role);
+
+  // Retrieve the first cell.
+  base::win::ScopedComPtr<IAccessibleTable2> table2;
+  base::win::ScopedComPtr<IUnknown> cell;
+  base::win::ScopedComPtr<IAccessible2> cell1;
+  EXPECT_HRESULT_SUCCEEDED(table.QueryInterface(table2.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(cell.QueryInterface(cell1.Receive()));
+
+  base::win::ScopedBstr name;
+  base::win::ScopedVariant childid_self(CHILDID_SELF);
+  base::win::ScopedComPtr<IAccessibleTableCell> accessible_cell;
+  LONG row_index = -1;
+  LONG column_index = -1;
+  EXPECT_HRESULT_SUCCEEDED(cell1->role(&role));
+  EXPECT_EQ(ROLE_SYSTEM_CELL, role);
+  EXPECT_HRESULT_SUCCEEDED(cell1->get_accName(childid_self, name.Receive()));
+  // EXPECT_STREQ(L"AD", name);
+  EXPECT_HRESULT_SUCCEEDED(cell1.QueryInterface(accessible_cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
+  EXPECT_EQ(0, row_index);
+  EXPECT_EQ(0, column_index);
+  name.Reset();
+  accessible_cell.Release();
+
+  // The first cell has a rowspan of 2, try navigating down and expect to get
+  // at the end of the table.
+  base::win::ScopedVariant variant;
+  EXPECT_HRESULT_SUCCEEDED(
+      cell1->accNavigate(NAVDIR_DOWN, childid_self, variant.Receive()));
+  ASSERT_EQ(VT_EMPTY, variant.type());
+
+  // Try navigating to the cell in the first row, 2nd column.
+  base::win::ScopedComPtr<IAccessible2> cell2;
+  EXPECT_HRESULT_SUCCEEDED(
+      cell1->accNavigate(NAVDIR_RIGHT, childid_self, variant.Receive()));
+  ASSERT_NE(nullptr, V_DISPATCH(variant.AsInput()));
+  ASSERT_EQ(VT_DISPATCH, variant.type());
+  V_DISPATCH(variant.AsInput())->QueryInterface(cell2.Receive());
+  EXPECT_HRESULT_SUCCEEDED(cell2->role(&role));
+  EXPECT_EQ(ROLE_SYSTEM_CELL, role);
+  EXPECT_HRESULT_SUCCEEDED(cell2->get_accName(childid_self, name.Receive()));
+  // EXPECT_STREQ(L"BC", name);
+  EXPECT_HRESULT_SUCCEEDED(cell2.QueryInterface(accessible_cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
+  EXPECT_EQ(0, row_index);
+  EXPECT_EQ(1, column_index);
+  variant.Reset();
+  name.Reset();
+  accessible_cell.Release();
+
+  // Try navigating to the cell in the second row, 2nd column.
+  base::win::ScopedComPtr<IAccessible2> cell3;
+  EXPECT_HRESULT_SUCCEEDED(
+      cell2->accNavigate(NAVDIR_DOWN, childid_self, variant.Receive()));
+  ASSERT_NE(nullptr, V_DISPATCH(variant.AsInput()));
+  ASSERT_EQ(VT_DISPATCH, variant.type());
+  V_DISPATCH(variant.AsInput())->QueryInterface(cell3.Receive());
+  EXPECT_HRESULT_SUCCEEDED(cell3->role(&role));
+  EXPECT_EQ(ROLE_SYSTEM_CELL, role);
+  EXPECT_HRESULT_SUCCEEDED(cell3->get_accName(childid_self, name.Receive()));
+  // EXPECT_STREQ(L"EF", name);
+  EXPECT_HRESULT_SUCCEEDED(cell3.QueryInterface(accessible_cell.Receive()));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_rowIndex(&row_index));
+  EXPECT_HRESULT_SUCCEEDED(accessible_cell->get_columnIndex(&column_index));
+  EXPECT_EQ(1, row_index);
+  EXPECT_EQ(1, column_index);
+  variant.Reset();
+  name.Reset();
+  accessible_cell.Release();
+}
+
 }  // namespace content
