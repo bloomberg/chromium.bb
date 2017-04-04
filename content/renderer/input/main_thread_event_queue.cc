@@ -405,8 +405,8 @@ void MainThreadEventQueue::PossiblyScheduleMainFrame() {
     if (!shared_state_.sent_main_frame_request_ &&
         !shared_state_.events_.empty() &&
         IsRafAlignedEvent(shared_state_.events_.front())) {
-      needs_main_frame = !shared_state_.sent_main_frame_request_;
-      shared_state_.sent_main_frame_request_ = false;
+      needs_main_frame = true;
+      shared_state_.sent_main_frame_request_ = true;
     }
   }
   if (needs_main_frame)
@@ -414,25 +414,31 @@ void MainThreadEventQueue::PossiblyScheduleMainFrame() {
 }
 
 void MainThreadEventQueue::DispatchEvents() {
-  std::deque<std::unique_ptr<MainThreadEventQueueTask>> events_to_process;
+  size_t events_to_process;
+
+  // Record the queue size so that we only process
+  // that maximum number of events.
   {
     base::AutoLock lock(shared_state_lock_);
     shared_state_.sent_post_task_ = false;
+    events_to_process = shared_state_.events_.size();
 
-    shared_state_.events_.swap(&events_to_process);
-
-    // Now take any raf aligned events that are at the tail of the queue
-    // and put them back.
-    while (!events_to_process.empty()) {
-      if (!IsRafAlignedEvent(events_to_process.back()))
-        break;
-      shared_state_.events_.emplace_front(std::move(events_to_process.back()));
-      events_to_process.pop_back();
+    // Don't process rAF aligned events at tail of queue.
+    while (events_to_process > 0 &&
+           IsRafAlignedEvent(shared_state_.events_.at(events_to_process - 1))) {
+      --events_to_process;
     }
   }
-  while (!events_to_process.empty()) {
-    in_flight_event_ = std::move(events_to_process.front());
-    events_to_process.pop_front();
+
+  while (events_to_process--) {
+    {
+      base::AutoLock lock(shared_state_lock_);
+      if (shared_state_.events_.empty())
+        return;
+      in_flight_event_ = shared_state_.events_.Pop();
+    }
+
+    // Dispatching the event is outside of critical section.
     DispatchInFlightEvent();
   }
   PossiblyScheduleMainFrame();
@@ -451,12 +457,23 @@ void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   if (IsRafAlignedInputDisabled())
     return;
 
-  std::deque<std::unique_ptr<MainThreadEventQueueTask>> events_to_process;
+  size_t queue_size_at_start;
+
+  // Record the queue size so that we only process
+  // that maximum number of events.
   {
     base::AutoLock lock(shared_state_lock_);
     shared_state_.sent_main_frame_request_ = false;
+    queue_size_at_start = shared_state_.events_.size();
+  }
 
-    while (!shared_state_.events_.empty()) {
+  while (queue_size_at_start--) {
+    {
+      base::AutoLock lock(shared_state_lock_);
+
+      if (shared_state_.events_.empty())
+        return;
+
       if (IsRafAlignedEvent(shared_state_.events_.front())) {
         // Throttle touchmoves that are async.
         if (handle_raf_aligned_touch_input_ &&
@@ -469,15 +486,13 @@ void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
           shared_state_.last_async_touch_move_timestamp_ = frame_time;
         }
       }
-      events_to_process.emplace_back(shared_state_.events_.Pop());
+      in_flight_event_ = shared_state_.events_.Pop();
     }
-  }
 
-  while(!events_to_process.empty()) {
-    in_flight_event_ = std::move(events_to_process.front());
-    events_to_process.pop_front();
+    // Dispatching the event is outside of critical section.
     DispatchInFlightEvent();
   }
+
   PossiblyScheduleMainFrame();
 }
 

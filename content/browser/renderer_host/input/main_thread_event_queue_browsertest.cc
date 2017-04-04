@@ -184,12 +184,8 @@ class MainThreadEventQueueBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueueBrowserTest);
 };
 
-#if defined(OS_LINUX)
-#define MAYBE_MouseMove DISABLED_MouseMove
-#else
 #define MAYBE_MouseMove MouseMove
-#endif
-IN_PROC_BROWSER_TEST_F(MainThreadEventQueueBrowserTest, MAYBE_MouseMove) {
+IN_PROC_BROWSER_TEST_F(MainThreadEventQueueBrowserTest, MouseMove) {
   LoadURL(kJankyPageURL);
   DoMouseMove();
 }

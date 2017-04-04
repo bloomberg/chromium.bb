@@ -31,13 +31,6 @@ class MainThreadEventQueueTaskList {
     return queue_.at(pos);
   }
 
-  void emplace_front(std::unique_ptr<MainThreadEventQueueTask> event) {
-    queue_.emplace_front(std::move(event));
-  }
-  void swap(std::deque<std::unique_ptr<MainThreadEventQueueTask>>* queue) {
-    queue_.swap(*queue);
-  }
-
   bool empty() const { return queue_.empty(); }
 
   size_t size() const { return queue_.size(); }
