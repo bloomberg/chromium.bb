@@ -1729,6 +1729,7 @@ interface Element : Node
     getter scrollWidth
     getter shadowRoot
     getter slot
+    getter styleMap
     getter tagName
     method after
     method animate
@@ -2365,7 +2366,6 @@ interface HTMLElement : Element
     getter outerText
     getter spellcheck
     getter style
-    getter styleMap
     getter tabIndex
     getter title
     getter translate
