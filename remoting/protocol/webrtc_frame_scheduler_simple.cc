@@ -132,6 +132,7 @@ WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 
 void WebrtcFrameSchedulerSimple::OnKeyFrameRequested() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  encoder_ready_ = true;
   key_frame_request_ = true;
   ScheduleNextFrame(base::TimeTicks::Now());
 }
@@ -274,8 +275,8 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (paused_ || pacing_bucket_.rate() == 0 || capture_callback_.is_null() ||
-      frame_pending_) {
+  if (!encoder_ready_ || paused_ || pacing_bucket_.rate() == 0 ||
+      capture_callback_.is_null() || frame_pending_) {
     return;
   }
 

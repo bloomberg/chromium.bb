@@ -69,6 +69,9 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   base::Closure capture_callback_;
   bool paused_ = false;
 
+  // Set to true after the first key frame is requested.
+  bool encoder_ready_ = false;
+
   // Set to false until the first frame frame was captured successfully.
   bool captured_first_frame_ = false;
 

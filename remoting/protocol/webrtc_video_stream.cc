@@ -4,6 +4,8 @@
 
 #include "remoting/protocol/webrtc_video_stream.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
@@ -76,8 +78,11 @@ void WebrtcVideoStream::Start(
   encode_task_runner_ = std::move(encode_task_runner);
   capturer_ = std::move(desktop_capturer);
   webrtc_transport_ = webrtc_transport;
-  // TODO(isheriff): make this codec independent
-  encoder_ = WebrtcVideoEncoderVpx::CreateForVP8();
+
+  webrtc_transport_->video_encoder_factory()->RegisterEncoderSelectedCallback(
+      base::Bind(&WebrtcVideoStream::OnEncoderCreated,
+                 weak_factory_.GetWeakPtr()));
+
   capturer_->Start(this);
 
   // Set video stream constraints.
@@ -163,6 +168,8 @@ void WebrtcVideoStream::OnCaptureResult(
         observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
     }
   }
+
+  DCHECK(encoder_);
 
   base::PostTaskAndReplyWithResult(
       encode_task_runner_.get(), FROM_HERE,
@@ -258,6 +265,17 @@ void WebrtcVideoStream::OnFrameEncoded(EncodedFrameWithStats frame) {
     stats.capturer_id = frame.stats->capturer_id;
 
     video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
+  }
+}
+
+void WebrtcVideoStream::OnEncoderCreated(webrtc::VideoCodecType codec_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (codec_type == webrtc::kVideoCodecVP8) {
+    encoder_ = WebrtcVideoEncoderVpx::CreateForVP8();
+  } else if (codec_type == webrtc::kVideoCodecVP9) {
+    encoder_ = WebrtcVideoEncoderVpx::CreateForVP9();
+  } else {
+    LOG(FATAL) << "Unknown codec type: " << codec_type;
   }
 }
 

@@ -18,6 +18,7 @@
 #include "remoting/codec/webrtc_video_encoder.h"
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stream.h"
+#include "third_party/webrtc/common_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace webrtc {
@@ -73,6 +74,8 @@ class WebrtcVideoStream : public VideoStream,
       WebrtcVideoEncoder::FrameParams params,
       std::unique_ptr<WebrtcVideoStream::FrameStats> stats);
   void OnFrameEncoded(EncodedFrameWithStats frame);
+
+  void OnEncoderCreated(webrtc::VideoCodecType codec_type);
 
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;

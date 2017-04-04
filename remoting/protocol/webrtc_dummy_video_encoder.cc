@@ -20,10 +20,14 @@ namespace protocol {
 
 WebrtcDummyVideoEncoder::WebrtcDummyVideoEncoder(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer)
+    base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer,
+    webrtc::VideoCodecType type)
     : main_task_runner_(main_task_runner),
       state_(kUninitialized),
-      video_channel_state_observer_(video_channel_state_observer) {}
+      codec_type_(type),
+      video_channel_state_observer_(video_channel_state_observer) {
+  DCHECK(type == webrtc::kVideoCodecVP8 || type == webrtc::kVideoCodecVP9);
+}
 
 WebrtcDummyVideoEncoder::~WebrtcDummyVideoEncoder() {}
 
@@ -121,15 +125,26 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
 
   webrtc::CodecSpecificInfo codec_specific_info;
   memset(&codec_specific_info, 0, sizeof(codec_specific_info));
-  codec_specific_info.codecType = webrtc::kVideoCodecVP8;
+  codec_specific_info.codecType = codec_type_;
+
+  if (codec_type_ == webrtc::kVideoCodecVP8) {
+    codec_specific_info.codecSpecific.VP8.simulcastIdx = 0;
+    codec_specific_info.codecSpecific.VP8.temporalIdx = webrtc::kNoTemporalIdx;
+    codec_specific_info.codecSpecific.VP8.tl0PicIdx = webrtc::kNoTl0PicIdx;
+    codec_specific_info.codecSpecific.VP8.pictureId = webrtc::kNoPictureId;
+  } else if (codec_type_ == webrtc::kVideoCodecVP9) {
+    codec_specific_info.codecSpecific.generic.simulcast_idx = 0;
+    codec_specific_info.codecSpecific.VP9.gof_idx = webrtc::kNoGofIdx;
+    codec_specific_info.codecSpecific.VP9.temporal_idx = webrtc::kNoTemporalIdx;
+    codec_specific_info.codecSpecific.VP9.spatial_idx = webrtc::kNoSpatialIdx;
+    codec_specific_info.codecSpecific.VP9.tl0_pic_idx = webrtc::kNoTl0PicIdx;
+    codec_specific_info.codecSpecific.VP9.picture_id = webrtc::kNoPictureId;
+  } else {
+    NOTREACHED();
+  }
 
   webrtc::RTPFragmentationHeader header;
   memset(&header, 0, sizeof(header));
-
-  codec_specific_info.codecSpecific.VP8.simulcastIdx = 0;
-  codec_specific_info.codecSpecific.VP8.temporalIdx = webrtc::kNoTemporalIdx;
-  codec_specific_info.codecSpecific.VP8.tl0PicIdx = webrtc::kNoTl0PicIdx;
-  codec_specific_info.codecSpecific.VP8.pictureId = webrtc::kNoPictureId;
 
   header.VerifyAndAllocateFragmentationHeader(1);
   header.fragmentationOffset[0] = 0;
@@ -146,7 +161,9 @@ WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
   // TODO(isheriff): These do not really affect anything internally
   // in webrtc.
   codecs_.push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
-      webrtc::kVideoCodecVP8, "VP8", 1280, 720, 30));
+      webrtc::kVideoCodecVP9, "VP8", 1280, 720, 30));
+  codecs_.push_back(cricket::WebRtcVideoEncoderFactory::VideoCodec(
+      webrtc::kVideoCodecVP9, "VP9", 1280, 720, 30));
 }
 
 WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
@@ -155,11 +172,14 @@ WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {
 
 webrtc::VideoEncoder* WebrtcDummyVideoEncoderFactory::CreateVideoEncoder(
     webrtc::VideoCodecType type) {
-  DCHECK_EQ(type, webrtc::kVideoCodecVP8);
   WebrtcDummyVideoEncoder* encoder = new WebrtcDummyVideoEncoder(
-      main_task_runner_, video_channel_state_observer_);
+      main_task_runner_, video_channel_state_observer_, type);
   base::AutoLock lock(lock_);
   encoders_.push_back(base::WrapUnique(encoder));
+  if (encoder_created_callback_) {
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(encoder_created_callback_, type));
+  }
   return encoder;
 }
 
@@ -202,6 +222,11 @@ WebrtcDummyVideoEncoderFactory::SendEncodedFrame(
         webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
   }
   return encoders_.front()->SendEncodedFrame(frame, capture_time);
+}
+
+void WebrtcDummyVideoEncoderFactory::RegisterEncoderSelectedCallback(
+    const base::Callback<void(webrtc::VideoCodecType)>& callback) {
+  encoder_created_callback_ = callback;
 }
 
 void WebrtcDummyVideoEncoderFactory::SetVideoChannelStateObserver(

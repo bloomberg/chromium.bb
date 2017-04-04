@@ -35,7 +35,8 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
 
   WebrtcDummyVideoEncoder(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
+      base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer,
+      webrtc::VideoCodecType type);
   ~WebrtcDummyVideoEncoder() override;
 
   // webrtc::VideoEncoder overrides.
@@ -62,6 +63,7 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
   base::Lock lock_;
   State state_;
   webrtc::EncodedImageCallback* encoded_callback_ = nullptr;
+  webrtc::VideoCodecType codec_type_;
 
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
 };
@@ -87,6 +89,11 @@ class WebrtcDummyVideoEncoderFactory
       const WebrtcVideoEncoder::EncodedFrame& packet,
       base::TimeTicks capture_time);
 
+  // Callback will be called once the dummy encoder has been created on
+  // |main_task_runner_|.
+  void RegisterEncoderSelectedCallback(
+      const base::Callback<void(webrtc::VideoCodecType)>& callback);
+
   void SetVideoChannelStateObserver(
       base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
   base::WeakPtr<VideoChannelStateObserver>
@@ -103,6 +110,7 @@ class WebrtcDummyVideoEncoderFactory
   base::Lock lock_;
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
   std::vector<std::unique_ptr<WebrtcDummyVideoEncoder>> encoders_;
+  base::Callback<void(webrtc::VideoCodecType)> encoder_created_callback_;
 };
 
 }  // namespace protocol
