@@ -40,7 +40,7 @@ class TestMetricsServiceClient : public MetricsServiceClient {
       base::StringPiece server_url,
       base::StringPiece mime_type,
       MetricsLogUploader::MetricServiceType service_type,
-      const base::Callback<void(int)>& on_upload_complete) override;
+      const MetricsLogUploader::UploadCallback& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
   bool IsReportingPolicyManaged() override;
   EnableMetricsDefault GetMetricsReportingDefaultState() override;

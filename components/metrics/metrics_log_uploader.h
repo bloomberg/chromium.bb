@@ -17,6 +17,10 @@ namespace metrics {
 // of MetricsService.
 class MetricsLogUploader {
  public:
+  // Type for OnUploadComplete callbacks.  These callbacks will receive two
+  // parameters: A response code and an net error code.
+  typedef base::Callback<void(int, int)> UploadCallback;
+
   // Possible service types. This should correspond to a type from
   // DataUseUserData.
   enum MetricServiceType {

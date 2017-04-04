@@ -89,8 +89,10 @@ void UkmReportingService::LogCellularConstraint(bool upload_canceled) {
                         upload_canceled);
 }
 
-void UkmReportingService::LogResponseCode(int response_code) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("UKM.Upload.ResponseCode", response_code);
+void UkmReportingService::LogResponseOrErrorCode(int response_code,
+                                                 int error_code) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("UKM.LogUpload.ResponseOrErrorCode",
+                              response_code >= 0 ? response_code : error_code);
 }
 
 void UkmReportingService::LogSuccess(size_t log_size) {

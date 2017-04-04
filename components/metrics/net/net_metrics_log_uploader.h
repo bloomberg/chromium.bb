@@ -31,11 +31,12 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   // be called with the HTTP response code of the upload or with -1 on an error.
   // The caller must ensure that |request_context_getter| remains valid for the
   // lifetime of this class.
-  NetMetricsLogUploader(net::URLRequestContextGetter* request_context_getter,
-                        base::StringPiece server_url,
-                        base::StringPiece mime_type,
-                        MetricsLogUploader::MetricServiceType service_type,
-                        const base::Callback<void(int)>& on_upload_complete);
+  NetMetricsLogUploader(
+      net::URLRequestContextGetter* request_context_getter,
+      base::StringPiece server_url,
+      base::StringPiece mime_type,
+      MetricsLogUploader::MetricServiceType service_type,
+      const MetricsLogUploader::UploadCallback& on_upload_complete);
   ~NetMetricsLogUploader() override;
 
   // MetricsLogUploader:
@@ -52,7 +53,7 @@ class NetMetricsLogUploader : public MetricsLogUploader,
   const GURL server_url_;
   const std::string mime_type_;
   const MetricsLogUploader::MetricServiceType service_type_;
-  const base::Callback<void(int)> on_upload_complete_;
+  const MetricsLogUploader::UploadCallback on_upload_complete_;
 
   // The outstanding transmission appears as a URL Fetch operation.
   std::unique_ptr<net::URLFetcher> current_fetch_;

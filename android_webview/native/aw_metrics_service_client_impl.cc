@@ -212,7 +212,7 @@ AwMetricsServiceClientImpl::CreateUploader(
     base::StringPiece server_url,
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
-    const base::Callback<void(int)>& on_upload_complete) {
+    const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
   // |server_url| and |mime_type| are unused because WebView uses the platform
   // logging mechanism instead of the normal UMA server.
   return std::unique_ptr<::metrics::MetricsLogUploader>(

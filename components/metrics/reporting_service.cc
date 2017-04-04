@@ -155,14 +155,14 @@ void ReportingService::SendStagedLog() {
   log_uploader_->UploadLog(log_store()->staged_log(), hash);
 }
 
-void ReportingService::OnLogUploadComplete(int response_code) {
+void ReportingService::OnLogUploadComplete(int response_code, int error_code) {
   DVLOG(1) << "OnLogUploadComplete:" << response_code;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(log_upload_in_progress_);
   log_upload_in_progress_ = false;
 
   // Log a histogram to track response success vs. failure rates.
-  LogResponseCode(response_code);
+  LogResponseOrErrorCode(response_code, error_code);
 
   bool upload_succeeded = response_code == 200;
 

@@ -72,7 +72,8 @@ class TodayMetricsServiceClient : public metrics::MetricsServiceClient {
       base::StringPiece server_url,
       base::StringPiece mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
-      const base::Callback<void(int)>& on_upload_complete) override;
+      const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
+      override;
   base::TimeDelta GetStandardUploadInterval() override;
 
  private:
@@ -153,7 +154,7 @@ TodayMetricsServiceClient::CreateUploader(
     base::StringPiece server_url,
     base::StringPiece mime_type,
     metrics::MetricsLogUploader::MetricServiceType service_type,
-    const base::Callback<void(int)>& on_upload_complete) {
+    const metrics::MetricsLogUploader::UploadCallback& on_upload_complete) {
   NOTREACHED();
   return nullptr;
 }

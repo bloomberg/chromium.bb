@@ -102,7 +102,7 @@ NetMetricsLogUploader::NetMetricsLogUploader(
     base::StringPiece server_url,
     base::StringPiece mime_type,
     MetricsLogUploader::MetricServiceType service_type,
-    const base::Callback<void(int)>& on_upload_complete)
+    const MetricsLogUploader::UploadCallback& on_upload_complete)
     : request_context_getter_(request_context_getter),
       server_url_(server_url),
       mime_type_(mime_type.data(), mime_type.size()),
@@ -155,8 +155,13 @@ void NetMetricsLogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   if (response_code == net::URLFetcher::RESPONSE_CODE_INVALID)
     response_code = -1;
+  int error_code = 0;
+  const net::URLRequestStatus& request_status = source->GetStatus();
+  if (request_status.status() != net::URLRequestStatus::SUCCESS) {
+    error_code = request_status.error();
+  }
   current_fetch_.reset();
-  on_upload_complete_.Run(response_code);
+  on_upload_complete_.Run(response_code, error_code);
 }
 
 }  // namespace metrics

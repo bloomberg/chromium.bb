@@ -51,7 +51,7 @@ class MetricsReportingService : public ReportingService {
   MetricsLogUploader::MetricServiceType service_type() const override;
   void LogActualUploadInterval(base::TimeDelta interval) override;
   void LogCellularConstraint(bool upload_canceled) override;
-  void LogResponseCode(int response_code) override;
+  void LogResponseOrErrorCode(int response_code, int error_code) override;
   void LogSuccess(size_t log_size) override;
   void LogLargeRejection(size_t log_size) override;
 

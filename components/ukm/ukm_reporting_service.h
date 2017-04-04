@@ -51,7 +51,7 @@ class UkmReportingService : public metrics::ReportingService {
   base::StringPiece upload_mime_type() const override;
   metrics::MetricsLogUploader::MetricServiceType service_type() const override;
   void LogCellularConstraint(bool upload_canceled) override;
-  void LogResponseCode(int response_code) override;
+  void LogResponseOrErrorCode(int response_code, int error_code) override;
   void LogSuccess(size_t log_size) override;
   void LogLargeRejection(size_t log_size) override;
 

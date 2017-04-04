@@ -97,7 +97,7 @@ class MetricsServiceClient {
       base::StringPiece server_url,
       base::StringPiece mime_type,
       metrics::MetricsLogUploader::MetricServiceType service_type,
-      const base::Callback<void(int)>& on_upload_complete) = 0;
+      const MetricsLogUploader::UploadCallback& on_upload_complete) = 0;
 
   // Returns the standard interval between upload attempts.
   virtual base::TimeDelta GetStandardUploadInterval() = 0;

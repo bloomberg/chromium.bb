@@ -89,7 +89,7 @@ class ReportingService {
   // Methods for recording data to histograms.
   virtual void LogActualUploadInterval(base::TimeDelta interval) {}
   virtual void LogCellularConstraint(bool upload_canceled) {}
-  virtual void LogResponseCode(int response_code) {}
+  virtual void LogResponseOrErrorCode(int response_code, int error_code) {}
   virtual void LogSuccess(size_t log_size) {}
   virtual void LogLargeRejection(size_t log_size) {}
 
@@ -101,7 +101,7 @@ class ReportingService {
   void SendStagedLog();
 
   // Called after transmission completes (either successfully or with failure).
-  void OnLogUploadComplete(int response_code);
+  void OnLogUploadComplete(int response_code, int error_code);
 
   // Used to interact with the embedder. Weak pointer; must outlive |this|
   // instance.

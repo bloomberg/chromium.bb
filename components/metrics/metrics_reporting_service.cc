@@ -24,27 +24,6 @@ namespace {
 // limit is exceeded.
 const size_t kUploadLogAvoidRetransmitSize = 100 * 1024;
 
-enum ResponseStatus {
-  UNKNOWN_FAILURE,
-  SUCCESS,
-  BAD_REQUEST,  // Invalid syntax or log too large.
-  NO_RESPONSE,
-  NUM_RESPONSE_STATUSES
-};
-
-ResponseStatus ResponseCodeToStatus(int response_code) {
-  switch (response_code) {
-    case -1:
-      return NO_RESPONSE;
-    case 200:
-      return SUCCESS;
-    case 400:
-      return BAD_REQUEST;
-    default:
-      return UNKNOWN_FAILURE;
-  }
-}
-
 }  // namespace
 
 // static
@@ -89,11 +68,10 @@ void MetricsReportingService::LogCellularConstraint(bool upload_canceled) {
                         upload_canceled);
 }
 
-void MetricsReportingService::LogResponseCode(int response_code) {
-  // Log a histogram to track response success vs. failure rates.
-  UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
-                            ResponseCodeToStatus(response_code),
-                            NUM_RESPONSE_STATUSES);
+void MetricsReportingService::LogResponseOrErrorCode(int response_code,
+                                                     int error_code) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LogUpload.ResponseOrErrorCode",
+                              response_code >= 0 ? response_code : error_code);
 }
 
 void MetricsReportingService::LogSuccess(size_t log_size) {

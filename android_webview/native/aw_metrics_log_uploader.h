@@ -16,7 +16,7 @@ namespace android_webview {
 class AwMetricsLogUploader : public ::metrics::MetricsLogUploader {
  public:
   explicit AwMetricsLogUploader(
-      const base::Callback<void(int)>& on_upload_complete);
+      const ::metrics::MetricsLogUploader::UploadCallback& on_upload_complete);
 
   ~AwMetricsLogUploader() override;
 
@@ -25,7 +25,7 @@ class AwMetricsLogUploader : public ::metrics::MetricsLogUploader {
                  const std::string& log_hash) override;
 
  private:
-  const base::Callback<void(int)> on_upload_complete_;
+  const metrics::MetricsLogUploader::UploadCallback on_upload_complete_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsLogUploader);
 };
