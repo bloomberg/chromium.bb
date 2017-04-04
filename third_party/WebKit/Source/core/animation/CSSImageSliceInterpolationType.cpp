@@ -4,24 +4,17 @@
 
 #include "core/animation/CSSImageSliceInterpolationType.h"
 
+#include <memory>
 #include "core/animation/CSSLengthInterpolationType.h"
 #include "core/animation/ImageSlicePropertyFunctions.h"
+#include "core/animation/SideIndex.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
 namespace {
-
-enum SideIndex : unsigned {
-  SideTop,
-  SideRight,
-  SideBottom,
-  SideLeft,
-  SideIndexCount,
-};
 
 struct SliceTypes {
   explicit SliceTypes(const ImageSlice& slice) {

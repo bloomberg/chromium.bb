@@ -59,7 +59,7 @@ enum TranslateComponentIndex : unsigned {
   TranslateComponentIndexCount,
 };
 
-std::unique_ptr<InterpolableValue> createIdentityInterpolableValue() {
+std::unique_ptr<InterpolableValue> createTranslateIdentity() {
   std::unique_ptr<InterpolableList> result =
       InterpolableList::create(TranslateComponentIndexCount);
   result->set(TranslateX,
@@ -96,7 +96,7 @@ InterpolationValue convertTranslateOperation(
 InterpolationValue CSSTranslateInterpolationType::maybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers&) const {
-  return InterpolationValue(createIdentityInterpolableValue());
+  return InterpolationValue(createTranslateIdentity());
 }
 
 InterpolationValue CSSTranslateInterpolationType::maybeConvertInitial(
@@ -153,9 +153,9 @@ PairwiseInterpolationValue CSSTranslateInterpolationType::maybeMergeSingles(
       toInterpolableList(*start.interpolableValue).length();
   size_t endListLength = toInterpolableList(*end.interpolableValue).length();
   if (startListLength < endListLength)
-    start.interpolableValue = createIdentityInterpolableValue();
+    start.interpolableValue = createTranslateIdentity();
   else if (endListLength < startListLength)
-    end.interpolableValue = createIdentityInterpolableValue();
+    end.interpolableValue = createTranslateIdentity();
 
   return PairwiseInterpolationValue(std::move(start.interpolableValue),
                                     std::move(end.interpolableValue));
@@ -178,7 +178,7 @@ void CSSTranslateInterpolationType::composite(
 
   if (isNoneValue(underlyingValueOwner.mutableValue())) {
     underlyingValueOwner.mutableValue().interpolableValue =
-        createIdentityInterpolableValue();
+        createTranslateIdentity();
   }
 
   return CSSInterpolationType::composite(

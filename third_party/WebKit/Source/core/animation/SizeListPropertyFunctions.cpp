@@ -8,8 +8,8 @@
 
 namespace blink {
 
-static const FillLayer* getFillLayer(CSSPropertyID property,
-                                     const ComputedStyle& style) {
+static const FillLayer* getFillLayerForSize(CSSPropertyID property,
+                                            const ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundSize:
       return &style.backgroundLayers();
@@ -21,8 +21,8 @@ static const FillLayer* getFillLayer(CSSPropertyID property,
   }
 }
 
-static FillLayer* accessFillLayer(CSSPropertyID property,
-                                  ComputedStyle& style) {
+static FillLayer* accessFillLayerForSize(CSSPropertyID property,
+                                         ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundSize:
       return &style.accessBackgroundLayers();
@@ -41,7 +41,7 @@ SizeList SizeListPropertyFunctions::getInitialSizeList(CSSPropertyID property) {
 SizeList SizeListPropertyFunctions::getSizeList(CSSPropertyID property,
                                                 const ComputedStyle& style) {
   SizeList result;
-  for (const FillLayer* fillLayer = getFillLayer(property, style);
+  for (const FillLayer* fillLayer = getFillLayerForSize(property, style);
        fillLayer && fillLayer->isSizeSet(); fillLayer = fillLayer->next())
     result.push_back(fillLayer->size());
   return result;
@@ -50,7 +50,7 @@ SizeList SizeListPropertyFunctions::getSizeList(CSSPropertyID property,
 void SizeListPropertyFunctions::setSizeList(CSSPropertyID property,
                                             ComputedStyle& style,
                                             const SizeList& sizeList) {
-  FillLayer* fillLayer = accessFillLayer(property, style);
+  FillLayer* fillLayer = accessFillLayerForSize(property, style);
   FillLayer* prev = nullptr;
   for (const FillSize& size : sizeList) {
     if (!fillLayer)

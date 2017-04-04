@@ -10,8 +10,8 @@ namespace blink {
 
 namespace {
 
-const FillLayer* getFillLayer(CSSPropertyID property,
-                              const ComputedStyle& style) {
+const FillLayer* getFillLayerForPosition(CSSPropertyID property,
+                                         const ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
@@ -25,7 +25,8 @@ const FillLayer* getFillLayer(CSSPropertyID property,
   }
 }
 
-FillLayer* accessFillLayer(CSSPropertyID property, ComputedStyle& style) {
+FillLayer* accessFillLayerForPosition(CSSPropertyID property,
+                                      ComputedStyle& style) {
   switch (property) {
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
@@ -159,7 +160,7 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property,
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY: {
-      const FillLayer* fillLayer = getFillLayer(property, style);
+      const FillLayer* fillLayer = getFillLayerForPosition(property, style);
       FillLayerMethods fillLayerMethods(property);
       while (fillLayer && (fillLayer->*fillLayerMethods.isSet)()) {
         result.push_back((fillLayer->*fillLayerMethods.getLength)());
@@ -241,7 +242,7 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property,
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY: {
-      FillLayer* fillLayer = accessFillLayer(property, style);
+      FillLayer* fillLayer = accessFillLayerForPosition(property, style);
       FillLayer* prev = nullptr;
       FillLayerMethods fillLayerMethods(property);
       for (size_t i = 0; i < lengthList.size(); i++) {

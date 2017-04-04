@@ -31,6 +31,7 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/animation/FontWeightConversion.h"
 #include "core/animation/LengthPropertyFunctions.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/animatable/AnimatableClipPathOperation.h"
@@ -307,32 +308,6 @@ static PassRefPtr<AnimatableValue> createFromTransformProperties(
   if (transform || initialTransform)
     operation.operations().push_back(transform ? transform : initialTransform);
   return AnimatableTransform::create(operation, transform ? zoom : 1);
-}
-
-static double fontWeightToDouble(FontWeight fontWeight) {
-  switch (fontWeight) {
-    case FontWeight100:
-      return 100;
-    case FontWeight200:
-      return 200;
-    case FontWeight300:
-      return 300;
-    case FontWeight400:
-      return 400;
-    case FontWeight500:
-      return 500;
-    case FontWeight600:
-      return 600;
-    case FontWeight700:
-      return 700;
-    case FontWeight800:
-      return 800;
-    case FontWeight900:
-      return 900;
-  }
-
-  NOTREACHED();
-  return 400;
 }
 
 static PassRefPtr<AnimatableValue> createFromFontWeight(FontWeight fontWeight) {

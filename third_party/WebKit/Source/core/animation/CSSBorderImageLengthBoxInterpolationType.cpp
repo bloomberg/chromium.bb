@@ -7,6 +7,7 @@
 #include <memory>
 #include "core/animation/BorderImageLengthBoxPropertyFunctions.h"
 #include "core/animation/LengthInterpolationFunctions.h"
+#include "core/animation/SideIndex.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSQuadValue.h"
 #include "core/css/resolver/StyleResolverState.h"
@@ -15,14 +16,6 @@
 namespace blink {
 
 namespace {
-
-enum SideIndex : unsigned {
-  SideTop,
-  SideRight,
-  SideBottom,
-  SideLeft,
-  SideIndexCount,
-};
 
 enum class SideType {
   Number,

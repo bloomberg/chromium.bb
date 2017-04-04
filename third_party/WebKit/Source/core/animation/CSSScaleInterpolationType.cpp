@@ -55,7 +55,7 @@ struct Scale {
   bool isNone;
 };
 
-std::unique_ptr<InterpolableValue> createIdentityInterpolableValue() {
+std::unique_ptr<InterpolableValue> createScaleIdentity() {
   std::unique_ptr<InterpolableList> list = InterpolableList::create(3);
   for (size_t i = 0; i < 3; i++)
     list->set(i, InterpolableNumber::create(1));
@@ -193,9 +193,9 @@ PairwiseInterpolationValue CSSScaleInterpolationType::maybeMergeSingles(
       toInterpolableList(*start.interpolableValue).length();
   size_t endListLength = toInterpolableList(*end.interpolableValue).length();
   if (startListLength < endListLength)
-    start.interpolableValue = createIdentityInterpolableValue();
+    start.interpolableValue = createScaleIdentity();
   else if (endListLength < startListLength)
-    end.interpolableValue = createIdentityInterpolableValue();
+    end.interpolableValue = createScaleIdentity();
 
   return PairwiseInterpolationValue(
       std::move(start.interpolableValue), std::move(end.interpolableValue),
@@ -218,7 +218,7 @@ void CSSScaleInterpolationType::composite(
   if (toInterpolableList(*underlyingValueOwner.mutableValue().interpolableValue)
           .length() == 0) {
     underlyingValueOwner.mutableValue().interpolableValue =
-        createIdentityInterpolableValue();
+        createScaleIdentity();
   }
 
   const CSSScaleNonInterpolableValue& metadata =
