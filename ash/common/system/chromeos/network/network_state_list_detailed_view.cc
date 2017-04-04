@@ -30,7 +30,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/resources/grit/ash_resources.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -49,9 +49,9 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/label.h"
@@ -475,8 +475,7 @@ views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
 
   controlled_icon->SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_AURA_UBER_TRAY_NETWORK_CONTROLLED));
+      gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
   controlled_icon->SetTooltipText(tooltip_text);
   return controlled_icon;
 }
