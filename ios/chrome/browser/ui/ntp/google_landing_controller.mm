@@ -34,6 +34,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/notification_promo.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
+#import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
@@ -108,44 +109,7 @@ const CGFloat kMostVisitedPaddingIPadFavicon = 24;
 
 }  // namespace
 
-@interface GoogleLandingController ()
-- (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data;
-- (void)onIconMadeAvailable:(const GURL&)siteUrl;
-@end
-
 namespace google_landing {
-
-// MostVisitedSitesObserverBridge allow registration as a
-// MostVisitedSites::Observer.
-class MostVisitedSitesObserverBridge
-    : public ntp_tiles::MostVisitedSites::Observer {
- public:
-  MostVisitedSitesObserverBridge(GoogleLandingController* owner);
-  ~MostVisitedSitesObserverBridge() override;
-
-  // MostVisitedSites::Observer implementation.
-  void OnMostVisitedURLsAvailable(
-      const ntp_tiles::NTPTilesVector& most_visited) override;
-  void OnIconMadeAvailable(const GURL& site_url) override;
-
- private:
-  GoogleLandingController* _owner;
-};
-
-MostVisitedSitesObserverBridge::MostVisitedSitesObserverBridge(
-    GoogleLandingController* owner)
-    : _owner(owner) {}
-
-MostVisitedSitesObserverBridge::~MostVisitedSitesObserverBridge() {}
-
-void MostVisitedSitesObserverBridge::OnMostVisitedURLsAvailable(
-    const ntp_tiles::NTPTilesVector& tiles) {
-  [_owner onMostVisitedURLsAvailable:tiles];
-}
-
-void MostVisitedSitesObserverBridge::OnIconMadeAvailable(const GURL& site_url) {
-  [_owner onIconMadeAvailable:site_url];
-}
 
 // Observer used to hide the Google logo and doodle if the TemplateURLService
 // changes.
@@ -220,7 +184,8 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
 @end
 
-@interface GoogleLandingController ()<OverscrollActionsControllerDelegate,
+@interface GoogleLandingController ()<MostVisitedSitesObserving,
+                                      OverscrollActionsControllerDelegate,
                                       UICollectionViewDataSource,
                                       UICollectionViewDelegate,
                                       UICollectionViewDelegateFlowLayout,
@@ -267,7 +232,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 
   // A MostVisitedSites::Observer bridge object to get notified of most visited
   // sites changes.
-  std::unique_ptr<google_landing::MostVisitedSitesObserverBridge>
+  std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge>
       _most_visited_observer_bridge;
 
   std::unique_ptr<ntp_tiles::MostVisitedSites> _most_visited_sites;
@@ -930,7 +895,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   _most_visited_sites =
       IOSMostVisitedSitesFactory::NewForBrowserState(_browserState);
   _most_visited_observer_bridge.reset(
-      new google_landing::MostVisitedSitesObserverBridge(self));
+      new ntp_tiles::MostVisitedSitesObserverBridge(self));
   _most_visited_sites->SetMostVisitedURLsObserver(
       _most_visited_observer_bridge.get(), kMaxNumMostVisitedFavicons);
 }
@@ -1096,34 +1061,6 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
   ntp_tiles::metrics::RecordTileClick(visitedIndex, tile.source, tileType);
 }
 
-- (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data {
-  _mostVisitedData = data;
-  [self reloadData];
-
-  if (data.size() && !_recordedPageImpression) {
-    _recordedPageImpression = YES;
-    std::vector<ntp_tiles::metrics::TileImpression> tiles;
-    for (const ntp_tiles::NTPTile& ntpTile : data) {
-      tiles.emplace_back(ntpTile.source, ntp_tiles::metrics::UNKNOWN_TILE_TYPE,
-                         ntpTile.url);
-    }
-    ntp_tiles::metrics::RecordPageImpression(
-        tiles, GetApplicationContext()->GetRapporServiceImpl());
-  }
-}
-
-- (void)onIconMadeAvailable:(const GURL&)siteUrl {
-  for (size_t i = 0; i < [self numberOfItems]; ++i) {
-    const ntp_tiles::NTPTile& ntpTile = _mostVisitedData[i];
-    if (ntpTile.url == siteUrl) {
-      NSIndexPath* indexPath =
-          [NSIndexPath indexPathForRow:i inSection:SectionWithMostVisited];
-      [_mostVisitedView reloadItemsAtIndexPaths:@[ indexPath ]];
-      break;
-    }
-  }
-}
-
 - (void)reloadData {
   // -reloadData updates from |_mostVisitedData|.
   // -invalidateLayout is necessary because sometimes the flowLayout has the
@@ -1159,6 +1096,36 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     }
   }
   return headerHeight;
+}
+
+#pragma mark - MostVisitedSitesObserving
+
+- (void)onMostVisitedURLsAvailable:(const ntp_tiles::NTPTilesVector&)data {
+  _mostVisitedData = data;
+  [self reloadData];
+
+  if (data.size() && !_recordedPageImpression) {
+    _recordedPageImpression = YES;
+    std::vector<ntp_tiles::metrics::TileImpression> tiles;
+    for (const ntp_tiles::NTPTile& ntpTile : data) {
+      tiles.emplace_back(ntpTile.source, ntp_tiles::metrics::UNKNOWN_TILE_TYPE,
+                         ntpTile.url);
+    }
+    ntp_tiles::metrics::RecordPageImpression(
+        tiles, GetApplicationContext()->GetRapporServiceImpl());
+  }
+}
+
+- (void)onIconMadeAvailable:(const GURL&)siteUrl {
+  for (size_t i = 0; i < [self numberOfItems]; ++i) {
+    const ntp_tiles::NTPTile& ntpTile = _mostVisitedData[i];
+    if (ntpTile.url == siteUrl) {
+      NSIndexPath* indexPath =
+          [NSIndexPath indexPathForRow:i inSection:SectionWithMostVisited];
+      [_mostVisitedView reloadItemsAtIndexPaths:@[ indexPath ]];
+      break;
+    }
+  }
 }
 
 #pragma mark - UICollectionView Methods.
