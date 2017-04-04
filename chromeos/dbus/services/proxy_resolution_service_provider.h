@@ -103,12 +103,27 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
   void ResolveProxy(dbus::MethodCall* method_call,
                     dbus::ExportedObject::ResponseSender response_sender);
 
+  // Callback passed to network thread static methods to run
+  // NotifyProxyResolved() on |origin_thread_|. This callback can be bound to a
+  // WeakPtr from |weak_ptr_factory_| (since the pointer will be dereferenced on
+  // |origin_thread_|), but the network methods can't (since WeakPtr disallows
+  // use on threads besides the one where it was created) and are static as a
+  // result.
+  using NotifyCallback = base::Callback<void(std::unique_ptr<Request>)>;
+
   // Helper method for ResolveProxy() that runs on network thread.
-  void ResolveProxyOnNetworkThread(std::unique_ptr<Request> request);
+  static void ResolveProxyOnNetworkThread(
+      std::unique_ptr<Request> request,
+      scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
+      NotifyCallback notify_callback);
 
   // Callback on network thread for when net::ProxyService::ResolveProxy()
   // completes, synchronously or asynchronously.
-  void OnResolutionComplete(std::unique_ptr<Request> request, int result);
+  static void OnResolutionComplete(
+      std::unique_ptr<Request> request,
+      scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
+      NotifyCallback notify_callback,
+      int result);
 
   // Called on UI thread from OnResolutionComplete() to pass the resolved proxy
   // information to the client over D-Bus.

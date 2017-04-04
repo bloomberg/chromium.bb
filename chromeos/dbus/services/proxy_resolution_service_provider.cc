@@ -163,6 +163,10 @@ void ProxyResolutionServiceProvider::ResolveProxy(
           : base::MakeUnique<Request>(source_url, std::move(response),
                                       response_sender, context_getter);
 
+  NotifyCallback notify_callback =
+      base::Bind(&ProxyResolutionServiceProvider::NotifyProxyResolved,
+                 weak_ptr_factory_.GetWeakPtr());
+
   // This would ideally call PostTaskAndReply() instead of PostTask(), but
   // ResolveProxyOnNetworkThread()'s call to net::ProxyService::ResolveProxy()
   // can result in an asynchronous lookup, in which case the result won't be
@@ -170,8 +174,8 @@ void ProxyResolutionServiceProvider::ResolveProxy(
   context_getter->GetNetworkTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(request))));
+                 base::Passed(std::move(request)), origin_thread_,
+                 notify_callback));
 
   // If we didn't already pass the response to the Request object because we're
   // returning data via a signal, send an empty response immediately.
@@ -179,8 +183,11 @@ void ProxyResolutionServiceProvider::ResolveProxy(
     response_sender.Run(std::move(response));
 }
 
+// static
 void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
-    std::unique_ptr<Request> request) {
+    std::unique_ptr<Request> request,
+    scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
+    NotifyCallback notify_callback) {
   DCHECK(request->context_getter->GetNetworkTaskRunner()
              ->BelongsToCurrentThread());
 
@@ -188,14 +195,15 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
       request->context_getter->GetURLRequestContext()->proxy_service();
   if (!proxy_service) {
     request->error = "No proxy service in chrome";
-    OnResolutionComplete(std::move(request), net::ERR_UNEXPECTED);
+    OnResolutionComplete(std::move(request), notify_thread, notify_callback,
+                         net::ERR_UNEXPECTED);
     return;
   }
 
   Request* request_ptr = request.get();
   net::CompletionCallback callback = base::Bind(
       &ProxyResolutionServiceProvider::OnResolutionComplete,
-      weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(request)));
+      base::Passed(std::move(request)), notify_thread, notify_callback);
 
   VLOG(1) << "Starting network proxy resolution for "
           << request_ptr->source_url;
@@ -208,8 +216,11 @@ void ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread(
   }
 }
 
+// static
 void ProxyResolutionServiceProvider::OnResolutionComplete(
     std::unique_ptr<Request> request,
+    scoped_refptr<base::SingleThreadTaskRunner> notify_thread,
+    NotifyCallback notify_callback,
     int result) {
   DCHECK(request->context_getter->GetNetworkTaskRunner()
              ->BelongsToCurrentThread());
@@ -217,11 +228,8 @@ void ProxyResolutionServiceProvider::OnResolutionComplete(
   if (request->error.empty() && result != net::OK)
     request->error = net::ErrorToString(result);
 
-  origin_thread_->PostTask(
-      FROM_HERE,
-      base::Bind(&ProxyResolutionServiceProvider::NotifyProxyResolved,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(std::move(request))));
+  notify_thread->PostTask(
+      FROM_HERE, base::Bind(notify_callback, base::Passed(std::move(request))));
 }
 
 void ProxyResolutionServiceProvider::NotifyProxyResolved(

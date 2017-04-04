@@ -5,11 +5,16 @@
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/thread_test_helper.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/services/service_provider_test_helper.h"
 #include "dbus/message.h"
 #include "net/base/net_errors.h"
@@ -29,6 +34,17 @@ namespace {
 // signal, to the following signal interface and the signal name.
 const char kReturnSignalInterface[] = "org.chromium.TestInterface";
 const char kReturnSignalName[] = "TestSignal";
+
+// Maximum time to wait for D-Bus signals to be received, in seconds.
+int kSignalTimeoutSec = 60;
+
+// Runs pending, non-delayed tasks on |task_runner|. Note that delayed tasks or
+// additional tasks posted by pending tests will not be run.
+void RunPendingTasks(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  scoped_refptr<base::ThreadTestHelper> helper =
+      new base::ThreadTestHelper(task_runner);
+  ASSERT_TRUE(helper->Run());
+}
 
 // Trivial net::ProxyResolver implementation that returns canned data either
 // synchronously or asynchronously.
@@ -110,6 +126,30 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
       : proxy_resolver_(proxy_resolver),
         context_getter_(
             new net::TestURLRequestContextGetter(network_task_runner)) {
+    network_task_runner->PostTask(
+        FROM_HERE, base::Bind(&TestDelegate::CreateProxyServiceOnNetworkThread,
+                              base::Unretained(this)));
+    RunPendingTasks(network_task_runner);
+  }
+
+  ~TestDelegate() override {
+    context_getter_->GetNetworkTaskRunner()->PostTask(
+        FROM_HERE, base::Bind(&TestDelegate::DeleteProxyServiceOnNetworkThread,
+                              base::Unretained(this)));
+    RunPendingTasks(context_getter_->GetNetworkTaskRunner());
+  }
+
+  // ProxyResolutionServiceProvider::Delegate:
+  scoped_refptr<net::URLRequestContextGetter> GetRequestContext() override {
+    return context_getter_;
+  }
+
+ private:
+  // Helper method for the constructor that initializes |proxy_service_| and
+  // injects it into |context_getter_|'s context.
+  void CreateProxyServiceOnNetworkThread() {
+    CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
+
     // The config's autodetect property needs to be set in order for
     // net::ProxyService to send requests to our resolver.
     net::ProxyConfig config = net::ProxyConfig::CreateAutoDetect();
@@ -120,16 +160,19 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
     context_getter_->GetURLRequestContext()->set_proxy_service(
         proxy_service_.get());
   }
-  ~TestDelegate() override = default;
 
-  // ProxyResolutionServiceProvider::Delegate:
-  scoped_refptr<net::URLRequestContextGetter> GetRequestContext() override {
-    return context_getter_;
+  // Helper method for the destructor that resets |proxy_service_|.
+  void DeleteProxyServiceOnNetworkThread() {
+    CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
+    proxy_service_.reset();
   }
 
- private:
   net::ProxyResolver* proxy_resolver_;  // Not owned.
+
+  // Created, used, and destroyed on the network thread (since net::ProxyService
+  // derives from base::NonThreadSafe).
   std::unique_ptr<net::ProxyService> proxy_service_;
+
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
@@ -139,20 +182,26 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
 
 class ProxyResolutionServiceProviderTest : public testing::Test {
  public:
-  ProxyResolutionServiceProviderTest() = default;
-  ~ProxyResolutionServiceProviderTest() override = default;
+  ProxyResolutionServiceProviderTest() : network_thread_("NetworkThread") {
+    CHECK(network_thread_.Start());
 
-  // testing::Test:
-  void SetUp() override {
-    proxy_resolver_ = base::MakeUnique<TestProxyResolver>(
-        base::ThreadTaskRunnerHandle::Get());
+    proxy_resolver_ =
+        base::MakeUnique<TestProxyResolver>(network_thread_.task_runner());
     service_provider_ = base::MakeUnique<ProxyResolutionServiceProvider>(
-        base::MakeUnique<TestDelegate>(base::ThreadTaskRunnerHandle::Get(),
+        base::MakeUnique<TestDelegate>(network_thread_.task_runner(),
                                        proxy_resolver_.get()));
     test_helper_.SetUp(kResolveNetworkProxy, service_provider_.get());
   }
-  void TearDown() override {
+
+  ~ProxyResolutionServiceProviderTest() override {
     test_helper_.TearDown();
+
+    // URLRequestContextGetter posts a task to delete itself to its task runner,
+    // so give it a chance to do that.
+    service_provider_.reset();
+    RunPendingTasks(network_thread_.task_runner());
+
+    network_thread_.Stop();
   }
 
  protected:
@@ -176,6 +225,11 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     EXPECT_TRUE(reader.PopString(&signal_->source_url));
     EXPECT_TRUE(reader.PopString(&signal_->proxy_info));
     EXPECT_TRUE(reader.PopString(&signal_->error_message));
+
+    // Stop the message loop.
+    ASSERT_FALSE(quit_closure_.is_null()) << "Unexpected D-Bus signal";
+    quit_closure_.Run();
+    quit_closure_.Reset();
   }
 
   // Called when connected to a signal.
@@ -216,16 +270,35 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     }
 
     *response_out = test_helper_.CallMethod(&method_call);
-    base::RunLoop().RunUntilIdle();
+
+    // If a signal is being emitted, run the main message loop until it's
+    // received or we get tired of waiting.
+    if (request_signal) {
+      base::RunLoop run_loop;
+      quit_closure_ = run_loop.QuitClosure();
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, quit_closure_,
+          base::TimeDelta::FromSeconds(kSignalTimeoutSec));
+      run_loop.Run();
+    }
+
     *signal_out = std::move(signal_);
   }
+
+  // Thread used to perform network operations.
+  base::Thread network_thread_;
 
   // Information about the last D-Bus signal received by OnSignalReceived().
   std::unique_ptr<SignalInfo> signal_;
 
+  // Closure used to stop the message loop after receiving a D-Bus signal.
+  base::Closure quit_closure_;
+
   std::unique_ptr<TestProxyResolver> proxy_resolver_;
   std::unique_ptr<ProxyResolutionServiceProvider> service_provider_;
   ServiceProviderTestHelper test_helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProviderTest);
 };
 
 // Tests that synchronously-resolved proxy information is returned via a signal.
