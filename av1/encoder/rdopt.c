@@ -1449,9 +1449,14 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         tmp = 0;
     } else
 #endif  // CONFIG_DAALA_DIST
-      tmp = pixel_sse(cpi, xd, plane, src, src_stride, dst, dst_stride, blk_row,
-                      blk_col, plane_bsize, tx_bsize);
-
+    {
+      const int diff_stride = block_size_wide[plane_bsize];
+      const int diff_idx = (blk_row * diff_stride + blk_col)
+                           << tx_size_wide_log2[0];
+      const int16_t *diff = &p->src_diff[diff_idx];
+      tmp = sum_squares_visible(xd, plane, diff, diff_stride, blk_row, blk_col,
+                                plane_bsize, tx_bsize);
+    }
     *out_sse = (int64_t)tmp * 16;
 
     if (eob) {
@@ -1473,6 +1478,8 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         aom_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0, NULL, 0,
                           bsw, bsh);
       }
+#else
+      (void)dst;
 #endif  // !CONFIG_PVQ
 
       const int block_raster_idx =
