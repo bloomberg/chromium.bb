@@ -95,7 +95,7 @@ void SetupOnUI(
                 service_worker_version_id, url, scope),
             is_installed);
     if (request.is_pending())
-      rph->GetRemoteInterfaces()->GetInterface(std::move(request));
+      BindInterface(rph, std::move(request));
   }
   BrowserThread::PostTask(
       BrowserThread::IO,

@@ -29,8 +29,8 @@
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/java_interfaces.h"
 #include "media/mojo/interfaces/android_overlay.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -147,7 +147,7 @@ GpuProcessHostUIShim::~GpuProcessHostUIShim() {
 #if defined(OS_ANDROID)
 // static
 void GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(
-    service_manager::InterfaceRegistry* registry) {
+    service_manager::BinderRegistry* registry) {
   registry->AddInterface(base::Bind(
       &BindJavaInterfaceOnUIThread<media::mojom::AndroidOverlayProvider>));
 }

@@ -34,7 +34,7 @@ class X509Certificate;
 }
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace chromecast {
@@ -164,7 +164,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
                        content::ResourceContext* context,
                        bool* no_javascript_access) override;
   void ExposeInterfacesToRenderer(
-      service_manager::InterfaceRegistry* registry,
+      service_manager::BinderRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   std::unique_ptr<base::Value> GetServiceManifestOverlay(

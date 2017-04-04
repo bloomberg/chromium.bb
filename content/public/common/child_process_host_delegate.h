@@ -10,13 +10,10 @@
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
 class Channel;
-}
-
-namespace service_manager {
-class InterfaceProvider;
 }
 
 namespace content {
@@ -43,10 +40,9 @@ class ChildProcessHostDelegate : public IPC::Listener {
   // OnProcessLaunched is called or it will be invalid and may crash.
   virtual const base::Process& GetProcess() const = 0;
 
-  // Returns the service_manager::InterfaceProvider the process host can use to
-  // bind interfaces exposed to it from the child.
-  CONTENT_EXPORT virtual service_manager::InterfaceProvider*
-  GetRemoteInterfaces();
+  // Binds an interface in the child process.
+  virtual void BindInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe) {}
 };
 
 };  // namespace content

@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   rph->AddObserver(this);
 
   mojom::TestServicePtr service;
-  rph->GetRemoteInterfaces()->GetInterface(&service);
+  BindInterface(rph, &service);
 
   base::RunLoop run_loop;
   set_process_exit_callback(run_loop.QuitClosure());
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
   rph->AddObserver(this);
 
   mojom::TestServicePtr service;
-  rph->GetRemoteInterfaces()->GetInterface(&service);
+  BindInterface(rph, &service);
 
   {
     // Force a bad message event to occur which will terminate the renderer.

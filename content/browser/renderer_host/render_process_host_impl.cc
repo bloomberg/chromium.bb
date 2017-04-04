@@ -183,10 +183,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
@@ -519,7 +519,7 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
  public:
   ConnectionFilterImpl(
       const service_manager::Identity& child_identity,
-      std::unique_ptr<service_manager::InterfaceRegistry> registry)
+      std::unique_ptr<service_manager::BinderRegistry> registry)
       : child_identity_(child_identity),
         registry_(std::move(registry)),
         controller_(new ConnectionFilterController(this)),
@@ -546,48 +546,31 @@ class RenderProcessHostImpl::ConnectionFilterImpl : public ConnectionFilter {
 
  private:
   // ConnectionFilter:
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry,
-                 service_manager::Connector* connector) override {
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle* interface_pipe,
+                       service_manager::Connector* connector) override {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // We only fulfill connections from the renderer we host.
-    if (child_identity_.name() != remote_identity.name() ||
-        child_identity_.instance() != remote_identity.instance()) {
-      return false;
+    if (child_identity_.name() != source_info.identity.name() ||
+        child_identity_.instance() != source_info.identity.instance()) {
+      return;
     }
 
     base::AutoLock lock(enabled_lock_);
     if (!enabled_)
-      return false;
+      return;
 
-    std::set<std::string> interface_names;
-    registry_->GetInterfaceNames(&interface_names);
-    for (auto& interface_name : interface_names) {
-      // Note that the added callbacks may outlive this object, which is
-      // destroyed in RPH::Cleanup().
-      registry->AddInterface(interface_name,
-                             base::Bind(&ConnectionFilterImpl::GetInterface,
-                                        weak_factory_.GetWeakPtr(),
-                                        interface_name));
+    if (registry_->CanBindInterface(interface_name)) {
+      registry_->BindInterface(source_info.identity, interface_name,
+                               std::move(*interface_pipe));
     }
-    return true;
-  }
-
-  void GetInterface(const std::string& interface_name,
-                    mojo::ScopedMessagePipeHandle handle) {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    service_manager::mojom::InterfaceProvider* provider = registry_.get();
-
-    base::AutoLock lock(enabled_lock_);
-    if (enabled_)
-      provider->GetInterface(interface_name, std::move(handle));
   }
 
   base::ThreadChecker thread_checker_;
   service_manager::Identity child_identity_;
-  std::unique_ptr<service_manager::InterfaceRegistry> registry_;
+  std::unique_ptr<service_manager::BinderRegistry> registry_;
   scoped_refptr<ConnectionFilterController> controller_;
 
   // Guards |enabled_|.
@@ -983,11 +966,11 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   // request will happily sit on the pipe until the process is launched and
   // connected to the ServiceManager. We take the other end immediately and
   // plug it into a new ChannelProxy.
-  IPC::mojom::ChannelBootstrapPtr bootstrap;
-  GetRemoteInterfaces()->GetInterface(&bootstrap);
+  mojo::MessagePipe pipe;
+  BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
   std::unique_ptr<IPC::ChannelFactory> channel_factory =
-      IPC::ChannelMojo::CreateServerFactory(
-          bootstrap.PassInterface().PassHandle(), io_task_runner);
+      IPC::ChannelMojo::CreateServerFactory(std::move(pipe.handle0),
+                                            io_task_runner);
 
   ResetChannelProxy();
 
@@ -1207,8 +1190,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
-  auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-      service_manager::mojom::kServiceManager_ConnectorSpec);
+  auto registry = base::MakeUnique<service_manager::BinderRegistry>();
 
   channel_->AddAssociatedInterfaceForIOThread(
       base::Bind(&IndexedDBDispatcherHost::AddBinding, indexed_db_factory_));
@@ -1404,9 +1386,10 @@ void RenderProcessHostImpl::ResumeDeferredNavigation(
   widget_helper_->ResumeDeferredNavigation(request_id);
 }
 
-service_manager::InterfaceProvider*
-RenderProcessHostImpl::GetRemoteInterfaces() {
-  return child_connection_->GetRemoteInterfaces();
+void RenderProcessHostImpl::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  child_connection_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
 std::unique_ptr<base::SharedPersistentMemoryAllocator>

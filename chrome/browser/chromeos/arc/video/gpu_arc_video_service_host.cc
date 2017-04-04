@@ -28,7 +28,7 @@ namespace {
 
 void ConnectToVideoAcceleratorServiceOnIOThread(
     mojom::VideoAcceleratorServiceRequest request) {
-  content::GetGpuRemoteInterfaces()->GetInterface(std::move(request));
+  content::BindInterfaceInGpuProcess(std::move(request));
 }
 
 }  // namespace

@@ -16,6 +16,7 @@
 #include "base/process/process_handle.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
 #include "media/media_features.h"
@@ -30,10 +31,6 @@ class TimeDelta;
 
 namespace media {
 class AudioOutputController;
-}
-
-namespace service_manager {
-class InterfaceProvider;
 }
 
 namespace content {
@@ -276,10 +273,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // transferring it to a new renderer process.
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id) = 0;
 
-  // Returns the service_manager::InterfaceProvider the browser process can use
-  // to bind
-  // interfaces exposed to it from the renderer.
-  virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
+  // Binds interfaces exposed to the browser process from the renderer.
+  virtual void BindInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data

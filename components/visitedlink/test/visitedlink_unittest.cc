@@ -35,7 +35,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -597,9 +596,7 @@ class VisitRelayingRenderProcessHost : public MockRenderProcessHost {
       content::BrowserContext* browser_context,
       VisitCountingContext* context)
       : MockRenderProcessHost(browser_context), widgets_(0) {
-    SetRemoteInterfaces(base::MakeUnique<service_manager::InterfaceProvider>());
-    service_manager::InterfaceProvider::TestApi test_api(GetRemoteInterfaces());
-    test_api.SetBinderForName(
+    OverrideBinderForTesting(
         mojom::VisitedLinkNotificationSink::Name_,
         base::Bind(&VisitCountingContext::Bind, base::Unretained(context)));
     content::NotificationService::current()->Notify(

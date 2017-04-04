@@ -65,8 +65,10 @@ class CdmFactory;
 }
 
 namespace service_manager {
+class BinderRegistry;
 class InterfaceRegistry;
 class Service;
+struct ServiceInfo;
 }
 
 namespace net {
@@ -109,7 +111,6 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
-class GpuProcessHost;
 class MediaObserver;
 class MemoryCoordinatorDelegate;
 class NavigationHandle;
@@ -659,7 +660,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // |registry| will by default be run immediately on the IO thread, unless a
   // task runner is provided.
   virtual void ExposeInterfacesToRenderer(
-      service_manager::InterfaceRegistry* registry,
+      service_manager::BinderRegistry* registry,
       RenderProcessHost* render_process_host) {}
 
   // Called when RenderFrameHostImpl connects to the Media service. Expose
@@ -674,13 +675,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       service_manager::InterfaceRegistry* registry,
       RenderFrameHost* render_frame_host) {}
 
-  // Allows to register browser Mojo interfaces exposed through the
-  // GpuProcessHost. Called on the IO thread. Note that interface factory
-  // callbacks added to |registry| will by default be run immediately on the IO
-  // thread, unless a task runner is provided.
-  virtual void ExposeInterfacesToGpuProcess(
-      service_manager::InterfaceRegistry* registry,
-      GpuProcessHost* render_process_host) {}
+  // (Currently called only from GPUProcessHost, move somewhere more central).
+  // Called when a request to bind |interface_name| on |interface_pipe| is
+  // received from |source_info.identity|. If the request is bound,
+  // |interface_pipe| will become invalid (taken by the client).
+  virtual void BindInterfaceRequest(
+      const service_manager::ServiceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) {}
 
   using StaticServiceMap = std::map<std::string, ServiceInfo>;
 

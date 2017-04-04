@@ -2929,12 +2929,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
         weak_ptr_factory_.GetWeakPtr()));
   }
 
-  if (!GetProcess()->GetRemoteInterfaces())
-    return;
-
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
-  GetProcess()->GetRemoteInterfaces()->GetInterface(&frame_factory);
+  BindInterface(GetProcess(), &frame_factory);
   frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_),
                              frame_host_binding_.CreateInterfacePtrAndBind());
 

@@ -39,10 +39,6 @@ class SyncChannel;
 class SyncMessageFilter;
 }  // namespace IPC
 
-namespace service_manager {
-class Connection;
-}  // namespace service_manager
-
 namespace mojo {
 namespace edk {
 class ScopedIPCSupport;
@@ -252,7 +248,6 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<service_manager::InterfaceRegistry> interface_registry_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
-  std::unique_ptr<service_manager::Connection> browser_connection_;
 
   bool connected_to_browser_ = false;
   service_manager::ServiceInfo child_info_;

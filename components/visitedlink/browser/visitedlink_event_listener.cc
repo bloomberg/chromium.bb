@@ -44,9 +44,8 @@ class VisitedLinkUpdater {
       : reset_needed_(false),
         invalidate_hashes_(false),
         render_process_id_(render_process_id) {
-    content::RenderProcessHost::FromID(render_process_id)
-        ->GetRemoteInterfaces()
-        ->GetInterface(&sink_);
+    BindInterface(content::RenderProcessHost::FromID(render_process_id),
+                  &sink_);
   }
 
   // Informs the renderer about a new visited link table.

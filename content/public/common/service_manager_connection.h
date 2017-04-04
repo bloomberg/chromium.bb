@@ -82,11 +82,10 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // implementation. Use this to initiate connections as this object's Identity.
   virtual service_manager::Connector* GetConnector() = 0;
 
-  // Returns this connection's identity with the Service Manager. Connections
-  // initiated via the service_manager::Connector returned by GetConnector()
-  // will use
-  // this.
-  virtual const service_manager::Identity& GetIdentity() const = 0;
+  // Returns the service_manager::ServiceInfo for the current service and the
+  // browser service (if this is not the browser service).
+  virtual const service_manager::ServiceInfo& GetLocalInfo() const = 0;
+  virtual const service_manager::ServiceInfo& GetBrowserInfo() const = 0;
 
   // Sets a closure that is called when the connection is lost. Note that
   // connection may already have been closed, in which case |closure| will be

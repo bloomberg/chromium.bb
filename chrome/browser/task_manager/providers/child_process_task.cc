@@ -124,10 +124,7 @@ void ConnectResourceReporterOnIOThread(
   if (!host)
     return;
 
-  service_manager::InterfaceProvider* interfaces =
-      host->GetHost()->GetRemoteInterfaces();
-  if (interfaces)
-    interfaces->GetInterface(std::move(resource_reporter));
+  BindInterface(host->GetHost(), std::move(resource_reporter));
 }
 
 // Creates the Mojo service wrapper that will be used to sample the V8 memory

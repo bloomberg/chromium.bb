@@ -17,14 +17,12 @@ mojo::ScopedMessagePipeHandle BindInterface(
     const Identity& source,
     const Identity& target,
     const std::string& interface_name) {
-  mojom::InterfaceProviderPtr remote_interfaces;
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(source);
   params->set_target(target);
-  params->set_remote_interfaces(mojo::MakeRequest(&remote_interfaces));
-  service_manager->Connect(std::move(params));
   mojo::MessagePipe pipe;
-  remote_interfaces->GetInterface(interface_name, std::move(pipe.handle1));
+  params->set_interface_request_info(interface_name, std::move(pipe.handle1));
+  service_manager->Connect(std::move(params));
   return std::move(pipe.handle0);
 }
 

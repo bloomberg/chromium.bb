@@ -69,7 +69,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void CreateChannelMojo() override;
   bool IsChannelOpening() override;
   void AddFilter(IPC::MessageFilter* filter) override;
-  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
   friend class ChildProcessHost;

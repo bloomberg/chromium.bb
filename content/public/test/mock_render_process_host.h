@@ -32,6 +32,8 @@ class RenderWidgetHost;
 // IPC messages are sent into the message sink for inspection by tests.
 class MockRenderProcessHost : public RenderProcessHost {
  public:
+  using InterfaceBinder = base::Callback<void(mojo::ScopedMessagePipeHandle)>;
+
   explicit MockRenderProcessHost(BrowserContext* browser_context);
   ~MockRenderProcessHost() override;
 
@@ -99,7 +101,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       const WebRtcRtpPacketCallback& packet_callback) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
-  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
@@ -145,10 +148,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override {}
 
-  void SetRemoteInterfaces(
-      std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces) {
-    remote_interfaces_ = std::move(remote_interfaces);
-  }
+  void OverrideBinderForTesting(const std::string& interface_name,
+                                const InterfaceBinder& binder);
 
  private:
   // Stores IPC messages that would have been sent to the renderer.
@@ -169,9 +170,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool is_process_backgrounded_;
   std::unique_ptr<base::ProcessHandle> process_handle;
   int worker_ref_count_;
-  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces_;
   std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
       renderer_interface_;
+  std::map<std::string, InterfaceBinder> binder_overrides_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

@@ -52,10 +52,6 @@ class ShaderDiskCache;
 struct SyncToken;
 }
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace content {
 class BrowserChildProcessHostImpl;
 
@@ -101,7 +97,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
       bool force_create,
       const base::Callback<void(GpuProcessHost*)>& callback);
 
-  service_manager::InterfaceProvider* GetRemoteInterfaces();
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe);
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.

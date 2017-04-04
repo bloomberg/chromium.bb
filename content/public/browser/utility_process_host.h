@@ -10,15 +10,15 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
-
-namespace service_manager {
-class InterfaceProvider;
 }
 
 namespace content {
@@ -33,8 +33,7 @@ struct ChildProcessData;
 // StartBatchMode(), then multiple calls to StartFooBar(p), then finish with
 // EndBatchMode().
 // If you need to bind Mojo interfaces, use Start() to start the child
-// process and GetRemoteInterfaces() to get the utility process'
-// service_manager::InterfaceProvider.
+// process and then call BindInterface().
 //
 // Note: If your class keeps a ptr to an object of this type, grab a weak ptr to
 // avoid a use after free since this object is deleted synchronously but the
@@ -82,10 +81,9 @@ class UtilityProcessHost : public IPC::Sender {
   // Starts the utility process.
   virtual bool Start() = 0;
 
-  // Returns the service_manager::InterfaceProvider the browser process can use
-  // to bind
-  // interfaces exposed to it from the utility process.
-  virtual service_manager::InterfaceProvider* GetRemoteInterfaces() = 0;
+  // Bind an interface exposed by the utility process.
+  virtual void BindInterface(const std::string& interface_name,
+                             mojo::ScopedMessagePipeHandle interface_pipe) = 0;
 
   // Set the name of the process to appear in the task manager.
   virtual void SetName(const base::string16& name) = 0;

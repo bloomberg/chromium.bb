@@ -24,6 +24,7 @@
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_service_registry.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
@@ -68,8 +69,7 @@ void StartServiceInUtilityProcess(
     process_host->DisableSandbox();
   process_host->Start();
   service_manager::mojom::ServiceFactoryPtr service_factory;
-  process_host->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&service_factory));
+  BindInterface(process_host, mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
 }
 
@@ -90,8 +90,7 @@ void StartServiceInGpuProcess(const std::string& service_name,
   // process is dead. In that case, |request| will be dropped and application
   // load requests through ServiceFactory will also fail. Make sure we handle
   // these cases correctly.
-  process_host->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&service_factory));
+  BindInterfaceInGpuProcess(mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
 }
 

@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "content::mojom::Child",
           "IPC::mojom::ChannelBootstrap",
           "service_manager::mojom::ServiceFactory",
           "ui::mojom::GpuMain"

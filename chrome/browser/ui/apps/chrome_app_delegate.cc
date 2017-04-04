@@ -311,7 +311,7 @@ void ChromeAppDelegate::SetWebContentsBlocked(
   content::RenderFrameHost* host = web_contents->GetMainFrame();
   if (host) {
     extensions::mojom::AppWindowPtr app_window;
-    host->GetProcess()->GetRemoteInterfaces()->GetInterface(&app_window);
+    BindInterface(host->GetProcess(), &app_window);
     app_window->SetVisuallyDeemphasized(blocked);
   }
 }

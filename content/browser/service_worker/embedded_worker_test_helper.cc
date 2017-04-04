@@ -115,7 +115,10 @@ void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
 // static
 void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
     const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-    mojom::EmbeddedWorkerInstanceClientRequest request) {
+    mojo::ScopedMessagePipeHandle request_handle) {
+  mojom::EmbeddedWorkerInstanceClientRequest request =
+      mojo::MakeRequest<mojom::EmbeddedWorkerInstanceClient>(
+          std::move(request_handle));
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>* clients =
       helper->mock_instance_clients();
   size_t next_client_index = helper->mock_instance_clients_next_index_;
@@ -293,11 +296,12 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                                          dispatcher_host.get());
   dispatcher_hosts_[mock_render_process_id_] = std::move(dispatcher_host);
 
-  // Setup process level interface registry.
-  render_process_interface_registry_ =
-      CreateInterfaceRegistry(render_process_host_.get());
-  new_render_process_interface_registry_ =
-      CreateInterfaceRegistry(new_render_process_host_.get());
+  render_process_host_->OverrideBinderForTesting(
+      mojom::EmbeddedWorkerInstanceClient::Name_,
+      base::Bind(&MockEmbeddedWorkerInstanceClient::Bind, AsWeakPtr()));
+  new_render_process_host_->OverrideBinderForTesting(
+      mojom::EmbeddedWorkerInstanceClient::Name_,
+      base::Bind(&MockEmbeddedWorkerInstanceClient::Bind, AsWeakPtr()));
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
@@ -767,26 +771,6 @@ void EmbeddedWorkerTestHelper::OnPaymentRequestEventStub(
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {
   DCHECK(context());
   return context()->embedded_worker_registry();
-}
-
-std::unique_ptr<service_manager::InterfaceRegistry>
-EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
-  auto registry =
-      base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
-  registry->AddInterface(
-      base::Bind(&MockEmbeddedWorkerInstanceClient::Bind, AsWeakPtr()));
-
-  service_manager::mojom::InterfaceProviderPtr interfaces;
-  registry->Bind(mojo::MakeRequest(&interfaces), service_manager::Identity(),
-                 service_manager::InterfaceProviderSpec(),
-                 service_manager::Identity(),
-                 service_manager::InterfaceProviderSpec());
-
-  std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces(
-      new service_manager::InterfaceProvider);
-  remote_interfaces->Bind(std::move(interfaces));
-  rph->SetRemoteInterfaces(std::move(remote_interfaces));
-  return registry;
 }
 
 }  // namespace content

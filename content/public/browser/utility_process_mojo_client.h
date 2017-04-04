@@ -124,8 +124,8 @@ class UtilityProcessMojoClient {
 #endif  // defined(OS_WIN)
 
    private:
-    // Starts the utility process and connects to the remote Mojo service.
-    void StartOnIOThread(const std::string& mojo_interface_name,
+    // Starts the utility process and binds the specified interface.
+    void StartOnIOThread(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle interface_pipe) {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -146,8 +146,7 @@ class UtilityProcessMojoClient {
 
       utility_host_->Start();
 
-      utility_host_->GetRemoteInterfaces()->GetInterface(
-          mojo_interface_name, std::move(interface_pipe));
+      utility_host_->BindInterface(interface_name, std::move(interface_pipe));
     }
 
     // Properties of the utility process.

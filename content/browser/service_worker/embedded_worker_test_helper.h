@@ -29,10 +29,6 @@
 
 class GURL;
 
-namespace service_manager {
-class InterfaceRegistry;
-}
-
 namespace content {
 
 struct BackgroundFetchSettledFetch;
@@ -79,7 +75,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     ~MockEmbeddedWorkerInstanceClient() override;
 
     static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     mojom::EmbeddedWorkerInstanceClientRequest request);
+                     mojo::ScopedMessagePipeHandle request);
 
    protected:
     // Implementation of mojo interfaces.
@@ -319,9 +315,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const mojom::ServiceWorkerEventDispatcher::
           DispatchPaymentRequestEventCallback& callback);
 
-  std::unique_ptr<service_manager::InterfaceRegistry> CreateInterfaceRegistry(
-      MockRenderProcessHost* rph);
-
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
@@ -341,11 +334,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   std::map<int /* process_id */, scoped_refptr<ServiceWorkerDispatcherHost>>
       dispatcher_hosts_;
-
-  std::unique_ptr<service_manager::InterfaceRegistry>
-      render_process_interface_registry_;
-  std::unique_ptr<service_manager::InterfaceRegistry>
-      new_render_process_interface_registry_;
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
   std::map<int /* thread_id */, int /* embedded_worker_id */>

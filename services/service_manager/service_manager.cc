@@ -212,8 +212,10 @@ class ServiceManager::Instance
       return false;
     }
 
-    params->bind_interface_callback().Run(mojom::ConnectResult::SUCCEEDED,
-                                          identity_.user_id());
+    if (!params->bind_interface_callback().is_null()) {
+      params->bind_interface_callback().Run(mojom::ConnectResult::SUCCEEDED,
+                                            identity_.user_id());
+    }
 
     pending_service_connections_++;
     service_->OnBindInterface(

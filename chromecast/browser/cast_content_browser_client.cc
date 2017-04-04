@@ -57,7 +57,7 @@
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -470,7 +470,7 @@ bool CastContentBrowserClient::CanCreateWindow(
 }
 
 void CastContentBrowserClient::ExposeInterfacesToRenderer(
-    service_manager::InterfaceRegistry* registry,
+    service_manager::BinderRegistry* registry,
     content::RenderProcessHost* render_process_host) {
   registry->AddInterface(
       base::Bind(&media::MediaCapsImpl::AddBinding,

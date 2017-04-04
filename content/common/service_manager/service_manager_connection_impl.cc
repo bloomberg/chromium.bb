@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/common/child.mojom.h"
 #include "content/common/service_manager/embedded_service_runner.h"
 #include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -43,12 +44,11 @@ ServiceManagerConnection::Factory* service_manager_connection_factory = nullptr;
 class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
       public service_manager::Service,
-      public service_manager::InterfaceFactory<
-          service_manager::mojom::ServiceFactory>,
-      public service_manager::mojom::ServiceFactory {
+      public service_manager::mojom::ServiceFactory,
+      public mojom::Child {
  public:
   using InitializeCallback =
-      base::Callback<void(const service_manager::Identity&)>;
+      base::Callback<void(const service_manager::ServiceInfo&)>;
 
   IOThreadContext(
       service_manager::mojom::ServiceRequest service_request,
@@ -59,22 +59,22 @@ class ServiceManagerConnectionImpl::IOThreadContext
         io_task_runner_(io_task_runner),
         io_thread_connector_(std::move(io_thread_connector)),
         pending_connector_request_(std::move(connector_request)),
+        child_binding_(this),
         weak_factory_(this) {
     // This will be reattached by any of the IO thread functions on first call.
     io_thread_checker_.DetachFromThread();
   }
 
   // Safe to call from any thread.
-  void Start(
-      const InitializeCallback& initialize_callback,
-      const ServiceManagerConnection::OnConnectHandler& on_connect_callback,
-      const base::Closure& stop_callback) {
+  void Start(const InitializeCallback& local_info_available_callback,
+             const InitializeCallback& browser_info_available_callback,
+             const base::Closure& stop_callback) {
     DCHECK(!started_);
 
     started_ = true;
     callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    initialize_handler_ = initialize_callback;
-    on_connect_callback_ = on_connect_callback;
+    local_info_available_callback_ = local_info_available_callback;
+    browser_info_available_callback_ = browser_info_available_callback;
     stop_callback_ = stop_callback;
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&IOThreadContext::StartOnIOThread, this));
@@ -263,64 +263,63 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   void OnStart() override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    DCHECK(!initialize_handler_.is_null());
+    DCHECK(!local_info_available_callback_.is_null());
     local_info_ = context()->local_info();
 
-    InitializeCallback handler = base::ResetAndReturn(&initialize_handler_);
+    InitializeCallback handler =
+        base::ResetAndReturn(&local_info_available_callback_);
     callback_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(handler, local_info_.identity));
+                                    base::Bind(handler, local_info_));
   }
 
-  bool OnConnect(const service_manager::ServiceInfo& remote_info,
-                 service_manager::InterfaceRegistry* registry) override {
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
-    callback_task_runner_->PostTask(
-        FROM_HERE, base::Bind(on_connect_callback_, local_info_, remote_info));
-
-    std::string remote_service = remote_info.identity.name();
-    if (remote_service == service_manager::mojom::kServiceName) {
-      // Only expose the ServiceFactory interface to the Service Manager.
-      registry->AddInterface<service_manager::mojom::ServiceFactory>(this);
-      return true;
+    std::string remote_service = source_info.identity.name();
+    // Only expose the ServiceFactory interface to the Service Manager.
+    if (remote_service == service_manager::mojom::kServiceName &&
+        interface_name == service_manager::mojom::ServiceFactory::Name_) {
+      factory_bindings_.AddBinding(
+          this, mojo::MakeRequest<service_manager::mojom::ServiceFactory>(
+                    std::move(interface_pipe)));
+      return;
     }
 
-    bool accept = false;
     {
       base::AutoLock lock(lock_);
       for (auto& entry : connection_filters_) {
-        accept |= entry.second->OnConnect(remote_info.identity, registry,
-                                          service_context_->connector());
+        entry.second->OnBindInterface(source_info, interface_name,
+                                      &interface_pipe,
+                                      service_context_->connector());
+        // A filter may have bound the interface, claiming the pipe.
+        if (!interface_pipe.is_valid())
+          return;
       }
     }
 
-    if (remote_service == "content_browser" &&
-        !has_browser_connection_) {
-      has_browser_connection_ = true;
-      registry->set_default_binder(default_browser_binder_);
-      registry->AddConnectionLostClosure(
-          base::Bind(&IOThreadContext::OnBrowserConnectionLost, this));
-      return true;
-    }
+    if (remote_service == "content_browser") {
+      if (interface_name == mojom::Child::Name_ && !has_browser_connection_) {
+        has_browser_connection_ = true;
+        InitializeCallback handler =
+            base::ResetAndReturn(&browser_info_available_callback_);
+        callback_task_runner_->PostTask(FROM_HERE,
+                                        base::Bind(handler, source_info));
 
-    // If no filters were interested, reject the connection.
-    return accept;
+        child_binding_.Bind(std::move(interface_pipe));
+        child_binding_.set_connection_error_handler(
+            base::Bind(&IOThreadContext::OnBrowserConnectionLost, this));
+      } else {
+        default_browser_binder_.Run(interface_name, std::move(interface_pipe));
+      }
+    }
   }
 
   bool OnServiceManagerConnectionLost() override {
     ClearConnectionFiltersOnIOThread();
     callback_task_runner_->PostTask(FROM_HERE, stop_callback_);
     return true;
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // service_manager::InterfaceFactory<service_manager::mojom::ServiceFactory>
-  // implementation
-
-  void Create(const service_manager::Identity& remote_identity,
-              service_manager::mojom::ServiceFactoryRequest request) override {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    factory_bindings_.AddBinding(this, std::move(request));
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -359,10 +358,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   // Callback to run once Service::OnStart is invoked.
-  InitializeCallback initialize_handler_;
-
-  // Callback to run when a connection request is received.
-  ServiceManagerConnection::OnConnectHandler on_connect_callback_;
+  InitializeCallback local_info_available_callback_;
+  InitializeCallback browser_info_available_callback_;
 
   // Callback to run if the service is stopped by the service manager.
   base::Closure stop_callback_;
@@ -394,6 +391,8 @@ class ServiceManagerConnectionImpl::IOThreadContext
   std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
       embedded_services_;
   std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
+
+  mojo::Binding<mojom::Child> child_binding_;
 
   base::WeakPtrFactory<IOThreadContext> weak_factory_;
 
@@ -465,9 +464,9 @@ ServiceManagerConnectionImpl::~ServiceManagerConnectionImpl() {
 
 void ServiceManagerConnectionImpl::Start() {
   context_->Start(
-      base::Bind(&ServiceManagerConnectionImpl::OnContextInitialized,
+      base::Bind(&ServiceManagerConnectionImpl::OnLocalServiceInfoAvailable,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&ServiceManagerConnectionImpl::OnConnect,
+      base::Bind(&ServiceManagerConnectionImpl::OnBrowserServiceInfoAvailable,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ServiceManagerConnectionImpl::OnConnectionLost,
                  weak_factory_.GetWeakPtr()));
@@ -477,9 +476,14 @@ service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {
   return connector_.get();
 }
 
-const service_manager::Identity& ServiceManagerConnectionImpl::GetIdentity()
+const service_manager::ServiceInfo& ServiceManagerConnectionImpl::GetLocalInfo()
     const {
-  return identity_;
+  return local_info_;
+}
+
+const service_manager::ServiceInfo&
+ServiceManagerConnectionImpl::GetBrowserInfo() const {
+  return browser_info_;
 }
 
 void ServiceManagerConnectionImpl::SetConnectionLostClosure(
@@ -532,22 +536,21 @@ void ServiceManagerConnectionImpl::RemoveOnConnectHandler(int id) {
   on_connect_handlers_.erase(it);
 }
 
-void ServiceManagerConnectionImpl::OnContextInitialized(
-    const service_manager::Identity& identity) {
-  identity_ = identity;
+void ServiceManagerConnectionImpl::OnLocalServiceInfoAvailable(
+    const service_manager::ServiceInfo& local_info) {
+  local_info_ = local_info;
+}
+
+void ServiceManagerConnectionImpl::OnBrowserServiceInfoAvailable(
+    const service_manager::ServiceInfo& browser_info) {
+  browser_info_ = browser_info;
+  for (auto& handler : on_connect_handlers_)
+    handler.second.Run(local_info_, browser_info_);
 }
 
 void ServiceManagerConnectionImpl::OnConnectionLost() {
   if (!connection_lost_handler_.is_null())
     connection_lost_handler_.Run();
-}
-
-void ServiceManagerConnectionImpl::OnConnect(
-    const service_manager::ServiceInfo& local_info,
-    const service_manager::ServiceInfo& remote_info) {
-  local_info_ = local_info;
-  for (auto& handler : on_connect_handlers_)
-    handler.second.Run(local_info, remote_info);
 }
 
 void ServiceManagerConnectionImpl::GetInterface(

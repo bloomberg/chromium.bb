@@ -190,13 +190,13 @@ class RenderThreadImplBrowserTest : public testing::Test {
         io_task_runner));
 
     mojo::MessagePipe pipe;
-    IPC::mojom::ChannelBootstrapPtr channel_bootstrap;
-    child_connection_->GetRemoteInterfaces()->GetInterface(&channel_bootstrap);
+    child_connection_->BindInterface(IPC::mojom::ChannelBootstrap::Name_,
+                                     std::move(pipe.handle1));
 
-    channel_ = IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateServerFactory(
-            channel_bootstrap.PassInterface().PassHandle(), io_task_runner),
-        nullptr, io_task_runner);
+    channel_ =
+        IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateServerFactory(
+                                      std::move(pipe.handle0), io_task_runner),
+                                  nullptr, io_task_runner);
 
     mock_process_.reset(new MockRenderProcess);
     test_task_counter_ = make_scoped_refptr(new TestTaskCounter());

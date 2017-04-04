@@ -54,8 +54,7 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
       IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME));
   bool process_started = utility_process_host->Start();
   if (process_started) {
-    utility_process_host->GetRemoteInterfaces()->GetInterface(
-        &resolver_factory_);
+    BindInterface(utility_process_host, &resolver_factory_);
     resolver_factory_.set_connection_error_handler(
         base::Bind(&UtilityProcessMojoProxyResolverFactory::OnConnectionError,
                    base::Unretained(this)));

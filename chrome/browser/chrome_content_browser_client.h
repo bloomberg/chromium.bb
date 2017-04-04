@@ -21,6 +21,7 @@
 #include "extensions/features/features.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 class ChromeContentBrowserClientParts;
 
@@ -283,7 +284,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       int sandbox_type) const override;
 #endif
   void ExposeInterfacesToRenderer(
-      service_manager::InterfaceRegistry* registry,
+      service_manager::BinderRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
   void ExposeInterfacesToMediaService(
       service_manager::InterfaceRegistry* registry,
@@ -291,9 +292,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void RegisterRenderFrameMojoInterfaces(
       service_manager::InterfaceRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
-  void ExposeInterfacesToGpuProcess(
-      service_manager::InterfaceRegistry* registry,
-      content::GpuProcessHost* render_process_host) override;
+  void BindInterfaceRequest(
+      const service_manager::ServiceInfo& source_info,
+      const std::string& interface_name,
+      mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void RegisterInProcessServices(StaticServiceMap* services) override;
   void RegisterOutOfProcessServices(
       OutOfProcessServiceMap* services) override;
@@ -383,6 +385,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.
   std::vector<ChromeContentBrowserClientParts*> extra_parts_;
+
+  service_manager::BinderRegistry gpu_binder_registry_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 

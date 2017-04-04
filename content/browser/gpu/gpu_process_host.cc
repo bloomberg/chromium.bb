@@ -67,9 +67,9 @@
 #include "media/media_features.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
@@ -325,35 +325,35 @@ void HostLoadedShader(int host_id,
 
 class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
  public:
-  ConnectionFilterImpl(GpuProcessHost* host) : host_(host) {}
-
- private:
-  // ConnectionFilter:
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry,
-                 service_manager::Connector* connector) override {
-    if (remote_identity.name() != mojom::kGpuServiceName)
-      return false;
-
-    registry->AddInterface(
+  ConnectionFilterImpl() {
+    registry_.AddInterface(
         base::Bind(
             &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
             base::Unretained(
                 memory_instrumentation::CoordinatorImpl::GetInstance())),
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI));
-
-    GetContentClient()->browser()->ExposeInterfacesToGpuProcess(registry,
-                                                                host_);
-
 #if defined(OS_ANDROID)
-    GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(registry);
+    GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(&registry_);
 #endif
-
-    return true;
   }
 
-  GpuProcessHost* host_;
+ private:
+  // ConnectionFilter:
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle* interface_pipe,
+                       service_manager::Connector* connector) override {
+    if (registry_.CanBindInterface(interface_name)) {
+      registry_.BindInterface(source_info.identity, interface_name,
+                              std::move(*interface_pipe));
+    } else {
+      GetContentClient()->browser()->BindInterfaceRequest(
+          source_info, interface_name, interface_pipe);
+    }
+  }
+
+  service_manager::BinderRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
@@ -445,8 +445,11 @@ void GpuProcessHost::CallOnIO(
       base::Bind(&RunCallbackOnIO, kind, force_create, callback));
 }
 
-service_manager::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
-  return process_->child_connection()->GetRemoteInterfaces();
+void GpuProcessHost::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  process_->child_connection()->BindInterface(interface_name,
+                                              std::move(interface_pipe));
 }
 
 // static
@@ -597,7 +600,7 @@ bool GpuProcessHost::Init() {
   // May be null during test execution.
   if (ServiceManagerConnection::GetForProcess()) {
     ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
-        base::MakeUnique<ConnectionFilterImpl>(this));
+        base::MakeUnique<ConnectionFilterImpl>());
   }
 
   process_->GetHost()->CreateChannelMojo();

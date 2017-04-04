@@ -692,11 +692,10 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
   base::RunLoop().RunUntilIdle();
 
   // Worker should handle the failure of binding as detach.
-  ASSERT_EQ(3u, events_.size());
+  ASSERT_EQ(2u, events_.size());
   EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
-  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
-  EXPECT_EQ(DETACHED, events_[2].type);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[2].status);
+  EXPECT_EQ(DETACHED, events_[1].type);
+  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, events_[1].status);
 }
 
 class FailEmbeddedWorkerInstanceClientImpl

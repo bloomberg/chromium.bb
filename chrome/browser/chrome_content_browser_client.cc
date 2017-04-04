@@ -200,6 +200,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -989,6 +990,10 @@ ChromeContentBrowserClient::ChromeContentBrowserClient()
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extra_parts_.push_back(new ChromeContentBrowserClientExtensionsPart);
 #endif
+
+  gpu_binder_registry_.AddInterface(
+      base::Bind(&metrics::CallStackProfileCollector::Create,
+                 metrics::CallStackProfileParams::GPU_PROCESS));
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -3074,7 +3079,7 @@ bool ChromeContentBrowserClient::PreSpawnRenderer(
 #endif  // defined(OS_WIN)
 
 void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
-    service_manager::InterfaceRegistry* registry,
+    service_manager::BinderRegistry* registry,
     content::RenderProcessHost* render_process_host) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
       content::BrowserThread::GetTaskRunnerForThread(
@@ -3222,12 +3227,15 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
 #endif
 }
 
-void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(
-    service_manager::InterfaceRegistry* registry,
-    content::GpuProcessHost* render_process_host) {
-  registry->AddInterface(
-      base::Bind(&metrics::CallStackProfileCollector::Create,
-                 metrics::CallStackProfileParams::GPU_PROCESS));
+void ChromeContentBrowserClient::BindInterfaceRequest(
+    const service_manager::ServiceInfo& source_info,
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle* interface_pipe) {
+  if (source_info.identity.name() == content::mojom::kGpuServiceName &&
+      gpu_binder_registry_.CanBindInterface(interface_name)) {
+    gpu_binder_registry_.BindInterface(source_info.identity, interface_name,
+                                       std::move(*interface_pipe));
+  }
 }
 
 void ChromeContentBrowserClient::RegisterInProcessServices(

@@ -227,9 +227,11 @@ bool UtilityProcessHostImpl::Start() {
   return StartProcess();
 }
 
-service_manager::InterfaceProvider*
-UtilityProcessHostImpl::GetRemoteInterfaces() {
-  return process_->child_connection()->GetRemoteInterfaces();
+void UtilityProcessHostImpl::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  process_->child_connection()->BindInterface(interface_name,
+                                              std::move(interface_pipe));
 }
 
 void UtilityProcessHostImpl::SetName(const base::string16& name) {

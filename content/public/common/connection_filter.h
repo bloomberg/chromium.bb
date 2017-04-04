@@ -6,38 +6,29 @@
 #define CONTENT_PUBLIC_COMMON_CONNECTION_FILTER_H_
 
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace service_manager {
 class Connector;
-class Identity;
-class InterfaceRegistry;
+struct ServiceInfo;
 }
 
 namespace content {
 
-// A ConnectionFilter may be used to conditionally expose interfaces on inbound
-// connections accepted by ServiceManagerConnection. ConnectionFilters are used
-// exclusively on the IO thread. See
-// ServiceManagerConnection::AddConnectionFilter for details.
+// TODO(beng): Rename to InterfaceBinder?
+// See ServiceManagerConnection::AddConnectionFilter().
 class CONTENT_EXPORT ConnectionFilter {
  public:
   virtual ~ConnectionFilter() {}
 
-  // Called for every new connection accepted. Implementations may add
-  // interfaces to |registry|, in which case they should return |true|.
-  // |connector| is a corresponding outgoing Connector that may be used by any
-  // interfaces added to the connection. Note that references to |connector|
-  // must not be retained, but an owned copy may be obtained by calling
-  // |connector->Clone()|.
-  //
-  // If a ConnectionFilter is not interested in an incoming connection, it
-  // should return |false|.
-  //
-  // NOTE: This ConnectionFilter is NOT guaranteed to outlive |registry|, so you
-  // must not attach unsafe references to |this|, e.g., via AddInterface().
-  virtual bool OnConnect(const service_manager::Identity& remote_identity,
-                         service_manager::InterfaceRegistry* registry,
-                         service_manager::Connector* connector) = 0;
+  // Provides the ConnectionFilter with the option of binding an interface
+  // request from a remote service. The interface request is in
+  // |interface_pipe|, which is taken by the binding action. If the interface
+  // request is bound, subsequent ConnectionFilters are not consulted.
+  virtual void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                               const std::string& interface_name,
+                               mojo::ScopedMessagePipeHandle* interface_pipe,
+                               service_manager::Connector* connector) = 0;
 };
 
 }  // namespace content

@@ -38,7 +38,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -165,7 +165,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebRtcRtpPacketCallback& packet_callback) override;
 #endif
   void ResumeDeferredNavigation(const GlobalRequestID& request_id) override;
-  service_manager::InterfaceProvider* GetRemoteInterfaces() override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   std::unique_ptr<base::SharedPersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
@@ -421,7 +422,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // the render process currently hosted by the RPHI. Callbacks added by this
   // method will never run beyond the next invocation of Cleanup().
   template <typename CallbackType>
-  void AddUIThreadInterface(service_manager::InterfaceRegistry* registry,
+  void AddUIThreadInterface(service_manager::BinderRegistry* registry,
                             const CallbackType& callback) {
     registry->AddInterface(
         base::Bind(&InterfaceGetter<CallbackType>::GetInterfaceOnUIThread,

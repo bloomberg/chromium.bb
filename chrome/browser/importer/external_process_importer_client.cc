@@ -19,7 +19,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
@@ -308,7 +307,7 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
 
   utility_process_host->Start();
   chrome::mojom::ProfileImportPtr profile_import;
-  utility_process_host->GetRemoteInterfaces()->GetInterface(std::move(request));
+  BindInterface(utility_process_host, std::move(request));
 }
 
 void ExternalProcessImporterClient::CloseMojoHandles() {

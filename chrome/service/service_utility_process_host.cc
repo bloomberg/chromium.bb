@@ -332,6 +332,12 @@ const base::Process& ServiceUtilityProcessHost::GetProcess() const {
   return process_;
 }
 
+void ServiceUtilityProcessHost::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  child_process_host_->BindInterface(interface_name, std::move(interface_pipe));
+}
+
 void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {
   if (!success || pdf_to_emf_state_->OnPageProcessed())
     OnPDFToEmfFinished(success);

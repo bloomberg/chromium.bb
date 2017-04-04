@@ -99,7 +99,6 @@ void MockRenderProcessHost::SimulateCrash() {
 
 bool MockRenderProcessHost::Init() {
   has_connection_ = true;
-  remote_interfaces_.reset(new service_manager::InterfaceProvider);
   return true;
 }
 
@@ -264,9 +263,11 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
   return base::TimeDelta::FromMilliseconds(0);
 }
 
-service_manager::InterfaceProvider*
-MockRenderProcessHost::GetRemoteInterfaces() {
-  return remote_interfaces_.get();
+void MockRenderProcessHost::BindInterface(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe) {
+  if (binder_overrides_.count(interface_name) > 0)
+    binder_overrides_[interface_name].Run(std::move(interface_pipe));
 }
 
 std::unique_ptr<base::SharedPersistentMemoryAllocator>
@@ -378,6 +379,12 @@ bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void MockRenderProcessHost::OnChannelConnected(int32_t peer_pid) {}
+
+void MockRenderProcessHost::OverrideBinderForTesting(
+    const std::string& interface_name,
+    const InterfaceBinder& binder) {
+  binder_overrides_[interface_name] = binder;
+}
 
 MockRenderProcessHostFactory::MockRenderProcessHostFactory() {}
 

@@ -5,19 +5,24 @@
 #ifndef CONTENT_PUBLIC_BROWSER_GPU_INTERFACE_REGISTRY_H_
 #define CONTENT_PUBLIC_BROWSER_GPU_INTERFACE_REGISTRY_H_
 
-#include "content/common/content_export.h"
+#include <string>
 
-namespace service_manager {
-class InterfaceProvider;
-}
+#include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
 
-// Get service_manager::InterfaceProvider that can be used to bind interfaces
-// registered
-// via ContentGpuClient::ExposeInterfacesToBrowser().
-// This must be called on IO thread.
-CONTENT_EXPORT service_manager::InterfaceProvider* GetGpuRemoteInterfaces();
+CONTENT_EXPORT void BindInterfaceInGpuProcess(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle interface_pipe);
+
+// Bind to an interface exposed by the GPU process.
+template <typename Interface>
+void BindInterfaceInGpuProcess(mojo::InterfaceRequest<Interface> request) {
+  BindInterfaceInGpuProcess(Interface::Name_,
+                            std::move(request.PassMessagePipe()));
+}
 
 }  // namespace content
 

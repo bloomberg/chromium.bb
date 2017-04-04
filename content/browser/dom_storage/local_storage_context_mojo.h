@@ -14,7 +14,6 @@
 #include "url/origin.h"
 
 namespace service_manager {
-class Connection;
 class Connector;
 }
 
@@ -64,9 +63,6 @@ class CONTENT_EXPORT LocalStorageContextMojo {
   // Initiates connecting to the database if no connection is in progres yet.
   void RunWhenConnected(base::OnceClosure callback);
 
-  void OnUserServiceConnectionComplete();
-  void OnUserServiceConnectionError();
-
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
   void OnDirectoryOpened(filesystem::mojom::FileError err);
@@ -104,8 +100,6 @@ class CONTENT_EXPORT LocalStorageContextMojo {
     CONNECTION_FINISHED
   } connection_state_ = NO_CONNECTION;
   bool database_initialized_ = false;
-
-  std::unique_ptr<service_manager::Connection> file_service_connection_;
 
   file::mojom::FileSystemPtr file_system_;
   filesystem::mojom::DirectoryPtr directory_;

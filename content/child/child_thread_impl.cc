@@ -261,28 +261,26 @@ void InitializeMojoIPCChannel() {
 class ChannelBootstrapFilter : public ConnectionFilter {
  public:
   explicit ChannelBootstrapFilter(IPC::mojom::ChannelBootstrapPtrInfo bootstrap)
-      : bootstrap_(std::move(bootstrap)), weak_factory_(this) {}
+      : bootstrap_(std::move(bootstrap)) {}
 
  private:
   // ConnectionFilter:
-  bool OnConnect(const service_manager::Identity& remote_identity,
-                 service_manager::InterfaceRegistry* registry,
-                 service_manager::Connector* connector) override {
-    if (remote_identity.name() != mojom::kBrowserServiceName)
-      return false;
+  void OnBindInterface(const service_manager::ServiceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle* interface_pipe,
+                       service_manager::Connector* connector) override {
+    if (source_info.identity.name() != mojom::kBrowserServiceName)
+      return;
 
-    registry->AddInterface(base::Bind(&ChannelBootstrapFilter::CreateBootstrap,
-                                      weak_factory_.GetWeakPtr()));
-    return true;
-  }
-
-  void CreateBootstrap(IPC::mojom::ChannelBootstrapRequest request) {
-    DCHECK(bootstrap_.is_valid());
-    mojo::FuseInterface(std::move(request), std::move(bootstrap_));
+    if (interface_name == IPC::mojom::ChannelBootstrap::Name_) {
+      DCHECK(bootstrap_.is_valid());
+      mojo::FuseInterface(mojo::MakeRequest<IPC::mojom::ChannelBootstrap>(
+                              std::move(*interface_pipe)),
+                          std::move(bootstrap_));
+    }
   }
 
   IPC::mojom::ChannelBootstrapPtrInfo bootstrap_;
-  base::WeakPtrFactory<ChannelBootstrapFilter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelBootstrapFilter);
 };
@@ -450,15 +448,6 @@ void ChildThreadImpl::Init(const Options& options) {
     service_manager_connection_ = ServiceManagerConnection::Create(
         mojo::MakeRequest<service_manager::mojom::Service>(std::move(handle)),
         GetIOTaskRunner());
-
-    // When connect_to_browser is true, we obtain interfaces from the browser
-    // process by connecting to it, rather than from the incoming interface
-    // provider. Exposed interfaces are subject to manifest capability spec.
-    if (options.connect_to_browser) {
-      browser_connection_ =
-          service_manager_connection_->GetConnector()->Connect(
-              mojom::kBrowserServiceName);
-    }
 
     // TODO(rockot): Remove this once all child-to-browser interface connections
     // are made via a Connector rather than directly through an

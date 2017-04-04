@@ -116,6 +116,8 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   void OnChildDisconnected() override;
   bool OnMessageReceived(const IPC::Message& message) override;
   const base::Process& GetProcess() const override;
+  void BindInterface(const std::string& interface_name,
+                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
  private:
   // Starts a process.  Returns true iff it succeeded.

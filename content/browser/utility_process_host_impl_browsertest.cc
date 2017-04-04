@@ -39,7 +39,7 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
 #endif
     EXPECT_TRUE(host->Start());
 
-    host->GetRemoteInterfaces()->GetInterface(&service_);
+    BindInterface(host, &service_);
     service_->DoSomething(base::Bind(
         &UtilityProcessHostImplBrowserTest::OnSomething,
         base::Unretained(this)));

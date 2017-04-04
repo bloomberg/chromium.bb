@@ -94,7 +94,7 @@ void WebCacheManager::Add(int renderer_id) {
       content::RenderProcessHost::FromID(renderer_id);
   if (host) {
     mojom::WebCachePtr service;
-    host->GetRemoteInterfaces()->GetInterface(&service);
+    BindInterface(host, &service);
     web_cache_services_[renderer_id] = std::move(service);
   }
 

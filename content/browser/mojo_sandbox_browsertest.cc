@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessSharedBuffer) {
   // Ensures that a shared buffer can be created within a sandboxed process.
 
   mojom::TestServicePtr test_service;
-  host_->GetRemoteInterfaces()->GetInterface(&test_service);
+  BindInterface(host_.get(), &test_service);
 
   bool got_response = false;
   base::RunLoop run_loop;

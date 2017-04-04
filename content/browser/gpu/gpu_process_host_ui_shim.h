@@ -32,7 +32,7 @@ class Message;
 }
 
 namespace service_manager {
-class InterfaceRegistry;
+class BinderRegistry;
 }
 
 namespace content {
@@ -64,7 +64,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
 #if defined(OS_ANDROID)
   // Register Mojo interfaces that must be bound on the UI thread.
   static void RegisterUIThreadMojoInterfaces(
-      service_manager::InterfaceRegistry* registry);
+      service_manager::BinderRegistry* registry);
 #endif
 
  private:

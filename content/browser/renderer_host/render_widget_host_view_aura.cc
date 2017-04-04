@@ -1890,7 +1890,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(ui::wm::WindowType type) {
   // Connect to the renderer, pass it a WindowTreeClient interface request
   // and embed that client inside our mus window.
   mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
-  host_->GetProcess()->GetRemoteInterfaces()->GetInterface(&factory);
+  BindInterface(host_->GetProcess(), &factory);
 
   ui::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(
