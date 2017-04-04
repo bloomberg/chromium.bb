@@ -49,7 +49,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
-#include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -1253,20 +1253,19 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   tracked_objects::ScopedTracker tracking_profile4(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
+  auto video_capture_system = base::MakeUnique<media::VideoCaptureSystem>(
+      media::VideoCaptureDeviceFactory::CreateFactory(
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #if defined(OS_WIN)
   // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
   // buggy third party Direct Show modules, http://crbug.com/428958.
   video_capture_thread_.init_com_with_mta(false);
   CHECK(video_capture_thread_.Start());
   video_capture_manager_ = new VideoCaptureManager(
-      media::VideoCaptureDeviceFactory::CreateFactory(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
-      video_capture_thread_.task_runner());
+      std::move(video_capture_system), video_capture_thread_.task_runner());
 #else
   video_capture_manager_ = new VideoCaptureManager(
-      media::VideoCaptureDeviceFactory::CreateFactory(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
-      audio_system_->GetTaskRunner());
+      std::move(video_capture_system), audio_system_->GetTaskRunner());
 #endif
 
   video_capture_manager_->RegisterListener(this);

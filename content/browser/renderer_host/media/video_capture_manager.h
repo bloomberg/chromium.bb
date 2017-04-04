@@ -34,6 +34,8 @@
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_factory.h"
+#include "media/capture/video/video_capture_device_info.h"
+#include "media/capture/video/video_capture_system.h"
 #include "media/capture/video_capture_types.h"
 
 #if defined(OS_ANDROID)
@@ -56,7 +58,7 @@ class CONTENT_EXPORT VideoCaptureManager
       base::Callback<void(const base::WeakPtr<VideoCaptureController>&)>;
 
   VideoCaptureManager(
-      std::unique_ptr<media::VideoCaptureDeviceFactory> factory,
+      std::unique_ptr<media::VideoCaptureSystem> capture_system,
       scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
 
   // AddVideoCaptureObserver() can be called only before any devices are opened.
@@ -163,7 +165,7 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // Gets a weak reference to the device factory, used for tests.
   media::VideoCaptureDeviceFactory* video_capture_device_factory() const {
-    return video_capture_device_factory_.get();
+    return video_capture_system_->video_capture_device_factory();
   }
 
 #if defined(OS_WIN)
@@ -197,13 +199,12 @@ class CONTENT_EXPORT VideoCaptureManager
 
   using EnumerationCallback =
       base::Callback<void(const media::VideoCaptureDeviceDescriptors&)>;
+  // Asynchronously obtains descriptors for the available devices.
+  // As a side-effect, updates |devices_info_cache_|.
   void EnumerateDevices(const EnumerationCallback& client_callback);
 
   // Implementation of BuildableVideoCaptureDevice::Callbacks:
-  const media::VideoCaptureDeviceDescriptor* LookupDeviceDescriptor(
-      const std::string& id) override;
-  void WillStartDevice(media::VideoFacingMode facing_mode) override;
-  void DidStartDevice(VideoCaptureController* controller) override;
+  void OnDeviceStarted(VideoCaptureController* controller) override;
   void OnDeviceStartFailed(VideoCaptureController* controller) override;
   void OnDeviceStartAborted() override;
 
@@ -216,32 +217,24 @@ class CONTENT_EXPORT VideoCaptureManager
 
  private:
   class CaptureDeviceStartRequest;
-  struct DeviceInfo;
 
   using SessionMap = std::map<media::VideoCaptureSessionId, MediaStreamDevice>;
-  using DeviceInfos = std::vector<DeviceInfo>;
   using DeviceStartQueue = std::list<CaptureDeviceStartRequest>;
   using VideoCaptureDeviceDescriptor = media::VideoCaptureDeviceDescriptor;
   using VideoCaptureDeviceDescriptors = media::VideoCaptureDeviceDescriptors;
 
   ~VideoCaptureManager() override;
 
+  void OnDeviceInfosReceived(
+      base::ElapsedTimer* timer,
+      const EnumerationCallback& client_callback,
+      const std::vector<media::VideoCaptureDeviceInfo>& device_infos);
+
   // Helpers to report an event to our Listener.
   void OnOpened(MediaStreamType type,
                 media::VideoCaptureSessionId capture_session_id);
   void OnClosed(MediaStreamType type,
                 media::VideoCaptureSessionId capture_session_id);
-  void OnDevicesInfoEnumerated(base::ElapsedTimer* timer,
-                               const EnumerationCallback& client_callback,
-                               const DeviceInfos& new_devices_info_cache);
-
-  // Consolidates the cached devices list with the list of currently connected
-  // devices in the system |names_snapshot|. Retrieves the supported formats of
-  // the new devices and sends the new cache to OnDevicesInfoEnumerated().
-  void ConsolidateDevicesInfoOnDeviceThread(
-      base::Callback<void(const DeviceInfos&)> on_devices_enumerated_callback,
-      const DeviceInfos& old_device_info_cache,
-      std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_snapshot);
 
   // Checks to see if |controller| has no clients left. If so, remove it from
   // the list of controllers, and delete it asynchronously. |controller| may be
@@ -260,7 +253,7 @@ class CONTENT_EXPORT VideoCaptureManager
       VideoCaptureController* controller) const;
 
   // Finds the device info by |id| in |devices_info_cache_|, or nullptr.
-  DeviceInfo* GetDeviceInfoById(const std::string& id);
+  media::VideoCaptureDeviceInfo* GetDeviceInfoById(const std::string& id);
 
   // Finds a VideoCaptureController for the indicated |capture_session_id|,
   // creating a fresh one if necessary. Returns nullptr if said
@@ -320,19 +313,14 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // Device creation factory injected on construction from MediaStreamManager or
   // from the test harness.
-  std::unique_ptr<media::VideoCaptureDeviceFactory>
-      video_capture_device_factory_;
+  std::unique_ptr<media::VideoCaptureSystem> video_capture_system_;
 
   base::ObserverList<media::VideoCaptureObserver> capture_observers_;
 
-  // Local cache of the enumerated video capture devices' names and capture
-  // supported formats. A snapshot of the current devices and their capabilities
-  // is composed in VideoCaptureDeviceFactory::EnumerateDeviceNames() and
-  // ConsolidateDevicesInfoOnDeviceThread(), and this snapshot is used to update
-  // this list in OnDevicesInfoEnumerated(). GetDeviceSupportedFormats() will
+  // Local cache of the enumerated DeviceInfos. GetDeviceSupportedFormats() will
   // use this list if the device is not started, otherwise it will retrieve the
   // active device capture format from the VideoCaptureController associated.
-  DeviceInfos devices_info_cache_;
+  std::vector<media::VideoCaptureDeviceInfo> devices_info_cache_;
 
   // Map used by DesktopCapture.
   std::map<media::VideoCaptureSessionId, gfx::NativeViewId>

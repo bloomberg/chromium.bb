@@ -36,6 +36,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
       const VideoCaptureDeviceDescriptor& device_descriptor) = 0;
 
   // Asynchronous version of GetDeviceDescriptors calling back to |callback|.
+  // TODO(chfremer): Consider removing this if none of the implementations
+  // overrides it. See crbug.com/708233.
   virtual void EnumerateDeviceDescriptors(
       const base::Callback<
           void(std::unique_ptr<VideoCaptureDeviceDescriptors>)>& callback);

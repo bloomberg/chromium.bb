@@ -24,6 +24,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
+#include "media/capture/video/video_capture_system.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -196,12 +197,13 @@ class VideoCaptureManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     listener_.reset(new MockMediaStreamProviderListener());
-    vcm_ = new VideoCaptureManager(
-        std::unique_ptr<media::VideoCaptureDeviceFactory>(
-            new WrappedDeviceFactory()),
-        base::ThreadTaskRunnerHandle::Get());
-    video_capture_device_factory_ = static_cast<WrappedDeviceFactory*>(
-        vcm_->video_capture_device_factory());
+    auto video_capture_device_factory =
+        base::MakeUnique<WrappedDeviceFactory>();
+    video_capture_device_factory_ = video_capture_device_factory.get();
+    auto video_capture_system = base::MakeUnique<media::VideoCaptureSystem>(
+        std::move(video_capture_device_factory));
+    vcm_ = new VideoCaptureManager(std::move(video_capture_system),
+                                   base::ThreadTaskRunnerHandle::Get());
     const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->SetToDefaultDevicesConfig(
         kNumberOfFakeDevices);
