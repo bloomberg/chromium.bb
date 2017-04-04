@@ -151,7 +151,8 @@ DXGI_COLOR_SPACE_TYPE ColorSpaceWin::GetDXGIColorSpace(
           return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P2020;
         }
       } else {
-        if (color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR) {
+        if (color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR ||
+            color_space.transfer_ == gfx::ColorSpace::TransferID::LINEAR_HDR) {
           return DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709;
         } else {
           return DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;

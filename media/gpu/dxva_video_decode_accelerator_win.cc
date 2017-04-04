@@ -2832,8 +2832,13 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
       base::win::ScopedComPtr<ID3D11VideoContext1> video_context1;
       HRESULT hr = video_context_.QueryInterface(video_context1.Receive());
       if (SUCCEEDED(hr)) {
-        if (use_fp16_ && base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnableHDR)) {
+        if (use_fp16_ &&
+            base::CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableHDR) &&
+            color_space.IsHDR()) {
+          // Note, we only use the SCRGBLinear output color space when
+          // the input is PQ, because nvidia drivers will not convert
+          // G22 to G10 for some reason.
           dx11_converter_output_color_space_ =
               gfx::ColorSpace::CreateSCRGBLinear();
         }
@@ -2854,6 +2859,13 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
               DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
           dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
         } else {
+          DVLOG(2) << "input color space: " << color_space
+                   << " DXGIColorSpace: "
+                   << gfx::ColorSpaceWin::GetDXGIColorSpace(color_space);
+          DVLOG(2) << "output color space:"
+                   << dx11_converter_output_color_space_ << " DXGIColorSpace: "
+                   << gfx::ColorSpaceWin::GetDXGIColorSpace(
+                          dx11_converter_output_color_space_);
           video_context1->VideoProcessorSetStreamColorSpace1(
               d3d11_processor_.get(), 0,
               gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
