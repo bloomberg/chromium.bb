@@ -66,7 +66,7 @@ class OfflinerPolicy {
 
   // TODO(petewil): Numbers here are chosen arbitrarily, do the proper studies
   // to get good policy numbers. Eventually this should get data from a finch
-  // experiment.
+  // experiment. crbug.com/705112.
 
   // Returns true if we should prefer retrying lesser tried requests.
   bool ShouldPreferUntriedRequests() const { return prefer_untried_requests_; }

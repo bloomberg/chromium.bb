@@ -197,7 +197,7 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     // TODO(petewil): This is borrowed from OfflinePageBridge test.  We should refactor
-    // to some common test code (including the setup).
+    // to some common test code (including the setup).  crbug.com/705100.
     private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);

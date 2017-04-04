@@ -705,9 +705,6 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
 
   // If this is the first call, the device conditions are current, no need to
   // update them.
-  // TODO(petewil): Now that we can get conditions any time, consider getting
-  // them now instead of passing them in earlier when we start scheduled
-  // processing.
   if (!is_start_of_processing) {
     // Get current device conditions from the Java side across the bridge.
     // NetworkChangeNotifier will not have the right conditions if chromium is
@@ -744,7 +741,6 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
       RequestConnectedEventForStarting();
 
     // Let the scheduler know we are done processing.
-    // TODO: Make sure the scheduler callback is valid before running it.
     scheduler_callback_.Run(true);
     DVLOG(2) << " out of time, giving up. " << __func__;
 
@@ -762,10 +758,6 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
       base::Bind(&RequestCoordinator::RequestCounts,
                  weak_ptr_factory_.GetWeakPtr(), is_start_of_processing),
       *current_conditions_.get(), disabled_requests_, prioritized_requests_);
-  // TODO(petewil): Verify current_conditions has a good value on all calling
-  // paths.  It is really more of a "last known conditions" than "current
-  // conditions".  Consider having a call to Java to check the current
-  // conditions.
 }
 
 // Called by the request picker when a request has been picked.

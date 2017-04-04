@@ -155,8 +155,6 @@ public class ChromeBackgroundService extends GcmTaskService {
                     new BackgroundOfflinerTask(new BackgroundSchedulerProcessorImpl());
         }
         mBackgroundOfflinerTask.startBackgroundRequests(context, bundle, waiter);
-        // TODO(petewil) if processBackgroundRequest returns false, return RESTART_RESCHEDULE
-        // to the GcmNetworkManager
     }
 
     /**

@@ -56,8 +56,8 @@ void CleanupTask::Prune(
     return;
   }
 
-  // TODO(petewil): Add UMA saying why we remove them
-  // TODO(petewil): Round trip the reason for deleting through the RQ
+  // TODO(petewil): Add UMA saying why we remove them.  Round trip the reason
+  // for deleting through the RQ callbacks.  crbug.com/705115.
   store_->RemoveRequests(expired_request_ids,
                          base::Bind(&CleanupTask::OnRequestsExpired,
                                     weak_ptr_factory_.GetWeakPtr()));

@@ -84,7 +84,6 @@ void PickRequestTask::Choose(
   else
     comparator = &PickRequestTask::RecencyFirstCompareFunction;
 
-  // TODO(petewil): Consider replacing this bool with a better named enum.
   bool non_user_requested_tasks_remaining = false;
   bool cleanup_needed = false;
 
@@ -198,9 +197,7 @@ bool PickRequestTask::RequestConditionsSatisfied(
     return false;
 
   // If this request is not active yet, return false.
-  // TODO(petewil): If the only reason we return nothing to do is that we have
-  // inactive requests, we still want to try again later after their activation
-  // time elapses, we shouldn't take ourselves completely off the scheduler.
+  // TODO(petewil): Remove the concept of activation time.  crbug.com/705103.
   if (request->activation_time() > base::Time::Now())
     return false;
 
