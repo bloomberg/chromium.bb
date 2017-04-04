@@ -39,7 +39,8 @@ public class FirstRunGlueImpl implements FirstRunGlue {
         boolean nativePrefValue = prefsBridge.isFirstRunEulaAccepted();
         boolean userHasSeenTos =
                 ToSAckedReceiver.checkAnyUserHasSeenToS(ContextUtils.getApplicationContext());
-        if (javaPrefValue || nativePrefValue || userHasSeenTos) {
+        boolean isFirstRunComplete = FirstRunStatus.getFirstRunFlowComplete();
+        if (javaPrefValue || nativePrefValue || userHasSeenTos || isFirstRunComplete) {
             if (!javaPrefValue) {
                 javaPrefs.edit().putBoolean(CACHED_TOS_ACCEPTED_PREF, true).apply();
             }
