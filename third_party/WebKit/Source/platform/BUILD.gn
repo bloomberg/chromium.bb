@@ -1870,7 +1870,6 @@ test("blink_platform_unittests") {
     "weborigin/SecurityOriginTest.cpp",
     "weborigin/SecurityPolicyTest.cpp",
     "weborigin/SuboriginTest.cpp",
-    "wtf/PtrUtilTest.cpp",
   ]
 
   if (is_win) {

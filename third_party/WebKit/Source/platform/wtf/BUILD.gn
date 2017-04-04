@@ -348,6 +348,7 @@ test("wtf_unittests") {
     "MathExtrasTest.cpp",
     "OptionalTest.cpp",
     "PassRefPtrTest.cpp",
+    "PtrUtilTest.cpp",
     "RefPtrTest.cpp",
     "StringExtrasTest.cpp",
     "StringHasherTest.cpp",
