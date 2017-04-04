@@ -965,28 +965,22 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   addPageVector_.clear();
 }
 
-- (void)webWillInitiateLoadWithParams:
-    (web::NavigationManager::WebLoadParams&)params {
-  GURL navUrl = params.url;
-
+- (void)webDidUpdateSessionForLoadWithParams:
+            (const web::NavigationManager::WebLoadParams&)params
+                        wasInitialNavigation:(BOOL)initialNavigation {
   // After a crash the NTP is loaded by default.
-  if (navUrl.host() != kChromeUINewTabHost) {
+  if (params.url.host() != kChromeUINewTabHost) {
     static BOOL hasLoadedPage = NO;
     if (!hasLoadedPage) {
-      // As soon as an URL is loaded, a crash shouldn't be counted as a startup
-      // crash. Since loading an url requires user action and is a significant
-      // source of crashes that could lead to false positives in crash loop
-      // detection.
+      // As soon as load is initialted, a crash shouldn't be counted as a
+      // startup crash. Since initiating a url load requires user action and is
+      // a significant source of crashes that could lead to false positives in
+      // crash loop detection.
       crash_util::ResetFailedStartupAttemptCount();
       hasLoadedPage = YES;
     }
   }
-}
 
-- (void)webDidUpdateSessionForLoadWithParams:
-            (const web::NavigationManager::WebLoadParams&)params
-                        wasInitialNavigation:(BOOL)initialNavigation {
-  GURL navUrl = params.url;
   ui::PageTransition transition = params.transition_type;
 
   // Record any explicit, non-redirect navigation as a clobber (as long as it's

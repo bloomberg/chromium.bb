@@ -52,12 +52,7 @@ class GURL;
 
 // Called when the page is reloaded.
 - (void)webWillReload;
-// Called when a page is loaded using loadWithParams.  In
-// |webWillInitiateLoadWithParams|, the |params| argument is non-const so that
-// the delegate can make changes if necessary.
-// TODO(rohitrao): This is not a great API.  Clean it up.
-- (void)webWillInitiateLoadWithParams:
-    (web::NavigationManager::WebLoadParams&)params;
+// Called when a page is loaded using loadWithParams.
 - (void)webDidUpdateSessionForLoadWithParams:
             (const web::NavigationManager::WebLoadParams&)params
                         wasInitialNavigation:(BOOL)initialNavigation;

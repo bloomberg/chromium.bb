@@ -1791,20 +1791,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadNativeViewWithSuccess:YES];
 }
 
-- (void)loadWithParams:(const NavigationManager::WebLoadParams&)originalParams {
-  // Make a copy of |params|, as some of the delegate methods may modify it.
-  NavigationManager::WebLoadParams params(originalParams);
+- (void)loadWithParams:(const NavigationManager::WebLoadParams&)params {
+  DCHECK(!(params.transition_type & ui::PAGE_TRANSITION_FORWARD_BACK));
 
-  // Initiating a navigation from the UI, record the current page state before
-  // the new page loads.
-
-  [_delegate webWillInitiateLoadWithParams:params];
-
-  GURL navUrl = params.url;
-  ui::PageTransition transition = params.transition_type;
-  DCHECK(!(transition & ui::PAGE_TRANSITION_FORWARD_BACK));
-
-  BOOL initialNavigation = NO;
   // Clear transient view before making any changes to history and navigation
   // manager. TODO(stuartmorgan): Drive Transient Item clearing from
   // navigation system, rather than from WebController.
@@ -1812,16 +1801,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [self recordStateInHistory];
 
-  if (!self.currentNavItem)
-    initialNavigation = YES;
+  BOOL initialNavigation = !self.currentNavItem;
 
   web::NavigationInitiationType navigationInitiationType =
       params.is_renderer_initiated
           ? web::NavigationInitiationType::RENDERER_INITIATED
           : web::NavigationInitiationType::USER_INITIATED;
   self.navigationManagerImpl->AddPendingItem(
-      navUrl, params.referrer, transition, navigationInitiationType,
-      params.user_agent_override_option);
+      params.url, params.referrer, params.transition_type,
+      navigationInitiationType, params.user_agent_override_option);
 
   web::NavigationItemImpl* addedItem = self.currentNavItem;
   DCHECK(addedItem);
