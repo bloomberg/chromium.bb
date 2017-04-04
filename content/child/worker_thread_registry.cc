@@ -82,7 +82,7 @@ WorkerThreadRegistry::WorkerThreadRegistry()
 int WorkerThreadRegistry::PostTaskToAllThreads(base::Closure closure) {
   base::AutoLock locker(task_runner_map_lock_);
   for (const auto& it : task_runner_map_)
-    it.second->PostTask(FROM_HERE, std::move(closure));
+    it.second->PostTask(FROM_HERE, closure);
   return static_cast<int>(task_runner_map_.size());
 }
 
