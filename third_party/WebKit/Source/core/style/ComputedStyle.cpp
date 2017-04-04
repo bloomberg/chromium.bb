@@ -1692,6 +1692,9 @@ float ComputedStyle::specifiedFontSize() const {
 float ComputedStyle::computedFontSize() const {
   return getFontDescription().computedSize();
 }
+LayoutUnit ComputedStyle::computedFontSizeAsFixed() const {
+  return LayoutUnit::fromFloatRound(getFontDescription().computedSize());
+}
 int ComputedStyle::fontSize() const {
   return getFontDescription().computedPixelSize();
 }
@@ -1931,18 +1934,18 @@ int ComputedStyle::computedLineHeight() const {
   return std::min(lh.value(), LayoutUnit::max().toFloat());
 }
 
-float ComputedStyle::computedLineHeightInFloat() const {
+LayoutUnit ComputedStyle::computedLineHeightAsFixed() const {
   const Length& lh = lineHeight();
 
   // Negative value means the line height is not set. Use the font's built-in
   // spacing, if avalible.
   if (lh.isNegative() && font().primaryFont())
-    return font().primaryFont()->getFontMetrics().floatLineSpacing();
+    return font().primaryFont()->getFontMetrics().fixedLineSpacing();
 
   if (lh.isPercentOrCalc())
-    return floatValueForLength(lh, computedFontSize());
+    return minimumValueForLength(lh, computedFontSizeAsFixed());
 
-  return std::min(lh.value(), LayoutUnit::max().toFloat());
+  return LayoutUnit::fromFloatRound(lh.value());
 }
 
 void ComputedStyle::setWordSpacing(float wordSpacing) {

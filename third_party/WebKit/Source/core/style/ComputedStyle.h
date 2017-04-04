@@ -2132,6 +2132,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   int fontSize() const;
   float specifiedFontSize() const;
   float computedFontSize() const;
+  LayoutUnit computedFontSizeAsFixed() const;
 
   // font-size-adjust
   float fontSizeAdjust() const;
@@ -2823,7 +2824,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Line-height utility functions.
   const Length& specifiedLineHeight() const;
   int computedLineHeight() const;
-  float computedLineHeightInFloat() const;
+  LayoutUnit computedLineHeightAsFixed() const;
 
   // Width/height utility functions.
   const Length& logicalWidth() const {

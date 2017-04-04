@@ -20,6 +20,7 @@
 #ifndef FontMetrics_h
 #define FontMetrics_h
 
+#include "platform/LayoutUnit.h"
 #include "platform/fonts/FontBaseline.h"
 #include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
@@ -110,6 +111,22 @@ class FontMetrics {
 
   int lineGap() const { return lroundf(m_lineGap); }
   int lineSpacing() const { return lroundf(m_lineSpacing); }
+
+  // LayoutUnit variants of certain metrics.
+  // LayoutNG should use LayoutUnit for the block progression metrics.
+  // TODO(kojii): Consider keeping converted values.
+  LayoutUnit fixedAscent(FontBaseline baselineType = AlphabeticBaseline) const {
+    return LayoutUnit::fromFloatRound(floatAscent(baselineType));
+  }
+
+  LayoutUnit fixedDescent(
+      FontBaseline baselineType = AlphabeticBaseline) const {
+    return LayoutUnit::fromFloatRound(floatDescent(baselineType));
+  }
+
+  LayoutUnit fixedLineSpacing() const {
+    return LayoutUnit::fromFloatRound(m_lineSpacing);
+  }
 
   bool hasIdenticalAscentDescentAndLineGap(const FontMetrics& other) const {
     return ascent() == other.ascent() && descent() == other.descent() &&

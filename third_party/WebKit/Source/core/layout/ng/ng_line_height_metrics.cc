@@ -13,25 +13,24 @@ NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
   const SimpleFontData* font_data = style.font().primaryFont();
   DCHECK(font_data);
   Initialize(font_data->getFontMetrics(), baseline_type,
-             style.computedLineHeightInFloat());
+             style.computedLineHeightAsFixed());
 }
 
 NGLineHeightMetrics::NGLineHeightMetrics(const FontMetrics& font_metrics,
                                          FontBaseline baseline_type) {
-  Initialize(font_metrics, baseline_type, font_metrics.floatLineSpacing());
+  Initialize(font_metrics, baseline_type,
+             LayoutUnit::fromFloatCeil(font_metrics.floatLineSpacing()));
 }
 
 void NGLineHeightMetrics::Initialize(const FontMetrics& font_metrics,
                                      FontBaseline baseline_type,
-                                     float line_height) {
-  ascent = font_metrics.floatAscent(baseline_type);
-  descent = font_metrics.floatDescent(baseline_type);
-  float half_leading = (line_height - (ascent + descent)) / 2;
+                                     LayoutUnit line_height) {
+  ascent = font_metrics.fixedAscent(baseline_type);
+  descent = font_metrics.fixedDescent(baseline_type);
+  LayoutUnit half_leading = (line_height - (ascent + descent)) / 2;
   // Ensure the top and the baseline is snapped to CSS pixel.
-  // TODO(kojii): How to handle fractional ascent isn't determined yet. Should
-  // we snap top or baseline? If baseline, top needs fractional. If top,
-  // baseline may not align across fonts.
-  ascent_and_leading = ascent + floor(half_leading);
+  // TODO(kojii): Snap baseline to pixel when our own paitn code is ready.
+  ascent_and_leading = ascent + half_leading.floor();
   descent_and_leading = line_height - ascent_and_leading;
 }
 

@@ -378,7 +378,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // of the line. Items are placed on this baseline, then adjusted later if the
   // estimation turned out to be different.
   LayoutUnit estimated_baseline =
-      content_size_ + LayoutUnit(block_metrics.ascent_and_leading);
+      content_size_ + block_metrics.ascent_and_leading;
 
   LayoutUnit inline_size;
   for (const auto& line_item_chunk : line_item_chunks) {
@@ -399,7 +399,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       // |InlineTextBoxPainter| sets the baseline at |top +
       // ascent-of-primary-font|. Compute |top| to match.
       NGLineHeightMetrics metrics(*style, baseline_type_);
-      block_start = estimated_baseline - LayoutUnit(metrics.ascent);
+      block_start = estimated_baseline - metrics.ascent;
       text_builder.SetBlockSize(metrics.LineHeight());
       line_box.UniteMetrics(metrics);
 
@@ -451,8 +451,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 
   // If the estimated baseline position was not the actual position, move all
   // fragments in the block direction.
-  LayoutUnit adjust_baseline(line_box.Metrics().ascent_and_leading -
-                             block_metrics.ascent_and_leading);
+  LayoutUnit adjust_baseline =
+      line_box.Metrics().ascent_and_leading - block_metrics.ascent_and_leading;
   if (adjust_baseline)
     line_box.MoveChildrenInBlockDirection(adjust_baseline);
 
@@ -513,7 +513,7 @@ LayoutUnit NGInlineLayoutAlgorithm::PlaceAtomicInline(
   LayoutUnit block_start = estimated_baseline - baseline_offset;
 
   NGLineHeightMetrics metrics;
-  metrics.ascent_and_leading = baseline_offset;
+  metrics.ascent_and_leading = LayoutUnit(baseline_offset);
   metrics.descent_and_leading = block_size - baseline_offset;
   line_box->UniteMetrics(metrics);
 
@@ -640,12 +640,10 @@ void NGInlineLayoutAlgorithm::CopyFragmentDataToLayoutBlockFlow(
     LayoutUnit line_top_with_leading = line_box.BlockOffset();
     root_line_box->setLogicalTop(line_top_with_leading);
     const NGLineHeightMetrics& metrics = physical_line_box->Metrics();
-    LayoutUnit baseline =
-        line_top_with_leading + LayoutUnit(metrics.ascent_and_leading);
+    LayoutUnit baseline = line_top_with_leading + metrics.ascent_and_leading;
     root_line_box->setLineTopBottomPositions(
-        baseline - LayoutUnit(metrics.ascent),
-        baseline + LayoutUnit(metrics.descent), line_top_with_leading,
-        baseline + LayoutUnit(metrics.descent_and_leading));
+        baseline - metrics.ascent, baseline + metrics.descent,
+        line_top_with_leading, baseline + metrics.descent_and_leading);
 
     bidi_runs.deleteRuns();
     fragments_for_bidi_runs.clear();
