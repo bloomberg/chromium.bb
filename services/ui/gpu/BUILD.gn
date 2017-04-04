@@ -51,11 +51,17 @@ test("mus_gpu_unittests") {
   deps = [
     ":gpu",
     "//base",
+    "//gpu",
     "//ipc",
     "//services/ui/common:run_all_service_tests",
+    "//services/ui/gpu/interfaces",
     "//testing/gtest",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
+  ]
+
+  sources = [
+    "gpu_service_unittest.cc",
   ]
 }
 

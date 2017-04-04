@@ -26,6 +26,11 @@
 #include <windows.h>
 #endif
 
+#if defined(USE_X11)
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#endif
+
 namespace gpu {
 namespace {
 
