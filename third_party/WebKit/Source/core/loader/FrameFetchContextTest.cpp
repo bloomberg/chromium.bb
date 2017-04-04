@@ -547,7 +547,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   expectHeader("http://www.example.com/1.gif", "Viewport-Width", true, "500");
 }
 
-TEST_F(FrameFetchContextTest, MainResource) {
+TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Default case
   ResourceRequest request("http://www.example.com");
   EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy,
@@ -629,6 +629,52 @@ TEST_F(FrameFetchContextTest, MainResource) {
   EXPECT_EQ(WebCachePolicy::BypassingCache,
             childFetchContext->resourceRequestCachePolicy(
                 request, Resource::MainResource, FetchRequest::NoDefer));
+}
+
+TEST_F(FrameFetchContextTest, SubResourceCachePolicy) {
+  // Default case
+  ResourceRequest request("http://www.example.com/mock");
+  EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy,
+            fetchContext->resourceRequestCachePolicy(request, Resource::Mock,
+                                                     FetchRequest::NoDefer));
+
+  // FrameLoadTypeReload should not affect sub-resources
+  document->loader()->setLoadType(FrameLoadTypeReload);
+  EXPECT_EQ(WebCachePolicy::UseProtocolCachePolicy,
+            fetchContext->resourceRequestCachePolicy(request, Resource::Mock,
+                                                     FetchRequest::NoDefer));
+
+  // Conditional request
+  document->loader()->setLoadType(FrameLoadTypeStandard);
+  ResourceRequest conditional("http://www.example.com/mock");
+  conditional.setHTTPHeaderField(HTTPNames::If_Modified_Since, "foo");
+  EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
+            fetchContext->resourceRequestCachePolicy(
+                conditional, Resource::Mock, FetchRequest::NoDefer));
+
+  // FrameLoadTypeReloadBypassingCache
+  document->loader()->setLoadType(FrameLoadTypeReloadBypassingCache);
+  EXPECT_EQ(WebCachePolicy::BypassingCache,
+            fetchContext->resourceRequestCachePolicy(request, Resource::Mock,
+                                                     FetchRequest::NoDefer));
+
+  // FrameLoadTypeReloadBypassingCache with a conditional request
+  document->loader()->setLoadType(FrameLoadTypeReloadBypassingCache);
+  EXPECT_EQ(WebCachePolicy::BypassingCache,
+            fetchContext->resourceRequestCachePolicy(
+                conditional, Resource::Mock, FetchRequest::NoDefer));
+
+  // Back/forward navigation
+  document->loader()->setLoadType(FrameLoadTypeBackForward);
+  EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad,
+            fetchContext->resourceRequestCachePolicy(request, Resource::Mock,
+                                                     FetchRequest::NoDefer));
+
+  // Back/forward navigation with a conditional request
+  document->loader()->setLoadType(FrameLoadTypeBackForward);
+  EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad,
+            fetchContext->resourceRequestCachePolicy(
+                conditional, Resource::Mock, FetchRequest::NoDefer));
 }
 
 TEST_F(FrameFetchContextTest, SetFirstPartyCookieAndRequestorOrigin) {

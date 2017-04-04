@@ -220,6 +220,11 @@ enum class RequestMethod { kIsPost, kIsNotPost };
 enum class RequestType { kIsConditional, kIsNotConditional };
 enum class ResourceType { kIsMainResource, kIsNotMainResource };
 
+// Determines WebCachePolicy for a main resource, or WebCachePolicy that is
+// corresponding to FrameLoadType.
+// TODO(toyoshim): Probably, we should split FrameLoadType to WebCachePolicy
+// conversion logic into a separate function once other TODOs in this function
+// are resolved.
 WebCachePolicy determineWebCachePolicy(RequestMethod method,
                                        RequestType requestType,
                                        ResourceType resourceType,
@@ -263,8 +268,11 @@ WebCachePolicy determineWebCachePolicy(RequestMethod method,
   return WebCachePolicy::UseProtocolCachePolicy;
 }
 
-// TODO(toyoshim): Remove |resourceType|. See comments in
-// resourceRequestCachePolicy().
+// Determines WebCachePolicy for |frame|. This WebCachePolicy should be a base
+// policy to consider one of each resource belonging to the frame, and should
+// not count resource specific conditions in.
+// TODO(toyoshim): Remove |resourceType| to realize the design described above.
+// See also comments in resourceRequestCachePolicy().
 WebCachePolicy determineFrameWebCachePolicy(Frame* frame,
                                             ResourceType resourceType) {
   if (!frame)
@@ -404,13 +412,16 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
       shouldDisallowFetchForMainFrameScript(request, defer, *m_document))
     return WebCachePolicy::ReturnCacheDataDontLoad;
 
-  // TODO(toyoshim): We should check isConditional() and use ValidatingCacheData
-  // only when |cachePolicy| below is UseProtocolCachePolicy.
-  if (request.isConditional())
-    return WebCachePolicy::ValidatingCacheData;
+  const WebCachePolicy cachePolicy =
+      determineFrameWebCachePolicy(frame(), ResourceType::kIsNotMainResource);
 
-  return determineFrameWebCachePolicy(frame(),
-                                      ResourceType::kIsNotMainResource);
+  // TODO(toyoshim): Revisit to consider if this clause can be merged to
+  // determineWebCachePolicy or determineFrameWebCachePolicy.
+  if (cachePolicy == WebCachePolicy::UseProtocolCachePolicy &&
+      request.isConditional()) {
+    return WebCachePolicy::ValidatingCacheData;
+  }
+  return cachePolicy;
 }
 
 // The |m_documentLoader| is null in the FrameFetchContext of an imported
