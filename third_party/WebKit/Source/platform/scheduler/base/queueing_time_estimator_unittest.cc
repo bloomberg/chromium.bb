@@ -183,5 +183,45 @@ TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
                                    base::TimeDelta::FromMilliseconds(100)));
 }
 
+// If a task is too long, we assume it's invalid. Perhaps the user's machine
+// went to sleep during a task, resulting in an extremely long task. Ignore
+// these long tasks completely.
+TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5));
+  // Start with a 1 second task.
+  base::TimeTicks time;
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Now perform an invalid task.
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(35000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Perform another 1 second task.
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(1000);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  // Flush the data by adding a task in the next window.
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(500);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  EXPECT_THAT(client.expected_queueing_times(),
+              testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(0),
+                                   base::TimeDelta::FromMilliseconds(100)));
+}
+
 }  // namespace scheduler
 }  // namespace blink
