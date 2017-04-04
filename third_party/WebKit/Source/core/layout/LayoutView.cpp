@@ -155,6 +155,23 @@ bool LayoutView::hitTestNoLifecycleUpdate(HitTestResult& result) {
             frameView()->scrollbarAtFramePoint(framePoint))
       result.setScrollbar(frameScrollbar);
 
+    // If hitTestResult include scrollbar, innerNode should be the parent of the
+    // scrollbar.
+    if (result.scrollbar()) {
+      // Clear innerNode if we hit a scrollbar whose ScrollableArea isn't
+      // associated with a LayoutBox so we aren't hitting some random element
+      // below too.
+      result.setInnerNode(nullptr);
+      result.setURLElement(nullptr);
+      ScrollableArea* scrollableArea = result.scrollbar()->getScrollableArea();
+      if (scrollableArea && scrollableArea->layoutBox() &&
+          scrollableArea->layoutBox()->node()) {
+        Node* node = scrollableArea->layoutBox()->node();
+        result.setInnerNode(node);
+        result.setURLElement(node->enclosingLinkEventParentOrSelf());
+      }
+    }
+
     if (hitLayer)
       m_hitTestCache->addCachedResult(result, domTreeVersion);
   }

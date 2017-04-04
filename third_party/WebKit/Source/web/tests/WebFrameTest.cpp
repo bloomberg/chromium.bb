@@ -10853,12 +10853,12 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   Document* document = webView->mainFrameImpl()->frame()->document();
   Element* aTag = document->getElementById("a");
 
-  // Ensure hittest has scrollbar and link
+  // Ensure hittest only has scrollbar.
   HitTestResult hitTestResult =
       webView->coreHitTestResultAt(WebPoint(18, aTag->offsetTop()));
 
-  EXPECT_TRUE(hitTestResult.URLElement());
-  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_FALSE(hitTestResult.URLElement());
+  EXPECT_FALSE(hitTestResult.innerElement());
   EXPECT_TRUE(hitTestResult.scrollbar());
   EXPECT_FALSE(hitTestResult.scrollbar()->isCustomScrollbar());
 
@@ -10991,6 +10991,80 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   // Custom not change the DIV :hover
   EXPECT_EQ(document->hoverNode(), scrollbarDiv);
   EXPECT_EQ(hitTestResult.scrollbar()->hoveredPart(), ScrollbarPart::ThumbPart);
+}
+
+// Makes sure that mouse hover over an overlay scrollbar doesn't hover iframe
+// below.
+TEST_F(WebFrameTest, MouseOverScrollbarAndIFrame) {
+  registerMockedHttpURLLoad("scrollbar-and-iframe-hover.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initializeAndLoad(
+      m_baseURL + "scrollbar-and-iframe-hover.html");
+
+  webViewHelper.resize(WebSize(200, 200));
+
+  webView->updateAllLifecyclePhases();
+
+  Document* document = toLocalFrame(webView->page()->mainFrame())->document();
+  Element* iframe = document->getElementById("iframe");
+  DCHECK(iframe);
+
+  // Ensure hittest only has IFRAME.
+  HitTestResult hitTestResult = webView->coreHitTestResultAt(WebPoint(5, 5));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_FALSE(hitTestResult.scrollbar());
+
+  // Mouse over IFRAME.
+  WebMouseEvent mouseMoveOverIFrame(
+      WebInputEvent::MouseMove, WebFloatPoint(5, 5), WebFloatPoint(5, 5),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverIFrame.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverIFrame, Vector<WebMouseEvent>());
+
+  // IFRAME hover.
+  EXPECT_EQ(document->hoverNode(), iframe);
+
+  // Ensure hittest has scrollbar.
+  hitTestResult = webView->coreHitTestResultAt(WebPoint(195, 5));
+  EXPECT_FALSE(hitTestResult.innerElement());
+  EXPECT_TRUE(hitTestResult.scrollbar());
+  EXPECT_TRUE(hitTestResult.scrollbar()->enabled());
+
+  // Mouse over scrollbar.
+  WebMouseEvent mouseMoveOverIFrameAndScrollbar(
+      WebInputEvent::MouseMove, WebFloatPoint(195, 5), WebFloatPoint(195, 5),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverIFrameAndScrollbar.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverIFrameAndScrollbar, Vector<WebMouseEvent>());
+
+  // IFRAME not hover.
+  EXPECT_NE(document->hoverNode(), iframe);
+
+  // Disable the Scrollbar.
+  webView->mainFrameImpl()->frameView()->setScrollbarsHidden(true);
+
+  // Ensure hittest has IFRAME and no scrollbar.
+  hitTestResult = webView->coreHitTestResultAt(WebPoint(196, 5));
+
+  EXPECT_TRUE(hitTestResult.innerElement());
+  EXPECT_FALSE(hitTestResult.scrollbar());
+
+  // Mouse over disabled scrollbar.
+  WebMouseEvent mouseMoveOverIFrameAndDisabledScrollbar(
+      WebInputEvent::MouseMove, WebFloatPoint(196, 5), WebFloatPoint(196, 5),
+      WebPointerProperties::Button::NoButton, 0, WebInputEvent::NoModifiers,
+      TimeTicks::Now().InSeconds());
+  mouseMoveOverIFrameAndDisabledScrollbar.setFrameScale(1);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverIFrameAndDisabledScrollbar, Vector<WebMouseEvent>());
+
+  // IFRAME hover.
+  EXPECT_EQ(document->hoverNode(), iframe);
 }
 
 // Makes sure that mouse hover over a scrollbar also hover the element owns the

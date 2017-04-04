@@ -234,7 +234,6 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/network/NetworkStateNotifier.h"
-#include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/SegmentedString.h"
@@ -3652,7 +3651,7 @@ MouseEventWithHitTestResults Document::performMouseEventHitTest(
   layoutViewItem().hitTest(result);
 
   if (!request.readOnly())
-    updateHoverActiveState(request, result.innerElement(), result.scrollbar());
+    updateHoverActiveState(request, result.innerElement());
 
   if (isHTMLCanvasElement(result.innerNode())) {
     HitTestCanvasResult* hitTestCanvasResult =
@@ -6158,29 +6157,17 @@ void Document::setContextFeatures(ContextFeatures& features) {
 // TODO(mustaq) |request| parameter maybe a misuse of HitTestRequest in
 // updateHoverActiveState() since the function doesn't bother with hit-testing.
 void Document::updateHoverActiveState(const HitTestRequest& request,
-                                      Element* innerElement,
-                                      Scrollbar* hitScrollbar) {
+                                      Element* innerElement) {
   DCHECK(!request.readOnly());
 
   if (request.active() && m_frame)
     m_frame->eventHandler().notifyElementActivated();
 
-  Element* innerElementInDocument = hitScrollbar ? nullptr : innerElement;
-  // Replace the innerElementInDocument to be srollbar's parent when hit
-  // scrollbar
-  if (hitScrollbar) {
-    ScrollableArea* scrollableArea = hitScrollbar->getScrollableArea();
-    if (scrollableArea && scrollableArea->layoutBox() &&
-        scrollableArea->layoutBox()->node() &&
-        scrollableArea->layoutBox()->node()->isElementNode()) {
-      innerElementInDocument =
-          toElement(hitScrollbar->getScrollableArea()->layoutBox()->node());
-    }
-  }
+  Element* innerElementInDocument = innerElement;
 
   while (innerElementInDocument && innerElementInDocument->document() != this) {
     innerElementInDocument->document().updateHoverActiveState(
-        request, innerElementInDocument, hitScrollbar);
+        request, innerElementInDocument);
     innerElementInDocument = innerElementInDocument->document().localOwner();
   }
 

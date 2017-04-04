@@ -199,17 +199,18 @@ class CORE_EXPORT HitTestResult {
   Member<Node> m_innerNode;
   Member<Node> m_innerPossiblyPseudoNode;
   // FIXME: Nothing changes this to a value different from m_hitTestLocation!
-  LayoutPoint m_pointInInnerNodeFrame;  // The hit-tested point in innerNode
-                                        // frame coordinates.
-  LayoutPoint m_localPoint;  // A point in the local coordinate space of
-                             // m_innerNode's layoutObject.Allows us to
-                             // efficiently determine where inside the
-                             // layoutObject we hit on subsequent operations.
+  // The hit-tested point in innerNode frame coordinates.
+  LayoutPoint m_pointInInnerNodeFrame;
+  // A point in the local coordinate space of m_innerNode's layoutObject.Allows
+  // us to efficiently determine where inside the layoutObject we hit on
+  // subsequent operations.
+  LayoutPoint m_localPoint;
+  // For non-URL, this is the enclosing that triggers navigation.
   Member<Element> m_innerURLElement;
   Member<Scrollbar> m_scrollbar;
-  bool m_isOverFrameViewBase;  // Returns true if we are over a FrameViewBase
-                               // (and not in the border/padding area of a
-                               // LayoutPart for example).
+  // Returns true if we are over a FrameViewBase (and not in the border/padding
+  // area of a LayoutPart for example).
+  bool m_isOverFrameViewBase;
 
   mutable Member<NodeSet> m_listBasedTestResult;
   String m_canvasRegionId;

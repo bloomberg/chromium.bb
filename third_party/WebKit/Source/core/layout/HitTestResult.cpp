@@ -218,7 +218,11 @@ HTMLAreaElement* HitTestResult::imageAreaForImage() const {
 
 void HitTestResult::setInnerNode(Node* n) {
   m_innerPossiblyPseudoNode = n;
-  if (n && n->isPseudoElement())
+  if (!n) {
+    m_innerNode = n;
+    return;
+  }
+  if (n->isPseudoElement())
     n = toPseudoElement(n)->findAssociatedNode();
   m_innerNode = n;
   if (HTMLAreaElement* area = imageAreaForImage()) {

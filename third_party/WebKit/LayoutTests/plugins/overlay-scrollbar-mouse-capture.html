@@ -38,11 +38,9 @@
         // element under the mouse.
         eventSender.mouseUp();
 
-        // TODO(bokan): This is wrong, if the scrollbar captures the input the
-        // plugin shouldn't be receiving events. crbug.com/636436.
-        shouldBe('eventHistory.length', '2');
-        shouldBe('eventHistory[0]', '"plugin.mousedown"');
-        shouldBe('eventHistory[1]', '"plugin.mouseup"');
+        // The scrollbar captures the input and the plugin should not receive
+        // events.
+        shouldBe('eventHistory.length', '0');
         requestAnimationFrame(function() {
           shouldBeTrue('window.scrollY > 0');
           finishJSTest();
