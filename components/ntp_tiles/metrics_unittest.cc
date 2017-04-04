@@ -72,12 +72,6 @@ TEST(RecordPageImpressionTest, ShouldRecordUmaForIcons) {
                           base::Bucket(/*min=*/ICON_COLOR, /*count=*/2)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.popular"),
               ElementsAre(base::Bucket(/*min=*/ICON_COLOR, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.IconsReal"),
-              ElementsAre(base::Bucket(/*min=*/4, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.IconsColor"),
-              ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.IconsGray"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.SuggestionsImpression.IconsReal"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
@@ -122,12 +116,6 @@ TEST(RecordPageImpressionTest, ShouldRecordUmaForThumbnails) {
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.client"),
               IsEmpty());
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.popular"),
-              IsEmpty());
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.IconsReal"),
-              IsEmpty());
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.IconsColor"),
-              IsEmpty());
-  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.IconsGray"),
               IsEmpty());
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.SuggestionsImpression.IconsReal"),

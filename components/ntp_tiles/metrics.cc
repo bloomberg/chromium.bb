@@ -82,8 +82,6 @@ void RecordPageImpression(const std::vector<TileImpression>& tiles,
                           rappor::RapporService* rappor_service) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", tiles.size());
 
-  int counts_per_type[NUM_RECORDED_TILE_TYPES] = {0};
-  bool have_tile_types = false;
   for (int index = 0; index < static_cast<int>(tiles.size()); index++) {
     NTPTileSource source = tiles[index].source;
     MostVisitedTileType tile_type = tiles[index].type;
@@ -100,9 +98,6 @@ void RecordPageImpression(const std::vector<TileImpression>& tiles,
     if (tile_type >= NUM_RECORDED_TILE_TYPES) {
       continue;
     }
-
-    have_tile_types = true;
-    ++counts_per_type[tile_type];
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type,
                               NUM_RECORDED_TILE_TYPES);
@@ -122,15 +117,6 @@ void RecordPageImpression(const std::vector<TileImpression>& tiles,
           "NewTabPage.SuggestionsImpression.%s", icon_type_suffix);
       LogHistogramEvent(icon_impression_histogram, index, kMaxNumTiles);
     }
-  }
-
-  if (have_tile_types) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsReal",
-                                counts_per_type[ICON_REAL]);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsColor",
-                                counts_per_type[ICON_COLOR]);
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.IconsGray",
-                                counts_per_type[ICON_DEFAULT]);
   }
 }
 
