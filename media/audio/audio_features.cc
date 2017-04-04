@@ -10,7 +10,7 @@ namespace features {
 // Allows experimentally enables mediaDevices.enumerateDevices() on ChromeOS.
 // Default disabled (crbug.com/554168).
 const base::Feature kEnumerateAudioDevices{"EnumerateAudioDevices",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 }  // namespace features
