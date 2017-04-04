@@ -114,7 +114,7 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
   Args:
     build: Dictionary of build details from CIDB.
     stage: Dictionary fo stage details from CIDB.
-    exceptions: A list of instances of failure_message_lib.StageFailure.
+    exceptions: Dictionary of build failures from CIDB.
     buildinfo: BuildInfo build JSON file from MILO.
     logdog_client: logdog.LogdogClient object.
 
@@ -186,9 +186,9 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
     del stage_links[MAX_STAGE_LINKS:]
 
   # Add all exceptions recording in CIDB as notes.
-  notes.extend('%s: %s' % (e.exception_type, e.exception_message)
+  notes.extend('%s: %s' % (e['exception_type'], e['exception_message'])
                for e in exceptions
-               if e.build_stage_id == stage['id'])
+               if e['build_stage_id'] == stage['id'])
 
   # Add the stage to the alert.
   return som.CrosStageFailure(stage['name'],
@@ -203,7 +203,7 @@ def GenerateBuildAlert(build, slave_stages, exceptions, severity, now,
   Args:
     build: Dictionary of build details from CIDB.
     slave_stages: Dictionary of stage details from CIDB.
-    exceptions: A list of instances of failure_message_lib.StageFailure.
+    exceptions: Dictionary of build failures from CIDB.
     severity: Sheriff-o-Matic severity to use for the alert.
     now: Current datettime.
     logdog_client: logdog.LogdogClient object.

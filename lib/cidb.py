@@ -17,7 +17,6 @@ from chromite.lib import constants
 from chromite.lib import clactions
 from chromite.lib import cros_logging as logging
 from chromite.lib import factory
-from chromite.lib import failure_message_lib
 from chromite.lib import graphite
 from chromite.lib import metrics
 from chromite.lib import osutils
@@ -1183,13 +1182,18 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     if not build_ids:
       return []
 
-    columns_string = ', '.join(failure_message_lib.FAILURE_KEYS)
+    columns = ['id', 'build_stage_id', 'outer_failure_id', 'exception_type',
+               'exception_message', 'exception_category', 'extra_info',
+               'timestamp', 'stage_name', 'board', 'stage_status', 'build_id',
+               'master_build_id', 'builder_name', 'waterfall', 'build_number',
+               'build_config', 'build_status', 'important', 'buildbucket_id']
+    columns_string = ', '.join(columns)
 
     query = ('SELECT %s FROM failureView WHERE build_id IN (%s)' %
              (columns_string, ','.join(str(int(x)) for x in build_ids)))
 
     results = self._Execute(query).fetchall()
-    return [failure_message_lib.StageFailure(*values) for values in results]
+    return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(44)
   def GetSlaveFailures(self, master_build_id, buildbucket_ids=None):
@@ -1210,7 +1214,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
        stage_status, build_id, master_build_id, builder_name, waterfall,
        build_number, build_config, build_status, important, buildbucket_id).
     """
-    columns_string = ', '.join(failure_message_lib.FAILURE_KEYS)
+    columns = ['id', 'build_stage_id', 'outer_failure_id', 'exception_type',
+               'exception_message', 'exception_category', 'extra_info',
+               'timestamp', 'stage_name', 'board', 'stage_status', 'build_id',
+               'master_build_id', 'builder_name', 'waterfall', 'build_number',
+               'build_config', 'build_status', 'important', 'buildbucket_id']
+    columns_string = ', '.join(columns)
 
     query = ('SELECT %s FROM failureView WHERE master_build_id = %s ' %
              (columns_string, master_build_id))
@@ -1226,7 +1235,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                 (','.join('"%s"' % x for x in buildbucket_ids)))
       results = self._Execute(query).fetchall()
 
-    return [failure_message_lib.StageFailure(*values) for values in results]
+    return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(32)
   def GetTimeToDeadline(self, build_id):

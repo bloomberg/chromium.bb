@@ -577,7 +577,7 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     self.assertEqual(len(failures),
                      len(constants.EXCEPTION_CATEGORY_ALL_CATEGORIES))
     for f in failures:
-      self.assertEqual(f.build_id, build_id)
+      self.assertEqual(f['build_id'], build_id)
 
     slave_stages = bot_db.GetSlaveStages(master_build_id)
     self.assertEqual(len(slave_stages), 1)
@@ -688,11 +688,11 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     failures = bot_db.GetSlaveFailures(master_build_id,
                                        buildbucket_ids=['bb_id_2'])
     self.assertEqual(len(failures), 1)
-    self.assertEqual(failures[0].buildbucket_id, 'bb_id_2')
+    self.assertEqual(failures[0]['buildbucket_id'], 'bb_id_2')
 
     failures = bot_db.GetBuildsFailures([build_id_1])
     self.assertEqual(len(failures), 1)
-    self.assertEqual(failures[0].build_id, build_id_1)
+    self.assertEqual(failures[0]['build_id'], build_id_1)
 
     failures = bot_db.GetBuildsFailures([build_id_1, build_id_2])
     self.assertEqual(len(failures), 2)
