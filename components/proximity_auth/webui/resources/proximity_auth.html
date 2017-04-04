@@ -1,19 +1,127 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
   <meta charset="utf-8">
-  <title>Proximity Auth Debug</title>
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-  <link href="proximity_auth.css" rel="stylesheet">
+
   <link href="chrome://resources/css/roboto.css" rel="stylesheet">
-  <link href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html" rel="import">
-  <link href="content-panel.html" rel="import">
-  <link href="log-panel.html" rel="import">
-  <script src="cryptauth_interface.js"></script>
+  <link href="common.css" rel="stylesheet">
+  <link href="proximity_auth.css" rel="stylesheet">
+
+  <script src='webui.js' type='text/javascript'></script>
+  <script src='logs.js' type='text/javascript'></script>
+  <script src='proximity_auth.js' type='text/javascript'></script>
 </head>
-<body class="layout horizontal fullbleed">
-  <content-panel id="content" class="flex"></content-panel>
-  <log-panel id="logs"></log-panel>
+
+<body>
+  <!-- Panel for debug controls. -->
+  <section id='controls'>
+    <header>
+      <div class='logo'>近</div>
+      <div class='title'>ProximityAuth</div>
+    </header>
+    <div id='controls-panel'>
+      <!-- Control for CryptAuth enrollment and sync -->
+      <div class='control'>
+        <div class='control-title'>CRYPTAUTH</div>
+        <table>
+          <tr>
+            <td>PUBLIC KEY</td>
+            <td colspan="2" id='public-key'>----</td>
+          </tr>
+          <tr>
+            <td>GCM REGISTRATION</td>
+            <td colspan="2" id='gcm-registration'>----</td>
+          </tr>
+          <tr>
+            <td>CURRENT EID</td>
+            <td colspan="2" id='current-eid'>----</td>
+          </tr>
+
+          <tr><td id='enrollment-title' state='synced'>ENROLLMENT</td></tr>
+          <tr class='subrow'>
+              <td>Last Success</td>
+              <td id='last-enrollment'>
+          </tr>
+          <tr class='subrow'>
+              <td>Next Refresh</td>
+              <td id='next-enrollment'>
+          </tr>
+          <tr class='subrow'>
+              <td><button id='force-enrollment'>Enroll</button></td>
+          </tr>
+
+          <tr><td id='device-sync-title' state='synced'>DEVICE SYNC</td></tr>
+          <tr class='subrow'>
+              <td>Last Success</td>
+              <td id='last-device-sync'>
+          </tr>
+          <tr class='subrow'>
+              <td>Next Refresh</td>
+              <td id='next-device-sync'>
+          </tr>
+          <tr class='subrow'>
+              <td><button id='force-device-sync'>Sync</button></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Control for showing synced remote devices. -->
+      <div class='control' id='remote-devices-control'>
+        <div class='control-title'>REMOTE DEVICES</div>
+      </div>
+
+      <!-- Control for showing eligible devices. -->
+      <div class='control'>
+        <div class='control-title'>ELIGIBLE UNLOCK KEYS</div>
+        <div id='eligible-devices-list' device-count=0>
+          <div>ELIGIBLE</div>
+        </div>
+        <div id='ineligible-devices-list' device-count=0>
+          <div>INELIGIBLE</div>
+        </div>
+        <button id='find-eligible-devices'>Find</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Panel for logs list. -->
+  <section id='logs-panel'>
+    <header>
+      <button id='clear-logs-button'>∅</button>
+    </header>
+    <div id='logs-list'> </div>
+  </section>
+
+  <!-- Template for a remote device entry. -->
+  <template id='remote-device-template'>
+    <div class='remote-device'>
+      <div class='device-connection-status' state='disconnected'>●</div>
+      <div class='device-info flex'>
+        <div class='device-name'>Huawei Nexus 6P</div>
+        <div class='device-info-subtitle'>0x32BD..EF</div>
+      </div>
+      <div class='device-info'>
+        <div class='device-attributes'>[KEY, TETHER]</div>
+        <div class='device-eid'>EID:AABB</div>
+      </div>
+      <button class='device-scan hidden'>Scan</button>
+      <button class='device-advertise hidden'>Advertise</button>
+      <button class='device-toggle-key hidden'>Toggle Key</button>
+    </div>
+  </template>
+
+  <!-- Template for a log item. -->
+  <template id='item-template'>
+    <div class='log-item' severity='0'>
+      <div class="item-metadata">
+        <div class='item-time'></div>
+        <div class="flex"></div>
+        <div class='item-source'></div>
+      </div>
+      <pre class="item-text flex">This is an error.</pre>
+    </div>
+  </template>
 </body>
+
 </html>

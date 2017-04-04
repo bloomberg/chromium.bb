@@ -21,14 +21,19 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
     : content::WebUIController(web_ui) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
-  source->SetDefaultResource(IDR_PROXIMITY_AUTH_POLLUX_DEBUG_HTML);
-  source->AddResourcePath("pollux_debug.css",
-                          IDR_PROXIMITY_AUTH_POLLUX_DEBUG_CSS);
-  source->AddResourcePath("pollux_debug.js",
-                          IDR_PROXIMITY_AUTH_POLLUX_DEBUG_JS);
-  source->AddResourcePath("webui.js", IDR_PROXIMITY_AUTH_POLLUX_WEBUI_JS);
-  source->AddResourcePath("logs_controller.js",
-                          IDR_PROXIMITY_AUTH_POLLUX_LOGS_CONTROLLER_JS);
+  source->SetDefaultResource(IDR_PROXIMITY_AUTH_INDEX_HTML);
+  source->AddResourcePath("common.css", IDR_PROXIMITY_AUTH_COMMON_CSS);
+  source->AddResourcePath("webui.js", IDR_PROXIMITY_AUTH_WEBUI_JS);
+  source->AddResourcePath("logs.js", IDR_PROXIMITY_AUTH_LOGS_JS);
+  source->AddResourcePath("proximity_auth.html",
+                          IDR_PROXIMITY_AUTH_PROXIMITY_AUTH_HTML);
+  source->AddResourcePath("proximity_auth.css",
+                          IDR_PROXIMITY_AUTH_PROXIMITY_AUTH_CSS);
+  source->AddResourcePath("proximity_auth.js",
+                          IDR_PROXIMITY_AUTH_PROXIMITY_AUTH_JS);
+  source->AddResourcePath("pollux.html", IDR_PROXIMITY_AUTH_POLLUX_HTML);
+  source->AddResourcePath("pollux.css", IDR_PROXIMITY_AUTH_POLLUX_CSS);
+  source->AddResourcePath("pollux.js", IDR_PROXIMITY_AUTH_POLLUX_JS);
 
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
