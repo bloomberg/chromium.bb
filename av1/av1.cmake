@@ -227,6 +227,7 @@ if (CONFIG_CDEF)
       "${AOM_ROOT}/av1/common/clpf.c"
       "${AOM_ROOT}/av1/common/clpf.h"
       "${AOM_ROOT}/av1/common/clpf_simd.h"
+      "${AOM_ROOT}/av1/common/cdef_simd.h"
       "${AOM_ROOT}/av1/common/cdef.c"
       "${AOM_ROOT}/av1/common/cdef.h"
       "${AOM_ROOT}/av1/common/od_dering.c"

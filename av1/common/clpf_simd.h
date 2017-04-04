@@ -10,8 +10,9 @@
  */
 
 #include "./av1_rtcd.h"
-#include "aom_ports/mem.h"
+#include "./cdef_simd.h"
 #include "aom_ports/bitops.h"
+#include "aom_ports/mem.h"
 
 // sign(a - b) * min(abs(a - b), max(0, strength - (abs(a - b) >> adjdamp)))
 SIMD_INLINE v128 constrain(v256 a, v256 b, unsigned int strength,
@@ -242,17 +243,6 @@ void SIMD_FUNC(aom_clpf_hblock)(uint8_t *dst, const uint16_t *src, int dstride,
   }
 }
 
-// sign(a - b) * min(abs(a - b), max(0, strength - (abs(a - b) >> adjdamp)))
-SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,
-                               unsigned int adjdamp) {
-  v128 diff = v128_sub_16(a, b);
-  const v128 sign = v128_shr_n_s16(diff, 15);
-  diff = v128_abs_s16(diff);
-  const v128 s =
-      v128_ssub_u16(v128_dup_16(strength), v128_shr_u16(diff, adjdamp));
-  return v128_xor(v128_add_16(sign, v128_min_s16(diff, s)), sign);
-}
-
 // delta = 1/16 * constrain(a, x, s, d) + 3/16 * constrain(b, x, s, d) +
 //         1/16 * constrain(c, x, s, d) + 3/16 * constrain(d, x, s, d) +
 //         3/16 * constrain(e, x, s, d) + 1/16 * constrain(f, x, s, d) +
@@ -261,13 +251,12 @@ SIMD_INLINE v128 calc_delta_hbd(v128 x, v128 a, v128 b, v128 c, v128 d, v128 e,
                                 v128 f, v128 g, v128 h, unsigned int s,
                                 unsigned int dmp) {
   const v128 bdeg = v128_add_16(
-      v128_add_16(constrain_hbd(b, x, s, dmp), constrain_hbd(d, x, s, dmp)),
-      v128_add_16(constrain_hbd(e, x, s, dmp), constrain_hbd(g, x, s, dmp)));
+      v128_add_16(constrain16(b, x, s, dmp), constrain16(d, x, s, dmp)),
+      v128_add_16(constrain16(e, x, s, dmp), constrain16(g, x, s, dmp)));
   const v128 delta = v128_add_16(
       v128_add_16(
-          v128_add_16(constrain_hbd(a, x, s, dmp), constrain_hbd(c, x, s, dmp)),
-          v128_add_16(constrain_hbd(f, x, s, dmp),
-                      constrain_hbd(h, x, s, dmp))),
+          v128_add_16(constrain16(a, x, s, dmp), constrain16(c, x, s, dmp)),
+          v128_add_16(constrain16(f, x, s, dmp), constrain16(h, x, s, dmp))),
       v128_add_16(v128_add_16(bdeg, bdeg), bdeg));
   return v128_add_16(
       x,
@@ -297,9 +286,9 @@ static void calc_delta_hbd8(v128 o, v128 a, v128 b, v128 c, v128 d, v128 e,
 SIMD_INLINE v128 calc_hdelta_hbd(v128 x, v128 a, v128 b, v128 c, v128 d,
                                  unsigned int s, unsigned int dmp) {
   const v128 bc =
-      v128_add_16(constrain_hbd(b, x, s, dmp), constrain_hbd(c, x, s, dmp));
+      v128_add_16(constrain16(b, x, s, dmp), constrain16(c, x, s, dmp));
   const v128 delta = v128_add_16(
-      v128_add_16(constrain_hbd(a, x, s, dmp), constrain_hbd(d, x, s, dmp)),
+      v128_add_16(constrain16(a, x, s, dmp), constrain16(d, x, s, dmp)),
       v128_add_16(v128_add_16(bc, bc), bc));
   return v128_add_16(
       x,

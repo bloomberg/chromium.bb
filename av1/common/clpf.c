@@ -9,17 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "av1/common/clpf.h"
+#include "./clpf.h"
 #include "./av1_rtcd.h"
+#include "./cdef.h"
 #include "aom/aom_image.h"
 #include "aom_dsp/aom_dsp_common.h"
-
-static int sign(int i) { return i < 0 ? -1 : 1; }
-
-static int constrain(int x, int s, unsigned int damping) {
-  return sign(x) *
-         AOMMIN(abs(x), AOMMAX(0, s - (abs(x) >> (damping - get_msb(s)))));
-}
 
 int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int G,
                     int H, int s, unsigned int dmp) {
