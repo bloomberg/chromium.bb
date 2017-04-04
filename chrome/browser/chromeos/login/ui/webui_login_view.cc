@@ -458,10 +458,12 @@ bool WebUILoginView::TakeFocus(content::WebContents* source, bool reverse) {
     return true;
 
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
-  if (tray && tray->GetWidget()->IsVisible()) {
+  if (tray && tray->GetWidget()->IsVisible() && tray->visible()) {
     tray->SetNextFocusableView(this);
     ash::Shell::Get()->focus_cycler()->RotateFocus(
         reverse ? ash::FocusCycler::BACKWARD : ash::FocusCycler::FORWARD);
+  } else {
+    AboutToRequestFocusFromTabTraversal(reverse);
   }
 
   return true;
