@@ -104,6 +104,7 @@ const char kId[] = "id";
 const char kETag[] = "etag";
 const char kItems[] = "items";
 const char kLargestChangeId[] = "largestChangeId";
+const char kNextPageToken[] = "nextPageToken";
 
 // About Resource
 // https://developers.google.com/drive/v2/reference/about
@@ -173,6 +174,7 @@ const char kDriveFolderMimeType[] = "application/vnd.google-apps.folder";
 
 // Team Drive
 const char kTeamDriveKind[] = "drive#teamDrive";
+const char kTeamDriveListKind[] = "drive#teamDriveList";
 const char kCapabilities[] = "capabilities";
 
 // Team Drive capabilities.
@@ -514,6 +516,47 @@ bool TeamDriveResource::Parse(const base::Value& value) {
   base::JSONValueConverter<TeamDriveResource> converter;
   if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid Team Drive resource JSON!";
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TeamDriveList implementation
+
+TeamDriveList::TeamDriveList() {}
+
+TeamDriveList::~TeamDriveList() {}
+
+// static
+void TeamDriveList::RegisterJSONConverter(
+    base::JSONValueConverter<TeamDriveList>* converter) {
+  converter->RegisterStringField(kNextPageToken,
+                                 &TeamDriveList::next_page_token_);
+  converter->RegisterRepeatedMessage<TeamDriveResource>(kItems,
+                                                        &TeamDriveList::items_);
+}
+
+// static
+bool TeamDriveList::HasTeamDriveListKind(const base::Value& value) {
+  return IsResourceKindExpected(value, kTeamDriveListKind);
+}
+
+// static
+std::unique_ptr<TeamDriveList> TeamDriveList::CreateFrom(
+    const base::Value& value) {
+  std::unique_ptr<TeamDriveList> resource(new TeamDriveList());
+  if (!HasTeamDriveListKind(value) || !resource->Parse(value)) {
+    LOG(ERROR) << "Unable to create: Invalid TeamDriveList JSON!";
+    return std::unique_ptr<TeamDriveList>();
+  }
+  return resource;
+}
+
+bool TeamDriveList::Parse(const base::Value& value) {
+  base::JSONValueConverter<TeamDriveList> converter;
+  if (!converter.Convert(value, this)) {
+    LOG(ERROR) << "Unable to parse: Invalid TeamDriveList";
     return false;
   }
   return true;

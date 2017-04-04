@@ -429,6 +429,54 @@ class TeamDriveResource {
   TeamDriveCapabilities capabilities_;
 };
 
+// TeamDriveList represents a collection of Team Drives.
+// https://developers.google.com/drive/v2/reference/teamdrives/list
+class TeamDriveList {
+ public:
+  TeamDriveList();
+  ~TeamDriveList();
+
+  // Registers the mapping between JSON field names and the members in this
+  // class.
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<TeamDriveList>* converter);
+
+  // Returns true if the |value| has kind field for TeamDriveList.
+  static bool HasTeamDriveListKind(const base::Value& value);
+
+  // Creates file list from parsed JSON.
+  static std::unique_ptr<TeamDriveList> CreateFrom(const base::Value& value);
+
+  // Returns a page token for the next page of Team Drives.
+  const std::string& next_page_token() const { return next_page_token_; }
+
+  void set_next_page_token(const std::string& next_page_token) {
+    this->next_page_token_ = next_page_token;
+  }
+
+  // Returns a set of Team Drives in this list.
+  const std::vector<std::unique_ptr<TeamDriveResource>>& items() const {
+    return items_;
+  }
+
+  std::vector<std::unique_ptr<TeamDriveResource>>* mutable_items() {
+    return &items_;
+  }
+
+ private:
+  friend class DriveAPIParserTest;
+  FRIEND_TEST_ALL_PREFIXES(DriveAPIParserTest, TeamDriveListParser);
+
+  // Parses and initializes data members from content of |value|.
+  // Return false if parsing fails.
+  bool Parse(const base::Value& value);
+
+  std::string next_page_token_;
+  std::vector<std::unique_ptr<TeamDriveResource>> items_;
+
+  DISALLOW_COPY_AND_ASSIGN(TeamDriveList);
+};
+
 // ParentReference represents a directory.
 // https://developers.google.com/drive/v2/reference/parents
 class ParentReference {

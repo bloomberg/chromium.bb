@@ -38,6 +38,7 @@ const char kDriveV2PermissionsUrlFormat[] = "drive/v2/files/%s/permissions";
 const char kDriveV2DownloadUrlFormat[] = "drive/v2/files/%s?alt=media";
 const char kDriveV2ThumbnailUrlFormat[] = "d/%s=w%d-h%d";
 const char kDriveV2ThumbnailUrlWithCropFormat[] = "d/%s=w%d-h%d-c";
+const char kDriveV2TeamDrivesUrl[] = "drive/v2/teamdrives";
 
 const char kIncludeTeamDriveItems[] = "includeTeamDriveItems";
 const char kSupportsTeamDrives[] = "supportsTeamDrives";
@@ -365,6 +366,22 @@ GURL DriveApiUrlGenerator::GetBatchUploadUrl() const {
   GURL url = base_url_.Resolve(kDriveV2BatchUploadUrl);
   if (enable_team_drives_)
     url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
+  return url;
+}
+
+GURL DriveApiUrlGenerator::GetTeamDriveListUrl(
+    int max_results,
+    const std::string& page_token) const {
+  GURL url = base_url_.Resolve(kDriveV2TeamDrivesUrl);
+
+  // maxResults is 10 by default.
+  if (max_results != 10) {
+    url = net::AppendOrReplaceQueryParameter(url, "maxResults",
+                                             base::IntToString(max_results));
+  }
+  if (!page_token.empty())
+    url = net::AppendOrReplaceQueryParameter(url, "pageToken", page_token);
+
   return url;
 }
 

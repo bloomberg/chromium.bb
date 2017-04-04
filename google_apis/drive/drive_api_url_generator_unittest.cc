@@ -501,4 +501,15 @@ TEST_F(DriveApiUrlGeneratorTest, BatchUploadUrl) {
             team_drives_url_generator_.GetBatchUploadUrl().spec());
 }
 
+TEST_F(DriveApiUrlGeneratorTest, GenerateTeamDriveListUrl) {
+  EXPECT_EQ("https://www.example.com/drive/v2/teamdrives",
+            team_drives_url_generator_.GetTeamDriveListUrl(10, "").spec());
+  EXPECT_EQ("https://www.example.com/drive/v2/teamdrives?maxResults=100",
+            team_drives_url_generator_.GetTeamDriveListUrl(100, "").spec());
+  EXPECT_EQ(
+      "https://www.example.com/drive/v2/"
+      "teamdrives?maxResults=100&pageToken=theToken",
+      team_drives_url_generator_.GetTeamDriveListUrl(100, "theToken").spec());
+}
+
 }  // namespace google_apis

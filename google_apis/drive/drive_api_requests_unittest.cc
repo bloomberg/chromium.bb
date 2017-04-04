@@ -901,6 +901,35 @@ TEST_F(DriveApiRequestsTest, FilesCopyRequest_EmptyParentResourceId) {
   EXPECT_TRUE(file_resource);
 }
 
+TEST_F(DriveApiRequestsTest, TeamDriveListRequest) {
+  // Set an expected data file containing valid result.
+  expected_data_file_path_ =
+      test_util::GetTestFilePath("drive/team_drive_list.json");
+
+  DriveApiErrorCode error = DRIVE_OTHER_ERROR;
+  std::unique_ptr<TeamDriveList> result;
+
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<drive::TeamDriveListRequest> request =
+        base::MakeUnique<drive::TeamDriveListRequest>(
+            request_sender_.get(), *url_generator_,
+            test_util::CreateQuitCallback(
+                &run_loop,
+                test_util::CreateCopyResultCallback(&error, &result)));
+    request->set_max_results(50);
+    request->set_page_token("PAGE_TOKEN");
+    request_sender_->StartRequestWithAuthRetry(std::move(request));
+    run_loop.Run();
+  }
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  EXPECT_EQ(net::test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/drive/v2/teamdrives?maxResults=50&pageToken=PAGE_TOKEN",
+            http_request_.relative_url);
+  EXPECT_TRUE(result);
+}
+
 TEST_F(DriveApiRequestsTest, FilesListRequest) {
   // Set an expected data file containing valid result.
   expected_data_file_path_ = test_util::GetTestFilePath(

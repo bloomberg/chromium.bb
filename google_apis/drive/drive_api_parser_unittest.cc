@@ -135,6 +135,19 @@ TEST(DriveAPIParserTest, TeamDriveResourceParser) {
   EXPECT_TRUE(capabilities.can_share());
 }
 
+TEST(DriveAPIParserTest, TeamDriveListParser) {
+  std::unique_ptr<base::Value> document(
+      test_util::LoadJSONFile("drive/team_drive_list.json"));
+  ASSERT_TRUE(document.get());
+  EXPECT_TRUE(TeamDriveList::HasTeamDriveListKind(*document));
+
+  ASSERT_EQ(base::Value::Type::DICTIONARY, document->GetType());
+  std::unique_ptr<TeamDriveList> resource(new TeamDriveList());
+  EXPECT_TRUE(resource->Parse(*document));
+  EXPECT_EQ(3U, resource->items().size());
+  EXPECT_EQ("theNextPageToken", resource->next_page_token());
+}
+
 // Test file list parsing.
 TEST(DriveAPIParserTest, FileListParser) {
   std::string error;

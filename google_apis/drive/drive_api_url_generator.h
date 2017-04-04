@@ -76,6 +76,10 @@ class DriveApiUrlGenerator {
   // Returns a URL to trash a resource with the given |file_id|.
   GURL GetFilesTrashUrl(const std::string& file_id) const;
 
+  // Returns a URL to invoke "TeamDrives: list" method.
+  GURL GetTeamDriveListUrl(int max_results,
+                           const std::string& page_token) const;
+
   // Returns a URL to fetch a list of changes.
   GURL GetChangesListUrl(bool include_deleted,
                          int max_results,
