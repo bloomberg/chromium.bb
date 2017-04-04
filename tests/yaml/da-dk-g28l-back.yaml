@@ -1,4 +1,4 @@
-table: [unicode.dis, da-dk-g28l.ctb]
+table: [tables/unicode.dis, tables/da-dk-g28l.ctb]
 flags: {testmode: backward}
 tests:
 # Test all characters from 0x21 to 0xff
