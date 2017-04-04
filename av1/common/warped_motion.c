@@ -1281,15 +1281,16 @@ void av1_warp_plane(WarpedMotionParams *wm,
 #if CONFIG_WARPED_MOTION
 #define LEAST_SQUARES_ORDER 2
 
-#define LS_MV_MAX 1024  // max mv in 1/8-pel
+#define LS_MV_MAX 512  // max mv in 1/8-pel
 #define LS_STEP 2
 
 #define LS_SUM(a) ((a)*4 + LS_STEP * 2)
-#define LS_SQUARE(a) ((a) * (a)*4 + (a)*4 * LS_STEP + LS_STEP * LS_STEP * 2)
+#define LS_SQUARE(a) \
+  (((a) * (a)*4 + (a)*4 * LS_STEP + LS_STEP * LS_STEP * 2) >> 2)
 #define LS_PRODUCT1(a, b) \
-  ((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP)
+  (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP) >> 2)
 #define LS_PRODUCT2(a, b) \
-  ((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2)
+  (((a) * (b)*4 + ((a) + (b)) * 2 * LS_STEP + LS_STEP * LS_STEP * 2) >> 2)
 
 #if LEAST_SQUARES_ORDER == 2
 static int find_affine_int(const int np, int *pts1, int *pts2, BLOCK_SIZE bsize,
