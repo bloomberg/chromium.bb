@@ -18,6 +18,8 @@ static_library("core") {
     "payment_address.h",
     "payment_instrument.cc",
     "payment_instrument.h",
+    "payment_method_data.cc",
+    "payment_method_data.h",
     "payment_options_provider.h",
     "payment_request_data_util.cc",
     "payment_request_data_util.h",
@@ -41,6 +43,7 @@ source_set("unit_tests") {
     "basic_card_response_unittest.cc",
     "currency_formatter_unittest.cc",
     "payment_address_unittest.cc",
+    "payment_method_data_unittest.cc",
     "payment_request_data_util_unittest.cc",
   ]
 

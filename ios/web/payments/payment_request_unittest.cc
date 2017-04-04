@@ -16,42 +16,6 @@ namespace web {
 
 // PaymentRequest parsing tests.
 
-// Tests the success case when populating a PaymentMethodData from a dictionary.
-TEST(PaymentRequestTest, PaymentMethodDataFromDictionaryValueSuccess) {
-  PaymentMethodData expected;
-  std::vector<base::string16> supported_methods;
-  supported_methods.push_back(base::ASCIIToUTF16("Visa"));
-  supported_methods.push_back(base::ASCIIToUTF16("Bitcoin"));
-  expected.supported_methods = supported_methods;
-  expected.data = base::ASCIIToUTF16("{merchantId: 'af22fke9'}");
-
-  base::DictionaryValue method_data_dict;
-  std::unique_ptr<base::ListValue> supported_methods_list(new base::ListValue);
-  supported_methods_list->AppendString("Visa");
-  supported_methods_list->AppendString("Bitcoin");
-  method_data_dict.Set("supportedMethods", std::move(supported_methods_list));
-  method_data_dict.SetString("data", "{merchantId: 'af22fke9'}");
-
-  PaymentMethodData actual;
-  EXPECT_TRUE(actual.FromDictionaryValue(method_data_dict));
-
-  EXPECT_EQ(expected, actual);
-}
-
-// Tests the failure case when populating a PaymentMethodData from a dictionary.
-TEST(PaymentRequestTest, PaymentMethodDataFromDictionaryValueFailure) {
-  // At least one supported method is required.
-  PaymentMethodData actual;
-  base::DictionaryValue method_data_dict;
-  EXPECT_FALSE(actual.FromDictionaryValue(method_data_dict));
-
-  // The value in the supported methods list must be a string.
-  std::unique_ptr<base::ListValue> supported_methods_list(new base::ListValue);
-  supported_methods_list->AppendInteger(13);
-  method_data_dict.Set("supportedMethods", std::move(supported_methods_list));
-  EXPECT_FALSE(actual.FromDictionaryValue(method_data_dict));
-}
-
 // Tests the success case when populating a PaymentCurrencyAmount from a
 // dictionary.
 TEST(PaymentRequestTest, PaymentCurrencyAmountFromDictionaryValueSuccess) {
@@ -243,7 +207,7 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   expected_request.details.total.amount.value = base::ASCIIToUTF16("6.66");
   expected_request.details.error = base::ASCIIToUTF16("Error in details");
 
-  PaymentMethodData method_data;
+  payments::PaymentMethodData method_data;
   std::vector<base::string16> supported_methods;
   supported_methods.push_back(base::ASCIIToUTF16("Visa"));
   method_data.supported_methods = supported_methods;
@@ -358,33 +322,6 @@ TEST(PaymentRequestTest, PopulatedResponseDictionary) {
 }
 
 // Value equality tests.
-
-// Tests that two method data objects are not equal if their property values
-// differ or one is missing a value present in the other, and equal otherwise.
-TEST(PaymentRequestTest, PaymentMethodDataEquality) {
-  PaymentMethodData method_data1;
-  PaymentMethodData method_data2;
-  EXPECT_EQ(method_data1, method_data2);
-
-  std::vector<base::string16> supported_methods1;
-  supported_methods1.push_back(base::ASCIIToUTF16("Visa"));
-  supported_methods1.push_back(base::ASCIIToUTF16("BobPay"));
-  method_data1.supported_methods = supported_methods1;
-  EXPECT_NE(method_data1, method_data2);
-  std::vector<base::string16> supported_methods2;
-  supported_methods2.push_back(base::ASCIIToUTF16("BobPay"));
-  method_data2.supported_methods = supported_methods2;
-  EXPECT_NE(method_data1, method_data2);
-  method_data2.supported_methods = supported_methods1;
-  EXPECT_EQ(method_data1, method_data2);
-
-  method_data1.data = base::ASCIIToUTF16("{merchantId: '123456'}");
-  EXPECT_NE(method_data1, method_data2);
-  method_data2.data = base::ASCIIToUTF16("{merchantId: '9999-88'}");
-  EXPECT_NE(method_data1, method_data2);
-  method_data2.data = base::ASCIIToUTF16("{merchantId: '123456'}");
-  EXPECT_EQ(method_data1, method_data2);
-}
 
 // Tests that two currency amount objects are not equal if their property values
 // differ or one is missing a value present in the other, and equal otherwise.
@@ -643,13 +580,13 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
   request2.shipping_option = base::ASCIIToUTF16("2-Day");
   EXPECT_EQ(request1, request2);
 
-  PaymentMethodData method_datum;
+  payments::PaymentMethodData method_datum;
   method_datum.data = base::ASCIIToUTF16("{merchantId: '123456'}");
-  std::vector<PaymentMethodData> method_data1;
+  std::vector<payments::PaymentMethodData> method_data1;
   method_data1.push_back(method_datum);
   request1.method_data = method_data1;
   EXPECT_NE(request1, request2);
-  std::vector<PaymentMethodData> method_data2;
+  std::vector<payments::PaymentMethodData> method_data2;
   request2.method_data = method_data2;
   EXPECT_NE(request1, request2);
   request2.method_data = method_data1;

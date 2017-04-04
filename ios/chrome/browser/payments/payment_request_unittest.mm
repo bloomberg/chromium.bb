@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_method_data.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/web/public/payments/payment_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,10 +52,10 @@ TEST(PaymentRequestTest, AcceptedPaymentNetworks) {
   web::PaymentRequest web_payment_request;
   autofill::TestPersonalDataManager personal_data_manager;
 
-  web::PaymentMethodData method_datum1;
+  payments::PaymentMethodData method_datum1;
   method_datum1.supported_methods.push_back(base::ASCIIToUTF16("visa"));
   web_payment_request.method_data.push_back(method_datum1);
-  web::PaymentMethodData method_datum2;
+  payments::PaymentMethodData method_datum2;
   method_datum2.supported_methods.push_back(base::ASCIIToUTF16("mastercard"));
   web_payment_request.method_data.push_back(method_datum2);
 

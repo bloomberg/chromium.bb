@@ -12,7 +12,6 @@ namespace {
 // All of these are defined here (even though most are only used once each) so
 // the format details are easy to locate and update or compare to the spec doc.
 // (https://w3c.github.io/browser-payment-api/).
-static const char kMethodDataData[] = "data";
 static const char kPaymentCurrencyAmountCurrencySystemISO4217[] =
     "urn:iso:std:iso:4217";
 static const char kPaymentCurrencyAmountCurrencySystem[] = "currencySystem";
@@ -47,48 +46,10 @@ static const char kPaymentShippingOptionAmount[] = "amount";
 static const char kPaymentShippingOptionId[] = "id";
 static const char kPaymentShippingOptionLabel[] = "label";
 static const char kPaymentShippingOptionSelected[] = "selected";
-static const char kSupportedMethods[] = "supportedMethods";
 
 }  // namespace
 
 namespace web {
-
-PaymentMethodData::PaymentMethodData() {}
-PaymentMethodData::PaymentMethodData(const PaymentMethodData& other) = default;
-PaymentMethodData::~PaymentMethodData() = default;
-
-bool PaymentMethodData::operator==(const PaymentMethodData& other) const {
-  return this->supported_methods == other.supported_methods &&
-         this->data == other.data;
-}
-
-bool PaymentMethodData::operator!=(const PaymentMethodData& other) const {
-  return !(*this == other);
-}
-
-bool PaymentMethodData::FromDictionaryValue(
-    const base::DictionaryValue& value) {
-  this->supported_methods.clear();
-
-  const base::ListValue* supported_methods_list = nullptr;
-  // At least one supported method is required.
-  if (!value.GetList(kSupportedMethods, &supported_methods_list) ||
-      supported_methods_list->GetSize() == 0) {
-    return false;
-  }
-  for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
-    base::string16 supported_method;
-    if (!supported_methods_list->GetString(i, &supported_method)) {
-      return false;
-    }
-    this->supported_methods.push_back(supported_method);
-  }
-
-  // Data is optional.
-  value.GetString(kMethodDataData, &this->data);
-
-  return true;
-}
 
 PaymentCurrencyAmount::PaymentCurrencyAmount()
     // By default, the currency is defined by [ISO4217]. For example, USD for
@@ -353,7 +314,7 @@ bool PaymentRequest::FromDictionaryValue(const base::DictionaryValue& value) {
     if (!method_data_list->GetDictionary(i, &method_data_dict))
       return false;
 
-    PaymentMethodData method_data;
+    payments::PaymentMethodData method_data;
     if (!method_data.FromDictionaryValue(*method_data_dict))
       return false;
     this->method_data.push_back(method_data);

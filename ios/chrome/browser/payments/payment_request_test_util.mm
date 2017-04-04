@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/payments/core/payment_method_data.h"
 #include "ios/web/public/payments/payment_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,7 +16,7 @@ namespace payment_request_test_util {
 
 web::PaymentRequest CreateTestWebPaymentRequest() {
   web::PaymentRequest web_payment_request;
-  web::PaymentMethodData method_datum;
+  payments::PaymentMethodData method_datum;
   method_datum.supported_methods.push_back(base::ASCIIToUTF16("visa"));
   method_datum.supported_methods.push_back(base::ASCIIToUTF16("amex"));
   web_payment_request.method_data.push_back(method_datum);

@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "components/payments/core/basic_card_response.h"
 #include "components/payments/core/payment_address.h"
+#include "components/payments/core/payment_method_data.h"
 
 // C++ bindings for the PaymentRequest API. Conforms to the following specs:
 // https://w3c.github.io/browser-payment-api/ (18 July 2016 editor's draft)
@@ -21,30 +22,6 @@ class DictionaryValue;
 }
 
 namespace web {
-
-// A set of supported payment methods and any associated payment method specific
-// data for those methods.
-class PaymentMethodData {
- public:
-  PaymentMethodData();
-  PaymentMethodData(const PaymentMethodData& other);
-  ~PaymentMethodData();
-
-  bool operator==(const PaymentMethodData& other) const;
-  bool operator!=(const PaymentMethodData& other) const;
-
-  // Populates the properties of this PaymentMethodData from |value|. Returns
-  // true if the required values are present.
-  bool FromDictionaryValue(const base::DictionaryValue& value);
-
-  // Payment method identifiers for payment methods that the merchant web site
-  // accepts.
-  std::vector<base::string16> supported_methods;
-
-  // A JSON-serialized object that provides optional information that might be
-  // needed by the supported payment methods.
-  base::string16 data;
-};
 
 // Supplies monetary amounts.
 class PaymentCurrencyAmount {
@@ -266,7 +243,7 @@ class PaymentRequest {
 
   // Properties set via the constructor for communicating from the page to the
   // browser UI.
-  std::vector<PaymentMethodData> method_data;
+  std::vector<payments::PaymentMethodData> method_data;
   PaymentDetails details;
   PaymentOptions options;
 };
