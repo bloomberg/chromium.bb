@@ -269,19 +269,13 @@ public abstract class AppHooks {
     }
 
     /**
-     * Starts a service from {@code intent}.  Meant to eventually be used by services that want to
-     * be put into the foreground with {@code notification} via
-     * {@link android.app.Service#startForeground(int, Notification)}.
+     * Starts a service from {@code intent} with the expectation that it will make itself a
+     * foreground service with {@link android.app.Service#startForeground(int, Notification)}.
      *
      * @param intent The {@link Intent} to fire to start the service.
-     * @param notificationId The id of the notification to show.
-     * @param notification The {@link Notification} to show.
      */
     @SuppressWarnings("Unused")
-    public void startServiceWithNotification(
-            Intent intent, int notificationId, Notification notification) {
-        // TODO(dtrainor): Eventually make sure the service gets put into the foreground with
-        // {@link android.app.Service#startForeground(int, Notification)}.
+    public void startForegroundService(Intent intent) {
         ContextUtils.getApplicationContext().startService(intent);
     }
 

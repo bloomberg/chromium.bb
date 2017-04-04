@@ -145,6 +145,12 @@ public class DownloadNotificationService extends Service {
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
 
     /**
+     * {@code true} when this service should be put into the foreground before processing an
+     * {@link Intent}.
+     */
+    private boolean mShouldMakeForeground;
+
+    /**
      * @return Whether or not this service should be made a foreground service if there are active
      * downloads.
      */
@@ -207,9 +213,7 @@ public class DownloadNotificationService extends Service {
                 return;
             }
 
-            AppHooks.get().startServiceWithNotification(intent,
-                    NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
-                    buildSummaryNotification(context, manager));
+            AppHooks.get().startForegroundService(intent);
         } else {
             context.startService(intent);
         }
@@ -440,6 +444,7 @@ public class DownloadNotificationService extends Service {
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
         mNextNotificationId = mSharedPrefs.getInt(
                 KEY_NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
+        mShouldMakeForeground = true;
     }
 
     @Override
@@ -451,6 +456,10 @@ public class DownloadNotificationService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, int flags, int startId) {
+        if (mShouldMakeForeground) {
+            mShouldMakeForeground = false;
+            startForegroundInternal();
+        }
         if (intent == null) {
             // Intent is only null during a process restart because of returning START_STICKY.  In
             // this case cancel the off the record notifications and put the normal notifications
