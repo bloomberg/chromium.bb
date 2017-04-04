@@ -124,8 +124,10 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      * Verifies that notifcations cannot be shown without permission, and that dismissing or denying
      * the infobar works correctly.
      */
-    @LargeTest
-    @Feature({"Browser", "Notifications"})
+    //@LargeTest
+    //@Feature({"Browser", "Notifications"})
+    // crbug.com/707528
+    @DisabledTest
     public void testPermissionDenied() throws Exception {
         // Notifications permission should initially be prompt, and showing should fail.
         assertEquals("\"default\"", runJavaScriptCodeInCurrentTab("Notification.permission"));
@@ -176,7 +178,8 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
      * Verifies granting permission via the infobar.
      */
     //@MediumTest
-    // Feature({"Browser", "Notifications"})
+    //@Feature({"Browser", "Notifications"})
+    // crbug.com/707528
     @DisabledTest
     public void testPermissionGranted() throws Exception {
         // Notifications permission should initially be prompt, and showing should fail.
