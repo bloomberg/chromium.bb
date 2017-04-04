@@ -21,8 +21,8 @@
           $i18n{resetPageDescription}
         </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{resetPageTitle}"
+      <button id="resetProfileArrow" is="paper-icon-button-light"
+          class="subpage-arrow" aria-label="$i18n{resetPageTitle}"
           aria-describedby="resetProfileSecondary"></button>
     </div>
     <template is="dom-if" if="[[showResetProfileDialog_]]" restamp>
@@ -38,8 +38,8 @@
           $i18n{powerwashDescription}
         </div>
       </div>
-      <button class="subpage-arrow" is="paper-icon-button-light"
-          aria-label="$i18n{powerwashTitle}"
+      <button id="powerwashArrow" is="paper-icon-button-light"
+          class="subpage-arrow" aria-label="$i18n{powerwashTitle}"
           aria-describedby="powerwashSecondary"></button>
     </div>
     <template is="dom-if" if="[[showPowerwashDialog_]]" restamp>

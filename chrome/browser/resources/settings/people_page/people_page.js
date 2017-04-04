@@ -308,6 +308,8 @@ Polymer({
   /** @private */
   onDisconnectClosed_: function() {
     this.showDisconnectDialog_ = false;
+    this.$$('#disconnectButton').focus();
+
     if (settings.getCurrentRoute() == settings.Route.SIGN_OUT)
       settings.navigateToPreviousRoute();
     this.fire('signout-dialog-closed');
@@ -437,6 +439,7 @@ Polymer({
   /** @private */
   onImportDataDialogClosed_: function() {
     settings.navigateToPreviousRoute();
+    this.$.importDataDialogTrigger.focus();
   },
 // </if>
 

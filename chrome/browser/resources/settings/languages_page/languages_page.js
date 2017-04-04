@@ -91,6 +91,7 @@ Polymer({
       var dialog = this.$$('settings-add-languages-dialog');
       dialog.addEventListener('close', function() {
         this.showAddLanguagesDialog_ = false;
+        this.$.addLanguages.focus();
       }.bind(this));
     });
   },
