@@ -60,6 +60,7 @@
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_ui_service.h"
@@ -420,6 +421,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           clear_history_.GetCompletionCallback(),
           &history_task_tracker_);
     }
+    if (ClipboardRecentContent::GetInstance())
+      ClipboardRecentContent::GetInstance()->SuppressClipboardContent();
 
     // Currently, ContentSuggestionService instance exists only on Android.
     ntp_snippets::ContentSuggestionsService* content_suggestions_service =

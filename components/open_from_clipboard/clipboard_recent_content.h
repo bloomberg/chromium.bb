@@ -9,8 +9,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-
-class GURL;
+#include "url/gurl.h"
 
 // Helper class returning an URL if the content of the clipboard can be turned
 // into an URL, and if it estimates that the content of the clipboard is not too
@@ -28,9 +27,9 @@ class ClipboardRecentContent {
   // Sets the global instance of ClipboardRecentContent singleton.
   static void SetInstance(ClipboardRecentContent* instance);
 
-  // Returns true if the clipboard contains a recent URL that has not been
-  // supressed, and copies it in |url|. Otherwise, returns false. |url| must not
-  // be null.
+  // Returns true if the clipboard contains a recent URL that is appropriate to
+  // be suggested and has not been supressed, and copies it in |url|.
+  // Otherwise, returns false. |url| must not be null.
   virtual bool GetRecentURLFromClipboard(GURL* url) = 0;
 
   // Returns how old the content of the clipboard is.
@@ -39,6 +38,14 @@ class ClipboardRecentContent {
   // Prevent GetRecentURLFromClipboard from returning anything until the
   // clipboard's content changed.
   virtual void SuppressClipboardContent() = 0;
+
+ protected:
+  // GetRecentURLFromClipboard() should never return a URL from a clipboard
+  // older than this.
+  const base::TimeDelta kMaximumAgeOfClipboard = base::TimeDelta::FromHours(3);
+
+  // Returns true if the URL is appropriate to be suggested.
+  static bool IsAppropriateSuggestion(const GURL& url);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClipboardRecentContent);

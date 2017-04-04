@@ -26,6 +26,10 @@ Clipboard* TestClipboard::CreateForCurrentThread() {
   return clipboard;
 }
 
+void TestClipboard::SetClipboardLastModifiedTime(const base::Time& time) {
+  last_modified_time_ = time;
+}
+
 void TestClipboard::OnPreShutdown() {}
 
 uint64_t TestClipboard::GetSequenceNumber(ClipboardType type) const {
@@ -124,6 +128,10 @@ void TestClipboard::ReadData(const FormatType& format,
   auto it = store.data.find(format);
   if (it != store.data.end())
     *result = it->second;
+}
+
+base::Time TestClipboard::GetClipboardLastModifiedTime() const {
+  return last_modified_time_;
 }
 
 void TestClipboard::WriteObjects(ClipboardType type, const ObjectMap& objects) {

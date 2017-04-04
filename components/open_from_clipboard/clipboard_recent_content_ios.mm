@@ -16,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
 #include "url/gurl.h"
-#include "url/url_constants.h"
 
 // Bridge that forwards UIApplicationDidBecomeActiveNotification notifications
 // to its delegate.
@@ -83,14 +82,6 @@ NSString* kPasteboardChangeDateKey = @"PasteboardChangeDate";
 // Key used to store the hash of the content of the pasteboard. Whenever the
 // hash changed, the pasteboard content is considered to have changed.
 NSString* kPasteboardEntryMD5Key = @"PasteboardEntryMD5";
-base::TimeDelta kMaximumAgeOfClipboard = base::TimeDelta::FromHours(3);
-// Schemes accepted by the ClipboardRecentContentIOS.
-const char* kAuthorizedSchemes[] = {
-    url::kHttpScheme,
-    url::kHttpsScheme,
-    url::kDataScheme,
-    url::kAboutScheme,
-};
 
 // Compute a hash consisting of the first 4 bytes of the MD5 hash of |string|.
 // This value is used to detect pasteboard content change. Keeping only 4 bytes
@@ -208,11 +199,8 @@ GURL ClipboardRecentContentIOS::URLFromPasteboard() {
   const std::string clipboard = base::SysNSStringToUTF8(clipboard_string);
   GURL gurl = GURL(clipboard);
   if (gurl.is_valid()) {
-    for (size_t i = 0; i < arraysize(kAuthorizedSchemes); ++i) {
-      if (gurl.SchemeIs(kAuthorizedSchemes[i])) {
-        return gurl;
-      }
-    }
+    if (IsAppropriateSuggestion(gurl))
+      return gurl;
     if (!application_scheme_.empty() &&
         gurl.SchemeIs(application_scheme_.c_str())) {
       return gurl;

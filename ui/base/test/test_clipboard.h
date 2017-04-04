@@ -26,6 +26,9 @@ class TestClipboard : public Clipboard {
   // Clipboard::DestroyClipboardForCurrentThread() on the same thread.
   static Clipboard* CreateForCurrentThread();
 
+  // Sets the time to be returned by GetClipboardLastModifiedTime();
+  void SetClipboardLastModifiedTime(const base::Time& time);
+
   // Clipboard overrides.
   void OnPreShutdown() override;
   uint64_t GetSequenceNumber(ClipboardType type) const override;
@@ -49,6 +52,7 @@ class TestClipboard : public Clipboard {
                       base::string16* result) const override;
   void ReadBookmark(base::string16* title, std::string* url) const override;
   void ReadData(const FormatType& format, std::string* result) const override;
+  base::Time GetClipboardLastModifiedTime() const override;
   void WriteObjects(ClipboardType type, const ObjectMap& objects) override;
   void WriteText(const char* text_data, size_t text_len) override;
   void WriteHTML(const char* markup_data,
@@ -87,6 +91,7 @@ class TestClipboard : public Clipboard {
 
   ClipboardType default_store_type_;
   mutable std::map<ClipboardType, DataStore> stores_;
+  base::Time last_modified_time_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClipboard);
 };

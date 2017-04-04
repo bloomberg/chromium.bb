@@ -1,0 +1,4 @@
+include_rules = [
+  "+ui/base/clipboard",
+  "+ui/base/test",
+]

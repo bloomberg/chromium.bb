@@ -11,6 +11,7 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +32,9 @@
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
+#if !defined(OS_IOS)
+#include "components/open_from_clipboard/clipboard_recent_content_generic.h"
+#endif
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -229,12 +233,25 @@ AutocompleteController::AutocompleteController(
       providers_.push_back(zero_suggest_provider_);
   }
   if (provider_types & AutocompleteProvider::TYPE_CLIPBOARD_URL) {
-    ClipboardRecentContent* clipboard_recent_content =
-        ClipboardRecentContent::GetInstance();
-    if (clipboard_recent_content) {
-      providers_.push_back(new ClipboardURLProvider(provider_client_.get(),
-                                                    history_url_provider_,
-                                                    clipboard_recent_content));
+#if !defined(OS_IOS)
+    // On iOS, a global ClipboardRecentContent should've been created by now
+    // (if enabled).  If none has been created (e.g., we're on a different
+    // platform), use the generic implementation, which AutocompleteController
+    // will own.  Don't try to create a generic implementation on iOS because
+    // iOS doesn't want/need to link in the implementation and the libraries
+    // that would come with it.
+    if (!ClipboardRecentContent::GetInstance()) {
+      clipboard_recent_content_ =
+          base::MakeUnique<ClipboardRecentContentGeneric>();
+      ClipboardRecentContent::SetInstance(clipboard_recent_content_.get());
+    }
+#endif
+    // ClipboardRecentContent can be null in iOS tests.  For non-iOS, we
+    // create a ClipboardRecentContent as above (for both Chrome and tests).
+    if (ClipboardRecentContent::GetInstance()) {
+      providers_.push_back(new ClipboardURLProvider(
+          provider_client_.get(), history_url_provider_,
+          ClipboardRecentContent::GetInstance()));
     }
   }
   if (provider_types & AutocompleteProvider::TYPE_PHYSICAL_WEB) {

@@ -10,8 +10,16 @@ static_library("open_from_clipboard") {
     "clipboard_recent_content_ios.mm",
   ]
 
+  if (!is_ios) {
+    sources += [
+      "clipboard_recent_content_generic.cc",
+      "clipboard_recent_content_generic.h",
+    ]
+  }
+
   deps = [
     "//base",
+    "//ui/base:base",
     "//url",
   ]
 }
@@ -36,9 +44,15 @@ source_set("unit_tests") {
     "clipboard_recent_content_ios_unittest.mm",
   ]
 
+  if (!is_ios) {
+    sources += [ "clipboard_recent_content_generic_unittest.cc" ]
+  }
+
   deps = [
     ":open_from_clipboard",
     "//base",
     "//testing/gtest",
+    "//ui/base:test_support",
+    "//url",
   ]
 }
