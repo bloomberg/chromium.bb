@@ -150,6 +150,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // SessionTabHelper comes first because it sets up the tab ID, and other
   // helpers may rely on that.
   SessionTabHelper::CreateForWebContents(web_contents);
+
 #if !defined(OS_ANDROID)
   // ZoomController comes before common tab helpers since ChromeAutofillClient
   // may want to register as a ZoomObserver with it.
@@ -185,6 +186,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                             web_contents->GetBrowserContext())).get());
   HistoryTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
+  metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
+      web_contents);
+  if (content::IsBrowserSideNavigationEnabled())
+    MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
   NavigationCorrectionTabObserver::CreateForWebContents(web_contents);
   NavigationMetricsRecorder::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
@@ -209,10 +214,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);
-  if (content::IsBrowserSideNavigationEnabled())
-    MixedContentSettingsTabHelper::CreateForWebContents(web_contents);
-  metrics::RendererUptimeWebContentsObserver::CreateForWebContents(
-      web_contents);
+
+  // NO! Do not just add your tab helper here. This is a large alphabetized
+  // block; please insert your tab helper above in alphabetical order.
 
   // --- Platform-specific tab helpers ---
 
@@ -257,6 +261,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationObserver::CreateForWebContents(web_contents);
 #endif
+
 // --- Feature tab helpers behind flags ---
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
