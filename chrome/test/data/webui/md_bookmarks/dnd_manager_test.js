@@ -233,7 +233,7 @@ suite('drag and drop', function() {
     dispatchDragEvent('dragend', dragElement);
     assertDragStyle(dragTarget, DRAG_STYLE.NONE);
 
-    store.data.closedFolders['11'] = true;
+    store.data.closedFolders.add('11');
 
     dispatchDragEvent('dragstart', dragElement);
     dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));
@@ -246,7 +246,7 @@ suite('drag and drop', function() {
 
   test('drag multiple list items', function() {
     // Dragging multiple items.
-    store.data.selection.items = {'13': true, '15': true};
+    store.data.selection.items = new Set(['13', '15']);
     dispatchDragEvent('dragstart', getListItem('13'));
     assertDeepEquals(['13', '15'], draggedIds);
     dndManager.dragInfo_.handleChromeDragEnter(createDragData(draggedIds));

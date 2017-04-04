@@ -28,7 +28,7 @@ var NodeList;
 
 /**
  * @typedef {{
- *   items: !Object<string, boolean>,
+ *   items: !Set<string>,
  *   anchor: ?string,
  * }}
  *
@@ -45,7 +45,7 @@ var SelectionState;
  */
 var SearchState;
 
-/** @typedef {!Object<string, boolean>} */
+/** @typedef {!Set<string>} */
 var ClosedFolderState;
 
 /**

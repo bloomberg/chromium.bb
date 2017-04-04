@@ -83,6 +83,15 @@ function createItem(id, config) {
 }
 
 /**
+ * @param {Set<T>}
+ * @return {Array<T>}
+ * @template T
+ */
+function normalizeSet(set) {
+  return Array.from(set).sort();
+}
+
+/**
  * Sends a custom click event to |element|.
  * @param {HTMLElement} element
  * @param {Object=} config

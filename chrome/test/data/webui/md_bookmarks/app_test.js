@@ -38,13 +38,14 @@ suite('<bookmarks-app>', function() {
   });
 
   test('write and load closed folder state', function() {
-    var closedFolders = {'1': true};
+    var closedFoldersList = ['1'];
+    var closedFolders = new Set(closedFoldersList);
     store.data.closedFolders = closedFolders;
     store.notifyObservers();
 
     // Ensure closed folders are written to local storage.
     assertDeepEquals(
-        JSON.stringify(closedFolders),
+        JSON.stringify(Array.from(closedFolders)),
         window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY]);
 
     resetStore();
@@ -52,6 +53,6 @@ suite('<bookmarks-app>', function() {
     replaceBody(app);
 
     // Ensure closed folders are read from local storage.
-    assertDeepEquals(closedFolders, store.data.closedFolders);
+    assertDeepEquals(closedFoldersList, normalizeSet(store.data.closedFolders));
   });
 });

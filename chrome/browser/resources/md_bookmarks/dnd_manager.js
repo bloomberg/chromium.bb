@@ -328,7 +328,7 @@ cr.define('bookmarks', function() {
 
       // Determine the selected bookmarks.
       var state = bookmarks.Store.getInstance().data;
-      var draggedNodes = Object.keys(state.selection.items);
+      var draggedNodes = Array.from(state.selection.items);
 
       if (isBookmarkFolderNode(dragElement) ||
           draggedNodes.indexOf(dragElement.itemId) == -1) {
@@ -496,7 +496,7 @@ cr.define('bookmarks', function() {
 
       // Don't allow dropping below an expanded sidebar folder item since it is
       // confusing to the user anyway.
-      if (isOverFolderNode && !state.closedFolders[overElement.itemId] &&
+      if (isOverFolderNode && !state.closedFolders.has(overElement.itemId) &&
           bookmarks.util.hasChildFolders(overElement.itemId, state.nodes)) {
         return validDropPositions;
       }

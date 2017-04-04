@@ -46,7 +46,7 @@ Polymer({
       return store.nodes[this.itemId];
     }.bind(this));
     this.watch('isSelectedItem_', function(store) {
-      return !!store.selection.items[this.itemId];
+      return !!store.selection.items.has(this.itemId);
     }.bind(this));
 
     this.updateFromStore();

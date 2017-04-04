@@ -54,14 +54,14 @@ cr.define('bookmarks.util', function() {
     return {
       nodes: {},
       selectedFolder: '0',
-      closedFolders: {},
+      closedFolders: new Set(),
       search: {
         term: '',
         inProgress: false,
         results: [],
       },
       selection: {
-        items: {},
+        items: new Set(),
         anchor: null,
       },
     };

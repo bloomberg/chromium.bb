@@ -16,6 +16,7 @@ Polymer({
       observer: 'searchTermChanged_',
     },
 
+    /** @type {ClosedFolderState} */
     closedFoldersState_: {
       type: Object,
       observer: 'closedFoldersStateChanged_',
@@ -49,9 +50,9 @@ Polymer({
       var closedFoldersString =
           window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY];
       initialState.closedFolders = closedFoldersString ?
-          /** @type {!Object<string,boolean>} */ (
-              JSON.parse(closedFoldersString)) :
-          {};
+          new Set(
+              /** @type Array<string> */ (JSON.parse(closedFoldersString))) :
+          new Set();
 
       bookmarks.Store.getInstance().init(initialState);
       bookmarks.ApiListener.init();
@@ -117,6 +118,6 @@ Polymer({
   /** @private */
   closedFoldersStateChanged_: function() {
     window.localStorage[LOCAL_STORAGE_CLOSED_FOLDERS_KEY] =
-        JSON.stringify(this.closedFoldersState_);
+        JSON.stringify(Array.from(this.closedFoldersState_));
   },
 });

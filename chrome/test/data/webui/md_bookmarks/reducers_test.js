@@ -26,30 +26,30 @@ suite('selection state', function() {
     action = select(['1'], '1', false);
     state = bookmarks.SelectionState.updateSelection(state, action);
 
-    assertDeepEquals({'1': true}, state.items);
+    assertDeepEquals(['1'], normalizeSet(state.items));
     assertEquals('1', state.anchor);
 
     // Replace current selection.
     action = select(['2'], '2', false);
     state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({'2': true}, state.items);
+    assertDeepEquals(['2'], normalizeSet(state.items));
     assertEquals('2', state.anchor);
 
     // Add to current selection.
     action = select(['3'], '3', true);
     state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({'2': true, '3': true}, state.items);
+    assertDeepEquals(['2', '3'], normalizeSet(state.items));
     assertEquals('3', state.anchor);
   });
 
   test('can select multiple items', function() {
     action = select(['1', '2', '3'], '3', false);
     state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({'1': true, '2': true, '3': true}, state.items);
+    assertDeepEquals(['1', '2', '3'], normalizeSet(state.items));
 
     action = select(['3', '4'], '4', true);
     state = bookmarks.SelectionState.updateSelection(state, action);
-    assertDeepEquals({'1': true, '2': true, '3': true, '4': true}, state.items);
+    assertDeepEquals(['1', '2', '3', '4'], normalizeSet(state.items));
   });
 
   test('is cleared when selected folder changes', function() {
@@ -103,15 +103,15 @@ suite('closed folder state', function() {
               createItem('3'),
             ]),
         createFolder('4', []));
-    state = {};
+    state = new Set();
   });
 
   test('toggle folder open state', function() {
     action = bookmarks.actions.changeFolderOpen('2', false);
     state =
         bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertFalse(!!state['1']);
-    assertTrue(state['2']);
+    assertFalse(state.has('1'));
+    assertTrue(state.has('2'));
   });
 
   test('select folder with closed parent', function() {
@@ -119,32 +119,32 @@ suite('closed folder state', function() {
     action = bookmarks.actions.changeFolderOpen('1', false);
     state =
         bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertTrue(state['1']);
-    assertFalse(!!state['2']);
+    assertTrue(state.has('1'));
+    assertFalse(state.has('2'));
 
     // Should re-open when '2' is selected.
     action = bookmarks.actions.selectFolder('2');
     state =
         bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertFalse(!!state['1']);
+    assertFalse(state.has('1'));
   });
 
   test('move nodes in a closed folder', function() {
     // Moving bookmark items should not open folders.
-    state = {'1': true};
+    state = new Set(['1']);
     action = bookmarks.actions.moveBookmark('3', '1', 1, '1', 0);
     state =
         bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
 
-    assertTrue(state['1']);
+    assertTrue(state.has('1'));
 
     // Moving folders should open their parents.
-    state = {'1': true, '2': true};
+    state = new Set(['1', '2']);
     action = bookmarks.actions.moveBookmark('4', '2', 0, '0', 1);
     state =
         bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
-    assertFalse(!!state['1']);
-    assertFalse(!!state['2']);
+    assertFalse(state.has('1'));
+    assertFalse(state.has('2'));
   });
 });
 
