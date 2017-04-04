@@ -136,7 +136,7 @@ SuspendableScriptExecutor* SuspendableScriptExecutor::create(
     const HeapVector<ScriptSourceCode>& sources,
     bool userGesture,
     WebScriptExecutionCallback* callback) {
-  ScriptState* scriptState = ScriptState::forWorld(frame, *world);
+  ScriptState* scriptState = toScriptState(frame, *world);
   return new SuspendableScriptExecutor(
       frame, scriptState, callback,
       new WebScriptExecutor(sources, world->worldId(), userGesture));

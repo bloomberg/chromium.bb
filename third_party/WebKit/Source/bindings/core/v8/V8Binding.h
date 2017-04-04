@@ -1004,6 +1004,13 @@ CORE_EXPORT v8::Local<v8::Context> toV8Context(LocalFrame*, DOMWrapperWorld&);
 CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame*,
                                                              DOMWrapperWorld&);
 
+// These methods can return nullptr if the context associated with the
+// ScriptState has already been detached.
+CORE_EXPORT ScriptState* toScriptState(LocalFrame*, DOMWrapperWorld&);
+// Do not use this method unless you are sure you should use the main world's
+// ScriptState
+CORE_EXPORT ScriptState* toScriptStateForMainWorld(LocalFrame*);
+
 // Returns the frame object of the window object associated with
 // a context, if the window is currently being displayed in a Frame.
 CORE_EXPORT LocalFrame* toLocalFrameIfNotDetached(v8::Local<v8::Context>);

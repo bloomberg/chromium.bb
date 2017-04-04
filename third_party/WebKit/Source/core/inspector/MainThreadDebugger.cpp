@@ -36,6 +36,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SourceLocation.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
@@ -178,8 +179,8 @@ void MainThreadDebugger::exceptionThrown(ExecutionContext* context,
     frame = toDocument(context)->frame();
     if (!frame)
       return;
-    scriptState = event->world() ? ScriptState::forWorld(frame, *event->world())
-                                 : nullptr;
+    scriptState =
+        event->world() ? toScriptState(frame, *event->world()) : nullptr;
   } else if (context->isMainThreadWorkletGlobalScope()) {
     frame = toMainThreadWorkletGlobalScope(context)->frame();
     if (!frame)

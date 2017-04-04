@@ -82,18 +82,11 @@ LocalDOMWindow* ScriptState::domWindow() const {
 }
 
 ScriptState* ScriptState::forMainWorld(LocalFrame* frame) {
-  return ScriptState::forWorld(frame, DOMWrapperWorld::mainWorld());
+  return toScriptStateForMainWorld(frame);
 }
 
 ScriptState* ScriptState::forWorld(LocalFrame* frame, DOMWrapperWorld& world) {
-  ASSERT(frame);
-  v8::HandleScope handleScope(toIsolate(frame));
-  v8::Local<v8::Context> context = toV8Context(frame, world);
-  if (context.IsEmpty())
-    return nullptr;
-  ScriptState* scriptState = ScriptState::from(context);
-  ASSERT(scriptState->contextIsValid());
-  return scriptState;
+  return toScriptState(frame, world);
 }
 
 }  // namespace blink

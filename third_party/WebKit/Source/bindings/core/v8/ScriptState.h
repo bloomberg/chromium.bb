@@ -138,7 +138,10 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
 
   // These methods can return nullptr if the context associated with the
   // ScriptState has already been detached.
+
+  // DEPRECATED: Use toScriptStateForMainWorld.
   static ScriptState* forMainWorld(LocalFrame*);
+  // DEPRECATED: Use toScriptState.
   static ScriptState* forWorld(LocalFrame*, DOMWrapperWorld&);
 
   v8::Isolate* isolate() const { return m_isolate; }

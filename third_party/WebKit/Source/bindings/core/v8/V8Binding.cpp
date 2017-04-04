@@ -786,6 +786,20 @@ void toFlexibleArrayBufferView(v8::Isolate* isolate,
   result.setSmall(storage, length);
 }
 
+static ScriptState* toScriptStateImpl(LocalFrame* frame,
+                                      DOMWrapperWorld& world) {
+  if (!frame)
+    return nullptr;
+  v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
+  if (context.IsEmpty())
+    return nullptr;
+  ScriptState* scriptState = ScriptState::from(context);
+  if (!scriptState->contextIsValid())
+    return nullptr;
+  DCHECK_EQ(frame, toLocalFrameIfNotDetached(context));
+  return scriptState;
+}
+
 v8::Local<v8::Context> toV8Context(ExecutionContext* context,
                                    DOMWrapperWorld& world) {
   ASSERT(context);
@@ -803,23 +817,25 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context,
 }
 
 v8::Local<v8::Context> toV8Context(LocalFrame* frame, DOMWrapperWorld& world) {
-  if (!frame)
+  ScriptState* scriptState = toScriptStateImpl(frame, world);
+  if (!scriptState)
     return v8::Local<v8::Context>();
-  v8::Local<v8::Context> context = toV8ContextEvenIfDetached(frame, world);
-  if (context.IsEmpty())
-    return v8::Local<v8::Context>();
-  ScriptState* scriptState = ScriptState::from(context);
-  if (scriptState->contextIsValid()) {
-    DCHECK_EQ(frame, toLocalFrameIfNotDetached(context));
-    return scriptState->context();
-  }
-  return v8::Local<v8::Context>();
+  return scriptState->context();
 }
 
 v8::Local<v8::Context> toV8ContextEvenIfDetached(LocalFrame* frame,
                                                  DOMWrapperWorld& world) {
   ASSERT(frame);
   return frame->windowProxy(world)->contextIfInitialized();
+}
+
+ScriptState* toScriptState(LocalFrame* frame, DOMWrapperWorld& world) {
+  v8::HandleScope handleScope(toIsolate(frame));
+  return toScriptStateImpl(frame, world);
+}
+
+ScriptState* toScriptStateForMainWorld(LocalFrame* frame) {
+  return toScriptState(frame, DOMWrapperWorld::mainWorld());
 }
 
 bool isValidEnum(const String& value,
