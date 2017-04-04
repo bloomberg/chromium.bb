@@ -43,17 +43,17 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   // async trace id, |navigation_start| as the timestamp and reporting the
   // FrameTreeNode id as a parameter.
   TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(
-      "navigation", "Navigation timeToResponseStarted", core_,
-      request_info->common_params.navigation_start,
-      "FrameTreeNode id", request_info->frame_tree_node_id);
+      "navigation", "Navigation timeToResponseStarted", core_.get(),
+      request_info->common_params.navigation_start, "FrameTreeNode id",
+      request_info->frame_tree_node_id);
   ServiceWorkerNavigationHandleCore* service_worker_handle_core =
       service_worker_handle ? service_worker_handle->core() : nullptr;
   AppCacheNavigationHandleCore* appcache_handle_core =
       appcache_handle ? appcache_handle->core() : nullptr;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::Start, base::Unretained(core_),
-                 resource_context, storage_partition->GetURLRequestContext(),
+      base::Bind(&NavigationURLLoaderImplCore::Start, core_, resource_context,
+                 storage_partition->GetURLRequestContext(),
                  service_worker_handle_core, appcache_handle_core,
                  base::Passed(&request_info),
                  base::Passed(&navigation_ui_data)));
@@ -61,9 +61,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, core_);
-  core_ = nullptr;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&NavigationURLLoaderImplCore::CancelRequestIfNeeded, core_));
 }
 
 void NavigationURLLoaderImpl::FollowRedirect() {
@@ -71,8 +71,7 @@ void NavigationURLLoaderImpl::FollowRedirect() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::FollowRedirect,
-                 base::Unretained(core_)));
+      base::Bind(&NavigationURLLoaderImplCore::FollowRedirect, core_));
 }
 
 void NavigationURLLoaderImpl::ProceedWithResponse() {
@@ -80,8 +79,7 @@ void NavigationURLLoaderImpl::ProceedWithResponse() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NavigationURLLoaderImplCore::ProceedWithResponse,
-                 base::Unretained(core_)));
+      base::Bind(&NavigationURLLoaderImplCore::ProceedWithResponse, core_));
 }
 
 void NavigationURLLoaderImpl::NotifyRequestRedirected(

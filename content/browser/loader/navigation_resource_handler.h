@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_handler.h"
 #include "content/browser/loader/stream_writer.h"
 
@@ -66,10 +67,13 @@ class NavigationResourceHandler : public ResourceHandler {
 
  private:
   // Clears |core_| and its reference to the resource handler. After calling
-  // this, the lifetime of the request is no longer tied to |core_|.
+  // this, the lifetime of the request is no longer managed by the
+  // NavigationURLLoader.
   void DetachFromCore();
 
-  NavigationURLLoaderImplCore* core_;
+  // NavigationResourceHandler has joint ownership of the
+  // NavigationURLLoaderImplCore with the NavigationURLLoaderImpl.
+  scoped_refptr<NavigationURLLoaderImplCore> core_;
   StreamWriter writer_;
   ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate_;
 

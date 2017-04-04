@@ -33,12 +33,7 @@ NavigationURLLoaderImplCore::NavigationURLLoaderImplCore(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-NavigationURLLoaderImplCore::~NavigationURLLoaderImplCore() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (resource_handler_)
-    resource_handler_->Cancel();
-}
+NavigationURLLoaderImplCore::~NavigationURLLoaderImplCore() {}
 
 void NavigationURLLoaderImplCore::Start(
     ResourceContext* resource_context,
@@ -75,6 +70,13 @@ void NavigationURLLoaderImplCore::ProceedWithResponse() {
 
   if (resource_handler_)
     resource_handler_->ProceedWithResponse();
+}
+
+void NavigationURLLoaderImplCore::CancelRequestIfNeeded() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (resource_handler_)
+    resource_handler_->Cancel();
 }
 
 void NavigationURLLoaderImplCore::NotifyRequestRedirected(

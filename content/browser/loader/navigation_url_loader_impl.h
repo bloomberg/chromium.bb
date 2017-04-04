@@ -69,9 +69,8 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
 
   NavigationURLLoaderDelegate* delegate_;
 
-  // |core_| is deleted on the IO thread in a subsequent task when the
-  // NavigationURLLoaderImpl goes out of scope.
-  NavigationURLLoaderImplCore* core_;
+  // |core_| is owned by this and the NavigationResourceHandler.
+  scoped_refptr<NavigationURLLoaderImplCore> core_;
 
   base::WeakPtrFactory<NavigationURLLoaderImpl> weak_factory_;
 
