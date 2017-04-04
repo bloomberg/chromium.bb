@@ -655,7 +655,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, TabsCreate) {
 
 // Tests that worker ref count increments while extension API function is
 // active.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WorkerRefCount) {
+
+// Flaky on Linux and ChromeOS, https://crbug.com/702126
+#if defined(OS_LINUX)
+#define MAYBE_WorkerRefCount DISABLED_WorkerRefCount
+#else
+#define MAYBE_WorkerRefCount WorkerRefCount
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MAYBE_WorkerRefCount) {
   // Extensions APIs from SW are only enabled on trunk.
   ScopedCurrentChannel current_channel_override(version_info::Channel::UNKNOWN);
   const Extension* extension = LoadExtensionWithFlags(
