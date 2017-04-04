@@ -6,7 +6,6 @@
 #define PaintInvalidator_h
 
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/paint/GeometryMapper.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -19,11 +18,8 @@ struct PaintPropertyTreeBuilderContext;
 
 struct PaintInvalidatorContext {
   PaintInvalidatorContext(
-      const PaintPropertyTreeBuilderContext& treeBuilderContext,
-      GeometryMapper& geometryMapper)
-      : parentContext(nullptr),
-        m_treeBuilderContext(treeBuilderContext),
-        m_geometryMapper(geometryMapper) {}
+      const PaintPropertyTreeBuilderContext& treeBuilderContext)
+      : parentContext(nullptr), m_treeBuilderContext(treeBuilderContext) {}
 
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext,
@@ -35,8 +31,7 @@ struct PaintInvalidatorContext {
         paintInvalidationContainerForStackedContents(
             parentContext.paintInvalidationContainerForStackedContents),
         paintingLayer(parentContext.paintingLayer),
-        m_treeBuilderContext(treeBuilderContext),
-        m_geometryMapper(parentContext.m_geometryMapper) {}
+        m_treeBuilderContext(treeBuilderContext) {}
 
   // This method is virtual temporarily to adapt PaintInvalidatorContext and the
   // legacy PaintInvalidationState for code shared by old code and new code.
@@ -102,7 +97,6 @@ struct PaintInvalidatorContext {
  private:
   friend class PaintInvalidator;
   const PaintPropertyTreeBuilderContext& m_treeBuilderContext;
-  GeometryMapper& m_geometryMapper;
 };
 
 class PaintInvalidator {

@@ -11,14 +11,15 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 
 namespace blink {
 
 struct PrePaintTreeWalkContext {
-  PrePaintTreeWalkContext(GeometryMapper& geometryMapper)
+  PrePaintTreeWalkContext()
       : treeBuilderContext(
             WTF::wrapUnique(new PaintPropertyTreeBuilderContext)),
-        paintInvalidatorContext(*treeBuilderContext, geometryMapper),
+        paintInvalidatorContext(*treeBuilderContext),
         ancestorOverflowPaintLayer(nullptr),
         ancestorTransformedOrRootPaintLayer(nullptr) {}
   PrePaintTreeWalkContext(const PrePaintTreeWalkContext& parentContext)
@@ -48,15 +49,15 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
   DCHECK(rootFrame.frame().document()->lifecycle().state() ==
          DocumentLifecycle::InPrePaint);
 
-  PrePaintTreeWalkContext initialContext(m_geometryMapper);
+  PrePaintTreeWalkContext initialContext;
   initialContext.ancestorTransformedOrRootPaintLayer =
       rootFrame.layoutView()->layer();
 
-  // GeometryMapper depends on paint properties.
+  // GeometryMapper caches depend on paint properties.
   if (rootFrame.needsPaintPropertyUpdate() ||
       (rootFrame.layoutView() &&
        !shouldEndWalkBefore(*rootFrame.layoutView(), initialContext)))
-    m_geometryMapper.clearCache();
+    GeometryMapper::clearCache();
 
   walk(rootFrame, initialContext);
   m_paintInvalidator.processPendingDelayedPaintInvalidations();
@@ -120,7 +121,7 @@ void PrePaintTreeWalk::computeClipRectForContext(
   PropertyTreeState localState(context.transform, context.clip, effect);
 
   clipRect =
-      m_geometryMapper.sourceToDestinationClipRect(localState, ancestorState);
+      GeometryMapper::sourceToDestinationClipRect(localState, ancestorState);
   clipRect.moveBy(-FloatPoint(ancestorPaintOffset));
 }
 

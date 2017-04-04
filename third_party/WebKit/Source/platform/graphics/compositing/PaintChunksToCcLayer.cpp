@@ -25,19 +25,19 @@ enum EndDisplayItemType { EndTransform, EndClip, EndEffect };
 
 // Applies the clips between |localState| and |ancestorState| into a single
 // combined cc::FloatClipDisplayItem on |ccList|.
-static void applyClipsBetweenStates(const PropertyTreeState& localState,
-                                    const PropertyTreeState& ancestorState,
-                                    cc::DisplayItemList& ccList,
-                                    Vector<EndDisplayItemType>& endDisplayItems,
-                                    GeometryMapper& geometryMapper) {
+static void applyClipsBetweenStates(
+    const PropertyTreeState& localState,
+    const PropertyTreeState& ancestorState,
+    cc::DisplayItemList& ccList,
+    Vector<EndDisplayItemType>& endDisplayItems) {
   DCHECK(localState.transform() == ancestorState.transform());
 #if DCHECK_IS_ON()
   const TransformPaintPropertyNode* transformNode =
       localState.clip()->localTransformSpace();
   if (transformNode != ancestorState.transform()) {
     const TransformationMatrix& localToAncestorMatrix =
-        geometryMapper.localToAncestorMatrix(transformNode,
-                                             ancestorState.transform());
+        GeometryMapper::localToAncestorMatrix(transformNode,
+                                              ancestorState.transform());
     // Clips are only in descendant spaces that are transformed by one
     // or more scrolls.
     DCHECK(localToAncestorMatrix.isIdentityOrTranslation());
@@ -45,7 +45,7 @@ static void applyClipsBetweenStates(const PropertyTreeState& localState,
 #endif
 
   const FloatClipRect& combinedClip =
-      geometryMapper.localToAncestorClipRect(localState, ancestorState);
+      GeometryMapper::localToAncestorClipRect(localState, ancestorState);
 
   ccList.CreateAndAppendPairedBeginItem<cc::FloatClipDisplayItem>(
       gfx::RectF(combinedClip.rect()));
@@ -56,8 +56,7 @@ static void recordPairedBeginDisplayItems(
     const Vector<PropertyTreeState>& pairedStates,
     const PropertyTreeState& pendingLayerState,
     cc::DisplayItemList& ccList,
-    Vector<EndDisplayItemType>& endDisplayItems,
-    GeometryMapper& geometryMapper) {
+    Vector<EndDisplayItemType>& endDisplayItems) {
   PropertyTreeState mappedClipDestinationSpace = pendingLayerState;
   PropertyTreeState clipSpace = pendingLayerState;
   bool hasClip = false;
@@ -69,7 +68,7 @@ static void recordPairedBeginDisplayItems(
       case PropertyTreeState::Transform: {
         if (hasClip) {
           applyClipsBetweenStates(clipSpace, mappedClipDestinationSpace, ccList,
-                                  endDisplayItems, geometryMapper);
+                                  endDisplayItems);
           hasClip = false;
         }
         mappedClipDestinationSpace = *pairedState;
@@ -118,8 +117,8 @@ static void recordPairedBeginDisplayItems(
           const TransformPaintPropertyNode* transformNode =
               pairedState->effect()->localTransformSpace();
           const TransformationMatrix& localToAncestorMatrix =
-              geometryMapper.localToAncestorMatrix(transformNode,
-                                                   pairedState->transform());
+              GeometryMapper::localToAncestorMatrix(transformNode,
+                                                    pairedState->transform());
           // Effects are only in descendant spaces that are transformed by one
           // or more scrolls.
           DCHECK(localToAncestorMatrix.isIdentityOrTranslation());
@@ -153,7 +152,7 @@ static void recordPairedBeginDisplayItems(
 
   if (hasClip) {
     applyClipsBetweenStates(clipSpace, mappedClipDestinationSpace, ccList,
-                            endDisplayItems, geometryMapper);
+                            endDisplayItems);
   }
 }
 
@@ -206,8 +205,7 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::convert(
     const Vector<const PaintChunk*>& paintChunks,
     const PropertyTreeState& layerState,
     const gfx::Vector2dF& layerOffset,
-    const DisplayItemList& displayItems,
-    GeometryMapper& geometryMapper) {
+    const DisplayItemList& displayItems) {
   auto ccList = make_scoped_refptr(new cc::DisplayItemList);
 
   gfx::Transform counterOffset;
@@ -230,7 +228,7 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::convert(
     Vector<EndDisplayItemType> endDisplayItems;
 
     recordPairedBeginDisplayItems(pairedStates, layerState, *ccList.get(),
-                                  endDisplayItems, geometryMapper);
+                                  endDisplayItems);
 
     for (const auto& displayItem : displayItems.itemsInPaintChunk(*paintChunk))
       appendDisplayItemToCcDisplayItemList(displayItem, ccList.get());
