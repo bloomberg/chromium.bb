@@ -208,7 +208,8 @@ void ReadingListWebStateObserver::PageLoaded(
   last_load_result_ = load_completion_status;
   web::NavigationItem* item =
       web_state()->GetNavigationManager()->GetLastCommittedItem();
-  if (!item || !pending_url_.is_valid()) {
+  if (!item || !pending_url_.is_valid() ||
+      !reading_list_model_->GetEntryByURL(pending_url_)) {
     StopCheckingProgress();
     return;
   }
