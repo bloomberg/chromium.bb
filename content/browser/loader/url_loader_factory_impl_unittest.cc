@@ -81,7 +81,8 @@ class RejectingResourceDispatcherHostDelegate final
 class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
  public:
   URLLoaderFactoryImplTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : thread_bundle_(
+            new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
         browser_context_(new TestBrowserContext()),
         resource_message_filter_(new ResourceMessageFilter(
             kChildId,
@@ -90,7 +91,8 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
             nullptr,
             nullptr,
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
-                       base::Unretained(this)))) {
+                       base::Unretained(this)),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))) {
     // Some tests specify request.report_raw_headers, but the RDH checks the
     // CanReadRawCookies permission before enabling it.
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(kChildId);
@@ -103,7 +105,8 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
 
     URLLoaderFactoryImpl::Create(
         resource_message_filter_->requester_info_for_test(),
-        mojo::MakeRequest(&factory_));
+        mojo::MakeRequest(&factory_),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
     // Calling this function creates a request context.
     browser_context_->GetResourceContext()->GetRequestContext();
@@ -120,6 +123,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
     base::RunLoop().RunUntilIdle();
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(
         MojoAsyncResourceHandler::kDefaultAllocationSize);
+    thread_bundle_.reset(nullptr);
   }
 
   void GetContexts(ResourceType resource_type,
@@ -130,7 +134,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
         browser_context_->GetResourceContext()->GetRequestContext();
   }
 
-  TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
   LoaderDelegateImpl loader_deleate_;
   ResourceDispatcherHostImpl rdh_;
   std::unique_ptr<TestBrowserContext> browser_context_;

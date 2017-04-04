@@ -550,7 +550,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   mojom::URLLoaderFactoryPtr url_loader_factory;
   URLLoaderFactoryImpl::Create(
       ResourceRequesterInfo::CreateForNavigationPreload(requester_info),
-      mojo::MakeRequest(&url_loader_factory));
+      mojo::MakeRequest(&url_loader_factory),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   ResourceRequest request;
   request.method = original_request->method();

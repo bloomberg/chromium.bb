@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"
@@ -175,6 +176,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // asynchronously.
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<ResourceLoader> weak_ptr_factory_;
 

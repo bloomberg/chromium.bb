@@ -1504,8 +1504,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // intercept requests to create handlers for download requests. We need to
     // find a better way to achieve this. Ideally we don't want knowledge of
     // downloads in ResourceDispatcherHostImpl.
+    // We pass the task runners for the UI and IO threads as a stopgap approach
+    // for now. Eventually variants of these runners would be available in the
+    // network service.
     resource_dispatcher_host_.reset(new ResourceDispatcherHostImpl(
-        base::Bind(&DownloadResourceHandler::Create)));
+        base::Bind(&DownloadResourceHandler::Create),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
     GetContentClient()->browser()->ResourceDispatcherHostCreated();
 
     loader_delegate_.reset(new LoaderDelegateImpl());

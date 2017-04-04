@@ -324,7 +324,6 @@ specific_include_rules = {
     "+content/common/resource_request.h",
     "+content/common/url_loader.mojom.h",
     "+content/common/url_loader_factory.mojom.h",
-    "+content/public/browser/browser_thread.h",
   ],
   "url_loader_factory_impl_unittest\.cc": [
     "-content",

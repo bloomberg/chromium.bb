@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/common/url_loader_factory.mojom.h"
 
@@ -47,13 +48,18 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
   // StrongBinding in it, so this function doesn't return the instance.
   CONTENT_EXPORT static void Create(
       scoped_refptr<ResourceRequesterInfo> requester_info,
-      mojom::URLLoaderFactoryRequest request);
+      mojom::URLLoaderFactoryRequest request,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner);
 
  private:
   explicit URLLoaderFactoryImpl(
-      scoped_refptr<ResourceRequesterInfo> requester_info);
+      scoped_refptr<ResourceRequesterInfo> requester_info,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner);
 
   scoped_refptr<ResourceRequesterInfo> requester_info_;
+
+  // Task runner for the IO thead.
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryImpl);
 };

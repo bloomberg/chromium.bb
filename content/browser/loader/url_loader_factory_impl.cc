@@ -9,7 +9,6 @@
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/common/resource_request.h"
 #include "content/common/url_loader.mojom.h"
-#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -35,15 +34,17 @@ void DispatchSyncLoadResult(
 } // namespace
 
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
-    scoped_refptr<ResourceRequesterInfo> requester_info)
-    : requester_info_(std::move(requester_info)) {
+    scoped_refptr<ResourceRequesterInfo> requester_info,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
+    : requester_info_(std::move(requester_info)),
+      io_thread_task_runner_(io_thread_runner) {
   DCHECK((requester_info_->IsRenderer() && requester_info_->filter()) ||
          requester_info_->IsNavigationPreload());
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 }
 
 URLLoaderFactoryImpl::~URLLoaderFactoryImpl() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 }
 
 void URLLoaderFactoryImpl::CreateLoaderAndStart(
@@ -72,7 +73,9 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t request_id,
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get()
+             ->io_thread_task_runner()
+             ->BelongsToCurrentThread());
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   rdh->OnRequestResourceWithMojo(requester_info, routing_id, request_id,
@@ -86,7 +89,9 @@ void URLLoaderFactoryImpl::SyncLoad(ResourceRequesterInfo* requester_info,
                                     int32_t request_id,
                                     const ResourceRequest& url_request,
                                     const SyncLoadCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get()
+             ->io_thread_task_runner()
+             ->BelongsToCurrentThread());
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   rdh->OnSyncLoadWithMojo(requester_info, routing_id, request_id, url_request,
@@ -95,10 +100,11 @@ void URLLoaderFactoryImpl::SyncLoad(ResourceRequesterInfo* requester_info,
 
 void URLLoaderFactoryImpl::Create(
     scoped_refptr<ResourceRequesterInfo> requester_info,
-    mojo::InterfaceRequest<mojom::URLLoaderFactory> request) {
-  mojo::MakeStrongBinding(
-      base::WrapUnique(new URLLoaderFactoryImpl(std::move(requester_info))),
-      std::move(request));
+    mojo::InterfaceRequest<mojom::URLLoaderFactory> request,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner) {
+  mojo::MakeStrongBinding(base::WrapUnique(new URLLoaderFactoryImpl(
+                              std::move(requester_info), io_thread_runner)),
+                          std::move(request));
 }
 
 }  // namespace content

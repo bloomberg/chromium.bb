@@ -257,7 +257,8 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             NULL,
             NULL,
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
-                       base::Unretained(this))),
+                       base::Unretained(this)),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
         resource_context_(resource_context),
         canceled_(false),
         received_after_canceled_(0) {
@@ -844,7 +845,8 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
 
   ResourceDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        host_(base::Bind(&DownloadResourceHandler::Create)),
+        host_(base::Bind(&DownloadResourceHandler::Create),
+              base::ThreadTaskRunnerHandle::Get()),
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {
@@ -863,6 +865,8 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
 
   ~ResourceDispatcherHostTest() override {
     filter_->OnChannelClosing();
+    filter_ = nullptr;
+    web_contents_filter_ = nullptr;
   }
 
   // IPC::Sender implementation

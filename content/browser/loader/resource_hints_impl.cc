@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/browser_thread.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_hints.h"
 #include "net/base/address_list.h"
@@ -51,7 +51,9 @@ void PreconnectUrl(content::ResourceContext* resource_context,
                    int count,
                    bool allow_credentials,
                    net::HttpRequestInfo::RequestMotivation motivation) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get()
+             ->io_thread_task_runner()
+             ->BelongsToCurrentThread());
   DCHECK(resource_context);
 
   net::URLRequestContext* context = resource_context->GetRequestContext();
@@ -89,7 +91,9 @@ void PreconnectUrl(content::ResourceContext* resource_context,
 int PreresolveUrl(content::ResourceContext* resource_context,
                   const GURL& url,
                   const net::CompletionCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get()
+             ->io_thread_task_runner()
+             ->BelongsToCurrentThread());
   DCHECK(resource_context);
 
   auto request_holder = base::MakeUnique<RequestHolder>();

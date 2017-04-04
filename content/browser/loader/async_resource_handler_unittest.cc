@@ -101,7 +101,8 @@ class RecordingResourceMessageFilter : public ResourceMessageFilter {
             nullptr,
             nullptr,
             base::Bind(&RecordingResourceMessageFilter::GetContexts,
-                       base::Unretained(this))),
+                       base::Unretained(this)),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
         resource_context_(resource_context),
         request_context_(request_context) {
     InitializeForTest();

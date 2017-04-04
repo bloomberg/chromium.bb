@@ -24,6 +24,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_loader_delegate.h"
@@ -91,7 +92,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Work on moving creation of download handlers out of
   // ResourceDispatcherHostImpl.
   ResourceDispatcherHostImpl(
-      CreateDownloadHandlerIntercept download_handler_intercept);
+      CreateDownloadHandlerIntercept download_handler_intercept,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner);
   ResourceDispatcherHostImpl();
   ~ResourceDispatcherHostImpl() override;
 
@@ -327,6 +329,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Note that this cancel is subtly different from the other CancelRequest
   // methods in this file, which also tear down the loader.
   void CancelRequestFromRenderer(GlobalRequestID request_id);
+
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner() const {
+    return io_thread_task_runner_;
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner() const {
+    return main_thread_task_runner_;
+  }
 
  private:
   friend class ResourceDispatcherHostTest;
@@ -756,6 +766,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Points to the registered download handler intercept.
   CreateDownloadHandlerIntercept create_download_handler_intercept_;
+
+  // Task runner for the main thread.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  // Task runner for the IO thead.
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

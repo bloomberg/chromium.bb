@@ -32,6 +32,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
@@ -338,7 +339,8 @@ ResourceDispatcherHost* ResourceDispatcherHost::Get() {
 }
 
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
-    CreateDownloadHandlerIntercept download_handler_intercept)
+    CreateDownloadHandlerIntercept download_handler_intercept,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
     : request_id_(-1),
       is_shutdown_(false),
       num_in_flight_requests_(0),
@@ -350,8 +352,10 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       delegate_(nullptr),
       loader_delegate_(nullptr),
       allow_cross_origin_auth_prompt_(false),
-      create_download_handler_intercept_(download_handler_intercept) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+      create_download_handler_intercept_(download_handler_intercept),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      io_thread_task_runner_(io_thread_runner) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
 
@@ -359,21 +363,23 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       &last_user_gesture_time_,
       "We don't care about the precise value, see http://crbug.com/92889");
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&ResourceDispatcherHostImpl::OnInit,
-                                     base::Unretained(this)));
+  io_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ResourceDispatcherHostImpl::OnInit, base::Unretained(this)));
 
   update_load_states_timer_.reset(new base::RepeatingTimer());
 }
 
+// The default ctor is only used by unittests. It is reasonable to assume that
+// the main thread and the IO thread are the same for unittests.
 ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
-    : ResourceDispatcherHostImpl(CreateDownloadHandlerIntercept()) {}
+    : ResourceDispatcherHostImpl(CreateDownloadHandlerIntercept(),
+                                 base::ThreadTaskRunnerHandle::Get()) {}
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
   DCHECK(outstanding_requests_stats_map_.empty());
   DCHECK(g_resource_dispatcher_host);
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   g_resource_dispatcher_host = NULL;
 }
 
@@ -393,7 +399,7 @@ void ResourceDispatcherHostImpl::SetAllowCrossOriginAuthPrompt(bool value) {
 
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
     ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(context);
 
   // Note that request cancellation has side effects. Therefore, we gather all
@@ -492,11 +498,10 @@ void ResourceDispatcherHostImpl::RegisterInterceptor(
 }
 
 void ResourceDispatcherHostImpl::Shutdown() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&ResourceDispatcherHostImpl::OnShutdown,
-                                     base::Unretained(this)));
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  io_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&ResourceDispatcherHostImpl::OnShutdown,
+                            base::Unretained(this)));
 }
 
 std::unique_ptr<ResourceHandler>
@@ -780,7 +785,7 @@ void ResourceDispatcherHostImpl::OnInit() {
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   is_shutdown_ = true;
   pending_loaders_.clear();
@@ -811,7 +816,7 @@ void ResourceDispatcherHostImpl::OnShutdown() {
 bool ResourceDispatcherHostImpl::OnMessageReceived(
     const IPC::Message& message,
     ResourceRequesterInfo* requester_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ResourceDispatcherHostImpl, message,
@@ -1525,8 +1530,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   if (request->has_upload()) {
     // Block power save while uploading data.
     throttles.push_back(base::MakeUnique<PowerSaveBlockResourceThrottle>(
-        request->url().host(),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        request->url().host(), main_thread_task_runner_,
         BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
   }
 
@@ -2203,7 +2207,7 @@ void ResourceDispatcherHostImpl::InitializeURLRequest(
     int render_frame_routing_id,
     PreviewsState previews_state,
     ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!request->is_pending());
 
   Referrer::SetReferrerForRequest(request, referrer);
@@ -2222,7 +2226,7 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
     bool is_content_initiated,
     bool do_not_prompt_for_login,
     ResourceContext* context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!request->is_pending());
 
   ResourceRequestInfoImpl* info =
@@ -2254,7 +2258,7 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
 }
 
 int ResourceDispatcherHostImpl::MakeRequestID() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   return --request_id_;
 }
 
@@ -2328,7 +2332,8 @@ bool ResourceDispatcherHostImpl::LoadInfoIsMoreInteresting(const LoadInfo& a,
 // static
 void ResourceDispatcherHostImpl::UpdateLoadStateOnUI(
     LoaderDelegate* loader_delegate, std::unique_ptr<LoadInfoList> infos) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(Get()->main_thread_task_runner_->BelongsToCurrentThread());
+
   std::unique_ptr<LoadInfoMap> info_map =
       PickMoreInterestingLoadInfos(std::move(infos));
   for (const auto& load_info: *info_map) {
@@ -2395,16 +2400,14 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   // their render frame routing IDs yet (which is what we have for subresource
   // requests), we must go to the UI thread and compare the requests using their
   // WebContents.
-  BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(UpdateLoadStateOnUI,
-                   loader_delegate_, base::Passed(&infos)));
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(UpdateLoadStateOnUI, loader_delegate_, base::Passed(&infos)));
 }
 
 void ResourceDispatcherHostImpl::BlockRequestsForRoute(
     const GlobalFrameRoutingId& global_routing_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(blocked_loaders_map_.find(global_routing_id) ==
          blocked_loaders_map_.end())
       << "BlockRequestsForRoute called  multiple time for the same RFH";
@@ -2479,7 +2482,7 @@ bool ResourceDispatcherHostImpl::IsTransferredNavigation(
 
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(
     const GlobalRequestID& id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   LoaderMap::const_iterator i = pending_loaders_.find(id);
   if (i == pending_loaders_.end())

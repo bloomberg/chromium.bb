@@ -1086,8 +1086,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), storage_partition_impl_->GetAppCacheService(),
       blob_storage_context.get(),
       storage_partition_impl_->GetFileSystemContext(),
-      storage_partition_impl_->GetServiceWorkerContext(),
-      get_contexts_callback);
+      storage_partition_impl_->GetServiceWorkerContext(), get_contexts_callback,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   AddFilter(resource_message_filter_.get());
 

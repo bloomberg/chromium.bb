@@ -9,7 +9,6 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -49,7 +48,6 @@ ResourceRequesterInfo::~ResourceRequesterInfo() {}
 
 void ResourceRequesterInfo::set_filter(
     base::WeakPtr<ResourceMessageFilter> filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(RequesterType::RENDERER, type_);
   filter_ = filter;
 }

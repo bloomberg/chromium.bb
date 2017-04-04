@@ -12,7 +12,6 @@
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
@@ -24,7 +23,8 @@ ResourceMessageFilter::ResourceMessageFilter(
     ChromeBlobStorageContext* blob_storage_context,
     storage::FileSystemContext* file_system_context,
     ServiceWorkerContextWrapper* service_worker_context,
-    const GetContextsCallback& get_contexts_callback)
+    const GetContextsCallback& get_contexts_callback,
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner)
     : BrowserMessageFilter(ResourceMsgStart),
       BrowserAssociatedInterface<mojom::URLLoaderFactory>(this, this),
       is_channel_closed_(false),
@@ -35,23 +35,22 @@ ResourceMessageFilter::ResourceMessageFilter(
                                                    file_system_context,
                                                    service_worker_context,
                                                    get_contexts_callback)),
-      weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
+      io_thread_task_runner_(io_thread_runner),
+      weak_ptr_factory_(this) {}
 
 ResourceMessageFilter::~ResourceMessageFilter() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(is_channel_closed_);
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
 void ResourceMessageFilter::OnFilterAdded(IPC::Channel*) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   InitializeOnIOThread();
 }
 
 void ResourceMessageFilter::OnChannelClosing() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   // Unhook us from all pending network requests so they don't get sent to a
   // deleted object.
@@ -63,7 +62,7 @@ void ResourceMessageFilter::OnChannelClosing() {
 }
 
 bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   // Check if InitializeOnIOThread() has been called.
   DCHECK_EQ(this, requester_info_->filter());
   return ResourceDispatcherHostImpl::Get()->OnMessageReceived(
@@ -73,11 +72,15 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void ResourceMessageFilter::OnDestruct() const {
   // Destroy the filter on the IO thread since that's where its weak pointers
   // are being used.
-  BrowserThread::DeleteOnIOThread::Destruct(this);
+  if (io_thread_task_runner_->BelongsToCurrentThread()) {
+    delete this;
+  } else {
+    io_thread_task_runner_->DeleteSoon(FROM_HERE, this);
+  }
 }
 
 base::WeakPtr<ResourceMessageFilter> ResourceMessageFilter::GetWeakPtr() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   return is_channel_closed_ ? nullptr : weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -109,7 +112,7 @@ void ResourceMessageFilter::InitializeForTest() {
 }
 
 void ResourceMessageFilter::InitializeOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   // The WeakPtr of the filter must be created on the IO thread. So sets the
   // WeakPtr of |requester_info_| now.
   requester_info_->set_filter(GetWeakPtr());
