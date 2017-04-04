@@ -53,7 +53,7 @@ ios_app_bundle("chrome_clean_skeleton") {
 
   extra_substitutions = [
     "CHROMIUM_BUNDLE_ID=$output_name",
-    "CHROMIUM_SHORT_NAME=$chromium_short_name",
+    "CHROMIUM_SHORT_NAME=$output_name",
     "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
     "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
     "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
