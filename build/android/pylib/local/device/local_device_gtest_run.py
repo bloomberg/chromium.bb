@@ -418,6 +418,9 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if not self._env.skip_clear_data:
       self._delegate.Clear(device)
 
+    for l in output:
+      logging.info(l)
+
     # Parse the output.
     # TODO(jbudorick): Transition test scripts away from parsing stdout.
     if self._test_instance.enable_xml_result_parsing:
