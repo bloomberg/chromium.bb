@@ -40,7 +40,6 @@ class SimCompositor final : public WebLayerTreeView {
 
  private:
   void setNeedsBeginFrame() override;
-  void setNeedsCompositorUpdate() override;
   void setDeferCommits(bool) override;
   void registerSelection(const WebSelection&) override;
   void clearSelection() override;

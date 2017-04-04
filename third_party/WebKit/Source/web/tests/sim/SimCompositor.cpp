@@ -63,10 +63,6 @@ void SimCompositor::setNeedsBeginFrame() {
   m_needsBeginFrame = true;
 }
 
-void SimCompositor::setNeedsCompositorUpdate() {
-  m_needsBeginFrame = true;
-}
-
 void SimCompositor::setDeferCommits(bool deferCommits) {
   m_deferCommits = deferCommits;
 }

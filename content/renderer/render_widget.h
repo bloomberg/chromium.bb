@@ -371,9 +371,6 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
-  void ScheduleComposite();
-  void ScheduleCompositeWithForcedRedraw();
-
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();

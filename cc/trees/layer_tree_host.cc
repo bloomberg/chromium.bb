@@ -479,9 +479,9 @@ void LayerTreeHost::SetNextCommitWaitsForActivation() {
   proxy_->SetNextCommitWaitsForActivation();
 }
 
-void LayerTreeHost::SetNextCommitForcesRedraw() {
+void LayerTreeHost::SetNeedsCommitWithForcedRedraw() {
   next_commit_forces_redraw_ = true;
-  proxy_->SetNeedsUpdateLayers();
+  proxy_->SetNeedsCommit();
 }
 
 void LayerTreeHost::SetAnimationEvents(
@@ -596,7 +596,7 @@ bool LayerTreeHost::UpdateLayers() {
         ->Add(timer.Elapsed().InMicroseconds());
   }
 
-  return result || next_commit_forces_redraw_;
+  return result;
 }
 
 void LayerTreeHost::DidCompletePageScaleAnimation() {

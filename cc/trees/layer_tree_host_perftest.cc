@@ -59,10 +59,8 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
   }
 
   void BeginMainFrame(const BeginFrameArgs& args) override {
-    if (begin_frame_driven_drawing_ && !TestEnded()) {
-      layer_tree_host()->SetNeedsAnimate();
-      layer_tree_host()->SetNextCommitForcesRedraw();
-    }
+    if (begin_frame_driven_drawing_ && !TestEnded())
+      layer_tree_host()->SetNeedsCommitWithForcedRedraw();
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {

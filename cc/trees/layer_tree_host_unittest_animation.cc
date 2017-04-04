@@ -573,7 +573,7 @@ class LayerTreeHostAnimationTestForceRedraw
   }
 
   void UpdateLayerTreeHost() override {
-    layer_tree_host()->SetNextCommitForcesRedraw();
+    layer_tree_host()->SetNeedsCommitWithForcedRedraw();
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {

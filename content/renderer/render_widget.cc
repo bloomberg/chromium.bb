@@ -786,14 +786,13 @@ void RenderWidget::OnWasShown(bool needs_repainting,
   if (!needs_repainting)
     return;
 
-  // Generate a full repaint.
   if (compositor_) {
     ui::LatencyInfo swap_latency_info(latency_info);
-    std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor(
-        compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info));
-    compositor_->SetNeedsForcedRedraw();
+    std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor =
+        compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info);
+    // Force this SwapPromiseMonitor to trigger and insert a SwapPromise.
+    compositor_->setNeedsBeginFrame();
   }
-  ScheduleComposite();
 }
 
 void RenderWidget::OnRequestMoveAck() {
@@ -1181,7 +1180,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (device_scale_factor_ != screen_info_.device_scale_factor) {
     device_scale_factor_ = screen_info_.device_scale_factor;
     OnDeviceScaleFactorChanged();
-    ScheduleComposite();
   }
 
   if (resizing_mode_selector_->NeverUsesSynchronousResize()) {
@@ -1344,24 +1342,6 @@ void RenderWidget::didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
     observer.DidMeaningfulLayout(layout_type);
 }
 
-void RenderWidget::ScheduleComposite() {
-  if (compositor_ &&
-      compositor_deps_->GetCompositorImplThreadTaskRunner().get()) {
-    compositor_->setNeedsCompositorUpdate();
-  }
-}
-
-void RenderWidget::ScheduleCompositeWithForcedRedraw() {
-  if (compositor_) {
-    // Regardless of whether threaded compositing is enabled, always
-    // use this mechanism to force the compositor to redraw. However,
-    // the invalidation code path below is still needed for the
-    // non-threaded case.
-    compositor_->SetNeedsForcedRedraw();
-  }
-  ScheduleComposite();
-}
-
 // static
 std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
     IPC::Message* msg,
@@ -1396,13 +1376,11 @@ void RenderWidget::QueueMessage(IPC::Message* msg,
 
   if (swap_promise) {
     compositor_->QueueSwapPromise(std::move(swap_promise));
-    // Request a commit. This might either A) request a commit ahead of time
-    // or B) request a commit which is not needed because there are not
-    // pending updates. If B) then the commit will be skipped and the swap
-    // promises will be broken (see EarlyOut_NoUpdates). To achieve that we
-    // call SetNeedsUpdateLayers instead of SetNeedsCommit so that
-    // can_cancel_commit is not unset.
-    compositor_->SetNeedsUpdateLayers();
+    // Request a main frame. This might either A) request a commit ahead of time
+    // or B) request a commit which is not needed because there are not pending
+    // updates. If B) then the frame will be aborted early and the swap promises
+    // will be broken (see EarlyOut_NoUpdates).
+    compositor_->setNeedsBeginFrame();
   }
 }
 
@@ -1906,10 +1884,7 @@ void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
     return;
 
   device_scale_factor_ = device_scale_factor;
-
   OnDeviceScaleFactorChanged();
-  ScheduleComposite();
-
   physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
 }
 

@@ -1411,8 +1411,8 @@ void RenderViewImpl::OnForceRedraw(const ui::LatencyInfo& latency_info) {
   if (RenderWidgetCompositor* rwc = compositor()) {
     rwc->QueueSwapPromise(
         base::MakeUnique<AlwaysDrawSwapPromise>(latency_info));
+    rwc->SetNeedsForcedRedraw();
   }
-  ScheduleCompositeWithForcedRedraw();
 }
 
 // blink::WebViewClient ------------------------------------------------------
@@ -2472,7 +2472,8 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
     return;
 
   // Remove the content highlighting if any.
-  ScheduleComposite();
+  if (RenderWidgetCompositor* rwc = compositor())
+    rwc->setNeedsBeginFrame();
 
   if (!intent.is_empty()) {
     Send(new ViewHostMsg_StartContentIntent(GetRoutingID(), intent,

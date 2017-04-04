@@ -1983,9 +1983,10 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestRasterColorSpaceChange);
 
-class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
+class LayerTreeHostTestSetNeedsCommitWithForcedRedraw
+    : public LayerTreeHostTest {
  public:
-  LayerTreeHostTestSetNextCommitForcesRedraw()
+  LayerTreeHostTestSetNeedsCommitWithForcedRedraw()
       : num_draws_(0), bounds_(50, 50), invalid_rect_(10, 10, 20, 20) {}
 
   void BeginTest() override {
@@ -2045,8 +2046,7 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
         break;
       case 2:
         // Should force full frame damage on the next commit
-        PostSetNextCommitForcesRedrawToMainThread();
-        PostSetNeedsCommitToMainThread();
+        PostSetNeedsCommitWithForcedRedrawToMainThread();
         host_impl->BlockNotifyReadyToActivateForTesting(true);
         break;
       case 3:
@@ -2070,7 +2070,8 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
 };
 
 // This test blocks activation which is not supported for single thread mode.
-MULTI_THREAD_BLOCKNOTIFY_TEST_F(LayerTreeHostTestSetNextCommitForcesRedraw);
+MULTI_THREAD_BLOCKNOTIFY_TEST_F(
+    LayerTreeHostTestSetNeedsCommitWithForcedRedraw);
 
 // Tests that if a layer is not drawn because of some reason in the parent then
 // its damage is preserved until the next time it is drawn.
@@ -4620,8 +4621,7 @@ class TestSwapPromise : public SwapPromise {
 class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
  protected:
   void BeginTest() override {
-    PostSetNextCommitForcesRedrawToMainThread();
-    PostSetNeedsCommitToMainThread();
+    layer_tree_host()->SetNeedsCommitWithForcedRedraw();
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {

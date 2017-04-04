@@ -597,10 +597,11 @@ void LayerTreeTest::PostSetVisibleToMainThread(bool visible) {
                                          main_thread_weak_ptr_, visible));
 }
 
-void LayerTreeTest::PostSetNextCommitForcesRedrawToMainThread() {
+void LayerTreeTest::PostSetNeedsCommitWithForcedRedrawToMainThread() {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LayerTreeTest::DispatchSetNextCommitForcesRedraw,
-                            main_thread_weak_ptr_));
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchSetNeedsCommitWithForcedRedraw,
+                 main_thread_weak_ptr_));
 }
 
 void LayerTreeTest::PostCompositeImmediatelyToMainThread() {
@@ -773,10 +774,10 @@ void LayerTreeTest::DispatchSetVisible(bool visible) {
     SetVisibleOnLayerTreeHost(visible);
 }
 
-void LayerTreeTest::DispatchSetNextCommitForcesRedraw() {
+void LayerTreeTest::DispatchSetNeedsCommitWithForcedRedraw() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (layer_tree_host_)
-    layer_tree_host_->SetNextCommitForcesRedraw();
+    layer_tree_host_->SetNeedsCommitWithForcedRedraw();
 }
 
 void LayerTreeTest::DispatchCompositeImmediately() {

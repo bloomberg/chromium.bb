@@ -609,8 +609,7 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 }
 
 void RenderWidgetCompositor::SetNeedsForcedRedraw() {
-  layer_tree_host_->SetNextCommitForcesRedraw();
-  layer_tree_host_->SetNeedsUpdateLayers();
+  layer_tree_host_->SetNeedsCommitWithForcedRedraw();
 }
 
 std::unique_ptr<cc::SwapPromiseMonitor>
@@ -627,14 +626,6 @@ void RenderWidgetCompositor::QueueSwapPromise(
 
 int RenderWidgetCompositor::GetSourceFrameNumber() const {
   return layer_tree_host_->SourceFrameNumber();
-}
-
-void RenderWidgetCompositor::SetNeedsUpdateLayers() {
-  layer_tree_host_->SetNeedsUpdateLayers();
-}
-
-void RenderWidgetCompositor::SetNeedsCommit() {
-  layer_tree_host_->SetNeedsCommit();
 }
 
 void RenderWidgetCompositor::NotifyInputThrottledUntilCommit() {
@@ -738,10 +729,6 @@ void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
 
 void RenderWidgetCompositor::setNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
-}
-
-void RenderWidgetCompositor::setNeedsCompositorUpdate() {
-  layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 void RenderWidgetCompositor::didStopFlinging() {

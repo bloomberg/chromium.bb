@@ -100,8 +100,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // LayerTreeHost.
   void QueueSwapPromise(std::unique_ptr<cc::SwapPromise> swap_promise);
   int GetSourceFrameNumber() const;
-  void SetNeedsUpdateLayers();
-  void SetNeedsCommit();
   void NotifyInputThrottledUntilCommit();
   const cc::Layer* GetRootLayer() const;
   int ScheduleMicroBenchmark(
@@ -138,7 +136,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool hasPendingPageScaleAnimation() const override;
   void heuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   void setNeedsBeginFrame() override;
-  void setNeedsCompositorUpdate() override;
   void didStopFlinging() override;
   void layoutAndPaintAsync(
       blink::WebLayoutAndPaintAsyncCallback* callback) override;

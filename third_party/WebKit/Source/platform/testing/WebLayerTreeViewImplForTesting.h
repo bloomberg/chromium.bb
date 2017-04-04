@@ -56,7 +56,6 @@ class WebLayerTreeViewImplForTesting
                                float newPageScale,
                                double durationSec) override;
   void setNeedsBeginFrame() override;
-  void setNeedsCompositorUpdate() override;
   void didStopFlinging() override;
   void setDeferCommits(bool) override;
   void registerViewportLayers(

@@ -118,10 +118,6 @@ void WebLayerTreeViewImplForTesting::setNeedsBeginFrame() {
   m_layerTreeHost->SetNeedsAnimate();
 }
 
-void WebLayerTreeViewImplForTesting::setNeedsCompositorUpdate() {
-  m_layerTreeHost->SetNeedsUpdateLayers();
-}
-
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
 void WebLayerTreeViewImplForTesting::setDeferCommits(bool deferCommits) {

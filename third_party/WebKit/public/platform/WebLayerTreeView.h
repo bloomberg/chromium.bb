@@ -116,9 +116,6 @@ class WebLayerTreeView {
   // dirty.
   virtual void setNeedsBeginFrame() {}
 
-  // Indicates that blink needs a BeginFrame and to update compositor state.
-  virtual void setNeedsCompositorUpdate() {}
-
   // Relays the end of a fling animation.
   virtual void didStopFlinging() {}
 

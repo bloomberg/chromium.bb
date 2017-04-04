@@ -193,7 +193,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
   // Requests a main frame (including layer updates) and ensures that this main
   // frame results in a redraw for the complete viewport when producing the
   // CompositorFrame.
-  void SetNextCommitForcesRedraw();
+  void SetNeedsCommitWithForcedRedraw();
 
   // Input Handling ---------------------------------------------
 
