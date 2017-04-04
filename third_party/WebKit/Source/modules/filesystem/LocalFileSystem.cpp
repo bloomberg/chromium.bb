@@ -116,19 +116,15 @@ void LocalFileSystem::requestFileSystemAccessInternal(
     ExecutionContext* context,
     std::unique_ptr<WTF::Closure> allowed,
     std::unique_ptr<WTF::Closure> denied) {
-  if (!client()) {
-    (*denied)();
-    return;
-  }
   if (!context->isDocument()) {
-    if (!client()->requestFileSystemAccessSync(context)) {
+    if (!client().requestFileSystemAccessSync(context)) {
       (*denied)();
       return;
     }
     (*allowed)();
     return;
   }
-  client()->requestFileSystemAccessAsync(
+  client().requestFileSystemAccessAsync(
       context,
       ContentSettingCallbacks::create(std::move(allowed), std::move(denied)));
 }
@@ -177,11 +173,15 @@ void LocalFileSystem::resolveURLInternal(ExecutionContext* context,
 
 LocalFileSystem::LocalFileSystem(LocalFrame& frame,
                                  std::unique_ptr<FileSystemClient> client)
-    : Supplement<LocalFrame>(frame), m_client(std::move(client)) {}
+    : Supplement<LocalFrame>(frame), m_client(std::move(client)) {
+  DCHECK(m_client);
+}
 
 LocalFileSystem::LocalFileSystem(WorkerClients& workerClients,
                                  std::unique_ptr<FileSystemClient> client)
-    : Supplement<WorkerClients>(workerClients), m_client(std::move(client)) {}
+    : Supplement<WorkerClients>(workerClients), m_client(std::move(client)) {
+  DCHECK(m_client);
+}
 
 DEFINE_TRACE(LocalFileSystem) {
   Supplement<LocalFrame>::trace(visitor);

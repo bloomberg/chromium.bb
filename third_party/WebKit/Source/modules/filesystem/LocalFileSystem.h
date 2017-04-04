@@ -68,7 +68,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                          long long size,
                          std::unique_ptr<AsyncFileSystemCallbacks>);
 
-  FileSystemClient* client() const { return m_client.get(); }
+  FileSystemClient& client() const { return *m_client; }
 
   static const char* supplementName();
   static LocalFileSystem* from(ExecutionContext&);
@@ -88,7 +88,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
                                  CallbackWrapper*);
   void resolveURLInternal(ExecutionContext*, const KURL&, CallbackWrapper*);
 
-  std::unique_ptr<FileSystemClient> m_client;
+  const std::unique_ptr<FileSystemClient> m_client;
 };
 
 }  // namespace blink
