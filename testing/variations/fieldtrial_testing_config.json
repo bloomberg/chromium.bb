@@ -581,6 +581,30 @@
             ]
         }
     ],
+    "DelayNavigation": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "DelayNavigation",
+                    "params": {
+                        "delay_millis": "4",
+                        "delay_probability": "0.5",
+                        "randomize_delay": "true"
+                    },
+                    "enable_features": [
+                        "DelayNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
     "DirectCompositionOverlays": [
         {
             "platforms": [
