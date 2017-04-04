@@ -62,7 +62,8 @@
                      android:isolatedProcess="true"
                      android:exported="true"
                      android:externalService="true"
-                     tools:ignore="ExportedService" />
+                     tools:ignore="ExportedService"
+                     {{sandboxed_service_extra_flags|default('')}} />
         {% endfor %}
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0"/>

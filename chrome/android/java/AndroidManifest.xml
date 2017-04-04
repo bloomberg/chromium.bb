@@ -889,6 +889,7 @@ by a child template that "extends" this file.
             android:isolatedProcess="true"
             android:exported="{{sandboxed_service_exported|default(false)}}"
             {% if (sandboxed_service_exported|default(false)) == 'true' %}
+            android:externalService="true"
             tools:ignore="ExportedService"
             {% endif %}
             {{sandboxed_service_extra_flags|default('')}} />
