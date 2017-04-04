@@ -262,6 +262,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     // Time in ms that it took took us to inflate the initial layout
     private long mInflateInitialLayoutDurationMs;
 
+    private int mUiMode;
     private int mScreenWidthDp;
     private Runnable mRecordMultiWindowModeScreenWidthRunnable;
 
@@ -1001,6 +1002,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // See crbug.com/541546.
         checkAccessibility();
 
+        mUiMode = getResources().getConfiguration().uiMode;
         mScreenWidthDp = getResources().getConfiguration().screenWidthDp;
     }
 
@@ -1659,6 +1661,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mAppMenuHandler != null) mAppMenuHandler.hideAppMenu();
         super.onConfigurationChanged(newConfig);
 
+        // We only handle VR UI mode changes. Any other changes should follow the default behavior
+        // of recreating the activity.
+        if (didChangeNonVrUiMode(mUiMode, newConfig.uiMode)) {
+            recreate();
+            return;
+        }
+        mUiMode = newConfig.uiMode;
+
         if (newConfig.screenWidthDp != mScreenWidthDp) {
             mScreenWidthDp = newConfig.screenWidthDp;
             final Activity activity = this;
@@ -1683,6 +1693,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mHandler.postDelayed(mRecordMultiWindowModeScreenWidthRunnable,
                     RECORD_MULTI_WINDOW_SCREEN_WIDTH_DELAY_MS);
         }
+    }
+
+    private static boolean didChangeNonVrUiMode(int oldMode, int newMode) {
+        if (oldMode == newMode) return false;
+        return isInVrUiMode(oldMode) == isInVrUiMode(newMode);
+    }
+
+    private static boolean isInVrUiMode(int uiMode) {
+        // TODO(mthiesse): Use Configuration.UI_MODE_TYPE_VR_HEADSET when building against the O
+        // sdk.
+        final int uiModeTypeVrHeadset = 0x07;
+        return (uiMode & Configuration.UI_MODE_TYPE_MASK) == uiModeTypeVrHeadset;
     }
 
     /**
