@@ -25,12 +25,21 @@
        */
       attrForItemTitle: {
         type: String
-      }
+      },
+
+      disabled: {
+        type: Boolean,
+        value: false,
+        observer: '_disabledChanged',
+      },
     },
+
+    _SEARCH_RESET_TIMEOUT_MS: 1000,
+
+    _previousTabIndex: 0,
 
     hostAttributes: {
       'role': 'menu',
-      'tabindex': '0'
     },
 
     observers: [
@@ -108,16 +117,40 @@
      * @param {KeyboardEvent} event A KeyboardEvent.
      */
     _focusWithKeyboardEvent: function(event) {
-      for (var i = 0, item; item = this.items[i]; i++) {
-        var attr = this.attrForItemTitle || 'textContent';
-        var title = item[attr] || item.getAttribute(attr);
+      this.cancelDebouncer('_clearSearchText');
 
-        if (!item.hasAttribute('disabled') && title &&
-            title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
+      var searchText = this._searchText || '';
+      var key = event.key && event.key.length == 1 ? event.key :
+          String.fromCharCode(event.keyCode);
+      searchText += key.toLocaleLowerCase();
+
+      var searchLength = searchText.length;
+
+      for (var i = 0, item; item = this.items[i]; i++) {
+        if (item.hasAttribute('disabled')) {
+          continue;
+        }
+
+        var attr = this.attrForItemTitle || 'textContent';
+        var title = (item[attr] || item.getAttribute(attr) || '').trim();
+
+        if (title.length < searchLength) {
+          continue;
+        }
+
+        if (title.slice(0, searchLength).toLocaleLowerCase() == searchText) {
           this._setFocusedItem(item);
           break;
         }
       }
+
+      this._searchText = searchText;
+      this.debounce('_clearSearchText', this._clearSearchText,
+                    this._SEARCH_RESET_TIMEOUT_MS);
+    },
+
+    _clearSearchText: function() {
+      this._searchText = '';
     },
 
     /**
@@ -195,7 +228,7 @@
      */
     _focusedItemChanged: function(focusedItem, old) {
       old && old.setAttribute('tabindex', '-1');
-      if (focusedItem) {
+      if (focusedItem && !focusedItem.hasAttribute('disabled') && !this.disabled) {
         focusedItem.setAttribute('tabindex', '0');
         focusedItem.focus();
       }
@@ -319,6 +352,19 @@
     _activateHandler: function(event) {
       Polymer.IronSelectableBehavior._activateHandler.call(this, event);
       event.stopPropagation();
+    },
+
+    /**
+     * Updates this element's tab index when it's enabled/disabled.
+     * @param {boolean} disabled
+     */
+    _disabledChanged: function(disabled) {
+      if (disabled) {
+        this._previousTabIndex = this.hasAttribute('tabindex') ? this.tabIndex : 0;
+        this.removeAttribute('tabindex');  // No tabindex means not tab-able or select-able.
+      } else if (!this.hasAttribute('tabindex')) {
+        this.setAttribute('tabindex', this._previousTabIndex);
+      }
     }
   };
 
