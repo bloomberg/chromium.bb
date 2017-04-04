@@ -181,9 +181,15 @@ class CC_PAINT_EXPORT PaintCanvas {
                                                    SkIRect* clip_bounds) = 0;
 
   virtual bool ToPixmap(SkPixmap* output) = 0;
-  virtual void AnnotateRectWithURL(const SkRect& rect, SkData* data) = 0;
-  virtual void AnnotateNamedDestination(const SkPoint& point, SkData* data) = 0;
-  virtual void AnnotateLinkToDestination(const SkRect& rect, SkData* data) = 0;
+
+  enum class AnnotationType {
+    URL,
+    NAMED_DESTINATION,
+    LINK_TO_DESTINATION,
+  };
+  virtual void Annotate(AnnotationType type,
+                        const SkRect& rect,
+                        sk_sp<SkData> data) = 0;
 
   // TODO(enne): maybe this should live on PaintRecord, but that's not
   // possible when PaintRecord is a typedef.
@@ -192,18 +198,6 @@ class CC_PAINT_EXPORT PaintCanvas {
  protected:
   friend class PaintSurface;
   friend class PaintRecorder;
-  friend CC_PAINT_EXPORT void PaintCanvasAnnotateRectWithURL(
-      PaintCanvas* canvas,
-      const SkRect& rect,
-      SkData* data);
-  friend CC_PAINT_EXPORT void PaintCanvasAnnotateNamedDestination(
-      PaintCanvas* canvas,
-      const SkPoint& point,
-      SkData* data);
-  friend CC_PAINT_EXPORT void PaintCanvasAnnotateLinkToDestination(
-      PaintCanvas* canvas,
-      const SkRect& rect,
-      SkData* data);
   friend CC_PAINT_EXPORT bool ToPixmap(PaintCanvas* canvas, SkPixmap* output);
 };
 
@@ -250,18 +244,6 @@ CC_PAINT_EXPORT bool ToPixmap(PaintCanvas* canvas, SkPixmap* output);
 CC_PAINT_EXPORT void SetIsPreviewMetafile(PaintCanvas* canvas, bool is_preview);
 CC_PAINT_EXPORT bool IsPreviewMetafile(PaintCanvas* canvas);
 #endif
-
-CC_PAINT_EXPORT void PaintCanvasAnnotateRectWithURL(PaintCanvas* canvas,
-                                                    const SkRect& rect,
-                                                    SkData* data);
-
-CC_PAINT_EXPORT void PaintCanvasAnnotateNamedDestination(PaintCanvas* canvas,
-                                                         const SkPoint& point,
-                                                         SkData* data);
-
-CC_PAINT_EXPORT void PaintCanvasAnnotateLinkToDestination(PaintCanvas* canvas,
-                                                          const SkRect& rect,
-                                                          SkData* data);
 
 }  // namespace cc
 

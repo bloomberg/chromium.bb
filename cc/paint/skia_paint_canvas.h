@@ -145,9 +145,9 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                                            SkIRect* clip_bounds) override;
 
   bool ToPixmap(SkPixmap* output) override;
-  void AnnotateRectWithURL(const SkRect& rect, SkData* data) override;
-  void AnnotateNamedDestination(const SkPoint& point, SkData* data) override;
-  void AnnotateLinkToDestination(const SkRect& rect, SkData* data) override;
+  void Annotate(AnnotationType type,
+                const SkRect& rect,
+                sk_sp<SkData> data) override;
 
   void PlaybackPaintRecord(sk_sp<const PaintRecord> record) override;
 

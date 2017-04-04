@@ -1260,7 +1260,8 @@ void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect) {
   DCHECK(m_canvas);
 
   sk_sp<SkData> url(SkData::MakeWithCString(link.getString().utf8().data()));
-  PaintCanvasAnnotateRectWithURL(m_canvas, destRect, url.get());
+  m_canvas->Annotate(PaintCanvas::AnnotationType::URL, destRect,
+                     std::move(url));
 }
 
 void GraphicsContext::setURLFragmentForRect(const String& destName,
@@ -1270,7 +1271,8 @@ void GraphicsContext::setURLFragmentForRect(const String& destName,
   DCHECK(m_canvas);
 
   sk_sp<SkData> skDestName(SkData::MakeWithCString(destName.utf8().data()));
-  PaintCanvasAnnotateLinkToDestination(m_canvas, rect, skDestName.get());
+  m_canvas->Annotate(PaintCanvas::AnnotationType::LINK_TO_DESTINATION, rect,
+                     std::move(skDestName));
 }
 
 void GraphicsContext::setURLDestinationLocation(const String& name,
@@ -1279,9 +1281,10 @@ void GraphicsContext::setURLDestinationLocation(const String& name,
     return;
   DCHECK(m_canvas);
 
+  SkRect rect = SkRect::MakeXYWH(location.x(), location.y(), 0, 0);
   sk_sp<SkData> skName(SkData::MakeWithCString(name.utf8().data()));
-  PaintCanvasAnnotateNamedDestination(
-      m_canvas, SkPoint::Make(location.x(), location.y()), skName.get());
+  m_canvas->Annotate(PaintCanvas::AnnotationType::NAMED_DESTINATION, rect,
+                     std::move(skName));
 }
 
 void GraphicsContext::concatCTM(const AffineTransform& affine) {

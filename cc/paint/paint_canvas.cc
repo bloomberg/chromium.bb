@@ -37,22 +37,4 @@ bool IsPreviewMetafile(PaintCanvas* canvas) {
 }
 #endif
 
-void PaintCanvasAnnotateRectWithURL(PaintCanvas* canvas,
-                                    const SkRect& rect,
-                                    SkData* data) {
-  canvas->AnnotateRectWithURL(rect, data);
-}
-
-void PaintCanvasAnnotateNamedDestination(PaintCanvas* canvas,
-                                         const SkPoint& point,
-                                         SkData* data) {
-  canvas->AnnotateNamedDestination(point, data);
-}
-
-void PaintCanvasAnnotateLinkToDestination(PaintCanvas* canvas,
-                                          const SkRect& rect,
-                                          SkData* data) {
-  canvas->AnnotateLinkToDestination(rect, data);
-}
-
 }  // namespace cc

@@ -307,18 +307,22 @@ bool SkiaPaintCanvas::ToPixmap(SkPixmap* output) {
   return true;
 }
 
-void SkiaPaintCanvas::AnnotateRectWithURL(const SkRect& rect, SkData* data) {
-  SkAnnotateRectWithURL(canvas_, rect, data);
-}
-
-void SkiaPaintCanvas::AnnotateNamedDestination(const SkPoint& point,
-                                               SkData* data) {
-  SkAnnotateNamedDestination(canvas_, point, data);
-}
-
-void SkiaPaintCanvas::AnnotateLinkToDestination(const SkRect& rect,
-                                                SkData* data) {
-  SkAnnotateLinkToDestination(canvas_, rect, data);
+void SkiaPaintCanvas::Annotate(AnnotationType type,
+                               const SkRect& rect,
+                               sk_sp<SkData> data) {
+  switch (type) {
+    case AnnotationType::URL:
+      SkAnnotateRectWithURL(canvas_, rect, data.get());
+      break;
+    case AnnotationType::LINK_TO_DESTINATION:
+      SkAnnotateLinkToDestination(canvas_, rect, data.get());
+      break;
+    case AnnotationType::NAMED_DESTINATION: {
+      SkPoint point = SkPoint::Make(rect.x(), rect.y());
+      SkAnnotateNamedDestination(canvas_, point, data.get());
+      break;
+    }
+  }
 }
 
 }  // namespace cc
