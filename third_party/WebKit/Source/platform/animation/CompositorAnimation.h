@@ -5,12 +5,12 @@
 #ifndef CompositorAnimation_h
 #define CompositorAnimation_h
 
+#include <memory>
 #include "cc/animation/animation.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class Animation;

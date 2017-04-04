@@ -8,7 +8,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorKeyframe.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

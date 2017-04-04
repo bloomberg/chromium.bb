@@ -5,13 +5,13 @@
 #ifndef CompositorTransformAnimationCurve_h
 #define CompositorTransformAnimationCurve_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorTransformKeyframe.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class KeyframedTransformAnimationCurve;

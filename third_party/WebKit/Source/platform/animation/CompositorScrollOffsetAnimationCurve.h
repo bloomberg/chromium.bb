@@ -5,12 +5,12 @@
 #ifndef CompositorScrollOffsetAnimationCurve_h
 #define CompositorScrollOffsetAnimationCurve_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/geometry/FloatPoint.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class ScrollOffsetAnimationCurve;

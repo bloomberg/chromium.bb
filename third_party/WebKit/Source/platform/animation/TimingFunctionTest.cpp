@@ -30,11 +30,11 @@
 
 #include "platform/animation/TimingFunction.h"
 
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 #include <sstream>
 #include <string>
+#include "platform/wtf/text/WTFString.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 // Macro is only used to allow the use of streams.
 // Can be removed if a pretty failure message isn't needed.

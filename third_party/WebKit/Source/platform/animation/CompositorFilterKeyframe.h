@@ -9,7 +9,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorKeyframe.h"
 #include "platform/graphics/CompositorFilterOperations.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

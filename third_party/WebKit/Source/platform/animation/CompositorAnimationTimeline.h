@@ -5,12 +5,12 @@
 #ifndef CompositorAnimationTimeline_h
 #define CompositorAnimationTimeline_h
 
+#include <memory>
 #include "base/memory/ref_counted.h"
 #include "cc/animation/animation_timeline.h"
 #include "platform/PlatformExport.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

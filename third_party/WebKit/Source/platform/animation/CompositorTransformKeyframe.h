@@ -10,7 +10,7 @@
 #include "platform/animation/CompositorKeyframe.h"
 #include "platform/animation/CompositorTransformOperations.h"
 #include "platform/animation/TimingFunction.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

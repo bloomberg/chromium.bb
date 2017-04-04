@@ -5,14 +5,14 @@
 #ifndef CompositorAnimationPlayer_h
 #define CompositorAnimationPlayer_h
 
+#include <memory>
 #include "base/memory/ref_counted.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_player.h"
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace cc {
 class AnimationCurve;

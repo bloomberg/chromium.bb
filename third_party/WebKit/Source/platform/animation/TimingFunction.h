@@ -27,11 +27,11 @@
 
 #include "cc/animation/timing_function.h"
 #include "platform/PlatformExport.h"
-#include "wtf/Assertions.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

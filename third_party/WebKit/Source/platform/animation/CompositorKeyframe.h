@@ -6,7 +6,7 @@
 #define CompositorKeyframe_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
 
 namespace cc {
 class TimingFunction;

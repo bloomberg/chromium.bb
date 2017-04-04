@@ -30,8 +30,8 @@
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/wtf/MathExtras.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
-#include "wtf/MathExtras.h"
 
 #include <algorithm>
 #include <type_traits>

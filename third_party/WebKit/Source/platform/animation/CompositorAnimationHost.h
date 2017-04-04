@@ -7,8 +7,8 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/CompositorElementId.h"
+#include "platform/wtf/Noncopyable.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "wtf/Noncopyable.h"
 
 namespace cc {
 class AnimationHost;
