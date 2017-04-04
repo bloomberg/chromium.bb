@@ -448,6 +448,11 @@ ContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return nullptr;
 }
 
+std::unique_ptr<base::TaskScheduler::InitParams>
+ContentBrowserClient::GetTaskSchedulerInitParams() {
+  return nullptr;
+}
+
 bool ContentBrowserClient::ShouldRedirectDOMStorageTaskRunner() {
   return false;
 }

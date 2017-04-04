@@ -3593,17 +3593,9 @@ void ChromeContentBrowserClient::CreateMediaRemoter(
 }
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
 
-void ChromeContentBrowserClient::GetTaskSchedulerInitializationParams(
-    std::vector<base::SchedulerWorkerPoolParams>* params_vector,
-    base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
-        index_to_traits_callback) {
-  DCHECK(params_vector);
-  DCHECK(index_to_traits_callback);
-  // If this call fails, content will fall back to the default params.
-  *params_vector =
-      task_scheduler_util::GetBrowserWorkerPoolParamsFromVariations();
-  *index_to_traits_callback =
-      base::Bind(&task_scheduler_util::BrowserWorkerPoolIndexForTraits);
+std::unique_ptr<base::TaskScheduler::InitParams>
+ChromeContentBrowserClient::GetTaskSchedulerInitParams() {
+  return task_scheduler_util::GetBrowserTaskSchedulerInitParamsFromVariations();
 }
 
 void ChromeContentBrowserClient::
