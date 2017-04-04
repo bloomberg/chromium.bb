@@ -72,7 +72,7 @@
 #include "public/web/WebMenuItemInfo.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebSearchableFormData.h"
-#include "public/web/WebSpellCheckClient.h"
+#include "public/web/WebTextCheckClient.h"
 #include "public/web/WebViewClient.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/WebDataSourceImpl.h"
@@ -327,9 +327,9 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
       Vector<String> suggestions;
       description.split('\n', suggestions);
       data.dictionarySuggestions = suggestions;
-    } else if (m_webView->spellCheckClient()) {
+    } else if (m_webView->textCheckClient()) {
       int misspelledOffset, misspelledLength;
-      m_webView->spellCheckClient()->checkSpelling(
+      m_webView->textCheckClient()->checkSpelling(
           data.misspelledWord, misspelledOffset, misspelledLength,
           &data.dictionarySuggestions);
     }

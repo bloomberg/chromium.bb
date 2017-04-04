@@ -1894,7 +1894,7 @@ WebContentSettingsClient* TestRunner::GetWebContentSettings() const {
 }
 
 void TestRunner::InitializeWebViewWithMocks(blink::WebView* web_view) {
-  web_view->setSpellCheckClient(spellcheck_.get());
+  web_view->setTextCheckClient(spellcheck_.get());
   web_view->setCredentialManagerClient(credential_manager_client_.get());
 }
 

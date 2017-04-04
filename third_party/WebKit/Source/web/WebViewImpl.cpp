@@ -329,6 +329,10 @@ void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient) {
   m_spellCheckClient = spellCheckClient;
 }
 
+void WebViewImpl::setTextCheckClient(WebTextCheckClient* textCheckClient) {
+  m_textCheckClient = textCheckClient;
+}
+
 // static
 HashSet<WebViewImpl*>& WebViewImpl::allInstances() {
   DEFINE_STATIC_LOCAL(HashSet<WebViewImpl*>, allInstances, ());
@@ -339,6 +343,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebPageVisibilityState visibilityState)
     : m_client(client),
       m_spellCheckClient(nullptr),
+      m_textCheckClient(nullptr),
       m_chromeClientImpl(ChromeClientImpl::create(this)),
       m_contextMenuClientImpl(this),
       m_editorClientImpl(this),

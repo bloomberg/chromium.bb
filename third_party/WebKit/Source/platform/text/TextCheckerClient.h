@@ -37,6 +37,7 @@
 
 namespace blink {
 
+// TODO(xiaochengh): Rename TextCheckerClient to SpellCheckerClient.
 class PLATFORM_EXPORT TextCheckerClient {
  public:
   virtual ~TextCheckerClient() {}

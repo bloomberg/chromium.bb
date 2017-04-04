@@ -38,6 +38,8 @@ namespace blink {
 class TextCheckerClient;
 class WebViewImpl;
 
+// TODO(xiaochengh): Split SpellCheckerClientImpl into two classes according to
+// the split that should be done to its interface.
 class SpellCheckerClientImpl final : public SpellCheckerClient {
  public:
   explicit SpellCheckerClientImpl(WebViewImpl*, TextCheckerClient*);

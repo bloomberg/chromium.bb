@@ -33,6 +33,9 @@ namespace blink {
 
 class TextCheckerClient;
 
+// TODO(xiaochengh): Split SpellCheckerClient into two classes:
+// - SpllingUIClient, for spelling UI related functions.
+// - SpellCheckToggler, for checking and toggling the enabled state.
 class SpellCheckerClient {
  public:
   virtual ~SpellCheckerClient() {}

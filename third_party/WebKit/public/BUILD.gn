@@ -594,6 +594,7 @@ source_set("blink_headers") {
     "web/WebStorageEventDispatcher.h",
     "web/WebSurroundingText.h",
     "web/WebTestingSupport.h",
+    "web/WebTextCheckClient.h",
     "web/WebTextCheckingCompletion.h",
     "web/WebTextCheckingResult.h",
     "web/WebTextDecorationType.h",

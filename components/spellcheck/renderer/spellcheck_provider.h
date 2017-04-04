@@ -16,23 +16,26 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
+#include "third_party/WebKit/public/web/WebTextCheckClient.h"
 
 class RenderView;
 class SpellCheck;
 struct SpellCheckResult;
 
 namespace blink {
-class WebString;
 class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 }
 
 // This class deals with invoking browser-side spellcheck mechanism
 // which is done asynchronously.
+// TODO(xiaochengh): Split this class to implement WebSpellCheckClient and
+// WebTextCheckClient separately.
 class SpellCheckProvider
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<SpellCheckProvider>,
-      public blink::WebSpellCheckClient {
+      public blink::WebSpellCheckClient,
+      public blink::WebTextCheckClient {
  public:
   using WebTextCheckCompletions = IDMap<blink::WebTextCheckingCompletion*>;
 
@@ -74,18 +77,18 @@ class SpellCheckProvider
   // RenderViewObserver implementation.
   void OnDestruct() override;
 
-  // blink::WebSpellCheckClient implementation.
+  // blink::WebTextCheckClient implementation.
   void checkSpelling(
       const blink::WebString& text,
       int& offset,
       int& length,
       blink::WebVector<blink::WebString>* optional_suggestions) override;
-
   void requestCheckingOfText(
       const blink::WebString& text,
       blink::WebTextCheckingCompletion* completion) override;
-
   void cancelAllPendingRequests() override;
+
+  // blink::WebSpellCheckClient implementation.
   void showSpellingUI(bool show) override;
   bool isShowingSpellingUI() override;
   void updateSpellingUIWithMisspelledWord(

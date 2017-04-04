@@ -11,6 +11,7 @@ namespace blink {
 
 class WebViewImpl;
 
+// TODO(xiaochengh): Rename TextCheckerClientImpl to SpellCheckerClientImpl.
 // TODO(xiaochengh): Move ownership of this class to WebLocalFrameImpl.
 class TextCheckerClientImpl final : public TextCheckerClient {
  public:

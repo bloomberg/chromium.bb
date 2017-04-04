@@ -31,37 +31,13 @@
 #ifndef WebSpellCheckClient_h
 #define WebSpellCheckClient_h
 
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 
-class WebString;
-class WebTextCheckingCompletion;
-
+// TODO(xiaochengh): Renaming WebSpellCheckClient to WebSpellingUIClient.
 class WebSpellCheckClient {
  public:
-  // The client should perform spell-checking on the given text. If the
-  // text contains a misspelled word, then upon return misspelledOffset
-  // will point to the start of the misspelled word, and misspelledLength
-  // will indicates its length. Otherwise, if there was not a spelling
-  // error, then upon return misspelledLength is 0. If optional_suggestions
-  // is given, then it will be filled with suggested words (not a cheap step).
-  virtual void checkSpelling(const WebString& text,
-                             int& misspelledOffset,
-                             int& misspelledLength,
-                             WebVector<WebString>* optionalSuggestions) {}
-
-  // Requests asynchronous spelling and grammar checking, whose result should be
-  // returned by passed completion object.
-  virtual void requestCheckingOfText(
-      const WebString& textToCheck,
-      WebTextCheckingCompletion* completionCallback) {}
-
-  // Clear all stored references to requests, so that it will not become a
-  // leak source.
-  virtual void cancelAllPendingRequests() {}
-
   // Show or hide the spelling UI.
   virtual void showSpellingUI(bool show) {}
 
@@ -72,7 +48,7 @@ class WebSpellCheckClient {
   virtual void updateSpellingUIWithMisspelledWord(const WebString& word) {}
 
  protected:
-  ~WebSpellCheckClient() {}
+  virtual ~WebSpellCheckClient() {}
 };
 
 }  // namespace blink

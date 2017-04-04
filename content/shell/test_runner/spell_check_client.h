@@ -12,7 +12,7 @@
 #include "content/shell/test_runner/mock_spell_check.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebSpellCheckClient.h"
+#include "third_party/WebKit/public/web/WebTextCheckClient.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -24,10 +24,10 @@ namespace test_runner {
 class TestRunner;
 class WebTestDelegate;
 
-class SpellCheckClient : public blink::WebSpellCheckClient {
+class SpellCheckClient : public blink::WebTextCheckClient {
  public:
   explicit SpellCheckClient(TestRunner* test_runner);
-  virtual ~SpellCheckClient();
+  ~SpellCheckClient() override;
 
   void SetDelegate(WebTestDelegate* delegate);
   void SetEnabled(bool enabled);

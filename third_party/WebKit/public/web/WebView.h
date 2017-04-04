@@ -58,6 +58,7 @@ class WebRemoteFrame;
 class WebSettings;
 class WebSpellCheckClient;
 class WebString;
+class WebTextCheckClient;
 class WebViewClient;
 class WebViewScheduler;
 struct WebActiveWheelFlingParameters;
@@ -134,6 +135,9 @@ class WebView : protected WebWidget {
   virtual void setCredentialManagerClient(WebCredentialManagerClient*) = 0;
   virtual void setPrerendererClient(WebPrerendererClient*) = 0;
   virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
+
+  // TODO(xiaochengh): Move reference of WebTextCheckClient to WebLocalFrame.
+  virtual void setTextCheckClient(WebTextCheckClient*) = 0;
 
   // Options -------------------------------------------------------------
 

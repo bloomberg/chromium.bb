@@ -81,7 +81,7 @@ class MultilingualSpellCheckTest : public testing::Test {
     for (size_t i = 0; i < num_test_cases; ++i) {
       int misspelling_start = 0;
       int misspelling_length = 0;
-      static_cast<blink::WebSpellCheckClient*>(provider())
+      static_cast<blink::WebTextCheckClient*>(provider())
           ->checkSpelling(blink::WebString::fromUTF16(
                               base::WideToUTF16(test_cases[i].input)),
                           misspelling_start, misspelling_length, nullptr);
@@ -235,7 +235,7 @@ TEST_F(MultilingualSpellCheckTest, MultilingualSpellCheckSuggestions) {
     blink::WebVector<blink::WebString> suggestions;
     int misspelling_start;
     int misspelling_length;
-    static_cast<blink::WebSpellCheckClient*>(provider())
+    static_cast<blink::WebTextCheckClient*>(provider())
         ->checkSpelling(
             blink::WebString::fromUTF16(base::WideToUTF16(kTestCases[i].input)),
             misspelling_start, misspelling_length, &suggestions);

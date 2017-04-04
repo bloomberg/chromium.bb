@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "web/TextCheckerClientImpl.h"
-#include "public/web/WebSpellCheckClient.h"
+#include "public/web/WebTextCheckClient.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "web/WebTextCheckingCompletionImpl.h"
 #include "web/WebViewImpl.h"
@@ -24,9 +24,9 @@ void TextCheckerClientImpl::checkSpellingOfString(const String& text,
   int spellLength = 0;
 
   // Check to see if the provided text is spelled correctly.
-  if (m_webView->spellCheckClient()) {
-    m_webView->spellCheckClient()->checkSpelling(text, spellLocation,
-                                                 spellLength, nullptr);
+  if (m_webView->textCheckClient()) {
+    m_webView->textCheckClient()->checkSpelling(text, spellLocation,
+                                                spellLength, nullptr);
   } else {
     spellLocation = 0;
     spellLength = 0;
@@ -42,17 +42,17 @@ void TextCheckerClientImpl::checkSpellingOfString(const String& text,
 
 void TextCheckerClientImpl::requestCheckingOfString(
     TextCheckingRequest* request) {
-  if (!m_webView->spellCheckClient())
+  if (!m_webView->textCheckClient())
     return;
   const String& text = request->data().text();
-  m_webView->spellCheckClient()->requestCheckingOfText(
+  m_webView->textCheckClient()->requestCheckingOfText(
       text, new WebTextCheckingCompletionImpl(request));
 }
 
 void TextCheckerClientImpl::cancelAllPendingRequests() {
-  if (!m_webView->spellCheckClient())
+  if (!m_webView->textCheckClient())
     return;
-  m_webView->spellCheckClient()->cancelAllPendingRequests();
+  m_webView->textCheckClient()->cancelAllPendingRequests();
 }
 
 }  // namespace blink

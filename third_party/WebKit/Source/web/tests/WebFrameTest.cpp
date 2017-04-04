@@ -136,7 +136,7 @@
 #include "public/web/WebSecurityPolicy.h"
 #include "public/web/WebSelection.h"
 #include "public/web/WebSettings.h"
-#include "public/web/WebSpellCheckClient.h"
+#include "public/web/WebTextCheckClient.h"
 #include "public/web/WebTextCheckingCompletion.h"
 #include "public/web/WebTextCheckingResult.h"
 #include "public/web/WebViewClient.h"
@@ -6264,10 +6264,10 @@ TEST_P(ParameterizedWebFrameTest,
   frame->toWebLocalFrame()->moveCaretSelection(WebPoint(0, 0));
 }
 
-class SpellCheckClient : public WebSpellCheckClient {
+class TextCheckClient : public WebTextCheckClient {
  public:
-  SpellCheckClient() : m_numberOfTimesChecked(0) {}
-  virtual ~SpellCheckClient() {}
+  TextCheckClient() : m_numberOfTimesChecked(0) {}
+  virtual ~TextCheckClient() {}
   void requestCheckingOfText(const WebString&,
                              WebTextCheckingCompletion* completion) override {
     ++m_numberOfTimesChecked;
@@ -6289,8 +6289,8 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
-  SpellCheckClient spellcheck;
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+  TextCheckClient textcheck;
+  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
   Document* document = frame->frame()->document();
@@ -6320,7 +6320,7 @@ TEST_P(ParameterizedWebFrameTest, ReplaceMisspelledRange) {
           .computeVisibleSelectionInDOMTreeDeprecated()
           .toNormalizedEphemeralRange();
 
-  EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
+  EXPECT_EQ(1, textcheck.numberOfTimesChecked());
   EXPECT_EQ(1U, document->markers()
                     .markersInRange(selectionRange, DocumentMarker::Spelling)
                     .size());
@@ -6336,8 +6336,8 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkers) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
-  SpellCheckClient spellcheck;
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+  TextCheckClient textcheck;
+  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
   Document* document = frame->frame()->document();
@@ -6378,8 +6378,8 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
-  SpellCheckClient spellcheck;
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+  TextCheckClient textcheck;
+  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   LocalFrame* frame = webViewHelper.webView()->mainFrameImpl()->frame();
   Document* document = frame->document();
@@ -6409,10 +6409,10 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
   EXPECT_EQ(0U, offsets2.size());
 }
 
-class StubbornSpellCheckClient : public WebSpellCheckClient {
+class StubbornTextCheckClient : public WebTextCheckClient {
  public:
-  StubbornSpellCheckClient() : m_completion(0) {}
-  virtual ~StubbornSpellCheckClient() {}
+  StubbornTextCheckClient() : m_completion(0) {}
+  virtual ~StubbornTextCheckClient() {}
 
   virtual void requestCheckingOfText(
       const WebString&,
@@ -6455,8 +6455,8 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
-  StubbornSpellCheckClient spellcheck;
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+  StubbornTextCheckClient textcheck;
+  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
   Document* document = frame->frame()->document();
@@ -6479,7 +6479,7 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition) {
         .forceInvocationForTesting();
   }
 
-  spellcheck.kick();
+  textcheck.kick();
 
   WebVector<unsigned> offsets;
   webViewHelper.webView()->spellingMarkerOffsetsForTest(&offsets);
@@ -6496,7 +6496,7 @@ TEST_P(ParameterizedWebFrameTest, CancelSpellingRequestCrash) {
   registerMockedHttpURLLoad("spell.html");
   FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + "spell.html");
-  webViewHelper.webView()->setSpellCheckClient(0);
+  webViewHelper.webView()->setTextCheckClient(0);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
   Document* document = frame->frame()->document();
@@ -6516,8 +6516,8 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
-  StubbornSpellCheckClient spellcheck;
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+  StubbornTextCheckClient textcheck;
+  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
   Document* document = frame->frame()->document();
@@ -6547,7 +6547,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers) {
                                 DocumentMarker::Grammar);
   EXPECT_EQ(2U, document->markers().markers().size());
 
-  spellcheck.kickNoResults();
+  textcheck.kickNoResults();
   EXPECT_EQ(0U, document->markers().markers().size());
 }
 
@@ -6556,8 +6556,8 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
   FrameTestHelpers::WebViewHelper webViewHelper;
   initializeTextSelectionWebView(m_baseURL + "spell.html", &webViewHelper);
 
-  StubbornSpellCheckClient spellcheck;
-  webViewHelper.webView()->setSpellCheckClient(&spellcheck);
+  StubbornTextCheckClient textcheck;
+  webViewHelper.webView()->setTextCheckClient(&textcheck);
 
   WebLocalFrameImpl* frame = webViewHelper.webView()->mainFrameImpl();
   Document* document = frame->frame()->document();
@@ -6578,7 +6578,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
         .forceInvocationForTesting();
   }
 
-  spellcheck.kick();
+  textcheck.kick();
   ASSERT_EQ(1U, document->markers().markers().size());
   ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
   EXPECT_EQ(DocumentMarker::Spelling, document->markers().markers()[0]->type());
@@ -6593,7 +6593,7 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
         .forceInvocationForTesting();
   }
 
-  spellcheck.kickGrammar();
+  textcheck.kickGrammar();
   ASSERT_EQ(1U, document->markers().markers().size());
   ASSERT_NE(static_cast<DocumentMarker*>(0), document->markers().markers()[0]);
   EXPECT_EQ(DocumentMarker::Grammar, document->markers().markers()[0]->type());
