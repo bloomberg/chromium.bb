@@ -60,7 +60,7 @@ body {
 
 @keyframes colorize {
   from {
-    -webkit-filter: grayscale(100%);
+    filter: grayscale(100%) brightness(128%) contrast(20%) brightness(161%);
     opacity: .6;
   }
 }
@@ -148,10 +148,10 @@ body {
 }
 
 .logo-shadow {
-  -webkit-filter: blur(16px);
   animation: fadeInAndSlideDownShadow 300ms 600ms both;
   background: rgba(0, 0, 0, .2);
   border-radius: 50%;
+  filter: blur(16px);
   height: 96px;
   position: absolute;
   top: 16px;
