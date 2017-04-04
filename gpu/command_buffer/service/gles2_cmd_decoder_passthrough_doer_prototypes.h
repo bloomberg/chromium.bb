@@ -420,6 +420,8 @@ error::Error DoReadPixels(GLint x,
                           GLenum type,
                           GLsizei bufsize,
                           GLsizei* length,
+                          GLsizei* columns,
+                          GLsizei* rows,
                           void* pixels,
                           int32_t* success);
 error::Error DoReleaseShaderCompiler();

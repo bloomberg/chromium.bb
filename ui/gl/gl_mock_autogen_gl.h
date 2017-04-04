@@ -865,16 +865,8 @@ MOCK_METHOD4(
 MOCK_METHOD2(PushGroupMarkerEXT, void(GLsizei length, const char* marker));
 MOCK_METHOD2(QueryCounter, void(GLuint id, GLenum target));
 MOCK_METHOD1(ReadBuffer, void(GLenum src));
-MOCK_METHOD9(ReadnPixelsRobustANGLE,
-             void(GLint x,
-                  GLint y,
-                  GLsizei width,
-                  GLsizei height,
-                  GLenum format,
-                  GLenum type,
-                  GLsizei bufSize,
-                  GLsizei* length,
-                  void* data));
+// TODO(zmo): crbug.com/456340
+// glReadnPixelsRobustANGLE cannot be mocked because it has 11 args.
 MOCK_METHOD7(ReadPixels,
              void(GLint x,
                   GLint y,
@@ -883,16 +875,8 @@ MOCK_METHOD7(ReadPixels,
                   GLenum format,
                   GLenum type,
                   void* pixels));
-MOCK_METHOD9(ReadPixelsRobustANGLE,
-             void(GLint x,
-                  GLint y,
-                  GLsizei width,
-                  GLsizei height,
-                  GLenum format,
-                  GLenum type,
-                  GLsizei bufSize,
-                  GLsizei* length,
-                  void* pixels));
+// TODO(zmo): crbug.com/456340
+// glReadPixelsRobustANGLE cannot be mocked because it has 11 args.
 MOCK_METHOD0(ReleaseShaderCompiler, void());
 MOCK_METHOD4(
     RenderbufferStorageEXT,
