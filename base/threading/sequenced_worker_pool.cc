@@ -695,6 +695,8 @@ bool SequencedWorkerPool::Inner::PostTask(
     const tracked_objects::Location& from_here,
     Closure task,
     TimeDelta delay) {
+  DCHECK(task);
+
   // TODO(fdoray): Uncomment this DCHECK. It is initially commented to avoid a
   // revert of the CL that adds debug::DumpWithoutCrashing() if it fails on the
   // waterfall. https://crbug.com/622400

@@ -146,6 +146,8 @@ void PosixDynamicThreadPool::PostTask(
 }
 
 void PosixDynamicThreadPool::AddTask(PendingTask* pending_task) {
+  DCHECK(pending_task);
+  DCHECK(pending_task->task);
   AutoLock locked(lock_);
 
   pending_tasks_.push(std::move(*pending_task));

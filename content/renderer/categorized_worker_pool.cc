@@ -63,6 +63,7 @@ class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   base::Closure task,
                                   base::TimeDelta delay) override {
+    DCHECK(task);
     base::AutoLock lock(lock_);
 
     // Remove completed tasks.

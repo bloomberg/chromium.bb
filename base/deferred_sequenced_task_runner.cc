@@ -72,6 +72,8 @@ void DeferredSequencedTaskRunner::QueueDeferredTask(
     Closure task,
     TimeDelta delay,
     bool is_non_nestable) {
+  DCHECK(task);
+
   DeferredTask deferred_task;
   deferred_task.posted_from = from_here;
   deferred_task.task = std::move(task);

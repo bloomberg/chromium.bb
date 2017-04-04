@@ -75,6 +75,8 @@ void ScheduleTask(std::unique_ptr<AfterStartupTask> queued_task) {
 }
 
 void QueueTask(std::unique_ptr<AfterStartupTask> queued_task) {
+  DCHECK(queued_task);
+  DCHECK(queued_task->task);
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

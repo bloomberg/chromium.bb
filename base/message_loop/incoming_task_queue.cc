@@ -63,6 +63,7 @@ bool IncomingTaskQueue::AddToIncomingQueue(
     Closure task,
     TimeDelta delay,
     bool nestable) {
+  DCHECK(task);
   DLOG_IF(WARNING,
           delay.InSeconds() > kTaskDelayWarningThresholdInSeconds)
       << "Requesting super-long task delay period of " << delay.InSeconds()

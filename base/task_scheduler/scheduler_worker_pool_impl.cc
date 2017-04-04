@@ -252,6 +252,7 @@ bool SchedulerWorkerPoolImpl::PostTaskWithSequence(
   if (task->delayed_run_time.is_null()) {
     PostTaskWithSequenceNow(std::move(task), std::move(sequence));
   } else {
+    DCHECK(task->task);
     delayed_task_manager_->AddDelayedTask(
         std::move(task),
         Bind(

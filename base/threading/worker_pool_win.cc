@@ -45,6 +45,8 @@ DWORD CALLBACK WorkItemCallback(void* param) {
 
 // Takes ownership of |pending_task|
 bool PostTaskInternal(PendingTask* pending_task, bool task_is_slow) {
+  DCHECK(pending_task->task);
+
   ULONG flags = 0;
   if (task_is_slow)
     flags |= WT_EXECUTELONGFUNCTION;
