@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 
 #include "base/macros.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
@@ -13,11 +15,9 @@
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
-#include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 // HomePageUndoBubble --------------------------------------------------------
@@ -25,7 +25,7 @@
 namespace {
 
 class HomePageUndoBubble : public views::BubbleDialogDelegateView,
-                           public views::LinkListener {
+                           public views::StyledLabelListener {
  public:
   static void ShowBubble(Browser* browser,
                          bool undo_value_is_ntp,
@@ -43,8 +43,10 @@ class HomePageUndoBubble : public views::BubbleDialogDelegateView,
   void Init() override;
   void WindowClosing() override;
 
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
 
   static HomePageUndoBubble* home_page_undo_bubble_;
 
@@ -94,31 +96,29 @@ int HomePageUndoBubble::GetDialogButtons() const {
 }
 
 void HomePageUndoBubble::Init() {
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
+  SetLayoutManager(new views::FillLayout());
 
-  // Create two columns for the message and the undo link.
-  views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs = layout->AddColumnSet(1);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::BASELINE, 0,
-                views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
-  cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::BASELINE, 0,
-                views::GridLayout::USE_PREF, 0, 0);
+  base::string16 undo_string =
+      l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO);
+  std::vector<base::string16> message = {
+      l10n_util::GetStringUTF16(IDS_TOOLBAR_INFORM_SET_HOME_PAGE), undo_string};
+  views::StyledLabel* label = new views::StyledLabel(
+      base::JoinString(message, base::StringPiece16(base::ASCIIToUTF16(" "))),
+      this);
 
-  views::Label* message_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_TOOLBAR_INFORM_SET_HOME_PAGE));
-  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRow(0, 1);
-  layout->AddView(message_label);
+  gfx::Range undo_range(label->text().length() - undo_string.length(),
+                        label->text().length());
+  label->AddStyleRange(undo_range,
+                       views::StyledLabel::RangeStyleInfo::CreateForLink());
 
-  views::Link* undo_link = new views::Link(
-      l10n_util::GetStringUTF16(IDS_ONE_CLICK_BUBBLE_UNDO));
-  undo_link->set_listener(this);
-  layout->AddView(undo_link);
+  // Ensure StyledLabel has a cached size to return in GetPreferredSize().
+  label->SizeToFit(0);
+  AddChildView(label);
 }
 
-void HomePageUndoBubble::LinkClicked(views::Link* source, int event_flags) {
+void HomePageUndoBubble::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                const gfx::Range& range,
+                                                int event_flags) {
   PrefService* prefs = user_prefs::UserPrefs::Get(browser_->profile());
   prefs->SetBoolean(prefs::kHomePageIsNewTabPage, undo_value_is_ntp_);
   prefs->SetString(prefs::kHomePage, undo_url_.spec());
