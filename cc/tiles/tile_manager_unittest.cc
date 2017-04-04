@@ -1988,7 +1988,7 @@ class MockReadyToDrawRasterBufferProviderImpl
         const gfx::Rect& raster_full_rect,
         const gfx::Rect& raster_dirty_rect,
         uint64_t new_content_id,
-        float scale,
+        const gfx::AxisTransform2d& transform,
         const RasterSource::PlaybackSettings& playback_settings) override {}
   };
 };

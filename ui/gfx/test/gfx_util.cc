@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -45,6 +46,21 @@ bool FloatAlmostEqual(float a, float b) {
 
 }  // namespace
 
+::testing::AssertionResult AssertAxisTransform2dFloatEqual(
+    const char* lhs_expr,
+    const char* rhs_expr,
+    const AxisTransform2d& lhs,
+    const AxisTransform2d& rhs) {
+  if (FloatAlmostEqual(lhs.scale(), rhs.scale()) &&
+      FloatAlmostEqual(lhs.translation().x(), rhs.translation().x()) &&
+      FloatAlmostEqual(lhs.translation().y(), rhs.translation().y())) {
+    return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure()
+         << "Value of: " << rhs_expr << "\n  Actual: " << rhs.ToString()
+         << "\nExpected: " << lhs_expr << "\nWhich is: " << lhs.ToString();
+}
+
 ::testing::AssertionResult AssertBoxFloatEqual(const char* lhs_expr,
                                                const char* rhs_expr,
                                                const BoxF& lhs,
@@ -61,6 +77,19 @@ bool FloatAlmostEqual(float a, float b) {
                                        << "\n  Actual: " << rhs.ToString()
                                        << "\nExpected: " << lhs_expr
                                        << "\nWhich is: " << lhs.ToString();
+}
+
+::testing::AssertionResult AssertPointFloatEqual(const char* lhs_expr,
+                                                 const char* rhs_expr,
+                                                 const PointF& lhs,
+                                                 const PointF& rhs) {
+  if (FloatAlmostEqual(lhs.x(), rhs.x()) &&
+      FloatAlmostEqual(lhs.y(), rhs.y())) {
+    return ::testing::AssertionSuccess();
+  }
+  return ::testing::AssertionFailure()
+         << "Value of: " << rhs_expr << "\n  Actual: " << rhs.ToString()
+         << "\nExpected: " << lhs_expr << "\nWhich is: " << lhs.ToString();
 }
 
 ::testing::AssertionResult AssertRectFloatEqual(const char* lhs_expr,
@@ -89,6 +118,10 @@ bool FloatAlmostEqual(float a, float b) {
                                        << "\n  Actual: " << ColorAsString(rhs)
                                        << "\nExpected: " << lhs_expr
                                        << "\nWhich is: " << ColorAsString(lhs);
+}
+
+void PrintTo(const AxisTransform2d& transform, ::std::ostream* os) {
+  *os << transform.ToString();
 }
 
 void PrintTo(const BoxF& box, ::std::ostream* os) {

@@ -10,12 +10,23 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/geometry/box_f.h"
-#include "ui/gfx/geometry/rect_f.h"
 
 namespace gfx {
 
-// Checks that the box coordinates are each almost equal floats.
+class AxisTransform2d;
+class BoxF;
+class PointF;
+class RectF;
+
+#define EXPECT_AXIS_TRANSFORM2D_EQ(a, b) \
+  EXPECT_PRED_FORMAT2(::gfx::AssertAxisTransform2dFloatEqual, a, b)
+
+::testing::AssertionResult AssertAxisTransform2dFloatEqual(
+    const char* lhs_expr,
+    const char* rhs_expr,
+    const AxisTransform2d& lhs,
+    const AxisTransform2d& rhs);
+
 #define EXPECT_BOXF_EQ(a, b) \
   EXPECT_PRED_FORMAT2(::gfx::AssertBoxFloatEqual, a, b)
 
@@ -23,6 +34,14 @@ namespace gfx {
                                                const char* rhs_expr,
                                                const BoxF& lhs,
                                                const BoxF& rhs);
+
+#define EXPECT_POINTF_EQ(a, b) \
+  EXPECT_PRED_FORMAT2(::gfx::AssertPointFloatEqual, a, b)
+
+::testing::AssertionResult AssertPointFloatEqual(const char* lhs_expr,
+                                                 const char* rhs_expr,
+                                                 const PointF& lhs,
+                                                 const PointF& rhs);
 
 #define EXPECT_RECTF_EQ(a, b) \
   EXPECT_PRED_FORMAT2(::gfx::AssertRectFloatEqual, a, b)

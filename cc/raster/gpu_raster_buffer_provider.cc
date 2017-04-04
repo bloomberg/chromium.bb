@@ -34,7 +34,7 @@ static void RasterizeSource(
     const gfx::Size& resource_size,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     ContextProvider* context_provider,
     ResourceProvider::ScopedWriteLockGL* resource_lock,
@@ -79,7 +79,7 @@ static void RasterizeSource(
 
   raster_source->PlaybackToCanvas(
       sk_surface->getCanvas(), resource_lock->color_space_for_raster(),
-      raster_full_rect, playback_rect, scale, playback_settings);
+      raster_full_rect, playback_rect, transform, playback_settings);
 }
 
 }  // namespace
@@ -105,13 +105,13 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0("cc", "GpuRasterBuffer::Playback");
   client_->PlaybackOnWorkerThread(&lock_, sync_token_,
                                   resource_has_previous_content_, raster_source,
                                   raster_full_rect, raster_dirty_rect,
-                                  new_content_id, scale, playback_settings);
+                                  new_content_id, transform, playback_settings);
 }
 
 GpuRasterBufferProvider::GpuRasterBufferProvider(
@@ -252,7 +252,7 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings) {
   ContextProvider::ScopedContextLock scoped_context(worker_context_provider_);
   gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
@@ -269,7 +269,7 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
 
   RasterizeSource(raster_source, resource_has_previous_content,
                   resource_lock->size(), raster_full_rect, raster_dirty_rect,
-                  scale, playback_settings, worker_context_provider_,
+                  transform, playback_settings, worker_context_provider_,
                   resource_lock, async_worker_context_enabled_,
                   use_distance_field_text_, msaa_sample_count_);
 

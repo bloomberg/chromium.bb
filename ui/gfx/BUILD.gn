@@ -626,6 +626,7 @@ test("gfx_unittests") {
       "color_utils_unittest.cc",
       "font_fallback_mac_unittest.cc",
       "font_list_unittest.cc",
+      "geometry/axis_transform2d_unittest.cc",
       "geometry/box_unittest.cc",
       "geometry/cubic_bezier_unittest.cc",
       "geometry/insets_unittest.cc",

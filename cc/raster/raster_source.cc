@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -60,12 +61,13 @@ RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
 
 RasterSource::~RasterSource() {}
 
-void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
-                                    const gfx::ColorSpace& canvas_color_space,
-                                    const gfx::Rect& canvas_bitmap_rect,
-                                    const gfx::Rect& canvas_playback_rect,
-                                    float raster_scale,
-                                    const PlaybackSettings& settings) const {
+void RasterSource::PlaybackToCanvas(
+    SkCanvas* raster_canvas,
+    const gfx::ColorSpace& canvas_color_space,
+    const gfx::Rect& canvas_bitmap_rect,
+    const gfx::Rect& canvas_playback_rect,
+    const gfx::AxisTransform2d& raster_transform,
+    const PlaybackSettings& settings) const {
   SkIRect raster_bounds = gfx::RectToSkIRect(canvas_bitmap_rect);
   if (!canvas_playback_rect.IsEmpty() &&
       !raster_bounds.intersect(gfx::RectToSkIRect(canvas_playback_rect)))
@@ -76,7 +78,9 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   raster_canvas->save();
   raster_canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
   raster_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
-  raster_canvas->scale(raster_scale, raster_scale);
+  raster_canvas->translate(raster_transform.translation().x(),
+                           raster_transform.translation().y());
+  raster_canvas->scale(raster_transform.scale(), raster_transform.scale());
   PlaybackToCanvas(raster_canvas, canvas_color_space, settings);
   raster_canvas->restore();
 }

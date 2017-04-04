@@ -29,6 +29,7 @@
 #include "cc/raster/task_category.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/tiles/tile.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -126,9 +127,10 @@ class RasterTaskImpl : public TileTask {
 
     DCHECK(raster_source_);
 
-    raster_buffer_->Playback(raster_source_.get(), content_rect_,
-                             invalid_content_rect_, new_content_id_,
-                             raster_scale_, playback_settings_);
+    raster_buffer_->Playback(
+        raster_source_.get(), content_rect_, invalid_content_rect_,
+        new_content_id_, gfx::AxisTransform2d(raster_scale_, gfx::Vector2dF()),
+        playback_settings_);
   }
 
   // Overridden from TileTask:

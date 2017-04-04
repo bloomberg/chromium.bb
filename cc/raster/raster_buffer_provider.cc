@@ -13,6 +13,7 @@
 #include "cc/resources/resource_format_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 
 namespace cc {
 
@@ -52,7 +53,7 @@ void RasterBufferProvider::PlaybackToMemory(
     const RasterSource* raster_source,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const gfx::ColorSpace& target_color_space,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
@@ -83,7 +84,7 @@ void RasterBufferProvider::PlaybackToMemory(
           SkSurface::MakeRasterDirect(info, memory, stride, &surface_props);
       raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
                                       canvas_bitmap_rect, canvas_playback_rect,
-                                      scale, playback_settings);
+                                      transform, playback_settings);
       return;
     }
     case RGBA_4444:
@@ -93,7 +94,7 @@ void RasterBufferProvider::PlaybackToMemory(
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
       raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
                                       canvas_bitmap_rect, canvas_bitmap_rect,
-                                      scale, playback_settings);
+                                      transform, playback_settings);
 
       if (format == ETC1) {
         TRACE_EVENT0("cc",

@@ -38,7 +38,7 @@ class CC_EXPORT RasterBufferProvider {
       const RasterSource* raster_source,
       const gfx::Rect& canvas_bitmap_rect,
       const gfx::Rect& canvas_playback_rect,
-      float scale,
+      const gfx::AxisTransform2d& transform,
       const gfx::ColorSpace& target_color_space,
       const RasterSource::PlaybackSettings& playback_settings);
 

@@ -19,6 +19,10 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/color_space.h"
 
+namespace gfx {
+class AxisTransform2d;
+}  // namespace gfx
+
 namespace cc {
 class DisplayItemList;
 class DrawImage;
@@ -54,12 +58,20 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
       const RecordingSource* other,
       bool can_use_lcd_text);
 
-  // TODO(trchen): Deprecated.
+  // Helper function to apply a few common operations before passing the canvas
+  // to the shorter version. This is useful for rastering into tiles.
+  // canvas is expected to be backed by a tile, with a default state.
+  // raster_transform will be applied to the display list, rastering the list
+  // into the "content space".
+  // canvas_bitmap_rect defines the extent of the tile in the content space,
+  // i.e. contents in the rect will be cropped and translated onto the canvas.
+  // canvas_playback_rect can be used to replay only part of the recording in,
+  // the content space, so only a sub-rect of the tile gets rastered.
   void PlaybackToCanvas(SkCanvas* canvas,
                         const gfx::ColorSpace& canvas_color_space,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
-                        float contents_scale,
+                        const gfx::AxisTransform2d& raster_transform,
                         const PlaybackSettings& settings) const;
 
   // Raster this RasterSource into the given canvas. Canvas states such as

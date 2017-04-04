@@ -57,12 +57,12 @@ void OneCopyRasterBufferProvider::RasterBufferImpl::Playback(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     uint64_t new_content_id,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0("cc", "OneCopyRasterBuffer::Playback");
   client_->PlaybackAndCopyOnWorkerThread(
       resource_, &lock_, sync_token_, raster_source, raster_full_rect,
-      raster_dirty_rect, scale, playback_settings, previous_content_id_,
+      raster_dirty_rect, transform, playback_settings, previous_content_id_,
       new_content_id);
 }
 
@@ -215,7 +215,7 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
     const RasterSource* raster_source,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const RasterSource::PlaybackSettings& playback_settings,
     uint64_t previous_content_id,
     uint64_t new_content_id) {
@@ -236,7 +236,7 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
 
   PlaybackToStagingBuffer(
       staging_buffer.get(), resource, raster_source, raster_full_rect,
-      raster_dirty_rect, scale, resource_lock->color_space_for_raster(),
+      raster_dirty_rect, transform, resource_lock->color_space_for_raster(),
       playback_settings, previous_content_id, new_content_id);
 
   CopyOnWorkerThread(staging_buffer.get(), resource_lock, sync_token,
@@ -251,7 +251,7 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     const RasterSource* raster_source,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
-    float scale,
+    const gfx::AxisTransform2d& transform,
     const gfx::ColorSpace& dst_color_space,
     const RasterSource::PlaybackSettings& playback_settings,
     uint64_t previous_content_id,
@@ -301,7 +301,7 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     RasterBufferProvider::PlaybackToMemory(
         buffer->memory(0), resource->format(), staging_buffer->size,
         buffer->stride(0), raster_source, raster_full_rect, playback_rect,
-        scale, dst_color_space, playback_settings);
+        transform, dst_color_space, playback_settings);
     buffer->Unmap();
     staging_buffer->content_id = new_content_id;
   }

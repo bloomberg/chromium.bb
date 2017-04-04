@@ -17,6 +17,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -52,9 +53,10 @@ void RunBenchmark(RasterSource* raster_source,
       bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
-      raster_source->PlaybackToCanvas(&canvas, gfx::ColorSpace(), content_rect,
-                                      content_rect, contents_scale,
-                                      RasterSource::PlaybackSettings());
+      raster_source->PlaybackToCanvas(
+          &canvas, gfx::ColorSpace(), content_rect, content_rect,
+          gfx::AxisTransform2d(contents_scale, gfx::Vector2dF()),
+          RasterSource::PlaybackSettings());
 
       timer.NextLap();
     } while (!timer.HasTimeLimitExpired());
