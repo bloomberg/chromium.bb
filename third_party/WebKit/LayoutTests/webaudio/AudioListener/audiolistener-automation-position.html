@@ -4,7 +4,7 @@
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audit.js"></script>
     <title>Test Automation of AudioListener</title>
   </head>
 
@@ -51,44 +51,43 @@
       // redo the test, but this time move the listener in the opposite direction.  The output of
       // this test is compared against the panner result.  They should be the same.
 
-      audit.defineTask("linear", function (done) {
+      audit.define("linear", (task, should) => {
         runTest({
+          should: should,
           startPosition: defaultStartPosition,
           endPosition: pannerEndPosition,
           distanceModel: {
             model: "linear",
             rolloff: 1
           }
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("exponential", function (done) {
+      audit.define("exponential", (task, should) => {
         runTest({
+          should: should,
           startPosition: defaultStartPosition,
           endPosition: pannerEndPosition,
           distanceModel: {
             model: "exponential",
             rolloff: 1.5
           }
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("inverse", function (done) {
+      audit.define("inverse", (task, should) => {
         runTest({
+          should: should,
           startPosition: defaultStartPosition,
           endPosition: pannerEndPosition,
           distanceModel: {
             model: "inverse",
             rolloff: 1
           }
-        }).then(done);
+        }).then(() => task.done());
       });
 
-      audit.defineTask("finish", function (done) {
-        done();
-      });
-
-      audit.runTasks();
+      audit.run();
         
       function createGraph() {
         var context = new OfflineAudioContext(2, renderFrames, sampleRate);
@@ -168,8 +167,6 @@
         // Compare the output with the reference output from moving the source in the opposite
         // direction.
 
-        var success = true;
-
         var expectedLeft = expectedResult.getChannelData(0);
         var expectedRight = expectedResult.getChannelData(1);
 
@@ -178,16 +175,10 @@
 
         var prefix = 'Distance model: "' + options.distanceModel.model + '"';
         prefix += ', rolloff: ' + options.distanceModel.rolloff;
-        success = Should(prefix + ": left channel", actualLeft, {
-            precision: 5
-          })
-          .beCloseToArray(expectedLeft, 0) && success;
-        success = Should(prefix + ": right channel", actualRight, {
-            precision: 5
-          })
-          .beCloseToArray(expectedRight, 0) && success;
-
-        return success;
+        options.should(actualLeft, prefix + ": left channel")
+          .beCloseToArray(expectedLeft, 0);
+        options.should(actualRight, prefix + ": right channel")
+          .beCloseToArray(expectedRight, 0);
       }
     </script>
   </body>
