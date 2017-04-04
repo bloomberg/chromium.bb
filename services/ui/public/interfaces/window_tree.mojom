@@ -330,7 +330,7 @@ interface WindowTreeClient {
   // in which case it will be null. |parent_drawn| is true if roots parent is
   // drawn, see OnParentDrawnStateChanged() for details. |display_id| identifies
   // the display this root window is on. |frame_sink_id| uniquely identifies the
-  // client in the display compositor. If the embedded window has a size,
+  // client in the frame sink manager. If the embedded window has a size,
   // |local_surface_id| identifies the ID to use to submit CompositorFrames.
   OnEmbed(uint16 connection_id,
           WindowData root,

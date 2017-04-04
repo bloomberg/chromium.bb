@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_FACTORY_IMPL_H_
 #define CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_SURFACE_FACTORY_IMPL_H_
 
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
 namespace content {
@@ -23,7 +23,7 @@ class OffscreenCanvasSurfaceFactoryImpl
   void CreateOffscreenCanvasSurface(
       const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& frame_sink_id,
-      cc::mojom::DisplayCompositorClientPtr client,
+      cc::mojom::FrameSinkManagerClientPtr client,
       blink::mojom::OffscreenCanvasSurfaceRequest request) override;
 
  private:

@@ -13,7 +13,7 @@
 
 namespace content {
 
-// TODO(fsamuel): This should be replaced with the DisplayCompositor interface.
+// TODO(fsamuel): This should be replaced with the FrameSinkManager interface.
 class OffscreenCanvasCompositorFrameSinkProviderImpl
     : public blink::mojom::OffscreenCanvasCompositorFrameSinkProvider {
  public:

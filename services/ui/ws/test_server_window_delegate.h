@@ -8,12 +8,6 @@
 #include "base/macros.h"
 #include "services/ui/ws/server_window_delegate.h"
 
-namespace cc {
-namespace mojom {
-class DisplayCompositor;
-}
-}
-
 namespace ui {
 namespace ws {
 
@@ -26,7 +20,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
  private:
   // ServerWindowDelegate:
-  cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
+  cc::mojom::FrameSinkManager* GetFrameSinkManager() override;
   ServerWindow* GetRootWindow(const ServerWindow* window) override;
 
   ServerWindow* root_window_ = nullptr;

@@ -200,9 +200,9 @@ void GpuChildThread::CreateGpuService(
   GetInterfaceRegistry()->ResumeBinding();
 }
 
-void GpuChildThread::CreateDisplayCompositor(
-    cc::mojom::DisplayCompositorRequest request,
-    cc::mojom::DisplayCompositorClientPtr client) {
+void GpuChildThread::CreateFrameSinkManager(
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtr client) {
   NOTREACHED();
 }
 

@@ -19,7 +19,7 @@ namespace content {
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::DisplayCompositorClientPtr client)
+    cc::mojom::FrameSinkManagerClientPtr client)
     : client_(std::move(client)),
       frame_sink_id_(frame_sink_id),
       parent_frame_sink_id_(parent_frame_sink_id) {
@@ -38,7 +38,7 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
 void OffscreenCanvasSurfaceImpl::Create(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::DisplayCompositorClientPtr client,
+    cc::mojom::FrameSinkManagerClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request) {
   std::unique_ptr<OffscreenCanvasSurfaceImpl> impl =
       base::MakeUnique<OffscreenCanvasSurfaceImpl>(

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_CPP_DISPLAY_CLIENT_COMPOSITOR_FRAME_SINK_H_
-#define SERVICES_UI_PUBLIC_CPP_DISPLAY_CLIENT_COMPOSITOR_FRAME_SINK_H_
+#ifndef SERVICES_UI_WS_DISPLAY_CLIENT_COMPOSITOR_FRAME_SINK_H_
+#define SERVICES_UI_WS_DISPLAY_CLIENT_COMPOSITOR_FRAME_SINK_H_
 
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
@@ -68,7 +68,7 @@ class DisplayClientCompositorFrameSink
   DISALLOW_COPY_AND_ASSIGN(DisplayClientCompositorFrameSink);
 };
 
-}  // namspace ws
+}  // namespace ws
 }  // namespace ui
 
-#endif  // SERVICES_UI_PUBLIC_CPP_DISPLAY_CLIENT_COMPOSITOR_FRAME_SINK_H_
+#endif  // SERVICES_UI_WS_DISPLAY_CLIENT_COMPOSITOR_FRAME_SINK_H_

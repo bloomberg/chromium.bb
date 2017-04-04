@@ -45,8 +45,6 @@ struct WindowServer::CurrentDragLoopState {
   WindowTree* initiator;
 };
 
-// TODO(fsamuel): DisplayCompositor should be a mojo interface dispensed by
-// GpuHost.
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
       next_client_id_(1),
@@ -56,12 +54,12 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
       next_wm_change_id_(0),
       gpu_host_(new GpuHost(this)),
       window_manager_window_tree_factory_set_(this, &user_id_tracker_),
-      display_compositor_client_binding_(this) {
+      frame_sink_manager_client_binding_(this) {
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
-  gpu_host_->CreateDisplayCompositor(
-      mojo::MakeRequest(&display_compositor_),
-      display_compositor_client_binding_.CreateInterfacePtrAndBind());
+  gpu_host_->CreateFrameSinkManager(
+      mojo::MakeRequest(&frame_sink_manager_),
+      frame_sink_manager_client_binding_.CreateInterfacePtrAndBind());
 }
 
 WindowServer::~WindowServer() {
@@ -535,8 +533,8 @@ WindowManagerState* WindowServer::GetWindowManagerStateForUser(
       user_id);
 }
 
-cc::mojom::DisplayCompositor* WindowServer::GetDisplayCompositor() {
-  return display_compositor_.get();
+cc::mojom::FrameSinkManager* WindowServer::GetFrameSinkManager() {
+  return frame_sink_manager_.get();
 }
 
 bool WindowServer::GetFrameDecorationsForUser(
@@ -638,7 +636,7 @@ void WindowServer::HandleTemporaryReferenceForNewSurface(
     current->GetOrCreateCompositorFrameSinkManager()->ClaimTemporaryReference(
         surface_id);
   } else {
-    display_compositor_->DropTemporaryReference(surface_id);
+    frame_sink_manager_->DropTemporaryReference(surface_id);
   }
 }
 
@@ -675,11 +673,11 @@ void WindowServer::OnWindowHierarchyChanged(ServerWindow* window,
   ProcessWindowHierarchyChanged(window, new_parent, old_parent);
 
   if (old_parent) {
-    display_compositor_->UnregisterFrameSinkHierarchy(
+    frame_sink_manager_->UnregisterFrameSinkHierarchy(
         old_parent->frame_sink_id(), window->frame_sink_id());
   }
   if (new_parent) {
-    display_compositor_->RegisterFrameSinkHierarchy(new_parent->frame_sink_id(),
+    frame_sink_manager_->RegisterFrameSinkHierarchy(new_parent->frame_sink_id(),
                                                     window->frame_sink_id());
   }
 
@@ -818,7 +816,7 @@ void WindowServer::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
 
   // If the window doesn't exist then we have nothing to propagate.
   if (!window) {
-    display_compositor_->DropTemporaryReference(surface_info.id());
+    frame_sink_manager_->DropTemporaryReference(surface_info.id());
     return;
   }
 

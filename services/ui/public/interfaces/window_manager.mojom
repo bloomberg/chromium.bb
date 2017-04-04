@@ -154,7 +154,7 @@ interface WindowManager {
 
   // Called when a new display is added. |root| gives the root window specific
   // to this WindowManager for |display|. |frame_sink_id| uniquely identifies
-  // the window manager in the display compositor. |local_surface_id| identifies
+  // the window manager in the frame sink manager. |local_surface_id| identifies
   // the ID to use to submit CompositorFrames.
   WmNewDisplayAdded(display.mojom.Display display,
                     WindowData root,

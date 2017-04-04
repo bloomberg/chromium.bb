@@ -94,9 +94,9 @@ class GpuChildThread : public ChildThreadImpl,
                         ui::mojom::GpuHostPtr gpu_host,
                         const gpu::GpuPreferences& preferences,
                         mojo::ScopedSharedBufferHandle activity_flags) override;
-  void CreateDisplayCompositor(
-      cc::mojom::DisplayCompositorRequest request,
-      cc::mojom::DisplayCompositorClientPtr client) override;
+  void CreateFrameSinkManager(
+      cc::mojom::FrameSinkManagerRequest request,
+      cc::mojom::FrameSinkManagerClientPtr client) override;
 
   // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,

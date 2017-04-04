@@ -6,11 +6,11 @@ import("//build/config/ui.gni")
 
 source_set("surfaces") {
   sources = [
-    "display_compositor.cc",
-    "display_compositor.h",
     "display_output_surface.cc",
     "display_output_surface.h",
     "display_provider.h",
+    "mojo_frame_sink_manager.cc",
+    "mojo_frame_sink_manager.h",
     "mus_display_provider.cc",
     "mus_display_provider.h",
   ]

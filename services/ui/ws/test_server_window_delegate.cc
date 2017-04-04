@@ -13,7 +13,7 @@ TestServerWindowDelegate::TestServerWindowDelegate() {}
 
 TestServerWindowDelegate::~TestServerWindowDelegate() {}
 
-cc::mojom::DisplayCompositor* TestServerWindowDelegate::GetDisplayCompositor() {
+cc::mojom::FrameSinkManager* TestServerWindowDelegate::GetFrameSinkManager() {
   return nullptr;
 }
 

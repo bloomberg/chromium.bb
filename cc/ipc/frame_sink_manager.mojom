@@ -26,18 +26,19 @@ interface DisplayPrivate {
                     float scale_factor);
 };
 
-// The DisplayCompositor interface is a privileged interface that allows
-// the display compositor host (browser or window server) to create
+// The FrameSinkManager interface is a privileged interface that allows the
+// frame sink manager host (browser or window server) to create
 // CompositorFrameSinks. Clients acquire a CompositorFrameSink connection
-// through the display compositor host. Clients request a
+// through the frame sink manager host. Clients request a
 // MojoCompositorFrameSink interface, and implement a
-// MojoCompositorFrameSinkClient interface. The display compositor host
-// holds one or more root CompositorFrameSinks that are tied to a valid
-// |surface_handle|. All other CompositorFrameSinks are offscreen. FrameSinkIds
-// are fixed for a given client and are determined ahead of time. Thus, a client
-// will typically simply request a CompositorFrameSink from the display
-// compositor host which will forward the request to the display compositor.
-interface DisplayCompositor {
+// MojoCompositorFrameSinkClient interface. The frame sink manager host
+// holds one or more display CompositorFrameSinks that are tied to a valid
+// |surface_handle| and cc::Display. All other CompositorFrameSinks must be
+// parented by another CompositorFrameSink. FrameSinkIds are fixed for a given
+// client and are determined ahead of time. Thus, a client will typically simply
+// request a CompositorFrameSink from the frame sink manager host which will
+// forward the request to the frame sink manager.
+interface FrameSinkManager {
   // Create a CompositorFrameSink for a privileged client (e.g. WindowServer).
   // This is only used by privileged clients. The client can call methods that
   // talks to the Display (e.g. ResizeDisplay(), SetDisplayVisible(), etc)
@@ -49,8 +50,8 @@ interface DisplayCompositor {
       cc.mojom.MojoCompositorFrameSinkClient compositor_frame_sink_client,
       associated DisplayPrivate& display_private);
 
-  // CreateCompositorFrameSink is used by unprivileged clients.
-  // This CompositorFrameSink is not a root, and has to be parented by another
+  // CreateCompositorFrameSink is used by unprivileged clients. This
+  // CompositorFrameSink is not a root, and has to be parented by another
   // CompositorFrameSink in order to appear on screen.
   CreateCompositorFrameSink(
       cc.mojom.FrameSinkId frame_sink_id,
@@ -69,16 +70,16 @@ interface DisplayCompositor {
                                cc.mojom.FrameSinkId child_frame_sink_id);
 
   // Drops the temporary reference for |surface_id|. This will get called when
-  // the DisplayCompositorClient doesn't think |surface_id| will be embedded.
+  // the FrameSinkManagerClient doesn't think |surface_id| will be embedded.
   DropTemporaryReference(cc.mojom.SurfaceId surface_id);
 };
 
-// The DisplayCompositorClient interface is implemented by the Display
+// The FrameSinkManagerClient interface is implemented by the Display
 // Compositor Host, a stable, and privileged peer service to the display
-// compositor. The display compositor host is either the browser process in
+// compositor. The frame sink manager host is either the browser process in
 // Chrome or the window server process.
-interface DisplayCompositorClient {
-  // Called by the display compositor immediately upon receiving a
+interface FrameSinkManagerClient {
+  // Called by the frame sink manager immediately upon receiving a
   // CompositorFrame with a new SurfaceId for the first time.
   OnSurfaceCreated(SurfaceInfo surface_info);
 };

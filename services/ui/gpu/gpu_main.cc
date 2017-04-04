@@ -135,15 +135,15 @@ void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
                      gpu::GpuProcessActivityFlags(std::move(activity_flags)))));
 }
 
-void GpuMain::CreateDisplayCompositor(
-    cc::mojom::DisplayCompositorRequest request,
-    cc::mojom::DisplayCompositorClientPtr client) {
+void GpuMain::CreateFrameSinkManager(
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtr client) {
   if (!gpu_service_) {
-    pending_display_compositor_request_ = std::move(request);
-    pending_display_compositor_client_info_ = client.PassInterface();
+    pending_frame_sink_manager_request_ = std::move(request);
+    pending_frame_sink_manager_client_info_ = client.PassInterface();
     return;
   }
-  CreateDisplayCompositorInternal(std::move(request), client.PassInterface());
+  CreateFrameSinkManagerInternal(std::move(request), client.PassInterface());
 }
 
 void GpuMain::InitOnGpuThread(
@@ -161,9 +161,9 @@ void GpuMain::InitOnGpuThread(
       gpu_init_->gpu_feature_info());
 }
 
-void GpuMain::CreateDisplayCompositorInternal(
-    cc::mojom::DisplayCompositorRequest request,
-    cc::mojom::DisplayCompositorClientPtrInfo client_info) {
+void GpuMain::CreateFrameSinkManagerInternal(
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
   DCHECK(!gpu_command_service_);
   gpu_command_service_ = new gpu::GpuInProcessThreadService(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
@@ -174,8 +174,8 @@ void GpuMain::CreateDisplayCompositorInternal(
   mojom::GpuServiceRequest gpu_service_request(&gpu_service);
 
   if (gpu_thread_task_runner_->BelongsToCurrentThread()) {
-    // If the DisplayCompositor creation was delayed because GpuService
-    // had not been created yet, then this is called, in gpu thread, right after
+    // If the FrameSinkManager creation was delayed because GpuService had not
+    // been created yet, then this is called, in gpu thread, right after
     // GpuService is created.
     BindGpuInternalOnGpuThread(std::move(gpu_service_request));
   } else {
@@ -186,20 +186,20 @@ void GpuMain::CreateDisplayCompositorInternal(
   }
 
   compositor_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GpuMain::CreateDisplayCompositorOnCompositorThread,
+      FROM_HERE, base::Bind(&GpuMain::CreateFrameSinkManagerOnCompositorThread,
                             base::Unretained(this), image_factory,
                             base::Passed(gpu_service.PassInterface()),
                             base::Passed(std::move(request)),
                             base::Passed(std::move(client_info))));
 }
 
-void GpuMain::CreateDisplayCompositorOnCompositorThread(
+void GpuMain::CreateFrameSinkManagerOnCompositorThread(
     gpu::ImageFactory* image_factory,
     mojom::GpuServicePtrInfo gpu_service_info,
-    cc::mojom::DisplayCompositorRequest request,
-    cc::mojom::DisplayCompositorClientPtrInfo client_info) {
-  DCHECK(!display_compositor_);
-  cc::mojom::DisplayCompositorClientPtr client;
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtrInfo client_info) {
+  DCHECK(!frame_sink_manager_);
+  cc::mojom::FrameSinkManagerClientPtr client;
   client.Bind(std::move(client_info));
 
   gpu_internal_.Bind(std::move(gpu_service_info));
@@ -210,12 +210,12 @@ void GpuMain::CreateDisplayCompositorOnCompositorThread(
                                                      1 /* client_id */),
       image_factory);
 
-  display_compositor_ = base::MakeUnique<DisplayCompositor>(
+  frame_sink_manager_ = base::MakeUnique<MojoFrameSinkManager>(
       display_provider_.get(), std::move(request), std::move(client));
 }
 
 void GpuMain::TearDownOnCompositorThread() {
-  display_compositor_.reset();
+  frame_sink_manager_.reset();
   display_provider_.reset();
   gpu_internal_.reset();
 }
@@ -238,10 +238,10 @@ void GpuMain::CreateGpuServiceOnGpuThread(
                                    std::move(activity_flags));
   gpu_service_->Bind(std::move(request));
 
-  if (pending_display_compositor_request_.is_pending()) {
-    CreateDisplayCompositorInternal(
-        std::move(pending_display_compositor_request_),
-        std::move(pending_display_compositor_client_info_));
+  if (pending_frame_sink_manager_request_.is_pending()) {
+    CreateFrameSinkManagerInternal(
+        std::move(pending_frame_sink_manager_request_),
+        std::move(pending_frame_sink_manager_client_info_));
   }
 }
 

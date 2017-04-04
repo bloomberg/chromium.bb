@@ -21,7 +21,7 @@ void OffscreenCanvasSurfaceFactoryImpl::Create(
 void OffscreenCanvasSurfaceFactoryImpl::CreateOffscreenCanvasSurface(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
-    cc::mojom::DisplayCompositorClientPtr client,
+    cc::mojom::FrameSinkManagerClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request) {
   OffscreenCanvasSurfaceImpl::Create(parent_frame_sink_id, frame_sink_id,
                                      std::move(client), std::move(request));

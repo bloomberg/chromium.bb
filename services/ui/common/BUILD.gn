@@ -37,7 +37,7 @@ source_set("mus_common") {
 }
 
 # GPU related code used by the server-side components (e.g. window server
-# process, display compositor in the gpu process).
+# process, frame sink manager in the gpu process).
 source_set("server_gpu") {
   sources = [
     "server_gpu_memory_buffer_manager.cc",

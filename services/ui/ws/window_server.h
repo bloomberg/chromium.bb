@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -49,7 +49,7 @@ class WindowServer : public ServerWindowDelegate,
                      public GpuHostDelegate,
                      public UserDisplayManagerDelegate,
                      public UserIdTrackerObserver,
-                     public cc::mojom::DisplayCompositorClient {
+                     public cc::mojom::FrameSinkManagerClient {
  public:
   explicit WindowServer(WindowServerDelegate* delegate);
   ~WindowServer() override;
@@ -229,7 +229,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
   // ServerWindowDelegate:
-  cc::mojom::DisplayCompositor* GetDisplayCompositor() override;
+  cc::mojom::FrameSinkManager* GetFrameSinkManager() override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -335,7 +335,7 @@ class WindowServer : public ServerWindowDelegate,
   // GpuHostDelegate:
   void OnGpuServiceInitialized() override;
 
-  // cc::mojom::DisplayCompositorClient:
+  // cc::mojom::FrameSinkManagerClient:
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info) override;
 
   // UserIdTrackerObserver:
@@ -382,10 +382,10 @@ class WindowServer : public ServerWindowDelegate,
 
   cc::SurfaceId root_surface_id_;
 
-  mojo::Binding<cc::mojom::DisplayCompositorClient>
-      display_compositor_client_binding_;
-  // State for rendering into a Surface.
-  cc::mojom::DisplayCompositorPtr display_compositor_;
+  // Provides interfaces to create and manage FrameSinks.
+  mojo::Binding<cc::mojom::FrameSinkManagerClient>
+      frame_sink_manager_client_binding_;
+  cc::mojom::FrameSinkManagerPtr frame_sink_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

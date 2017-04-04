@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/surfaces/mojo_frame_sink_manager.h"
 
 #include <utility>
 
@@ -18,10 +18,10 @@
 
 namespace ui {
 
-DisplayCompositor::DisplayCompositor(
+MojoFrameSinkManager::MojoFrameSinkManager(
     DisplayProvider* display_provider,
-    cc::mojom::DisplayCompositorRequest request,
-    cc::mojom::DisplayCompositorClientPtr client)
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtr client)
     : manager_(cc::SurfaceManager::LifetimeType::REFERENCES),
       display_provider_(display_provider),
       client_(std::move(client)),
@@ -29,12 +29,12 @@ DisplayCompositor::DisplayCompositor(
   manager_.AddObserver(this);
 }
 
-DisplayCompositor::~DisplayCompositor() {
+MojoFrameSinkManager::~MojoFrameSinkManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   manager_.RemoveObserver(this);
 }
 
-void DisplayCompositor::CreateRootCompositorFrameSink(
+void MojoFrameSinkManager::CreateRootCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     gpu::SurfaceHandle surface_handle,
     cc::mojom::MojoCompositorFrameSinkAssociatedRequest request,
@@ -68,7 +68,7 @@ void DisplayCompositor::CreateRootCompositorFrameSink(
           std::move(display_private_request));
 }
 
-void DisplayCompositor::CreateCompositorFrameSink(
+void MojoFrameSinkManager::CreateCompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
@@ -82,30 +82,31 @@ void DisplayCompositor::CreateCompositorFrameSink(
           std::move(private_request), std::move(client));
 }
 
-void DisplayCompositor::RegisterFrameSinkHierarchy(
+void MojoFrameSinkManager::RegisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& child_frame_sink_id) {
   manager_.RegisterFrameSinkHierarchy(parent_frame_sink_id,
                                       child_frame_sink_id);
 }
 
-void DisplayCompositor::UnregisterFrameSinkHierarchy(
+void MojoFrameSinkManager::UnregisterFrameSinkHierarchy(
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& child_frame_sink_id) {
   manager_.UnregisterFrameSinkHierarchy(parent_frame_sink_id,
                                         child_frame_sink_id);
 }
 
-void DisplayCompositor::DropTemporaryReference(
+void MojoFrameSinkManager::DropTemporaryReference(
     const cc::SurfaceId& surface_id) {
   manager_.DropTemporaryReference(surface_id);
 }
 
-void DisplayCompositor::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
+void MojoFrameSinkManager::DestroyCompositorFrameSink(cc::FrameSinkId sink_id) {
   compositor_frame_sinks_.erase(sink_id);
 }
 
-void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
+void MojoFrameSinkManager::OnSurfaceCreated(
+    const cc::SurfaceInfo& surface_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(surface_info.device_scale_factor(), 0.0f);
 
@@ -118,21 +119,21 @@ void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceInfo& surface_info) {
     client_->OnSurfaceCreated(surface_info);
 }
 
-void DisplayCompositor::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
-                                         bool* changed) {}
+void MojoFrameSinkManager::OnSurfaceDamaged(const cc::SurfaceId& surface_id,
+                                            bool* changed) {}
 
-void DisplayCompositor::OnClientConnectionLost(
+void MojoFrameSinkManager::OnClientConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (destroy_compositor_frame_sink)
     DestroyCompositorFrameSink(frame_sink_id);
-  // TODO(fsamuel): Tell the display compositor host that the client connection
+  // TODO(fsamuel): Tell the frame sink manager host that the client connection
   // has been lost so that it can drop its private connection and allow a new
   // client instance to create a new CompositorFrameSink.
 }
 
-void DisplayCompositor::OnPrivateConnectionLost(
+void MojoFrameSinkManager::OnPrivateConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {
   DCHECK(thread_checker_.CalledOnValidThread());

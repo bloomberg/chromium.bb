@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_DISPLAY_COMPOSITOR_H_
-#define SERVICES_UI_SURFACES_DISPLAY_COMPOSITOR_H_
+#ifndef SERVICES_UI_SURFACES_MOJO_FRAME_SINK_MANAGER_H_
+#define SERVICES_UI_SURFACES_MOJO_FRAME_SINK_MANAGER_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
@@ -24,24 +24,27 @@ namespace ui {
 
 class DisplayProvider;
 
-// The DisplayCompositor object is an object global to the Window Server app
-// that holds the SurfaceServer and allocates new Surfaces namespaces.
-// This object lives on the main thread of the Window Server.
-// TODO(rjkroege, fsamuel): This object will need to change to support multiple
-// displays.
-class DisplayCompositor
+// MojoFrameSinkManager manages state associated with CompositorFrameSinks. It
+// provides a Mojo interface to create CompositorFrameSinks, manages BeginFrame
+// hierarchy and manages surface lifetime.
+//
+// This is intended to be created in the viz or GPU process. For mus+ash this
+// will be true after the mus process split. For non-mus Chrome this will be
+// created in the browser process, at least until GPU implementations can be
+// unified.
+class MojoFrameSinkManager
     : public cc::SurfaceObserver,
       public display_compositor::GpuCompositorFrameSinkDelegate,
-      public cc::mojom::DisplayCompositor {
+      public cc::mojom::FrameSinkManager {
  public:
-  DisplayCompositor(DisplayProvider* display_provider,
-                    cc::mojom::DisplayCompositorRequest request,
-                    cc::mojom::DisplayCompositorClientPtr client);
-  ~DisplayCompositor() override;
+  MojoFrameSinkManager(DisplayProvider* display_provider,
+                       cc::mojom::FrameSinkManagerRequest request,
+                       cc::mojom::FrameSinkManagerClientPtr client);
+  ~MojoFrameSinkManager() override;
 
   cc::SurfaceManager* manager() { return &manager_; }
 
-  // cc::mojom::DisplayCompositor implementation:
+  // cc::mojom::MojoFrameSinkManager implementation:
   void CreateRootCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
@@ -84,7 +87,7 @@ class DisplayCompositor
 
   // SurfaceManager should be the first object constructed and the last object
   // destroyed in order to ensure that all other objects that depend on it have
-  // access to a valid pointer for the entirety of their liftimes.
+  // access to a valid pointer for the entirety of their lifetimes.
   cc::SurfaceManager manager_;
 
   // Provides a cc::Display for CreateRootCompositorFrameSink().
@@ -97,12 +100,12 @@ class DisplayCompositor
 
   base::ThreadChecker thread_checker_;
 
-  cc::mojom::DisplayCompositorClientPtr client_;
-  mojo::Binding<cc::mojom::DisplayCompositor> binding_;
+  cc::mojom::FrameSinkManagerClientPtr client_;
+  mojo::Binding<cc::mojom::FrameSinkManager> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
+  DISALLOW_COPY_AND_ASSIGN(MojoFrameSinkManager);
 };
 
 }  // namespace ui
 
-#endif  //  SERVICES_UI_SURFACES_DISPLAY_COMPOSITOR_H_
+#endif  //  SERVICES_UI_SURFACES_MOJO_FRAME_SINK_MANAGER_H_

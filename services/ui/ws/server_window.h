@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"

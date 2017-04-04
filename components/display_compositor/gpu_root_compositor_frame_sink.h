@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_DISPLAY_COMPOSITOR_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 #define COMPONENTS_DISPLAY_COMPOSITOR_GPU_ROOT_COMPOSITOR_FRAME_SINK_H_
 
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
 #include "cc/surfaces/display_client.h"

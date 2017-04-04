@@ -44,9 +44,9 @@ class GpuHost : public mojom::GpuHost {
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
   void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget);
 
-  // Requests a cc::mojom::DisplayCompositor interface from mus-gpu.
-  void CreateDisplayCompositor(cc::mojom::DisplayCompositorRequest request,
-                               cc::mojom::DisplayCompositorClientPtr client);
+  // Requests a cc::mojom::FrameSinkManager interface from mus-gpu.
+  void CreateFrameSinkManager(cc::mojom::FrameSinkManagerRequest request,
+                              cc::mojom::FrameSinkManagerClientPtr client);
 
  private:
   friend class test::GpuHostTest;

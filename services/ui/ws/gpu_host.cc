@@ -29,7 +29,7 @@ namespace ws {
 
 namespace {
 
-// The client Id 1 is reserved for the display compositor.
+// The client Id 1 is reserved for the frame sink manager.
 const int32_t kInternalGpuChannelClientId = 2;
 
 }  // namespace
@@ -72,10 +72,10 @@ void GpuHost::OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) {
 #endif
 }
 
-void GpuHost::CreateDisplayCompositor(
-    cc::mojom::DisplayCompositorRequest request,
-    cc::mojom::DisplayCompositorClientPtr client) {
-  gpu_main_->CreateDisplayCompositor(std::move(request), std::move(client));
+void GpuHost::CreateFrameSinkManager(
+    cc::mojom::FrameSinkManagerRequest request,
+    cc::mojom::FrameSinkManagerClientPtr client) {
+  gpu_main_->CreateFrameSinkManager(std::move(request), std::move(client));
 }
 
 GpuClient* GpuHost::AddInternal(mojom::GpuRequest request) {

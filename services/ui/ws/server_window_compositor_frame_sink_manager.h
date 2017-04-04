@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
-#include "cc/ipc/display_compositor.mojom.h"
+#include "cc/ipc/frame_sink_manager.mojom.h"
 #include "cc/output/context_provider.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"

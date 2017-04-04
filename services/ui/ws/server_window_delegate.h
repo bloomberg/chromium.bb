@@ -7,9 +7,14 @@
 
 #include <memory>
 
-#include "cc/ipc/display_compositor.mojom.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+
+namespace cc {
+namespace mojom {
+class FrameSinkManager;
+}
+}
 
 namespace ui {
 
@@ -19,9 +24,9 @@ class ServerWindow;
 
 class ServerWindowDelegate {
  public:
-  // Returns a display compositor interface pointer. There is only one
-  // DisplayCompositor running in the system.
-  virtual cc::mojom::DisplayCompositor* GetDisplayCompositor() = 0;
+  // Returns a frame sink manager interface pointer. There is only one
+  // MojoFrameSinkManager running in the system.
+  virtual cc::mojom::FrameSinkManager* GetFrameSinkManager() = 0;
 
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.

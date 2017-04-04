@@ -4,7 +4,6 @@
 
 module ui.mojom;
 
-import "cc/ipc/display_compositor.mojom";
 import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";

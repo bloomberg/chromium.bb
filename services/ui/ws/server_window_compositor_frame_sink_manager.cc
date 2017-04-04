@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "cc/ipc/display_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
@@ -36,7 +35,7 @@ void ServerWindowCompositorFrameSinkManager::CreateRootCompositorFrameSink(
   // TODO(fsamuel): AcceleratedWidget cannot be transported over IPC for Mac
   // or Android. We should instead use GpuSurfaceTracker here on those
   // platforms.
-  window_->delegate()->GetDisplayCompositor()->CreateRootCompositorFrameSink(
+  window_->delegate()->GetFrameSinkManager()->CreateRootCompositorFrameSink(
       window_->frame_sink_id(), widget, std::move(sink_request),
       std::move(pending_compositor_frame_sink_request_), std::move(client),
       std::move(display_request));
@@ -50,7 +49,7 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSink(
         mojo::MakeRequest(&compositor_frame_sink_);
   }
 
-  window_->delegate()->GetDisplayCompositor()->CreateCompositorFrameSink(
+  window_->delegate()->GetFrameSinkManager()->CreateCompositorFrameSink(
       window_->frame_sink_id(), std::move(request),
       std::move(pending_compositor_frame_sink_request_), std::move(client));
 }

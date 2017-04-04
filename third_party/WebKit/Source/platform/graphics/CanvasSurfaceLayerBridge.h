@@ -8,7 +8,7 @@
 #include <memory>
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/ipc/display_compositor.mojom-blink.h"
+#include "cc/ipc/frame_sink_manager.mojom-blink.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_reference_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,7 +34,7 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridgeObserver {
 };
 
 class PLATFORM_EXPORT CanvasSurfaceLayerBridge
-    : NON_EXPORTED_BASE(public cc::mojom::blink::DisplayCompositorClient) {
+    : NON_EXPORTED_BASE(public cc::mojom::blink::FrameSinkManagerClient) {
  public:
   explicit CanvasSurfaceLayerBridge(CanvasSurfaceLayerBridgeObserver*,
                                     WebLayerTreeView*);
@@ -43,7 +43,7 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridge
   WebLayer* getWebLayer() const { return m_webLayer.get(); }
   const cc::FrameSinkId& getFrameSinkId() const { return m_frameSinkId; }
 
-  // Implementation of cc::mojom::blink::DisplayCompositorClient
+  // Implementation of cc::mojom::blink::FrameSinkManagerClient
   void OnSurfaceCreated(const cc::SurfaceInfo&) override;
 
   void satisfyCallback(const cc::SurfaceSequence&);
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT CanvasSurfaceLayerBridge
   CanvasSurfaceLayerBridgeObserver* m_observer;
 
   mojom::blink::OffscreenCanvasSurfacePtr m_service;
-  mojo::Binding<cc::mojom::blink::DisplayCompositorClient> m_binding;
+  mojo::Binding<cc::mojom::blink::FrameSinkManagerClient> m_binding;
 
   const cc::FrameSinkId m_frameSinkId;
   cc::SurfaceId m_currentSurfaceId;

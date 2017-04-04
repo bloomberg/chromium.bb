@@ -17,7 +17,8 @@ class FrameSinkId;
 
 namespace ui {
 
-// Handles creating new cc::Displays and related classes for DisplayCompositor.
+// Handles creating new cc::Displays and related classes for
+// MojoFrameSinkManager.
 class DisplayProvider {
  public:
   virtual ~DisplayProvider() {}

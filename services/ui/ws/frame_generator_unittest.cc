@@ -26,7 +26,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
   ~TestServerWindowDelegate() override {}
 
   // ServerWindowDelegate implementation:
-  cc::mojom::DisplayCompositor* GetDisplayCompositor() override {
+  cc::mojom::FrameSinkManager* GetFrameSinkManager() override {
     return nullptr;
   }
 
