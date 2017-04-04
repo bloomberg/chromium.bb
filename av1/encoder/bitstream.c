@@ -4135,7 +4135,9 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       cpi->td.mb.pvq_q = &this_tile->pvq_q;
 #endif
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
+#if !CONFIG_LV_MAP
       assert(tok == tok_end);
+#endif  // !CONFIG_LV_MAP
       aom_stop_encode(&mode_bc);
       tile_size = mode_bc.pos;
 #endif  // CONFIG_ANS
