@@ -33,13 +33,19 @@ class CORE_EXPORT ScriptModule final {
   ScriptModule(const ScriptModule& module) : m_module(module.m_module) {}
   ~ScriptModule();
 
-  bool instantiate(ScriptState*);
+  // Returns exception, if any.
+  ScriptValue instantiate(ScriptState*);
   void evaluate(ScriptState*);
 
   bool isNull() const { return m_module->isEmpty(); }
 
  private:
   ScriptModule(v8::Isolate*, v8::Local<v8::Module>);
+
+  static v8::MaybeLocal<v8::Module> resolveModuleCallback(
+      v8::Local<v8::Context>,
+      v8::Local<v8::String> specifier,
+      v8::Local<v8::Module> referrer);
 
   RefPtr<SharedPersistent<v8::Module>> m_module;
 };

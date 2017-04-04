@@ -5,6 +5,8 @@
 #include "bindings/core/v8/ScriptModule.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/Modulator.h"
+#include "core/dom/ScriptModuleResolver.h"
 
 namespace blink {
 
@@ -27,18 +29,20 @@ ScriptModule ScriptModule::compile(v8::Isolate* isolate,
   return ScriptModule(isolate, module);
 }
 
-v8::MaybeLocal<v8::Module> dummyCallback(v8::Local<v8::Context> context,
-                                         v8::Local<v8::String> specifier,
-                                         v8::Local<v8::Module> referrer) {
-  return v8::MaybeLocal<v8::Module>();
-}
+ScriptValue ScriptModule::instantiate(ScriptState* scriptState) {
+  v8::Isolate* isolate = scriptState->isolate();
+  v8::TryCatch tryCatch(isolate);
 
-bool ScriptModule::instantiate(ScriptState* scriptState) {
   DCHECK(!isNull());
   v8::Local<v8::Context> context = scriptState->context();
-  // TODO(adamk): pass in a real callback.
-  return m_module->newLocal(scriptState->isolate())
-      ->Instantiate(context, &dummyCallback);
+  bool success = m_module->newLocal(scriptState->isolate())
+                     ->Instantiate(context, &resolveModuleCallback);
+  if (!success) {
+    DCHECK(tryCatch.HasCaught());
+    return ScriptValue(scriptState, tryCatch.Exception());
+  }
+  DCHECK(!tryCatch.HasCaught());
+  return ScriptValue();
 }
 
 void ScriptModule::evaluate(ScriptState* scriptState) {
@@ -51,6 +55,28 @@ void ScriptModule::evaluate(ScriptState* scriptState) {
               result, tryCatch)) {
     // TODO(adamk): report error
   }
+}
+
+v8::MaybeLocal<v8::Module> ScriptModule::resolveModuleCallback(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::String> specifier,
+    v8::Local<v8::Module> referrer) {
+  v8::Isolate* isolate = context->GetIsolate();
+  Modulator* modulator = V8PerContextData::from(context)->modulator();
+  DCHECK(modulator);
+
+  ScriptModule referrerRecord(isolate, referrer);
+  ExceptionState exceptionState(isolate, ExceptionState::ExecutionContext,
+                                "ScriptModule", "resolveModuleCallback");
+  ScriptModule resolved = modulator->scriptModuleResolver()->resolve(
+      toCoreStringWithNullCheck(specifier), referrerRecord, exceptionState);
+  if (resolved.isNull()) {
+    DCHECK(exceptionState.hadException());
+    return v8::MaybeLocal<v8::Module>();
+  }
+
+  DCHECK(!exceptionState.hadException());
+  return v8::MaybeLocal<v8::Module>(resolved.m_module->newLocal(isolate));
 }
 
 }  // namespace blink

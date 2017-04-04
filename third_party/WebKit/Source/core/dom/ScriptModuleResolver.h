@@ -21,8 +21,10 @@ class ModuleScript;
 // the specifier, and the module identified by 'x' is the descendant.
 // ScriptModuleResolver, given a referrer and specifier, can look up the
 // descendant.
-class ScriptModuleResolver : public GarbageCollected<ScriptModuleResolver> {
+class ScriptModuleResolver
+    : public GarbageCollectedFinalized<ScriptModuleResolver> {
  public:
+  virtual ~ScriptModuleResolver() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   // Notify the ScriptModuleResolver that a ModuleScript exists.
