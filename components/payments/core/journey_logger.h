@@ -53,7 +53,7 @@ class JourneyLogger {
   static const int CMP_SHOW_COULD_MAKE_PAYMENT_ = 1 << 1;
   static const int CMP_SHOW_MAX = 4;
 
-  JourneyLogger();
+  explicit JourneyLogger(bool is_incognito);
   ~JourneyLogger();
 
   // Increments the number of selection adds for the specified section.
@@ -112,7 +112,8 @@ class JourneyLogger {
   // merchant.
   void RecordSectionSpecificStats(CompletionStatus completion_status);
 
-  // Records the metrics related the the CanMakePayment method.
+  // Records the metrics related the the CanMakePayment method unless in
+  // incognito mode.
   void RecordCanMakePaymentStats(CompletionStatus completion_status);
 
   // Records CanMakePayment's return value effect on whether the Payment Request
@@ -128,6 +129,7 @@ class JourneyLogger {
   bool was_can_make_payments_used_;
   bool could_make_payment_;
   bool was_show_called_;
+  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(JourneyLogger);
 };

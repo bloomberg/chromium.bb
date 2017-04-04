@@ -48,10 +48,10 @@ public class JourneyLogger {
      */
     private long mJourneyLoggerAndroid;
 
-    public JourneyLogger() {
+    public JourneyLogger(boolean isIncognito) {
         // Note that this pointer could leak the native object. The called must call destroy() to
         // ensure that the native object is destroyed.
-        mJourneyLoggerAndroid = nativeInitJourneyLoggerAndroid();
+        mJourneyLoggerAndroid = nativeInitJourneyLoggerAndroid(isIncognito);
     }
 
     /** Will destroy the native object. This class shouldn't be used afterwards. */
@@ -130,7 +130,7 @@ public class JourneyLogger {
         nativeRecordJourneyStatsHistograms(mJourneyLoggerAndroid, completionStatus);
     }
 
-    private native long nativeInitJourneyLoggerAndroid();
+    private native long nativeInitJourneyLoggerAndroid(boolean isIncognito);
     private native void nativeDestroy(long nativeJourneyLoggerAndroid);
     private native void nativeSetNumberOfSuggestionsShown(
             long nativeJourneyLoggerAndroid, int section, int number);

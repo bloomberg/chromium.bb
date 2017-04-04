@@ -259,7 +259,7 @@ public class PaymentRequestImpl
     private final byte[][] mCertificateChain;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
-    private final JourneyLogger mJourneyLogger = new JourneyLogger();
+    private final JourneyLogger mJourneyLogger;
     private final boolean mIsIncognito;
 
     private PaymentRequestClient mClient;
@@ -380,6 +380,8 @@ public class PaymentRequestImpl
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null
                 && activity.getCurrentTabModel().isIncognito();
+
+        mJourneyLogger = new JourneyLogger(mIsIncognito);
 
         if (sCanMakePaymentQueries == null) sCanMakePaymentQueries = new ArrayMap<>();
 

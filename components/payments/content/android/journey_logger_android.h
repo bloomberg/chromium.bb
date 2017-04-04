@@ -19,7 +19,7 @@ class JourneyLoggerAndroid {
   // Registers the JNI bindings for this class.
   static bool Register(JNIEnv* env);
 
-  JourneyLoggerAndroid();
+  explicit JourneyLoggerAndroid(bool is_incognito);
   ~JourneyLoggerAndroid();
 
   // Message from Java to destroy this object.

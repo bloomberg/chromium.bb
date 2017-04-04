@@ -20,7 +20,8 @@ bool JourneyLoggerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-JourneyLoggerAndroid::JourneyLoggerAndroid() {}
+JourneyLoggerAndroid::JourneyLoggerAndroid(bool is_incognito)
+    : journey_logger_(is_incognito) {}
 
 JourneyLoggerAndroid::~JourneyLoggerAndroid() {}
 
@@ -95,8 +96,9 @@ void JourneyLoggerAndroid::RecordJourneyStatsHistograms(
 }
 
 static jlong InitJourneyLoggerAndroid(JNIEnv* env,
-                                      const JavaParamRef<jobject>& jcaller) {
-  return reinterpret_cast<jlong>(new JourneyLoggerAndroid());
+                                      const JavaParamRef<jobject>& jcaller,
+                                      jboolean jis_incognito) {
+  return reinterpret_cast<jlong>(new JourneyLoggerAndroid(jis_incognito));
 }
 
 }  // namespace payments

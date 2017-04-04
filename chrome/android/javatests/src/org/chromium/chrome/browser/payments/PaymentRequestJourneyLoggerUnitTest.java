@@ -43,7 +43,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_NoShow() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_USER_ABORTED);
@@ -73,7 +73,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndUserAbort() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The merchant does not query CanMakePayment, show the PaymentRequest and the user
@@ -103,7 +103,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndOtherAbort() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The merchant does not query CanMakePayment, show the PaymentRequest and the user
@@ -133,7 +133,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentNotCalled_ShowAndComplete() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The merchant does not query CanMakePayment, show the PaymentRequest and the user
@@ -163,7 +163,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseAndNoShow() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make payment and the PaymentRequest is not shown.
@@ -201,7 +201,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueAndNoShow() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user can make a payment but the Payment Request is not shown.
@@ -239,7 +239,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndUserAbort() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown but aborted.
@@ -275,7 +275,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndOtherAbort() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown but aborted.
@@ -311,7 +311,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_FalseShowAndComplete() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
@@ -347,7 +347,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndUserAbort() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
@@ -384,7 +384,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndOtherAbort() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
@@ -421,7 +421,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_CanMakePaymentCalled_TrueShowAndComplete() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
         assertNoLogForCanMakePayment();
 
         // The user cannot make a payment. the payment request is shown and completed.
@@ -451,6 +451,26 @@ public class PaymentRequestJourneyLoggerUnitTest {
     }
 
     /**
+     * Tests the canMakePayment metrics are not logged if the Payment Request was done in an
+     * incognito tab.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Payments"})
+    public void testRecordJourneyStatsHistograms_CanMakePayment_IncognitoTab() {
+        JourneyLogger logger = new JourneyLogger(true /* is_incognito */);
+        assertNoLogForCanMakePayment();
+
+        // The user is in an incognito tab so CanMakePayment is always true;
+        logger.setShowCalled();
+        logger.setCanMakePaymentValue(true);
+        logger.recordJourneyStatsHistograms(JourneyLogger.COMPLETION_STATUS_COMPLETED);
+
+        // There should be no CanMakePayment metrics logged.
+        assertNoLogForCanMakePayment();
+    }
+
+    /**
      * Tests that the completion status metrics based on whether the user had suggestions for all
      * the requested sections are logged as correctly.
      */
@@ -458,7 +478,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_SuggestionsForEverything_Completed() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
 
         // Simulate that the user had suggestions for all the requested sections.
         logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
@@ -486,7 +506,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_SuggestionsForEverything_UserAborted() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
 
         // Simulate that the user had suggestions for all the requested sections.
         logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
@@ -514,7 +534,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_SuggestionsForEverything_OtherAborted() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
 
         // Simulate that the user had suggestions for all the requested sections.
         logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 1);
@@ -542,7 +562,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_Completed() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
 
         // Simulate that the user did not have suggestions for all the requested sections.
         logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
@@ -570,7 +590,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_UserAborted() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
 
         // Simulate that the user did not have suggestions for all the requested sections.
         logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
@@ -598,7 +618,7 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_NoSuggestionsForEverything_OtherAborted() {
-        JourneyLogger logger = new JourneyLogger();
+        JourneyLogger logger = new JourneyLogger(false /* is_incognito */);
 
         // Simulate that the user did not have suggestions for all the requested sections.
         logger.setNumberOfSuggestionsShown(JourneyLogger.SECTION_CREDIT_CARDS, 0);
@@ -625,8 +645,8 @@ public class PaymentRequestJourneyLoggerUnitTest {
     @SmallTest
     @Feature({"Payments"})
     public void testRecordJourneyStatsHistograms_TwoPaymentRequests() {
-        JourneyLogger logger1 = new JourneyLogger();
-        JourneyLogger logger2 = new JourneyLogger();
+        JourneyLogger logger1 = new JourneyLogger(false /* is_incognito */);
+        JourneyLogger logger2 = new JourneyLogger(false /* is_incognito */);
 
         // Make the two loggers have different data.
         logger1.setShowCalled();

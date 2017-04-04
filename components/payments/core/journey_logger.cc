@@ -54,10 +54,11 @@ std::string GetHistogramNameSuffix(
 
 }  // namespace
 
-JourneyLogger::JourneyLogger()
+JourneyLogger::JourneyLogger(bool is_incognito)
     : was_can_make_payments_used_(false),
       could_make_payment_(false),
-      was_show_called_(false) {}
+      was_show_called_(false),
+      is_incognito_(is_incognito) {}
 
 JourneyLogger::~JourneyLogger() {}
 
@@ -150,6 +151,11 @@ void JourneyLogger::RecordSectionSpecificStats(
 
 void JourneyLogger::RecordCanMakePaymentStats(
     CompletionStatus completion_status) {
+  // CanMakePayment always returns true in incognito mode. Don't log the
+  // metrics.
+  if (is_incognito_)
+    return;
+
   // Record CanMakePayment usage.
   UMA_HISTOGRAM_ENUMERATION("PaymentRequest.CanMakePayment.Usage",
                             was_can_make_payments_used_
