@@ -4,6 +4,7 @@
 
 #include "base/win/scoped_comptr.h"
 
+#include <objbase.h>
 #include <shlobj.h>
 
 #include <memory>
@@ -51,8 +52,7 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   EXPECT_TRUE(SUCCEEDED(CoGetMalloc(1, mem_alloc.Receive())));
 
   ScopedComPtr<IUnknown> qi_test;
-  EXPECT_HRESULT_SUCCEEDED(mem_alloc.QueryInterface(IID_IUnknown,
-      reinterpret_cast<void**>(qi_test.Receive())));
+  EXPECT_HRESULT_SUCCEEDED(mem_alloc.QueryInterface(IID_PPV_ARGS(&qi_test)));
   EXPECT_TRUE(qi_test.get() != NULL);
   qi_test.Release();
 

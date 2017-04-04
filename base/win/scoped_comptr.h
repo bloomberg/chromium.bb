@@ -5,6 +5,7 @@
 #ifndef BASE_WIN_SCOPED_COMPTR_H_
 #define BASE_WIN_SCOPED_COMPTR_H_
 
+#include <objbase.h>
 #include <unknwn.h>
 
 #include "base/logging.h"
@@ -99,7 +100,7 @@ class ScopedComPtr {
     // IUnknown already has a template version of QueryInterface
     // so the iid parameter is implicit here. The only thing this
     // function adds are the DCHECKs.
-    return ptr_->QueryInterface(p);
+    return ptr_->QueryInterface(IID_PPV_ARGS(p));
   }
 
   // QI for times when the IID is not associated with the type.
@@ -113,7 +114,7 @@ class ScopedComPtr {
   // error code from the other->QueryInterface operation.
   HRESULT QueryFrom(IUnknown* object) {
     DCHECK(object);
-    return object->QueryInterface(Receive());
+    return object->QueryInterface(IID_PPV_ARGS(Receive()));
   }
 
   // Convenience wrapper around CoCreateInstance
@@ -135,10 +136,10 @@ class ScopedComPtr {
       return false;
 
     ScopedComPtr<IUnknown> my_identity;
-    QueryInterface(my_identity.Receive());
+    QueryInterface(IID_PPV_ARGS(my_identity.Receive()));
 
     ScopedComPtr<IUnknown> other_identity;
-    other->QueryInterface(other_identity.Receive());
+    other->QueryInterface(IID_PPV_ARGS(other_identity.Receive()));
 
     return my_identity == other_identity;
   }
@@ -255,6 +256,12 @@ bool operator!=(std::nullptr_t null, const ScopedComPtr<T>& rhs) {
 template <typename T>
 std::ostream& operator<<(std::ostream& out, const ScopedComPtr<T>& p) {
   return out << p.get();
+}
+
+// Helper to make IID_PPV_ARGS work with ScopedComPtr.
+template <typename T>
+void** IID_PPV_ARGS_Helper(base::win::ScopedComPtr<T>* pp) throw() {
+  return pp->ReceiveVoid();
 }
 
 }  // namespace win
