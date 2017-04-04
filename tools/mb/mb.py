@@ -1091,7 +1091,8 @@ class MetaBuildWrapper(object):
           '../../build/android/test_wrapper/logdog_wrapper.py',
           '--target', target,
           '--target-devices-file', '${SWARMING_BOT_FILE}',
-          '--logdog-bin-cmd', '../../bin/logdog_butler']
+          '--logdog-bin-cmd', '../../bin/logdog_butler',
+          '--logcat-output-file', '${ISOLATED_OUTDIR}/logcats']
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files = [
           '../../testing/test_env.py',
