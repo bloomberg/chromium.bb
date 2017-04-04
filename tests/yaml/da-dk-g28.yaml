@@ -1,4 +1,4 @@
-table: [unicode.dis, da-dk-g28.ctb]
+table: [tables/unicode.dis, tables/da-dk-g28.ctb]
 tests:
   # Test all characters from 0x21 to 0xff
   - [' ', ' ']
