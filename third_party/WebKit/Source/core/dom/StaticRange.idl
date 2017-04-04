@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://discourse.wicg.io/t/proposal-staticrange-to-be-used-instead-of-range-for-new-apis/1472
+// https://garykac.github.io/staticrange/#interface-staticrange
 
 [
     Constructor,
@@ -11,13 +11,13 @@
     RuntimeEnabled=InputEvent,
 ] interface StaticRange {
     attribute Node startContainer;
-    attribute long startOffset;
+    attribute unsigned long startOffset;
     attribute Node endContainer;
-    attribute long endOffset;
+    attribute unsigned long endOffset;
     readonly attribute boolean collapsed;
 
-    void setStart(Node node, long offset);
-    void setEnd(Node node, long offset);
+    void setStart(Node node, unsigned long offset);
+    void setEnd(Node node, unsigned long offset);
 
     [NewObject, RaisesException] Range toRange();
 };

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://discourse.wicg.io/t/proposal-staticrange-to-be-used-instead-of-range-for-new-apis/1472
-
 #ifndef StaticRange_h
 #define StaticRange_h
 
@@ -28,9 +26,9 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
   }
   static StaticRange* create(Document& document,
                              Node* startContainer,
-                             int startOffset,
+                             unsigned startOffset,
                              Node* endContainer,
-                             int endOffset) {
+                             unsigned endOffset) {
     return new StaticRange(document, startContainer, startOffset, endContainer,
                            endOffset);
   }
@@ -53,21 +51,21 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
     m_startContainer = startContainer;
   }
 
-  int startOffset() const { return m_startOffset; }
-  void setStartOffset(int startOffset) { m_startOffset = startOffset; }
+  unsigned startOffset() const { return m_startOffset; }
+  void setStartOffset(unsigned startOffset) { m_startOffset = startOffset; }
 
   Node* endContainer() const { return m_endContainer.get(); }
   void setEndContainer(Node* endContainer) { m_endContainer = endContainer; }
 
-  int endOffset() const { return m_endOffset; }
-  void setEndOffset(int endOffset) { m_endOffset = endOffset; }
+  unsigned endOffset() const { return m_endOffset; }
+  void setEndOffset(unsigned endOffset) { m_endOffset = endOffset; }
 
   bool collapsed() const {
     return m_startContainer == m_endContainer && m_startOffset == m_endOffset;
   }
 
-  void setStart(Node* container, int offset);
-  void setEnd(Node* container, int offset);
+  void setStart(Node* container, unsigned offset);
+  void setEnd(Node* container, unsigned offset);
 
   Range* toRange(ExceptionState& = ASSERT_NO_EXCEPTION) const;
 
@@ -77,15 +75,15 @@ class CORE_EXPORT StaticRange final : public GarbageCollected<StaticRange>,
   explicit StaticRange(Document&);
   StaticRange(Document&,
               Node* startContainer,
-              int startOffset,
+              unsigned startOffset,
               Node* endContainer,
-              int endOffset);
+              unsigned endOffset);
 
   Member<Document> m_ownerDocument;  // Required by |toRange()|.
   Member<Node> m_startContainer;
-  int m_startOffset;
+  unsigned m_startOffset;
   Member<Node> m_endContainer;
-  int m_endOffset;
+  unsigned m_endOffset;
 };
 
 using StaticRangeVector = HeapVector<Member<StaticRange>>;

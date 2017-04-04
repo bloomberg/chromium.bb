@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://discourse.wicg.io/t/proposal-staticrange-to-be-used-instead-of-range-for-new-apis/1472
-
 #include "core/dom/StaticRange.h"
 
 #include "bindings/core/v8/ExceptionState.h"
@@ -16,27 +14,27 @@ namespace blink {
 StaticRange::StaticRange(Document& document)
     : m_ownerDocument(document),
       m_startContainer(document),
-      m_startOffset(0),
+      m_startOffset(0u),
       m_endContainer(document),
-      m_endOffset(0) {}
+      m_endOffset(0u) {}
 
 StaticRange::StaticRange(Document& document,
                          Node* startContainer,
-                         int startOffset,
+                         unsigned startOffset,
                          Node* endContainer,
-                         int endOffset)
+                         unsigned endOffset)
     : m_ownerDocument(document),
       m_startContainer(startContainer),
       m_startOffset(startOffset),
       m_endContainer(endContainer),
       m_endOffset(endOffset) {}
 
-void StaticRange::setStart(Node* container, int offset) {
+void StaticRange::setStart(Node* container, unsigned offset) {
   m_startContainer = container;
   m_startOffset = offset;
 }
 
-void StaticRange::setEnd(Node* container, int offset) {
+void StaticRange::setEnd(Node* container, unsigned offset) {
   m_endContainer = container;
   m_endOffset = offset;
 }
