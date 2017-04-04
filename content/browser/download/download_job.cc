@@ -51,6 +51,17 @@ bool DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
   return true;
 }
 
+void DownloadJob::SetPotentialFileLength(int64_t length) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DownloadFile* download_file = download_item_->download_file_.get();
+  if (download_file) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE, FROM_HERE,
+        base::Bind(&DownloadFile::SetPotentialFileLength,
+                   base::Unretained(download_file), length));
+  }
+}
+
 bool DownloadJob::UsesParallelRequests() const {
   return false;
 }

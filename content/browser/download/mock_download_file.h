@@ -51,6 +51,7 @@ class MockDownloadFile : public DownloadFile {
                     const RenameCompletionCallback& callback));
   MOCK_METHOD0(Detach, void());
   MOCK_METHOD0(Cancel, void());
+  MOCK_METHOD1(SetPotentialFileLength, void(int64_t length));
   MOCK_METHOD0(Finish, void());
   MOCK_CONST_METHOD0(FullPath, const base::FilePath&());
   MOCK_CONST_METHOD0(InProgress, bool());

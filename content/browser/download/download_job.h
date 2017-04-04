@@ -53,6 +53,9 @@ class CONTENT_EXPORT DownloadJob {
                      int64_t offset,
                      int64_t length);
 
+  // Sets the potential length of the file.
+  void SetPotentialFileLength(int64_t length);
+
   DownloadItemImpl* download_item_;
 
  private:

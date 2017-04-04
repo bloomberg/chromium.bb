@@ -48,6 +48,9 @@ const int kMaxRenameRetries = 3;
 // 0 for length if we found that a stream can no longer write any data.
 const int kNoBytesToWrite = -1;
 
+// Default content length when the potential file size is not yet determined.
+const int kUnknownContentLength = -1;
+
 }  // namespace
 
 DownloadFileImpl::SourceStream::SourceStream(
@@ -75,8 +78,10 @@ void DownloadFileImpl::SourceStream::TruncateLengthWithWrittenDataBlock(
     return;
 
   if (offset <= offset_) {
-    if (offset + bytes_written > offset_)
+    if (offset + bytes_written > offset_) {
       length_ = kNoBytesToWrite;
+      finished_ = true;
+    }
     return;
   }
 
@@ -99,6 +104,7 @@ DownloadFileImpl::DownloadFileImpl(
       file_(net_log_),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
+      potential_file_length_(kUnknownContentLength),
       bytes_seen_(0),
       num_active_streams_(0),
       record_stream_bandwidth_(true),
@@ -344,6 +350,22 @@ void DownloadFileImpl::Cancel() {
   file_.Cancel();
 }
 
+void DownloadFileImpl::SetPotentialFileLength(int64_t length) {
+  DCHECK(potential_file_length_ == length ||
+         potential_file_length_ == kUnknownContentLength)
+      << "Potential file length changed, the download might have updated.";
+
+  if (length < potential_file_length_ ||
+      potential_file_length_ == kUnknownContentLength) {
+    potential_file_length_ = length;
+  }
+
+  // TODO(qinmin): interrupt the download if the received bytes are larger
+  // than content length limit.
+  LOG_IF(ERROR, TotalBytesReceived() > potential_file_length_)
+      << "Received data is larger than the content length limit.";
+}
+
 const base::FilePath& DownloadFileImpl::FullPath() const {
   return file_.full_path();
 }
@@ -446,6 +468,10 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     // Signal successful completion or termination of the current stream.
     source_stream->stream_reader()->RegisterCallback(base::Closure());
     source_stream->set_finished(true);
+    if (source_stream->length() == DownloadSaveInfo::kLengthFullContent) {
+      SetPotentialFileLength(source_stream->offset() +
+                             source_stream->bytes_written());
+    }
     num_active_streams_--;
 
     // Inform observers.
@@ -548,16 +574,8 @@ void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
 }
 
 bool DownloadFileImpl::IsDownloadCompleted() {
-  SourceStream* stream_for_last_slice = nullptr;
-  int64_t last_slice_offset = 0;
   for (auto& stream : source_streams_) {
-    SourceStream* source_stream = stream.second.get();
-    if (source_stream->offset() >= last_slice_offset &&
-        source_stream->bytes_written() > 0) {
-      stream_for_last_slice = source_stream;
-      last_slice_offset = source_stream->offset();
-    }
-    if (!source_stream->is_finished())
+    if (!stream.second->is_finished())
       return false;
   }
 
@@ -572,21 +590,7 @@ bool DownloadFileImpl::IsDownloadCompleted() {
     // Some streams might not have been added to |source_streams_| yet.
     return false;
   }
-  if (stream_for_last_slice) {
-    DCHECK_EQ(slices_to_download[0].received_bytes,
-              DownloadSaveInfo::kLengthFullContent);
-    // The last stream should not have a length limit. If it has, it might
-    // not reach the end of the file.
-    if (stream_for_last_slice->length() !=
-        DownloadSaveInfo::kLengthFullContent) {
-      return false;
-    }
-    DCHECK_EQ(slices_to_download[0].offset,
-              stream_for_last_slice->offset() +
-                  stream_for_last_slice->bytes_written());
-  }
-
-  return true;
+  return TotalBytesReceived() == potential_file_length_;
 }
 
 void DownloadFileImpl::HandleStreamError(SourceStream* source_stream,

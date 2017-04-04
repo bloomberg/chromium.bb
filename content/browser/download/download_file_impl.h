@@ -69,6 +69,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
                          const RenameCompletionCallback& callback) override;
   void Detach() override;
   void Cancel() override;
+  void SetPotentialFileLength(int64_t length) override;
   const base::FilePath& FullPath() const override;
   bool InProgress() const override;
   void WasPaused() override;
@@ -250,6 +251,10 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Used to trigger progress updates.
   std::unique_ptr<base::RepeatingTimer> update_timer_;
+
+  // Potential file length. A range request with an offset larger than this
+  // value will fail. So the actual file length cannot be larger than this.
+  int64_t potential_file_length_;
 
   // Statistics
   size_t bytes_seen_;

@@ -95,12 +95,6 @@ void DownloadWorker::OnUrlDownloaderStarted(
     VLOG(kVerboseLevel) << "Parallel download sub-request failed. reason = "
                         << create_info->result;
 
-    // Ignore HTTP 416 for the workers.
-    if (create_info->result ==
-        DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
-      return;
-    }
-
     delegate_->OnServerResponseError(this, create_info->result);
     return;
   }

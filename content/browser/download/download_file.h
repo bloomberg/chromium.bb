@@ -75,6 +75,14 @@ class CONTENT_EXPORT DownloadFile {
   // Abort the download and automatically close the file.
   virtual void Cancel() = 0;
 
+  // Sets the potential file length. This is called when a half-open range
+  // request fails or completes successfully. If the range request fails, the
+  // file length should not be larger than the request's offset. If the range
+  // request completes successfully, the file length can be determined by
+  // the request offset and the bytes received. So |length| may not be the
+  // actual file length, but it should not be smaller than it.
+  virtual void SetPotentialFileLength(int64_t length) = 0;
+
   virtual const base::FilePath& FullPath() const = 0;
   virtual bool InProgress() const = 0;
   virtual void WasPaused() = 0;
