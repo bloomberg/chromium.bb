@@ -14,6 +14,13 @@
 
 namespace blink {
 
+// ScriptModule wraps a handle to a v8::Module for use in core.
+//
+// Using ScriptModules needs a ScriptState and its scope to operate in. You
+// should always provide the same ScriptState and not try to reuse ScriptModules
+// across different contexts.
+// Currently all ScriptModule users can easily access its context Modulator, so
+// we use it to fill ScriptState in.
 class CORE_EXPORT ScriptModule final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
