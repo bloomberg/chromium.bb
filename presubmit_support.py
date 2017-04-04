@@ -664,8 +664,6 @@ class AffectedFile(object):
 
   def Action(self):
     """Returns the action on this opened file, e.g. A, M, D, etc."""
-    # TODO(maruel): Somewhat crappy, Could be "A" or "A  +" for svn but
-    # different for other SCM.
     return self._action
 
   def IsTestableFile(self):
@@ -874,8 +872,7 @@ class Change(object):
 
     if include_deletes:
       return affected
-    else:
-      return filter(lambda x: x.Action() != 'D', affected)
+    return filter(lambda x: x.Action() != 'D', affected)
 
   def AffectedTestableFiles(self, include_deletes=None):
     """Return a list of the existing text files in a change."""
@@ -1343,17 +1340,17 @@ def DoPresubmitChecks(change,
 def ScanSubDirs(mask, recursive):
   if not recursive:
     return [x for x in glob.glob(mask) if x not in ('.svn', '.git')]
-  else:
-    results = []
-    for root, dirs, files in os.walk('.'):
-      if '.svn' in dirs:
-        dirs.remove('.svn')
-      if '.git' in dirs:
-        dirs.remove('.git')
-      for name in files:
-        if fnmatch.fnmatch(name, mask):
-          results.append(os.path.join(root, name))
-    return results
+
+  results = []
+  for root, dirs, files in os.walk('.'):
+    if '.svn' in dirs:
+      dirs.remove('.svn')
+    if '.git' in dirs:
+      dirs.remove('.git')
+    for name in files:
+      if fnmatch.fnmatch(name, mask):
+        results.append(os.path.join(root, name))
+  return results
 
 
 def ParseFiles(args, recursive):
@@ -1468,9 +1465,6 @@ def main(argv=None):
   parser.add_option("--rietveld_email_file", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_private_key_file", help=optparse.SUPPRESS_HELP)
 
-  # TODO(phajdan.jr): Update callers and remove obsolete --trybot-json .
-  parser.add_option("--trybot-json",
-                    help="Output trybot information to the file specified.")
   auth.add_auth_options(parser)
   options, args = parser.parse_args(argv)
   auth_config = auth.extract_auth_config_from_options(options)
