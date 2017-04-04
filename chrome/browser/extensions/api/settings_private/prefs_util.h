@@ -42,6 +42,11 @@ class PrefsUtil {
   // manipulate.
   const TypedPrefMap& GetWhitelistedKeys();
 
+  // Returns the pref type for |pref_name| or PREF_TYPE_NONE if not in the
+  // whitelist.
+  api::settings_private::PrefType GetWhitelistedPrefType(
+      const std::string& pref_name);
+
   // Gets the value of the pref with the given |name|. Returns a pointer to an
   // empty PrefObject if no pref is found for |name|.
   virtual std::unique_ptr<api::settings_private::PrefObject> GetPref(

@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 // Use the <code>chrome.settingsPrivate</code> API to get or set preferences
-// from the settings UI.
+// from the settings UI. Access is restricted to a whitelisted set of user
+// facing preferences.
 namespace settingsPrivate {
   enum PrefType { BOOLEAN, NUMBER, STRING, URL, LIST, DICTIONARY };
 
@@ -58,7 +59,7 @@ namespace settingsPrivate {
   callback SetDefaultZoomCallback = void (boolean success);
 
   interface Functions {
-    // Sets a settings value.
+    // Sets a pref value.
     // |name|: The name of the pref.
     // |value|: The new value of the pref.
     // |pageId|: The user metrics identifier or null.
