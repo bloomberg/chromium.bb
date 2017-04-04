@@ -99,10 +99,6 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                              ImageDataColorSettings&,
                              ExceptionState&);
 
-  void getColorSettings(ImageDataColorSettings& result) {
-    result = m_colorSettings;
-  }
-
   static ImageData* createForTest(const IntSize&);
   static ImageData* createForTest(const IntSize&,
                                   DOMArrayBufferView*,
@@ -129,6 +125,12 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   ImageDataArray& dataUnion() { return m_dataUnion; }
   const ImageDataArray& dataUnion() const { return m_dataUnion; }
   void dataUnion(ImageDataArray& result) { result = m_dataUnion; };
+  const ImageDataColorSettings& colorSettings() const {
+    return m_colorSettings;
+  }
+  void colorSettings(ImageDataColorSettings& result) {
+    result = m_colorSettings;
+  };
 
   sk_sp<SkColorSpace> skColorSpace();
   bool imageDataInCanvasColorSettings(const CanvasColorSpace&,
