@@ -49,6 +49,9 @@ const int kDefaultInputBufferSize = 1024;
 const char kBeamformingOnDeviceId[] = "default-beamforming-on";
 const char kBeamformingOffDeviceId[] = "default-beamforming-off";
 
+const char kInternalInputDevice[] = "Built-in-mic";
+const char kInternalOutputDevice[] = "Built-in-speaker";
+
 enum CrosBeamformingDeviceState {
   BEAMFORMING_DEFAULT_ENABLED = 0,
   BEAMFORMING_USER_ENABLED,
@@ -164,10 +167,37 @@ void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
   if (base::FeatureList::IsEnabled(features::kEnumerateAudioDevices)) {
     chromeos::AudioDeviceList devices;
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+
+    int internal_input_dev_index = 0;
+    int internal_output_dev_index = 0;
+    for (const auto& device : devices) {
+      if (device.type == chromeos::AUDIO_TYPE_INTERNAL_MIC)
+        internal_input_dev_index = dev_index_of(device.id);
+      else if (device.type == chromeos::AUDIO_TYPE_INTERNAL_SPEAKER)
+        internal_output_dev_index = dev_index_of(device.id);
+    }
+
+    bool has_internal_input = false;
+    bool has_internal_output = false;
     for (const auto& device : devices) {
       if (device.is_input == is_input && device.is_for_simple_usage()) {
-        device_names->emplace_back(device.display_name,
-                                   base::Uint64ToString(device.id));
+        int dev_index = dev_index_of(device.id);
+        if (dev_index == internal_input_dev_index) {
+          if (!has_internal_input) {
+            device_names->emplace_back(kInternalInputDevice,
+                                       base::Uint64ToString(device.id));
+            has_internal_input = true;
+          }
+        } else if (dev_index == internal_output_dev_index) {
+          if (!has_internal_output) {
+            device_names->emplace_back(kInternalOutputDevice,
+                                       base::Uint64ToString(device.id));
+            has_internal_output = true;
+          }
+        } else {
+          device_names->emplace_back(device.display_name,
+                                     base::Uint64ToString(device.id));
+        }
       }
     }
   }
