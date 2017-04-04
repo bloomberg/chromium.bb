@@ -167,7 +167,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceNoUUIDs) {
   EXPECT_EQ(0u, uuids.size());
 }
 
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_MACOSX)
 // TODO(ortuno): Enable on Android once it supports Service Data.
 // http://crbug.com/639408
 TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
@@ -176,84 +176,55 @@ TEST_F(BluetoothTest, GetServiceDataUUIDs_GetServiceDataForUUID) {
     return;
   }
   InitWithFakeAdapter();
-
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(crbug.com/706043): Remove #if once StartLowEnergyDiscoverySession is
-  // implemented for bluez.
   StartLowEnergyDiscoverySession();
-#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-  // Receive Advertisement with empty service data.
-  BluetoothDevice* device1 = SimulateLowEnergyDevice(4);
-  EXPECT_TRUE(device1->GetServiceData().empty());
-  EXPECT_TRUE(device1->GetServiceDataUUIDs().empty());
 
   // Receive Advertisement with service data.
-  BluetoothDevice* device2 = SimulateLowEnergyDevice(1);
+  BluetoothDevice* device = SimulateLowEnergyDevice(1);
 
   EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
-            device2->GetServiceData());
+            device->GetServiceData());
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDHeartRate)}),
-            device2->GetServiceDataUUIDs());
+            device->GetServiceDataUUIDs());
   EXPECT_EQ(std::vector<uint8_t>({1}),
-            *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
+            *device->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
 
   // Receive Advertisement with no service data.
   SimulateLowEnergyDevice(3);
 
-// TODO(crbug.com/707039): Remove #if once the BlueZ caching behavior is
-// changed.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  // On ChromeOS and Linux, BlueZ persists all service data meaning if
-  // a device stops advertising service data for a UUID, BlueZ will
-  // still return the cached value for that UUID.
-  EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {1}}}),
-            device2->GetServiceData());
-  EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDHeartRate)}),
-            device2->GetServiceDataUUIDs());
-  EXPECT_EQ(std::vector<uint8_t>({1}),
-            *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
-#else
-  EXPECT_TRUE(device2->GetServiceData().empty());
-  EXPECT_TRUE(device2->GetServiceDataUUIDs().empty());
+  EXPECT_TRUE(device->GetServiceData().empty());
+  EXPECT_TRUE(device->GetServiceDataUUIDs().empty());
   EXPECT_EQ(nullptr,
-            device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
-#endif
+            device->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
 
   // Receive Advertisement with new service data.
   SimulateLowEnergyDevice(2);
 
-  EXPECT_EQ(ServiceDataMap(
-                {{BluetoothUUID(kTestUUIDHeartRate), std::vector<uint8_t>({})},
-                 {BluetoothUUID(kTestUUIDImmediateAlert), {0, 2}}}),
-            device2->GetServiceData());
+  EXPECT_EQ(ServiceDataMap({{BluetoothUUID(kTestUUIDHeartRate), {2}},
+                            {BluetoothUUID(kTestUUIDImmediateAlert), {0}}}),
+            device->GetServiceData());
   EXPECT_EQ(UUIDSet({BluetoothUUID(kTestUUIDHeartRate),
                      BluetoothUUID(kTestUUIDImmediateAlert)}),
-            device2->GetServiceDataUUIDs());
-  EXPECT_EQ(std::vector<uint8_t>({}),
-            *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
+            device->GetServiceDataUUIDs());
+  EXPECT_EQ(std::vector<uint8_t>({2}),
+            *device->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
   EXPECT_EQ(
-      std::vector<uint8_t>({0, 2}),
-      *device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDImmediateAlert)));
+      std::vector<uint8_t>({0}),
+      *device->GetServiceDataForUUID(BluetoothUUID(kTestUUIDImmediateAlert)));
 
-#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(crbug.com/706043): Remove #if once StartLowEnergyDiscoverySession is
-  // implemented for bluez.
   // Stop discovery.
   discovery_sessions_[0]->Stop(GetCallback(Call::EXPECTED),
                                GetErrorCallback(Call::NOT_EXPECTED));
   ASSERT_FALSE(adapter_->IsDiscovering());
   ASSERT_FALSE(discovery_sessions_[0]->IsActive());
 
-  EXPECT_TRUE(device2->GetServiceData().empty());
-  EXPECT_TRUE(device2->GetServiceDataUUIDs().empty());
+  EXPECT_TRUE(device->GetServiceData().empty());
+  EXPECT_TRUE(device->GetServiceDataUUIDs().empty());
   EXPECT_EQ(nullptr,
-            device2->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
-  EXPECT_EQ(nullptr, device2->GetServiceDataForUUID(
+            device->GetServiceDataForUUID(BluetoothUUID(kTestUUIDHeartRate)));
+  EXPECT_EQ(nullptr, device->GetServiceDataForUUID(
                          BluetoothUUID(kTestUUIDImmediateAlert)));
-#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
-#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Tests that the Advertisement Data fields are correctly updated during

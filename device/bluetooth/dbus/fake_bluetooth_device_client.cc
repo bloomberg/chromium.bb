@@ -1551,29 +1551,6 @@ void FakeBluetoothDeviceClient::UpdateDeviceRSSI(
   properties->rssi.ReplaceValue(rssi);
 }
 
-void FakeBluetoothDeviceClient::UpdateServiceData(
-    const dbus::ObjectPath& object_path,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& service_data) {
-  PropertiesMap::const_iterator iter = properties_map_.find(object_path);
-  if (iter == properties_map_.end()) {
-    VLOG(2) << "Fake device does not exist: " << object_path.value();
-    return;
-  }
-  Properties* properties = iter->second.get();
-  DCHECK(properties);
-  properties->service_data.set_valid(true);
-
-  // BlueZ caches all the previously received advertisements. To mimic BlueZ
-  // caching behavior, merge the new data here with the existing data.
-  // TODO(crbug.com/707039): once the BlueZ caching behavior is changed, this
-  // needs to be updated as well.
-  std::unordered_map<std::string, std::vector<uint8_t>> merged_data =
-      service_data;
-  merged_data.insert(properties->service_data.value().begin(),
-                     properties->service_data.value().end());
-  properties->service_data.ReplaceValue(merged_data);
-}
-
 void FakeBluetoothDeviceClient::UpdateConnectionInfo(
     uint16_t connection_rssi,
     uint16_t transmit_power,
@@ -1798,8 +1775,7 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
     const std::string alias,
     const std::string device_address,
     const std::vector<std::string>& service_uuids,
-    device::BluetoothTransport type,
-    const std::unordered_map<std::string, std::vector<uint8_t>>& service_data) {
+    device::BluetoothTransport type) {
   // Create a random device path.
   dbus::ObjectPath device_path;
   std::string id;
@@ -1841,11 +1817,6 @@ void FakeBluetoothDeviceClient::CreateTestDevice(
       NOTREACHED();
   }
   properties->type.set_valid(true);
-
-  if (!service_data.empty()) {
-    properties->service_data.ReplaceValue(service_data);
-    properties->service_data.set_valid(true);
-  }
 
   properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
