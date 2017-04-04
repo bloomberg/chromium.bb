@@ -619,6 +619,14 @@ shared_library("chrome") {
     "//chrome:chrome_android_core",
   ]
 
+  if (enable_vr) {
+    # Ensure libgvr static library appears before gcc library in linking order.
+    # See https://crbug.com/704305 for details.
+    libs = [
+      "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+    ]
+  }
+
   if (is_android && use_order_profiling) {
     deps += [ "//tools/cygprofile" ]
   }
@@ -704,6 +712,14 @@ if (!android_64bit_target_cpu ||
       "//chrome:chrome_android_core",
     ]
 
+    if (enable_vr) {
+      # Ensure libgvr static library appears before gcc library in linking order.
+      # See https://crbug.com/704305 for details.
+      libs = [
+        "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+      ]
+    }
+
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [ "//build/config/android:hide_all_but_jni" ]
     if (is_android && use_order_profiling) {
@@ -734,6 +750,13 @@ shared_library("chrome_sync_shell") {
     "//components/sync",
     "//components/sync:test_support_fake_server_android",
   ]
+  if (enable_vr) {
+    # Ensure libgvr static library appears before gcc library in linking order.
+    # See https://crbug.com/704305 for details.
+    libs = [
+      "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
+    ]
+  }
 }
 
 # Contains rules common to chrome_public_apk and chrome_sync_shell_apk

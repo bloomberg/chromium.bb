@@ -244,17 +244,6 @@ void VrController::Initialize(gvr_context* gvr_context) {
   // TODO(bajones): Monitor changes to the controller handedness.
   handedness_ = gvr->GetUserPrefs().GetControllerHandedness();
 
-  // Work around an obscure link error in component build.
-  // third_party/gvr-android-sdk/libgvr_shim_static_arm.a needs
-  // __aeabi_f2lz (float to int64_t static cast implementation) for
-  // ION's logging.cc::ThrottledLogger. Somehow this is no longer
-  // being provided, so convince the compiler to emit it here so that
-  // it's resolvable when linking libchrome.so.
-  // TODO(bshe,crbug.com/704305): look into a more elegant fix?
-  volatile float fixme_float = 1.3f;
-  volatile int64_t fixme_int64 = static_cast<int64_t>(fixme_float);
-  (void)fixme_int64;
-
   controller_api_->Resume();
 }
 

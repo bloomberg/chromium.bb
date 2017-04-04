@@ -93,6 +93,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
       "android",
     ]
+
     configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
   }
 
@@ -123,6 +124,12 @@ if (enable_vr) {
       "//testing/gtest",
       "//third_party/WebKit/public:blink",
       "//ui/gfx/geometry",
+    ]
+
+    # Ensure libgvr static library appears before gcc library in linking order.
+    # See https://crbug.com/704305 for details.
+    libs = [
+      "//third_party/gvr-android-sdk/libgvr_shim_static_${current_cpu}.a",
     ]
 
     data = [
