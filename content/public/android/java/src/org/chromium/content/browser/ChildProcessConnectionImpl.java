@@ -176,9 +176,11 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                     StartCallback startCallback = mStartCallback;
                     mStartCallback = null;
 
+                    final boolean bindCheck =
+                            mCreationParams != null && mCreationParams.getBindToCallerCheck();
                     boolean boundToUs = false;
                     try {
-                        boundToUs = mService.bindToCaller();
+                        boundToUs = bindCheck ? mService.bindToCaller() : true;
                     } catch (RemoteException ex) {
                         // Do not trigger the StartCallback here, since the service is already
                         // dead and the DeathCallback will run from onServiceDisconnected().

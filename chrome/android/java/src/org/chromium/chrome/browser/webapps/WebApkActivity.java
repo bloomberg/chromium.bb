@@ -166,8 +166,9 @@ public class WebApkActivity extends WebappActivity {
         ChildProcessCreationParams params = mDefaultParams;
         if (isForWebApk) {
             boolean isExternalService = false;
+            boolean bindToCaller = false;
             params = new ChildProcessCreationParams(getWebappInfo().webApkPackageName(),
-                    isExternalService, LibraryProcessType.PROCESS_CHILD);
+                    isExternalService, LibraryProcessType.PROCESS_CHILD, bindToCaller);
         }
         ChildProcessCreationParams.registerDefault(params);
     }

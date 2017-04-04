@@ -15,6 +15,8 @@ public interface ChildProcessConstants {
     // Key in the binding Intent's Bundle for the ChromiumLinkerParams.
     public static final String EXTRA_LINKER_PARAMS =
             "com.google.android.apps.chrome.extra.linker_params";
+    public static final String EXTRA_BIND_TO_CALLER =
+            "com.google.android.apps.chrome.extra.bind_to_caller";
 
     // Below are the names for the items placed in the Bundle passed in the
     // IChildProcessService.setupConnection call, once the connection has been established.

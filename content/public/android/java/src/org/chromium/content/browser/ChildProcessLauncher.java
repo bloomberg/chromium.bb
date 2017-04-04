@@ -404,15 +404,22 @@ public class ChildProcessLauncher {
         }
     }
 
+    private static Bundle createCommonParamsBundle(ChildProcessCreationParams params) {
+        Bundle commonParams = new Bundle();
+        commonParams.putParcelable(
+                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
+        final boolean bindToCallerCheck = params == null ? false : params.getBindToCallerCheck();
+        commonParams.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCallerCheck);
+        return commonParams;
+    }
+
     private static ChildProcessConnection allocateBoundConnection(
             SpawnData spawnData, ChildProcessConnection.StartCallback startCallback) {
         final Context context = spawnData.getContext();
         final boolean inSandbox = spawnData.isInSandbox();
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
-        Bundle commonParams = new Bundle();
-        commonParams.putParcelable(
-                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
-        ChildProcessConnection connection = allocateConnection(spawnData, commonParams);
+        ChildProcessConnection connection = allocateConnection(
+                spawnData, createCommonParamsBundle(spawnData.getCreationParams()));
         if (connection != null) {
             connection.start(startCallback);
 
@@ -631,7 +638,8 @@ public class ChildProcessLauncher {
                 // Chrome's package to use when initializing a non-renderer processes.
                 // TODO(boliu): Should fold into |paramId|. Investigate why this is needed.
                 params = new ChildProcessCreationParams(context.getPackageName(),
-                        params.getIsExternalService(), params.getLibraryProcessType());
+                        params.getIsExternalService(), params.getLibraryProcessType(),
+                        params.getBindToCallerCheck());
             }
             if (ContentSwitches.SWITCH_GPU_PROCESS.equals(processType)) {
                 childProcessCallback = new GpuProcessCallback();
@@ -800,17 +808,14 @@ public class ChildProcessLauncher {
     }
 
     @VisibleForTesting
-    static ChildProcessConnection allocateConnectionForTesting(Context context,
-            ChildProcessCreationParams creationParams) {
-        Bundle commonParams = new Bundle();
-        commonParams.putParcelable(
-                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
+    static ChildProcessConnection allocateConnectionForTesting(
+            Context context, ChildProcessCreationParams creationParams) {
         return allocateConnection(
                 new SpawnData(false /* forWarmUp */, context, null /* commandLine */,
                         0 /* childProcessId */, null /* filesToBeMapped */,
                         null /* launchCallback */, null /* childProcessCallback */,
                         true /* inSandbox */, false /* alwaysInForeground */, creationParams),
-                commonParams);
+                createCommonParamsBundle(creationParams));
     }
 
     /**

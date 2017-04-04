@@ -24,7 +24,8 @@ public class MonochromeApplication extends ChromeApplication {
         LibraryLoader.setNativeLibraryPreloader(new MonochromeLibraryPreloader());
         // ChildProcessCreationParams is only needed for browser process, though it is
         // created and set in all processes.
-        ChildProcessCreationParams.registerDefault(new ChildProcessCreationParams(
-                getPackageName(), true /* isExternalService */, LibraryProcessType.PROCESS_CHILD));
+        boolean bindToCaller = false;
+        ChildProcessCreationParams.registerDefault(new ChildProcessCreationParams(getPackageName(),
+                true /* isExternalService */, LibraryProcessType.PROCESS_CHILD, bindToCaller));
     }
 }

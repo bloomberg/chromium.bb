@@ -75,8 +75,9 @@ public abstract class AwBrowserProcess {
      */
     public static void configureChildProcessLauncher(String packageName,
             boolean isExternalService) {
-        ChildProcessCreationParams.registerDefault(new ChildProcessCreationParams(
-                packageName, isExternalService, LibraryProcessType.PROCESS_WEBVIEW_CHILD));
+        final boolean bindToCaller = true;
+        ChildProcessCreationParams.registerDefault(new ChildProcessCreationParams(packageName,
+                isExternalService, LibraryProcessType.PROCESS_WEBVIEW_CHILD, bindToCaller));
     }
 
     /**

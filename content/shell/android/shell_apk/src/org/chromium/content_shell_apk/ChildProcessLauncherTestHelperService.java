@@ -68,8 +68,9 @@ public class ChildProcessLauncherTestHelperService extends Service {
 
     private void doBindService(final Message msg) {
         String[] commandLine = { "_", "--" + BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER };
-        ChildProcessCreationParams params = new ChildProcessCreationParams(getPackageName(), false,
-                LibraryProcessType.PROCESS_CHILD);
+        final boolean bindToCaller = true;
+        ChildProcessCreationParams params = new ChildProcessCreationParams(
+                getPackageName(), false, LibraryProcessType.PROCESS_CHILD, bindToCaller);
         final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(this, commandLine,
                 new FileDescriptorInfo[0], params);
 

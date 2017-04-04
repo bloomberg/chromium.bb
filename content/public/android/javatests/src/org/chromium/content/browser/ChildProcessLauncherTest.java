@@ -388,9 +388,11 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
 
         // Launch a service from this process. Since slot 0 is already bound by the Helper, it
         // will fail to start and the ChildProcessLauncher will retry.
-        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(context,
-                sProcessWaitArguments, new FileDescriptorInfo[0],
-                getDefaultChildProcessCreationParams(context.getPackageName()));
+        final ChildProcessCreationParams creationParams = new ChildProcessCreationParams(
+                context.getPackageName(), false /* isExternalService */,
+                LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */);
+        final ChildProcessConnection conn = ChildProcessLauncher.startForTesting(
+                context, sProcessWaitArguments, new FileDescriptorInfo[0], creationParams);
 
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Failed waiting for instrumentation-bound service") {
@@ -533,7 +535,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
 
     private ChildProcessCreationParams getDefaultChildProcessCreationParams(String packageName) {
         return new ChildProcessCreationParams(packageName, false /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD);
+                LibraryProcessType.PROCESS_CHILD, false /* bindToCallerCheck */);
     }
 
     private void triggerConnectionSetup(ChildProcessConnectionImpl connection) {
