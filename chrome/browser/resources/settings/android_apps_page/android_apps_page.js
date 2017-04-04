@@ -14,10 +14,7 @@ Polymer({
 
   properties: {
     /** Preferences state. */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
+    prefs: Object,
 
     /** @private {!AndroidAppsInfo|undefined} */
     androidAppsInfo_: Object,
@@ -37,6 +34,7 @@ Polymer({
         'android-apps-info-update', this.androidAppsInfoUpdate_.bind(this));
     this.browserProxy_.requestAndroidAppsInfo();
   },
+
   /**
    * @param {AndroidAppsInfo} info
    * @private
@@ -45,27 +43,69 @@ Polymer({
     this.androidAppsInfo_ = info;
   },
 
-  /** @return {string} */
-  getSubtext_: function() {
-    // TODO(stevenjb): Change the text when appReady to 'toggleOn' or whatever
-    // UX finally decides on. Discussion in crbug.com/698463.
-    return this.androidAppsInfo_.appReady ? this.i18n('androidAppsSubtext') :
-                                            this.i18n('androidAppsSubtext');
-  },
-
   /**
    * @param {Event} event
    * @private
    */
-  onEnableTap_: function(event) {
-    this.setPrefValue('arc.enabled', true);
+  onManageAndroidAppsKeydown_: function(event) {
+    if (event.key != 'Enter' && event.key != ' ')
+      return;
+    this.browserProxy_.showAndroidAppsSettings(true  /** keyboardAction */);
     event.stopPropagation();
   },
 
   /** @private */
-  onSubpageTap_: function() {
-    if (!this.androidAppsInfo_.appReady)
+  onManageAndroidAppsTap_: function(event) {
+    this.browserProxy_.showAndroidAppsSettings(false /** keyboardAction */);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getDialogBody_: function() {
+    return this.i18nAdvanced(
+        'androidAppsDisableDialogMessage', {substitutions: [], tags: ['br']});
+  },
+
+  /**
+   * Handles the change event for the arc.enabled checkbox. Shows a
+   * confirmation dialog when disabling the preference.
+   * @param {Event} event
+   * @private
+   */
+  onArcEnabledChange_: function(event) {
+    if (event.target.checked) {
+      /** @type {!SettingsCheckboxElement} */ (event.target).sendPrefChange();
       return;
-    settings.navigateTo(settings.Route.ANDROID_APPS_DETAILS);
+    }
+    this.$.confirmDisableDialog.showModal();
+  },
+
+  /**
+   * Handles the shared proxy confirmation dialog 'Confirm' button.
+   * @private
+   */
+  onConfirmDisableDialogConfirm_: function() {
+    /** @type {!SettingsCheckboxElement} */ (this.$.enabled).sendPrefChange();
+    this.$.confirmDisableDialog.close();
+  },
+
+  /**
+   * Handles the shared proxy confirmation dialog 'Cancel' button or a cancel
+   * event.
+   * @private
+   */
+  onConfirmDisableDialogCancel_: function() {
+    /** @type {!SettingsCheckboxElement} */ (this.$.enabled).resetToPrefValue();
+    this.$.confirmDisableDialog.close();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  stopPropagation_: function(e) {
+    e.stopPropagation();
   },
 });

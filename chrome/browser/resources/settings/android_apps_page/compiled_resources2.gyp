@@ -14,19 +14,9 @@
     {
       'target_name': 'android_apps_page',
       'dependencies': [
-        '../compiled_resources2.gyp:route',
+        '../controls/compiled_resources2.gyp:settings_checkbox',
         '../prefs/compiled_resources2.gyp:prefs_behavior',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
-        '<(EXTERNS_GYP):settings_private',
-        'android_apps_browser_proxy',
-      ], 
-     'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'android_apps_subpage',
-      'dependencies': [
-        '../compiled_resources2.gyp:route',
-        '../prefs/compiled_resources2.gyp:prefs_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         'android_apps_browser_proxy',
       ],

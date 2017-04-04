@@ -294,28 +294,18 @@ void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"androidAppsPageTitle", IDS_SETTINGS_ANDROID_APPS_TITLE},
-      {"androidAppsPageLabel", IDS_SETTINGS_ANDROID_APPS_LABEL},
-      {"androidAppsEnable", IDS_SETTINGS_ANDROID_APPS_ENABLE},
+      {"androidAppsEnabled", IDS_SETTINGS_ANDROID_APPS_ENABLE},
       {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
-      {"androidAppsRemove", IDS_SETTINGS_ANDROID_APPS_REMOVE},
       {"androidAppsLearnMore", IDS_SETTINGS_ANDROID_APPS_LEARN_MORE},
       {"androidAppsDisableDialogTitle",
        IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE},
-      {"androidAppsDisableDialogRemove",
-       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_REMOVE},
+      {"androidAppsDisableDialogMessage",
+       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-  html_source->AddString(
-      "androidAppsSubtext",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ANDROID_APPS_SUBTEXT,
-          base::ASCIIToUTF16(chrome::kAndroidAppsLearnMoreURL)));
-  html_source->AddString(
-      "androidAppsDisableDialogMessage",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE,
-          base::ASCIIToUTF16(chrome::kAndroidAppsLearnMoreURL)));
+  html_source->AddString("androidAppsLearnMoreUrl",
+                         chrome::kAndroidAppsLearnMoreURL);
 }
 #endif
 

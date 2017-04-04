@@ -1025,12 +1025,6 @@
         <structure name="IDR_SETTINGS_ANDROID_APPS_PAGE_JS"
                    file="android_apps_page/android_apps_page.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_ANDROID_APPS_SUBPAGE_HTML"
-                   file="android_apps_page/android_apps_subpage.html"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_ANDROID_APPS_SUBPAGE_JS"
-                   file="android_apps_page/android_apps_subpage.js"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_ANDROID_APPS_BROWSER_PROXY_JS"
                    file="android_apps_page/android_apps_browser_proxy.js"
                    type="chrome_html"
