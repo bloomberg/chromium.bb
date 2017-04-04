@@ -251,8 +251,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Getters/setters for private members.
 
-  virtual void SetCurrentUserIsOwner(bool is_current_user_owner);
-
   virtual bool GetEphemeralUsersEnabled() const;
   virtual void SetEphemeralUsersEnabled(bool enabled);
 
@@ -344,11 +342,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_ = STAGE_NOT_LOADED;
-
-  // Cached flag of whether currently logged-in user is owner or not.
-  // May be accessed on different threads, requires locking.
-  bool is_current_user_owner_ = false;
-  mutable base::Lock is_current_user_owner_lock_;
 
   // Cached flag of whether the currently logged-in user existed before this
   // login.

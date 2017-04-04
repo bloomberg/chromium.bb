@@ -194,6 +194,9 @@ void DeviceSettingsService::InitOwner(
   username_ = username;
   owner_settings_service_ = owner_settings_service;
 
+  // Reset the flag since consumer ownership should be established now.
+  will_establish_consumer_ownership_ = false;
+
   EnsureReload(true);
 }
 
@@ -204,6 +207,10 @@ const std::string& DeviceSettingsService::GetUsername() const {
 ownership::OwnerSettingsService*
 DeviceSettingsService::GetOwnerSettingsService() const {
   return owner_settings_service_.get();
+}
+
+void DeviceSettingsService::MarkWillEstablishConsumerOwnership() {
+  will_establish_consumer_ownership_ = true;
 }
 
 void DeviceSettingsService::AddObserver(Observer* observer) {
@@ -221,7 +228,11 @@ void DeviceSettingsService::OwnerKeySet(bool success) {
   }
 
   public_key_ = NULL;
-  EnsureReload(true);
+
+  if (GetOwnershipStatus() == OWNERSHIP_TAKEN ||
+      !will_establish_consumer_ownership_) {
+    EnsureReload(true);
+  }
 }
 
 void DeviceSettingsService::PropertyChangeComplete(bool success) {
@@ -230,7 +241,10 @@ void DeviceSettingsService::PropertyChangeComplete(bool success) {
     return;
   }
 
-  EnsureReload(false);
+  if (GetOwnershipStatus() == OWNERSHIP_TAKEN ||
+      !will_establish_consumer_ownership_) {
+    EnsureReload(false);
+  }
 }
 
 void DeviceSettingsService::Enqueue(

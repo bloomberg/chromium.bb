@@ -739,6 +739,17 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
     UMA_HISTOGRAM_COUNTS_100("Login.OfflineSuccess.Attempts",
                              num_login_attempts_);
 
+  const bool is_enterprise_managed = g_browser_process->platform_part()
+                                         ->browser_policy_connector_chromeos()
+                                         ->IsEnterpriseManaged();
+
+  // Mark device will be consumer owned if the device is not managed and this is
+  // the first user on the device.
+  if (!is_enterprise_managed &&
+      user_manager::UserManager::Get()->GetUsers().empty()) {
+    DeviceSettingsService::Get()->MarkWillEstablishConsumerOwnership();
+  }
+
   UserSessionManager::StartSessionType start_session_type =
       UserAddingScreen::Get()->IsRunning()
           ? UserSessionManager::SECONDARY_USER_SESSION
@@ -761,9 +772,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   }
   ClearRecordedNames();
 
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->IsEnterpriseManaged()) {
+  if (is_enterprise_managed) {
     enterprise_user_session_metrics::RecordSignInEvent(
         user_context, last_login_attempt_was_auto_login_);
   }

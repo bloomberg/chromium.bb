@@ -458,4 +458,54 @@ TEST_F(DeviceSettingsServiceTest, Observer) {
   device_settings_service_.RemoveObserver(&observer_);
 }
 
+// Test that DeviceSettingsService defers load operations until after
+// OwnerSettingsService finishes loading the private key and invokes
+// DeviceSettingsService::InitOwner to set the owner info.
+// See http://crbug.com/706820 for more details.
+TEST_F(DeviceSettingsServiceTest, LoadDeferredDuringOwnershipEstablishment) {
+  owner_key_util_->Clear();
+
+  EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
+  EXPECT_FALSE(device_settings_service_.GetPublicKey().get());
+  EXPECT_EQ(DeviceSettingsService::OWNERSHIP_UNKNOWN,
+            device_settings_service_.GetOwnershipStatus());
+
+  // Mark ownership establishment is running.
+  device_settings_service_.MarkWillEstablishConsumerOwnership();
+
+  const std::string& user_id = device_policy_.policy_data().username();
+  owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
+  InitOwner(AccountId::FromUserEmail(user_id), false);
+  OwnerSettingsServiceChromeOS* service =
+      OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(profile_.get());
+  ASSERT_TRUE(service);
+  service->IsOwnerAsync(base::Bind(&DeviceSettingsServiceTest::OnIsOwner,
+                                   base::Unretained(this)));
+  ReloadDeviceSettings();
+
+  // No load operation should happen until OwnerSettingsService loads the
+  // private key.
+  EXPECT_FALSE(device_settings_service_.HasPrivateOwnerKey());
+  ASSERT_FALSE(device_settings_service_.GetPublicKey().get());
+  EXPECT_EQ(DeviceSettingsService::OWNERSHIP_UNKNOWN,
+            device_settings_service_.GetOwnershipStatus());
+  EXPECT_FALSE(is_owner_set_);
+
+  // Load the private key and trigger a reload. Load operations should finish.
+  owner_key_util_->SetPrivateKey(device_policy_.GetSigningKey());
+  service->OnTPMTokenReady(true /* is ready */);
+  FlushDeviceSettings();
+
+  // Verify owner key is loaded and ownership status is updated.
+  EXPECT_TRUE(device_settings_service_.HasPrivateOwnerKey());
+  ASSERT_TRUE(device_settings_service_.GetPublicKey().get());
+  ASSERT_TRUE(device_settings_service_.GetPublicKey()->is_loaded());
+  EXPECT_EQ(device_policy_.GetPublicSigningKeyAsString(),
+            device_settings_service_.GetPublicKey()->as_string());
+  EXPECT_EQ(DeviceSettingsService::OWNERSHIP_TAKEN,
+            device_settings_service_.GetOwnershipStatus());
+  EXPECT_TRUE(is_owner_set_);
+  EXPECT_TRUE(is_owner_);
+}
+
 }  // namespace chromeos

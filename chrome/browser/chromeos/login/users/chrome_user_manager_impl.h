@@ -188,9 +188,6 @@ class ChromeUserManagerImpl
   // trusted device policies are not yet available.
   void RetrieveTrustedDevicePolicies();
 
-  // Updates current user ownership on UI thread.
-  void UpdateOwnership();
-
   // If data for a device local account is marked as pending removal and the
   // user is no longer logged into that account, removes the data.
   void CleanUpDeviceLocalAccountNonCryptohomeDataPendingRemoval();

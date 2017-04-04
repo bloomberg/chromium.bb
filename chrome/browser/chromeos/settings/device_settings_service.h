@@ -172,6 +172,12 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   ownership::OwnerSettingsService* GetOwnerSettingsService() const;
 
+  // Mark that the device will establish consumer ownership. If the flag is set
+  // and ownership is not taken, policy reload will be deferred until InitOwner
+  // is called. So that the ownership status is flipped after the private part
+  // of owner is fully loaded.
+  void MarkWillEstablishConsumerOwnership();
+
   // Adds an observer.
   void AddObserver(Observer* observer);
   // Removes an observer.
@@ -249,6 +255,9 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
 
   // For recoverable load errors how many retries are left before we give up.
   int load_retries_left_;
+
+  // Whether the device will be establishing consumer ownership.
+  bool will_establish_consumer_ownership_ = false;
 
   base::WeakPtrFactory<DeviceSettingsService> weak_factory_;
 

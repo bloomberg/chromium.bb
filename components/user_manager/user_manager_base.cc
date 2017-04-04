@@ -242,6 +242,7 @@ void UserManagerBase::SwitchActiveUser(const AccountId& account_id) {
 
   NotifyActiveUserHashChanged(active_user_->username_hash());
   NotifyActiveUserChanged(active_user_);
+  CallUpdateLoginState();
 }
 
 void UserManagerBase::SwitchToLastActiveUser() {
@@ -518,17 +519,8 @@ void UserManagerBase::ParseUserList(const base::ListValue& users_list,
 
 bool UserManagerBase::IsCurrentUserOwner() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  base::AutoLock lk(is_current_user_owner_lock_);
-  return is_current_user_owner_;
-}
-
-void UserManagerBase::SetCurrentUserIsOwner(bool is_current_user_owner) {
-  DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  {
-    base::AutoLock lk(is_current_user_owner_lock_);
-    is_current_user_owner_ = is_current_user_owner;
-  }
-  CallUpdateLoginState();
+  return !owner_account_id_.empty() && active_user_ &&
+         active_user_->GetAccountId() == owner_account_id_;
 }
 
 bool UserManagerBase::IsCurrentUserNew() const {
@@ -749,6 +741,7 @@ bool UserManagerBase::HasPendingBootstrap(const AccountId& account_id) const {
 
 void UserManagerBase::SetOwnerId(const AccountId& owner_account_id) {
   owner_account_id_ = owner_account_id;
+  CallUpdateLoginState();
 }
 
 const AccountId& UserManagerBase::GetPendingUserSwitchID() const {
@@ -1041,7 +1034,7 @@ void UserManagerBase::Initialize() {
 }
 
 void UserManagerBase::CallUpdateLoginState() {
-  UpdateLoginState(active_user_, primary_user_, is_current_user_owner_);
+  UpdateLoginState(active_user_, primary_user_, IsCurrentUserOwner());
 }
 
 void UserManagerBase::SetLRUUser(User* user) {

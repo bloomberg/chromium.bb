@@ -458,7 +458,6 @@ void ChromeUserManagerImpl::Observe(
           device_local_account_policy_service_->AddObserver(this);
       }
       RetrieveTrustedDevicePolicies();
-      UpdateOwnership();
       break;
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
       Profile* profile = content::Details<Profile>(details).ptr();
@@ -946,14 +945,6 @@ void ChromeUserManagerImpl::NotifyOnLogin() {
       content::Details<const user_manager::User>(GetActiveUser()));
 
   UserSessionManager::GetInstance()->PerformPostUserLoggedInActions();
-}
-
-void ChromeUserManagerImpl::UpdateOwnership() {
-  bool is_owner =
-      FakeOwnership() || DeviceSettingsService::Get()->HasPrivateOwnerKey();
-  VLOG(1) << "Current user " << (is_owner ? "is owner" : "is not owner");
-
-  SetCurrentUserIsOwner(is_owner);
 }
 
 void ChromeUserManagerImpl::RemoveNonCryptohomeData(
