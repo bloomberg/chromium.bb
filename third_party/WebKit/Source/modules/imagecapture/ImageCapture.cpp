@@ -517,37 +517,35 @@ void ImageCapture::onCapabilitiesUpdateInternal(
   if (capabilities.exposure_compensation->max !=
       capabilities.exposure_compensation->min) {
     m_capabilities.setExposureCompensation(
-        MediaSettingsRange::create(*capabilities.exposure_compensation.get()));
+        MediaSettingsRange::create(*capabilities.exposure_compensation));
   }
   if (capabilities.color_temperature->max !=
       capabilities.color_temperature->min) {
     m_capabilities.setColorTemperature(
-        MediaSettingsRange::create(*capabilities.color_temperature.get()));
+        MediaSettingsRange::create(*capabilities.color_temperature));
   }
   if (capabilities.iso->max != capabilities.iso->min)
-    m_capabilities.setIso(MediaSettingsRange::create(*capabilities.iso.get()));
+    m_capabilities.setIso(MediaSettingsRange::create(*capabilities.iso));
 
   if (capabilities.brightness->max != capabilities.brightness->min) {
     m_capabilities.setBrightness(
-        MediaSettingsRange::create(*capabilities.brightness.get()));
+        MediaSettingsRange::create(*capabilities.brightness));
   }
   if (capabilities.contrast->max != capabilities.contrast->min) {
     m_capabilities.setContrast(
-        MediaSettingsRange::create(*capabilities.contrast.get()));
+        MediaSettingsRange::create(*capabilities.contrast));
   }
   if (capabilities.saturation->max != capabilities.saturation->min) {
     m_capabilities.setSaturation(
-        MediaSettingsRange::create(*capabilities.saturation.get()));
+        MediaSettingsRange::create(*capabilities.saturation));
   }
   if (capabilities.sharpness->max != capabilities.sharpness->min) {
     m_capabilities.setSharpness(
-        MediaSettingsRange::create(*capabilities.sharpness.get()));
+        MediaSettingsRange::create(*capabilities.sharpness));
   }
 
-  if (capabilities.zoom->max != capabilities.zoom->min) {
-    m_capabilities.setZoom(
-        MediaSettingsRange::create(*capabilities.zoom.get()));
-  }
+  if (capabilities.zoom->max != capabilities.zoom->min)
+    m_capabilities.setZoom(MediaSettingsRange::create(*capabilities.zoom));
 
   m_capabilities.setTorch(capabilities.torch);
 
