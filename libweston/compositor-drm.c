@@ -1623,7 +1623,7 @@ on_drm_input(int fd, uint32_t mask, void *data)
 	drmEventContext evctx;
 
 	memset(&evctx, 0, sizeof evctx);
-	evctx.version = DRM_EVENT_CONTEXT_VERSION;
+	evctx.version = 2;
 	evctx.page_flip_handler = page_flip_handler;
 	evctx.vblank_handler = vblank_handler;
 	drmHandleEvent(fd, &evctx);
