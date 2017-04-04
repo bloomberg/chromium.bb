@@ -479,6 +479,12 @@ static qcms_bool read_tag_vcgtType(qcms_profile *profile, struct mem_source *src
 
 			if (!src->valid)
 				goto invalid_vcgt_tag;
+			if (gamma <= 0)
+				goto invalid_vcgt_tag;
+			if (min <= 0 || min > 1.f)
+				goto invalid_vcgt_tag;
+			if (max <= 0 || max > 1.f || min > max)
+				goto invalid_vcgt_tag;
 
 			for (j = 0; j < profile->vcgt.length; ++j) {
 				*dest++ = 65535.f *
