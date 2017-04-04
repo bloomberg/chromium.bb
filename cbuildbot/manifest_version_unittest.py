@@ -177,8 +177,6 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
 
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      '_InitSlaveInfo')
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetBuilderStatusForBuild')
 
   def BuildManager(self, config=None, metadata=None,
                    buildbucket_client=None):
@@ -357,12 +355,13 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      side_effect=status_runs)
 
     final_status_dict = status_runs[-1]
+    message_mock = mock.Mock()
+    message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
     build_statuses = [
-        builder_status_lib.BuilderStatus(final_status_dict.get(x).status, None)
-        for x in builders
-    ]
-    self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+        builder_status_lib.BuilderStatus(
+            final_status_dict.get(x).status, message_mock) for x in builders]
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
                      side_effect=build_statuses)
 
     return self.manager.GetBuildersStatus(
@@ -453,12 +452,13 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      side_effect=buildbucket_info_dicts)
 
     final_status_dict = status_runs[-1]
+    message_mock = mock.Mock()
+    message_mock.BuildFailureMessageToStr.return_value = 'failure_message_str'
     build_statuses = [
-        builder_status_lib.BuilderStatus(final_status_dict.get(x).status, None)
-        for x in builders
-    ]
-    self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+        builder_status_lib.BuilderStatus(
+            final_status_dict.get(x).status, message_mock) for x in builders]
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
                      side_effect=build_statuses)
 
     return self.manager.GetBuildersStatus(

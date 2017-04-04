@@ -428,10 +428,11 @@ class SlaveStatus(object):
 
     if self.pool is not None:
       triage_relevant_changes = relevant_changes.TriageRelevantChanges(
-          self.master_build_id, self.db, self.config, self.version,
-          self.pool.build_root, self.pool.applied,
+          self.master_build_id, self.db, self.builders_array, self.config,
+          self.metadata, self.version, self.pool.build_root, self.pool.applied,
           self.all_buildbucket_info_dict, self.all_cidb_status_dict,
-          self.completed_builds, self.dependency_map)
+          self.completed_builds, self.dependency_map, self.buildbucket_client,
+          dry_run=self.dry_run)
 
       if not triage_relevant_changes.ShouldWait():
         logging.warning('No need to wait for the remaining running slaves given'

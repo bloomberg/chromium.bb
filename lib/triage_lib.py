@@ -12,7 +12,6 @@ import os
 import pprint
 import re
 
-from chromite.lib import failures_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -509,29 +508,61 @@ class CalculateSuspects(object):
     return [x for x in changes if x.project in constants.INFRA_PROJECTS]
 
   @classmethod
-  def _MatchesFailureType(cls, messages, fail_type, strict=True):
-    """Returns True if all failures are instances of |fail_type|.
+  def _MatchesExceptionCategory(cls, messages, exception_category, strict=True):
+    """Returns True if all failure messages are in the exception_category.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects
-        from the failed slaves.
-      fail_type: The exception class to look for.
+      messages: A list of BuildFailureMessage or NoneType objects from the
+        failed slaves.
+      exception_category: The exception category to match, must be one of
+        constants.EXCEPTION_CATEGORY_ALL_CATEGORIES.
       strict: If False, treat NoneType message as a match.
 
     Returns:
-      True if all objects in |messages| are non-None and all failures are
-      instances of |fail_type|.
+      When strict is True, returns True if all objects in |messages| are
+      non-None and are in the |exception_category|, else False. When strict is
+      False, returns True if all the objects in |messages| are in the
+      |exception_category|, else False.
     """
     return ((not strict or all(messages)) and
-            all(x.MatchesFailureType(fail_type) for x in messages if x))
+            all(x.MatchesExceptionCategory(exception_category)
+                for x in messages if x))
+
+  @classmethod
+  def _MatchesExceptionCategories(cls, messages, exception_categories,
+                                  strict=True):
+    """Returns True if all failure messages are in the exception_categories.
+
+    Args:
+      messages: A list of BuildFailureMessage or NoneType objects from the
+        failed slaves.
+      exception_categories: A list of exception categories to match, every item
+        must be one of constants.EXCEPTION_CATEGORY_ALL_CATEGORIES.
+      strict: If False, treat NoneType message as a match.
+
+    Returns:
+      When strict is True, returns True if all objects in |messages| are
+      non-None and are in the |exception_category|, else False. When strict is
+      False, returns True if all the objects in |messages| are in the
+      |exception_categories|, else False.
+    """
+    if strict and not all(messages):
+      return False
+
+    for x in messages:
+      if (x is not None and
+          not any(x.MatchesExceptionCategory(c) for c in exception_categories)):
+        return False
+
+    return True
 
   @classmethod
   def OnlyLabFailures(cls, messages, no_stat):
     """Determine if the cause of build failure was lab failure.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects
-        from the failed slaves.
+      messages: A list of BuildFailureMessage or NoneType objects from the
+        failed slaves.
       no_stat: A list of builders which failed prematurely without reporting
         status.
 
@@ -539,16 +570,18 @@ class CalculateSuspects(object):
       True if the build failed purely due to lab failures.
     """
     # If any builder failed prematuely, lab failure was not the only cause.
-    return (not no_stat and
-            cls._MatchesFailureType(messages, failures_lib.TestLabFailure))
+    return (not no_stat and cls._MatchesExceptionCategory(
+        messages, constants.EXCEPTION_CATEGORY_LAB))
 
   @classmethod
   def OnlyInfraFailures(cls, messages, no_stat):
     """Determine if the cause of build failure was infrastructure failure.
 
+    All failures in 'lab' and 'infra' categories are infra failures.
+
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects
-        from the failed slaves.
+      messages: A list of BuildFailureMessage or NoneType objects from the
+        failed slaves.
       no_stat: A list of builders which failed prematurely without reporting
         status.
 
@@ -557,9 +590,10 @@ class CalculateSuspects(object):
     """
     # "Failed to report status" and "NoneType" messages are considered
     # infra failures.
-    return ((not messages and no_stat) or
-            cls._MatchesFailureType(
-                messages, failures_lib.InfrastructureFailure, strict=False))
+    return ((not messages and no_stat) or cls._MatchesExceptionCategories(
+        messages,
+        [constants.EXCEPTION_CATEGORY_INFRA, constants.EXCEPTION_CATEGORY_LAB],
+        strict=False))
 
   @classmethod
   def FindSuspects(cls, changes, messages, infra_fail=False, lab_fail=False,

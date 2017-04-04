@@ -585,7 +585,8 @@ class BuildSpecsManager(object):
       timeout: Number of seconds to wait for the results.
 
     Returns:
-      A build_config name-> status dictionary of build statuses.
+      A dict mapping build_config names (strings) to
+        builder_status_lib.BuilderStatus instances.
     """
     logging.info('Getting slave BuilderStatuses for %s', master_build_id)
     start_time = datetime.datetime.now()
@@ -615,43 +616,28 @@ class BuildSpecsManager(object):
     except timeout_util.TimeoutError:
       builds_timed_out = True
 
-    # Actually fetch the BuildStatus pickles from Google Storage.
-    builder_statuses = {}
+    slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
+        master_build_id, db, self.config, self.metadata,
+        self.buildbucket_client, builders_array, self.dry_run)
+
+    slave_builder_status_dict = {}
     for builder in builders_array:
-      logging.debug("Checking for builder %s's status", builder)
-      builder_status = builder_status_lib.BuilderStatusManager.GetBuilderStatus(
-          builder, self.current_version)
-      builder_statuses[builder] = builder_status
-
-    try:
-      # TODO(nxia): will remove the try/except block and return
-      # slave_builder_status_dict instead of builder_statuses after it's tested
-      # on CQ-master.
-      slave_builder_statuses = builder_status_lib.SlaveBuilderStatus(
-          master_build_id, db, self.config, self.metadata,
-          self.buildbucket_client, builders_array, self.dry_run)
-
-      slave_builder_status_dict = {}
-      for builder in builders_array:
-        logging.info('Creating BuilderStatus for builder %s', builder)
-        builder_status = slave_builder_statuses.GetBuilderStatusForBuild(
-            builder)
-        slave_builder_status_dict[builder] = builder_status
-        message = (builder_status.message.BuildFailureMessageToStr()
-                   if builder_status.message is not None else None)
-        logging.info(
-            'Builder %s BuilderStatus.status %s BuilderStatus.message %s'
-            ' BuilderStatus.dashboard_url %s ' %
-            (builder, builder_status.status, message,
-             builder_status.dashboard_url))
-    except Exception as e:
-      logging.error('Error getting slave builder status %s', e)
+      logging.info('Creating BuilderStatus for builder %s', builder)
+      builder_status = slave_builder_statuses.GetBuilderStatusForBuild(builder)
+      slave_builder_status_dict[builder] = builder_status
+      message = (builder_status.message.BuildFailureMessageToStr()
+                 if builder_status.message is not None else None)
+      logging.info(
+          'Builder %s BuilderStatus.status %s BuilderStatus.message %s'
+          ' BuilderStatus.dashboard_url %s ' %
+          (builder, builder_status.status, message,
+           builder_status.dashboard_url))
 
     if builds_timed_out:
       logging.error('Not all builds finished before timeout (%d minutes)'
                     ' reached.', int((timeout / 60) + 0.5))
 
-    return builder_statuses
+    return slave_builder_status_dict
 
   def GetLatestPassingSpec(self):
     """Get the last spec file that passed in the current branch."""

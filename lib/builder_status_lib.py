@@ -42,8 +42,8 @@ class BuilderStatus(object):
       status: Status string (should be one of BUILDER_STATUS_FAILED,
               BUILDER_STATUS_PASSED, BUILDER_STATUS_INFLIGHT, or
               BUILDER_STATUS_MISSING).
-      message: A failures_lib.BuildFailureMessage object with details
-               of builder failure. Or, None.
+      message: A BuildFailureMessage object with details of builder failure.
+               Or, None.
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
     self.status = status

@@ -16,7 +16,8 @@ from chromite.lib import builder_status_lib
 from chromite.lib import clactions
 from chromite.lib import constants
 from chromite.lib import fake_cidb
-from chromite.lib import failures_lib
+from chromite.lib import failure_message_lib
+from chromite.lib import metadata_lib
 from chromite.lib import patch_unittest
 from chromite.lib import triage_lib
 
@@ -181,9 +182,13 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
                                   constants.CL_ACTION_PICKED_UP)
     self.version = '9289.0.0-rc2'
     self.build_root = '/tmp/build_root'
-    self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     '_InitSlaveInfo')
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
                      return_value=self._GetMissingBuilderStatus())
+    self.metadata = metadata_lib.CBuildbotMetadata()
+    self.buildbucket_client = mock.Mock()
 
   def _GetDefaultSuccessBuildbucketInfoDict(self, builds):
     return {build: self.BuildbucketInfos.GetSuccessBuild(
@@ -197,14 +202,21 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
               change, action)])
 
   def GetTriageRelevantChanges(self,
+                               builders_array=None,
                                changes=None,
+                               metadata=None,
                                buildbucket_info_dict=None,
                                cidb_status_dict=None,
                                completed_builds=None,
-                               dependency_map=None):
+                               dependency_map=None,
+                               dry_run=True):
     """Returns a TriageRelevantChanges instance."""
+    if builders_array is None:
+      builders_array = self.slaves
     if changes is None:
       changes = self.changes
+    if metadata is None:
+      metadata = self.metadata
     if buildbucket_info_dict is None:
       buildbucket_info_dict = self.buildbucket_info_dict
     if cidb_status_dict is None:
@@ -215,9 +227,10 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
       dependency_map = {}
 
     return relevant_changes.TriageRelevantChanges(
-        self.master_build_id, self.fake_cidb, self.build_config, self.version,
-        self.build_root, changes, buildbucket_info_dict, cidb_status_dict,
-        completed_builds, dependency_map)
+        self.master_build_id, self.fake_cidb, builders_array, self.build_config,
+        metadata, self.version, self.build_root, changes, buildbucket_info_dict,
+        cidb_status_dict, completed_builds, dependency_map,
+        self.buildbucket_client, dry_run)
 
   def _MockSlaveInfo(self, slave_stages_dict, slave_changes_dict,
                      slave_subsys_dict):
@@ -387,7 +400,7 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
 
   def _GetFailedBuilderStatus(self, contains_message=True):
     """Helper to return a failed BuilderStatus."""
-    failure_message = failures_lib.BuildFailureMessage(
+    failure_message = failure_message_lib.BuildFailureMessage(
         'messages', [], True, 'reason', 'builder') if contains_message else None
     return builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_FAILED, failure_message)
@@ -570,8 +583,9 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     stages = [self._GetStage(status=self.PASS, build_config=build,
                              name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
-    self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
                      return_value=self._GetPassedBuilderStatus())
     can_ignore_failures_mock = self.PatchObject(
         triage_lib.CalculateSuspects, 'CanIgnoreFailures')
@@ -608,8 +622,8 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     stages = [self._GetStage(status=self.PASS, build_config=build,
                              name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
-    self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
                      return_value=self._GetFailedBuilderStatus())
     self.PatchObject(
         relevant_changes.TriageRelevantChanges, '_GetIgnorableChanges',
@@ -629,8 +643,8 @@ class TriageRelevantChangesTest(patch_unittest.MockPatchBase):
     stages = [self._GetStage(status=self.PASS, build_config=build,
                              name=self.COMMIT_QUEUE_SYNC)]
     self._GetMockSlaveInfoForProcessCompletedBuilds(build, stages)
-    self.PatchObject(builder_status_lib.BuilderStatusManager,
-                     'GetBuilderStatus',
+    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
+                     'GetBuilderStatusForBuild',
                      return_value=self._GetPassedBuilderStatus())
     self.PatchObject(
         relevant_changes.TriageRelevantChanges, '_GetIgnorableChanges',

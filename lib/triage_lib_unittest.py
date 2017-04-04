@@ -7,37 +7,61 @@
 from __future__ import print_function
 
 import ConfigParser
+import json
 import os
 
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import failures_lib
-from chromite.lib import results_lib
-from chromite.lib import triage_lib
-from chromite.cbuildbot.stages import sync_stages_unittest
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import failure_message_lib
+from chromite.lib import failure_message_lib_unittest
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 from chromite.lib import portage_util
+from chromite.lib import triage_lib
+from chromite.cbuildbot.stages import sync_stages_unittest
 
 
 site_config = config_lib.GetConfig()
+failure_msg_helper = failure_message_lib_unittest.FailureMessageHelper()
 
+class MessageHelper(object):
+  """Helper class to create failure messages for tests."""
 
-def GetFailedMessage(exceptions, stage='Build', internal=False,
-                     bot='daisy_spring-paladin'):
-  """Returns a BuildFailureMessage object."""
-  tracebacks = []
-  for ex in exceptions:
-    tracebacks.append(results_lib.RecordedTraceback(stage, stage, ex,
-                                                    str(ex)))
-  reason = 'failure reason string'
-  return failures_lib.BuildFailureMessage(
-      'Stage %s failed' % stage, tracebacks, internal, reason, bot)
+  @staticmethod
+  def GetFailedMessage(failure_messages, stage='Build', internal=False,
+                       bot='daisy_spring-paladin'):
+    """Returns a BuildFailureMessage object."""
+    return failure_message_lib.BuildFailureMessage(
+        'Stage %s failed' % stage, failure_messages, internal,
+        'failure reason string', bot)
+
+  @staticmethod
+  def GetGeneralFailure(stage='Build'):
+    return failure_msg_helper.GetStageFailureMessage(stage_name=stage)
+
+  @staticmethod
+  def GetTestLabFailure(stage='Build'):
+    return failure_msg_helper.GetStageFailureMessage(
+        exception_type='TestLabFailure',
+        exception_category=constants.EXCEPTION_CATEGORY_LAB,
+        stage_name=stage)
+
+  @staticmethod
+  def GetInfraFailure(stage='Build'):
+    return failure_msg_helper.GetStageFailureMessage(
+        exception_type='InfrastructureFailure',
+        exception_category=constants.EXCEPTION_CATEGORY_INFRA,
+        stage_name=stage)
+
+  @staticmethod
+  def GetPackageStageBuildFailure(extra_info=None, stage='Build'):
+    return failure_msg_helper.GetPackageBuildFailureMessage(
+        extra_info=extra_info,
+        stage_name=stage)
 
 
 class TestFindSuspects(patch_unittest.MockPatchBase):
@@ -69,8 +93,10 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     Args:
       pkg: Package that failed to build.
     """
-    ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
-    return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
+    extra_info_dict = {'shortname': './build_image',
+                       'failed_packages': [pkg]}
+    extra_info = json.dumps(extra_info_dict)
+    return MessageHelper.GetPackageStageBuildFailure(extra_info=extra_info)
 
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
                       internal=False, infra_fail=False, lab_fail=False,
@@ -81,7 +107,8 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
       patches: List of patches to look at.
       suspects: Expected list of suspects returned by _FindSuspects.
       pkgs: List of packages that failed with exceptions in the build.
-      exceptions: List of other exceptions that occurred during the build.
+      exceptions: List of other failure messages (instances of
+        failure_message_lib.StageFailureMessage) that occurred during the build.
       internal: Whether the failures occurred on an internal bot.
       infra_fail: Whether the build failed due to infrastructure issues.
       lab_fail: Whether the build failed due to lab infrastructure issues.
@@ -89,7 +116,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
               the build started.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
-    message = GetFailedMessage(all_exceptions, internal=internal)
+    message = MessageHelper.GetFailedMessage(all_exceptions, internal=internal)
     results = triage_lib.CalculateSuspects.FindSuspects(
         patches, [message], lab_fail=lab_fail, infra_fail=infra_fail,
         sanity=sanity)
@@ -123,17 +150,21 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
   def testFailUnknownException(self):
     """An unknown exception should cause all patches to fail."""
     changes = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
-    self._AssertSuspects(changes, changes, exceptions=[Exception('foo bar')])
-    self._AssertSuspects(changes, [], exceptions=[Exception('foo bar')],
+    self._AssertSuspects(changes, changes,
+                         exceptions=[MessageHelper.GetGeneralFailure()])
+    self._AssertSuspects(changes, [],
+                         exceptions=[MessageHelper.GetGeneralFailure()],
                          sanity=False)
 
   def testFailUnknownInternalException(self):
     """An unknown exception should cause all patches to fail."""
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
-    self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')],
-                         internal=True)
-    self._AssertSuspects(suspects, [], exceptions=[Exception('foo bar')],
-                         internal=True, sanity=False)
+    self._AssertSuspects(
+        suspects, suspects, exceptions=[MessageHelper.GetGeneralFailure()],
+        internal=True)
+    self._AssertSuspects(
+        suspects, [], exceptions=[MessageHelper.GetGeneralFailure()],
+        internal=True, sanity=False)
 
   def testFailUnknownCombo(self):
     """Unknown exceptions should cause all patches to fail.
@@ -144,9 +175,9 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     with self.PatchObject(portage_util, 'FindWorkonProjects',
                           return_value=self.kernel):
       self._AssertSuspects(suspects, suspects, [self.kernel_pkg],
-                           [Exception('foo bar')])
+                           [MessageHelper.GetGeneralFailure()])
       self._AssertSuspects(suspects, [self.kernel_patch], [self.kernel_pkg],
-                           [Exception('foo bar')], sanity=False)
+                           [MessageHelper.GetGeneralFailure()], sanity=False)
 
   def testFailNone(self):
     """If a message is just 'None', it should cause all patches to fail."""
@@ -208,13 +239,15 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     """Returns a list of BuildFailureMessage objects."""
     messages = []
     messages.extend(
-        [GetFailedMessage([failures_lib.TestLabFailure()])
+        [MessageHelper.GetFailedMessage([MessageHelper.GetTestLabFailure()])
          for _ in range(lab_fail)])
     messages.extend(
-        [GetFailedMessage([failures_lib.InfrastructureFailure()])
+        [MessageHelper.GetFailedMessage([MessageHelper.GetInfraFailure()])
          for _ in range(infra_fail)])
     messages.extend(
-        [GetFailedMessage(Exception()) for _ in range(other_fail)])
+        [MessageHelper.GetFailedMessage([MessageHelper.GetGeneralFailure()])
+         for _ in range(other_fail)])
+
     return messages
 
   def testOnlyLabFailures(self):
@@ -246,6 +279,17 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     no_stat = []
     # Lab failures are infrastructure failures.
     self.assertTrue(
+        triage_lib.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
+
+    messages = self._GetMessages(lab_fail=1, infra_fail=1)
+    no_stat = []
+    # Lab failures are infrastructure failures.
+    self.assertTrue(
+        triage_lib.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
+
+    messages = self._GetMessages(other_fail=1, infra_fail=1)
+    no_stat = []
+    self.assertFalse(
         triage_lib.CalculateSuspects.OnlyInfraFailures(messages, no_stat))
 
     no_stat = ['orange']
@@ -329,8 +373,11 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     """Tests CanIgnoreFailures()."""
     # pylint: disable=protected-access
     change = self.changes[0]
-    messages = [GetFailedMessage([Exception()], stage='HWTest'),
-                GetFailedMessage([Exception()], stage='VMTest'),]
+    messages = [
+        MessageHelper.GetFailedMessage(
+            [MessageHelper.GetGeneralFailure(stage='HWTest')], stage='HWTest'),
+        MessageHelper.GetFailedMessage(
+            [MessageHelper.GetGeneralFailure(stage='VMTest')], stage='VMTest')]
     subsys_by_config = None
     m = self.PatchObject(triage_lib, 'GetStagesToIgnoreForChange')
 
@@ -351,12 +398,16 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     """Tests CanIgnoreFailures with subsystem logic."""
     # pylint: disable=protected-access
     change = self.changes[0]
-    messages = [GetFailedMessage([Exception()], stage='HWTest',
-                                 bot='foo-paladin'),
-                GetFailedMessage([Exception()], stage='VMTest',
-                                 bot='foo-paladin'),
-                GetFailedMessage([Exception()], stage='HWTest',
-                                 bot='cub-paladin')]
+    messages = [
+        MessageHelper.GetFailedMessage(
+            [MessageHelper.GetGeneralFailure(stage='HWTest')], stage='HWTest',
+            bot='foo-paladin'),
+        MessageHelper.GetFailedMessage(
+            [MessageHelper.GetGeneralFailure(stage='VMTest')], stage='VMTest',
+            bot='foo-paladin'),
+        MessageHelper.GetFailedMessage(
+            [MessageHelper.GetGeneralFailure(stage='HWTest')], stage='HWTest',
+            bot='cub-paladin')]
     m = self.PatchObject(triage_lib, 'GetStagesToIgnoreForChange')
     m.return_value = ('VMTest', )
     cl_subsys = self.PatchObject(triage_lib, 'GetTestSubsystemForChange')
