@@ -435,7 +435,7 @@
     'official.desktop': {
       'linux64': 'official',
       'mac64': 'official',
-      'precise64': 'official',
+      'precise64': 'official_six_concurrent_links',
 
       # Currently the official bots set mini_installer_official_deps=1
       # but it's not clear if that's actually used anywhere.
