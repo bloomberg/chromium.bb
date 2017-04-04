@@ -76,7 +76,7 @@ unsigned int aom_variance8x8_neon(const uint8_t *a, int a_stride,
                                   unsigned int *sse) {
   int sum;
   variance_neon_w8(a, a_stride, b, b_stride, 8, 8, sse, &sum);
-  return *sse - (((int64_t)sum * sum) >> 6);  //  >> 6 = / 8 * 8
+  return *sse - ((sum * sum) >> 6);
 }
 
 unsigned int aom_variance16x16_neon(const uint8_t *a, int a_stride,
@@ -84,7 +84,7 @@ unsigned int aom_variance16x16_neon(const uint8_t *a, int a_stride,
                                     unsigned int *sse) {
   int sum;
   variance_neon_w8(a, a_stride, b, b_stride, 16, 16, sse, &sum);
-  return *sse - (((int64_t)sum * sum) >> 8);  //  >> 8 = / 16 * 16
+  return *sse - (((unsigned int)((int64_t)sum * sum)) >> 8);
 }
 
 unsigned int aom_variance32x32_neon(const uint8_t *a, int a_stride,
@@ -92,7 +92,7 @@ unsigned int aom_variance32x32_neon(const uint8_t *a, int a_stride,
                                     unsigned int *sse) {
   int sum;
   variance_neon_w8(a, a_stride, b, b_stride, 32, 32, sse, &sum);
-  return *sse - (((int64_t)sum * sum) >> 10);  // >> 10 = / 32 * 32
+  return *sse - (unsigned int)(((int64_t)sum * sum) >> 10);
 }
 
 unsigned int aom_variance32x64_neon(const uint8_t *a, int a_stride,
@@ -105,7 +105,7 @@ unsigned int aom_variance32x64_neon(const uint8_t *a, int a_stride,
                    32, 32, &sse2, &sum2);
   *sse = sse1 + sse2;
   sum1 += sum2;
-  return *sse - (((int64_t)sum1 * sum1) >> 11);  // >> 11 = / 32 * 64
+  return *sse - (unsigned int)(((int64_t)sum1 * sum1) >> 11);
 }
 
 unsigned int aom_variance64x32_neon(const uint8_t *a, int a_stride,
@@ -118,7 +118,7 @@ unsigned int aom_variance64x32_neon(const uint8_t *a, int a_stride,
                    64, 16, &sse2, &sum2);
   *sse = sse1 + sse2;
   sum1 += sum2;
-  return *sse - (((int64_t)sum1 * sum1) >> 11);  // >> 11 = / 32 * 64
+  return *sse - (unsigned int)(((int64_t)sum1 * sum1) >> 11);
 }
 
 unsigned int aom_variance64x64_neon(const uint8_t *a, int a_stride,
@@ -142,7 +142,7 @@ unsigned int aom_variance64x64_neon(const uint8_t *a, int a_stride,
                    b_stride, 64, 16, &sse2, &sum2);
   *sse = sse1 + sse2;
   sum1 += sum2;
-  return *sse - (((int64_t)sum1 * sum1) >> 12);  // >> 12 = / 64 * 64
+  return *sse - (unsigned int)(((int64_t)sum1 * sum1) >> 12);
 }
 
 unsigned int aom_variance16x8_neon(const unsigned char *src_ptr,
