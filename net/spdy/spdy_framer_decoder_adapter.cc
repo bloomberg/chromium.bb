@@ -192,6 +192,10 @@ class NestedSpdyFramerDecoder : public SpdyFramerDecoderAdapter {
     framer_.set_visitor(visitor_adapter_.get());
   }
 
+  void set_extension_visitor(ExtensionVisitorInterface* visitor) override {
+    framer_.set_extension_visitor(visitor);
+  }
+
   // Passes the call on to the base adapter class and wrapped SpdyFramer.
   void set_debug_visitor(
       SpdyFramerDebugVisitorInterface* debug_visitor) override {

@@ -3052,11 +3052,6 @@ TEST_P(SpdyFramerTest, ReadUnknownSettingsId) {
 }
 
 TEST_P(SpdyFramerTest, ReadUnknownSettingsWithExtension) {
-  if (std::get<0>(GetParam()) != DECODER_SELF) {
-    // TODO(jamessynge): Implement extension support for the new decoder.
-    return;
-  }
-
   SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
   const unsigned char kH2FrameData[] = {
       0x00, 0x00, 0x0c,        // Length: 12
@@ -3426,11 +3421,6 @@ TEST_P(SpdyFramerTest, ReceiveUnknownMidContinuation) {
 // Receiving an unknown frame when a continuation is expected should
 // result in a SPDY_UNEXPECTED_FRAME error
 TEST_P(SpdyFramerTest, ReceiveUnknownMidContinuationWithExtension) {
-  if (std::get<0>(GetParam()) != DECODER_SELF) {
-    // TODO(jamessynge): Implement extension support for the new decoder.
-    return;
-  }
-
   const unsigned char kInput[] = {
       0x00, 0x00, 0x10,        // Length: 16
       0x01,                    //   Type: HEADERS
@@ -3641,6 +3631,45 @@ TEST_P(SpdyFramerTest, ReadUnknownExtensionFrame) {
     ASSERT_TRUE(framer.SerializeSettings(settings_ir, &output_));
     control_frame = SpdySerializedFrame(output_.Begin(), output_.Size(), false);
   }
+  visitor.SimulateInFramer(
+      reinterpret_cast<unsigned char*>(control_frame.data()),
+      control_frame.size());
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(1u, static_cast<unsigned>(visitor.setting_count_));
+  EXPECT_EQ(1u, static_cast<unsigned>(visitor.settings_ack_sent_));
+}
+
+TEST_P(SpdyFramerTest, ReadUnknownExtensionFrameWithExtension) {
+  SpdyFramer framer(SpdyFramer::ENABLE_COMPRESSION);
+
+  // The unrecognized frame type should still have a valid length.
+  const unsigned char unknown_frame[] = {
+      0x00, 0x00, 0x14,        // Length: 20
+      0xff,                    //   Type: UnknownFrameType(255)
+      0xff,                    //  Flags: 0xff
+      0xff, 0xff, 0xff, 0xff,  // Stream: 0x7fffffff (R-bit set)
+      0xff, 0xff, 0xff, 0xff,  // Payload
+      0xff, 0xff, 0xff, 0xff,  //
+      0xff, 0xff, 0xff, 0xff,  //
+      0xff, 0xff, 0xff, 0xff,  //
+      0xff, 0xff, 0xff, 0xff,  //
+  };
+  TestSpdyVisitor visitor(SpdyFramer::DISABLE_COMPRESSION);
+  TestExtension extension;
+  visitor.set_extension_visitor(&extension);
+  visitor.SimulateInFramer(unknown_frame, arraysize(unknown_frame));
+  EXPECT_EQ(0, visitor.error_count_);
+  EXPECT_EQ(0x7fffffffu, extension.stream_id_);
+  EXPECT_EQ(20u, extension.length_);
+  EXPECT_EQ(255, extension.type_);
+  EXPECT_EQ(0xff, extension.flags_);
+  EXPECT_EQ(string(20, '\xff'), extension.payload_);
+
+  // Follow it up with a valid control frame to make sure we handle
+  // subsequent frames correctly.
+  SpdySettingsIR settings_ir;
+  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE, 10);
+  SpdySerializedFrame control_frame(framer.SerializeSettings(settings_ir));
   visitor.SimulateInFramer(
       reinterpret_cast<unsigned char*>(control_frame.data()),
       control_frame.size());

@@ -193,6 +193,9 @@ void SpdyFramer::set_visitor(SpdyFramerVisitorInterface* visitor) {
 }
 
 void SpdyFramer::set_extension_visitor(ExtensionVisitorInterface* extension) {
+  if (decoder_adapter_ != nullptr) {
+    decoder_adapter_->set_extension_visitor(extension);
+  }
   extension_ = extension;
 }
 
