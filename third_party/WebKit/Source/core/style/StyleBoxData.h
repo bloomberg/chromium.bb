@@ -36,7 +36,7 @@ namespace blink {
 // TODO(sashab): Move this into a private class on ComputedStyle, and remove
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
-class CORE_EXPORT StyleBoxData : public RefCounted<StyleBoxData> {
+class CORE_EXPORT StyleBoxData : public RefCountedCopyable<StyleBoxData> {
  public:
   static PassRefPtr<StyleBoxData> create() {
     return adoptRef(new StyleBoxData);
@@ -71,7 +71,7 @@ class CORE_EXPORT StyleBoxData : public RefCounted<StyleBoxData> {
   friend class ComputedStyle;
 
   StyleBoxData();
-  StyleBoxData(const StyleBoxData&);
+  StyleBoxData(const StyleBoxData&) = default;
 
   Length m_width;
   Length m_height;

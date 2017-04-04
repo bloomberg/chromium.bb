@@ -164,8 +164,17 @@ class RefCounted : public RefCountedBase {
 #endif
 };
 
+// Allows subclasses to use the default copy constructor.
+template <typename T>
+class RefCountedCopyable : public RefCounted<T> {
+ protected:
+  RefCountedCopyable() = default;
+  RefCountedCopyable(const RefCountedCopyable&) : RefCounted<T>() {}
+};
+
 }  // namespace WTF
 
 using WTF::RefCounted;
+using WTF::RefCountedCopyable;
 
 #endif  // RefCounted_h

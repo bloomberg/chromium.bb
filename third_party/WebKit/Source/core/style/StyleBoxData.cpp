@@ -44,20 +44,6 @@ StyleBoxData::StyleBoxData()
       m_boxSizing(static_cast<unsigned>(ComputedStyle::initialBoxSizing())),
       m_boxDecorationBreak(BoxDecorationBreakSlice) {}
 
-StyleBoxData::StyleBoxData(const StyleBoxData& o)
-    : RefCounted<StyleBoxData>(),
-      m_width(o.m_width),
-      m_height(o.m_height),
-      m_minWidth(o.m_minWidth),
-      m_maxWidth(o.m_maxWidth),
-      m_minHeight(o.m_minHeight),
-      m_maxHeight(o.m_maxHeight),
-      m_verticalAlign(o.m_verticalAlign),
-      m_zIndex(o.m_zIndex),
-      m_hasAutoZIndex(o.m_hasAutoZIndex),
-      m_boxSizing(o.m_boxSizing),
-      m_boxDecorationBreak(o.m_boxDecorationBreak) {}
-
 bool StyleBoxData::operator==(const StyleBoxData& o) const {
   return m_width == o.m_width && m_height == o.m_height &&
          m_minWidth == o.m_minWidth && m_maxWidth == o.m_maxWidth &&
