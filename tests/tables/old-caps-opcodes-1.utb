@@ -8,8 +8,8 @@
 # HIii    wrong
 # HIIi    correct
 
-include ../../tables/braille-patterns.cti
-include ../../tables/latinLetterDef6Dots.uti
+include tables/braille-patterns.cti
+include tables/latinLetterDef6Dots.uti
 
 capsletter 46
 begcaps 45
