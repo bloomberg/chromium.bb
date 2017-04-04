@@ -5249,6 +5249,24 @@ weston_output_release(struct weston_output *output)
 	free(output->name);
 }
 
+/** When you need a head...
+ *
+ * This function is a hack, used until all code has been converted to become
+ * multi-head aware.
+ *
+ * \param output The weston_output whose head to get.
+ * \return The first head in the output's list.
+ */
+WL_EXPORT struct weston_head *
+weston_output_get_first_head(struct weston_output *output)
+{
+	if (wl_list_empty(&output->head_list))
+		return NULL;
+
+	return container_of(output->head_list.next,
+			    struct weston_head, output_link);
+}
+
 static void
 destroy_viewport(struct wl_resource *resource)
 {

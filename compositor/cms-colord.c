@@ -102,9 +102,19 @@ edid_value_valid(const char *str)
 static gchar *
 get_output_id(struct cms_colord *cms, struct weston_output *o)
 {
-	struct weston_head *head = &o->head;
+	struct weston_head *head;
 	const gchar *tmp;
 	GString *device_id;
+
+	/* XXX: What to do with multiple heads?
+	 * This is potentially unstable, if head configuration is changed
+	 * while the output is enabled. */
+	head = weston_output_get_first_head(o);
+
+	if (wl_list_length(&o->head_list) > 1) {
+		weston_log("colord: WARNING: multiple heads are not supported (output %s).\n",
+			   o->name);
+	}
 
 	/* see https://github.com/hughsie/colord/blob/master/doc/device-and-profile-naming-spec.txt
 	 * for format and allowed values */
@@ -231,13 +241,16 @@ colord_notifier_output_destroy(struct wl_listener *listener, void *data)
 static void
 colord_output_created(struct cms_colord *cms, struct weston_output *o)
 {
-	struct weston_head *head = &o->head;
+	struct weston_head *head;
 	CdDevice *device;
 	const gchar *tmp;
 	gchar *device_id;
 	GError *error = NULL;
 	GHashTable *device_props;
 	struct cms_output *ocms;
+
+	/* XXX: What to do with multiple heads? */
+	head = weston_output_get_first_head(o);
 
 	/* create device */
 	device_id = get_output_id(cms, o);

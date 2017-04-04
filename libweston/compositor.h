@@ -2000,6 +2000,9 @@ weston_pending_output_coldplug(struct weston_compositor *compositor);
 struct weston_head *
 weston_head_from_resource(struct wl_resource *resource);
 
+struct weston_head *
+weston_output_get_first_head(struct weston_output *output);
+
 #ifdef  __cplusplus
 }
 #endif
