@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("manifest_processor.gni")
 import("shell_apk_version.gni")
 
 declare_args() {
@@ -48,7 +49,7 @@ shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
 shell_apk_manifest_javatests =
     "$target_gen_dir/shell_apk_manifest_javatests/AndroidManifest.xml"
 
-jinja_template("shell_apk_manifest") {
+manifest_processor_template("shell_apk_manifest") {
   input = "AndroidManifest.xml"
   output = shell_apk_manifest
 
@@ -75,7 +76,7 @@ jinja_template("shell_apk_manifest") {
 }
 
 # Manifest for instrumentation tests. Cannot be customized via GN args.
-jinja_template("shell_apk_manifest_javatests") {
+manifest_processor_template("shell_apk_manifest_javatests") {
   input = "AndroidManifest.xml"
   output = shell_apk_manifest_javatests
 

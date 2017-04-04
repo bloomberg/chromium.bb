@@ -5,9 +5,9 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="{{ manifest_package }}"
-    android:versionCode="{{ version_code }}"
-    android:versionName="{{ version_name }}" >
+    package="{{{manifest_package}}}"
+    android:versionCode="{{{version_code}}}"
+    android:versionName="{{{version_name}}}" >
 
     <uses-sdk
         android:minSdkVersion="16"
@@ -15,7 +15,7 @@
 
     <application
         android:icon="@mipmap/app_icon"
-        android:label="{{ short_name }}"
+        android:label="{{{short_name}}}"
         android:allowBackup="false">
         <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
@@ -28,7 +28,7 @@
                 <action android:name="android.intent.action.VIEW"></action>
                 <category android:name="android.intent.category.DEFAULT"></category>
                 <category android:name="android.intent.category.BROWSABLE"></category>
-                <data android:scheme="{{ scope_url_scheme }}" android:host="{{ scope_url_host }}" android:pathPrefix="{{ scope_url_path }}"></data>
+                <data android:scheme="{{{scope_url_scheme}}}" android:host="{{{scope_url_host}}}" android:pathPrefix="{{{scope_url_path}}}"></data>
             </intent-filter>
         </activity>
         <activity android:name="org.chromium.webapk.shell_apk.NotificationSettingsLauncherActivity">
@@ -37,19 +37,19 @@
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES"/>
             </intent-filter>
         </activity>
-        <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{ shell_apk_version }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{ runtime_host }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.startUrl" android:value="{{ start_url }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.name" android:value="{{ name }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.shortName" android:value="{{ short_name }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.scope" android:value="{{ scope_url }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.displayMode" android:value="{{ display_mode }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.orientation" android:value="{{ orientation }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{ theme_color }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{ background_color }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.shellApkVersion" android:value="{{{shell_apk_version}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.runtimeHost" android:value="{{{runtime_host}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.startUrl" android:value="{{{start_url}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.name" android:value="{{{name}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.shortName" android:value="{{{short_name}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.scope" android:value="{{{scope_url}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.displayMode" android:value="{{{display_mode}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.orientation" android:value="{{{orientation}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.themeColor" android:value="{{{theme_color}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.backgroundColor" android:value="{{{background_color}}}" />
         <meta-data android:name="org.chromium.webapk.shell_apk.iconId" android:resource="@mipmap/app_icon" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes" android:value="{{ icon_urls_and_icon_murmur2_hashes }}" />
-        <meta-data android:name="org.chromium.webapk.shell_apk.webManifestUrl" android:value="{{ web_manifest_url }}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.iconUrlsAndIconMurmur2Hashes" android:value="{{{icon_urls_and_icon_murmur2_hashes}}}" />
+        <meta-data android:name="org.chromium.webapk.shell_apk.webManifestUrl" android:value="{{{web_manifest_url}}}" />
         <service
             android:name="org.chromium.webapk.shell_apk.WebApkServiceFactory"
             android:exported="true"
