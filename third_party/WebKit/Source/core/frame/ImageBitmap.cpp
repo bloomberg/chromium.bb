@@ -789,7 +789,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
     // Using kN32 type, swizzle input if necessary.
     SkImageInfo info = SkImageInfo::Make(
         parsedOptions.cropRect.width(), parsedOptions.cropRect.height(),
-        kN32_SkColorType, kUnpremul_SkAlphaType, data->getSkColorSpace());
+        kN32_SkColorType, kUnpremul_SkAlphaType, data->skColorSpace());
     unsigned bytesPerPixel = static_cast<unsigned>(info.bytesPerPixel());
     unsigned srcPixelBytesPerRow = bytesPerPixel * data->size().width();
     unsigned dstPixelBytesPerRow =
@@ -866,15 +866,15 @@ ImageBitmap::ImageBitmap(ImageData* data,
     }
     if (!skImage)
       return;
-    if (data->getSkColorSpace()) {
-      parsedOptions.latestColorSpace = data->getSkColorSpace();
+    if (data->skColorSpace()) {
+      parsedOptions.latestColorSpace = data->skColorSpace();
       applyColorSpaceConversion(skImage, parsedOptions);
     }
     if (parsedOptions.shouldScaleInput) {
       m_image = StaticBitmapImage::create(
           scaleSkImage(skImage, parsedOptions.resizeWidth,
                        parsedOptions.resizeHeight, parsedOptions.resizeQuality,
-                       parsedOptions.latestColorType, data->getSkColorSpace()));
+                       parsedOptions.latestColorType, data->skColorSpace()));
     } else {
       m_image = StaticBitmapImage::create(skImage);
     }
@@ -886,7 +886,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
 
   std::unique_ptr<ImageBuffer> buffer =
       ImageBuffer::create(parsedOptions.cropRect.size(), NonOpaque,
-                          DoNotInitializeImagePixels, data->getSkColorSpace());
+                          DoNotInitializeImagePixels, data->skColorSpace());
   if (!buffer)
     return;
 
@@ -914,7 +914,7 @@ ImageBitmap::ImageBitmap(ImageData* data,
   if (parsedOptions.shouldScaleInput) {
     sk_sp<SkSurface> surface = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(
         parsedOptions.resizeWidth, parsedOptions.resizeHeight,
-        data->getSkColorSpace()));
+        data->skColorSpace()));
     if (!surface)
       return;
     SkPaint paint;
@@ -924,8 +924,8 @@ ImageBitmap::ImageBitmap(ImageData* data,
     surface->getCanvas()->drawImageRect(skImage, dstDrawRect, &paint);
     skImage = surface->makeImageSnapshot();
   }
-  if (data->getSkColorSpace()) {
-    parsedOptions.latestColorSpace = data->getSkColorSpace();
+  if (data->skColorSpace()) {
+    parsedOptions.latestColorSpace = data->skColorSpace();
     applyColorSpaceConversion(skImage, parsedOptions);
   }
   m_image = StaticBitmapImage::create(std::move(skImage));
