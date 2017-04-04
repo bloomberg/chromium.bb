@@ -53,7 +53,6 @@ component("gfx") {
     "color_analysis.cc",
     "color_analysis.h",
     "color_palette.h",
-    "color_space.cc",
     "color_space_win.cc",
     "color_space_win.h",
     "color_transform.cc",
@@ -88,8 +87,6 @@ component("gfx") {
     "gfx_paths.h",
     "half_float.cc",
     "half_float.h",
-    "icc_profile.cc",
-    "icc_profile.h",
     "icc_profile_mac.mm",
     "icc_profile_win.cc",
     "icc_profile_x11.cc",
@@ -165,8 +162,6 @@ component("gfx") {
     "shadow_value.h",
     "skbitmap_operations.cc",
     "skbitmap_operations.h",
-    "skia_color_space_util.cc",
-    "skia_color_space_util.h",
     "switches.cc",
     "switches.h",
     "sys_color_change_listener.cc",
@@ -398,19 +393,25 @@ component("gfx") {
   }
 }
 
-# Depend on this to use color_space.h without pulling in all of gfx.
-source_set("color_space") {
+component("color_space") {
   sources = [
+    "color_space.cc",
     "color_space.h",
+    "icc_profile.cc",
+    "icc_profile.h",
+    "skia_color_space_util.cc",
+    "skia_color_space_util.h",
   ]
-
-  defines = [ "GFX_IMPLEMENTATION" ]
-
   public_deps = [
     ":gfx_export",
     "//base",
     "//skia",
   ]
+  deps = [
+    "//base",
+    "//skia",
+  ]
+  defines = [ "GFX_IMPLEMENTATION" ]
 }
 
 # Depend on this to use half_float.h without pulling in all of gfx.

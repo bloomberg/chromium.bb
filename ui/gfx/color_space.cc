@@ -14,7 +14,6 @@
 #include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"
-#include "ui/gfx/transform.h"
 
 namespace gfx {
 
@@ -188,6 +187,11 @@ ColorSpace::ColorSpace(const ColorSpace& other)
            sizeof(custom_primary_matrix_));
   }
 }
+
+ColorSpace::ColorSpace(ColorSpace&& other) = default;
+
+ColorSpace& ColorSpace::operator=(const ColorSpace& other) = default;
+
 ColorSpace::~ColorSpace() = default;
 
 bool ColorSpace::IsValid() const {
@@ -330,6 +334,27 @@ bool ColorSpace::operator<(const ColorSpace& other) const {
       return false;
   }
   return false;
+}
+
+size_t ColorSpace::GetHash() const {
+  size_t result = (static_cast<size_t>(primaries_) << 0) |
+                  (static_cast<size_t>(transfer_) << 8) |
+                  (static_cast<size_t>(matrix_) << 16) |
+                  (static_cast<size_t>(range_) << 24);
+  if (primaries_ == PrimaryID::CUSTOM) {
+    const uint32_t* params =
+        reinterpret_cast<const uint32_t*>(custom_primary_matrix_);
+    result ^= params[0];
+    result ^= params[4];
+    result ^= params[8];
+  }
+  if (transfer_ == TransferID::CUSTOM) {
+    const uint32_t* params =
+        reinterpret_cast<const uint32_t*>(custom_transfer_params_);
+    result ^= params[3];
+    result ^= params[6];
+  }
+  return result;
 }
 
 std::string ColorSpace::ToString() const {

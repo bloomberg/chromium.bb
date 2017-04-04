@@ -11,7 +11,6 @@
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkICC.h"
-#include "ui/gfx/color_transform.h"
 #include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {

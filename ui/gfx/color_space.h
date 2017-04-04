@@ -28,7 +28,7 @@ class ICCProfile;
 // between any processes.
 class GFX_EXPORT ColorSpace {
  public:
-  enum class PrimaryID : uint16_t {
+  enum class PrimaryID : uint8_t {
     INVALID,
     BT709,
     BT470M,
@@ -51,7 +51,7 @@ class GFX_EXPORT ColorSpace {
     LAST = ICC_BASED,
   };
 
-  enum class TransferID : uint16_t {
+  enum class TransferID : uint8_t {
     INVALID,
     BT709,
     GAMMA22,
@@ -86,7 +86,7 @@ class GFX_EXPORT ColorSpace {
     LAST = ICC_BASED,
   };
 
-  enum class MatrixID : int16_t {
+  enum class MatrixID : uint8_t {
     INVALID,
     RGB,
     BT709,
@@ -101,7 +101,7 @@ class GFX_EXPORT ColorSpace {
     LAST = YDZDX,
   };
 
-  enum class RangeID : int8_t {
+  enum class RangeID : uint8_t {
     INVALID,
     // Limited Rec. 709 color range with RGB values ranging from 16 to 235.
     LIMITED,
@@ -119,6 +119,8 @@ class GFX_EXPORT ColorSpace {
              MatrixID matrix,
              RangeID full_range);
   ColorSpace(const ColorSpace& other);
+  ColorSpace(ColorSpace&& other);
+  ColorSpace& operator=(const ColorSpace& other);
   ~ColorSpace();
 
   // Create a color space with primary, transfer and matrix values from the
@@ -153,6 +155,7 @@ class GFX_EXPORT ColorSpace {
   bool operator==(const ColorSpace& other) const;
   bool operator!=(const ColorSpace& other) const;
   bool operator<(const ColorSpace& other) const;
+  size_t GetHash() const;
   std::string ToString() const;
 
   // Returns true if the decoded values can be outside of the 0.0-1.0 range.
