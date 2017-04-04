@@ -812,6 +812,8 @@ split_static_library("browser") {
     "page_load_metrics/observers/media_page_load_metrics_observer.h",
     "page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.cc",
     "page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h",
+    "page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.cc",
+    "page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h",
     "page_load_metrics/observers/prerender_page_load_metrics_observer.cc",
     "page_load_metrics/observers/prerender_page_load_metrics_observer.h",
     "page_load_metrics/observers/previews_page_load_metrics_observer.cc",

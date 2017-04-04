@@ -21,6 +21,7 @@
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/media_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
@@ -121,6 +122,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     if (prerender_observer)
       tracker->AddObserver(std::move(prerender_observer));
   }
+  tracker->AddObserver(
+      base::MakeUnique<OmniboxSuggestionUsedMetricsObserver>(IsPrerendering()));
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering() const {
