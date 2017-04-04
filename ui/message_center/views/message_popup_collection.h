@@ -72,6 +72,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   void MarkAllPopupsShown();
 
+  // Inclement the timer counter, and pause the popup timer if necessary.
+  void PausePopupTimers();
+  // Declement the timer counter, and restart the popup timer if necessary.
+  void RestartPopupTimers();
+
   // Since these events are really coming from individual toast widgets,
   // it helps to be able to keep track of the sender.
   void OnMouseEntered(ToastContentsView* toast_entered);
@@ -164,6 +169,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // clicking" mode.
   // Only to be used when user_is_closing_toasts_by_clicking_ is true.
   int target_top_edge_;
+
+  // This is the number of pause request for timer. If it's more than zero, the
+  // timer is paused. If zero, the timer is not paused.
+  int timer_pause_counter_ = 0;
 
   // Weak, only exists temporarily in tests.
   std::unique_ptr<base::RunLoop> run_loop_for_test_;

@@ -15,6 +15,7 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_center_controller.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace gfx {
 class Animation;
@@ -42,6 +43,7 @@ class PopupAlignmentDelegate;
 // widget/views are closed/destructed.
 class MESSAGE_CENTER_EXPORT ToastContentsView
     : public views::WidgetDelegateView,
+      public views::WidgetObserver,
       public MessageCenterController,
       public gfx::AnimationDelegate {
  public:
@@ -116,6 +118,9 @@ class MESSAGE_CENTER_EXPORT ToastContentsView
   void WindowClosing() override;
   void OnDisplayChanged() override;
   void OnWorkAreaChanged() override;
+
+  // Overridden from views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // Recalculates preferred size from underlying view and notifies about it.
   void UpdatePreferredSize();

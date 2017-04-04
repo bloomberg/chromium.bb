@@ -138,6 +138,26 @@ void MessagePopupCollection::MarkAllPopupsShown() {
   }
 }
 
+void MessagePopupCollection::PausePopupTimers() {
+  DCHECK(timer_pause_counter_ >= 0);
+  if (timer_pause_counter_ <= 0) {
+    message_center_->PausePopupTimers();
+    timer_pause_counter_ = 1;
+  } else {
+    timer_pause_counter_++;
+  }
+}
+
+void MessagePopupCollection::RestartPopupTimers() {
+  DCHECK(timer_pause_counter_ >= 1);
+  if (timer_pause_counter_ <= 1) {
+    message_center_->RestartPopupTimers();
+    timer_pause_counter_ = 0;
+  } else {
+    timer_pause_counter_--;
+  }
+}
+
 void MessagePopupCollection::UpdateWidgets() {
   if (message_center_->IsMessageCenterVisible()) {
     DCHECK_EQ(0u, message_center_->GetPopupNotifications().size());
@@ -229,7 +249,7 @@ void MessagePopupCollection::OnMouseEntered(ToastContentsView* toast_entered) {
   // toasts.  So we need to keep track of which one is the currently active one.
   latest_toast_entered_ = toast_entered;
 
-  message_center_->PausePopupTimers();
+  PausePopupTimers();
 
   if (user_is_closing_toasts_by_clicking_)
     defer_timer_->Stop();
@@ -249,7 +269,7 @@ void MessagePopupCollection::OnMouseExited(ToastContentsView* toast_exited) {
         this,
         &MessagePopupCollection::OnDeferTimerExpired);
   } else {
-    message_center_->RestartPopupTimers();
+    RestartPopupTimers();
   }
 }
 
@@ -412,7 +432,7 @@ void MessagePopupCollection::OnDeferTimerExpired() {
   user_is_closing_toasts_by_clicking_ = false;
   DecrementDeferCounter();
 
-  message_center_->RestartPopupTimers();
+  RestartPopupTimers();
 }
 
 void MessagePopupCollection::OnNotificationUpdated(

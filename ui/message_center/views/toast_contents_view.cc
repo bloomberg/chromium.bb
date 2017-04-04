@@ -278,6 +278,14 @@ void ToastContentsView::OnWorkAreaChanged() {
       Screen::GetScreen()->GetDisplayNearestView(native_view));
 }
 
+void ToastContentsView::OnWidgetActivationChanged(views::Widget* widget,
+                                                  bool active) {
+  if (active)
+    collection_->PausePopupTimers();
+  else
+    collection_->RestartPopupTimers();
+}
+
 // views::View
 void ToastContentsView::OnMouseEntered(const ui::MouseEvent& event) {
   if (collection_)
@@ -389,6 +397,7 @@ void ToastContentsView::CreateWidget(
   views::Widget* widget = new views::Widget();
   alignment_delegate->ConfigureWidgetInitParamsForContainer(widget, &params);
   widget->set_focus_on_creation(false);
+  widget->AddObserver(this);
 
 #if defined(OS_WIN)
   // We want to ensure that this toast always goes to the native desktop,
