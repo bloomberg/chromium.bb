@@ -576,6 +576,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame);
 
+  const cc::CompositorFrameMetadata& last_frame_metadata() {
+    return last_frame_metadata_;
+  }
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -948,6 +952,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // of so we can tell when a new instance has been created for the purpose of
   // not returning stale resources.
   uint32_t last_compositor_frame_sink_id_ = 0;
+
+  cc::CompositorFrameMetadata last_frame_metadata_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

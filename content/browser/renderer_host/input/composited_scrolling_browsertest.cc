@@ -83,8 +83,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
-    scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
-    frame_watcher->AttachTo(shell()->web_contents());
+    FrameWatcher frame_watcher(shell()->web_contents());
     host->GetView()->SetSize(gfx::Size(400, 400));
 
     base::string16 ready_title(base::ASCIIToUTF16("ready"));
@@ -95,7 +94,7 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
     // otherwise the injection of the synthetic gestures may get
     // dropped because of MainThread/Impl thread sync of touch event
     // regions.
-    frame_watcher->WaitFrames(1);
+    frame_watcher.WaitFrames(1);
   }
 
   // ContentBrowserTest:

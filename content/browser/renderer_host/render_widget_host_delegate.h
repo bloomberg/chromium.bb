@@ -249,6 +249,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // not a WebContents, returns nullptr.
   virtual WebContents* GetAsWebContents();
 
+  // Notifies that a CompositorFrame was received from the renderer.
+  virtual void DidReceiveCompositorFrame() {}
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

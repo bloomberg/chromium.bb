@@ -5375,6 +5375,11 @@ void WebContentsImpl::FocusedNodeTouched(bool editable) {
 #endif
 }
 
+void WebContentsImpl::DidReceiveCompositorFrame() {
+  for (auto& observer : observers_)
+    observer.DidReceiveCompositorFrame();
+}
+
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
   bool allow_localhost = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAllowInsecureLocalhost);

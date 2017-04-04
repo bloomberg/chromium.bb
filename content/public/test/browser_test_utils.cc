@@ -1533,41 +1533,15 @@ bool RequestFrame(WebContents* web_contents) {
       ->ScheduleComposite();
 }
 
-FrameWatcher::FrameWatcher() : MessageFilter(), frames_to_wait_(0) {}
+FrameWatcher::FrameWatcher() = default;
 
-FrameWatcher::~FrameWatcher() {
-}
+FrameWatcher::FrameWatcher(WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
 
-void FrameWatcher::ReceivedFrameSwap(cc::CompositorFrameMetadata metadata) {
-  --frames_to_wait_;
-  last_metadata_ = std::move(metadata);
-  if (frames_to_wait_ == 0)
-    quit_.Run();
-}
-
-bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() == ViewHostMsg_SwapCompositorFrame::ID) {
-    ViewHostMsg_SwapCompositorFrame::Param param;
-    if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
-      return false;
-    cc::CompositorFrame frame(std::move(std::get<2>(param)));
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FrameWatcher::ReceivedFrameSwap, this,
-                   base::Passed(std::move(frame.metadata))));
-  }
-  return false;
-}
-
-void FrameWatcher::AttachTo(WebContents* web_contents) {
-  DCHECK(web_contents);
-  RenderWidgetHostImpl* widget_host = RenderWidgetHostImpl::From(
-      web_contents->GetRenderViewHost()->GetWidget());
-  widget_host->GetProcess()->GetChannel()->AddFilter(this);
-}
+FrameWatcher::~FrameWatcher() = default;
 
 void FrameWatcher::WaitFrames(int frames_to_wait) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (frames_to_wait <= 0)
     return;
   base::RunLoop run_loop;
@@ -1577,7 +1551,15 @@ void FrameWatcher::WaitFrames(int frames_to_wait) {
 }
 
 const cc::CompositorFrameMetadata& FrameWatcher::LastMetadata() {
-  return last_metadata_;
+  return RenderWidgetHostImpl::From(
+             web_contents()->GetRenderViewHost()->GetWidget())
+      ->last_frame_metadata();
+}
+
+void FrameWatcher::DidReceiveCompositorFrame() {
+  --frames_to_wait_;
+  if (frames_to_wait_ == 0)
+    quit_.Run();
 }
 
 MainThreadFrameObserver::MainThreadFrameObserver(

@@ -238,8 +238,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     screenshot_manager_ = new ScreenshotTracker(controller);
     controller->SetScreenshotManager(base::WrapUnique(screenshot_manager_));
 
-    frame_watcher_ = new FrameWatcher();
-    frame_watcher_->AttachTo(shell()->web_contents());
+    frame_watcher_.Observe(shell()->web_contents());
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -381,7 +380,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   void WaitAFrame() {
     while (!GetRenderWidgetHost()->ScheduleComposite())
       GiveItSomeTime();
-    frame_watcher_->WaitFrames(1);
+    frame_watcher_.WaitFrames(1);
   }
 
  protected:
@@ -398,7 +397,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
  private:
   ScreenshotTracker* screenshot_manager_;
   scoped_refptr<InputEventMessageFilterWaitsForAcks> filter_;
-  scoped_refptr<FrameWatcher> frame_watcher_;
+  FrameWatcher frame_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAuraTest);
 };

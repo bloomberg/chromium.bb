@@ -2632,6 +2632,8 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
   }
 
+  last_frame_metadata_ = frame.metadata.Clone();
+
   latency_tracker_.OnSwapCompositorFrame(&frame.metadata.latency_info);
 
   bool is_mobile_optimized = IsMobileOptimizedFrame(frame.metadata);
@@ -2660,6 +2662,9 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
       new_content_rendering_timeout_->IsRunning()) {
     new_content_rendering_timeout_->Stop();
   }
+
+  if (delegate_)
+    delegate_->DidReceiveCompositorFrame();
 }
 
 }  // namespace content

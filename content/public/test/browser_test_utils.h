@@ -531,33 +531,34 @@ class WebContentsAddedObserver {
 bool RequestFrame(WebContents* web_contents);
 
 // Watches compositor frame changes, blocking until a frame has been
-// composited. This class is intended to be run on the main thread; to
-// synchronize the main thread against the impl thread.
-class FrameWatcher : public IPC::MessageFilter {
+// composited. This class must run on the UI thread.
+class FrameWatcher : public WebContentsObserver {
  public:
+  // Don't observe any WebContents at construction. Observe() must be called
+  // later on.
   FrameWatcher();
 
-  // Listen for new frames from the |web_contents| renderer process.
-  void AttachTo(WebContents* web_contents);
+  // Listen for new frames from the |web_contents| renderer process. The
+  // WebContents that we observe can be changed by calling Observe().
+  explicit FrameWatcher(WebContents* web_contents);
+
+  ~FrameWatcher() override;
 
   // Wait for |frames_to_wait| swap mesages from the compositor.
   void WaitFrames(int frames_to_wait);
 
-  // Return the meta data received in the last compositor
-  // swap frame.
+  // Return the last received CompositorFrame's metadata.
   const cc::CompositorFrameMetadata& LastMetadata();
 
+  // Call this method to start observing a WebContents for CompositorFrames.
+  using WebContentsObserver::Observe;
+
  private:
-  ~FrameWatcher() override;
+  // WebContentsObserver implementation.
+  void DidReceiveCompositorFrame() override;
 
-  // Overridden BrowserMessageFilter methods.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void ReceivedFrameSwap(cc::CompositorFrameMetadata meta_data);
-
-  int frames_to_wait_;
+  int frames_to_wait_ = 0;
   base::Closure quit_;
-  cc::CompositorFrameMetadata last_metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
 };

@@ -117,11 +117,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void RenderProcessGone(base::TerminationStatus status) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
   void DidAttachInterstitialPage() override;
   void DidDetachInterstitialPage() override;
   void WasShown() override;
   void WasHidden() override;
+  void DidReceiveCompositorFrame() override;
 
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
                                   RenderFrameHost* new_host);

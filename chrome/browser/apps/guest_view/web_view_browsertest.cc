@@ -822,9 +822,6 @@ class WebViewTestBase : public extensions::PlatformAppBrowserTest {
 
   ~WebViewTestBase() override {}
 
- protected:
-  scoped_refptr<content::FrameWatcher> frame_watcher_;
-
  private:
   bool UsesFakeSpeech() {
     const testing::TestInfo* const test_info =
@@ -3879,10 +3876,7 @@ class WebViewFocusTest : public WebViewTest {
   }
 
   void ForceCompositorFrame() {
-    if (!frame_watcher_) {
-      frame_watcher_ = new content::FrameWatcher();
-      frame_watcher_->AttachTo(GetEmbedderWebContents());
-    }
+    frame_watcher_.Observe(GetEmbedderWebContents());
 
     while (!RequestFrame(GetEmbedderWebContents())) {
       // RequestFrame failed because we were waiting on an ack ... wait a short
@@ -3893,11 +3887,11 @@ class WebViewFocusTest : public WebViewTest {
           base::TimeDelta::FromMilliseconds(10));
       run_loop.Run();
     }
-    frame_watcher_->WaitFrames(1);
+    frame_watcher_.WaitFrames(1);
   }
 
  private:
-  scoped_refptr<content::FrameWatcher> frame_watcher_;
+  content::FrameWatcher frame_watcher_;
 };
 INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewFocusTest, testing::Values(false));
 

@@ -860,15 +860,6 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
 }
 
 bool RenderFrameDevToolsAgentHost::OnMessageReceived(
-    const IPC::Message& message) {
-  if (!current_)
-    return false;
-  if (message.type() == ViewHostMsg_SwapCompositorFrame::ID)
-    OnSwapCompositorFrame(message);
-  return false;
-}
-
-bool RenderFrameDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
   bool is_current = current_ && current_->host() == render_frame_host;
@@ -922,6 +913,27 @@ void RenderFrameDevToolsAgentHost::WasHidden() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
+}
+
+void RenderFrameDevToolsAgentHost::DidReceiveCompositorFrame() {
+  if (!session())
+    return;
+  const cc::CompositorFrameMetadata& metadata =
+      RenderWidgetHostImpl::From(
+          web_contents()->GetRenderViewHost()->GetWidget())
+          ->last_frame_metadata();
+  protocol::PageHandler* page_handler =
+      protocol::PageHandler::FromSession(session());
+  if (page_handler)
+    page_handler->OnSwapCompositorFrame(metadata.Clone());
+  protocol::InputHandler::FromSession(session())->OnSwapCompositorFrame(
+      metadata);
+  protocol::TracingHandler* tracing_handler =
+      protocol::TracingHandler::FromSession(session());
+  if (frame_trace_recorder_ && tracing_handler->did_initiate_recording()) {
+    frame_trace_recorder_->OnSwapCompositorFrame(
+        current_ ? current_->host() : nullptr, metadata);
+  }
 }
 
 void RenderFrameDevToolsAgentHost::
@@ -1083,28 +1095,6 @@ base::TimeTicks RenderFrameDevToolsAgentHost::GetLastActivityTime() {
   if (content::WebContents* contents = web_contents())
     return contents->GetLastActiveTime();
   return base::TimeTicks();
-}
-
-void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
-    const IPC::Message& message) {
-  ViewHostMsg_SwapCompositorFrame::Param param;
-  if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
-    return;
-  if (!session())
-    return;
-  protocol::PageHandler* page_handler =
-      protocol::PageHandler::FromSession(session());
-  if (page_handler) {
-    page_handler->OnSwapCompositorFrame(std::move(std::get<2>(param).metadata));
-  }
-  protocol::InputHandler::FromSession(session())->OnSwapCompositorFrame(
-      std::get<2>(param).metadata);
-  protocol::TracingHandler* tracing_handler =
-      protocol::TracingHandler::FromSession(session());
-  if (frame_trace_recorder_ && tracing_handler->did_initiate_recording()) {
-    frame_trace_recorder_->OnSwapCompositorFrame(
-        current_ ? current_->host() : nullptr, std::get<2>(param).metadata);
-  }
 }
 
 void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
