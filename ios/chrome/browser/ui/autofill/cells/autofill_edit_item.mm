@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -30,7 +30,7 @@ const CGFloat kLabelAndFieldGap = 5;
 @synthesize textFieldValue = _textFieldValue;
 @synthesize cardTypeIcon = _cardTypeIcon;
 @synthesize textFieldEnabled = _textFieldEnabled;
-@synthesize autofillType = _autofillType;
+@synthesize autofillUIType = _autofillUIType;
 @synthesize required = _required;
 
 - (instancetype)initWithType:(NSInteger)type {

@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+
 @class AutofillEditItem;
 
 // Field definition for an editor field. Used for building the UI and
@@ -14,7 +16,7 @@
 @interface EditorField : NSObject
 
 // Autofill type for the field. Corresponds to autofill::ServerFieldType
-@property(nonatomic, assign) NSInteger autofillType;
+@property(nonatomic, assign) AutofillUIType autofillUIType;
 // Label for the field.
 @property(nonatomic, copy) NSString* label;
 // Value of the field. May be nil.
@@ -26,10 +28,10 @@
 // The section identifier for the associated AutofillEditItem.
 @property(nonatomic, assign) NSInteger sectionIdentifier;
 
-- (instancetype)initWithAutofillType:(NSInteger)autofillType
-                               label:(NSString*)label
-                               value:(NSString*)value
-                            required:(BOOL)required;
+- (instancetype)initWithAutofillUIType:(AutofillUIType)autofillUIType
+                                 label:(NSString*)label
+                                 value:(NSString*)value
+                              required:(BOOL)required;
 
 @end
 

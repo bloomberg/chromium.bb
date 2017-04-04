@@ -8,8 +8,6 @@ source_set("cells") {
     "account_signin_item.mm",
     "autofill_data_item.h",
     "autofill_data_item.mm",
-    "autofill_edit_item.h",
-    "autofill_edit_item.mm",
     "byo_textfield_item.h",
     "byo_textfield_item.mm",
     "card_multiline_item.h",
@@ -53,7 +51,6 @@ source_set("unit_tests") {
   sources = [
     "account_signin_item_unittest.mm",
     "autofill_data_item_unittest.mm",
-    "autofill_edit_item_unittest.mm",
     "byo_textfield_item_unittest.mm",
     "card_multiline_item_unittest.mm",
     "copied_to_chrome_item_unittest.mm",

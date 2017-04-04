@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_AUTOFILL_EDIT_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_AUTOFILL_EDIT_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_AUTOFILL_EDIT_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_AUTOFILL_EDIT_ITEM_H_
 
 #import <UIKit/UIKit.h>
 
-#include "components/autofill/core/browser/autofill_profile.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
@@ -25,8 +25,7 @@
 @property(nonatomic, copy) UIImage* cardTypeIcon;
 
 // The field type this item is describing.
-// TODO(crbug.com/702252): Get rid of the dependency on the model type.
-@property(nonatomic, assign) autofill::ServerFieldType autofillType;
+@property(nonatomic, assign) AutofillUIType autofillUIType;
 
 // Whether this field is required. If YES, an "*" is appended to the name of the
 // text field to indicate that the field is required. It is also used for
@@ -54,4 +53,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_AUTOFILL_EDIT_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_CELLS_AUTOFILL_EDIT_ITEM_H_

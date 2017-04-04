@@ -10,6 +10,8 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+
 @class EditorField;
 @class PaymentRequestEditViewController;
 
@@ -33,13 +35,13 @@
 // Validator protocol for PaymentRequestEditViewController.
 @protocol PaymentRequestEditViewControllerValidator<NSObject>
 
-// Returns the validation error string for |value|. |autofillType| corresponds
-// to autofill::ServerFieldType. |required| indicates whether this is a required
-// field. If there are no validation errors, an empty string is returned.
+// Returns the validation error string for |value| which has the type
+// |autofillUIType|. |required| indicates whether this is a required field. If
+// there are no validation errors, an empty string is returned.
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
                                 validateValue:(NSString*)value
-                                 autofillType:(NSInteger)autofillType
+                               autofillUIType:(AutofillUIType)autofillUIType
                                      required:(BOOL)required;
 
 @end

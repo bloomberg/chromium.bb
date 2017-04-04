@@ -9,8 +9,10 @@
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,21 +56,18 @@
 
 - (NSArray<EditorField*>*)editorFields {
   return @[
-    [[EditorField alloc]
-        initWithAutofillType:static_cast<NSInteger>(autofill::UNKNOWN_TYPE)
-                       label:@"Name"
-                       value:@"John Doe"
-                    required:YES],
-    [[EditorField alloc]
-        initWithAutofillType:static_cast<NSInteger>(autofill::UNKNOWN_TYPE)
-                       label:@"Address"
-                       value:@""
-                    required:YES],
-    [[EditorField alloc]
-        initWithAutofillType:static_cast<NSInteger>(autofill::UNKNOWN_TYPE)
-                       label:@"Postal Code"
-                       value:@""
-                    required:NO]
+    [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
+                                          label:@"Name"
+                                          value:@"John Doe"
+                                       required:YES],
+    [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
+                                          label:@"Address"
+                                          value:@""
+                                       required:YES],
+    [[EditorField alloc] initWithAutofillUIType:AutofillUITypeUnknown
+                                          label:@"Postal Code"
+                                          value:@""
+                                       required:NO]
   ];
 }
 

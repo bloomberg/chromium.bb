@@ -7,17 +7,16 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/autofill/core/browser/field_types.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller+internal.h"
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller_actions.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
+#import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
-#import "ios/chrome/browser/ui/settings/autofill_edit_accessory_view.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
@@ -182,8 +181,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     item.textFieldEnabled = YES;
     item.textFieldValue = field.value;
     item.required = field.isRequired;
-    item.autofillType =
-        static_cast<autofill::ServerFieldType>(field.autofillType);
+    item.autofillUIType = field.autofillUIType;
     [model addItem:item
         toSectionWithIdentifier:static_cast<NSInteger>(sectionIdentifier)];
     field.item = item;
@@ -227,7 +225,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* errorMessage =
       [_validatorDelegate paymentRequestEditViewController:self
                                              validateValue:textField.text
-                                              autofillType:item.autofillType
+                                            autofillUIType:item.autofillUIType
                                                   required:item.required];
   NSInteger sectionIdentifier =
       [model sectionIdentifierForSection:[indexPath section]];
@@ -360,7 +358,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (NSString*)paymentRequestEditViewController:
                  (PaymentRequestEditViewController*)controller
                                 validateValue:(NSString*)value
-                                 autofillType:(NSInteger)autofillType
+                               autofillUIType:(AutofillUIType)autofillUIType
                                      required:(BOOL)required {
   if (required && value.length == 0) {
     return l10n_util::GetNSString(
@@ -425,11 +423,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (EditorField* field in _fields) {
     AutofillEditItem* item = field.item;
 
-    NSString* errorMessage =
-        [_validatorDelegate paymentRequestEditViewController:self
-                                               validateValue:item.textFieldValue
-                                                autofillType:field.autofillType
-                                                    required:field.isRequired];
+    NSString* errorMessage = [_validatorDelegate
+        paymentRequestEditViewController:self
+                           validateValue:item.textFieldValue
+                          autofillUIType:field.autofillUIType
+                                required:field.isRequired];
     [self addOrRemoveErrorMessage:errorMessage
           inSectionWithIdentifier:field.sectionIdentifier];
     if (errorMessage.length != 0) {

@@ -7,9 +7,9 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
-#import "ios/chrome/browser/ui/settings/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill_edit_collection_view_controller+protected.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 namespace {

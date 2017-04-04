@@ -8,12 +8,15 @@ source_set("autofill") {
     "autofill_client_ios.h",
     "autofill_client_ios.mm",
     "autofill_save_card_infobar.mm",
+    "autofill_ui_type_util.h",
+    "autofill_ui_type_util.mm",
     "card_unmask_prompt_view_bridge.h",
     "card_unmask_prompt_view_bridge.mm",
     "storage_switch_tooltip.h",
     "storage_switch_tooltip.mm",
   ]
   deps = [
+    ":autofill_ui",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
@@ -40,6 +43,20 @@ source_set("autofill") {
   ]
   public_deps = [
     "//ios/chrome/browser/ui/collection_view",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("autofill_ui") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "autofill_edit_accessory_view.h",
+    "autofill_edit_accessory_view.mm",
+    "autofill_ui_type.h",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui",
   ]
   libs = [ "UIKit.framework" ]
 }

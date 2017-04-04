@@ -10,20 +10,20 @@
 
 @implementation EditorField
 
-@synthesize autofillType = _autofillType;
+@synthesize autofillUIType = _autofillUIType;
 @synthesize label = _label;
 @synthesize value = _value;
 @synthesize required = _required;
 @synthesize item = _item;
 @synthesize sectionIdentifier = _sectionIdentifier;
 
-- (instancetype)initWithAutofillType:(NSInteger)autofillType
-                               label:(NSString*)label
-                               value:(NSString*)value
-                            required:(BOOL)required {
+- (instancetype)initWithAutofillUIType:(AutofillUIType)autofillUIType
+                                 label:(NSString*)label
+                                 value:(NSString*)value
+                              required:(BOOL)required {
   self = [super init];
   if (self) {
-    _autofillType = autofillType;
+    _autofillUIType = autofillUIType;
     _label = label;
     _value = value;
     _required = required;

@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/settings/autofill_edit_accessory_view.h"
+#import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 
 #include <string>
 
 #import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -40,14 +44,14 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
   [imageView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [imageView setFrame:kDefaultAccessorySeparatorRect];
 
-  return imageView.autorelease();
+  return imageView;
 }
 
 }  // namespace
 
 @interface AutofillEditAccessoryView () {
-  base::scoped_nsobject<UIButton> _previousButton;
-  base::scoped_nsobject<UIButton> _nextButton;
+  UIButton* _previousButton;
+  UIButton* _nextButton;
   __unsafe_unretained id<AutofillEditAccessoryDelegate> _delegate;  // weak
 }
 @end
@@ -75,24 +79,21 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
 }
 
 - (void)setupSubviews {
-  UIButton* previousButton =
+  _previousButton =
       [self accessoryButtonWithNormalName:@"autofill_prev"
                               pressedName:@"autofill_prev_pressed"
                              disabledName:@"autofill_prev_inactive"
                                    action:@selector(previousPressed)];
-  [self addSubview:previousButton];
-  _previousButton.reset([previousButton retain]);
+  [self addSubview:_previousButton];
 
   UIImageView* firstSeparator = ImageViewWithImageName(@"autofill_middle_sep");
   [self addSubview:firstSeparator];
 
-  UIButton* nextButton =
-      [self accessoryButtonWithNormalName:@"autofill_next"
-                              pressedName:@"autofill_next_pressed"
-                             disabledName:@"autofill_next_inactive"
-                                   action:@selector(nextPressed)];
-  [self addSubview:nextButton];
-  _nextButton.reset([nextButton retain]);
+  _nextButton = [self accessoryButtonWithNormalName:@"autofill_next"
+                                        pressedName:@"autofill_next_pressed"
+                                       disabledName:@"autofill_next_inactive"
+                                             action:@selector(nextPressed)];
+  [self addSubview:_nextButton];
 
   UIImageView* secondSeparator = nil;
   UIButton* closeButton = nil;
@@ -109,14 +110,14 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
   }
 
   NSDictionary* bindings = NSDictionaryOfVariableBindings(
-      previousButton, firstSeparator, nextButton);
+      _previousButton, firstSeparator, _nextButton);
   NSString* horizontalLayout =
-      @"H:[previousButton][firstSeparator][nextButton]|";
+      @"H:[_previousButton][firstSeparator][_nextButton]|";
   if (closeButton) {
-    bindings = NSDictionaryOfVariableBindings(previousButton, firstSeparator,
-                                              nextButton, secondSeparator,
+    bindings = NSDictionaryOfVariableBindings(_previousButton, firstSeparator,
+                                              _nextButton, secondSeparator,
                                               closeButton);
-    horizontalLayout = @"H:[previousButton][firstSeparator][nextButton]["
+    horizontalLayout = @"H:[_previousButton][firstSeparator][_nextButton]["
                        @"secondSeparator][closeButton]|";
   }
 
@@ -126,7 +127,7 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                                                metrics:0
                                                  views:bindings]];
   [self addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:@"V:[previousButton]|"
+                           constraintsWithVisualFormat:@"V:[_previousButton]|"
                                                options:0
                                                metrics:0
                                                  views:bindings]];
@@ -136,7 +137,7 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                                                metrics:0
                                                  views:bindings]];
   [self addConstraints:[NSLayoutConstraint
-                           constraintsWithVisualFormat:@"V:[nextButton]|"
+                           constraintsWithVisualFormat:@"V:[_nextButton]|"
                                                options:0
                                                metrics:nil
                                                  views:bindings]];
@@ -192,7 +193,6 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
   [backgroundImageView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
   [backgroundImageView setImage:backgroundImage];
   [self insertSubview:backgroundImageView atIndex:0];
-  [backgroundImageView release];
 }
 
 @end

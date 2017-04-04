@@ -13,11 +13,13 @@
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
+#import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
+#import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
-#import "ios/chrome/browser/ui/settings/cells/autofill_edit_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -26,6 +28,8 @@ NSString* const kAutofillProfileEditCollectionViewId =
     @"kAutofillProfileEditCollectionViewId";
 
 namespace {
+using ::AutofillTypeFromAutofillUIType;
+using ::AutofillUITypeFromAutofillType;
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierFields = kSectionIdentifierEnumZero,
@@ -143,8 +147,9 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
           [NSIndexPath indexPathForItem:itemIndex inSection:section];
       AutofillEditItem* item = base::mac::ObjCCastStrict<AutofillEditItem>(
           [model itemAtIndexPath:path]);
-      autofill::ServerFieldType serverFieldType = item.autofillType;
-      if (serverFieldType == autofill::ADDRESS_HOME_COUNTRY) {
+      autofill::ServerFieldType serverFieldType =
+          AutofillTypeFromAutofillUIType(item.autofillUIType);
+      if (item.autofillUIType == AutofillUITypeProfileHomeAddressCountry) {
         _autofillProfile.SetInfo(
             autofill::AutofillType(serverFieldType),
             base::SysNSStringToUTF16(item.textFieldValue),
@@ -180,7 +185,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     item.textFieldName = l10n_util::GetNSString(field.displayStringID);
     item.textFieldValue = base::SysUTF16ToNSString(_autofillProfile.GetInfo(
         autofill::AutofillType(field.autofillType), locale));
-    item.autofillType = field.autofillType;
+    item.autofillUIType = AutofillUITypeFromAutofillType(field.autofillType);
     item.textFieldEnabled = self.editor.editing;
     [model addItem:item toSectionWithIdentifier:SectionIdentifierFields];
   }
