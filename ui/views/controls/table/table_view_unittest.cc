@@ -11,9 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
 #include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/test/views_test_base.h"
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.
@@ -39,10 +41,6 @@ class TableViewTestHelper {
 
   void SetSelectionModel(const ui::ListSelectionModel& new_selection) {
     table_->SetSelectionModel(new_selection);
-  }
-
-  void OnFocus() {
-    table_->OnFocus();
   }
 
  private:
@@ -184,30 +182,15 @@ std::string GetRowsInViewOrderAsString(TableView* table) {
   return result;
 }
 
-class TestTableView : public TableView {
- public:
-  TestTableView(ui::TableModel* model,
-                const std::vector<ui::TableColumn>& columns)
-      : TableView(model, columns, TEXT_ONLY, false) {
-  }
-
-  // View overrides:
-  bool HasFocus() const override {
-    // Overriden so key processing works.
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTableView);
-};
-
 }  // namespace
 
-class TableViewTest : public testing::Test {
+class TableViewTest : public ViewsTestBase {
  public:
   TableViewTest() : table_(NULL) {}
 
   void SetUp() override {
+    ViewsTestBase::SetUp();
+
     model_.reset(new TestTableModel2);
     std::vector<ui::TableColumn> columns(2);
     columns[0].title = base::ASCIIToUTF16("Title Column 0");
@@ -215,27 +198,36 @@ class TableViewTest : public testing::Test {
     columns[1].title = base::ASCIIToUTF16("Title Column 1");
     columns[1].id = 1;
     columns[1].sortable = true;
-    table_ = new TestTableView(model_.get(), columns);
-    parent_.reset(table_->CreateParentIfNecessary());
-    parent_->SetBounds(0, 0, 10000, 10000);
-    parent_->Layout();
+    table_ = new TableView(model_.get(), columns, TEXT_ONLY, false);
+    View* parent = table_->CreateParentIfNecessary();
+    parent->SetBounds(0, 0, 10000, 10000);
+    parent->Layout();
     helper_.reset(new TableViewTestHelper(table_));
+
+    Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 650, 650);
+    widget_.reset(new Widget);
+    widget_->Init(params);
+    widget_->GetContentsView()->AddChildView(parent);
+    widget_->Show();
+  }
+
+  void TearDown() override {
+    widget_.reset();
+    ViewsTestBase::TearDown();
   }
 
   void ClickOnRow(int row, int flags) {
-    const int y = row * table_->row_height();
-    const ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, gfx::Point(0, y),
-                                 gfx::Point(0, y), ui::EventTimeForNow(),
-                                 ui::EF_LEFT_MOUSE_BUTTON | flags,
-                                 ui::EF_LEFT_MOUSE_BUTTON);
-    table_->OnMousePressed(pressed);
+    ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    generator.set_flags(flags);
+    generator.set_current_location(GetPointForRow(row));
+    generator.PressLeftButton();
   }
 
   void TapOnRow(int row) {
-    const int y = row * table_->row_height();
-    const ui::GestureEventDetails event_details(ui::ET_GESTURE_TAP);
-    ui::GestureEvent tap(0, y, 0, base::TimeTicks(), event_details);
-    table_->OnGestureEvent(&tap);
+    ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    generator.GestureTapAt(GetPointForRow(row));
   }
 
   // Returns the state of the selection model as a string. The format is:
@@ -256,8 +248,8 @@ class TableViewTest : public testing::Test {
   }
 
   void PressKey(ui::KeyboardCode code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, code, ui::EF_NONE);
-    table_->OnKeyPressed(event);
+    ui::test::EventGenerator generator(widget_->GetNativeWindow());
+    generator.PressKey(code, ui::EF_NONE);
   }
 
  protected:
@@ -269,7 +261,12 @@ class TableViewTest : public testing::Test {
   std::unique_ptr<TableViewTestHelper> helper_;
 
  private:
-  std::unique_ptr<View> parent_;
+  gfx::Point GetPointForRow(int row) {
+    const int y = (row + 0.5) * table_->row_height();
+    return table_->GetBoundsInScreen().origin() + gfx::Vector2d(5, y);
+  }
+
+  std::unique_ptr<Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TableViewTest);
 };
@@ -727,6 +724,8 @@ TEST_F(TableViewTest, SelectionNoSelectOnRemove) {
   table_->set_observer(nullptr);
 }
 
+// No touch on desktop Mac. Tracked in http://crbug.com/445520.
+#if !defined(OS_MACOSX)
 // Verifies selection works by way of a gesture.
 TEST_F(TableViewTest, SelectOnTap) {
   // Initially no selection.
@@ -735,13 +734,14 @@ TEST_F(TableViewTest, SelectOnTap) {
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
 
-  // Click on the first row, should select it.
+  // Tap on the first row, should select it.
   TapOnRow(0);
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=0 anchor=0 selection=0", SelectionStateAsString());
 
   table_->set_observer(NULL);
 }
+#endif
 
 // Verifies up/down correctly navigates through groups.
 TEST_F(TableViewTest, KeyUpDown) {
@@ -762,6 +762,7 @@ TEST_F(TableViewTest, KeyUpDown) {
 
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
+  table_->RequestFocus();
 
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
@@ -892,6 +893,7 @@ TEST_F(TableViewTest, HomeEnd) {
 
   TableViewObserverImpl observer;
   table_->set_observer(&observer);
+  table_->RequestFocus();
 
   // Initially no selection.
   EXPECT_EQ("active=-1 anchor=-1 selection=", SelectionStateAsString());
@@ -904,9 +906,15 @@ TEST_F(TableViewTest, HomeEnd) {
   EXPECT_EQ(1, observer.GetChangedCountAndClear());
   EXPECT_EQ("active=4 anchor=4 selection=3 4", SelectionStateAsString());
 
+  PressKey(ui::VKEY_HOME);
+  EXPECT_EQ(1, observer.GetChangedCountAndClear());
+  EXPECT_EQ("active=0 anchor=0 selection=0 1", SelectionStateAsString());
+
   table_->set_observer(NULL);
 }
 
+// TODO(tapted): enable these tests on Mac.
+#if !defined(OS_MACOSX)
 // Verifies multiple selection gestures work (control-click, shift-click ...).
 TEST_F(TableViewTest, Multiselection) {
   // Configure the grouper so that there are three groups:
@@ -1007,6 +1015,7 @@ TEST_F(TableViewTest, MultiselectionWithSort) {
 
   table_->set_observer(NULL);
 }
+#endif
 
 // Verifies we don't crash after removing the selected row when there is
 // sorting and the anchor/active index also match the selected row.
@@ -1020,31 +1029,7 @@ TEST_F(TableViewTest, FocusAfterRemovingAnchor) {
   new_selection.set_anchor(0);
   helper_->SetSelectionModel(new_selection);
   model_->RemoveRow(0);
-  helper_->OnFocus();
-}
-
-// Tests that focusing the table will activate the first row, but only if
-// there's no active row.
-TEST_F(TableViewTest, InitialFocusActivatesFirstRow) {
-  EXPECT_EQ(-1, table_->selection_model().active());
-  helper_->OnFocus();
-  EXPECT_EQ(0, table_->selection_model().active());
-
-  ui::ListSelectionModel new_selection;
-  new_selection.set_active(1);
-  helper_->SetSelectionModel(new_selection);
-  EXPECT_EQ(1, table_->selection_model().active());
-  helper_->OnFocus();
-  EXPECT_EQ(1, table_->selection_model().active());
-
-  // Remove all rows; focusing should not activate a non existent first row.
-  while (model_->RowCount())
-    model_->RemoveRow(0);
-
-  new_selection.set_active(-1);
-  helper_->SetSelectionModel(new_selection);
-  helper_->OnFocus();
-  EXPECT_EQ(-1, table_->selection_model().active());
+  table_->RequestFocus();
 }
 
 }  // namespace views

@@ -625,9 +625,6 @@ void TableView::OnFocus() {
   if (scroll_view)
     scroll_view->SetHasFocusIndicator(true);
 
-  if (selection_model_.active() == -1 && RowCount())
-    SelectByViewIndex(0);
-
   SchedulePaintForSelection();
   NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
