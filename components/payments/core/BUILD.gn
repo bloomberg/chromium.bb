@@ -23,11 +23,15 @@ static_library("core") {
     "payment_options_provider.h",
     "payment_request_data_util.cc",
     "payment_request_data_util.h",
+    "strings_util.cc",
+    "strings_util.h",
   ]
 
   deps = [
     "//base",
     "//components/autofill/core/browser",
+    "//components/strings:components_strings_grit",
+    "//ui/base",
   ]
 
   public_deps = [

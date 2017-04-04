@@ -27,6 +27,7 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_instrument.h"
+#include "components/payments/core/strings_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"

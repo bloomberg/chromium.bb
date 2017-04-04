@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/strings_util.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace payments {

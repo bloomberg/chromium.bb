@@ -98,11 +98,6 @@ std::unique_ptr<views::Border> CreatePaymentRequestRowBorder();
 // Creates a label with a bold font.
 std::unique_ptr<views::Label> CreateBoldLabel(const base::string16& text);
 
-base::string16 GetShippingAddressSectionString(
-    PaymentShippingType shipping_type);
-base::string16 GetShippingOptionSectionString(
-    PaymentShippingType shipping_type);
-
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,
     const base::string16& formatted_amount);

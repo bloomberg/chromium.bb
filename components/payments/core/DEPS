@@ -2,5 +2,7 @@ include_rules = [
   "-components/payments/content",
   "-content",
   "+components/autofill/core",
+  "+components/strings",
   "+third_party/libaddressinput",
+  "+ui/base",
 ]
