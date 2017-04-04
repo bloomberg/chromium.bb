@@ -27,8 +27,13 @@
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -49,7 +54,31 @@ const char kUMAPreviewsInfoBarActionOffline[] =
 const char kUMAPreviewsInfoBarActionLitePage[] =
     "Previews.InfoBarAction.LitePage";
 
+class TestPreviewsWebContentsObserver
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<TestPreviewsWebContentsObserver> {
+ public:
+  explicit TestPreviewsWebContentsObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        last_navigation_reload_type_(content::ReloadType::NONE) {}
+  ~TestPreviewsWebContentsObserver() override {}
+
+  content::ReloadType last_navigation_reload_type() {
+    return last_navigation_reload_type_;
+  }
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    last_navigation_reload_type_ = navigation_handle->GetReloadType();
+  }
+
+ private:
+  content::ReloadType last_navigation_reload_type_;
+};
+
 }  // namespace
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TestPreviewsWebContentsObserver);
 
 class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
  protected:
@@ -57,6 +86,7 @@ class PreviewsInfoBarDelegateUnitTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     InfoBarService::CreateForWebContents(web_contents());
     PreviewsInfoBarTabHelper::CreateForWebContents(web_contents());
+    TestPreviewsWebContentsObserver::CreateForWebContents(web_contents());
 
     drp_test_context_ =
         data_reduction_proxy::DataReductionProxyTestContext::Builder()
@@ -132,8 +162,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
   EXPECT_EQ(1U, infobar_service()->infobar_count());
 
   // Navigate and make sure the infobar is dismissed.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
+  NavigateAndCommit(GURL(kTestUrl));
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   EXPECT_FALSE(user_opt_out_.value());
 
@@ -148,8 +177,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
   base::HistogramTester tester;
 
   // Navigate to test URL, so we can reload later.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
+  NavigateAndCommit(GURL(kTestUrl));
 
   CreateInfoBar(PreviewsInfoBarDelegate::LOFI, true /* is_data_saver_user */);
 
@@ -195,7 +223,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestUserDismissal) {
   EXPECT_FALSE(user_opt_out_.value());
 }
 
-TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLink) {
+TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLoFi) {
   base::HistogramTester tester;
 
   ConfirmInfoBarDelegate* infobar = CreateInfoBar(
@@ -212,6 +240,30 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLink) {
   EXPECT_EQ(1, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
   EXPECT_TRUE(user_opt_out_.value());
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestClickLinkLitePage) {
+  base::HistogramTester tester;
+
+  NavigateAndCommit(GURL(kTestUrl));
+
+  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
+      PreviewsInfoBarDelegate::LITE_PAGE, true /* is_data_saver_user */);
+
+  // Simulate clicking the infobar link.
+  if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
+    infobar_service()->infobar_at(0)->RemoveSelf();
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+
+  tester.ExpectBucketCount(
+      kUMAPreviewsInfoBarActionLitePage,
+      PreviewsInfoBarDelegate::INFOBAR_LOAD_ORIGINAL_CLICKED, 1);
+
+  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+  EXPECT_EQ(content::ReloadType::DISABLE_LOFI_MODE,
+            TestPreviewsWebContentsObserver::FromWebContents(web_contents())
+                ->last_navigation_reload_type());
 }
 
 TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
@@ -232,8 +284,7 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestShownOncePerNavigation) {
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 
   // Navigate and show infobar again.
-  content::WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL(kTestUrl));
+  NavigateAndCommit(GURL(kTestUrl));
   CreateInfoBar(PreviewsInfoBarDelegate::LOFI, true /* is_data_saver_user */);
 }
 
@@ -330,4 +381,27 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDataSaverUserTest) {
 #else
   ASSERT_EQ(PreviewsInfoBarDelegate::kNoIconID, infobar->GetIconId());
 #endif
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, OfflineInfobarDisablesLoFi) {
+  base::HistogramTester tester;
+
+  NavigateAndCommit(GURL(kTestUrl));
+
+  ConfirmInfoBarDelegate* infobar = CreateInfoBar(
+      PreviewsInfoBarDelegate::OFFLINE, true /* is_data_saver_user */);
+
+  tester.ExpectUniqueSample(kUMAPreviewsInfoBarActionOffline,
+                            PreviewsInfoBarDelegate::INFOBAR_SHOWN, 1);
+
+  // Simulate clicking the infobar link.
+  if (infobar->LinkClicked(WindowOpenDisposition::CURRENT_TAB))
+    infobar_service()->infobar_at(0)->RemoveSelf();
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+
+  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+  EXPECT_EQ(content::ReloadType::DISABLE_LOFI_MODE,
+            TestPreviewsWebContentsObserver::FromWebContents(web_contents())
+                ->last_navigation_reload_type());
 }

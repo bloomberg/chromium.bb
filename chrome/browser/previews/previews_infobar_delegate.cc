@@ -155,7 +155,11 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
             web_contents->GetBrowserContext());
     data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
   } else if (infobar_type_ == OFFLINE) {
-    web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
+    // Prevent LoFi and lite page modes from showing after reload.
+    // TODO(ryansturm): rename DISABLE_LOFI_MODE to DISABLE_PREVIEWS.
+    //  crbug.com/707272
+    web_contents->GetController().Reload(content::ReloadType::DISABLE_LOFI_MODE,
+                                         true);
   }
 
   return true;
