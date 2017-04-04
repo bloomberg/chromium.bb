@@ -461,7 +461,7 @@ body.alternate-logo #logo {
     width: 0in;
 """)
 
-  def testHtmlInlineStyle(self):
+  def testInlineStyleInHtml(self):
     self.VerifyContentsProducesOutput("""<!doctype html>
 <html>
 <head>
@@ -483,11 +483,26 @@ body.alternate-logo #logo {
     flex-direction:column;
 """, filename='test.html')
 
-  def testHtmlIncludeStyle(self):
+  def testInlineStyleInHtmlWithIncludes(self):
     self.VerifyContentsProducesOutput("""<!doctype html>
 <html>
-  <style include="fake-shared-css">
+  <style include="fake-shared-css other-shared-css">
     body {
+      flex-direction:column;
+    }
+  </style>
+</head>
+</html>""", """
+- Colons (:) should have a space after them.
+    flex-direction:column;
+""", filename='test.html')
+
+  def testInlineSTyleInHtmlWithTagsInComments(self):
+    self.VerifyContentsProducesOutput("""<!doctype html>
+<html>
+  <style>
+    body {
+      /* You better ignore the <tag> in this comment! */
       flex-direction:column;
     }
   </style>

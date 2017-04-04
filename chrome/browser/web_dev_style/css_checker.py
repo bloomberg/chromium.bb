@@ -385,18 +385,21 @@ class CSSChecker(object):
                                                   file_filter=self.file_filter)
     files = []
     for f in affected_files:
-      file_contents = '\n'.join(f.NewContents())
       path = f.LocalPath()
+
+      is_html = path.endswith('.html')
+      if not is_html and not path.endswith('.css'):
+        continue
+
+      # Remove all /*comments*/, @at-keywords, and grit <if|include> tags; we're
+      # not using a real parser. TODO(dbeam): Check alpha in <if> blocks.
+      file_contents = _remove_all('\n'.join(f.NewContents()))
+
       # Handle CSS files and HTML files with inline styles.
-      if path.endswith('.html'):
+      if is_html:
         file_contents = _extract_inline_style(file_contents)
 
-      if path.endswith('.html') or path.endswith('.css'):
-        # Remove all /*comments*/, @at-keywords, and grit <if|include> tags;
-        # we're not using a real parser. TODO(dbeam): Check alpha in <if>
-        # blocks.
-        file_contents = _remove_all(file_contents)
-        files.append((path, file_contents))
+      files.append((path, file_contents))
 
     for f in files:
       file_errors = []
