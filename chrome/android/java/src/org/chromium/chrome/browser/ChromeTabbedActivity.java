@@ -13,6 +13,7 @@ import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ShortcutManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,7 +35,6 @@ import android.widget.FrameLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -130,7 +130,6 @@ import org.chromium.ui.widget.Toast;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -1923,18 +1922,13 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      * was performed.
      * @param isIncognito Whether the shortcut or action created a new incognito tab.
      */
-    @TargetApi(25)
+    @TargetApi(Build.VERSION_CODES.N_MR1)
     private void reportNewTabShortcutUsed(boolean isIncognito) {
-        if (!BuildInfo.isGreaterThanN()) return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
 
-        try {
-            Class<?> clazz = Class.forName("android.content.pm.ShortcutManager");
-            Method method = clazz.getDeclaredMethod("reportShortcutUsed", String.class);
-            method.invoke(getSystemService(clazz),
-                    isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ShortcutManager shortcutManager = (ShortcutManager) getSystemService(ShortcutManager.class);
+        shortcutManager.reportShortcutUsed(
+                isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
     }
 
     @Override

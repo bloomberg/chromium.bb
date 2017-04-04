@@ -123,9 +123,7 @@ by a child template that "extends" this file.
         {% else %}
         android:allowBackup="false"
         {% endif %}
-        {% if target_sdk_version|int >= 24 or target_sdk_version == 'O' %}
         android:networkSecurityConfig="@xml/network_security_config"
-        {% endif %}
         {% block extra_application_attributes %}{% endblock %}>
 
         <!-- Samsung MultiWindow Support -->
@@ -258,10 +256,8 @@ by a child template that "extends" this file.
             </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
-            {% if target_sdk_version|int > 24 or target_sdk_version == 'O' %}
             <meta-data android:name="android.app.shortcuts"
                 android:resource="@xml/launchershortcuts" />
-            {% endif %}
 
         </activity-alias>
 
