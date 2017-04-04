@@ -88,6 +88,8 @@ source_set("settings") {
     "settings_root_collection_view_controller.mm",
     "settings_utils.h",
     "settings_utils.mm",
+    "simple_signin_promo_view_mediator.h",
+    "simple_signin_promo_view_mediator.mm",
     "sync_create_passphrase_collection_view_controller.h",
     "sync_create_passphrase_collection_view_controller.mm",
     "sync_encryption_collection_view_controller.h",

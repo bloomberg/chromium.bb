@@ -76,6 +76,10 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   // Adds |identity| to the available identities.
   void AddIdentity(ChromeIdentity* identity);
 
+  // Removes |identity| from the available identities. No-op if the identity
+  // is unknown.
+  void RemoveIdentity(ChromeIdentity* identity);
+
  private:
   base::scoped_nsobject<NSMutableArray> identities_;
 };

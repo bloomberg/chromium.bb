@@ -253,4 +253,11 @@ void FakeChromeIdentityService::AddIdentity(ChromeIdentity* identity) {
   FireIdentityListChanged();
 }
 
+void FakeChromeIdentityService::RemoveIdentity(ChromeIdentity* identity) {
+  if ([identities_ indexOfObject:identity] != NSNotFound) {
+    [identities_ removeObject:identity];
+    FireIdentityListChanged();
+  }
+}
+
 }  // namespace ios
