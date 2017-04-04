@@ -87,8 +87,7 @@ TEST(HpackFuzzUtilTest, ParsesSequenceOfHeaderBlocks) {
 TEST(HpackFuzzUtilTest, SerializedHeaderBlockPrefixes) {
   EXPECT_EQ(string("\x00\x00\x00\x00", 4), HpackFuzzUtil::HeaderBlockPrefix(0));
   EXPECT_EQ(string("\x00\x00\x00\x05", 4), HpackFuzzUtil::HeaderBlockPrefix(5));
-  EXPECT_EQ(string("\x4f\xb3\x0a\x91", 4),
-            HpackFuzzUtil::HeaderBlockPrefix(1337133713));
+  EXPECT_EQ("\x4f\xb3\x0a\x91", HpackFuzzUtil::HeaderBlockPrefix(1337133713));
 }
 
 TEST(HpackFuzzUtilTest, PassValidInputThroughAllStages) {

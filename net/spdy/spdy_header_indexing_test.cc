@@ -35,7 +35,7 @@ class HeaderIndexingPeer {
                         hi_.indexing_set_bound_);
   }
 
-  bool InTrackingSet(std::string str) {
+  bool InTrackingSet(const std::string& str) {
     return hi_.tracking_set_.find(str) != hi_.tracking_set_.end();
   }
 

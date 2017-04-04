@@ -124,7 +124,7 @@ class HpackHeaderTableTest : public ::testing::Test {
     }
   }
 
-  HpackEntry DynamicEntry(string name, string value) {
+  HpackEntry DynamicEntry(const string& name, const string& value) {
     peer_.AddDynamicEntry(name, value);
     return peer_.dynamic_entries().back();
   }
