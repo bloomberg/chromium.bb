@@ -752,6 +752,11 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	struct weston_compositor *c = output->base.compositor;
 	struct drm_backend *b = to_drm_backend(c);
 
+	/* If we already have a client buffer promoted to scanout, then we don't
+	 * want to render. */
+	if (output->fb_pending)
+		return;
+
 	if (b->use_pixman)
 		drm_output_render_pixman(output, damage);
 	else
@@ -823,8 +828,7 @@ drm_output_repaint(struct weston_output *output_base,
 	if (output->disable_pending || output->destroy_pending)
 		return -1;
 
-	if (!output->fb_pending)
-		drm_output_render(output, damage);
+	drm_output_render(output, damage);
 	if (!output->fb_pending)
 		return -1;
 
