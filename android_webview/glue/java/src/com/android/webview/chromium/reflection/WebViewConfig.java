@@ -4,6 +4,9 @@
 
 package com.android.webview.chromium.reflection;
 
+import android.content.Context;
+import android.webkit.ValueCallback;
+
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.base.annotations.UsedByReflection;
 
@@ -18,5 +21,24 @@ public class WebViewConfig {
     @UsedByReflection("")
     public static void disableSafeBrowsing() {
         AwContentsStatics.setSafeBrowsingEnabled(false);
+    }
+
+    /**
+     * Starts Safe Browsing initialization. This should only be called once.
+     * @param context is the activity context the WebView will be used in.
+     * @param callback will be called with the value true if initialization is successful. The
+     * callback will be run on the UI thread.
+     */
+    @UsedByReflection("")
+    public static void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
+        AwContentsStatics.initSafeBrowsing(context, callback);
+    }
+
+    /**
+     * Shuts down Safe Browsing. This should only be called once.
+     */
+    @UsedByReflection("")
+    public static void shutdownSafeBrowsing() {
+        AwContentsStatics.shutdownSafeBrowsing();
     }
 }
