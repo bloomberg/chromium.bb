@@ -25,7 +25,9 @@ function createTest(eventName, dispatchEventFn) {
         document.addEventListener(eventName, t.step_func(function(e) {
             const platformTimestamp = eventSender.lastEventTimestamp(); // in seconds
             const expectedTimestamp = Math.floor((internals.monotonicTimeToZeroBasedDocumentTime(platformTimestamp) * 1000) / 0.005) * 0.005;
-            assert_approx_equals(e.timeStamp, expectedTimestamp, 0.005);
+            // Use 0.005001 instead of 0.005 to deal with floating point
+            // comparison issues.
+            assert_approx_equals(e.timeStamp, expectedTimestamp, 0.005001);
             t.done();
         }));
         dispatchEventFn();
