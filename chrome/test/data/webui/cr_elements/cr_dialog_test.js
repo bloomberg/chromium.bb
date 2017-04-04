@@ -26,6 +26,49 @@ suite('cr-dialog', function() {
     expectNotEquals(button, document.activeElement);
   });
 
+  test('enter key clicks action button', function() {
+    document.body.innerHTML = `
+      <dialog is="cr-dialog">
+        <div class="title">title</div>
+        <div class="body">
+          <button class="action-button" disabled>button</button>
+          <button id="other-button">other button</button>
+        </div>
+      </dialog>`;
+
+    var dialog = document.body.querySelector('dialog');
+    var actionButton = document.body.querySelector('.action-button');
+
+    dialog.showModal();
+
+    // MockInteractions triggers event listeners synchronously.
+    var clickedCounter = 0;
+    actionButton.addEventListener('click', function() {
+      clickedCounter += 1;
+    });
+
+    // Enter key should ignore disabled buttons.
+    MockInteractions.keyEventOn(dialog, 'keypress', 13, undefined, 'Enter');
+    assertEquals(0, clickedCounter);
+
+    // Enter key should trigger enabled buttons.
+    actionButton.disabled = false;
+    MockInteractions.keyEventOn(dialog, 'keypress', 13, undefined, 'Enter');
+    assertEquals(1, clickedCounter);
+
+    // Enter keys on other buttons should be ignored.
+    clickedCounter = 0;
+    var otherButton = document.body.querySelector('#other-button');
+    assertTrue(!!otherButton);
+    MockInteractions.keyEventOn(
+        otherButton, 'keypress', 13, undefined, 'Enter');
+    assertEquals(0, clickedCounter);
+
+    // Enter key on the action button should only fire the click handler once.
+    MockInteractions.tap(actionButton, 'keypress', 13, undefined, 'Enter');
+    assertEquals(1, clickedCounter);
+  });
+
   test('focuses [autofocus] instead of title when present', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">

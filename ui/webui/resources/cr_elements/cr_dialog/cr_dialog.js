@@ -30,6 +30,14 @@ Polymer({
       value: false,
     },
 
+    /**
+     * True if the dialog should ignore 'Enter' keypresses.
+     */
+    ignoreEnterKey: {
+      type: Boolean,
+      value: false,
+    },
+
     showScrollBorders: {
       type: Boolean,
       value: false,
@@ -48,6 +56,9 @@ Polymer({
       if (!this.ignorePopstate && this.open)
         this.cancel();
     }.bind(this));
+
+    if (!this.ignoreEnterKey)
+      this.addEventListener('keypress', this.onKeypress_.bind(this));
   },
 
   /** @override */
@@ -95,5 +106,22 @@ Polymer({
   /** @return {!PaperIconButtonElement} */
   getCloseButton: function() {
     return this.$.close;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onKeypress_: function(e) {
+    if (e.target != this)
+      return;
+    if (e.key != 'Enter')
+      return;
+
+    var actionButton = this.querySelector('.action-button');
+    if (actionButton && !actionButton.disabled) {
+      actionButton.click();
+      e.preventDefault();
+    }
   },
 });
