@@ -59,7 +59,7 @@ PASS syntax:'ba
 |	na\r|nya', initialValue:'nya' is valid 
 PASS syntax:'null', initialValue:'null' is valid 
 PASS syntax:'undefined', initialValue:'undefined' is valid 
-PASS syntax:'banana', initialValue:'banana' is valid 
+PASS syntax:'array', initialValue:'array' is valid 
 PASS syntax:'banana,nya', initialValue:'banana' is invalid 
 PASS syntax:'banan\61', initialValue:'banana' is invalid 
 PASS syntax:'<\6c ength>', initialValue:'10px' is invalid 
