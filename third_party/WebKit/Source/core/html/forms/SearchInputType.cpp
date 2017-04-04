@@ -131,14 +131,14 @@ bool SearchInputType::searchEventsShouldBeDispatched() const {
   return element().hasAttribute(incrementalAttr);
 }
 
-void SearchInputType::didSetValueByUserEdit(ValueChangeState state) {
+void SearchInputType::didSetValueByUserEdit() {
   updateCancelButtonVisibility();
 
   // If the incremental attribute is set, then dispatch the search event
   if (searchEventsShouldBeDispatched())
     startSearchEventTimer();
 
-  TextFieldInputType::didSetValueByUserEdit(state);
+  TextFieldInputType::didSetValueByUserEdit();
 }
 
 void SearchInputType::updateView() {

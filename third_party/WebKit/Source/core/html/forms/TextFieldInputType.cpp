@@ -499,9 +499,7 @@ String TextFieldInputType::convertFromVisibleValue(
 }
 
 void TextFieldInputType::subtreeHasChanged() {
-  bool wasChanged = element().wasChangedSinceLastFormControlChangeEvent();
   element().setChangedSinceLastFormControlChangeEvent(true);
-
   element().setValueFromRenderer(sanitizeUserInputValue(
       convertFromVisibleValue(element().innerEditorValue())));
   element().updatePlaceholderVisibility();
@@ -510,11 +508,10 @@ void TextFieldInputType::subtreeHasChanged() {
   element().pseudoStateChanged(CSSSelector::PseudoInRange);
   element().pseudoStateChanged(CSSSelector::PseudoOutOfRange);
 
-  didSetValueByUserEdit(wasChanged ? ValueChangeStateChanged
-                                   : ValueChangeStateNone);
+  didSetValueByUserEdit();
 }
 
-void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state) {
+void TextFieldInputType::didSetValueByUserEdit() {
   if (!element().isFocused())
     return;
   if (ChromeClient* chromeClient = this->chromeClient())

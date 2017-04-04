@@ -72,8 +72,7 @@ class TextFieldInputType : public InputType,
 
   virtual bool needsContainer() const { return false; }
   virtual String convertFromVisibleValue(const String&) const;
-  enum ValueChangeState { ValueChangeStateNone, ValueChangeStateChanged };
-  virtual void didSetValueByUserEdit(ValueChangeState);
+  virtual void didSetValueByUserEdit();
 
   void handleKeydownEventForSpinButton(KeyboardEvent*);
   bool shouldHaveSpinButton() const;

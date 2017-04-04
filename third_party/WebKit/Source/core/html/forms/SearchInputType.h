@@ -48,7 +48,7 @@ class SearchInputType final : public BaseTextInputType {
   bool needsContainer() const override;
   void createShadowSubtree() override;
   void handleKeydownEvent(KeyboardEvent*) override;
-  void didSetValueByUserEdit(ValueChangeState) override;
+  void didSetValueByUserEdit() override;
   bool supportsInputModeAttribute() const override;
   void updateView() override;
   const AtomicString& defaultAutocapitalize() const override;
