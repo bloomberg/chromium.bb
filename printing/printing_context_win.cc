@@ -188,6 +188,15 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
     dev_mode->dmOrientation = settings_.landscape() ? DMORIENT_LANDSCAPE :
                                                       DMORIENT_PORTRAIT;
 
+    if (settings_.dpi_horizontal() > 0) {
+      dev_mode->dmPrintQuality = settings_.dpi_horizontal();
+      dev_mode->dmFields |= DM_PRINTQUALITY;
+    }
+    if (settings_.dpi_vertical() > 0) {
+      dev_mode->dmYResolution = settings_.dpi_vertical();
+      dev_mode->dmFields |= DM_YRESOLUTION;
+    }
+
     const PrintSettings::RequestedMedia& requested_media =
         settings_.requested_media();
     static const int kFromUm = 100;  // Windows uses 0.1mm.

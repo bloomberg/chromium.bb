@@ -172,7 +172,8 @@ void PrintSettings::Clear() {
   device_name_.clear();
   requested_media_ = RequestedMedia();
   page_setup_device_units_.Clear();
-  dpi_ = 0;
+  dpi_[0] = 0;
+  dpi_[1] = 0;
   scale_factor_ = 1.0f;
   rasterize_pdf_ = false;
   landscape_ = false;

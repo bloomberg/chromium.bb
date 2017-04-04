@@ -56,6 +56,12 @@ const char kSettingDeviceName[] = "deviceName";
 // Option to disable scaling. True if scaling is disabled else false.
 const char kSettingDisableScaling[] = "disableScaling";
 
+// Horizontal DPI
+const char kSettingDpiHorizontal[] = "dpiHorizontal";
+
+// Vertical DPI
+const char kSettingDpiVertical[] = "dpiVertical";
+
 // Scaling value required to fit the document to page.
 const char kSettingFitToPageScaling[] = "fitToPageScaling";
 

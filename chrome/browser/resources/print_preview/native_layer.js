@@ -312,6 +312,10 @@ cr.define('print_preview', function() {
         'copies': 1,
         'collate': true,
         'rasterizePDF': false,
+        'dpiHorizontal': "horizontal_dpi" in printTicketStore.dpi.getValue() ?
+           printTicketStore.dpi.getValue().horizontal_dpi : 0,
+        'dpiVertical': "vertical_dpi" in printTicketStore.dpi.getValue() ?
+           printTicketStore.dpi.getValue().vertical_dpi : 0,
         'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
         'shouldPrintSelectionOnly': printTicketStore.selectionOnly.getValue()
       };
@@ -387,6 +391,10 @@ cr.define('print_preview', function() {
         'printWithExtension': destination.isExtension,
         'rasterizePDF': printTicketStore.rasterize.getValue(),
         'scaleFactor': printTicketStore.scaling.getValueAsNumber(),
+        'dpiHorizontal': "horizontal_dpi" in printTicketStore.dpi.getValue() ?
+           printTicketStore.dpi.getValue().horizontal_dpi : 0,
+        'dpiVertical': "vertical_dpi" in printTicketStore.dpi.getValue() ?
+           printTicketStore.dpi.getValue().vertical_dpi : 0,
         'deviceName': destination.id,
         'isFirstRequest': false,
         'requestID': -1,

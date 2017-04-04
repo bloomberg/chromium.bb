@@ -103,30 +103,29 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   DCHECK(print_settings);
 
   print_settings->SetOrientation(dev_mode.dmOrientation == DMORIENT_LANDSCAPE);
-
-  int dpi = GetDeviceCaps(hdc, LOGPIXELSX);
-  print_settings->set_dpi(dpi);
-
+  int dpi_x = GetDeviceCaps(hdc, LOGPIXELSX);
+  int dpi_y = GetDeviceCaps(hdc, LOGPIXELSY);
+  print_settings->set_dpi_xy(dpi_x, dpi_y);
   const int kAlphaCaps = SB_CONST_ALPHA | SB_PIXEL_ALPHA;
   print_settings->set_supports_alpha_blend(
     (GetDeviceCaps(hdc, SHADEBLENDCAPS) & kAlphaCaps) == kAlphaCaps);
-
-  // No printer device is known to advertise different dpi in X and Y axis; even
-  // the fax device using the 200x100 dpi setting. It's ought to break so many
-  // applications that it's not even needed to care about. Blink doesn't support
-  // different dpi settings in X and Y axis.
-  DCHECK_EQ(dpi, GetDeviceCaps(hdc, LOGPIXELSY));
 
   DCHECK_EQ(GetDeviceCaps(hdc, SCALINGFACTORX), 0);
   DCHECK_EQ(GetDeviceCaps(hdc, SCALINGFACTORY), 0);
 
   // Initialize |page_setup_device_units_|.
-  gfx::Size physical_size_device_units(GetDeviceCaps(hdc, PHYSICALWIDTH),
-                                       GetDeviceCaps(hdc, PHYSICALHEIGHT));
-  gfx::Rect printable_area_device_units(GetDeviceCaps(hdc, PHYSICALOFFSETX),
-                                        GetDeviceCaps(hdc, PHYSICALOFFSETY),
-                                        GetDeviceCaps(hdc, HORZRES),
-                                        GetDeviceCaps(hdc, VERTRES));
+  // Blink doesn't support different dpi settings in X and Y axis. However,
+  // some printers use them. So, to avoid a bad page calculation, scale page
+  // size components based on the dpi in the appropriate dimension.
+  int dpi = print_settings->dpi();
+  gfx::Size physical_size_device_units(
+      GetDeviceCaps(hdc, PHYSICALWIDTH) * dpi / dpi_x,
+      GetDeviceCaps(hdc, PHYSICALHEIGHT) * dpi / dpi_y);
+  gfx::Rect printable_area_device_units(
+      GetDeviceCaps(hdc, PHYSICALOFFSETX) * dpi / dpi_x,
+      GetDeviceCaps(hdc, PHYSICALOFFSETY) * dpi / dpi_y,
+      GetDeviceCaps(hdc, HORZRES) * dpi / dpi_x,
+      GetDeviceCaps(hdc, VERTRES) * dpi / dpi_y);
 
   // Sanity check the printable_area: we've seen crashes caused by a printable
   // area rect of 0, 0, 0, 0, so it seems some drivers don't set it.
@@ -139,6 +138,7 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
                                           false);
+
   // Check for postscript first so that we can change the mode with the
   // first command.
   int level;
