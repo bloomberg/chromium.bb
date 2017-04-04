@@ -727,6 +727,7 @@ void CompositorImpl::OnGpuChannelEstablished(
     LOG_IF(FATAL, ++num_successive_context_creation_failures_ >= 2)
         << "Too many context creation failures. Giving up... ";
     HandlePendingCompositorFrameSinkRequest();
+    return;
   }
 
   // Unretained is safe this owns cc::Display which owns OutputSurface.
