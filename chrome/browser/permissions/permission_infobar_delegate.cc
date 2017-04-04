@@ -12,6 +12,7 @@
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 #include "chrome/browser/media/protected_media_identifier_infobar_delegate_android.h"
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -79,8 +80,14 @@ PermissionInfoBarDelegate::~PermissionInfoBarDelegate() {
                       : PermissionRequestGestureType::NO_GESTURE,
         requesting_origin_, profile_);
 
-    PermissionUmaUtil::RecordEmbargoStatus(
-        PermissionEmbargoStatus::NOT_EMBARGOED);
+    PermissionEmbargoStatus embargo_status =
+        PermissionEmbargoStatus::NOT_EMBARGOED;
+    if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
+            ->RecordIgnoreAndEmbargo(requesting_origin_,
+                                     content_settings_type_)) {
+      embargo_status = PermissionEmbargoStatus::REPEATED_IGNORES;
+    }
+    PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
 }
 

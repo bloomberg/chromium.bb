@@ -71,6 +71,11 @@ const base::Feature kBackspaceGoesBackFeature {
 const base::Feature kBlockPromptsIfDismissedOften{
     "BlockPromptsIfDismissedOften", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables whether permission prompts are automatically blocked
+// after the user has ignored them too many times.
+const base::Feature kBlockPromptsIfIgnoredOften{
+    "BlockPromptsIfIgnoredOften", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_MACOSX)
 // Enables the new bookmark app system (e.g. Add To Applications on Mac).
 const base::Feature kBookmarkApps{"BookmarkAppsMac",

@@ -55,6 +55,7 @@ enum class PermissionEmbargoStatus {
   NOT_EMBARGOED = 0,
   PERMISSIONS_BLACKLISTING = 1,
   REPEATED_DISMISSALS = 2,
+  REPEATED_IGNORES = 3,
 
   // Keep this at the end.
   NUM,

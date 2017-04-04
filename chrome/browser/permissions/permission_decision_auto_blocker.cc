@@ -29,15 +29,23 @@ namespace {
 
 // The number of times that users may explicitly dismiss a permission prompt
 // from an origin before it is automatically blocked.
-int g_prompt_dismissals_before_block = 3;
+int g_dismissals_before_block = 3;
 
-// The number of days that an origin will stay under embargo for a requested
-// permission due to blacklisting.
-int g_blacklist_embargo_days = 7;
+// The number of times that users may ignore a permission prompt from an origin
+// before it is automatically blocked.
+int g_ignores_before_block = 4;
 
 // The number of days that an origin will stay under embargo for a requested
 // permission due to repeated dismissals.
 int g_dismissal_embargo_days = 7;
+
+// The number of days that an origin will stay under embargo for a requested
+// permission due to repeated ignores.
+int g_ignore_embargo_days = 7;
+
+// The number of days that an origin will stay under embargo for a requested
+// permission due to blacklisting.
+int g_blacklist_embargo_days = 7;
 
 // Maximum time in milliseconds to wait for safe browsing service to check a
 // url for blacklisting. After this amount of time, the check will be aborted
@@ -109,6 +117,22 @@ int GetActionCount(const GURL& url,
   return current_count;
 }
 
+bool IsUnderEmbargo(base::DictionaryValue* permission_dict,
+                    const base::Feature& feature,
+                    const char* key,
+                    base::Time current_time,
+                    base::TimeDelta offset) {
+  double embargo_date = -1;
+
+  if (base::FeatureList::IsEnabled(feature) &&
+      permission_dict->GetDouble(key, &embargo_date)) {
+    if (current_time < base::Time::FromInternalValue(embargo_date) + offset)
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 // PermissionDecisionAutoBlocker::Factory --------------------------------------
@@ -156,12 +180,16 @@ const char PermissionDecisionAutoBlocker::kPromptIgnoreCountKey[] =
     "ignore_count";
 
 // static
-const char PermissionDecisionAutoBlocker::kPermissionBlacklistEmbargoKey[] =
-    "blacklisting_embargo_days";
-
-// static
 const char PermissionDecisionAutoBlocker::kPermissionDismissalEmbargoKey[] =
     "dismissal_embargo_days";
+
+// static
+const char PermissionDecisionAutoBlocker::kPermissionIgnoreEmbargoKey[] =
+    "ignore_embargo_days";
+
+// static
+const char PermissionDecisionAutoBlocker::kPermissionBlacklistEmbargoKey[] =
+    "blacklisting_embargo_days";
 
 // static
 PermissionDecisionAutoBlocker* PermissionDecisionAutoBlocker::GetForProfile(
@@ -171,30 +199,52 @@ PermissionDecisionAutoBlocker* PermissionDecisionAutoBlocker::GetForProfile(
 
 // static
 void PermissionDecisionAutoBlocker::UpdateFromVariations() {
-  int prompt_dismissals = -1;
-  int blacklist_embargo_days = -1;
+  int dismissals_before_block = -1;
+  int ignores_before_block = -1;
   int dismissal_embargo_days = -1;
-  std::string dismissals_value = variations::GetVariationParamValueByFeature(
-      features::kBlockPromptsIfDismissedOften, kPromptDismissCountKey);
-  std::string blacklist_embargo_value =
+  int ignore_embargo_days = -1;
+  int blacklist_embargo_days = -1;
+
+  std::string dismissals_before_block_value =
       variations::GetVariationParamValueByFeature(
-          features::kPermissionsBlacklist, kPermissionBlacklistEmbargoKey);
-  std::string dismissal_embargo_value =
+          features::kBlockPromptsIfDismissedOften, kPromptDismissCountKey);
+  std::string ignores_before_block_value =
+      variations::GetVariationParamValueByFeature(
+          features::kBlockPromptsIfIgnoredOften, kPromptIgnoreCountKey);
+  std::string dismissal_embargo_days_value =
       variations::GetVariationParamValueByFeature(
           features::kBlockPromptsIfDismissedOften,
           kPermissionDismissalEmbargoKey);
+  std::string ignore_embargo_days_value =
+      variations::GetVariationParamValueByFeature(
+          features::kBlockPromptsIfIgnoredOften, kPermissionIgnoreEmbargoKey);
+  std::string blacklist_embargo_days_value =
+      variations::GetVariationParamValueByFeature(
+          features::kPermissionsBlacklist, kPermissionBlacklistEmbargoKey);
+
   // If converting the value fails, stick with the current value.
-  if (base::StringToInt(dismissals_value, &prompt_dismissals) &&
-      prompt_dismissals > 0) {
-    g_prompt_dismissals_before_block = prompt_dismissals;
+  if (base::StringToInt(dismissals_before_block_value,
+                        &dismissals_before_block) &&
+      dismissals_before_block > 0) {
+    g_dismissals_before_block = dismissals_before_block;
   }
-  if (base::StringToInt(blacklist_embargo_value, &blacklist_embargo_days) &&
-      blacklist_embargo_days > 0) {
-    g_blacklist_embargo_days = blacklist_embargo_days;
+  if (base::StringToInt(ignores_before_block_value, &ignores_before_block) &&
+      ignores_before_block > 0) {
+    g_ignores_before_block = ignores_before_block;
   }
-  if (base::StringToInt(dismissal_embargo_value, &dismissal_embargo_days) &&
+  if (base::StringToInt(dismissal_embargo_days_value,
+                        &dismissal_embargo_days) &&
       dismissal_embargo_days > 0) {
     g_dismissal_embargo_days = dismissal_embargo_days;
+  }
+  if (base::StringToInt(ignore_embargo_days_value, &ignore_embargo_days) &&
+      ignore_embargo_days > 0) {
+    g_ignore_embargo_days = ignore_embargo_days;
+  }
+  if (base::StringToInt(blacklist_embargo_days_value,
+                        &blacklist_embargo_days) &&
+      blacklist_embargo_days > 0) {
+    g_blacklist_embargo_days = blacklist_embargo_days;
   }
 }
 
@@ -232,29 +282,27 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
       GetOriginDict(map, request_origin);
   base::DictionaryValue* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
-  double embargo_date = -1;
 
   base::Time current_time = clock_->Now();
-  if (base::FeatureList::IsEnabled(features::kPermissionsBlacklist) &&
-      permission_dict->GetDouble(kPermissionBlacklistEmbargoKey,
-                                 &embargo_date)) {
-    if (current_time <
-        base::Time::FromInternalValue(embargo_date) +
-            base::TimeDelta::FromDays(g_blacklist_embargo_days)) {
-      return PermissionResult(CONTENT_SETTING_BLOCK,
-                              PermissionStatusSource::SAFE_BROWSING_BLACKLIST);
-    }
+  if (IsUnderEmbargo(permission_dict, features::kPermissionsBlacklist,
+                     kPermissionBlacklistEmbargoKey, current_time,
+                     base::TimeDelta::FromDays(g_blacklist_embargo_days))) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::SAFE_BROWSING_BLACKLIST);
   }
 
-  if (base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften) &&
-      permission_dict->GetDouble(kPermissionDismissalEmbargoKey,
-                                 &embargo_date)) {
-    if (current_time <
-        base::Time::FromInternalValue(embargo_date) +
-            base::TimeDelta::FromDays(g_dismissal_embargo_days)) {
-      return PermissionResult(CONTENT_SETTING_BLOCK,
-                              PermissionStatusSource::MULTIPLE_DISMISSALS);
-    }
+  if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfDismissedOften,
+                     kPermissionDismissalEmbargoKey, current_time,
+                     base::TimeDelta::FromDays(g_dismissal_embargo_days))) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::MULTIPLE_DISMISSALS);
+  }
+
+  if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfIgnoredOften,
+                     kPermissionIgnoreEmbargoKey, current_time,
+                     base::TimeDelta::FromDays(g_ignore_embargo_days))) {
+    return PermissionResult(CONTENT_SETTING_BLOCK,
+                            PermissionStatusSource::MULTIPLE_IGNORES);
   }
 
   return PermissionResult(CONTENT_SETTING_ASK,
@@ -290,18 +338,26 @@ bool PermissionDecisionAutoBlocker::RecordDismissAndEmbargo(
   // to make this nicer once PermissionQueueController is removed.
   if (base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften) &&
       permission != CONTENT_SETTINGS_TYPE_PLUGINS &&
-      current_dismissal_count >= g_prompt_dismissals_before_block) {
+      current_dismissal_count >= g_dismissals_before_block) {
     PlaceUnderEmbargo(url, permission, kPermissionDismissalEmbargoKey);
     return true;
   }
   return false;
 }
 
-int PermissionDecisionAutoBlocker::RecordIgnore(
+bool PermissionDecisionAutoBlocker::RecordIgnoreAndEmbargo(
     const GURL& url,
     ContentSettingsType permission) {
-  return RecordActionInWebsiteSettings(url, permission, kPromptIgnoreCountKey,
-                                       profile_);
+  int current_ignore_count = RecordActionInWebsiteSettings(
+      url, permission, kPromptIgnoreCountKey, profile_);
+
+  if (base::FeatureList::IsEnabled(features::kBlockPromptsIfIgnoredOften) &&
+      permission != CONTENT_SETTINGS_TYPE_PLUGINS &&
+      current_ignore_count >= g_ignores_before_block) {
+    PlaceUnderEmbargo(url, permission, kPermissionIgnoreEmbargoKey);
+    return true;
+  }
+  return false;
 }
 
 void PermissionDecisionAutoBlocker::RemoveCountsByUrl(

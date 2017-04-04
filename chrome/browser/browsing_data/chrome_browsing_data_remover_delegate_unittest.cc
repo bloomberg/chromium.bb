@@ -584,8 +584,8 @@ class RemovePermissionPromptCountsTest {
     return autoblocker_->GetIgnoreCount(url, permission);
   }
 
-  int RecordIgnore(const GURL& url, ContentSettingsType permission) {
-    return autoblocker_->RecordIgnore(url, permission);
+  bool RecordIgnoreAndEmbargo(const GURL& url, ContentSettingsType permission) {
+    return autoblocker_->RecordIgnoreAndEmbargo(url, permission);
   }
 
   bool RecordDismissAndEmbargo(const GURL& url,
@@ -1677,16 +1677,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
 
   {
     // Test REMOVE_HISTORY.
-    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
-    EXPECT_EQ(2, tester.RecordIgnore(kOrigin1,
-                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
-    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     EXPECT_FALSE(tester.RecordDismissAndEmbargo(
         kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
-    EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
-                                     CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     tester.CheckEmbargo(kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                         CONTENT_SETTING_ASK);
     EXPECT_FALSE(tester.RecordDismissAndEmbargo(
@@ -1737,18 +1737,18 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ClearPermissionPromptCounts) {
   }
   {
     // Test REMOVE_SITE_DATA.
-    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
-    EXPECT_EQ(2, tester.RecordIgnore(kOrigin1,
-                                     CONTENT_SETTINGS_TYPE_GEOLOCATION));
-    EXPECT_EQ(1, tester.RecordIgnore(kOrigin1,
-                                     CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin1, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
     EXPECT_FALSE(tester.RecordDismissAndEmbargo(
         kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX));
     tester.CheckEmbargo(kOrigin1, CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
                         CONTENT_SETTING_ASK);
-    EXPECT_EQ(1, tester.RecordIgnore(kOrigin2,
-                                     CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
+    EXPECT_FALSE(tester.RecordIgnoreAndEmbargo(
+        kOrigin2, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE));
     EXPECT_FALSE(tester.RecordDismissAndEmbargo(
         kOrigin2, CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
 

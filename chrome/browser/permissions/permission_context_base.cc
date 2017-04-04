@@ -53,6 +53,12 @@ const char kPermissionBlockedRepeatedDismissalsMessage[] =
     "https://www.chromestatus.com/features/6443143280984064 for more "
     "information.";
 
+const char kPermissionBlockedRepeatedIgnoresMessage[] =
+    "%s permission has been blocked as the user has ignored the permission "
+    "prompt several times. See "
+    "https://www.chromestatus.com/features/6443143280984064 for more "
+    "information.";
+
 const char kPermissionBlockedBlacklistMessage[] =
     "this origin is not allowed to request %s permission.";
 
@@ -124,17 +130,31 @@ void PermissionContextBase::RequestPermission(
 
   if (result.content_setting == CONTENT_SETTING_ALLOW ||
       result.content_setting == CONTENT_SETTING_BLOCK) {
-    if (result.source == PermissionStatusSource::KILL_SWITCH) {
-      // Block the request and log to the developer console.
-      LogPermissionBlockedMessage(web_contents,
-                                  kPermissionBlockedKillSwitchMessage,
-                                  content_settings_type_);
-      callback.Run(CONTENT_SETTING_BLOCK);
-      return;
-    } else if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS) {
-      LogPermissionBlockedMessage(web_contents,
-                                  kPermissionBlockedRepeatedDismissalsMessage,
-                                  content_settings_type_);
+    switch (result.source) {
+      case PermissionStatusSource::KILL_SWITCH:
+        // Block the request and log to the developer console.
+        LogPermissionBlockedMessage(web_contents,
+                                    kPermissionBlockedKillSwitchMessage,
+                                    content_settings_type_);
+        callback.Run(CONTENT_SETTING_BLOCK);
+        return;
+      case PermissionStatusSource::MULTIPLE_DISMISSALS:
+        LogPermissionBlockedMessage(web_contents,
+                                    kPermissionBlockedRepeatedDismissalsMessage,
+                                    content_settings_type_);
+        break;
+      case PermissionStatusSource::MULTIPLE_IGNORES:
+        LogPermissionBlockedMessage(web_contents,
+                                    kPermissionBlockedRepeatedIgnoresMessage,
+                                    content_settings_type_);
+        break;
+      case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
+        LogPermissionBlockedMessage(web_contents,
+                                    kPermissionBlockedBlacklistMessage,
+                                    content_settings_type_);
+        break;
+      case PermissionStatusSource::UNSPECIFIED:
+        break;
     }
 
     // If we are under embargo, record the embargo reason for which we have

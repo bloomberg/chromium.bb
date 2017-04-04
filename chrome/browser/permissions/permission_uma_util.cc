@@ -295,11 +295,6 @@ void PermissionUmaUtil::PermissionIgnored(
   RecordPermissionPromptPriorCount(
       permission, kPermissionsPromptIgnoredPriorIgnoreCountPrefix,
       autoblocker->GetIgnoreCount(requesting_origin, permission));
-
-  // RecordPermission* methods need to be called before RecordIgnore in the
-  // blocker because they record the number of prior ignore and dismiss values,
-  // and we don't want to include the current ignore.
-  autoblocker->RecordIgnore(requesting_origin, permission);
 }
 
 void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
@@ -334,6 +329,10 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
     case PermissionStatusSource::MULTIPLE_DISMISSALS:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_DISMISSALS);
+      break;
+    case PermissionStatusSource::MULTIPLE_IGNORES:
+      PermissionUmaUtil::RecordEmbargoPromptSuppression(
+          PermissionEmbargoStatus::REPEATED_IGNORES);
       break;
     case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(

@@ -5,6 +5,7 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -40,8 +41,14 @@ PermissionRequestImpl::~PermissionRequestImpl() {
   if (!action_taken_) {
     PermissionUmaUtil::PermissionIgnored(
         content_settings_type_, GetGestureType(), request_origin_, profile_);
-    PermissionUmaUtil::RecordEmbargoStatus(
-        PermissionEmbargoStatus::NOT_EMBARGOED);
+
+    PermissionEmbargoStatus embargo_status =
+        PermissionEmbargoStatus::NOT_EMBARGOED;
+    if (PermissionDecisionAutoBlocker::GetForProfile(profile_)
+            ->RecordIgnoreAndEmbargo(request_origin_, content_settings_type_)) {
+      embargo_status = PermissionEmbargoStatus::REPEATED_IGNORES;
+    }
+    PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
 }
 

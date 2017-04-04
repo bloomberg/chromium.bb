@@ -48,6 +48,7 @@ extern const base::Feature kBackgroundModeAllowRestart;
 extern const base::Feature kBackspaceGoesBackFeature;
 
 extern const base::Feature kBlockPromptsIfDismissedOften;
+extern const base::Feature kBlockPromptsIfIgnoredOften;
 
 #if defined(OS_MACOSX)
 extern const base::Feature kBookmarkApps;
