@@ -4,6 +4,10 @@
 
 #import "ios/chrome/browser/sessions/test_session_service.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation TestSessionService
 - (void)saveWindow:(SessionWindowIOS*)window
     forBrowserState:(ios::ChromeBrowserState*)browserState

@@ -59,6 +59,7 @@ source_set("sessions_non_arc") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "test_session_service.h",
