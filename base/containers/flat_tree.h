@@ -248,7 +248,7 @@ class flat_tree {
 
  protected:
   // Emplaces a new item into the tree that is known not to be in it. This
-  // is for implementing map [] and at().
+  // is for implementing map operator[].
   template <class... Args>
   iterator unsafe_emplace(const_iterator position, Args&&... args);
 
@@ -683,8 +683,8 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::unsafe_emplace(
     const_iterator position,
     Args&&... args) -> iterator {
   // We have to cast away const because of crbug.com/677044.
-  return impl_.body_.insert(const_cast_it(position),
-                            value_type(std::forward<Args>(args)...));
+  return impl_.body_.emplace(const_cast_it(position),
+                             std::forward<Args>(args)...);
 }
 
 // For containers like sets, the key is the same as the value. This implements
