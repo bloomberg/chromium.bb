@@ -8,6 +8,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -15,10 +16,6 @@
 // static
 BudgetManager* BudgetManagerFactory::GetForProfile(
     content::BrowserContext* profile) {
-  // Budget tracking is not supported in incognito mode.
-  if (profile->IsOffTheRecord())
-    return nullptr;
-
   return static_cast<BudgetManager*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
@@ -33,6 +30,11 @@ BudgetManagerFactory::BudgetManagerFactory()
           "BudgetManager",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SiteEngagementServiceFactory::GetInstance());
+}
+
+content::BrowserContext* BudgetManagerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
 KeyedService* BudgetManagerFactory::BuildServiceInstanceFor(

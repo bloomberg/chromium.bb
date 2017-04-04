@@ -22,6 +22,8 @@ class BudgetManagerFactory : public BrowserContextKeyedServiceFactory {
   ~BudgetManagerFactory() override {}
 
   // BrowserContextKeyedServiceFactory interface.
+  content::BrowserContext* GetBrowserContextToUse(
+      content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 

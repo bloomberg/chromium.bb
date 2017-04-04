@@ -32,27 +32,40 @@ class BudgetManagerTest : public testing::Test {
   BudgetManagerTest() : origin_(url::Origin(GURL(kTestOrigin))) {}
   ~BudgetManagerTest() override {}
 
-  BudgetManager* GetManager() {
-    return BudgetManagerFactory::GetForProfile(&profile_);
+  BudgetManager* GetManager(Profile* profile) {
+    return BudgetManagerFactory::GetForProfile(profile);
   }
 
-  void SetSiteEngagementScore(double score) {
-    SiteEngagementService* service = SiteEngagementService::Get(&profile_);
-    service->ResetBaseScoreForURL(GURL(origin().Serialize()), score);
+  double GetSiteEngagementScore(Profile* profile) {
+    SiteEngagementService* service = SiteEngagementService::Get(profile);
+    DCHECK(service);
+
+    return service->GetScore(origin_.GetURL());
   }
 
-  Profile* profile() { return &profile_; }
+  void SetSiteEngagementScore(Profile* profile, double score) {
+    SiteEngagementService* service = SiteEngagementService::Get(profile);
+    DCHECK(service);
+
+    service->ResetBaseScoreForURL(origin_.GetURL(), score);
+  }
+
   const url::Origin origin() const { return origin_; }
   void SetOrigin(const url::Origin& origin) { origin_ = origin; }
 
-  void GetBudgetCallback(base::Closure run_loop_closure,
+  void GetBudgetCallback(double* out_budget_value,
+                         base::Closure run_loop_closure,
                          blink::mojom::BudgetServiceErrorType error,
                          std::vector<blink::mojom::BudgetStatePtr> budget) {
     // The BudgetDatabaseTest class tests all of the budget values returned.
-    // This is just checking that the UMA records correctly, so no need to keep
-    // track of the budget value.
     success_ = (error == blink::mojom::BudgetServiceErrorType::NONE);
     error_ = error;
+
+    if (out_budget_value) {
+      DCHECK_GT(budget.size(), 0u);
+      *out_budget_value = budget[0]->budget_at;
+    }
+
     run_loop_closure.Run();
   }
 
@@ -69,18 +82,19 @@ class BudgetManagerTest : public testing::Test {
     run_loop_closure.Run();
   }
 
-  bool GetBudget() {
+  bool GetBudget(Profile* profile, double* out_budget_value) {
     base::RunLoop run_loop;
-    GetManager()->GetBudget(
+    GetManager(profile)->GetBudget(
         origin(), base::Bind(&BudgetManagerTest::GetBudgetCallback,
-                             base::Unretained(this), run_loop.QuitClosure()));
+                             base::Unretained(this), out_budget_value,
+                             run_loop.QuitClosure()));
     run_loop.Run();
     return success_;
   }
 
-  bool ReserveBudget(blink::mojom::BudgetOperationType type) {
+  bool ReserveBudget(Profile* profile, blink::mojom::BudgetOperationType type) {
     base::RunLoop run_loop;
-    GetManager()->Reserve(
+    GetManager(profile)->Reserve(
         origin(), type,
         base::Bind(&BudgetManagerTest::ReserveCallback, base::Unretained(this),
                    run_loop.QuitClosure()));
@@ -88,9 +102,9 @@ class BudgetManagerTest : public testing::Test {
     return success_;
   }
 
-  bool ConsumeBudget(blink::mojom::BudgetOperationType type) {
+  bool ConsumeBudget(Profile* profile, blink::mojom::BudgetOperationType type) {
     base::RunLoop run_loop;
-    GetManager()->Consume(
+    GetManager(profile)->Consume(
         origin(), type,
         base::Bind(&BudgetManagerTest::ConsumeCallback, base::Unretained(this),
                    run_loop.QuitClosure()));
@@ -107,7 +121,6 @@ class BudgetManagerTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
   base::HistogramTester histogram_tester_;
   url::Origin origin_;
 
@@ -115,30 +128,32 @@ class BudgetManagerTest : public testing::Test {
 };
 
 TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
+  TestingProfile profile;
+
   // Set initial SES. The first time we try to spend budget, the engagement
   // award will be granted which is 23.04. (kTestSES * maxDaily / maxSES)
-  SetSiteEngagementScore(kTestSES);
+  SetSiteEngagementScore(&profile, kTestSES);
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
 
   // Spend for 11 silent push messages. This should consume all the original
   // budget grant.
   for (int i = 0; i < 11; i++) {
-    ASSERT_TRUE(GetBudget());
-    ASSERT_TRUE(ReserveBudget(type));
+    ASSERT_TRUE(GetBudget(&profile, nullptr /* out_budget_value */));
+    ASSERT_TRUE(ReserveBudget(&profile, type));
   }
 
   // Try to send one final silent push. The origin should be out of budget.
-  ASSERT_TRUE(GetBudget());
-  ASSERT_FALSE(ReserveBudget(type));
+  ASSERT_TRUE(GetBudget(&profile, nullptr /* out_budget_value */));
+  ASSERT_FALSE(ReserveBudget(&profile, type));
 
   // Try to consume for the 11 messages reserved.
   for (int i = 0; i < 11; i++)
-    ASSERT_TRUE(ConsumeBudget(type));
+    ASSERT_TRUE(ConsumeBudget(&profile, type));
 
   // The next consume should fail, since there is no reservation or budget
   // available.
-  ASSERT_FALSE(ConsumeBudget(type));
+  ASSERT_FALSE(ConsumeBudget(&profile, type));
 
   // Check the the UMA recorded for the Reserve calls matches the operations
   // that were executed.
@@ -163,24 +178,64 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
 }
 
 TEST_F(BudgetManagerTest, TestInsecureOrigin) {
+  TestingProfile profile;
+
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
   SetOrigin(url::Origin(GURL("http://example.com")));
-  SetSiteEngagementScore(kTestSES);
+  SetSiteEngagementScore(&profile, kTestSES);
 
   // Methods on the BudgetManager should only be allowed for secure origins.
-  ASSERT_FALSE(ReserveBudget(type));
+  ASSERT_FALSE(ReserveBudget(&profile, type));
   ASSERT_EQ(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED, error_);
-  ASSERT_FALSE(ConsumeBudget(type));
+  ASSERT_FALSE(ConsumeBudget(&profile, type));
 }
 
 TEST_F(BudgetManagerTest, TestUniqueOrigin) {
+  TestingProfile profile;
+
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
   SetOrigin(url::Origin(GURL("file://example.com:443/etc/passwd")));
 
   // Methods on the BudgetManager should not be allowed for unique origins.
-  ASSERT_FALSE(ReserveBudget(type));
+  ASSERT_FALSE(ReserveBudget(&profile, type));
   ASSERT_EQ(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED, error_);
-  ASSERT_FALSE(ConsumeBudget(type));
+  ASSERT_FALSE(ConsumeBudget(&profile, type));
+}
+
+TEST_F(BudgetManagerTest, TestIncognitoBehaviour) {
+  TestingProfile profile;
+
+  SetSiteEngagementScore(&profile, kTestSES);
+
+  // The |incognito| profile will be owned by the original |profile|.
+  TestingProfile* incognito =
+      TestingProfile::Builder().BuildIncognito(&profile);
+
+  ASSERT_EQ(GetSiteEngagementScore(&profile), kTestSES);
+  ASSERT_EQ(GetSiteEngagementScore(incognito), kTestSES);
+
+  // Budget for the |profile| and the |incognito| profile should be identical.
+  {
+    double profile_budget, incognito_budget;
+    ASSERT_TRUE(GetBudget(&profile, &profile_budget));
+    ASSERT_TRUE(GetBudget(incognito, &incognito_budget));
+
+    EXPECT_EQ(profile_budget, incognito_budget);
+  }
+
+  // Consume some budget from the |incognito| profile.
+  ASSERT_TRUE(
+      ConsumeBudget(incognito, blink::mojom::BudgetOperationType::SILENT_PUSH));
+
+  // The budget available to |incognito| should have decreased, but the budget
+  // available to the |profile| should've been untouched.
+  {
+    double profile_budget, incognito_budget;
+    ASSERT_TRUE(GetBudget(&profile, &profile_budget));
+    ASSERT_TRUE(GetBudget(incognito, &incognito_budget));
+
+    EXPECT_GT(profile_budget, incognito_budget);
+  }
 }
