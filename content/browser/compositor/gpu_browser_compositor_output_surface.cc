@@ -54,7 +54,7 @@ void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
-  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
+  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
 }
 

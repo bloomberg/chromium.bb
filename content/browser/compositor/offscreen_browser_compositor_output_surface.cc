@@ -193,7 +193,7 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
 
 void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
+  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
 }
 

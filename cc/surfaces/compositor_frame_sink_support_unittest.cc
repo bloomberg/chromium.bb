@@ -769,7 +769,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
   const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
   const ui::LatencyComponentType latency_type1 =
-      ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
   const int64_t latency_id1 = 234;
   const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
@@ -833,7 +833,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   const ui::LatencyComponentType latency_type1 =
-      ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
   const int64_t latency_id1 = 234;
   const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
@@ -901,7 +901,7 @@ TEST_F(CompositorFrameSinkSupportTest,
   const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
 
   const ui::LatencyComponentType latency_type1 =
-      ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
   const int64_t latency_id1 = 234;
   const int64_t latency_sequence_number1 = 5645432;
   const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;

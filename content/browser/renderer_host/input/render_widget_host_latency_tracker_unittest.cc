@@ -202,7 +202,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
       EXPECT_EQ(1U, wheel_latency.input_coordinates_size());
       tracker()->OnInputEventAck(wheel, &wheel_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnFrameSwapped(wheel_latency);
+      tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
 
       // Rappor metrics.
       EXPECT_TRUE(
@@ -294,7 +294,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
       EXPECT_EQ(1U, wheel_latency.input_coordinates_size());
       tracker()->OnInputEventAck(wheel, &wheel_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnFrameSwapped(wheel_latency);
+      tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
       EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelUI", 1));
       EXPECT_TRUE(HistogramSizeEq("Event.Latency.Browser.WheelAcked", 1));
 
@@ -392,7 +392,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
       EXPECT_EQ(2U, touch_latency.input_coordinates_size());
       tracker()->OnInputEventAck(touch, &touch_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnFrameSwapped(touch_latency);
+      tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
     // Rappor metrics.
@@ -512,7 +512,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
       EXPECT_EQ(2U, touch_latency.input_coordinates_size());
       tracker()->OnInputEventAck(touch, &touch_latency,
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-      tracker()->OnFrameSwapped(touch_latency);
+      tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
     // Rappor metrics.
@@ -616,7 +616,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     EXPECT_TRUE(touch_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_NO_SWAP_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated());
-    tracker()->OnFrameSwapped(touch_latency);
+    tracker()->OnGpuSwapBuffersCompleted(touch_latency);
   }
 
   {

@@ -494,14 +494,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
     return max_size_for_auto_resize_;
   }
 
-  void FrameSwapped(const ui::LatencyInfo& latency_info);
   void DidReceiveRendererFrame();
 
   // Returns the ID that uniquely describes this component to the latency
   // subsystem.
   int64_t GetLatencyComponentId() const;
 
-  static void CompositorFrameDrawn(
+  static void OnGpuSwapBuffersCompleted(
       const std::vector<ui::LatencyInfo>& latency_info);
 
   // Don't check whether we expected a resize ack during layout tests.
@@ -625,6 +624,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // renderer is unresponsive, this will clear that state and call
   // NotifyRendererResponsive.
   void RendererIsResponsive();
+
+  void OnGpuSwapBuffersCompletedInternal(const ui::LatencyInfo& latency_info);
 
   // IPC message handlers
   void OnRenderProcessGone(int status, int error_code);

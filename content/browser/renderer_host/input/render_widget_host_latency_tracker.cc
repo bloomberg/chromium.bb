@@ -308,7 +308,7 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
   std::vector<LatencyInfo::LatencyComponent> new_components_value;
   for (const auto& lc : latency->latency_components()) {
     ui::LatencyComponentType component_type = lc.first.first;
-    if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+    if (component_type == ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
       // Generate a new component entry with the correct component ID
       new_components_key.push_back(std::make_pair(component_type,
                                                   latency_component_id));
@@ -317,7 +317,7 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
   }
 
   // Remove the entries with invalid component IDs.
-  latency->RemoveLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT);
+  latency->RemoveLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT);
 
   // Add newly generated components into the latency info
   for (size_t i = 0; i < new_components_key.size(); i++) {
@@ -535,7 +535,7 @@ void RenderWidgetHostLatencyTracker::OnSwapCompositorFrame(
   }
 }
 
-void RenderWidgetHostLatencyTracker::OnFrameSwapped(
+void RenderWidgetHostLatencyTracker::OnGpuSwapBuffersCompleted(
     const LatencyInfo& latency) {
   LatencyInfo::LatencyComponent gpu_swap_end_component;
   if (!latency.FindLatency(

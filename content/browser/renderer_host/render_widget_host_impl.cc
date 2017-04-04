@@ -1456,8 +1456,8 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
   if (from_surface) {
     pending_surface_browser_snapshots_.insert(std::make_pair(id, callback));
     ui::LatencyInfo latency_info;
-    latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT, 0,
-                                  id);
+    latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                                  0, id);
     Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
     return;
   }
@@ -1477,7 +1477,7 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
 #endif
   pending_browser_snapshots_.insert(std::make_pair(id, callback));
   ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT, 0,
+  latency_info.AddLatencyNumber(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT, 0,
                                 id);
   Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
 }
@@ -1758,6 +1758,32 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
   NotifyNewContentRenderingTimeoutForTesting();
   if (view_)
     view_->ClearCompositorFrame();
+}
+
+void RenderWidgetHostImpl::OnGpuSwapBuffersCompletedInternal(
+    const ui::LatencyInfo& latency_info) {
+  ui::LatencyInfo::LatencyComponent window_snapshot_component;
+  if (latency_info.FindLatency(ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT,
+                               GetLatencyComponentId(),
+                               &window_snapshot_component)) {
+    int sequence_number =
+        static_cast<int>(window_snapshot_component.sequence_number);
+#if defined(OS_MACOSX)
+    // On Mac, when using CoreAnimation, there is a delay between when content
+    // is drawn to the screen, and when the snapshot will actually pick up
+    // that content. Insert a manual delay of 1/6th of a second (to simulate
+    // 10 frames at 60 fps) before actually taking the snapshot.
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
+                   weak_factory_.GetWeakPtr(), sequence_number),
+        base::TimeDelta::FromSecondsD(1. / 6));
+#else
+    WindowSnapshotReachedScreen(sequence_number);
+#endif
+  }
+
+  latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -2342,31 +2368,6 @@ void RenderWidgetHostImpl::DetachDelegate() {
   latency_tracker_.SetDelegate(nullptr);
 }
 
-void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
-  ui::LatencyInfo::LatencyComponent window_snapshot_component;
-  if (latency_info.FindLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                               GetLatencyComponentId(),
-                               &window_snapshot_component)) {
-    int sequence_number = static_cast<int>(
-        window_snapshot_component.sequence_number);
-#if defined(OS_MACOSX)
-    // On Mac, when using CoreAnmation, there is a delay between when content
-    // is drawn to the screen, and when the snapshot will actually pick up
-    // that content. Insert a manual delay of 1/6th of a second (to simulate
-    // 10 frames at 60 fps) before actually taking the snapshot.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
-                   weak_factory_.GetWeakPtr(), sequence_number),
-        base::TimeDelta::FromSecondsD(1. / 6));
-#else
-    WindowSnapshotReachedScreen(sequence_number);
-#endif
-  }
-
-  latency_tracker_.OnFrameSwapped(latency_info);
-}
-
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {
   view_->DidReceiveRendererFrame();
 }
@@ -2457,13 +2458,13 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
 }
 
 // static
-void RenderWidgetHostImpl::CompositorFrameDrawn(
+void RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info) {
   for (size_t i = 0; i < latency_info.size(); i++) {
     std::set<RenderWidgetHostImpl*> rwhi_set;
     for (const auto& lc : latency_info[i].latency_components()) {
       if (lc.first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
-          lc.first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
+          lc.first.first == ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
           lc.first.first == ui::TAB_SHOW_COMPONENT) {
         // Matches with GetLatencyComponentId
         int routing_id = lc.first.second & 0xffffffff;
@@ -2475,7 +2476,7 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
         }
         RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
         if (rwhi_set.insert(rwhi).second)
-          rwhi->FrameSwapped(latency_info[i]);
+          rwhi->OnGpuSwapBuffersCompletedInternal(latency_info[i]);
       }
     }
   }

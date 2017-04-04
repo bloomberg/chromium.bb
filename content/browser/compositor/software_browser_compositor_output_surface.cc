@@ -79,9 +79,9 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
         ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0,
         swap_time, 1);
   }
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&RenderWidgetHostImpl::CompositorFrameDrawn,
-                                    frame.latency_info));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RenderWidgetHostImpl::OnGpuSwapBuffersCompleted,
+                            frame.latency_info));
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider)
