@@ -1110,3 +1110,40 @@ TEST_F(DownloadSuggestionsProviderTest,
   CreateProvider(/*show_assets=*/false, /*show_offline_pages=*/true,
                  std::move(test_clock));
 }
+
+TEST_F(DownloadSuggestionsProviderTest,
+       ShouldShowRecentlyVisitedAssetDownloads) {
+  IgnoreOnCategoryStatusChangedToAvailable();
+  IgnoreOnSuggestionInvalidated();
+
+  const base::Time not_outdated =
+      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) +
+      base::TimeDelta::FromSeconds(1);
+  const base::Time outdated =
+      now - base::TimeDelta::FromHours(kDefaultMaxDownloadAgeHours) -
+      base::TimeDelta::FromSeconds(1);
+
+  *(downloads_manager()->mutable_items()) = CreateDummyAssetDownloads({0, 1});
+
+  downloads_manager()->mutable_items()->at(0)->SetURL(
+      GURL("http://download.com/0"));
+  downloads_manager()->mutable_items()->at(0)->SetStartTime(outdated);
+  downloads_manager()->mutable_items()->at(0)->SetLastAccessTime(not_outdated);
+
+  downloads_manager()->mutable_items()->at(1)->SetURL(
+      GURL("http://download.com/1"));
+  downloads_manager()->mutable_items()->at(1)->SetStartTime(outdated);
+  downloads_manager()->mutable_items()->at(1)->SetLastAccessTime(
+      downloads_manager()->mutable_items()->at(1)->GetStartTime());
+
+  // Even though asset download 0 was downloaded long time ago, it should be
+  // reported because it has been visited recently.
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(_, downloads_category(),
+                       UnorderedElementsAre(HasUrl("http://download.com/0"))));
+  auto test_clock = base::MakeUnique<base::SimpleTestClock>();
+  test_clock->SetNow(now);
+  CreateLoadedProvider(/*show_assets=*/true, /*show_offline_pages=*/false,
+                       std::move(test_clock));
+}

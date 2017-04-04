@@ -513,13 +513,11 @@ void DownloadSuggestionsProvider::FetchAssetsDownloads() {
   for (DownloadItem* item : all_downloads) {
     std::string within_category_id =
         GetAssetDownloadPerCategoryID(item->GetId());
-    // TODO(vitaliii): Provide proper last access time here once it is collected
-    // for asset downloads.
     if (old_dismissed_ids.count(within_category_id)) {
       retained_dismissed_ids.insert(within_category_id);
     } else if (IsAssetDownloadCompleted(*item) &&
                !IsDownloadOutdated(GetAssetDownloadPublishedTime(*item),
-                                   base::Time())) {
+                                   item->GetLastAccessTime())) {
       cached_asset_downloads_.push_back(item);
       // We may already observe this item and, therefore, we remove the
       // observer first.

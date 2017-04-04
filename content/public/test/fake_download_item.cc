@@ -142,6 +142,14 @@ int64_t FakeDownloadItem::GetReceivedBytes() const {
   return received_bytes_;
 }
 
+void FakeDownloadItem::SetLastAccessTime(base::Time time) {
+  last_access_time_ = time;
+}
+
+base::Time FakeDownloadItem::GetLastAccessTime() const {
+  return last_access_time_;
+}
+
 // The methods below are not supported and are not expected to be called.
 void FakeDownloadItem::ValidateDangerousDownload() {
   NOTREACHED();
@@ -370,11 +378,6 @@ bool FakeDownloadItem::GetOpened() const {
   return false;
 }
 
-base::Time FakeDownloadItem::GetLastAccessTime() const {
-  NOTREACHED();
-  return base::Time();
-}
-
 bool FakeDownloadItem::IsTransient() const {
   NOTREACHED();
   return false;
@@ -399,10 +402,6 @@ void FakeDownloadItem::SetOpenWhenComplete(bool open) {
 }
 
 void FakeDownloadItem::SetOpened(bool opened) {
-  NOTREACHED();
-}
-
-void FakeDownloadItem::SetLastAccessTime(base::Time time) {
   NOTREACHED();
 }
 

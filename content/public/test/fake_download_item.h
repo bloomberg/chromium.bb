@@ -72,6 +72,9 @@ class FakeDownloadItem : public DownloadItem {
   void SetReceivedBytes(int64_t received_bytes);
   int64_t GetReceivedBytes() const override;
 
+  void SetLastAccessTime(base::Time time) override;
+  base::Time GetLastAccessTime() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
@@ -121,14 +124,12 @@ class FakeDownloadItem : public DownloadItem {
   bool GetOpenWhenComplete() const override;
   bool GetAutoOpened() override;
   bool GetOpened() const override;
-  base::Time GetLastAccessTime() const override;
   bool IsTransient() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
-  void SetLastAccessTime(base::Time time) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;
 
@@ -141,6 +142,7 @@ class FakeDownloadItem : public DownloadItem {
   bool is_file_externally_removed_ = false;
   base::Time start_time_;
   base::Time end_time_;
+  base::Time last_access_time_;
   // MAX_DOWNLOAD_STATE is used as the uninitialized state.
   DownloadState download_state_ =
       DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
