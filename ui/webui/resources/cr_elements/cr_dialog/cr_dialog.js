@@ -118,8 +118,9 @@ Polymer({
     if (e.key != 'Enter')
       return;
 
-    var actionButton = this.querySelector('.action-button');
-    if (actionButton && !actionButton.disabled) {
+    var actionButton =
+        this.querySelector('.action-button:not([disabled]):not([hidden])');
+    if (actionButton) {
       actionButton.click();
       e.preventDefault();
     }

@@ -26,12 +26,12 @@ suite('cr-dialog', function() {
     expectNotEquals(button, document.activeElement);
   });
 
-  test('enter key clicks action button', function() {
+  test('enter keys should trigger action buttons once', function() {
     document.body.innerHTML = `
       <dialog is="cr-dialog">
         <div class="title">title</div>
         <div class="body">
-          <button class="action-button" disabled>button</button>
+          <button class="action-button">button</button>
           <button id="other-button">other button</button>
         </div>
       </dialog>`;
@@ -47,15 +47,6 @@ suite('cr-dialog', function() {
       clickedCounter += 1;
     });
 
-    // Enter key should ignore disabled buttons.
-    MockInteractions.keyEventOn(dialog, 'keypress', 13, undefined, 'Enter');
-    assertEquals(0, clickedCounter);
-
-    // Enter key should trigger enabled buttons.
-    actionButton.disabled = false;
-    MockInteractions.keyEventOn(dialog, 'keypress', 13, undefined, 'Enter');
-    assertEquals(1, clickedCounter);
-
     // Enter keys on other buttons should be ignored.
     clickedCounter = 0;
     var otherButton = document.body.querySelector('#other-button');
@@ -67,6 +58,36 @@ suite('cr-dialog', function() {
     // Enter key on the action button should only fire the click handler once.
     MockInteractions.tap(actionButton, 'keypress', 13, undefined, 'Enter');
     assertEquals(1, clickedCounter);
+  });
+
+  test('enter keys find the first non-hidden non-disabled button', function() {
+    document.body.innerHTML = `
+      <dialog is="cr-dialog">
+        <div class="title">title</div>
+        <div class="body">
+          <button id="hidden" class="action-button" hidden>hidden</button>
+          <button class="action-button" disabled>disabled</button>
+          <button class="action-button" disabled hidden>disabled hidden</button>
+          <button id="active" class="action-button">active</button>
+        </div>
+      </dialog>`;
+
+    var dialog = document.body.querySelector('dialog');
+    var hiddenButton = document.body.querySelector('#hidden');
+    var actionButton = document.body.querySelector('#active');
+    dialog.showModal();
+
+    // MockInteractions triggers event listeners synchronously.
+    hiddenButton.addEventListener('click', function() {
+      assertNotReached('Hidden button received a click.');
+    })
+    var clicked = false;
+    actionButton.addEventListener('click', function() {
+      clicked = true;
+    });
+
+    MockInteractions.keyEventOn(dialog, 'keypress', 13, undefined, 'Enter');
+    assertTrue(clicked);
   });
 
   test('focuses [autofocus] instead of title when present', function() {
