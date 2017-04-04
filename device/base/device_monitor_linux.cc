@@ -49,14 +49,9 @@ DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
 
   monitor_fd_ = udev_monitor_get_fd(monitor_.get());
   if (monitor_fd_ <= 0) {
-    LOG(ERROR) << "Failed to start udev monitoring.";
+    LOG(ERROR) << "Failed to get udev monitor FD.";
     return;
   }
-
-  monitor_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
-      monitor_fd_,
-      base::Bind(&DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking,
-                 base::Unretained(this)));
 }
 
 // static
@@ -67,11 +62,24 @@ DeviceMonitorLinux* DeviceMonitorLinux::GetInstance() {
 void DeviceMonitorLinux::AddObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.AddObserver(observer);
+
+  if (monitor_watch_controller_)
+    return;
+
+  monitor_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+      monitor_fd_,
+      base::Bind(&DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking,
+                 base::Unretained(this)));
 }
 
 void DeviceMonitorLinux::RemoveObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observers_.RemoveObserver(observer);
+
+  if (observers_.might_have_observers())
+    return;
+
+  monitor_watch_controller_.reset();
 }
 
 void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
@@ -106,7 +114,6 @@ DeviceMonitorLinux::~DeviceMonitorLinux() {
 
 void DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   ScopedUdevDevicePtr device(udev_monitor_receive_device(monitor_.get()));
   if (!device)
     return;
