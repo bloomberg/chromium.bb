@@ -1039,6 +1039,33 @@ TEST_F(ResourcePrefetchPredictorTest, ManifestHostNotInDBAndDBFull) {
   predictor_->OnManifestFetched("en.wikipedia.org", manifest);
 }
 
+TEST_F(ResourcePrefetchPredictorTest, ManifestUnknownFieldsRemoved) {
+  precache::PrecacheManifest manifest = CreateManifestData(1);
+  InitializePrecacheResource(manifest.add_resource(),
+                             "http://cdn.google.com/script.js", 0.9);
+  InitializePrecacheResource(manifest.add_resource(),
+                             "http://cdn.google.com/style.css", 0.75);
+
+  precache::PrecacheManifest manifest_with_unknown_fields(manifest);
+  manifest_with_unknown_fields.mutable_id()->mutable_unknown_fields()->append(
+      "DATA");
+  manifest_with_unknown_fields.mutable_unknown_fields()->append("DATA");
+  for (auto& resource : *manifest_with_unknown_fields.mutable_resource()) {
+    resource.mutable_unknown_fields()->append("DATA");
+  }
+
+  int manifest_size = manifest.ByteSize();
+  auto match_size = [manifest_size](const precache::PrecacheManifest& m) {
+    return m.ByteSize() == manifest_size;
+  };
+  EXPECT_CALL(
+      *mock_tables_.get(),
+      UpdateManifestData("google.com",
+                         testing::AllOf(manifest, testing::Truly(match_size))));
+
+  predictor_->OnManifestFetched("google.com", manifest_with_unknown_fields);
+}
+
 TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
   // Add some dummy entries to cache.
   predictor_->url_table_cache_->insert(

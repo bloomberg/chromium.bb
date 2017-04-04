@@ -221,6 +221,22 @@ void ReportPredictionAccuracy(
       static_cast<int>(redirect_status), static_cast<int>(RedirectStatus::MAX));
 }
 
+void RemoveUnknownFieldsFromPrecacheManifest(
+    precache::PrecacheManifest* manifest) {
+  manifest->mutable_unknown_fields()->clear();
+  for (auto& resource : *manifest->mutable_resource())
+    resource.mutable_unknown_fields()->clear();
+  if (manifest->has_experiments()) {
+    manifest->mutable_experiments()->mutable_unknown_fields()->clear();
+    for (auto& kv : *manifest->mutable_experiments()
+                         ->mutable_resources_by_experiment_group()) {
+      kv.second.mutable_unknown_fields()->clear();
+    }
+  }
+  if (manifest->has_id())
+    manifest->mutable_id()->mutable_unknown_fields()->clear();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1465,6 +1481,8 @@ void ResourcePrefetchPredictor::OnManifestFetched(
   } else {
     cache_entry->second = manifest;
   }
+
+  RemoveUnknownFieldsFromPrecacheManifest(&cache_entry->second);
 
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
