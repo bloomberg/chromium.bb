@@ -1235,8 +1235,13 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       if (packet_buffer->pkt.pts != static_cast<int64_t>(AV_NOPTS_VALUE)) {
         const base::TimeDelta packet_pts =
             ConvertFromTimeBase(stream->time_base, packet_buffer->pkt.pts);
-        if (packet_pts < start_time_estimates[stream->index])
+        // We ignore kNoTimestamp here since -int64_t::min() is possible; see
+        // https://crbug.com/700501. Technically this is a valid value, but in
+        // practice shouldn't occur, so just ignore it when estimating.
+        if (packet_pts != kNoTimestamp && packet_pts != kInfiniteDuration &&
+            packet_pts < start_time_estimates[stream->index]) {
           start_time_estimates[stream->index] = packet_pts;
+        }
       }
       packet_buffer = packet_buffer->next;
     }
