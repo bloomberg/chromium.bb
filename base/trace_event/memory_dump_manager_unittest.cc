@@ -116,8 +116,6 @@ void PostTaskAndWait(const tracked_objects::Location& from_here,
   event.Wait();
 }
 
-}  // namespace
-
 // Testing MemoryDumpManagerDelegate which, by default, short-circuits dump
 // requests locally to the MemoryDumpManager instead of performing IPC dances.
 class MemoryDumpManagerDelegateForTesting : public MemoryDumpManagerDelegate {
@@ -213,6 +211,8 @@ class TestSequencedTaskRunner : public SequencedTaskRunner {
   bool enabled_;
   unsigned num_of_post_tasks_;
 };
+
+}  // namespace
 
 class MemoryDumpManagerTest : public testing::Test {
  public:
