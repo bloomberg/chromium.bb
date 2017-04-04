@@ -89,7 +89,7 @@ const char kInputEncodingKey[] = "ie";
 const char kAssistedQueryStatsKey[] = "aqs";
 
 InstantMostVisitedItem::InstantMostVisitedItem()
-    : source(ntp_tiles::NTPTileSource::TOP_SITES) {}
+    : source(ntp_tiles::TileSource::TOP_SITES) {}
 
 InstantMostVisitedItem::InstantMostVisitedItem(
     const InstantMostVisitedItem& other) = default;

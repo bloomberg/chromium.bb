@@ -251,7 +251,7 @@ void SearchIPCRouter::LogEvent(int page_seq_no,
 void SearchIPCRouter::LogMostVisitedImpression(
     int page_seq_no,
     int position,
-    ntp_tiles::NTPTileSource tile_source) {
+    ntp_tiles::TileSource tile_source) {
   if (page_seq_no != commit_counter_)
     return;
 
@@ -266,7 +266,7 @@ void SearchIPCRouter::LogMostVisitedImpression(
 void SearchIPCRouter::LogMostVisitedNavigation(
     int page_seq_no,
     int position,
-    ntp_tiles::NTPTileSource tile_source) {
+    ntp_tiles::TileSource tile_source) {
   if (page_seq_no != commit_counter_)
     return;
 

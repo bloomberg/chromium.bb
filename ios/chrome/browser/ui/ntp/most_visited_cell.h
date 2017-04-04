@@ -22,7 +22,7 @@ class ChromeBrowserState;
 // Reference to the relevant ChromeBrowserState
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
 // Type of tile (icon, scrabble tile, default)
-@property(nonatomic, readonly) ntp_tiles::metrics::MostVisitedTileType tileType;
+@property(nonatomic, readonly) ntp_tiles::TileVisualType tileType;
 
 // Set text of top site.
 - (void)setText:(NSString*)text;

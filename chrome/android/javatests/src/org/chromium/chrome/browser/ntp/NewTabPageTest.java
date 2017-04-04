@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.browser.suggestions.TileGroupDelegateImpl;
+import org.chromium.chrome.browser.suggestions.TileSource;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -59,7 +60,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
 
     private static final String[] FAKE_MOST_VISITED_TITLES = new String[] { "Simple" };
     private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] { "" };
-    private static final int[] FAKE_MOST_VISITED_SOURCES = new int[] {NTPTileSource.TOP_SITES};
+    private static final int[] FAKE_MOST_VISITED_SOURCES = new int[] {TileSource.TOP_SITES};
 
     private Tab mTab;
     private NewTabPage mNtp;

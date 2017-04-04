@@ -34,7 +34,7 @@ class IOSNTPTilesInternalsMessageHandlerBridge
 
   // ntp_tiles::NTPTilesInternalsMessageHandlerClient
   bool SupportsNTPTiles() override;
-  bool DoesSourceExist(ntp_tiles::NTPTileSource source) override;
+  bool DoesSourceExist(ntp_tiles::TileSource source) override;
   std::unique_ptr<ntp_tiles::MostVisitedSites> MakeMostVisitedSites() override;
   PrefService* GetPrefs() override;
   void RegisterMessageCallback(
@@ -58,13 +58,13 @@ bool IOSNTPTilesInternalsMessageHandlerBridge::SupportsNTPTiles() {
 }
 
 bool IOSNTPTilesInternalsMessageHandlerBridge::DoesSourceExist(
-    ntp_tiles::NTPTileSource source) {
+    ntp_tiles::TileSource source) {
   switch (source) {
-    case ntp_tiles::NTPTileSource::TOP_SITES:
-    case ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE:
-    case ntp_tiles::NTPTileSource::POPULAR:
+    case ntp_tiles::TileSource::TOP_SITES:
+    case ntp_tiles::TileSource::SUGGESTIONS_SERVICE:
+    case ntp_tiles::TileSource::POPULAR:
       return true;
-    case ntp_tiles::NTPTileSource::WHITELIST:
+    case ntp_tiles::TileSource::WHITELIST:
       return false;
   }
   NOTREACHED();

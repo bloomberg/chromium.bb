@@ -86,7 +86,7 @@ ACTION_TEMPLATE(InvokeCallbackArgument,
 
 NTPTile MakeTile(const std::string& title,
                  const std::string& url,
-                 NTPTileSource source) {
+                 TileSource source) {
   NTPTile tile;
   tile.title = base::ASCIIToUTF16(title);
   tile.url = GURL(url);
@@ -374,15 +374,15 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
     EXPECT_CALL(
         mock_observer_,
         OnMostVisitedURLsAvailable(ElementsAre(
-            MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
+            MatchesTile("Site 1", "http://site1/", TileSource::TOP_SITES),
             MatchesTile("PopularSite1", "http://popularsite1/",
-                        NTPTileSource::POPULAR),
+                        TileSource::POPULAR),
             MatchesTile("PopularSite2", "http://popularsite2/",
-                        NTPTileSource::POPULAR))));
+                        TileSource::POPULAR))));
   } else {
     EXPECT_CALL(mock_observer_,
                 OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
-                    "Site 1", "http://site1/", NTPTileSource::TOP_SITES))));
+                    "Site 1", "http://site1/", TileSource::TOP_SITES))));
   }
   EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
       .WillOnce(Return(true));
@@ -431,22 +431,22 @@ class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
       EXPECT_CALL(mock_observer_,
                   OnMostVisitedURLsAvailable(ElementsAre(
                       MatchesTile("Site 1", "http://site1/",
-                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                                  TileSource::SUGGESTIONS_SERVICE),
                       MatchesTile("Site 2", "http://site2/",
-                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                                  TileSource::SUGGESTIONS_SERVICE),
                       MatchesTile("Site 3", "http://site3/",
-                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                                  TileSource::SUGGESTIONS_SERVICE),
                       MatchesTile("PopularSite1", "http://popularsite1/",
-                                  NTPTileSource::POPULAR))));
+                                  TileSource::POPULAR))));
     } else {
       EXPECT_CALL(mock_observer_,
                   OnMostVisitedURLsAvailable(ElementsAre(
                       MatchesTile("Site 1", "http://site1/",
-                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                                  TileSource::SUGGESTIONS_SERVICE),
                       MatchesTile("Site 2", "http://site2/",
-                                  NTPTileSource::SUGGESTIONS_SERVICE),
+                                  TileSource::SUGGESTIONS_SERVICE),
                       MatchesTile("Site 3", "http://site3/",
-                                  NTPTileSource::SUGGESTIONS_SERVICE))));
+                                  TileSource::SUGGESTIONS_SERVICE))));
     }
     EXPECT_CALL(mock_suggestions_service_, FetchSuggestionsData())
         .WillOnce(Return(true));
@@ -467,15 +467,15 @@ TEST_P(MostVisitedSitesWithCacheHitTest, ShouldFavorSuggestionsServiceCache) {
 TEST_P(MostVisitedSitesWithCacheHitTest,
        ShouldPropagateUpdateBySuggestionsService) {
   EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(ElementsAre(
-                  MatchesTile("Site 4", "http://site4/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 5", "http://site5/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 6", "http://site6/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 7", "http://site7/",
-                              NTPTileSource::SUGGESTIONS_SERVICE))));
+              OnMostVisitedURLsAvailable(
+                  ElementsAre(MatchesTile("Site 4", "http://site4/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 5", "http://site5/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 6", "http://site6/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 7", "http://site7/",
+                                          TileSource::SUGGESTIONS_SERVICE))));
   suggestions_service_callbacks_.Notify(
       MakeProfile({MakeSuggestion("Site 4", "http://site4/"),
                    MakeSuggestion("Site 5", "http://site5/"),
@@ -501,16 +501,16 @@ TEST_P(MostVisitedSitesWithCacheHitTest,
     EXPECT_CALL(mock_observer_,
                 OnMostVisitedURLsAvailable(ElementsAre(
                     MatchesTile("Site 4", "http://site4/",
-                                NTPTileSource::SUGGESTIONS_SERVICE),
+                                TileSource::SUGGESTIONS_SERVICE),
                     MatchesTile("PopularSite1", "http://popularsite1/",
-                                NTPTileSource::POPULAR),
+                                TileSource::POPULAR),
                     MatchesTile("PopularSite2", "http://popularsite2/",
-                                NTPTileSource::POPULAR))));
+                                TileSource::POPULAR))));
   } else {
     EXPECT_CALL(
         mock_observer_,
         OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
-            "Site 4", "http://site4/", NTPTileSource::SUGGESTIONS_SERVICE))));
+            "Site 4", "http://site4/", TileSource::SUGGESTIONS_SERVICE))));
   }
   suggestions_service_callbacks_.Notify(
       MakeProfile({MakeSuggestion("Site 4", "http://site4/")}));
@@ -527,10 +527,10 @@ TEST_P(MostVisitedSitesWithCacheHitTest,
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 4", "http://site4/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 5", "http://site5/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 6", "http://site6/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 7", "http://site7/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 4", "http://site4/", TileSource::TOP_SITES),
+          MatchesTile("Site 5", "http://site5/", TileSource::TOP_SITES),
+          MatchesTile("Site 6", "http://site6/", TileSource::TOP_SITES),
+          MatchesTile("Site 7", "http://site7/", TileSource::TOP_SITES))));
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 4", "http://site4/"),
        MakeMostVisitedURL("Site 5", "http://site5/"),
@@ -580,16 +580,16 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
     EXPECT_CALL(mock_observer_,
                 OnMostVisitedURLsAvailable(ElementsAre(
                     MatchesTile("Site 4", "http://site4/",
-                                NTPTileSource::SUGGESTIONS_SERVICE),
+                                TileSource::SUGGESTIONS_SERVICE),
                     MatchesTile("PopularSite1", "http://popularsite1/",
-                                NTPTileSource::POPULAR),
+                                TileSource::POPULAR),
                     MatchesTile("PopularSite2", "http://popularsite2/",
-                                NTPTileSource::POPULAR))));
+                                TileSource::POPULAR))));
   } else {
     EXPECT_CALL(
         mock_observer_,
         OnMostVisitedURLsAvailable(ElementsAre(MatchesTile(
-            "Site 4", "http://site4/", NTPTileSource::SUGGESTIONS_SERVICE))));
+            "Site 4", "http://site4/", TileSource::SUGGESTIONS_SERVICE))));
   }
   suggestions_service_callbacks_.Notify(
       MakeProfile({MakeSuggestion("Site 4", "http://site4/")}));
@@ -600,13 +600,13 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
        ShouldIgnoreTopSitesIfSuggestionsServiceFaster) {
   // Reply from suggestions service triggers and update to our observer.
   EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(ElementsAre(
-                  MatchesTile("Site 1", "http://site1/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 2", "http://site2/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 3", "http://site3/",
-                              NTPTileSource::SUGGESTIONS_SERVICE))));
+              OnMostVisitedURLsAvailable(
+                  ElementsAre(MatchesTile("Site 1", "http://site1/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 2", "http://site2/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 3", "http://site3/",
+                                          TileSource::SUGGESTIONS_SERVICE))));
   suggestions_service_callbacks_.Notify(
       MakeProfile({MakeSuggestion("Site 1", "http://site1/"),
                    MakeSuggestion("Site 2", "http://site2/"),
@@ -634,9 +634,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 2", "http://site2/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 1", "http://site1/", TileSource::TOP_SITES),
+          MatchesTile("Site 2", "http://site2/", TileSource::TOP_SITES),
+          MatchesTile("Site 3", "http://site3/", TileSource::TOP_SITES))));
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 1", "http://site1/"),
        MakeMostVisitedURL("Site 2", "http://site2/"),
@@ -650,9 +650,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 2", "http://site2/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 1", "http://site1/", TileSource::TOP_SITES),
+          MatchesTile("Site 2", "http://site2/", TileSource::TOP_SITES),
+          MatchesTile("Site 3", "http://site3/", TileSource::TOP_SITES))));
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 1", "http://site1/"),
        MakeMostVisitedURL("Site 2", "http://site2/"),
@@ -662,13 +662,13 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   // Reply from suggestions service overrides top sites.
   InSequence seq;
   EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(ElementsAre(
-                  MatchesTile("Site 4", "http://site4/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 5", "http://site5/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 6", "http://site6/",
-                              NTPTileSource::SUGGESTIONS_SERVICE))));
+              OnMostVisitedURLsAvailable(
+                  ElementsAre(MatchesTile("Site 4", "http://site4/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 5", "http://site5/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 6", "http://site6/",
+                                          TileSource::SUGGESTIONS_SERVICE))));
   suggestions_service_callbacks_.Notify(
       MakeProfile({MakeSuggestion("Site 4", "http://site4/"),
                    MakeSuggestion("Site 5", "http://site5/"),
@@ -682,9 +682,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 2", "http://site2/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 1", "http://site1/", TileSource::TOP_SITES),
+          MatchesTile("Site 2", "http://site2/", TileSource::TOP_SITES),
+          MatchesTile("Site 3", "http://site3/", TileSource::TOP_SITES))));
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 1", "http://site1/"),
        MakeMostVisitedURL("Site 2", "http://site2/"),
@@ -701,9 +701,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest, ShouldPropagateUpdateByTopSites) {
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 2", "http://site2/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 1", "http://site1/", TileSource::TOP_SITES),
+          MatchesTile("Site 2", "http://site2/", TileSource::TOP_SITES),
+          MatchesTile("Site 3", "http://site3/", TileSource::TOP_SITES))));
   top_sites_callbacks_.ClearAndNotify(
       {MakeMostVisitedURL("Site 1", "http://site1/"),
        MakeMostVisitedURL("Site 2", "http://site2/"),
@@ -724,9 +724,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest, ShouldPropagateUpdateByTopSites) {
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 4", "http://site4/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 5", "http://site5/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 6", "http://site6/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 4", "http://site4/", TileSource::TOP_SITES),
+          MatchesTile("Site 5", "http://site5/", TileSource::TOP_SITES),
+          MatchesTile("Site 6", "http://site6/", TileSource::TOP_SITES))));
   mock_top_sites_->NotifyTopSitesChanged(
       history::TopSitesObserver::ChangeReason::MOST_VISITED);
   base::RunLoop().RunUntilIdle();
@@ -738,9 +738,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
     EXPECT_CALL(mock_observer_,
                 OnMostVisitedURLsAvailable(ElementsAre(
                     MatchesTile("PopularSite1", "http://popularsite1/",
-                                NTPTileSource::POPULAR),
+                                TileSource::POPULAR),
                     MatchesTile("PopularSite2", "http://popularsite2/",
-                                NTPTileSource::POPULAR))));
+                                TileSource::POPULAR))));
   } else {
     // The Android NTP doesn't finish initialization until it gets tiles, so a
     // 0-tile notification is always needed.
@@ -757,9 +757,9 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
   EXPECT_CALL(
       mock_observer_,
       OnMostVisitedURLsAvailable(ElementsAre(
-          MatchesTile("Site 1", "http://site1/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 2", "http://site2/", NTPTileSource::TOP_SITES),
-          MatchesTile("Site 3", "http://site3/", NTPTileSource::TOP_SITES))));
+          MatchesTile("Site 1", "http://site1/", TileSource::TOP_SITES),
+          MatchesTile("Site 2", "http://site2/", TileSource::TOP_SITES),
+          MatchesTile("Site 3", "http://site3/", TileSource::TOP_SITES))));
 
   suggestions_service_callbacks_.Notify(SuggestionsProfile());
 
@@ -786,13 +786,13 @@ TEST_P(MostVisitedSitesWithEmptyCacheTest,
 TEST_P(MostVisitedSitesWithEmptyCacheTest,
        ShouldNotifyOnceIfSuggestionsUnchanged) {
   EXPECT_CALL(mock_observer_,
-              OnMostVisitedURLsAvailable(ElementsAre(
-                  MatchesTile("Site 1", "http://site1/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 2", "http://site2/",
-                              NTPTileSource::SUGGESTIONS_SERVICE),
-                  MatchesTile("Site 3", "http://site3/",
-                              NTPTileSource::SUGGESTIONS_SERVICE))));
+              OnMostVisitedURLsAvailable(
+                  ElementsAre(MatchesTile("Site 1", "http://site1/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 2", "http://site2/",
+                                          TileSource::SUGGESTIONS_SERVICE),
+                              MatchesTile("Site 3", "http://site3/",
+                                          TileSource::SUGGESTIONS_SERVICE))));
 
   for (int i = 0; i < 5; ++i) {
     suggestions_service_callbacks_.Notify(
@@ -815,10 +815,10 @@ INSTANTIATE_TEST_CASE_P(MostVisitedSitesWithEmptyCacheTest,
 // - Ensuring personal tiles are not duplicated in popular tiles.
 TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPersonalOnly) {
   std::vector<NTPTile> personal_tiles{
-      MakeTile("Site 1", "https://www.site1.com/", NTPTileSource::TOP_SITES),
-      MakeTile("Site 2", "https://www.site2.com/", NTPTileSource::TOP_SITES),
-      MakeTile("Site 3", "https://www.site3.com/", NTPTileSource::TOP_SITES),
-      MakeTile("Site 4", "https://www.site4.com/", NTPTileSource::TOP_SITES),
+      MakeTile("Site 1", "https://www.site1.com/", TileSource::TOP_SITES),
+      MakeTile("Site 2", "https://www.site2.com/", TileSource::TOP_SITES),
+      MakeTile("Site 3", "https://www.site3.com/", TileSource::TOP_SITES),
+      MakeTile("Site 4", "https://www.site4.com/", TileSource::TOP_SITES),
   };
   // Without any popular tiles, the result after merge should be the personal
   // tiles.
@@ -826,21 +826,21 @@ TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPersonalOnly) {
                                            /*whitelist_tiles=*/NTPTilesVector(),
                                            /*popular_tiles=*/NTPTilesVector()),
               ElementsAre(MatchesTile("Site 1", "https://www.site1.com/",
-                                      NTPTileSource::TOP_SITES),
+                                      TileSource::TOP_SITES),
                           MatchesTile("Site 2", "https://www.site2.com/",
-                                      NTPTileSource::TOP_SITES),
+                                      TileSource::TOP_SITES),
                           MatchesTile("Site 3", "https://www.site3.com/",
-                                      NTPTileSource::TOP_SITES),
+                                      TileSource::TOP_SITES),
                           MatchesTile("Site 4", "https://www.site4.com/",
-                                      NTPTileSource::TOP_SITES)));
+                                      TileSource::TOP_SITES)));
 }
 
 TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPopularOnly) {
   std::vector<NTPTile> popular_tiles{
-      MakeTile("Site 1", "https://www.site1.com/", NTPTileSource::POPULAR),
-      MakeTile("Site 2", "https://www.site2.com/", NTPTileSource::POPULAR),
-      MakeTile("Site 3", "https://www.site3.com/", NTPTileSource::POPULAR),
-      MakeTile("Site 4", "https://www.site4.com/", NTPTileSource::POPULAR),
+      MakeTile("Site 1", "https://www.site1.com/", TileSource::POPULAR),
+      MakeTile("Site 2", "https://www.site2.com/", TileSource::POPULAR),
+      MakeTile("Site 3", "https://www.site3.com/", TileSource::POPULAR),
+      MakeTile("Site 4", "https://www.site4.com/", TileSource::POPULAR),
   };
   // Without any personal tiles, the result after merge should be the popular
   // tiles.
@@ -848,37 +848,35 @@ TEST(MostVisitedSitesMergeTest, ShouldMergeTilesWithPopularOnly) {
       MostVisitedSites::MergeTiles(/*personal_tiles=*/NTPTilesVector(),
                                    /*whitelist_tiles=*/NTPTilesVector(),
                                    /*popular_tiles=*/std::move(popular_tiles)),
-      ElementsAre(MatchesTile("Site 1", "https://www.site1.com/",
-                              NTPTileSource::POPULAR),
-                  MatchesTile("Site 2", "https://www.site2.com/",
-                              NTPTileSource::POPULAR),
-                  MatchesTile("Site 3", "https://www.site3.com/",
-                              NTPTileSource::POPULAR),
-                  MatchesTile("Site 4", "https://www.site4.com/",
-                              NTPTileSource::POPULAR)));
+      ElementsAre(
+          MatchesTile("Site 1", "https://www.site1.com/", TileSource::POPULAR),
+          MatchesTile("Site 2", "https://www.site2.com/", TileSource::POPULAR),
+          MatchesTile("Site 3", "https://www.site3.com/", TileSource::POPULAR),
+          MatchesTile("Site 4", "https://www.site4.com/",
+                      TileSource::POPULAR)));
 }
 
 TEST(MostVisitedSitesMergeTest, ShouldMergeTilesFavoringPersonalOverPopular) {
   std::vector<NTPTile> popular_tiles{
-      MakeTile("Site 1", "https://www.site1.com/", NTPTileSource::POPULAR),
-      MakeTile("Site 2", "https://www.site2.com/", NTPTileSource::POPULAR),
+      MakeTile("Site 1", "https://www.site1.com/", TileSource::POPULAR),
+      MakeTile("Site 2", "https://www.site2.com/", TileSource::POPULAR),
   };
   std::vector<NTPTile> personal_tiles{
-      MakeTile("Site 3", "https://www.site3.com/", NTPTileSource::TOP_SITES),
-      MakeTile("Site 4", "https://www.site4.com/", NTPTileSource::TOP_SITES),
+      MakeTile("Site 3", "https://www.site3.com/", TileSource::TOP_SITES),
+      MakeTile("Site 4", "https://www.site4.com/", TileSource::TOP_SITES),
   };
   EXPECT_THAT(
       MostVisitedSites::MergeTiles(std::move(personal_tiles),
                                    /*whitelist_tiles=*/NTPTilesVector(),
                                    /*popular_tiles=*/std::move(popular_tiles)),
-      ElementsAre(MatchesTile("Site 3", "https://www.site3.com/",
-                              NTPTileSource::TOP_SITES),
-                  MatchesTile("Site 4", "https://www.site4.com/",
-                              NTPTileSource::TOP_SITES),
-                  MatchesTile("Site 1", "https://www.site1.com/",
-                              NTPTileSource::POPULAR),
-                  MatchesTile("Site 2", "https://www.site2.com/",
-                              NTPTileSource::POPULAR)));
+      ElementsAre(
+          MatchesTile("Site 3", "https://www.site3.com/",
+                      TileSource::TOP_SITES),
+          MatchesTile("Site 4", "https://www.site4.com/",
+                      TileSource::TOP_SITES),
+          MatchesTile("Site 1", "https://www.site1.com/", TileSource::POPULAR),
+          MatchesTile("Site 2", "https://www.site2.com/",
+                      TileSource::POPULAR)));
 }
 
 }  // namespace

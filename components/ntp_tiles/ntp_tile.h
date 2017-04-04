@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/ntp_tiles/ntp_tile_source.h"
+#include "components/ntp_tiles/tile_source.h"
 #include "url/gurl.h"
 
 namespace ntp_tiles {
@@ -19,7 +19,7 @@ namespace ntp_tiles {
 struct NTPTile {
   base::string16 title;
   GURL url;
-  NTPTileSource source;
+  TileSource source;
 
   // Empty unless whitelists are enabled and this site is in a whitelist.
   // However, may be non-empty even if |source| is not |WHITELIST|, if this tile

@@ -293,7 +293,7 @@ void InstantService::OnTopSitesReceived(
     InstantMostVisitedItem item;
     item.url = mv_url.url;
     item.title = mv_url.title;
-    item.source = ntp_tiles::NTPTileSource::TOP_SITES;
+    item.source = ntp_tiles::TileSource::TOP_SITES;
     most_visited_items_.push_back(item);
   }
 

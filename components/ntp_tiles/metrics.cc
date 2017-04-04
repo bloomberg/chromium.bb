@@ -44,33 +44,33 @@ void LogHistogramEvent(const std::string& histogram,
     counter->Add(position);
 }
 
-std::string GetSourceHistogramName(NTPTileSource source) {
+std::string GetSourceHistogramName(TileSource source) {
   switch (source) {
-    case NTPTileSource::TOP_SITES:
+    case TileSource::TOP_SITES:
       return kHistogramClientName;
-    case NTPTileSource::POPULAR:
+    case TileSource::POPULAR:
       return kHistogramPopularName;
-    case NTPTileSource::WHITELIST:
+    case TileSource::WHITELIST:
       return kHistogramWhitelistName;
-    case NTPTileSource::SUGGESTIONS_SERVICE:
+    case TileSource::SUGGESTIONS_SERVICE:
       return kHistogramServerName;
   }
   NOTREACHED();
   return std::string();
 }
 
-const char* GetIconTypeSuffix(MostVisitedTileType type) {
+const char* GetIconTypeSuffix(TileVisualType type) {
   switch (type) {
-    case ICON_COLOR:
+    case TileVisualType::ICON_COLOR:
       return kIconTypeSuffixColor;
-    case ICON_DEFAULT:
+    case TileVisualType::ICON_DEFAULT:
       return kIconTypeSuffixGray;
-    case ICON_REAL:
+    case TileVisualType::ICON_REAL:
       return kIconTypeSuffixReal;
-    case NONE:                     // Fall through.
-    case NUM_RECORDED_TILE_TYPES:  // Fall through.
-    case THUMBNAIL:                // Fall through.
-    case UNKNOWN_TILE_TYPE:
+    case TileVisualType::NONE:                     // Fall through.
+    case TileVisualType::NUM_RECORDED_TILE_TYPES:  // Fall through.
+    case TileVisualType::THUMBNAIL:                // Fall through.
+    case TileVisualType::UNKNOWN_TILE_TYPE:
       break;
   }
   return nullptr;
@@ -83,8 +83,8 @@ void RecordPageImpression(const std::vector<TileImpression>& tiles,
   UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", tiles.size());
 
   for (int index = 0; index < static_cast<int>(tiles.size()); index++) {
-    NTPTileSource source = tiles[index].source;
-    MostVisitedTileType tile_type = tiles[index].type;
+    TileSource source = tiles[index].source;
+    TileVisualType tile_type = tiles[index].type;
     const GURL& url = tiles[index].url;
 
     UMA_HISTOGRAM_ENUMERATION("NewTabPage.SuggestionsImpression", index,
@@ -120,9 +120,7 @@ void RecordPageImpression(const std::vector<TileImpression>& tiles,
   }
 }
 
-void RecordTileClick(int index,
-                     NTPTileSource source,
-                     MostVisitedTileType tile_type) {
+void RecordTileClick(int index, TileSource source, TileVisualType tile_type) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, kMaxNumTiles);
 
   std::string histogram = base::StringPrintf(

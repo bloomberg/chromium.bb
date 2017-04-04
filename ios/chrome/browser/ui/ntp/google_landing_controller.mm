@@ -314,7 +314,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 - (void)reloadData;
 // Logs a histogram due to a Most Visited item being opened.
 - (void)logMostVisitedClick:(const NSUInteger)visitedIndex
-                   tileType:(ntp_tiles::metrics::MostVisitedTileType)tileType;
+                   tileType:(ntp_tiles::TileVisualType)tileType;
 // Returns the size of |_mostVisitedData|.
 - (NSUInteger)numberOfItems;
 // Returns the number of non empty tiles (as opposed to the placeholder tiles).
@@ -1053,7 +1053,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
 }
 
 - (void)logMostVisitedClick:(const NSUInteger)visitedIndex
-                   tileType:(ntp_tiles::metrics::MostVisitedTileType)tileType {
+                   tileType:(ntp_tiles::TileVisualType)tileType {
   new_tab_page_uma::RecordAction(
       _browserState, new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisited"));
@@ -1108,7 +1108,7 @@ void SearchEngineObserver::OnTemplateURLServiceChanged() {
     _recordedPageImpression = YES;
     std::vector<ntp_tiles::metrics::TileImpression> tiles;
     for (const ntp_tiles::NTPTile& ntpTile : data) {
-      tiles.emplace_back(ntpTile.source, ntp_tiles::metrics::UNKNOWN_TILE_TYPE,
+      tiles.emplace_back(ntpTile.source, ntp_tiles::UNKNOWN_TILE_TYPE,
                          ntpTile.url);
     }
     ntp_tiles::metrics::RecordPageImpression(

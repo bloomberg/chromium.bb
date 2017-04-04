@@ -6,7 +6,7 @@
 
 namespace ntp_tiles {
 
-NTPTile::NTPTile() : source(NTPTileSource::TOP_SITES) {}
+NTPTile::NTPTile() : source(TileSource::TOP_SITES) {}
 
 NTPTile::NTPTile(const NTPTile&) = default;
 

@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.suggestions;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 
-import org.chromium.chrome.browser.ntp.MostVisitedTileType;
-import org.chromium.chrome.browser.ntp.MostVisitedTileType.MostVisitedTileTypeEnum;
-import org.chromium.chrome.browser.ntp.NTPTileSource.NTPTileSourceEnum;
+import org.chromium.chrome.browser.suggestions.TileSource.TileSourceEnum;
+import org.chromium.chrome.browser.suggestions.TileVisualType.TileVisualTypeEnum;
 
 /**
  * Holds the details to populate a site suggestion tile.
@@ -20,11 +19,11 @@ public class Tile implements OfflinableSuggestion {
     private final String mWhitelistIconPath;
     private final int mIndex;
 
-    @NTPTileSourceEnum
+    @TileSourceEnum
     private final int mSource;
 
-    @MostVisitedTileTypeEnum
-    private int mType = MostVisitedTileType.NONE;
+    @TileVisualTypeEnum
+    private int mType = TileVisualType.NONE;
 
     @Nullable
     private Drawable mIcon;
@@ -38,10 +37,10 @@ public class Tile implements OfflinableSuggestion {
      * @param whitelistIconPath The path to the icon image file, if this is a whitelisted tile.
      * Empty otherwise.
      * @param index The index of this tile in the list of tiles.
-     * @param source The {@code NTPTileSource} that generated this tile.
+     * @param source The {@code TileSource} that generated this tile.
      */
     public Tile(String title, String url, String whitelistIconPath, int index,
-            @NTPTileSourceEnum int source) {
+            @TileSourceEnum int source) {
         mTitle = title;
         mUrl = url;
         mWhitelistIconPath = whitelistIconPath;
@@ -125,27 +124,26 @@ public class Tile implements OfflinableSuggestion {
 
     /**
      * @return The source of this tile. Used for metrics tracking. Valid values are listed in
-     * {@code NTPTileSource}.
+     * {@code TileSource}.
      */
-    @NTPTileSourceEnum
+    @TileSourceEnum
     public int getSource() {
         return mSource;
     }
 
     /**
-     * @return The visual type of this tile. Valid values are listed in
-     *         {@link MostVisitedTileType}.
+     * @return The visual type of this tile. Valid values are listed in {@link TileVisualType}.
      */
-    @MostVisitedTileTypeEnum
+    @TileVisualTypeEnum
     public int getType() {
         return mType;
     }
 
     /**
      * Sets the visual type of this tile. Valid values are listed in
-     * {@link MostVisitedTileType}.
+     * {@link TileVisualType}.
      */
-    public void setType(@MostVisitedTileTypeEnum int type) {
+    public void setType(@TileVisualTypeEnum int type) {
         mType = type;
     }
 

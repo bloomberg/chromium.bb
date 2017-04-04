@@ -183,5 +183,5 @@ TEST_F(InstantServiceTest, GetSuggestionFromClientSide) {
 
   auto items = instant_service_->most_visited_items_;
   ASSERT_EQ(1, (int)items.size());
-  ASSERT_EQ(ntp_tiles::NTPTileSource::TOP_SITES, items[0].source);
+  ASSERT_EQ(ntp_tiles::TileSource::TOP_SITES, items[0].source);
 }

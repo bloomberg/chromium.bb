@@ -14,7 +14,7 @@
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "chrome/renderer/instant_restricted_id_cache.h"
-#include "components/ntp_tiles/ntp_tile_source.h"
+#include "components/ntp_tiles/tile_source.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -55,11 +55,11 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Sends LogMostVisitedImpression to the browser.
   void LogMostVisitedImpression(int position,
-                                ntp_tiles::NTPTileSource tile_source);
+                                ntp_tiles::TileSource tile_source);
 
   // Sends LogMostVisitedNavigation to the browser.
   void LogMostVisitedNavigation(int position,
-                                ntp_tiles::NTPTileSource tile_source);
+                                ntp_tiles::TileSource tile_source);
 
   // Sends ChromeIdentityCheck to the browser.
   void CheckIsUserSignedInToChromeAs(const base::string16& identity);

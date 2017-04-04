@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/strings/string16.h"
-#include "components/ntp_tiles/ntp_tile_source.h"
+#include "components/ntp_tiles/tile_source.h"
 #include "url/gurl.h"
 
 // ID used by Instant code to refer to objects (e.g. Autocomplete results, Most
@@ -143,7 +143,7 @@ struct InstantMostVisitedItem {
   GURL favicon;
 
   // The source of the item, e.g. server-side or client-side.
-  ntp_tiles::NTPTileSource source;
+  ntp_tiles::TileSource source;
 };
 
 // An InstantMostVisitedItem along with its assigned restricted ID.

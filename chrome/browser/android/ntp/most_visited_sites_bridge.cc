@@ -31,9 +31,9 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaIntArray;
 using ntp_tiles::MostVisitedSites;
-using ntp_tiles::NTPTileSource;
+using ntp_tiles::TileSource;
 using ntp_tiles::NTPTilesVector;
-using ntp_tiles::metrics::MostVisitedTileType;
+using ntp_tiles::TileVisualType;
 using ntp_tiles::metrics::TileImpression;
 
 class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
@@ -139,9 +139,8 @@ void MostVisitedSitesBridge::RecordPageImpression(
 
   std::vector<TileImpression> tiles;
   for (size_t i = 0; i < int_sources.size(); i++) {
-    NTPTileSource source = static_cast<NTPTileSource>(int_sources[i]);
-    MostVisitedTileType tile_type =
-        static_cast<MostVisitedTileType>(int_tile_types[i]);
+    TileSource source = static_cast<TileSource>(int_sources[i]);
+    TileVisualType tile_type = static_cast<TileVisualType>(int_tile_types[i]);
 
     tiles.emplace_back(source, tile_type, GURL(string_tile_urls[i]));
   }
@@ -155,9 +154,8 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
     jint index,
     jint tile_type,
     jint source) {
-  ntp_tiles::metrics::RecordTileClick(
-      index, static_cast<NTPTileSource>(source),
-      static_cast<MostVisitedTileType>(tile_type));
+  ntp_tiles::metrics::RecordTileClick(index, static_cast<TileSource>(source),
+                                      static_cast<TileVisualType>(tile_type));
 }
 
 // static

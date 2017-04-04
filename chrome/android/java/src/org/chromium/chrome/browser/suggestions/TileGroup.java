@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
-import org.chromium.chrome.browser.ntp.MostVisitedTileType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -408,8 +407,8 @@ public class TileGroup implements MostVisitedSites.Observer {
                 mIconGenerator.setBackgroundColor(fallbackColor);
                 icon = mIconGenerator.generateIconForUrl(mUrl);
                 tile.setIcon(new BitmapDrawable(mContext.getResources(), icon));
-                tile.setType(isFallbackColorDefault ? MostVisitedTileType.ICON_DEFAULT
-                                                    : MostVisitedTileType.ICON_COLOR);
+                tile.setType(isFallbackColorDefault ? TileVisualType.ICON_DEFAULT
+                                                    : TileVisualType.ICON_COLOR);
             } else {
                 RoundedBitmapDrawable roundedIcon =
                         RoundedBitmapDrawableFactory.create(mContext.getResources(), icon);
@@ -421,7 +420,7 @@ public class TileGroup implements MostVisitedSites.Observer {
                 roundedIcon.setFilterBitmap(true);
 
                 tile.setIcon(roundedIcon);
-                tile.setType(MostVisitedTileType.ICON_REAL);
+                tile.setType(TileVisualType.ICON_REAL);
             }
 
             mObserver.onTileIconChanged(tile);

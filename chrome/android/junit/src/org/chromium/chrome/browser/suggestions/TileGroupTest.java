@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.Features;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.NTPTileSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -361,7 +360,7 @@ public class TileGroupTest {
                 mock(OfflinePageBridge.class), TILE_TITLE_LINES);
         tileGroup.startObserving(MAX_TILES_TO_FETCH);
         reset(mTileGroupObserver);
-        Tile tile = new Tile("title", URLS[0], "", 0, NTPTileSource.POPULAR);
+        Tile tile = new Tile("title", URLS[0], "", 0, TileSource.POPULAR);
 
         ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
         tileGroup.buildTileView(tile, layout, /* trackLoadTask = */ true, /* condensed = */ false);

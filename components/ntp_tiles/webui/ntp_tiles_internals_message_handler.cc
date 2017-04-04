@@ -98,7 +98,7 @@ void NTPTilesInternalsMessageHandler::HandleUpdate(
 
   PrefService* prefs = client_->GetPrefs();
 
-  if (most_visited_sites_->DoesSourceExist(ntp_tiles::NTPTileSource::POPULAR)) {
+  if (most_visited_sites_->DoesSourceExist(ntp_tiles::TileSource::POPULAR)) {
     popular_sites_json_.clear();
 
     std::string url;
@@ -139,7 +139,7 @@ void NTPTilesInternalsMessageHandler::HandleFetchSuggestions(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
   if (!most_visited_sites_->DoesSourceExist(
-          ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE)) {
+          ntp_tiles::TileSource::SUGGESTIONS_SERVICE)) {
     return;
   }
 
@@ -154,8 +154,7 @@ void NTPTilesInternalsMessageHandler::HandleFetchSuggestions(
 void NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
-  if (!most_visited_sites_->DoesSourceExist(
-          ntp_tiles::NTPTileSource::POPULAR)) {
+  if (!most_visited_sites_->DoesSourceExist(ntp_tiles::TileSource::POPULAR)) {
     return;
   }
 
@@ -168,19 +167,18 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
   PrefService* prefs = client_->GetPrefs();
   base::DictionaryValue value;
 
-  value.SetBoolean("topSites", most_visited_sites_->DoesSourceExist(
-                                   NTPTileSource::TOP_SITES));
-  value.SetBoolean("whitelist", most_visited_sites_->DoesSourceExist(
-                                    NTPTileSource::WHITELIST));
+  value.SetBoolean("topSites",
+                   most_visited_sites_->DoesSourceExist(TileSource::TOP_SITES));
+  value.SetBoolean("whitelist",
+                   most_visited_sites_->DoesSourceExist(TileSource::WHITELIST));
 
-  if (most_visited_sites_->DoesSourceExist(
-          NTPTileSource::SUGGESTIONS_SERVICE)) {
+  if (most_visited_sites_->DoesSourceExist(TileSource::SUGGESTIONS_SERVICE)) {
     value.SetString("suggestionsService.status", suggestions_status_);
   } else {
     value.SetBoolean("suggestionsService", false);
   }
 
-  if (most_visited_sites_->DoesSourceExist(NTPTileSource::POPULAR)) {
+  if (most_visited_sites_->DoesSourceExist(TileSource::POPULAR)) {
     auto* popular_sites = most_visited_sites_->popular_sites();
     value.SetString("popular.url", popular_sites->GetURLToFetch().spec());
     value.SetString("popular.country", popular_sites->GetCountryToFetch());

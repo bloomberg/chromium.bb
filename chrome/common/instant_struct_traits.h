@@ -15,8 +15,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(OmniboxFocusChangeReason,
 
 IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType, NTP_EVENT_TYPE_LAST)
 
-IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::NTPTileSource,
-                          ntp_tiles::NTPTileSource::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(ntp_tiles::TileSource, ntp_tiles::TileSource::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(InstantMostVisitedItem)
   IPC_STRUCT_TRAITS_MEMBER(url)

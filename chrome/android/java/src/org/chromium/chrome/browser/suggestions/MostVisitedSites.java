@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ntp.MostVisitedTileType;
-import org.chromium.chrome.browser.ntp.NTPTileSource;
 
 /**
  * Methods to provide most recent urls, titles and thumbnails.
@@ -26,7 +24,7 @@ interface MostVisitedSites {
          *             visited URLs).
          * @param whitelistIconPaths The paths to the icon image files for whitelisted tiles, empty
          *                           strings otherwise.
-         * @param sources For each tile, the {@code NTPTileSource} that generated the tile.
+         * @param sources For each tile, the {@code TileSource} that generated the tile.
          */
         @CalledByNative("Observer")
         void onMostVisitedURLsAvailable(
@@ -68,9 +66,9 @@ interface MostVisitedSites {
     /**
      * Records metrics about an impression, including the sources (local, server, ...) and visual
      * types of the tiles that are shown.
-     * @param tileTypes An array of values from MostVisitedTileType indicating the type of each
+     * @param tileTypes An array of values from {@link TileVisualType} indicating the type of each
      *                  tile that's currently showing.
-     * @param sources An array of values from NTPTileSource indicating the source of each tile
+     * @param sources An array of values from {@link TileSource} indicating the source of each tile
      *                that's currently showing.
      * @param tileUrls An array of strings indicating the URL of each tile.
      */
@@ -79,10 +77,9 @@ interface MostVisitedSites {
     /**
      * Records the opening of a Most Visited Item.
      * @param index The index of the item that was opened.
-     * @param type The visual type of the item as defined in {@code MostVisitedTileType}.
-     * @param source The {@code NTPTileSource} that generated this item.
+     * @param type The visual type of the item as defined in {@link TileVisualType}.
+     * @param source The {@link TileSource} that generated this item.
      */
-    void recordOpenedMostVisitedItem(int index,
-            @MostVisitedTileType.MostVisitedTileTypeEnum int type,
-            @NTPTileSource.NTPTileSourceEnum int source);
+    void recordOpenedMostVisitedItem(int index, @TileVisualType.TileVisualTypeEnum int type,
+            @TileSource.TileSourceEnum int source);
 }

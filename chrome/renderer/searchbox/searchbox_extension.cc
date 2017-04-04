@@ -22,7 +22,7 @@
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "components/crx_file/id_util.h"
-#include "components/ntp_tiles/ntp_tile_source.h"
+#include "components/ntp_tiles/tile_source.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -1001,10 +1001,9 @@ void SearchBoxExtensionWrapper::LogMostVisitedImpression(
 
   DVLOG(1) << render_frame << " LogMostVisitedImpression";
 
-  if (args[1]->Uint32Value() <=
-      static_cast<int>(ntp_tiles::NTPTileSource::LAST)) {
-    ntp_tiles::NTPTileSource tile_source =
-        static_cast<ntp_tiles::NTPTileSource>(args[1]->Uint32Value());
+  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST)) {
+    ntp_tiles::TileSource tile_source =
+        static_cast<ntp_tiles::TileSource>(args[1]->Uint32Value());
     SearchBox::Get(render_frame)
         ->LogMostVisitedImpression(args[0]->IntegerValue(), tile_source);
   }
@@ -1025,10 +1024,9 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
 
   DVLOG(1) << render_frame << " LogMostVisitedNavigation";
 
-  if (args[1]->Uint32Value() <=
-      static_cast<int>(ntp_tiles::NTPTileSource::LAST)) {
-    ntp_tiles::NTPTileSource tile_source =
-        static_cast<ntp_tiles::NTPTileSource>(args[1]->Uint32Value());
+  if (args[1]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST)) {
+    ntp_tiles::TileSource tile_source =
+        static_cast<ntp_tiles::TileSource>(args[1]->Uint32Value());
     SearchBox::Get(render_frame)
         ->LogMostVisitedNavigation(args[0]->IntegerValue(), tile_source);
   }

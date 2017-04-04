@@ -21,6 +21,7 @@
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/ntp_tiles/ntp_tile.h"
 #include "components/ntp_tiles/popular_sites.h"
+#include "components/ntp_tiles/tile_source.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
@@ -105,7 +106,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Returns true if this object was created with a non-null provider for the
   // given NTP tile source. That source may or may not actually provide tiles,
   // depending on its configuration and the priority of different sources.
-  bool DoesSourceExist(NTPTileSource source) const;
+  bool DoesSourceExist(TileSource source) const;
 
   // Returns the corresponding object passed at construction.
   history::TopSites* top_sites() { return top_sites_.get(); }
@@ -206,7 +207,7 @@ class MostVisitedSites : public history::TopSitesObserver,
       top_sites_observer_;
 
   // The main source of personal tiles - either TOP_SITES or SUGGESTIONS_SEVICE.
-  NTPTileSource mv_source_;
+  TileSource mv_source_;
 
   // Current set of tiles. Optional so that the observer can be notified
   // whenever it changes, including possibily an initial change from

@@ -98,7 +98,7 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
 
 void NTPUserDataLogger::LogMostVisitedImpression(
     int position,
-    ntp_tiles::NTPTileSource tile_source) {
+    ntp_tiles::TileSource tile_source) {
   if ((position >= kNumMostVisited) || impression_was_logged_[position]) {
     return;
   }
@@ -108,9 +108,9 @@ void NTPUserDataLogger::LogMostVisitedImpression(
 
 void NTPUserDataLogger::LogMostVisitedNavigation(
     int position,
-    ntp_tiles::NTPTileSource tile_source) {
+    ntp_tiles::TileSource tile_source) {
   ntp_tiles::metrics::RecordTileClick(position, tile_source,
-                                      ntp_tiles::metrics::THUMBNAIL);
+                                      ntp_tiles::TileVisualType::THUMBNAIL);
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
@@ -163,13 +163,13 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
       break;
     }
     if (impression_tile_source_[i] ==
-        ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE) {
+        ntp_tiles::TileSource::SUGGESTIONS_SERVICE) {
       has_server_side_suggestions = true;
     }
     // No URL passed since we're not interested in favicon-related Rappor
     // metrics.
     tiles.emplace_back(impression_tile_source_[i],
-                       ntp_tiles::metrics::THUMBNAIL, GURL());
+                       ntp_tiles::TileVisualType::THUMBNAIL, GURL());
   }
 
   // Not interested in Rappor metrics.

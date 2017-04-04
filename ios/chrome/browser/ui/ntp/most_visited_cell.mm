@@ -46,7 +46,7 @@ const CGFloat kMaximumHeight = 100;
   // Weak reference to the relevant BrowserState.
   ios::ChromeBrowserState* _browserState;
   // Backs property with the same name.
-  ntp_tiles::metrics::MostVisitedTileType _tileType;
+  ntp_tiles::TileVisualType _tileType;
 
   base::scoped_nsobject<UILabel> _label;
   base::scoped_nsobject<UILabel> _noIconLabel;
@@ -150,7 +150,7 @@ const CGFloat kMaximumHeight = 100;
                title:(NSString*)title
         browserState:(ios::ChromeBrowserState*)browserState {
   _browserState = browserState;
-  _tileType = ntp_tiles::metrics::NONE;
+  _tileType = ntp_tiles::TileVisualType::NONE;
   [self setText:title];
   [self setURL:URL];
   base::WeakNSObject<MostVisitedCell> weakSelf(self);
@@ -228,15 +228,15 @@ const CGFloat kMaximumHeight = 100;
       setText:base::SysUTF16ToNSString(favicon::GetFallbackIconText(_URL))];
   [_noIconLabel setTextColor:textColor];
   [_imageView setBackgroundColor:backgroundColor];
-  _tileType = isDefaultBackgroundColor ? ntp_tiles::metrics::ICON_DEFAULT
-                                       : ntp_tiles::metrics::ICON_COLOR;
+  _tileType = isDefaultBackgroundColor ? ntp_tiles::TileVisualType::ICON_DEFAULT
+                                       : ntp_tiles::TileVisualType::ICON_COLOR;
 }
 
 - (void)setImage:(UIImage*)image {
   [_imageView setBackgroundColor:nil];
   [_noIconLabel setText:nil];
   [_imageView setImage:image];
-  _tileType = ntp_tiles::metrics::ICON_REAL;
+  _tileType = ntp_tiles::TileVisualType::ICON_REAL;
 }
 
 @end

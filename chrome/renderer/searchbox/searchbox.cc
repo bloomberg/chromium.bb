@@ -267,13 +267,13 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
 }
 
 void SearchBox::LogMostVisitedImpression(int position,
-                                         ntp_tiles::NTPTileSource tile_source) {
+                                         ntp_tiles::TileSource tile_source) {
   instant_service_->LogMostVisitedImpression(page_seq_no_, position,
                                              tile_source);
 }
 
 void SearchBox::LogMostVisitedNavigation(int position,
-                                         ntp_tiles::NTPTileSource tile_source) {
+                                         ntp_tiles::TileSource tile_source) {
   instant_service_->LogMostVisitedNavigation(page_seq_no_, position,
                                              tile_source);
 }

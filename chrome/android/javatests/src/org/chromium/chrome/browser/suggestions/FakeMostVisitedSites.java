@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.ntp.NTPTileSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -89,7 +88,7 @@ public class FakeMostVisitedSites implements MostVisitedSites {
         Arrays.fill(whitelistIconPaths, "");
 
         int[] sources = new int[urls.length];
-        Arrays.fill(sources, NTPTileSource.TOP_SITES);
+        Arrays.fill(sources, TileSource.TOP_SITES);
 
         setTileSuggestions(urls, urls.clone(), whitelistIconPaths, sources);
     }

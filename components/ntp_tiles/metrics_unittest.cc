@@ -24,16 +24,15 @@ using testing::IsEmpty;
 
 TEST(RecordPageImpressionTest, ShouldRecordUmaForIcons) {
   base::HistogramTester histogram_tester;
-  RecordPageImpression(
-      {{NTPTileSource::TOP_SITES, ICON_REAL, GURL()},
-       {NTPTileSource::TOP_SITES, ICON_REAL, GURL()},
-       {NTPTileSource::TOP_SITES, ICON_REAL, GURL()},
-       {NTPTileSource::TOP_SITES, ICON_COLOR, GURL()},
-       {NTPTileSource::TOP_SITES, ICON_COLOR, GURL()},
-       {NTPTileSource::SUGGESTIONS_SERVICE, ICON_REAL, GURL()},
-       {NTPTileSource::SUGGESTIONS_SERVICE, ICON_DEFAULT, GURL()},
-       {NTPTileSource::POPULAR, ICON_COLOR, GURL()}},
-      /*rappor_service=*/nullptr);
+  RecordPageImpression({{TileSource::TOP_SITES, ICON_REAL, GURL()},
+                        {TileSource::TOP_SITES, ICON_REAL, GURL()},
+                        {TileSource::TOP_SITES, ICON_REAL, GURL()},
+                        {TileSource::TOP_SITES, ICON_COLOR, GURL()},
+                        {TileSource::TOP_SITES, ICON_COLOR, GURL()},
+                        {TileSource::SUGGESTIONS_SERVICE, ICON_REAL, GURL()},
+                        {TileSource::SUGGESTIONS_SERVICE, ICON_DEFAULT, GURL()},
+                        {TileSource::POPULAR, ICON_COLOR, GURL()}},
+                       /*rappor_service=*/nullptr);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
               ElementsAre(base::Bucket(/*min=*/8, /*count=*/1)));
   EXPECT_THAT(
@@ -71,7 +70,8 @@ TEST(RecordPageImpressionTest, ShouldRecordUmaForIcons) {
               ElementsAre(base::Bucket(/*min=*/ICON_REAL, /*count=*/3),
                           base::Bucket(/*min=*/ICON_COLOR, /*count=*/2)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.TileType.popular"),
-              ElementsAre(base::Bucket(/*min=*/ICON_COLOR, /*count=*/1)));
+              ElementsAre(base::Bucket(/*min=*/ICON_COLOR,
+                                       /*count=*/1)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.SuggestionsImpression.IconsReal"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
@@ -90,9 +90,9 @@ TEST(RecordPageImpressionTest, ShouldRecordUmaForIcons) {
 
 TEST(RecordPageImpressionTest, ShouldRecordUmaForThumbnails) {
   base::HistogramTester histogram_tester;
-  RecordPageImpression({{NTPTileSource::TOP_SITES, THUMBNAIL, GURL()},
-                        {NTPTileSource::SUGGESTIONS_SERVICE, THUMBNAIL, GURL()},
-                        {NTPTileSource::POPULAR, THUMBNAIL, GURL()}},
+  RecordPageImpression({{TileSource::TOP_SITES, THUMBNAIL, GURL()},
+                        {TileSource::SUGGESTIONS_SERVICE, THUMBNAIL, GURL()},
+                        {TileSource::POPULAR, THUMBNAIL, GURL()}},
                        /*rappor_service=*/nullptr);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
               ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
@@ -130,7 +130,7 @@ TEST(RecordPageImpressionTest, ShouldRecordUmaForThumbnails) {
 
 TEST(RecordTileClickTest, ShouldRecordUma) {
   base::HistogramTester histogram_tester;
-  RecordTileClick(3, NTPTileSource::TOP_SITES, ICON_REAL);
+  RecordTileClick(3, TileSource::TOP_SITES, ICON_REAL);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
               ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.MostVisited.server"),
@@ -150,7 +150,7 @@ TEST(RecordTileClickTest, ShouldRecordUma) {
 
 TEST(RecordTileClickTest, ShouldIgnoreThumbnails) {
   base::HistogramTester histogram_tester;
-  RecordTileClick(3, NTPTileSource::TOP_SITES, THUMBNAIL);
+  RecordTileClick(3, TileSource::TOP_SITES, THUMBNAIL);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.IconsReal"),
       IsEmpty());
@@ -166,10 +166,10 @@ TEST(RecordPageImpressionTest, ShouldRecordRappor) {
   rappor::TestRapporServiceImpl rappor_service;
 
   RecordPageImpression(
-      {{NTPTileSource::TOP_SITES, ICON_REAL, GURL("http://www.site1.com/")},
-       {NTPTileSource::TOP_SITES, ICON_COLOR, GURL("http://www.site2.com/")},
-       {NTPTileSource::TOP_SITES, ICON_DEFAULT, GURL("http://www.site3.com/")},
-       {NTPTileSource::TOP_SITES, THUMBNAIL, GURL("http://www.site4.com/")}},
+      {{TileSource::TOP_SITES, ICON_REAL, GURL("http://www.site1.com/")},
+       {TileSource::TOP_SITES, ICON_COLOR, GURL("http://www.site2.com/")},
+       {TileSource::TOP_SITES, ICON_DEFAULT, GURL("http://www.site3.com/")},
+       {TileSource::TOP_SITES, THUMBNAIL, GURL("http://www.site4.com/")}},
       &rappor_service);
 
   // Thumbnail shouldn't get reported.
