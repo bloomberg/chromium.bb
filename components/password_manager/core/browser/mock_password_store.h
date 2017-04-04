@@ -19,6 +19,9 @@ class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
 
+  bool Init(const syncer::SyncableService::StartSyncFlare& flare) override {
+    return true;
+  };
   MOCK_METHOD1(RemoveLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(GetLogins,
                void(const PasswordStore::FormDigest&, PasswordStoreConsumer*));

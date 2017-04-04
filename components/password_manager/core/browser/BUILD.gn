@@ -77,8 +77,6 @@ static_library("browser") {
     "login_database_win.cc",
     "login_model.cc",
     "login_model.h",
-    "obsolete_http_cleaner.cc",
-    "obsolete_http_cleaner.h",
     "password_autofill_manager.cc",
     "password_autofill_manager.h",
     "password_bubble_experiment.cc",
@@ -175,6 +173,15 @@ static_library("browser") {
     "//url",
   ]
 
+  if (!is_ios) {
+    sources += [
+      "hsts_query.cc",
+      "hsts_query.h",
+      "http_data_cleaner.cc",
+      "http_data_cleaner.h",
+    ]
+  }
+
   if (is_mac || is_ios) {
     sources -= [ "login_database_posix.cc" ]
   }
@@ -231,6 +238,7 @@ static_library("test_support") {
   deps = [
     "//base",
     "//components/autofill/core/common",
+    "//net:net",
     "//testing/gtest",
   ]
 }
@@ -296,7 +304,6 @@ source_set("unit_tests") {
     "log_router_unittest.cc",
     "login_database_unittest.cc",
     "login_model_unittest.cc",
-    "obsolete_http_cleaner_unittest.cc",
     "password_autofill_manager_unittest.cc",
     "password_bubble_experiment_unittest.cc",
     "password_form_manager_unittest.cc",
@@ -318,6 +325,11 @@ source_set("unit_tests") {
   }
   if (is_ios) {
     sources += [ "login_database_ios_unittest.cc" ]
+  } else {
+    sources += [
+      "hsts_query_unittest.cc",
+      "http_data_cleaner_unittest.cc",
+    ]
   }
   if (password_reuse_detection_support) {
     sources += [

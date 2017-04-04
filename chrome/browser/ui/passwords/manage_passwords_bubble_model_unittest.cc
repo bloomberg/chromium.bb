@@ -110,7 +110,6 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
         password_manager::BuildPasswordStore<
             content::BrowserContext,
             testing::StrictMock<password_manager::MockPasswordStore>>);
-    EXPECT_CALL(*GetStore(), FillAutofillableLogins(_));
   }
 
   void TearDown() override {

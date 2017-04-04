@@ -59,6 +59,9 @@ extern const char kPasswordManagerSavingEnabled[];
 // prompt was shown or not.
 extern const char kWasAutoSignInFirstRunExperienceShown[];
 
+// Boolean that indicated if obsolete HTTP data has been cleaned in the past.
+extern const char kWasObsoleteHttpDataCleaned[];
+
 // Boolean that indicated if user interacted with the Chrome Sign in promo.
 extern const char kWasSignInPasswordPromoClicked[];
 
