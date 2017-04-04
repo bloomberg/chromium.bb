@@ -8,10 +8,10 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/SparseHeapBitmap.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

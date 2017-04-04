@@ -5,9 +5,9 @@
 #ifndef Member_h
 #define Member_h
 
-#include "wtf/Allocator.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashTraits.h"
 
 namespace blink {
 

@@ -9,8 +9,8 @@
 #include "platform/heap/Member.h"
 #include "platform/heap/PersistentNode.h"
 #include "platform/heap/Visitor.h"
-#include "wtf/Allocator.h"
-#include "wtf/Atomics.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Atomics.h"
 
 namespace blink {
 

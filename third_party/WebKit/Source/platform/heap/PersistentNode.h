@@ -5,13 +5,13 @@
 #ifndef PersistentNode_h
 #define PersistentNode_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/heap/ThreadState.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

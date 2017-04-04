@@ -39,10 +39,10 @@
 #include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
 #include "platform/heap/VisitorImpl.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 #if defined(LEAK_SANITIZER)
-#include "wtf/LeakAnnotations.h"
+#include "platform/wtf/LeakAnnotations.h"
 #endif
 
 namespace blink {

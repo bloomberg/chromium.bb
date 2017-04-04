@@ -6,11 +6,11 @@
 
 #include "platform/heap/Handle.h"
 #include "platform/heap/SparseHeapBitmap.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/LinkedHashSet.h"
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Deque.h"
-#include "wtf/HashMap.h"
-#include "wtf/LinkedHashSet.h"
-#include "wtf/Vector.h"
 
 #include <memory>
 

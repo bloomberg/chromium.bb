@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "platform/heap/CallbackStack.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

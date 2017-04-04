@@ -6,7 +6,7 @@
 #define WrapperVisitor_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace v8 {
 class Value;

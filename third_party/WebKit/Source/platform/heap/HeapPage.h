@@ -38,12 +38,12 @@
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
-#include "wtf/AddressSanitizer.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/ContainerAnnotations.h"
-#include "wtf/Forward.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/AddressSanitizer.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/ContainerAnnotations.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

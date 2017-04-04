@@ -31,14 +31,14 @@
 #ifndef Visitor_h
 #define Visitor_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/heap/GarbageCollected.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Forward.h"
-#include "wtf/HashTraits.h"
-#include "wtf/TypeTraits.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/TypeTraits.h"
 
 namespace blink {
 

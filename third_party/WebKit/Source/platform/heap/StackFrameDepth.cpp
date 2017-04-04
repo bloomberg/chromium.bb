@@ -4,8 +4,8 @@
 
 #include "platform/heap/StackFrameDepth.h"
 
+#include "platform/wtf/StackUtil.h"
 #include "public/platform/Platform.h"
-#include "wtf/StackUtil.h"
 
 #if OS(WIN)
 #include <stddef.h>

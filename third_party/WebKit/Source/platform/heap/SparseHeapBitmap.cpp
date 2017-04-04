@@ -5,7 +5,7 @@
 #include "platform/heap/SparseHeapBitmap.h"
 
 #include "platform/heap/Heap.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -11,9 +11,9 @@
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/Threading.h"
 #include "public/platform/Platform.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/Threading.h"
 
 namespace blink {
 namespace {

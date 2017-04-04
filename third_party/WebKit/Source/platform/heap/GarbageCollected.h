@@ -6,9 +6,9 @@
 #define GarbageCollected_h
 
 #include "platform/heap/ThreadState.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/TypeTraits.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/TypeTraits.h"
 
 namespace blink {
 

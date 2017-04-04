@@ -8,7 +8,7 @@
 // BlinkGC.h is a file that defines common things used by Blink GC.
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

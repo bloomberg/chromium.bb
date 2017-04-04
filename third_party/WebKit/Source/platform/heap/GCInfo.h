@@ -6,18 +6,18 @@
 #define GCInfo_h
 
 #include "platform/heap/Visitor.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
-#include "wtf/Deque.h"
-#include "wtf/HashCountedSet.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/HashTable.h"
-#include "wtf/LinkedHashSet.h"
-#include "wtf/ListHashSet.h"
-#include "wtf/TypeTraits.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Atomics.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/HashCountedSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/HashTable.h"
+#include "platform/wtf/LinkedHashSet.h"
+#include "platform/wtf/ListHashSet.h"
+#include "platform/wtf/TypeTraits.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

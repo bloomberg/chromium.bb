@@ -43,13 +43,13 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/AutoReset.h"
+#include "platform/wtf/ContainerAnnotations.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/LeakAnnotations.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/Platform.h"
-#include "wtf/Assertions.h"
-#include "wtf/AutoReset.h"
-#include "wtf/ContainerAnnotations.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/LeakAnnotations.h"
-#include "wtf/allocator/Partitions.h"
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
 // FIXME: have ContainerAnnotations.h define an ENABLE_-style name instead.

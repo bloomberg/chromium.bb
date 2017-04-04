@@ -5,12 +5,12 @@
 #ifndef SparseHeapBitmap_h
 #define SparseHeapBitmap_h
 
-#include "platform/heap/BlinkGC.h"
-#include "platform/heap/HeapPage.h"
-#include "wtf/Alignment.h"
-#include "wtf/PtrUtil.h"
 #include <bitset>
 #include <memory>
+#include "platform/heap/BlinkGC.h"
+#include "platform/heap/HeapPage.h"
+#include "platform/wtf/Alignment.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

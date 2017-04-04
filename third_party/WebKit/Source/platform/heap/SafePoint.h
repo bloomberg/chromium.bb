@@ -6,7 +6,7 @@
 #define SafePoint_h
 
 #include "platform/heap/ThreadState.h"
-#include "wtf/ThreadingPrimitives.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

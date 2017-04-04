@@ -6,10 +6,10 @@
 #define PageMemory_h
 
 #include "platform/heap/HeapPage.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Compiler.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace blink {
 

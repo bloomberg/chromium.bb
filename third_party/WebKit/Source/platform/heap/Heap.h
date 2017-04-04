@@ -31,6 +31,7 @@
 #ifndef Heap_h
 #define Heap_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/HeapPage.h"
@@ -38,12 +39,11 @@
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
-#include "wtf/AddressSanitizer.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
-#include "wtf/Forward.h"
-#include <memory>
+#include "platform/wtf/AddressSanitizer.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Atomics.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

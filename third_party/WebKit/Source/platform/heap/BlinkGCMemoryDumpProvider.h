@@ -8,9 +8,9 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
-#include "wtf/Allocator.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace base {
 namespace trace_event {

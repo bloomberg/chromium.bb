@@ -6,8 +6,8 @@
 #define HeapTerminatedArray_h
 
 #include "platform/heap/Heap.h"
-#include "wtf/TerminatedArray.h"
-#include "wtf/TerminatedArrayBuilder.h"
+#include "platform/wtf/TerminatedArray.h"
+#include "platform/wtf/TerminatedArrayBuilder.h"
 
 namespace blink {
 

@@ -7,10 +7,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
-#include "wtf/DataLog.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/DataLog.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
 
 #include <bitset>
 #include <utility>

@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <algorithm>
+#include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Handle.h"
@@ -39,14 +41,12 @@
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "platform/testing/UnitTestHelpers.h"
+#include "platform/wtf/HashTraits.h"
+#include "platform/wtf/LinkedHashSet.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/HashTraits.h"
-#include "wtf/LinkedHashSet.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

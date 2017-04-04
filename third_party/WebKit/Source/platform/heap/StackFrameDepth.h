@@ -5,11 +5,11 @@
 #ifndef StackFrameDepth_h
 #define StackFrameDepth_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include <cstddef>
 #include <stdint.h>
+#include <cstddef>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

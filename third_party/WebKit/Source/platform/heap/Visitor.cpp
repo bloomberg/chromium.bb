@@ -4,11 +4,11 @@
 
 #include "platform/heap/Visitor.h"
 
+#include <memory>
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/VisitorImpl.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

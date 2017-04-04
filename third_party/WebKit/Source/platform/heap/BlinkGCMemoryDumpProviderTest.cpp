@@ -5,9 +5,9 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 
 #include "base/trace_event/process_memory_dump.h"
+#include "platform/wtf/Threading.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Threading.h"
 
 namespace blink {
 

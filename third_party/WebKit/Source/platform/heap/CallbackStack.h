@@ -6,10 +6,10 @@
 #define CallbackStack_h
 
 #include "platform/heap/BlinkGC.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 
 namespace blink {
 

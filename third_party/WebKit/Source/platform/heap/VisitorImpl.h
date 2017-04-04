@@ -8,7 +8,7 @@
 #include "platform/heap/Heap.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

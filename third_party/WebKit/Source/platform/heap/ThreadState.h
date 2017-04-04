@@ -31,20 +31,20 @@
 #ifndef ThreadState_h
 #define ThreadState_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/ThreadingTraits.h"
+#include "platform/wtf/AddressSanitizer.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Functional.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/WebThread.h"
-#include "wtf/AddressSanitizer.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Functional.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
-#include <memory>
 
 namespace v8 {
 class Isolate;

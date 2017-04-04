@@ -30,6 +30,8 @@
 
 #include "platform/heap/ThreadState.h"
 
+#include <v8.h>
+#include <memory>
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -45,18 +47,16 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "platform/wtf/CurrentTime.h"
+#include "platform/wtf/DataLog.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StackUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/allocator/Partitions.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/CurrentTime.h"
-#include "wtf/DataLog.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StackUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/allocator/Partitions.h"
-#include <memory>
-#include <v8.h>
 
 #if OS(WIN)
 #include <stddef.h>
