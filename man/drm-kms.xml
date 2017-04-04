@@ -309,8 +309,8 @@ static int modeset_find_crtc(int fd, drmModeRes *res, drmModeConnector *conn)
   <refsect1>
     <title>Reporting Bugs</title>
     <para>Bugs in this manual should be reported to
-          http://bugs.freedesktop.org under the "Mesa" product, with "Other" or
-          "libdrm" as the component.</para>
+          http://bugs.freedesktop.org under the "Mesa" product, with "Other"
+          as the component.</para>
   </refsect1>
 
   <refsect1>
