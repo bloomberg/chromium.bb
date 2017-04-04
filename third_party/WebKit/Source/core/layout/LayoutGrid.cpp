@@ -25,6 +25,8 @@
 
 #include "core/layout/LayoutGrid.h"
 
+#include <algorithm>
+#include <memory>
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/TextAutosizer.h"
@@ -33,9 +35,8 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/GridArea.h"
 #include "platform/LengthFunctions.h"
+#include "platform/text/WritingMode.h"
 #include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 
@@ -167,19 +168,44 @@ void LayoutGrid::computeTrackSizesForDefiniteSize(
 
 void LayoutGrid::repeatTracksSizingIfNeeded(LayoutUnit availableSpaceForColumns,
                                             LayoutUnit availableSpaceForRows) {
+  // Baseline alignment may change item's intrinsic size, hence changing its
+  // min-content contribution.
+  // https://drafts.csswg.org/css-align-3/#baseline-align-content
+  // https://drafts.csswg.org/css-align-3/#baseline-align-self
+  bool baselineAffectIntrinsicWidth = baselineMayAffectIntrinsicWidth();
+  bool baselineAffectIntrinsicHeight = baselineMayAffectIntrinsicHeight();
+
   // In orthogonal flow cases column track's size is determined by using the
   // computed row track's size, which it was estimated during the first cycle of
   // the sizing algorithm.
-  // Hence we need to repeat computeUsedBreadthOfGridTracks for both, columns
-  // and rows, to determine the final values.
-  // TODO (lajava): orthogonal flows is just one of the cases which may require
+  bool hasAnyOrthogonal =
+      m_trackSizingAlgorithm.grid().hasAnyOrthogonalGridItem();
+
+  // TODO (lajava): these are just some of the cases which may require
   // a new cycle of the sizing algorithm; there may be more. In addition, not
   // all the cases with orthogonal flows require this extra cycle; we need a
   // more specific condition to detect whether child's min-content contribution
   // has changed or not.
-  if (m_grid.hasAnyOrthogonalGridItem()) {
-    computeTrackSizesForDefiniteSize(ForColumns, availableSpaceForColumns);
-    computeTrackSizesForDefiniteSize(ForRows, availableSpaceForRows);
+  if (!baselineAffectIntrinsicWidth && !baselineAffectIntrinsicHeight &&
+      !hasAnyOrthogonal)
+    return;
+
+  // TODO (lajava): Whenever the min-content contribution of a grid item changes
+  // we may need to update the grid container's intrinsic width. The new
+  // intrinsic width may also affect the extra Track Sizing algorithm cycles we
+  // are about to execute.
+  // https://crbug.com/704713
+  // https://github.com/w3c/csswg-drafts/issues/1039
+
+  // Hence we need to repeat computeUsedBreadthOfGridTracks for both, columns
+  // and rows, to determine the final values.
+  computeTrackSizesForDefiniteSize(ForColumns, availableSpaceForColumns);
+  computeTrackSizesForDefiniteSize(ForRows, availableSpaceForRows);
+
+  if (baselineAffectIntrinsicHeight) {
+    setLogicalHeight(computeTrackBasedLogicalHeight() +
+                     borderAndPaddingLogicalHeight() +
+                     scrollbarLogicalHeight());
   }
 }
 
@@ -192,6 +218,9 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
       (!m_grid.needsItemsPlacement() || !posChildNeedsLayout()) &&
       simplifiedLayout())
     return;
+
+  m_rowAxisAlignmentContext.clear();
+  m_colAxisAlignmentContext.clear();
 
   SubtreeLayoutScope layoutScope(*this);
 
@@ -258,6 +287,15 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
       m_trackSizingAlgorithm.freeSpace(ForRows) =
           logicalHeight() - trackBasedLogicalHeight;
     }
+
+    // TODO (lajava): We need to compute baselines after step 2 so
+    // items with a relative size (percentages) can resolve it before
+    // determining its baseline. However, we only set item's grid area
+    // (via override sizes) as part of the content-sized tracks sizing
+    // logic. Hence, items located at fixed or flexible tracks can't
+    // resolve correctly their size at this stage, which may lead to
+    // an incorrect computation of their shared context's baseline.
+    computeBaselineAlignmentContext();
 
     // 3- If the min-content contribution of any grid items have changed based
     // on the row sizes calculated in step 2, steps 1 and 2 are repeated with
@@ -1580,8 +1618,6 @@ static int synthesizedBaselineFromBorderBox(const LayoutBox& box,
       .toInt();
 }
 
-// TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
-// refactored somehow.
 int LayoutGrid::baselinePosition(FontBaseline,
                                  bool,
                                  LineDirectionMode direction,
@@ -1593,11 +1629,6 @@ int LayoutGrid::baselinePosition(FontBaseline,
     baseline = synthesizedBaselineFromContentBox(*this, direction);
 
   return baseline + beforeMarginInLineDirection(direction);
-}
-
-bool LayoutGrid::isInlineBaselineAlignedChild(const LayoutBox* child) const {
-  return alignSelfForChild(*child).position() == ItemPositionBaseline &&
-         !isOrthogonalChild(*child) && !hasAutoMarginsInColumnAxis(*child);
 }
 
 int LayoutGrid::firstLineBoxBaseline() const {
@@ -1612,8 +1643,8 @@ int LayoutGrid::firstLineBoxBaseline() const {
     for (size_t index = 0; index < m_grid.cell(0, column).size(); index++) {
       const LayoutBox* child = m_grid.cell(0, column)[index];
       DCHECK(!child->isOutOfFlowPositioned());
-      // If an item participates in baseline alignmen, we select such item.
-      if (isInlineBaselineAlignedChild(child)) {
+      // If an item participates in baseline alignment, we select such item.
+      if (isBaselineAlignmentForChild(*child)) {
         // TODO (lajava): self-baseline and content-baseline alignment
         // still not implemented.
         baselineChild = child;
@@ -1661,6 +1692,199 @@ int LayoutGrid::inlineBlockBaseline(LineDirectionMode direction) const {
   int marginHeight =
       (direction == HorizontalLine ? marginTop() : marginRight()).toInt();
   return synthesizedBaselineFromContentBox(*this, direction) + marginHeight;
+}
+
+bool LayoutGrid::isHorizontalGridAxis(GridAxis axis) const {
+  return axis == GridRowAxis ? isHorizontalWritingMode()
+                             : !isHorizontalWritingMode();
+}
+
+bool LayoutGrid::isParallelToBlockAxisForChild(const LayoutBox& child,
+                                               GridAxis axis) const {
+  return axis == GridColumnAxis ? !isOrthogonalChild(child)
+                                : isOrthogonalChild(child);
+}
+
+bool LayoutGrid::isDescentBaselineForChild(const LayoutBox& child,
+                                           GridAxis baselineAxis) const {
+  return isHorizontalGridAxis(baselineAxis) &&
+         ((child.styleRef().isFlippedBlocksWritingMode() &&
+           !styleRef().isFlippedBlocksWritingMode()) ||
+          (child.styleRef().isFlippedLinesWritingMode() &&
+           styleRef().isFlippedBlocksWritingMode()));
+}
+
+bool LayoutGrid::isBaselineAlignmentForChild(const LayoutBox& child,
+                                             GridAxis baselineAxis) const {
+  bool isColumnAxisBaseline = baselineAxis == GridColumnAxis;
+  ItemPosition align = isColumnAxisBaseline
+                           ? alignSelfForChild(child).position()
+                           : justifySelfForChild(child).position();
+  bool hasAutoMargins = isColumnAxisBaseline ? hasAutoMarginsInColumnAxis(child)
+                                             : hasAutoMarginsInRowAxis(child);
+  return isBaselinePosition(align) && !hasAutoMargins;
+}
+
+const BaselineGroup& LayoutGrid::getBaselineGroupForChild(
+    const LayoutBox& child,
+    GridAxis baselineAxis) const {
+  DCHECK(isBaselineAlignmentForChild(child, baselineAxis));
+  auto& grid = m_trackSizingAlgorithm.grid();
+  bool isColumnAxisBaseline = baselineAxis == GridColumnAxis;
+  bool isRowAxisContext = isColumnAxisBaseline;
+  const auto& span = isRowAxisContext ? grid.gridItemSpan(child, ForRows)
+                                      : grid.gridItemSpan(child, ForColumns);
+  auto& contextsMap =
+      isRowAxisContext ? m_rowAxisAlignmentContext : m_colAxisAlignmentContext;
+  auto* context = contextsMap.at(span.startLine());
+  DCHECK(context);
+  ItemPosition align = isColumnAxisBaseline
+                           ? alignSelfForChild(child).position()
+                           : justifySelfForChild(child).position();
+  return context->getSharedGroup(child, align);
+}
+
+LayoutUnit LayoutGrid::marginOverForChild(const LayoutBox& child,
+                                          GridAxis axis) const {
+  return isHorizontalGridAxis(axis) ? child.marginRight() : child.marginTop();
+}
+
+LayoutUnit LayoutGrid::marginUnderForChild(const LayoutBox& child,
+                                           GridAxis axis) const {
+  return isHorizontalGridAxis(axis) ? child.marginLeft() : child.marginBottom();
+}
+
+LayoutUnit LayoutGrid::logicalAscentForChild(const LayoutBox& child,
+                                             GridAxis baselineAxis) const {
+  LayoutUnit ascent = ascentForChild(child, baselineAxis);
+  return isDescentBaselineForChild(child, baselineAxis)
+             ? descentForChild(child, ascent, baselineAxis)
+             : ascent;
+}
+
+LayoutUnit LayoutGrid::ascentForChild(const LayoutBox& child,
+                                      GridAxis baselineAxis) const {
+  LayoutUnit margin = isDescentBaselineForChild(child, baselineAxis)
+                          ? marginUnderForChild(child, baselineAxis)
+                          : marginOverForChild(child, baselineAxis);
+  int baseline = isParallelToBlockAxisForChild(child, baselineAxis)
+                     ? child.firstLineBoxBaseline()
+                     : -1;
+  // We take border-box's under edge if no valid baseline.
+  if (baseline == -1) {
+    if (isHorizontalGridAxis(baselineAxis)) {
+      return styleRef().isFlippedBlocksWritingMode()
+                 ? child.size().width().toInt() + margin
+                 : margin;
+    }
+    return child.size().height() + margin;
+  }
+  return LayoutUnit(baseline) + margin;
+}
+
+LayoutUnit LayoutGrid::descentForChild(const LayoutBox& child,
+                                       LayoutUnit ascent,
+                                       GridAxis baselineAxis) const {
+  if (isParallelToBlockAxisForChild(child, baselineAxis))
+    return child.marginLogicalHeight() + child.logicalHeight() - ascent;
+  return child.marginLogicalWidth() + child.logicalWidth() - ascent;
+}
+
+bool LayoutGrid::isBaselineContextComputed(GridAxis baselineAxis) const {
+  return baselineAxis == GridColumnAxis ? !m_rowAxisAlignmentContext.isEmpty()
+                                        : !m_colAxisAlignmentContext.isEmpty();
+}
+
+bool LayoutGrid::baselineMayAffectIntrinsicWidth() const {
+  if (!styleRef().logicalWidth().isIntrinsicOrAuto())
+    return false;
+  for (const auto& context : m_colAxisAlignmentContext) {
+    for (const auto& group : context.value->sharedGroups()) {
+      if (group.size() > 1)
+        return true;
+    }
+  }
+  return false;
+}
+
+bool LayoutGrid::baselineMayAffectIntrinsicHeight() const {
+  if (!styleRef().logicalHeight().isIntrinsicOrAuto())
+    return false;
+  for (const auto& context : m_rowAxisAlignmentContext) {
+    for (const auto& group : context.value->sharedGroups()) {
+      if (group.size() > 1)
+        return true;
+    }
+  }
+  return false;
+}
+
+void LayoutGrid::computeBaselineAlignmentContext() {
+  for (auto* child = firstInFlowChildBox(); child;
+       child = child->nextInFlowSiblingBox()) {
+    updateBaselineAlignmentContextIfNeeded(*child, GridRowAxis);
+    updateBaselineAlignmentContextIfNeeded(*child, GridColumnAxis);
+  }
+}
+
+void LayoutGrid::updateBaselineAlignmentContextIfNeeded(LayoutBox& child,
+                                                        GridAxis baselineAxis) {
+  // TODO (lajava): We must ensure this method is not called as part of an
+  // intrinsic size computation.
+  if (!isBaselineAlignmentForChild(child, baselineAxis))
+    return;
+
+  child.layoutIfNeeded();
+
+  // Determine Ascent and Descent values of this child with respect to
+  // its grid container.
+  LayoutUnit ascent = ascentForChild(child, baselineAxis);
+  LayoutUnit descent = descentForChild(child, ascent, baselineAxis);
+  if (isDescentBaselineForChild(child, baselineAxis))
+    std::swap(ascent, descent);
+
+  // Looking up for a shared alignment context perpendicular to the
+  // baseline axis.
+  auto& grid = m_trackSizingAlgorithm.grid();
+  bool isColumnAxisBaseline = baselineAxis == GridColumnAxis;
+  bool isRowAxisContext = isColumnAxisBaseline;
+  const auto& span = isRowAxisContext ? grid.gridItemSpan(child, ForRows)
+                                      : grid.gridItemSpan(child, ForColumns);
+  auto& contextsMap =
+      isRowAxisContext ? m_rowAxisAlignmentContext : m_colAxisAlignmentContext;
+  auto addResult = contextsMap.insert(span.startLine(), nullptr);
+
+  // Looking for a compatible baseline-sharing group.
+  ItemPosition align = isColumnAxisBaseline
+                           ? alignSelfForChild(child).position()
+                           : justifySelfForChild(child).position();
+  if (addResult.isNewEntry) {
+    addResult.storedValue->value =
+        WTF::makeUnique<BaselineContext>(child, align, ascent, descent);
+  } else {
+    auto* context = addResult.storedValue->value.get();
+    context->updateSharedGroup(child, align, ascent, descent);
+  }
+}
+
+LayoutUnit LayoutGrid::columnAxisBaselineOffsetForChild(
+    const LayoutBox& child) const {
+  if (!isBaselineAlignmentForChild(child, GridColumnAxis))
+    return LayoutUnit();
+  auto& group = getBaselineGroupForChild(child, GridColumnAxis);
+  if (group.size() > 1)
+    return group.maxAscent() - logicalAscentForChild(child, GridColumnAxis);
+  return LayoutUnit();
+}
+
+LayoutUnit LayoutGrid::rowAxisBaselineOffsetForChild(
+    const LayoutBox& child) const {
+  if (!isBaselineAlignmentForChild(child, GridRowAxis))
+    return LayoutUnit();
+  auto& group = getBaselineGroupForChild(child, GridRowAxis);
+  if (group.size() > 1)
+    return group.maxAscent() - logicalAscentForChild(child, GridRowAxis);
+  return LayoutUnit();
 }
 
 GridAxisPosition LayoutGrid::columnAxisPositionForChild(
@@ -1732,8 +1956,6 @@ GridAxisPosition LayoutGrid::columnAxisPositionForChild(
       return GridAxisStart;
     case ItemPositionBaseline:
     case ItemPositionLastBaseline:
-      // FIXME: These two require implementing Baseline Alignment. For now, we
-      // always 'start' align the child. crbug.com/234191
       return GridAxisStart;
     case ItemPositionAuto:
     case ItemPositionNormal:
@@ -1811,8 +2033,6 @@ GridAxisPosition LayoutGrid::rowAxisPositionForChild(
       return GridAxisStart;
     case ItemPositionBaseline:
     case ItemPositionLastBaseline:
-      // FIXME: These two require implementing Baseline Alignment. For now, we
-      // always 'start' align the child. crbug.com/234191
       return GridAxisStart;
     case ItemPositionAuto:
     case ItemPositionNormal:
@@ -1834,7 +2054,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const {
   GridAxisPosition axisPosition = columnAxisPositionForChild(child);
   switch (axisPosition) {
     case GridAxisStart:
-      return startPosition;
+      return startPosition + columnAxisBaselineOffsetForChild(child);
     case GridAxisEnd:
     case GridAxisCenter: {
       size_t childEndLine = rowsSpan.endLine();
@@ -1876,7 +2096,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const {
   GridAxisPosition axisPosition = rowAxisPositionForChild(child);
   switch (axisPosition) {
     case GridAxisStart:
-      return startPosition;
+      return startPosition + rowAxisBaselineOffsetForChild(child);
     case GridAxisEnd:
     case GridAxisCenter: {
       size_t childEndLine = columnsSpan.endLine();

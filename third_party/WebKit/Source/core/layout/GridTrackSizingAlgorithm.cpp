@@ -276,6 +276,13 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::logicalHeightForChild(
     child.clearOverrideLogicalContentHeight();
 
   child.layoutIfNeeded();
+  GridAxis baselineAxis =
+      layoutGrid()->isOrthogonalChild(child) ? GridRowAxis : GridColumnAxis;
+  if (layoutGrid()->isBaselineAlignmentForChild(child, baselineAxis) &&
+      layoutGrid()->isBaselineContextComputed(baselineAxis)) {
+    auto& group = layoutGrid()->getBaselineGroupForChild(child, baselineAxis);
+    return group.maxAscent() + group.maxDescent();
+  }
   return child.logicalHeight() + child.marginLogicalHeight();
 }
 
@@ -302,6 +309,16 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::minContentForChild(
                                   InlineDirection, layoutGrid(), child)
                             : child.marginLogicalWidth();
     return child.minPreferredLogicalWidth() + marginLogicalWidth;
+  }
+
+  if (direction() == ForColumns &&
+      m_algorithm.m_sizingOperation == IntrinsicSizeComputation) {
+    DCHECK(layoutGrid()->isOrthogonalChild(child));
+    if (layoutGrid()->isBaselineAlignmentForChild(child, GridRowAxis) &&
+        layoutGrid()->isBaselineContextComputed(GridRowAxis)) {
+      auto& group = layoutGrid()->getBaselineGroupForChild(child, GridRowAxis);
+      return group.maxAscent() + group.maxDescent();
+    }
   }
 
   if (updateOverrideContainingBlockContentSizeForChild(child,

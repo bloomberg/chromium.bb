@@ -26,12 +26,13 @@
 #ifndef LayoutGrid_h
 #define LayoutGrid_h
 
+#include <memory>
+#include "core/layout/BaselineAlignment.h"
 #include "core/layout/Grid.h"
 #include "core/layout/GridTrackSizingAlgorithm.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
 #include "core/style/GridPositionsResolver.h"
-#include <memory>
 
 namespace blink {
 
@@ -40,6 +41,7 @@ struct GridArea;
 struct GridSpan;
 
 enum GridAxisPosition { GridAxisStart, GridAxisEnd, GridAxisCenter };
+enum GridAxis { GridRowAxis, GridColumnAxis };
 
 class LayoutGrid final : public LayoutBlock {
  public:
@@ -95,6 +97,11 @@ class LayoutGrid final : public LayoutBlock {
                          SizingOperation) const;
   bool cachedHasDefiniteLogicalHeight() const;
   bool isOrthogonalChild(const LayoutBox&) const;
+  bool isBaselineContextComputed(GridAxis) const;
+  bool isBaselineAlignmentForChild(const LayoutBox&,
+                                   GridAxis = GridColumnAxis) const;
+  const BaselineGroup& getBaselineGroupForChild(const LayoutBox&,
+                                                GridAxis) const;
 
  protected:
   ItemPosition selfAlignmentNormalBehavior(
@@ -230,7 +237,26 @@ class LayoutGrid final : public LayoutBlock {
       LinePositionMode = PositionOnContainingLine) const override;
   int firstLineBoxBaseline() const override;
   int inlineBlockBaseline(LineDirectionMode) const override;
-  bool isInlineBaselineAlignedChild(const LayoutBox* child) const;
+
+  bool isHorizontalGridAxis(GridAxis) const;
+  bool isParallelToBlockAxisForChild(const LayoutBox&, GridAxis) const;
+  bool isDescentBaselineForChild(const LayoutBox&, GridAxis) const;
+
+  LayoutUnit marginOverForChild(const LayoutBox&, GridAxis) const;
+  LayoutUnit marginUnderForChild(const LayoutBox&, GridAxis) const;
+  LayoutUnit logicalAscentForChild(const LayoutBox&, GridAxis) const;
+  LayoutUnit ascentForChild(const LayoutBox&, GridAxis) const;
+  LayoutUnit descentForChild(const LayoutBox&,
+                             LayoutUnit ascent,
+                             GridAxis) const;
+
+  bool baselineMayAffectIntrinsicWidth() const;
+  bool baselineMayAffectIntrinsicHeight() const;
+  void computeBaselineAlignmentContext();
+  void updateBaselineAlignmentContextIfNeeded(LayoutBox&, GridAxis);
+
+  LayoutUnit columnAxisBaselineOffsetForChild(const LayoutBox&) const;
+  LayoutUnit rowAxisBaselineOffsetForChild(const LayoutBox&) const;
 
   LayoutUnit gridGapForDirection(GridTrackSizingDirection,
                                  SizingOperation) const;
@@ -242,6 +268,15 @@ class LayoutGrid final : public LayoutBlock {
       GridTrackSizingDirection) const;
 
   size_t numTracks(GridTrackSizingDirection, const Grid&) const;
+
+  typedef HashMap<unsigned,
+                  std::unique_ptr<BaselineContext>,
+                  DefaultHash<unsigned>::Hash,
+                  WTF::UnsignedWithZeroKeyHashTraits<unsigned>>
+      BaselineContextsMap;
+
+  BaselineContextsMap m_rowAxisAlignmentContext;
+  BaselineContextsMap m_colAxisAlignmentContext;
 
   Grid m_grid;
   GridTrackSizingAlgorithm m_trackSizingAlgorithm;

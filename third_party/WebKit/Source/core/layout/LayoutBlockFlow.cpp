@@ -2529,7 +2529,9 @@ int LayoutBlockFlow::lineCount(const RootInlineBox* stopRootInlineBox) const {
 }
 
 int LayoutBlockFlow::firstLineBoxBaseline() const {
-  if (isWritingModeRoot() && !isRubyRun())
+  // Orthogonal grid items can participante in baseline alignment along column
+  // axis.
+  if (isWritingModeRoot() && !isRubyRun() && !isGridItem())
     return -1;
   if (!childrenInline())
     return LayoutBlock::firstLineBoxBaseline();
@@ -2538,6 +2540,18 @@ int LayoutBlockFlow::firstLineBoxBaseline() const {
     DCHECK(fontData);
     if (!fontData)
       return -1;
+    // fontMetrics 'ascent' is the distance above the baseline to the 'over'
+    // edge, which is 'top' for horizontal and 'right' for vertical-lr and
+    // vertical-rl. However, firstLineBox()->logicalTop() gives the offset from
+    // the 'left' edge for vertical-lr, hence we need to use the Font Metrics
+    // 'descent' instead. The result should be handled accordingly by the caller
+    // as a 'descent' value, in order to compute properly the max baseline.
+    if (styleRef().isFlippedLinesWritingMode()) {
+      return (firstLineBox()->logicalTop() +
+              fontData->getFontMetrics().descent(
+                  firstRootBox()->baselineType()))
+          .toInt();
+    }
     return (firstLineBox()->logicalTop() +
             fontData->getFontMetrics().ascent(firstRootBox()->baselineType()))
         .toInt();

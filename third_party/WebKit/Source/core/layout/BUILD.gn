@@ -9,6 +9,8 @@ blink_core_sources("layout") {
 
   sources = [
     "BackgroundBleedAvoidance.h",
+    "BaselineAlignment.cpp",
+    "BaselineAlignment.h",
     "BidiRun.h",
     "BidiRunForLine.cpp",
     "BidiRunForLine.h",

@@ -26,6 +26,7 @@
 .alignItemsStart { align-items: start; }
 .alignItemsCenter { align-items: center; }
 .alignItemsEnd { align-items: end; }
+.alignItemsBaseline { align-items: baseline; }
 
 .alignItemsCenterSafe { align-items: center safe; }
 .alignItemsCenterUnsafe { align-items: center unsafe; }
@@ -65,6 +66,8 @@
 .justifySelfCenterSafe { justify-self: center safe; }
 .justifySelfCenterUnsafe { justify-self: center unsafe; }
 
+.justifySelfBaseline { justify-self: baseline; }
+
 /* justify-items */
 .justifyItemsAuto { justify-items: auto; }
 .justifyItemsStretch { justify-items: stretch; }
@@ -76,6 +79,8 @@
 .justifyItemsCenterUnsafe { justify-items: center unsafe; }
 .justifyItemsEndSafe { justify-items: end safe; }
 .justifyItemsEndUnsafe { justify-items: end unsafe; }
+
+.justifyItemsBaseline { justify-items: baseline; }
 
 /* justify-content */
 .justifyContentBaseline { justify-content: baseline; }
@@ -136,6 +141,10 @@
 .itemsSelfEnd {
     align-items: self-end;
     justify-items: self-end;
+}
+.itemsBaseline {
+    align-items: baseline;
+    justify-items: baseline;
 }
 
 /* Both align-self and justify-self */
