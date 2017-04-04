@@ -999,7 +999,7 @@ void av1_foreach_transformed_block_in_plane(
 
 #if CONFIG_LV_MAP
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize,
+                                   BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    foreach_transformed_block_visitor visit,
                                    void *arg);
 #endif

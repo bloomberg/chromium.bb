@@ -565,10 +565,11 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
 
   if (!dry_run) {
     td->counts->skip[ctx][0] += skip_inc;
-    av1_foreach_transformed_block(xd, bsize, update_and_record_txb_context,
-                                  &arg);
+    av1_foreach_transformed_block(xd, bsize, mi_row, mi_col,
+                                  update_and_record_txb_context, &arg);
   } else if (dry_run == DRY_RUN_NORMAL) {
-    av1_foreach_transformed_block(xd, bsize, update_txb_context, &arg);
+    av1_foreach_transformed_block(xd, bsize, mi_row, mi_col, update_txb_context,
+                                  &arg);
   } else {
     printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
     assert(0);

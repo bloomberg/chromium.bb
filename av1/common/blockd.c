@@ -158,13 +158,21 @@ void av1_foreach_transformed_block_in_plane(
 
 #if CONFIG_LV_MAP
 void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize,
+                                   BLOCK_SIZE bsize, int mi_row, int mi_col,
                                    foreach_transformed_block_visitor visit,
                                    void *arg) {
   int plane;
 
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col))
+      continue;
+#else
+    (void)mi_row;
+    (void)mi_col;
+#endif
     av1_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
+  }
 }
 #endif
 
