@@ -75,7 +75,7 @@ UIResourceBitmap::UIResourceBitmap(const gfx::Size& size, bool is_opaque) {
   SkImageInfo info =
       SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
   sk_sp<SkPixelRef> pixel_ref(
-      SkMallocPixelRef::NewAllocate(info, info.minRowBytes(), NULL));
+      SkMallocPixelRef::MakeAllocate(info, info.minRowBytes(), NULL));
   pixel_ref->setImmutable();
   Create(std::move(pixel_ref), size, UIResourceBitmap::RGBA8);
   SetOpaque(is_opaque);
