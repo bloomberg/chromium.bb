@@ -8,6 +8,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
@@ -26,6 +27,7 @@
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#include "ios/shared/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #include "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "third_party/ocmock/OCMock/OCMock.h"

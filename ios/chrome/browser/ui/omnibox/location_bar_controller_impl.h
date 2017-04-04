@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_VIEW_IOS_H_
-#define IOS_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_VIEW_IOS_H_
+#ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_CONTROLLER_IMPL_H_
+#define IOS_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_CONTROLLER_IMPL_H_
 
 #import <UIKit/UIKit.h>
 
@@ -12,7 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "ios/chrome/browser/ui/omnibox/web_omnibox_edit_controller.h"
+#include "ios/shared/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -24,6 +24,7 @@ namespace web {
 class WebState;
 }
 
+@protocol LocationBarDelegate;
 class OmniboxViewIOS;
 @class OmniboxClearButtonBridge;
 @protocol OmniboxPopupPositioner;
@@ -31,31 +32,15 @@ class OmniboxViewIOS;
 @protocol PreloadProvider;
 class ToolbarModel;
 
-// Delegate for LocationBarViewIOS objects.  Used to provide the location bar a
-// way to open URLs and otherwise interact with the browser.
-@protocol LocationBarDelegate
-- (void)loadGURLFromLocationBar:(const GURL&)url
-                     transition:(ui::PageTransition)transition;
-- (void)locationBarHasBecomeFirstResponder;
-- (void)locationBarHasResignedFirstResponder;
-- (void)locationBarBeganEdit;
-- (void)locationBarChanged;
-- (web::WebState*)getWebState;
-- (ToolbarModel*)toolbarModel;
-@end
-
-// C++ object that wraps an OmniboxViewIOS and serves as its
-// OmniboxEditController.  LocationBarViewIOS bridges between the edit view
-// and the rest of the browser and manages text field decorations (location
-// icon, security icon, etc.).
-class LocationBarViewIOS : public WebOmniboxEditController {
+// Concrete implementation of the LocationBarController interface.
+class LocationBarControllerImpl : public LocationBarController {
  public:
-  LocationBarViewIOS(OmniboxTextFieldIOS* field,
-                     ios::ChromeBrowserState* browser_state,
-                     id<PreloadProvider> preloader,
-                     id<OmniboxPopupPositioner> positioner,
-                     id<LocationBarDelegate> delegate);
-  ~LocationBarViewIOS() override;
+  LocationBarControllerImpl(OmniboxTextFieldIOS* field,
+                            ios::ChromeBrowserState* browser_state,
+                            id<PreloadProvider> preloader,
+                            id<OmniboxPopupPositioner> positioner,
+                            id<LocationBarDelegate> delegate);
+  ~LocationBarControllerImpl() override;
 
   // OmniboxEditController implementation
   void OnAutocompleteAccept(const GURL& url,
@@ -72,22 +57,13 @@ class LocationBarViewIOS : public WebOmniboxEditController {
   web::WebState* GetWebState() override;
   void OnKillFocus() override;
 
-  // Called when toolbar state is updated.
-  void OnToolbarUpdated();
-
-  // Resign omnibox first responder and end edit view editing.
-  void HideKeyboardAndEndEditing();
-
-  // Tells the omnibox if it can show the hint text or not.
-  void SetShouldShowHintText(bool show_hint_text);
-
-  // Returns a pointer to the text entry view.
-  const OmniboxView* GetLocationEntry() const;
-  OmniboxView* GetLocationEntry();
-
-  // True if the omnibox text field is showing a placeholder image in its left
-  // view while it's collapsed (i.e. not in editing mode).
-  bool IsShowingPlaceholderWhileCollapsed();
+  // LocationBarController implementation.
+  void OnToolbarUpdated() override;
+  void HideKeyboardAndEndEditing() override;
+  void SetShouldShowHintText(bool show_hint_text) override;
+  const OmniboxView* GetLocationEntry() const override;
+  OmniboxView* GetLocationEntry() override;
+  bool IsShowingPlaceholderWhileCollapsed() override;
 
  private:
   // Installs a UIButton that serves as the location icon and lock icon.  This
@@ -116,4 +92,4 @@ class LocationBarViewIOS : public WebOmniboxEditController {
   bool is_showing_placeholder_while_collapsed_;
 };
 
-#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_VIEW_IOS_H_
+#endif  // IOS_CHROME_BROWSER_UI_OMNIBOX_LOCATION_BAR_CONTROLLER_IMPL_H_

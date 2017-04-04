@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
+
 #import <UIKit/UIKit.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/security_state/core/security_state_ui.h"
@@ -17,13 +20,13 @@
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#include "ios/chrome/browser/ui/omnibox/location_bar_view_ios.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_view_ios.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#include "ios/shared/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/navigation_manager.h"
@@ -110,16 +113,17 @@ bool IsCurrentPageOffline(web::WebState* webState) {
 
 @end
 
-LocationBarViewIOS::LocationBarViewIOS(OmniboxTextFieldIOS* field,
-                                       ios::ChromeBrowserState* browser_state,
-                                       id<PreloadProvider> preloader,
-                                       id<OmniboxPopupPositioner> positioner,
-                                       id<LocationBarDelegate> delegate)
-    : edit_view_(new OmniboxViewIOS(field,
-                                    this,
-                                    browser_state,
-                                    preloader,
-                                    positioner)),
+LocationBarControllerImpl::LocationBarControllerImpl(
+    OmniboxTextFieldIOS* field,
+    ios::ChromeBrowserState* browser_state,
+    id<PreloadProvider> preloader,
+    id<OmniboxPopupPositioner> positioner,
+    id<LocationBarDelegate> delegate)
+    : edit_view_(base::MakeUnique<OmniboxViewIOS>(field,
+                                                  this,
+                                                  browser_state,
+                                                  preloader,
+                                                  positioner)),
       field_(field),
       delegate_(delegate) {
   DCHECK([delegate_ toolbarModel]);
@@ -129,30 +133,30 @@ LocationBarViewIOS::LocationBarViewIOS(OmniboxTextFieldIOS* field,
   CreateClearTextIcon(browser_state->IsOffTheRecord());
 }
 
-LocationBarViewIOS::~LocationBarViewIOS() {}
+LocationBarControllerImpl::~LocationBarControllerImpl() {}
 
-void LocationBarViewIOS::HideKeyboardAndEndEditing() {
+void LocationBarControllerImpl::HideKeyboardAndEndEditing() {
   edit_view_->HideKeyboardAndEndEditing();
 }
 
-void LocationBarViewIOS::SetShouldShowHintText(bool show_hint_text) {
+void LocationBarControllerImpl::SetShouldShowHintText(bool show_hint_text) {
   show_hint_text_ = show_hint_text;
 }
 
-const OmniboxView* LocationBarViewIOS::GetLocationEntry() const {
+const OmniboxView* LocationBarControllerImpl::GetLocationEntry() const {
   return edit_view_.get();
 }
 
-OmniboxView* LocationBarViewIOS::GetLocationEntry() {
+OmniboxView* LocationBarControllerImpl::GetLocationEntry() {
   return edit_view_.get();
 }
 
-void LocationBarViewIOS::OnToolbarUpdated() {
+void LocationBarControllerImpl::OnToolbarUpdated() {
   edit_view_->UpdateAppearance();
   OnChanged();
 }
 
-void LocationBarViewIOS::OnAutocompleteAccept(
+void LocationBarControllerImpl::OnAutocompleteAccept(
     const GURL& gurl,
     WindowOpenDisposition disposition,
     ui::PageTransition transition,
@@ -164,7 +168,7 @@ void LocationBarViewIOS::OnAutocompleteAccept(
   }
 }
 
-void LocationBarViewIOS::OnChanged() {
+void LocationBarControllerImpl::OnChanged() {
   const bool page_is_offline = IsCurrentPageOffline(GetWebState());
   const int resource_id = edit_view_->GetIcon(page_is_offline);
   [field_ setPlaceholderImage:resource_id];
@@ -196,18 +200,18 @@ void LocationBarViewIOS::OnChanged() {
   [field_ setPlaceholder:placeholderText];
 }
 
-bool LocationBarViewIOS::IsShowingPlaceholderWhileCollapsed() {
+bool LocationBarControllerImpl::IsShowingPlaceholderWhileCollapsed() {
   return is_showing_placeholder_while_collapsed_;
 }
 
-void LocationBarViewIOS::OnInputInProgress(bool in_progress) {
+void LocationBarControllerImpl::OnInputInProgress(bool in_progress) {
   if ([delegate_ toolbarModel])
     [delegate_ toolbarModel]->set_input_in_progress(in_progress);
   if (in_progress)
     [delegate_ locationBarBeganEdit];
 }
 
-void LocationBarViewIOS::OnKillFocus() {
+void LocationBarControllerImpl::OnKillFocus() {
   // Hide the location icon on phone.  A subsequent call to OnChanged() will
   // bring the icon back if needed.
   if (!IsIPadIdiom()) {
@@ -230,7 +234,7 @@ void LocationBarViewIOS::OnKillFocus() {
   [delegate_ locationBarHasResignedFirstResponder];
 }
 
-void LocationBarViewIOS::OnSetFocus() {
+void LocationBarControllerImpl::OnSetFocus() {
   // Show the location icon on phone.
   if (!IsIPadIdiom())
     [field_ showPlaceholderImage];
@@ -248,19 +252,19 @@ void LocationBarViewIOS::OnSetFocus() {
   [delegate_ locationBarHasBecomeFirstResponder];
 }
 
-const ToolbarModel* LocationBarViewIOS::GetToolbarModel() const {
+const ToolbarModel* LocationBarControllerImpl::GetToolbarModel() const {
   return [delegate_ toolbarModel];
 }
 
-ToolbarModel* LocationBarViewIOS::GetToolbarModel() {
+ToolbarModel* LocationBarControllerImpl::GetToolbarModel() {
   return [delegate_ toolbarModel];
 }
 
-web::WebState* LocationBarViewIOS::GetWebState() {
+web::WebState* LocationBarControllerImpl::GetWebState() {
   return [delegate_ getWebState];
 }
 
-void LocationBarViewIOS::InstallLocationIcon() {
+void LocationBarControllerImpl::InstallLocationIcon() {
   // Set the placeholder for empty omnibox.
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   UIImage* image = NativeImage(IDR_IOS_OMNIBOX_SEARCH);
@@ -290,7 +294,7 @@ void LocationBarViewIOS::InstallLocationIcon() {
     [field_ setLeftViewMode:UITextFieldViewModeNever];
 }
 
-void LocationBarViewIOS::CreateClearTextIcon(bool is_incognito) {
+void LocationBarControllerImpl::CreateClearTextIcon(bool is_incognito) {
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   UIImage* omniBoxClearImage = is_incognito
                                    ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR)
@@ -316,7 +320,7 @@ void LocationBarViewIOS::CreateClearTextIcon(bool is_incognito) {
                                   IDS_IOS_ACCNAME_CLEAR_TEXT, @"Clear Text");
 }
 
-void LocationBarViewIOS::UpdateRightDecorations() {
+void LocationBarControllerImpl::UpdateRightDecorations() {
   DCHECK(clear_text_button_);
   if (!edit_view_->model()->has_focus()) {
     // Do nothing for iPhone. The right view will be set to nil after the

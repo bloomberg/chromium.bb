@@ -5,7 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_WEB_TOOLBAR_CONTROLLER_PRIVATE_H_
 #define IOS_CHROME_BROWSER_UI_TOOLBAR_WEB_TOOLBAR_CONTROLLER_PRIVATE_H_
 
+#import <CoreGraphics/CoreGraphics.h>
+
+#include <string>
+
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+
+@class OmniboxTextFieldIOS;
 
 // Private methods for unit tests.
 @interface WebToolbarController (Testing)
