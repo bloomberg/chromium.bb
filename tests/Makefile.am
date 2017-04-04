@@ -135,25 +135,25 @@ dist_yaml_TESTS =				\
 	yaml/begcaps_endcaps.yaml		\
 	yaml/capsnocont.yaml			\
 	yaml/chr-us-g1_harness.yaml		\
-	yaml/da-dk-g08.yaml			\
 	yaml/da-dk-g08-back.yaml		\
+	yaml/da-dk-g08.yaml			\
 	yaml/da-dk-g16-dictionary_harness.yaml	\
-	yaml/da-dk-g18.yaml			\
 	yaml/da-dk-g18-back.yaml		\
 	yaml/da-dk-g18-dictionary_harness.yaml	\
+	yaml/da-dk-g18.yaml			\
 	yaml/da-dk-g26-dictionary_harness.yaml	\
-	yaml/da-dk-g28.yaml			\
 	yaml/da-dk-g28-back.yaml		\
 	yaml/da-dk-g28-dictionary_harness.yaml	\
-	yaml/da-dk-g28l.yaml			\
 	yaml/da-dk-g28l-back.yaml		\
+	yaml/da-dk-g28l.yaml			\
+	yaml/da-dk-g28.yaml			\
 	yaml/el-backward.yaml			\
 	yaml/el-forward.yaml			\
 	yaml/emphasis-full.yaml			\
 	yaml/emphasis-no-context.yaml		\
+	yaml/en-gb-g1_harness.yaml		\
 	yaml/en-GB-g2_backward.yaml		\
 	yaml/en-GB-g2_harness.yaml		\
-	yaml/en-gb-g1_harness.yaml		\
 	yaml/en-ueb-02-stand_alone.yaml		\
 	yaml/en-ueb-03-symbols.yaml		\
 	yaml/en-ueb-05-grade_1_mode.yaml	\
@@ -198,14 +198,14 @@ dist_yaml_TESTS =				\
 	yaml/multipass-backward.yaml		\
 	yaml/multipass-forward.yaml		\
 	yaml/multipass.yaml			\
-	yaml/nl-NL-g0_harness.yaml		\
 	yaml/new_emph.yaml			\
 	yaml/nl-g0_harness.yaml			\
+	yaml/nl-NL-g0_harness.yaml		\
 	yaml/no_8dot_harness.yaml		\
+	yaml/nocross_harness.yaml		\
 	yaml/no_g1_harness.yaml			\
 	yaml/no_g2_harness.yaml			\
 	yaml/no_harness.yaml			\
-	yaml/nocross_harness.yaml		\
 	yaml/noletsignafter.yaml		\
 	yaml/pl-pl-comp8_harness.yaml		\
 	yaml/sr-g1_harness.yaml			\

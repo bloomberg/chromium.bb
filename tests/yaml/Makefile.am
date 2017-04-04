@@ -20,9 +20,9 @@ EXTRA_DIST =					\
 	el-forward.yaml				\
 	emphasis-full.yaml			\
 	emphasis-no-context.yaml		\
+	en-gb-g1_harness.yaml			\
 	en-GB-g2_backward.yaml			\
 	en-GB-g2_harness.yaml			\
-	en-gb-g1_harness.yaml			\
 	en-ueb-02-stand_alone.yaml		\
 	en-ueb-03-symbols.yaml			\
 	en-ueb-05-grade_1_mode.yaml		\
@@ -56,9 +56,9 @@ EXTRA_DIST =					\
 	hr-8dots_harness.yaml			\
 	hu-hu-comp8_backward.yaml		\
 	hu-hu-comp8_harness.yaml		\
-	hu-hu-g1-hyph_harness.yaml		\
 	hu-hu-g1_backward.yaml			\
 	hu-hu-g1_harness.yaml			\
+	hu-hu-g1-hyph_harness.yaml		\
 	iu-ca-g1_harness.yaml			\
 	ko-2006-g2_harness.yaml			\
 	ko-g2_harness.yaml			\
@@ -68,14 +68,15 @@ EXTRA_DIST =					\
 	multipass-backward.yaml			\
 	multipass-forward.yaml			\
 	multipass.yaml				\
-	nl-NL-g0_harness.yaml			\
 	new_emph.yaml				\
 	nl-g0_harness.yaml			\
+	nl-NL-g0_harness.yaml			\
 	no_8dot_harness.yaml			\
+	nocross_harness.yaml			\
 	no_g1_harness.yaml			\
 	no_g2_harness.yaml			\
 	no_harness.yaml				\
-	nocross_harness.yaml			\
+	noletsignafter.yaml			\
 	pl-pl-comp8_harness.yaml		\
 	sr-g1_harness.yaml			\
 	ta-ta-g1_harness.yaml			\
