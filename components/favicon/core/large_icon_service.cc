@@ -30,11 +30,11 @@ namespace favicon {
 namespace {
 
 const char kGoogleServerV2RequestFormat[] =
-    "https://t0.gstatic.com/"
-    "faviconV2?user=chrome&drop_404_icon=true&size=%d&min_size=%d&max_size=%d&"
-    "fallback_opts=TYPE&url=%s";
-const int kGoogleServerV2MaxSizeInPixel = 256;
-const int kGoogleServerV2DesiredSizeInPixel = 192;
+    "https://t0.gstatic.com/faviconV2?"
+    "client=chrome&drop_404_icon=true&size=%d&min_size=%d&max_size=%d&"
+    "fallback_opts=TYPE,SIZE&url=%s";
+const int kGoogleServerV2MaxSizeInPixel = 128;
+const int kGoogleServerV2DesiredSizeInPixel = 64;
 
 GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
   if (!page_url.SchemeIsHTTPOrHTTPS() || page_url.HostIsIPAddress())
