@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_set_volume_job.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,11 +30,6 @@ const char kVolumeFieldName[] = "volume";
 DeviceCommandSetVolumeJob::DeviceCommandSetVolumeJob() {}
 
 DeviceCommandSetVolumeJob::~DeviceCommandSetVolumeJob() {}
-
-void DeviceCommandSetVolumeJob::SetVolumeCallbackForTesting(
-    const VolumeCallback& callback) {
-  volume_callback_ = callback;
-}
 
 enterprise_management::RemoteCommand_Type DeviceCommandSetVolumeJob::GetType()
     const {
@@ -69,14 +65,10 @@ void DeviceCommandSetVolumeJob::RunImpl(
     const CallbackWithResult& succeeded_callback,
     const CallbackWithResult& failed_callback) {
   SYSLOG(INFO) << "Running set volume command, volume = " << volume_;
-  if (volume_callback_.is_null()) {
-    auto* audio_handler = chromeos::CrasAudioHandler::Get();
-    audio_handler->SetOutputVolumePercent(volume_);
-    bool mute = audio_handler->IsOutputVolumeBelowDefaultMuteLevel();
-    audio_handler->SetOutputMute(mute);
-  } else {
-    volume_callback_.Run(volume_);
-  }
+  auto* audio_handler = chromeos::CrasAudioHandler::Get();
+  audio_handler->SetOutputVolumePercent(volume_);
+  bool mute = audio_handler->IsOutputVolumeBelowDefaultMuteLevel();
+  audio_handler->SetOutputMute(mute);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(succeeded_callback, nullptr));
