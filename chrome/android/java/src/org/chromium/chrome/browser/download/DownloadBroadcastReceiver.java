@@ -46,6 +46,8 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
      * @param intent Intent from the android DownloadManager.
      */
     private void openDownload(final Context context, Intent intent) {
+        DownloadNotificationService.hideDanglingSummaryNotification(context);
+
         long ids[] =
                 intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
         if (ids == null || ids.length == 0) {

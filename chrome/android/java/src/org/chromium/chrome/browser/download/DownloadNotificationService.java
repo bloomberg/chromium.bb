@@ -37,6 +37,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -93,6 +94,8 @@ public class DownloadNotificationService extends Service {
             "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
     public static final String ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON =
             "org.chromium.chrome.browser.download.DOWNLOAD_UPDATE_SUMMARY_ICON";
+    public static final String ACTION_DOWNLOAD_FAIL_SAFE =
+            "org.chromium.chrome.browser.download.ACTION_SUMMARY_FAIL_SAFE";
 
     static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
     private static final String TAG = "DownloadNotification";
@@ -148,6 +151,39 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     static boolean useForegroundService() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+    }
+
+    /**
+     * Checks to see if the summary notification is alone and, if so, hides it.  If the summary
+     * notification thinks it's in the foreground, this will start the service with the goal of
+     * shutting it down.  That is because if the service is in the foreground it's not possible to
+     * stop it through the notification manager.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    public static void hideDanglingSummaryNotification(Context context) {
+        if (!useForegroundService()) return;
+
+        NotificationManager manager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (hasDownloadNotifications(manager, -1)) return;
+
+        StatusBarNotification summary = getSummaryNotification(manager);
+        if (summary == null) return;
+
+        boolean isForeground =
+                (summary.getNotification().flags & Notification.FLAG_FOREGROUND_SERVICE) != 0;
+
+        RecordHistogram.recordBooleanHistogram(
+                "MobileDownload.Notification.FixingSummaryLeak", isForeground);
+
+        if (isForeground) {
+            // If it is a foreground notification, we are in a bad state.  We don't have any
+            // other download notifications, but we can't close the summary.  Try to start
+            // up the service and quit through that path?
+            startDownloadNotificationService(context, new Intent(ACTION_DOWNLOAD_FAIL_SAFE));
+        } else {
+            manager.cancel(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY);
+        }
     }
 
     /**
@@ -424,6 +460,9 @@ public class DownloadNotificationService extends Service {
             handleDownloadOperation(
                     new Intent(DownloadNotificationService.ACTION_DOWNLOAD_RESUME_ALL));
             hideSummaryNotificationIfNecessary(-1);
+        } else if (TextUtils.equals(intent.getAction(),
+                           DownloadNotificationService.ACTION_DOWNLOAD_FAIL_SAFE)) {
+            hideSummaryNotificationIfNecessary(-1);
         } else if (isDownloadOperationIntent(intent)) {
             handleDownloadOperation(intent);
             DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).cancelTask();
@@ -583,10 +622,10 @@ public class DownloadNotificationService extends Service {
      * @return The summary {@link StatusBarNotification} if one is showing.
      */
     @TargetApi(Build.VERSION_CODES.M)
-    private StatusBarNotification getSummaryNotification() {
+    private static StatusBarNotification getSummaryNotification(NotificationManager manager) {
         if (!useForegroundService()) return null;
 
-        StatusBarNotification[] notifications = mNotificationManager.getActiveNotifications();
+        StatusBarNotification[] notifications = manager.getActiveNotifications();
         for (StatusBarNotification notification : notifications) {
             boolean isDownloadsGroup = TextUtils.equals(notification.getNotification().getGroup(),
                     NotificationConstants.GROUP_DOWNLOADS);
@@ -624,7 +663,7 @@ public class DownloadNotificationService extends Service {
 
         if (hasDownloadNotificationsInternal(notificationIdToIgnore)) return false;
 
-        StatusBarNotification notification = getSummaryNotification();
+        StatusBarNotification notification = getSummaryNotification(mNotificationManager);
         if (notification != null) {
             // We have a valid summary notification, but how we dismiss it depends on whether or not
             // it is currently bound to this service via startForeground(...).
