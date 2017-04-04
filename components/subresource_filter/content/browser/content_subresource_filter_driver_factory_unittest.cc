@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/subresource_filter/content/browser/content_activation_list_utils.h"
@@ -15,6 +16,10 @@
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "components/subresource_filter/core/common/activation_list.h"
+#include "components/subresource_filter/core/common/test_ruleset_creator.h"
+#include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -41,6 +46,7 @@ const char kUrlB[] = "https://example_b.com";
 const char kUrlC[] = "https://example_c.com";
 const char kUrlD[] = "https://example_d.com";
 const char kSubframeName[] = "Child";
+const char kDisallowedUrl[] = "https://example.com/disallowed.html";
 
 const char kMatchesPatternHistogramName[] =
     "SubresourceFilter.PageLoad.RedirectChainMatchPattern.";
@@ -179,7 +185,8 @@ const ActivationLevelTestData kActivationLevelTestData[] = {
 
 class MockSubresourceFilterClient : public SubresourceFilterClient {
  public:
-  MockSubresourceFilterClient() {}
+  MockSubresourceFilterClient(VerifiedRulesetDealer::Handle* ruleset_dealer)
+      : ruleset_dealer_(ruleset_dealer) {}
 
   ~MockSubresourceFilterClient() override = default;
 
@@ -189,16 +196,24 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
 
   void WhitelistByContentSettings(const GURL& url) override {}
 
+  VerifiedRulesetDealer::Handle* GetRulesetDealer() override {
+    return ruleset_dealer_;
+  }
+
   MOCK_METHOD1(ToggleNotificationVisibility, void(bool));
 
  private:
+  // Owned by the test harness.
+  VerifiedRulesetDealer::Handle* ruleset_dealer_;
+
   DISALLOW_COPY_AND_ASSIGN(MockSubresourceFilterClient);
 };
 
 }  // namespace
 
 class ContentSubresourceFilterDriverFactoryTest
-    : public content::RenderViewHostTestHarness {
+    : public content::RenderViewHostTestHarness,
+      public content::WebContentsObserver {
  public:
   ContentSubresourceFilterDriverFactoryTest() {}
   ~ContentSubresourceFilterDriverFactoryTest() override {}
@@ -207,26 +222,43 @@ class ContentSubresourceFilterDriverFactoryTest
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
 
-    client_ = new MockSubresourceFilterClient();
+    std::vector<proto::UrlRule> rules;
+    rules.push_back(testing::CreateSuffixRule("disallowed.html"));
+    ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
+        rules, &test_ruleset_pair_));
+    ruleset_dealer_ = base::MakeUnique<VerifiedRulesetDealer::Handle>(
+        base::MessageLoop::current()->task_runner());
+    ruleset_dealer_->SetRulesetFile(
+        testing::TestRuleset::Open(test_ruleset_pair_.indexed));
+    client_ = new MockSubresourceFilterClient(ruleset_dealer_.get());
     ContentSubresourceFilterDriverFactory::CreateForWebContents(
-        web_contents(), base::WrapUnique(client()));
+        RenderViewHostTestHarness::web_contents(), base::WrapUnique(client()));
 
     // Add a subframe.
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(main_rfh());
     rfh_tester->InitializeRenderFrameIfNeeded();
     rfh_tester->AppendChild(kSubframeName);
+
+    Observe(content::RenderViewHostTestHarness::web_contents());
+  }
+
+  void TearDown() override {
+    ruleset_dealer_.reset();
+    base::RunLoop().RunUntilIdle();
+    RenderViewHostTestHarness::TearDown();
   }
 
   ContentSubresourceFilterDriverFactory* factory() {
     return ContentSubresourceFilterDriverFactory::FromWebContents(
-        web_contents());
+        RenderViewHostTestHarness::web_contents());
   }
 
   MockSubresourceFilterClient* client() { return client_; }
 
   content::RenderFrameHost* GetSubframeRFH() {
-    for (content::RenderFrameHost* rfh : web_contents()->GetAllFrames()) {
+    for (content::RenderFrameHost* rfh :
+         RenderViewHostTestHarness::web_contents()->GetAllFrames()) {
       if (rfh->GetFrameName() == kSubframeName)
         return rfh;
     }
@@ -318,6 +350,22 @@ class ContentSubresourceFilterDriverFactoryTest
     }
   }
 
+  void NavigateSubframeAndExpectCheckResult(const GURL& url,
+                                            bool expect_cancelled) {
+    std::unique_ptr<content::NavigationSimulator> simulator =
+        content::NavigationSimulator::CreateRendererInitiated(url,
+                                                              GetSubframeRFH());
+    simulator->Start();
+    content::NavigationThrottle::ThrottleCheckResult result =
+        simulator->GetLastThrottleCheckResult();
+    if (expect_cancelled) {
+      EXPECT_EQ(content::NavigationThrottle::CANCEL, result);
+    } else {
+      EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
+      simulator->Commit();
+    }
+  }
+
   void NavigateAndCommitSubframe(const GURL& url, bool expected_activation) {
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
@@ -358,13 +406,6 @@ class ContentSubresourceFilterDriverFactoryTest
         expected_activation_decision);
   }
 
-  void EmulateDidDisallowFirstSubresourceMessage() {
-    factory()->OnMessageReceived(
-        SubresourceFilterHostMsg_DidDisallowFirstSubresource(
-            main_rfh()->GetRoutingID()),
-        main_rfh());
-  }
-
   void EmulateFailedNavigationAndExpectNoActivation(const GURL& url) {
     EXPECT_CALL(*client(), ToggleNotificationVisibility(false)).Times(1);
 
@@ -401,6 +442,20 @@ class ContentSubresourceFilterDriverFactoryTest
     ::testing::Mock::VerifyAndClearExpectations(client());
   }
 
+ protected:
+  // content::WebContentsObserver
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->IsSameDocument())
+      return;
+
+    std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
+    factory()->throttle_manager()->MaybeAppendNavigationThrottles(
+        navigation_handle, &throttles);
+    for (auto& it : throttles)
+      navigation_handle->RegisterThrottleForTesting(std::move(it));
+  }
+
  private:
   static bool expected_measure_performance() {
     const double rate = GetPerformanceMeasurementRate();
@@ -409,8 +464,13 @@ class ContentSubresourceFilterDriverFactoryTest
     return rate == 1;
   }
 
+  testing::TestRulesetCreator test_ruleset_creator_;
+  testing::TestRulesetPair test_ruleset_pair_;
+
   // Owned by the factory.
   MockSubresourceFilterClient* client_;
+
+  std::unique_ptr<VerifiedRulesetDealer::Handle> ruleset_dealer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactoryTest);
 };
@@ -627,7 +687,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, NotificationVisibility) {
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATED);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(true)).Times(1);
-  EmulateDidDisallowFirstSubresourceMessage();
+  NavigateSubframeAndExpectCheckResult(GURL(kDisallowedUrl),
+                                       true /* expect_cancelled */);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest,
@@ -642,7 +703,16 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
   NavigateAndExpectActivation({false}, {GURL(kExampleUrl)}, EMPTY,
                               ActivationDecision::ACTIVATED);
   EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
-  EmulateDidDisallowFirstSubresourceMessage();
+  NavigateSubframeAndExpectCheckResult(GURL(kDisallowedUrl),
+                                       true /* expect_cancelled */);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       InactiveMainFrame_SubframeNotFiltered) {
+  GURL url(kExampleUrl);
+  NavigateAndExpectActivation({false}, {url}, EMPTY,
+                              ActivationDecision::ACTIVATION_DISABLED);
+  NavigateSubframeAndExpectCheckResult(url, false /* expect_cancelled */);
 }
 
 TEST_F(ContentSubresourceFilterDriverFactoryTest, WhitelistSiteOnReload) {

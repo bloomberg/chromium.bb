@@ -147,6 +147,8 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/task_scheduler_util/browser/initialization.h"
 #include "components/task_scheduler_util/common/variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
@@ -3469,6 +3471,16 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   if (subresource_filter_activation_throttle) {
     throttles.push_back(
         base::WrapUnique(subresource_filter_activation_throttle));
+  }
+
+  // These throttles must come after the
+  // SubresourceFilterSafeBrowsingActivationThrottle.
+  content::WebContents* web_contents = handle->GetWebContents();
+  if (auto* factory =
+          subresource_filter::ContentSubresourceFilterDriverFactory::
+              FromWebContents(web_contents)) {
+    factory->throttle_manager()->MaybeAppendNavigationThrottles(handle,
+                                                                &throttles);
   }
 
   return throttles;

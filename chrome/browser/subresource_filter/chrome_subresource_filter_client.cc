@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/android/content_settings/subresource_filter_infobar_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/subresource_filter/content/browser/content_ruleset_service.h"
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
@@ -87,4 +89,11 @@ ContentSetting ChromeSubresourceFilterClient::GetContentSettingForUrl(
   return settings_map->GetContentSetting(
       url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
       std::string());
+}
+
+subresource_filter::VerifiedRulesetDealer::Handle*
+ChromeSubresourceFilterClient::GetRulesetDealer() {
+  subresource_filter::ContentRulesetService* ruleset_service =
+      g_browser_process->subresource_filter_ruleset_service();
+  return ruleset_service ? ruleset_service->ruleset_dealer() : nullptr;
 }

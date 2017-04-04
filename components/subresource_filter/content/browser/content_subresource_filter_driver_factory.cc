@@ -13,8 +13,10 @@
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_list.h"
+#include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/time_measurements.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -90,20 +92,17 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     std::unique_ptr<SubresourceFilterClient> client)
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
+      throttle_manager_(
+          base::MakeUnique<ContentSubresourceFilterThrottleManager>(
+              this,
+              client_->GetRulesetDealer(),
+              web_contents)),
       activation_level_(ActivationLevel::DISABLED),
       activation_decision_(ActivationDecision::UNKNOWN),
       measure_performance_(false) {}
 
 ContentSubresourceFilterDriverFactory::
     ~ContentSubresourceFilterDriverFactory() {}
-
-void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  if (ShouldSuppressNotifications())
-    return;
-
-  client_->ToggleNotificationVisibility(activation_level_ ==
-                                        ActivationLevel::ENABLED);
-}
 
 void ContentSubresourceFilterDriverFactory::OnDocumentLoadStatistics(
     const DocumentLoadStatistics& statistics) {
@@ -184,17 +183,6 @@ ContentSubresourceFilterDriverFactory::ComputeActivationDecisionForMainFrameURL(
   }
 }
 
-void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url) {
-  if (activation_level_ != ActivationLevel::DISABLED) {
-    render_frame_host->Send(
-        new SubresourceFilterMsg_ActivateForNextCommittedLoad(
-            render_frame_host->GetRoutingID(), activation_level_,
-            measure_performance_));
-  }
-}
-
 void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
   const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
@@ -209,6 +197,56 @@ void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
     AddHostOfURLToWhitelistSet(whitelist_url);
   }
   web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
+}
+
+void ContentSubresourceFilterDriverFactory::WillProcessResponse(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK(!navigation_handle->IsSameDocument());
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->GetNetErrorCode() != net::OK) {
+    return;
+  }
+
+  const GURL& url = navigation_handle->GetURL();
+  const content::Referrer& referrer = navigation_handle->GetReferrer();
+  ui::PageTransition transition = navigation_handle->GetPageTransition();
+
+  RecordRedirectChainMatchPattern();
+
+  if (ShouldWhitelistSiteOnReload() &&
+      NavigationIsPageReload(url, referrer, transition)) {
+    // Whitelist this host for the current as well as subsequent navigations.
+    AddHostOfURLToWhitelistSet(url);
+  }
+
+  activation_decision_ = ComputeActivationDecisionForMainFrameURL(url);
+  DCHECK(activation_decision_ != ActivationDecision::UNKNOWN);
+  if (activation_decision_ != ActivationDecision::ACTIVATED) {
+    ResetActivationState();
+    return;
+  }
+
+  activation_level_ = GetMaximumActivationLevel();
+  measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
+                         ShouldMeasurePerformanceForPageLoad();
+  ActivationState state = ActivationState(activation_level_);
+  state.measure_performance = measure_performance_;
+  throttle_manager_->NotifyPageActivationComputed(navigation_handle, state);
+}
+
+void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
+  if (ShouldSuppressNotifications())
+    return;
+
+  client_->ToggleNotificationVisibility(activation_level_ ==
+                                        ActivationLevel::ENABLED);
+}
+
+bool ContentSubresourceFilterDriverFactory::ShouldSuppressActivation(
+    content::NavigationHandle* navigation_handle) {
+  // Never suppress subframe navigations.
+  return navigation_handle->IsInMainFrame() &&
+         IsWhitelisted(navigation_handle->GetURL());
 }
 
 void ContentSubresourceFilterDriverFactory::ResetActivationState() {
@@ -235,25 +273,6 @@ void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
   DCHECK(!navigation_handle->IsSameDocument());
   if (navigation_handle->IsInMainFrame())
     navigation_chain_.push_back(navigation_handle->GetURL());
-}
-
-void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK(!navigation_handle->IsSameDocument());
-
-  // ReadyToCommitNavigation with browser-side navigation disabled is not called
-  // in production code for failed navigations (e.g. network errors). We don't
-  // want to activate on these pages, so we bail early to guarantee consistent
-  // behavior regardless of whether browser-side navigation is enabled.
-  if (navigation_handle->GetNetErrorCode() != net::OK)
-    return;
-
-  content::RenderFrameHost* render_frame_host =
-      navigation_handle->GetRenderFrameHost();
-  GURL url = navigation_handle->GetURL();
-  const content::Referrer& referrer = navigation_handle->GetReferrer();
-  ui::PageTransition transition = navigation_handle->GetPageTransition();
-  ReadyToCommitNavigationInternal(render_frame_host, url, referrer, transition);
 }
 
 void ContentSubresourceFilterDriverFactory::DidFinishLoad(
@@ -302,44 +321,11 @@ bool ContentSubresourceFilterDriverFactory::OnMessageReceived(
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterDriverFactory, message)
-    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
-                        OnFirstSubresourceLoadDisallowed)
     IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DocumentLoadStatistics,
                         OnDocumentLoadStatistics)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    const content::Referrer& referrer,
-    ui::PageTransition transition) {
-  if (render_frame_host->GetParent()) {
-    ActivateForFrameHostIfNeeded(render_frame_host, url);
-    return;
-  }
-
-  RecordRedirectChainMatchPattern();
-
-  if (ShouldWhitelistSiteOnReload() &&
-      NavigationIsPageReload(url, referrer, transition)) {
-    // Whitelist this host for the current as well as subsequent navigations.
-    AddHostOfURLToWhitelistSet(url);
-  }
-
-  activation_decision_ = ComputeActivationDecisionForMainFrameURL(url);
-  DCHECK(activation_decision_ != ActivationDecision::UNKNOWN);
-  if (activation_decision_ != ActivationDecision::ACTIVATED) {
-    ResetActivationState();
-    return;
-  }
-
-  activation_level_ = GetMaximumActivationLevel();
-  measure_performance_ = activation_level_ != ActivationLevel::DISABLED &&
-                         ShouldMeasurePerformanceForPageLoad();
-  ActivateForFrameHostIfNeeded(render_frame_host, url);
 }
 
 bool ContentSubresourceFilterDriverFactory::DidURLMatchActivationList(

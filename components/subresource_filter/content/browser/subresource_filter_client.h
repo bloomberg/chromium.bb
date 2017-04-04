@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_CLIENT_H_
 
+#include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
+
 class GURL;
 
 namespace subresource_filter {
@@ -28,6 +30,8 @@ class SubresourceFilterClient {
   // Adds |url| to the BLOCKED state via content settings for the current
   // profile.
   virtual void WhitelistByContentSettings(const GURL& url) = 0;
+
+  virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
 };
 
 }  // namespace subresource_filter

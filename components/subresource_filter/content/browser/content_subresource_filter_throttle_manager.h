@@ -21,6 +21,10 @@ class NavigationThrottle;
 class RenderFrameHost;
 }  // namespace content
 
+namespace IPC {
+class Message;
+}  // namespace IPC
+
 namespace subresource_filter {
 
 class AsyncDocumentSubresourceFilter;
@@ -51,6 +55,10 @@ class ContentSubresourceFilterThrottleManager
     // have a specific whitelist.
     virtual bool ShouldSuppressActivation(
         content::NavigationHandle* navigation_handle);
+
+    // Temporary method to help the delegate compute the activation decision.
+    virtual void WillProcessResponse(
+        content::NavigationHandle* navigation_handle) {}
   };
 
   ContentSubresourceFilterThrottleManager(
@@ -94,6 +102,8 @@ class ContentSubresourceFilterThrottleManager
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
  private:
   std::unique_ptr<SubframeNavigationFilteringThrottle>

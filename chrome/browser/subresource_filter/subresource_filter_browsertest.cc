@@ -549,6 +549,35 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       SubframeDocumentLoadFiltering) {
+  GURL url(GetTestUrl(kTestFrameSetPath));
+  ConfigureAsPhishingURL(url);
+
+  // Disallow all the subframes that end up loading included_script.js.
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.html"));
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  const std::vector<const char*> kSubframeNames{"one", "two", "three"};
+  const std::vector<bool> kExpectScriptInFrameToLoad{false, true, false};
+  ASSERT_NO_FATAL_FAILURE(ExpectParsedScriptElementLoadedStatusInFrames(
+      kSubframeNames, kExpectScriptInFrameToLoad));
+
+  // The subframe navigations never commit.
+  for (size_t i = 0; i < kSubframeNames.size(); ++i) {
+    const char* subframe_name = kSubframeNames[i];
+    bool expect_loaded = kExpectScriptInFrameToLoad[i];
+    content::RenderFrameHost* frame = FindFrameByName(subframe_name);
+    if (!expect_loaded)
+      EXPECT_EQ(GURL(), frame->GetLastCommittedURL());
+  }
+
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           1);
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        HistoryNavigationActivation) {
   GURL url_with_activation(GetTestUrl(kTestFrameSetPath));
   GURL url_without_activation(
@@ -1007,8 +1036,12 @@ void ExpectHistogramsAreRecordedForTestFrameSet(
   tester.ExpectTotalCount(kEvaluationTotalCPUDurationForDocument,
                           time_recorded ? 6 : 0);
 
-  tester.ExpectTotalCount(kEvaluationWallDuration, time_recorded ? 6 : 0);
-  tester.ExpectTotalCount(kEvaluationCPUDuration, time_recorded ? 6 : 0);
+  // 5 subframes, each with an include.js, plus a top level include.js.
+  int num_subresource_checks = 5 + 5 + 1;
+  tester.ExpectTotalCount(kEvaluationWallDuration,
+                          time_recorded ? num_subresource_checks : 0);
+  tester.ExpectTotalCount(kEvaluationCPUDuration,
+                          time_recorded ? num_subresource_checks : 0);
 
   // Activation timing histograms are always recorded.
   tester.ExpectTotalCount(kActivationWallDuration, 6);

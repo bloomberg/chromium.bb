@@ -66,6 +66,8 @@ class ChromeSubresourceFilterClient
   void ToggleNotificationVisibility(bool visibility) override;
   bool IsWhitelistedByContentSettings(const GURL& url) override;
   void WhitelistByContentSettings(const GURL& url) override;
+  subresource_filter::VerifiedRulesetDealer::Handle* GetRulesetDealer()
+      override;
 
   static void LogAction(SubresourceFilterAction action);
 

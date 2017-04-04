@@ -10,12 +10,42 @@
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subframe_navigation_filtering_throttle.h"
+#include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 
 namespace subresource_filter {
+
+namespace {
+
+// Used to forward calls to WillProcessResonse to the driver.
+// TODO(https://crbug.com/708181): Remove this once the safe browsing navigation
+// throttle is responsible for all activation decisions.
+class ForwardingNavigationThrottle : public content::NavigationThrottle {
+ public:
+  ForwardingNavigationThrottle(
+      content::NavigationHandle* handle,
+      ContentSubresourceFilterThrottleManager::Delegate* delegate)
+      : content::NavigationThrottle(handle), delegate_(delegate) {}
+  ~ForwardingNavigationThrottle() override {}
+
+  // content::NavigationThrottle:
+  content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
+      override {
+    delegate_->WillProcessResponse(navigation_handle());
+    return content::NavigationThrottle::PROCEED;
+  }
+
+ private:
+  ContentSubresourceFilterThrottleManager::Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(ForwardingNavigationThrottle);
+};
+
+}  // namespace
 
 bool ContentSubresourceFilterThrottleManager::Delegate::
     ShouldSuppressActivation(content::NavigationHandle* navigation_handle) {
@@ -62,17 +92,22 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   if (throttle == ongoing_activation_throttles_.end())
     return;
 
+  // A filter with DISABLED activation indicates a corrupted ruleset.
   AsyncDocumentSubresourceFilter* filter = throttle->second->filter();
   if (!filter || navigation_handle->GetNetErrorCode() != net::OK ||
+      filter->activation_state().activation_level ==
+          ActivationLevel::DISABLED ||
       delegate_->ShouldSuppressActivation(navigation_handle)) {
     return;
   }
 
-  DCHECK_NE(ActivationLevel::DISABLED,
-            filter->activation_state().activation_level);
-
   throttle->second->WillSendActivationToRenderer();
-  // TODO(csharrison): Send an IPC to the renderer.
+
+  content::RenderFrameHost* frame_host =
+      navigation_handle->GetRenderFrameHost();
+  frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
+      frame_host->GetRoutingID(), filter->activation_state().activation_level,
+      filter->activation_state().measure_performance));
 }
 
 void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
@@ -110,10 +145,28 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
   DestroyRulesetHandleIfNoLongerUsed();
 }
 
+bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterThrottleManager, message)
+    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
+                        MaybeCallFirstDisallowedLoad)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
 void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
     content::NavigationHandle* navigation_handle,
     std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles) {
   DCHECK(!navigation_handle->IsSameDocument());
+  if (navigation_handle->IsInMainFrame()) {
+    throttles->push_back(base::MakeUnique<ForwardingNavigationThrottle>(
+        navigation_handle, delegate_));
+  }
+  if (!dealer_handle_)
+    return;
   if (auto filtering_throttle =
           MaybeCreateSubframeNavigationFilteringThrottle(navigation_handle)) {
     throttles->push_back(std::move(filtering_throttle));
