@@ -20,17 +20,35 @@ remoting.OptionsExporter = function() {
 
 remoting.OptionsExporter.migrateSettings_ = function() {
   var result = new base.Deferred();
-  chrome.storage.local.get(KEY_NAME, function(options) {
+  chrome.storage.local.get(OPTIONS_KEY_NAME, function(options) {
     // If there are no host options stored, reformat the message response so
     // that the sender doesn't interpret it as an error.
     if (Object.keys(options).length == 0) {
-      options[KEY_NAME] = '{}';
+      options[OPTIONS_KEY_NAME] = '{}';
     }
-    result.resolve(options);
+    var nativeMessagingHost = new remoting.HostDaemonFacade();
+    nativeMessagingHost.getDaemonState().then(
+        function(state) {
+          var reverse = new Map([
+            [remoting.HostController.State.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED'],
+            [remoting.HostController.State.NOT_INSTALLED, 'NOT_INSTALLED'],
+            [remoting.HostController.State.STOPPED, 'STOPPED'],
+            [remoting.HostController.State.STARTING, 'STARTING'],
+            [remoting.HostController.State.STARTED, 'STARTED'],
+            [remoting.HostController.State.STOPPING, 'STOPPING'],
+          ]);
+          options[LOCAL_HOST_STATE_KEY_NAME] = reverse.get(state) || 'UNKNOWN';
+          result.resolve(options);
+        },
+        function(error) {
+          options[LOCAL_HOST_STATE_KEY_NAME] = 'UNKNOWN';
+          result.resolve(options);
+        });
   })
   return result.promise();
 };
 
-var KEY_NAME = 'remoting-host-options';
+var OPTIONS_KEY_NAME = 'remoting-host-options';
+var LOCAL_HOST_STATE_KEY_NAME = 'local-host-state';
 
 }());
