@@ -176,9 +176,9 @@ BluetoothDevice* BluetoothTestMac::SimulateLowEnergyDevice(int device_ordinal) {
       ];
       service_data = @{
         [CBUUID UUIDWithString:@(kTestUUIDHeartRate.c_str())] :
-            [NSData dataWithBytes:(unsigned char[]){2} length:1],
+            [NSData dataWithBytes:(unsigned char[]){} length:0],
         [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())] :
-            [NSData dataWithBytes:(unsigned char[]){0} length:1]
+            [NSData dataWithBytes:(unsigned char[]){0, 2} length:2]
       };
       tx_power = @(static_cast<int8_t>(TestTxPower::LOWER));
       break;

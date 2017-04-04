@@ -156,18 +156,29 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   void RemoveAllDevices();
 
   // Create a test Bluetooth device with the given properties.
-  void CreateTestDevice(const dbus::ObjectPath& adapter_path,
-                        const base::Optional<std::string> name,
-                        const std::string alias,
-                        const std::string device_address,
-                        const std::vector<std::string>& service_uuids,
-                        device::BluetoothTransport type);
+  void CreateTestDevice(
+      const dbus::ObjectPath& adapter_path,
+      const base::Optional<std::string> name,
+      const std::string alias,
+      const std::string device_address,
+      const std::vector<std::string>& service_uuids,
+      device::BluetoothTransport type,
+      const std::unordered_map<std::string, std::vector<uint8_t>>&
+          service_data);
 
   void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
 
   // Updates the inquiry RSSI property of fake device with object path
   // |object_path| to |rssi|, if the fake device exists.
   void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
+
+  // Updates the service data property of fake device with object path
+  // |object_path| to merge |service_data| into the existing data,
+  // if the fake device exists.
+  void UpdateServiceData(
+      const dbus::ObjectPath& object_path,
+      const std::unordered_map<std::string, std::vector<uint8_t>>&
+          service_data);
 
   static const char kTestPinCode[];
   static const int kTestPassKey;
