@@ -5,6 +5,7 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/PaintLayer.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,6 +83,75 @@ TEST_P(PaintInvalidationTest, UpdateVisualRectOnFrameBorderWidthChange) {
             &childLayoutView->containerForPaintInvalidation());
   EXPECT_EQ(LayoutRect(30, 30, 100, 100), childLayoutView->visualRect());
 };
+
+// This is a simplified test case for crbug.com/704182. It ensures no repaint
+// on transform change causing no visual change.
+TEST_P(PaintInvalidationTest, InvisibleTransformUnderFixedOnScroll) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<style>"
+      "  #fixed {"
+      "    position: fixed;"
+      "    top: 0;"
+      "    left: 0;"
+      "    width: 100px;"
+      "    height: 100px;"
+      "    background-color: blue;"
+      "  }"
+      "  #transform {"
+      "    width: 100px;"
+      "    height: 100px;"
+      "    background-color: yellow;"
+      "    will-change: transform;"
+      "    transform: translate(10px, 20px);"
+      "  }"
+      "</style>"
+      "<div style='height: 2000px'></div>"
+      "<div id='fixed' style='visibility: hidden'>"
+      "  <div id='transform'></div>"
+      "</div>");
+
+  auto& fixed = *document().getElementById("fixed");
+  const auto& fixedObject = toLayoutBox(*fixed.layoutObject());
+  const auto& fixedLayer = *fixedObject.layer();
+  auto& transform = *document().getElementById("transform");
+  EXPECT_TRUE(fixedLayer.subtreeIsInvisible());
+  EXPECT_EQ(LayoutRect(0, 0, 110, 120), fixedObject.layoutOverflowRect());
+
+  document().domWindow()->scrollTo(0, 100);
+  transform.setAttribute(HTMLNames::styleAttr,
+                         "transform: translate(20px, 30px)");
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+
+  EXPECT_TRUE(fixedLayer.subtreeIsInvisible());
+  // We skip invisible layers when setting non-composited fixed-position
+  // needing paint invalidation when the frame is scrolled.
+  EXPECT_FALSE(fixedObject.shouldDoFullPaintInvalidation());
+  // This was set when fixedObject is marked needsOverflowRecaldAfterStyleChange
+  // when child changed transform.
+  EXPECT_TRUE(fixedObject.mayNeedPaintInvalidation());
+  EXPECT_EQ(LayoutRect(0, 0, 120, 130), fixedObject.layoutOverflowRect());
+
+  // We should not repaint anything because all contents are invisible.
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(fixedLayer.needsRepaint());
+  document().view()->updateAllLifecyclePhases();
+
+  // The following ensures normal paint invalidation still works.
+  transform.setAttribute(
+      HTMLNames::styleAttr,
+      "visibility: visible; transform: translate(20px, 30px)");
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+  EXPECT_FALSE(fixedLayer.subtreeIsInvisible());
+  document().view()->updateAllLifecyclePhases();
+  fixed.setAttribute(HTMLNames::styleAttr, "top: 50px");
+  document().view()->updateLifecycleToCompositingCleanPlusScrolling();
+  EXPECT_TRUE(fixedObject.mayNeedPaintInvalidation());
+  EXPECT_FALSE(fixedLayer.subtreeIsInvisible());
+  document().view()->updateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(fixedLayer.needsRepaint());
+  document().view()->updateAllLifecyclePhases();
+}
 
 }  // namespace
 

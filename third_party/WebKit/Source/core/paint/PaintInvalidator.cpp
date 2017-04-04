@@ -488,7 +488,8 @@ void PaintInvalidator::invalidatePaintIfNeeded(
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
   }
 
-  if (context.oldLocation != context.newLocation) {
+  if (context.oldLocation != context.newLocation &&
+      !context.paintingLayer->subtreeIsInvisible()) {
     context.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedSubtreeInvalidationChecking;
   }
