@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/uievents/#interface-inputevent
-
-// InputEventInit
-// https://w3c.github.io/input-events/#interface-InputEventInit
 dictionary InputEventInit : UIEventInit {
-    DOMString inputType = "";
+    // UI Events
+    // https://w3c.github.io/uievents/#idl-inputeventinit
     DOMString? data;
-    DataTransfer? dataTransfer;
     boolean isComposing = false;
+
+    // Input Events Level 1
+    // https://www.w3.org/TR/2017/WD-input-events-1-20170321/#interface-InputEvent
+    DOMString inputType = "";
+    DataTransfer? dataTransfer;
     sequence<StaticRange> targetRanges = [];
 };

@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/uievents/#interface-inputevent
-
-// Input Events
-// https://w3c.github.io/input-events/#interface-InputEvent
 [
     Constructor(DOMString type, optional InputEventInit eventInitDict),
     RuntimeEnabled=InputEvent,
 ] interface InputEvent : UIEvent {
-    readonly attribute DOMString inputType;
+    // UI Events
+    // https://w3c.github.io/uievents/#idl-inputevent
     readonly attribute DOMString? data;
-    readonly attribute DataTransfer? dataTransfer;
     readonly attribute boolean isComposing;
+
+    // Input Events Level 1
+    // https://www.w3.org/TR/2017/WD-input-events-1-20170321/#interface-InputEvent
+    readonly attribute DOMString inputType;
+    readonly attribute DataTransfer? dataTransfer;
     sequence<StaticRange> getTargetRanges();
 };
