@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -23,6 +22,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -39,8 +42,8 @@ class SessionServiceTest : public PlatformTest {
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPath(test_dir_.GetPath());
     chrome_browser_state_ = test_cbs_builder.Build();
-    directory_name_.reset([base::SysUTF8ToNSString(
-        chrome_browser_state_->GetStatePath().value()) copy]);
+    directory_name_ = [base::SysUTF8ToNSString(
+        chrome_browser_state_->GetStatePath().value()) copy];
   }
 
   // Helper function to load a SessionWindowIOS from a given testdata
@@ -68,13 +71,13 @@ class SessionServiceTest : public PlatformTest {
     return chrome_browser_state_.get();
   }
 
-  NSString* directory_name() { return directory_name_.get(); }
+  NSString* directory_name() { return directory_name_; }
 
  private:
   base::ScopedTempDir test_dir_;
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<ios::ChromeBrowserState> chrome_browser_state_;
-  base::scoped_nsobject<NSString> directory_name_;
+  NSString* directory_name_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionServiceTest);
 };
@@ -124,8 +127,7 @@ TEST_F(SessionServiceTest, LoadEmptyWindowFromDirectory) {
 
 TEST_F(SessionServiceTest, LoadWindowFromDirectory) {
   SessionServiceIOS* service = [SessionServiceIOS sharedService];
-  base::scoped_nsobject<SessionWindowIOS> origSessionWindow(
-      [[SessionWindowIOS alloc] init]);
+  SessionWindowIOS* origSessionWindow = [[SessionWindowIOS alloc] init];
   [service performSaveWindow:origSessionWindow toDirectory:directory_name()];
 
   SessionWindowIOS* session_window =

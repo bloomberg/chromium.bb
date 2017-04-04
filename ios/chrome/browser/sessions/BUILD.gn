@@ -87,6 +87,7 @@ source_set("unit_tests") {
 }
 
 source_set("unit_tests_non_arc") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "session_service_unittest.mm",
