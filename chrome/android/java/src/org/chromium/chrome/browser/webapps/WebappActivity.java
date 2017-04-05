@@ -104,10 +104,6 @@ public class WebappActivity extends FullScreenActivity {
         if (newWebappInfo == null) {
             Log.e(TAG, "Failed to parse new Intent: " + intent);
             ApiCompatibilityUtils.finishAndRemoveTask(this);
-        } else if (!TextUtils.equals(mWebappInfo.id(), newWebappInfo.id())) {
-            mWebappInfo = newWebappInfo;
-            resetSavedInstanceState();
-            if (mIsInitialized) initializeUI(null);
         } else if (newWebappInfo.shouldForceNavigation() && mIsInitialized) {
             getActivityTab().loadUrl(new LoadUrlParams(
                     newWebappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL));

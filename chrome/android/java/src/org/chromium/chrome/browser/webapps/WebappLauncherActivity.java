@@ -138,6 +138,21 @@ public class WebappLauncherActivity extends Activity {
                     ? ActivityAssigner.WEBAPK_NAMESPACE : ActivityAssigner.WEBAPP_NAMESPACE;
             int activityIndex = ActivityAssigner.instance(namespace).assign(info.id());
             activityName += String.valueOf(activityIndex);
+
+            // Finishes the old activity if it has been assigned to a different WebappActivity. See
+            // crbug.com/702998.
+            for (WeakReference<Activity> activityRef : ApplicationStatus.getRunningActivities()) {
+                Activity activity = activityRef.get();
+                if (!(activity instanceof WebappActivity)
+                        || !activity.getClass().getName().equals(activityName)) {
+                    continue;
+                }
+                WebappActivity webappActivity = (WebappActivity) activity;
+                if (!TextUtils.equals(webappActivity.mWebappInfo.id(), info.id())) {
+                    activity.finish();
+                }
+                break;
+            }
         }
 
         // Create an intent to launch the Webapp in an unmapped WebappActivity.
