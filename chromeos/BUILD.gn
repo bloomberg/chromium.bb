@@ -133,6 +133,8 @@ component("chromeos") {
     "dbus/auth_policy_client.h",
     "dbus/biod/biod_client.cc",
     "dbus/biod/biod_client.h",
+    "dbus/biod/fake_biod_client.cc",
+    "dbus/biod/fake_biod_client.h",
     "dbus/blocking_method_caller.cc",
     "dbus/blocking_method_caller.h",
     "dbus/cras_audio_client.cc",

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "chromeos/dbus/biod/fake_biod_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -356,8 +357,11 @@ BiodClient::BiodClient() {}
 BiodClient::~BiodClient() {}
 
 // static
-BiodClient* BiodClient::Create(DBusClientImplementationType /* type */) {
-  return new BiodClientImpl();
+BiodClient* BiodClient::Create(DBusClientImplementationType type) {
+  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
+    return new BiodClientImpl();
+  DCHECK_EQ(FAKE_DBUS_CLIENT_IMPLEMENTATION, type);
+  return new FakeBiodClient();
 }
 
 }  // namespace chromeos
