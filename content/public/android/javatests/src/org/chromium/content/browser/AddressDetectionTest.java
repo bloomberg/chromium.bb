@@ -62,6 +62,7 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
 
     //@MediumTest
     //@Feature({"ContentDetection", "TabContents"})
+    // crbug.com/671647
     @DisabledTest
     public void testAddressLimits() throws Throwable {
         startActivityWithTestUrl(
@@ -100,9 +101,11 @@ public class AddressDetectionTest extends ContentDetectionTestBase {
                 "79th Street, New York, NY, 10024-5192"));
     }
 
-    @MediumTest
-    @Feature({"ContentDetection", "TabContents"})
-    @RetryOnFailure
+    //@MediumTest
+    //@Feature({"ContentDetection", "TabContents"})
+    //@RetryOnFailure
+    // crbug.com/708176
+    @DisabledTest
     public void testSpecialChars() throws Throwable {
         startActivityWithTestUrl(
                 "content/test/data/android/content_detection/geo_address_special_chars.html");
