@@ -17,10 +17,19 @@ NSString* const kCertificatePolicyCacheStorageKey =
     @"certificatePolicyCacheStorage";
 NSString* const kCertificatePolicyCacheStorageDeprecatedKey =
     @"certificatePolicyManager";
-NSString* const klastCommittedItemIndexKey = @"lastCommittedItemIndex";
 NSString* const kItemStoragesKey = @"entries";
 NSString* const kHasOpenerKey = @"openedByDOM";
+NSString* const kLastCommittedItemIndexKey = @"lastCommittedItemIndex";
 NSString* const kPreviousItemIndexKey = @"previousItemIndex";
+
+// Deprecated, used for backward compatibility.
+// TODO(crbug.com/708795): Remove this key.
+NSString* const kLastCommittedItemIndexDeprecatedKey =
+    @"currentNavigationIndex";
+
+// Deprecated, used for backward compatibility.
+// TODO(crbug.com/708795): Remove this key.
+NSString* const kPreviousItemIndexDeprecatedKey = @"previousNavigationIndex";
 }
 
 @interface CRWSessionStorage () {
@@ -55,9 +64,24 @@ NSString* const kPreviousItemIndexKey = @"previousItemIndex";
   self = [super init];
   if (self) {
     _hasOpener = [decoder decodeBoolForKey:kHasOpenerKey];
-    _lastCommittedItemIndex =
-        [decoder decodeIntForKey:klastCommittedItemIndexKey];
-    _previousItemIndex = [decoder decodeIntForKey:kPreviousItemIndexKey];
+
+    if ([decoder containsValueForKey:kLastCommittedItemIndexKey]) {
+      _lastCommittedItemIndex =
+          [decoder decodeIntForKey:kLastCommittedItemIndexKey];
+    } else {
+      // Backward compatibility.
+      _lastCommittedItemIndex =
+          [decoder decodeIntForKey:kLastCommittedItemIndexDeprecatedKey];
+    }
+
+    if ([decoder containsValueForKey:kPreviousItemIndexKey]) {
+      _previousItemIndex = [decoder decodeIntForKey:kPreviousItemIndexKey];
+    } else {
+      // Backward compatibility.
+      _previousItemIndex =
+          [decoder decodeIntForKey:kPreviousItemIndexDeprecatedKey];
+    }
+
     _itemStorages = [[NSMutableArray alloc]
         initWithArray:[decoder decodeObjectForKey:kItemStoragesKey]];
     // Prior to M34, 0 was used as "no index" instead of -1; adjust for that.
@@ -82,7 +106,7 @@ NSString* const kPreviousItemIndexKey = @"previousItemIndex";
 - (void)encodeWithCoder:(NSCoder*)coder {
   [coder encodeBool:self.hasOpener forKey:kHasOpenerKey];
   [coder encodeInt:self.lastCommittedItemIndex
-            forKey:klastCommittedItemIndexKey];
+            forKey:kLastCommittedItemIndexKey];
   [coder encodeInt:self.previousItemIndex forKey:kPreviousItemIndexKey];
   [coder encodeObject:self.itemStorages forKey:kItemStoragesKey];
   [coder encodeObject:self.certPolicyCacheStorage
