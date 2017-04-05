@@ -667,6 +667,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                        const gfx::Vector2d& bitmap_offset_in_dip,
                        const DragEventSourceInfo& event_info);
   void OnUpdateDragCursor(blink::WebDragOperation current_op);
+  void OnFrameSwapMessagesReceived(uint32_t frame_token,
+                                   std::vector<IPC::Message> messages);
 
   // Called (either immediately or asynchronously) after we're done with our
   // BackingStore and can send an ACK to the renderer so it can paint onto it
@@ -740,6 +742,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Used for UMA logging how long the renderer was unresponsive.
   void LogHangMonitorUnresponsive();
+
+  // Signals that a frame with token |frame_token| was finished processing. If
+  // there are any queued messages belonging to it, they will be processed.
+  void DidProcessFrame(uint32_t frame_token);
+
+  // Once both the frame and its swap messages arrive, we call this method to
+  // process the messages. Virtual for tests.
+  virtual void ProcessSwapMessages(std::vector<IPC::Message> messages);
 
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
@@ -954,6 +964,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   uint32_t last_compositor_frame_sink_id_ = 0;
 
   cc::CompositorFrameMetadata last_frame_metadata_;
+
+  // Last non-zero frame token received from the renderer. Any swap messsages
+  // having a token less than or equal to this value will be processed.
+  uint32_t last_received_frame_token_ = 0;
+
+  // List of all swap messages that their corresponding frames have not arrived.
+  // Sorted by frame token.
+  std::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

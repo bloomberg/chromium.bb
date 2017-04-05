@@ -182,6 +182,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::input_router_;
+  using RenderWidgetHostImpl::queued_messages_;
 
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                        InputEventAckState ack_result) override {
@@ -215,6 +216,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
     return static_cast<MockInputRouter*>(input_router_.get());
   }
 
+  uint32_t processed_frame_messages_count() {
+    return processed_frame_messages_count_;
+  }
+
  protected:
   void NotifyNewContentRenderingTimeoutForTesting() override {
     new_content_rendering_timeout_fired_ = true;
@@ -224,6 +229,10 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   WebInputEvent::Type acked_touch_event_type_;
 
  private:
+  void ProcessSwapMessages(std::vector<IPC::Message> messages) override {
+    processed_frame_messages_count_++;
+  }
+  uint32_t processed_frame_messages_count_ = 0;
   DISALLOW_COPY_AND_ASSIGN(MockRenderWidgetHost);
 };
 
@@ -1936,8 +1945,8 @@ TEST_F(RenderWidgetHostTest, CompositorFrameSinkIdChanges) {
 
   // Submit a frame with compositor_frame_sink_id=1
   cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 1, local_surface_id, frame, std::vector<IPC::Message>()));
+  host_->OnMessageReceived(
+      ViewHostMsg_SwapCompositorFrame(0, 1, local_surface_id, frame));
 
   // Send an ack. The right compositor_frame_sink_id must be sent.
   host_->SendReclaimCompositorResources(true /* is_swap_ack */,
@@ -1956,8 +1965,8 @@ TEST_F(RenderWidgetHostTest, CompositorFrameSinkIdChanges) {
   // notified of the change in id.
   view_->reset_did_change_compositor_frame_sink();
   frame = MakeCompositorFrame(1.f, frame_size);
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      2, 2, local_surface_id, frame, std::vector<IPC::Message>()));
+  host_->OnMessageReceived(
+      ViewHostMsg_SwapCompositorFrame(2, 2, local_surface_id, frame));
   EXPECT_TRUE(view_->did_change_compositor_frame_sink());
 
   // Send an ack. The right compositor_frame_sink_id must be sent.
@@ -1972,6 +1981,218 @@ TEST_F(RenderWidgetHostTest, CompositorFrameSinkIdChanges) {
     EXPECT_EQ(2u, std::get<0>(params));  // compositor_frame_sink_id
   }
   sink_->ClearMessages();
+}
+
+// Check that if messages of a frame arrive earlier than the frame itself, we
+// queue the messages until the frame arrives and then process them.
+TEST_F(RenderWidgetHostTest, FrameToken_MessageThenFrame) {
+  const uint32_t frame_token = 99;
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  std::vector<IPC::Message> messages;
+  messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token, messages));
+  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+}
+
+// Check that if a frame arrives earlier than its messages, we process the
+// messages immedtiately.
+TEST_F(RenderWidgetHostTest, FrameToken_FrameThenMessage) {
+  const uint32_t frame_token = 99;
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  std::vector<IPC::Message> messages;
+  messages.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token, messages));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+}
+
+// Check that if messages of multiple frames arrive before the frames, we
+// process each message once it frame arrives.
+TEST_F(RenderWidgetHostTest, FrameToken_MultipleMessagesThenTokens) {
+  const uint32_t frame_token1 = 99;
+  const uint32_t frame_token2 = 100;
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages2;
+  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+  EXPECT_EQ(2u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token1;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+
+  frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token2;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(2u, host_->processed_frame_messages_count());
+}
+
+// Check that if multiple frames arrive before their messages, each message is
+// processed immediately as soon as it arrives.
+TEST_F(RenderWidgetHostTest, FrameToken_MultipleTokensThenMessages) {
+  const uint32_t frame_token1 = 99;
+  const uint32_t frame_token2 = 100;
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages2;
+  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token1;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token2;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(2u, host_->processed_frame_messages_count());
+}
+
+// Check that if one frame is lost but its messages arrive, we process the
+// messages on the arrival of the next frame.
+TEST_F(RenderWidgetHostTest, FrameToken_DroppedFrame) {
+  const uint32_t frame_token1 = 99;
+  const uint32_t frame_token2 = 100;
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages2;
+  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages2.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token2, messages2));
+  EXPECT_EQ(2u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token2;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(2u, host_->processed_frame_messages_count());
+}
+
+// Check that if the renderer crashes, we drop all queued messages and allow
+// smaller frame tokens to be sent by the renderer.
+TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
+  const uint32_t frame_token1 = 99;
+  const uint32_t frame_token2 = 50;
+  const uint32_t frame_token3 = 30;
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+  std::vector<IPC::Message> messages1;
+  std::vector<IPC::Message> messages3;
+  messages1.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(5));
+  messages3.push_back(ViewHostMsg_DidFirstVisuallyNonEmptyPaint(6));
+
+  // If we don't do this, then RWHI destroys the view in RendererExited and
+  // then a crash occurs when we attempt to destroy it again in TearDown().
+  host_->SetView(nullptr);
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token1, messages1));
+  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+  host_->Init();
+
+  cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token2;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+  host_->Init();
+
+  host_->OnMessageReceived(
+      ViewHostMsg_FrameSwapMessages(0, frame_token3, messages3));
+  EXPECT_EQ(1u, host_->queued_messages_.size());
+  EXPECT_EQ(0u, host_->processed_frame_messages_count());
+
+  frame = MakeCompositorFrame(1.f, frame_size);
+  frame.metadata.frame_token = frame_token3;
+  host_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+  EXPECT_EQ(0u, host_->queued_messages_.size());
+  EXPECT_EQ(1u, host_->processed_frame_messages_count());
 }
 
 }  // namespace content

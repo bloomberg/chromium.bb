@@ -574,6 +574,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameSwapMessages,
+                        OnFrameSwapMessagesReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1576,6 +1578,31 @@ void RenderWidgetHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
     view->UpdateDragCursor(current_op);
 }
 
+void RenderWidgetHostImpl::OnFrameSwapMessagesReceived(
+    uint32_t frame_token,
+    std::vector<IPC::Message> messages) {
+  // Zero token is invalid.
+  if (!frame_token) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_INVALID_FRAME_TOKEN);
+    return;
+  }
+
+  // Frame tokens always increase.
+  if (queued_messages_.size() && frame_token <= queued_messages_.back().first) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_INVALID_FRAME_TOKEN);
+    return;
+  }
+
+  if (frame_token <= last_received_frame_token_) {
+    ProcessSwapMessages(std::move(messages));
+    return;
+  }
+
+  queued_messages_.push(std::make_pair(frame_token, std::move(messages)));
+}
+
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
   if (!renderer_initialized_)
@@ -1628,6 +1655,9 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
       process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
   synthetic_gesture_controller_.reset();
+
+  last_received_frame_token_ = 0;
+  auto doomed = std::move(queued_messages_);
 }
 
 void RenderWidgetHostImpl::UpdateTextDirection(WebTextDirection direction) {
@@ -1875,8 +1905,6 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   uint32_t compositor_frame_sink_id = std::get<0>(param);
   cc::LocalSurfaceId local_surface_id = std::get<1>(param);
   cc::CompositorFrame frame(std::move(std::get<2>(param)));
-  std::vector<IPC::Message> messages_to_deliver_with_frame;
-  messages_to_deliver_with_frame.swap(std::get<3>(param));
 
   if (compositor_frame_sink_id != last_compositor_frame_sink_id_) {
     if (view_)
@@ -1885,17 +1913,6 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   }
 
   SubmitCompositorFrame(local_surface_id, std::move(frame));
-
-  RenderProcessHost* rph = GetProcess();
-  for (std::vector<IPC::Message>::const_iterator i =
-           messages_to_deliver_with_frame.begin();
-       i != messages_to_deliver_with_frame.end();
-       ++i) {
-    rph->OnMessageReceived(*i);
-    if (i->dispatch_error())
-      rph->OnBadMessageReceived(*i);
-  }
-  messages_to_deliver_with_frame.clear();
 
   return true;
 }
@@ -2610,6 +2627,8 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
     return;
   }
 
+  uint32_t frame_token = frame.metadata.frame_token;
+
   last_local_surface_id_ = local_surface_id;
   last_frame_size_ = frame_size;
   last_device_scale_factor_ = device_scale_factor;
@@ -2665,6 +2684,37 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   if (delegate_)
     delegate_->DidReceiveCompositorFrame();
+
+  if (frame_token)
+    DidProcessFrame(frame_token);
+}
+
+void RenderWidgetHostImpl::DidProcessFrame(uint32_t frame_token) {
+  // Frame tokens always increase.
+  if (frame_token <= last_received_frame_token_) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_INVALID_FRAME_TOKEN);
+    return;
+  }
+
+  last_received_frame_token_ = frame_token;
+
+  while (queued_messages_.size() &&
+         queued_messages_.front().first <= frame_token) {
+    ProcessSwapMessages(std::move(queued_messages_.front().second));
+    queued_messages_.pop();
+  }
+}
+
+void RenderWidgetHostImpl::ProcessSwapMessages(
+    std::vector<IPC::Message> messages) {
+  RenderProcessHost* rph = GetProcess();
+  for (std::vector<IPC::Message>::const_iterator i = messages.begin();
+       i != messages.end(); ++i) {
+    rph->OnMessageReceived(*i);
+    if (i->dispatch_error())
+      rph->OnBadMessageReceived(*i);
+  }
 }
 
 }  // namespace content

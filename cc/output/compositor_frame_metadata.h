@@ -92,6 +92,11 @@ class CC_EXPORT CompositorFrameMetadata {
   // BeginFrameAck for the BeginFrame that this CompositorFrame answers.
   BeginFrameAck begin_frame_ack;
 
+  // Once the display compositor processes a frame containing a non-zero frame
+  // token, the token is sent to embedder of the frame. This is helpful when
+  // the embedder wants to do something after a particular frame is processed.
+  uint32_t frame_token = 0;
+
  private:
   CompositorFrameMetadata(const CompositorFrameMetadata& other);
   CompositorFrameMetadata operator=(const CompositorFrameMetadata&) = delete;

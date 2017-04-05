@@ -34,4 +34,5 @@ struct CompositorFrameMetadata {
   bool can_activate_before_dependencies;
   uint32 content_source_id;
   BeginFrameAck begin_frame_ack;
+  uint32 frame_token;
 };

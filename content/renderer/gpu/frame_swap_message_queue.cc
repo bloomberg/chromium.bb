@@ -206,4 +206,8 @@ void FrameSwapMessageQueue::TransferMessages(
   source->clear();
 }
 
+uint32_t FrameSwapMessageQueue::AllocateFrameToken() {
+  return ++last_used_frame_token_;
+}
+
 }  // namespace content

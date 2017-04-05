@@ -207,6 +207,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(referenced_surfaces)
   IPC_STRUCT_TRAITS_MEMBER(content_source_id)
   IPC_STRUCT_TRAITS_MEMBER(begin_frame_ack)
+  IPC_STRUCT_TRAITS_MEMBER(frame_token)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

@@ -130,18 +130,25 @@ void RendererCompositorFrameSink::SubmitCompositorFrame(
   if (ShouldAllocateNewLocalSurfaceId(frame))
     local_surface_id_ = id_allocator_.GenerateId();
   UpdateFrameData(frame);
+
   {
     std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
         send_message_scope =
             frame_swap_message_queue_->AcquireSendMessageScope();
     std::vector<std::unique_ptr<IPC::Message>> messages;
-    std::vector<IPC::Message> messages_to_deliver_with_frame;
     frame_swap_message_queue_->DrainMessages(&messages);
-    FrameSwapMessageQueue::TransferMessages(&messages,
-                                            &messages_to_deliver_with_frame);
+    std::vector<IPC::Message> messages_to_send;
+    FrameSwapMessageQueue::TransferMessages(&messages, &messages_to_send);
+    uint32_t frame_token = 0;
+    if (!messages_to_send.empty())
+      frame_token = frame_swap_message_queue_->AllocateFrameToken();
+    frame.metadata.frame_token = frame_token;
     Send(new ViewHostMsg_SwapCompositorFrame(
-        routing_id_, compositor_frame_sink_id_, local_surface_id_, frame,
-        messages_to_deliver_with_frame));
+        routing_id_, compositor_frame_sink_id_, local_surface_id_, frame));
+    if (frame_token) {
+      Send(new ViewHostMsg_FrameSwapMessages(routing_id_, frame_token,
+                                             messages_to_send));
+    }
     // ~send_message_scope.
   }
 }
