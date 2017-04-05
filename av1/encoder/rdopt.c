@@ -1917,13 +1917,62 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return rd;
 }
 
+static int skip_txfm_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
+                            TX_TYPE tx_type, TX_SIZE tx_size) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const TX_SIZE max_tx_size = max_txsize_lookup[bs];
+  const int is_inter = is_inter_block(mbmi);
+  int prune = 0;
+  if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE)
+    // passing -1 in for tx_type indicates that all 1D
+    // transforms should be considered for pruning
+    prune = prune_tx_types(cpi, bs, x, xd, -1);
+
+#if CONFIG_EXT_TX && CONFIG_RECT_TX
+  if (!is_rect_tx(tx_size)) return 1;
+#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+  if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, 0, tx_size))
+    return 1;
+  if (!is_inter && x->use_default_intra_tx_type &&
+      tx_type != get_default_tx_type(0, xd, 0, tx_size))
+    return 1;
+  if (is_inter && x->use_default_inter_tx_type &&
+      tx_type != get_default_tx_type(0, xd, 0, tx_size))
+    return 1;
+  if (max_tx_size >= TX_32X32 && tx_size == TX_4X4) return 1;
+#if CONFIG_EXT_TX
+  const AV1_COMMON *const cm = &cpi->common;
+  int ext_tx_set =
+      get_ext_tx_set(tx_size, bs, is_inter, cm->reduced_tx_set_used);
+  if (is_inter) {
+    if (!ext_tx_used_inter[ext_tx_set][tx_type]) return 1;
+    if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
+      if (!do_tx_type_search(tx_type, prune)) return 1;
+    }
+  } else {
+    if (!ALLOW_INTRA_EXT_TX && bs >= BLOCK_8X8) {
+      if (tx_type != intra_mode_to_tx_type_context[mbmi->mode]) return 1;
+    }
+    if (!ext_tx_used_intra[ext_tx_set][tx_type]) return 1;
+  }
+#else   // CONFIG_EXT_TX
+  if (tx_size >= TX_32X32 && tx_type != DCT_DCT) return 1;
+  if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
+      !do_tx_type_search(tx_type, prune))
+    return 1;
+#endif  // CONFIG_EXT_TX
+  return 0;
+}
+
 static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
                                        MACROBLOCK *x, RD_STATS *rd_stats,
-                                       int64_t ref_best_rd, TX_TYPE tx_type,
+                                       int64_t ref_best_rd, TX_TYPE tx_type
 #if CONFIG_PVQ
-                                       od_rollback_buffer buf,
+                                       ,
+                                       od_rollback_buffer buf
 #endif  // CONFIG_PVQ
-                                       int prune) {
+                                       ) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -1983,37 +2032,7 @@ static int64_t choose_tx_size_fix_type(const AV1_COMP *const cpi, BLOCK_SIZE bs,
   last_rd = INT64_MAX;
   for (n = start_tx; n >= end_tx; --n) {
     RD_STATS this_rd_stats;
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-    if (is_rect_tx(n)) break;
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
-    if (FIXED_TX_TYPE && tx_type != get_default_tx_type(0, xd, 0, n)) continue;
-    if (!is_inter && x->use_default_intra_tx_type &&
-        tx_type != get_default_tx_type(0, xd, 0, n))
-      continue;
-    if (is_inter && x->use_default_inter_tx_type &&
-        tx_type != get_default_tx_type(0, xd, 0, n))
-      continue;
-    if (max_tx_size >= TX_32X32 && n == TX_4X4) continue;
-#if CONFIG_EXT_TX
-    ext_tx_set = get_ext_tx_set(n, bs, is_inter, cm->reduced_tx_set_used);
-    if (is_inter) {
-      if (!ext_tx_used_inter[ext_tx_set][tx_type]) continue;
-      if (cpi->sf.tx_type_search.prune_mode > NO_PRUNE) {
-        if (!do_tx_type_search(tx_type, prune)) continue;
-      }
-    } else {
-      if (!ALLOW_INTRA_EXT_TX && bs >= BLOCK_8X8) {
-        if (tx_type != intra_mode_to_tx_type_context[mbmi->mode]) continue;
-      }
-      if (!ext_tx_used_intra[ext_tx_set][tx_type]) continue;
-    }
-#else   // CONFIG_EXT_TX
-    if (n >= TX_32X32 && tx_type != DCT_DCT) continue;
-    if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE &&
-        !do_tx_type_search(tx_type, prune))
-      continue;
-#endif  // CONFIG_EXT_TX
-
+    if (skip_txfm_search(cpi, x, bs, tx_type, n)) continue;
     rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type, n);
 #if CONFIG_PVQ
     od_encode_rollback(&x->daala_enc, &buf);
@@ -2242,18 +2261,11 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   int64_t rd = INT64_MAX;
   int64_t best_rd = INT64_MAX;
   TX_SIZE best_tx = max_txsize_lookup[bs];
-  const int is_inter = is_inter_block(mbmi);
   TX_TYPE tx_type, best_tx_type = DCT_DCT;
-  int prune = 0;
 
 #if CONFIG_PVQ
   od_rollback_buffer buf;
 #endif  // CONFIG_PVQ
-  if (is_inter && cpi->sf.tx_type_search.prune_mode > NO_PRUNE)
-    // passing -1 in for tx_type indicates that all 1D
-    // transforms should be considered for pruning
-    prune = prune_tx_types(cpi, bs, x, xd, -1);
-
   av1_invalid_rd_stats(rd_stats);
 
 #if CONFIG_PVQ
@@ -2264,12 +2276,13 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #if CONFIG_REF_MV
     if (mbmi->ref_mv_idx > 0 && tx_type != DCT_DCT) continue;
 #endif  // CONFIG_REF_MV
-    rd = choose_tx_size_fix_type(cpi, bs, x, &this_rd_stats, ref_best_rd,
-                                 tx_type,
+    rd =
+        choose_tx_size_fix_type(cpi, bs, x, &this_rd_stats, ref_best_rd, tx_type
 #if CONFIG_PVQ
-                                 buf,
+                                ,
+                                buf
 #endif  // CONFIG_PVQ
-                                 prune);
+                                );
     if (rd < best_rd) {
       best_rd = rd;
       *rd_stats = this_rd_stats;
@@ -2277,6 +2290,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       best_tx = mbmi->tx_size;
     }
 #if CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+    const int is_inter = is_inter_block(mbmi);
     if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
 #endif  // CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   }
