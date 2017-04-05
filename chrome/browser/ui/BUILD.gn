@@ -92,6 +92,7 @@ split_static_library("ui") {
     "browser_commands_chromeos.h",
     "browser_commands_mac.cc",
     "browser_commands_mac.h",
+    "browser_dialogs.cc",
     "browser_dialogs.h",
     "browser_mac.cc",
     "browser_mac.h",

@@ -186,6 +186,15 @@ class ContentSettingBubbleViewsBridge {
 
 #endif  // TOOLKIT_VIEWS
 
+// Values used in the Dialog.Creation UMA metric. Each value represents a
+// different type of dialog box.
+// These values are written to logs. New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+enum class DialogIdentifier { UNKNOWN = 0, TRANSLATE = 1, MAX_VALUE };
+
+// Record an UMA metric counting the creation of a dialog box of this type.
+void RecordDialogCreation(DialogIdentifier identifier);
+
 }  // namespace chrome
 
 #if defined(OS_CHROMEOS)
