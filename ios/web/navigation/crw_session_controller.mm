@@ -16,7 +16,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/history_state_util.h"
-#import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/navigation/navigation_manager_facade_delegate.h"
@@ -42,9 +41,6 @@
   // Identifies the index of the previous item in the items array.
   NSInteger _previousItemIndex;
 
-  // Stores the certificate policies decided by the user.
-  CRWSessionCertificatePolicyManager* _sessionCertificatePolicyManager;
-
   // The browser state associated with this CRWSessionController;
   web::BrowserState* _browserState;  // weak
 
@@ -64,11 +60,6 @@
 
 // Redefine as readwrite.
 @property(nonatomic, readwrite, assign) NSInteger lastCommittedItemIndex;
-
-// TODO(rohitrao): These properties must be redefined readwrite to work around a
-// clang bug. crbug.com/228650
-@property(nonatomic, readwrite, strong)
-    CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 
 // Expose setters for serialization properties.  These are exposed in a category
 // in SessionStorageBuilder, and will be removed as ownership of
@@ -96,7 +87,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
 @synthesize lastCommittedItemIndex = _lastCommittedItemIndex;
 @synthesize previousItemIndex = _previousItemIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
-@synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
 - (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   self = [super init];
@@ -105,8 +95,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
     _lastCommittedItemIndex = -1;
     _previousItemIndex = -1;
     _pendingItemIndex = -1;
-    _sessionCertificatePolicyManager =
-        [[CRWSessionCertificatePolicyManager alloc] init];
   }
   return self;
 }
@@ -123,8 +111,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
                  static_cast<NSInteger>(_items.size()) - 1);
     _previousItemIndex = -1;
     _pendingItemIndex = -1;
-    _sessionCertificatePolicyManager =
-        [[CRWSessionCertificatePolicyManager alloc] init];
   }
   return self;
 }

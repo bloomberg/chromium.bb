@@ -19,8 +19,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
+#import "ios/web/public/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/crw_session_storage.h"
 #include "ios/web/public/web_thread.h"
 
@@ -70,8 +70,9 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
 + (void)registerCompatibilityAliases {
   // TODO(crbug.com/661633): those aliases where introduced between M57 and
   // M58, so remove them after M67 has shipped to stable.
-  [SessionWindowUnarchiver setClass:[CRWSessionCertificatePolicyManager class]
-                       forClassName:@"SessionCertificatePolicyManager"];
+  [SessionWindowUnarchiver
+          setClass:[CRWSessionCertificatePolicyCacheStorage class]
+      forClassName:@"SessionCertificatePolicyManager"];
   [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
                        forClassName:@"SessionController"];
   [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
@@ -87,6 +88,9 @@ const NSTimeInterval kSaveDelay = 2.5;  // Value taken from Desktop Chrome.
   // remove it after M68 has shipped to stable.
   [SessionWindowUnarchiver setClass:[CRWSessionStorage class]
                        forClassName:@"CRWNavigationManagerStorage"];
+  [SessionWindowUnarchiver
+          setClass:[CRWSessionCertificatePolicyCacheStorage class]
+      forClassName:@"CRWSessionCertificatePolicyManager"];
 }
 
 @end

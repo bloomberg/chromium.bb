@@ -69,6 +69,16 @@ NavigationManager* TestWebState::GetNavigationManager() {
   return navigation_manager_.get();
 }
 
+const SessionCertificatePolicyCache*
+TestWebState::GetSessionCertificatePolicyCache() const {
+  return nullptr;
+}
+
+SessionCertificatePolicyCache*
+TestWebState::GetSessionCertificatePolicyCache() {
+  return nullptr;
+}
+
 CRWSessionStorage* TestWebState::BuildSessionStorage() {
   return nil;
 }

@@ -38,6 +38,9 @@ class TestWebState : public WebState {
   void Stop() override {}
   const NavigationManager* GetNavigationManager() const override;
   NavigationManager* GetNavigationManager() override;
+  const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
+      const override;
+  SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
   CRWSessionStorage* BuildSessionStorage() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
   void ExecuteJavaScript(const base::string16& javascript) override;

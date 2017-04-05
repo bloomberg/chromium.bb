@@ -43,6 +43,7 @@ struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
 class NavigationManager;
+class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
 class WebStateFacadeDelegate;
 class WebStatePolicyDecider;
@@ -157,6 +158,11 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   const NavigationManagerImpl& GetNavigationManagerImpl() const;
   NavigationManagerImpl& GetNavigationManagerImpl();
 
+  // Returns the SessionCertificatePolicyCacheImpl for this WebStateImpl.
+  const SessionCertificatePolicyCacheImpl&
+  GetSessionCertificatePolicyCacheImpl() const;
+  SessionCertificatePolicyCacheImpl& GetSessionCertificatePolicyCacheImpl();
+
   // Creates a WebUI page for the given url, owned by this object.
   void CreateWebUI(const GURL& url);
   // Clears any current WebUI. Should be called when the page changes.
@@ -211,6 +217,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void Stop() override;
   const NavigationManager* GetNavigationManager() const override;
   NavigationManager* GetNavigationManager() override;
+  const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
+      const override;
+  SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() override;
   CRWSessionStorage* BuildSessionStorage() override;
   CRWJSInjectionReceiver* GetJSInjectionReceiver() const override;
   void ExecuteJavaScript(const base::string16& javascript) override;
@@ -332,6 +341,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // The NavigationManagerImpl that stores session info for this WebStateImpl.
   std::unique_ptr<NavigationManagerImpl> navigation_manager_;
+
+  // The SessionCertificatePolicyCacheImpl that stores the certificate policy
+  // information for this WebStateImpl.
+  std::unique_ptr<SessionCertificatePolicyCacheImpl> certificate_policy_cache_;
 
   // |web::WebUIIOS| object for the current page if it is a WebUI page that
   // uses the web-based WebUI framework, or nullptr otherwise.

@@ -5,8 +5,6 @@
 #ifndef IOS_WEB_NAVIGATION_SERIALIZED_NAVIGATION_MANAGER_BUILDER_H_
 #define IOS_WEB_NAVIGATION_SERIALIZED_NAVIGATION_MANAGER_BUILDER_H_
 
-#include <memory>
-
 @class CRWSessionStorage;
 
 namespace web {

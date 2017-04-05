@@ -52,8 +52,6 @@ source_set("web_arc") {
     "interstitials/web_interstitial_impl.h",
     "interstitials/web_interstitial_impl.mm",
     "load_committed_details.cc",
-    "navigation/crw_session_certificate_policy_manager.h",
-    "navigation/crw_session_certificate_policy_manager.mm",
     "navigation/crw_session_controller+private_constructors.h",
     "navigation/crw_session_controller.h",
     "navigation/crw_session_controller.mm",
@@ -105,6 +103,8 @@ source_set("web_arc") {
     "public/certificate_policy_cache.h",
     "public/crw_navigation_item_storage.h",
     "public/crw_navigation_item_storage.mm",
+    "public/crw_session_certificate_policy_cache_storage.h",
+    "public/crw_session_certificate_policy_cache_storage.mm",
     "public/crw_session_storage.h",
     "public/crw_session_storage.mm",
     "public/favicon_status.cc",
@@ -152,6 +152,7 @@ source_set("web_arc") {
     "public/web_state/navigation_context.h",
     "public/web_state/page_display_state.h",
     "public/web_state/page_display_state.mm",
+    "public/web_state/session_certificate_policy_cache.h",
     "public/web_state/ui/crw_content_view.h",
     "public/web_state/ui/crw_context_menu_delegate.h",
     "public/web_state/ui/crw_generic_content_view.h",
@@ -208,6 +209,10 @@ source_set("web_arc") {
     "web_state/navigation_context_impl.mm",
     "web_state/page_viewport_state.h",
     "web_state/page_viewport_state.mm",
+    "web_state/session_certificate_policy_cache_impl.h",
+    "web_state/session_certificate_policy_cache_impl.mm",
+    "web_state/session_certificate_policy_cache_storage_builder.h",
+    "web_state/session_certificate_policy_cache_storage_builder.mm",
     "web_state/ui/crw_context_menu_controller.h",
     "web_state/ui/crw_context_menu_controller.mm",
     "web_state/ui/crw_generic_content_view.mm",
@@ -511,6 +516,39 @@ bundle_data("ios_web_unittests_bundle_data") {
   ]
 }
 
+test("ios_web_unittests_arc") {
+  deps = [
+    ":core",
+    ":ios_web_unittests_bundle_data",
+    ":run_all_unittests",
+    ":test_support",
+    ":user_agent",
+    ":web",
+    "//base",
+    "//base/test:test_support",
+    "//components/payments/core",
+    "//components/url_formatter",
+    "//ios/net",
+    "//ios/testing:ios_test_support",
+    "//ios/testing:ocmock_support",
+    "//ios/web/test:mojo_bindings",
+    "//net:test_support",
+    "//services/service_manager/public/cpp",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+    "//ui/base:test_support",
+  ]
+
+  sources = [
+    "public/crw_session_certificate_policy_cache_storage_unittest.mm",
+    "web_state/session_certificate_policy_cache_impl_unittest.mm",
+    "web_state/session_certificate_policy_cache_storage_builder_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 test("ios_web_unittests") {
   deps = [
     ":core",
@@ -524,6 +562,7 @@ test("ios_web_unittests") {
     "//components/payments/core",
     "//components/url_formatter",
     "//ios/net",
+    "//ios/testing:ios_test_support",
     "//ios/testing:ocmock_support",
     "//ios/web/test:mojo_bindings",
     "//net:test_support",
@@ -532,6 +571,10 @@ test("ios_web_unittests") {
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base:test_support",
+  ]
+
+  public_deps = [
+    ":ios_web_unittests_arc",
   ]
 
   sources = [
@@ -598,6 +641,8 @@ test("ios_web_unittests") {
   ]
 
   assert_no_deps = ios_assert_no_deps
+
+  allow_circular_includes_from = [ ":ios_web_unittests_arc" ]
 }
 
 test("ios_web_inttests") {

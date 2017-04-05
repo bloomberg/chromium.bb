@@ -12,8 +12,6 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
-@class CRWSessionCertificatePolicyManager;
-
 namespace web {
 class BrowserState;
 class NavigationItemImpl;
@@ -35,8 +33,6 @@ struct Referrer;
 // The index of the pending item if it is in |items|, or -1 if |pendingItem|
 // corresponds with a new navigation (created by addPendingItem:).
 @property(nonatomic, readwrite, assign) NSInteger pendingItemIndex;
-@property(nonatomic, readonly, strong)
-    CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 
 // Whether the CRWSessionController can prune all but the last committed item.
 // This is true when all the following conditions are met:

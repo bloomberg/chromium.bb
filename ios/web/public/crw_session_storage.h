@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
-@class CRWSessionCertificatePolicyManager;
+@class CRWSessionCertificatePolicyCacheStorage;
 
 namespace web {
 class SerializableUserData;
@@ -22,8 +22,8 @@ class SerializableUserData;
 @property(nonatomic, assign) NSInteger lastCommittedItemIndex;
 @property(nonatomic, assign) NSInteger previousItemIndex;
 @property(nonatomic, copy) NSArray* itemStorages;
-@property(nonatomic, retain)
-    CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
+@property(nonatomic, strong)
+    CRWSessionCertificatePolicyCacheStorage* certPolicyCacheStorage;
 @property(nonatomic, readonly) web::SerializableUserData* userData;
 
 // Setter for |userData|.  The receiver takes ownership of |userData|.

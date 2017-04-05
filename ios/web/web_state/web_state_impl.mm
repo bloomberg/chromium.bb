@@ -31,6 +31,7 @@
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #include "ios/web/web_state/navigation_context_impl.h"
+#import "ios/web/web_state/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 #include "ios/web/web_state/web_state_facade_delegate.h"
@@ -81,7 +82,9 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
     SessionStorageBuilder session_storage_builder;
     session_storage_builder.ExtractSessionState(this, session_storage);
   } else {
-    navigation_manager_.reset(new NavigationManagerImpl());
+    navigation_manager_ = base::MakeUnique<NavigationManagerImpl>();
+    certificate_policy_cache_ =
+        base::MakeUnique<SessionCertificatePolicyCacheImpl>();
   }
   navigation_manager_->SetDelegate(this);
   navigation_manager_->SetBrowserState(params.browser_state);
@@ -346,6 +349,16 @@ NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() {
 
 const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
   return *navigation_manager_;
+}
+
+const SessionCertificatePolicyCacheImpl&
+WebStateImpl::GetSessionCertificatePolicyCacheImpl() const {
+  return *certificate_policy_cache_;
+}
+
+SessionCertificatePolicyCacheImpl&
+WebStateImpl::GetSessionCertificatePolicyCacheImpl() {
+  return *certificate_policy_cache_;
 }
 
 void WebStateImpl::CreateWebUI(const GURL& url) {
@@ -642,6 +655,16 @@ const NavigationManager* WebStateImpl::GetNavigationManager() const {
 
 NavigationManager* WebStateImpl::GetNavigationManager() {
   return &GetNavigationManagerImpl();
+}
+
+const SessionCertificatePolicyCache*
+WebStateImpl::GetSessionCertificatePolicyCache() const {
+  return &GetSessionCertificatePolicyCacheImpl();
+}
+
+SessionCertificatePolicyCache*
+WebStateImpl::GetSessionCertificatePolicyCache() {
+  return &GetSessionCertificatePolicyCacheImpl();
 }
 
 CRWSessionStorage* WebStateImpl::BuildSessionStorage() {

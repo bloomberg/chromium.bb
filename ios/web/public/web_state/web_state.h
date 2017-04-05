@@ -43,6 +43,7 @@ namespace web {
 
 class BrowserState;
 class NavigationManager;
+class SessionCertificatePolicyCache;
 class WebInterstitial;
 class WebStateDelegate;
 class WebStateObserver;
@@ -133,6 +134,12 @@ class WebState : public base::SupportsUserData {
   // null.
   virtual const NavigationManager* GetNavigationManager() const = 0;
   virtual NavigationManager* GetNavigationManager() = 0;
+
+  // Gets the SessionCertificatePolicyCache for this WebState.  Can never return
+  // null.
+  virtual const SessionCertificatePolicyCache*
+  GetSessionCertificatePolicyCache() const = 0;
+  virtual SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() = 0;
 
   // Creates a serializable representation of the session. The returned value
   // is autoreleased.

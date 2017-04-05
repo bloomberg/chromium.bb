@@ -47,13 +47,12 @@
 #import "ios/shared/chrome/browser/tabs/web_state_list_metrics_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_opener.h"
-#import "ios/web/navigation/crw_session_certificate_policy_manager.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/serializable_user_data_manager.h"
+#include "ios/web/public/web_state/session_certificate_policy_cache.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
@@ -88,16 +87,11 @@ NSString* const kOpenerNavigationIndexKey = @"OpenerNavigationIndex";
 // Updates CRWSessionCertificatePolicyManager's certificate policy cache.
 void UpdateCertificatePolicyCacheFromWebState(
     const scoped_refptr<web::CertificatePolicyCache>& policy_cache,
-    web::WebState* web_state) {
+    const web::WebState* web_state) {
   DCHECK(web_state);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  // TODO(crbug.com/454984): Remove CRWSessionController usage once certificate
-  // policy manager is moved to NavigationManager.
-  CRWSessionController* controller = static_cast<web::WebStateImpl*>(web_state)
-                                         ->GetNavigationManagerImpl()
-                                         .GetSessionController();
-  [[controller sessionCertificatePolicyManager]
-      updateCertificatePolicyCache:policy_cache];
+  web_state->GetSessionCertificatePolicyCache()->UpdateCertificatePolicyCache(
+      policy_cache);
 }
 
 // Populates the certificate policy cache based on the WebStates of

@@ -41,7 +41,6 @@
 #import "ios/net/nsurlrequest_util.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/interstitials/web_interstitial_impl.h"
-#import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -68,6 +67,7 @@
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/page_display_state.h"
+#include "ios/web/public/web_state/session_certificate_policy_cache.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
@@ -3974,10 +3974,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           [_certVerificationController allowCert:leafCert
                                          forHost:host
                                           status:info.cert_status];
-          [self.sessionController.sessionCertificatePolicyManager
-              registerAllowedCertificate:leafCert
-                                 forHost:base::SysNSStringToUTF8(host)
-                                  status:info.cert_status];
+          _webStateImpl->GetSessionCertificatePolicyCache()
+              ->RegisterAllowedCertificate(
+                  leafCert, base::SysNSStringToUTF8(host), info.cert_status);
           [self loadCurrentURL];
         }
       }));
