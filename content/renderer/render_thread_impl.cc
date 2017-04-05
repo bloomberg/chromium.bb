@@ -1722,7 +1722,13 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {
   DCHECK(memory_metrics);
 
-  if (RenderView::GetRenderViewCount() == 0)
+  // Cache this result, as it can change while this code is running, and is used
+  // as a divisor below.
+  size_t render_view_count = RenderView::GetRenderViewCount();
+
+  // If there are no render views it doesn't make sense to calculate metrics
+  // right now.
+  if (render_view_count == 0)
     return false;
 
   blink::WebMemoryStatistics blink_stats = blink::WebMemoryStatistics::Get();
@@ -1764,7 +1770,7 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
   memory_metrics->non_discardable_total_allocated_mb =
       (total_allocated - discardable_usage) / 1024 / 1024;
   memory_metrics->total_allocated_per_render_view_mb =
-      total_allocated / RenderView::GetRenderViewCount() / 1024 / 1024;
+      total_allocated / render_view_count / 1024 / 1024;
 
   return true;
 }
