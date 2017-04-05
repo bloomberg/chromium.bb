@@ -9,8 +9,7 @@ namespace scheduler {
 
 AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
     base::TimeTicks initial_time)
-    : VirtualTimeDomain(nullptr, initial_time),
-      can_advance_virtual_time_(true) {}
+    : VirtualTimeDomain(initial_time), can_advance_virtual_time_(true) {}
 
 AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {}
 
@@ -24,16 +23,16 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   return base::TimeDelta();  // Makes DoWork post an immediate continuation.
 }
 
-void AutoAdvancingVirtualTimeDomain::RequestWakeupAt(base::TimeTicks now,
+void AutoAdvancingVirtualTimeDomain::RequestWakeUpAt(base::TimeTicks now,
                                                      base::TimeTicks run_time) {
   // Avoid posting pointless DoWorks.  I.e. if the time domain has more then one
   // scheduled wake up then we don't need to do anything.
-  if (can_advance_virtual_time_ && NumberOfScheduledWakeups() == 1u)
+  if (can_advance_virtual_time_ && NumberOfScheduledWakeUps() == 1u)
     RequestDoWork();
 }
 
-void AutoAdvancingVirtualTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
-  // We ignore this because RequestWakeupAt doesn't post a delayed task.
+void AutoAdvancingVirtualTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
+  // We ignore this because RequestWakeUpAt doesn't post a delayed task.
 }
 
 void AutoAdvancingVirtualTimeDomain::SetCanAdvanceVirtualTime(

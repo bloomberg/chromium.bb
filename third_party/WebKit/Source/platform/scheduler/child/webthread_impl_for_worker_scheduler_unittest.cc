@@ -149,7 +149,7 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
       .WillByDefault(Invoke([&completion](double) { completion.Signal(); }));
 
   thread_->postIdleTask(BLINK_FROM_HERE, task.release());
-  // We need to post a wakeup task or idle work will never happen.
+  // We need to post a wake-up task or idle work will never happen.
   thread_->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE,
                                                WTF::bind([] {}), 50ll);
 

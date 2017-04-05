@@ -120,7 +120,7 @@ class TaskQueueSelectorTest : public testing::Test {
  protected:
   void SetUp() final {
     virtual_time_domain_ = base::WrapUnique<VirtualTimeDomain>(
-        new VirtualTimeDomain(nullptr, base::TimeTicks()));
+        new VirtualTimeDomain(base::TimeTicks()));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
       scoped_refptr<TaskQueueImpl> task_queue =
           make_scoped_refptr(new TaskQueueImpl(

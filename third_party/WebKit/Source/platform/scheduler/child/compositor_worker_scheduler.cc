@@ -117,6 +117,8 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     NOTREACHED();
   }
 
+  void SetObserver(Observer* observer) override { NOTREACHED(); }
+
  private:
   ~CompositorWorkerTaskRunnerWrapper() override {}
 

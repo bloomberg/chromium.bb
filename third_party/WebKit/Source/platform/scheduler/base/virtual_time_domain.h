@@ -14,8 +14,7 @@ namespace scheduler {
 
 class BLINK_PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
-  VirtualTimeDomain(TimeDomain::Observer* observer,
-                    base::TimeTicks initial_time);
+  VirtualTimeDomain(base::TimeTicks initial_time);
   ~VirtualTimeDomain() override;
 
   // TimeDomain implementation:
@@ -32,8 +31,8 @@ class BLINK_PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
  protected:
   void OnRegisterWithTaskQueueManager(
       TaskQueueManager* task_queue_manager) override;
-  void RequestWakeupAt(base::TimeTicks now, base::TimeTicks run_time) override;
-  void CancelWakeupAt(base::TimeTicks run_time) override;
+  void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
+  void CancelWakeUpAt(base::TimeTicks run_time) override;
   void AsValueIntoInternal(
       base::trace_event::TracedValue* state) const override;
 

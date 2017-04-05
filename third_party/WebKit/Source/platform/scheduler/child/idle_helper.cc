@@ -110,7 +110,7 @@ IdleHelper::IdlePeriodState IdleHelper::ComputeNewLongIdlePeriodState(
       return IdlePeriodState::IN_LONG_IDLE_PERIOD;
     }
   } else {
-    // If we can't start the idle period yet then try again after wakeup.
+    // If we can't start the idle period yet then try again after wake-up.
     *next_long_idle_period_delay_out = base::TimeDelta::FromMilliseconds(
         kRetryEnableLongIdlePeriodDelayMillis);
     return IdlePeriodState::NOT_IN_IDLE_PERIOD;
