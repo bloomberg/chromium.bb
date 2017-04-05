@@ -46,6 +46,11 @@ const char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
 const char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
 
 const char kIsEnterpriseManaged[] = "is-enterprise-managed";
+
+// Registry values used to determine Chrome's update channel; see
+// https://crbug.com/579504.
+const char kApValue[] = "ap";
+const char kCohortName[] = "cohort-name";
 #endif
 
 const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
@@ -105,6 +110,10 @@ size_t RegisterChromeCrashKeys() {
     {kNumExtensionsCount, kSmallSize},
     {kShutdownType, kSmallSize},
     {kBrowserUnpinTrace, kMediumSize},
+#if defined(OS_WIN)
+    {kApValue, kSmallSize},
+    {kCohortName, kSmallSize},
+#endif  // defined(OS_WIN)
 #if !defined(OS_ANDROID)
     {gpu::crash_keys::kGPUVendorID, kSmallSize},
     {gpu::crash_keys::kGPUDeviceID, kSmallSize},

@@ -128,7 +128,16 @@ std::unique_ptr<PrimaryInstallDetails> MakeProductDetails(
 
   details->set_mode(mode);
   details->set_system_level(system_level);
-  details->set_channel(DetermineChannel(*mode, system_level));
+
+  // Cache the ap and cohort name values found in the registry for use in crash
+  // keys and in about:version.
+  std::wstring update_ap;
+  std::wstring update_cohort_name;
+  details->set_channel(DetermineChannel(*mode, system_level,
+                                        false /* !from_binaries */, &update_ap,
+                                        &update_cohort_name));
+  details->set_update_ap(update_ap);
+  details->set_update_cohort_name(update_cohort_name);
 
   return details;
 }

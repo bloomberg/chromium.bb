@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -58,6 +59,7 @@ constexpr wchar_t kChromeChannelStableExplicit[] = L"stable";
 // These constants are defined in the chrome/installer directory as well. We
 // need to unify them.
 constexpr wchar_t kRegValueAp[] = L"ap";
+constexpr wchar_t kRegValueName[] = L"name";
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
@@ -250,50 +252,39 @@ std::vector<StringType> TokenizeStringT(
   return tokens;
 }
 
+// Returns Chrome's update channel name based on the contents of the given "ap"
+// value from Chrome's ClientState key.
 std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
-                                             bool system_level,
-                                             bool from_binaries) {
+                                             const std::wstring& ap_value) {
   assert(kUseGoogleUpdateIntegration);
-  // InitChannelInfo in google_update_settings.cc only reports a failure when
-  // Chrome's ClientState key exists but that the "ap" value therein cannot be
-  // read due to some reason *other* than it not being present. This should be
-  // exceedingly rare. For simplicity's sake, use an empty |value| in case of
-  // any error whatsoever here.
-  std::wstring value;
-  nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
-                      from_binaries
-                          ? GetBinariesClientStateKeyPath().c_str()
-                          : GetClientStateKeyPath(mode.app_guid).c_str(),
-                      kRegValueAp, &value);
 
   static constexpr wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
   static constexpr wchar_t kChromeChannelBetaX64Pattern[] = L"*x64-beta*";
   static constexpr wchar_t kChromeChannelDevPattern[] = L"2?0-d*";
   static constexpr wchar_t kChromeChannelDevX64Pattern[] = L"*x64-dev*";
 
-  std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+  std::wstring value;
+  value.reserve(ap_value.size());
+  std::transform(ap_value.begin(), ap_value.end(), std::back_inserter(value),
+                 ::tolower);
 
   // Empty channel names or those containing "stable" should be reported as
   // an empty string.
-  std::wstring channel_name;
   if (value.empty() ||
       (value.find(kChromeChannelStableExplicit) != std::wstring::npos)) {
-  } else if (MatchPattern(value, kChromeChannelDevPattern) ||
-             MatchPattern(value, kChromeChannelDevX64Pattern)) {
-    channel_name.assign(kChromeChannelDev);
-  } else if (MatchPattern(value, kChromeChannelBetaPattern) ||
-             MatchPattern(value, kChromeChannelBetaX64Pattern)) {
-    channel_name.assign(kChromeChannelBeta);
+    return std::wstring();
+  }
+  if (MatchPattern(value, kChromeChannelDevPattern) ||
+      MatchPattern(value, kChromeChannelDevX64Pattern)) {
+    return kChromeChannelDev;
+  }
+  if (MatchPattern(value, kChromeChannelBetaPattern) ||
+      MatchPattern(value, kChromeChannelBetaX64Pattern)) {
+    return kChromeChannelBeta;
   }
   // Else report values with garbage as stable since they will match the stable
-  // rules in the update configs. ChannelInfo::GetChannelName painstakingly
-  // strips off known modifiers (e.g., "-full") to see if the empty string
-  // remains, returning channel "unknown" if not. This differs here in that some
-  // clients will tag crashes as "stable" rather than "unknown" via this
-  // codepath, but it is an accurate reflection of which update channel the
-  // client is on according to the server-side rules.
-
-  return channel_name;
+  // rules in the update configs.
+  return std::wstring();
 }
 
 }  // namespace
@@ -795,16 +786,36 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
 // InstallDetails instance since it is used to bootstrap InstallDetails.
 std::wstring DetermineChannel(const InstallConstants& mode,
                               bool system_level,
-                              bool from_binaries) {
+                              bool from_binaries,
+                              std::wstring* update_ap,
+                              std::wstring* update_cohort_name) {
   if (!kUseGoogleUpdateIntegration)
     return std::wstring();
+
+  // Read the "ap" value and cache it if requested.
+  std::wstring client_state(from_binaries
+                                ? GetBinariesClientStateKeyPath()
+                                : GetClientStateKeyPath(mode.app_guid));
+  std::wstring ap_value;
+  // An empty |ap_value| is used in case of error.
+  nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
+                      client_state.c_str(), kRegValueAp, &ap_value);
+  if (update_ap)
+    *update_ap = ap_value;
+
+  // Cache the cohort name if requested.
+  if (update_cohort_name) {
+    nt::QueryRegValueSZ(system_level ? nt::HKLM : nt::HKCU, nt::WOW6432,
+                        client_state.append(L"\\cohort").c_str(), kRegValueName,
+                        update_cohort_name);
+  }
 
   switch (mode.channel_strategy) {
     case ChannelStrategy::UNSUPPORTED:
       assert(false);
       break;
     case ChannelStrategy::ADDITIONAL_PARAMETERS:
-      return ChannelFromAdditionalParameters(mode, system_level, from_binaries);
+      return ChannelFromAdditionalParameters(mode, ap_value);
     case ChannelStrategy::FIXED:
       return mode.default_channel_name;
   }

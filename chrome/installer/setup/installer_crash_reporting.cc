@@ -18,6 +18,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/install_static/install_details.h"
 #include "chrome/installer/setup/installer_crash_reporter_client.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -31,6 +32,8 @@ namespace {
 
 // Crash Keys
 
+const char kApValue[] = "ap";
+const char kCohortName[] = "cohort-name";
 const char kCurrentVersion[] = "current-version";
 const char kIsSystemLevel[] = "system-level";
 const char kOperation[] = "operation";
@@ -101,17 +104,19 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
 }
 
 size_t RegisterCrashKeys() {
-  const base::debug::CrashKey kFixedKeys[] = {
-    { crash_keys::kMetricsClientId, crash_keys::kSmallSize },
-    { kCurrentVersion, crash_keys::kSmallSize },
-    { kIsSystemLevel, crash_keys::kSmallSize },
-    { kOperation, crash_keys::kSmallSize },
+  static constexpr base::debug::CrashKey kFixedKeys[] = {
+      {crash_keys::kMetricsClientId, crash_keys::kSmallSize},
+      {kApValue, crash_keys::kSmallSize},
+      {kCohortName, crash_keys::kSmallSize},
+      {kCurrentVersion, crash_keys::kSmallSize},
+      {kIsSystemLevel, crash_keys::kSmallSize},
+      {kOperation, crash_keys::kSmallSize},
 
-    // This is a Windows registry key, which maxes out at 255 chars.
-    // (kMediumSize actually maxes out at 252 chars on Windows, but potentially
-    // truncating such a small amount is a fair tradeoff compared to using
-    // kLargeSize, which is wasteful.)
-    { kStateKey, crash_keys::kMediumSize },
+      // This is a Windows registry key, which maxes out at 255 chars.
+      // (kMediumSize actually maxes out at 252 chars on Windows, but
+      // potentially truncating such a small amount is a fair tradeoff compared
+      // to using kLargeSize, which is wasteful.)
+      {kStateKey, crash_keys::kMediumSize},
   };
   std::vector<base::debug::CrashKey> keys(std::begin(kFixedKeys),
                                           std::end(kFixedKeys));
@@ -129,6 +134,14 @@ void SetInitialCrashKeys(const InstallerState& state) {
   const base::string16 state_key = state.state_key();
   if (!state_key.empty())
     SetCrashKeyValue(kStateKey, base::UTF16ToUTF8(state_key));
+
+  // Set crash keys containing the registry values used to determine Chrome's
+  // update channel at process startup; see https://crbug.com/579504.
+  const auto& details = install_static::InstallDetails::Get();
+  base::debug::SetCrashKeyValue(kApValue,
+                                base::UTF16ToUTF8(details.update_ap()));
+  base::debug::SetCrashKeyValue(
+      kCohortName, base::UTF16ToUTF8(details.update_cohort_name()));
 }
 
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {

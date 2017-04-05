@@ -92,8 +92,16 @@ std::unique_ptr<install_static::PrimaryInstallDetails> MakeInstallDetails(
   // ClientState registry key or the mode's ClientState registry key. Which one
   // is used depends on whether or not this Chrome is updating from a legacy
   // multi-install Chrome.
+
+  // Cache the ap and cohort name values found in the registry for use in crash
+  // keys.
+  base::string16 update_ap;
+  base::string16 update_cohort_name;
   details->set_channel(install_static::DetermineChannel(
-      *mode, system_level, IsUpdatingFromMulti(*mode, system_level)));
+      *mode, system_level, IsUpdatingFromMulti(*mode, system_level), &update_ap,
+      &update_cohort_name));
+  details->set_update_ap(update_ap);
+  details->set_update_cohort_name(update_cohort_name);
 
   return details;
 }

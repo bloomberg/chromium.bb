@@ -238,10 +238,15 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path);
 // Returns the unadorned channel name based on the channel strategy for the
 // install mode. |from_binaries| forces the registry locations corresponding to
 // the now-deprecated multi-install binaries to be read, and is only for use by
-// the installer.
+// the installer. |update_ap|, if not null, is set to the raw "ap" value read
+// from Chrome's ClientState key in the registry. |update_cohort_name|, if not
+// null, is set to the raw "cohort\name" value read from Chrome's ClientState
+// key in the registry.
 std::wstring DetermineChannel(const InstallConstants& mode,
                               bool system_level,
-                              bool from_binaries = false);
+                              bool from_binaries,
+                              std::wstring* update_ap,
+                              std::wstring* update_cohort_name);
 
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;

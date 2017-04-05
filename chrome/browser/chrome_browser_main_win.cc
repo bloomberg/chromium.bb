@@ -57,6 +57,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/install_static/install_details.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -320,6 +321,14 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
   base::debug::SetCrashKeyValue(
       crash_keys::kIsEnterpriseManaged,
       base::win::IsEnterpriseManaged() ? "yes" : "no");
+
+  // Set crash keys containing the registry values used to determine Chrome's
+  // update channel at process startup; see https://crbug.com/579504.
+  const auto& details = install_static::InstallDetails::Get();
+  base::debug::SetCrashKeyValue(crash_keys::kApValue,
+                                base::UTF16ToUTF8(details.update_ap()));
+  base::debug::SetCrashKeyValue(
+      crash_keys::kCohortName, base::UTF16ToUTF8(details.update_cohort_name()));
 
   int rv = ChromeBrowserMainParts::PreCreateThreads();
 

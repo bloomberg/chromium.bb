@@ -28,6 +28,7 @@ per-file supervised_user_error_page_strings.grdp=file://components/supervised_us
 per-file sync_ui_strings.grdp=file://components/sync/OWNERS
 per-file translate_strings.grdp=file://components/translate/OWNERS
 per-file undo_strings.grdp=file://components/undo/OWNERS
+per-file version_ui_strings.grdp=file://components/version_ui/OWNERS
 per-file web_contents_delegate_android_strings.grdp=file://components/web_contents_delegate_android/OWNERS
 
 # These are for the common case of adding or removing tests. If you're making

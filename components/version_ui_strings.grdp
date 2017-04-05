@@ -55,4 +55,9 @@
   <message name="IDS_VERSION_UI_VARIATIONS" desc="label for the variations list on the about:version page">
     Variations
   </message>
+  <if expr="is_win">
+    <message name="IDS_VERSION_UI_COHORT_NAME" desc="Update cohort substring included in the version number line on the about:version page.">
+      (cohort: <ph name="UPDATE_COHORT_NAME">$1<ex>Stable</ex></ph>)
+    </message>
+  </if>
 </grit-part>
