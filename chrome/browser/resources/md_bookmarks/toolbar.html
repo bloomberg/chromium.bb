@@ -1,7 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://bookmarks/edit_dialog.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
@@ -23,17 +25,16 @@
       }
     </style>
     <dialog is="cr-action-menu" id="dropdown">
-      <button class="dropdown-item" on-tap="onBulkEditTap_">
-        $i18n{menuBulkEdit}
-      </button>
       <button class="dropdown-item" on-tap="onSortTap_">
         $i18n{menuSort}
       </button>
       <hr>
-      <button class="dropdown-item" on-tap="onAddBookmarkTap_">
+      <button class="dropdown-item" on-tap="onAddBookmarkTap_"
+          disabled="[[hasSearchTerm_(searchTerm_)]]">
         $i18n{menuAddBookmark}
       </button>
-      <button class="dropdown-item" on-tap="onAddFolderTap_">
+      <button class="dropdown-item" on-tap="onAddFolderTap_"
+          disabled="[[hasSearchTerm_(searchTerm_)]]">
         $i18n{menuAddFolder}
       </button>
       <hr>
@@ -55,6 +56,9 @@
         <div></div>
       </button>
     </cr-toolbar>
+    <template is="cr-lazy-render" id="addDialog">
+      <bookmarks-edit-dialog></bookmarks-edit-dialog>
+    </template>
   </template>
   <script src="chrome://bookmarks/toolbar.js"></script>
 </dom-module>

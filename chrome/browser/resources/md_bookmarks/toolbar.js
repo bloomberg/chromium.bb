@@ -44,17 +44,22 @@ Polymer({
   },
 
   /** @private */
-  onBulkEditTap_: function() {
-    this.closeDropdownMenu_();
-  },
-
-  /** @private */
   onSortTap_: function() {
     this.closeDropdownMenu_();
   },
 
   /** @private */
   onAddBookmarkTap_: function() {
+    var dialog =
+        /** @type {BookmarksEditDialogElement} */ (this.$.addDialog.get());
+    dialog.showAddDialog(false, assert(this.getState().selectedFolder));
+    this.closeDropdownMenu_();
+  },
+
+  onAddFolderTap_: function() {
+    var dialog =
+        /** @type {BookmarksEditDialogElement} */ (this.$.addDialog.get());
+    dialog.showAddDialog(true, assert(this.getState().selectedFolder));
     this.closeDropdownMenu_();
   },
 
@@ -93,5 +98,13 @@ Polymer({
   /** @private */
   onSearchTermChanged_: function() {
     this.searchField.setValue(this.searchTerm_ || '');
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  hasSearchTerm_: function() {
+    return !!this.searchTerm_;
   },
 });

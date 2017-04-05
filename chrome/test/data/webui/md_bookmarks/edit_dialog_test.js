@@ -5,16 +5,21 @@
 suite('<bookmarks-edit-dialog>', function() {
   var dialog;
   var lastUpdate;
+  var lastCreation;
 
   suiteSetup(function() {
     chrome.bookmarks.update = function(id, edit) {
       lastUpdate.id = id;
       lastUpdate.edit = edit;
-    }
+    };
+    chrome.bookmarks.create = function(node) {
+      lastCreation = node;
+    };
   });
 
   setup(function() {
     lastUpdate = {};
+    lastCreation = {};
     dialog = document.createElement('bookmarks-edit-dialog');
     replaceBody(dialog);
   });
@@ -30,6 +35,11 @@ suite('<bookmarks-edit-dialog>', function() {
     var folder = createFolder('0', []);
     dialog.showEditDialog(folder);
 
+    assertTrue(dialog.$.url.hidden);
+  });
+
+  test('adding a folder hides the url field', function() {
+    dialog.showAddDialog(true, '1');
     assertTrue(dialog.$.url.hidden);
   });
 
@@ -62,6 +72,19 @@ suite('<bookmarks-edit-dialog>', function() {
 
     MockInteractions.pressEnter(dialog.$.url);
     assertFalse(dialog.$.dialog.open);
+  });
+
+  test('add passes the correct details to the backend', function() {
+    dialog.showAddDialog(false, '1');
+
+    dialog.titleValue_ = 'Permission Site';
+    dialog.urlValue_ = 'permission.site';
+
+    MockInteractions.tap(dialog.$.saveButton);
+
+    assertEquals('1', lastCreation.parentId);
+    assertEquals('http://permission.site', lastCreation.url);
+    assertEquals('Permission Site', lastCreation.title);
   });
 
   test('validates urls correctly', function() {
