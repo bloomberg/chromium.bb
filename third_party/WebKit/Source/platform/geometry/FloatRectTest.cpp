@@ -6,8 +6,8 @@
 
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/GeometryTestHelpers.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

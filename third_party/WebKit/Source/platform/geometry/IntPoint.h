@@ -28,11 +28,11 @@
 #define IntPoint_h
 
 #include "platform/geometry/IntSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/MathExtras.h"
-#include "wtf/SaturatedArithmetic.h"
-#include "wtf/VectorTraits.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/SaturatedArithmetic.h"
+#include "platform/wtf/VectorTraits.h"
 
 #if OS(MACOSX)
 typedef struct CGPoint CGPoint;

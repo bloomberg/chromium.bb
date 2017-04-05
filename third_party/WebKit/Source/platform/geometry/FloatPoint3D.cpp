@@ -21,9 +21,9 @@
 
 #include "platform/geometry/FloatPoint3D.h"
 
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
 #include <math.h>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

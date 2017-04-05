@@ -4,8 +4,8 @@
 
 #include "platform/geometry/IntSize.h"
 
+#include "platform/wtf/text/WTFString.h"
 #include "ui/gfx/geometry/size.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -30,11 +30,11 @@
 
 #include "platform/geometry/FloatQuad.h"
 
-#include "third_party/skia/include/core/SkPoint.h"
-#include "wtf/text/WTFString.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include "platform/wtf/text/WTFString.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 namespace blink {
 

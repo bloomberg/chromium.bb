@@ -30,11 +30,11 @@
 #ifndef FloatRoundedRect_h
 #define FloatRoundedRect_h
 
+#include <iosfwd>
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkRRect.h"
-#include "wtf/Allocator.h"
-#include <iosfwd>
 
 namespace blink {
 

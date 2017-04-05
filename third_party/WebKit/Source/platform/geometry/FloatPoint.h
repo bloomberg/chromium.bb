@@ -27,14 +27,14 @@
 #ifndef FloatPoint_h
 #define FloatPoint_h
 
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntPoint.h"
-#include "third_party/skia/include/core/SkPoint.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/MathExtras.h"
 #include <algorithm>
 #include <iosfwd>
+#include "platform/geometry/FloatSize.h"
+#include "platform/geometry/IntPoint.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/MathExtras.h"
+#include "third_party/skia/include/core/SkPoint.h"
 
 #if OS(MACOSX)
 typedef struct CGPoint CGPoint;

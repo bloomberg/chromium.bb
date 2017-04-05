@@ -26,14 +26,14 @@
 
 #include "platform/geometry/FloatPoint.h"
 
+#include <math.h>
+#include <limits>
 #include "SkPoint.h"
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
-#include <limits>
-#include <math.h>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

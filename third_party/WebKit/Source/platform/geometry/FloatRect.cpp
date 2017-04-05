@@ -28,10 +28,10 @@
 
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

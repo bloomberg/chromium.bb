@@ -29,9 +29,9 @@
 
 #include "platform/geometry/FloatRoundedRect.h"
 
-#include "platform/geometry/FloatQuad.h"
-#include "wtf/text/WTFString.h"
 #include <algorithm>
+#include "platform/geometry/FloatQuad.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

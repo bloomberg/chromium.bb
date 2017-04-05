@@ -30,12 +30,12 @@
 #ifndef FloatBox_h
 #define FloatBox_h
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "wtf/Allocator.h"
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
+#include "platform/PlatformExport.h"
+#include "platform/geometry/FloatPoint3D.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

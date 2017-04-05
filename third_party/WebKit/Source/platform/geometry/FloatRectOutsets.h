@@ -5,9 +5,9 @@
 #ifndef FloatRectOutsets_h
 #define FloatRectOutsets_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
 #include <algorithm>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

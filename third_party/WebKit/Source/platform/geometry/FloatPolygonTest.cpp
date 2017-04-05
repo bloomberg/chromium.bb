@@ -29,9 +29,9 @@
 
 #include "platform/geometry/FloatPolygon.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

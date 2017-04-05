@@ -31,7 +31,7 @@
 #define IntRectOutsets_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

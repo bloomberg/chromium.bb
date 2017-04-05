@@ -4,7 +4,7 @@
 
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 #include <limits>
 #include <math.h>

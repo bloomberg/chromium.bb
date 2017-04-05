@@ -31,13 +31,13 @@
 #ifndef LayoutPoint_h
 #define LayoutPoint_h
 
+#include <algorithm>
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/MathExtras.h"
-#include <algorithm>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

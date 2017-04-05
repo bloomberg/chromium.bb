@@ -7,8 +7,8 @@
 
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/DoubleSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

@@ -30,13 +30,13 @@
 #ifndef FloatPolygon_h
 #define FloatPolygon_h
 
+#include <memory>
 #include "platform/PODIntervalTree.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsTypes.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

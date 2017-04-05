@@ -31,13 +31,13 @@
 #ifndef LayoutRect_h
 #define LayoutRect_h
 
+#include <iosfwd>
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRectOutsets.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Vector.h"
-#include <iosfwd>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

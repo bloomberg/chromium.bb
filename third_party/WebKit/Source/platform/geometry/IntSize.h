@@ -29,9 +29,9 @@
 #define IntSize_h
 
 #include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 #include "public/platform/WebCommon.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
 
 #if OS(MACOSX)
 typedef struct CGSize CGSize;

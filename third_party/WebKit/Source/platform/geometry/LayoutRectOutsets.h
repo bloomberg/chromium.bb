@@ -37,7 +37,7 @@
 #include "platform/geometry/IntRectOutsets.h"
 #include "platform/text/TextDirection.h"
 #include "platform/text/WritingMode.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

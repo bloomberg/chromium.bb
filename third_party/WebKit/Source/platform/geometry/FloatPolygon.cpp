@@ -29,8 +29,8 @@
 
 #include "platform/geometry/FloatPolygon.h"
 
-#include "wtf/MathExtras.h"
 #include <memory>
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

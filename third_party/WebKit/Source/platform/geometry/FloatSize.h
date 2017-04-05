@@ -28,12 +28,12 @@
 #ifndef FloatSize_h
 #define FloatSize_h
 
-#include "platform/geometry/IntPoint.h"
-#include "third_party/skia/include/core/SkSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/MathExtras.h"
 #include <iosfwd>
+#include "platform/geometry/IntPoint.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/MathExtras.h"
+#include "third_party/skia/include/core/SkSize.h"
 
 #if OS(MACOSX)
 typedef struct CGSize CGSize;

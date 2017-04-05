@@ -26,12 +26,12 @@
 
 #include "platform/geometry/FloatSize.h"
 
+#include <math.h>
+#include <limits>
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/WTFString.h"
-#include <limits>
-#include <math.h>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

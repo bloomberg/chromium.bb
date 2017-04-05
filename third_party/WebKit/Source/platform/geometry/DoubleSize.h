@@ -7,9 +7,9 @@
 
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

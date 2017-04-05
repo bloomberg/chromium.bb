@@ -7,7 +7,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

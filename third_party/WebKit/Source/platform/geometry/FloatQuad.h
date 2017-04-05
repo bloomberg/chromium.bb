@@ -29,12 +29,12 @@
 #ifndef FloatQuad_h
 #define FloatQuad_h
 
+#include <iosfwd>
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutSize.h"
-#include "wtf/Allocator.h"
-#include <iosfwd>
+#include "platform/wtf/Allocator.h"
 
 struct SkPoint;
 

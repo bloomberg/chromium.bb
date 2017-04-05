@@ -30,8 +30,8 @@
 
 #include "platform/geometry/LayoutRectOutsets.h"
 
-#include "wtf/Assertions.h"
 #include <algorithm>
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

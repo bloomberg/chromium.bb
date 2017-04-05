@@ -5,8 +5,8 @@
 #include "platform/geometry/FloatQuad.h"
 
 #include <limits>
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

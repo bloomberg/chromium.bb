@@ -27,9 +27,9 @@
 
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect.h"
-#include "wtf/text/WTFString.h"
 
 #include <algorithm>
 

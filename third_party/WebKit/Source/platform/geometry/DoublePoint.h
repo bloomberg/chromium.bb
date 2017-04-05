@@ -5,12 +5,12 @@
 #ifndef DoublePoint_h
 #define DoublePoint_h
 
+#include <algorithm>
 #include "platform/geometry/DoubleSize.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include <algorithm>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

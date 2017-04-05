@@ -24,8 +24,8 @@
 #define FloatPoint3D_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "platform/wtf/Allocator.h"
 #include "third_party/skia/include/core/SkPoint3.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

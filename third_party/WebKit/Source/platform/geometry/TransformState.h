@@ -34,7 +34,7 @@
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/AffineTransform.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

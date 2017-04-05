@@ -29,8 +29,8 @@
 
 #include "platform/geometry/FloatRoundedRect.h"
 
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

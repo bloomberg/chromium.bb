@@ -30,12 +30,12 @@
 
 #include "platform/geometry/LayoutRect.h"
 
+#include <stdio.h>
+#include <algorithm>
 #include "platform/LayoutUnit.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/text/WTFString.h"
-#include <algorithm>
-#include <stdio.h>
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
