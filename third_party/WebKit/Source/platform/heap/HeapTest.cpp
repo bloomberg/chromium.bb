@@ -2963,7 +2963,7 @@ TEST(HeapTest, HeapWeakCollectionSimple) {
     EXPECT_EQ(4u, weakSet->size());
     EXPECT_EQ(4u, weakCountedSet->size());
     EXPECT_EQ(3u, weakCountedSet->find(two)->value);
-    weakCountedSet->remove(two);
+    weakCountedSet->erase(two);
     EXPECT_EQ(2u, weakCountedSet->find(two)->value);
   }
 

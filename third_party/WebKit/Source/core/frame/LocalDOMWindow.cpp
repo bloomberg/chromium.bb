@@ -201,7 +201,7 @@ static void removeUnloadEventListener(LocalDOMWindow* domWindow) {
   DOMWindowSet::iterator it = set.find(domWindow);
   if (it == set.end())
     return;
-  set.remove(it);
+  set.erase(it);
   if (set.isEmpty()) {
     updateSuddenTerminationStatus(domWindow, false,
                                   LocalFrameClient::UnloadHandler);
@@ -235,7 +235,7 @@ static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow) {
   DOMWindowSet::iterator it = set.find(domWindow);
   if (it == set.end())
     return;
-  set.remove(it);
+  set.erase(it);
   if (set.isEmpty()) {
     updateSuddenTerminationStatus(domWindow, false,
                                   LocalFrameClient::BeforeUnloadHandler);

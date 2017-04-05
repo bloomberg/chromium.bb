@@ -101,7 +101,7 @@ void ImageResourceContent::markObserverFinished(
   auto it = m_observers.find(observer);
   if (it == m_observers.end())
     return;
-  m_observers.remove(it);
+  m_observers.erase(it);
   m_finishedObservers.insert(observer);
 }
 
@@ -136,11 +136,11 @@ void ImageResourceContent::removeObserver(ImageResourceObserver* observer) {
 
   auto it = m_observers.find(observer);
   if (it != m_observers.end()) {
-    m_observers.remove(it);
+    m_observers.erase(it);
   } else {
     it = m_finishedObservers.find(observer);
     DCHECK(it != m_finishedObservers.end());
-    m_finishedObservers.remove(it);
+    m_finishedObservers.erase(it);
   }
   m_info->didRemoveClientOrObserver();
 }

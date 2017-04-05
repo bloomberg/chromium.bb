@@ -103,7 +103,7 @@ bool EventHandlerRegistry::updateEventHandlerTargets(
         return false;
       targets->removeAll(target);
     } else {
-      if (!targets->remove(target)) {
+      if (!targets->erase(target)) {
         // Just decremented refcount, no real update.
         return false;
       }

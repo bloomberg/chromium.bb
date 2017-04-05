@@ -164,7 +164,7 @@ void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map,
                                      const AtomicString& name) {
   if (name.isEmpty())
     return;
-  map.remove(name);
+  map.erase(name);
   if (LocalFrame* f = frame()) {
     f->script()
         .windowProxy(DOMWrapperWorld::mainWorld())

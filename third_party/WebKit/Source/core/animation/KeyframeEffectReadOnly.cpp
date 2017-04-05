@@ -115,7 +115,7 @@ void KeyframeEffectReadOnly::attach(Animation* animation) {
 
 void KeyframeEffectReadOnly::detach() {
   if (m_target)
-    m_target->elementAnimations()->animations().remove(animation());
+    m_target->elementAnimations()->animations().erase(animation());
   if (m_sampledEffect)
     clearEffects();
   AnimationEffectReadOnly::detach();

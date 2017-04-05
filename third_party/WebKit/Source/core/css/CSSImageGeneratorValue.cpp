@@ -73,7 +73,7 @@ void CSSImageGeneratorValue::removeClient(const LayoutObject* layoutObject) {
   SizeAndCount& sizeCount = it->value;
   IntSize size = sizeCount.size;
   if (!size.isEmpty()) {
-    m_sizes.remove(size);
+    m_sizes.erase(size);
     if (!m_sizes.contains(size))
       m_images.erase(size);
   }

@@ -95,7 +95,7 @@ void CSSSelectorWatch::updateSelectorMatches(
   bool shouldUpdateTimer = false;
 
   for (const auto& selector : removedSelectors) {
-    if (!m_matchingCallbackSelectors.remove(selector))
+    if (!m_matchingCallbackSelectors.erase(selector))
       continue;
 
     // Count reached 0.

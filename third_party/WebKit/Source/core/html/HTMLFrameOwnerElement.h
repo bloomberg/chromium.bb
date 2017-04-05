@@ -141,7 +141,7 @@ class SubframeLoadingDisabler {
 
   ~SubframeLoadingDisabler() {
     if (m_root)
-      disabledSubtreeRoots().remove(m_root);
+      disabledSubtreeRoots().erase(m_root);
   }
 
   static bool canLoadFrame(HTMLFrameOwnerElement& owner) {

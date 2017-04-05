@@ -394,7 +394,7 @@ void Database::closeDatabase() {
     MutexLocker locker(guidMutex());
 
     ASSERT(guidCount().contains(m_guid));
-    if (guidCount().remove(m_guid)) {
+    if (guidCount().erase(m_guid)) {
       guidToVersionMap().erase(m_guid);
     }
   }

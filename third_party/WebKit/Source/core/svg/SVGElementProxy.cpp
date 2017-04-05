@@ -21,7 +21,7 @@ class SVGElementProxy::IdObserver : public IdTargetObserver {
 
   void addClient(SVGResourceClient* client) { m_clients.insert(client); }
   bool removeClient(SVGResourceClient* client) {
-    return m_clients.remove(client);
+    return m_clients.erase(client);
   }
   bool hasClients() const { return !m_clients.isEmpty(); }
 

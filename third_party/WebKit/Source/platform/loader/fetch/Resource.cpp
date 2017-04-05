@@ -371,7 +371,7 @@ void Resource::checkNotify() {
 void Resource::markClientFinished(ResourceClient* client) {
   if (m_clients.contains(client)) {
     m_finishedClients.insert(client);
-    m_clients.remove(client);
+    m_clients.erase(client);
   }
 }
 
@@ -660,7 +660,7 @@ void Resource::didAddClient(ResourceClient* c) {
     c->notifyFinished(this);
     if (m_clients.contains(c)) {
       m_finishedClients.insert(c);
-      m_clients.remove(c);
+      m_clients.erase(c);
     }
   }
 }
@@ -737,11 +737,11 @@ void Resource::removeClient(ResourceClient* client) {
   // HashCountedSet are already swept out.
 
   if (m_finishedClients.contains(client))
-    m_finishedClients.remove(client);
+    m_finishedClients.erase(client);
   else if (m_clientsAwaitingCallback.contains(client))
-    m_clientsAwaitingCallback.remove(client);
+    m_clientsAwaitingCallback.erase(client);
   else
-    m_clients.remove(client);
+    m_clients.erase(client);
 
   if (m_clientsAwaitingCallback.isEmpty())
     ResourceCallback::callbackHandler().cancel(this);
@@ -812,7 +812,7 @@ void Resource::finishPendingClients() {
 
   for (const auto& client : clientsToNotify) {
     // Handle case (2) to skip removed clients.
-    if (!m_clientsAwaitingCallback.remove(client))
+    if (!m_clientsAwaitingCallback.erase(client))
       continue;
     m_clients.insert(client);
 

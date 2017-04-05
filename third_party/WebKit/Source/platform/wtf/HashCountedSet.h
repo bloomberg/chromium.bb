@@ -93,8 +93,8 @@ class HashCountedSet {
 
   // Reduces the count of the value, and removes it if count goes down to
   // zero, returns true if the value is removed.
-  bool remove(const ValueType& value) { return remove(find(value)); }
-  bool remove(iterator);
+  bool erase(const ValueType& value) { return erase(find(value)); }
+  bool erase(iterator);
 
   // Removes the value, regardless of its count.
   void removeAll(const ValueType& value) { removeAll(find(value)); }
@@ -130,7 +130,7 @@ HashCountedSet<T, U, V, W>::insert(const ValueType& value) {
 }
 
 template <typename T, typename U, typename V, typename W>
-inline bool HashCountedSet<T, U, V, W>::remove(iterator it) {
+inline bool HashCountedSet<T, U, V, W>::erase(iterator it) {
   if (it == end())
     return false;
 
