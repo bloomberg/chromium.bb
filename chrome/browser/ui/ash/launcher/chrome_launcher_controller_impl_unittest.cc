@@ -21,6 +21,7 @@
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/display/display_configuration_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -4025,67 +4026,6 @@ TEST_P(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   // Manually unlock first.
   NotifyOnTaskOrientationLockRequested(task_id_none_, OrientationLock::NONE);
   EXPECT_FALSE(controller->rotation_locked());
-}
-
-TEST_P(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
-  ASSERT_TRUE(display::Display::HasInternalDisplay());
-
-  extension_service_->AddExtension(arc_support_host_.get());
-  EnablePlayStore(true);
-  EnableTabletMode(true);
-
-  InitLauncherController();
-
-  InitApps();
-  ash::ScreenOrientationController* controller =
-      ash::Shell::GetInstance()->screen_orientation_controller();
-
-  // Start with portrait.
-  window_portrait_->Activate();
-
-  // Create a arc window to lock the CURRENT orientation.
-  views::Widget* window_current = CreateArcWindow(window_app_id_current_);
-  NotifyOnTaskCreated(appinfo_current_, task_id_current_);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Re-activating changes the orientation to previously locked orientation.
-  window_landscape_->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-  window_current->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Exitting and re-entering tablet mode re-locks the orientation.
-  EnableTabletMode(false);
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  EnableTabletMode(true);
-  EXPECT_TRUE(window_current->IsActive());
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Manually unlock, and lock again at landscape.
-  NotifyOnTaskOrientationLockRequested(task_id_current_, OrientationLock::NONE);
-  window_landscape_->Activate();
-  EXPECT_TRUE(controller->rotation_locked());
-  window_current->Activate();
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  NotifyOnTaskOrientationLockRequested(task_id_current_,
-                                       OrientationLock::CURRENT);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 }
 
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {

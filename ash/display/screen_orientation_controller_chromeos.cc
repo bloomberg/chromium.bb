@@ -168,7 +168,7 @@ ScreenOrientationController::~ScreenOrientationController() {
   chromeos::AccelerometerReader::GetInstance()->RemoveObserver(this);
   WmShell::Get()->RemoveDisplayObserver(this);
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  for (auto& windows : locking_windows_)
+  for (auto& windows : lock_info_map_)
     windows.first->aura_window()->RemoveObserver(this);
 }
 
@@ -182,29 +182,31 @@ void ScreenOrientationController::RemoveObserver(Observer* observer) {
 
 void ScreenOrientationController::LockOrientationForWindow(
     WmWindow* requesting_window,
-    blink::WebScreenOrientationLockType lock_orientation) {
-  if (locking_windows_.empty())
+    blink::WebScreenOrientationLockType lock_orientation,
+    LockCompletionBehavior lock_completion_behavior) {
+  if (lock_info_map_.empty())
     Shell::GetInstance()->activation_client()->AddObserver(this);
 
   if (!requesting_window->aura_window()->HasObserver(this))
     requesting_window->aura_window()->AddObserver(this);
-  locking_windows_[requesting_window] = lock_orientation;
+  lock_info_map_[requesting_window] =
+      LockInfo(lock_orientation, lock_completion_behavior);
 
   ApplyLockForActiveWindow();
 }
 
 void ScreenOrientationController::UnlockOrientationForWindow(WmWindow* window) {
-  locking_windows_.erase(window);
-  if (locking_windows_.empty())
+  lock_info_map_.erase(window);
+  if (lock_info_map_.empty())
     Shell::GetInstance()->activation_client()->RemoveObserver(this);
   window->aura_window()->RemoveObserver(this);
   ApplyLockForActiveWindow();
 }
 
 void ScreenOrientationController::UnlockAll() {
-  for (auto pair : locking_windows_)
+  for (auto pair : lock_info_map_)
     pair.first->aura_window()->RemoveObserver(this);
-  locking_windows_.clear();
+  lock_info_map_.clear();
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
   SetRotationLockedInternal(false);
   if (user_rotation_ != current_rotation_)
@@ -262,7 +264,7 @@ void ScreenOrientationController::OnWindowDestroying(aura::Window* window) {
 void ScreenOrientationController::OnWindowVisibilityChanged(
     aura::Window* window,
     bool visible) {
-  if (locking_windows_.find(WmWindow::Get(window)) == locking_windows_.end())
+  if (lock_info_map_.find(WmWindow::Get(window)) == lock_info_map_.end())
     return;
   ApplyLockForActiveWindow();
 }
@@ -528,10 +530,16 @@ void ScreenOrientationController::ApplyLockForActiveWindow() {
   for (WmWindow* window : mru_windows) {
     if (!window->GetTargetVisibility())
       continue;
-    for (auto const& pair : locking_windows_) {
+    for (auto& pair : lock_info_map_) {
       if (pair.first->GetTargetVisibility() && window->Contains(pair.first)) {
-        LockRotationToOrientation(
-            ResolveOrientationLock(pair.second, user_locked_orientation_));
+        LockRotationToOrientation(ResolveOrientationLock(
+            pair.second.orientation, user_locked_orientation_));
+        if (pair.second.lock_completion_behavior ==
+            LockCompletionBehavior::DisableSensor) {
+          pair.second.orientation = RotationToOrientation(current_rotation_);
+          pair.second.lock_completion_behavior = LockCompletionBehavior::None;
+          LockRotationToOrientation(pair.second.orientation);
+        }
         return;
       }
     }
@@ -562,6 +570,11 @@ bool ScreenOrientationController::IsRotationAllowedInLockedState(
            rotation == display::Display::ROTATE_270;
   }
   return false;
+}
+
+blink::WebScreenOrientationLockType
+ScreenOrientationController::GetCurrentOrientationForTest() const {
+  return RotationToOrientation(current_rotation_);
 }
 
 bool ScreenOrientationController::CanRotateInLockedState() {

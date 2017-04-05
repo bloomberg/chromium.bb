@@ -5,7 +5,7 @@
 #ifndef ASH_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
 #define ASH_DISPLAY_SCREEN_ORIENTATION_CONTROLLER_CHROMEOS_H_
 
-#include <map>
+#include <unordered_map>
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
@@ -43,6 +43,18 @@ class ASH_EXPORT ScreenOrientationController
     virtual ~Observer() {}
   };
 
+  // Controls the behavior after lock is applied to the window (when
+  // the window becomes active window). |DisableSensor| disables
+  // the sensor based rotation and locks to the specific orientation.
+  // For example, PORTRAIT may rotate to PORTRAIT_PRIMARY or
+  // PORTRAIT_SECONDARY, and will allow rotate between these two.
+  // |DisableSensor| will lock the orientation to the one of them
+  // after locked to disalow the sensor basd rotation.
+  enum class LockCompletionBehavior {
+    None,
+    DisableSensor,
+  };
+
   ScreenOrientationController();
   ~ScreenOrientationController() override;
 
@@ -53,7 +65,8 @@ class ASH_EXPORT ScreenOrientationController
   // Allows/unallows a window to lock the screen orientation.
   void LockOrientationForWindow(
       WmWindow* requesting_window,
-      blink::WebScreenOrientationLockType lock_orientation);
+      blink::WebScreenOrientationLockType lock_orientation,
+      LockCompletionBehavior lock_completion_behavior);
   void UnlockOrientationForWindow(WmWindow* window);
 
   // Unlock all and set the rotation back to the user specified rotation.
@@ -104,6 +117,19 @@ class ASH_EXPORT ScreenOrientationController
 
  private:
   friend class test::ScreenOrientationControllerTestApi;
+
+  struct LockInfo {
+    LockInfo() {}
+    LockInfo(blink::WebScreenOrientationLockType orientation,
+             LockCompletionBehavior lock_completion_behavior)
+        : orientation(orientation),
+          lock_completion_behavior(lock_completion_behavior) {}
+
+    blink::WebScreenOrientationLockType orientation =
+        blink::WebScreenOrientationLockAny;
+    LockCompletionBehavior lock_completion_behavior =
+        LockCompletionBehavior::None;
+  };
 
   // Sets the display rotation for the given |source|. The new |rotation| will
   // also become active. Display changed notifications are surpressed for this
@@ -163,6 +189,8 @@ class ASH_EXPORT ScreenOrientationController
   // supported for the current |rotation_locked_orientation_|.
   bool IsRotationAllowedInLockedState(display::Display::Rotation rotation);
 
+  blink::WebScreenOrientationLockType GetCurrentOrientationForTest() const;
+
   // Certain orientation locks allow for rotation between the two angles of the
   // same screen orientation. Returns true if |rotation_locked_orientation_|
   // allows rotation.
@@ -198,7 +226,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // Tracks all windows that have requested a lock, as well as the requested
   // orientation.
-  std::map<WmWindow*, blink::WebScreenOrientationLockType> locking_windows_;
+  std::unordered_map<WmWindow*, LockInfo> lock_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationController);
 };
