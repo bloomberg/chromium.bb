@@ -39,20 +39,20 @@
 using base::TimeDelta;
 using content::BrowserThread;
 
-const std::string NOLISTENERS_HTML =
+const char NOLISTENERS_HTML[] =
     "<html><head><title>nolisteners</title></head><body></body></html>";
 
-const std::string UNLOAD_HTML =
+const char UNLOAD_HTML[] =
     "<html><head><title>unload</title></head><body>"
     "<script>window.onunload=function(e){}</script></body></html>";
 
-const std::string BEFORE_UNLOAD_HTML =
+const char BEFORE_UNLOAD_HTML[] =
     "<html><head><title>beforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
     "setTimeout('document.title=\"cancelled\"', 0);return 'foo'}</script>"
     "</body></html>";
 
-const std::string INNER_FRAME_WITH_FOCUS_HTML =
+const char INNER_FRAME_WITH_FOCUS_HTML[] =
     "<html><head><title>innerframewithfocus</title></head><body>"
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "<iframe src=\"data:text/html,<html><head><script>window.onload="
@@ -60,51 +60,55 @@ const std::string INNER_FRAME_WITH_FOCUS_HTML =
     "<body><input id='box'></input></body></html>\"></iframe>"
     "</body></html>";
 
-const std::string INFINITE_UNLOAD_HTML =
+const char INFINITE_UNLOAD_HTML[] =
     "<html><head><title>infiniteunload</title></head><body>"
     "<script>window.onunload=function(e){while(true){}}</script>"
     "</body></html>";
 
-const std::string INFINITE_BEFORE_UNLOAD_HTML =
+const char INFINITE_BEFORE_UNLOAD_HTML[] =
     "<html><head><title>infinitebeforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){while(true){}}</script>"
     "</body></html>";
 
-const std::string INFINITE_UNLOAD_ALERT_HTML =
+const char INFINITE_UNLOAD_ALERT_HTML[] =
     "<html><head><title>infiniteunloadalert</title></head><body>"
     "<script>window.onunload=function(e){"
-      "while(true){}"
-      "alert('foo');"
+    "while(true){}"
+    "alert('foo');"
     "}</script></body></html>";
 
-const std::string INFINITE_BEFORE_UNLOAD_ALERT_HTML =
+const char INFINITE_BEFORE_UNLOAD_ALERT_HTML[] =
     "<html><head><title>infinitebeforeunloadalert</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
-      "while(true){}"
-      "alert('foo');"
+    "while(true){}"
+    "alert('foo');"
     "}</script></body></html>";
 
-const std::string TWO_SECOND_UNLOAD_ALERT_HTML =
+const char TWO_SECOND_UNLOAD_ALERT_HTML[] =
     "<html><head><title>twosecondunloadalert</title></head><body>"
     "<script>window.onunload=function(e){"
-      "var start = new Date().getTime();"
-      "while(new Date().getTime() - start < 2000){}"
-      "alert('foo');"
+    "var start = new Date().getTime();"
+    "while(new Date().getTime() - start < 2000){}"
+    "alert('foo');"
     "}</script></body></html>";
 
-const std::string TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML =
+const char TWO_SECOND_BEFORE_UNLOAD_ALERT_HTML[] =
     "<html><head><title>twosecondbeforeunloadalert</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
-      "var start = new Date().getTime();"
-      "while(new Date().getTime() - start < 2000){}"
-      "alert('foo');"
+    "var start = new Date().getTime();"
+    "while(new Date().getTime() - start < 2000){}"
+    "alert('foo');"
     "}</script></body></html>";
 
-const std::string CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER =
+const char CLOSE_TAB_WHEN_OTHER_TAB_HAS_LISTENER[] =
     "<html><head><title>only_one_unload</title></head>"
-    "<body onclick=\"window.open('data:text/html,"
-    "<html><head><title>popup</title></head></body>')\" "
-    "onbeforeunload='return;'>"
+    "<script>"
+    "function openPopup() {"
+    "  var w = window.open('about:blank');"
+    "  w.document.write('<html><head><title>popup</title></head></body>');"
+    "}"
+    "</script>"
+    "<body onclick='openPopup()' onbeforeunload='return;'>"
     "</body></html>";
 
 class UnloadResults {
@@ -152,10 +156,9 @@ class UnloadTest : public InProcessBrowserTest {
               browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   }
 
-  void NavigateToDataURL(const std::string& html_content,
-                         const char* expected_title) {
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL("data:text/html," + html_content));
+  void NavigateToDataURL(const char* html_content, const char* expected_title) {
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(std::string("data:text/html,") + html_content));
     CheckTitle(expected_title);
   }
 
@@ -178,7 +181,7 @@ class UnloadTest : public InProcessBrowserTest {
     CheckTitle("Title Of Awesomeness");
   }
 
-  void LoadUrlAndQuitBrowser(const std::string& html_content,
+  void LoadUrlAndQuitBrowser(const char* html_content,
                              const char* expected_title) {
     NavigateToDataURL(html_content, expected_title);
     content::WindowedNotificationObserver window_observer(

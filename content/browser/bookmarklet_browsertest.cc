@@ -14,7 +14,11 @@
 namespace content {
 
 class BookmarkletTest : public ContentBrowserTest {
- public:
+ protected:
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
   void NavigateToStartPage() {
     NavigateToURL(shell(), GURL("data:text/html,start page"));
     EXPECT_EQ("start page", GetBodyText());
@@ -33,9 +37,11 @@ class BookmarkletTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(BookmarkletTest, Redirect) {
   NavigateToStartPage();
 
-  NavigateToURL(shell(), GURL(
-      "javascript:location.href='data:text/plain,SUCCESS'"));
-  EXPECT_EQ("SUCCESS", GetBodyText());
+  const GURL url(base::StringPrintf(
+      "javascript:location.href='%s'",
+      embedded_test_server()->GetURL("/simple_page.html").spec().c_str()));
+  NavigateToURL(shell(), url);
+  EXPECT_EQ("Basic html test.", GetBodyText());
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkletTest, RedirectVoided) {
@@ -45,9 +51,11 @@ IN_PROC_BROWSER_TEST_F(BookmarkletTest, RedirectVoided) {
   // here is to emphasize that in either case the assignment to location during
   // the evaluation of the script should suppress loading the script result.
   // Here, because of the void() wrapping there is no script result.
-  NavigateToURL(shell(), GURL(
-      "javascript:void(location.href='data:text/plain,SUCCESS')"));
-  EXPECT_EQ("SUCCESS", GetBodyText());
+  const GURL url(base::StringPrintf(
+      "javascript:void(location.href='%s')",
+      embedded_test_server()->GetURL("/simple_page.html").spec().c_str()));
+  NavigateToURL(shell(), url);
+  EXPECT_EQ("Basic html test.", GetBodyText());
 }
 
 // http://crbug.com/177957
