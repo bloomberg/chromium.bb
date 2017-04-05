@@ -36,26 +36,22 @@ NGLogicalOffset AdjustToTopEdgeAlignmentRule(const NGConstraintSpace& space,
 // @param space Constraint space that is used to find layout opportunity for
 //              the fragment.
 // @param fragment Fragment that needs to be placed.
-// @param origin_point {@code space}'s offset relative to the space that
-//                     establishes a new formatting context that we're currently
-//                     in and where all our exclusions reside.
-// @param margins Margins of the fragment.
-// @param available_size Available size used by the layout opportunity iterator.
+// @param floating_object Floating object for which we need to find a layout
+//                        opportunity.
 // @return Layout opportunity for the fragment.
 const NGLayoutOpportunity FindLayoutOpportunityForFragment(
     const NGConstraintSpace* space,
     const NGFragment& fragment,
-    const NGLogicalOffset& origin_point,
-    const NGBoxStrut& margins,
-    const NGLogicalSize& available_size) {
+    const NGFloatingObject* floating_object) {
   NGLogicalOffset adjusted_origin_point =
-      AdjustToTopEdgeAlignmentRule(*space, origin_point);
+      AdjustToTopEdgeAlignmentRule(*space, floating_object->origin_offset);
 
-  NGLayoutOpportunityIterator opportunity_iter(space, available_size,
-                                               adjusted_origin_point);
+  NGLayoutOpportunityIterator opportunity_iter(
+      space, floating_object->available_size, adjusted_origin_point);
   NGLayoutOpportunity opportunity;
   NGLayoutOpportunity opportunity_candidate = opportunity_iter.Next();
 
+  NGBoxStrut margins = floating_object->margins;
   while (!opportunity_candidate.IsEmpty()) {
     opportunity = opportunity_candidate;
     // Checking opportunity's block size is not necessary as a float cannot be
@@ -73,25 +69,20 @@ const NGLayoutOpportunity FindLayoutOpportunityForFragment(
 NGLogicalOffset CalculateLogicalOffsetForOpportunity(
     const NGLayoutOpportunity& opportunity,
     const LayoutUnit float_offset,
-    const NGLogicalOffset& from_offset,
-    NGFloatingObject* floating_object) {
+    const NGFloatingObject* floating_object) {
   DCHECK(floating_object);
   auto margins = floating_object->margins;
   // Adjust to child's margin.
-  LayoutUnit inline_offset = margins.inline_start;
-  LayoutUnit block_offset = margins.block_start;
+  NGLogicalOffset result = margins.InlineBlockStartOffset();
 
   // Offset from the opportunity's block/inline start.
-  inline_offset += opportunity.offset.inline_offset;
-  block_offset += opportunity.offset.block_offset;
+  result += opportunity.offset;
 
   // Adjust to float: right offset if needed.
-  inline_offset += float_offset;
+  result.inline_offset += float_offset;
 
-  block_offset -= from_offset.block_offset;
-  inline_offset -= from_offset.inline_offset;
-
-  return NGLogicalOffset(inline_offset, block_offset);
+  result -= floating_object->from_offset;
+  return result;
 }
 
 // Creates an exclusion from the fragment that will be placed in the provided
@@ -119,32 +110,25 @@ void UpdateFloatingObjectLeftOffset(const NGConstraintSpace& new_parent_space,
                                     NGFloatingObject* floating_object) {
   DCHECK(floating_object);
   // TODO(glebl): We should use physical offset here.
-  floating_object->left_offset =
-      floating_object->original_parent_space->BfcOffset().inline_offset -
-      new_parent_space.BfcOffset().inline_offset +
-      float_logical_offset.inline_offset;
+  floating_object->left_offset = floating_object->from_offset.inline_offset -
+                                 new_parent_space.BfcOffset().inline_offset +
+                                 float_logical_offset.inline_offset;
 }
 }  // namespace
 
-// Calculates the relative position from {@code from_offset} of the
-// floating object that is requested to be positioned from {@code origin_point}.
-NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
-                              const NGLogicalOffset& from_offset,
-                              NGFloatingObject* floating_object,
+NGLogicalOffset PositionFloat(NGFloatingObject* floating_object,
                               NGConstraintSpace* new_parent_space) {
   DCHECK(floating_object);
-  const auto* float_space = floating_object->space.get();
   DCHECK(floating_object->fragment) << "Fragment cannot be null here";
 
   // TODO(ikilpatrick): The writing mode switching here looks wrong.
   NGBoxFragment float_fragment(
-      float_space->WritingMode(),
+      floating_object->writing_mode,
       toNGPhysicalBoxFragment(floating_object->fragment.get()));
 
   // Find a layout opportunity that will fit our float.
   const NGLayoutOpportunity opportunity = FindLayoutOpportunityForFragment(
-      new_parent_space, float_fragment, origin_point, floating_object->margins,
-      floating_object->available_size);
+      new_parent_space, float_fragment, floating_object);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
   // Calculate the float offset if needed.
@@ -162,9 +146,27 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
   new_parent_space->AddExclusion(exclusion);
 
   NGLogicalOffset logical_offset = CalculateLogicalOffsetForOpportunity(
-      opportunity, float_offset, from_offset, floating_object);
+      opportunity, float_offset, floating_object);
   UpdateFloatingObjectLeftOffset(*new_parent_space, logical_offset,
                                  floating_object);
   return logical_offset;
 }
+
+void PositionPendingFloats(const LayoutUnit& origin_block_offset,
+                           NGConstraintSpace* space,
+                           NGFragmentBuilder* builder) {
+  DCHECK(builder) << "Builder cannot be null here";
+  DCHECK(builder->BfcOffset()) << "Parent BFC offset should be known here";
+  LayoutUnit bfc_block_offset = builder->BfcOffset().value().block_offset;
+
+  for (auto& floating_object : builder->UnpositionedFloats()) {
+    floating_object->origin_offset.block_offset = origin_block_offset;
+    floating_object->from_offset.block_offset = bfc_block_offset;
+
+    NGLogicalOffset offset = PositionFloat(floating_object.get(), space);
+    builder->AddFloatingObject(floating_object, offset);
+  }
+  builder->MutableUnpositionedFloats().clear();
+}
+
 }  // namespace blink

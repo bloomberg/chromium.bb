@@ -20,29 +20,38 @@ namespace blink {
 // Struct that keeps all information needed to position floats in LayoutNG.
 struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
  public:
-  static RefPtr<NGFloatingObject> Create(const NGConstraintSpace* space,
-                                         const NGConstraintSpace* parent_space,
-                                         const ComputedStyle& style,
-                                         const NGBoxStrut& margins,
-                                         const NGLogicalSize& available_size,
+  static RefPtr<NGFloatingObject> Create(const ComputedStyle& style,
+                                         NGWritingMode writing_mode,
+                                         NGLogicalSize available_size,
+                                         NGLogicalOffset origin_offset,
+                                         NGLogicalOffset from_offset,
+                                         NGBoxStrut margins,
                                          NGPhysicalFragment* fragment) {
-    return adoptRef(new NGFloatingObject(space, parent_space, style, margins,
-                                         available_size, fragment));
+    return adoptRef(new NGFloatingObject(style, margins, available_size,
+                                         origin_offset, from_offset,
+                                         writing_mode, fragment));
   }
-
-  // Original constraint space of the float.
-  RefPtr<const NGConstraintSpace> space;
-
-  // Parent space is used so we can calculate the inline offset relative to
-  // the original parent of this float.
-  RefPtr<const NGConstraintSpace> original_parent_space;
 
   NGExclusion::Type exclusion_type;
   EClear clear_type;
   NGBoxStrut margins;
   // Available size of the constraint space that will be used by
-  // NGLayoutOpportunityIterator to position this floaing object.
+  // NGLayoutOpportunityIterator to position this floating object.
   NGLogicalSize available_size;
+
+  // To correctly position a float we need 2 offsets:
+  // - origin_offset which represents the layout point for this float.
+  // - from_offset which represents the point from where we need to calculate
+  //   the relative logical offset for this float.
+  // Layout details:
+  // At the time when this float is created only *inline* offsets are known.
+  // Block offset will be set when we are about to place this float, i.e. when
+  // we resolved MarginStrut, adjusted the offset to clearance line etc.
+  NGLogicalOffset origin_offset;
+  NGLogicalOffset from_offset;
+
+  // Writing mode of the float's constraint space.
+  NGWritingMode writing_mode;
 
   RefPtr<NGPhysicalFragment> fragment;
 
@@ -65,16 +74,18 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   }
 
  private:
-  NGFloatingObject(const NGConstraintSpace* space,
-                   const NGConstraintSpace* parent_space,
-                   const ComputedStyle& style,
+  NGFloatingObject(const ComputedStyle& style,
                    const NGBoxStrut& margins,
                    const NGLogicalSize& available_size,
+                   const NGLogicalOffset& origin_offset,
+                   const NGLogicalOffset& from_offset,
+                   NGWritingMode writing_mode,
                    NGPhysicalFragment* fragment)
-      : space(space),
-        original_parent_space(parent_space),
-        margins(margins),
+      : margins(margins),
         available_size(available_size),
+        origin_offset(origin_offset),
+        from_offset(from_offset),
+        writing_mode(writing_mode),
         fragment(fragment) {
     exclusion_type = NGExclusion::kFloatLeft;
     if (style.floating() == EFloat::kRight)

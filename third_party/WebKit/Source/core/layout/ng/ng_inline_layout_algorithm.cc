@@ -53,20 +53,6 @@ NGLogicalOffset GetOriginPointForFloats(const NGConstraintSpace& space,
   origin_point.block_offset += content_size;
   return origin_point;
 }
-
-void PositionPendingFloats(const NGLogicalOffset& origin_point,
-                           NGConstraintSpace* space,
-                           NGFragmentBuilder* builder) {
-  DCHECK(builder) << "Builder cannot be null here";
-
-  for (auto& floating_object : builder->UnpositionedFloats()) {
-    NGLogicalOffset offset = PositionFloat(origin_point, space->BfcOffset(),
-                                           floating_object.get(), space);
-    builder->AddFloatingObject(floating_object, offset);
-  }
-  builder->MutableUnpositionedFloats().clear();
-}
-
 }  // namespace
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
@@ -89,6 +75,9 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     Initialize(break_token->ItemIndex(), break_token->TextOffset());
   else
     Initialize(0, 0);
+
+  // BFC offset is known for inline fragments.
+  container_builder_.SetBfcOffset(space->BfcOffset());
 }
 
 bool NGInlineLayoutAlgorithm::CanFitOnLine() const {
@@ -279,7 +268,7 @@ bool NGInlineLayoutAlgorithm::CreateLineUpToLastBreakOpportunity() {
 
   NGLogicalOffset origin_point =
       GetOriginPointForFloats(ConstraintSpace(), content_size_);
-  PositionPendingFloats(origin_point, MutableConstraintSpace(),
+  PositionPendingFloats(origin_point.block_offset, MutableConstraintSpace(),
                         &container_builder_);
   FindNextLayoutOpportunity();
   return true;
@@ -339,9 +328,15 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
       float_space->WritingMode(),
       toNGPhysicalBoxFragment(layout_result->PhysicalFragment().get()));
 
+  NGLogicalOffset origin_offset =
+      GetOriginPointForFloats(ConstraintSpace(), content_size_);
+  NGLogicalOffset from_offset = ConstraintSpace().BfcOffset();
+  // TODO(glebl): add margins calculation.
+  NGBoxStrut margins;
   RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
-      float_space.get(), MutableConstraintSpace(), node->Style(), NGBoxStrut(),
-      current_opportunity_.size, layout_result->PhysicalFragment().get());
+      node->Style(), float_space->WritingMode(), current_opportunity_.size,
+      origin_offset, from_offset, margins,
+      layout_result->PhysicalFragment().get());
 
   bool float_does_not_fit = end_position + float_fragment.InlineSize() >
                             current_opportunity_.InlineSize();
@@ -351,11 +346,8 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
       float_does_not_fit) {
     container_builder_.AddUnpositionedFloat(floating_object);
   } else {
-    NGLogicalOffset origin_point =
-        GetOriginPointForFloats(ConstraintSpace(), content_size_);
     NGLogicalOffset offset =
-        PositionFloat(origin_point, ConstraintSpace().BfcOffset(),
-                      floating_object.get(), MutableConstraintSpace());
+        PositionFloat(floating_object.get(), MutableConstraintSpace());
     container_builder_.AddFloatingObject(floating_object, offset);
     FindNextLayoutOpportunity();
   }

@@ -8,16 +8,20 @@
 #include "core/layout/ng/geometry/ng_logical_offset.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_floating_object.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 
 namespace blink {
 
-// Calculates the relative position from {@code from_offset} of the
-// floating object that is requested to be positioned from {@code origin_point}.
-CORE_EXPORT NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
-                                          const NGLogicalOffset& from_offset,
-                                          NGFloatingObject*,
+// Positions {@code floating_object} into {@code new_parent_space}.
+// @returns Logical offset of the positioned float.
+CORE_EXPORT NGLogicalOffset PositionFloat(NGFloatingObject*,
                                           NGConstraintSpace* new_parent_space);
 
+// Positions pending floats stored on the fragment builder starting from
+// {@code origin_block_offset}.
+void PositionPendingFloats(const LayoutUnit& origin_block_offset,
+                           NGConstraintSpace* space,
+                           NGFragmentBuilder* builder);
 }  // namespace blink
 
 #endif  // NGFloatsUtils_h

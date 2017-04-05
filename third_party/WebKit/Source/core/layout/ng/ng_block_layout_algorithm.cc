@@ -24,31 +24,6 @@
 namespace blink {
 namespace {
 
-// Positions pending floats stored on the fragment builder starting from
-// {@code origin_point_block_offset}.
-void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
-                           NGConstraintSpace* new_parent_space,
-                           NGFragmentBuilder* builder) {
-  DCHECK(builder->BfcOffset()) << "Parent BFC offset should be known here";
-  LayoutUnit bfc_block_offset = builder->BfcOffset().value().block_offset;
-
-  for (auto& floating_object : builder->UnpositionedFloats()) {
-    const auto* float_space = floating_object->space.get();
-    const NGConstraintSpace* original_parent_space =
-        floating_object->original_parent_space.get();
-
-    NGLogicalOffset origin_point = {float_space->BfcOffset().inline_offset,
-                                    origin_point_block_offset};
-    NGLogicalOffset from_offset = {
-        original_parent_space->BfcOffset().inline_offset, bfc_block_offset};
-
-    NGLogicalOffset float_fragment_offset = PositionFloat(
-        origin_point, from_offset, floating_object.get(), new_parent_space);
-    builder->AddFloatingObject(floating_object, float_fragment_offset);
-  }
-  builder->MutableUnpositionedFloats().clear();
-}
-
 // Returns if a child may be affected by its clear property. I.e. it will
 // actually clear a float.
 bool ClearanceMayAffectLayout(
@@ -216,9 +191,7 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (ConstraintSpace().IsNewFormattingContext()) {
     UpdateFragmentBfcOffset(curr_bfc_offset_);
     DCHECK_EQ(curr_margin_strut_, NGMarginStrut());
-    // TODO(glebl): Uncomment the line below once we add the fragmentation
-    // support for floats.
-    // DCHECK_EQ(builder_.BfcOffset().value(), NGLogicalOffset());
+    DCHECK_EQ(builder_.BfcOffset().value(), NGLogicalOffset());
     curr_bfc_offset_ = {};
   }
 
@@ -382,11 +355,13 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
   builder_.MutableUnpositionedFloats().appendVector(
       layout_result->UnpositionedFloats());
 
-  if (child->Type() == NGLayoutInputNode::kLegacyBlock &&
-      toNGBlockNode(child)->Style().isFloating()) {
+  if (child->IsBlock() && child->Style().isFloating()) {
+    NGLogicalOffset origin_offset = constraint_space_->BfcOffset();
+    origin_offset.inline_offset += border_and_padding_.inline_start;
     RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
-        child_space, constraint_space_, toNGBlockNode(child)->Style(),
-        curr_child_margins_, child_space->AvailableSize(),
+        child->Style(), child_space->WritingMode(),
+        child_space->AvailableSize(), origin_offset,
+        constraint_space_->BfcOffset(), curr_child_margins_,
         layout_result->PhysicalFragment().get());
     builder_.AddUnpositionedFloat(floating_object);
     // No need to postpone the positioning if we know the correct offset.
@@ -545,9 +520,6 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     if (is_new_bfc) {
       DCHECK(builder_.BfcOffset());
       space_available -= curr_bfc_offset_.block_offset;
-      // TODO(glebl): We need to reset BFCOffset in ToConstraintSpace() after we
-      // started handling the fragmentation for floats.
-      space_builder_.SetBfcOffset(NGLogicalOffset());
     }
   }
   space_builder_.SetFragmentainerSpaceAvailable(space_available);
