@@ -1031,8 +1031,8 @@ void UserMediaClientImpl::DelayedGetUserMediaRequestFailed(
     case MEDIA_DEVICE_NO_HARDWARE:
       request.requestFailedUASpecific("DevicesNotFoundError");
       return;
-    case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
-      request.requestFailedUASpecific("InvalidSecurityOriginError");
+    case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN_DEPRECATED:
+      NOTREACHED();
       return;
     case MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
       request.requestFailedUASpecific("TabCaptureError");

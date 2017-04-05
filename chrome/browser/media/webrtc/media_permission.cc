@@ -41,12 +41,7 @@ MediaPermission::MediaPermission(ContentSettingsType content_type,
 
 ContentSetting MediaPermission::GetPermissionStatus(
     content::MediaStreamRequestResult* denial_reason) const {
-  // Deny the request if the security origin is empty, this happens with
-  // file access without |--allow-file-access-from-files| flag.
-  if (requesting_origin_.is_empty()) {
-    *denial_reason = content::MEDIA_DEVICE_INVALID_SECURITY_ORIGIN;
-    return CONTENT_SETTING_BLOCK;
-  }
+  DCHECK(!requesting_origin_.is_empty());
 
   PermissionManager* permission_manager = PermissionManager::Get(profile_);
 
