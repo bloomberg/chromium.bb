@@ -57,10 +57,6 @@ namespace blink {
 
 static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate*,
                                                     const IDBValue*);
-static v8::Local<v8::Value> deserializeIDBValue(
-    v8::Isolate*,
-    v8::Local<v8::Object> creationContext,
-    const IDBValue*);
 static v8::Local<v8::Value> deserializeIDBValueArray(
     v8::Isolate*,
     v8::Local<v8::Object> creationContext,
@@ -378,7 +374,8 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate,
 }
 
 // Deserialize just the value data & blobInfo from the given IDBValue.
-// Does not deserialize the key & keypath.
+//
+// Primary key injection is performed in deserializeIDBValue() below.
 static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate,
                                                     const IDBValue* value) {
   ASSERT(isolate->InContext());
@@ -390,14 +387,26 @@ static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate,
   SerializedScriptValue::DeserializeOptions options;
   options.blobInfo = value->blobInfo();
   options.readWasmFromStream = true;
+
+  // deserialize() returns null when serialization fails.  This is sub-optimal
+  // because IndexedDB values can be null, so an application cannot distinguish
+  // between a de-serialization failure and a legitimately stored null value.
+  //
+  // TODO(crbug.com/703704): Ideally, SerializedScriptValue should return an
+  // empty handle on serialization errors, which should be handled by higher
+  // layers. For example, IndexedDB could throw an exception, abort the
+  // transaction, or close the database connection.
   return serializedValue->deserialize(isolate, options);
 }
 
-// Deserialize the entire IDBValue (injecting key & keypath if present).
-static v8::Local<v8::Value> deserializeIDBValue(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> creationContext,
-    const IDBValue* value) {
+// Deserialize the entire IDBValue.
+//
+// On top of deserializeIDBValueData(), this handles the special case of having
+// to inject a key into the de-serialized value. See injectV8KeyIntoV8Value()
+// for details.
+v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate,
+                                         v8::Local<v8::Object> creationContext,
+                                         const IDBValue* value) {
   ASSERT(isolate->InContext());
   if (!value || value->isNull())
     return v8::Null(isolate);
@@ -408,9 +417,12 @@ static v8::Local<v8::Value> deserializeIDBValue(
         ToV8(value->primaryKey(), creationContext, isolate);
     if (key.IsEmpty())
       return v8::Local<v8::Value>();
-    bool injected =
-        injectV8KeyIntoV8Value(isolate, key, v8Value, value->keyPath());
-    DCHECK(injected);
+
+    injectV8KeyIntoV8Value(isolate, key, v8Value, value->keyPath());
+
+    // TODO(crbug.com/703704): Throw an error here or at a higher layer if
+    // injectV8KeyIntoV8Value() returns false, which means that the serialized
+    // value got corrupted while on disk.
   }
 
   return v8Value;
@@ -436,8 +448,23 @@ static v8::Local<v8::Value> deserializeIDBValueArray(
   return array;
 }
 
-// This is only applied to deserialized values which were validated before
-// serialization, so various assumptions/assertions can be made.
+// Injects a primary key into a deserialized V8 value.
+//
+// In general, the value stored in IndexedDB is the serialized version of a
+// value passed to the API. However, the specification has a special case of
+// object stores that specify a key path and have a key generator. In this case,
+// the conceptual description in the spec states that the key produced by the
+// key generator is injected into the value before it is written to IndexedDB.
+//
+// We cannot implementing the spec's conceptual description. We need to assign
+// primary keys in the browser process, to ensure that multiple renderer
+// processes talking to the same database receive sequential keys. At the same
+// time, we want the value serialization code to live in the renderer process,
+// because this type of code is a likely victim to security exploits.
+//
+// We handle this special case by serializing and writing values without the
+// corresponding keys. At read time, we obtain the keys and the values
+// separately, and we inject the keys into values.
 bool injectV8KeyIntoV8Value(v8::Isolate* isolate,
                             v8::Local<v8::Value> key,
                             v8::Local<v8::Value> value,
@@ -460,12 +487,34 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate,
 
   // For an object o = {} which should have keypath 'a.b.c' and key k, this
   // populates o to be {a:{b:{}}}. This is only applied to deserialized
-  // values which were validated before serialization, so various
-  // assumptions can be made, e.g. there are no getters/setters on the
+  // values, so we can assume that there are no getters/setters on the
   // object itself (though there might be on the prototype chain).
+  //
+  // Previous versions of this code assumed that the deserialized value meets
+  // the constraints checked by the serialization validation code. For example,
+  // given a keypath of a.b.c, the code assumed that the de-serialized value
+  // cannot possibly be {a:{b:42}}. This is not a safe assumption.
+  //
+  // IndexedDB's backing store (LevelDB) does use CRC32C to protect against disk
+  // errors. However, this does not prevent corruption caused by bugs in the
+  // higher level code writing invalid values. The following cases are
+  // interesting here.
+  //
+  // (1) Deserialization failures, which are currently handled by returning
+  // null. Disk errors aside, deserialization errors can also occur when a user
+  // switches channels and receives an older build which does not support the
+  // serialization format used by the previous (more recent) build that the user
+  // had.
+  //
+  // (2) Bugs that write a value which is incompatible with the primary key
+  // injection required by the object store. The simplest example is writing
+  // numbers or booleans to an object store with an auto-incrementing primary
+  // keys.
   for (size_t i = 0; i < keyPathElements.size() - 1; ++i) {
+    if (!value->IsObject())
+      return false;
+
     const String& keyPathElement = keyPathElements[i];
-    ASSERT(value->IsObject());
     ASSERT(!isImplicitProperty(isolate, value, keyPathElement));
     v8::Local<v8::Object> object = value.As<v8::Object>();
     v8::Local<v8::String> property = v8String(isolate, keyPathElement);
@@ -488,7 +537,12 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate,
   if (isImplicitProperty(isolate, value, keyPathElements.back()))
     return true;
 
-  // If it's not an implicit property of value, value must be an object.
+  // If the key path does not point to an implicit property, the value must be
+  // an object. Previous code versions DCHECKed this, which is unsafe in the
+  // event of database corruption or version skew in the serialization format.
+  if (!value->IsObject())
+    return false;
+
   v8::Local<v8::Object> object = value.As<v8::Object>();
   v8::Local<v8::String> property = v8String(isolate, keyPathElements.back());
   if (!v8CallBoolean(object->CreateDataProperty(context, property, key)))
