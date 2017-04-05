@@ -261,7 +261,7 @@
     <div class="dialog-header">
       <div id="location-breadcrumbs" class="breadcrumbs"></div>
       <div id="cancel-selection-button-wrapper">
-        <paper-button id="cancel-selection-button" tabindex="7"
+        <paper-button id="cancel-selection-button" tabindex="8"
               i18n-values="aria-label:CANCEL_SELECTION_BUTTON_LABEL">
           <span class="icon-arrow-back"></span>
           <span i18n-content="CANCEL_SELECTION_BUTTON_LABEL"></span>
@@ -270,25 +270,25 @@
       <div id="files-selected-label"></div>
       <div class="spacer"></div>
       <button id="tasks" class="combobutton" menu="#tasks-menu"
-              tabindex="9" hidden
+              tabindex="10" hidden
               i18n-values="aria-label:TASKS_BUTTON_LABEL">
       </button>
       <button id="share-button" class="icon-button" command="#share"
-              tabindex="10" hidden
+              tabindex="11" hidden
               i18n-values="aria-label:SHARE_BUTTON_LABEL"
               visibleif="full-page"
               has-tooltip>
         <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
-      <button id="delete-button" class="icon-button" tabindex="11" hidden
+      <button id="delete-button" class="icon-button" tabindex="12" hidden
               i18n-values="aria-label:DELETE_BUTTON_LABEL"
               visibleif="full-page"
               has-tooltip>
         <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
-      <button id="search-button" class="icon-button" tabindex="12"
+      <button id="search-button" class="icon-button" tabindex="13"
               i18n-values="aria-label:SEARCH_TEXT_LABEL"
               has-tooltip>
         <files-toggle-ripple></files-toggle-ripple>
@@ -296,12 +296,12 @@
       </button>
       <div id="search-box">
         <paper-input-container no-label-float>
-          <input is="iron-input" type="search" tabindex="13"
+          <input is="iron-input" type="search" tabindex="14"
                  i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL">
           <span class="clear" suffix></span>
         </paper-input-container>
       </div>
-      <button id="refresh-button" class="icon-button" tabindex="14" hidden
+      <button id="refresh-button" class="icon-button" tabindex="15" hidden
               i18n-values="aria-label:REFRESH_BUTTON_LABEL"
               command="#refresh" has-tooltip>
         <files-ripple></files-ripple>
@@ -313,14 +313,14 @@
         <div class="buttons">
           <button id="cloud-import-button"
                   class="icon-button"
-                  tabindex="15"
+                  tabindex="16"
                   i18n-values="aria-label:CLOUD_IMPORT_COMMAND"
                   has-tooltip>
             <iron-icon icon="files:cloud-queue"></iron-icon>
           </button>
           <button id="cloud-import-details-button"
                   class="icon-button"
-                  tabindex="15"
+                  tabindex="16"
                   i18n-values="aria-label:CLOUD_IMPORT_SHOW_DETAILS"
                   has-tooltip>
             <iron-icon icon="files:arrow-drop-down"></iron-icon>
@@ -331,13 +331,13 @@
           <files-toggle-ripple></files-toggle-ripple>
         </div>
       </div>
-      <button id="view-button" class="icon-button" tabindex="16"
+      <button id="view-button" class="icon-button" tabindex="17"
               i18n-values="aria-label:CHANGE_TO_THUMBNAILVIEW_BUTTON_LABEL"
               has-tooltip>
         <files-ripple></files-ripple>
         <div class="icon"></div>
       </button>
-      <button id="sort-button" class="icon-button" tabindex="17"
+      <button id="sort-button" class="icon-button" tabindex="18"
               menu="#sort-menu"
               i18n-values="aria-label:SORT_BUTTON_TOOLTIP"
               aria-activedescendant="sort-menu"
@@ -366,10 +366,10 @@
           <div class="content"></div>
         </div>
         <div class="progress"><div class="value"></div></div>
-        <paper-button class="import" tabindex="15">
+        <paper-button class="import" tabindex="16">
           <span i18n-content="CLOUD_IMPORT_COMMAND"></span>
         </paper-button>
-        <paper-button class="cancel" tabindex="15">
+        <paper-button class="cancel" tabindex="16">
           <span i18n-content="CLOUD_IMPORT_CANCEL_COMMAND"></span>
         </paper-button>
       </div>
@@ -378,7 +378,7 @@
     <div class="dialog-container">
       <div class="dialog-navigation-list">
         <div class="dialog-navigation-list-contents">
-          <tree id="directory-tree" tabindex="20"></tree>
+          <tree id="directory-tree" tabindex="21"></tree>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>
@@ -448,9 +448,10 @@
           <paper-ripple fit></paper-ripple>
           <span i18n-content="NEW_FOLDER_BUTTON_LABEL"></span>
         </button>
+        <select class="file-type" hidden tabindex="4"></select>
         <div id="filename-input-box" visibleif="saveas-file">
           <paper-input-container no-label-float>
-            <input id="filename-input-textbox" is="iron-input" tabindex="4"
+            <input id="filename-input-textbox" is="iron-input" tabindex="5"
                    class="entry-name" type="text" spellcheck="false"
                    i18n-values="placeholder:FILENAME_LABEL">
           </paper-input-container>
@@ -459,12 +460,11 @@
         <div class="progress-bar"><div class="progress-track"></div></div>
       </div>
       <div class="right buttonbar">
-        <select class="file-type" hidden tabindex="-1"></select>
-        <button id="ok-button" class="ok primary" disabled tabindex="5">
+        <button id="ok-button" class="ok primary" disabled tabindex="6">
           <paper-ripple fit></paper-ripple>
           <span></span>
         </button>
-        <button id="cancel-button" class="cancel secondary" tabindex="6">
+        <button id="cancel-button" class="cancel secondary" tabindex="7">
           <paper-ripple fit></paper-ripple>
           <span i18n-content="CANCEL_LABEL"></span>
         </button>

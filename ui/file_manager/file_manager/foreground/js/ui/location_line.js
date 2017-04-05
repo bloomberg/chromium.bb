@@ -163,7 +163,7 @@ LocationLine.prototype.update_ = function(components) {
   for (var el = this.breadcrumbs_.firstChild; el; el = el.nextSibling) {
     if (el.classList.contains('breadcrumb-path')) {
       var isLast = !el.nextSibling;
-      el.tabIndex = isLast ? -1 : 8;
+      el.tabIndex = isLast ? -1 : 9;
       el.classList.toggle('breadcrumb-last', isLast);
     }
   }

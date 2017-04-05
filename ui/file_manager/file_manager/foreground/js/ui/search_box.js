@@ -268,8 +268,8 @@ SearchBox.prototype.updateStyles_ = function() {
   var hasFocusOnInput = this.element.classList.contains('has-cursor');
 
   // See go/filesapp-tabindex for tabindexes.
-  this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 13 : -1;
-  this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 12;
+  this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 14 : -1;
+  this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 13;
 };
 
 /**

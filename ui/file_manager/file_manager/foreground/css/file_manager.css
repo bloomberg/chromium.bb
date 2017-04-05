@@ -799,6 +799,7 @@ html[dir='rtl'] #search-box .clear {
 
 .dialog-footer select {
   -webkit-appearance: none;
+  -webkit-margin-start: 16px;
   background: -webkit-image-set(
      url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
      url(../images/common/2x/disclosure_arrow_dk_grey_down.png) 2x) no-repeat
@@ -808,7 +809,6 @@ html[dir='rtl'] #search-box .clear {
   border-radius: 0;
   color: rgb(51, 51, 51);
   cursor: pointer;
-  margin: 0 32px 0 36px;
   outline: none;
   padding: 0 12px 0 0;
 }
@@ -1639,6 +1639,7 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 
 #filename-input-box {
   -webkit-margin-start: 30px;
+  -webkit-margin-end: 30px;
   align-items: center;
   display: flex;
   flex: auto;
