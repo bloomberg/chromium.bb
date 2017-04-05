@@ -127,9 +127,24 @@ void ReadingListSuggestionsProvider::ReadingListModelBeingDeleted(
   reading_list_model_ = nullptr;
 }
 
+void ReadingListSuggestionsProvider::ReadingListDidApplyChanges(
+    ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+
+  FetchReadingListInternal();
+}
+
+void ReadingListSuggestionsProvider::ReadingListModelCompletedBatchUpdates(
+    const ReadingListModel* model) {
+  DCHECK(model == reading_list_model_);
+
+  FetchReadingListInternal();
+}
+
 void ReadingListSuggestionsProvider::FetchReadingListInternal() {
-  if (!reading_list_model_)
+  if (!reading_list_model_ || reading_list_model_->IsPerformingBatchUpdates()) {
     return;
+  }
 
   DCHECK(reading_list_model_->loaded());
   std::vector<const ReadingListEntry*> entries;

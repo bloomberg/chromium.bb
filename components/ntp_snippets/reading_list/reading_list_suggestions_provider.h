@@ -51,6 +51,9 @@ class ReadingListSuggestionsProvider : public ContentSuggestionsProvider,
   // ReadingListModelObserver implementation.
   void ReadingListModelLoaded(const ReadingListModel* model) override;
   void ReadingListModelBeingDeleted(const ReadingListModel* model) override;
+  void ReadingListDidApplyChanges(ReadingListModel* model) override;
+  void ReadingListModelCompletedBatchUpdates(
+      const ReadingListModel* model) override;
 
  private:
   // The actual method to fetch Reading List entries. Must be called after the
