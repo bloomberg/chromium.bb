@@ -8,7 +8,11 @@ After calling, it prints outs ANDROID_VERSION_ATOM=(version atom string).  A
 caller could then use this atom with emerge to build the newly uprevved version
 of Android e.g.
 
-./cros_mark_android_as_stable
+./cros_mark_android_as_stable \
+    --android_package=android-container \
+    --android_build_branch=git_mnc-dr-arc-dev \
+    --android_gts_build_branch=git_mnc-dev
+
 Returns chromeos-base/android-container-2559197
 
 emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
@@ -40,6 +44,11 @@ _GIT_COMMIT_MESSAGE = ('Marking latest for %(android_package)s ebuild '
 # URLs that print lists of Android revisions between two build ids.
 _ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
                         'last_bid=%(old)s&bid=%(new)s&branch=%(branch)s')
+
+# TODO(nya): Check if this default value can be used for NYC uprevs.
+# I'm afraid it's not, but NYC manual uprev instruction does not mention
+# the flag.
+_DEFAULT_ANDROID_GTS_BUILD_BRANCH = 'git_mnc-dev'
 
 
 def IsBuildIdValid(bucket_url, build_branch, build_id, targets):
@@ -431,9 +440,13 @@ def GetParser():
                       default=constants.ANDROID_BUCKET_URL,
                       type='gs_path')
   parser.add_argument('--android_build_branch',
-                      default=constants.ANDROID_BUILD_BRANCH)
+                      required=True,
+                      help='Android branch to import from. '
+                           'Ex: git_mnc-dr-arc-dev')
   parser.add_argument('--android_gts_build_branch',
-                      default=constants.ANDROID_GTS_BUILD_BRANCH)
+                      default=_DEFAULT_ANDROID_GTS_BUILD_BRANCH,
+                      help='Android GTS branch to copy artifacts from. '
+                           'Ex: git_mnc-dev')
   parser.add_argument('--android_package',
                       default=constants.ANDROID_PACKAGE_NAME)
   parser.add_argument('--arc_bucket_url',

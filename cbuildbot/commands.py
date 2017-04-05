@@ -1466,12 +1466,14 @@ class ChromeIsPinnedUprevError(failures_lib.InfrastructureFailure):
     self.new_chrome_atom = new_chrome_atom
 
 
-def MarkAndroidAsStable(buildroot, tracking_branch, boards,
+def MarkAndroidAsStable(buildroot, tracking_branch, android_package,
+                        android_build_branch, boards=None,
                         android_version=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
-  # TODO: Consider merging this with MarkChromeAsStable.
   command = ['cros_mark_android_as_stable',
              '--tracking_branch=%s' % tracking_branch]
+  command.append('--android_package=%s' % android_package)
+  command.append('--android_build_branch=%s' % android_build_branch)
   if boards:
     command.append('--boards=%s' % ':'.join(boards))
   if android_version:

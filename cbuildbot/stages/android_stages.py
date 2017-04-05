@@ -25,55 +25,62 @@ ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,
                                     'profiles', 'default', 'linux',
                                     'package.mask', 'androidpin')
 
+
+def _GetAndroidVersionFromMetadata(metadata):
+  """Return the Android version from metadata; None if is does not exist.
+
+  Sync stages may have set this metadata to use a specific Android version.
+  """
+  version_dict = metadata.GetDict().get('version', {})
+  return version_dict.get('android')
+
+
 class UprevAndroidStage(generic_stages.BuilderStage,
                         generic_stages.ArchivingStageMixin):
   """Stage that uprevs Android container if needed."""
 
-  def __init__(self, builder_run, **kwargs):
-    super(UprevAndroidStage, self).__init__(builder_run, **kwargs)
-    # PerformStage() will fill this out for us.
-    self.android_version = None
-
-  def _GetAndroidVersionFromMetadata(self):
-    """Return the Android version from metadata; None if is does not exist."""
-    version_dict = self._run.attrs.metadata.GetDict().get('version', {})
-    return version_dict.get('android')
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    android_atom_to_build = None
-    if self._android_rev:
-      self.android_version = self._GetAndroidVersionFromMetadata()
-      if self.android_version:
-        logging.info('Using Android version from the metadata dictionary: %s',
-                     self.android_version)
+    if not self._android_rev:
+      logging.info('Not uprevving Android.')
+      return
 
-      try:
-        android_atom_to_build = commands.MarkAndroidAsStable(
-            self._build_root,
-            self._run.manifest_branch,
-            self._boards,
-            android_version=self.android_version)
-      except commands.AndroidIsPinnedUprevError as e:
-        # If uprev failed due to a pin, record that failure (so that the
-        # build ultimately fails) but try again without the pin, to allow the
-        # slave to test the newer version anyway).
-        android_atom_to_build = e.new_android_atom
-        if android_atom_to_build:
-          results_lib.Results.Record(self.name, e)
-          logging.PrintBuildbotStepFailure()
-          logging.error('Android is pinned. Attempting to continue build for '
-                        'Android atom %s anyway but build will ultimately '
-                        'fail.',
-                        android_atom_to_build)
-          logging.info('Deleting pin file at %s and proceeding.',
-                       ANDROIDPIN_MASK_PATH)
-          osutils.SafeUnlink(ANDROIDPIN_MASK_PATH)
-        else:
-          raise
+    android_package = self._run.config.android_package
+    android_build_branch = self._run.config.android_import_branch
+    android_version = _GetAndroidVersionFromMetadata(self._run.attrs.metadata)
+    logging.info('Android package: %s', android_package)
+    logging.info('Android branch: %s', android_build_branch)
+    logging.info('Android version: %s', android_version or 'LATEST')
 
-    if (self._android_rev and
-        not android_atom_to_build and
+    try:
+      android_atom_to_build = commands.MarkAndroidAsStable(
+          buildroot=self._build_root,
+          tracking_branch=self._run.manifest_branch,
+          android_package=android_package,
+          android_build_branch=android_build_branch,
+          boards=self._boards,
+          android_version=android_version)
+    except commands.AndroidIsPinnedUprevError as e:
+      # If uprev failed due to a pin, record that failure (so that the
+      # build ultimately fails) but try again without the pin, to allow the
+      # slave to test the newer version anyway).
+      android_atom_to_build = e.new_android_atom
+      if android_atom_to_build:
+        results_lib.Results.Record(self.name, e)
+        logging.PrintBuildbotStepFailure()
+        logging.error('Android is pinned. Attempting to continue build for '
+                      'Android atom %s anyway but build will ultimately '
+                      'fail.',
+                      android_atom_to_build)
+        logging.info('Deleting pin file at %s and proceeding.',
+                     ANDROIDPIN_MASK_PATH)
+        osutils.SafeUnlink(ANDROIDPIN_MASK_PATH)
+      else:
+        raise
+
+    logging.info('android_atom_to_build = %s', android_atom_to_build)
+
+    if (not android_atom_to_build and
         self._run.options.buildbot and
         self._run.config.build_type == constants.ANDROID_PFQ_TYPE):
       logging.info('Android already uprevved. Nothing else to do.')
@@ -98,22 +105,12 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
     self.android_version = None
     self.android_branch = None
 
-  def _GetAndroidVersionFromMetadata(self):
-    """Return the Android version from metadata; None if is does not exist."""
-    version_dict = self._run.attrs.metadata.GetDict().get('version', {})
-    return version_dict.get('android')
-
-  def _GetAndroidBranchFromMetadata(self):
-    """Return the Android branch from metadata; None if is does not exist."""
-    version_dict = self._run.attrs.metadata.GetDict().get('version', {})
-    return version_dict.get('android-branch')
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     # Initially get version from metadata in case the initial sync
     # stage set it.
-    self.android_version = self._GetAndroidVersionFromMetadata()
-    self.android_branch = self._GetAndroidBranchFromMetadata()
+    self.android_version = _GetAndroidVersionFromMetadata(
+        self._run.attrs.metadata)
 
     # Need to always iterate through and generate the board-specific
     # Android version metadata.  Each board must be handled separately
@@ -160,18 +157,16 @@ class AndroidMetadataStage(generic_stages.BuilderStage,
 
   def _WriteAndroidVersionToMetadata(self):
     """Write Android version to metadata and upload partial json file."""
+    # Even if the stage failed, a None value for android_version still
+    # means something.  In other words, this stage tried to run.
     self._run.attrs.metadata.UpdateKeyDictWithDict(
         'version',
-        {'android': self._run.attrs.android_version,
-         'android-branch': self._run.attrs.android_branch})
+        {'android': self.android_version,
+         'android-branch': self.android_branch})
     self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
 
   def Finish(self):
     """Provide android_version to the rest of the run."""
-    # Even if the stage failed, a None value for android_version still
-    # means something.  In other words, this stage tried to run.
-    self._run.attrs.android_version = self.android_version
-    self._run.attrs.android_branch = self.android_branch
     self._WriteAndroidVersionToMetadata()
     super(AndroidMetadataStage, self).Finish()
 

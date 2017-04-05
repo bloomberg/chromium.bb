@@ -162,8 +162,6 @@ class RunAttributes(object):
   """
 
   REGULAR_ATTRS = frozenset((
-      'android_branch',   # Set by AndroidMetadataStage.
-      'android_version',  # Set by UprevAndroidStage, if it runs.
       'chrome_version',   # Set by SyncChromeStage, if it runs.
       'manifest_manager', # Set by ManifestVersionedSyncStage.
       'release_tag',      # Set by cbuildbot after sync stage.
@@ -629,8 +627,6 @@ class _BuilderRunBase(object):
 
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
-    attrs.android_branch = None
-    attrs.android_version = None
     attrs.chrome_version = None
     attrs.metadata = metadata_lib.CBuildbotMetadata(
         multiprocess_manager=multiprocess_manager)

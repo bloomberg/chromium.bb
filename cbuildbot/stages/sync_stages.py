@@ -625,8 +625,7 @@ class ManifestVersionedSyncStage(SyncStage):
       # later. This is easier than parsing the manifest again after
       # the re-execution.
       self._run.attrs.metadata.UpdateKeyDictWithDict(
-          'version', {'android': android_version,
-                      'android-branch':  constants.ANDROID_BUILD_BRANCH})
+          'version', {'android': android_version})
 
   def _SetChromeVersionIfApplicable(self, manifest):
     """If 'chrome' is in |manifest|, write the version to the BuilderRun object.
@@ -889,7 +888,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   def GetLatestAndroidVersion(self):
     """Returns the version of Android to uprev."""
     return cros_mark_android_as_stable.GetLatestBuild(
-        constants.ANDROID_BUCKET_URL, constants.ANDROID_BUILD_BRANCH,
+        constants.ANDROID_BUCKET_URL, self._run.config.android_import_branch,
         constants.ANDROID_BUILD_TARGETS)[0]
 
   def GetLatestChromeVersion(self):

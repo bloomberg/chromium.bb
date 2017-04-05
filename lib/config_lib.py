@@ -648,6 +648,9 @@ def DefaultSettings():
       # Which Android branch build do we try to uprev from.
       android_import_branch=None,
 
+      # Android package name.
+      android_package=None,
+
       # Uprev Chrome, values of 'tot', 'stable_release', or None.
       chrome_rev=None,
 
