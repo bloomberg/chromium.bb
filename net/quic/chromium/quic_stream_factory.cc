@@ -286,12 +286,12 @@ class QuicStreamFactory::CertVerifierJob {
   const QuicServerId& server_id() const { return server_id_; }
 
  private:
-  QuicServerId server_id_;
+  const QuicServerId server_id_;
   ProofVerifierCallbackImpl* verify_callback_;
   std::unique_ptr<ProofVerifyContext> verify_context_;
   std::unique_ptr<ProofVerifyDetails> verify_details_;
   std::string verify_error_details_;
-  base::TimeTicks start_time_;
+  const base::TimeTicks start_time_;
   const NetLogWithSource net_log_;
   CompletionCallback callback_;
   base::WeakPtrFactory<CertVerifierJob> weak_factory_;
@@ -328,7 +328,6 @@ class QuicStreamFactory::Job {
   int DoLoadServerInfo();
   int DoLoadServerInfoComplete(int rv);
   int DoConnect();
-  int DoResumeConnect();
   int DoConnectComplete(int rv);
 
   void OnIOComplete(int rv);
@@ -351,7 +350,6 @@ class QuicStreamFactory::Job {
     STATE_LOAD_SERVER_INFO,
     STATE_LOAD_SERVER_INFO_COMPLETE,
     STATE_CONNECT,
-    STATE_RESUME_CONNECT,
     STATE_CONNECT_COMPLETE,
   };
   IoState io_state_;
@@ -359,9 +357,9 @@ class QuicStreamFactory::Job {
   QuicStreamFactory* factory_;
   HostResolver* host_resolver_;
   std::unique_ptr<HostResolver::Request> request_;
-  QuicSessionKey key_;
-  int cert_verify_flags_;
-  bool was_alternative_service_recently_broken_;
+  const QuicSessionKey key_;
+  const int cert_verify_flags_;
+  const bool was_alternative_service_recently_broken_;
   std::unique_ptr<QuicServerInfo> server_info_;
   bool started_another_job_;
   const NetLogWithSource net_log_;
@@ -394,22 +392,6 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       net_log_(net_log),
       num_sent_client_hellos_(0),
       session_(nullptr),
-      weak_factory_(this) {}
-
-QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
-                            HostResolver* host_resolver,
-                            QuicChromiumClientSession* session,
-                            const QuicSessionKey& key)
-    : io_state_(STATE_RESUME_CONNECT),
-      factory_(factory),
-      host_resolver_(host_resolver),  // unused
-      key_(key),
-      cert_verify_flags_(0),                            // unused
-      was_alternative_service_recently_broken_(false),  // unused
-      started_another_job_(false),                      // unused
-      net_log_(session->net_log()),                     // unused
-      num_sent_client_hellos_(0),
-      session_(session),
       weak_factory_(this) {}
 
 QuicStreamFactory::Job::~Job() {
@@ -451,10 +433,6 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
       case STATE_CONNECT:
         CHECK_EQ(OK, rv);
         rv = DoConnect();
-        break;
-      case STATE_RESUME_CONNECT:
-        CHECK_EQ(OK, rv);
-        rv = DoResumeConnect();
         break;
       case STATE_CONNECT_COMPLETE:
         rv = DoConnectComplete(rv);
@@ -617,15 +595,6 @@ int QuicStreamFactory::Job::DoConnect() {
       session_->error() == QUIC_PROOF_INVALID) {
     return ERR_QUIC_HANDSHAKE_FAILED;
   }
-
-  return rv;
-}
-
-int QuicStreamFactory::Job::DoResumeConnect() {
-  io_state_ = STATE_CONNECT_COMPLETE;
-
-  int rv = session_->ResumeCryptoConnect(
-      base::Bind(&QuicStreamFactory::Job::OnIOComplete, GetWeakPtr()));
 
   return rv;
 }
