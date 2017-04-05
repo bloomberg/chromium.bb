@@ -130,7 +130,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -1141,10 +1140,11 @@ void BrowserOptionsHandler::InitializeHandler() {
         base::Bind(&BrowserOptionsHandler::OnWallpaperPolicyChanged,
                    base::Unretained(this)));
   }
-  chromeos::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kSystemTimezonePolicy,
-      base::Bind(&BrowserOptionsHandler::OnSystemTimezonePolicyChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+  system_timezone_policy_observer_ =
+      chromeos::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kSystemTimezonePolicy,
+          base::Bind(&BrowserOptionsHandler::OnSystemTimezonePolicyChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
   local_state_pref_change_registrar_.Init(g_browser_process->local_state());
   local_state_pref_change_registrar_.Add(
       prefs::kSystemTimezoneAutomaticDetectionPolicy,

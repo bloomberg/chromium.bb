@@ -19,11 +19,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/settings/cros_settings_names.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace {
 
 enum MetricsReportingChangeHistogramValue {
@@ -79,17 +74,6 @@ void SetMetricsReporting(bool to_update_pref,
     callback_fn.Run(updated_pref);
 }
 
-#if defined(OS_CHROMEOS)
-// Callback function for Chrome OS device settings change, so that the update is
-// applied to metrics reporting state.
-void OnDeviceSettingChange() {
-  bool enable_metrics = false;
-  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kStatsReportingPref,
-                                            &enable_metrics);
-  ChangeMetricsReportingState(enable_metrics);
-}
-#endif
-
 }  // namespace
 
 void ChangeMetricsReportingState(bool enabled) {
@@ -142,16 +126,4 @@ bool IsMetricsReportingPolicyManaged() {
   const PrefService::Preference* pref =
       pref_service->FindPreference(metrics::prefs::kMetricsReportingEnabled);
   return pref && pref->IsManaged();
-}
-
-// TODO(gayane): Add unittest which will check that observer on device settings
-// will trigger this function and kMetricsReportinEnabled as well as metrics
-// service state will be updated accordingly.
-void SetupMetricsStateForChromeOS() {
-#if defined(OS_CHROMEOS)
-  chromeos::CrosSettings::Get()->AddSettingsObserver(
-      chromeos::kStatsReportingPref, base::Bind(&OnDeviceSettingChange));
-
-  OnDeviceSettingChange();
-#endif  // defined(OS_CHROMEOS)
 }

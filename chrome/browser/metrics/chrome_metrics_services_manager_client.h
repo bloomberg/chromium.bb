@@ -13,6 +13,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
+
 class PrefService;
 
 namespace metrics {
@@ -91,6 +95,11 @@ class ChromeMetricsServicesManagerClient
 
   // Weak pointer to the local state prefs store.
   PrefService* local_state_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      cros_settings_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServicesManagerClient);
 };

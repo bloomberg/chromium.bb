@@ -32,8 +32,4 @@ void UpdateMetricsPrefsOnPermissionChange(bool metrics_enabled);
 // Android).
 bool IsMetricsReportingPolicyManaged();
 
-// Initialize kMetricsReportingEnabled based on kStatsReportingPref device
-// setting and add an observer as it is the source of truth on Chrome OS.
-void SetupMetricsStateForChromeOS();
-
 #endif  // CHROME_BROWSER_METRICS_METRICS_REPORTING_STATE_H_
