@@ -27,12 +27,12 @@ void SystemHandler::AddLoadTimeData(content::WebUIDataSource* data_source) {
 }
 
 void SystemHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("changeProxySettings",
-      base::Bind(&SystemHandler::HandleChangeProxySettings,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showProxySettings", base::Bind(&SystemHandler::HandleShowProxySettings,
+                                      base::Unretained(this)));
 }
 
-void SystemHandler::HandleChangeProxySettings(const base::ListValue* /*args*/) {
+void SystemHandler::HandleShowProxySettings(const base::ListValue* /*args*/) {
   base::RecordAction(base::UserMetricsAction("Options_ShowProxySettings"));
   settings_utils::ShowNetworkProxySettings(web_ui()->GetWebContents());
 }

@@ -1017,7 +1017,7 @@ CrSettingsSystemPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSystemPageTest', 'Restart', function() {
+TEST_F('CrSettingsSystemPageTest', 'All', function() {
   mocha.run();
 });
 GEN('#endif');

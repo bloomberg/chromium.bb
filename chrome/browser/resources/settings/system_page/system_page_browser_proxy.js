@@ -9,8 +9,8 @@ cr.define('settings', function() {
   function SystemPageBrowserProxy() {}
 
   SystemPageBrowserProxy.prototype = {
-    /** Allows the user to change native system proxy settings. */
-    changeProxySettings: function() {},
+    /** Shows the native system proxy settings. */
+    showProxySettings: function() {},
 
     /**
      * @return {boolean} Whether hardware acceleration was enabled when the user
@@ -29,8 +29,8 @@ cr.define('settings', function() {
 
   SystemPageBrowserProxyImpl.prototype = {
     /** @override */
-    changeProxySettings: function() {
-      chrome.send('changeProxySettings');
+    showProxySettings: function() {
+      chrome.send('showProxySettings');
     },
 
     /** @override */

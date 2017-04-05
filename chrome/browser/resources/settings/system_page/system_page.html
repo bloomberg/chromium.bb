@@ -1,6 +1,7 @@
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="../controls/controlled_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
@@ -31,11 +32,17 @@
         </template>
       </settings-toggle-button>
     </div>
-    <div class="settings-box">
-      <controlled-button class="primary-button" pref="[[prefs.proxy]]"
-          on-tap="onChangeProxySettingsTap_" label="$i18n{changeProxySettings}"
-          no-extension-indicator>
-      </controlled-button>
+    <div id="proxy" class="settings-box" on-tap="onProxyTap_"
+        actionable$="[[!isProxyEnforcedByPolicy_]]">
+      <div class="start">$i18n{proxySettingsLabel}</div>
+      <button is="paper-icon-button-light" class="icon-external"
+          aria-label="$i18n{proxySettingsLabel}"
+          hidden$="[[isProxyEnforcedByPolicy_]]"></button>
+      <template is="dom-if" if="[[isProxyEnforcedByPolicy_]]">
+        <cr-policy-pref-indicator pref="[[prefs.proxy]]"
+            icon-aria-label="$i18n{proxySettingsLabel}">
+        </cr-policy-pref-indicator>
+      </template>
     </div>
     <template is="dom-if" if="[[prefs.proxy.extensionId]]">
       <div class="settings-box continuation">

@@ -32,8 +32,8 @@ class SystemHandler : public SettingsPageUIHandler {
   void OnJavascriptDisallowed() override {}
 
  private:
-  // Handler for the "changeProxySettings" message. No args.
-  void HandleChangeProxySettings(const base::ListValue* /*args*/);
+  // Handler for the "showProxySettings" message. No args.
+  void HandleShowProxySettings(const base::ListValue* /*args*/);
 
   DISALLOW_COPY_AND_ASSIGN(SystemHandler);
 };

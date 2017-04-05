@@ -17,6 +17,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:lifetime_browser_proxy',
         'system_page_browser_proxy',
+        '<(EXTERNS_GYP):settings_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
