@@ -179,10 +179,6 @@ void SQLiteChannelIDStore::Backend::LoadInBackground(
   if (!base::PathExists(dir) && !base::CreateDirectory(dir))
     return;
 
-  int64_t db_size = 0;
-  if (base::GetFileSize(path_, &db_size))
-    UMA_HISTOGRAM_COUNTS("DomainBoundCerts.DBSizeInKB", db_size / 1024);
-
   db_.reset(new sql::Connection);
   db_->set_histogram_tag("DomainBoundCerts");
 
