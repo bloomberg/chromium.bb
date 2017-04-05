@@ -48,6 +48,14 @@ class Describer(object):
         percent = float(size) / total_bytes if total_bytes else 0
         yield '{}: {:,} bytes ({:.1%})'.format(name, size, percent)
 
+    if self.verbose:
+      yield ''
+      yield 'Other section sizes:'
+      section_names = sorted(k for k in section_sizes.iterkeys()
+                             if k not in section_names)
+      for name in section_names:
+        yield '{}: {:,} bytes'.format(name, section_sizes[name])
+
   def _DescribeSymbol(self, sym):
     # SymbolGroups are passed here when we don't want to expand them.
     if sym.IsGroup():
@@ -68,11 +76,11 @@ class Describer(object):
       yield '    source_path={} \tobject_path={}'.format(
           sym.source_path, sym.object_path)
       if sym.full_name:
-        yield '    full_name={} \tis_anonymous={}'.format(
-            sym.full_name, sym.is_anonymous)
+        yield '    is_anonymous={}  full_name={}'.format(
+            int(sym.is_anonymous), sym.full_name)
       if sym.name:
-        yield '    name={} \tis_anonymous={}'.format(
-            sym.name, sym.is_anonymous)
+        yield '    is_anonymous={}  name={}'.format(
+            int(sym.is_anonymous), sym.name)
     else:
       yield '{}@0x{:<8x}  {:<7} {}'.format(
           sym.section, sym.address, sym.size,

@@ -153,38 +153,46 @@ def _RemoveDuplicatesAndCalculatePadding(symbol_group):
   Symbols must already be sorted by |address|.
   """
   to_remove = []
+  seen_sections = []
   for i, symbol in enumerate(symbol_group[1:]):
     prev_symbol = symbol_group[i]
     if prev_symbol.section_name != symbol.section_name:
+      assert symbol.section_name not in seen_sections, (
+          'Input symbols must be sorted by section, then address.')
+      seen_sections.append(symbol.section_name)
       continue
-    if symbol.address > 0 and prev_symbol.address > 0:
-      # Fold symbols that are at the same address (happens in nm output).
-      if symbol.address == prev_symbol.address:
-        symbol.size = max(prev_symbol.size, symbol.size)
-        to_remove.add(symbol)
-        continue
-      # Even with symbols at the same address removed, overlaps can still
-      # happen. In this case, padding will be negative (and this is fine).
-      padding = symbol.address - prev_symbol.end_address
-      # These thresholds were found by manually auditing arm32 Chrome.
-      # E.g.: Set them to 0 and see what warnings get logged.
-      # TODO(agrieve): See if these thresholds make sense for architectures
-      #     other than arm32.
-      if (symbol.section in 'rd' and padding >= 256 or
-          symbol.section in 't' and padding >= 64):
-        # For nm data, this is caused by data that has no associated symbol.
-        # The linker map file lists them with no name, but with a file.
-        # Example:
-        #   .data 0x02d42764 0x120 .../V8SharedWorkerGlobalScope.o
-        # Where as most look like:
-        #   .data.MANGLED_NAME...
-        logging.debug('Large padding of %d between:\n  A) %r\n  B) %r' % (
-                      padding, prev_symbol, symbol))
-        continue
-      symbol.padding = padding
-      symbol.size += padding
-      assert symbol.size >= 0, 'Symbol has negative size: ' + (
-          '%r\nprev symbol: %r' % (symbol, prev_symbol))
+    if symbol.address <= 0 or prev_symbol.address <= 0:
+      continue
+    # Fold symbols that are at the same address (happens in nm output).
+    prev_is_padding_only = prev_symbol.size_without_padding == 0
+    if symbol.address == prev_symbol.address and not prev_is_padding_only:
+      symbol.size = max(prev_symbol.size, symbol.size)
+      to_remove.add(symbol)
+      continue
+    # Even with symbols at the same address removed, overlaps can still
+    # happen. In this case, padding will be negative (and this is fine).
+    padding = symbol.address - prev_symbol.end_address
+    # These thresholds were found by manually auditing arm32 Chrome.
+    # E.g.: Set them to 0 and see what warnings get logged.
+    # TODO(agrieve): See if these thresholds make sense for architectures
+    #     other than arm32.
+    if not symbol.name.startswith('*') and (
+        symbol.section in 'rd' and padding >= 256 or
+        symbol.section in 't' and padding >= 64):
+      # For nm data, this is caused by data that has no associated symbol.
+      # The linker map file lists them with no name, but with a file.
+      # Example:
+      #   .data 0x02d42764 0x120 .../V8SharedWorkerGlobalScope.o
+      # Where as most look like:
+      #   .data.MANGLED_NAME...
+      logging.debug('Large padding of %d between:\n  A) %r\n  B) %r' % (
+                    padding, prev_symbol, symbol))
+      continue
+    symbol.padding = padding
+    symbol.size += padding
+    assert symbol.size >= 0, (
+        'Symbol has negative size (likely not sorted propertly): '
+        '%r\nprev symbol: %r' % (symbol, prev_symbol))
   # Map files have no overlaps, so worth special-casing the no-op case.
   if to_remove:
     logging.info('Removing %d overlapping symbols', len(to_remove))

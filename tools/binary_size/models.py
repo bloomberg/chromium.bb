@@ -113,10 +113,10 @@ class Symbol(BaseSymbol):
     self.padding = 0
 
   def __repr__(self):
-    return '%s@%x(size=%d,padding=%d,name=%s,path=%s,anon=%d)' % (
-        self.section_name, self.address, self.size_without_padding,
-        self.padding, self.name, self.source_path or self.object_path,
-        int(self.is_anonymous))
+    return ('%s@%x(size_without_padding=%d,padding=%d,name=%s,path=%s,anon=%d)'
+            % (self.section_name, self.address, self.size_without_padding,
+               self.padding, self.name, self.source_path or self.object_path,
+               int(self.is_anonymous)))
 
 
 class SymbolGroup(BaseSymbol):
@@ -573,7 +573,7 @@ def Diff(new, old):
 
   for section_name, padding in padding_by_section_name.iteritems():
     similar.append(Symbol(section_name, padding,
-                          name='** aggregate padding of delta symbols'))
+                          name="** aggregate padding of diff'ed symbols"))
   return SymbolDiff(added, removed, similar)
 
 
