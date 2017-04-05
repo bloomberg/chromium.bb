@@ -39,7 +39,7 @@
     },
     'android_item_chooser_dialogs': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/.*ChooserDialog.java|'\
-                  'chrome/android/javatests/src/org/chromium/chrome/browser/.*ChooserDialogTest.java|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/.*ChooserDialogTest.java'
     },
     'android_crash_reporting': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/crash/'
