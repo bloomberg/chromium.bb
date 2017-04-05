@@ -60,6 +60,8 @@ ios_framework_bundle("web_view") {
     "internal/translate/web_view_translate_accept_languages_factory.h",
     "internal/translate/web_view_translate_client.h",
     "internal/translate/web_view_translate_client.mm",
+    "internal/translate/web_view_translate_ranker_factory.cc",
+    "internal/translate/web_view_translate_ranker_factory.h",
     "internal/web_view_browser_state.h",
     "internal/web_view_browser_state.mm",
     "internal/web_view_early_page_script_provider.h",

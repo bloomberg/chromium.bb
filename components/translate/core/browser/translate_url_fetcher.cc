@@ -31,7 +31,7 @@ TranslateURLFetcher::~TranslateURLFetcher() {
 bool TranslateURLFetcher::Request(
     const GURL& url,
     const TranslateURLFetcher::Callback& callback) {
-  // This function is not supposed to be called before previous operaion is not
+  // This function is not supposed to be called if the previous operation is not
   // finished.
   if (state_ == REQUESTING) {
     NOTREACHED();

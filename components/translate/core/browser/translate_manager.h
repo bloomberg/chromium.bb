@@ -29,6 +29,7 @@ extern const base::Feature kTranslateLanguageByULP;
 class TranslateClient;
 class TranslateDriver;
 class TranslatePrefs;
+class TranslateRanker;
 
 namespace testing {
 class TranslateManagerTest;
@@ -46,6 +47,7 @@ class TranslateManager {
   // |accept_language_pref_name| is the path for the preference for the
   // accept-languages.
   TranslateManager(TranslateClient* translate_client,
+                   TranslateRanker* translate_ranker,
                    const std::string& accept_language_pref_name);
   virtual ~TranslateManager();
 
@@ -161,6 +163,7 @@ class TranslateManager {
 
   TranslateClient* translate_client_;  // Weak.
   TranslateDriver* translate_driver_;  // Weak.
+  TranslateRanker* translate_ranker_;  // Weak.
 
   LanguageState language_state_;
 

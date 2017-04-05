@@ -33,7 +33,7 @@ constexpr int kUrlFetcherId = 2;
 
 // The maximum number of model download attempts to make. Download may fail
 // due to server error or network availability issues.
-constexpr int kMaxRetryOn5xx = 8;
+constexpr int kMaxDownloadAttempts = 8;
 
 // The minimum duration, in minutes, between download attempts.
 constexpr int kMinRetryDelayMins = 3;
@@ -148,6 +148,9 @@ class RankerModelLoader::Backend {
   // TODO(rogerm): Use net::URLFetcher directly?
   std::unique_ptr<TranslateURLFetcher> url_fetcher_;
 
+  // The number of times the backend has attempted to download the model.
+  int download_attempts_;
+
   // The next time before which no new attempts to download the model should be
   // attempted.
   base::TimeTicks next_earliest_download_time_;
@@ -170,7 +173,9 @@ RankerModelLoader::Backend::Backend(
       internal_on_model_available_cb_(internal_on_model_available_cb),
       model_path_(model_path),
       model_url_(model_url),
-      uma_prefix_(uma_prefix) {
+      uma_prefix_(uma_prefix),
+      url_fetcher_(base::MakeUnique<TranslateURLFetcher>(kUrlFetcherId)),
+      download_attempts_(0) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -258,20 +263,16 @@ void RankerModelLoader::Backend::LoadFromFile() {
 void RankerModelLoader::Backend::AsyncLoadFromURL() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  if (!model_url_.is_valid())
+  if (!model_url_.is_valid()) {
+    // Notify the loader that model loading has been abandoned.
+    TransferModelToClient(nullptr, true);
     return;
+  }
 
   // Do nothing if the download attempts should be throttled.
   if (base::TimeTicks::Now() < next_earliest_download_time_) {
     DVLOG(2) << "Last download attempt was too recent.";
     return;
-  }
-
-  // Otherwise, initialize the model fetcher to be non-null and trigger an
-  // initial download attempt.
-  if (!url_fetcher_) {
-    url_fetcher_ = base::MakeUnique<TranslateURLFetcher>(kUrlFetcherId);
-    url_fetcher_->set_max_retry_on_5xx(kMaxRetryOn5xx);
   }
 
   // If a request is already in flight, do not issue a new one.
@@ -280,28 +281,25 @@ void RankerModelLoader::Backend::AsyncLoadFromURL() {
     return;
   }
 
-  DVLOG(2) << "Downloading model from: " << model_url_;
-
-  // Reset the time of the next earliest allowable download attempt.
-  next_earliest_download_time_ =
-      base::TimeTicks::Now() + base::TimeDelta::FromMinutes(kMinRetryDelayMins);
-
-  // Kick off the next download attempt.
-  download_start_time_ = base::TimeTicks::Now();
-  bool result = url_fetcher_->Request(
-      model_url_, base::Bind(&RankerModelLoader::Backend::OnDownloadComplete,
-                             base::Unretained(this)));
-
-  // The maximum number of download attempts has been surpassed. Don't make
-  // any further attempts.
-  if (!result) {
+  // If all allowed attempts have been exhausted, notify the loader that the
+  // backend has abandoned the download.
+  if (++download_attempts_ > kMaxDownloadAttempts) {
     DVLOG(2) << "Model download abandoned.";
     ReportModelStatus(RankerModelStatus::DOWNLOAD_FAILED);
-    url_fetcher_.reset();
-
-    // Notify the loader that model loading has been abandoned.
     TransferModelToClient(nullptr, true);
+    return;
   }
+
+  DVLOG(2) << "Downloading model from: " << model_url_;
+
+  // Kick off the next download attempt and reset the time of the next earliest
+  // allowable download attempt.
+  download_start_time_ = base::TimeTicks::Now();
+  next_earliest_download_time_ =
+      download_start_time_ + base::TimeDelta::FromMinutes(kMinRetryDelayMins);
+  url_fetcher_->Request(
+      model_url_, base::Bind(&RankerModelLoader::Backend::OnDownloadComplete,
+                             base::Unretained(this)));
 }
 
 void RankerModelLoader::Backend::OnDownloadComplete(int /* id */,
