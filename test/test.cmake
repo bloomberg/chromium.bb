@@ -43,7 +43,7 @@ if (CONFIG_GLOBAL_MOTION OR CONFIG_WARPED_MOTION)
     # TODO: not sure if this is intrinsics or a wrapper calling intrin/asm.
     set(AOM_UNIT_TEST_COMMON_SOURCES
         ${AOM_UNIT_TEST_COMMON_SOURCES}
-        "${AOM_ROOT}/test/warp_filter_test.cc")
+        "${AOM_ROOT}/test/warp_filter_test.cc"
         "${AOM_ROOT}/test/warp_filter_test_util.cc")
   endif ()
 endif ()
