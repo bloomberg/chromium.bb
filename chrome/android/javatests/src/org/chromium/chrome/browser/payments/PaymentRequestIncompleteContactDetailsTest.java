@@ -98,6 +98,6 @@ public class PaymentRequestIncompleteContactDetailsTest extends PaymentRequestTe
                 mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "+15555555555", "jon.doe@google.com"});
     }
 }

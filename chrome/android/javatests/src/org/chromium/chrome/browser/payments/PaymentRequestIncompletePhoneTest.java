@@ -96,6 +96,6 @@ public class PaymentRequestIncompletePhoneTest extends PaymentRequestTestBase {
         setTextInEditorAndWait(new String[] {"514-555-5555"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"514-555-5555"});
+        expectResultContains(new String[] {"+15145555555"});
     }
 }

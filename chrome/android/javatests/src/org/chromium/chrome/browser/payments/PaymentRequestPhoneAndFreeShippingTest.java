@@ -48,7 +48,7 @@ public class PaymentRequestPhoneAndFreeShippingTest extends PaymentRequestTestBa
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"555-555-5555", "Jon Doe", "4111111111111111", "12",
+        expectResultContains(new String[] {"+15555555555", "Jon Doe", "4111111111111111", "12",
                 "2050", "visa", "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US",
                 "en", "freeShippingOption"});
     }

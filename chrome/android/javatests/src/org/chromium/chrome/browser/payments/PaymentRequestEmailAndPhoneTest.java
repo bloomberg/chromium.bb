@@ -62,7 +62,7 @@ public class PaymentRequestEmailAndPhoneTest extends PaymentRequestTestBase {
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"555-555-5555", "jon.doe@google.com"});
+        expectResultContains(new String[] {"+15555555555", "jon.doe@google.com"});
     }
 
     /** Attempt to add an invalid email address and phone number and cancel the transaction. */
@@ -92,7 +92,7 @@ public class PaymentRequestEmailAndPhoneTest extends PaymentRequestTestBase {
                 new String[] {"555-555-5555", "jane.jones@google.com"}, mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"555-555-5555", "jane.jones@google.com"});
+        expectResultContains(new String[] {"+15555555555", "jane.jones@google.com"});
     }
 
     /**

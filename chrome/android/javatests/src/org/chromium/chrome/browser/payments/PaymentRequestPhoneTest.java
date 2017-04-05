@@ -62,7 +62,7 @@ public class PaymentRequestPhoneTest extends PaymentRequestTestBase {
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"555-555-5555"});
+        expectResultContains(new String[] {"+15555555555"});
     }
 
     /** Attempt to add an invalid phone number and cancel the transaction. */
@@ -92,7 +92,7 @@ public class PaymentRequestPhoneTest extends PaymentRequestTestBase {
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"999-999-9999"});
+        expectResultContains(new String[] {"+19999999999"});
     }
 
     /**

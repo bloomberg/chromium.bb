@@ -27,7 +27,7 @@ public class PhoneNumberUtil {
         public void afterTextChanged(Editable s) {
             if (mSelfChange) return;
 
-            String formattedNumber = format(s.toString());
+            String formattedNumber = formatForDisplay(s.toString());
             mSelfChange = true;
             s.replace(0, s.length(), formattedNumber, 0, formattedNumber.length());
             mSelfChange = false;
@@ -47,10 +47,24 @@ public class PhoneNumberUtil {
      * office will be formatted as "+41 44 668 1800" in INTERNATIONAL format.
      *
      * @param phoneNumber The given phone number.
-     * @return formatted phone number.
+     * @return Formatted phone number.
      */
-    public static String format(String phoneNumber) {
-        return nativeFormat(phoneNumber);
+    public static String formatForDisplay(String phoneNumber) {
+        return nativeFormatForDisplay(phoneNumber);
+    }
+
+    /**
+     * Formats the given phone number in E.164 format as specified in the Payment Request spec
+     * (https://w3c.github.io/browser-payment-api/#paymentrequest-updated-algorithm)
+     * [i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::E164], returning the original number
+     * if no formatting can be made. For example, the number of the Google Zürich office will be
+     * formatted as "+41446681800" in E.164 format.
+     *
+     * @param phoneNumber The given phone number.
+     * @return Formatted phone number.
+     */
+    public static String formatForResponse(String phoneNumber) {
+        return nativeFormatForResponse(phoneNumber);
     }
 
     /**
@@ -65,6 +79,7 @@ public class PhoneNumberUtil {
         return nativeIsValidNumber(phoneNumber);
     }
 
-    private static native String nativeFormat(String phoneNumber);
+    private static native String nativeFormatForDisplay(String phoneNumber);
+    private static native String nativeFormatForResponse(String phoneNumber);
     private static native boolean nativeIsValidNumber(String phoneNumber);
 }

@@ -63,7 +63,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"});
+        expectResultContains(new String[] {"Jon Doe", "+15555555555", "jon.doe@google.com"});
     }
 
     /** Attempt to add invalid contact information and cancel the transaction. */
@@ -94,7 +94,7 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
 
         clickAndWait(R.id.button_primary, mDismissed);
-        expectResultContains(new String[] {"Jane Jones", "999-999-9999", "jane.jones@google.com"});
+        expectResultContains(new String[] {"Jane Jones", "+19999999999", "jane.jones@google.com"});
     }
 
     /** Quickly pressing on "add contact info" and then [X] should not crash. */
