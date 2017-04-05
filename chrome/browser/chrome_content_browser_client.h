@@ -224,7 +224,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                            content::WebPreferences* prefs) override;
   void BrowserURLHandlerCreated(content::BrowserURLHandler* handler) override;
   void ClearCache(content::RenderFrameHost* rfh) override;
-  void ClearCookies(content::RenderFrameHost* rfh) override;
   void ClearSiteData(content::BrowserContext* browser_context,
                      const url::Origin& origin,
                      bool remove_cookies,

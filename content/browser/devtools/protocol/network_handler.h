@@ -41,7 +41,8 @@ class NetworkHandler : public DevToolsDomainHandler,
   Response Disable() override;
 
   Response ClearBrowserCache() override;
-  Response ClearBrowserCookies() override;
+  void ClearBrowserCookies(
+      std::unique_ptr<ClearBrowserCookiesCallback> callback) override;
 
   void GetCookies(Maybe<protocol::Array<String>> urls,
                   std::unique_ptr<GetCookiesCallback> callback) override;

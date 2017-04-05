@@ -2760,16 +2760,6 @@ void ChromeContentBrowserClient::ClearCache(RenderFrameHost* rfh) {
                   BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 }
 
-void ChromeContentBrowserClient::ClearCookies(RenderFrameHost* rfh) {
-  Profile* profile = Profile::FromBrowserContext(
-      rfh->GetSiteInstance()->GetProcess()->GetBrowserContext());
-  BrowsingDataRemover* remover =
-      BrowsingDataRemoverFactory::GetForBrowserContext(profile);
-  int remove_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA;
-  remover->Remove(base::Time(), base::Time::Max(), remove_mask,
-                  BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
-}
-
 void ChromeContentBrowserClient::ClearSiteData(
     content::BrowserContext* browser_context,
     const url::Origin& origin,
