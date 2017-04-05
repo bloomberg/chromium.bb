@@ -69,19 +69,5 @@ static_assert(
     internal::SupportsOstreamOperator<const StructWithOperator&>::value,
     "struct with operator<< should be printable by const ref");
 
-struct TriviallyDestructible {
-  int field;
-};
-
-class NonTriviallyDestructible {
-  ~NonTriviallyDestructible() {}
-};
-
-static_assert(is_trivially_destructible<int>::value, "IsTriviallyDestructible");
-static_assert(is_trivially_destructible<TriviallyDestructible>::value,
-              "IsTriviallyDestructible");
-static_assert(!is_trivially_destructible<NonTriviallyDestructible>::value,
-              "IsTriviallyDestructible");
-
 }  // namespace
 }  // namespace base

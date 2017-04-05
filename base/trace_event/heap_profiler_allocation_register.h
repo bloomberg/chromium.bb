@@ -8,13 +8,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <type_traits>
 #include <utility>
 
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/process/process_metrics.h"
-#include "base/template_util.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "build/build_config.h"
 
@@ -39,9 +39,10 @@ void FreeGuardedVirtualMemory(void* address, size_t allocated_size);
 template <size_t NumBuckets, class Key, class Value, class KeyHasher>
 class FixedHashMap {
   // To keep things simple we don't call destructors.
-  static_assert(is_trivially_destructible<Key>::value &&
-                    is_trivially_destructible<Value>::value,
+  static_assert(std::is_trivially_destructible<Key>::value &&
+                    std::is_trivially_destructible<Value>::value,
                 "Key and Value shouldn't have destructors");
+
  public:
   using KVPair = std::pair<const Key, Value>;
 

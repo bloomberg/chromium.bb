@@ -24,7 +24,7 @@ ProtoZeroMessage::ProtoZeroMessage() {
   // |nested_messages_arena_| and implictly destroyed when the arena of the
   // root message goes away. This is fine as long as all the fields are PODs,
   // hence the static_assert below.
-  static_assert(base::is_trivially_destructible<ProtoZeroMessage>::value,
+  static_assert(std::is_trivially_destructible<ProtoZeroMessage>::value,
                 "ProtoZeroMessage must be trivially destructible");
 
   static_assert(
