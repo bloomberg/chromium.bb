@@ -176,6 +176,37 @@
       throw new RangeError(errGetReaderBadMode);
     }
 
+    pipeThrough({writable, readable}, options) {
+      this.pipeTo(writable, options);
+      return readable;
+    }
+
+    pipeTo(dest, {preventClose, preventAbort, preventCancel} = {}) {
+      if (!IsReadableStream(this)) {
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
+      }
+
+      if (!binding.IsWritableStream(dest)) {
+        // TODO(ricea): Think about having a better error message.
+        return Promise_reject(new TypeError(streamErrors.illegalInvocation));
+      }
+
+      preventClose = Boolean(preventClose);
+      preventAbort = Boolean(preventAbort);
+      preventCancel = Boolean(preventCancel);
+
+      if (IsReadableStreamLocked(this)) {
+        return Promise_reject(new TypeError(errCannotPipeLockedStream));
+      }
+
+      if (binding.IsWritableStreamLocked(dest)) {
+        return Promise_reject(new TypeError(errCannotPipeToALockedStream));
+      }
+
+      return ReadableStreamPipeTo(this, dest, preventClose, preventAbort,
+                                  preventCancel);
+    }
+
     tee() {
       if (IsReadableStream(this) === false) {
         throw new TypeError(streamErrors.illegalInvocation);
@@ -185,36 +216,14 @@
     }
   }
 
-  // TODO(ricea): Move this into the class definition once it ships.
-  function ReadableStream_prototype_pipeThrough({writable, readable}, options) {
-    this.pipeTo(writable, options);
-    return readable;
-  }
-
-  // TODO(ricea): Move this into the class definition once it ships.
-  function ReadableStream_prototype_pipeTo(
-      dest, {preventClose, preventAbort, preventCancel} = {}) {
-    if (!IsReadableStream(this)) {
-      return Promise_reject(new TypeError(streamErrors.illegalInvocation));
-    }
-
-    if (!binding.IsWritableStream(dest)) {
-      // TODO(ricea): Think about having a better error message.
-      return Promise_reject(new TypeError(streamErrors.illegalInvocation));
-    }
-
-    preventClose = Boolean(preventClose);
-    preventAbort = Boolean(preventAbort);
-    preventCancel = Boolean(preventCancel);
-
-    const readable = this;
-    if (IsReadableStreamLocked(readable)) {
-      return Promise_reject(new TypeError(errCannotPipeLockedStream));
-    }
-
-    if (binding.IsWritableStreamLocked(dest)) {
-      return Promise_reject(new TypeError(errCannotPipeToALockedStream));
-    }
+  function ReadableStreamPipeTo(readable, dest, preventClose, preventAbort,
+                                preventCancel) {
+    // Callers of this function must ensure that the following invariants
+    // are enforced:
+    // assert(IsReadableStream(readable));
+    // assert(binding.IsWritableStream(dest));
+    // assert(!IsReadableStreamLocked(readable));
+    // assert(!binding.IsWritableStreamLocked(dest));
 
     const reader = AcquireReadableStreamDefaultReader(readable);
     const writer = binding.AcquireWritableStreamDefaultWriter(dest);
@@ -1108,9 +1117,4 @@
         return new ReadableStream(
             underlyingSource, strategy, createWithExternalControllerSentinel);
       };
-
-  // Temporary exports while pipeTo() and pipeThrough() are behind flags
-  binding.ReadableStream_prototype_pipeThrough =
-      ReadableStream_prototype_pipeThrough;
-  binding.ReadableStream_prototype_pipeTo = ReadableStream_prototype_pipeTo;
 });
