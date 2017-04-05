@@ -37,6 +37,10 @@
                   'chrome/browser/android/shortcut_.*|'\
                   'chrome/browser/android/webapps/',
     },
+    'android_item_chooser_dialogs': {
+      'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/.*ChooserDialog.java|'\
+                  'chrome/android/javatests/src/org/chromium/chrome/browser/.*ChooserDialogTest.java|'\
+    },
     'android_crash_reporting': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/crash/'
     },
@@ -1563,6 +1567,7 @@
                           'pkotwicz+watch@chromium.org',
                           'zpeng+watch@chromium.org'],
     'android_crash_reporting': ['asvitkine+watch@chromium.org'],
+    'android_item_chooser_dialogs': ['ortuno+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
     'android_infra': ['agrieve+watch@chromium.org',
