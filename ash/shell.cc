@@ -313,8 +313,8 @@ const aura::Window* Shell::GetContainer(const aura::Window* root_window,
 }
 
 // static
-Config Shell::GetConfig() {
-  return GetInstance()->wm_shell_->GetConfig();
+Config Shell::GetAshConfig() {
+  return GetInstance()->wm_shell_->GetAshConfig();
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -444,7 +444,7 @@ void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
 }
 
 void Shell::SetCursorCompositingEnabled(bool enabled) {
-  if (GetConfig() == Config::CLASSIC) {
+  if (GetAshConfig() == Config::CLASSIC) {
     // TODO: needs to work in mus. http://crbug.com/705592.
     window_tree_host_manager_->cursor_window_controller()
         ->SetCursorCompositingEnabled(enabled);
@@ -789,7 +789,7 @@ Shell::~Shell() {
 
 void Shell::Init(const ShellInitParams& init_params) {
   const bool is_mash = wm_shell_->IsRunningInMash();
-  const Config config = wm_shell_->GetConfig();
+  const Config config = wm_shell_->GetAshConfig();
 
   blocking_pool_ = init_params.blocking_pool;
 

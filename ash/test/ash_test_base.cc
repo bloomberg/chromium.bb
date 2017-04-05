@@ -137,7 +137,7 @@ void AshTestBase::SetUp() {
   // interfere test expectations.
   Shell::GetPrimaryRootWindow()->MoveCursorTo(gfx::Point(-1000, -1000));
   // TODO: mus/mash needs to support CursorManager. http://crbug.com/637853.
-  if (Shell::GetConfig() == Config::CLASSIC)
+  if (Shell::GetAshConfig() == Config::CLASSIC)
     Shell::GetInstance()->cursor_manager()->EnableMouseEvents();
 
   // Changing GestureConfiguration shouldn't make tests fail. These values
@@ -200,7 +200,7 @@ display::Display::Rotation AshTestBase::GetCurrentInternalDisplayRotation() {
 
 // static
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  if (Shell::GetConfig() != Config::CLASSIC) {
+  if (Shell::GetAshConfig() != Config::CLASSIC) {
     ash_test_helper_->UpdateDisplayForMash(display_specs);
   } else {
     display::test::DisplayManagerTestApi(

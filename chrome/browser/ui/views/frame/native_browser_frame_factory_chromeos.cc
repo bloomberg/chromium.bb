@@ -12,7 +12,7 @@
 NativeBrowserFrame* NativeBrowserFrameFactory::Create(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
-  if (chromeos::GetConfig() == ash::Config::MASH)
+  if (chromeos::GetAshConfig() == ash::Config::MASH)
     return new BrowserFrameMus(browser_frame, browser_view);
   return new BrowserFrameAsh(browser_frame, browser_view);
 }

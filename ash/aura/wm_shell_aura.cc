@@ -73,7 +73,7 @@ bool WmShellAura::IsRunningInMash() const {
   return false;
 }
 
-Config WmShellAura::GetConfig() const {
+Config WmShellAura::GetAshConfig() const {
   return Config::CLASSIC;
 }
 

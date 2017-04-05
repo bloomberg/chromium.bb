@@ -46,7 +46,7 @@ class ChromeBrowserMainExtraPartsViews : public ChromeBrowserMainExtraParts {
   // Not created when running in ash::Config::MUS.
   std::unique_ptr<wm::WMState> wm_state_;
 
-  // Only used if ash_util::GetConfig() returns ash::Config::MASH.
+  // Only used when running in ash::Config::MASH.
   std::unique_ptr<views::MusClient> mus_client_;
 
   // Subscribes to updates about input-devices.

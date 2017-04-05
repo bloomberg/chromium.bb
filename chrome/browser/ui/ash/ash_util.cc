@@ -62,7 +62,7 @@ bool ShouldOpenAshOnStartup() {
 }
 
 bool IsRunningInMash() {
-  return chromeos::GetConfig() == ash::Config::MASH;
+  return chromeos::GetAshConfig() == ash::Config::MASH;
 }
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {

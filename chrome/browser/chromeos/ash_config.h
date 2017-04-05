@@ -10,7 +10,7 @@
 namespace chromeos {
 
 // Returns the configuration of ash begin run.
-ash::Config GetConfig();
+ash::Config GetAshConfig();
 
 }  // namespace chromeos
 

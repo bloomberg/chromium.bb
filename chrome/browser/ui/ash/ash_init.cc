@@ -84,7 +84,7 @@ AshInit::AshInit() {
 #if defined(USE_X11)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Mus only runs on ozone.
-    DCHECK_NE(ash::Config::MUS, chromeos::GetConfig());
+    DCHECK_NE(ash::Config::MUS, chromeos::GetAshConfig());
     // Hides the cursor outside of the Aura root window. The cursor will be
     // drawn within the Aura root window, and it'll remain hidden after the
     // Aura window is closed.
@@ -99,7 +99,7 @@ AshInit::AshInit() {
   // Balanced by a call to DestroyInstance() in CloseAsh() below.
   ash::ShellContentState::SetInstance(new ChromeShellContentState);
 
-  if (chromeos::GetConfig() == ash::Config::MUS)
+  if (chromeos::GetAshConfig() == ash::Config::MUS)
     window_manager_ = CreateMusShell();
   else
     CreateClassicShell();
@@ -108,10 +108,10 @@ AshInit::AshInit() {
 
   ash::AcceleratorControllerDelegateAura* accelerator_controller_delegate =
       nullptr;
-  if (chromeos::GetConfig() == ash::Config::CLASSIC) {
+  if (chromeos::GetAshConfig() == ash::Config::CLASSIC) {
     accelerator_controller_delegate =
         ash::WmShellAura::Get()->accelerator_controller_delegate();
-  } else if (chromeos::GetConfig() == ash::Config::MUS) {
+  } else if (chromeos::GetAshConfig() == ash::Config::MUS) {
     accelerator_controller_delegate =
         ash::mus::WmShellMus::Get()->accelerator_controller_delegate_mus();
   }

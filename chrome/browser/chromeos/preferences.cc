@@ -551,7 +551,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = unified_desktop_enabled_by_default_.GetValue();
     // TODO: this needs to work in Config::MUS. http://crbug.com/705591.
     if (ash::Shell::HasInstance() &&
-        chromeos::GetConfig() == ash::Config::CLASSIC) {
+        chromeos::GetAshConfig() == ash::Config::CLASSIC) {
       ash::Shell::GetInstance()->display_manager()
           ->SetUnifiedDesktopEnabled(enabled);
     }

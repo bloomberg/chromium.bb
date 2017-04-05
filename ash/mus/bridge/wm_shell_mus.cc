@@ -108,13 +108,13 @@ WmShellMus::WmShellMus(
     session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
   DCHECK(primary_root_window_);
 
-  if (GetConfig() == Config::MASH) {
+  if (GetAshConfig() == Config::MASH) {
     mash_state_ = base::MakeUnique<MashSpecificState>();
     mash_state_->pointer_watcher_event_router = pointer_watcher_event_router;
     mash_state_->immersive_handler_factory =
         base::MakeUnique<ImmersiveHandlerFactoryMus>();
   } else {
-    DCHECK_EQ(Config::MUS, GetConfig());
+    DCHECK_EQ(Config::MUS, GetAshConfig());
     mus_state_ = base::MakeUnique<MusSpecificState>();
   }
 }
@@ -124,7 +124,7 @@ WmShellMus::~WmShellMus() {
 
 // static
 WmShellMus* WmShellMus::Get() {
-  const ash::Config config = WmShell::Get()->GetConfig();
+  const ash::Config config = WmShell::Get()->GetAshConfig();
   CHECK(config == Config::MUS || config == Config::MASH);
   return static_cast<WmShellMus*>(WmShell::Get());
 }
@@ -156,10 +156,10 @@ void WmShellMus::Shutdown() {
 }
 
 bool WmShellMus::IsRunningInMash() const {
-  return GetConfig() == Config::MASH;
+  return GetAshConfig() == Config::MASH;
 }
 
-Config WmShellMus::GetConfig() const {
+Config WmShellMus::GetAshConfig() const {
   return window_manager_->config();
 }
 
@@ -240,7 +240,7 @@ std::vector<WmWindow*> WmShellMus::GetAllRootWindows() {
 }
 
 void WmShellMus::RecordGestureAction(GestureActionType action) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     TouchUMA::GetInstance()->RecordGestureAction(action);
     return;
   }
@@ -249,7 +249,7 @@ void WmShellMus::RecordGestureAction(GestureActionType action) {
 }
 
 void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(action);
     return;
   }
@@ -258,7 +258,7 @@ void WmShellMus::RecordUserMetricsAction(UserMetricsAction action) {
 }
 
 void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     Shell::GetInstance()
         ->metrics()
         ->task_switch_metrics_recorder()
@@ -272,7 +272,7 @@ void WmShellMus::RecordTaskSwitchMetric(TaskSwitchSource source) {
 std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
     wm::WindowState* window_state) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     return base::WrapUnique(ash::DragWindowResizer::Create(
         next_window_resizer.release(), window_state));
   }
@@ -282,7 +282,7 @@ std::unique_ptr<WindowResizer> WmShellMus::CreateDragWindowResizer(
 
 std::unique_ptr<WindowCycleEventFilter>
 WmShellMus::CreateWindowCycleEventFilter() {
-  if (GetConfig() == Config::MUS)
+  if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<WindowCycleEventFilterAura>();
 
   // TODO: implement me, http://crbug.com/629191.
@@ -291,7 +291,7 @@ WmShellMus::CreateWindowCycleEventFilter() {
 
 std::unique_ptr<wm::MaximizeModeEventHandler>
 WmShellMus::CreateMaximizeModeEventHandler() {
-  if (GetConfig() == Config::MUS)
+  if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<wm::MaximizeModeEventHandlerAura>();
 
   // TODO: need support for window manager to get events before client:
@@ -302,7 +302,7 @@ WmShellMus::CreateMaximizeModeEventHandler() {
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
 WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
 #if defined(USE_OZONE)
     return base::MakeUnique<ScopedDisableInternalMouseAndKeyboardOzone>();
 #else
@@ -320,7 +320,7 @@ WmShellMus::CreateScopedDisableInternalMouseAndKeyboard() {
 
 std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
     WmWindow* workspace_window) {
-  if (GetConfig() == Config::MUS)
+  if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<WorkspaceEventHandlerAura>(workspace_window);
 
   return base::MakeUnique<WorkspaceEventHandlerMus>(
@@ -333,14 +333,14 @@ WmShellMus::CreateImmersiveFullscreenController() {
 }
 
 std::unique_ptr<KeyboardUI> WmShellMus::CreateKeyboardUI() {
-  if (GetConfig() == Config::MUS)
+  if (GetAshConfig() == Config::MUS)
     return KeyboardUI::Create();
 
   return KeyboardUIMus::Create(window_manager_->connector());
 }
 
 std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
-  if (GetConfig() == Config::MUS)
+  if (GetAshConfig() == Config::MUS)
     return base::MakeUnique<KeyEventWatcherAura>();
 
   // TODO: needs implementation for mus, http://crbug.com/649600.
@@ -366,7 +366,7 @@ void WmShellMus::RemoveDisplayObserver(WmDisplayObserver* observer) {
 
 void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher,
                                    views::PointerWatcherEventTypes events) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     mus_state_->pointer_watcher_adapter->AddPointerWatcher(watcher, events);
     return;
   }
@@ -378,7 +378,7 @@ void WmShellMus::AddPointerWatcher(views::PointerWatcher* watcher,
 }
 
 void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     mus_state_->pointer_watcher_adapter->RemovePointerWatcher(watcher);
     return;
   }
@@ -387,7 +387,7 @@ void WmShellMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
 }
 
 bool WmShellMus::IsTouchDown() {
-  if (GetConfig() == Config::MUS)
+  if (GetAshConfig() == Config::MUS)
     return aura::Env::GetInstance()->is_touch_down();
 
   // TODO: implement me, http://crbug.com/634967.
@@ -396,7 +396,7 @@ bool WmShellMus::IsTouchDown() {
 }
 
 void WmShellMus::ToggleIgnoreExternalKeyboard() {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     Shell::GetInstance()
         ->virtual_keyboard_controller()
         ->ToggleIgnoreExternalKeyboard();
@@ -407,7 +407,7 @@ void WmShellMus::ToggleIgnoreExternalKeyboard() {
 }
 
 void WmShellMus::SetLaserPointerEnabled(bool enabled) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     Shell::GetInstance()->laser_pointer_controller()->SetEnabled(enabled);
     return;
   }
@@ -416,7 +416,7 @@ void WmShellMus::SetLaserPointerEnabled(bool enabled) {
 }
 
 void WmShellMus::SetPartialMagnifierEnabled(bool enabled) {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     Shell::GetInstance()->partial_magnification_controller()->SetEnabled(
         enabled);
     return;
@@ -428,7 +428,7 @@ void WmShellMus::SetPartialMagnifierEnabled(bool enabled) {
 void WmShellMus::CreatePointerWatcherAdapter() {
   // In Config::MUS PointerWatcherAdapter must be created when this function is
   // called (it is order dependent), that is not the case with Config::MASH.
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     mus_state_->pointer_watcher_adapter =
         base::MakeUnique<PointerWatcherAdapter>();
   }
@@ -443,7 +443,7 @@ void WmShellMus::InitHosts(const ShellInitParams& init_params) {
 
 std::unique_ptr<AcceleratorController>
 WmShellMus::CreateAcceleratorController() {
-  if (GetConfig() == Config::MUS) {
+  if (GetAshConfig() == Config::MUS) {
     DCHECK(!mus_state_->accelerator_controller_delegate);
     mus_state_->accelerator_controller_delegate =
         base::MakeUnique<AcceleratorControllerDelegateAura>();

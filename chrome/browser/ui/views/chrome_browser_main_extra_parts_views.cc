@@ -44,7 +44,7 @@ namespace {
 #if defined(USE_AURA)
 bool ShouldCreateWMState() {
 #if defined(OS_CHROMEOS)
-  return chromeos::GetConfig() != ash::Config::MUS;
+  return chromeos::GetAshConfig() != ash::Config::MUS;
 #else
   return true;
 #endif
@@ -129,7 +129,7 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
   input_device_client_->Connect(std::move(server));
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::GetConfig() != ash::Config::MASH)
+  if (chromeos::GetAshConfig() != ash::Config::MASH)
     return;
 #endif
 

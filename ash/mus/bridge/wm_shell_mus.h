@@ -61,7 +61,7 @@ class WmShellMus : public WmShell {
   // WmShell:
   void Shutdown() override;
   bool IsRunningInMash() const override;
-  Config GetConfig() const override;
+  Config GetAshConfig() const override;
   WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   const display::ManagedDisplayInfo& GetDisplayInfo(

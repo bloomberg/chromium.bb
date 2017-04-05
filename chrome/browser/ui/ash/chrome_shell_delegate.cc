@@ -424,7 +424,7 @@ bool ChromeShellDelegate::IsForceMaximizeOnFirstRun() const {
 
 void ChromeShellDelegate::PreInit() {
   // TODO: port to mus. http://crbug.com/678949.
-  if (chromeos::GetConfig() != ash::Config::CLASSIC)
+  if (chromeos::GetAshConfig() != ash::Config::CLASSIC)
     return;
 
   bool first_run_after_boot = base::CommandLine::ForCurrentProcess()->HasSwitch(

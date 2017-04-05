@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-ash::Config GetConfig() {
+ash::Config GetAshConfig() {
   if (!service_manager::ServiceManagerIsRemote())
     return ash::Config::CLASSIC;
 

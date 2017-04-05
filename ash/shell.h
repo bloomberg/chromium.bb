@@ -261,7 +261,7 @@ class ASH_EXPORT Shell : public SessionStateObserver,
     return window_manager_client_;
   }
 
-  static Config GetConfig();
+  static Config GetAshConfig();
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
