@@ -307,7 +307,7 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(
 
   // TODO(dcheng): Clean this up to not use ScriptState, to match
   // executeScriptInIsolatedWorld.
-  ScriptState* scriptState = ScriptState::forMainWorld(frame());
+  ScriptState* scriptState = toScriptStateForMainWorld(frame());
   if (!scriptState)
     return v8::Local<v8::Value>();
   v8::EscapableHandleScope handleScope(isolate());

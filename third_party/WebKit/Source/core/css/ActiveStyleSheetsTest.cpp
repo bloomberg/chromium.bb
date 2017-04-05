@@ -4,6 +4,7 @@
 
 #include "core/css/ActiveStyleSheets.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
@@ -49,7 +50,7 @@ ShadowRoot& ApplyRulesetsTest::attachShadow(Element& host) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host.attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(shadowRoot);
   return *shadowRoot;
 }

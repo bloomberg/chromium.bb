@@ -4,11 +4,12 @@
 
 #include "core/page/FocusController.h"
 
+#include <memory>
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/shadow/ShadowRootInit.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -46,7 +47,7 @@ TEST_F(FocusControllerTest, DoNotCrash1) {
   Element* host = toElement(document().body()->firstChild());
   ShadowRootInit init;
   init.setMode("open");
-  host->attachShadow(ScriptState::forMainWorld(document().frame()), init,
+  host->attachShadow(toScriptStateForMainWorld(document().frame()), init,
                      ASSERT_NO_EXCEPTION);
   // "This test is for crbug.com/609012"
   Node* text = host->nextSibling();
@@ -73,7 +74,7 @@ TEST_F(FocusControllerTest, DoNotCrash2) {
   Element* host = toElement(text->nextSibling());
   ShadowRootInit init;
   init.setMode("open");
-  host->attachShadow(ScriptState::forMainWorld(document().frame()), init,
+  host->attachShadow(toScriptStateForMainWorld(document().frame()), init,
                      ASSERT_NO_EXCEPTION);
 
   // Set sequential focus navigation point at text node.

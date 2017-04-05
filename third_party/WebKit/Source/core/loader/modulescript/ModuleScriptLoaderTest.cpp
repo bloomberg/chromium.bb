@@ -4,6 +4,7 @@
 
 #include "core/loader/modulescript/ModuleScriptLoader.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/dom/Modulator.h"
 #include "core/dom/ModuleScript.h"
@@ -107,7 +108,7 @@ void ModuleScriptLoaderTest::SetUp() {
   m_fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
   m_modulator = new ModuleScriptLoaderTestModulator(
-      ScriptState::forMainWorld(&frame()), document().getSecurityOrigin());
+      toScriptStateForMainWorld(&frame()), document().getSecurityOrigin());
 }
 
 TEST_F(ModuleScriptLoaderTest, fetchDataURL) {

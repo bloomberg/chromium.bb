@@ -5,6 +5,7 @@
 #include "core/layout/LayoutTestHelper.h"
 
 #include "bindings/core/v8/StringOrArrayBufferOrArrayBufferView.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/css/FontFaceDescriptors.h"
 #include "core/css/FontFaceSet.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -84,7 +85,7 @@ void RenderingTest::loadAhem() {
   FontFace* ahem =
       FontFace::create(&document(), "Ahem", buffer, FontFaceDescriptors());
 
-  ScriptState* scriptState = ScriptState::forMainWorld(&m_pageHolder->frame());
+  ScriptState* scriptState = toScriptStateForMainWorld(&m_pageHolder->frame());
   DummyExceptionStateForTesting exceptionState;
   FontFaceSet::from(document())
       ->addForBinding(scriptState, ahem, exceptionState);

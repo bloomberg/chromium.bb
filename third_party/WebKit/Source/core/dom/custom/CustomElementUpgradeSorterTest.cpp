@@ -4,8 +4,10 @@
 
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/StringOrDictionary.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -16,7 +18,6 @@
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -37,7 +38,7 @@ class CustomElementUpgradeSorterTest : public ::testing::Test {
   Document* document() { return &m_page->document(); }
 
   ScriptState* scriptState() {
-    return ScriptState::forMainWorld(&m_page->frame());
+    return toScriptStateForMainWorld(&m_page->frame());
   }
 
   ShadowRoot* attachShadowTo(Element* element) {

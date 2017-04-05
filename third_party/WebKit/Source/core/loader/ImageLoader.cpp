@@ -112,7 +112,7 @@ class ImageLoader::Task {
       m_scriptState = ScriptState::current(isolate);
     } else {
       m_scriptState =
-          ScriptState::forMainWorld(loader->element()->document().frame());
+          toScriptStateForMainWorld(loader->element()->document().frame());
       DCHECK(m_scriptState);
     }
     m_requestURL =

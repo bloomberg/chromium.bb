@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
 #include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
@@ -560,7 +561,7 @@ Page* InspectorOverlay::overlayPage() {
                        SubstituteData(overlayPageHTMLResource, "text/html",
                                       "UTF-8", KURL(), ForceSynchronousLoad)));
   v8::Isolate* isolate = toIsolate(frame);
-  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  ScriptState* scriptState = toScriptStateForMainWorld(frame);
   DCHECK(scriptState);
   ScriptState::Scope scope(scriptState);
   v8::Local<v8::Object> global = scriptState->context()->Global();

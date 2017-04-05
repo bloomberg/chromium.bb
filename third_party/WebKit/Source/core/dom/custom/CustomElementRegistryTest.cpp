@@ -4,7 +4,9 @@
 
 #include "core/dom/custom/CustomElementRegistry.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDefinitionOptions.h"
@@ -20,7 +22,6 @@
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 
@@ -39,7 +40,7 @@ class CustomElementRegistryTest : public ::testing::Test {
   }
 
   ScriptState* scriptState() {
-    return ScriptState::forMainWorld(&m_page->frame());
+    return toScriptStateForMainWorld(&m_page->frame());
   }
 
   void collectCandidates(const CustomElementDescriptor& desc,

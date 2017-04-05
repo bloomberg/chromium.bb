@@ -53,7 +53,7 @@ class ScriptPromiseResolverTest : public ::testing::Test {
 
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   ScriptState* getScriptState() const {
-    return ScriptState::forMainWorld(&m_pageHolder->frame());
+    return toScriptStateForMainWorld(&m_pageHolder->frame());
   }
   ExecutionContext* getExecutionContext() const {
     return &m_pageHolder->document();

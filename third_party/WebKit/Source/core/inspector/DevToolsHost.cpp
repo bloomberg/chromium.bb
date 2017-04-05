@@ -130,7 +130,7 @@ void DevToolsHost::evaluateScript(const String& expression) {
     return;
   if (!m_frontendFrame)
     return;
-  ScriptState* scriptState = ScriptState::forMainWorld(m_frontendFrame);
+  ScriptState* scriptState = toScriptStateForMainWorld(m_frontendFrame);
   if (!scriptState)
     return;
   ScriptState::Scope scope(scriptState);

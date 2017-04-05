@@ -25,8 +25,11 @@
 
 #include "core/html/parser/HTMLParserScriptRunner.h"
 
+#include <inttypes.h>
+#include <memory>
 #include "bindings/core/v8/Microtask.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/Element.h"
@@ -46,8 +49,6 @@
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "public/platform/Platform.h"
-#include <inttypes.h>
-#include <memory>
 
 namespace blink {
 
@@ -554,7 +555,7 @@ void HTMLParserScriptRunner::requestParsingBlockingScript(Element* element) {
   // returning control to the parser.
   if (!parserBlockingScript()->isReady()) {
     if (m_document->frame()) {
-      ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
+      ScriptState* scriptState = toScriptStateForMainWorld(m_document->frame());
       if (scriptState) {
         ScriptStreamer::startStreaming(
             m_parserBlockingScript, ScriptStreamer::ParsingBlocking,
@@ -574,7 +575,7 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
     return;
 
   if (m_document->frame() && !pendingScript->isReady()) {
-    ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
+    ScriptState* scriptState = toScriptStateForMainWorld(m_document->frame());
     if (scriptState) {
       ScriptStreamer::startStreaming(
           pendingScript, ScriptStreamer::Deferred,

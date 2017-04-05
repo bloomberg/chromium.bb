@@ -4,6 +4,8 @@
 
 #include "core/css/resolver/SharedStyleFinder.h"
 
+#include <memory>
+#include "bindings/core/v8/V8Binding.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/parser/CSSParser.h"
@@ -15,7 +17,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -35,7 +36,7 @@ class SharedStyleFinderTest : public ::testing::Test {
     ShadowRootInit init;
     init.setMode("open");
     ShadowRoot* shadowRoot =
-        host.attachShadow(ScriptState::forMainWorld(document().frame()), init,
+        host.attachShadow(toScriptStateForMainWorld(document().frame()), init,
                           ASSERT_NO_EXCEPTION);
     EXPECT_TRUE(shadowRoot);
     return *shadowRoot;

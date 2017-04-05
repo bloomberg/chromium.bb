@@ -5,11 +5,12 @@
 #include "core/dom/Modulator.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 
 namespace blink {
 
 Modulator* Modulator::from(LocalFrame* frame) {
-  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  ScriptState* scriptState = toScriptStateForMainWorld(frame);
   if (!scriptState)
     return nullptr;
   // TODO(kouhei): setModulator in V8PerContextData when we land ModulatorImpl.

@@ -49,7 +49,7 @@ class ReadableStreamBytesConsumerTest : public ::testing::Test {
   ReadableStreamBytesConsumerTest() : m_page(DummyPageHolder::create()) {}
 
   ScriptState* getScriptState() {
-    return ScriptState::forMainWorld(m_page->document().frame());
+    return toScriptStateForMainWorld(m_page->document().frame());
   }
   v8::Isolate* isolate() { return getScriptState()->isolate(); }
 

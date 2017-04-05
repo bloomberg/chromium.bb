@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Element.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
@@ -448,7 +449,7 @@ v8::Local<v8::Object> WebPluginContainerImpl::v8ObjectForElement() {
   if (!m_element->document().canExecuteScripts(NotAboutToExecuteScript))
     return v8::Local<v8::Object>();
 
-  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  ScriptState* scriptState = toScriptStateForMainWorld(frame);
   if (!scriptState)
     return v8::Local<v8::Object>();
 

@@ -278,7 +278,7 @@ void MainThreadDebugger::unmuteMetrics(int contextGroupId) {
 v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(
     int contextGroupId) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
-  ScriptState* scriptState = frame ? ScriptState::forMainWorld(frame) : nullptr;
+  ScriptState* scriptState = frame ? toScriptStateForMainWorld(frame) : nullptr;
   return scriptState ? scriptState->context() : v8::Local<v8::Context>();
 }
 

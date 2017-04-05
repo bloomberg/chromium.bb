@@ -4,6 +4,7 @@
 
 #include "modules/webaudio/BaseAudioContext.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/frame/FrameOwner.h"
@@ -113,7 +114,7 @@ class BaseAudioContextTest : public ::testing::Test {
   Document& childDocument() { return *m_childFrame->document(); }
 
   ScriptState* getScriptStateFrom(const Document& document) {
-    return ScriptState::forMainWorld(document.frame());
+    return toScriptStateForMainWorld(document.frame());
   }
 
   void rejectPendingResolvers(BaseAudioContext* audioContext) {

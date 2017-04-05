@@ -4,6 +4,7 @@
 
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -99,7 +100,7 @@ class CanvasRenderingContextUsageTrackingTest : public ::testing::Test {
   void TearDown();
 
   ScriptState* getScriptState() {
-    return ScriptState::forMainWorld(m_canvasElement->frame());
+    return toScriptStateForMainWorld(m_canvasElement->frame());
   }
 
  private:

@@ -4,6 +4,8 @@
 
 #include "core/dom/StyleEngine.h"
 
+#include <memory>
+#include "bindings/core/v8/V8Binding.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
@@ -18,7 +20,6 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -209,7 +210,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host->attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
   shadowRoot->setInnerHTML("<div></div><div></div><div></div>");
@@ -254,7 +255,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host->attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
   shadowRoot->setInnerHTML("<slot name=other></slot><slot></slot>");
@@ -285,7 +286,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host->attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
   shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>");
@@ -315,7 +316,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationV0BoundaryCrossing) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host->attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
   shadowRoot->setInnerHTML("<div></div><div class=a></div><div></div>");
@@ -531,7 +532,7 @@ TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host->attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(shadowRoot);
 
   shadowRoot->setInnerHTML(

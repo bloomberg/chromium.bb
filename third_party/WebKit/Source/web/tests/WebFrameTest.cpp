@@ -38,6 +38,7 @@
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 #include "core/clipboard/DataTransfer.h"
@@ -1021,7 +1022,7 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach) {
       toLocalFrame(webViewHelper.webView()->page()->mainFrame());
   NonThrowableExceptionState exceptionState;
   RefPtr<SerializedScriptValue> message =
-      serializeString("message", ScriptState::forMainWorld(frame));
+      serializeString("message", toScriptStateForMainWorld(frame));
   MessagePortArray messagePorts;
   frame->domWindow()->postMessage(message, messagePorts, "*",
                                   frame->domWindow(), exceptionState);
@@ -8862,7 +8863,7 @@ TEST_F(WebFrameSwapTest, SetTimeoutAfterSwap) {
         "SecurityError: Blocked a frame with origin \"http://internal.test\" "
         "from accessing a cross-origin frame.",
         toCoreString(exception
-                         ->ToString(ScriptState::forMainWorld(
+                         ->ToString(toScriptStateForMainWorld(
                                         webView()->mainFrameImpl()->frame())
                                         ->context())
                          .ToLocalChecked()));

@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -82,7 +83,7 @@ void ServiceWorkerLinkResource::process() {
 
   String errorMessage;
   ServiceWorkerContainer* container = NavigatorServiceWorker::serviceWorker(
-      ScriptState::forMainWorld(m_owner->document().frame()),
+      toScriptStateForMainWorld(m_owner->document().frame()),
       *document.frame()->domWindow()->navigator(), errorMessage);
 
   if (!container) {

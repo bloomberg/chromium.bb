@@ -9,6 +9,7 @@
 #include <cstdint>
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/Settings.h"
@@ -85,7 +86,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   options.blobInfo = (hash & kFuzzBlobInfo) ? blobInfoArray : nullptr;
 
   // Set up.
-  ScriptState* scriptState = ScriptState::forMainWorld(&pageHolder->frame());
+  ScriptState* scriptState = toScriptStateForMainWorld(&pageHolder->frame());
   v8::Isolate* isolate = scriptState->isolate();
   ScriptState::Scope scope(scriptState);
   v8::TryCatch tryCatch(isolate);

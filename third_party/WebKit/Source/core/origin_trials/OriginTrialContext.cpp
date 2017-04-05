@@ -190,7 +190,7 @@ void OriginTrialContext::initializePendingFeatures() {
   LocalFrame* frame = toDocument(supplementable())->frame();
   if (!frame)
     return;
-  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  ScriptState* scriptState = toScriptStateForMainWorld(frame);
   if (!scriptState)
     return;
   if (!scriptState->contextIsValid())

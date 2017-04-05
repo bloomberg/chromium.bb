@@ -110,7 +110,7 @@ class ScriptPromisePropertyTestBase {
   Document& document() { return m_page->document(); }
   v8::Isolate* isolate() { return toIsolate(&document()); }
   ScriptState* mainScriptState() {
-    return ScriptState::forMainWorld(document().frame());
+    return toScriptStateForMainWorld(document().frame());
   }
   DOMWrapperWorld& mainWorld() { return mainScriptState()->world(); }
   ScriptState* otherScriptState() { return m_otherScriptState.get(); }

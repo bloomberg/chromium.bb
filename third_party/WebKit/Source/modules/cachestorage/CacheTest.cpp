@@ -240,7 +240,7 @@ class CacheStorageTest : public ::testing::Test {
   }
 
   ScriptState* getScriptState() {
-    return ScriptState::forMainWorld(m_page->document().frame());
+    return toScriptStateForMainWorld(m_page->document().frame());
   }
   ExecutionContext* getExecutionContext() {
     return getScriptState()->getExecutionContext();

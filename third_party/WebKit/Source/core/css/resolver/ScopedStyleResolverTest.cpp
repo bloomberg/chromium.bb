@@ -4,6 +4,7 @@
 
 #include "core/css/resolver/ScopedStyleResolver.h"
 
+#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"
 #include "core/frame/FrameView.h"
@@ -31,7 +32,7 @@ ShadowRoot& ScopedStyleResolverTest::attachShadow(Element& host) {
   ShadowRootInit init;
   init.setMode("open");
   ShadowRoot* shadowRoot = host.attachShadow(
-      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+      toScriptStateForMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(shadowRoot);
   return *shadowRoot;
 }

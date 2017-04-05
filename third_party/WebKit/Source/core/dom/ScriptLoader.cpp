@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "core/HTMLNames.h"
 #include "core/SVGNames.h"
 #include "core/dom/Document.h"
@@ -459,7 +460,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     m_asyncExecType = ScriptRunner::Async;
     LocalFrame* frame = m_element->document().frame();
     if (frame) {
-      ScriptState* scriptState = ScriptState::forMainWorld(frame);
+      ScriptState* scriptState = toScriptStateForMainWorld(frame);
       if (scriptState)
         ScriptStreamer::startStreaming(
             m_pendingScript.get(), ScriptStreamer::Async, frame->settings(),

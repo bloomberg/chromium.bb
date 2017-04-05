@@ -132,7 +132,7 @@ bool DocumentXSLT::processingInstructionInsertedIntoDocument(
   if (!RuntimeEnabledFeatures::xsltEnabled() || !document.frame())
     return true;
 
-  ScriptState* scriptState = ScriptState::forMainWorld(document.frame());
+  ScriptState* scriptState = toScriptStateForMainWorld(document.frame());
   if (!scriptState)
     return false;
   DOMContentLoadedListener* listener =

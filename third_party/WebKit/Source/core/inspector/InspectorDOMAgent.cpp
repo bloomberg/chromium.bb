@@ -30,8 +30,10 @@
 
 #include "core/inspector/InspectorDOMAgent.h"
 
+#include <memory>
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Node.h"
 #include "core/InputTypeNames.h"
 #include "core/dom/Attr.h"
@@ -79,7 +81,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -2356,7 +2357,7 @@ InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup) {
   if (!frame)
     return nullptr;
 
-  ScriptState* scriptState = ScriptState::forMainWorld(frame);
+  ScriptState* scriptState = toScriptStateForMainWorld(frame);
   if (!scriptState)
     return nullptr;
 

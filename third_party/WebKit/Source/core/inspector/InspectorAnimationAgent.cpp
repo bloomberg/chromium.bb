@@ -4,6 +4,8 @@
 
 #include "core/inspector/InspectorAnimationAgent.h"
 
+#include <memory>
+#include "bindings/core/v8/V8Binding.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/AnimationEffectTiming.h"
@@ -28,7 +30,6 @@
 #include "platform/Decimal.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/text/Base64.h"
-#include <memory>
 
 namespace AnimationAgentState {
 static const char animationAgentEnabled[] = "animationAgentEnabled";
@@ -423,7 +424,7 @@ Response InspectorAnimationAgent::resolveAnimation(
       toKeyframeEffectReadOnly(animation->effect())->target();
   Document* document = element->ownerDocument();
   LocalFrame* frame = document ? document->frame() : nullptr;
-  ScriptState* scriptState = frame ? ScriptState::forMainWorld(frame) : nullptr;
+  ScriptState* scriptState = frame ? toScriptStateForMainWorld(frame) : nullptr;
   if (!scriptState)
     return Response::Error("Element not associated with a document.");
 

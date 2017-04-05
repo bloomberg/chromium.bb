@@ -31,6 +31,7 @@
 #include "web/WebDevToolsFrontendImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DevToolsHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/DevToolsHost.h"
@@ -68,7 +69,7 @@ void WebDevToolsFrontendImpl::didClearWindowObject(WebLocalFrameImpl* frame) {
     // Use higher limit for DevTools isolate so that it does not OOM when
     // profiling large heaps.
     isolate->IncreaseHeapLimitForDebugging();
-    ScriptState* scriptState = ScriptState::forMainWorld(m_webFrame->frame());
+    ScriptState* scriptState = toScriptStateForMainWorld(m_webFrame->frame());
     DCHECK(scriptState);
     ScriptState::Scope scope(scriptState);
 

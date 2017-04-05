@@ -44,7 +44,7 @@ V8TestingScope::V8TestingScope()
 }
 
 ScriptState* V8TestingScope::getScriptState() const {
-  return ScriptState::forMainWorld(m_holder->document().frame());
+  return toScriptStateForMainWorld(m_holder->document().frame());
 }
 
 ExecutionContext* V8TestingScope::getExecutionContext() const {
