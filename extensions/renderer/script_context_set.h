@@ -104,11 +104,7 @@ class ScriptContextSet {
   }
 
   // Cleans up contexts belonging to an unloaded extension.
-  //
-  // Returns the set of ScriptContexts that were removed as a result. These
-  // are safe to interact with until the end of the current event loop, since
-  // they're deleted asynchronously.
-  std::set<ScriptContext*> OnExtensionUnloaded(const std::string& extension_id);
+  void OnExtensionUnloaded(const std::string& extension_id);
 
   // Adds the given |context| for testing purposes.
   void AddForTesting(std::unique_ptr<ScriptContext> context);
@@ -129,10 +125,6 @@ class ScriptContextSet {
       int world_id,
       const GURL& url,
       const blink::WebSecurityOrigin& origin);
-
-  // Helper for OnExtensionUnloaded().
-  void RecordAndRemove(std::set<ScriptContext*>* removed,
-                       ScriptContext* context);
 
   // Weak reference to all installed Extensions that are also active in this
   // process.

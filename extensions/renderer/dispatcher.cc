@@ -1169,13 +1169,14 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // changed origin whitelist.
   ScriptInjection::RemoveIsolatedWorld(id);
 
-  // Invalidate all of the contexts that were removed.
-  // TODO(kalman): add an invalidation observer interface to ScriptContext.
-  std::set<ScriptContext*> removed_contexts =
-      script_context_set_->OnExtensionUnloaded(id);
-  for (ScriptContext* context : removed_contexts) {
-    bindings_system_->WillReleaseScriptContext(context);
-  }
+  // Inform the bindings system that the contexts will be removed to allow time
+  // to clear out context-specific data, and then remove the contexts
+  // themselves.
+  script_context_set_->ForEach(
+      id, nullptr,
+      base::Bind(&ExtensionBindingsSystem::WillReleaseScriptContext,
+                 base::Unretained(bindings_system_.get())));
+  script_context_set_->OnExtensionUnloaded(id);
 
   // Update the available bindings for the remaining contexts. These may have
   // changed if an externally_connectable extension is unloaded and a webpage
