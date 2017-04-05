@@ -76,13 +76,14 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
 
     @Override
     public void prepareToUploadMinidumps(final Runnable startUploads) {
-        createPlatformServiceBridge().queryMetricsSetting(new ValueCallback<Boolean>() {
-            public void onReceiveValue(Boolean enabled) {
-                ThreadUtils.assertOnUiThread();
-                mPermittedByUser = enabled;
-                startUploads.run();
-            }
-        });
+        PlatformServiceBridge.getOrCreateInstance(mContext).queryMetricsSetting(
+                new ValueCallback<Boolean>() {
+                    public void onReceiveValue(Boolean enabled) {
+                        ThreadUtils.assertOnUiThread();
+                        mPermittedByUser = enabled;
+                        startUploads.run();
+                    }
+                });
     }
 
     @Override
@@ -90,13 +91,4 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
 
     @Override
     public void recordUploadFailure(File minidump) {}
-
-    /**
-     * Utility method to allow us to test the logic of this class by injecting
-     * a test-specific PlatformServiceBridge.
-     */
-    @VisibleForTesting
-    public PlatformServiceBridge createPlatformServiceBridge() {
-        return PlatformServiceBridge.getInstance(mContext);
-    }
 }

@@ -402,10 +402,13 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         PathService.override(PathService.DIR_MODULE, "/system/lib/");
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
+        final Context context = ContextUtils.getApplicationContext();
+        // Future calls to PlatformServiceBridge.getInstance() rely on it having been created here.
+        PlatformServiceBridge.getOrCreateInstance(context);
+
         // Make sure that ResourceProvider is initialized before starting the browser process.
         final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
         final String webViewPackageName = webViewPackageInfo.packageName;
-        final Context context = ContextUtils.getApplicationContext();
         setUpResources(webViewPackageInfo, context);
         initPlatSupportLibrary();
         doNetworkInitializations(context);
@@ -419,18 +422,17 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             AwBrowserProcess.handleMinidumps(webViewPackageName, true /* enabled */);
         }
 
-        // Actions conditioned on whether the Android Checkbox is toggled on
-        PlatformServiceBridge.getInstance(context)
-                .queryMetricsSetting(new ValueCallback<Boolean>() {
-                    public void onReceiveValue(Boolean enabled) {
-                        ThreadUtils.assertOnUiThread();
-                        AwMetricsServiceClient.setConsentSetting(context, enabled);
+        PlatformServiceBridge.getInstance().queryMetricsSetting(new ValueCallback<Boolean>() {
+            // Actions conditioned on whether the Android Checkbox is toggled on
+            public void onReceiveValue(Boolean enabled) {
+                ThreadUtils.assertOnUiThread();
+                AwMetricsServiceClient.setConsentSetting(context, enabled);
 
-                        if (!enableMinidumpUploadingForTesting) {
-                            AwBrowserProcess.handleMinidumps(webViewPackageName, enabled);
-                        }
-                    }
-                });
+                if (!enableMinidumpUploadingForTesting) {
+                    AwBrowserProcess.handleMinidumps(webViewPackageName, enabled);
+                }
+            }
+        });
 
         if (CommandLineUtil.isBuildDebuggable()) {
             setWebContentsDebuggingEnabled(true);

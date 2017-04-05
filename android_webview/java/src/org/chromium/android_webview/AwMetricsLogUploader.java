@@ -14,8 +14,9 @@ import org.chromium.base.annotations.JNINamespace;
 public class AwMetricsLogUploader {
     @CalledByNative
     public static void uploadLog(byte[] data) {
-        // getInstance only needs a Context on the first call. WebViewChromiumFactoryProvider will
-        // have already called it, so we can pass null here.
-        PlatformServiceBridge.getInstance(null).logMetrics(data);
+        // This relies on WebViewChromiumFactoryProvider having already created the
+        // PlatformServiceBridge. This is guaranteed because metrics won't start until the
+        // PlatformServiceBridge.queryMetricsSetting() callback fires.
+        PlatformServiceBridge.getInstance().logMetrics(data);
     }
 }
