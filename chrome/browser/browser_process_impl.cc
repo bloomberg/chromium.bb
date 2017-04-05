@@ -633,7 +633,7 @@ NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
 }
 
 NotificationPlatformBridge* BrowserProcessImpl::notification_platform_bridge() {
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
   if (!created_notification_bridge_)
     CreateNotificationPlatformBridge();
   return notification_bridge_.get();
@@ -1162,7 +1162,7 @@ void BrowserProcessImpl::CreateIntranetRedirectDetector() {
 }
 
 void BrowserProcessImpl::CreateNotificationPlatformBridge() {
-#if (defined(OS_ANDROID) || defined(OS_MACOSX))
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
   DCHECK(!notification_bridge_);
   notification_bridge_.reset(NotificationPlatformBridge::Create());
   created_notification_bridge_ = true;

@@ -3762,6 +3762,14 @@ split_static_library("browser") {
       deps += [ "//third_party/libsecret" ]
     }
 
+    if (enable_native_notifications) {
+      sources += [
+        "notifications/notification_platform_bridge_linux.cc",
+        "notifications/notification_platform_bridge_linux.h",
+      ]
+      deps += [ "//build/linux/libgio" ]
+    }
+
     if (use_ozone) {
       sources += [
         "fullscreen_ozone.cc",

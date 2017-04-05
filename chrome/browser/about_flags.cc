@@ -1467,11 +1467,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"translate-lang-by-ulp", flag_descriptions::kTranslateLanguageByUlpName,
      flag_descriptions::kTranslateLanguageByUlpDescription, kOsAll,
      FEATURE_VALUE_TYPE(translate::kTranslateLanguageByULP)},
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
     {"enable-native-notifications", flag_descriptions::kNotificationsNativeFlag,
-     flag_descriptions::kNotificationsNativeFlagDescription, kOsMac,
+     flag_descriptions::kNotificationsNativeFlagDescription, kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(features::kNativeNotifications)},
-#endif  // OS_MACOSX
+#endif  // defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #if defined(TOOLKIT_VIEWS)
     {"disable-views-rect-based-targeting",
      flag_descriptions::kViewsRectBasedTargetingName,

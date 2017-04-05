@@ -9,6 +9,7 @@
 #define CHROME_COMMON_CHROME_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "chrome/common/features.h"
 #include "extensions/features/features.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
@@ -119,9 +120,9 @@ extern const base::Feature kModalPermissionPrompts;
 extern const base::Feature kModuleDatabase;
 #endif
 
-#if defined(OS_MACOSX)
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 extern const base::Feature kNativeNotifications;
-#endif  // defined(OS_MACOSX)
+#endif
 
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
