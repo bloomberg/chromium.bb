@@ -214,11 +214,6 @@ class ScopedComPtr {
     r.ptr_ = tmp;
   }
 
-  // static methods
-  static const IID& iid() {
-    return *interface_id;
-  }
-
  private:
   Interface* ptr_ = nullptr;
 };

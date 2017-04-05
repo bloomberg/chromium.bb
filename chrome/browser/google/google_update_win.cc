@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <objbase.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -126,9 +127,9 @@ void ConfigureProxyBlanket(IUnknown* interface_pointer) {
 // Vista+. |hwnd| must refer to a foregound window in order to get the UAC
 // prompt to appear in the foreground if running on Vista+. It can also be NULL
 // if background UAC prompts are desired.
-HRESULT CoGetClassObjectAsAdmin(REFCLSID class_id,
+HRESULT CoGetClassObjectAsAdmin(gfx::AcceleratedWidget hwnd,
+                                REFCLSID class_id,
                                 REFIID interface_id,
-                                gfx::AcceleratedWidget hwnd,
                                 void** interface_ptr) {
   if (!interface_ptr)
     return E_POINTER;
@@ -182,24 +183,19 @@ HRESULT CreateGoogleUpdate3WebClass(
       !install_update_if_possible ||
       !IsElevationRequiredForSystemLevelUpdates()) {
     hresult = ::CoGetClassObject(google_update_clsid, CLSCTX_ALL, nullptr,
-                                 base::win::ScopedComPtr<IClassFactory>::iid(),
-                                 class_factory.ReceiveVoid());
+                                 IID_PPV_ARGS(&class_factory));
   } else {
     // With older versions of GoogleUpdate, a system-level update requires Admin
     // privileges. Elevate while instantiating the MachineClass.
-    hresult = CoGetClassObjectAsAdmin(
-        google_update_clsid, base::win::ScopedComPtr<IClassFactory>::iid(),
-        elevation_window, class_factory.ReceiveVoid());
+    hresult = CoGetClassObjectAsAdmin(elevation_window, google_update_clsid,
+                                      IID_PPV_ARGS(&class_factory));
   }
   if (FAILED(hresult))
     return hresult;
 
   ConfigureProxyBlanket(class_factory.get());
 
-  return class_factory->CreateInstance(
-      nullptr,
-      base::win::ScopedComPtr<IGoogleUpdate3Web>::iid(),
-      google_update->ReceiveVoid());
+  return class_factory->CreateInstance(nullptr, IID_PPV_ARGS(google_update));
 }
 
 // UpdateCheckDriver -----------------------------------------------------------

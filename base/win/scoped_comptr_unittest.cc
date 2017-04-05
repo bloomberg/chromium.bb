@@ -35,9 +35,6 @@ const IID dummy_iid = {0x12345678u,
 }  // namespace
 
 TEST(ScopedComPtrTest, ScopedComPtr) {
-  EXPECT_EQ(memcmp(&ScopedComPtr<IUnknown>::iid(), &IID_IUnknown, sizeof(IID)),
-            0);
-
   base::win::ScopedCOMInitializer com_initializer;
   EXPECT_TRUE(com_initializer.succeeded());
 
