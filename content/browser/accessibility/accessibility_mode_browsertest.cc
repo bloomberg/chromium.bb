@@ -172,9 +172,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
   EXPECT_FALSE(textbox->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
   int original_id = textbox->GetId();
 
-  AccessibilityNotificationWaiter waiter2(shell()->web_contents(),
-                                          AccessibilityMode(),
-                                          ui::AX_EVENT_LAYOUT_COMPLETE);
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), AccessibilityMode(), ui::AX_EVENT_LOAD_COMPLETE);
   BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
       AccessibilityMode::kScreenReader);
   waiter2.WaitForNotification();
@@ -183,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
       ui::AX_ROLE_TEXT_FIELD, "Foo");
   ASSERT_NE(nullptr, textbox2);
   EXPECT_TRUE(textbox2->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
-  EXPECT_NE(original_id, textbox2->GetId());
+  EXPECT_EQ(original_id, textbox2->GetId());
 }
 
 }  // namespace content

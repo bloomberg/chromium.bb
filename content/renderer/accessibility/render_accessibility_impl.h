@@ -75,6 +75,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnPluginRootNodeUpdated() override;
 
   // RenderFrameObserver implementation.
+  void AccessibilityModeChanged() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Called when an accessibility notification occurs in Blink.

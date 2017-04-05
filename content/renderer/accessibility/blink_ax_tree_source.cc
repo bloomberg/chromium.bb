@@ -243,6 +243,12 @@ bool BlinkAXTreeSource::IsInTree(blink::WebAXObject node) const {
   return false;
 }
 
+void BlinkAXTreeSource::SetAccessibilityMode(AccessibilityMode new_mode) {
+  if (accessibility_mode_ == new_mode)
+    return;
+  accessibility_mode_ = new_mode;
+}
+
 bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   CHECK(frozen_);
   tree_data->doctype = "html";

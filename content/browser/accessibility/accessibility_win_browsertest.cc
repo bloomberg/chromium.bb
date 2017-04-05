@@ -61,7 +61,9 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
 
  protected:
   class AccessibleChecker;
-  void LoadInitialAccessibilityTreeFromHtml(const std::string& html);
+  void LoadInitialAccessibilityTreeFromHtml(
+      const std::string& html,
+      AccessibilityMode accessibility_mode = kAccessibilityModeComplete);
   IAccessible* GetRendererAccessible();
   void ExecuteScript(const std::wstring& script);
   void SetUpInputField(
@@ -69,7 +71,9 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
   void SetUpTextareaField(
       base::win::ScopedComPtr<IAccessibleText>* textarea_text);
   template <typename Interface>
-  void SetUpSampleParagraph(base::win::ScopedComPtr<Interface>* com_interface);
+  void SetUpSampleParagraph(
+      base::win::ScopedComPtr<Interface>* com_interface,
+      AccessibilityMode accessibility_mode = kAccessibilityModeComplete);
 
   static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
@@ -102,10 +106,10 @@ AccessibilityWinBrowserTest::~AccessibilityWinBrowserTest() {
 }
 
 void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
-    const std::string& html) {
-  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
-                                         kAccessibilityModeComplete,
-                                         ui::AX_EVENT_LOAD_COMPLETE);
+    const std::string& html,
+    AccessibilityMode accessibility_mode) {
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), accessibility_mode, ui::AX_EVENT_LOAD_COMPLETE);
   GURL html_data_url("data:text/html," + html);
   NavigateToURL(shell(), html_data_url);
   waiter.WaitForNotification();
@@ -229,7 +233,8 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
 // Loads a page with  a paragraph of sample text.
 template <typename Interface>
 void AccessibilityWinBrowserTest::SetUpSampleParagraph(
-    base::win::ScopedComPtr<Interface>* com_interface) {
+    base::win::ScopedComPtr<Interface>* com_interface,
+    AccessibilityMode accessibility_mode) {
   ASSERT_NE(nullptr, com_interface);
   LoadInitialAccessibilityTreeFromHtml(
       "<!DOCTYPE html><html>"
@@ -237,7 +242,8 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
       "<p><b>Game theory</b> is \"the study of "
       "<a href=\"#\" title=\"Mathematical model\">mathematical models</a> "
       "of conflict and<br>cooperation between intelligent rational "
-      "decision-makers.\"</p></body></html>");
+      "decision-makers.\"</p></body></html>",
+      accessibility_mode);
 
   // Retrieve the IAccessible interface for the web page.
   base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
@@ -1036,14 +1042,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestCharacterExtents) {
 
   LONG x, y, width, height;
   LONG previous_x, previous_y;
-
   for (int coordinate = IA2_COORDTYPE_SCREEN_RELATIVE;
        coordinate <= IA2_COORDTYPE_PARENT_RELATIVE; ++coordinate) {
     auto coordinate_type = static_cast<IA2CoordinateType>(coordinate);
     EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
         0, coordinate_type, &x, &y, &width, &height));
-    EXPECT_LE(0, x) << "at offset 0";
-    EXPECT_LE(0, y) << "at offset 0";
+    EXPECT_LT(0, x) << "at offset 0";
+    EXPECT_LT(0, y) << "at offset 0";
     EXPECT_LT(0, width) << "at offset 0";
     EXPECT_LT(0, height) << "at offset 0";
 
@@ -1079,6 +1084,38 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestCharacterExtents) {
       EXPECT_LT(0, height) << "at offset " << offset;
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestCharacterExtentsWithAccessibilityModeChange) {
+  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  SetUpSampleParagraph(&paragraph_text, AccessibilityMode::kNativeAPIs |
+                                            AccessibilityMode::kWebContents |
+                                            AccessibilityMode::kScreenReader);
+
+  LONG x, y, width, height;
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         AccessibilityMode::kNativeAPIs |
+                                             AccessibilityMode::kWebContents |
+                                             AccessibilityMode::kScreenReader,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+      0, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+  // X and y coordinates should be available without
+  // |AccessibilityMode::kInlineTextBoxes|.
+  EXPECT_LT(0, x);
+  EXPECT_LT(0, y);
+  // Width and height should be unavailable at this point.
+  EXPECT_EQ(0, width);
+  EXPECT_EQ(0, height);
+  waiter.WaitForNotification();
+  // Inline text boxes should have been enabled by this point.
+  EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+      0, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height));
+  EXPECT_LT(0, x);
+  EXPECT_LT(0, y);
+  EXPECT_LT(0, width);
+  EXPECT_LT(0, height);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {

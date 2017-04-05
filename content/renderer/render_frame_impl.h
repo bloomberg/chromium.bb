@@ -1316,7 +1316,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // The current accessibility mode.
   AccessibilityMode accessibility_mode_;
 
-  // Only valid if |accessibility_mode_| has no flags.
+  // Only valid if |accessibility_mode_| has |AccessibilityMode::kWebContents|
+  // flag set.
   RenderAccessibilityImpl* render_accessibility_;
 
   std::unique_ptr<RelatedAppsFetcher> related_apps_fetcher_;

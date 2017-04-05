@@ -122,10 +122,50 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 RenderAccessibilityImpl::~RenderAccessibilityImpl() {
 }
 
+void RenderAccessibilityImpl::AccessibilityModeChanged() {
+  AccessibilityMode new_mode = render_frame_->accessibility_mode();
+  if (tree_source_.accessibility_mode() == new_mode)
+    return;
+  tree_source_.SetAccessibilityMode(new_mode);
+
+#if !defined(OS_ANDROID)
+  // Inline text boxes can be enabled globally on all except Android.
+  // On Android they can be requested for just a specific node.
+  RenderView* render_view = render_frame_->GetRenderView();
+  if (render_view) {
+    WebView* web_view = render_view->GetWebView();
+    if (web_view) {
+      WebSettings* settings = web_view->settings();
+      if (settings) {
+        if (new_mode.has_mode(AccessibilityMode::kInlineTextBoxes)) {
+          settings->setInlineTextBoxAccessibilityEnabled(true);
+          tree_source_.GetRoot().loadInlineTextBoxes();
+        } else {
+          settings->setInlineTextBoxAccessibilityEnabled(false);
+        }
+      }
+    }
+  }
+#endif  // !defined(OS_ANDROID)
+
+  serializer_.Reset();
+  const WebDocument& document = GetMainDocument();
+  if (!document.isNull()) {
+    // If there are any events in flight, |HandleAXEvent| will refuse to process
+    // our new event.
+    pending_events_.clear();
+    ui::AXEvent event = document.accessibilityObject().isLoaded()
+                            ? ui::AX_EVENT_LOAD_COMPLETE
+                            : ui::AX_EVENT_LAYOUT_COMPLETE;
+    HandleAXEvent(document.accessibilityObject(), event);
+  }
+}
+
 bool RenderAccessibilityImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   during_action_ = true;
   IPC_BEGIN_MESSAGE_MAP(RenderAccessibilityImpl, message)
+
     IPC_MESSAGE_HANDLER(AccessibilityMsg_PerformAction, OnPerformAction)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_Events_ACK, OnEventsAck)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_HitTest, OnHitTest)
@@ -352,7 +392,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     event_msg.id = event.id;
     event_msg.event_from = event.event_from;
     if (!serializer_.SerializeChanges(obj, &event_msg.update)) {
-      LOG(ERROR) << "Failed to serialize one accessibility event.";
+      VLOG(1) << "Failed to serialize one accessibility event.";
       continue;
     }
 

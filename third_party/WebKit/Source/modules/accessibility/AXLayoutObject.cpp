@@ -1064,11 +1064,18 @@ KURL AXLayoutObject::url() const {
 //
 
 void AXLayoutObject::loadInlineTextBoxes() {
-  if (!getLayoutObject() || !getLayoutObject()->isText())
+  if (!getLayoutObject())
     return;
 
-  clearChildren();
-  addInlineTextBoxChildren(true);
+  if (getLayoutObject()->isText()) {
+    clearChildren();
+    addInlineTextBoxChildren(true);
+    return;
+  }
+
+  for (const auto& child : m_children) {
+    child->loadInlineTextBoxes();
+  }
 }
 
 AXObject* AXLayoutObject::nextOnLine() const {
