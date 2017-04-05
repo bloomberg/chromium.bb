@@ -233,18 +233,28 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
       int tile_top, tile_left, tile_bottom, tile_right;
+      int mi_idx = MAX_MIB_SIZE * sbr * cm->mi_stride + MAX_MIB_SIZE * sbc;
       BOUNDARY_TYPE boundary_tl =
           cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                               MAX_MIB_SIZE * sbc]
               ->mbmi.boundary_info;
-      BOUNDARY_TYPE boundary_br =
-          cm->mi_grid_visible[(MAX_MIB_SIZE * sbr + nvb - 1) * cm->mi_stride +
-                              MAX_MIB_SIZE * sbc + nhb - 1]
-              ->mbmi.boundary_info;
       tile_top = boundary_tl & TILE_ABOVE_BOUNDARY;
       tile_left = boundary_tl & TILE_LEFT_BOUNDARY;
-      tile_bottom = boundary_br & TILE_BOTTOM_BOUNDARY;
-      tile_right = boundary_br & TILE_RIGHT_BOUNDARY;
+      /* Right and bottom information appear unreliable, so we use the top
+         and left flags for the next superblocks. */
+      if (sbr != nvsb - 1 &&
+          cm->mi_grid_visible[mi_idx + MAX_MIB_SIZE * cm->mi_stride])
+        tile_bottom = cm->mi_grid_visible[mi_idx + MAX_MIB_SIZE * cm->mi_stride]
+                          ->mbmi.boundary_info &
+                      TILE_ABOVE_BOUNDARY;
+      else
+        tile_bottom = 1;
+      if (sbc != nhsb - 1 && cm->mi_grid_visible[mi_idx + MAX_MIB_SIZE])
+        tile_right =
+            cm->mi_grid_visible[mi_idx + MAX_MIB_SIZE]->mbmi.boundary_info &
+            TILE_LEFT_BOUNDARY;
+      else
+        tile_right = 1;
       const int mbmi_cdef_strength =
           cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                               MAX_MIB_SIZE * sbc]
