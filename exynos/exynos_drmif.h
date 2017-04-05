@@ -31,6 +31,10 @@
 #include <stdint.h>
 #include "exynos_drm.h"
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 struct exynos_device {
 	int fd;
 };
@@ -108,5 +112,9 @@ int exynos_vidi_connection(struct exynos_device *dev, uint32_t connect,
 int exynos_handle_event(struct exynos_device *dev,
 				struct exynos_event_context *ctx);
 
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif /* EXYNOS_DRMIF_H_ */
