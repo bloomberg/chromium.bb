@@ -36,6 +36,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -54,6 +55,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
+import org.chromium.content.browser.BrowserStartupController;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,8 +181,11 @@ public class DownloadNotificationService extends Service {
         boolean isForeground =
                 (summary.getNotification().flags & Notification.FLAG_FOREGROUND_SERVICE) != 0;
 
-        RecordHistogram.recordBooleanHistogram(
-                "MobileDownload.Notification.FixingSummaryLeak", isForeground);
+        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                        .isStartupSuccessfullyCompleted()) {
+            RecordHistogram.recordBooleanHistogram(
+                    "MobileDownload.Notification.FixingSummaryLeak", isForeground);
+        }
 
         if (isForeground) {
             // If it is a foreground notification, we are in a bad state.  We don't have any
