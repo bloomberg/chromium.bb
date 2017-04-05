@@ -49,8 +49,8 @@
   <message name="IDS_PAYMENTS_ADD_PHONE_NUMBER" desc="The title of the dialog for user to add phone number to the shipping address or contact info. This phone number can be used, for example, if there's a problem with shipping a package to its destination." formatter_data="android_java">
     Add phone number
   </message>
-  <message name="IDS_PAYMENTS_ADD_RECIPIENT" desc="The title of the dialog for user to add recipient in the shipping address. The recipient could be a person or institute name identifies the receiver of the shipping package." formatter_data="android_java">
-    Add recipient
+  <message name="IDS_PAYMENTS_ADD_RECIPIENT" desc="The title of the dialog for user to add the name in the shipping address. This name identifies the person that will receive the shipped package." formatter_data="android_java">
+    Add name
   </message>
   <message name="IDS_PAYMENTS_ADD_VALID_ADDRESS" desc="The title of the dialog for user to add valid shipping address. For example, missing state or city name." formatter_data="android_java">
     Add valid address
@@ -170,8 +170,8 @@
   <message name="IDS_PAYMENTS_PHONE_NUMBER_REQUIRED" desc="The label to indicate phone number is required in the shipping address or contact info. This phone number can be used, for example, if there's a problem with shipping a package to its destination." formatter_data="android_java">
     Phone number required
   </message>
-  <message name="IDS_PAYMENTS_RECIPIENT_REQUIRED" desc="The label to indicate recipient is required in the shipping address. The recipient could be a person or institute name identifies the receiver of the shipping package." formatter_data="android_java">
-    Recipient required
+  <message name="IDS_PAYMENTS_RECIPIENT_REQUIRED" desc="The label to indicate recipient name is required in the shipping address. This name identifies the person that will receive the shipped package." formatter_data="android_java">
+    Name required
   </message>
   <message name="IDS_PAYMENTS_INVALID_ADDRESS" desc="The label to indicate the shipping address is invalid. For example, missing state or city name." formatter_data="android_java">
     Invalid address
