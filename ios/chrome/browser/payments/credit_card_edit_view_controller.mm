@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller+internal.h"
+#import "ios/chrome/browser/payments/payment_request_edit_view_controller_actions.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
@@ -62,10 +63,34 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)init {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
-    // Handles the super class editor delegate calls.
-    self.editorDelegate = self;
-
     _saveCreditCard = YES;
+
+    // Set up leading (cancel) button.
+    UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                style:UIBarButtonItemStylePlain
+               target:nil
+               action:@selector(onCancel)];
+    [cancelButton setTitleTextAttributes:@{
+      NSForegroundColorAttributeName : [UIColor lightGrayColor]
+    }
+                                forState:UIControlStateDisabled];
+    [cancelButton
+        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
+    [self navigationItem].leftBarButtonItem = cancelButton;
+
+    // Set up trailing (done) button.
+    UIBarButtonItem* doneButton =
+        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_DONE)
+                                         style:UIBarButtonItemStylePlain
+                                        target:nil
+                                        action:@selector(onDone)];
+    [doneButton setTitleTextAttributes:@{
+      NSForegroundColorAttributeName : [UIColor lightGrayColor]
+    }
+                              forState:UIControlStateDisabled];
+    [doneButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_DONE)];
+    [self navigationItem].rightBarButtonItem = doneButton;
   }
 
   return self;
@@ -97,20 +122,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return YES;
 }
 
-#pragma mark - PaymentRequestEditViewControllerDelegate
+#pragma mark - PaymentRequestEditViewControllerActions methods
 
-- (void)paymentRequestEditViewController:
-            (PaymentRequestEditViewController*)controller
-                  didFinishEditingFields:(NSArray<EditorField*>*)fields {
-  [_delegate creditCardEditViewController:self
-                   didFinishEditingFields:fields
-                         billingAddressID:_billingAddressGUID
-                           saveCreditCard:_saveCreditCard];
+- (void)onCancel {
+  [_delegate creditCardEditViewControllerDidCancel:self];
 }
 
-- (void)paymentRequestEditViewControllerDidReturn:
-    (PaymentRequestEditViewController*)controller {
-  [_delegate creditCardEditViewControllerDidCancel:self];
+- (void)onDone {
+  if (![self validateForm])
+    return;
+
+  [_delegate creditCardEditViewController:self
+                   didFinishEditingFields:_fields
+                         billingAddressID:_billingAddressGUID
+                           saveCreditCard:_saveCreditCard];
 }
 
 #pragma mark - CollectionViewController methods

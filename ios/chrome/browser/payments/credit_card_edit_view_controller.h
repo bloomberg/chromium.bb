@@ -51,8 +51,7 @@ typedef NS_ENUM(NSInteger, CreditCardEditViewControllerState) {
 // features text fields for the field definitions passed to the initializer in
 // addition to an item displaying the billing address associated with the credit
 // card, if any.
-@interface CreditCardEditViewController
-    : PaymentRequestEditViewController<PaymentRequestEditViewControllerDelegate>
+@interface CreditCardEditViewController : PaymentRequestEditViewController
 
 // The delegate to be notified when the user returns or finishes editing the
 // credit card editor fields.

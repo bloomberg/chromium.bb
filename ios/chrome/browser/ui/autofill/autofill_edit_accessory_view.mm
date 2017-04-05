@@ -7,8 +7,13 @@
 #include <string>
 
 #import "base/mac/scoped_nsobject.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
+#include "ui/base/l10n/l10n_util.h"
+
+NSString* const kAutofillEditAccessoryViewAccessibilityID =
+    @"kAutofillEditAccessoryViewAccessibilityID";
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -71,6 +76,8 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
   if (!self)
     return nil;
 
+  self.accessibilityIdentifier = kAutofillEditAccessoryViewAccessibilityID;
+
   _delegate = delegate;
   [self addBackgroundImage];
   [self setupSubviews];
@@ -84,6 +91,8 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                               pressedName:@"autofill_prev_pressed"
                              disabledName:@"autofill_prev_inactive"
                                    action:@selector(previousPressed)];
+  [_previousButton
+      setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_PREVIOUS)];
   [self addSubview:_previousButton];
 
   UIImageView* firstSeparator = ImageViewWithImageName(@"autofill_middle_sep");
@@ -93,6 +102,7 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                                         pressedName:@"autofill_next_pressed"
                                        disabledName:@"autofill_next_inactive"
                                              action:@selector(nextPressed)];
+  [_nextButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_NEXT)];
   [self addSubview:_nextButton];
 
   UIImageView* secondSeparator = nil;
@@ -102,7 +112,8 @@ UIImageView* ImageViewWithImageName(NSString* imageName) {
                                           pressedName:@"autofill_close_pressed"
                                          disabledName:nil
                                                action:@selector(closePressed)];
-
+    [closeButton
+        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CLOSE)];
     [self addSubview:closeButton];
 
     secondSeparator = ImageViewWithImageName(@"autofill_middle_sep");

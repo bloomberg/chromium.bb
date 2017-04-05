@@ -10,7 +10,6 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/payment_request_edit_view_controller+internal.h"
-#import "ios/chrome/browser/payments/payment_request_edit_view_controller_actions.h"
 #import "ios/chrome/browser/payments/payment_request_editor_field.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
@@ -25,6 +24,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+NSString* const kWarningMessageAccessibilityID =
+    @"kWarningMessageAccessibilityID";
 
 namespace {
 
@@ -63,7 +65,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface PaymentRequestEditViewController ()<
     AutofillEditAccessoryDelegate,
-    PaymentRequestEditViewControllerActions,
     PaymentRequestEditViewControllerValidator,
     UITextFieldDelegate> {
   NSArray<EditorField*>* _fields;
@@ -93,7 +94,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation PaymentRequestEditViewController
 
 @synthesize dataSource = _dataSource;
-@synthesize editorDelegate = _editorDelegate;
 @synthesize validatorDelegate = _validatorDelegate;
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
@@ -101,33 +101,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     // Set self as the validator delegate.
     _validatorDelegate = self;
-
-    // Set up leading (cancel) button.
-    UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                style:UIBarButtonItemStylePlain
-               target:nil
-               action:@selector(onReturn)];
-    [cancelButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
-    }
-                                forState:UIControlStateDisabled];
-    [cancelButton
-        setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
-    [self navigationItem].leftBarButtonItem = cancelButton;
-
-    // Set up trailing (done) button.
-    UIBarButtonItem* doneButton =
-        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_DONE)
-                                         style:UIBarButtonItemStylePlain
-                                        target:nil
-                                        action:@selector(onDone)];
-    [doneButton setTitleTextAttributes:@{
-      NSForegroundColorAttributeName : [UIColor lightGrayColor]
-    }
-                              forState:UIControlStateDisabled];
-    [doneButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_DONE)];
-    [self navigationItem].rightBarButtonItem = doneButton;
 
     _accessoryView = [[AutofillEditAccessoryView alloc] initWithDelegate:self];
   }
@@ -138,19 +111,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     (id<PaymentRequestEditViewControllerDataSource>)dataSource {
   _dataSource = dataSource;
   _fields = [dataSource editorFields];
-}
-
-#pragma mark - PaymentRequestEditViewControllerActions methods
-
-- (void)onReturn {
-  [_editorDelegate paymentRequestEditViewControllerDidReturn:self];
-}
-
-- (void)onDone {
-  if ([self validateForm]) {
-    [_editorDelegate paymentRequestEditViewController:self
-                               didFinishEditingFields:_fields];
-  }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -486,6 +446,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[PaymentsTextItem alloc] initWithType:ItemTypeErrorMessage];
     errorMessageItem.text = errorMessage;
     errorMessageItem.image = NativeImage(IDR_IOS_PAYMENTS_WARNING);
+    errorMessageItem.accessibilityIdentifier = kWarningMessageAccessibilityID;
     [model addItem:errorMessageItem toSectionWithIdentifier:sectionIdentifier];
     NSIndexPath* indexPath = [model indexPathForItemType:ItemTypeErrorMessage
                                        sectionIdentifier:sectionIdentifier];

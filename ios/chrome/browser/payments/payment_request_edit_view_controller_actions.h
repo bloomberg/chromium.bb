@@ -8,8 +8,8 @@
 // Protocol handling the actions sent by the PaymentRequestEditViewController.
 @protocol PaymentRequestEditViewControllerActions
 
-// Called when the user presses the return button.
-- (void)onReturn;
+// Called when the user presses the cancel button.
+- (void)onCancel;
 
 // Called when the user presses the done button.
 - (void)onDone;

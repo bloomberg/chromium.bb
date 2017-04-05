@@ -19,7 +19,6 @@
 #endif
 
 @interface SCPaymentsEditorCoordinator ()<
-    PaymentRequestEditViewControllerDelegate,
     PaymentRequestEditViewControllerDataSource> {
   PaymentRequestEditViewController* _paymentRequestEditViewController;
 }
@@ -33,25 +32,12 @@
   _paymentRequestEditViewController = [[PaymentRequestEditViewController alloc]
       initWithStyle:CollectionViewControllerStyleAppBar];
   [_paymentRequestEditViewController setTitle:@"Add info"];
-  [_paymentRequestEditViewController setEditorDelegate:self];
   [_paymentRequestEditViewController setDataSource:self];
   [_paymentRequestEditViewController loadModel];
   [self.baseViewController pushViewController:_paymentRequestEditViewController
                                      animated:YES];
 }
 
-#pragma mark - PaymentRequestEditViewControllerDelegate
-
-- (void)paymentRequestEditViewController:
-            (PaymentRequestEditViewController*)controller
-                  didFinishEditingFields:(NSArray<EditorField*>*)fields {
-  [self.baseViewController popViewControllerAnimated:YES];
-}
-
-- (void)paymentRequestEditViewControllerDidReturn:
-    (PaymentRequestEditViewController*)controller {
-  [self.baseViewController popViewControllerAnimated:YES];
-}
 
 #pragma mark - PaymentRequestEditViewControllerDataSource
 

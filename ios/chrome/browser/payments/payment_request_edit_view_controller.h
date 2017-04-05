@@ -12,6 +12,8 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 
+extern NSString* const kWarningMessageAccessibilityID;
+
 @class EditorField;
 @class PaymentRequestEditViewController;
 
@@ -20,23 +22,6 @@
 
 // Returns the list of field definitions for the editor.
 - (NSArray<EditorField*>*)editorFields;
-
-@end
-
-// Delegate protocol for PaymentRequestEditViewController.
-@protocol PaymentRequestEditViewControllerDelegate<NSObject>
-
-// Notifies the delegate that the user has finished editing the fields supplied
-// to the initializer. The value property of each field reflects the submitted
-// value.
-- (void)paymentRequestEditViewController:
-            (PaymentRequestEditViewController*)controller
-                  didFinishEditingFields:(NSArray<EditorField*>*)fields;
-
-// Notifies the delegate that the user has chosen to return to the previous
-// screen.
-- (void)paymentRequestEditViewControllerDidReturn:
-    (PaymentRequestEditViewController*)controller;
 
 @end
 
@@ -63,11 +48,6 @@
 // The data source for this view controller.
 @property(nonatomic, weak) id<PaymentRequestEditViewControllerDataSource>
     dataSource;
-
-// The delegate to be notified when the user returns or finishes editing the
-// fields.
-@property(nonatomic, weak) id<PaymentRequestEditViewControllerDelegate>
-    editorDelegate;
 
 // The delegate to be called for validating the fields. By default, the
 // controller is the validator.
