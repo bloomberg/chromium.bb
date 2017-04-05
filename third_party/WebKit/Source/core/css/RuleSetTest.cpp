@@ -199,7 +199,10 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_HostContextAndClass) {
 TEST(RuleSetTest, SelectorIndexLimit) {
   StringBuilder builder;
 
-  for (unsigned i = 0; i < 16383; i++)
+  // We use 13 bits to storing the selector start index in RuleData. This is a
+  // test to check that we don't regress. We WONTFIX issues asking for more
+  // since 2^13 simple selectors in a style rule is already excessive.
+  for (unsigned i = 0; i < 8191; i++)
     builder.append("div,");
 
   builder.append("b,span {}");

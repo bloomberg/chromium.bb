@@ -115,7 +115,9 @@ class CORE_EXPORT RuleData {
   // might be sites and extensions using style rules with selector lists
   // exceeding the number of simple selectors to fit in this bitfield.
   // See https://crbug.com/312913 and https://crbug.com/704562
-  unsigned m_selectorIndex : 14;
+  unsigned m_selectorIndex : 13;
+  // We store an array of RuleData objects in a primitive array.
+  unsigned m_isLastInArray : 1;
   // This number was picked fairly arbitrarily. We can probably lower it if we
   // need to. Some simple testing showed <100,000 RuleData's on large sites.
   unsigned m_position : 18;
@@ -125,9 +127,7 @@ class CORE_EXPORT RuleData {
   unsigned m_linkMatchType : 2;  //  CSSSelector::LinkMatchMask
   unsigned m_hasDocumentSecurityOrigin : 1;
   unsigned m_propertyWhitelist : 2;
-  // We store an array of RuleData objects in a primitive array.
-  unsigned m_isLastInArray : 1;
-  // 31 bits above
+  // 30 bits above
   // Use plain array instead of a Vector to minimize memory overhead.
   unsigned m_descendantSelectorIdentifierHashes[maximumIdentifierCount];
 };
