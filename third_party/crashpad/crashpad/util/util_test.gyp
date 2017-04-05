@@ -39,6 +39,7 @@
         'file/file_io_test.cc',
         'file/file_reader_test.cc',
         'file/string_file_test.cc',
+        'linux/process_memory_test.cc',
         'mac/launchd_test.mm',
         'mac/mac_util_test.mm',
         'mac/service_management_test.mm',
@@ -62,6 +63,7 @@
         'misc/clock_test.cc',
         'misc/initialization_state_dcheck_test.cc',
         'misc/initialization_state_test.cc',
+        'misc/paths_test.cc',
         'misc/scoped_forbid_return_test.cc',
         'misc/random_string_test.cc',
         'misc/uuid_test.cc',
@@ -76,6 +78,7 @@
         'numeric/in_range_cast_test.cc',
         'numeric/int128_test.cc',
         'posix/process_info_test.cc',
+        'posix/scoped_mmap_test.cc',
         'posix/signals_test.cc',
         'posix/symbolic_constants_posix_test.cc',
         'stdlib/aligned_allocator_test.cc',
@@ -133,6 +136,13 @@
           'sources/' : [
             ['exclude', '^numeric/checked_address_range_test\\.cc$'],
           ]
+        }],
+      ],
+      'target_conditions': [
+        ['OS=="android"', {
+          'sources/': [
+            ['include', '^linux/'],
+          ],
         }],
       ],
     },
