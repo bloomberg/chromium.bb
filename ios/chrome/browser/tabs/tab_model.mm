@@ -46,6 +46,7 @@
 #import "ios/shared/chrome/browser/tabs/web_state_list_fast_enumeration_helper.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_metrics_observer.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list_observer.h"
+#import "ios/shared/chrome/browser/tabs/web_state_list_serialization.h"
 #import "ios/shared/chrome/browser/tabs/web_state_opener.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/certificate_policy_cache.h"
@@ -75,14 +76,6 @@ NSString* const kTabModelPageLoadSuccess = @"pageLoadSuccess";
 NSString* const kTabModelOpenInBackgroundKey = @"shouldOpenInBackground";
 
 namespace {
-
-// The key under which the opener Tab ID is stored in the WebState's
-// serializable user data.
-NSString* const kOpenerIDKey = @"OpenerID";
-
-// The key under which the opener navigation index is stored in the WebState's
-// serializable user data.
-NSString* const kOpenerNavigationIndexKey = @"OpenerNavigationIndex";
 
 // Updates CRWSessionCertificatePolicyManager's certificate policy cache.
 void UpdateCertificatePolicyCacheFromWebState(
@@ -122,34 +115,6 @@ void CleanCertificatePolicyCache(
                  policy_cache),
       base::Bind(&RestoreCertificatePolicyCacheFromModel, policy_cache,
                  base::Unretained(web_state_list)));
-}
-
-// Internal helper function returning the opener for a given Tab by
-// checking the associated Tab tabId (should be removed once the opener
-// is passed to the insertTab:atIndex: and replaceTab:withTab: methods).
-WebStateOpener GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
-  web::SerializableUserDataManager* user_data_manager =
-      web::SerializableUserDataManager::FromWebState(tab.webState);
-
-  NSString* opener_id = base::mac::ObjCCast<NSString>(
-      user_data_manager->GetValueForSerializationKey(kOpenerIDKey));
-  if (!opener_id || ![opener_id length])
-    return WebStateOpener(nullptr);
-
-  NSNumber* boxed_opener_navigation_index = base::mac::ObjCCast<NSNumber>(
-      user_data_manager->GetValueForSerializationKey(
-          kOpenerNavigationIndexKey));
-  if (!boxed_opener_navigation_index)
-    return WebStateOpener(nullptr);
-
-  for (Tab* current_tab in tabs) {
-    if ([opener_id isEqualToString:current_tab.tabId]) {
-      return WebStateOpener(current_tab.webState,
-                            [boxed_opener_navigation_index intValue]);
-    }
-  }
-
-  return WebStateOpener(nullptr);
 }
 
 }  // anonymous namespace
@@ -700,31 +665,8 @@ WebStateOpener GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   // be done on a separate thread.
   // TODO(crbug.com/661986): This could get expensive especially since this
   // window may never be saved (if another call comes in before the delay).
-  NSMutableArray<CRWSessionStorage*>* sessions =
-      [NSMutableArray arrayWithCapacity:[self count]];
-
-  for (int index = 0; index < _webStateList->count(); ++index) {
-    web::WebState* webState = _webStateList->GetWebStateAt(index);
-    web::SerializableUserDataManager* userDataManager =
-        web::SerializableUserDataManager::FromWebState(webState);
-
-    WebStateOpener opener = _webStateList->GetOpenerOfWebStateAt(index);
-    if (opener.opener) {
-      Tab* parentTab = LegacyTabHelper::GetTabForWebState(opener.opener);
-      userDataManager->AddSerializableData(parentTab.tabId, kOpenerIDKey);
-      userDataManager->AddSerializableData(@(opener.navigation_index),
-                                           kOpenerNavigationIndexKey);
-    } else {
-      userDataManager->AddSerializableData([NSNull null], kOpenerIDKey);
-      userDataManager->AddSerializableData([NSNull null],
-                                           kOpenerNavigationIndexKey);
-    }
-
-    [sessions addObject:webState->BuildSessionStorage()];
-  }
-
   return [[[SessionWindowIOS alloc]
-      initWithSessions:sessions
+      initWithSessions:SerializeWebStateList(_webStateList.get())
          selectedIndex:[self indexOfTab:self.currentTab]] autorelease];
 }
 
@@ -752,25 +694,26 @@ WebStateOpener GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
   int oldCount = _webStateList->count();
   DCHECK_GE(oldCount, 0);
 
-  web::WebState::CreateParams params(_browserState);
+  web::WebState::CreateParams createParams(_browserState);
+  DeserializeWebStateList(
+      _webStateList.get(), sessions,
+      base::BindRepeating(&web::WebState::CreateWithStorageSession,
+                          createParams));
+
+  DCHECK_GT(_webStateList->count(), oldCount);
+  int restoredCount = _webStateList->count() - oldCount;
+  DCHECK_EQ(sessions.count, static_cast<NSUInteger>(restoredCount));
+
   scoped_refptr<web::CertificatePolicyCache> policyCache =
       web::BrowserState::GetCertificatePolicyCache(_browserState);
 
   base::scoped_nsobject<NSMutableArray<Tab*>> restoredTabs(
       [[NSMutableArray alloc] initWithCapacity:sessions.count]);
 
-  // Recreate all the restored Tabs and add them to the WebStateList without
-  // any opener-opened relationship (as the n-th restored Tab opener may be
-  // at an index larger than n). Then in a second pass fix the openers.
-  for (CRWSessionStorage* session in sessions) {
-    std::unique_ptr<web::WebState> webState =
-        web::WebState::CreateWithStorageSession(params, session);
-    _webStateList->InsertWebState(_webStateList->count(), std::move(webState));
-  }
-
   for (int index = oldCount; index < _webStateList->count(); ++index) {
     web::WebState* webState = _webStateList->GetWebStateAt(index);
     Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+
     tab.webController.webUsageEnabled = webUsageEnabled_;
     tab.webController.usePlaceholderOverlay = YES;
 
@@ -778,20 +721,6 @@ WebStateOpener GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
     // passing it via move semantic to -initWithWebState:model:).
     UpdateCertificatePolicyCacheFromWebState(policyCache, [tab webState]);
     [restoredTabs addObject:tab];
-  }
-
-  DCHECK_EQ(sessions.count, [restoredTabs count]);
-  DCHECK_GT(_webStateList->count(), oldCount);
-
-  // Fix openers now that all Tabs have been restored. Only look for an opener
-  // Tab in the newly restored Tabs and not in the already open Tabs.
-  for (int index = oldCount; index < _webStateList->count(); ++index) {
-    DCHECK_GE(index, oldCount);
-    NSUInteger tabIndex = static_cast<NSUInteger>(index - oldCount);
-    Tab* tab = [restoredTabs objectAtIndex:tabIndex];
-    WebStateOpener opener = GetOpenerForTab(restoredTabs.get(), tab);
-    if (opener.opener)
-      _webStateList->SetOpenerOfWebStateAt(index, opener);
   }
 
   // Update the selected tab if there was a selected Tab in the saved session.
@@ -816,7 +745,7 @@ WebStateOpener GetOpenerForTab(id<NSFastEnumeration> tabs, Tab* tab) {
     }
   }
   if (_tabUsageRecorder)
-    _tabUsageRecorder->InitialRestoredTabs(self.currentTab, restoredTabs);
+    _tabUsageRecorder->InitialRestoredTabs(self.currentTab, restoredTabs.get());
   return closedNTPTab;
 }
 
