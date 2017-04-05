@@ -57,9 +57,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Sets whether subpixel rendering is used on the label.
   void SetTextSubpixelRenderingEnabled(bool enabled);
 
-  // TODO(estade): remove. See crbug.com/633986
-  void SetFontListDeprecated(const gfx::FontList& font_list);
-
   // Adjusts the font size up or down by the given amount.
   virtual void AdjustFontSize(int font_size_delta);
 

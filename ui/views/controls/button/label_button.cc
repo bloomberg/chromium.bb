@@ -159,10 +159,6 @@ void LabelButton::SetTextSubpixelRenderingEnabled(bool enabled) {
   label_->SetSubpixelRenderingEnabled(enabled);
 }
 
-void LabelButton::SetFontListDeprecated(const gfx::FontList& font_list) {
-  SetFontList(font_list);
-}
-
 void LabelButton::AdjustFontSize(int font_size_delta) {
   LabelButton::SetFontList(
       label()->font_list().DeriveWithSizeDelta(font_size_delta));
