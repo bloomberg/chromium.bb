@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/statistics_recorder.h"
 #include "components/cronet/android/cronet_bidirectional_stream_adapter.h"
 #include "components/cronet/android/cronet_upload_data_stream_adapter.h"
 #include "components/cronet/android/cronet_url_request_adapter.h"
@@ -67,6 +68,9 @@ bool NativeInit() {
   if (!base::android::OnJNIOnLoadInit())
     return false;
   url::Initialize();
+  // Initializes the statistics recorder system. This needs to be done before
+  // emitting histograms to prevent memory leaks (crbug.com/707836).
+  base::StatisticsRecorder::Initialize();
   return true;
 }
 
