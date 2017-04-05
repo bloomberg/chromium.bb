@@ -126,12 +126,6 @@ Polymer({
     this.password_ = '';
   },
 
-  /** @private */
-  onKeydown_: function(e) {
-    if (e.key == 'Enter')
-      this.submitPassword_();
-  },
-
   /**
    * Run the account password check.
    * @private

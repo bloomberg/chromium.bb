@@ -113,9 +113,11 @@ Polymer({
    * @private
    */
   onKeypress_: function(e) {
-    if (e.target != this)
-      return;
     if (e.key != 'Enter')
+      return;
+
+    // Accept Enter keys from either the dialog, or a child paper-input element.
+    if (e.target != this && e.target.tagName != 'PAPER-INPUT')
       return;
 
     var actionButton =

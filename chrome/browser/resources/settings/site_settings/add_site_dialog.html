@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="../i18n_setup.html">
@@ -20,8 +19,6 @@
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">$i18n{addSiteTitle}</div>
       <div class="body">
-        <iron-a11y-keys id="keys" keys="enter"
-            on-keys-pressed="onSubmit_"></iron-a11y-keys>
         <paper-input id="site" always-float-label label="$i18n{addSite}"
             placeholder="$i18n{addSiteExceptionPlaceholder}"
             value="{{site_}}" on-input="validate_"

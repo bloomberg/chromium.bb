@@ -13,7 +13,7 @@ var DeviceStateProperties;
 Polymer({
   is: 'network-summary-item',
 
-  behaviors: [Polymer.IronA11yKeysBehavior, I18nBehavior],
+  behaviors: [I18nBehavior],
 
   properties: {
     /**

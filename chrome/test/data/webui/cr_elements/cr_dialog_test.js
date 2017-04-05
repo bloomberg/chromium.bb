@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 suite('cr-dialog', function() {
+  function pressEnter(element) {
+    MockInteractions.keyEventOn(element, 'keypress', 13, undefined, 'Enter');
+  }
+
   setup(function() {
     PolymerTest.clearBody();
   });
@@ -44,15 +48,14 @@ suite('cr-dialog', function() {
     // MockInteractions triggers event listeners synchronously.
     var clickedCounter = 0;
     actionButton.addEventListener('click', function() {
-      clickedCounter += 1;
+      clickedCounter++;
     });
 
     // Enter keys on other buttons should be ignored.
     clickedCounter = 0;
     var otherButton = document.body.querySelector('#other-button');
     assertTrue(!!otherButton);
-    MockInteractions.keyEventOn(
-        otherButton, 'keypress', 13, undefined, 'Enter');
+    pressEnter(otherButton);
     assertEquals(0, clickedCounter);
 
     // Enter key on the action button should only fire the click handler once.
@@ -86,8 +89,41 @@ suite('cr-dialog', function() {
       clicked = true;
     });
 
-    MockInteractions.keyEventOn(dialog, 'keypress', 13, undefined, 'Enter');
+    pressEnter(dialog);
     assertTrue(clicked);
+  });
+
+  test('enter keys from paper-inputs (only) are processed', function() {
+    document.body.innerHTML = `
+      <dialog is="cr-dialog">
+        <div class="title">title</div>
+        <div class="body">
+          <paper-input></paper-input>
+          <foobar></foobar>
+          <button class="action-button">active</button>
+        </div>
+      </dialog>`;
+
+    var dialog = document.body.querySelector('dialog');
+
+    var inputElement = document.body.querySelector('paper-input');
+    var otherElement = document.body.querySelector('foobar');
+    var actionButton = document.body.querySelector('.action-button');
+    assertTrue(!!inputElement);
+    assertTrue(!!otherElement);
+    assertTrue(!!actionButton);
+
+    // MockInteractions triggers event listeners synchronously.
+    var clickedCounter = 0;
+    actionButton.addEventListener('click', function() {
+      clickedCounter++;
+    });
+
+    pressEnter(otherElement);
+    assertEquals(0, clickedCounter);
+
+    pressEnter(inputElement);
+    assertEquals(1, clickedCounter);
   });
 
   test('focuses [autofocus] instead of title when present', function() {
