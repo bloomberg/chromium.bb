@@ -5,8 +5,8 @@
 #include "components/pdf/renderer/pepper_pdf_host.h"
 
 #include "base/memory/ptr_util.h"
-#include "components/pdf/common/pdf_messages.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_frame.h"
@@ -118,12 +118,11 @@ int32_t PepperPDFHost::OnHostMsgDidStopLoading(
 int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
     ppapi::host::HostMessageContext* context,
     int restrictions) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
+  mojom::PdfService* service = GetRemotePdfService();
+  if (!service)
     return PP_ERROR_FAILED;
 
-  render_frame->Send(new PDFHostMsg_PDFUpdateContentRestrictions(
-      render_frame->GetRoutingID(), restrictions));
+  service->UpdateContentRestrictions(restrictions);
   return PP_OK;
 }
 
@@ -138,12 +137,11 @@ int32_t PepperPDFHost::OnHostMsgUserMetricsRecordAction(
 
 int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
     ppapi::host::HostMessageContext* context) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
+  mojom::PdfService* service = GetRemotePdfService();
+  if (!service)
     return PP_ERROR_FAILED;
 
-  render_frame->Send(
-      new PDFHostMsg_PDFHasUnsupportedFeature(render_frame->GetRoutingID()));
+  service->HasUnsupportedFeature();
   return PP_OK;
 }
 
@@ -159,17 +157,17 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
   if (!instance)
     return PP_ERROR_FAILED;
 
-  content::RenderFrame* render_frame = instance->GetRenderFrame();
-  if (!render_frame)
-    return PP_ERROR_FAILED;
-
   GURL url = instance->GetPluginURL();
   content::Referrer referrer;
   referrer.url = url;
   referrer.policy = blink::WebReferrerPolicyDefault;
   referrer = content::Referrer::SanitizeForRequest(url, referrer);
-  render_frame->Send(
-      new PDFHostMsg_PDFSaveURLAs(render_frame->GetRoutingID(), url, referrer));
+
+  mojom::PdfService* service = GetRemotePdfService();
+  if (!service)
+    return PP_ERROR_FAILED;
+
+  service->SaveUrlAs(url, referrer);
   return PP_OK;
 }
 
@@ -239,6 +237,18 @@ content::RenderFrame* PepperPDFHost::GetRenderFrame() {
   content::PepperPluginInstance* instance =
       host_->GetPluginInstance(pp_instance());
   return instance ? instance->GetRenderFrame() : nullptr;
+}
+
+mojom::PdfService* PepperPDFHost::GetRemotePdfService() {
+  content::RenderFrame* render_frame = GetRenderFrame();
+  if (!render_frame)
+    return nullptr;
+
+  if (!remote_pdf_service_) {
+    render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
+        &remote_pdf_service_);
+  }
+  return remote_pdf_service_.get();
 }
 
 }  // namespace pdf

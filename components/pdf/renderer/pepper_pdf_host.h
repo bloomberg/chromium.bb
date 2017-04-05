@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/pdf/common/pdf.mojom.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/private/ppb_pdf.h"
@@ -103,9 +104,11 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
 
   content::RenderFrame* GetRenderFrame();
 
-  std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
+  mojom::PdfService* GetRemotePdfService();
 
+  std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
   content::RendererPpapiHost* const host_;
+  mojom::PdfServiceAssociatedPtr remote_pdf_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperPDFHost);
 };

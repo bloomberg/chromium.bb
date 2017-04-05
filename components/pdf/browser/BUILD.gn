@@ -13,7 +13,7 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//components/pdf/common",
+    "//components/pdf/common:interfaces",
     "//content/public/browser",
   ]
 

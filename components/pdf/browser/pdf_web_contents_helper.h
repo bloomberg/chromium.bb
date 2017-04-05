@@ -10,9 +10,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/pdf/common/pdf.mojom.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "ipc/ipc_message.h"
 
 namespace content {
 class WebContents;
@@ -25,7 +26,8 @@ class PDFWebContentsHelperClient;
 // Per-WebContents class to handle PDF messages.
 class PDFWebContentsHelper
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<PDFWebContentsHelper> {
+      public content::WebContentsUserData<PDFWebContentsHelper>,
+      public mojom::PdfService {
  public:
   static void CreateForWebContentsWithClient(
       content::WebContents* contents,
@@ -36,15 +38,12 @@ class PDFWebContentsHelper
                        std::unique_ptr<PDFWebContentsHelperClient> client);
   ~PDFWebContentsHelper() override;
 
-  // content::WebContentsObserver overrides:
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
+  // mojom::PdfService:
+  void HasUnsupportedFeature() override;
+  void SaveUrlAs(const GURL& url, const content::Referrer& referrer) override;
+  void UpdateContentRestrictions(int32_t content_restrictions) override;
 
-  // Message handlers.
-  void OnHasUnsupportedFeature();
-  void OnSaveURLAs(const GURL& url, const content::Referrer& referrer);
-  void OnUpdateContentRestrictions(int content_restrictions);
-
+  content::WebContentsFrameBindingSet<mojom::PdfService> pdf_service_bindings_;
   std::unique_ptr<PDFWebContentsHelperClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/pdf/browser/pdf_web_contents_helper_client.h"
-#include "components/pdf/common/pdf_messages.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(pdf::PDFWebContentsHelper);
 
@@ -28,38 +27,25 @@ void PDFWebContentsHelper::CreateForWebContentsWithClient(
 PDFWebContentsHelper::PDFWebContentsHelper(
     content::WebContents* web_contents,
     std::unique_ptr<PDFWebContentsHelperClient> client)
-    : content::WebContentsObserver(web_contents), client_(std::move(client)) {}
+    : content::WebContentsObserver(web_contents),
+      pdf_service_bindings_(web_contents, this),
+      client_(std::move(client)) {}
 
 PDFWebContentsHelper::~PDFWebContentsHelper() {
 }
 
-bool PDFWebContentsHelper::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(PDFWebContentsHelper, message)
-    IPC_MESSAGE_HANDLER(PDFHostMsg_PDFHasUnsupportedFeature,
-                        OnHasUnsupportedFeature)
-    IPC_MESSAGE_HANDLER(PDFHostMsg_PDFSaveURLAs, OnSaveURLAs)
-    IPC_MESSAGE_HANDLER(PDFHostMsg_PDFUpdateContentRestrictions,
-                        OnUpdateContentRestrictions)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void PDFWebContentsHelper::OnHasUnsupportedFeature() {
+void PDFWebContentsHelper::HasUnsupportedFeature() {
   client_->OnPDFHasUnsupportedFeature(web_contents());
 }
 
-void PDFWebContentsHelper::OnSaveURLAs(const GURL& url,
-                                       const content::Referrer& referrer) {
+void PDFWebContentsHelper::SaveUrlAs(const GURL& url,
+                                     const content::Referrer& referrer) {
   client_->OnSaveURL(web_contents());
   web_contents()->SaveFrame(url, referrer);
 }
 
-void PDFWebContentsHelper::OnUpdateContentRestrictions(
-    int content_restrictions) {
+void PDFWebContentsHelper::UpdateContentRestrictions(
+    int32_t content_restrictions) {
   client_->UpdateContentRestrictions(web_contents(), content_restrictions);
 }
 
