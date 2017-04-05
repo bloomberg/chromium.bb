@@ -51,7 +51,7 @@ class ChannelProvider final : public AudioSourceProvider {
   // data.
   void provideInput(AudioBus* bus, size_t framesToProcess) override {
     bool isBusGood = bus && bus->numberOfChannels() == 1;
-    ASSERT(isBusGood);
+    DCHECK(isBusGood);
     if (!isBusGood)
       return;
 
@@ -69,7 +69,7 @@ class ChannelProvider final : public AudioSourceProvider {
     // case, but let's just make sure.
     bool isGood =
         m_multiChannelBus.get() && framesToProcess == m_framesToProcess;
-    ASSERT(isGood);
+    DCHECK(isGood);
     if (!isGood)
       return;
 

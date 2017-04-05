@@ -50,7 +50,7 @@ AudioDelayDSPKernel::AudioDelayDSPKernel(double maxDelayTime, float sampleRate)
     return;
 
   size_t bufferLength = bufferLengthForDelay(maxDelayTime, sampleRate);
-  ASSERT(bufferLength);
+  DCHECK(bufferLength);
   if (!bufferLength)
     return;
 
@@ -87,7 +87,7 @@ void AudioDelayDSPKernel::process(const float* source,
   size_t bufferLength = m_buffer.size();
   float* buffer = m_buffer.data();
 
-  ASSERT(bufferLength);
+  DCHECK(bufferLength);
   if (!bufferLength)
     return;
 

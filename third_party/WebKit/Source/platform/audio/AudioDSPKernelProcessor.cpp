@@ -44,7 +44,7 @@ void AudioDSPKernelProcessor::initialize() {
     return;
 
   MutexLocker locker(m_processLock);
-  ASSERT(!m_kernels.size());
+  DCHECK(!m_kernels.size());
 
   // Create processing kernels, one per channel.
   for (unsigned i = 0; i < numberOfChannels(); ++i)
@@ -81,7 +81,7 @@ void AudioDSPKernelProcessor::process(const AudioBus* source,
     bool channelCountMatches =
         source->numberOfChannels() == destination->numberOfChannels() &&
         source->numberOfChannels() == m_kernels.size();
-    ASSERT(channelCountMatches);
+    DCHECK(channelCountMatches);
     if (!channelCountMatches)
       return;
 
@@ -112,7 +112,7 @@ void AudioDSPKernelProcessor::processOnlyAudioParams(size_t framesToProcess) {
 
 // Resets filter state
 void AudioDSPKernelProcessor::reset() {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   if (!isInitialized())
     return;
 
@@ -130,13 +130,13 @@ void AudioDSPKernelProcessor::setNumberOfChannels(unsigned numberOfChannels) {
   if (numberOfChannels == m_numberOfChannels)
     return;
 
-  ASSERT(!isInitialized());
+  DCHECK(!isInitialized());
   if (!isInitialized())
     m_numberOfChannels = numberOfChannels;
 }
 
 double AudioDSPKernelProcessor::tailTime() const {
-  ASSERT(!isMainThread());
+  DCHECK(!isMainThread());
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked()) {
     // It is expected that all the kernels have the same tailTime.
@@ -148,7 +148,7 @@ double AudioDSPKernelProcessor::tailTime() const {
 }
 
 double AudioDSPKernelProcessor::latencyTime() const {
-  ASSERT(!isMainThread());
+  DCHECK(!isMainThread());
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked()) {
     // It is expected that all the kernels have the same latencyTime.

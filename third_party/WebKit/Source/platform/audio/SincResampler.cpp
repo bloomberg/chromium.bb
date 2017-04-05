@@ -132,7 +132,7 @@ void SincResampler::initializeKernel() {
 
 void SincResampler::consumeSource(float* buffer,
                                   unsigned numberOfSourceFrames) {
-  ASSERT(m_sourceProvider);
+  DCHECK(m_sourceProvider);
   if (!m_sourceProvider)
     return;
 
@@ -207,7 +207,7 @@ void SincResampler::process(AudioSourceProvider* sourceProvider,
   bool isGood = sourceProvider && m_blockSize > m_kernelSize &&
                 m_inputBuffer.size() >= m_blockSize + m_kernelSize &&
                 !(m_kernelSize % 2);
-  ASSERT(isGood);
+  DCHECK(isGood);
   if (!isGood)
     return;
 

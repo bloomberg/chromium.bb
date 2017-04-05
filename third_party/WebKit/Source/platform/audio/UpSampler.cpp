@@ -72,17 +72,17 @@ void UpSampler::process(const float* sourceP,
                         float* destP,
                         size_t sourceFramesToProcess) {
   bool isInputBlockSizeGood = sourceFramesToProcess == m_inputBlockSize;
-  ASSERT(isInputBlockSizeGood);
+  DCHECK(isInputBlockSizeGood);
   if (!isInputBlockSizeGood)
     return;
 
   bool isTempBufferGood = sourceFramesToProcess == m_tempBuffer.size();
-  ASSERT(isTempBufferGood);
+  DCHECK(isTempBufferGood);
   if (!isTempBufferGood)
     return;
 
   bool isKernelGood = m_kernel.size() == DefaultKernelSize;
-  ASSERT(isKernelGood);
+  DCHECK(isKernelGood);
   if (!isKernelGood)
     return;
 
@@ -91,7 +91,7 @@ void UpSampler::process(const float* sourceP,
   // Copy source samples to 2nd half of input buffer.
   bool isInputBufferGood = m_inputBuffer.size() == sourceFramesToProcess * 2 &&
                            halfSize <= sourceFramesToProcess;
-  ASSERT(isInputBufferGood);
+  DCHECK(isInputBufferGood);
   if (!isInputBufferGood)
     return;
 

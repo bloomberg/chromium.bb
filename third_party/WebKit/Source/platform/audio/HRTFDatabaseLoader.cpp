@@ -48,7 +48,7 @@ static LoaderMap& getLoaderMap() {
 
 PassRefPtr<HRTFDatabaseLoader>
 HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(float sampleRate) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   RefPtr<HRTFDatabaseLoader> loader = getLoaderMap().at(sampleRate);
   if (loader) {
@@ -64,12 +64,12 @@ HRTFDatabaseLoader::createAndLoadAsynchronouslyIfNecessary(float sampleRate) {
 
 HRTFDatabaseLoader::HRTFDatabaseLoader(float sampleRate)
     : m_databaseSampleRate(sampleRate) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 }
 
 HRTFDatabaseLoader::~HRTFDatabaseLoader() {
-  ASSERT(isMainThread());
-  ASSERT(!m_thread);
+  DCHECK(isMainThread());
+  DCHECK(!m_thread);
   getLoaderMap().erase(m_databaseSampleRate);
 }
 
@@ -85,7 +85,7 @@ void HRTFDatabaseLoader::loadTask() {
 }
 
 void HRTFDatabaseLoader::loadAsynchronously() {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   // m_hrtfDatabase and m_thread should both be unset because this should be a
   // new HRTFDatabaseLoader object that was just created by

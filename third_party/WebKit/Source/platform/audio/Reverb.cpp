@@ -158,7 +158,7 @@ void Reverb::process(const AudioBus* sourceBus,
                          framesToProcess <= sourceBus->length() &&
                          framesToProcess <= destinationBus->length();
 
-  ASSERT(isSafeToProcess);
+  DCHECK(isSafeToProcess);
   if (!isSafeToProcess)
     return;
 

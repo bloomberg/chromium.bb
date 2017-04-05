@@ -42,7 +42,7 @@ void ReverbAccumulationBuffer::readAndClear(float* destination,
   bool isCopySafe =
       m_readIndex <= bufferLength && numberOfFrames <= bufferLength;
 
-  ASSERT(isCopySafe);
+  DCHECK(isCopySafe);
   if (!isCopySafe)
     return;
 
@@ -91,7 +91,7 @@ int ReverbAccumulationBuffer::accumulate(float* source,
   bool isSafe = writeIndex <= bufferLength &&
                 numberOfFrames1 + writeIndex <= bufferLength &&
                 numberOfFrames2 <= bufferLength;
-  ASSERT(isSafe);
+  DCHECK(isSafe);
   if (!isSafe)
     return 0;
 

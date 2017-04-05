@@ -64,7 +64,7 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
 
   // Sanity check
   bool isCopyGood = kernelP && sourceP && destP && m_buffer.data();
-  ASSERT(isCopyGood);
+  DCHECK(isCopyGood);
   if (!isCopyGood)
     return;
 

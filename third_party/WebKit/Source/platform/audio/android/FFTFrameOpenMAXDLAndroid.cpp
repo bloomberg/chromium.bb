@@ -92,7 +92,7 @@ FFTFrame::~FFTFrame() {
 }
 
 void FFTFrame::doFFT(const float* data) {
-  ASSERT(m_forwardContext);
+  DCHECK(m_forwardContext);
 
   if (m_forwardContext) {
     AudioFloatArray complexFFT(m_FFTSize + 2);
@@ -116,7 +116,7 @@ void FFTFrame::doFFT(const float* data) {
 }
 
 void FFTFrame::doInverseFFT(float* data) {
-  ASSERT(m_inverseContext);
+  DCHECK(m_inverseContext);
 
   if (m_inverseContext) {
     AudioFloatArray fftDataArray(m_FFTSize + 2);
@@ -142,7 +142,7 @@ void FFTFrame::doInverseFFT(float* data) {
 }
 
 OMXFFTSpec_R_F32* FFTFrame::contextForSize(unsigned log2FFTSize) {
-  ASSERT(log2FFTSize);
+  DCHECK(log2FFTSize);
   ASSERT(log2FFTSize <= kMaxFFTPow2Size);
   int bufSize;
   OMXResult status = omxSP_FFTGetBufSize_R_F32(log2FFTSize, &bufSize);

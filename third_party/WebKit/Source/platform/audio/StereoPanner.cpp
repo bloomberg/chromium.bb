@@ -35,7 +35,7 @@ void StereoPanner::panWithSampleAccurateValues(const AudioBus* inputBus,
   bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
                                   inputBus->numberOfChannels() == 2) &&
                      framesToProcess <= inputBus->length();
-  ASSERT(isInputSafe);
+  DCHECK(isInputSafe);
   if (!isInputSafe)
     return;
 
@@ -43,7 +43,7 @@ void StereoPanner::panWithSampleAccurateValues(const AudioBus* inputBus,
 
   bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
                       framesToProcess <= outputBus->length();
-  ASSERT(isOutputSafe);
+  DCHECK(isOutputSafe);
   if (!isOutputSafe)
     return;
 
@@ -100,7 +100,7 @@ void StereoPanner::panToTargetValue(const AudioBus* inputBus,
   bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
                                   inputBus->numberOfChannels() == 2) &&
                      framesToProcess <= inputBus->length();
-  ASSERT(isInputSafe);
+  DCHECK(isInputSafe);
   if (!isInputSafe)
     return;
 
@@ -108,7 +108,7 @@ void StereoPanner::panToTargetValue(const AudioBus* inputBus,
 
   bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
                       framesToProcess <= outputBus->length();
-  ASSERT(isOutputSafe);
+  DCHECK(isOutputSafe);
   if (!isOutputSafe)
     return;
 

@@ -122,7 +122,7 @@ class AudioArray {
 
   void zeroRange(unsigned start, unsigned end) {
     bool isSafe = (start <= end) && (end <= this->size());
-    ASSERT(isSafe);
+    DCHECK(isSafe);
     if (!isSafe)
       return;
 
@@ -133,7 +133,7 @@ class AudioArray {
 
   void copyToRange(const T* sourceData, unsigned start, unsigned end) {
     bool isSafe = (start <= end) && (end <= this->size());
-    ASSERT(isSafe);
+    DCHECK(isSafe);
     if (!isSafe)
       return;
 

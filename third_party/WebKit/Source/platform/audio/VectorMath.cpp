@@ -733,7 +733,7 @@ void vsvesq(const float* sourceP,
     sourceP += sourceStride;
   }
 
-  ASSERT(sumP);
+  DCHECK(sumP);
   *sumP = sum;
 }
 
@@ -829,7 +829,7 @@ void vmaxmgv(const float* sourceP,
     sourceP += sourceStride;
   }
 
-  ASSERT(maxP);
+  DCHECK(maxP);
   *maxP = max;
 }
 

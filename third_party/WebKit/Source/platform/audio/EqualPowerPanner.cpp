@@ -45,7 +45,7 @@ void EqualPowerPanner::pan(double azimuth,
   bool isInputSafe = inputBus && (inputBus->numberOfChannels() == 1 ||
                                   inputBus->numberOfChannels() == 2) &&
                      framesToProcess <= inputBus->length();
-  ASSERT(isInputSafe);
+  DCHECK(isInputSafe);
   if (!isInputSafe)
     return;
 
@@ -53,7 +53,7 @@ void EqualPowerPanner::pan(double azimuth,
 
   bool isOutputSafe = outputBus && outputBus->numberOfChannels() == 2 &&
                       framesToProcess <= outputBus->length();
-  ASSERT(isOutputSafe);
+  DCHECK(isOutputSafe);
   if (!isOutputSafe)
     return;
 

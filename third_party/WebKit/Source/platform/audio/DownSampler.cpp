@@ -81,19 +81,19 @@ void DownSampler::process(const float* sourceP,
                           float* destP,
                           size_t sourceFramesToProcess) {
   bool isInputBlockSizeGood = sourceFramesToProcess == m_inputBlockSize;
-  ASSERT(isInputBlockSizeGood);
+  DCHECK(isInputBlockSizeGood);
   if (!isInputBlockSizeGood)
     return;
 
   size_t destFramesToProcess = sourceFramesToProcess / 2;
 
   bool isTempBufferGood = destFramesToProcess == m_tempBuffer.size();
-  ASSERT(isTempBufferGood);
+  DCHECK(isTempBufferGood);
   if (!isTempBufferGood)
     return;
 
   bool isReducedKernelGood = m_reducedKernel.size() == DefaultKernelSize / 2;
-  ASSERT(isReducedKernelGood);
+  DCHECK(isReducedKernelGood);
   if (!isReducedKernelGood)
     return;
 
@@ -102,7 +102,7 @@ void DownSampler::process(const float* sourceP,
   // Copy source samples to 2nd half of input buffer.
   bool isInputBufferGood = m_inputBuffer.size() == sourceFramesToProcess * 2 &&
                            halfSize <= sourceFramesToProcess;
-  ASSERT(isInputBufferGood);
+  DCHECK(isInputBufferGood);
   if (!isInputBufferGood)
     return;
 

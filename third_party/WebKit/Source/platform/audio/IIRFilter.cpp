@@ -60,8 +60,8 @@ void IIRFilter::process(const float* sourceP,
   const double* feedback = m_feedback->data();
   const double* feedforward = m_feedforward->data();
 
-  ASSERT(feedback);
-  ASSERT(feedforward);
+  DCHECK(feedback);
+  DCHECK(feedforward);
 
   // Sanity check to see if the feedback coefficients have been scaled
   // appropriately. It must be EXACTLY 1!

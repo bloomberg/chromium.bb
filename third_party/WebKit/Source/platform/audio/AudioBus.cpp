@@ -193,7 +193,7 @@ PassRefPtr<AudioBus> AudioBus::createBufferFromRange(
 
   // Sanity checking
   bool isRangeSafe = startFrame < endFrame && endFrame <= numberOfSourceFrames;
-  ASSERT(isRangeSafe);
+  DCHECK(isRangeSafe);
   if (!isRangeSafe)
     return nullptr;
 

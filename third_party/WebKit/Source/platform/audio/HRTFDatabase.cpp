@@ -54,7 +54,7 @@ HRTFDatabase::HRTFDatabase(float sampleRate)
        elevation += RawElevationAngleSpacing) {
     std::unique_ptr<HRTFElevation> hrtfElevation =
         HRTFElevation::createForSubject("Composite", elevation, sampleRate);
-    ASSERT(hrtfElevation.get());
+    DCHECK(hrtfElevation.get());
     if (!hrtfElevation.get())
       return;
 
@@ -103,7 +103,7 @@ void HRTFDatabase::getKernelsFromAzimuthElevation(double azimuthBlend,
     elevationIndex = m_elevations.size() - 1;
 
   HRTFElevation* hrtfElevation = m_elevations[elevationIndex].get();
-  ASSERT(hrtfElevation);
+  DCHECK(hrtfElevation);
   if (!hrtfElevation) {
     kernelL = 0;
     kernelR = 0;

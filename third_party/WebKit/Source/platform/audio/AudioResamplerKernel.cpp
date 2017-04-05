@@ -67,7 +67,7 @@ float* AudioResamplerKernel::getSourcePointer(
   // Do bounds checking for the source buffer.
   bool isGood = m_fillIndex < m_sourceBuffer.size() &&
                 m_fillIndex + framesNeeded <= m_sourceBuffer.size();
-  ASSERT(isGood);
+  DCHECK(isGood);
   if (!isGood)
     return 0;
 

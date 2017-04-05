@@ -50,7 +50,7 @@ void AudioChannel::scale(float scale) {
 
 void AudioChannel::copyFrom(const AudioChannel* sourceChannel) {
   bool isSafe = (sourceChannel && sourceChannel->length() >= length());
-  ASSERT(isSafe);
+  DCHECK(isSafe);
   if (!isSafe)
     return;
 
@@ -67,7 +67,7 @@ void AudioChannel::copyFromRange(const AudioChannel* sourceChannel,
   // Check that range is safe for reading from sourceChannel.
   bool isRangeSafe = sourceChannel && startFrame < endFrame &&
                      endFrame <= sourceChannel->length();
-  ASSERT(isRangeSafe);
+  DCHECK(isRangeSafe);
   if (!isRangeSafe)
     return;
 
@@ -77,7 +77,7 @@ void AudioChannel::copyFromRange(const AudioChannel* sourceChannel,
   // Check that this channel has enough space.
   size_t rangeLength = endFrame - startFrame;
   bool isRangeLengthSafe = rangeLength <= length();
-  ASSERT(isRangeLengthSafe);
+  DCHECK(isRangeLengthSafe);
   if (!isRangeLengthSafe)
     return;
 
@@ -95,7 +95,7 @@ void AudioChannel::copyFromRange(const AudioChannel* sourceChannel,
 
 void AudioChannel::sumFrom(const AudioChannel* sourceChannel) {
   bool isSafe = sourceChannel && sourceChannel->length() >= length();
-  ASSERT(isSafe);
+  DCHECK(isSafe);
   if (!isSafe)
     return;
 

@@ -155,7 +155,7 @@ RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans) {
   // FFTFrames of the same size.  But FFmpeg's RDFT uses a scratch buffer
   // inside the context and so they are not thread-safe.  We could improve this
   // by sharing the FFTFrames on a per-thread basis.
-  ASSERT(fftSize);
+  DCHECK(fftSize);
   int pow2size = static_cast<int>(log2(fftSize));
   ASSERT(pow2size < kMaxFFTPow2Size);
 

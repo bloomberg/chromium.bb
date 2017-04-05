@@ -174,14 +174,14 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel,
   bool isSafe = sourceChannel && destinationChannel &&
                 sourceChannel->length() >= framesToProcess &&
                 destinationChannel->length() >= framesToProcess;
-  ASSERT(isSafe);
+  DCHECK(isSafe);
   if (!isSafe)
     return;
 
   const float* source = sourceChannel->data();
   float* destination = destinationChannel->mutableData();
   bool isDataSafe = source && destination;
-  ASSERT(isDataSafe);
+  DCHECK(isDataSafe);
   if (!isDataSafe)
     return;
 

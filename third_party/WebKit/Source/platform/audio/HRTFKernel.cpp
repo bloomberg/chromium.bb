@@ -43,12 +43,12 @@ namespace blink {
 // of the passed in AudioChannel must be a power of 2.
 static float extractAverageGroupDelay(AudioChannel* channel,
                                       size_t analysisFFTSize) {
-  ASSERT(channel);
+  DCHECK(channel);
 
   float* impulseP = channel->mutableData();
 
   bool isSizeGood = channel->length() >= analysisFFTSize;
-  ASSERT(isSizeGood);
+  DCHECK(isSizeGood);
   if (!isSizeGood)
     return 0;
 
@@ -67,7 +67,7 @@ static float extractAverageGroupDelay(AudioChannel* channel,
 
 HRTFKernel::HRTFKernel(AudioChannel* channel, size_t fftSize, float sampleRate)
     : m_frameDelay(0), m_sampleRate(sampleRate) {
-  ASSERT(channel);
+  DCHECK(channel);
 
   // Determine the leading delay (average group delay) for the response.
   m_frameDelay = extractAverageGroupDelay(channel, fftSize / 2);

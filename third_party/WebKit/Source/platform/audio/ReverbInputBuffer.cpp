@@ -36,7 +36,7 @@ ReverbInputBuffer::ReverbInputBuffer(size_t length)
 void ReverbInputBuffer::write(const float* sourceP, size_t numberOfFrames) {
   size_t bufferLength = m_buffer.size();
   bool isCopySafe = m_writeIndex + numberOfFrames <= bufferLength;
-  ASSERT(isCopySafe);
+  DCHECK(isCopySafe);
   if (!isCopySafe)
     return;
 
@@ -55,7 +55,7 @@ float* ReverbInputBuffer::directReadFrom(int* readIndex,
   size_t bufferLength = m_buffer.size();
   bool isPointerGood = readIndex && *readIndex >= 0 &&
                        *readIndex + numberOfFrames <= bufferLength;
-  ASSERT(isPointerGood);
+  DCHECK(isPointerGood);
   if (!isPointerGood) {
     // Should never happen in practice but return pointer to start of buffer
     // (avoid crash)

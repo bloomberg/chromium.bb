@@ -50,7 +50,7 @@ void FFTConvolver::process(FFTFrame* fftKernel,
   // or halfSize is a multiple of framesToProcess when halfSize >
   // framesToProcess.
   bool isGood = !(halfSize % framesToProcess && framesToProcess % halfSize);
-  ASSERT(isGood);
+  DCHECK(isGood);
   if (!isGood)
     return;
 
@@ -66,7 +66,7 @@ void FFTConvolver::process(FFTFrame* fftKernel,
     // Sanity check
     bool isCopyGood1 = sourceP && inputP &&
                        m_readWriteIndex + divisionSize <= m_inputBuffer.size();
-    ASSERT(isCopyGood1);
+    DCHECK(isCopyGood1);
     if (!isCopyGood1)
       return;
 
@@ -78,7 +78,7 @@ void FFTConvolver::process(FFTFrame* fftKernel,
     // Sanity check
     bool isCopyGood2 = destP && outputP &&
                        m_readWriteIndex + divisionSize <= m_outputBuffer.size();
-    ASSERT(isCopyGood2);
+    DCHECK(isCopyGood2);
     if (!isCopyGood2)
       return;
 
@@ -99,7 +99,7 @@ void FFTConvolver::process(FFTFrame* fftKernel,
       // Finally, save 2nd half of result
       bool isCopyGood3 = m_outputBuffer.size() == 2 * halfSize &&
                          m_lastOverlapBuffer.size() == halfSize;
-      ASSERT(isCopyGood3);
+      DCHECK(isCopyGood3);
       if (!isCopyGood3)
         return;
 

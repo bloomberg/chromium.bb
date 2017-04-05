@@ -52,15 +52,15 @@ ReverbConvolverStage::ReverbConvolverStage(
       m_accumulationReadIndex(0),
       m_inputReadIndex(0),
       m_directMode(directMode) {
-  ASSERT(impulseResponse);
-  ASSERT(accumulationBuffer);
+  DCHECK(impulseResponse);
+  DCHECK(accumulationBuffer);
 
   if (!m_directMode) {
     m_fftKernel = WTF::makeUnique<FFTFrame>(fftSize);
     m_fftKernel->doPaddedFFT(impulseResponse + stageOffset, stageLength);
     m_fftConvolver = WTF::makeUnique<FFTConvolver>(fftSize);
   } else {
-    ASSERT(!stageOffset);
+    DCHECK(!stageOffset);
     ASSERT(stageLength <= fftSize / 2);
 
     m_directKernel = WTF::wrapUnique(new AudioFloatArray(fftSize / 2));
@@ -112,7 +112,7 @@ void ReverbConvolverStage::processInBackground(ReverbConvolver* convolver,
 
 void ReverbConvolverStage::process(const float* source,
                                    size_t framesToProcess) {
-  ASSERT(source);
+  DCHECK(source);
   if (!source)
     return;
 
@@ -127,7 +127,7 @@ void ReverbConvolverStage::process(const float* source,
     // (memcpy() )
     bool isPreDelaySafe =
         m_preReadWriteIndex + framesToProcess <= m_preDelayBuffer.size();
-    ASSERT(isPreDelaySafe);
+    DCHECK(isPreDelaySafe);
     if (!isPreDelaySafe)
       return;
 
@@ -145,7 +145,7 @@ void ReverbConvolverStage::process(const float* source,
     isTemporaryBufferSafe = framesToProcess <= m_preDelayBuffer.size();
   }
 
-  ASSERT(isTemporaryBufferSafe);
+  DCHECK(isTemporaryBufferSafe);
   if (!isTemporaryBufferSafe)
     return;
 

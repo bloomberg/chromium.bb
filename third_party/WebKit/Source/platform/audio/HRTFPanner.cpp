@@ -60,7 +60,7 @@ HRTFPanner::HRTFPanner(float sampleRate, HRTFDatabaseLoader* databaseLoader)
       m_tempR1(AudioUtilities::kRenderQuantumFrames),
       m_tempL2(AudioUtilities::kRenderQuantumFrames),
       m_tempR2(AudioUtilities::kRenderQuantumFrames) {
-  ASSERT(databaseLoader);
+  DCHECK(databaseLoader);
 }
 
 HRTFPanner::~HRTFPanner() {}
@@ -75,7 +75,7 @@ size_t HRTFPanner::fftSizeForSampleRate(float sampleRate) {
   // of two that is greater than or equal the resampled length. This power of
   // two is doubled to get the actual FFT size.
 
-  ASSERT(AudioUtilities::isValidAudioBufferSampleRate(sampleRate));
+  DCHECK(AudioUtilities::isValidAudioBufferSampleRate(sampleRate));
 
   int truncatedImpulseLength = 256;
   double sampleRateRatio = sampleRate / 44100;
@@ -125,11 +125,11 @@ void HRTFPanner::pan(double desiredAzimuth,
   unsigned numInputChannels = inputBus ? inputBus->numberOfChannels() : 0;
 
   bool isInputGood = inputBus && numInputChannels >= 1 && numInputChannels <= 2;
-  ASSERT(isInputGood);
+  DCHECK(isInputGood);
 
   bool isOutputGood = outputBus && outputBus->numberOfChannels() == 2 &&
                       framesToProcess <= outputBus->length();
-  ASSERT(isOutputGood);
+  DCHECK(isOutputGood);
 
   if (!isInputGood || !isOutputGood) {
     if (outputBus)
@@ -148,7 +148,7 @@ void HRTFPanner::pan(double desiredAzimuth,
   double azimuth = -desiredAzimuth;
 
   bool isAzimuthGood = azimuth >= -180.0 && azimuth <= 180.0;
-  ASSERT(isAzimuthGood);
+  DCHECK(isAzimuthGood);
   if (!isAzimuthGood) {
     outputBus->zero();
     return;
@@ -234,7 +234,7 @@ void HRTFPanner::pan(double desiredAzimuth,
                                              frameDelayL2, frameDelayR2);
 
     bool areKernelsGood = kernelL1 && kernelR1 && kernelL2 && kernelR2;
-    ASSERT(areKernelsGood);
+    DCHECK(areKernelsGood);
     if (!areKernelsGood) {
       outputBus->zero();
       return;

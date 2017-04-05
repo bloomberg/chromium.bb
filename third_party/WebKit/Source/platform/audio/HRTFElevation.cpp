@@ -80,7 +80,7 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(
     RefPtr<AudioBus> concatenatedImpulseResponses(
         AudioBus::loadPlatformResource(subjectName.utf8().data(),
                                        ResponseSampleRate));
-    ASSERT(concatenatedImpulseResponses);
+    DCHECK(concatenatedImpulseResponses);
     if (!concatenatedImpulseResponses)
       return nullptr;
 
@@ -96,7 +96,7 @@ static PassRefPtr<AudioBus> getConcatenatedImpulseResponsesForSubject(
   // Check number of channels and length. For now these are fixed and known.
   bool isBusGood =
       responseLength == expectedLength && bus->numberOfChannels() == 2;
-  ASSERT(isBusGood);
+  DCHECK(isBusGood);
   if (!isBusGood)
     return nullptr;
 
@@ -116,13 +116,13 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
 
   bool isAzimuthGood =
       azimuth >= 0 && azimuth <= 345 && (azimuth / 15) * 15 == azimuth;
-  ASSERT(isAzimuthGood);
+  DCHECK(isAzimuthGood);
   if (!isAzimuthGood)
     return false;
 
   bool isElevationGood =
       elevation >= -45 && elevation <= 90 && (elevation / 15) * 15 == elevation;
-  ASSERT(isElevationGood);
+  DCHECK(isElevationGood);
   if (!isElevationGood)
     return false;
 
@@ -152,7 +152,7 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
 
   bool isElevationIndexGood =
       (elevationIndex >= 0) && (elevationIndex < ElevationIndexTableSize);
-  ASSERT(isElevationIndexGood);
+  DCHECK(isElevationIndexGood);
   if (!isElevationIndexGood)
     return false;
 
@@ -164,7 +164,7 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
       ((azimuth / AzimuthSpacing) * HRTFDatabase::NumberOfRawElevations) +
       elevationIndex;
   bool isIndexGood = index < TotalNumberOfResponses;
-  ASSERT(isIndexGood);
+  DCHECK(isIndexGood);
   if (!isIndexGood)
     return false;
 
@@ -189,7 +189,7 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
   RefPtr<AudioBus> impulseResponse(
       AudioBus::loadPlatformResource(resourceName.utf8().data(), sampleRate));
 
-  ASSERT(impulseResponse.get());
+  DCHECK(impulseResponse.get());
   if (!impulseResponse.get())
     return false;
 
@@ -199,7 +199,7 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
   // Check number of channels and length.  For now these are fixed and known.
   bool isBusGood = responseLength == expectedLength &&
                    impulseResponse->numberOfChannels() == 2;
-  ASSERT(isBusGood);
+  DCHECK(isBusGood);
   if (!isBusGood)
     return false;
 
@@ -257,7 +257,7 @@ std::unique_ptr<HRTFElevation> HRTFElevation::createForSubject(
     float sampleRate) {
   bool isElevationGood =
       elevation >= -45 && elevation <= 90 && (elevation / 15) * 15 == elevation;
-  ASSERT(isElevationGood);
+  DCHECK(isElevationGood);
   if (!isElevationGood)
     return nullptr;
 
@@ -350,14 +350,14 @@ void HRTFElevation::getKernelsFromAzimuth(double azimuthBlend,
                                           double& frameDelayL,
                                           double& frameDelayR) {
   bool checkAzimuthBlend = azimuthBlend >= 0.0 && azimuthBlend < 1.0;
-  ASSERT(checkAzimuthBlend);
+  DCHECK(checkAzimuthBlend);
   if (!checkAzimuthBlend)
     azimuthBlend = 0.0;
 
   unsigned numKernels = m_kernelListL->size();
 
   bool isIndexGood = azimuthIndex < numKernels;
-  ASSERT(isIndexGood);
+  DCHECK(isIndexGood);
   if (!isIndexGood) {
     kernelL = 0;
     kernelR = 0;
