@@ -136,3 +136,28 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(tab, "loaded2()", &loaded2));
   EXPECT_TRUE(loaded2);
 }
+
+class SupervisedUserNavigationThrottleNotSupervisedTest
+    : public SupervisedUserNavigationThrottleTest {
+ protected:
+  SupervisedUserNavigationThrottleNotSupervisedTest() {}
+  ~SupervisedUserNavigationThrottleNotSupervisedTest() override {}
+
+ private:
+  // Overridden to do nothing, so that the supervised user ID will be empty.
+  void SetUpCommandLine(base::CommandLine* command_line) override {}
+};
+
+IN_PROC_BROWSER_TEST_F(SupervisedUserNavigationThrottleNotSupervisedTest,
+                       DontBlock) {
+  BlockHost(kExampleHost);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL blocked_url = embedded_test_server()->GetURL(
+      kExampleHost, "/supervised_user/simple.html");
+  ui_test_utils::NavigateToURL(browser(), blocked_url);
+  // Even though the URL is marked as blocked, the load should go through, since
+  // the user isn't supervised.
+  EXPECT_FALSE(tab->ShowingInterstitialPage());
+}

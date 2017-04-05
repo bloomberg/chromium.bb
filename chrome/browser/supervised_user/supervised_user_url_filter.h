@@ -57,7 +57,11 @@ class SupervisedUserURLFilter : public base::NonThreadSafe {
 
   class Observer {
    public:
+    // Called whenever the whitelists are updated. This does *not* include
+    // SetManualHosts/SetManualURLs.
     virtual void OnSiteListUpdated() = 0;
+    // Called whenever a check started via
+    // GetFilteringBehaviorForURLWithAsyncChecks completes.
     virtual void OnURLChecked(
         const GURL& url,
         FilteringBehavior behavior,

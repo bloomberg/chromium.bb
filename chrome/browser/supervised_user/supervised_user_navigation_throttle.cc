@@ -122,6 +122,10 @@ SupervisedUserNavigationThrottle::MaybeCreateThrottleFor(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())
     return nullptr;
+  Profile* profile = Profile::FromBrowserContext(
+      navigation_handle->GetWebContents()->GetBrowserContext());
+  if (!profile->IsSupervised())
+    return nullptr;
   // Can't use base::MakeUnique because the constructor is private.
   return base::WrapUnique(
       new SupervisedUserNavigationThrottle(navigation_handle));
