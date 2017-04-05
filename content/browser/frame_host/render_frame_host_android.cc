@@ -26,8 +26,10 @@ bool RenderFrameHostAndroid::Register(JNIEnv* env) {
 }
 
 RenderFrameHostAndroid::RenderFrameHostAndroid(
-    RenderFrameHostImpl* render_frame_host)
-    : render_frame_host_(render_frame_host) {}
+    RenderFrameHostImpl* render_frame_host,
+    service_manager::mojom::InterfaceProviderPtr interface_provider_ptr)
+    : render_frame_host_(render_frame_host),
+      interface_provider_ptr_(std::move(interface_provider_ptr)) {}
 
 RenderFrameHostAndroid::~RenderFrameHostAndroid() {
   ScopedJavaLocalRef<jobject> jobj = GetJavaObject();
@@ -47,7 +49,8 @@ RenderFrameHostAndroid::GetJavaObject() {
     ScopedJavaLocalRef<jobject> local_ref = Java_RenderFrameHostImpl_create(
         env, reinterpret_cast<intptr_t>(this),
         render_frame_host_->delegate()->GetJavaRenderFrameHostDelegate(),
-        is_incognito);
+        is_incognito,
+        interface_provider_ptr_.PassInterface().PassHandle().release().value());
     obj_ = JavaObjectWeakGlobalRef(env, local_ref);
     return local_ref;
   }

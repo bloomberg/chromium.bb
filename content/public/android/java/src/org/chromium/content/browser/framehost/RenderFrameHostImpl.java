@@ -7,6 +7,8 @@ package org.chromium.content.browser.framehost;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.mojo.system.impl.CoreImpl;
+import org.chromium.services.service_manager.InterfaceProvider;
 
 /**
  * The RenderFrameHostImpl Java wrapper to allow communicating with the native RenderFrameHost
@@ -16,20 +18,27 @@ import org.chromium.content_public.browser.RenderFrameHost;
 public class RenderFrameHostImpl implements RenderFrameHost {
     private long mNativeRenderFrameHostAndroid;
     // mDelegate can be null.
-    final RenderFrameHostDelegate mDelegate;
-    final boolean mIncognito;
+    private final RenderFrameHostDelegate mDelegate;
+    private final boolean mIncognito;
+    private final InterfaceProvider mInterfaceProvider;
 
     private RenderFrameHostImpl(long nativeRenderFrameHostAndroid, RenderFrameHostDelegate delegate,
-            boolean isIncognito) {
+            boolean isIncognito, int nativeInterfaceProviderHandle) {
         mNativeRenderFrameHostAndroid = nativeRenderFrameHostAndroid;
         mDelegate = delegate;
         mIncognito = isIncognito;
+        mInterfaceProvider =
+                new InterfaceProvider(CoreImpl.getInstance()
+                                              .acquireNativeHandle(nativeInterfaceProviderHandle)
+                                              .toMessagePipeHandle());
     }
 
     @CalledByNative
     private static RenderFrameHostImpl create(long nativeRenderFrameHostAndroid,
-            RenderFrameHostDelegate delegate, boolean isIncognito) {
-        return new RenderFrameHostImpl(nativeRenderFrameHostAndroid, delegate, isIncognito);
+            RenderFrameHostDelegate delegate, boolean isIncognito,
+            int nativeInterfaceProviderHandle) {
+        return new RenderFrameHostImpl(
+                nativeRenderFrameHostAndroid, delegate, isIncognito, nativeInterfaceProviderHandle);
     }
 
     @CalledByNative
@@ -50,6 +59,11 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     public String getLastCommittedURL() {
         if (mNativeRenderFrameHostAndroid == 0) return null;
         return nativeGetLastCommittedURL(mNativeRenderFrameHostAndroid);
+    }
+
+    @Override
+    public InterfaceProvider getRemoteInterfaces() {
+        return mInterfaceProvider;
     }
 
     /**

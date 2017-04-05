@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
 
@@ -28,7 +29,9 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
  public:
   static bool Register(JNIEnv* env);
 
-  explicit RenderFrameHostAndroid(RenderFrameHostImpl* render_frame_host);
+  RenderFrameHostAndroid(
+      RenderFrameHostImpl* render_frame_host,
+      service_manager::mojom::InterfaceProviderPtr interface_provider_ptr);
   ~RenderFrameHostAndroid() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
@@ -40,6 +43,7 @@ class RenderFrameHostAndroid : public base::SupportsUserData::Data {
 
  private:
   RenderFrameHostImpl* const render_frame_host_;
+  service_manager::mojom::InterfaceProviderPtr interface_provider_ptr_;
   JavaObjectWeakGlobalRef obj_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostAndroid);

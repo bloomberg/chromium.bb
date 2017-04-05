@@ -3664,7 +3664,19 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
       static_cast<RenderFrameHostAndroid*>(
           GetUserData(kRenderFrameHostAndroidKey));
   if (!render_frame_host_android) {
-    render_frame_host_android = new RenderFrameHostAndroid(this);
+    java_interface_registry_ =
+        base::MakeUnique<service_manager::InterfaceRegistry>(
+            "RenderFrameHost Java");
+    service_manager::mojom::InterfaceProviderPtr interface_provider_ptr;
+    java_interface_registry_->set_default_binder(
+        base::Bind(&RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame,
+                   weak_ptr_factory_.GetWeakPtr()));
+    java_interface_registry_->Bind(
+        mojo::MakeRequest(&interface_provider_ptr), service_manager::Identity(),
+        service_manager::InterfaceProviderSpec(), service_manager::Identity(),
+        service_manager::InterfaceProviderSpec());
+    render_frame_host_android =
+        new RenderFrameHostAndroid(this, std::move(interface_provider_ptr));
     SetUserData(kRenderFrameHostAndroidKey, render_frame_host_android);
   }
   return render_frame_host_android->GetJavaObject();
@@ -3678,6 +3690,12 @@ service_manager::InterfaceProvider* RenderFrameHostImpl::GetJavaInterfaces() {
     java_interfaces_->Bind(std::move(provider));
   }
   return java_interfaces_.get();
+}
+
+void RenderFrameHostImpl::ForwardGetInterfaceToRenderFrame(
+    const std::string& interface_name,
+    mojo::ScopedMessagePipeHandle pipe) {
+  GetRemoteInterfaces()->GetInterface(interface_name, std::move(pipe));
 }
 #endif
 

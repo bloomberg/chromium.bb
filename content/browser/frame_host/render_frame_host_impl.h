@@ -789,6 +789,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 #if defined(OS_ANDROID)
   void OnNavigationHandledByEmbedder();
+  void ForwardGetInterfaceToRenderFrame(const std::string& interface_name,
+                                        mojo::ScopedMessagePipeHandle pipe);
 #endif
   void OnShowCreatedWindow(int pending_widget_routing_id,
                            WindowOpenDisposition disposition,
@@ -1170,7 +1172,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<FeaturePolicy> feature_policy_;
 
 #if defined(OS_ANDROID)
+  // An InterfaceProvider for Java-implemented interfaces that are scoped to
+  // this RenderFrameHost. This provides access to interfaces implemented in
+  // Java in the browser process to C++ code in the browser process.
   std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;
+
+  // An InterfaceRegistry that forwards interface requests from Java to the
+  // RenderFrame. This provides access to interfaces implemented in the renderer
+  // to Java code in the browser process.
+  std::unique_ptr<service_manager::InterfaceRegistry> java_interface_registry_;
 #endif
 
   // NOTE: This must be the last member.
