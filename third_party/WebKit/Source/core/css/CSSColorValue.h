@@ -11,6 +11,10 @@
 
 namespace blink {
 
+class CSSValuePool;
+
+namespace cssvalue {
+
 // Represents the non-keyword subset of <color>.
 class CSSColorValue : public CSSValue {
  public:
@@ -32,7 +36,7 @@ class CSSColorValue : public CSSValue {
   }
 
  private:
-  friend class CSSValuePool;
+  friend class ::blink::CSSValuePool;
 
   CSSColorValue(Color color) : CSSValue(ColorClass), m_color(color) {}
 
@@ -41,6 +45,7 @@ class CSSColorValue : public CSSValue {
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSColorValue, isColorValue());
 
+}  // namespace cssvalue
 }  // namespace blink
 
 #endif  // CSSColorValue_h

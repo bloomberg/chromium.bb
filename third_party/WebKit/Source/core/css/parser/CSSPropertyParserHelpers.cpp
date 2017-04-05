@@ -22,6 +22,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 namespace CSSPropertyParserHelpers {
 
 namespace {

@@ -72,6 +72,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 inline static bool isFlexOrGrid(const ComputedStyle* style) {
   return style && style->isDisplayFlexibleOrGridBox();
 }

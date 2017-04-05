@@ -7,6 +7,7 @@
 #include "core/css/CSSValuePool.h"
 
 namespace blink {
+namespace cssvalue {
 
 CSSColorValue* CSSColorValue::create(RGBA32 color) {
   // These are the empty and deleted values of the hash table.
@@ -25,4 +26,5 @@ CSSColorValue* CSSColorValue::create(RGBA32 color) {
   return entry.storedValue->value;
 }
 
+}  // namespace cssvalue
 }  // namespace blink

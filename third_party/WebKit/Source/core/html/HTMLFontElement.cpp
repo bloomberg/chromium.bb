@@ -35,6 +35,7 @@
 
 namespace blink {
 
+using namespace cssvalue;
 using namespace HTMLNames;
 
 inline HTMLFontElement::HTMLFontElement(Document& document)

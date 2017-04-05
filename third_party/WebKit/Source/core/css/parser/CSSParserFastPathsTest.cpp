@@ -11,6 +11,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 TEST(CSSParserFastPathsTest, ParseKeyword) {
   CSSValue* value = CSSParserFastPaths::maybeParseValue(
       CSSPropertyFloat, "left", HTMLStandardMode);

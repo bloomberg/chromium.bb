@@ -30,6 +30,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 CSSValuePool& cssValuePool() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       ThreadSpecific<Persistent<CSSValuePool>>, threadSpecificPool,

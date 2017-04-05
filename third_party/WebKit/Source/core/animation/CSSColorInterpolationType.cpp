@@ -14,6 +14,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 enum InterpolableColorIndex : unsigned {
   Red,
   Green,

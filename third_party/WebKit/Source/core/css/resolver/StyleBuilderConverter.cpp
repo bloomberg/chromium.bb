@@ -61,6 +61,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 namespace {
 
 static GridLength convertGridTrackBreadth(const StyleResolverState& state,

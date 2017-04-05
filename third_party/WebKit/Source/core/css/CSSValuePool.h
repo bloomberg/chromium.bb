@@ -51,6 +51,7 @@ class CORE_EXPORT CSSValuePool
  public:
   // TODO(sashab): Make all the value pools store const CSSValues.
   static const int maximumCacheableIntegerValue = 255;
+  using CSSColorValue = cssvalue::CSSColorValue;
   using ColorValueCache = HeapHashMap<unsigned, Member<CSSColorValue>>;
   static const unsigned maximumColorCacheSize = 512;
   using FontFaceValueCache =

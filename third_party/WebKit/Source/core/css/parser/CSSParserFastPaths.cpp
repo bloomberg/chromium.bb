@@ -20,6 +20,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId,
                                             bool& acceptsNegativeNumbers) {
   switch (propertyId) {

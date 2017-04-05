@@ -36,6 +36,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 bool EditingStyleUtilities::hasAncestorVerticalAlignStyle(Node& node,
                                                           CSSValueID value) {
   for (Node& runner : NodeTraversal::inclusiveAncestorsOf(node)) {

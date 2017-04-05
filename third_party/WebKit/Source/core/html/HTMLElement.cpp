@@ -72,6 +72,7 @@
 
 namespace blink {
 
+using namespace cssvalue;
 using namespace HTMLNames;
 using namespace WTF;
 

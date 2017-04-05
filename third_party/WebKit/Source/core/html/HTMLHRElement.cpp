@@ -32,6 +32,7 @@
 
 namespace blink {
 
+using namespace cssvalue;
 using namespace HTMLNames;
 
 inline HTMLHRElement::HTMLHRElement(Document& document)

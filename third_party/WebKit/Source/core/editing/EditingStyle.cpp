@@ -65,6 +65,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 static const CSSPropertyID& textDecorationPropertyForEditing() {
   static const CSSPropertyID property =
       RuntimeEnabledFeatures::css3TextDecorationsEnabled()

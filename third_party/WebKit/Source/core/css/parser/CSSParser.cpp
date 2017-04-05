@@ -21,6 +21,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 bool CSSParser::parseDeclarationList(const CSSParserContext* context,
                                      MutableStylePropertySet* propertySet,
                                      const String& declaration) {

@@ -37,6 +37,8 @@
 
 namespace blink {
 
+using namespace cssvalue;
+
 TextLinkColors::TextLinkColors() : m_textColor(Color::black) {
   resetLinkColor();
   resetVisitedLinkColor();
