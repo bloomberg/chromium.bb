@@ -98,7 +98,7 @@ class CONTENT_EXPORT ContentClient {
 
   // Gives the embedder a chance to register its own schemes early in the
   // startup sequence.
-  struct Schemes {
+  struct CONTENT_EXPORT Schemes {
     Schemes();
     ~Schemes();
     std::vector<std::string> standard_schemes;

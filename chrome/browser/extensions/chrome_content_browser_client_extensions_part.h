@@ -72,6 +72,31 @@ class ChromeContentBrowserClientExtensionsPart
       content::BrowserContext* browser_context);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
+                           ShouldAllowOpenURLMetricsForEmptySiteURL);
+  FRIEND_TEST_ALL_PREFIXES(ChromeContentBrowserClientExtensionsPartTest,
+                           ShouldAllowOpenURLMetricsForKnownSchemes);
+
+  // Specifies reasons why web-accessible resource checks in ShouldAllowOpenURL
+  // might fail.
+  //
+  // This enum backs an UMA histogram.  The order of existing values
+  // should not be changed, and new values should only be added before
+  // FAILURE_LAST.
+  enum ShouldAllowOpenURLFailureReason {
+    FAILURE_FILE_SYSTEM_URL = 0,
+    FAILURE_BLOB_URL,
+    FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION,
+    FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE,
+    FAILURE_LAST,
+  };
+
+  // Records metrics when ShouldAllowOpenURL blocks a load.  |site_url|
+  // corresponds to the SiteInstance that initiated the blocked load.
+  static void RecordShouldAllowOpenURLFailure(
+      ShouldAllowOpenURLFailureReason reason,
+      const GURL& site_url);
+
   // ChromeContentBrowserClientParts:
   void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;

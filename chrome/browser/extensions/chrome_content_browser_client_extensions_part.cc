@@ -29,6 +29,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/guest_view/browser/guest_view_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -92,18 +93,38 @@ enum RenderProcessHostPrivilege {
   PRIV_EXTENSION,
 };
 
-// Specifies reasons why web-accessible resource checks in ShouldAllowOpenURL
-// might fail.
+// Specifies the scheme of the SiteInstance responsible for a failed
+// web-accessible resource check in ShouldAllowOpenURL.
 //
 // This enum backs an UMA histogram.  The order of existing values
-// should not be changed, and new values should only be added before
-// FAILURE_LAST.
-enum ShouldAllowOpenURLFailureReason {
-  FAILURE_FILE_SYSTEM_URL = 0,
-  FAILURE_BLOB_URL,
-  FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION,
-  FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE,
-  FAILURE_LAST,
+// should not be changed.  Add any new values before SCHEME_LAST, and also run
+// update_should_allow_open_url_histograms.py to update the corresponding enum
+// in histograms.xml.  This enum must also be synchronized to kSchemeNames in
+// RecordShouldAllowOpenURLFailure.
+enum ShouldAllowOpenURLFailureScheme {
+  SCHEME_UNKNOWN,
+  SCHEME_EMPTY,
+  SCHEME_HTTP,
+  SCHEME_HTTPS,
+  SCHEME_FILE,
+  SCHEME_FTP,
+  SCHEME_DATA,
+  SCHEME_JAVASCRIPT,
+  SCHEME_ABOUT,
+  SCHEME_CHROME,
+  SCHEME_DEVTOOLS,
+  SCHEME_GUEST,
+  SCHEME_VIEWSOURCE,
+  SCHEME_CHROME_SEARCH,
+  SCHEME_CHROME_NATIVE,
+  SCHEME_DOM_DISTILLER,
+  SCHEME_CHROME_EXTENSION,
+  SCHEME_CONTENT,
+  SCHEME_BLOB,
+  SCHEME_FILESYSTEM,
+  // Add new entries above and make sure to update histograms.xml by running
+  // update_should_allow_open_url_histograms.py.
+  SCHEME_LAST,
 };
 
 RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
@@ -226,11 +247,6 @@ void OnHttpHeaderReceived(const std::string& header,
   DCHECK(origin.SchemeIs(extensions::kExtensionScheme));
 
   callback.Run(CheckOriginHeader(resource_context, child_id, origin));
-}
-
-void RecordShowAllowOpenURLFailure(ShouldAllowOpenURLFailureReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Extensions.ShouldAllowOpenURL.Failure", reason,
-                            FAILURE_LAST);
 }
 
 }  // namespace
@@ -587,9 +603,9 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
   // https://crbug.com/656752.
   if (to_url.SchemeIsFileSystem() || to_url.SchemeIsBlob()) {
     if (to_url.SchemeIsFileSystem())
-      RecordShowAllowOpenURLFailure(FAILURE_FILE_SYSTEM_URL);
+      RecordShouldAllowOpenURLFailure(FAILURE_FILE_SYSTEM_URL, site_url);
     else
-      RecordShowAllowOpenURLFailure(FAILURE_BLOB_URL);
+      RecordShouldAllowOpenURLFailure(FAILURE_BLOB_URL, site_url);
 
     // TODO(alexmos): Temporary instrumentation to find any regressions for
     // this blocking.  Remove after verifying that this is not breaking any
@@ -637,23 +653,14 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
   }
 
   if (!site_url.SchemeIsHTTPOrHTTPS() && !site_url.SchemeIs(kExtensionScheme)) {
-    RecordShowAllowOpenURLFailure(
-        FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION);
-
-    // TODO(alexmos): Previous version of this function skipped the
-    // web-accessible resource checks in this case.  Collect data to catch
-    // any regressions, and then remove this.
-    char site_url_copy[256];
-    base::strlcpy(site_url_copy, site_url.spec().c_str(),
-                  arraysize(site_url_copy));
-    base::debug::Alias(&site_url_copy);
-    char to_origin_copy[256];
-    base::strlcpy(to_origin_copy, to_origin.Serialize().c_str(),
-                  arraysize(to_origin_copy));
-    base::debug::Alias(&to_origin_copy);
-    base::debug::DumpWithoutCrashing();
+    // This function used to incorrectly skip the web-accessible resource
+    // checks in this case. Measure how often this happens.  See also
+    // https://crbug.com/696034.
+    RecordShouldAllowOpenURLFailure(
+        FAILURE_SCHEME_NOT_HTTP_OR_HTTPS_OR_EXTENSION, site_url);
   } else {
-    RecordShowAllowOpenURLFailure(FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE);
+    RecordShouldAllowOpenURLFailure(FAILURE_RESOURCE_NOT_WEB_ACCESSIBLE,
+                                    site_url);
   }
 
   *result = false;
@@ -673,6 +680,53 @@ ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
 #else
   return nullptr;
 #endif
+}
+
+// static
+void ChromeContentBrowserClientExtensionsPart::RecordShouldAllowOpenURLFailure(
+    ShouldAllowOpenURLFailureReason reason,
+    const GURL& site_url) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.ShouldAllowOpenURL.Failure", reason,
+                            FAILURE_LAST);
+
+  // Must be kept in sync with the ShouldAllowOpenURLFailureScheme enum.
+  static const char* const kSchemeNames[] = {
+      "unknown",
+      "",
+      url::kHttpScheme,
+      url::kHttpsScheme,
+      url::kFileScheme,
+      url::kFtpScheme,
+      url::kDataScheme,
+      url::kJavaScriptScheme,
+      url::kAboutScheme,
+      content::kChromeUIScheme,
+      content::kChromeDevToolsScheme,
+      content::kGuestScheme,
+      content::kViewSourceScheme,
+      chrome::kChromeSearchScheme,
+      chrome::kChromeNativeScheme,
+      dom_distiller::kDomDistillerScheme,
+      extensions::kExtensionScheme,
+      url::kContentScheme,
+      url::kBlobScheme,
+      url::kFileSystemScheme,
+      "last",
+  };
+
+  static_assert(arraysize(kSchemeNames) == SCHEME_LAST + 1,
+                "kSchemeNames should have SCHEME_LAST + 1 elements");
+
+  ShouldAllowOpenURLFailureScheme scheme = SCHEME_UNKNOWN;
+  for (int i = 1; i < SCHEME_LAST; i++) {
+    if (site_url.SchemeIs(kSchemeNames[i])) {
+      scheme = static_cast<ShouldAllowOpenURLFailureScheme>(i);
+      break;
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Extensions.ShouldAllowOpenURL.Failure.Scheme",
+                            scheme, SCHEME_LAST);
 }
 
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(

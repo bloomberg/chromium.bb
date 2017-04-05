@@ -1123,6 +1123,8 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
                         0 /* FAILURE_FILE_SYSTEM_URL */, 1);
   uma.ExpectBucketCount("Extensions.ShouldAllowOpenURL.Failure",
                         1 /* FAILURE_BLOB_URL */, 1);
+  uma.ExpectUniqueSample("Extensions.ShouldAllowOpenURL.Failure.Scheme",
+                         2 /* SCHEME_HTTP */, 2);
 }
 
 // Verify that a web popup created via window.open from an extension page can
