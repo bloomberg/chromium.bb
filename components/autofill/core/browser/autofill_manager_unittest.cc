@@ -172,9 +172,11 @@ class TestPersonalDataManager : public PersonalDataManager {
     web_profiles_.push_back(std::move(profile));
   }
 
-  void AddCreditCard(std::unique_ptr<CreditCard> credit_card) {
-    credit_card->set_modification_date(base::Time::Now());
-    local_credit_cards_.push_back(std::move(credit_card));
+  void AddCreditCard(const CreditCard& credit_card) override {
+    std::unique_ptr<CreditCard> local_credit_card =
+        base::MakeUnique<CreditCard>(credit_card);
+    local_credit_card->set_modification_date(base::Time::Now());
+    local_credit_cards_.push_back(std::move(local_credit_card));
   }
 
   void RecordUseOf(const AutofillDataModel& data_model) override {
@@ -630,8 +632,8 @@ class TestAutofillManager : public AutofillManager {
     personal_data_->AddProfile(std::move(profile));
   }
 
-  void AddCreditCard(std::unique_ptr<CreditCard> credit_card) {
-    personal_data_->AddCreditCard(std::move(credit_card));
+  void AddCreditCard(const CreditCard& credit_card) {
+    personal_data_->AddCreditCard(credit_card);
   }
 
   int GetPackedCreditCardID(int credit_card_id) {
@@ -1598,12 +1600,12 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
 // field has stop characters in it and some input.
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   // Add a credit card with particular numbers that we will attempt to recall.
-  std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
-  test::SetCreditCardInfo(credit_card.get(), "John Smith",
+  CreditCard credit_card;
+  test::SetCreditCardInfo(&credit_card, "John Smith",
                           "5255667890123123",  // Mastercard
                           "08", "2017");
-  credit_card->set_guid("00000000-0000-0000-0000-000000000007");
-  autofill_manager_->AddCreditCard(std::move(credit_card));
+  credit_card.set_guid("00000000-0000-0000-0000-000000000007");
+  autofill_manager_->AddCreditCard(credit_card);
 
   // Set up our form data.
   FormData form;
@@ -1880,13 +1882,13 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
   // Add a credit card with the same obfuscated number as Elvis's.
   // |credit_card| will be owned by the mock PersonalDataManager.
-  std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
-  test::SetCreditCardInfo(credit_card.get(), "Elvis Presley",
+  CreditCard credit_card;
+  test::SetCreditCardInfo(&credit_card, "Elvis Presley",
                           "5231567890123456",  // Mastercard
                           "05", "2999");
-  credit_card->set_guid("00000000-0000-0000-0000-000000000007");
-  credit_card->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
-  autofill_manager_->AddCreditCard(std::move(credit_card));
+  credit_card.set_guid("00000000-0000-0000-0000-000000000007");
+  credit_card.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(15));
+  autofill_manager_->AddCreditCard(credit_card);
 
   // Set up our form data.
   FormData form;
@@ -4208,10 +4210,10 @@ TEST_F(AutofillManagerTest, RemoveProfile) {
 
 TEST_F(AutofillManagerTest, RemoveCreditCard) {
   // Add and remove an Autofill credit card.
-  std::unique_ptr<CreditCard> credit_card = base::MakeUnique<CreditCard>();
+  CreditCard credit_card;
   const char guid[] = "00000000-0000-0000-0000-000000100007";
-  credit_card->set_guid(guid);
-  autofill_manager_->AddCreditCard(std::move(credit_card));
+  credit_card.set_guid(guid);
+  autofill_manager_->AddCreditCard(credit_card);
 
   int id = MakeFrontendID(guid, std::string());
 

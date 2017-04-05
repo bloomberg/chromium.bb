@@ -122,6 +122,8 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "credit_card_edit_coordinator_unittest.mm",
+    "credit_card_edit_view_controller_unittest.mm",
     "payment_items_display_coordinator_unittest.mm",
     "payment_items_display_view_controller_unittest.mm",
     "payment_method_selection_coordinator_unittest.mm",
@@ -140,6 +142,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":payments",
+    ":payments_ui",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
@@ -149,6 +152,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/payments/cells",
+    "//ios/chrome/browser/ui/autofill:autofill_ui",
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/collection_view:test_support",
     "//ios/chrome/browser/ui/collection_view/cells",
@@ -158,6 +162,7 @@ source_set("unit_tests") {
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ios/web:test_support",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
   ]

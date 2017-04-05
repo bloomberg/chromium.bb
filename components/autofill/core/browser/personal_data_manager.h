@@ -146,7 +146,7 @@ class PersonalDataManager : public KeyedService,
       const std::vector<AutofillProfile*>& profiles);
 
   // Adds |credit_card| to the web database.
-  void AddCreditCard(const CreditCard& credit_card);
+  virtual void AddCreditCard(const CreditCard& credit_card);
 
   // Updates |credit_card| which already exists in the web database. This
   // can only be used on local credit cards.
