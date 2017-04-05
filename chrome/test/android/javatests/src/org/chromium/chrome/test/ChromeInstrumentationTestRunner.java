@@ -35,10 +35,7 @@ import java.util.concurrent.FutureTask;
 /**
  *  An Instrumentation test runner that optionally spawns a test HTTP server.
  *  The server's root directory is the device's external storage directory.
- *
- *  TODO(jbudorick): remove uses of deprecated org.apache.* crbug.com/488192
  */
-@SuppressWarnings("deprecation")
 public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentationTestRunner {
 
     private static final String TAG = "ChromeInstrumentationTestRunner";

@@ -214,12 +214,6 @@ java_group("google_play_services_default_java") {
   ]
 }
 
-# TODO(jbudorick): Remove this once net_java_test_support no longer needs it.
-android_java_prebuilt("legacy_http_javalib") {
-  testonly = true
-  jar_path = "$android_sdk/optional/org.apache.http.legacy.jar"
-}
-
 # TODO(dgn): Use the POM files instead of hardcoding the dependencies.
 gms_path = "$default_extras_android_sdk_root/extras/google/m2repository/com/google/android/gms"
 gms_version = "10.2.0"
