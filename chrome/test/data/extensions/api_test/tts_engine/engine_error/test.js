@@ -19,6 +19,13 @@ chrome.test.runTests([
       } catch (e) {
       }
 
+      try {
+        // This should fail: charIndex should be an integer.
+        sendTtsEvent(
+            {type: 'error', charIndex: 0.1, errorMessage: 'some error'});
+        chrome.test.fail();
+      } catch (e) {}
+
       // This won't actually send an event, and an error will be logged
       // to the console, because we haven't registered the 'word'
       // event type in our manifest.
