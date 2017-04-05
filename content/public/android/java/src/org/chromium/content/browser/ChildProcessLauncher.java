@@ -561,45 +561,50 @@ public class ChildProcessLauncher {
 
     /**
      * Should be called early in startup so the work needed to spawn the child process can be done
-     * in parallel to other startup work. Must not be called on the UI thread. Spare connection is
-     * created in sandboxed child process.
+     * in parallel to other startup work. Spare connection is created in sandboxed child process.
      * @param context the application context used for the connection.
      */
-    public static void warmUp(Context context) {
-        synchronized (sSpareConnectionLock) {
-            assert !ThreadUtils.runningOnUiThread();
-            if (sSpareSandboxedConnection == null) {
-                ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
-                sSpareConnectionStarting = true;
+    public static void warmUp(final Context context) {
+        assert ThreadUtils.runningOnUiThread();
+        LauncherThread.post(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (sSpareConnectionLock) {
+                    if (sSpareSandboxedConnection == null) {
+                        ChildProcessCreationParams params = ChildProcessCreationParams.getDefault();
+                        sSpareConnectionStarting = true;
 
-                ChildProcessConnection.StartCallback startCallback =
-                        new ChildProcessConnection.StartCallback() {
-                            @Override
-                            public void onChildStarted() {
-                                synchronized (sSpareConnectionLock) {
-                                    sSpareConnectionStarting = false;
-                                    sSpareConnectionLock.notify();
-                                }
-                            }
+                        ChildProcessConnection.StartCallback startCallback =
+                                new ChildProcessConnection.StartCallback() {
+                                    @Override
+                                    public void onChildStarted() {
+                                        synchronized (sSpareConnectionLock) {
+                                            sSpareConnectionStarting = false;
+                                            sSpareConnectionLock.notify();
+                                        }
+                                    }
 
-                            @Override
-                            public void onChildStartFailed() {
-                                Log.e(TAG, "Failed to warm up the spare sandbox service");
-                                synchronized (sSpareConnectionLock) {
-                                    sSpareSandboxedConnection = null;
-                                    sSpareConnectionStarting = false;
-                                    sSpareConnectionLock.notify();
-                                }
-                            }
-                        };
-                SpawnData spawnData = new SpawnData(true /* forWarmUp*/, context,
-                        null /* commandLine */, -1 /* child process id */,
-                        null /* filesToBeMapped */, null /* launchCallback */,
-                        null /* child process callback */, true /* inSandbox */,
-                        SPARE_CONNECTION_ALWAYS_IN_FOREGROUND, params);
-                sSpareSandboxedConnection = allocateBoundConnection(spawnData, startCallback);
+                                    @Override
+                                    public void onChildStartFailed() {
+                                        Log.e(TAG, "Failed to warm up the spare sandbox service");
+                                        synchronized (sSpareConnectionLock) {
+                                            sSpareSandboxedConnection = null;
+                                            sSpareConnectionStarting = false;
+                                            sSpareConnectionLock.notify();
+                                        }
+                                    }
+                                };
+                        SpawnData spawnData = new SpawnData(true /* forWarmUp*/, context,
+                                null /* commandLine */, -1 /* child process id */,
+                                null /* filesToBeMapped */, null /* launchCallback */,
+                                null /* child process callback */, true /* inSandbox */,
+                                SPARE_CONNECTION_ALWAYS_IN_FOREGROUND, params);
+                        sSpareSandboxedConnection =
+                                allocateBoundConnection(spawnData, startCallback);
+                    }
+                }
             }
-        }
+        });
     }
 
     /**

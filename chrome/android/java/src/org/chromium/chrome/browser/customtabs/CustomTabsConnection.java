@@ -13,7 +13,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -215,13 +214,7 @@ public class CustomTabsConnection {
             System.exit(-1);
         }
         final Context context = app.getApplicationContext();
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                ChildProcessLauncher.warmUp(context);
-                return null;
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        ChildProcessLauncher.warmUp(context);
         ChromeBrowserInitializer.initNetworkChangeNotifier(context);
         WarmupManager.getInstance().initializeViewHierarchy(
                 context, R.layout.custom_tabs_control_container, R.layout.custom_tabs_toolbar);

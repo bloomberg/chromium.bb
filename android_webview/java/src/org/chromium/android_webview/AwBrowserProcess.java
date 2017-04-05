@@ -97,14 +97,7 @@ public abstract class AwBrowserProcess {
                 boolean multiProcess = CommandLine.getInstance().hasSwitch(
                         AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
                 if (multiProcess) {
-                    // Have a background thread warm up a renderer process now, so that this can
-                    // proceed in parallel to the browser process initialisation.
-                    AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            ChildProcessLauncher.warmUp(appContext);
-                        }
-                    });
+                    ChildProcessLauncher.warmUp(appContext);
                 }
                 // The policies are used by browser startup, so we need to register the policy
                 // providers before starting the browser process. This only registers java objects
