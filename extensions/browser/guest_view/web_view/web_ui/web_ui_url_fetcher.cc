@@ -8,6 +8,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 
 WebUIURLFetcher::WebUIURLFetcher(content::BrowserContext* context,
@@ -25,7 +26,27 @@ WebUIURLFetcher::~WebUIURLFetcher() {
 }
 
 void WebUIURLFetcher::Start() {
-  fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("webui_content_scripts_download", R"(
+        semantics {
+          sender: "WebView"
+          description:
+            "When a WebView is embedded within a WebUI, it needs to fetch the "
+            "embedder's content scripts from Chromium's network stack for its "
+            "content scripts injection API."
+          trigger: "The content script injection API is called."
+          data: "URL of the script file to be downloaded."
+          destination: LOCAL
+        }
+        policy {
+          cookies_allowed: false
+          setting: "It is not possible to disable this feature from settings."
+          policy_exception_justification:
+            "Not Implemented, considered not useful as the request doesn't "
+            "go to the network."
+        })");
+  fetcher_ = net::URLFetcher::Create(url_, net::URLFetcher::GET, this,
+                                     traffic_annotation);
   fetcher_->SetRequestContext(
       content::BrowserContext::GetDefaultStoragePartition(context_)->
           GetURLRequestContext());
