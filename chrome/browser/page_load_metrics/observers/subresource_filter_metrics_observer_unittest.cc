@@ -27,6 +27,11 @@ class SubresourceFilterMetricsObserverTest
   void InitializePageLoadTiming(page_load_metrics::PageLoadTiming* timing) {
     timing->navigation_start = base::Time::FromDoubleT(1);
     timing->parse_start = base::TimeDelta::FromMilliseconds(100);
+    timing->parse_stop = base::TimeDelta::FromMilliseconds(200);
+    timing->parse_blocked_on_script_load_duration =
+        base::TimeDelta::FromMilliseconds(10);
+    timing->parse_blocked_on_script_execution_duration =
+        base::TimeDelta::FromMilliseconds(20);
     timing->first_contentful_paint = base::TimeDelta::FromMilliseconds(300);
     timing->first_meaningful_paint = base::TimeDelta::FromMilliseconds(400);
     timing->dom_content_loaded_event_start =
@@ -60,6 +65,9 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
   metadata.behavior_flags |=
       blink::WebLoadingBehaviorFlag::WebLoadingBehaviorSubresourceFilterMatch;
   SimulateTimingAndMetadataUpdate(timing, metadata);
+
+  // Navigate away from the current page to force logging of metrics.
+  NavigateToUntrackedUrl();
 
   ASSERT_TRUE(AnyMetricsRecorded());
 
@@ -105,6 +113,30 @@ TEST_F(SubresourceFilterMetricsObserverTest, Basic) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramSubresourceFilterLoad,
       timing.load_event_start.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterParseDuration, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterParseDuration,
+      (timing.parse_stop.value() - timing.parse_start.value()).InMilliseconds(),
+      1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterParseBlockedOnScriptLoad, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterParseBlockedOnScriptLoad,
+      timing.parse_blocked_on_script_load_duration.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterParseBlockedOnScriptExecution, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterParseBlockedOnScriptExecution,
+      timing.parse_blocked_on_script_execution_duration.value()
+          .InMilliseconds(),
+      1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterForegroundDuration, 1);
 }
 
 TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
@@ -167,4 +199,130 @@ TEST_F(SubresourceFilterMetricsObserverTest, Subresources) {
       internal::kHistogramSubresourceFilterCacheBytes, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramSubresourceFilterCacheBytes, 10, 1);
+
+  // Make sure data is also recorded for pages with no media.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNoMediaTotalResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNoMediaTotalResources, 3, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNoMediaNetworkResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNoMediaNetworkResources, 2, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNoMediaCacheResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNoMediaCacheResources, 1, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNoMediaTotalBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNoMediaTotalBytes, 70, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNoMediaNetworkBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNoMediaNetworkBytes, 60, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNoMediaCacheBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNoMediaCacheBytes, 10, 1);
+}
+
+TEST_F(SubresourceFilterMetricsObserverTest, SubresourcesWithMedia) {
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  SimulateMediaPlayed();
+
+  SimulateLoadedResource({false /* was_cached */,
+                          1024 * 40 /* raw_body_bytes */,
+                          false /* data_reduction_proxy_used */,
+                          0 /* original_network_content_length */});
+
+  page_load_metrics::PageLoadTiming timing;
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  page_load_metrics::PageLoadMetadata metadata;
+  metadata.behavior_flags |=
+      blink::WebLoadingBehaviorFlag::WebLoadingBehaviorSubresourceFilterMatch;
+  SimulateTimingAndMetadataUpdate(timing, metadata);
+
+  SimulateLoadedResource({false /* was_cached */,
+                          1024 * 20 /* raw_body_bytes */,
+                          false /* data_reduction_proxy_used */,
+                          0 /* original_network_content_length */});
+
+  SimulateLoadedResource({true /* was_cached */, 1024 * 10 /* raw_body_bytes */,
+                          false /* data_reduction_proxy_used */,
+                          0 /* original_network_content_length */});
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterCount, 1);
+
+  // Navigate away from the current page to force logging of request and byte
+  // metrics.
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterTotalResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterTotalResources, 3, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNetworkResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNetworkResources, 2, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterCacheResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterCacheResources, 1, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterTotalBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterTotalBytes, 70, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterNetworkBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterNetworkBytes, 60, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterCacheBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterCacheBytes, 10, 1);
+
+  // Make sure data is also recorded for pages with media.
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterMediaTotalResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterMediaTotalResources, 3, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterMediaNetworkResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterMediaNetworkResources, 2, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterMediaCacheResources, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterMediaCacheResources, 1, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterMediaTotalBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterMediaTotalBytes, 70, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterMediaNetworkBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterMediaNetworkBytes, 60, 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramSubresourceFilterMediaCacheBytes, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramSubresourceFilterMediaCacheBytes, 10, 1);
 }
