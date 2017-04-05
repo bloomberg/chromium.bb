@@ -37,18 +37,8 @@ SubresourceFilterAgent::SubresourceFilterAgent(
 
 SubresourceFilterAgent::~SubresourceFilterAgent() = default;
 
-std::vector<GURL> SubresourceFilterAgent::GetAncestorDocumentURLs() {
-  std::vector<GURL> urls;
-  // As a temporary workaround for --isolate-extensions, ignore the ancestor
-  // hierarchy after crossing an extension/non-extension boundary. This,
-  // however, will not be a satisfactory solution for OOPIF in general.
-  // See: https://crbug.com/637415.
-  blink::WebFrame* frame = render_frame()->GetWebFrame();
-  do {
-    urls.push_back(frame->document().url());
-    frame = frame->parent();
-  } while (frame && frame->isWebLocalFrame());
-  return urls;
+GURL SubresourceFilterAgent::GetDocumentURL() {
+  return render_frame()->GetWebFrame()->document().url();
 }
 
 void SubresourceFilterAgent::SetSubresourceFilterForCommittedLoad(
@@ -70,20 +60,20 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
 }
 
 void SubresourceFilterAgent::OnActivateForNextCommittedLoad(
-    ActivationLevel activation_level,
-    bool measure_performance) {
-  activation_level_for_next_commit_ = activation_level;
-  measure_performance_for_next_commit_ = measure_performance;
+    ActivationState activation_state) {
+  activation_state_for_next_commit_ = activation_state;
 }
 
 void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
   // Note: ActivationLevel used to be called ActivationState, the legacy name is
   // kept for the histogram.
+  ActivationLevel activation_level =
+      activation_state_for_next_commit_.activation_level;
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.DocumentLoad.ActivationState",
-                            static_cast<int>(activation_level_for_next_commit_),
+                            static_cast<int>(activation_level),
                             static_cast<int>(ActivationLevel::LAST) + 1);
 
-  if (activation_level_for_next_commit_ != ActivationLevel::DISABLED) {
+  if (activation_level != ActivationLevel::DISABLED) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
                           ruleset_dealer_->IsRulesetFileAvailable());
   }
@@ -133,8 +123,8 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
 }
 
 void SubresourceFilterAgent::ResetActivatonStateForNextCommit() {
-  activation_level_for_next_commit_ = ActivationLevel::DISABLED;
-  measure_performance_for_next_commit_ = false;
+  activation_state_for_next_commit_ =
+      ActivationState(ActivationLevel::DISABLED);
 }
 
 void SubresourceFilterAgent::OnDestruct() {
@@ -149,11 +139,13 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
 
   filter_for_last_committed_load_.reset();
 
-  std::vector<GURL> ancestor_document_urls = GetAncestorDocumentURLs();
-  if (ancestor_document_urls.front().SchemeIsHTTPOrHTTPS() ||
-      ancestor_document_urls.front().SchemeIsFile()) {
+  // TODO(csharrison): Use WebURL and WebSecurityOrigin for efficiency here,
+  // which require changes to the unit tests.
+  const GURL& url = GetDocumentURL();
+  if (url.SchemeIsHTTPOrHTTPS() || url.SchemeIsFile()) {
     RecordHistogramsOnLoadCommitted();
-    if (activation_level_for_next_commit_ != ActivationLevel::DISABLED &&
+    if (activation_state_for_next_commit_.activation_level !=
+            ActivationLevel::DISABLED &&
         ruleset_dealer_->IsRulesetFileAvailable()) {
       base::OnceClosure first_disallowed_load_callback(
           base::BindOnce(&SubresourceFilterAgent::
@@ -162,13 +154,8 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
 
       auto ruleset = ruleset_dealer_->GetRuleset();
       DCHECK(ruleset);
-      ActivationState activation_state =
-          ComputeActivationState(activation_level_for_next_commit_,
-                                 measure_performance_for_next_commit_,
-                                 ancestor_document_urls, ruleset.get());
-      DCHECK(!ancestor_document_urls.empty());
       auto filter = base::MakeUnique<WebDocumentSubresourceFilterImpl>(
-          url::Origin(ancestor_document_urls[0]), activation_state,
+          url::Origin(url), activation_state_for_next_commit_,
           std::move(ruleset), std::move(first_disallowed_load_callback));
 
       filter_for_last_committed_load_ = filter->AsWeakPtr();

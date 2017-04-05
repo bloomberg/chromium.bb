@@ -274,9 +274,10 @@ class ContentSubresourceFilterDriverFactoryTest
             SubresourceFilterMsg_ActivateForNextCommittedLoad::ID);
     ASSERT_EQ(expect_activation, !!message);
     if (expect_activation) {
-      std::tuple<ActivationLevel, bool> args;
+      std::tuple<ActivationState> args;
       SubresourceFilterMsg_ActivateForNextCommittedLoad::Read(message, &args);
-      EXPECT_NE(ActivationLevel::DISABLED, std::get<0>(args));
+      ActivationLevel level = std::get<0>(args).activation_level;
+      EXPECT_NE(ActivationLevel::DISABLED, level);
     }
     render_process_host->sink().ClearMessages();
   }

@@ -45,19 +45,6 @@ ActivationState ComputeActivationState(
     const ActivationState& parent_activation_state,
     const MemoryMappedRuleset* ruleset);
 
-// Same as above, but instead of relying on the pre-computed activation state of
-// the parent, computes the activation state for a frame from scratch, based on
-// the page-level activation options |activation_level| and
-// |measure_performance|; as well as any deactivation rules in |ruleset| that
-// apply to |ancestor_document_urls|.
-//
-// TODO(pkalinnikov): Remove this when browser-side navigation is supported.
-ActivationState ComputeActivationState(
-    ActivationLevel activation_level,
-    bool measure_performance,
-    const std::vector<GURL>& ancestor_document_urls,
-    const MemoryMappedRuleset* ruleset);
-
 // Performs filtering of subresource loads in the scope of a given document.
 class DocumentSubresourceFilter {
  public:

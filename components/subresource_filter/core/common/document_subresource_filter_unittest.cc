@@ -16,7 +16,6 @@ namespace subresource_filter {
 
 namespace {
 
-constexpr auto kDisabled = ActivationLevel::DISABLED;
 constexpr auto kDryRun = ActivationLevel::DRYRUN;
 constexpr auto kEnabled = ActivationLevel::ENABLED;
 
@@ -236,61 +235,6 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
     ActivationState activation_state =
         ComputeActivationState(document_url, parent_document_origin,
                                test_case.parent_activation, ruleset());
-    EXPECT_EQ(test_case.expected_activation_state, activation_state);
-  }
-}
-
-TEST_F(SubresourceFilterComputeActivationStateTest,
-       ActivationStateCorrectlyPropagatesDownDocumentHierarchy) {
-  const struct {
-    std::vector<std::string> ancestor_document_urls;
-    ActivationLevel activation_level;
-    ActivationState expected_activation_state;
-  } kTestCases[] = {
-      {{"http://example.com"}, kEnabled, MakeState(false)},
-      {std::vector<std::string>(2, "http://example.com"), kEnabled,
-       MakeState(false)},
-      {std::vector<std::string>(4, "http://example.com"), kEnabled,
-       MakeState(false)},
-
-      {std::vector<std::string>(4, "http://example.com"), kEnabled,
-       MakeState(false, false, kEnabled)},
-      {std::vector<std::string>(4, "http://example.com"), kDisabled,
-       MakeState(false, false, kDisabled)},
-      {std::vector<std::string>(4, "http://example.com"), kDryRun,
-       MakeState(false, false, kDryRun)},
-
-      {{"http://ex.com", "http://child1.com", "http://parent1.com",
-        "http://root.com"},
-       kEnabled,
-       MakeState(true)},
-
-      {{"http://ex.com", "http://child1.com", "http://parent1.com",
-        "http://root.com"},
-       kEnabled,
-       MakeState(true)},
-
-      {{"http://ex.com", "http://child2.com", "http://parent1.com",
-        "http://root.com"},
-       kEnabled,
-       MakeState(false, true)},
-
-      {{"http://ex.com", "http://ex.com", "http://child3.com",
-        "http://parent1.com", "http://root.com"},
-       kDryRun,
-       MakeState(true, false, kDryRun)},
-  };
-
-  for (size_t i = 0, size = arraysize(kTestCases); i != size; ++i) {
-    const auto& test_case = kTestCases[i];
-    SCOPED_TRACE(::testing::Message() << "Test number: " << i);
-
-    std::vector<GURL> ancestor_document_urls;
-    for (const auto& url_string : test_case.ancestor_document_urls)
-      ancestor_document_urls.emplace_back(url_string);
-
-    ActivationState activation_state = ComputeActivationState(
-        test_case.activation_level, false, ancestor_document_urls, ruleset());
     EXPECT_EQ(test_case.expected_activation_state, activation_state);
   }
 }

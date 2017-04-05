@@ -106,8 +106,7 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   content::RenderFrameHost* frame_host =
       navigation_handle->GetRenderFrameHost();
   frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
-      frame_host->GetRoutingID(), filter->activation_state().activation_level,
-      filter->activation_state().measure_performance));
+      frame_host->GetRoutingID(), filter->activation_state()));
 }
 
 void ContentSubresourceFilterThrottleManager::DidFinishNavigation(

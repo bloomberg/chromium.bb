@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/subresource_filter/core/common/activation_level.h"
+#include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
 
@@ -40,10 +40,8 @@ class SubresourceFilterAgent
  protected:
   // Below methods are protected virtual so they can be mocked out in tests.
 
-  // Returns the URLs of documents loaded into nested frames starting with the
-  // current frame and ending with the main frame. The returned array is
-  // guaranteed to have at least one element.
-  virtual std::vector<GURL> GetAncestorDocumentURLs();
+  // Returns the URL of the currently committed document.
+  virtual GURL GetDocumentURL();
 
   // Injects the provided subresource |filter| into the DocumentLoader
   // orchestrating the most recently committed load.
@@ -59,8 +57,7 @@ class SubresourceFilterAgent
       const DocumentLoadStatistics& statistics);
 
  private:
-  void OnActivateForNextCommittedLoad(ActivationLevel activation_level,
-                                      bool measure_performance);
+  void OnActivateForNextCommittedLoad(ActivationState activation_state);
   void RecordHistogramsOnLoadCommitted();
   void RecordHistogramsOnLoadFinished();
   void ResetActivatonStateForNextCommit();
@@ -76,8 +73,7 @@ class SubresourceFilterAgent
   // Owned by the ChromeContentRendererClient and outlives us.
   UnverifiedRulesetDealer* ruleset_dealer_;
 
-  ActivationLevel activation_level_for_next_commit_ = ActivationLevel::DISABLED;
-  bool measure_performance_for_next_commit_ = false;
+  ActivationState activation_state_for_next_commit_;
 
   base::WeakPtr<WebDocumentSubresourceFilterImpl>
       filter_for_last_committed_load_;

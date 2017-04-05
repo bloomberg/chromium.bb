@@ -17,13 +17,18 @@
 
 namespace subresource_filter {
 
-namespace {
-
-ActivationState ComputeActivationStateImpl(
+ActivationState ComputeActivationState(
     const GURL& document_url,
     const url::Origin& parent_document_origin,
     const ActivationState& parent_activation_state,
-    const IndexedRulesetMatcher& matcher) {
+    const MemoryMappedRuleset* ruleset) {
+  DCHECK(ruleset);
+  SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
+      "SubresourceFilter.DocumentLoad.Activation.WallDuration");
+  SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
+      "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
+
+  IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
   ActivationState activation_state = parent_activation_state;
   if (activation_state.filtering_disabled_for_document)
     return activation_state;
@@ -39,48 +44,6 @@ ActivationState ComputeActivationStateImpl(
                  proto::ACTIVATION_TYPE_GENERICBLOCK)) {
     activation_state.generic_blocking_rules_disabled = true;
   }
-  return activation_state;
-}
-
-}  // namespace
-
-ActivationState ComputeActivationState(
-    const GURL& document_url,
-    const url::Origin& parent_document_origin,
-    const ActivationState& parent_activation_state,
-    const MemoryMappedRuleset* ruleset) {
-  DCHECK(ruleset);
-  IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
-  return ComputeActivationStateImpl(document_url, parent_document_origin,
-                                    parent_activation_state, matcher);
-}
-
-ActivationState ComputeActivationState(
-    ActivationLevel activation_level,
-    bool measure_performance,
-    const std::vector<GURL>& ancestor_document_urls,
-    const MemoryMappedRuleset* ruleset) {
-  SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
-      "SubresourceFilter.DocumentLoad.Activation.WallDuration");
-  SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
-      "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
-
-  ActivationState activation_state(activation_level);
-  activation_state.measure_performance = measure_performance;
-  DCHECK(ruleset);
-
-  IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
-
-  url::Origin parent_document_origin;
-  for (auto iter = ancestor_document_urls.rbegin(),
-            rend = ancestor_document_urls.rend();
-       iter != rend; ++iter) {
-    const GURL& document_url(*iter);
-    activation_state = ComputeActivationStateImpl(
-        document_url, parent_document_origin, activation_state, matcher);
-    parent_document_origin = url::Origin(document_url);
-  }
-
   return activation_state;
 }
 
