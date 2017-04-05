@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -211,12 +212,12 @@ void BrandcodeConfigFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   }
   config_fetcher_.reset();
   download_timer_.Stop();
-  fetch_callback_.Run();
+  base::ResetAndReturn(&fetch_callback_).Run();
 }
 
 void BrandcodeConfigFetcher::OnDownloadTimeout() {
   if (config_fetcher_) {
     config_fetcher_.reset();
-    fetch_callback_.Run();
+    base::ResetAndReturn(&fetch_callback_).Run();
   }
 }
