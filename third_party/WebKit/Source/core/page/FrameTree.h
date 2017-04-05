@@ -36,8 +36,11 @@ class CORE_EXPORT FrameTree final {
   explicit FrameTree(Frame* thisFrame);
   ~FrameTree();
 
-  const AtomicString& name() const { return m_name; }
+  const AtomicString& name() const;
   void setName(const AtomicString&);
+
+  // TODO(andypaicu): remove this once we have gathered the data
+  void experimentalSetNulledName();
 
   Frame* parent() const;
   Frame* top() const;
@@ -63,6 +66,9 @@ class CORE_EXPORT FrameTree final {
   AtomicString m_name;  // The actual frame name (may be empty).
 
   mutable unsigned m_scopedChildCount;
+
+  // TODO(andypaicu): remove this once we have gathered the data
+  bool m_experimentalSetNulledName;
 };
 
 }  // namespace blink

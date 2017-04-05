@@ -221,6 +221,10 @@ class CORE_EXPORT DocumentLoader
                  const SubstituteData&,
                  ClientRedirectPolicy);
 
+  static bool shouldClearWindowName(const LocalFrame&,
+                                    SecurityOrigin* previousSecurityOrigin,
+                                    const Document& newDocument);
+
   Vector<KURL> m_redirectChain;
 
  private:
@@ -229,11 +233,9 @@ class CORE_EXPORT DocumentLoader
   // initalizes a bunch of state on the Document (e.g., the state based on
   // response headers).
   enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
-  void installNewDocument(const DocumentInit&,
-                          const AtomicString& mimeType,
+  void installNewDocument(const DocumentInit&, const AtomicString& mimeType,
                           const AtomicString& encoding,
-                          InstallNewDocumentReason,
-                          ParserSynchronizationPolicy,
+                          InstallNewDocumentReason, ParserSynchronizationPolicy,
                           const KURL& overridingURL);
   void didInstallNewDocument(Document*);
   void didCommitNavigation();

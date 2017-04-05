@@ -1030,21 +1030,44 @@ void setFeaturePolicy(Document* document, const String& featurePolicyHeader) {
     frame->client()->didSetFeaturePolicyHeader(parsedHeader);
 }
 
+// static
+bool DocumentLoader::shouldClearWindowName(
+    const LocalFrame& frame, SecurityOrigin* previousSecurityOrigin,
+    const Document& newDocument) {
+  if (!previousSecurityOrigin) return false;
+  if (!frame.isMainFrame()) return false;
+  if (frame.loader().opener()) return false;
+
+  return !newDocument.getSecurityOrigin()->isSameSchemeHostPort(
+      previousSecurityOrigin);
+}
+
 void DocumentLoader::installNewDocument(
-    const DocumentInit& init,
-    const AtomicString& mimeType,
-    const AtomicString& encoding,
-    InstallNewDocumentReason reason,
-    ParserSynchronizationPolicy parsingPolicy,
-    const KURL& overridingURL) {
+    const DocumentInit& init, const AtomicString& mimeType,
+    const AtomicString& encoding, InstallNewDocumentReason reason,
+    ParserSynchronizationPolicy parsingPolicy, const KURL& overridingURL) {
   DCHECK_EQ(init.frame(), m_frame);
   DCHECK(!m_frame->document() || !m_frame->document()->isActive());
   DCHECK_EQ(m_frame->tree().childCount(), 0u);
+
+  SecurityOrigin* previousSecurityOrigin = nullptr;
+  if (m_frame->document())
+    previousSecurityOrigin = m_frame->document()->getSecurityOrigin();
 
   if (!init.shouldReuseDefaultView())
     m_frame->setDOMWindow(LocalDOMWindow::create(*m_frame));
 
   Document* document = m_frame->domWindow()->installNewDocument(mimeType, init);
+
+  if (shouldClearWindowName(*m_frame, previousSecurityOrigin, *document)) {
+    // TODO(andypaicu): experimentalSetNullName will just record the fact
+    // that the name would be nulled and if the name is accessed after we will
+    // fire a UseCounter. If we decide to move forward with this change, we'd
+    // actually clean the name here.
+    // m_frame->tree().setName(nullAtom);
+    m_frame->tree().experimentalSetNulledName();
+  }
+
   m_frame->page()->chromeClient().installSupplements(*m_frame);
   if (!overridingURL.isEmpty())
     document->setBaseURLOverride(overridingURL);
@@ -1063,6 +1086,7 @@ void DocumentLoader::installNewDocument(
   // are sent in didCommitNavigation().
   setFeaturePolicy(document,
                    m_response.httpHeaderField(HTTPNames::Feature_Policy));
+
   frameLoader().dispatchDidClearDocumentOfWindowObject();
 }
 
@@ -1075,8 +1099,7 @@ const AtomicString& DocumentLoader::mimeType() const {
 // This is only called by
 // FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
 void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(
-    const DocumentInit& init,
-    const String& source) {
+    const DocumentInit& init, const String& source) {
   installNewDocument(init, mimeType(),
                      m_writer ? m_writer->encoding() : emptyAtom,
                      InstallNewDocumentReason::kJavascriptURL,

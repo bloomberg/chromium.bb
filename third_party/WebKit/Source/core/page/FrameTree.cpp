@@ -26,6 +26,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"
@@ -47,7 +48,23 @@ FrameTree::FrameTree(Frame* thisFrame)
 
 FrameTree::~FrameTree() {}
 
+const AtomicString& FrameTree::name() const {
+  // TODO(andypaicu): remove this once we have gathered the data
+  if (m_experimentalSetNulledName) {
+    UseCounter::count(m_thisFrame.get(),
+                      UseCounter::CrossOriginMainFrameNulledNameAccessed);
+  }
+  return m_name;
+}
+
+// TODO(andypaicu): remove this once we have gathered the data
+void FrameTree::experimentalSetNulledName() {
+  m_experimentalSetNulledName = true;
+}
+
 void FrameTree::setName(const AtomicString& name) {
+  // TODO(andypaicu): remove this once we have gathered the data
+  m_experimentalSetNulledName = false;
   m_name = name;
 }
 

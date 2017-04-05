@@ -1523,6 +1523,7 @@ class CORE_EXPORT UseCounter {
     MagnetometerConstructor = 1907,
     OrientationSensorPopulateMatrix = 1908,
     WindowOpenWithInvalidURL = 1909,
+    CrossOriginMainFrameNulledNameAccessed = 1910,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
