@@ -446,7 +446,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
                 time.strftime('%Y%m%dT%H%M%S', time.localtime()),
                 device.serial)
             tombstones_url = logdog_helper.text(
-                stream_name, resolved_tombstones)
+                stream_name, '\n'.join(resolved_tombstones))
           result.SetLink('tombstones', tombstones_url)
 
     tests_stripped_disabled_prefix = set()
