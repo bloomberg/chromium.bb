@@ -92,6 +92,8 @@ component("capture_lib") {
     "video/video_capture_device_factory.h",
     "video/video_capture_jpeg_decoder.h",
     "video/video_frame_receiver.h",
+    "video/video_frame_receiver_on_task_runner.cc",
+    "video/video_frame_receiver_on_task_runner.h",
     "video/win/capability_list_win.cc",
     "video/win/capability_list_win.h",
     "video/win/filter_base_win.cc",

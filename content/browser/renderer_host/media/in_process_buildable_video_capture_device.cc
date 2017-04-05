@@ -10,7 +10,6 @@
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
-#include "content/browser/renderer_host/media/video_frame_receiver_on_io_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
@@ -18,7 +17,7 @@
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
-#include "media/capture/video/video_frame_receiver.h"
+#include "media/capture/video/video_frame_receiver_on_task_runner.h"
 
 #if defined(ENABLE_SCREEN_CAPTURE) && !defined(OS_ANDROID)
 #include "content/browser/media/capture/desktop_capture_device.h"
@@ -306,7 +305,8 @@ InProcessBuildableVideoCaptureDevice::CreateDeviceClient(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return base::MakeUnique<media::VideoCaptureDeviceClient>(
-      base::MakeUnique<VideoFrameReceiverOnIOThread>(receiver),
+      base::MakeUnique<media::VideoFrameReceiverOnTaskRunner>(
+          receiver, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       new media::VideoCaptureBufferPoolImpl(
           base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
           buffer_pool_max_buffer_count),
