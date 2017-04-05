@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 
 namespace cloud_print {
@@ -24,7 +23,6 @@ class CloudPrintPrinterList : public CloudPrintApiFlowRequest {
 
   class Delegate {
    public:
-    Delegate();
     virtual ~Delegate();
 
     virtual void OnDeviceListReady(const DeviceList& devices) = 0;
@@ -38,6 +36,7 @@ class CloudPrintPrinterList : public CloudPrintApiFlowRequest {
   void OnGCDApiFlowError(GCDApiFlow::Status status) override;
   void OnGCDApiFlowComplete(const base::DictionaryValue& value) override;
   GURL GetURL() override;
+  NetworkTrafficAnnotation GetNetworkTrafficAnnotationType() override;
 
  private:
   bool FillPrinterDetails(const base::DictionaryValue& printer_value,

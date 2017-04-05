@@ -13,14 +13,7 @@
 
 namespace cloud_print {
 
-GCDApiFlow::Request::Request() {
-}
-
 GCDApiFlow::Request::~Request() {
-}
-
-net::URLFetcher::RequestType GCDApiFlow::Request::GetRequestType() {
-  return net::URLFetcher::GET;
 }
 
 std::unique_ptr<GCDApiFlow> GCDApiFlow::Create(

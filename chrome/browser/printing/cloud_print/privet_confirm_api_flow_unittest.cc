@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/json/json_reader.h"
+#include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +34,6 @@ TEST(PrivetConfirmApiFlowTest, Params) {
             confirmation.GetURL());
   EXPECT_EQ("https://www.googleapis.com/auth/cloudprint",
             confirmation.GetOAuthScope());
-  EXPECT_EQ(net::URLFetcher::GET, confirmation.GetRequestType());
   EXPECT_FALSE(confirmation.GetExtraRequestHeaders().empty());
 }
 

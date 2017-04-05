@@ -4,12 +4,11 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_printer_list.h"
 
+#include "base/values.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 
 namespace cloud_print {
-
-CloudPrintPrinterList::Delegate::Delegate() {}
 
 CloudPrintPrinterList::Delegate::~Delegate() {}
 
@@ -49,6 +48,11 @@ void CloudPrintPrinterList::OnGCDApiFlowComplete(
 
 GURL CloudPrintPrinterList::GetURL() {
   return cloud_devices::GetCloudPrintRelativeURL("search");
+}
+
+GCDApiFlow::Request::NetworkTrafficAnnotation
+CloudPrintPrinterList::GetNetworkTrafficAnnotationType() {
+  return TYPE_SEARCH;
 }
 
 bool CloudPrintPrinterList::FillPrinterDetails(

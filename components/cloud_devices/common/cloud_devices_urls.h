@@ -12,7 +12,6 @@
 namespace cloud_devices {
 
 extern const char kCloudPrintAuthScope[];
-extern const char kCloudDevicesAuthScope[];
 extern const char kCloudPrintLearnMoreURL[];
 extern const char kCloudPrintTestPageURL[];
 

@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -713,8 +714,7 @@ const std::string& PrivetHTTPClientImpl::GetName() {
 
 std::unique_ptr<PrivetJSONOperation> PrivetHTTPClientImpl::CreateInfoOperation(
     const PrivetJSONOperation::ResultCallback& callback) {
-  return std::unique_ptr<PrivetJSONOperation>(
-      new PrivetInfoOperationImpl(this, callback));
+  return base::MakeUnique<PrivetInfoOperationImpl>(this, callback);
 }
 
 std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
@@ -752,9 +752,9 @@ std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
           policy_exception_justification:
             "Not implemented, it's good to do so."
         })");
-  return std::unique_ptr<PrivetURLFetcher>(
-      new PrivetURLFetcher(url.ReplaceComponents(replacements), request_type,
-                           context_getter_, traffic_annotation, delegate));
+  return base::MakeUnique<PrivetURLFetcher>(url.ReplaceComponents(replacements),
+                                            request_type, context_getter_,
+                                            traffic_annotation, delegate);
 }
 
 void PrivetHTTPClientImpl::RefreshPrivetToken(
@@ -810,25 +810,25 @@ std::unique_ptr<PrivetRegisterOperation>
 PrivetV1HTTPClientImpl::CreateRegisterOperation(
     const std::string& user,
     PrivetRegisterOperation::Delegate* delegate) {
-  return std::unique_ptr<PrivetRegisterOperation>(
-      new PrivetRegisterOperationImpl(info_client(), user, delegate));
+  return base::MakeUnique<PrivetRegisterOperationImpl>(info_client(), user,
+                                                       delegate);
 }
 
 std::unique_ptr<PrivetJSONOperation>
 PrivetV1HTTPClientImpl::CreateCapabilitiesOperation(
     const PrivetJSONOperation::ResultCallback& callback) {
-  return std::unique_ptr<PrivetJSONOperation>(new PrivetJSONOperationImpl(
-      info_client(), kPrivetCapabilitiesPath, "", callback));
+  return base::MakeUnique<PrivetJSONOperationImpl>(
+      info_client(), kPrivetCapabilitiesPath, "", callback);
 }
 
 std::unique_ptr<PrivetLocalPrintOperation>
 PrivetV1HTTPClientImpl::CreateLocalPrintOperation(
     PrivetLocalPrintOperation::Delegate* delegate) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  return std::unique_ptr<PrivetLocalPrintOperation>(
-      new PrivetLocalPrintOperationImpl(info_client(), delegate));
+  return base::MakeUnique<PrivetLocalPrintOperationImpl>(info_client(),
+                                                         delegate);
 #else
-  return std::unique_ptr<PrivetLocalPrintOperation>();
+  return nullptr;
 #endif  // ENABLE_PRINT_PREVIEW
 }
 

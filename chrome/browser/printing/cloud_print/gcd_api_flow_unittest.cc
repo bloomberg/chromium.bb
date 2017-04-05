@@ -40,8 +40,9 @@ class MockDelegate : public CloudPrintApiFlowRequest {
  public:
   MOCK_METHOD1(OnGCDApiFlowError, void(GCDApiFlow::Status));
   MOCK_METHOD1(OnGCDApiFlowComplete, void(const base::DictionaryValue&));
-
   MOCK_METHOD0(GetURL, GURL());
+  MOCK_METHOD0(GetNetworkTrafficAnnotationType,
+               GCDApiFlow::Request::NetworkTrafficAnnotation());
 };
 
 class GCDApiFlowTest : public testing::Test {
@@ -61,15 +62,16 @@ class GCDApiFlowTest : public testing::Test {
     token_service_.AddAccount(account_id_);
     ui_thread_.Stop();  // HACK: Fake being on the UI thread
 
-    std::unique_ptr<MockDelegate> delegate(new MockDelegate);
+    std::unique_ptr<MockDelegate> delegate = base::MakeUnique<MockDelegate>();
     mock_delegate_ = delegate.get();
     EXPECT_CALL(*mock_delegate_, GetURL())
         .WillRepeatedly(Return(
             GURL("https://www.google.com/cloudprint/confirm?token=SomeToken")));
-    gcd_flow_.reset(new GCDApiFlowImpl(
-        request_context_.get(), &token_service_, account_id_));
+    gcd_flow_ = base::MakeUnique<GCDApiFlowImpl>(request_context_.get(),
+                                                 &token_service_, account_id_);
     gcd_flow_->Start(std::move(delegate));
   }
+
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;

@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/json/json_reader.h"
+#include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,7 +45,6 @@ TEST(CloudPrintPrinterListTest, Params) {
             device_list.GetURL());
   EXPECT_EQ("https://www.googleapis.com/auth/cloudprint",
             device_list.GetOAuthScope());
-  EXPECT_EQ(net::URLFetcher::GET, device_list.GetRequestType());
   EXPECT_FALSE(device_list.GetExtraRequestHeaders().empty());
 }
 
@@ -62,16 +62,14 @@ TEST(CloudPrintPrinterListTest, Parsing) {
 
   Mock::VerifyAndClear(&delegate);
 
-  std::set<std::string> ids_found;
   std::set<std::string> ids_expected;
   ids_expected.insert("someID");
 
-  for (size_t i = 0; i != devices.size(); ++i) {
-    ids_found.insert(devices[i].id);
-  }
+  std::set<std::string> ids_found;
+  for (const auto& device : devices)
+    ids_found.insert(device.id);
 
   ASSERT_EQ(ids_expected, ids_found);
-
   EXPECT_EQ("someID", devices[0].id);
   EXPECT_EQ("someDisplayName", devices[0].display_name);
   EXPECT_EQ("someDescription", devices[0].description);

@@ -23,10 +23,58 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
+using net::DefineNetworkTrafficAnnotation;
+
 namespace cloud_print {
 
 namespace {
+
 const char kCloudPrintOAuthHeaderFormat[] = "Authorization: Bearer %s";
+
+net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
+    GCDApiFlow::Request::NetworkTrafficAnnotation type) {
+  if (type == CloudPrintApiFlowRequest::TYPE_PRIVET_REGISTER) {
+    return DefineNetworkTrafficAnnotation("cloud_print_privet_register", R"(
+        semantics {
+          sender: "Cloud Print"
+          description:
+            "Registers a locally discovered Privet printer with a Cloud Print "
+            "Server.
+          trigger:
+            "Users can select Privet printers on chrome://devices/ and "
+            "register them."
+          data:
+            "Token id for a printer retrieved from a previous request to a "
+            "Cloud Print Server."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting: "User triggered requests cannot be disabled."
+          policy_exception_justification: "Not implemented, it's good to do so."
+        })");
+  } else {
+    DCHECK_EQ(CloudPrintApiFlowRequest::TYPE_SEARCH, type);
+    return DefineNetworkTrafficAnnotation("cloud_print_search", R"(
+        semantics {
+          sender: "Cloud Print"
+          description:
+            "Queries a Cloud Print Server for the list of printers."
+          trigger:
+            "chrome://devices/ fetches the list when the user logs in,
+            "re-enable the Cloud Print service, or manually requests a printer "
+            "list refresh."
+          data: "None"
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: false
+          setting: "User triggered requests cannot be disabled."
+          policy_exception_justification: "Not implemented, it's good to do so."
+        })");
+  }
+}
+
 }  // namespace
 
 GCDApiFlowImpl::GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
@@ -53,7 +101,7 @@ void GCDApiFlowImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  CreateRequest(request_->GetURL());
+  CreateRequest();
 
   std::string authorization_header =
       base::StringPrintf(kCloudPrintOAuthHeaderFormat, access_token.c_str());
@@ -70,19 +118,18 @@ void GCDApiFlowImpl::OnGetTokenFailure(
   request_->OnGCDApiFlowError(ERROR_TOKEN);
 }
 
-void GCDApiFlowImpl::CreateRequest(const GURL& url) {
-  net::URLFetcher::RequestType request_type = request_->GetRequestType();
-  DCHECK_EQ(net::URLFetcher::GET, request_type);
-
-  url_fetcher_ = net::URLFetcher::Create(url, request_type, this);
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
+void GCDApiFlowImpl::CreateRequest() {
+  url_fetcher_ = net::URLFetcher::Create(
+      request_->GetURL(), net::URLFetcher::GET, this,
+      GetNetworkTrafficAnnotation(request_->GetNetworkTrafficAnnotationType()));
   url_fetcher_->SetRequestContext(request_context_.get());
 
   std::vector<std::string> extra_headers = request_->GetExtraRequestHeaders();
-  for (size_t i = 0; i < extra_headers.size(); ++i)
-    url_fetcher_->AddExtraRequestHeader(extra_headers[i]);
+  for (const std::string& header : extra_headers)
+    url_fetcher_->AddExtraRequestHeader(header);
+
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
 }
 
 void GCDApiFlowImpl::OnURLFetchComplete(const net::URLFetcher* source) {

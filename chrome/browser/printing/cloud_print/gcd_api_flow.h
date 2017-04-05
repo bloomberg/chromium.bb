@@ -10,8 +10,13 @@
 
 #include "base/macros.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace cloud_print {
 
@@ -32,23 +37,30 @@ class GCDApiFlow {
   // Parses results of requests.
   class Request {
    public:
-    Request();
+    enum NetworkTrafficAnnotation {
+      TYPE_SEARCH,
+      TYPE_PRIVET_REGISTER,
+    };
+
     virtual ~Request();
 
+    // Called if the API flow fails.
     virtual void OnGCDApiFlowError(Status status) = 0;
 
+    // Called when the API flow finishes.
     virtual void OnGCDApiFlowComplete(const base::DictionaryValue& value) = 0;
 
+    // Returns the URL for this request.
     virtual GURL GetURL() = 0;
 
+    // Returns the scope parameter for use with OAuth.
     virtual std::string GetOAuthScope() = 0;
 
-    virtual net::URLFetcher::RequestType GetRequestType();
-
+    // Returns extra headers, if any, to send with this request.
     virtual std::vector<std::string> GetExtraRequestHeaders() = 0;
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Request);
+    // Returns the network traffic annotation tag for this request.
+    virtual NetworkTrafficAnnotation GetNetworkTrafficAnnotationType() = 0;
   };
 
   GCDApiFlow();

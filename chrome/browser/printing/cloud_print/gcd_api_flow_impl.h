@@ -38,7 +38,7 @@ class GCDApiFlowImpl : public GCDApiFlow,
                          const GoogleServiceAuthError& error) override;
 
  private:
-  void CreateRequest(const GURL& url);
+  void CreateRequest();
 
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   std::unique_ptr<OAuth2TokenService::Request> oauth_request_;

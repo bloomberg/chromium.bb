@@ -227,7 +227,7 @@ void LocalDiscoveryUIHandler::HandleRequestDeviceList(
 
   if (cloud_print_printer_list_) {
     cloud_print_printer_list_->Start(
-        base::WrapUnique<GCDApiFlow::Request>(new CloudPrintPrinterList(this)));
+        base::MakeUnique<CloudPrintPrinterList>(this));
   }
 
   CheckListingDone();
@@ -289,10 +289,10 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     SendRegisterError();
     return;
   }
-  confirm_api_call_flow_->Start(base::WrapUnique<GCDApiFlow::Request>(
-      new cloud_print::PrivetConfirmApiCallFlow(
+  confirm_api_call_flow_->Start(
+      base::MakeUnique<cloud_print::PrivetConfirmApiCallFlow>(
           token, base::Bind(&LocalDiscoveryUIHandler::OnConfirmDone,
-                            base::Unretained(this)))));
+                            base::Unretained(this))));
 }
 
 void LocalDiscoveryUIHandler::OnPrivetRegisterError(
@@ -302,7 +302,6 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
     int printer_http_code,
     const base::DictionaryValue* json) {
   std::string error;
-
   if (reason == PrivetRegisterOperation::FAILURE_JSON_ERROR &&
       json->GetString(cloud_print::kPrivetKeyError, &error)) {
     if (error == cloud_print::kPrivetErrorTimeout) {

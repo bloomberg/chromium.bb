@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 
 namespace cloud_print {
@@ -25,9 +24,8 @@ class PrivetConfirmApiCallFlow : public CloudPrintApiFlowRequest {
   // CloudPrintApiFlowRequest implementation:
   void OnGCDApiFlowError(GCDApiFlow::Status status) override;
   void OnGCDApiFlowComplete(const base::DictionaryValue& value) override;
-  net::URLFetcher::RequestType GetRequestType() override;
-
   GURL GetURL() override;
+  NetworkTrafficAnnotation GetNetworkTrafficAnnotationType() override;
 
  private:
   ResponseCallback callback_;

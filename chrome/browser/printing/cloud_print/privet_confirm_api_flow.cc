@@ -38,13 +38,14 @@ void PrivetConfirmApiCallFlow::OnGCDApiFlowComplete(
   callback_.Run(success ? GCDApiFlow::SUCCESS : GCDApiFlow::ERROR_FROM_SERVER);
 }
 
-net::URLFetcher::RequestType PrivetConfirmApiCallFlow::GetRequestType() {
-  return net::URLFetcher::GET;
-}
-
 GURL PrivetConfirmApiCallFlow::GetURL() {
   return net::AppendQueryParameter(
       cloud_devices::GetCloudPrintRelativeURL("confirm"), "token", token_);
+}
+
+GCDApiFlow::Request::NetworkTrafficAnnotation
+PrivetConfirmApiCallFlow::GetNetworkTrafficAnnotationType() {
+  return TYPE_PRIVET_REGISTER;
 }
 
 }  // namespace cloud_print
