@@ -21,40 +21,40 @@ import java.util.concurrent.TimeoutException;
  */
 public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentRequestTestBase {
     private static final AutofillProfile[] AUTOFILL_PROFILES = {
-        // Incomplete profile (missing phone number)
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Bart Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "US", "", "bart@simpson.com", ""),
+            // Incomplete profile (missing phone number)
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Bart Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "", "bart@simpson.com", ""),
 
-        // Incomplete profile (missing street address).
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Homer Simpson", "Acme Inc.", "", "California", "Los Angeles", "",
-                "90210", "", "US", "555 123-4567", "homer@simpson.com", ""),
+            // Incomplete profile (missing street address).
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Homer Simpson", "Acme Inc.", "", "California", "Los Angeles", "", "90210", "",
+                    "US", "555 123-4567", "homer@simpson.com", ""),
 
-        // Complete profile.
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Lisa Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
+            // Complete profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Lisa Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
 
-        // Complete profile in another country.
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "Uzbekistan", "555 123-4567", "maggie@simpson.com", ""),
+            // Complete profile in another country.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "Uzbekistan", "555 123-4567", "maggie@simpson.com", ""),
 
-        // Incomplete profile (invalid address).
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "Marge Simpson", "Acme Inc.", "123 Main", "California", "", "",
-                "90210", "", "US", "555 123-4567", "marge@simpson.com", ""),
+            // Incomplete profile (invalid address).
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Marge Simpson", "Acme Inc.", "123 Main", "California", "", "", "90210", "",
+                    "US", "555 123-4567", "marge@simpson.com", ""),
 
-        // Incomplete profile (missing recipient).
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
+            // Incomplete profile (missing recipient name).
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */, "",
+                    "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                    "555 123-4567", "lisa@simpson.com", ""),
 
-        // Incomplete profile (need more information).
-        new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "", "Acme Inc.", "123 Main", "California", "", "",
-                "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
+            // Incomplete profile (need more information).
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */, "",
+                    "Acme Inc.", "123 Main", "California", "", "", "90210", "", "US",
+                    "555 123-4567", "lisa@simpson.com", ""),
     };
 
     private AutofillProfile[] mProfilesToAdd;
@@ -205,7 +205,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest extends PaymentR
         assertEquals(4, getNumberOfShippingAddressSuggestions());
         assertTrue(getShippingAddressSuggestionLabel(0).contains("Phone number required"));
         assertTrue(getShippingAddressSuggestionLabel(1).contains("Invalid address"));
-        assertTrue(getShippingAddressSuggestionLabel(2).contains("Recipient required"));
+        assertTrue(getShippingAddressSuggestionLabel(2).contains("Name required"));
         assertTrue(getShippingAddressSuggestionLabel(3).contains("More information required"));
     }
 }

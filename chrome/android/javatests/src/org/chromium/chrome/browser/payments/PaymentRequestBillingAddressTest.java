@@ -59,7 +59,7 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 "Lisa Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "",
                 "jon.doe@gmail.com", "en-US"));
 
-        // Incomplete profile (missing recipient).
+        // Incomplete profile (missing recipient name).
         String profile6 = helper.setProfile(new AutofillProfile("", "https://example.com", true, "",
                 "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000",
                 "jon.doe@gmail.com", "en-US"));
@@ -317,14 +317,14 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 .equals("Select"));
 
         // The incomplete addresses in the dropdown contain edit required messages.
-        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                4).endsWith("Recipient required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 4)
+                           .endsWith("Name required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 5).endsWith("More information required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 6).endsWith("Invalid address"));
 
-        // Selects the fourth billing addresss that misses recipient brings up the address
+        // Selects the fourth billing addresss that misses recipient name brings up the address
         // editor.
         setSpinnerSelectionsInCardEditorAndWait(new int[] {DECEMBER, NEXT_YEAR, 4}, mReadyToEdit);
         setTextInEditorAndWait(new String[] {"Lisa Doh", "Google", "340 Main St", "Los Angeles",
@@ -352,8 +352,8 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
                 .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
 
         // The incomplete addresses in the dropdown contain edit required messages.
-        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
-                4).endsWith("Recipient required"));
+        assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX, 4)
+                           .endsWith("Name required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
                 5).endsWith("More information required"));
         assertTrue(getSpinnerTextAtPositionInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX,
