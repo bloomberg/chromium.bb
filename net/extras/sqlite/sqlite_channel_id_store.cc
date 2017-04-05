@@ -442,10 +442,17 @@ void SQLiteChannelIDStore::Backend::DeleteAllInList(
 void SQLiteChannelIDStore::Backend::BatchOperation(
     PendingOperation::OperationType op,
     const DefaultChannelIDStore::ChannelID& channel_id) {
-  // Commit every 30 seconds.
-  static const int kCommitIntervalMs = 30 * 1000;
-  // Commit right away if we have more than 512 outstanding operations.
-  static const size_t kCommitAfterBatchSize = 512;
+  // These thresholds used to be 30 seconds or 512 outstanding operations (the
+  // same values used in CookieMonster). Since cookies can be bound to Channel
+  // IDs, it's possible for a cookie to get committed to the cookie database
+  // before the Channel ID it is bound to gets committed. Decreasing these
+  // thresholds increases the chance that the Channel ID will be committed
+  // before or at the same time as the cookie.
+
+  // Commit every 2 seconds.
+  static const int kCommitIntervalMs = 2 * 1000;
+  // Commit right away if we have more than 3 outstanding operations.
+  static const size_t kCommitAfterBatchSize = 3;
 
   // We do a full copy of the cert here, and hopefully just here.
   std::unique_ptr<PendingOperation> po(new PendingOperation(op, channel_id));
