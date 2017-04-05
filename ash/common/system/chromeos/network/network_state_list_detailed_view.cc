@@ -498,7 +498,7 @@ views::View* NetworkStateListDetailedView::CreateViewForNetwork(
   else if (info.connecting)
     SetupConnectingItem(container, info.label, info.image);
   else
-    container->AddIconAndLabel(info.image, info.label, info.highlight);
+    container->AddIconAndLabel(info.image, info.label);
   container->set_tooltip(info.tooltip);
   views::View* controlled_icon = CreateControlledByExtensionView(info);
   if (controlled_icon)
@@ -521,7 +521,7 @@ void NetworkStateListDetailedView::UpdateViewForNetwork(
   else if (info.connecting)
     SetupConnectingItem(container, info.label, info.image);
   else
-    container->AddIconAndLabel(info.image, info.label, info.highlight);
+    container->AddIconAndLabel(info.image, info.label);
   views::View* controlled_icon = CreateControlledByExtensionView(info);
   container->set_tooltip(info.tooltip);
   if (controlled_icon)

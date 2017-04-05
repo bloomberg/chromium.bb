@@ -84,7 +84,6 @@ class AccessibilityDetailedView : public TrayDetailsView,
 
   // Helper function to create entries in the detailed accessibility view.
   HoverHighlightView* AddScrollListItem(const base::string16& text,
-                                        bool highlight,
                                         bool checked,
                                         const gfx::VectorIcon& icon);
   HoverHighlightView* AddScrollListItemWithoutIcon(const base::string16& text,

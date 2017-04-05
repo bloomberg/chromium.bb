@@ -4,8 +4,6 @@
 
 #include "ash/common/system/tray/hover_highlight_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
@@ -37,11 +35,9 @@ namespace ash {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : ActionableView(nullptr, TrayPopupInkDropStyle::FILL_BOUNDS),
-      listener_(listener),
-      highlight_color_(kHoverBackgroundColor) {
+      listener_(listener) {
   set_notify_enter_exit_on_child(true);
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    SetInkDropMode(InkDropHostView::InkDropMode::ON);
+  SetInkDropMode(InkDropHostView::InkDropMode::ON);
 }
 
 HoverHighlightView::~HoverHighlightView() {}
@@ -58,14 +54,7 @@ void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image,
                                       int icon_size) {
   DCHECK(!right_view_);
 
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    views::ImageView* right_icon = TrayPopupUtils::CreateMainImageView();
-    right_icon->SetImage(image);
-    AddRightView(right_icon);
-    return;
-  }
-
-  views::ImageView* right_icon = new FixedSizedImageView(icon_size, icon_size);
+  views::ImageView* right_icon = TrayPopupUtils::CreateMainImageView();
   right_icon->SetImage(image);
   AddRightView(right_icon);
 }
@@ -75,14 +64,8 @@ void HoverHighlightView::AddRightView(views::View* view) {
 
   right_view_ = view;
   right_view_->SetEnabled(enabled());
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    DCHECK(tri_view_);
-    tri_view_->AddView(TriView::Container::END, right_view_);
-    tri_view_->SetContainerVisible(TriView::Container::END, true);
-    return;
-  }
-  DCHECK(box_layout_);
-  AddChildView(right_view_);
+  tri_view_->AddView(TriView::Container::END, right_view_);
+  tri_view_->SetContainerVisible(TriView::Container::END, true);
 }
 
 // TODO(tdanderson): Ensure all checkable detailed view rows use this
@@ -97,100 +80,38 @@ void HoverHighlightView::SetRightViewVisible(bool visible) {
 }
 
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
-                                         const base::string16& text,
-                                         bool highlight) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    DoAddIconAndLabelMd(image, text,
-                        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-    return;
-  }
-
-  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
-                                     kTrayPopupPaddingBetweenItems);
-  SetLayoutManager(box_layout_);
-  DoAddIconAndLabel(image, kTrayPopupDetailsIconWidth, text, highlight);
+                                         const base::string16& text) {
+  DoAddIconAndLabel(image, text,
+                    TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
 }
 
 void HoverHighlightView::AddIconAndLabels(const gfx::ImageSkia& image,
                                           const base::string16& text,
                                           const base::string16& sub_text) {
-  DCHECK(MaterialDesignController::IsSystemTrayMenuMaterial());
-  DoAddIconAndLabelsMd(image, text,
-                       TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
-                       sub_text);
-}
-
-void HoverHighlightView::AddIconAndLabelCustomSize(const gfx::ImageSkia& image,
-                                                   const base::string16& text,
-                                                   bool highlight,
-                                                   int icon_size,
-                                                   int indent,
-                                                   int space_between_items) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    DoAddIconAndLabelMd(image, text,
-                        TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
-    return;
-  }
-
-  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, indent, 0,
-                                     space_between_items);
-  SetLayoutManager(box_layout_);
-  DoAddIconAndLabel(image, icon_size, text, highlight);
+  DoAddIconAndLabels(image, text,
+                     TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL,
+                     sub_text);
 }
 
 void HoverHighlightView::AddIconAndLabelForDefaultView(
     const gfx::ImageSkia& image,
-    const base::string16& text,
-    bool highlight) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    DoAddIconAndLabelMd(image, text,
-                        TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
-    return;
-  }
-
-  // For non-MD, call AddIconAndLabel() so that |box_layout_| is instantiated
-  // and installed as the layout manager.
-  AddIconAndLabel(image, text, highlight);
+    const base::string16& text) {
+  DoAddIconAndLabel(image, text,
+                    TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
 }
 
-void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
-                                           int icon_size,
-                                           const base::string16& text,
-                                           bool highlight) {
-  DCHECK(!MaterialDesignController::IsSystemTrayMenuMaterial());
-  DCHECK(box_layout_);
-
-  views::ImageView* image_view = new FixedSizedImageView(icon_size, 0);
-  image_view->SetImage(image);
-  image_view->SetEnabled(enabled());
-  AddChildView(image_view);
-
-  text_label_ = new views::Label(text);
-  text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  text_label_->SetFontList(GetFontList(highlight));
-  if (text_default_color_)
-    text_label_->SetEnabledColor(text_default_color_);
-  text_label_->SetEnabled(enabled());
-  AddChildView(text_label_);
-  box_layout_->SetFlexForView(text_label_, 1);
-
-  SetAccessibleName(text);
-}
-
-void HoverHighlightView::DoAddIconAndLabelMd(
+void HoverHighlightView::DoAddIconAndLabel(
     const gfx::ImageSkia& image,
     const base::string16& text,
     TrayPopupItemStyle::FontStyle font_style) {
-  DoAddIconAndLabelsMd(image, text, font_style, base::string16());
+  DoAddIconAndLabels(image, text, font_style, base::string16());
 }
 
-void HoverHighlightView::DoAddIconAndLabelsMd(
+void HoverHighlightView::DoAddIconAndLabels(
     const gfx::ImageSkia& image,
     const base::string16& text,
     TrayPopupItemStyle::FontStyle font_style,
     const base::string16& sub_text) {
-  DCHECK(MaterialDesignController::IsSystemTrayMenuMaterial());
-
   SetLayoutManager(new views::FillLayout);
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view_);
@@ -221,9 +142,10 @@ void HoverHighlightView::DoAddIconAndLabelsMd(
   SetAccessibleName(text);
 }
 
-views::Label* HoverHighlightView::AddLabel(const base::string16& text,
-                                           gfx::HorizontalAlignment alignment,
-                                           bool highlight) {
+views::Label* HoverHighlightView::AddLabelDeprecated(
+    const base::string16& text,
+    gfx::HorizontalAlignment alignment,
+    bool highlight) {
   box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
   SetLayoutManager(box_layout_);
   text_label_ = new views::Label(text);
@@ -252,9 +174,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
   return text_label_;
 }
 
-void HoverHighlightView::AddLabelRowMd(const base::string16& text) {
-  DCHECK(MaterialDesignController::IsSystemTrayMenuMaterial());
-
+void HoverHighlightView::AddLabelRow(const base::string16& text) {
   SetLayoutManager(new views::FillLayout);
   tri_view_ = TrayPopupUtils::CreateDefaultRowView();
   AddChildView(tri_view_);
@@ -276,40 +196,11 @@ void HoverHighlightView::SetExpandable(bool expandable) {
   }
 }
 
-void HoverHighlightView::SetHighlight(bool highlight) {
-  // Do not change the font styling for a highlighted row in material design.
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
-  DCHECK(text_label_);
-  text_label_->SetFontList(GetFontList(highlight));
-  text_label_->InvalidateLayout();
-}
-
 void HoverHighlightView::SetAccessiblityState(
     AccessibilityState accessibility_state) {
   accessibility_state_ = accessibility_state;
   if (accessibility_state_ != AccessibilityState::DEFAULT)
     NotifyAccessibilityEvent(ui::AX_EVENT_CHECKED_STATE_CHANGED, true);
-}
-
-void HoverHighlightView::SetHoverHighlight(bool hover) {
-  // We do not show any hover effects for material design.
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    return;
-
-  if (!enabled() && hover)
-    return;
-  if (hover_ == hover)
-    return;
-  hover_ = hover;
-  if (!text_label_)
-    return;
-  if (hover_ && text_highlight_color_)
-    text_label_->SetEnabledColor(text_highlight_color_);
-  if (!hover_ && text_default_color_)
-    text_label_->SetEnabledColor(text_default_color_);
-  SchedulePaint();
 }
 
 bool HoverHighlightView::PerformAction(const ui::Event& event) {
@@ -346,46 +237,13 @@ int HoverHighlightView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
 }
 
-void HoverHighlightView::OnMouseEntered(const ui::MouseEvent& event) {
-  SetHoverHighlight(true);
-}
-
-void HoverHighlightView::OnMouseExited(const ui::MouseEvent& event) {
-  SetHoverHighlight(false);
-}
-
-void HoverHighlightView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    SetHoverHighlight(true);
-  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-             event->type() == ui::ET_GESTURE_TAP) {
-    SetHoverHighlight(false);
-  }
-  ActionableView::OnGestureEvent(event);
-}
-
-void HoverHighlightView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetHoverHighlight(IsMouseHovered());
-}
-
 void HoverHighlightView::OnEnabledChanged() {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    if (left_icon_)
-      left_icon_->SetEnabled(enabled());
-    if (text_label_)
-      text_label_->SetEnabled(enabled());
-    if (right_view_)
-      right_view_->SetEnabled(enabled());
-  } else {
-    if (!enabled())
-      SetHoverHighlight(false);
-    for (int i = 0; i < child_count(); ++i)
-      child_at(i)->SetEnabled(enabled());
-  }
-}
-
-void HoverHighlightView::OnPaintBackground(gfx::Canvas* canvas) {
-  canvas->DrawColor(hover_ ? highlight_color_ : default_color_);
+  if (left_icon_)
+    left_icon_->SetEnabled(enabled());
+  if (text_label_)
+    text_label_->SetEnabled(enabled());
+  if (right_view_)
+    right_view_->SetEnabled(enabled());
 }
 
 void HoverHighlightView::OnFocus() {

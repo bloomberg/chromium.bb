@@ -53,7 +53,7 @@ class SelectableHoverHighlightView : public HoverHighlightView {
                                const base::string16& label,
                                bool selected)
       : HoverHighlightView(listener), selected_(selected) {
-    AddLabel(label, gfx::ALIGN_LEFT, selected);
+    AddLabelDeprecated(label, gfx::ALIGN_LEFT, selected);
   }
 
   ~SelectableHoverHighlightView() override {}
@@ -371,7 +371,7 @@ void ImeListView::AppendKeyboardStatus() {
   HoverHighlightView* container = new HoverHighlightView(this);
   int id = keyboard::IsKeyboardEnabled() ? IDS_ASH_STATUS_TRAY_DISABLE_KEYBOARD
                                          : IDS_ASH_STATUS_TRAY_ENABLE_KEYBOARD;
-  container->AddLabel(
+  container->AddLabelDeprecated(
       ui::ResourceBundle::GetSharedInstance().GetLocalizedString(id),
       gfx::ALIGN_LEFT, false /* highlight */);
   scroll_content()->AddChildView(container);

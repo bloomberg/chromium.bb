@@ -314,9 +314,10 @@ class BluetoothDetailedView : public TrayDetailsView {
     if (device_map_.size() == 0) {
       if (bluetooth_available && bluetooth_enabled) {
         HoverHighlightView* container = new HoverHighlightView(this);
-        container->AddLabel(l10n_util::GetStringUTF16(
-                                IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
-                            gfx::ALIGN_LEFT, false);
+        container->AddLabelDeprecated(
+            l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING),
+            gfx::ALIGN_LEFT, false);
         scroll_content()->AddChildView(container);
       }
     }
@@ -353,7 +354,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     } else if (connecting) {
       SetupConnectingItem(container, text, image);
     } else {
-      container->AddIconAndLabel(image, text, false);
+      container->AddIconAndLabel(image, text);
     }
     scroll_content()->AddChildView(container);
     return container;

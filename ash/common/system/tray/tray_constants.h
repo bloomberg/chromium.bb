@@ -76,7 +76,6 @@ extern const int kTrayRoundedBorderRadius;
 extern const int kTrayToggleButtonWidth;
 
 extern const SkColor kBackgroundColor;
-extern const SkColor kHoverBackgroundColor;
 extern const SkColor kPublicAccountUserCardTextColor;
 extern const SkColor kPublicAccountUserCardNameColor;
 

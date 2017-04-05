@@ -90,10 +90,7 @@ views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
 
   highlight_view_ = new HoverHighlightView(this);
   highlight_view_->SetBorder(views::CreateEmptyBorder(0, 0, 0, 0));
-  const int interior_button_padding = (kMenuButtonSize - kMenuIconSize) / 2;
-  highlight_view_->AddIconAndLabelCustomSize(icon, name, false, kMenuIconSize,
-                                             interior_button_padding,
-                                             kTrayPopupPaddingHorizontal);
+  highlight_view_->AddIconAndLabel(icon, name);
   highlight_view_->AddRightIcon(check, kMenuIconSize);
   highlight_view_->set_custom_height(kMenuButtonSize);
 

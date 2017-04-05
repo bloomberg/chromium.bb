@@ -206,7 +206,7 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
   else if (network->IsConnectingState())
     SetupConnectingItem(label, image);
   else
-    AddIconAndLabel(image, label, false);
+    AddIconAndLabel(image, label);
 
   if (network->IsConnectedState()) {
     disconnect_button_ = TrayPopupUtils::CreateTrayPopupButton(

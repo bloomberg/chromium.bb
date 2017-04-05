@@ -402,10 +402,7 @@ views::View* CastDetailedView::AddToReceiverList(
       gfx::CreateVectorIcon(kSystemMenuCastDeviceIcon, kMenuIconColor);
 
   HoverHighlightView* container = new HoverHighlightView(this);
-  container->AddIconAndLabelCustomSize(
-      image, base::UTF8ToUTF16(sink_route->sink->name), false,
-      kTrayPopupDetailsIconWidth, kTrayPopupPaddingHorizontal,
-      kTrayPopupPaddingBetweenItems);
+  container->AddIconAndLabel(image, base::UTF8ToUTF16(sink_route->sink->name));
 
   scroll_content()->AddChildView(container);
   return container;

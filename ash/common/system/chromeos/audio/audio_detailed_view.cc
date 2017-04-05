@@ -109,7 +109,7 @@ HoverHighlightView* AudioDetailedView::AddScrollListItem(
     bool checked) {
   HoverHighlightView* container = new HoverHighlightView(this);
 
-  container->AddLabelRowMd(text);
+  container->AddLabelRow(text);
   if (checked) {
     gfx::ImageSkia check_mark =
         gfx::CreateVectorIcon(kCheckCircleIcon, gfx::kGoogleGreen700);
