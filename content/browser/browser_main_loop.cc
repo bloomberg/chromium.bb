@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -134,6 +135,7 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "base/allocator/allocator_interception_mac.h"
 #include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
@@ -842,6 +844,14 @@ int BrowserMainLoop::PreCreateThreads() {
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator))
     MemoryCoordinatorImpl::GetInstance()->Start();
+
+#if defined(OS_MACOSX)
+  if (base::CommandLine::InitializedForCurrentProcess() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHeapProfiling)) {
+    base::allocator::PeriodicallyShimNewMallocZones();
+  }
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Prior to any processing happening on the IO thread, we create the
