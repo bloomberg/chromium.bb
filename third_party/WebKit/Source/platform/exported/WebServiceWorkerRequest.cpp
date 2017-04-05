@@ -6,10 +6,10 @@
 
 #include "platform/blob/BlobData.h"
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/RefCounted.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

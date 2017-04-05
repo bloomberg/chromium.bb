@@ -30,10 +30,10 @@
 
 #include "public/platform/WebPrerender.h"
 
-#include "platform/Prerender.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/Prerender.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

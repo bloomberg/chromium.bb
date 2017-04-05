@@ -31,7 +31,7 @@
 #include "public/platform/WebURL.h"
 
 #include "platform/weborigin/KURL.h"
-#include "wtf/text/StringView.h"
+#include "platform/wtf/text/StringView.h"
 
 namespace blink {
 

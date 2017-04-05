@@ -30,16 +30,16 @@
 
 #include "public/platform/WebImage.h"
 
+#include <algorithm>
+#include <memory>
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/Image.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

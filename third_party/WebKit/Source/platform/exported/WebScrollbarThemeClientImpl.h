@@ -28,9 +28,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebScrollbar.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

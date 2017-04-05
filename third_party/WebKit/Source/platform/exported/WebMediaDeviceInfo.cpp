@@ -25,9 +25,9 @@
 
 #include "public/platform/WebMediaDeviceInfo.h"
 
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
 #include "public/platform/WebString.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 

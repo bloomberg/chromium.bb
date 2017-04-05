@@ -26,12 +26,12 @@
 #ifndef WebScrollbarThemeGeometryNative_h
 #define WebScrollbarThemeGeometryNative_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarThemeGeometry.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

@@ -4,11 +4,11 @@
 
 #include "public/platform/WebDataConsumerHandle.h"
 
-#include "platform/heap/Handle.h"
-#include "wtf/PtrUtil.h"
+#include <string.h>
 #include <algorithm>
 #include <memory>
-#include <string.h>
+#include "platform/heap/Handle.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

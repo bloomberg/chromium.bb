@@ -24,14 +24,14 @@
 
 #include "public/platform/WebMediaStreamTrack.h"
 
+#include <memory>
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebString.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

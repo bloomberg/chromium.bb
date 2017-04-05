@@ -24,11 +24,11 @@
 
 #include "public/platform/WebAudioBus.h"
 
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #include "platform/audio/AudioBus.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 

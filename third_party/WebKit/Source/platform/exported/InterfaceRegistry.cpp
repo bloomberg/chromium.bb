@@ -4,7 +4,7 @@
 
 #include "public/platform/InterfaceRegistry.h"
 
-#include "wtf/StdLibExtras.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
 namespace {

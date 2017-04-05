@@ -31,7 +31,7 @@
 #include "public/platform/WebRTCVoidRequest.h"
 
 #include "platform/peerconnection/RTCVoidRequest.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #include "public/platform/WebRTCSessionDescriptionRequest.h"
 
 #include "platform/peerconnection/RTCSessionDescriptionRequest.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebRTCSessionDescription.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

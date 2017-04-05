@@ -27,10 +27,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebScrollbar.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 
 #include <memory>
 

@@ -31,12 +31,12 @@
 #include "public/platform/WebString.h"
 
 #include "base/strings/string_util.h"
-#include "wtf/text/ASCIIFastPath.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/text/StringView.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/text/ASCIIFastPath.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/CString.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/StringView.h"
+#include "platform/wtf/text/WTFString.h"
 
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \

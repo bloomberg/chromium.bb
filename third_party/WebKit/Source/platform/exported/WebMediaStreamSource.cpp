@@ -30,14 +30,14 @@
 
 #include "public/platform/WebMediaStreamSource.h"
 
+#include <memory>
 #include "platform/audio/AudioBus.h"
 #include "platform/mediastream/MediaStreamSource.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebAudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebString.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 
 namespace blink {
 

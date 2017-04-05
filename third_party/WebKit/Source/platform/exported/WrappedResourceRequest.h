@@ -31,9 +31,9 @@
 #ifndef WrappedResourceRequest_h
 #define WrappedResourceRequest_h
 
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebURLRequest.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

@@ -30,12 +30,12 @@
 
 #include "public/platform/WebCryptoAlgorithm.h"
 
-#include "public/platform/WebCryptoAlgorithmParams.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include <memory>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "public/platform/WebCryptoAlgorithmParams.h"
 
 namespace blink {
 

@@ -5,9 +5,9 @@
 #include "public/platform/FilePathConversion.h"
 
 #include "base/files/file_path.h"
+#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebString.h"
-#include "wtf/text/StringUTF8Adaptor.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

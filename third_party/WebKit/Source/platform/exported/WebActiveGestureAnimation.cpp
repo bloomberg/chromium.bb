@@ -25,10 +25,10 @@
 
 #include "platform/exported/WebActiveGestureAnimation.h"
 
+#include <memory>
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebGestureCurve.h"
 #include "public/platform/WebGestureCurveTarget.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

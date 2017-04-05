@@ -30,9 +30,9 @@
 
 #include "public/platform/WebCryptoKeyAlgorithm.h"
 
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadSafeRefCounted.h"
 #include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
 
 namespace blink {
 

@@ -25,11 +25,11 @@
 
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"
 
+#include <memory>
 #include "platform/exported/WebScrollbarThemeClientImpl.h"
 #include "platform/scroll/ScrollbarTheme.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebScrollbar.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

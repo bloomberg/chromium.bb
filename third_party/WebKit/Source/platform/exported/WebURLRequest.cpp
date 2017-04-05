@@ -33,14 +33,14 @@
 #include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURL.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #ifndef WrappedResourceResponse_h
 #define WrappedResourceResponse_h
 
+#include "platform/wtf/Noncopyable.h"
 #include "public/platform/WebURLResponse.h"
-#include "wtf/Noncopyable.h"
 
 namespace blink {
 

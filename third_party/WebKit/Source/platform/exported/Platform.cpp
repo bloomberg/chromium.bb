@@ -41,10 +41,10 @@
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
+#include "platform/wtf/HashMap.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "wtf/HashMap.h"
 
 namespace blink {
 

@@ -33,15 +33,15 @@
 #include <memory>
 #include "platform/loader/fetch/ResourceLoadTiming.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/RefPtr.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebHTTPLoadInfo.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoadTiming.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

@@ -5,9 +5,9 @@
 #include "public/platform/WebCredential.h"
 
 #include "platform/credentialmanager/PlatformCredential.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/WebFederatedCredential.h"
 #include "public/platform/WebPasswordCredential.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

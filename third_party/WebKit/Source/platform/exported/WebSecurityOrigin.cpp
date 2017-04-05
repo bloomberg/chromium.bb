@@ -32,9 +32,9 @@
 
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PassRefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
