@@ -36,10 +36,13 @@ SubresourceFilterInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, subresource_filter_delegate->GetExplanationText());
 
   if (subresource_filter_delegate->ShouldShowExperimentalInfobar()) {
+    ScopedJavaLocalRef<jstring> toggle_text = ConvertUTF16ToJavaString(
+        env, subresource_filter_delegate->GetToggleText());
     return Java_SubresourceFilterExperimentalInfoBar_show(
         env, GetEnumeratedIconId(), message_text, ok_button_text,
-        reload_button_text, explanation_message);
+        reload_button_text, toggle_text, explanation_message);
   }
+
   return Java_SubresourceFilterInfoBar_show(
       env, GetEnumeratedIconId(), message_text, ok_button_text,
       reload_button_text, explanation_message);

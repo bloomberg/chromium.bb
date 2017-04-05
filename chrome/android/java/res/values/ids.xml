@@ -29,6 +29,7 @@
     <item type="id" name="translate_infobar_always_toggle" />
     <item type="id" name="translate_infobar_source_spinner" />
     <item type="id" name="translate_infobar_target_spinner" />
+    <item type="id" name="subresource_filter_infobar_toggle" />
 
     <!-- Menu items IDs in Settings -->
     <item type="id" name="menu_id_close" />

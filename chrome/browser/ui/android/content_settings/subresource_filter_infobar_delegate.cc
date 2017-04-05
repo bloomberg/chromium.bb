@@ -23,7 +23,9 @@ void SubresourceFilterInfobarDelegate::Create(InfoBarService* infobar_service) {
 }
 
 SubresourceFilterInfobarDelegate::SubresourceFilterInfobarDelegate()
-    : ConfirmInfoBarDelegate() {}
+    : ConfirmInfoBarDelegate(),
+      using_experimental_infobar_(base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {}
 
 SubresourceFilterInfobarDelegate::~SubresourceFilterInfobarDelegate() {}
 
@@ -32,9 +34,17 @@ base::string16 SubresourceFilterInfobarDelegate::GetExplanationText() const {
       IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION);
 }
 
+// TODO(csharrison): For the time being the experimental infobar will use the
+// PROMPT_RELOAD string for the toggle text. Update this when launch strings are
+// finalized.
+base::string16 SubresourceFilterInfobarDelegate::GetToggleText() const {
+  DCHECK(using_experimental_infobar_);
+  return l10n_util::GetStringUTF16(
+      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD);
+}
+
 bool SubresourceFilterInfobarDelegate::ShouldShowExperimentalInfobar() const {
-  return base::FeatureList::IsEnabled(
-      subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
+  return using_experimental_infobar_;
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -56,9 +66,13 @@ int SubresourceFilterInfobarDelegate::GetButtons() const {
 
 base::string16 SubresourceFilterInfobarDelegate::GetButtonLabel(
     InfoBarButton button) const {
+  if (button == BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_OK);
+
   return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK) ? IDS_OK
-                            : IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD);
+      using_experimental_infobar_
+          ? IDS_FILTERED_DECEPTIVE_CONTENT_RELOAD_ACTION
+          : IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD);
 }
 
 bool SubresourceFilterInfobarDelegate::Cancel() {
