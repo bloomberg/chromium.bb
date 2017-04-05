@@ -69,6 +69,9 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         }
 
         @Override
+        public void onSheetReleased() {}
+
+        @Override
         public void onLoadUrl(String url) {}
 
         @Override

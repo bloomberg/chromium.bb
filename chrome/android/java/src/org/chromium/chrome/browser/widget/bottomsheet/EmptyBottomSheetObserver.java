@@ -17,6 +17,9 @@ public class EmptyBottomSheetObserver implements BottomSheetObserver {
     public void onSheetClosed() {}
 
     @Override
+    public void onSheetReleased() {}
+
+    @Override
     public void onLoadUrl(String url) {}
 
     @Override

@@ -54,9 +54,15 @@ import java.lang.annotation.RetentionPolicy;
 public class BottomSheet
         extends FrameLayout implements FadingBackgroundView.FadingViewObserver, NativePageHost {
     /** The different states that the bottom sheet can have. */
-    @IntDef({SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL, SHEET_STATE_SCROLLING})
+    @IntDef({SHEET_STATE_NONE, SHEET_STATE_PEEK, SHEET_STATE_HALF, SHEET_STATE_FULL,
+            SHEET_STATE_SCROLLING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SheetState {}
+    /**
+     * SHEET_STATE_NONE is for internal use only and indicates the sheet is not currently
+     * transitioning between states.
+     */
+    private static final int SHEET_STATE_NONE = -1;
     public static final int SHEET_STATE_PEEK = 0;
     public static final int SHEET_STATE_HALF = 1;
     public static final int SHEET_STATE_FULL = 2;
@@ -353,6 +359,8 @@ public class BottomSheet
 
             mVelocityTracker.computeCurrentVelocity(1000);
 
+            for (BottomSheetObserver o : mObservers) o.onSheetReleased();
+
             // If an animation was not created to settle the sheet at some state, do it now.
             if (mSettleAnimator == null) {
                 // Negate velocity so a positive number indicates a swipe up.
@@ -427,7 +435,7 @@ public class BottomSheet
                 updateSheetDimensions();
 
                 cancelAnimation();
-                setSheetState(mTargetState, false);
+                setSheetState(mCurrentState, false);
             }
         });
 
@@ -445,7 +453,7 @@ public class BottomSheet
                 updateSheetDimensions();
 
                 cancelAnimation();
-                setSheetState(mTargetState, false);
+                setSheetState(mCurrentState, false);
             }
         });
 
@@ -707,6 +715,7 @@ public class BottomSheet
             public void onAnimationEnd(Animator animator) {
                 mSettleAnimator = null;
                 setInternalCurrentState(mTargetState);
+                mTargetState = SHEET_STATE_NONE;
             }
         });
 
@@ -833,12 +842,13 @@ public class BottomSheet
 
     /**
      * Moves the sheet to the provided state.
-     * @param state The state to move the panel to. This cannot be SHEET_STATE_SCROLLING.
+     * @param state The state to move the panel to. This cannot be SHEET_STATE_SCROLLING or
+     *              SHEET_STATE_NONE.
      * @param animate If true, the sheet will animate to the provided state, otherwise it will
      *                move there instantly.
      */
     public void setSheetState(@SheetState int state, boolean animate) {
-        assert state != SHEET_STATE_SCROLLING;
+        assert state != SHEET_STATE_SCROLLING && state != SHEET_STATE_NONE;
         mTargetState = state;
 
         if (animate) {
@@ -846,7 +856,19 @@ public class BottomSheet
         } else {
             setSheetOffsetFromBottom(getSheetHeightForState(state));
             setInternalCurrentState(mTargetState);
+            mTargetState = SHEET_STATE_NONE;
         }
+    }
+
+    /**
+     * @return The target state that the sheet is moving to during animation. If the sheet is
+     *         stationary or a target state has not been determined, SHEET_STATE_NONE will be
+     *         returned. A target state will be set when the user releases the sheet from drag
+     *         ({@link BottomSheetObserver#onSheetReleased()}) and has begun animation to the next
+     *         state.
+     */
+    public int getTargetSheetState() {
+        return mTargetState;
     }
 
     /**

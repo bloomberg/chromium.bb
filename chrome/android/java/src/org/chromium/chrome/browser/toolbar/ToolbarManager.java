@@ -201,7 +201,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
         };
 
-        mToolbarModel = new ToolbarModelImpl();
+        mToolbarModel = new ToolbarModelImpl(activity.getBottomSheet());
         mControlContainer = controlContainer;
         assert mControlContainer != null;
 

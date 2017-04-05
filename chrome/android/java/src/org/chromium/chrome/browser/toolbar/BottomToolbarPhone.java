@@ -33,6 +33,21 @@ public class BottomToolbarPhone extends ToolbarPhone {
      */
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
+        public void onSheetOpened() {
+            onPrimaryColorChanged(true);
+        }
+
+        @Override
+        public void onSheetClosed() {
+            onPrimaryColorChanged(true);
+        }
+
+        @Override
+        public void onSheetReleased() {
+            onPrimaryColorChanged(true);
+        }
+
+        @Override
         public void onTransitionPeekToHalf(float transitionFraction) {
             // TODO(twellington): animate end toolbar button appearance/disappearance.
             if (transitionFraction >= 0.5 && !mShouldHideEndToolbarButtons) {
