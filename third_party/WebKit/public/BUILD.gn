@@ -746,6 +746,7 @@ mojom("android_mojo_bindings") {
   visibility = [ ":mojo_bindings" ]
   visibility_blink = [ ":mojo_bindings_blink" ]
   sources = [
+    "platform/modules/document_metadata/copyless_paste.mojom",
     "platform/modules/installation/installation.mojom",
     "platform/modules/installedapp/installed_app_provider.mojom",
     "platform/modules/installedapp/related_application.mojom",
