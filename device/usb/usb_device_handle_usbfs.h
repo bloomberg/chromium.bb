@@ -89,8 +89,12 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
     return task_runner_;
   }
 
-  // Stops |helper_| and releases ownership of |fd_| without closing it.
+  // Destroys |helper_| and releases ownership of |fd_| without closing it.
   void ReleaseFileDescriptor();
+
+  // Destroys |helper_| and closes |fd_|. Override to call
+  // ReleaseFileDescriptor() if necessary.
+  virtual void CloseBlocking();
 
  private:
   class FileThreadHelper;
@@ -103,22 +107,11 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
     const UsbInterfaceDescriptor* interface;
   };
 
-  virtual void CloseBlocking();
-  void SetConfigurationBlocking(int configuration_value,
-                                const ResultCallback& callback);
   void SetConfigurationComplete(int configuration_value,
                                 bool success,
                                 const ResultCallback& callback);
-  void ReleaseInterfaceBlocking(int interface_number,
-                                const ResultCallback& callback);
   void ReleaseInterfaceComplete(int interface_number,
                                 const ResultCallback& callback);
-  void SetInterfaceBlocking(int interface_number,
-                            int alternate_setting,
-                            const ResultCallback& callback);
-  void ResetDeviceBlocking(const ResultCallback& callback);
-  void ClearHaltBlocking(uint8_t endpoint_address,
-                         const ResultCallback& callback);
   void IsochronousTransferInternal(uint8_t endpoint_address,
                                    scoped_refptr<net::IOBuffer> buffer,
                                    size_t total_length,
@@ -147,7 +140,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   void UrbDiscarded(Transfer* transfer);
 
   scoped_refptr<UsbDevice> device_;
-  base::ScopedFD fd_;
+  int fd_;  // Copy of the base::ScopedFD held by |helper_| valid if |device_|.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
@@ -160,10 +153,9 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   // included in the map.
   std::map<uint8_t, EndpointInfo> endpoints_;
 
-  // Helper object owned by the blocking task thread. It will be freed if that
-  // thread's message loop is destroyed but can also be freed by this class on
-  // destruction.
-  FileThreadHelper* helper_;
+  // Helper object exists on the blocking task thread and all calls to it and
+  // its destruction must be posted there.
+  std::unique_ptr<FileThreadHelper> helper_;
 
   std::list<std::unique_ptr<Transfer>> transfers_;
 };

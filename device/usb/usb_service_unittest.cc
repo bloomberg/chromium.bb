@@ -14,6 +14,7 @@
 #include "device/test/test_device_client.h"
 #include "device/test/usb_test_gadget.h"
 #include "device/usb/usb_device.h"
+#include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +38,13 @@ class UsbServiceTest : public ::testing::Test {
 
 void OnGetDevices(const base::Closure& quit_closure,
                   const std::vector<scoped_refptr<UsbDevice>>& devices) {
+  quit_closure.Run();
+}
+
+void OnOpen(scoped_refptr<UsbDeviceHandle>* output,
+            const base::Closure& quit_closure,
+            scoped_refptr<UsbDeviceHandle> input) {
+  *output = input;
   quit_closure.Run();
 }
 
@@ -70,7 +78,7 @@ TEST_F(UsbServiceTest, ClaimGadget) {
 
   std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
-  ASSERT_TRUE(gadget.get());
+  ASSERT_TRUE(gadget);
 
   scoped_refptr<UsbDevice> device = gadget->GetDevice();
   ASSERT_EQ("Google Inc.", base::UTF16ToUTF8(device->manufacturer_string()));
@@ -83,9 +91,29 @@ TEST_F(UsbServiceTest, DisconnectAndReconnect) {
 
   std::unique_ptr<UsbTestGadget> gadget =
       UsbTestGadget::Claim(io_thread_->task_runner());
-  ASSERT_TRUE(gadget.get());
+  ASSERT_TRUE(gadget);
   ASSERT_TRUE(gadget->Disconnect());
   ASSERT_TRUE(gadget->Reconnect());
+}
+
+TEST_F(UsbServiceTest, Shutdown) {
+  if (!UsbTestGadget::IsTestEnabled())
+    return;
+
+  std::unique_ptr<UsbTestGadget> gadget =
+      UsbTestGadget::Claim(io_thread_->task_runner());
+  ASSERT_TRUE(gadget);
+
+  base::RunLoop loop;
+  scoped_refptr<UsbDeviceHandle> device_handle;
+  gadget->GetDevice()->Open(
+      base::Bind(&OnOpen, &device_handle, loop.QuitClosure()));
+  loop.Run();
+  ASSERT_TRUE(device_handle);
+
+  // Shut down the USB service while the device handle is still open.
+  device_client_.reset();
+  EXPECT_FALSE(device_handle->GetDevice());
 }
 
 }  // namespace

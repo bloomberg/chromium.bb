@@ -13,6 +13,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/base/features.h"
 #include "device/usb/usb_device.h"
+#include "device/usb/usb_device_handle.h"
 
 #if defined(OS_ANDROID)
 #include "device/usb/usb_service_android.h"
@@ -86,6 +87,13 @@ scoped_refptr<UsbDevice> UsbService::GetDevice(const std::string& guid) {
 }
 
 void UsbService::Shutdown() {
+  for (const auto& map_entry : devices_) {
+    // Swap out this list as UsbDevice::HandleClosed() will try to modify it.
+    std::list<UsbDeviceHandle*> handles;
+    handles.swap(map_entry.second->handles());
+    for (auto* handle : handles)
+      handle->Close();
+  }
 #if DCHECK_IS_ON()
   DCHECK(!did_shutdown_);
   did_shutdown_ = true;

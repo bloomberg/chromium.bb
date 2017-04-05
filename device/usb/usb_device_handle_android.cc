@@ -21,6 +21,8 @@ scoped_refptr<UsbDeviceHandleAndroid> UsbDeviceHandleAndroid::Create(
     const base::android::JavaRef<jobject>& usb_connection) {
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbConnection_create(env, usb_connection);
+  // C++ doesn't own this file descriptor so CloseBlocking() is overridden
+  // below to release it without closing it.
   base::ScopedFD fd(Java_ChromeUsbConnection_getFileDescriptor(env, wrapper));
   return make_scoped_refptr(new UsbDeviceHandleAndroid(
       device, std::move(fd), blocking_task_runner, wrapper));
