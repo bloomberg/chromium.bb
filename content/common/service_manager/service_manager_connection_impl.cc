@@ -139,6 +139,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
  private:
   friend class base::RefCountedThreadSafe<IOThreadContext>;
 
+  struct PendingRequest {
+    std::string service_name;
+    service_manager::mojom::ServiceRequest request;
+  };
+
   class MessageLoopObserver : public base::MessageLoop::DestructionObserver {
    public:
     explicit MessageLoopObserver(base::WeakPtr<IOThreadContext> context)
@@ -256,6 +261,16 @@ class ServiceManagerConnectionImpl::IOThreadContext
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto result = request_handlers_.insert(std::make_pair(name, handler));
     DCHECK(result.second);
+    auto iter = pending_requests_.begin();
+    while (iter != pending_requests_.end()) {
+      if ((*iter)->service_name == name) {
+        std::unique_ptr<PendingRequest> pending_request = std::move(*iter);
+        iter = pending_requests_.erase(iter);
+        handler.Run(std::move(pending_request->request));
+      } else {
+        ++iter;
+      }
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////
@@ -329,8 +344,14 @@ class ServiceManagerConnectionImpl::IOThreadContext
                      const std::string& name) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto it = request_handlers_.find(name);
-    DCHECK(it != request_handlers_.end())
-        << "Can't create service " << name << ". No handler found.";
+    if (it == request_handlers_.end()) {
+      std::unique_ptr<PendingRequest> pending_request =
+          base::MakeUnique<PendingRequest>();
+      pending_request->service_name = name;
+      pending_request->request = std::move(request);
+      pending_requests_.push_back(std::move(pending_request));
+      return;
+    }
     it->second.Run(std::move(request));
   }
 
@@ -391,6 +412,10 @@ class ServiceManagerConnectionImpl::IOThreadContext
   std::unordered_map<std::string, std::unique_ptr<EmbeddedServiceRunner>>
       embedded_services_;
   std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
+
+  // Requests before the service have been registered are added here. Typically
+  // there are very few elements, so we use a vector.
+  std::vector<std::unique_ptr<PendingRequest>> pending_requests_;
 
   mojo::Binding<mojom::Child> child_binding_;
 
