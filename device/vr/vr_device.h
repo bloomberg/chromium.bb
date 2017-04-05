@@ -30,7 +30,6 @@ class DEVICE_VR_EXPORT VRDevice {
   // nullptr as argument. onCreated can be called before this function returns.
   virtual void CreateVRDisplayInfo(
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) = 0;
-  virtual void ResetPose() = 0;
 
   virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                               const base::Callback<void(bool)>& callback) = 0;

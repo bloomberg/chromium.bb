@@ -384,11 +384,6 @@ void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
                                      left_bounds, right_bounds, source_size));
 }
 
-void VrShell::ResetPose() {
-  gl_thread_->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::ResetPose, gl_thread_->GetVrShellGl()));
-}
-
 void VrShell::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
@@ -746,7 +741,6 @@ device::mojom::VRDisplayInfoPtr VrShell::CreateVRDisplayInfo(
   device->index = device_id;
 
   device->capabilities = device::mojom::VRDisplayCapabilities::New();
-  device->capabilities->hasOrientation = true;
   device->capabilities->hasPosition = false;
   device->capabilities->hasExternalDisplay = false;
   device->capabilities->canPresent = true;

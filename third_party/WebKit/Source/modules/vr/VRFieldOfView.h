@@ -5,16 +5,12 @@
 #ifndef VRFieldOfView_h
 #define VRFieldOfView_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class VRFieldOfView final : public GarbageCollected<VRFieldOfView>,
-                            public ScriptWrappable {
-  DEFINE_WRAPPERTYPEINFO();
-
+class VRFieldOfView final : public GarbageCollected<VRFieldOfView> {
  public:
   VRFieldOfView()
       : m_upDegrees(0.0),

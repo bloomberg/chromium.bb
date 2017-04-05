@@ -28,7 +28,6 @@ struct VRPose {
 };
 
 struct VRDisplayCapabilities {
-  bool hasOrientation;
   bool hasPosition;
   bool hasExternalDisplay;
   bool canPresent;
@@ -92,8 +91,6 @@ interface VRSubmitFrameClient {
 };
 
 interface VRDisplay {
-  ResetPose();
-
   RequestPresent(bool secureOrigin, VRSubmitFrameClient client) => (bool success);
   ExitPresent();
   SubmitFrame(int16 frameId, gpu.mojom.MailboxHolder mailboxHolder);

@@ -371,12 +371,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::CSSSelectorPseudoShadow:
       return willBeRemoved("::shadow pseudo-element", M60, "6750456638341120");
 
-    case UseCounter::VRDeprecatedFieldOfView:
-      return replacedBy("VREyeParameters.fieldOfView",
-                        "projection matrices provided by VRFrameData");
-
-    case UseCounter::VRDeprecatedGetPose:
-      return replacedBy("VRDisplay.getPose()", "VRDisplay.getFrameData()");
+    case UseCounter::VREyeParametersOffset:
+      return replacedBy("VREyeParameters.offset",
+                        "view matrices provided by VRFrameData");
 
     case UseCounter::
         ServiceWorkerRespondToNavigationRequestWithRedirectedResponse:

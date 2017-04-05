@@ -74,7 +74,6 @@ void VRDisplay::update(const device::mojom::blink::VRDisplayInfoPtr& display) {
   m_displayName = display->displayName;
   m_isConnected = true;
 
-  m_capabilities->setHasOrientation(display->capabilities->hasOrientation);
   m_capabilities->setHasPosition(display->capabilities->hasPosition);
   m_capabilities->setHasExternalDisplay(
       display->capabilities->hasExternalDisplay);
@@ -104,11 +103,6 @@ void VRDisplay::update(const device::mojom::blink::VRDisplayInfoPtr& display) {
   }
 }
 
-void VRDisplay::disconnected() {
-  if (m_isConnected)
-    m_isConnected = !m_isConnected;
-}
-
 bool VRDisplay::getFrameData(VRFrameData* frameData) {
   if (!m_navigatorVR->isFocused() || !m_framePose || m_displayBlurred)
     return false;
@@ -121,22 +115,6 @@ bool VRDisplay::getFrameData(VRFrameData* frameData) {
 
   return frameData->update(m_framePose, m_eyeParametersLeft,
                            m_eyeParametersRight, m_depthNear, m_depthFar);
-}
-
-VRPose* VRDisplay::getPose() {
-  if (!m_navigatorVR->isFocused() || !m_framePose || m_displayBlurred)
-    return nullptr;
-
-  VRPose* pose = VRPose::create();
-  pose->setPose(m_framePose);
-  return pose;
-}
-
-void VRDisplay::resetPose() {
-  if (!m_display)
-    return;
-
-  m_display->ResetPose();
 }
 
 VREyeParameters* VRDisplay::getEyeParameters(const String& whichEye) {

@@ -56,13 +56,6 @@ void VRDisplayImpl::OnDeactivate(mojom::VRDisplayEventReason reason) {
   client_->OnDeactivate(reason);
 }
 
-void VRDisplayImpl::ResetPose() {
-  if (!device_->IsAccessAllowed(this))
-    return;
-
-  device_->ResetPose();
-}
-
 void VRDisplayImpl::RequestPresent(bool secure_origin,
                                    mojom::VRSubmitFrameClientPtr submit_client,
                                    const RequestPresentCallback& callback) {

@@ -42,8 +42,6 @@ class VRDisplayImpl : public mojom::VRDisplay {
   friend class VRDisplayImplTest;
   friend class VRServiceImpl;
 
-  void ResetPose() override;
-
   void RequestPresent(bool secure_origin,
                       mojom::VRSubmitFrameClientPtr submit_client,
                       const RequestPresentCallback& callback) override;

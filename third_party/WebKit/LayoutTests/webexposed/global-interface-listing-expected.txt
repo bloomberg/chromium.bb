@@ -7003,7 +7003,6 @@ interface VRDisplay : EventTarget
     getter depthNear
     getter displayId
     getter displayName
-    getter isConnected
     getter isPresenting
     getter stageParameters
     method cancelAnimationFrame
@@ -7012,10 +7011,8 @@ interface VRDisplay : EventTarget
     method getEyeParameters
     method getFrameData
     method getLayers
-    method getPose
     method requestAnimationFrame
     method requestPresent
-    method resetPose
     method submitFrame
     setter depthFar
     setter depthNear
@@ -7023,7 +7020,6 @@ interface VRDisplayCapabilities
     attribute @@toStringTag
     getter canPresent
     getter hasExternalDisplay
-    getter hasOrientation
     getter hasPosition
     getter maxLayers
     method constructor
@@ -7034,22 +7030,10 @@ interface VRDisplayEvent : Event
     method constructor
 interface VREyeParameters
     attribute @@toStringTag
-    getter fieldOfView
     getter offset
     getter renderHeight
     getter renderWidth
     method constructor
-interface VRFieldOfView
-    attribute @@toStringTag
-    getter downDegrees
-    getter leftDegrees
-    getter rightDegrees
-    getter upDegrees
-    method constructor
-    setter downDegrees
-    setter leftDegrees
-    setter rightDegrees
-    setter upDegrees
 interface VRFrameData
     attribute @@toStringTag
     getter leftProjectionMatrix

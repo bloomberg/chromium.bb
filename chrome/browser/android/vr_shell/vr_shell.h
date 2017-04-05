@@ -216,7 +216,6 @@ class VrShell : public device::PresentingGvrDelegate,
       device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(int64_t timebase_nanos,
                            double interval_seconds) override;
-  void ResetPose() override;
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) override;

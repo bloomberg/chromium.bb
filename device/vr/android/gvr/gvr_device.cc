@@ -34,12 +34,6 @@ void GvrDevice::CreateVRDisplayInfo(
   }
 }
 
-void GvrDevice::ResetPose() {
-  GvrDelegate* delegate = GetGvrDelegate();
-  if (delegate)
-    delegate->ResetPose();
-}
-
 void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                                const base::Callback<void(bool)>& callback) {
   gvr_provider_->RequestPresent(std::move(submit_client), callback);

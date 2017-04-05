@@ -23,18 +23,6 @@ vr_test( (t) => {
               FLOAT_EPSILON);
         }
 
-        let expectedFov = expected.fieldOfView;
-        let actualFov = actual.fieldOfView;
-        // Can't use Object.keys() and a loop - see crbug.com/678718
-        assert_approx_equals(actualFov.upDegrees, expectedFov.upDegrees,
-            FLOAT_EPSILON);
-        assert_approx_equals(actualFov.rightDegrees, expectedFov.rightDegrees,
-            FLOAT_EPSILON);
-        assert_approx_equals(actualFov.downDegrees, expectedFov.downDegrees,
-            FLOAT_EPSILON);
-        assert_approx_equals(actualFov.leftDegrees, expectedFov.leftDegrees,
-            FLOAT_EPSILON);
-
         assert_equals(actual.renderWidth, expected.renderWidth);
         assert_equals(actual.renderHeight, expected.renderHeight);
       }, "Returned eye parameters match provided parameters");

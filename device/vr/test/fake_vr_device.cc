@@ -19,7 +19,6 @@ void FakeVRDevice::InitBasicDevice() {
   display_info_->displayName = "FakeVRDevice";
 
   display_info_->capabilities = mojom::VRDisplayCapabilities::New();
-  display_info_->capabilities->hasOrientation = true;
   display_info_->capabilities->hasPosition = false;
   display_info_->capabilities->hasExternalDisplay = false;
   display_info_->capabilities->canPresent = false;
@@ -59,8 +58,6 @@ void FakeVRDevice::CreateVRDisplayInfo(
   mojom::VRDisplayInfoPtr display = display_info_.Clone();
   on_created.Run(std::move(display));
 }
-
-void FakeVRDevice::ResetPose() {}
 
 void FakeVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                                   const base::Callback<void(bool)>& callback) {

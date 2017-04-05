@@ -1290,13 +1290,6 @@ void VrShellGl::SendVSync(base::TimeDelta time,
                device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
-void VrShellGl::ResetPose() {
-  // Should never call RecenterTracking when using with Daydream viewers. On
-  // those devices recentering should only be done via the controller.
-  if (gvr_api_ && gvr_api_->GetViewerType() == GVR_VIEWER_TYPE_CARDBOARD)
-    gvr_api_->RecenterTracking();
-}
-
 void VrShellGl::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {

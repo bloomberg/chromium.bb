@@ -32,7 +32,6 @@ class VRController;
 class VREyeParameters;
 class VRFrameData;
 class VRStageParameters;
-class VRPose;
 
 class WebGLRenderingContextBase;
 
@@ -56,12 +55,9 @@ class VRDisplay final : public EventTargetWithInlineData,
   VRDisplayCapabilities* capabilities() const { return m_capabilities; }
   VRStageParameters* stageParameters() const { return m_stageParameters; }
 
-  bool isConnected() const { return m_isConnected; }
   bool isPresenting() const { return m_isPresenting; }
 
   bool getFrameData(VRFrameData*);
-  VRPose* getPose();
-  void resetPose();
 
   double depthNear() const { return m_depthNear; }
   double depthFar() const { return m_depthFar; }
@@ -112,7 +108,6 @@ class VRDisplay final : public EventTargetWithInlineData,
   void forceExitPresent();
 
   void updateLayerBounds();
-  void disconnected();
 
   VRController* controller();
 

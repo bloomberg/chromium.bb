@@ -19,7 +19,6 @@ vr_test( (t) => {
 
     t.step( () => {
       assert_equals(pixel.displayName, "Google, Inc. Daydream View");
-      assert_true(pixel.capabilities.hasOrientation);
       assert_true(pixel.capabilities.canPresent);
       assert_false(pixel.capabilities.hasPosition);
       assert_false(pixel.capabilities.hasExternalDisplay);
@@ -30,7 +29,6 @@ vr_test( (t) => {
 
     t.step( () => {
       assert_equals(fake.displayName, "FakeVRDisplay");
-      assert_true(fake.capabilities.hasOrientation);
       assert_false(fake.capabilities.canPresent);
       assert_false(fake.capabilities.hasPosition);
       assert_false(fake.capabilities.hasExternalDisplay);

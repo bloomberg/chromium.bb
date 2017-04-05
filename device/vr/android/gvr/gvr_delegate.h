@@ -25,7 +25,6 @@ class DEVICE_VR_EXPORT GvrDelegate {
       mojom::VRVSyncProviderRequest request) = 0;
   virtual void UpdateVSyncInterval(int64_t timebase_nanos,
                                    double interval_seconds) = 0;
-  virtual void ResetPose() = 0;
   virtual void CreateVRDisplayInfo(
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) = 0;

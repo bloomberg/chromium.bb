@@ -26,7 +26,6 @@ function fakeVRDisplays(){
     FakeMagicWindowOnly: {
       displayName : "FakeVRDisplay",
       capabilities : {
-        hasOrientation : true,
         hasPosition : false,
         hasExternalDisplay : false,
         canPresent : false
@@ -39,7 +38,6 @@ function fakeVRDisplays(){
     FakeRoomScale: {
       displayName : "FakeVRDisplayRoom",
       capabilities : {
-        hasOrientation : true,
         hasPosition : true,
         hasExternalDisplay : true,
         canPresent : true,
@@ -60,7 +58,6 @@ function fakeVRDisplays(){
     Pixel: { // Pixel info as of Dec. 22 2016
       displayName : "Google, Inc. Daydream View",
       capabilities : {
-        hasOrientation : true,
         hasPosition : false,
         hasExternalDisplay : false,
         canPresent : true,

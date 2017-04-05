@@ -19,13 +19,11 @@ class VRDisplayCapabilities final
  public:
   VRDisplayCapabilities();
 
-  bool hasOrientation() const { return m_hasOriention; }
   bool hasPosition() const { return m_hasPosition; }
   bool hasExternalDisplay() const { return m_hasExternalDisplay; }
   bool canPresent() const { return m_canPresent; }
   unsigned maxLayers() const { return m_maxLayers; }
 
-  void setHasOrientation(bool value) { m_hasOriention = value; }
   void setHasPosition(bool value) { m_hasPosition = value; }
   void setHasExternalDisplay(bool value) { m_hasExternalDisplay = value; }
   void setCanPresent(bool value) { m_canPresent = value; }
@@ -34,7 +32,6 @@ class VRDisplayCapabilities final
   DECLARE_VIRTUAL_TRACE()
 
  private:
-  bool m_hasOriention;
   bool m_hasPosition;
   bool m_hasExternalDisplay;
   bool m_canPresent;

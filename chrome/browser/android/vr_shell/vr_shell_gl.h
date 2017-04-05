@@ -104,7 +104,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void UpdateVSyncInterval(int64_t timebase_nanos, double interval_seconds);
 
   void OnRequest(device::mojom::VRVSyncProviderRequest request);
-  void ResetPose();
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id);

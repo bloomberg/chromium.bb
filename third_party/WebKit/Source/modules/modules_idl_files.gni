@@ -275,7 +275,6 @@ modules_idl_files =
                     "vr/VRDisplayEvent.idl",
                     "vr/VRDisplayCapabilities.idl",
                     "vr/VREyeParameters.idl",
-                    "vr/VRFieldOfView.idl",
                     "vr/VRFrameData.idl",
                     "vr/VRPose.idl",
                     "vr/VRStageParameters.idl",

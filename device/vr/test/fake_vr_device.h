@@ -25,7 +25,6 @@ class FakeVRDevice : public VRDevice {
   // VRDevice
   void CreateVRDisplayInfo(
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) override;
-  void ResetPose() override;
 
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
                       const base::Callback<void(bool)>& callback) override;
