@@ -194,8 +194,15 @@ crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ Won
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ WontFix ]
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ WontFix ]
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ WontFix ]
+crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ WontFix ]
+crbug.com/606302 [ Win7 Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ WontFix ]
 crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001-vertical.html [ WontFix ]
 crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001.html [ WontFix ]
+
+# Rendering issue only seen in Layout Tests on Android.
+# R and B color channels switched on decoded images.
+crbug.com/517449 [ Android ] images/optimize-contrast-image.html [ WontFix ]
+crbug.com/676561 [ Android ] images/paletted-png-with-color-profile.html [ WontFix ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
 crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
