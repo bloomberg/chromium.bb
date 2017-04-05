@@ -32,7 +32,8 @@ struct ShortcutInfo {
     SOURCE_ADD_TO_HOMESCREEN_PWA = 6,
     SOURCE_ADD_TO_HOMESCREEN_STANDALONE = 7,
     SOURCE_ADD_TO_HOMESCREEN_SHORTCUT = 8,
-    SOURCE_COUNT = 9
+    SOURCE_EXTERNAL_INTENT = 9,
+    SOURCE_COUNT = 10
   };
 
   explicit ShortcutInfo(const GURL& shortcut_url);
