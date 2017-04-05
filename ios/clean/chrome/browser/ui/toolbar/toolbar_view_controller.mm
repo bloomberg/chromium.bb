@@ -24,7 +24,7 @@ CGFloat kHorizontalMargin = 8.0f;
 }  // namespace
 
 @interface ToolbarViewController ()
-@property(nonatomic, strong) UITextField* omnibox;
+@property(nonatomic, strong) UIView* locationBarContainer;
 @property(nonatomic, strong) UIStackView* stackView;
 @property(nonatomic, strong) ToolbarButton* backButton;
 @property(nonatomic, strong) ToolbarButton* forwardButton;
@@ -38,8 +38,9 @@ CGFloat kHorizontalMargin = 8.0f;
 
 @implementation ToolbarViewController
 @synthesize dispatcher = _dispatcher;
+@synthesize locationBarViewController = _locationBarViewController;
 @synthesize stackView = _stackView;
-@synthesize omnibox = _omnibox;
+@synthesize locationBarContainer = _locationBarContainer;
 @synthesize backButton = _backButton;
 @synthesize forwardButton = _forwardButton;
 @synthesize tabSwitchStripButton = _tabSwitchStripButton;
@@ -53,13 +54,7 @@ CGFloat kHorizontalMargin = 8.0f;
   self = [super init];
   if (self) {
     [self setUpToolbarButtons];
-    // PLACEHOLDER: Omnibox could have some "Toolbar component" traits if
-    // needed.
-    UITextField* omnibox = [[UITextField alloc] initWithFrame:CGRectZero];
-    omnibox.translatesAutoresizingMaskIntoConstraints = NO;
-    omnibox.backgroundColor = [UIColor whiteColor];
-    omnibox.enabled = NO;
-    self.omnibox = omnibox;
+    [self setUpLocationBarContainer];
   }
   return self;
 }
@@ -67,16 +62,19 @@ CGFloat kHorizontalMargin = 8.0f;
 - (void)viewDidLoad {
   self.view.backgroundColor = [UIColor lightGrayColor];
 
+  [self addChildViewController:self.locationBarViewController
+                     toSubview:self.locationBarContainer];
+
   // Stack view to contain toolbar items.
   self.stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
     self.backButton, self.forwardButton, self.reloadButton, self.stopButton,
-    self.omnibox, self.shareButton, self.tabSwitchStripButton,
+    self.locationBarContainer, self.shareButton, self.tabSwitchStripButton,
     self.tabSwitchGridButton, self.toolsMenuButton
   ]];
   [self updateAllButtonsVisibility];
   self.stackView.translatesAutoresizingMaskIntoConstraints = NO;
   self.stackView.spacing = 16.0;
-  self.stackView.distribution = UIStackViewDistributionFillProportionally;
+  self.stackView.distribution = UIStackViewDistributionFill;
   [self.view addSubview:self.stackView];
 
   // Set constraints.
@@ -165,6 +163,52 @@ CGFloat kHorizontalMargin = 8.0f;
             forControlEvents:UIControlEventTouchUpInside];
 }
 
+- (void)setUpLocationBarContainer {
+  UIView* locationBarContainer = [[UIView alloc] initWithFrame:CGRectZero];
+  locationBarContainer.translatesAutoresizingMaskIntoConstraints = NO;
+  locationBarContainer.backgroundColor = [UIColor whiteColor];
+  [locationBarContainer
+      setContentHuggingPriority:UILayoutPriorityDefaultLow
+                        forAxis:UILayoutConstraintAxisHorizontal];
+  self.locationBarContainer = locationBarContainer;
+}
+
+#pragma mark - View Controller Containment
+
+- (void)addChildViewController:(UIViewController*)viewController
+                     toSubview:(UIView*)subview {
+  if (!viewController || !subview) {
+    return;
+  }
+  [self addChildViewController:viewController];
+  viewController.view.translatesAutoresizingMaskIntoConstraints = YES;
+  viewController.view.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+  viewController.view.frame = subview.bounds;
+  [subview addSubview:viewController.view];
+  [viewController didMoveToParentViewController:self];
+}
+
+- (void)setLocationBarViewController:(UIViewController*)controller {
+  if (self.locationBarViewController == controller) {
+    return;
+  }
+
+  if ([self isViewLoaded]) {
+    // Remove the old child view controller.
+    if (self.locationBarViewController) {
+      DCHECK_EQ(self, self.locationBarViewController.parentViewController);
+      [self.locationBarViewController willMoveToParentViewController:nil];
+      [self.locationBarViewController.view removeFromSuperview];
+      [self.locationBarViewController removeFromParentViewController];
+    }
+    // Add the new child view controller.
+    [self addChildViewController:controller
+                       toSubview:self.locationBarContainer];
+  }
+  _locationBarViewController = controller;
+}
+
 #pragma mark - Trait Collection Changes
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -183,7 +227,6 @@ CGFloat kHorizontalMargin = 8.0f;
 #pragma mark - ToolbarWebStateConsumer
 
 - (void)setCurrentPageText:(NSString*)text {
-  self.omnibox.text = text;
 }
 
 - (void)setCanGoForward:(BOOL)canGoForward {

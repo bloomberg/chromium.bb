@@ -5,6 +5,7 @@
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
 #import "ios/clean/chrome/browser/ui/commands/tools_menu_commands.h"
+#import "ios/clean/chrome/browser/ui/omnibox/location_bar_coordinator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/clean/chrome/browser/ui/toolbar/toolbar_view_controller.h"
 #import "ios/clean/chrome/browser/ui/tools/tools_coordinator.h"
@@ -20,12 +21,14 @@
 #endif
 
 @interface ToolbarCoordinator ()<ToolsMenuCommands>
+@property(nonatomic, weak) LocationBarCoordinator* locationBarCoordinator;
 @property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
 @property(nonatomic, strong) ToolbarViewController* viewController;
 @property(nonatomic, strong) ToolbarMediator* mediator;
 @end
 
 @implementation ToolbarCoordinator
+@synthesize locationBarCoordinator = _locationBarCoordinator;
 @synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 @synthesize viewController = _viewController;
 @synthesize webState = _webState;
@@ -60,6 +63,12 @@
   self.viewController.dispatcher = static_cast<id>(self.browser->dispatcher());
   self.mediator.consumer = self.viewController;
 
+  LocationBarCoordinator* locationBarCoordinator =
+      [[LocationBarCoordinator alloc] init];
+  self.locationBarCoordinator = locationBarCoordinator;
+  [self addChildCoordinator:locationBarCoordinator];
+  [locationBarCoordinator start];
+
   [self.context.baseViewController presentViewController:self.viewController
                                                 animated:self.context.animated
                                               completion:nil];
@@ -69,6 +78,13 @@
 - (void)stop {
   [super stop];
   [self.browser->dispatcher() stopDispatchingToTarget:self];
+}
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)coordinator {
+  if ([coordinator isKindOfClass:[LocationBarCoordinator class]]) {
+    self.viewController.locationBarViewController =
+        self.locationBarCoordinator.viewController;
+  }
 }
 
 #pragma mark - ToolsMenuCommands Implementation

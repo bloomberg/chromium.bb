@@ -180,6 +180,7 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       preloader_(preloader),
       ignore_popup_updates_(false),
       attributing_display_string_(nil) {
+  DCHECK(field_);
   popup_view_.reset(new OmniboxPopupViewIOS(this, model(), positioner));
   field_delegate_.reset(
       [[AutocompleteTextFieldDelegate alloc] initWithEditView:this]);

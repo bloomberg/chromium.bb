@@ -7,11 +7,14 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ui/base/page_transition_types.h"
+
+class GURL;
+class ToolbarModel;
+
 namespace web {
 class WebState;
 }
-
-class ToolbarModel;
 
 // Delegate for LocationBarController objects.  Used to provide the location bar
 // a way to open URLs and otherwise interact with the browser.

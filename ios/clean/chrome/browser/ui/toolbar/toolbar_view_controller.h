@@ -23,6 +23,9 @@
 
 // The dispatcher for this view controller
 @property(nonatomic, weak) id<ToolsMenuCommands, NavigationCommands> dispatcher;
+
+@property(nonatomic, strong) UIViewController* locationBarViewController;
+
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_VIEW_CONTROLLER_H_
