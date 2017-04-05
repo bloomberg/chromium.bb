@@ -4,7 +4,13 @@
 
 #import "chrome/browser/notifications/stub_alert_dispatcher_mac.h"
 
+#include <set>
+#include <string>
+
+#include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 
 @implementation StubAlertDispatcher {
@@ -41,6 +47,27 @@
 
 - (void)closeAllNotifications {
   [alerts_ removeAllObjects];
+}
+
+- (void)
+getDisplayedAlertsForProfileId:(NSString*)profileId
+                     incognito:(BOOL)incognito
+            notificationCenter:(NSUserNotificationCenter*)notificationCenter
+                      callback:(GetDisplayedNotificationsCallback)callback {
+  std::unique_ptr<std::set<std::string>> displayedNotifications =
+      base::MakeUnique<std::set<std::string>>();
+  for (NSUserNotification* toast in
+       [notificationCenter deliveredNotifications]) {
+    NSString* toastProfileId = [toast.userInfo
+        objectForKey:notification_constants::kNotificationProfileId];
+    if ([toastProfileId isEqualToString:profileId]) {
+      displayedNotifications->insert(base::SysNSStringToUTF8([toast.userInfo
+          objectForKey:notification_constants::kNotificationId]));
+    }
+  }
+
+  callback.Run(std::move(displayedNotifications),
+               true /* supports_synchronization */);
 }
 
 - (NSArray*)alerts {

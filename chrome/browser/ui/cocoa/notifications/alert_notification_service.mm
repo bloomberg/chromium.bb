@@ -113,4 +113,27 @@ crashpad::SimpleStringDictionary* GetCrashpadAnnotations() {
   [transactionHandler_ closeTransactionIfNeeded];
 }
 
+- (void)getDisplayedAlertsForProfileId:(NSString*)profileId
+                          andIncognito:(BOOL)incognito
+                             withReply:(void (^)(NSArray*))reply {
+  NSUserNotificationCenter* notificationCenter =
+      [NSUserNotificationCenter defaultUserNotificationCenter];
+  NSMutableArray* notificationIds = [NSMutableArray
+      arrayWithCapacity:[[notificationCenter deliveredNotifications] count]];
+  for (NSUserNotification* toast in
+       [notificationCenter deliveredNotifications]) {
+    NSString* candidateProfileId = [toast.userInfo
+        objectForKey:notification_constants::kNotificationProfileId];
+    BOOL incognitoNotification = [[toast.userInfo
+        objectForKey:notification_constants::kNotificationIncognito] boolValue];
+    if ([candidateProfileId isEqualToString:profileId] &&
+        incognito == incognitoNotification) {
+      [notificationIds
+          addObject:[toast.userInfo
+                        objectForKey:notification_constants::kNotificationId]];
+    }
+  }
+  reply(notificationIds);
+}
+
 @end

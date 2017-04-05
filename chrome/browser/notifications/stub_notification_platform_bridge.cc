@@ -57,7 +57,7 @@ void StubNotificationPlatformBridge::Close(const std::string& profile_id,
 void StubNotificationPlatformBridge::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const DisplayedNotificationsCallback& callback) const {
+    const GetDisplayedNotificationsCallback& callback) const {
   auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
 
   if (notifications_.find(profile_id) != notifications_.end()) {

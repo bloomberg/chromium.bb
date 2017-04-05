@@ -7,6 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/callback_forward.h"
+#include "chrome/browser/notifications/displayed_notifications_dispatch_callback.h"
+
 // Interface to communicate with the Alert XPC service.
 @protocol AlertDispatcher<NSObject>
 
@@ -20,6 +23,12 @@
 // Close all notifications.
 - (void)closeAllNotifications;
 
+// Get currently displayed notifications.
+- (void)
+getDisplayedAlertsForProfileId:(NSString*)profileId
+                     incognito:(BOOL)incognito
+            notificationCenter:(NSUserNotificationCenter*)notificationCenter
+                      callback:(GetDisplayedNotificationsCallback)callback;
 @end
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_ALERT_DISPATCHER_MAC_H_

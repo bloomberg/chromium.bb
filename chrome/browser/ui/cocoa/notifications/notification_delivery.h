@@ -27,6 +27,12 @@
 
 // Closes all the alerts being displayed.
 - (void)closeAllNotifications;
+
+// Will invoke |reply| with an array of NSString notification IDs for all alerts
+// for |profileId| and |incognito| value currently displayed.
+- (void)getDisplayedAlertsForProfileId:(NSString*)profileId
+                          andIncognito:(BOOL)incognito
+                             withReply:(void (^)(NSArray*))reply;
 @end
 
 // Response protocol for the XPC notification service to notify Chrome of

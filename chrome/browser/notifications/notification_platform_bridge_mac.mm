@@ -127,16 +127,6 @@ void RecordXPCEvent(XPCConnectionEvent event) {
 // Interface to communicate with the Alert XPC service.
 @interface AlertDispatcherImpl : NSObject<AlertDispatcher>
 
-// Deliver a notification to the XPC service to be displayed as an alert.
-- (void)dispatchNotification:(NSDictionary*)data;
-
-// Close a notification for a given |notificationId| and |profileId|.
-- (void)closeNotificationWithId:(NSString*)notificationId
-                  withProfileId:(NSString*)profileId;
-
-// Close all notifications.
-- (void)closeAllNotifications;
-
 @end
 
 // /////////////////////////////////////////////////////////////////////////////
@@ -293,14 +283,26 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
 void NotificationPlatformBridgeMac::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const DisplayedNotificationsCallback& callback) const {
+    const GetDisplayedNotificationsCallback& callback) const {
+#if BUILDFLAG(ENABLE_XPC_NOTIFICATIONS)
+  [alert_dispatcher_
+      getDisplayedAlertsForProfileId:base::SysUTF8ToNSString(profile_id)
+                           incognito:incognito
+                  notificationCenter:notification_center_
+                            callback:callback];
+
+#else
+
   auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
   NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toast_profile_id = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
-    if ([toast_profile_id isEqualToString:current_profile_id]) {
+    BOOL incognito_notification = [[toast.userInfo
+        objectForKey:notification_constants::kNotificationIncognito] boolValue];
+    if ([toast_profile_id isEqualToString:current_profile_id] &&
+        incognito == incognito_notification) {
       displayed_notifications->insert(base::SysNSStringToUTF8([toast.userInfo
           objectForKey:notification_constants::kNotificationId]));
     }
@@ -309,6 +311,8 @@ void NotificationPlatformBridgeMac::GetDisplayed(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(callback, base::Passed(&displayed_notifications),
                  true /* supports_synchronization */));
+
+#endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
 // static
@@ -490,6 +494,7 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   return self;
 }
 
+// AlertDispatcher:
 - (void)dispatchNotification:(NSDictionary*)data {
   [[self serviceProxy] deliverNotification:data];
 }
@@ -502,6 +507,43 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 
 - (void)closeAllNotifications {
   [[self serviceProxy] closeAllNotifications];
+}
+
+- (void)
+getDisplayedAlertsForProfileId:(NSString*)profileId
+                     incognito:(BOOL)incognito
+            notificationCenter:(NSUserNotificationCenter*)notificationCenter
+                      callback:(GetDisplayedNotificationsCallback)callback {
+  auto reply = ^(NSArray* alerts) {
+    std::unique_ptr<std::set<std::string>> displayedNotifications =
+        base::MakeUnique<std::set<std::string>>();
+
+    for (NSUserNotification* toast in
+         [notificationCenter deliveredNotifications]) {
+      NSString* toastProfileId = [toast.userInfo
+          objectForKey:notification_constants::kNotificationProfileId];
+      BOOL incognitoNotification = [[toast.userInfo
+          objectForKey:notification_constants::kNotificationIncognito]
+          boolValue];
+      if ([toastProfileId isEqualToString:profileId] &&
+          incognito == incognitoNotification) {
+        displayedNotifications->insert(base::SysNSStringToUTF8([toast.userInfo
+            objectForKey:notification_constants::kNotificationId]));
+      }
+    }
+
+    for (NSString* alert in alerts)
+      displayedNotifications->insert(base::SysNSStringToUTF8(alert));
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, base::Passed(&displayedNotifications),
+                   true /* supports_synchronization */));
+  };
+
+  [[self serviceProxy] getDisplayedAlertsForProfileId:profileId
+                                         andIncognito:incognito
+                                            withReply:reply];
 }
 
 // NotificationReply:

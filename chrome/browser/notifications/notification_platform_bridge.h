@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "chrome/browser/notifications/displayed_notifications_dispatch_callback.h"
 #include "chrome/browser/notifications/notification_common.h"
 
 class Notification;
@@ -21,10 +22,6 @@ class Notification;
 // TODO(miguelg): Add support for click and close events.
 class NotificationPlatformBridge {
  public:
-  using DisplayedNotificationsCallback =
-      base::Callback<void(std::unique_ptr<std::set<std::string>>,
-                          bool /* supports_synchronization */)>;
-
   static NotificationPlatformBridge* Create();
 
   virtual ~NotificationPlatformBridge() {}
@@ -46,7 +43,7 @@ class NotificationPlatformBridge {
   virtual void GetDisplayed(
       const std::string& profile_id,
       bool incognito,
-      const DisplayedNotificationsCallback& callback) const = 0;
+      const GetDisplayedNotificationsCallback& callback) const = 0;
 
  protected:
   NotificationPlatformBridge() {}

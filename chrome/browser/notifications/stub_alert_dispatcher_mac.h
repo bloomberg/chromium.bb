@@ -7,7 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "chrome/browser/notifications/alert_dispatcher_mac.h"
+#include <string>
+
+#include "chrome/browser/notifications/alert_dispatcher_mac.h"
 
 @interface StubAlertDispatcher : NSObject<AlertDispatcher>
 
@@ -17,6 +19,12 @@
                   withProfileId:(NSString*)profileId;
 
 - (void)closeAllNotifications;
+
+- (void)
+getDisplayedAlertsForProfileId:(NSString*)profileId
+                     incognito:(BOOL)incognito
+            notificationCenter:(NSUserNotificationCenter*)notificationCenter
+                      callback:(GetDisplayedNotificationsCallback)callback;
 
 // Stub specific methods.
 - (NSArray*)alerts;

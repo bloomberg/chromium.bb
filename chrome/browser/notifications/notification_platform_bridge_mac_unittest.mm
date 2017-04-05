@@ -272,7 +272,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestGetDisplayed) {
   std::unique_ptr<Notification> notification = CreateBanner(
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-      new NotificationPlatformBridgeMac(notification_center(), nil));
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
   EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
@@ -290,7 +291,8 @@ TEST_F(NotificationPlatformBridgeMacTest, TestGetDisplayedUnknownProfile) {
   std::unique_ptr<Notification> notification = CreateBanner(
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
-      new NotificationPlatformBridgeMac(notification_center(), nil));
+      new NotificationPlatformBridgeMac(notification_center(),
+                                        alert_dispatcher()));
   EXPECT_EQ(0u, [[notification_center() deliveredNotifications] count]);
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);

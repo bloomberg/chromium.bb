@@ -62,6 +62,7 @@ void NotificationPlatformBridgeLinux::Close(
 void NotificationPlatformBridgeLinux::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    const DisplayedNotificationsCallback& callback) const {
+    const GetDisplayedNotificationsCallback& callback) const {
+  // TODO(thomasanderson): implement.
   callback.Run(base::MakeUnique<std::set<std::string>>(), false);
 }

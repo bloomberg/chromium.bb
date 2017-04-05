@@ -36,7 +36,7 @@ class StubNotificationPlatformBridge : public NotificationPlatformBridge {
   void GetDisplayed(
       const std::string& profile_id,
       bool incognito,
-      const DisplayedNotificationsCallback& callback) const override;
+      const GetDisplayedNotificationsCallback& callback) const override;
 
  private:
   // Map of profile Ids to list of notifications shown for said profile.

@@ -27,7 +27,7 @@ class NotificationPlatformBridgeLinux : public NotificationPlatformBridge {
   void GetDisplayed(
       const std::string& profile_id,
       bool incognito,
-      const DisplayedNotificationsCallback& callback) const override;
+      const GetDisplayedNotificationsCallback& callback) const override;
 
  private:
   GDBusProxy* const notification_proxy_;
