@@ -173,7 +173,7 @@ TEST(DragImageTest, InvalidRotatedBitmapImage) {
   sk_sp<SkPixelRef> pixelRef(new InvalidPixelRef(info));
   SkBitmap invalidBitmap;
   invalidBitmap.setInfo(info);
-  invalidBitmap.setPixelRef(pixelRef.get());
+  invalidBitmap.setPixelRef(pixelRef, 0, 0);
   RefPtr<BitmapImage> image = BitmapImage::createWithOrientationForTesting(
       invalidBitmap, OriginRightTop);
 

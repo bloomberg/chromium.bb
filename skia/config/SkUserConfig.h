@@ -210,10 +210,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_DISABLE_COLOR_XFORM_PIPELINE
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_BITMAP_SETPIXELREF
-#   define SK_SUPPORT_LEGACY_BITMAP_SETPIXELREF
-#endif
-
 // Remove this after we fixed all the issues related to the new SDF algorithm
 // (https://codereview.chromium.org/1643143002)
 #ifndef    SK_USE_LEGACY_DISTANCE_FIELDS

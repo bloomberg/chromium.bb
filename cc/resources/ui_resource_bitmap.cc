@@ -53,7 +53,7 @@ void UIResourceBitmap::Create(sk_sp<SkPixelRef> pixel_ref,
 void UIResourceBitmap::DrawToCanvas(SkCanvas* canvas, SkPaint* paint) {
   SkBitmap bitmap;
   bitmap.setInfo(pixel_ref_.get()->info(), pixel_ref_.get()->rowBytes());
-  bitmap.setPixelRef(pixel_ref_.get());
+  bitmap.setPixelRef(pixel_ref_, 0, 0);
   canvas->drawBitmap(bitmap, 0, 0, paint);
   canvas->flush();
 }
