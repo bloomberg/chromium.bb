@@ -100,6 +100,7 @@ public class VrShellImpl
 
     // The tab that holds the main ContentViewCore.
     private Tab mTab;
+    private ContentViewCore mContentViewCore;
     private NativePage mNativePage;
 
     private WindowAndroid mOriginalWindowAndroid;
@@ -175,6 +176,9 @@ public class VrShellImpl
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
+                // Restore proper focus on the old CVC.
+                if (mContentViewCore != null) mContentViewCore.onWindowFocusChanged(false);
+                mContentViewCore = null;
                 if (mNativeVrShell == 0) return;
                 if (tab.isShowingSadTab()) {
                     // For now we don't support the sad tab page. crbug.com/661609.
@@ -203,11 +207,14 @@ public class VrShellImpl
                             new MotionEventSynthesizer(mNativePage.getView(), VrShellImpl.this);
                 }
                 setContentCssSize(mLastContentWidth, mLastContentHeight, mLastContentDpr);
-                if (tab.getNativePage() == null && mTab.getContentViewCore() != null) {
-                    mTab.getContentViewCore().onAttachedToWindow();
-                    mTab.getContentViewCore().getContainerView().requestFocus();
-                    nativeSwapContents(
-                            mNativeVrShell, mTab.getContentViewCore().getWebContents(), null);
+                if (tab.getNativePage() == null && tab.getContentViewCore() != null) {
+                    mContentViewCore = tab.getContentViewCore();
+                    mContentViewCore.onAttachedToWindow();
+                    mContentViewCore.getContainerView().requestFocus();
+                    // We need the CVC to think it has Window Focus so it doesn't blur the page,
+                    // even though we're drawing VR layouts over top of it.
+                    mContentViewCore.onWindowFocusChanged(true);
+                    nativeSwapContents(mNativeVrShell, mContentViewCore.getWebContents(), null);
                 } else {
                     nativeSwapContents(mNativeVrShell, null, mMotionEventSynthesizer);
                 }
