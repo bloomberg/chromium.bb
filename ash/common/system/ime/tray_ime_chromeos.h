@@ -24,6 +24,9 @@ class IMEDetailedView;
 
 class TrayItemView;
 
+// Controller for IME options in the system menu. Note this is separate from
+// the "opt-in" IME menu which can appear as a button in the system tray
+// area; that is controlled by ImeMenuTray.
 class ASH_EXPORT TrayIME : public SystemTrayItem,
                            public IMEObserver,
                            public AccessibilityObserver,

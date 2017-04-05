@@ -68,9 +68,6 @@ class ASH_EXPORT TrayDetailsView : public views::View,
   // any other view between the list and the footer row at the bottom.
   void CreateScrollableList();
 
-  // Adds a separator in scrollable list.
-  void AddScrollSeparator();
-
   // Removes (and destroys) all child views.
   void Reset();
 

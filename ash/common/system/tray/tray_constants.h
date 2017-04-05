@@ -69,7 +69,6 @@ extern const int kTrayPopupLabelRightPadding;
 extern const int kTrayPopupDetailsIconWidth;
 extern const int kTrayPopupDetailsLabelExtraLeftMargin;
 extern const SkColor kTrayPopupHoverBackgroundColor;
-extern const int kTrayPopupScrollSeparatorHeight;
 extern const int kTrayRoundedBorderRadius;
 
 // The width of ToggleButton views including any border padding.
@@ -80,10 +79,6 @@ extern const SkColor kPublicAccountUserCardTextColor;
 extern const SkColor kPublicAccountUserCardNameColor;
 
 extern const SkColor kHeaderBackgroundColor;
-
-extern const SkColor kBorderDarkColor;
-extern const SkColor kBorderLightColor;
-extern const SkColor kButtonStrokeColor;
 
 extern const SkColor kHeaderTextColorNormal;
 extern const SkColor kHeaderTextColorHover;

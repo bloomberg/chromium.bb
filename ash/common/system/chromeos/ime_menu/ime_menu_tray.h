@@ -22,8 +22,10 @@ class Label;
 namespace ash {
 class ImeListView;
 
-// The tray item for IME menu, which shows the detailed view of a null single
-// item.
+// A button in the tray which displays the short name of the currently-activated
+// IME (e.g., 'GB', 'US'). Clicking this button opens the opt-in IME menu,
+// a standalone bubble displaying a list of available IMEs along with buttons
+// for emoji, handwriting, and voice.
 class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
                                public IMEObserver,
                                public views::TrayBubbleView::Delegate,

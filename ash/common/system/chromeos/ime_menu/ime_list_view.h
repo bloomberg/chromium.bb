@@ -11,9 +11,11 @@
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
-class MaterialKeyboardStatusRowView;
+class KeyboardStatusRow;
 
-// The detailed view for showing IME list.
+// Base class used to represent a selecatable list of available IMEs.
+// Optionally shows a toggle which is used to enable or disable the invocation
+// of the virtual keyboard.
 class ImeListView : public TrayDetailsView {
  public:
   enum SingleImeBehavior {
@@ -67,23 +69,12 @@ class ImeListView : public TrayDetailsView {
  private:
   friend class ImeListViewTestApi;
 
-  // Appends the IMEs to the scrollable area of the detailed view.
-  void AppendIMEList(const IMEInfoList& list);
-
-  // Appends the IME listed to the scrollable area of the detailed view.
-  void AppendIMEProperties(const IMEPropertyInfoList& property_list);
-
-  // Appends the IMEs and properties to the scrollable area  in the material
-  // design IME menu.
+  // Appends the IMEs and properties to the IME menu's scrollable area.
   void AppendImeListAndProperties(const IMEInfoList& list,
                                   const IMEPropertyInfoList& property_list);
 
-  // Appends the on-screen keyboard status to the last area of the detailed
-  // view.
-  void AppendKeyboardStatus();
-
-  // Inserts the material on-screen keyboard status in the detailed view.
-  void PrependMaterialKeyboardStatus();
+  // Initializes |keyboard_status_row_| and adds it above the scrollable list.
+  void PrependKeyboardStatusRow();
 
   // Requests focus on the current IME if it was selected with keyboard so that
   // accessible text will alert the user of the IME change.
@@ -91,10 +82,7 @@ class ImeListView : public TrayDetailsView {
 
   std::map<views::View*, std::string> ime_map_;
   std::map<views::View*, std::string> property_map_;
-  // On-screen keyboard view which is not used in material design.
-  views::View* keyboard_status_;
-  // On-screen keyboard view which is only used in material design.
-  MaterialKeyboardStatusRowView* material_keyboard_status_view_;
+  KeyboardStatusRow* keyboard_status_row_;
 
   // The id of the last item selected with keyboard. It will be empty if the
   // item is not selected with keyboard.

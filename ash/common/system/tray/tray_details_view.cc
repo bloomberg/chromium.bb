@@ -227,24 +227,6 @@ const int kTitleRowPaddingTop = kTitleRowVerticalPadding;
 const int kTitleRowPaddingBottom =
     kTitleRowVerticalPadding - kTitleRowProgressBarHeight;
 
-class ScrollSeparator : public views::View {
- public:
-  ScrollSeparator() {}
-
-  ~ScrollSeparator() override {}
-
- private:
-  // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    canvas->FillRect(gfx::Rect(0, height() / 2, width(), 1), kBorderLightColor);
-  }
-  gfx::Size GetPreferredSize() const override {
-    return gfx::Size(1, kTrayPopupScrollSeparatorHeight);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollSeparator);
-};
-
 }  // namespace
 
 TrayDetailsView::TrayDetailsView(SystemTrayItem* owner)
@@ -319,14 +301,6 @@ void TrayDetailsView::CreateScrollableList() {
 
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);
-}
-
-void TrayDetailsView::AddScrollSeparator() {
-  DCHECK(scroll_content_);
-  // Do not draw the separator if it is the very first item
-  // in the scrollable list.
-  if (scroll_content_->has_children())
-    scroll_content_->AddChildView(new ScrollSeparator);
 }
 
 void TrayDetailsView::Reset() {

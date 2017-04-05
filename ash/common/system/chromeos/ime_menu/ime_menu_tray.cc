@@ -249,7 +249,8 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(ImeButtonsView);
 };
 
-// The list view that contains the selected IME and property items.
+// A list of available IMEs shown in the opt-in IME menu, which has a different
+// height depending on the number of IMEs in the list.
 class ImeMenuListView : public ImeListView {
  public:
   ImeMenuListView(SystemTrayItem* owner) : ImeListView(owner) {

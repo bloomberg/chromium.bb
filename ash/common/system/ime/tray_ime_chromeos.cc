@@ -70,6 +70,9 @@ class IMEDefaultView : public TrayItemMore {
   DISALLOW_COPY_AND_ASSIGN(IMEDefaultView);
 };
 
+// A list of available IMEs shown in the IME detailed view of the system menu,
+// along with other items in the title row (a settings button and optional
+// enterprise-controlled icon).
 class IMEDetailedView : public ImeListView {
  public:
   IMEDetailedView(SystemTrayItem* owner, LoginStatus login)

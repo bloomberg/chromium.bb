@@ -838,12 +838,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_KEYBOARD_ENABLED" desc="The text shown in the tray menu when the virtual keyboard is enabled.">
         On-screen keyboard enabled
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ENABLE_KEYBOARD" desc="A button label in the tray menu to enable the keyboard.">
-        Enable on-screen keyboard
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_DISABLE_KEYBOARD" desc="A button label in the tray menu to disable the keyboard.">
-        Disable on-screen keyboard
-      </message>
 
       <!-- Status tray networking strings. -->
       <message name="IDS_ASH_STATUS_TRAY_MOBILE_SCANNING" desc="Message when scanning for mobile networks">
