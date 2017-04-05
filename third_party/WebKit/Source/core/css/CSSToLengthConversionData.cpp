@@ -98,24 +98,27 @@ CSSToLengthConversionData::CSSToLengthConversionData(
                                 zoom) {}
 
 double CSSToLengthConversionData::viewportWidthPercent() const {
-  m_style->setHasViewportUnits();
+  // FIXME: Remove m_style from this class. Plumb viewport and rem unit
+  // information through as output parameters on functions involved in length
+  // resolution.
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
   return m_viewportSize.width() / 100;
 }
 double CSSToLengthConversionData::viewportHeightPercent() const {
-  m_style->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
   return m_viewportSize.height() / 100;
 }
 double CSSToLengthConversionData::viewportMinPercent() const {
-  m_style->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
   return std::min(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 double CSSToLengthConversionData::viewportMaxPercent() const {
-  m_style->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
   return std::max(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 
 float CSSToLengthConversionData::remFontSize() const {
-  m_style->setHasRemUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasRemUnits();
   return m_fontSizes.rem();
 }
 

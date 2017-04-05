@@ -231,12 +231,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       return !(*this == other);
     }
 
-    // This is set if we used viewport units when resolving a length.
-    // It is mutable so we can pass around const ComputedStyles to resolve
-    // lengths.
-    mutable unsigned m_hasViewportUnits : 1;
-
-    mutable unsigned m_hasRemUnits : 1;
+    // These are set if we used viewport or rem units when resolving a length.
+    unsigned m_hasViewportUnits : 1;
+    unsigned m_hasRemUnits : 1;
 
     // If you add more style bits here, you will also need to update
     // ComputedStyle::copyNonInheritedFromCached() 68 bits
@@ -2349,12 +2346,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool hasViewportUnits() const {
     return m_nonInheritedData.m_hasViewportUnits;
   }
-  void setHasViewportUnits(bool hasViewportUnits = true) const {
+  void setHasViewportUnits(bool hasViewportUnits = true) {
     m_nonInheritedData.m_hasViewportUnits = hasViewportUnits;
   }
 
   bool hasRemUnits() const { return m_nonInheritedData.m_hasRemUnits; }
-  void setHasRemUnits() const { m_nonInheritedData.m_hasRemUnits = true; }
+  void setHasRemUnits() { m_nonInheritedData.m_hasRemUnits = true; }
 
   bool emptyState() const { return m_emptyState; }
   void setEmptyState(bool b) {
