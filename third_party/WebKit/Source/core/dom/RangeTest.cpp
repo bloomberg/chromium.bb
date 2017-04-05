@@ -16,6 +16,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Compiler.h"
@@ -247,6 +248,15 @@ TEST_F(RangeTest, MultipleTextQuads) {
   Vector<FloatQuad> quads;
   range->textQuads(quads);
   EXPECT_EQ(2u, quads.size());
+}
+
+TEST_F(RangeTest, ToPosition) {
+  Node& textarea = *HTMLTextAreaElement::create(document());
+  Range& range = *Range::create(document());
+  const Position position = Position(&textarea, 0);
+  range.setStart(position, ASSERT_NO_EXCEPTION);
+  EXPECT_EQ(position, range.startPosition());
+  EXPECT_EQ(position, range.endPosition());
 }
 
 }  // namespace blink

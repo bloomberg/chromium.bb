@@ -131,8 +131,7 @@ inline const Position RangeBoundaryPoint::toPosition() const {
   ensureOffsetIsValid();
   // TODO(yosin): We should return |Position::beforeAnchor| when
   // |m_containerNode| isn't |Text| node.
-  return Position::editingPositionOf(m_containerNode.get(),
-                                     m_offsetInContainer);
+  return Position(m_containerNode.get(), m_offsetInContainer);
 }
 
 inline unsigned RangeBoundaryPoint::offset() const {
