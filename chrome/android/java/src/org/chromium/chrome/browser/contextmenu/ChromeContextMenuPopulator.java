@@ -16,12 +16,12 @@ import android.webkit.MimeTypeMap;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -235,7 +235,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     public static String createHeaderText(ContextMenuParams params) {
         String titleText = "";
         if (!TextUtils.isEmpty(params.getLinkUrl())
-                && !params.getLinkUrl().equals(UrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+                && !params.getLinkUrl().equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
             titleText = params.getLinkUrl();
         } else if (!TextUtils.isEmpty(params.getTitleText())) {
             titleText = params.getTitleText();
@@ -397,7 +397,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         if (TextUtils.isEmpty(params.getLinkUrl())
-                || params.getLinkUrl().equals(UrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+                || params.getLinkUrl().equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
             disabledOptions.add(ContextMenuItem.OPEN_IN_OTHER_WINDOW);
             disabledOptions.add(ContextMenuItem.OPEN_IN_NEW_TAB);
             disabledOptions.add(ContextMenuItem.OPEN_IN_INCOGNITO_TAB);

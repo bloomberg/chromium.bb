@@ -24,6 +24,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import java.util.concurrent.TimeUnit;
  * Tests for the WebViewClient.shouldOverrideUrlLoading() method.
  */
 public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
-    private static final String ABOUT_BLANK_URL = "about:blank";
     private static final String DATA_URL = "data:text/html,<div/>";
     private static final String REDIRECT_TARGET_PATH = "/redirect_target.html";
     private static final String TITLE = "TITLE";
@@ -55,6 +55,13 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     private AwTestContainerView mTestContainerView;
     private AwContents mAwContents;
     private TestAwContentsClient.ShouldOverrideUrlLoadingHelper mShouldOverrideUrlLoadingHelper;
+
+    private static class TestDefaultContentsClient extends TestAwContentsClient {
+        @Override
+        public boolean hasWebViewClient() {
+            return false;
+        }
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -275,7 +282,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         // After we load this URL we're certain that any in-flight callbacks for the previous
         // navigation have been delivered.
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         assertEquals(onReceivedErrorCallCount, onReceivedErrorHelper.getCallCount());
     }
@@ -314,7 +322,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         // After we load this URL we're certain that any in-flight callbacks for the previous
         // navigation have been delivered.
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), ABOUT_BLANK_URL);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
         assertEquals(shouldOverrideUrlLoadingCallCount,
                 mShouldOverrideUrlLoadingHelper.getCallCount());
@@ -351,7 +360,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final String httpPath = "/page_with_about_blank_navigation";
         final String httpPathOnServer = mWebServer.getResponseUrl(httpPath);
         addPageToTestServer(httpPath,
-                CommonResources.makeHtmlPageWithSimpleLinkTo(ABOUT_BLANK_URL));
+                CommonResources.makeHtmlPageWithSimpleLinkTo(
+                        ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 httpPathOnServer);
@@ -361,7 +371,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         clickOnLinkUsingJs();
 
         mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertEquals(ABOUT_BLANK_URL,
+        assertEquals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL,
                 mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
     }
 
@@ -906,6 +916,38 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testNullContentsClientOpenAboutUrlInWebView() throws Throwable {
+        try {
+            // If there's a bug in WebView, this may fire real intents through the test activity.
+            // Need to temporarily suppress startActivity otherwise there will be a
+            // handler selection window and the test can't dismiss that.
+            getActivity().setIgnoreStartActivity(true);
+            TestDefaultContentsClient nullClient = new TestDefaultContentsClient();
+            setupWithProvidedContentsClient(nullClient);
+            enableJavaScriptOnUiThread(mAwContents);
+            final String pageTitle = "Click Title";
+            final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
+                    + "<body><a id='link' href='" + ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL
+                    + "'>Click this!</a></body></html>";
+            final String urlWithLink = mWebServer.setResponse(
+                    "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
+
+            loadUrlSync(mAwContents, nullClient.getOnPageFinishedHelper(), urlWithLink);
+
+            // Clicking on an about:blank link should always navigate to the page directly
+            int currentCallCount = nullClient.getOnPageFinishedHelper().getCallCount();
+            DOMUtils.clickNode(mAwContents.getContentViewCore(), "link");
+            nullClient.getOnPageFinishedHelper().waitForCallback(
+                    currentCallCount, 1, WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+
+            assertEquals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL, mAwContents.getUrl());
+        } finally {
+            getActivity().setIgnoreStartActivity(false);
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testNullContentsClientOpenLink() throws Throwable {
         try {
             // The test will fire real intents through the test activity.
@@ -914,12 +956,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             getActivity().setIgnoreStartActivity(true);
             final String testUrl = mWebServer.setResponse("/" + CommonResources.ABOUT_FILENAME,
                     CommonResources.ABOUT_HTML, CommonResources.getTextHtmlHeaders(true));
-            setupWithProvidedContentsClient(new NullContentsClient() {
-                @Override
-                public boolean hasWebViewClient() {
-                    return false;
-                }
-            });
+            TestDefaultContentsClient nullClient = new TestDefaultContentsClient();
+            setupWithProvidedContentsClient(nullClient);
             enableJavaScriptOnUiThread(mAwContents);
             final String pageTitle = "Click Title";
             final String htmlWithLink = "<html><title>" + pageTitle + "</title>"
@@ -927,13 +965,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
             final String urlWithLink = mWebServer.setResponse(
                     "/html_with_link.html", htmlWithLink, CommonResources.getTextHtmlHeaders(true));
 
-            loadUrlAsync(mAwContents, urlWithLink);
-            pollUiThread(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return mAwContents.getTitle().equals(pageTitle);
-                }
-            });
+            loadUrlSync(mAwContents, nullClient.getOnPageFinishedHelper(), urlWithLink);
             // Executing JS code that tries to navigate somewhere should not create an intent.
             assertEquals("\"" + testUrl + "\"", JSUtils.executeJavaScriptAndWaitForResult(
                             this, mAwContents, new OnEvaluateJavaScriptResultHelper(),

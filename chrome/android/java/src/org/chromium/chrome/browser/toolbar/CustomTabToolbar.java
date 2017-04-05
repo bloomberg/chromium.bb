@@ -35,7 +35,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
@@ -55,6 +54,7 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -314,7 +314,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // always return the url. We postpone the title animation until the title is authentic.
         if ((mState == STATE_DOMAIN_AND_TITLE || mState == STATE_TITLE_ONLY)
                 && !title.equals(currentTab.getUrl())
-                && !title.equals(UrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
+                && !title.equals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL)) {
             // Delay the title animation until security icon animation finishes.
             ThreadUtils.postOnUiThreadDelayed(mTitleAnimationStarter, TITLE_ANIM_DELAY_MS);
         }
@@ -350,7 +350,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         // If we have taken a pre-initialized WebContents, then the starting URL
         // is "about:blank". We should not display it.
         if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
-                || UrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
+                || ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL.equals(url)) {
             mUrlBar.setUrl("", null);
             return;
         }

@@ -85,6 +85,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -127,11 +128,9 @@ public class LocationBarLayout extends FrameLayout
      * The following additions have been made: "chrome", "ftp".
      */
     private static final HashSet<String> ACCEPTED_SCHEMES = CollectionUtil.newHashSet(
-            UrlConstants.ABOUT_SCHEME, UrlConstants.DATA_SCHEME,
-            UrlConstants.FILE_SCHEME, UrlConstants.FTP_SCHEME,
-            UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME,
-            UrlConstants.INLINE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME,
-            UrlConstants.CHROME_SCHEME);
+            ContentUrlConstants.ABOUT_SCHEME, UrlConstants.DATA_SCHEME, UrlConstants.FILE_SCHEME,
+            UrlConstants.FTP_SCHEME, UrlConstants.HTTP_SCHEME, UrlConstants.HTTPS_SCHEME,
+            UrlConstants.INLINE_SCHEME, UrlConstants.JAVASCRIPT_SCHEME, UrlConstants.CHROME_SCHEME);
 
     /**
      * The URL schemes that should be displayed complete with path.

@@ -27,6 +27,7 @@ import android.webkit.WebChromeClient;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -177,6 +178,12 @@ public abstract class AwContentsClient {
             Log.w(TAG, "Denied starting an intent without a user gesture, URI %s", url);
             return true;
         }
+
+        // Treat 'about:' URLs as internal, always open them in the WebView
+        if (url.startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)) {
+            return false;
+        }
+
         Intent intent;
         // Perform generic parsing of the URI to turn it into an Intent.
         try {

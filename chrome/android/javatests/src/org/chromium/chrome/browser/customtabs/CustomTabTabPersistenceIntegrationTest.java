@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.customtabs;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.io.File;
 import java.util.Locale;
@@ -24,7 +24,8 @@ public class CustomTabTabPersistenceIntegrationTest extends CustomTabActivityTes
     public void startMainActivity() throws InterruptedException {
         super.startMainActivity();
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), UrlConstants.ABOUT_BLANK_DISPLAY_URL));
+                getInstrumentation().getTargetContext(),
+                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL));
     }
 
     @MediumTest
