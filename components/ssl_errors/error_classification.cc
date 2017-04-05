@@ -38,32 +38,13 @@ using base::TimeDelta;
 namespace ssl_errors {
 namespace {
 
-// Events for UMA. Do not reorder or change!
-enum SSLInterstitialCause {
-  CLOCK_PAST,
-  CLOCK_FUTURE,
-  WWW_SUBDOMAIN_MATCH,
-  SUBDOMAIN_MATCH,
-  SUBDOMAIN_INVERSE_MATCH,
-  SUBDOMAIN_OUTSIDE_WILDCARD,
-  HOST_NAME_NOT_KNOWN_TLD,
-  LIKELY_MULTI_TENANT_HOSTING,
-  LOCALHOST,
-  PRIVATE_URL,
-  AUTHORITY_ERROR_CAPTIVE_PORTAL,  // Deprecated in M47.
-  SELF_SIGNED,
-  EXPIRED_RECENTLY,
-  LIKELY_SAME_DOMAIN,
-  UNUSED_INTERSTITIAL_CAUSE_ENTRY,
-};
-
 void RecordSSLInterstitialCause(bool overridable, SSLInterstitialCause event) {
   if (overridable) {
     UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.overridable", event,
-                              UNUSED_INTERSTITIAL_CAUSE_ENTRY);
+                              SSL_INTERSTITIAL_CAUSE_MAX);
   } else {
     UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.cause.nonoverridable", event,
-                              UNUSED_INTERSTITIAL_CAUSE_ENTRY);
+                              SSL_INTERSTITIAL_CAUSE_MAX);
   }
 }
 
@@ -109,7 +90,7 @@ bool IsWWWSubDomainMatch(const GURL& request_url,
                          const net::X509Certificate& cert) {
   std::string www_host;
   std::vector<std::string> dns_names;
-  cert.GetDNSNames(&dns_names);
+  cert.GetSubjectAltName(&dns_names, nullptr);
   return GetWWWSubDomainMatch(request_url, dns_names, &www_host);
 }
 
@@ -149,24 +130,28 @@ void RecordUMAStatistics(bool overridable,
     }
     case ssl_errors::ErrorInfo::CERT_COMMON_NAME_INVALID: {
       std::string host_name = request_url.host();
+      std::vector<std::string> dns_names;
+      cert.GetSubjectAltName(&dns_names, nullptr);
+      std::vector<HostnameTokens> dns_name_tokens =
+          GetTokenizedDNSNames(dns_names);
+
+      if (dns_names.empty())
+        RecordSSLInterstitialCause(overridable, NO_SUBJECT_ALT_NAME);
+
       if (HostNameHasKnownTLD(host_name)) {
         HostnameTokens host_name_tokens = Tokenize(host_name);
         if (IsWWWSubDomainMatch(request_url, cert))
-          RecordSSLInterstitialCause(overridable, WWW_SUBDOMAIN_MATCH);
+          RecordSSLInterstitialCause(overridable, WWW_SUBDOMAIN_MATCH2);
         if (IsSubDomainOutsideWildcard(request_url, cert))
-          RecordSSLInterstitialCause(overridable, SUBDOMAIN_OUTSIDE_WILDCARD);
-        std::vector<std::string> dns_names;
-        cert.GetDNSNames(&dns_names);
-        std::vector<HostnameTokens> dns_name_tokens =
-            GetTokenizedDNSNames(dns_names);
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_OUTSIDE_WILDCARD2);
         if (NameUnderAnyNames(host_name_tokens, dns_name_tokens))
-          RecordSSLInterstitialCause(overridable, SUBDOMAIN_MATCH);
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_MATCH2);
         if (AnyNamesUnderName(dns_name_tokens, host_name_tokens))
-          RecordSSLInterstitialCause(overridable, SUBDOMAIN_INVERSE_MATCH);
+          RecordSSLInterstitialCause(overridable, SUBDOMAIN_INVERSE_MATCH2);
         if (IsCertLikelyFromMultiTenantHosting(request_url, cert))
-          RecordSSLInterstitialCause(overridable, LIKELY_MULTI_TENANT_HOSTING);
+          RecordSSLInterstitialCause(overridable, LIKELY_MULTI_TENANT_HOSTING2);
         if (IsCertLikelyFromSameDomain(request_url, cert))
-          RecordSSLInterstitialCause(overridable, LIKELY_SAME_DOMAIN);
+          RecordSSLInterstitialCause(overridable, LIKELY_SAME_DOMAIN2);
       } else {
         RecordSSLInterstitialCause(overridable, HOST_NAME_NOT_KNOWN_TLD);
       }
@@ -383,7 +368,7 @@ bool IsSubDomainOutsideWildcard(const GURL& request_url,
   std::string host_name = request_url.host();
   HostnameTokens host_name_tokens = Tokenize(host_name);
   std::vector<std::string> dns_names;
-  cert.GetDNSNames(&dns_names);
+  cert.GetSubjectAltName(&dns_names, nullptr);
   bool result = false;
 
   // This method requires that the host name be longer than the dns name on
@@ -411,7 +396,7 @@ bool IsCertLikelyFromMultiTenantHosting(const GURL& request_url,
   std::string host_name = request_url.host();
   std::vector<std::string> dns_names;
   std::vector<std::string> dns_names_domain;
-  cert.GetDNSNames(&dns_names);
+  cert.GetSubjectAltName(&dns_names, nullptr);
   size_t dns_names_size = dns_names.size();
 
   // If there is only 1 DNS name then it is definitely not a shared certificate.
@@ -458,7 +443,9 @@ bool IsCertLikelyFromSameDomain(const GURL& request_url,
                                 const net::X509Certificate& cert) {
   std::string host_name = request_url.host();
   std::vector<std::string> dns_names;
-  cert.GetDNSNames(&dns_names);
+  cert.GetSubjectAltName(&dns_names, nullptr);
+  if (dns_names.empty())
+    return false;
 
   dns_names.push_back(host_name);
   std::vector<std::string> dns_names_domain;

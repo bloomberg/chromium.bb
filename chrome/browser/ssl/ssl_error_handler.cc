@@ -569,37 +569,38 @@ void SSLErrorHandler::StartHandlingError() {
   }
 #endif
 
-  std::vector<std::string> dns_names;
-  ssl_info_.cert->GetDNSNames(&dns_names);
-  DCHECK(!dns_names.empty());
-  GURL suggested_url;
   if (IsSSLCommonNameMismatchHandlingEnabled() &&
       cert_error_ == net::ERR_CERT_COMMON_NAME_INVALID &&
-      delegate_->IsErrorOverridable() &&
-      delegate_->GetSuggestedUrl(dns_names, &suggested_url)) {
-    RecordUMA(WWW_MISMATCH_FOUND);
+      delegate_->IsErrorOverridable()) {
+    std::vector<std::string> dns_names;
+    ssl_info_.cert->GetSubjectAltName(&dns_names, nullptr);
+    GURL suggested_url;
+    if (!dns_names.empty() &&
+        delegate_->GetSuggestedUrl(dns_names, &suggested_url)) {
+      RecordUMA(WWW_MISMATCH_FOUND_IN_SAN);
 
-    // Show the SSL interstitial if |CERT_STATUS_COMMON_NAME_INVALID| is not
-    // the only error. Need not check for captive portal in this case.
-    // (See the comment below).
-    if (!only_error_is_name_mismatch) {
-      ShowSSLInterstitial();
+      // Show the SSL interstitial if |CERT_STATUS_COMMON_NAME_INVALID| is not
+      // the only error. Need not check for captive portal in this case.
+      // (See the comment below).
+      if (!only_error_is_name_mismatch) {
+        ShowSSLInterstitial();
+        return;
+      }
+      delegate_->CheckSuggestedUrl(
+          suggested_url,
+          base::Bind(&SSLErrorHandler::CommonNameMismatchHandlerCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+      timer_.Start(FROM_HERE, g_config.Pointer()->interstitial_delay(), this,
+                   &SSLErrorHandler::ShowSSLInterstitial);
+
+      if (g_config.Pointer()->timer_started_callback())
+        g_config.Pointer()->timer_started_callback()->Run(web_contents_);
+
+      // Do not check for a captive portal in this case, because a captive
+      // portal most likely cannot serve a valid certificate which passes the
+      // similarity check.
       return;
     }
-    delegate_->CheckSuggestedUrl(
-        suggested_url,
-        base::Bind(&SSLErrorHandler::CommonNameMismatchHandlerCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
-    timer_.Start(FROM_HERE, g_config.Pointer()->interstitial_delay(), this,
-                 &SSLErrorHandler::ShowSSLInterstitial);
-
-    if (g_config.Pointer()->timer_started_callback())
-      g_config.Pointer()->timer_started_callback()->Run(web_contents_);
-
-    // Do not check for a captive portal in this case, because a captive
-    // portal most likely cannot serve a valid certificate which passes the
-    // similarity check.
-    return;
   }
 
   // Always listen to captive portal notifications, otherwise build fails

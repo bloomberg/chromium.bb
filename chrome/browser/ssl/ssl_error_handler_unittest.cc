@@ -196,13 +196,13 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
  public:
   SSLErrorHandlerNameMismatchTest() : field_trial_list_(nullptr) {}
+  ~SSLErrorHandlerNameMismatchTest() override {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SSLErrorHandler::ResetConfigForTesting();
     SSLErrorHandler::SetInterstitialDelayForTesting(base::TimeDelta());
-    ssl_info_.cert =
-        net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+    ssl_info_.cert = GetCertificate();
     ssl_info_.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
     ssl_info_.public_key_hashes.push_back(
         net::HashValue(kCertPublicKeyHashValue));
@@ -230,12 +230,35 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
   const net::SSLInfo& ssl_info() { return ssl_info_; }
 
  private:
+  // Returns a certificate for the test. Virtual to allow derived fixtures to
+  // use a certificate with different characteristics.
+  virtual scoped_refptr<net::X509Certificate> GetCertificate() {
+    return net::ImportCertFromFile(net::GetTestCertsDirectory(),
+                                   "subjectAltName_www_example_com.pem");
+  }
+
   net::SSLInfo ssl_info_;
   std::unique_ptr<TestSSLErrorHandler> error_handler_;
   TestSSLErrorHandlerDelegate* delegate_;
   base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerNameMismatchTest);
+};
+
+// A class to test name mismatch errors, where the certificate lacks a
+// SubjectAltName. Creates an error handler with a name mismatch error.
+class SSLErrorHandlerNameMismatchNoSANTest
+    : public SSLErrorHandlerNameMismatchTest {
+ public:
+  SSLErrorHandlerNameMismatchNoSANTest() {}
+
+ private:
+  // Return a certificate that contains no SubjectAltName field.
+  scoped_refptr<net::X509Certificate> GetCertificate() override {
+    return net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerNameMismatchNoSANTest);
 };
 
 // A class to test the captive portal certificate list feature. Creates an error
@@ -575,7 +598,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::HANDLE_ALL, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::WWW_MISMATCH_FOUND, 1);
+                               SSLErrorHandler::WWW_MISMATCH_FOUND_IN_SAN, 1);
   histograms.ExpectBucketCount(
       SSLErrorHandler::GetHistogramNameForTesting(),
       SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
@@ -649,7 +672,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::HANDLE_ALL, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::WWW_MISMATCH_FOUND, 1);
+                               SSLErrorHandler::WWW_MISMATCH_FOUND_IN_SAN, 1);
   histograms.ExpectBucketCount(
       SSLErrorHandler::GetHistogramNameForTesting(),
       SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
@@ -681,9 +704,33 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::HANDLE_ALL, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::WWW_MISMATCH_FOUND, 1);
+                               SSLErrorHandler::WWW_MISMATCH_FOUND_IN_SAN, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::WWW_MISMATCH_URL_AVAILABLE, 1);
+}
+
+// No suggestions should be requested if certificate lacks a SubjectAltName.
+TEST_F(SSLErrorHandlerNameMismatchNoSANTest,
+       SSLCommonNameMismatchHandlingRequiresSubjectAltName) {
+  base::HistogramTester histograms;
+  EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
+  delegate()->set_suggested_url_exists();
+  error_handler()->StartHandlingError();
+
+  EXPECT_FALSE(delegate()->suggested_url_checked());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(delegate()->ssl_interstitial_shown());
+  EXPECT_FALSE(delegate()->redirected_to_suggested_url());
+
+  histograms.ExpectTotalCount(SSLErrorHandler::GetHistogramNameForTesting(), 2);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::HANDLE_ALL, 1);
+  histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
+                               SSLErrorHandler::WWW_MISMATCH_FOUND_IN_SAN, 0);
+  histograms.ExpectBucketCount(
+      SSLErrorHandler::GetHistogramNameForTesting(),
+      SSLErrorHandler::SHOW_SSL_INTERSTITIAL_OVERRIDABLE, 1);
 }
 
 TEST_F(SSLErrorHandlerNameMismatchTest,
@@ -710,7 +757,7 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::HANDLE_ALL, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
-                               SSLErrorHandler::WWW_MISMATCH_FOUND, 1);
+                               SSLErrorHandler::WWW_MISMATCH_FOUND_IN_SAN, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::WWW_MISMATCH_URL_NOT_AVAILABLE,
                                1);

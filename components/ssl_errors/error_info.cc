@@ -32,22 +32,30 @@ ErrorInfo ErrorInfo::CreateError(ErrorType error_type,
   base::string16 details, short_description;
   switch (error_type) {
     case CERT_COMMON_NAME_INVALID: {
-      // If the certificate contains multiple DNS names, we choose the most
-      // representative one -- either the DNS name that's also in the subject
-      // field, or the first one.  If this heuristic turns out to be
-      // inadequate, we can consider choosing the DNS name that is the
-      // "closest match" to the host name in the request URL, or listing all
-      // the DNS names with an HTML <ul>.
       std::vector<std::string> dns_names;
-      cert->GetDNSNames(&dns_names);
-      DCHECK(!dns_names.empty());
+      cert->GetSubjectAltName(&dns_names, nullptr);
+
       size_t i = 0;
-      for (; i < dns_names.size(); ++i) {
-        if (dns_names[i] == cert->subject().common_name)
-          break;
+      if (dns_names.empty()) {
+        // The certificate had no DNS names, display an explanatory string.
+        // TODO(elawrence): Change the error messsage instead of just the
+        // placeholder string; see https://crbug.com/708268
+        dns_names.push_back("[missing_subjectAltName]");
+      } else {
+        // If the certificate contains multiple DNS names, we choose the most
+        // representative one -- either the DNS name that's also in the subject
+        // field, or the first one. If this heuristic turns out to be
+        // inadequate, we can consider choosing the DNS name that is the
+        // "closest match" to the host name in the request URL, or listing all
+        // the DNS names with an HTML <ul>.
+        for (; i < dns_names.size(); ++i) {
+          if (dns_names[i] == cert->subject().common_name)
+            break;
+        }
+        if (i == dns_names.size())
+          i = 0;
       }
-      if (i == dns_names.size())
-        i = 0;
+
       details = l10n_util::GetStringFUTF16(
           IDS_CERT_ERROR_COMMON_NAME_INVALID_DETAILS,
           UTF8ToUTF16(request_url.host()),

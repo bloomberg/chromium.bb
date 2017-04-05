@@ -2309,6 +2309,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/spdy_pooling.pem",
     "data/ssl/certificates/start_after_expiry.pem",
     "data/ssl/certificates/subjectAltName_sanity_check.pem",
+    "data/ssl/certificates/subjectAltName_www_example_com.pem",
     "data/ssl/certificates/test_mail_google_com.pem",
     "data/ssl/certificates/thawte.single.pem",
     "data/ssl/certificates/tls_feature_extension.pem",

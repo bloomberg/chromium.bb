@@ -28,6 +28,33 @@ typedef std::vector<std::string> HostnameTokens;
 
 // Methods for identifying specific error causes. ------------------------------
 
+// These values are written to logs. New enum values can be added, but existing
+// enums must never be renumbered or deleted and reused.
+enum SSLInterstitialCause {
+  CLOCK_PAST = 0,
+  CLOCK_FUTURE = 1,
+  WWW_SUBDOMAIN_MATCH = 2,         // Deprecated in M59.
+  SUBDOMAIN_MATCH = 3,             // Deprecated in M59.
+  SUBDOMAIN_INVERSE_MATCH = 4,     // Deprecated in M59.
+  SUBDOMAIN_OUTSIDE_WILDCARD = 5,  // Deprecated in M59.
+  HOST_NAME_NOT_KNOWN_TLD = 6,
+  LIKELY_MULTI_TENANT_HOSTING = 7,  // Deprecated in M59.
+  LOCALHOST = 8,
+  PRIVATE_URL = 9,
+  AUTHORITY_ERROR_CAPTIVE_PORTAL = 10,  // Deprecated in M47.
+  SELF_SIGNED = 11,
+  EXPIRED_RECENTLY = 12,
+  LIKELY_SAME_DOMAIN = 13,  // Deprecated in M59.
+  NO_SUBJECT_ALT_NAME = 14,
+  WWW_SUBDOMAIN_MATCH2 = 15,
+  SUBDOMAIN_MATCH2 = 16,
+  SUBDOMAIN_INVERSE_MATCH2 = 17,
+  SUBDOMAIN_OUTSIDE_WILDCARD2 = 18,
+  LIKELY_MULTI_TENANT_HOSTING2 = 19,
+  LIKELY_SAME_DOMAIN2 = 20,
+  SSL_INTERSTITIAL_CAUSE_MAX
+};
+
 // What is known about the accuracy of system clock.  Do not change or
 // reorder; these values are used in an UMA histogram.
 enum ClockState {
@@ -110,14 +137,9 @@ bool IsCertLikelyFromMultiTenantHosting(const GURL& request_url,
 bool IsCertLikelyFromSameDomain(const GURL& request_url,
                                 const net::X509Certificate& cert);
 
-// Returns true if the site's hostname differs from one of the DNS
-// names in the certificate (CN or SANs) only by the presence or
-// absence of the single-label prefix "www". E.g.: (The first domain
-// is hostname and the second domain is a DNS name in the certificate)
-//     www.example.com ~ example.com -> true
-//     example.com ~ www.example.com -> true
-//     www.food.example.com ~ example.com -> false
-//     mail.example.com ~ example.com -> false
+// Returns true if the site's hostname differs from one of the DNS names in
+// |dns_names| only by the presence or absence of the single-label prefix "www".
+// The matching name from the certificate is returned in |www_match_host_name|.
 bool GetWWWSubDomainMatch(const GURL& request_url,
                           const std::vector<std::string>& dns_names,
                           std::string* www_match_host_name);
