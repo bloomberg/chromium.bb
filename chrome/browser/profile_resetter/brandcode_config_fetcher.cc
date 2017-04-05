@@ -13,6 +13,7 @@
 #include "libxml/parser.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -145,8 +146,31 @@ BrandcodeConfigFetcher::BrandcodeConfigFetcher(const FetchCallback& callback,
                                                const std::string& brandcode)
     : fetch_callback_(callback) {
   DCHECK(!brandcode.empty());
-  config_fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */, url,
-                                            net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("brandcode_config", R"(
+        semantics {
+          sender: "Brandcode Configuration Fetcher"
+          description:
+            "Chrome installation can be non-organic. That means that Chrome "
+            "is distributed by partners and it has a brand code associated "
+            "with that partner. For the settings reset operation, Chrome needs "
+            "to know the default settings which are partner specific."
+          trigger: "'Reset Settings' invocation from Chrome settings."
+          data: "Brandcode."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled and is only invoked by user "
+            "request."
+          policy_exception_justification:
+            "Not implemented, considered not useful as enterprises don't need "
+            "to install Chrome in a non-organic fashion."
+        })");
+  config_fetcher_ =
+      net::URLFetcher::Create(0 /* ID used for testing */, url,
+                              net::URLFetcher::POST, this, traffic_annotation);
   config_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
   config_fetcher_->SetUploadData("text/xml", GetUploadData(brandcode));
