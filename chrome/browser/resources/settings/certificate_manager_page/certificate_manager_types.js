@@ -7,15 +7,24 @@
  */
 
 /**
- * The payload of the certificate-action event that is emitted from this
- * component.
+ * The payload of the 'certificate-action' event.
  * @typedef {{
  *   action: !CertificateAction,
  *   subnode: (null|CertificateSubnode|NewCertificateSubNode),
- *   certificateType: !CertificateType
+ *   certificateType: !CertificateType,
+ *   anchor: !HTMLElement
  * }}
  */
 var CertificateActionEventDetail;
+
+/**
+ * The payload of the 'certificates-error' event.
+ * @typedef {{
+ *   error: (null|CertificatesError|CertificatesImportError),
+ *   anchor: ?HTMLElement
+ * }}
+ */
+var CertificatesErrorEventDetail;
 
 /**
  * Enumeration of actions that require a popup menu to be shown to the user.
