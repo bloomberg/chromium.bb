@@ -14,18 +14,19 @@
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
-static CGFloat kLinePadding = 2.f;
+static const CGFloat kLinePadding = 2.f;
 static const CGFloat kHostCardIconInset = 10.f;
 static const CGFloat kHostCardPadding = 4.f;
 static const CGFloat kHostCardIconSize = 45.f;
 
-@interface HostCollectionViewCell ()
-
-@property(nonatomic) UIImageView* imageView;
-@property(nonatomic) UILabel* titleLabel;
-@property(nonatomic) UILabel* statusLabel;
-@property(nonatomic) UIView* cellView;
-
+@interface HostCollectionViewCell () {
+  NSString* _status;
+  NSString* _title;
+  UIImageView* _imageView;
+  UILabel* _statusLabel;
+  UILabel* _titleLabel;
+  UIView* _cellView;
+}
 @end
 
 //
@@ -35,12 +36,9 @@ static const CGFloat kHostCardIconSize = 45.f;
 //
 @implementation HostCollectionViewCell
 
-@synthesize title = _title;
-@synthesize status = _status;
-@synthesize imageView = _imageView;
-@synthesize titleLabel = _titleLabel;
-@synthesize statusLabel = _statusLabel;
-@synthesize cellView = _cellView;
++ (Class)layerClass {
+  return [MDCShadowLayer class];
+}
 
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
@@ -97,14 +95,16 @@ static const CGFloat kHostCardIconSize = 45.f;
   [_cellView addSubview:_statusLabel];
 }
 
+#pragma mark - HostCollectionViewCell Public
+
 - (void)populateContentWithTitle:(NSString*)title status:(NSString*)status {
-  self.title = title;
-  self.titleLabel.text = title;
+  _title = title;
+  _titleLabel.text = title;
 
-  self.status = status;
-  self.statusLabel.text = status;
+  _status = status;
+  _statusLabel.text = status;
 
-  self.imageView.image = [UIImage imageNamed:@"ic_desktop"];
+  _imageView.image = [UIImage imageNamed:@"ic_desktop"];
 
   // TODO(nicholss): These colors are incorrect for the final product.
   // Need to update to the values in the mocks.
@@ -115,14 +115,14 @@ static const CGFloat kHostCardIconSize = 45.f;
   }
 }
 
+#pragma mark - UICollectionReusableView
+
 - (void)prepareForReuse {
   [super prepareForReuse];
-  self.title = nil;
-  self.status = nil;
-}
-
-+ (Class)layerClass {
-  return [MDCShadowLayer class];
+  _title = nil;
+  _status = nil;
+  _statusLabel.text = nil;
+  _titleLabel.text = nil;
 }
 
 @end

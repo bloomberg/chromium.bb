@@ -11,9 +11,7 @@
 
 @interface HostCollectionViewCell : MDCCollectionViewCell
 
-@property(nonatomic, copy) NSString* title;
-@property(nonatomic, copy) NSString* status;
-
+// Update a cell with a title and status. Typically called for cell reuse.
 - (void)populateContentWithTitle:(NSString*)title status:(NSString*)status;
 
 @end

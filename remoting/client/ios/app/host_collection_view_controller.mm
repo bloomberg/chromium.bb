@@ -8,12 +8,13 @@
 
 #import "remoting/client/ios/app/host_collection_view_controller.h"
 
-#import "MaterialInk.h"
-#import "MaterialShadowElevations.h"
-#import "MaterialShadowLayer.h"
-#import "remoting/client/ios/app/host_collection_view_cell.h"
+#import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
+#import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
+#import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
+#import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
 
-static NSString* const kReusableIdentifierItem = @"itemCellIdentifier";
+static NSString* const kReusableIdentifierItem =
+    @"remotingHostCollectionViewControllerItem";
 
 static CGFloat kHostCollectionViewControllerCellHeight = 70.f;
 static CGFloat kHostCollectionViewControllerDefaultHeaderHeight = 100.f;
@@ -21,18 +22,16 @@ static CGFloat kHostCollectionViewControllerSmallHeaderHeight = 60.f;
 static UIColor* kBackgroundColor =
     [UIColor colorWithRed:0.f green:0.67f blue:0.55f alpha:1.f];
 
-@interface HostCollectionViewController ()
-
-@property(nonatomic) MDCInkTouchController* inkTouchController;
-
+@interface HostCollectionViewController () {
+  MDCInkTouchController* _inkTouchController;
+}
 @end
 
 @implementation HostCollectionViewController
 
 @synthesize delegate = _delegate;
-@synthesize scrollOffsetY = _scrollOffsetY;
-@synthesize flexHeaderContainerVC = _flexHeaderContainerVC;
-@synthesize inkTouchController = _inkTouchController;
+@synthesize flexHeaderContainerViewController =
+    _flexHeaderContainerViewController;
 
 - (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout {
   self = [super initWithCollectionViewLayout:layout];
@@ -45,10 +44,10 @@ static UIColor* kBackgroundColor =
   return self;
 }
 
+#pragma mark - UIViewController
+
 - (void)viewDidLoad {
   [super viewDidLoad];
-
-  // Customize collection view settings.
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeGrid;
   self.styler.gridPadding = 0;
@@ -66,11 +65,11 @@ static UIColor* kBackgroundColor =
   [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
-#pragma mark - <UICollectionViewDataSource>
+#pragma mark - UICollectionViewDataSource
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  return [self.delegate getHostCount];
+  return [_delegate getHostCount];
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -79,43 +78,44 @@ static UIColor* kBackgroundColor =
       [collectionView dequeueReusableCellWithReuseIdentifier:
                           NSStringFromClass([HostCollectionViewCell class])
                                                 forIndexPath:indexPath];
-  Host* host = [self.delegate getHostAtIndexPath:indexPath];
-  [cell populateContentWithTitle:host.hostName status:host.status];
+  HostInfo* host = [_delegate getHostAtIndexPath:indexPath];
+  if (host) {
+    [cell populateContentWithTitle:host.hostName status:host.status];
+  }
   return cell;
 }
 
-#pragma mark - <UICollectionViewDelegate>
+#pragma mark - UICollectionViewDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-  HostCollectionViewCell* cell =
-      (HostCollectionViewCell*)[collectionView
-          cellForItemAtIndexPath:indexPath];
-  [self.delegate didSelectCell:cell
-                    completion:^{}];
+  HostCollectionViewCell* cell = (HostCollectionViewCell*)[collectionView
+      cellForItemAtIndexPath:indexPath];
+  [_delegate didSelectCell:cell
+                completion:^{
+                }];
 }
 
-#pragma mark - <MDCCollectionViewStylingDelegate>
+#pragma mark - MDCCollectionViewStylingDelegate
 
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   return kHostCollectionViewControllerCellHeight;
 }
 
-#pragma mark - <UIScrollViewDelegate>
+#pragma mark - UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  self.scrollOffsetY = scrollView.contentOffset.y;
-  [self.flexHeaderContainerVC.headerViewController
+  [self.flexHeaderContainerViewController.headerViewController
       scrollViewDidScroll:scrollView];
 }
 
-#pragma mark - Private methods
+#pragma mark - Private
 
 - (UIView*)hostsHeaderView {
   CGRect headerFrame =
-      _flexHeaderContainerVC.headerViewController.headerView.bounds;
+      _flexHeaderContainerViewController.headerViewController.headerView.bounds;
   UIView* hostsHeaderView = [[UIView alloc] initWithFrame:headerFrame];
   hostsHeaderView.backgroundColor = kBackgroundColor;
   hostsHeaderView.layer.masksToBounds = YES;
@@ -129,11 +129,12 @@ static UIColor* kBackgroundColor =
   return hostsHeaderView;
 }
 
-- (void)setFlexHeaderContainerVC:
-    (MDCFlexibleHeaderContainerViewController*)flexHeaderContainerVC {
-  _flexHeaderContainerVC = flexHeaderContainerVC;
+- (void)setflexHeaderContainerViewController:
+    (MDCFlexibleHeaderContainerViewController*)
+        flexHeaderContainerViewController {
+  _flexHeaderContainerViewController = flexHeaderContainerViewController;
   MDCFlexibleHeaderView* headerView =
-      _flexHeaderContainerVC.headerViewController.headerView;
+      _flexHeaderContainerViewController.headerViewController.headerView;
   headerView.trackingScrollView = self.collectionView;
   headerView.maximumHeight = kHostCollectionViewControllerDefaultHeaderHeight;
   headerView.minimumHeight = kHostCollectionViewControllerSmallHeaderHeight;
