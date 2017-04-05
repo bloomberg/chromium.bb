@@ -160,8 +160,6 @@ class CC_SURFACES_EXPORT Surface {
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 
-using PendingSurfaceSet = base::flat_set<Surface*>;
-
 }  // namespace cc
 
 #endif  // CC_SURFACES_SURFACE_H_

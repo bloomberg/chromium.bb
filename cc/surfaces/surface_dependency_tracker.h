@@ -84,10 +84,12 @@ class CC_SURFACES_EXPORT SurfaceDependencyTracker : public BeginFrameObserver,
   base::Optional<uint32_t> frames_since_deadline_set_;
 
   // A map from a SurfaceId to the set of Surfaces blocked on that SurfaceId.
-  std::unordered_map<SurfaceId, PendingSurfaceSet, SurfaceIdHash>
-      blocked_surfaces_;
+  std::unordered_map<SurfaceId, base::flat_set<SurfaceId>, SurfaceIdHash>
+      blocked_surfaces_from_dependency_;
 
-  PendingSurfaceSet pending_surfaces_;
+  // The set of SurfaceIds corresponding to observed Surfaces that have
+  // blockers.
+  base::flat_set<SurfaceId> observed_surfaces_by_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceDependencyTracker);
 };

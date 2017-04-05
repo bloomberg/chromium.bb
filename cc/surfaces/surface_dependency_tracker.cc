@@ -26,9 +26,12 @@ SurfaceDependencyTracker::SurfaceDependencyTracker(
 SurfaceDependencyTracker::~SurfaceDependencyTracker() {
   surface_manager_->RemoveObserver(this);
   begin_frame_source_->RemoveObserver(this);
-  for (Surface* pending_surface : pending_surfaces_)
-    pending_surface->RemoveObserver(this);
-  pending_surfaces_.clear();
+  for (const SurfaceId& surface_id : observed_surfaces_by_id_) {
+    Surface* observed_surface = surface_manager_->GetSurfaceForId(surface_id);
+    DCHECK(observed_surface);
+    observed_surface->RemoveObserver(this);
+  }
+  observed_surfaces_by_id_.clear();
 }
 
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
@@ -44,12 +47,13 @@ void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
        pending_frame.metadata.referenced_surfaces) {
     Surface* surface_dependency = surface_manager_->GetSurfaceForId(surface_id);
     if (!surface_dependency || !surface_dependency->HasActiveFrame())
-      blocked_surfaces_[surface_id].insert(surface);
+      blocked_surfaces_from_dependency_[surface_id].insert(
+          surface->surface_id());
   }
 
-  if (!pending_surfaces_.count(surface)) {
+  if (!observed_surfaces_by_id_.count(surface->surface_id())) {
     surface->AddObserver(this);
-    pending_surfaces_.insert(surface);
+    observed_surfaces_by_id_.insert(surface->surface_id());
   }
 
   if (needs_begin_frame && !frames_since_deadline_set_)
@@ -71,12 +75,24 @@ void SurfaceDependencyTracker::OnBeginFrame(const BeginFrameArgs& args) {
     return;
 
   // Activate all surfaces that respect the deadline.
-  PendingSurfaceSet pending_surfaces(pending_surfaces_);
-  for (Surface* pending_surface : pending_surfaces) {
-    // Clear all tracked blockers for |pending_surface|.
-    for (const SurfaceId& surface_id : pending_surface->blocking_surfaces())
-      blocked_surfaces_[surface_id].erase(pending_surface);
-    pending_surface->ActivatePendingFrameForDeadline();
+  // Copy the set of blocked surfaces here because that set can mutate as we
+  // activate CompositorFrames: an activation can trigger further activations
+  // which will remove elements from |observed_surfaces_by_id_|. This
+  // invalidates the iterator.
+  base::flat_set<SurfaceId> blocked_surfaces_by_id(observed_surfaces_by_id_);
+  for (const SurfaceId& surface_id : blocked_surfaces_by_id) {
+    Surface* blocked_surface = surface_manager_->GetSurfaceForId(surface_id);
+    if (!blocked_surface) {
+      // A blocked surface may have been garbage collected during dependency
+      // resolution.
+      DCHECK(!observed_surfaces_by_id_.count(surface_id));
+      continue;
+    }
+    // Clear all tracked blockers for |blocked_surface|.
+    for (const SurfaceId& blocking_surface_id :
+         blocked_surface->blocking_surfaces())
+      blocked_surfaces_from_dependency_[blocking_surface_id].erase(surface_id);
+    blocked_surface->ActivatePendingFrameForDeadline();
   }
 
   frames_since_deadline_set_.reset();
@@ -105,23 +121,24 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
 
   for (const SurfaceId& surface_id :
        pending_frame.metadata.referenced_surfaces) {
-    auto it = blocked_surfaces_.find(surface_id);
-    if (it == blocked_surfaces_.end())
+    auto it = blocked_surfaces_from_dependency_.find(surface_id);
+    if (it == blocked_surfaces_from_dependency_.end())
       continue;
 
-    auto& pending_surface_set = it->second;
-    auto pending_surface_it = pending_surface_set.find(surface);
-    if (pending_surface_it != pending_surface_set.end()) {
-      pending_surface_set.erase(surface);
-      if (pending_surface_set.empty())
-        blocked_surfaces_.erase(surface_id);
+    auto& blocked_surface_ids = it->second;
+    auto blocked_surface_ids_it =
+        blocked_surface_ids.find(surface->surface_id());
+    if (blocked_surface_ids_it != blocked_surface_ids.end()) {
+      blocked_surface_ids.erase(surface->surface_id());
+      if (blocked_surface_ids.empty())
+        blocked_surfaces_from_dependency_.erase(surface_id);
     }
   }
 
-  if (blocked_surfaces_.empty())
+  if (blocked_surfaces_from_dependency_.empty())
     frames_since_deadline_set_.reset();
 
-  pending_surfaces_.erase(surface);
+  observed_surfaces_by_id_.erase(surface->surface_id());
   surface->RemoveObserver(this);
 
   // Pretend that the discarded surface's SurfaceId is now available to unblock
@@ -131,7 +148,7 @@ void SurfaceDependencyTracker::OnSurfaceDiscarded(Surface* surface) {
 
 void SurfaceDependencyTracker::OnSurfaceActivated(Surface* surface) {
   surface->RemoveObserver(this);
-  pending_surfaces_.erase(surface);
+  observed_surfaces_by_id_.erase(surface->surface_id());
   NotifySurfaceIdAvailable(surface->surface_id());
 }
 
@@ -139,20 +156,21 @@ void SurfaceDependencyTracker::OnSurfaceDependenciesChanged(
     Surface* surface,
     const SurfaceDependencies& added_dependencies,
     const SurfaceDependencies& removed_dependencies) {
-  // Update the |blocked_surfaces_| map with the changes in dependencies.
+  // Update the |blocked_surfaces_from_dependency_| map with the changes in
+  // dependencies.
   for (const SurfaceId& surface_id : added_dependencies)
-    blocked_surfaces_[surface_id].insert(surface);
+    blocked_surfaces_from_dependency_[surface_id].insert(surface->surface_id());
 
   for (const SurfaceId& surface_id : removed_dependencies) {
-    auto it = blocked_surfaces_.find(surface_id);
-    it->second.erase(surface);
+    auto it = blocked_surfaces_from_dependency_.find(surface_id);
+    it->second.erase(surface->surface_id());
     if (it->second.empty())
-      blocked_surfaces_.erase(it);
+      blocked_surfaces_from_dependency_.erase(it);
   }
 
   // If there are no more dependencies to resolve then we don't need to have a
   // deadline.
-  if (blocked_surfaces_.empty())
+  if (blocked_surfaces_from_dependency_.empty())
     frames_since_deadline_set_.reset();
 }
 
@@ -171,21 +189,30 @@ void SurfaceDependencyTracker::OnSurfaceDamaged(const SurfaceId& surface_id,
 
 void SurfaceDependencyTracker::NotifySurfaceIdAvailable(
     const SurfaceId& surface_id) {
-  auto it = blocked_surfaces_.find(surface_id);
-  if (it == blocked_surfaces_.end())
+  auto it = blocked_surfaces_from_dependency_.find(surface_id);
+  if (it == blocked_surfaces_from_dependency_.end())
     return;
 
   // Unblock surfaces that depend on this |surface_id|.
-  PendingSurfaceSet blocked_pending_surface_set(it->second);
-  blocked_surfaces_.erase(it);
+  base::flat_set<SurfaceId> blocked_surfaces_by_id(it->second);
+  blocked_surfaces_from_dependency_.erase(it);
   // If there are no more blockers in the system, then we no longer need to
   // have a deadline.
-  if (blocked_surfaces_.empty())
+  if (blocked_surfaces_from_dependency_.empty())
     frames_since_deadline_set_.reset();
 
   // Tell each surface about the availability of its blocker.
-  for (Surface* blocked_pending_surface : blocked_pending_surface_set)
-    blocked_pending_surface->NotifySurfaceIdAvailable(surface_id);
+  for (const SurfaceId& blocked_surface_by_id : blocked_surfaces_by_id) {
+    Surface* blocked_surface =
+        surface_manager_->GetSurfaceForId(blocked_surface_by_id);
+    if (!blocked_surface) {
+      // A blocked surface may have been garbage collected during dependency
+      // resolution.
+      DCHECK(!observed_surfaces_by_id_.count(blocked_surface_by_id));
+      continue;
+    }
+    blocked_surface->NotifySurfaceIdAvailable(surface_id);
+  }
 }
 
 }  // namespace cc

@@ -171,10 +171,9 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     testing::Test::SetUp();
     begin_frame_source_ =
         base::MakeUnique<FakeExternalBeginFrameSource>(0.f, false);
-    std::unique_ptr<SurfaceDependencyTracker> dependency_tracker(
-        new SurfaceDependencyTracker(&surface_manager_,
-                                     begin_frame_source_.get()));
-    surface_manager_.SetDependencyTracker(std::move(dependency_tracker));
+    surface_manager_.SetDependencyTracker(
+        base::MakeUnique<SurfaceDependencyTracker>(&surface_manager_,
+                                                   begin_frame_source_.get()));
     supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
         &support_client_, &surface_manager_, kDisplayFrameSink,
         true /* is_root */, true /* handles_frame_sink_id_invalidation */,
@@ -1130,6 +1129,69 @@ TEST_F(CompositorFrameSinkSupportTest, DependencyTrackingGarbageCollection) {
   // |parent_id1| subtree. This should not crash.
   child_support1().SubmitCompositorFrame(
       child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+}
+
+// This test verifies that a crash does not occur if garbage collection is
+// triggered when a deadline forces frame activation. This test triggers garbage
+// collection during deadline activation by causing the activation of a display
+// frame to replace a previously activated display frame that was referring to
+// a now-unreachable surface subtree. That subtree gets garbage collected during
+// deadline activation. SurfaceDependencyTracker is also tracking a surface
+// from that subtree due to an unresolved dependency. This test verifies that
+// this dependency resolution does not crash.
+TEST_F(CompositorFrameSinkSupportTest, GarbageCollectionOnDeadline) {
+  const SurfaceId display_id = MakeSurfaceId(kDisplayFrameSink, 1);
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id = MakeSurfaceId(kChildFrameSink1, 1);
+
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          MakeCompositorFrame({parent_id1}));
+
+  EXPECT_TRUE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(dependency_tracker().has_deadline());
+  EXPECT_FALSE(display_surface()->HasActiveFrame());
+
+  // Advance BeginFrames to trigger a deadline. This activates the
+  // CompositorFrame submitted above.
+  BeginFrameArgs args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  for (int i = 0; i < 3; ++i) {
+    begin_frame_source()->TestOnBeginFrame(args);
+    EXPECT_TRUE(dependency_tracker().has_deadline());
+  }
+  begin_frame_source()->TestOnBeginFrame(args);
+  EXPECT_FALSE(dependency_tracker().has_deadline());
+  EXPECT_FALSE(display_surface()->HasPendingFrame());
+  EXPECT_TRUE(display_surface()->HasActiveFrame());
+
+  // |parent_id1| is blocked on |child_id|, but |display_id|'s CompositorFrame
+  // has activated due to a deadline. |parent_id1| will be tracked by the
+  // SurfaceDependencyTracker.
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+
+  // By submitting a display CompositorFrame, and replacing the parent's
+  // CompositorFrame with another surface ID, parent_id1 becomes unreachable and
+  // a candidate for garbage collection.
+  display_support().SubmitCompositorFrame(display_id.local_surface_id(),
+                                          MakeCompositorFrame({parent_id2}));
+
+  // Now |parent_id1| is only kept alive by the active |display_id| frame.
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+
+  // SurfaceDependencyTracker should now be tracking |display_id|, |parent_id1|
+  // and |parent_id2|. By activating the pending |display_id| frame by deadline,
+  // |parent_id1| becomes unreachable and is garbage collected while
+  // SurfaceDependencyTracker is in the process of activating surfaces. This
+  // should not cause a crash or use-after-free.
+  for (int i = 0; i < 3; ++i) {
+    begin_frame_source()->TestOnBeginFrame(args);
+    EXPECT_TRUE(dependency_tracker().has_deadline());
+  }
+  begin_frame_source()->TestOnBeginFrame(args);
+  EXPECT_FALSE(dependency_tracker().has_deadline());
 }
 
 }  // namespace test
