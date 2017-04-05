@@ -316,6 +316,30 @@ static inline bool transformUsesBoxSize(
   return false;
 }
 
+static FloatRect computeTransformReferenceBox(const SVGElement& element) {
+  const LayoutObject& layoutObject = *element.layoutObject();
+  const ComputedStyle& style = layoutObject.styleRef();
+  if (!RuntimeEnabledFeatures::cssTransformBoxEnabled()) {
+    FloatRect referenceBox = layoutObject.objectBoundingBox();
+    // Set the reference origin to zero when transform-origin (x/y) has a
+    // non-percentage unit.
+    const TransformOrigin& transformOrigin = style.transformOrigin();
+    if (transformOrigin.x().type() != Percent)
+      referenceBox.setX(0);
+    if (transformOrigin.y().type() != Percent)
+      referenceBox.setY(0);
+    return referenceBox;
+  }
+  if (style.transformBox() == ETransformBox::kFillBox)
+    return layoutObject.objectBoundingBox();
+  DCHECK(style.transformBox() == ETransformBox::kBorderBox ||
+         style.transformBox() == ETransformBox::kViewBox);
+  SVGLengthContext lengthContext(&element);
+  FloatSize viewportSize;
+  lengthContext.determineViewport(viewportSize);
+  return FloatRect(FloatPoint(), viewportSize);
+}
+
 AffineTransform SVGElement::calculateTransform(
     ApplyMotionTransform applyMotionTransform) const {
   const ComputedStyle* style =
@@ -325,16 +349,13 @@ AffineTransform SVGElement::calculateTransform(
   // set).
   AffineTransform matrix;
   if (style && style->hasTransform()) {
-    TransformationMatrix transform;
-    float zoom = style->effectiveZoom();
-
-    FloatRect boundingBox = layoutObject()->objectBoundingBox();
+    FloatRect referenceBox = computeTransformReferenceBox(*this);
     ComputedStyle::ApplyTransformOrigin applyTransformOrigin =
         ComputedStyle::IncludeTransformOrigin;
     // SVGTextElements need special handling for the text positioning code.
     if (isSVGTextElement(this)) {
       // Do not take into account transform-origin, or percentage values.
-      boundingBox = FloatRect();
+      referenceBox = FloatRect();
       applyTransformOrigin = ComputedStyle::ExcludeTransformOrigin;
     }
 
@@ -344,7 +365,7 @@ AffineTransform SVGElement::calculateTransform(
     // CSS transforms operate with pre-scaled lengths. To make this work with
     // SVG (which applies the zoom factor globally, at the root level) we
     //
-    //   * pre-scale the bounding box (to bring it into the same space as the
+    //   * pre-scale the reference box (to bring it into the same space as the
     //     other CSS values)
     //   * invert the zoom factor (to effectively compute the CSS transform
     //     under a 1.0 zoom)
@@ -352,17 +373,19 @@ AffineTransform SVGElement::calculateTransform(
     // Note: objectBoundingBox is an emptyRect for elements like pattern or
     // clipPath. See the "Object bounding box units" section of
     // http://dev.w3.org/csswg/css3-transforms/
+    float zoom = style->effectiveZoom();
+    TransformationMatrix transform;
     if (zoom != 1) {
-      boundingBox.scale(zoom);
+      referenceBox.scale(zoom);
       transform.scale(1 / zoom);
       style->applyTransform(
-          transform, boundingBox, applyTransformOrigin,
+          transform, referenceBox, applyTransformOrigin,
           ComputedStyle::IncludeMotionPath,
           ComputedStyle::IncludeIndependentTransformProperties);
       transform.scale(zoom);
     } else {
       style->applyTransform(
-          transform, boundingBox, applyTransformOrigin,
+          transform, referenceBox, applyTransformOrigin,
           ComputedStyle::IncludeMotionPath,
           ComputedStyle::IncludeIndependentTransformProperties);
     }

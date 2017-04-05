@@ -1312,12 +1312,10 @@ void ComputedStyle::applyTransform(
   if (applyTransformOrigin ||
       // We need to calculate originX and originY for applying motion path.
       applyMotionPath == IncludeMotionPath) {
-    float offsetX = transformOriginX().type() == Percent ? boundingBox.x() : 0;
-    originX =
-        floatValueForLength(transformOriginX(), boxSize.width()) + offsetX;
-    float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
-    originY =
-        floatValueForLength(transformOriginY(), boxSize.height()) + offsetY;
+    originX = floatValueForLength(transformOriginX(), boxSize.width()) +
+              boundingBox.x();
+    originY = floatValueForLength(transformOriginY(), boxSize.height()) +
+              boundingBox.y();
     if (applyTransformOrigin) {
       originZ = transformOriginZ();
       result.translate3d(originX, originY, originZ);

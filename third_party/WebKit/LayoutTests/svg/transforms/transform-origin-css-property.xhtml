@@ -12,6 +12,12 @@
     fill: green;
     transform: rotate(90deg);
 }
+.relative {
+    transform-box: fill-box;
+}
+.absolute {
+    transform-box: view-box;
+}
 </style>
 
 <!--
@@ -30,7 +36,8 @@
     function addTransformOriginRect(x, y, s)
     {
        var rect = document.createElementNS(svgNS, "rect");
-       var transformOrigin = (typeof(s) == "string") ? s :  (x + s[0]) + " " + (y + s[1]);
+       var transformOrigin = (typeof(s) == "string") ? s :  (x + s[0] + "px") + " " + (y + s[1] + "px");
+       rect.setAttribute("class", typeof(s) == "string" ? "relative" : "absolute");
        rect.setAttribute("id", "transformOriginRect");
        rect.setAttribute("x", x);
        rect.setAttribute("y", y);

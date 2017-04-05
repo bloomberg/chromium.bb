@@ -3162,6 +3162,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSIdentifierValue::create(style.speak());
     case CSSPropertyTransform:
       return computedTransform(layoutObject, style);
+    case CSSPropertyTransformBox:
+      return CSSIdentifierValue::create(style.transformBox());
     case CSSPropertyTransformOrigin: {
       CSSValueList* list = CSSValueList::createSpaceSeparated();
       if (layoutObject) {

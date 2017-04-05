@@ -752,6 +752,13 @@
     "preserve-3d",
 
     //
+    // transform-box
+    //
+    // border-box
+    "fill-box",
+    "view-box",
+
+    //
     // transition-timing-function
     // animation-timing-function
     //

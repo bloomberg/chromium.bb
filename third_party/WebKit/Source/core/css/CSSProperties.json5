@@ -1929,6 +1929,13 @@
       typedom_types: ["Transform"],
     },
     {
+      name: "transform-box",
+      field_template: "keyword",
+      keywords: ["border-box", "fill-box", "view-box"],
+      default_value: "border-box",
+      runtime_flag: "CSSTransformBox",
+    },
+    {
       name: "transform-origin",
       api_class: true,
       api_methods: ["parseSingleValue"],

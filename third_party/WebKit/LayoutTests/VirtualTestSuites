@@ -104,6 +104,11 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "stable",
+    "base": "svg/transforms/stable",
+    "args": ["--stable-release-mode"]
+  },
+  {
     "prefix": "disable-spinvalidation",
     "base": "compositing",
     "args": ["--disable-slimming-paint-invalidation"]

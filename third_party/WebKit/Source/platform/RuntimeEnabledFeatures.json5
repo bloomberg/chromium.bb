@@ -292,6 +292,10 @@
       status: "stable",
     },
     {
+      name: "CSSTransformBox",
+      status: "experimental",
+    },
+    {
       name: "CSSTypedOM",
       status: "experimental",
     },

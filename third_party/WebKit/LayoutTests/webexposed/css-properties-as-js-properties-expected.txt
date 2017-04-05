@@ -295,6 +295,7 @@ textUnderlinePosition
 top
 touchAction
 transform
+transformBox
 transformOrigin
 transformStyle
 transition

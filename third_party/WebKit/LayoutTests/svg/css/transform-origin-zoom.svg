@@ -10,6 +10,7 @@
 
   <rect x="301" y="101" width="98" height="98" fill="red" transform="rotate(45, 350, 150)"/>
   <rect x="300" y="100" width="100" height="100" fill="green" style="
+    transform-box: fill-box;
     transform-origin: 50% 50%;
     transform: rotate(45deg);
   "/>

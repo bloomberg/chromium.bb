@@ -806,6 +806,9 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(
     case CSSPropertyWebkitTextSecurity:
       return valueID == CSSValueDisc || valueID == CSSValueCircle ||
              valueID == CSSValueSquare || valueID == CSSValueNone;
+    case CSSPropertyTransformBox:
+      return valueID == CSSValueBorderBox || valueID == CSSValueFillBox ||
+             valueID == CSSValueViewBox;
     case CSSPropertyTransformStyle:
       return valueID == CSSValueFlat || valueID == CSSValuePreserve3d;
     case CSSPropertyWebkitUserDrag:
@@ -938,6 +941,7 @@ bool CSSParserFastPaths::isKeywordPropertyID(CSSPropertyID propertyId) {
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
+    case CSSPropertyTransformBox:
     case CSSPropertyTransformStyle:
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
