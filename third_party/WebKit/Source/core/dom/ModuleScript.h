@@ -6,7 +6,9 @@
 #define ModuleScript_h
 
 #include "bindings/core/v8/ScriptModule.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperV8Reference.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -43,17 +45,21 @@ class CORE_EXPORT ModuleScript final
   void clearRecord() { m_record = ScriptModule(); }
   const KURL& baseURL() const { return m_baseURL; }
 
+  ModuleInstantiationState instantiationState() const {
+    return m_instantiationState;
+  }
+
+  void setInstantiationSuccess();
+  void setInstantiationError(v8::Isolate*, v8::Local<v8::Value> error);
+
   ParserDisposition parserState() const { return m_parserState; }
   WebURLRequest::FetchCredentialsMode credentialsMode() const {
     return m_credentialsMode;
   }
   const String& nonce() const { return m_nonce; }
 
-  ModuleInstantiationState instantiationState() const {
-    return m_instantiationState;
-  }
-
   DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   ModuleScript(ScriptModule record,
@@ -63,6 +69,7 @@ class CORE_EXPORT ModuleScript final
                WebURLRequest::FetchCredentialsMode credentialsMode)
       : m_record(record),
         m_baseURL(baseURL),
+        m_instantiationError(this),
         m_nonce(nonce),
         m_parserState(parserState),
         m_credentialsMode(credentialsMode) {}
@@ -83,7 +90,7 @@ class CORE_EXPORT ModuleScript final
       ModuleInstantiationState::Uninstantiated;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-instantiation-error
-  // TODO(kouhei): Add a corresponding member.
+  TraceWrapperV8Reference<v8::Value> m_instantiationError;
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-module-script-nonce
   const String m_nonce;
