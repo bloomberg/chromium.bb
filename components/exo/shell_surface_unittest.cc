@@ -9,6 +9,8 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
@@ -50,6 +52,13 @@ uint32_t ConfigureFullscreen(uint32_t serial,
 
 wm::ShadowElevation GetShadowElevation(aura::Window* window) {
   return window->GetProperty(wm::kShadowElevationKey);
+}
+
+bool IsWidgetPinned(views::Widget* widget) {
+  ash::mojom::WindowPinType type =
+      widget->GetNativeWindow()->GetProperty(ash::kWindowPinTypeKey);
+  return type == ash::mojom::WindowPinType::PINNED ||
+         type == ash::mojom::WindowPinType::TRUSTED_PINNED;
 }
 
 TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
@@ -186,25 +195,17 @@ TEST_F(ShellSurfaceTest, SetPinned) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
-  shell_surface->SetPinned(true, /* trusted */ true);
-  EXPECT_TRUE(
-      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
-          ->IsPinned());
+  shell_surface->SetPinned(ash::mojom::WindowPinType::TRUSTED_PINNED);
+  EXPECT_TRUE(IsWidgetPinned(shell_surface->GetWidget()));
 
-  shell_surface->SetPinned(false, /* trusted */ true);
-  EXPECT_FALSE(
-      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
-          ->IsPinned());
+  shell_surface->SetPinned(ash::mojom::WindowPinType::NONE);
+  EXPECT_FALSE(IsWidgetPinned(shell_surface->GetWidget()));
 
-  shell_surface->SetPinned(true, /* trusted */ false);
-  EXPECT_TRUE(
-      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
-          ->IsPinned());
+  shell_surface->SetPinned(ash::mojom::WindowPinType::PINNED);
+  EXPECT_TRUE(IsWidgetPinned(shell_surface->GetWidget()));
 
-  shell_surface->SetPinned(false, /* trusted */ false);
-  EXPECT_FALSE(
-      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow())
-          ->IsPinned());
+  shell_surface->SetPinned(ash::mojom::WindowPinType::NONE);
+  EXPECT_FALSE(IsWidgetPinned(shell_surface->GetWidget()));
 }
 
 TEST_F(ShellSurfaceTest, SetSystemUiVisibility) {

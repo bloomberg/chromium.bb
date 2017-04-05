@@ -13,6 +13,8 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -482,9 +484,9 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   widget_->SetFullscreen(fullscreen);
 }
 
-void ShellSurface::SetPinned(bool pinned, bool trusted) {
-  TRACE_EVENT2("exo", "ShellSurface::SetPinned", "pinned", pinned, "trusted",
-               trusted);
+void ShellSurface::SetPinned(ash::mojom::WindowPinType type) {
+  TRACE_EVENT1("exo", "ShellSurface::SetPinned", "type",
+               static_cast<int>(type));
 
   if (!widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
@@ -492,16 +494,7 @@ void ShellSurface::SetPinned(bool pinned, bool trusted) {
   // Note: This will ask client to configure its surface even if pinned
   // state doesn't change.
   ScopedConfigure scoped_configure(this, true);
-  if (pinned) {
-    ash::wm::PinWindow(widget_->GetNativeWindow(), trusted);
-  } else {
-    // At the moment, we cannot just unpin the window state, due to ash
-    // implementation. Instead, we call Restore() to unpin, if it is Pinned
-    // state. In this implementation, we may loose the previous state,
-    // if the previous state is fullscreen, etc.
-    if (ash::wm::GetWindowState(widget_->GetNativeWindow())->IsPinned())
-      widget_->Restore();
-  }
+  widget_->GetNativeWindow()->SetProperty(ash::kWindowPinTypeKey, type);
 }
 
 void ShellSurface::SetSystemUiVisibility(bool autohide) {

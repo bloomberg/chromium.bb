@@ -13,7 +13,10 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/window_properties.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "base/auto_reset.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 namespace wm {
@@ -38,6 +41,19 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
       NOTREACHED() << "No WMEvent defined for the show state:"
                    << requested_show_state;
   }
+  return WM_EVENT_NORMAL;
+}
+
+WMEventType WMEventTypeFromWindowPinType(ash::mojom::WindowPinType type) {
+  switch (type) {
+    case ash::mojom::WindowPinType::NONE:
+      return WM_EVENT_NORMAL;
+    case ash::mojom::WindowPinType::PINNED:
+      return WM_EVENT_PIN;
+    case ash::mojom::WindowPinType::TRUSTED_PINNED:
+      return WM_EVENT_TRUSTED_PIN;
+  }
+  NOTREACHED() << "No WMEvent defined for the window pin type:" << type;
   return WM_EVENT_NORMAL;
 }
 
@@ -286,6 +302,13 @@ void WindowState::OnWindowShowStateChanged() {
   }
 }
 
+void WindowState::OnWindowPinTypeChanged() {
+  if (!ignore_property_change_) {
+    WMEvent event(WMEventTypeFromWindowPinType(GetPinType()));
+    OnWMEvent(&event);
+  }
+}
+
 WindowState::WindowState(WmWindow* window)
     : window_(window),
       window_position_managed_(false),
@@ -310,6 +333,10 @@ ui::WindowShowState WindowState::GetShowState() const {
   return window_->GetShowState();
 }
 
+ash::mojom::WindowPinType WindowState::GetPinType() const {
+  return window_->aura_window()->GetProperty(kWindowPinTypeKey);
+}
+
 void WindowState::SetBoundsInScreen(const gfx::Rect& bounds_in_screen) {
   gfx::Rect bounds_in_parent =
       window_->GetParent()->ConvertRectFromScreen(bounds_in_screen);
@@ -328,12 +355,23 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
   bounds->set_height(maximized_bounds.height());
 }
 
-void WindowState::UpdateWindowShowStateFromStateType() {
+void WindowState::UpdateWindowPropertiesFromStateType() {
   ui::WindowShowState new_window_state =
       ToWindowShowState(current_state_->GetType());
   if (new_window_state != GetShowState()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetShowState(new_window_state);
+  }
+
+  // sync up current window show state with PinType property.
+  ash::mojom::WindowPinType pin_type = ash::mojom::WindowPinType::NONE;
+  if (GetStateType() == WINDOW_STATE_TYPE_PINNED)
+    pin_type = ash::mojom::WindowPinType::PINNED;
+  else if (GetStateType() == WINDOW_STATE_TYPE_TRUSTED_PINNED)
+    pin_type = ash::mojom::WindowPinType::TRUSTED_PINNED;
+  if (pin_type != GetPinType()) {
+    base::AutoReset<bool> resetter(&ignore_property_change_, true);
+    window_->aura_window()->SetProperty(kWindowPinTypeKey, pin_type);
   }
 }
 

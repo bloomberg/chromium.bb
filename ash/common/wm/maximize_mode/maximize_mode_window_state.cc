@@ -263,7 +263,7 @@ void MaximizeModeWindowState::UpdateWindow(wm::WindowState* window_state,
 
   const wm::WindowStateType old_state_type = current_state_type_;
   current_state_type_ = target_state;
-  window_state->UpdateWindowShowStateFromStateType();
+  window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(old_state_type);
 
   if (target_state == wm::WINDOW_STATE_TYPE_MINIMIZED) {

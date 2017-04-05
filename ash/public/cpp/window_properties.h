@@ -18,6 +18,10 @@ using WindowProperty = ui::ClassProperty<T>;
 
 namespace ash {
 
+namespace mojom {
+enum class WindowPinType;
+}
+
 // Shell-specific window property keys for use by ash and its clients.
 
 // Alphabetical sort.
@@ -29,6 +33,14 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // A property key to store the type of a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;
+
+// A property key to store ash::WindowPinType for a window.
+// When setting this property to PINNED or TRUSTED_PINNED, the window manager
+// will try to fullscreen the window and pin it on the top of the screen. If the
+// window manager failed to do it, the property will be restored to NONE. When
+// setting this property to NONE, the window manager will restore the window.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    ash::mojom::WindowPinType>* const kWindowPinTypeKey;
 
 // Alphabetical sort.
 

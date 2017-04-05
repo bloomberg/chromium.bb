@@ -25,6 +25,9 @@
 
 namespace ash {
 class WindowResizer;
+namespace mojom {
+enum class WindowPinType;
+}
 }
 
 namespace base {
@@ -129,8 +132,8 @@ class ShellSurface : public SurfaceDelegate,
   // Set fullscreen state for shell surface.
   void SetFullscreen(bool fullscreen);
 
-  // Pins the shell surface. |trusted| flag is ignored when |pinned| is false.
-  void SetPinned(bool pinned, bool trusted);
+  // Pins the shell surface.
+  void SetPinned(ash::mojom::WindowPinType type);
 
   // Sets whether or not the shell surface should autohide the system UI.
   void SetSystemUiVisibility(bool autohide);

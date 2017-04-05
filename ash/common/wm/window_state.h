@@ -28,6 +28,10 @@ class LockWindowState;
 class MaximizeModeWindowState;
 class WmWindow;
 
+namespace mojom {
+enum class WindowPinType;
+}
+
 namespace wm {
 class WindowStateDelegate;
 class WindowStateObserver;
@@ -319,6 +323,9 @@ class ASH_EXPORT WindowState {
   // Called from the associated WmWindow once the show state changes.
   void OnWindowShowStateChanged();
 
+  // Called from the associated WmWindow once the window pin type changes.
+  void OnWindowPinTypeChanged();
+
  protected:
   explicit WindowState(WmWindow* window);
 
@@ -338,6 +345,9 @@ class ASH_EXPORT WindowState {
   // Returns the window's current show state.
   ui::WindowShowState GetShowState() const;
 
+  // Return the window's current pin type.
+  ash::mojom::WindowPinType GetPinType() const;
+
   // Sets the window's bounds in screen coordinates.
   void SetBoundsInScreen(const gfx::Rect& bounds_in_screen);
 
@@ -345,9 +355,10 @@ class ASH_EXPORT WindowState {
   // workspace if the window represented by |window_state| is side snapped.
   void AdjustSnappedBounds(gfx::Rect* bounds);
 
-  // Updates the window show state according to the current window state type.
+  // Updates the window properties(show state, pin type) according to the
+  // current window state type.
   // Note that this does not update the window bounds.
-  void UpdateWindowShowStateFromStateType();
+  void UpdateWindowPropertiesFromStateType();
 
   void NotifyPreStateTypeChange(WindowStateType old_window_state_type);
   void NotifyPostStateTypeChange(WindowStateType old_window_state_type);

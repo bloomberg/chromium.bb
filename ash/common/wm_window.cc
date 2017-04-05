@@ -776,6 +776,10 @@ void WmWindow::OnWindowPropertyChanged(aura::Window* window,
     GetWindowState()->set_in_immersive_fullscreen(enable);
     return;
   }
+  if (key == kWindowPinTypeKey) {
+    ash::wm::GetWindowState(window_)->OnWindowPinTypeChanged();
+    return;
+  }
 }
 
 void WmWindow::OnTransientChildAdded(aura::Window* window,

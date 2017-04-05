@@ -18,6 +18,8 @@ component("ash_public_cpp") {
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
+    "window_pin_type.cc",
+    "window_pin_type.h",
     "window_properties.cc",
     "window_properties.h",
     "window_style.cc",

@@ -484,7 +484,7 @@ void DefaultState::EnterToNextState(WindowState* window_state,
   WindowStateType previous_state_type = state_type_;
   state_type_ = next_state_type;
 
-  window_state->UpdateWindowShowStateFromStateType();
+  window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
   if (window_state->window()->GetParent()) {
@@ -548,7 +548,7 @@ void DefaultState::ReenterToCurrentState(
     state_type_ = previous_state_type;
   }
 
-  window_state->UpdateWindowShowStateFromStateType();
+  window_state->UpdateWindowPropertiesFromStateType();
   window_state->NotifyPreStateTypeChange(previous_state_type);
 
   if ((state_type_ == wm::WINDOW_STATE_TYPE_NORMAL ||

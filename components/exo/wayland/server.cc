@@ -31,6 +31,7 @@
 #include <utility>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
@@ -1951,11 +1952,14 @@ void remote_surface_unfullscreen(wl_client* client, wl_resource* resource) {
 void remote_surface_pin(wl_client* client,
                         wl_resource* resource,
                         int32_t trusted) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(true, trusted);
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(
+      trusted ? ash::mojom::WindowPinType::TRUSTED_PINNED
+              : ash::mojom::WindowPinType::PINNED);
 }
 
 void remote_surface_unpin(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetPinned(false, /* trusted */ false);
+  GetUserDataAs<ShellSurface>(resource)->SetPinned(
+      ash::mojom::WindowPinType::NONE);
 }
 
 void remote_surface_set_system_modal(wl_client* client, wl_resource* resource) {
