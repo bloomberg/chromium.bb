@@ -30,11 +30,16 @@ cr.define('settings', function() {
     getAvailableIcons: function() {},
 
     /**
-     * Sets the profile's icon and name. There is no response.
+     * Sets the profile's icon.
      * @param {!string} iconUrl The new profile URL.
+     */
+    setProfileIcon: function(iconUrl) {},
+
+    /**
+     * Sets the profile's name.
      * @param {!string} name The new profile name.
      */
-    setProfileIconAndName: function(iconUrl, name) {},
+    setProfileName: function(name) {},
 
     /**
      * Returns whether the current profile has a shortcut.
@@ -69,8 +74,13 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    setProfileIconAndName: function(iconUrl, name) {
-      chrome.send('setProfileIconAndName', [iconUrl, name]);
+    setProfileIcon: function(iconUrl) {
+      chrome.send('setProfileIcon', [iconUrl]);
+    },
+
+    /** @override */
+    setProfileName: function(name) {
+      chrome.send('setProfileName', [name]);
     },
 
     /** @override */

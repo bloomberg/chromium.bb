@@ -33,8 +33,8 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest,
-                           HandleSetProfileIconAndName);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleSetProfileIcon);
+  FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleSetProfileName);
   FRIEND_TEST_ALL_PREFIXES(ManageProfileHandlerTest, HandleGetAvailableIcons);
 
   // Callback for the "getAvailableIcons" message.
@@ -44,13 +44,11 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
   // Get all the available profile icons to choose from.
   std::unique_ptr<base::ListValue> GetAvailableIcons();
 
-  // Callback for the "setProfileIconAndName" message. Sets the name and icon
-  // of a given profile.
-  // |args| is of the form: [
-  //   /*string*/ newProfileIconURL
-  //   /*string*/ newProfileName,
-  // ]
-  void HandleSetProfileIconAndName(const base::ListValue* args);
+  // Callback for the "setProfileIcon" message.
+  void HandleSetProfileIcon(const base::ListValue* args);
+
+  // Callback for the "setProfileName" message.
+  void HandleSetProfileName(const base::ListValue* args);
 
   // Callback for the "requestProfileShortcutStatus" message, which is called
   // when editing an existing profile. Asks the profile shortcut manager whether

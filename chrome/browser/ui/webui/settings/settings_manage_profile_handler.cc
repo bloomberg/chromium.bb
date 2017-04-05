@@ -62,9 +62,11 @@ void ManageProfileHandler::RegisterMessages() {
       base::Bind(&ManageProfileHandler::HandleGetAvailableIcons,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setProfileIconAndName",
-      base::Bind(&ManageProfileHandler::HandleSetProfileIconAndName,
-                 base::Unretained(this)));
+      "setProfileIcon", base::Bind(&ManageProfileHandler::HandleSetProfileIcon,
+                                   base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setProfileName", base::Bind(&ManageProfileHandler::HandleSetProfileName,
+                                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestProfileShortcutStatus",
       base::Bind(&ManageProfileHandler::HandleRequestProfileShortcutStatus,
@@ -132,11 +134,10 @@ std::unique_ptr<base::ListValue> ManageProfileHandler::GetAvailableIcons() {
   return image_url_list;
 }
 
-void ManageProfileHandler::HandleSetProfileIconAndName(
-    const base::ListValue* args) {
+void ManageProfileHandler::HandleSetProfileIcon(const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(args);
-  DCHECK_EQ(2u, args->GetSize());
+  DCHECK_EQ(1u, args->GetSize());
 
   std::string icon_url;
   CHECK(args->GetString(0, &icon_url));
@@ -167,17 +168,26 @@ void ManageProfileHandler::HandleSetProfileIconAndName(
     // Only default avatars and Gaia account photos are supported.
     CHECK(false);
   }
+
   ProfileMetrics::LogProfileUpdate(profile_->GetPath());
+}
+
+void ManageProfileHandler::HandleSetProfileName(const base::ListValue* args) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(args);
+  DCHECK_EQ(1u, args->GetSize());
 
   if (profile_->IsLegacySupervised())
     return;
 
   base::string16 new_profile_name;
-  CHECK(args->GetString(1, &new_profile_name));
+  CHECK(args->GetString(0, &new_profile_name));
 
   base::TrimWhitespace(new_profile_name, base::TRIM_ALL, &new_profile_name);
   CHECK(!new_profile_name.empty());
   profiles::UpdateProfileName(profile_, new_profile_name);
+
+  ProfileMetrics::LogProfileUpdate(profile_->GetPath());
 }
 
 void ManageProfileHandler::HandleRequestProfileShortcutStatus(

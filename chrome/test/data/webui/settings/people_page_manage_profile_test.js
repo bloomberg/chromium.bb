@@ -11,7 +11,8 @@ cr.define('settings_people_page_manage_profile', function() {
   var TestManageProfileBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
       'getAvailableIcons',
-      'setProfileIconAndName',
+      'setProfileIcon',
+      'setProfileName',
       'getProfileShortcutStatus',
       'addProfileShortcut',
       'removeProfileShortcut',
@@ -37,8 +38,13 @@ cr.define('settings_people_page_manage_profile', function() {
     },
 
     /** @override */
-    setProfileIconAndName: function(iconUrl, name) {
-      this.methodCalled('setProfileIconAndName', [iconUrl, name]);
+    setProfileIcon: function(iconUrl) {
+      this.methodCalled('setProfileIcon', [iconUrl]);
+    },
+
+    /** @override */
+    setProfileName: function(name) {
+      this.methodCalled('setProfileName', [name]);
     },
 
     /** @override */
@@ -94,10 +100,9 @@ cr.define('settings_people_page_manage_profile', function() {
           assertFalse(selector.items[1].classList.contains('iron-selected'));
 
           MockInteractions.tap(selector.items[1]);
-          return browserProxy.whenCalled('setProfileIconAndName').then(
+          return browserProxy.whenCalled('setProfileIcon').then(
               function(args) {
                 assertEquals('fake-icon-2.png', args[0]);
-                assertEquals('Initial Fake Name', args[1]);
               });
         });
       });
@@ -129,10 +134,9 @@ cr.define('settings_people_page_manage_profile', function() {
         nameField.value = 'New Name';
         nameField.fire('change');
 
-        return browserProxy.whenCalled('setProfileIconAndName').then(
+        return browserProxy.whenCalled('setProfileName').then(
             function(args) {
-              assertEquals('fake-icon-1.png', args[0]);
-              assertEquals('New Name', args[1]);
+              assertEquals('New Name', args[0]);
             });
       });
 

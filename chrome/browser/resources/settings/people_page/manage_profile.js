@@ -98,8 +98,7 @@ Polymer({
     if (event.target.invalid)
       return;
 
-    this.browserProxy_.setProfileIconAndName(this.profileIconUrl,
-                                             event.target.value);
+    this.browserProxy_.setProfileName(event.target.value);
   },
 
   /**
@@ -120,8 +119,7 @@ Polymer({
    * @private
    */
   onIconActivate_: function(event) {
-    this.browserProxy_.setProfileIconAndName(event.detail.selected,
-                                             this.profileName);
+    this.browserProxy_.setProfileIcon(event.detail.selected);
   },
 
   /**
