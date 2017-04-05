@@ -1283,7 +1283,8 @@ class TextureLayerChangeInvisibleMailboxTest
   int commit_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerChangeInvisibleMailboxTest);
+// Flaky when multi-threaded. crbug.com/702868
+SINGLE_THREAD_TEST_F(TextureLayerChangeInvisibleMailboxTest);
 
 // Test that TextureLayerImpl::ReleaseResources can be called which releases
 // the mailbox back to TextureLayerClient.
