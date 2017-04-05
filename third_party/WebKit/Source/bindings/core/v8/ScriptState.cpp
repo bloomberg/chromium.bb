@@ -7,7 +7,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
 
 namespace blink {
 
@@ -79,14 +78,6 @@ void ScriptState::setExecutionContext(ExecutionContext*) {
 LocalDOMWindow* ScriptState::domWindow() const {
   v8::HandleScope scope(m_isolate);
   return toLocalDOMWindow(context());
-}
-
-ScriptState* ScriptState::forMainWorld(LocalFrame* frame) {
-  return toScriptStateForMainWorld(frame);
-}
-
-ScriptState* ScriptState::forWorld(LocalFrame* frame, DOMWrapperWorld& world) {
-  return toScriptState(frame, world);
 }
 
 }  // namespace blink
