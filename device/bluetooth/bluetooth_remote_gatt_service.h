@@ -16,6 +16,7 @@ namespace device {
 
 class BluetoothDevice;
 class BluetoothRemoteGattCharacteristic;
+class BluetoothUUID;
 
 // BluetoothRemoteGattService represents a remote GATT service.
 //
@@ -49,6 +50,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattService
   // to this GATT service.
   virtual BluetoothRemoteGattCharacteristic* GetCharacteristic(
       const std::string& identifier) const = 0;
+
+  std::vector<BluetoothRemoteGattCharacteristic*> GetCharacteristicsByUUID(
+      const BluetoothUUID& characteristic_uuid);
 
  protected:
   BluetoothRemoteGattService();

@@ -449,10 +449,9 @@ void WebBluetoothServiceImpl::RemoteServiceGetCharacteristics(
   }
 
   std::vector<device::BluetoothRemoteGattCharacteristic*> characteristics =
-      characteristics_uuid
-          ? query_result.device->GetCharacteristicsByUUID(
-                service_instance_id, characteristics_uuid.value())
-          : query_result.service->GetCharacteristics();
+      characteristics_uuid ? query_result.service->GetCharacteristicsByUUID(
+                                 characteristics_uuid.value())
+                           : query_result.service->GetCharacteristics();
 
   std::vector<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>
       response_characteristics;
@@ -529,11 +528,10 @@ void WebBluetoothServiceImpl::RemoteCharacteristicGetDescriptors(
     return;
   }
 
-  auto descriptors =
-      descriptors_uuid
-          ? query_result.device->GetDescriptorsByUUID(
-                query_result.characteristic, descriptors_uuid.value())
-          : query_result.characteristic->GetDescriptors();
+  auto descriptors = descriptors_uuid
+                         ? query_result.characteristic->GetDescriptorsByUUID(
+                               descriptors_uuid.value())
+                         : query_result.characteristic->GetDescriptors();
 
   std::vector<blink::mojom::WebBluetoothRemoteGATTDescriptorPtr>
       response_descriptors;

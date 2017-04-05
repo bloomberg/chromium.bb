@@ -4,10 +4,27 @@
 
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_uuid.h"
+
 namespace device {
 
 BluetoothRemoteGattService::BluetoothRemoteGattService() {}
 
 BluetoothRemoteGattService::~BluetoothRemoteGattService() {}
+
+std::vector<BluetoothRemoteGattCharacteristic*>
+BluetoothRemoteGattService::GetCharacteristicsByUUID(
+    const BluetoothUUID& characteristic_uuid) {
+  std::vector<BluetoothRemoteGattCharacteristic*> result;
+  std::vector<BluetoothRemoteGattCharacteristic*> characteristics =
+      GetCharacteristics();
+  for (auto* characteristic : characteristics) {
+    if (characteristic->GetUUID() == characteristic_uuid) {
+      result.push_back(characteristic);
+    }
+  }
+  return result;
+}
 
 }  // namespace device

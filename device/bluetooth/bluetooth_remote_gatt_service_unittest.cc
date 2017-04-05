@@ -173,6 +173,67 @@ TEST_F(BluetoothRemoteGattServiceTest,
   EXPECT_EQ(service->GetCharacteristic(char_id1),
             service->GetCharacteristic(char_id1));
 }
+
+TEST_F(BluetoothRemoteGattServiceTest, GetCharacteristicsByUUID) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = SimulateLowEnergyDevice(3);
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate two primary GATT services.
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back("01010101-0101-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+  base::RunLoop().RunUntilIdle();
+  BluetoothRemoteGattService* service1 = device->GetGattServices()[0];
+  BluetoothRemoteGattService* service2 = device->GetGattServices()[1];
+  std::string characteristic_uuid1 = "11111111-0000-1000-8000-00805f9b34fb";
+  std::string characteristic_uuid2 = "22222222-0000-1000-8000-00805f9b34fb";
+  SimulateGattCharacteristic(service1, characteristic_uuid1,
+                             /* properties */ 0);
+  // 2 duplicate UUIDs creating 2 instances.
+  SimulateGattCharacteristic(service2, characteristic_uuid2,
+                             /* properties */ 0);
+  SimulateGattCharacteristic(service2, characteristic_uuid2,
+                             /* properties */ 0);
+
+  {
+    std::vector<BluetoothRemoteGattCharacteristic*> characteristics =
+        service1->GetCharacteristicsByUUID(BluetoothUUID(characteristic_uuid1));
+    EXPECT_EQ(1u, characteristics.size());
+    EXPECT_EQ(characteristic_uuid1,
+              characteristics[0]->GetUUID().canonical_value());
+  }
+
+  {
+    std::vector<BluetoothRemoteGattCharacteristic*> characteristics =
+        service2->GetCharacteristicsByUUID(BluetoothUUID(characteristic_uuid2));
+    EXPECT_EQ(2u, characteristics.size());
+    EXPECT_EQ(characteristic_uuid2,
+              characteristics[0]->GetUUID().canonical_value());
+    EXPECT_EQ(characteristic_uuid2,
+              characteristics[1]->GetUUID().canonical_value());
+    EXPECT_NE(characteristics[0]->GetIdentifier(),
+              characteristics[1]->GetIdentifier());
+  }
+
+  BluetoothUUID characteristic_uuid_not_exist_in_setup(
+      "33333333-0000-1000-8000-00805f9b34fb");
+  EXPECT_TRUE(
+      service1->GetCharacteristicsByUUID(characteristic_uuid_not_exist_in_setup)
+          .empty());
+  EXPECT_TRUE(
+      service2->GetCharacteristicsByUUID(characteristic_uuid_not_exist_in_setup)
+          .empty());
+}
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
