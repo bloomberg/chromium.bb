@@ -97,6 +97,10 @@ const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
+// Whether to trigger app banner installability checks on page load.
+const base::Feature kCheckInstallabilityForBannerOnLoad{
+    "CheckInstallabilityForBannerOnLoad", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_WIN)
 const base::Feature kCleanupToolUI{"CleanupToolUI",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

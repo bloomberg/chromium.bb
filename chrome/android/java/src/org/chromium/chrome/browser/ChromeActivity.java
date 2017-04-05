@@ -1880,6 +1880,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 RecordUserAction.record("MobileMenuPrint");
             }
         } else if (id == R.id.add_to_homescreen_id) {
+            // Record whether or not we have finished installability checks for this page when the
+            // user clicks the add to homescren menu item. This will let us determine how effective
+            // an on page-load check will be in speeding up WebAPK installation.
+            currentTab.getAppBannerManager().recordMenuItemAddToHomescreen();
+
             AddToHomescreenManager addToHomescreenManager =
                     new AddToHomescreenManager(this, currentTab);
             addToHomescreenManager.start();

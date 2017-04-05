@@ -172,7 +172,7 @@ public class AppMenuPropertiesDelegate {
             // * If creating shortcuts it not supported by the current home screen.
             boolean canShowHomeScreenMenuItem = ShortcutHelper.isAddToHomeIntentSupported()
                     && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito;
-            prepareAddToHomescreenMenuItem(menu, currentTab.getUrl(), canShowHomeScreenMenuItem);
+            prepareAddToHomescreenMenuItem(menu, currentTab, canShowHomeScreenMenuItem);
 
             // Hide request desktop site on all chrome:// pages except for the NTP. Check request
             // desktop site if it's activated on this page.
@@ -225,13 +225,19 @@ public class AppMenuPropertiesDelegate {
      * Sets the visibility and labels of the "Add to Home screen" and "Open WebAPK" menu items.
      */
     protected void prepareAddToHomescreenMenuItem(
-            Menu menu, String url, boolean canShowHomeScreenMenuItem) {
+            Menu menu, Tab currentTab, boolean canShowHomeScreenMenuItem) {
+        // Record whether or not we have finished installability checks for this page when we're
+        // preparing the menu to be displayed. This will let us determine if it is feasible to
+        // change the add to homescreen menu item based on whether a site is a PWA.
+        currentTab.getAppBannerManager().recordMenuOpen();
+
         MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
         MenuItem openWebApkItem = menu.findItem(R.id.open_webapk_id);
         if (canShowHomeScreenMenuItem) {
             Context context = ContextUtils.getApplicationContext();
             long addToHomeScreenStart = SystemClock.elapsedRealtime();
-            ResolveInfo resolveInfo = WebApkValidator.queryResolveInfo(context, url);
+            ResolveInfo resolveInfo =
+                    WebApkValidator.queryResolveInfo(context, currentTab.getUrl());
             RecordHistogram.recordTimesHistogram("Android.PrepareMenu.OpenWebApkVisibilityCheck",
                     SystemClock.elapsedRealtime() - addToHomeScreenStart, TimeUnit.MILLISECONDS);
 

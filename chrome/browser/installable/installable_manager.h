@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/installable/installable_logging.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -128,7 +129,16 @@ class InstallableManager
   virtual void GetData(const InstallableParams& params,
                        const InstallableCallback& callback);
 
+  // Called via AppBannerManagerAndroid to record metrics on how often the
+  // installable check is completed when the menu or add to homescreen menu item
+  // is opened on Android.
+  void RecordMenuOpenHistogram();
+  void RecordMenuItemAddToHomescreenHistogram();
+  void RecordQueuedMetricsOnTaskCompletion(const InstallableParams& params,
+                                           bool check_passed);
+
  private:
+  friend class InstallableManagerBrowserTest;
   friend class InstallableManagerUnitTest;
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManagerBeginsInEmptyState);
@@ -218,7 +228,19 @@ class InstallableManager
   std::unique_ptr<InstallableProperty> installable_;
   std::map<IconParams, IconProperty> icons_;
 
+  // Whether or not the current page is a PWA. This is reset per navigation and
+  // is independent of the caching mechanism, i.e. if a PWA check is run
+  // multiple times for one page, this will be set on the first check.
+  InstallabilityCheckStatus page_status_;
+
+  // Counts for the number of queued requests of the menu and add to homescreen
+  // menu item there have been whilst the installable check is awaiting
+  // completion. Used for metrics recording.
+  int menu_open_count_;
+  int menu_item_add_to_homescreen_count_;
+
   bool is_active_;
+  bool is_pwa_check_complete_;
 
   base::WeakPtrFactory<InstallableManager> weak_factory_;
 

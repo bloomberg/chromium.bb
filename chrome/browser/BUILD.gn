@@ -498,6 +498,8 @@ split_static_library("browser") {
     "installable/installable_logging.h",
     "installable/installable_manager.cc",
     "installable/installable_manager.h",
+    "installable/installable_metrics.cc",
+    "installable/installable_metrics.h",
     "internal_auth.cc",
     "internal_auth.h",
     "interstitials/chrome_controller_client.cc",

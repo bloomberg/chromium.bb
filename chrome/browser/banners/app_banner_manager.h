@@ -94,6 +94,26 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual void OnAppIconFetched(const SkBitmap& bitmap) {}
 
  protected:
+  enum class State {
+    // The banner pipeline has not yet been triggered for this page load.
+    INACTIVE,
+
+    // The banner pipeline is currently running for this page load.
+    ACTIVE,
+
+    // The banner pipeline has finished running, but is waiting for sufficient
+    // engagement to trigger the banner.
+    PENDING_ENGAGEMENT,
+
+    // The banner pipeline has finished running, but is waiting for an event to
+    // trigger the banner.
+    PENDING_EVENT,
+
+    // The banner pipeline has finished running for this page load and no more
+    // processing is to be done.
+    COMPLETE,
+  };
+
   explicit AppBannerManager(content::WebContents* web_contents);
   ~AppBannerManager() override;
 
@@ -171,6 +191,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // display it later), or otherwise allow it to be shown.
   void SendBannerPromptRequest();
 
+  // Updates the current state to |state|. Virtual to allow overriding in tests.
+  virtual void UpdateState(State state);
+
   // content::WebContentsObserver overrides.
   void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;
@@ -191,7 +214,18 @@ class AppBannerManager : public content::WebContentsObserver,
   // this class.
   InstallableManager* manager() const { return manager_; }
   int event_request_id() const { return event_request_id_; }
-  bool is_active() const { return is_active_; }
+  bool is_active() const { return state_ == State::ACTIVE; }
+  bool is_active_or_pending() const {
+    return state_ == State::ACTIVE || state_ == State::PENDING_ENGAGEMENT ||
+           state_ == State::PENDING_EVENT;
+  }
+  bool is_complete() const { return state_ == State::COMPLETE; }
+  bool is_pending_engagement() const {
+    return state_ == State::PENDING_ENGAGEMENT;
+  }
+  bool is_pending_event() const {
+    return state_ == State::PENDING_EVENT || page_requested_prompt_;
+  }
 
   // The title to display in the banner.
   base::string16 app_title_;
@@ -214,6 +248,9 @@ class AppBannerManager : public content::WebContentsObserver,
   // The referrer string (if any) specified in the app URL. Used only for native
   // app banners.
   std::string referrer_;
+
+  // The current banner pipeline state for this page load.
+  State state_;
 
  private:
   friend class AppBannerManagerTest;
@@ -254,17 +291,12 @@ class AppBannerManager : public content::WebContentsObserver,
   blink::mojom::AppBannerEventPtr event_;
   blink::mojom::AppBannerControllerPtr controller_;
 
-  // Whether we are currently working on whether to show a banner.
-  bool is_active_;
-
   // If a banner is requested before the page has finished loading, defer
   // triggering the pipeline until the load is complete.
-  bool banner_request_queued_;
+  bool has_sufficient_engagement_;
   bool load_finished_;
 
-  // Record whether the page decides to defer showing the banner, and if it
-  // requests for it to be shown later on.
-  bool was_canceled_by_page_;
+  // Record whether the page requests for a banner to be shown later on.
   bool page_requested_prompt_;
 
   // Whether we should be logging errors to the console for this request.

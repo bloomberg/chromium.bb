@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -536,6 +537,23 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @Feature({"AppBanners"})
     public void testWebAppBannerAppears() throws Exception {
         triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE, false);
+
+        // Verify metrics calling in the successful case.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
+                manager.recordMenuItemAddToHomescreen();
+                assertEquals(1,
+                        RecordHistogram.getHistogramValueCountForTesting(
+                                "Webapp.InstallabilityCheckStatus.MenuItemAddToHomescreen", 5));
+
+                manager.recordMenuOpen();
+                assertEquals(1,
+                        RecordHistogram.getHistogramValueCountForTesting(
+                                "Webapp.InstallabilityCheckStatus.MenuOpen", 5));
+            }
+        });
     }
 
     @SmallTest

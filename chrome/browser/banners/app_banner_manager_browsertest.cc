@@ -9,15 +9,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -35,11 +38,27 @@ class AppBannerManagerTest : public AppBannerManager {
 
   ~AppBannerManagerTest() override {}
 
+  void RequestAppBanner(const GURL& validated_url,
+                        bool is_debug_mode) override {
+    // Filter out about:blank navigations - we use these in testing to force
+    // Stop() to be called.
+    if (validated_url == GURL("about:blank"))
+      return;
+
+    AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
+  }
+
   bool will_show() { return will_show_.get() && *will_show_; }
 
   void clear_will_show() { will_show_.reset(); }
 
   bool is_active() { return AppBannerManager::is_active(); }
+
+  bool is_complete() { return AppBannerManager::is_complete(); }
+
+  bool is_pending_engagement() {
+    return AppBannerManager::is_pending_engagement();
+  }
 
   bool need_to_log_status() { return need_to_log_status_; }
 
@@ -49,8 +68,9 @@ class AppBannerManagerTest : public AppBannerManager {
 
  protected:
   // All calls to RequestAppBanner should terminate in one of Stop() (not
-  // showing banner) or ShowBanner(). Override those two methods to capture test
-  // status.
+  // showing banner), UpdateState(State::PENDING_ENGAGEMENT) (waiting for
+  // sufficient engagement), or ShowBanner(). Override these methods to capture
+  // test status.
   void Stop() override {
     AppBannerManager::Stop();
     ASSERT_FALSE(will_show_.get());
@@ -69,6 +89,13 @@ class AppBannerManagerTest : public AppBannerManager {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
   }
 
+  void UpdateState(AppBannerManager::State state) override {
+    AppBannerManager::UpdateState(state);
+
+    if (state == AppBannerManager::State::PENDING_ENGAGEMENT)
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
+  }
+
  private:
   bool IsDebugMode() const override { return false; }
 
@@ -82,6 +109,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
     AppBannerSettingsHelper::SetTotalEngagementToTrigger(10);
+    SiteEngagementScore::SetParamValuesForTesting();
     ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -149,7 +177,7 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
 
     // On the final loop, we expect the banner pipeline to trigger - the
     // navigation should generate the final engagement to show the banner. Spin
-    // the run loop, which should be quit by either Stop() or ShowBanner().
+    // the run loop and wait for the manager to finish.
     base::RunLoop run_loop;
     manager->clear_will_show();
     manager->Prepare(run_loop.QuitClosure());
@@ -158,9 +186,6 @@ class AppBannerManagerBrowserTest : public InProcessBrowserTest {
 
     EXPECT_EQ(expected_to_show, manager->will_show());
     EXPECT_FALSE(manager->is_active());
-
-    // Navigate to ensure the InstallableStatusCodeHistogram is logged.
-    ui_test_utils::NavigateToURL(browser, GURL("about:blank"));
 
     // If in incognito, ensure that nothing is recorded.
     // If showing the banner, ensure that the minutes histogram is recorded.
@@ -327,6 +352,146 @@ IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, DoesNotShowInIncognito) {
   RunBannerTest(incognito_browser, manager.get(),
                 "/banners/manifest_test_page.html", engagement_scores,
                 IN_INCOGNITO, false);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       CheckOnLoadWithSufficientEngagement) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  std::vector<double> engagement_scores{10};
+  RunBannerTest(browser(), manager.get(), "/banners/manifest_test_page.html",
+                engagement_scores, SHOWING_WEB_APP_BANNER, true);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       CheckOnLoadWithSufficientEngagementCancelDirect) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  std::vector<double> engagement_scores{10};
+  RunBannerTest(browser(), manager.get(), "/banners/cancel_test_page.html",
+                engagement_scores, RENDERER_CANCELLED, false);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AppBannerManagerBrowserTest,
+    CheckOnLoadWithSufficientEngagementCancelBannerAfterPromptInHandler) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+  std::vector<double> engagement_scores{10};
+  RunBannerTest(browser(), manager.get(),
+                "/banners/prompt_in_handler_test_page.html", engagement_scores,
+                SHOWING_WEB_APP_BANNER, true);
+  std::string cancel_test_page_url =
+      GetURLOfPageWithManifest("/banners/cancel_test_page.html?manifest=",
+                               "/banners/manifest_different_start_url.json");
+  RunBannerTest(browser(), manager.get(), cancel_test_page_url,
+                engagement_scores, RENDERER_CANCELLED, false);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest,
+                       CheckOnLoadWithoutSufficientEngagement) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(1);
+  SiteEngagementService* service =
+      SiteEngagementService::Get(browser()->profile());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+
+  base::HistogramTester histograms;
+  GURL test_url =
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  service->ResetBaseScoreForURL(test_url, 0);
+
+  // First run through: expect the manager to end up stopped in the pending
+  // state, without showing a banner.
+  {
+    base::RunLoop run_loop;
+    manager->clear_will_show();
+    manager->Prepare(run_loop.QuitClosure());
+    ui_test_utils::NavigateToURL(browser(), test_url);
+    run_loop.Run();
+  }
+
+  EXPECT_FALSE(manager->will_show());
+  EXPECT_FALSE(manager->is_active());
+  EXPECT_TRUE(manager->is_pending_engagement());
+  EXPECT_TRUE(manager->need_to_log_status());
+
+  // Trigger an engagement increase that signals observers and expect the banner
+  // to be shown.
+  {
+    base::RunLoop run_loop;
+    manager->clear_will_show();
+    manager->Prepare(run_loop.QuitClosure());
+    service->HandleNavigation(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        ui::PageTransition::PAGE_TRANSITION_TYPED);
+    run_loop.Run();
+  }
+
+  EXPECT_TRUE(manager->will_show());
+  EXPECT_FALSE(manager->is_active());
+  EXPECT_FALSE(manager->need_to_log_status());
+  EXPECT_TRUE(manager->is_complete());
+
+  histograms.ExpectTotalCount(banners::kMinutesHistogram, 1);
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                SHOWING_WEB_APP_BANNER, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerManagerBrowserTest, CheckOnLoadThenNavigate) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kCheckInstallabilityForBannerOnLoad);
+  std::unique_ptr<AppBannerManagerTest> manager(
+      CreateAppBannerManager(browser()));
+
+  base::HistogramTester histograms;
+  GURL test_url =
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+
+  // First run through: expect the manager to end up stopped in the pending
+  // state, without showing a banner.
+  {
+    base::RunLoop run_loop;
+    manager->clear_will_show();
+    manager->Prepare(run_loop.QuitClosure());
+    ui_test_utils::NavigateToURL(browser(), test_url);
+    run_loop.Run();
+  }
+
+  EXPECT_FALSE(manager->will_show());
+  EXPECT_FALSE(manager->is_active());
+  EXPECT_TRUE(manager->is_pending_engagement());
+  EXPECT_TRUE(manager->need_to_log_status());
+
+  // Navigate and expect Stop() to be called.
+  {
+    base::RunLoop run_loop;
+    manager->clear_will_show();
+    manager->Prepare(run_loop.QuitClosure());
+    ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+    run_loop.Run();
+  }
+
+  EXPECT_FALSE(manager->will_show());
+  EXPECT_FALSE(manager->is_active());
+  EXPECT_FALSE(manager->need_to_log_status());
+
+  histograms.ExpectTotalCount(banners::kMinutesHistogram, 0);
+  histograms.ExpectUniqueSample(banners::kInstallableStatusCodeHistogram,
+                                INSUFFICIENT_ENGAGEMENT, 1);
 }
 
 }  // namespace banners

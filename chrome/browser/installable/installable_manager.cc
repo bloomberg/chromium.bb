@@ -61,6 +61,11 @@ bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
   return false;
 }
 
+// Returns true if |params| specifies a full PWA check.
+bool IsParamsForPwaCheck(const InstallableParams& params) {
+  return params.check_installable && params.fetch_valid_primary_icon;
+}
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InstallableManager);
@@ -94,13 +99,16 @@ struct InstallableManager::IconProperty {
   DISALLOW_COPY_AND_ASSIGN(IconProperty);
 };
 
-
 InstallableManager::InstallableManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       manifest_(new ManifestProperty()),
       installable_(new InstallableProperty()),
+      page_status_(InstallabilityCheckStatus::NOT_STARTED),
+      menu_open_count_(0),
+      menu_item_add_to_homescreen_count_(0),
       is_active_(false),
-      weak_factory_(this) { }
+      is_pwa_check_complete_(false),
+      weak_factory_(this) {}
 
 InstallableManager::~InstallableManager() = default;
 
@@ -138,6 +146,51 @@ void InstallableManager::GetData(const InstallableParams& params,
 
   is_active_ = true;
   StartNextTask();
+}
+
+void InstallableManager::RecordMenuOpenHistogram() {
+  if (is_pwa_check_complete_)
+    InstallableMetrics::RecordMenuOpenHistogram(page_status_);
+  else
+    ++menu_open_count_;
+}
+
+void InstallableManager::RecordMenuItemAddToHomescreenHistogram() {
+  if (is_pwa_check_complete_)
+    InstallableMetrics::RecordMenuItemAddToHomescreenHistogram(page_status_);
+  else
+    ++menu_item_add_to_homescreen_count_;
+}
+
+void InstallableManager::RecordQueuedMetricsOnTaskCompletion(
+    const InstallableParams& params,
+    bool check_passed) {
+  // Don't do anything if we've already finished the PWA check or if this check
+  // was not for the full PWA params. Once a full check is completed, metrics
+  // will be directly recorded in Record*Histogram since
+  // |is_pwa_check_complete_| will be true.
+  if (is_pwa_check_complete_ || !IsParamsForPwaCheck(params))
+    return;
+
+  is_pwa_check_complete_ = true;
+  page_status_ =
+      check_passed
+          ? InstallabilityCheckStatus::COMPLETE_PROGRESSIVE_WEB_APP
+          : InstallabilityCheckStatus::COMPLETE_NON_PROGRESSIVE_WEB_APP;
+
+  // Compute what the status would have been for any queued calls to
+  // Record*Histogram, and record appropriately.
+  InstallabilityCheckStatus prev_status =
+      check_passed
+          ? InstallabilityCheckStatus::IN_PROGRESS_PROGRESSIVE_WEB_APP
+          : InstallabilityCheckStatus::IN_PROGRESS_NON_PROGRESSIVE_WEB_APP;
+  for (; menu_open_count_ > 0; --menu_open_count_)
+    InstallableMetrics::RecordMenuOpenHistogram(prev_status);
+
+  for (; menu_item_add_to_homescreen_count_ > 0;
+       --menu_item_add_to_homescreen_count_) {
+    InstallableMetrics::RecordMenuItemAddToHomescreenHistogram(prev_status);
+  }
 }
 
 InstallableManager::IconParams InstallableManager::ParamsForPrimaryIcon(
@@ -232,6 +285,23 @@ void InstallableManager::Reset() {
   tasks_.clear();
   icons_.clear();
 
+  // We may have reset prior to completion, in which case |menu_open_count_| or
+  // |menu_item_add_to_homescreen_count_| will be nonzero. If we completed, then
+  // these values cannot be anything except 0.
+  page_status_ = InstallabilityCheckStatus::NOT_STARTED;
+  is_pwa_check_complete_ = false;
+
+  for (; menu_open_count_ > 0; --menu_open_count_) {
+    InstallableMetrics::RecordMenuOpenHistogram(
+        InstallabilityCheckStatus::STOPPED_BEFORE_COMPLETION);
+  }
+
+  for (; menu_item_add_to_homescreen_count_ > 0;
+       --menu_item_add_to_homescreen_count_) {
+    InstallableMetrics::RecordMenuItemAddToHomescreenHistogram(
+        InstallabilityCheckStatus::STOPPED_BEFORE_COMPLETION);
+  }
+
   manifest_.reset(new ManifestProperty());
   installable_.reset(new InstallableProperty());
 
@@ -292,7 +362,9 @@ void InstallableManager::WorkOnTask() {
   const InstallableParams& params = task.first;
 
   InstallableStatusCode code = GetErrorCode(params);
-  if (code != NO_ERROR_DETECTED || IsComplete(params)) {
+  bool check_passed = (code == NO_ERROR_DETECTED);
+  if (!check_passed || IsComplete(params)) {
+    RecordQueuedMetricsOnTaskCompletion(params, check_passed);
     RunCallback(task, code);
     tasks_.erase(tasks_.begin());
     StartNextTask();

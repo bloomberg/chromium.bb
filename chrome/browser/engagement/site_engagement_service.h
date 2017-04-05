@@ -26,6 +26,11 @@ namespace base {
 class Clock;
 }
 
+namespace banners {
+FORWARD_DECLARE_TEST(AppBannerManagerBrowserTest,
+                     CheckOnLoadWithoutSufficientEngagement);
+}
+
 namespace content {
 class WebContents;
 }
@@ -173,6 +178,8 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            IncognitoEngagementService);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetScoreFromSettings);
+  FRIEND_TEST_ALL_PREFIXES(banners::AppBannerManagerBrowserTest,
+                           CheckOnLoadWithoutSufficientEngagement);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
 #if defined(OS_ANDROID)
