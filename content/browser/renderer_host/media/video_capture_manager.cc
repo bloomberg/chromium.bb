@@ -58,6 +58,51 @@
 
 namespace {
 
+// Compares two VideoCaptureFormat by checking smallest frame_size area, then
+// by _largest_ frame_rate. Used to order a VideoCaptureFormats vector so that
+// the first entry for a given resolution has the largest frame rate, as needed
+// by the ConsolidateCaptureFormats() method.
+bool IsCaptureFormatSmaller(const media::VideoCaptureFormat& format1,
+                            const media::VideoCaptureFormat& format2) {
+  DCHECK(format1.frame_size.GetCheckedArea().IsValid());
+  DCHECK(format2.frame_size.GetCheckedArea().IsValid());
+  if (format1.frame_size.GetCheckedArea().ValueOrDefault(0) ==
+      format2.frame_size.GetCheckedArea().ValueOrDefault(0)) {
+    return format1.frame_rate > format2.frame_rate;
+  }
+  return format1.frame_size.GetCheckedArea().ValueOrDefault(0) <
+         format2.frame_size.GetCheckedArea().ValueOrDefault(0);
+}
+
+bool IsCaptureFormatSizeEqual(const media::VideoCaptureFormat& format1,
+                              const media::VideoCaptureFormat& format2) {
+  DCHECK(format1.frame_size.GetCheckedArea().IsValid());
+  DCHECK(format2.frame_size.GetCheckedArea().IsValid());
+  return format1.frame_size.GetCheckedArea().ValueOrDefault(0) ==
+         format2.frame_size.GetCheckedArea().ValueOrDefault(0);
+}
+
+// This function receives a list of capture formats, removes duplicated
+// resolutions while keeping the highest frame rate for each, and forcing I420
+// pixel format.
+void ConsolidateCaptureFormats(media::VideoCaptureFormats* formats) {
+  if (formats->empty())
+    return;
+  std::sort(formats->begin(), formats->end(), IsCaptureFormatSmaller);
+  // Due to the ordering imposed, the largest frame_rate is kept while removing
+  // duplicated resolutions.
+  media::VideoCaptureFormats::iterator last =
+      std::unique(formats->begin(), formats->end(), IsCaptureFormatSizeEqual);
+  formats->erase(last, formats->end());
+  // Mark all formats as I420, since this is what the renderer side will get
+  // anyhow: the actual pixel format is decided at the device level.
+  // Don't do this for Y16 format as it is handled separatelly.
+  for (auto& format : *formats) {
+    if (format.pixel_format != media::PIXEL_FORMAT_Y16)
+      format.pixel_format = media::PIXEL_FORMAT_I420;
+  }
+}
+
 // Used for logging capture events.
 // Elements in this enum should not be deleted or rearranged; the only
 // permitted operation is to add new elements before NUM_VIDEO_CAPTURE_EVENT.
@@ -81,6 +126,19 @@ const media::VideoCaptureSessionId kFakeSessionId = -1;
 
 namespace content {
 
+// Bundles a media::VideoCaptureDeviceDescriptor with corresponding supported
+// video formats.
+struct VideoCaptureManager::DeviceInfo {
+  DeviceInfo();
+  DeviceInfo(media::VideoCaptureDeviceDescriptor descriptor);
+  DeviceInfo(const DeviceInfo& other);
+  ~DeviceInfo();
+  DeviceInfo& operator=(const DeviceInfo& other);
+
+  media::VideoCaptureDeviceDescriptor descriptor;
+  media::VideoCaptureFormats supported_formats;
+};
+
 // Class used for queuing request for starting a device.
 class VideoCaptureManager::CaptureDeviceStartRequest {
  public:
@@ -97,6 +155,20 @@ class VideoCaptureManager::CaptureDeviceStartRequest {
   const media::VideoCaptureParams params_;
 };
 
+VideoCaptureManager::DeviceInfo::DeviceInfo() = default;
+
+VideoCaptureManager::DeviceInfo::DeviceInfo(
+    media::VideoCaptureDeviceDescriptor descriptor)
+    : descriptor(descriptor) {}
+
+VideoCaptureManager::DeviceInfo::DeviceInfo(
+    const VideoCaptureManager::DeviceInfo& other) = default;
+
+VideoCaptureManager::DeviceInfo::~DeviceInfo() = default;
+
+VideoCaptureManager::DeviceInfo& VideoCaptureManager::DeviceInfo::operator=(
+    const VideoCaptureManager::DeviceInfo& other) = default;
+
 VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
     VideoCaptureController* controller,
     media::VideoCaptureSessionId session_id,
@@ -104,11 +176,11 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
     : controller_(controller), session_id_(session_id), params_(params) {}
 
 VideoCaptureManager::VideoCaptureManager(
-    std::unique_ptr<media::VideoCaptureSystem> video_capture_system,
+    std::unique_ptr<media::VideoCaptureDeviceFactory> factory,
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner)
     : device_task_runner_(std::move(device_task_runner)),
       new_capture_session_id_(1),
-      video_capture_system_(std::move(video_capture_system)) {}
+      video_capture_device_factory_(std::move(factory)) {}
 
 VideoCaptureManager::~VideoCaptureManager() {
   DCHECK(controllers_.empty());
@@ -152,17 +224,29 @@ void VideoCaptureManager::EnumerateDevices(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureManager::EnumerateDevices";
 
-  // OK to use base::Unretained(video_capture_system_) since we own the
-  // |video_capture_system_| and |this| is bound in
-  // |devices_enumerated_callback|.
+  // Bind a callback to ConsolidateDevicesInfoOnDeviceThread() with an argument
+  // for another callback to OnDevicesInfoEnumerated() to be run in the current
+  // loop, i.e. IO loop. Pass a timer for UMA histogram collection.
+  base::Callback<void(std::unique_ptr<VideoCaptureDeviceDescriptors>)>
+      devices_enumerated_callback = base::Bind(
+          &VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread, this,
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCaptureManager::OnDevicesInfoEnumerated, this,
+              base::Owned(new base::ElapsedTimer()), client_callback)),
+          devices_info_cache_);
+  // OK to use base::Unretained() since we own the VCDFactory and |this| is
+  // bound in |devices_enumerated_callback|.
   device_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&media::VideoCaptureSystem::GetDeviceInfosAsync,
-                 base::Unretained(video_capture_system_.get()),
-                 // Pass a timer for UMA histogram collection.
-                 media::BindToCurrentLoop(base::Bind(
-                     &VideoCaptureManager::OnDeviceInfosReceived, this,
-                     base::Owned(new base::ElapsedTimer()), client_callback))));
+      base::Bind(&media::VideoCaptureDeviceFactory::EnumerateDeviceDescriptors,
+                 base::Unretained(video_capture_device_factory_.get()),
+                 devices_enumerated_callback));
+}
+
+const media::VideoCaptureDeviceDescriptor*
+VideoCaptureManager::LookupDeviceDescriptor(const std::string& id) {
+  const DeviceInfo* info = GetDeviceInfoById(id);
+  return info ? (&info->descriptor) : nullptr;
 }
 
 int VideoCaptureManager::Open(const MediaStreamDevice& device) {
@@ -253,8 +337,7 @@ void VideoCaptureManager::DoStopDevice(VideoCaptureController* controller) {
     }
   }
 
-  const media::VideoCaptureDeviceInfo* device_info =
-      GetDeviceInfoById(controller->device_id());
+  const DeviceInfo* device_info = GetDeviceInfoById(controller->device_id());
   if (device_info != nullptr) {
     for (auto& observer : capture_observers_)
       observer.OnVideoCaptureStopped(device_info->descriptor.facing);
@@ -285,25 +368,6 @@ void VideoCaptureManager::ProcessDeviceStartRequestQueue() {
   DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
            << controller->device_id()
            << " start id = " << controller->serial_id();
-  // The unit test VideoCaptureManagerTest.OpenNotExisting requires us to fail
-  // synchronously if the stream_type is MEDIA_DEVICE_VIDEO_CAPTURE and no
-  // DeviceInfo matching the requested id is present (which is the case when
-  // requesting a device with a bogus id). Note, that since other types of
-  // failure during startup of the device are allowed to be reported
-  // asynchronously, this requirement is questionable.
-  // TODO(chfremer): Check if any production code actually depends on this
-  // requirement. If not, relax the requirement in the test and remove the below
-  // if block. See crbug.com/708251
-  if (controller->stream_type() == MEDIA_DEVICE_VIDEO_CAPTURE) {
-    const media::VideoCaptureDeviceInfo* device_info =
-        GetDeviceInfoById(controller->device_id());
-    if (!device_info) {
-      OnDeviceStartFailed(controller);
-      return;
-    }
-    for (auto& observer : capture_observers_)
-      observer.OnVideoCaptureStarted(device_info->descriptor.facing);
-  }
 
   // The method CreateAndStartDeviceAsync() is going to run asynchronously.
   // Since we may be removing the controller while it is executing, we need to
@@ -321,13 +385,17 @@ void VideoCaptureManager::ProcessDeviceStartRequestQueue() {
                  GetControllerSharedRef(controller)));
 }
 
-void VideoCaptureManager::OnDeviceStarted(VideoCaptureController* controller) {
+void VideoCaptureManager::WillStartDevice(media::VideoFacingMode facing_mode) {
+  for (auto& observer : capture_observers_)
+    observer.OnVideoCaptureStarted(facing_mode);
+}
+
+void VideoCaptureManager::DidStartDevice(VideoCaptureController* controller) {
   DVLOG(3) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!device_start_request_queue_.empty());
   DCHECK_EQ(controller, device_start_request_queue_.begin()->controller());
   DCHECK(controller);
-
   if (controller->stream_type() == MEDIA_DESKTOP_VIDEO_CAPTURE) {
     const media::VideoCaptureSessionId session_id =
         device_start_request_queue_.front().session_id();
@@ -518,7 +586,7 @@ bool VideoCaptureManager::GetDeviceSupportedFormats(
   DCHECK(supported_formats->empty());
 
   // Return all available formats of the device, regardless its started state.
-  media::VideoCaptureDeviceInfo* existing_device = GetDeviceInfoById(device_id);
+  DeviceInfo* existing_device = GetDeviceInfoById(device_id);
   if (existing_device)
     *supported_formats = existing_device->supported_formats;
   return true;
@@ -676,18 +744,18 @@ void VideoCaptureManager::OnClosed(
     listener.Closed(stream_type, capture_session_id);
 }
 
-void VideoCaptureManager::OnDeviceInfosReceived(
+void VideoCaptureManager::OnDevicesInfoEnumerated(
     base::ElapsedTimer* timer,
     const EnumerationCallback& client_callback,
-    const std::vector<media::VideoCaptureDeviceInfo>& device_infos) {
+    const VideoCaptureManager::DeviceInfos& new_devices_info_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_TIMES(
       "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime",
       timer->Elapsed());
-  devices_info_cache_ = device_infos;
+  devices_info_cache_ = new_devices_info_cache;
 
   // Walk the |devices_info_cache_| and produce a
-  // media::VideoCaptureDeviceDescriptors for |client_callback|.
+  // media::VideoCaptureDeviceDescriptors for return purposes.
   media::VideoCaptureDeviceDescriptors devices;
   std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
                          media::VideoCaptureFormats>>
@@ -700,6 +768,40 @@ void VideoCaptureManager::OnDeviceInfosReceived(
   }
 
   client_callback.Run(devices);
+}
+
+void VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread(
+    base::Callback<void(const VideoCaptureManager::DeviceInfos&)>
+        on_devices_enumerated_callback,
+    const VideoCaptureManager::DeviceInfos& old_device_info_cache,
+    std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_snapshot) {
+  DCHECK(device_task_runner_->BelongsToCurrentThread());
+  // Construct |new_devices_info_cache| with the cached devices that are still
+  // present in the system, and remove their names from |names_snapshot|, so we
+  // keep there the truly new devices.
+  VideoCaptureManager::DeviceInfos new_devices_info_cache;
+  for (const auto& device_info : old_device_info_cache) {
+    for (VideoCaptureDeviceDescriptors::iterator it =
+             descriptors_snapshot->begin();
+         it != descriptors_snapshot->end(); ++it) {
+      if (device_info.descriptor.device_id == it->device_id) {
+        new_devices_info_cache.push_back(device_info);
+        descriptors_snapshot->erase(it);
+        break;
+      }
+    }
+  }
+
+  // Get the device info for the new devices in |names_snapshot|.
+  for (const auto& it : *descriptors_snapshot) {
+    DeviceInfo device_info(it);
+    video_capture_device_factory_->GetSupportedFormats(
+        it, &device_info.supported_formats);
+    ConsolidateCaptureFormats(&device_info.supported_formats);
+    new_devices_info_cache.push_back(device_info);
+  }
+
+  on_devices_enumerated_callback.Run(new_devices_info_cache);
 }
 
 void VideoCaptureManager::DestroyControllerIfNoClients(
@@ -770,7 +872,7 @@ VideoCaptureManager::GetControllerSharedRef(
   return nullptr;
 }
 
-media::VideoCaptureDeviceInfo* VideoCaptureManager::GetDeviceInfoById(
+VideoCaptureManager::DeviceInfo* VideoCaptureManager::GetDeviceInfoById(
     const std::string& id) {
   for (auto& it : devices_info_cache_) {
     if (it.descriptor.device_id == id)
@@ -801,14 +903,14 @@ VideoCaptureController* VideoCaptureManager::GetOrCreateController(
   VideoCaptureController* new_controller = new VideoCaptureController(
       device_info.id, device_info.type, params,
       base::MakeUnique<InProcessBuildableVideoCaptureDevice>(
-          device_task_runner_, video_capture_system_.get()));
+          device_task_runner_, video_capture_device_factory_.get()));
   controllers_.emplace_back(new_controller);
   return new_controller;
 }
 
 base::Optional<CameraCalibration> VideoCaptureManager::GetCameraCalibration(
     const std::string& device_id) {
-  media::VideoCaptureDeviceInfo* info = GetDeviceInfoById(device_id);
+  VideoCaptureManager::DeviceInfo* info = GetDeviceInfoById(device_id);
   if (!info)
     return base::Optional<CameraCalibration>();
   return info->descriptor.camera_calibration;

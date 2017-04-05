@@ -143,9 +143,8 @@ class MediaDevicesManagerTest : public ::testing::Test {
     audio_manager_.reset(new MockAudioManager());
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     video_capture_manager_ = new VideoCaptureManager(
-        base::MakeUnique<media::VideoCaptureSystem>(
-            std::unique_ptr<media::VideoCaptureDeviceFactory>(
-                new MockVideoCaptureDeviceFactory())),
+        std::unique_ptr<media::VideoCaptureDeviceFactory>(
+            new MockVideoCaptureDeviceFactory()),
         base::ThreadTaskRunnerHandle::Get());
     video_capture_device_factory_ = static_cast<MockVideoCaptureDeviceFactory*>(
         video_capture_manager_->video_capture_device_factory());

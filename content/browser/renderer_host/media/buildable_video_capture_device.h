@@ -30,7 +30,11 @@ class CONTENT_EXPORT BuildableVideoCaptureDevice {
   class CONTENT_EXPORT Callbacks {
    public:
     virtual ~Callbacks() {}
-    virtual void OnDeviceStarted(VideoCaptureController* controller) = 0;
+    // Returns nullptr if no descriptor was found.
+    virtual const media::VideoCaptureDeviceDescriptor* LookupDeviceDescriptor(
+        const std::string& id) = 0;
+    virtual void WillStartDevice(media::VideoFacingMode facing_mode) = 0;
+    virtual void DidStartDevice(VideoCaptureController* controller) = 0;
     virtual void OnDeviceStartFailed(VideoCaptureController* controller) = 0;
     virtual void OnDeviceStartAborted() = 0;
   };

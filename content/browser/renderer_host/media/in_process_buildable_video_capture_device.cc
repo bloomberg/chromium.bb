@@ -84,9 +84,9 @@ namespace content {
 
 InProcessBuildableVideoCaptureDevice::InProcessBuildableVideoCaptureDevice(
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner,
-    media::VideoCaptureSystem* video_capture_system)
+    media::VideoCaptureDeviceFactory* device_factory)
     : device_task_runner_(std::move(device_task_runner)),
-      video_capture_system_(video_capture_system) {}
+      device_factory_(device_factory) {}
 
 InProcessBuildableVideoCaptureDevice::~InProcessBuildableVideoCaptureDevice() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -109,24 +109,45 @@ void InProcessBuildableVideoCaptureDevice::CreateAndStartDeviceAsync(
       CreateDeviceClient(max_buffers, controller->GetWeakPtrForIOThread());
 
   base::Closure start_capture_closure;
-  // Use of Unretained() is safe, because |done_cb| guarantees that
-  // |this| stays alive.
-  ReceiveDeviceCallback after_start_capture_callback = media::BindToCurrentLoop(
-      base::Bind(&InProcessBuildableVideoCaptureDevice::OnDeviceStarted,
-                 base::Unretained(this), controller, callbacks,
-                 base::Passed(&done_cb)));
-
   switch (controller->stream_type()) {
     case MEDIA_DEVICE_VIDEO_CAPTURE: {
+      const media::VideoCaptureDeviceDescriptor* descriptor =
+          callbacks->LookupDeviceDescriptor(controller->device_id());
+      if (!descriptor) {
+        callbacks->OnDeviceStartFailed(controller);
+        base::ResetAndReturn(&done_cb).Run();
+        return;
+      }
+      controller->OnLog(base::StringPrintf(
+          "Starting device: id: %s, name: %s, api: %s",
+          descriptor->device_id.c_str(), descriptor->GetNameAndModel().c_str(),
+          descriptor->GetCaptureApiTypeString()));
+
+      callbacks->WillStartDevice(descriptor->facing);
+
+      // Use of Unretained() is safe, because |done_cb| guarantees that |this|
+      // stays alive.
+      ReceiveDeviceCallback after_start_capture_callback =
+          media::BindToCurrentLoop(
+              base::Bind(&InProcessBuildableVideoCaptureDevice::OnDeviceStarted,
+                         base::Unretained(this), controller, callbacks,
+                         base::Passed(&done_cb)));
       start_capture_closure =
           base::Bind(&InProcessBuildableVideoCaptureDevice::
                          DoStartDeviceCaptureOnDeviceThread,
-                     base::Unretained(this), controller->device_id(), params,
+                     base::Unretained(this), *descriptor, params,
                      base::Passed(std::move(device_client)),
                      std::move(after_start_capture_callback));
       break;
     }
-    case MEDIA_TAB_VIDEO_CAPTURE:
+    case MEDIA_TAB_VIDEO_CAPTURE: {
+      // Use of Unretained() is safe, because |done_cb| guarantees that |this|
+      // stays alive.
+      ReceiveDeviceCallback after_start_capture_callback =
+          media::BindToCurrentLoop(
+              base::Bind(&InProcessBuildableVideoCaptureDevice::OnDeviceStarted,
+                         base::Unretained(this), controller, callbacks,
+                         base::Passed(&done_cb)));
       start_capture_closure =
           base::Bind(&InProcessBuildableVideoCaptureDevice::
                          DoStartTabCaptureOnDeviceThread,
@@ -134,8 +155,15 @@ void InProcessBuildableVideoCaptureDevice::CreateAndStartDeviceAsync(
                      base::Passed(std::move(device_client)),
                      std::move(after_start_capture_callback));
       break;
-
-    case MEDIA_DESKTOP_VIDEO_CAPTURE:
+    }
+    case MEDIA_DESKTOP_VIDEO_CAPTURE: {
+      // Use of Unretained() is safe, because |done_cb| guarantees that |this|
+      // stays alive.
+      ReceiveDeviceCallback after_start_capture_callback =
+          media::BindToCurrentLoop(
+              base::Bind(&InProcessBuildableVideoCaptureDevice::OnDeviceStarted,
+                         base::Unretained(this), controller, callbacks,
+                         base::Passed(&done_cb)));
       start_capture_closure =
           base::Bind(&InProcessBuildableVideoCaptureDevice::
                          DoStartDesktopCaptureOnDeviceThread,
@@ -143,7 +171,7 @@ void InProcessBuildableVideoCaptureDevice::CreateAndStartDeviceAsync(
                      base::Passed(std::move(device_client)),
                      std::move(after_start_capture_callback));
       break;
-
+    }
     default: {
       NOTIMPLEMENTED();
       return;
@@ -310,7 +338,7 @@ void InProcessBuildableVideoCaptureDevice::OnDeviceStarted(
               device.get(), device_task_runner_));
       device_ = std::move(device);
       state_ = State::DEVICE_STARTED;
-      callbacks->OnDeviceStarted(controller);
+      callbacks->DidStartDevice(controller);
       base::ResetAndReturn(&done_cb).Run();
       return;
     case State::DEVICE_START_ABORTING:
@@ -335,7 +363,7 @@ void InProcessBuildableVideoCaptureDevice::OnDeviceStarted(
 }
 
 void InProcessBuildableVideoCaptureDevice::DoStartDeviceCaptureOnDeviceThread(
-    const std::string& device_id,
+    const media::VideoCaptureDeviceDescriptor& descriptor,
     const media::VideoCaptureParams& params,
     std::unique_ptr<media::VideoCaptureDeviceClient> device_client,
     ReceiveDeviceCallback result_callback) {
@@ -343,7 +371,7 @@ void InProcessBuildableVideoCaptureDevice::DoStartDeviceCaptureOnDeviceThread(
   DCHECK(device_task_runner_->BelongsToCurrentThread());
 
   std::unique_ptr<media::VideoCaptureDevice> video_capture_device =
-      video_capture_system_->CreateDevice(device_id);
+      device_factory_->CreateDevice(descriptor);
 
   if (!video_capture_device) {
     result_callback.Run(nullptr);
