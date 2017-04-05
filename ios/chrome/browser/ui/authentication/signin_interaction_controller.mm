@@ -45,6 +45,7 @@ using signin_ui::CompletionCallback;
   base::scoped_nsobject<ChromeIdentityInteractionManager>
       identityInteractionManager_;
   base::scoped_nsobject<ChromeIdentity> signInIdentity_;
+  BOOL identityAdded_;
 }
 @end
 
@@ -100,10 +101,10 @@ using signin_ui::CompletionCallback;
   if (identity) {
     DCHECK(identityService->IsValidIdentity(identity));
     DCHECK(!signinViewController_);
-    [self showSigninViewControllerWithIdentity:identity];
+    [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
   } else if (identityService->HasIdentities()) {
     DCHECK(!signinViewController_);
-    [self showSigninViewControllerWithIdentity:nil];
+    [self showSigninViewControllerWithIdentity:nil identityAdded:NO];
   } else {
     identityInteractionManager_ =
         identityService->NewChromeIdentityInteractionManager(browserState_,
@@ -212,7 +213,7 @@ using signin_ui::CompletionCallback;
     return;
   }
   if (shouldSignIn) {
-    [self showSigninViewControllerWithIdentity:identity];
+    [self showSigninViewControllerWithIdentity:identity identityAdded:YES];
   } else {
     [self runCompletionCallbackWithSuccess:YES executeCommand:nil];
   }
@@ -260,7 +261,8 @@ using signin_ui::CompletionCallback;
 
 #pragma mark - ChromeSigninViewController operations
 
-- (void)showSigninViewControllerWithIdentity:(ChromeIdentity*)signInIdentity {
+- (void)showSigninViewControllerWithIdentity:(ChromeIdentity*)signInIdentity
+                               identityAdded:(BOOL)identityAdded {
   signinViewController_.reset([[ChromeSigninViewController alloc]
        initWithBrowserState:browserState_
       isPresentedOnSettings:isPresentedOnSettings_
@@ -272,6 +274,7 @@ using signin_ui::CompletionCallback;
   [signinViewController_
       setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
   signInIdentity_.reset([signInIdentity retain]);
+  identityAdded_ = identityAdded;
 
   UIViewController* presentingViewController = presentingViewController_;
   if (identityInteractionManager_) {
@@ -329,12 +332,15 @@ using signin_ui::CompletionCallback;
   DCHECK_EQ(controller, signinViewController_.get());
   if ([signInIdentity_.get() isEqual:identity]) {
     signInIdentity_.reset();
-    // This is best effort. If the operation fails, the account will be left on
-    // the device. The user will not be warned either as this call is
-    // asynchronous (but undo is not), the application might be in an unknown
-    // state when the forget identity operation finishes.
-    ios::GetChromeBrowserProvider()->GetChromeIdentityService()->ForgetIdentity(
-        identity, nil);
+    if (identityAdded_) {
+      // This is best effort. If the operation fails, the account will be left
+      // on the device. The user will not be warned either as this call is
+      // asynchronous (but undo is not), the application might be in an unknown
+      // state when the forget identity operation finishes.
+      ios::GetChromeBrowserProvider()
+          ->GetChromeIdentityService()
+          ->ForgetIdentity(identity, nil);
+    }
     [self dismissSigninViewControllerWithSignInSuccess:NO executeCommand:nil];
   }
 }
