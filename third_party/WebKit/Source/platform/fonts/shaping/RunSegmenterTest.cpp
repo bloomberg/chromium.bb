@@ -4,12 +4,12 @@
 
 #include "platform/fonts/shaping/RunSegmenter.h"
 
-#include "platform/fonts/OrientationIterator.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Assertions.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 #include <string>
+#include "platform/fonts/OrientationIterator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

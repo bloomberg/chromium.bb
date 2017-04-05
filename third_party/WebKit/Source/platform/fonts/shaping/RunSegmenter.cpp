@@ -9,8 +9,8 @@
 #include "platform/fonts/SymbolsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
 #include "platform/text/Character.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

@@ -29,9 +29,9 @@
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontCacheClient.h"
 #include "platform/fonts/SegmentedFontData.h"
-#include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

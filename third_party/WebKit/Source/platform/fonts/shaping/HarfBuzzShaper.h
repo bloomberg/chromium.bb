@@ -33,9 +33,9 @@
 
 #include "platform/fonts/shaping/RunSegmenter.h"
 #include "platform/fonts/shaping/ShapeResult.h"
-#include "wtf/Allocator.h"
-#include "wtf/Deque.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Deque.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

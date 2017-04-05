@@ -5,6 +5,8 @@
 #ifndef RunSegmenter_h
 #define RunSegmenter_h
 
+#include <unicode/uscript.h>
+#include <memory>
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontTraits.h"
 #include "platform/fonts/OrientationIterator.h"
@@ -12,10 +14,8 @@
 #include "platform/fonts/SmallCapsIterator.h"
 #include "platform/fonts/SymbolsIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
-#include <unicode/uscript.h>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

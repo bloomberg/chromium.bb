@@ -26,11 +26,11 @@
 
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/wtf/text/CString.h"
+#include "public/platform/Platform.h"
 #include "public/platform/linux/WebFallbackFont.h"
 #include "public/platform/linux/WebSandboxSupport.h"
-#include "public/platform/Platform.h"
 #include "ui/gfx/font_fallback_linux.h"
-#include "wtf/text/CString.h"
 
 namespace blink {
 

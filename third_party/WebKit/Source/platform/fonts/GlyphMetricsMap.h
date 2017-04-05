@@ -29,14 +29,14 @@
 #ifndef GlyphMetricsMap_h
 #define GlyphMetricsMap_h
 
+#include <memory>
 #include "platform/fonts/Glyph.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/HashMap.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/Unicode.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

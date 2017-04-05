@@ -26,10 +26,10 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/text/Character.h"
-#include "wtf/ByteSwap.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/ByteSwap.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 #if OS(MACOSX)
 #include "third_party/skia/include/ports/SkTypeface_mac.h"

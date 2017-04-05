@@ -26,8 +26,8 @@
 #include "platform/fonts/SegmentedFontData.h"
 
 #include "platform/fonts/SimpleFontData.h"
-#include "wtf/Assertions.h"
-#include "wtf/text/WTFString.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

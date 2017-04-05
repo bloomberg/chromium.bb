@@ -5,9 +5,9 @@
 #ifndef CaseMappingHarfBuzzBufferFiller_h
 #define CaseMappingHarfBuzzBufferFiller_h
 
-#include "wtf/Allocator.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/Unicode.h"
 
 #include <hb.h>
 

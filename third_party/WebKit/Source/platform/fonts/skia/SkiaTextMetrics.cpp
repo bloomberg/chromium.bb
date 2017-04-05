@@ -4,7 +4,7 @@
 
 #include "SkiaTextMetrics.h"
 
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 #include <SkPath.h>
 

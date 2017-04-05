@@ -22,8 +22,8 @@
 
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontBaseline.h"
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

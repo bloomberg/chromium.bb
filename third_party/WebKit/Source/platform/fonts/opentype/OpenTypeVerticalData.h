@@ -27,11 +27,11 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Glyph.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

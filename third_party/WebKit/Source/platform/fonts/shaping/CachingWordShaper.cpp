@@ -31,7 +31,7 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeCache.h"
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

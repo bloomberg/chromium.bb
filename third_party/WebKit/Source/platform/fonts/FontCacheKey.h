@@ -33,11 +33,11 @@
 
 #include "FontFaceCreationParams.h"
 #include "platform/fonts/opentype/FontSettings.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

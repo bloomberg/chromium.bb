@@ -27,8 +27,8 @@
 #ifndef FontTraits_h
 #define FontTraits_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

@@ -25,8 +25,8 @@
 
 #include "platform/fonts/FontDescription.h"
 
+#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

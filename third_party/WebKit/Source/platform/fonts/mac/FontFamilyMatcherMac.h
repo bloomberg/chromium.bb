@@ -27,10 +27,10 @@
 #ifndef FontFamilyMatcherMac_h
 #define FontFamilyMatcherMac_h
 
+#include <AppKit/NSFontManager.h>
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontTraits.h"
-#include "wtf/Forward.h"
-#include <AppKit/NSFontManager.h>
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 

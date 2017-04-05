@@ -4,11 +4,11 @@
 
 #include "platform/fonts/ScriptRunIterator.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Assertions.h"
-#include "wtf/Threading.h"
-#include "wtf/text/WTFString.h"
 #include <string>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/Threading.h"
+#include "platform/wtf/text/WTFString.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 

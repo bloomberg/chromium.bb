@@ -31,12 +31,12 @@
 
 #include "platform/fonts/shaping/ShapeResult.h"
 
+#include <hb.h>
+#include <memory>
 #include "platform/fonts/Font.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "wtf/PtrUtil.h"
-#include <hb.h>
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

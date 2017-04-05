@@ -35,11 +35,11 @@
 #include "platform/graphics/paint/PaintFlags.h"
 #include "platform/text/TabSize.h"
 #include "platform/text/TextDirection.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashSet.h"
-#include "wtf/MathExtras.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

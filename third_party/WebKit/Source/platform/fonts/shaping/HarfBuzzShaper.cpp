@@ -45,10 +45,10 @@
 #include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "wtf/Compiler.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 enum HolesQueueItemAction { HolesQueueNextFont, HolesQueueRange };

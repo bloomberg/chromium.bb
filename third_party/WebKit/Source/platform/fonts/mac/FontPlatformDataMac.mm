@@ -23,18 +23,18 @@
 
 #import "platform/fonts/FontPlatformData.h"
 
+#import <AppKit/NSFont.h>
+#import <AvailabilityMacros.h>
 #import "platform/LayoutTestSupport.h"
 #import "platform/fonts/Font.h"
 #import "platform/fonts/opentype/FontSettings.h"
 #import "platform/fonts/shaping/HarfBuzzFace.h"
 #import "platform/graphics/skia/SkiaUtils.h"
+#import "platform/wtf/RetainPtr.h"
+#import "platform/wtf/text/WTFString.h"
 #import "public/platform/Platform.h"
 #import "public/platform/mac/WebSandboxSupport.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
-#import "wtf/RetainPtr.h"
-#import "wtf/text/WTFString.h"
-#import <AppKit/NSFont.h>
-#import <AvailabilityMacros.h>
 
 namespace blink {
 

@@ -31,9 +31,9 @@
 
 #include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/StringHasher.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

@@ -29,6 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <unicode/locid.h>
+#include <memory>
 #include "SkFontMgr.h"
 #include "SkStream.h"
 #include "SkTypeface.h"
@@ -39,14 +41,12 @@
 #include "platform/fonts/FontFaceCreationParams.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/CString.h"
 #include "public/platform/Platform.h"
 #include "public/platform/linux/WebSandboxSupport.h"
-#include "wtf/Assertions.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/CString.h"
-#include <memory>
-#include <unicode/locid.h>
 
 #if !OS(WIN) && !OS(ANDROID)
 #include "SkFontConfigInterface.h"

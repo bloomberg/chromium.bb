@@ -26,7 +26,7 @@
 #define OpenTypeTypes_h
 
 #include "platform/SharedBuffer.h"
-#include "wtf/ByteOrder.h"
+#include "platform/wtf/ByteOrder.h"
 
 namespace blink {
 namespace OpenType {

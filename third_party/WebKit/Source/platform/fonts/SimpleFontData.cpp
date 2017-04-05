@@ -29,6 +29,9 @@
 
 #include "platform/fonts/SimpleFontData.h"
 
+#include <unicode/unorm.h>
+#include <unicode/utf16.h>
+#include <memory>
 #include "SkPath.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
@@ -36,14 +39,11 @@
 #include "platform/fonts/VDMXParser.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/Unicode.h"
-#include <memory>
-#include <unicode/unorm.h>
-#include <unicode/utf16.h>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

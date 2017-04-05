@@ -30,6 +30,7 @@
 
 #include "platform/fonts/shaping/HarfBuzzFace.h"
 
+#include <memory>
 #include "platform/Histogram.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
@@ -37,10 +38,9 @@
 #include "platform/fonts/UnicodeRangeSet.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/skia/SkiaTextMetrics.h"
-#include "wtf/HashMap.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 #include <hb-ot.h>
 #include <hb.h>

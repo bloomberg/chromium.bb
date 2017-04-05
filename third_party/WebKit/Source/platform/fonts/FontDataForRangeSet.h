@@ -29,8 +29,8 @@
 #include "platform/fonts/FontData.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/UnicodeRangeSet.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

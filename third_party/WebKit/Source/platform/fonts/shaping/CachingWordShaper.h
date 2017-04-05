@@ -29,9 +29,9 @@
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/text/TextRun.h"
-#include "wtf/Allocator.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

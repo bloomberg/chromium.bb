@@ -29,7 +29,7 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 namespace blink {
 namespace OpenType {

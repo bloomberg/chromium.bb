@@ -31,16 +31,16 @@
 
 #include "platform/fonts/win/FontFallbackWin.h"
 
+#include <unicode/uchar.h>
+#include <limits>
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/text/ICUError.h"
-#include "wtf/HashMap.h"
-#include "wtf/StringExtras.h"
-#include "wtf/text/StringHash.h"
-#include "wtf/text/WTFString.h"
-#include <limits>
-#include <unicode/uchar.h>
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/StringExtras.h"
+#include "platform/wtf/text/StringHash.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 

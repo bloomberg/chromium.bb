@@ -32,12 +32,12 @@
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
+#include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontTraits.h"
-#include "platform/LayoutTestSupport.h"
 #include "platform/mac/VersionUtilMac.h"
-#import "wtf/HashSet.h"
-#import "wtf/text/AtomicStringHash.h"
+#import "platform/wtf/HashSet.h"
+#import "platform/wtf/text/AtomicStringHash.h"
 
 @interface NSFont (YosemiteAdditions)
 + (NSFont*)systemFontOfSize:(CGFloat)size weight:(CGFloat)weight;

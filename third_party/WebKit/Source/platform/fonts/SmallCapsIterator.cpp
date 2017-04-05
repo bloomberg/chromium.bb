@@ -4,8 +4,8 @@
 
 #include "SmallCapsIterator.h"
 
-#include "wtf/PtrUtil.h"
 #include <unicode/utypes.h>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

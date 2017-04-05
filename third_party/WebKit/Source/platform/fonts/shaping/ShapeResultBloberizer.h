@@ -9,9 +9,9 @@
 #include "platform/fonts/Glyph.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
 
 namespace blink {
 

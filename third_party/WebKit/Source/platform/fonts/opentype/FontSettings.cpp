@@ -4,10 +4,10 @@
 
 #include "platform/fonts/opentype/FontSettings.h"
 
-#include "wtf/HashFunctions.h"
-#include "wtf/StringHasher.h"
-#include "wtf/text/AtomicStringHash.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/text/AtomicStringHash.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

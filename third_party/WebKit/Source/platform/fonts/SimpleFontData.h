@@ -24,6 +24,8 @@
 #ifndef SimpleFontData_h
 #define SimpleFontData_h
 
+#include <SkPaint.h>
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/fonts/CustomFontData.h"
 #include "platform/fonts/FontBaseline.h"
@@ -33,10 +35,8 @@
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/geometry/FloatRect.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/text/StringHash.h"
-#include <SkPaint.h>
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringHash.h"
 
 #if OS(MACOSX)
 #include "platform/fonts/GlyphMetricsMap.h"

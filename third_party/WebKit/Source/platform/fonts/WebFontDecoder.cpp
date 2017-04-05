@@ -35,11 +35,11 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/wtf/CurrentTime.h"
 #include "public/platform/Platform.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/ots/include/ots-memory-stream.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "wtf/CurrentTime.h"
 
 #include <stdarg.h>
 

@@ -4,9 +4,9 @@
 
 #include "ScriptRunIterator.h"
 
-#include "platform/text/ICUError.h"
-#include "wtf/Threading.h"
 #include <algorithm>
+#include "platform/text/ICUError.h"
+#include "platform/wtf/Threading.h"
 
 namespace blink {
 

@@ -7,9 +7,9 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/shaping/ShapeResult.h"
-#include "wtf/Allocator.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

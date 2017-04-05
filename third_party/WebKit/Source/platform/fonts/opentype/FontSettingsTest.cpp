@@ -4,8 +4,8 @@
 
 #include "platform/fonts/opentype/FontSettings.h"
 
+#include "platform/wtf/PassRefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 

@@ -26,7 +26,7 @@
 #ifndef FontWidthVariant_h
 #define FontWidthVariant_h
 
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

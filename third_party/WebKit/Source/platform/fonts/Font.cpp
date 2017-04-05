@@ -42,10 +42,10 @@
 #include "platform/text/TextRun.h"
 #include "platform/text/TextRunIterator.h"
 #include "platform/transforms/AffineTransform.h"
+#include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/text/CharacterNames.h"
+#include "platform/wtf/text/Unicode.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
-#include "wtf/StdLibExtras.h"
-#include "wtf/text/CharacterNames.h"
-#include "wtf/text/Unicode.h"
 
 using namespace WTF;
 using namespace Unicode;

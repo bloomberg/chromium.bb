@@ -33,8 +33,8 @@
 #include "SkFontStyle.h"
 #include "SkPaint.h"
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/CString.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/CString.h"
 
 namespace blink {
 

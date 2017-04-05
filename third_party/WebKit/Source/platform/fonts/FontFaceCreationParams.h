@@ -31,11 +31,11 @@
 #ifndef FontFaceCreationParams_h
 #define FontFaceCreationParams_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Assertions.h"
-#include "wtf/StringHasher.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/StringHash.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

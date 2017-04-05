@@ -27,9 +27,9 @@
 #define FontFamily_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/text/AtomicString.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
 

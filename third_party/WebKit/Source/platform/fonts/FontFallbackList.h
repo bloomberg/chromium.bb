@@ -26,10 +26,10 @@
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/shaping/ShapeCache.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

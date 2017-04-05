@@ -5,13 +5,13 @@
 #ifndef SymbolsIterator_h
 #define SymbolsIterator_h
 
+#include <memory>
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/ScriptRunIterator.h"
 #include "platform/fonts/UTF16TextIterator.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

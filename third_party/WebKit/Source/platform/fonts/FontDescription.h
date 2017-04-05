@@ -39,10 +39,10 @@
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
 #include "platform/fonts/opentype/FontSettings.h"
-#include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/MathExtras.h"
 
-#include "wtf/RefPtr.h"
+#include "platform/wtf/RefPtr.h"
 
 #include <unicode/uscript.h>
 

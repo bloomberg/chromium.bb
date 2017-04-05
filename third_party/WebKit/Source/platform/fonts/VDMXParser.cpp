@@ -30,9 +30,9 @@
 
 #include "platform/fonts/VDMXParser.h"
 
-#include "wtf/Allocator.h"
-#include "wtf/ByteOrder.h"
-#include "wtf/Noncopyable.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/ByteOrder.h"
+#include "platform/wtf/Noncopyable.h"
 
 #include <stdlib.h>
 #include <string.h>

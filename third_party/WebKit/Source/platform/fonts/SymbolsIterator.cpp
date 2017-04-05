@@ -4,9 +4,9 @@
 
 #include "SymbolsIterator.h"
 
-#include "wtf/PtrUtil.h"
 #include <unicode/uchar.h>
 #include <unicode/uniset.h>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

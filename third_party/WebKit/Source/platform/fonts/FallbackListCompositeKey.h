@@ -7,9 +7,9 @@
 
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDescription.h"
-#include "wtf/Allocator.h"
-#include "wtf/HashMap.h"
-#include "wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #include "platform/fonts/shaping/CachingWordShapeIterator.h"
 #include "platform/fonts/shaping/ShapeCache.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/CharacterNames.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/CharacterNames.h"
 
 namespace blink {
 

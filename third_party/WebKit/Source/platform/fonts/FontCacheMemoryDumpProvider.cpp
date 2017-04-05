@@ -5,7 +5,7 @@
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 
 #include "platform/fonts/FontCache.h"
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
 namespace blink {
 

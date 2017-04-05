@@ -31,10 +31,10 @@
 #ifndef WebFontDecoder_h
 #define WebFontDecoder_h
 
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/text/WTFString.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkTypeface.h"
-#include "wtf/Allocator.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

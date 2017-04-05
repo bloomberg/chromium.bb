@@ -7,12 +7,12 @@
 
 #include "platform/fonts/FontDataForRangeSet.h"
 #include "platform/fonts/FontFallbackPriority.h"
-#include "wtf/HashMap.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/Unicode.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/text/Unicode.h"
 
 namespace blink {
 

@@ -24,8 +24,8 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/opentype/OpenTypeTypes.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

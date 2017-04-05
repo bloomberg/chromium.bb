@@ -43,7 +43,7 @@
 #if OS(WIN)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

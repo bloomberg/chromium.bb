@@ -8,8 +8,8 @@
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/fonts/opentype/OpenTypeVerticalData.h"
 #include "platform/fonts/shaping/ShapeResultTestInfo.h"
+#include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/Optional.h"
 
 namespace blink {
 

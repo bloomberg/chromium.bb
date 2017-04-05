@@ -29,12 +29,12 @@
 
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/text/TextRun.h"
-#include "wtf/Forward.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashSet.h"
-#include "wtf/HashTableDeletedValueType.h"
-#include "wtf/StringHasher.h"
-#include "wtf/WeakPtr.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/HashFunctions.h"
+#include "platform/wtf/HashSet.h"
+#include "platform/wtf/HashTableDeletedValueType.h"
+#include "platform/wtf/StringHasher.h"
+#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 

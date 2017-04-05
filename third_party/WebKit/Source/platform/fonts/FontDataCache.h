@@ -33,8 +33,8 @@
 
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "wtf/HashMap.h"
-#include "wtf/ListHashSet.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/ListHashSet.h"
 
 namespace blink {
 
