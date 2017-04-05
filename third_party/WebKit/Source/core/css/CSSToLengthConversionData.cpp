@@ -101,19 +101,19 @@ double CSSToLengthConversionData::viewportWidthPercent() const {
   // FIXME: Remove m_style from this class. Plumb viewport and rem unit
   // information through as output parameters on functions involved in length
   // resolution.
-  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits(true);
   return m_viewportSize.width() / 100;
 }
 double CSSToLengthConversionData::viewportHeightPercent() const {
-  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits(true);
   return m_viewportSize.height() / 100;
 }
 double CSSToLengthConversionData::viewportMinPercent() const {
-  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits(true);
   return std::min(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 double CSSToLengthConversionData::viewportMaxPercent() const {
-  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits();
+  const_cast<ComputedStyle*>(m_style)->setHasViewportUnits(true);
   return std::max(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 

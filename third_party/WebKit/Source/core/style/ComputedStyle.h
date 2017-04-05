@@ -2346,7 +2346,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool hasViewportUnits() const {
     return m_nonInheritedData.m_hasViewportUnits;
   }
-  void setHasViewportUnits(bool hasViewportUnits = true) {
+  // TODO(shend): This function should take no arguments.
+  void setHasViewportUnits(bool hasViewportUnits) {
     m_nonInheritedData.m_hasViewportUnits = hasViewportUnits;
   }
 
