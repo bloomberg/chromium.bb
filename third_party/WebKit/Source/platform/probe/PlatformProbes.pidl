@@ -4,8 +4,6 @@
 
 interface PlatformProbes {
 
-#define PROBE_EXPORT PLATFORM_EXPORT
-
 class FetchContext;
 class ResourceRequest;
 class ResourceResponse;

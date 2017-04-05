@@ -1,0 +1,18 @@
+{
+  settings: {
+    export_symbol: "CORE_EXPORT",
+    default_include: "core/inspector"
+  },
+  observers: {
+    Network: {
+      class: "InspectorNetworkAgent"
+    },
+    TraceEvents: {
+      class: "InspectorTraceEvents"
+    },
+    Performance: {
+      class: "PerformanceMonitor",
+      include: "core/frame"
+    }
+  }
+}

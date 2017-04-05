@@ -64,8 +64,6 @@ interface CoreProbes {
 #include "core/dom/PseudoElement.h"
 #include "core/html/HTMLSlotElement.h"
 
-#define PROBE_EXPORT CORE_EXPORT
-
 class ConsoleMessage;
 class HTMLDocumentParser;
 class ThreadableLoaderClient;
@@ -350,8 +348,6 @@ class XMLHttpRequest;
 }
 
 interface InspectorOverrides {
-
-#define PROBE_EXPORT CORE_EXPORT
 
     [CSS]
     bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);

@@ -35,8 +35,6 @@ inline PlatformProbeSink* toPlatformProbeSink(FetchContext* context) {
 }  // namespace probe
 }  // namespace blink
 
-#undef PROBE_EXPORT
-
 #include "platform/PlatformProbesInl.h"
 
 #endif  // PlatformProbes_h

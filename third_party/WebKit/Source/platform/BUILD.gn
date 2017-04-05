@@ -133,14 +133,15 @@ action("character_data") {
 }
 
 action("instrumentation_probes") {
-  script = "probe/InstrumentingProbesCodeGenerator.py"
+  script = "../build/scripts/make_instrumenting_probes.py"
 
   input_file = "probe/PlatformProbes.pidl"
   inputs = [
     input_file,
-    "probe/templates/InstrumentingProbesImpl.cpp.tmpl",
-    "probe/templates/InstrumentingProbesInl.h.tmpl",
-    "probe/templates/ProbeSink.h.tmpl",
+    "probe/PlatformProbes.json5",
+    "../build/scripts/templates/InstrumentingProbesImpl.cpp.tmpl",
+    "../build/scripts/templates/InstrumentingProbesInl.h.tmpl",
+    "../build/scripts/templates/ProbeSink.h.tmpl",
   ]
 
   outputs = [
@@ -151,6 +152,8 @@ action("instrumentation_probes") {
 
   args = [
     rebase_path(inputs[0], root_build_dir),
+    "--config",
+    rebase_path("probe/PlatformProbes.json5", root_build_dir),
     "--output_dir",
     rebase_path(blink_platform_output_dir, root_build_dir),
   ]

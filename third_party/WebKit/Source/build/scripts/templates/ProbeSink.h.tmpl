@@ -5,14 +5,12 @@
 // found in the LICENSE file.
 
 {% set sink_class = (name | to_singular) + "Sink" %}
+{% set export_symbol = config["settings"]["export_symbol"] %}
 
 #ifndef {{sink_class}}_h
 #define {{sink_class}}_h
 
 #include "platform/heap/HeapAllocator.h"
-{% for define in defines %}
-{{define}}
-{% endfor %}
 
 namespace blink {
 
@@ -20,7 +18,7 @@ namespace blink {
 class {{ agent | agent_name_to_class }};
 {% endfor %}
 
-class PROBE_EXPORT {{sink_class}} : public GarbageCollected<{{sink_class}}> {
+class {{export_symbol}} {{sink_class}} : public GarbageCollected<{{sink_class}}> {
   WTF_MAKE_NONCOPYABLE({{sink_class}});
 
  public:

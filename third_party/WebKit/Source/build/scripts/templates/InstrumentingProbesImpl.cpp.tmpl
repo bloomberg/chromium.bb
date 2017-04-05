@@ -11,14 +11,7 @@
 {% endfor %}
 #include "{{sink_class}}.h"
 {% for agent in agents %}
-{% set class_name = agent | agent_name_to_class %}
-{% if class_name == "PerformanceMonitor" %}
-#include "core/frame/PerformanceMonitor.h"
-{% elif class_name.startswith("Platform") %}
-#include "platform/probe/{{class_name}}.h"
-{% else %}
-#include "core/inspector/{{class_name}}.h"
-{% endif %}
+#include "{{agent | agent_name_to_include}}"
 {% endfor %}
 
 namespace blink {

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import ast
 import optparse
 import os.path
 import re
@@ -16,14 +17,26 @@ import sys
 # is regenerated, which causes a race condition and breaks concurrent build,
 # since some compile processes will try to read the partially written cache.
 module_path, module_filename = os.path.split(os.path.realpath(__file__))
-templates_dir = os.path.join(module_path, "templates")
-third_party_dir = os.path.normpath(os.path.join(
-    module_path, os.pardir, os.pardir, os.pardir, os.pardir))
+third_party_dir = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir, os.pardir, os.pardir))
 # jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
 # after path[0] == invoking script dir
 sys.path.insert(1, third_party_dir)
 import jinja2
+
+
+def _json5_loads(lines):
+    # Use json5.loads when json5 is available. Currently we use simple
+    # regexs to convert well-formed JSON5 to PYL format.
+    # Strip away comments and quote unquoted keys.
+    re_comment = re.compile(r"^\s*//.*$|//+ .*$", re.MULTILINE)
+    re_map_keys = re.compile(r"^\s*([$A-Za-z_][\w]*)\s*:", re.MULTILINE)
+    pyl = re.sub(re_map_keys, r"'\1':", re.sub(re_comment, "", lines))
+    # Convert map values of true/false to Python version True/False.
+    re_true = re.compile(r":\s*true\b")
+    re_false = re.compile(r":\s*false\b")
+    pyl = re.sub(re_true, ":True", re.sub(re_false, ":False", pyl))
+    return ast.literal_eval(pyl)
 
 
 def to_singular(text):
@@ -34,20 +47,25 @@ def to_lower_case(name):
     return name[:1].lower() + name[1:]
 
 
+def agent_config(agent_name, field):
+    observers = config["observers"]
+    if agent_name not in observers:
+        return None
+    return observers[agent_name][field] if field in observers[agent_name] else None
+
+
 def agent_name_to_class(agent_name):
-    if agent_name == "Performance":
-        return "PerformanceMonitor"
-    elif agent_name == "TraceEvents":
-        return "InspectorTraceEvents"
-    elif agent_name == "PlatformTraceEvents":
-        return "PlatformTraceEventsAgent"
-    else:
-        return "Inspector%sAgent" % agent_name
+    return agent_config(agent_name, "class") or "Inspector%sAgent" % agent_name
+
+
+def agent_name_to_include(agent_name):
+    include_path = agent_config(agent_name, "include") or config["settings"]["default_include"]
+    return os.path.join(include_path, agent_name_to_class(agent_name) + ".h")
 
 
 def initialize_jinja_env(cache_dir):
     jinja_env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader(templates_dir),
+        loader=jinja2.FileSystemLoader(os.path.join(module_path, "templates")),
         # Bytecode cache is not concurrency-safe unless pre-cached:
         # if pre-cached this is read-only, but writing creates a race condition.
         bytecode_cache=jinja2.FileSystemBytecodeCache(cache_dir),
@@ -57,7 +75,8 @@ def initialize_jinja_env(cache_dir):
     jinja_env.filters.update({
         "to_lower_case": to_lower_case,
         "to_singular": to_singular,
-        "agent_name_to_class": agent_name_to_class})
+        "agent_name_to_class": agent_name_to_class,
+        "agent_name_to_include": agent_name_to_include})
     jinja_env.add_extension('jinja2.ext.loopcontrols')
     return jinja_env
 
@@ -91,13 +110,10 @@ class File(object):
         self.includes = [include_inspector_header(base_name)]
         self.forward_declarations = []
         self.declarations = []
-        self.defines = []
         for line in map(str.strip, source.split("\n")):
             line = re.sub(r"\s{2,}", " ", line).strip()  # Collapse whitespace
             if len(line) == 0:
                 continue
-            if line.startswith("#define"):
-                self.defines.append(line)
             elif line.startswith("#include"):
                 self.includes.append(line)
             elif line.startswith("class ") or line.startswith("struct "):
@@ -194,9 +210,20 @@ def build_param_name(param_type):
     return "param" + base_name
 
 
+def load_config(file_name):
+    default_config = {
+        "settings": {},
+        "observers": {}
+    }
+    if not file_name:
+        return default_config
+    with open(file_name) as config_file:
+        return _json5_loads(config_file.read()) or default_config
+
+
 cmdline_parser = optparse.OptionParser()
 cmdline_parser.add_option("--output_dir")
-cmdline_parser.add_option("--template_dir")
+cmdline_parser.add_option("--config")
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
@@ -206,16 +233,20 @@ try:
     output_dirpath = arg_options.output_dir
     if not output_dirpath:
         raise Exception("Output directory must be specified")
+    config_file_name = arg_options.config
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
     sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> --output_dir <output_dir> InstrumentingProbes.idl\n")
+    sys.stderr.write("Usage: <script> [options] <probes.pidl>\n")
+    sys.stderr.write("Options:\n")
+    sys.stderr.write("\t--config <config_file.json5>\n")
+    sys.stderr.write("\t--output_dir <output_dir>\n")
     exit(1)
 
+config = load_config(config_file_name)
 jinja_env = initialize_jinja_env(output_dirpath)
 all_agents = set()
-all_defines = []
 base_name = os.path.splitext(os.path.basename(input_path))[0]
 
 fin = open(input_path, "r")
@@ -226,12 +257,11 @@ for f in files:
     for declaration in f.declarations:
         for agent in declaration.agents:
             all_agents.add(agent)
-    all_defines += f.defines
 
 template_context = {
     "files": files,
     "agents": all_agents,
-    "defines": all_defines,
+    "config": config,
     "name": base_name,
     "input_file": os.path.basename(input_path)
 }

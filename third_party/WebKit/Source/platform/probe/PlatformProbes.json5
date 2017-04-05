@@ -1,0 +1,11 @@
+{
+  settings: {
+    export_symbol: "PLATFORM_EXPORT",
+    default_include: "platform/probe"
+  },
+  observers: {
+    PlatformTraceEvents: {
+      class: "PlatformTraceEventsAgent"
+    }
+  }
+}
