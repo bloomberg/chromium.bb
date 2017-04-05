@@ -357,6 +357,17 @@ if (CONFIG_PVQ)
     endif ()
 endif ()
 
+if (CONFIG_WARPED_MOTION)
+  set(AOM_AV1_COMMON_SOURCES
+      ${AOM_AV1_COMMON_SOURCES}
+      "${AOM_ROOT}/av1/common/warped_motion.c"
+      "${AOM_ROOT}/av1/common/warped_motion.h")
+
+  set(AOM_AV1_COMMON_SSE2_INTRIN
+      ${AOM_AV1_COMMON_SSE2_INTRIN}
+      "${AOM_ROOT}/av1/common/x86/warp_plane_sse2.c")
+endif ()
+
 # Setup AV1 common/decoder/encoder targets. The libaom target must exist before
 # this function is called.
 function (setup_av1_targets)
