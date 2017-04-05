@@ -191,7 +191,15 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAOnclick) {
   RunHtmlTest(FILE_PATH_LITERAL("a-onclick.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAomChecked) {
+
+#if defined(THREAD_SANITIZER)
+// See (crbug.com/708759).
+#define MAYBE_AccessibilityAomChecked DISABLED_AccessibilityAomChecked
+#else
+#define MAYBE_AccessibilityAomChecked AccessibilityAomChecked
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityAomChecked) {
   RunAomTest(FILE_PATH_LITERAL("aom-checked.html"));
 }
 
