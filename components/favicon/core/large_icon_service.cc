@@ -56,13 +56,80 @@ GURL GetIconUrlForGoogleServerV2(const GURL& page_url,
       page_url.spec().c_str()));
 }
 
+bool IsDbResultAdequate(const favicon_base::FaviconRawBitmapResult& db_result,
+                        int min_source_size) {
+  return db_result.is_valid() &&
+         db_result.pixel_size.width() == db_result.pixel_size.height() &&
+         db_result.pixel_size.width() >= min_source_size;
+}
+
+// Wraps the PNG data in |db_result| in a gfx::Image. If |desired_size| is not
+// 0, the image gets decoded and resized to |desired_size| (in px). Must run on
+// a background thread in production.
+gfx::Image ResizeLargeIconOnBackgroundThread(
+    const favicon_base::FaviconRawBitmapResult& db_result,
+    int desired_size) {
+  gfx::Image image = gfx::Image::CreateFrom1xPNGBytes(
+      db_result.bitmap_data->front(), db_result.bitmap_data->size());
+
+  if (desired_size == 0 || db_result.pixel_size.width() == desired_size) {
+    return image;
+  }
+
+  SkBitmap resized = skia::ImageOperations::Resize(
+      image.AsBitmap(), skia::ImageOperations::RESIZE_LANCZOS3, desired_size,
+      desired_size);
+  return gfx::Image::CreateFrom1xBitmap(resized);
+}
+
+// Processes the |db_result| and writes the result into |raw_result| if
+// |raw_result| is not nullptr or to |bitmap|, otherwise. If |db_result| is not
+// valid or is smaller than |min_source_size|, the resulting fallback style is
+// written into |fallback_icon_style|.
+void ProcessIconOnBackgroundThread(
+    const favicon_base::FaviconRawBitmapResult& db_result,
+    int min_source_size,
+    int desired_size,
+    favicon_base::FaviconRawBitmapResult* raw_result,
+    SkBitmap* bitmap,
+    favicon_base::FallbackIconStyle* fallback_icon_style) {
+  if (IsDbResultAdequate(db_result, min_source_size)) {
+    gfx::Image image;
+    image = ResizeLargeIconOnBackgroundThread(db_result, desired_size);
+
+    if (!image.IsEmpty()) {
+      if (raw_result) {
+        *raw_result = db_result;
+        if (desired_size != 0)
+          raw_result->pixel_size = gfx::Size(desired_size, desired_size);
+        raw_result->bitmap_data = image.As1xPNGBytes();
+      }
+      if (bitmap) {
+        *bitmap = image.AsBitmap();
+      }
+      return;
+    }
+  }
+
+  if (!fallback_icon_style)
+    return;
+
+  *fallback_icon_style = favicon_base::FallbackIconStyle();
+  if (db_result.is_valid()) {
+    favicon_base::SetDominantColorAsBackground(db_result.bitmap_data,
+                                               fallback_icon_style);
+  }
+}
+
 // Processes the bitmap data returned from the FaviconService as part of a
 // LargeIconService request.
 class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
  public:
+  // Exactly one of the callbacks is expected to be non-null.
   LargeIconWorker(int min_source_size_in_pixel,
                   int desired_size_in_pixel,
-                  favicon_base::LargeIconCallback callback,
+                  favicon_base::LargeIconCallback raw_bitmap_callback,
+                  favicon_base::LargeIconImageCallback image_callback,
                   scoped_refptr<base::TaskRunner> background_task_runner,
                   base::CancelableTaskTracker* tracker);
 
@@ -71,27 +138,12 @@ class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
   // ProcessIconOnBackgroundThread() so we do not perform complex image
   // operations on the UI thread.
   void OnIconLookupComplete(
-      const favicon_base::FaviconRawBitmapResult& bitmap_result);
+      const favicon_base::FaviconRawBitmapResult& db_result);
 
  private:
   friend class base::RefCountedThreadSafe<LargeIconWorker>;
 
   ~LargeIconWorker();
-
-  // Must run on a background thread in production.
-  // Tries to resize |bitmap_result_| and pass the output to |callback_|. If
-  // that does not work, computes the icon fallback style and uses it to
-  // invoke |callback_|. This must be run on a background thread because image
-  // resizing and dominant color extraction can be expensive.
-  void ProcessIconOnBackgroundThread();
-
-  // Must run on a background thread in production.
-  // If |bitmap_result_| is square and large enough (>= |min_source_in_pixel_|),
-  // resizes it to |desired_size_in_pixel_| (but if |desired_size_in_pixel_| is
-  // 0 then don't resize). If successful, stores the resulting bitmap data
-  // into |resized_bitmap_result| and returns true.
-  bool ResizeLargeIconOnBackgroundThreadIfValid(
-      favicon_base::FaviconRawBitmapResult* resized_bitmap_result);
 
   // Must run on the owner (UI) thread in production.
   // Invoked when ProcessIconOnBackgroundThread() is done.
@@ -99,11 +151,14 @@ class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
 
   int min_source_size_in_pixel_;
   int desired_size_in_pixel_;
-  favicon_base::LargeIconCallback callback_;
+  favicon_base::LargeIconCallback raw_bitmap_callback_;
+  favicon_base::LargeIconImageCallback image_callback_;
   scoped_refptr<base::TaskRunner> background_task_runner_;
   base::CancelableTaskTracker* tracker_;
-  favicon_base::FaviconRawBitmapResult bitmap_result_;
-  std::unique_ptr<favicon_base::LargeIconResult> result_;
+
+  favicon_base::FaviconRawBitmapResult raw_bitmap_result_;
+  SkBitmap bitmap_result_;
+  std::unique_ptr<favicon_base::FallbackIconStyle> fallback_icon_style_;
 
   DISALLOW_COPY_AND_ASSIGN(LargeIconWorker);
 };
@@ -111,87 +166,54 @@ class LargeIconWorker : public base::RefCountedThreadSafe<LargeIconWorker> {
 LargeIconWorker::LargeIconWorker(
     int min_source_size_in_pixel,
     int desired_size_in_pixel,
-    favicon_base::LargeIconCallback callback,
+    favicon_base::LargeIconCallback raw_bitmap_callback,
+    favicon_base::LargeIconImageCallback image_callback,
     scoped_refptr<base::TaskRunner> background_task_runner,
     base::CancelableTaskTracker* tracker)
     : min_source_size_in_pixel_(min_source_size_in_pixel),
       desired_size_in_pixel_(desired_size_in_pixel),
-      callback_(callback),
+      raw_bitmap_callback_(raw_bitmap_callback),
+      image_callback_(image_callback),
       background_task_runner_(background_task_runner),
-      tracker_(tracker) {
-}
+      tracker_(tracker),
+      fallback_icon_style_(
+          base::MakeUnique<favicon_base::FallbackIconStyle>()) {}
 
 LargeIconWorker::~LargeIconWorker() {
 }
 
 void LargeIconWorker::OnIconLookupComplete(
-    const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  bitmap_result_ = bitmap_result;
+    const favicon_base::FaviconRawBitmapResult& db_result) {
   tracker_->PostTaskAndReply(
       background_task_runner_.get(), FROM_HERE,
-      base::Bind(&LargeIconWorker::ProcessIconOnBackgroundThread, this),
+      base::Bind(&ProcessIconOnBackgroundThread, db_result,
+                 min_source_size_in_pixel_, desired_size_in_pixel_,
+                 raw_bitmap_callback_ ? &raw_bitmap_result_ : nullptr,
+                 image_callback_ ? &bitmap_result_ : nullptr,
+                 fallback_icon_style_.get()),
       base::Bind(&LargeIconWorker::OnIconProcessingComplete, this));
 }
 
-void LargeIconWorker::ProcessIconOnBackgroundThread() {
-  favicon_base::FaviconRawBitmapResult resized_bitmap_result;
-  if (ResizeLargeIconOnBackgroundThreadIfValid(&resized_bitmap_result)) {
-    result_.reset(
-        new favicon_base::LargeIconResult(resized_bitmap_result));
-  } else {
-    // Failed to resize |bitmap_result_|, so compute fallback icon style.
-    std::unique_ptr<favicon_base::FallbackIconStyle> fallback_icon_style(
-        new favicon_base::FallbackIconStyle());
-    if (bitmap_result_.is_valid()) {
-      favicon_base::SetDominantColorAsBackground(
-          bitmap_result_.bitmap_data, fallback_icon_style.get());
-    }
-    result_.reset(
-        new favicon_base::LargeIconResult(fallback_icon_style.release()));
-  }
-}
-
-bool LargeIconWorker::ResizeLargeIconOnBackgroundThreadIfValid(
-    favicon_base::FaviconRawBitmapResult* resized_bitmap_result) {
-  // Require bitmap to be valid and square.
-  if (!bitmap_result_.is_valid() ||
-      bitmap_result_.pixel_size.width() != bitmap_result_.pixel_size.height())
-    return false;
-
-  // Require bitmap to be large enough. It's square, so just check width.
-  if (bitmap_result_.pixel_size.width() < min_source_size_in_pixel_)
-    return false;
-
-  *resized_bitmap_result = bitmap_result_;
-
-  // Special case: Can use |bitmap_result_| as is.
-  if (desired_size_in_pixel_ == 0 ||
-      bitmap_result_.pixel_size.width() == desired_size_in_pixel_)
-    return true;
-
-  // Resize bitmap: decode PNG, resize, and re-encode PNG.
-  SkBitmap decoded_bitmap;
-  if (!gfx::PNGCodec::Decode(bitmap_result_.bitmap_data->front(),
-          bitmap_result_.bitmap_data->size(), &decoded_bitmap))
-    return false;
-
-  SkBitmap resized_bitmap = skia::ImageOperations::Resize(
-      decoded_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
-      desired_size_in_pixel_, desired_size_in_pixel_);
-
-  std::vector<unsigned char> bitmap_data;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(resized_bitmap, false, &bitmap_data))
-    return false;
-
-  resized_bitmap_result->pixel_size =
-      gfx::Size(desired_size_in_pixel_, desired_size_in_pixel_);
-  resized_bitmap_result->bitmap_data =
-      base::RefCountedBytes::TakeVector(&bitmap_data);
-  return true;
-}
-
 void LargeIconWorker::OnIconProcessingComplete() {
-  callback_.Run(*result_);
+  // If |raw_bitmap_callback_| is provided, return the raw result.
+  if (raw_bitmap_callback_) {
+    if (raw_bitmap_result_.is_valid()) {
+      raw_bitmap_callback_.Run(
+          favicon_base::LargeIconResult(raw_bitmap_result_));
+      return;
+    }
+    raw_bitmap_callback_.Run(
+        favicon_base::LargeIconResult(fallback_icon_style_.release()));
+    return;
+  }
+
+  if (!bitmap_result_.isNull()) {
+    image_callback_.Run(favicon_base::LargeIconImageResult(
+        gfx::Image::CreateFrom1xBitmap(bitmap_result_)));
+    return;
+  }
+  image_callback_.Run(
+      favicon_base::LargeIconImageResult(fallback_icon_style_.release()));
 }
 
 void OnFetchIconFromGoogleServerComplete(
@@ -242,27 +264,27 @@ LargeIconService::~LargeIconService() {
 }
 
 base::CancelableTaskTracker::TaskId
-    LargeIconService::GetLargeIconOrFallbackStyle(
-        const GURL& page_url,
-        int min_source_size_in_pixel,
-        int desired_size_in_pixel,
-        const favicon_base::LargeIconCallback& callback,
-        base::CancelableTaskTracker* tracker) {
-  DCHECK_LE(1, min_source_size_in_pixel);
-  DCHECK_LE(0, desired_size_in_pixel);
+LargeIconService::GetLargeIconOrFallbackStyle(
+    const GURL& page_url,
+    int min_source_size_in_pixel,
+    int desired_size_in_pixel,
+    const favicon_base::LargeIconCallback& raw_bitmap_callback,
+    base::CancelableTaskTracker* tracker) {
+  return GetLargeIconOrFallbackStyleImpl(
+      page_url, min_source_size_in_pixel, desired_size_in_pixel,
+      raw_bitmap_callback, favicon_base::LargeIconImageCallback(), tracker);
+}
 
-  scoped_refptr<LargeIconWorker> worker =
-      new LargeIconWorker(min_source_size_in_pixel, desired_size_in_pixel,
-                          callback, background_task_runner_, tracker);
-
-  // TODO(beaudoin): For now this is just a wrapper around
-  //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
-  //   possible large icon. Also add logic to fetch-on-demand when the URL of
-  //   a large icon is known but its bitmap is not available.
-  return favicon_service_->GetLargestRawFaviconForPageURL(
-      page_url, large_icon_types_, min_source_size_in_pixel,
-      base::Bind(&LargeIconWorker::OnIconLookupComplete, worker),
-      tracker);
+base::CancelableTaskTracker::TaskId
+LargeIconService::GetLargeIconImageOrFallbackStyle(
+    const GURL& page_url,
+    int min_source_size_in_pixel,
+    int desired_size_in_pixel,
+    const favicon_base::LargeIconImageCallback& image_callback,
+    base::CancelableTaskTracker* tracker) {
+  return GetLargeIconOrFallbackStyleImpl(
+      page_url, min_source_size_in_pixel, desired_size_in_pixel,
+      favicon_base::LargeIconCallback(), image_callback, tracker);
 }
 
 void LargeIconService::
@@ -291,6 +313,30 @@ void LargeIconService::
       icon_url.spec(), icon_url,
       base::Bind(&OnFetchIconFromGoogleServerComplete, favicon_service_,
                  page_url, callback));
+}
+
+base::CancelableTaskTracker::TaskId
+LargeIconService::GetLargeIconOrFallbackStyleImpl(
+    const GURL& page_url,
+    int min_source_size_in_pixel,
+    int desired_size_in_pixel,
+    const favicon_base::LargeIconCallback& raw_bitmap_callback,
+    const favicon_base::LargeIconImageCallback& image_callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK_LE(1, min_source_size_in_pixel);
+  DCHECK_LE(0, desired_size_in_pixel);
+
+  scoped_refptr<LargeIconWorker> worker = new LargeIconWorker(
+      min_source_size_in_pixel, desired_size_in_pixel, raw_bitmap_callback,
+      image_callback, background_task_runner_, tracker);
+
+  // TODO(beaudoin): For now this is just a wrapper around
+  //   GetLargestRawFaviconForPageURL. Add the logic required to select the best
+  //   possible large icon. Also add logic to fetch-on-demand when the URL of
+  //   a large icon is known but its bitmap is not available.
+  return favicon_service_->GetLargestRawFaviconForPageURL(
+      page_url, large_icon_types_, min_source_size_in_pixel,
+      base::Bind(&LargeIconWorker::OnIconLookupComplete, worker), tracker);
 }
 
 }  // namespace favicon

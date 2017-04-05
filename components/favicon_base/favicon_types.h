@@ -99,6 +99,26 @@ struct LargeIconResult {
   std::unique_ptr<FallbackIconStyle> fallback_icon_style;
 };
 
+// Result returned by LargeIconService::GetLargeIconImageOrFallbackStyle().
+// Contains either the gfx::Image if the favicon database has a sufficiently
+// large favicon bitmap and the style of the fallback icon otherwise.
+struct LargeIconImageResult {
+  explicit LargeIconImageResult(const gfx::Image& image_in);
+
+  // Takes ownership of |fallback_icon_style_in|.
+  explicit LargeIconImageResult(FallbackIconStyle* fallback_icon_style_in);
+
+  ~LargeIconImageResult();
+
+  // The image from the favicon database if the database has a sufficiently
+  // large one.
+  gfx::Image image;
+
+  // The fallback icon style if a sufficiently large icon isn't available. This
+  // uses the dominant color of a smaller icon as the background if available.
+  std::unique_ptr<FallbackIconStyle> fallback_icon_style;
+};
+
 }  // namespace favicon_base
 
 #endif  // COMPONENTS_FAVICON_BASE_FAVICON_TYPES_H_

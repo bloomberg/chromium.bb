@@ -48,12 +48,22 @@ class LargeIconService : public KeyedService {
   // - Returns the default fallback icon style.
   // For cases 2 and 3, this function returns the style of the fallback icon
   // instead of rendering an icon so clients can render the icon themselves.
+  // TODO(jkrcal): Rename to GetLargeIconRawBitmapOrFallbackStyle.
   base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyle(
-    const GURL& page_url,
-    int min_source_size_in_pixel,
-    int desired_size_in_pixel,
-    const favicon_base::LargeIconCallback& callback,
-    base::CancelableTaskTracker* tracker);
+      const GURL& page_url,
+      int min_source_size_in_pixel,
+      int desired_size_in_pixel,
+      const favicon_base::LargeIconCallback& callback,
+      base::CancelableTaskTracker* tracker);
+
+  // Behaves the same as GetLargeIconOrFallbackStyle(), only returns the large
+  // icon (if available) decoded.
+  base::CancelableTaskTracker::TaskId GetLargeIconImageOrFallbackStyle(
+      const GURL& page_url,
+      int min_source_size_in_pixel,
+      int desired_size_in_pixel,
+      const favicon_base::LargeIconImageCallback& callback,
+      base::CancelableTaskTracker* tracker);
 
   // Fetches the best large icon for the page at |page_url| from a Google
   // favicon server and stores the result in the FaviconService database
@@ -76,6 +86,14 @@ class LargeIconService : public KeyedService {
       const base::Callback<void(bool success)>& callback);
 
  private:
+  base::CancelableTaskTracker::TaskId GetLargeIconOrFallbackStyleImpl(
+      const GURL& page_url,
+      int min_source_size_in_pixel,
+      int desired_size_in_pixel,
+      const favicon_base::LargeIconCallback& raw_bitmap_callback,
+      const favicon_base::LargeIconImageCallback& image_callback,
+      base::CancelableTaskTracker* tracker);
+
   FaviconService* favicon_service_;
   scoped_refptr<base::TaskRunner> background_task_runner_;
 

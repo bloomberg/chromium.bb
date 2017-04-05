@@ -14,6 +14,7 @@ namespace favicon_base {
 struct FaviconRawBitmapResult;
 struct FaviconImageResult;
 struct LargeIconResult;
+struct LargeIconImageResult;
 
 // Callback for functions that can be used to return a |gfx::Image| and the
 // |GURL| it is loaded from. They are returned as a |FaviconImageResult| object.
@@ -33,7 +34,15 @@ typedef base::Callback<void(const std::vector<FaviconRawBitmapResult>&)>
 // Callback for functions returning data for a large icon. |LargeIconResult|
 // will contain either the raw bitmap for a large icon or the style of the
 // fallback to use if a sufficiently large icon could not be found.
+// TODO(jkrcal): Rename LargeIcon* to LargeIconRawBitmap*.
 typedef base::Callback<void(const LargeIconResult&)> LargeIconCallback;
+
+// Callback for functions returning decoded data for a large icon.
+// |LargeIconImageResult| will contain either the decoded image of a large
+// icon or the style of the fallback to use if a sufficiently large icon could
+// not be found.
+typedef base::Callback<void(const LargeIconImageResult&)>
+    LargeIconImageCallback;
 
 }  // namespace favicon_base
 
