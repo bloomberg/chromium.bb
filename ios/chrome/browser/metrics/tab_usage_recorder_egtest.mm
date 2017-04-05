@@ -26,6 +26,7 @@
 #include "ios/chrome/test/app/navigation_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -841,9 +842,11 @@ void SelectTabUsingUI(NSString* title) {
   NewMainTabWithURL(initialURL, "link");
 
   int numberOfTabs = chrome_test_util::GetMainTabCount();
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::WebViewContainingText("link")]
-      performAction:grey_longPress()];
+  id<GREYMatcher> webViewMatcher =
+      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+  [[EarlGrey selectElementWithMatcher:webViewMatcher]
+      performAction:chrome_test_util::LongPressElementForContextMenu(
+                        "link", true /* menu should appear */)];
 
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]
       performAction:grey_tap()];
