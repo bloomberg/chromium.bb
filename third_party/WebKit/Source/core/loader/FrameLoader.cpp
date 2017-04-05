@@ -716,9 +716,8 @@ FrameLoadType FrameLoader::determineFrameLoadType(
       m_documentLoader->loadType() == FrameLoadTypeReload)
     return FrameLoadTypeReload;
 
-  if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
-      request.originDocument() &&
-      !request.originDocument()->frame()->hasReceivedUserGesture())
+  if (request.originDocument() &&
+      !request.originDocument()->canCreateHistoryEntry())
     return FrameLoadTypeReplaceCurrentItem;
 
   if (request.resourceRequest().url().isEmpty() &&

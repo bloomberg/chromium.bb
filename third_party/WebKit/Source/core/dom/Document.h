@@ -677,6 +677,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool shouldScheduleLayout() const;
   int elapsedTime() const;
 
+  bool canCreateHistoryEntry() const;
+
   TextLinkColors& textLinkColors() { return m_textLinkColors; }
   VisitedLinkState& visitedLinkState() const { return *m_visitedLinkState; }
 

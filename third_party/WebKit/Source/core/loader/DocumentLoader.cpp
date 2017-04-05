@@ -301,11 +301,8 @@ void DocumentLoader::updateForSameDocumentNavigation(
     HistoryScrollRestorationType scrollRestorationType,
     FrameLoadType type,
     Document* initiatingDocument) {
-  if (m_frame->settings()->getHistoryEntryRequiresUserGesture() &&
-      initiatingDocument &&
-      !initiatingDocument->frame()->hasReceivedUserGesture()) {
+  if (initiatingDocument && !initiatingDocument->canCreateHistoryEntry())
     type = FrameLoadTypeReplaceCurrentItem;
-  }
 
   KURL oldURL = m_request.url();
   m_originalRequest.setURL(newURL);
