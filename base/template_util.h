@@ -64,19 +64,6 @@ struct SupportsOstreamOperator<T,
 
 }  // namespace internal
 
-// underlying_type produces the integer type backing an enum type.
-// TODO(crbug.com/554293): Remove this when all platforms have this in the std
-// namespace.
-#if defined(CR_USE_FALLBACKS_FOR_OLD_GLIBCXX)
-template <typename T>
-struct underlying_type {
-  using type = __underlying_type(T);
-};
-#else
-template <typename T>
-using underlying_type = std::underlying_type<T>;
-#endif
-
 // TODO(crbug.com/554293): Remove this when all platforms have this in the std
 // namespace.
 #if defined(CR_USE_FALLBACKS_FOR_OLD_GLIBCXX)

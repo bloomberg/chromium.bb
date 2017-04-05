@@ -69,15 +69,6 @@ static_assert(
     internal::SupportsOstreamOperator<const StructWithOperator&>::value,
     "struct with operator<< should be printable by const ref");
 
-// underlying type of enums
-static_assert(std::is_integral<underlying_type<SimpleEnum>::type>::value,
-              "simple enum must have some integral type");
-static_assert(
-    std::is_same<underlying_type<EnumWithExplicitType>::type, uint64_t>::value,
-    "explicit type must be detected");
-static_assert(std::is_same<underlying_type<ScopedEnum>::type, int>::value,
-              "scoped enum defaults to int");
-
 struct TriviallyDestructible {
   int field;
 };

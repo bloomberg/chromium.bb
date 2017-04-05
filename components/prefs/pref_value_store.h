@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "base/callback.h"
@@ -263,7 +264,7 @@ template <>
 struct hash<PrefValueStore::PrefStoreType> {
   size_t operator()(PrefValueStore::PrefStoreType type) const {
     return std::hash<
-        base::underlying_type<PrefValueStore::PrefStoreType>::type>()(type);
+        std::underlying_type<PrefValueStore::PrefStoreType>::type>()(type);
   }
 };
 

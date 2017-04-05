@@ -95,7 +95,7 @@ struct hash<{{enum_name}}>
 namespace WTF {
 struct {{hash_fn_name}} {
   static unsigned hash(const {{enum_name}}& value) {
-    typedef base::underlying_type<{{enum_name}}>::type utype;
+    using utype = std::underlying_type<{{enum_name}}>::type;
     return DefaultHash<utype>::Hash().hash(static_cast<utype>(value));
   }
   static bool equal(const {{enum_name}}& left, const {{enum_name}}& right) {

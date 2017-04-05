@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include <functional>
+#include <type_traits>
 
-#include "base/template_util.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/system/core.h"
@@ -325,7 +325,7 @@ struct EnumHashImpl {
   static_assert(std::is_enum<T>::value, "Incorrect hash function.");
 
   size_t operator()(T input) const {
-    using UnderlyingType = typename base::underlying_type<T>::type;
+    using UnderlyingType = typename std::underlying_type<T>::type;
     return std::hash<UnderlyingType>()(static_cast<UnderlyingType>(input));
   }
 };

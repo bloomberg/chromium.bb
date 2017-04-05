@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
-#include "base/template_util.h"
 
 namespace ntp_snippets {
 namespace metrics {
@@ -83,8 +82,8 @@ enum HistogramCategories {
 
 HistogramCategories GetHistogramCategory(Category category) {
   static_assert(
-      std::is_same<decltype(category.id()), typename base::underlying_type<
-                                                KnownCategories>::type>::value,
+      std::is_same<decltype(category.id()),
+                   typename std::underlying_type<KnownCategories>::type>::value,
       "KnownCategories must have the same underlying type as category.id()");
   // Note: Since the underlying type of KnownCategories is int, it's legal to
   // cast from int to KnownCategories, even if the given value isn't listed in
