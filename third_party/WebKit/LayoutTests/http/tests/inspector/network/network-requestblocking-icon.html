@@ -3,40 +3,36 @@
 <script src="/inspector/inspector-test.js"></script>
 <script>
 
-function test()
+async function test()
 {
-    var blockedSetting = Common.settingForTest("networkBlockedURLs");
-
-    Common.moduleSetting('requestBlockingEnabled').set(false);
-    blockedSetting.set([]);
+    SDK.multitargetNetworkManager.setBlockingEnabled(false);
+    SDK.multitargetNetworkManager.setBlockedPatterns([]);
     dumpIconResult();
-    Common.moduleSetting('requestBlockingEnabled').set(true);
+    SDK.multitargetNetworkManager.setBlockingEnabled(true);
     dumpIconResult();
-    blockedSetting.set(['*']);
+    SDK.multitargetNetworkManager.setBlockedPatterns([{url: '*', enabled: true}]);
     dumpIconResult();
-    Common.moduleSetting('requestBlockingEnabled').set(false);
+    SDK.multitargetNetworkManager.setBlockingEnabled(false);
     dumpIconResult();
 
     InspectorTest.addResult("Loading Network Module");
-    UI.inspectorView._tabbedPane.tabView('network')._materialize().then(() => {
-        InspectorTest.addResult("Network Module Loaded");
+    await self.runtime.loadModulePromise('network');
+    InspectorTest.addResult("Network Module Loaded");
 
-        Common.moduleSetting('requestBlockingEnabled').set(false);
-        blockedSetting.set([]);
-        dumpIconResult();
-        Common.moduleSetting('requestBlockingEnabled').set(true);
-        dumpIconResult();
-        blockedSetting.set(['*']);
-        dumpIconResult();
-        Common.moduleSetting('requestBlockingEnabled').set(false);
-        dumpIconResult();
-        InspectorTest.completeTest();
-    })
+    SDK.multitargetNetworkManager.setBlockingEnabled(false);
+    SDK.multitargetNetworkManager.setBlockedPatterns([]);
+    dumpIconResult();
+    SDK.multitargetNetworkManager.setBlockingEnabled(true);
+    dumpIconResult();
+    SDK.multitargetNetworkManager.setBlockedPatterns([{url: '*', enabled: true}]);
+    dumpIconResult();
+    SDK.multitargetNetworkManager.setBlockingEnabled(false);
+    dumpIconResult();
+    InspectorTest.completeTest();
 
     function dumpIconResult() {
         var hasIcon = !!UI.inspectorView._tabbedPane._tabsElement.getElementsByClassName("smallicon-warning").length;
-        InspectorTest.addResult("Setting Enabled: " + Common.moduleSetting('requestBlockingEnabled').get());
-        InspectorTest.addResult("Has Patterns: " + !!blockedSetting.get().length);
+        InspectorTest.addResult("Is blocking: " + SDK.multitargetNetworkManager.isBlocking());
         InspectorTest.addResult(hasIcon ? "Has Icon" : "Does Not Have Icon");
         InspectorTest.addResult("");
     }
