@@ -270,7 +270,7 @@
 
       <div id="encryptionRadioGroupContainer" class="list-frame"
           hidden="[[syncPrefs.passphraseRequired]]">
-        <paper-radio-group
+        <paper-radio-group disabled$="[[syncPrefs.encryptAllData]]"
             selected="[[selectedEncryptionRadio_(
                 syncPrefs.passphraseTypeIsCustom)]]"
             on-paper-radio-group-changed="onEncryptionRadioSelectionChanged_">
