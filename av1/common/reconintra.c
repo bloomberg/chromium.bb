@@ -485,7 +485,7 @@ static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
     const int hl = mi_height_log2_lookup[bsize];
     const int height = block_size_high[bsize] >> tx_size_high_log2[0];
     const int h = AOMMAX(height >> ss_y, 1);
-    const int step = tx_size_wide_unit[txsz];
+    const int step = tx_size_high_unit[txsz];
     const uint16_t *order = orders[bsize];
     int my_order, bl_order;
 
