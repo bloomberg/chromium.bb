@@ -78,8 +78,7 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
 
   void handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*) const;
   static String sanitizeUserInputValue(const String&, unsigned maxLength);
-  void updateValue() const;
-  void setInnerEditorValue(const String&) override;
+  void updateValue();
   void setNonDirtyValue(const String&);
   void setValueCommon(const String&,
                       TextFieldEventBehavior,
@@ -148,7 +147,6 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   WrapMethod m_wrap;
   mutable String m_value;
   mutable bool m_isDirty;
-  bool m_valueIsUpToDate;
   unsigned m_isPlaceholderVisible : 1;
   String m_suggestedValue;
 };

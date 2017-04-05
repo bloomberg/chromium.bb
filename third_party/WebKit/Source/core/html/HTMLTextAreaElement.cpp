@@ -76,7 +76,6 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
       m_cols(defaultCols),
       m_wrap(SoftWrap),
       m_isDirty(false),
-      m_valueIsUpToDate(true),
       m_isPlaceholderVisible(false) {}
 
 HTMLTextAreaElement* HTMLTextAreaElement::create(Document& document) {
@@ -287,7 +286,7 @@ void HTMLTextAreaElement::subtreeHasChanged() {
 #endif
   addPlaceholderBreakElementIfNecessary();
   setChangedSinceLastFormControlChangeEvent(true);
-  m_valueIsUpToDate = false;
+  updateValue();
   setNeedsValidityCheck();
   setAutofilled(false);
   updatePlaceholderVisibility();
@@ -360,19 +359,14 @@ String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue,
   return proposedValue.left(i);
 }
 
-void HTMLTextAreaElement::updateValue() const {
-  if (m_valueIsUpToDate)
-    return;
-
+void HTMLTextAreaElement::updateValue() {
   m_value = innerEditorValue();
-  const_cast<HTMLTextAreaElement*>(this)->m_valueIsUpToDate = true;
-  const_cast<HTMLTextAreaElement*>(this)->notifyFormStateChanged();
+  notifyFormStateChanged();
   m_isDirty = true;
-  const_cast<HTMLTextAreaElement*>(this)->updatePlaceholderVisibility();
+  updatePlaceholderVisibility();
 }
 
 String HTMLTextAreaElement::value() const {
-  updateValue();
   return m_value;
 }
 
@@ -441,11 +435,6 @@ void HTMLTextAreaElement::setValueCommon(
         setTextAsOfLastFormControlChangeEvent(normalizedValue);
       break;
   }
-}
-
-void HTMLTextAreaElement::setInnerEditorValue(const String& value) {
-  TextControlElement::setInnerEditorValue(value);
-  m_valueIsUpToDate = true;
 }
 
 String HTMLTextAreaElement::defaultValue() const {

@@ -831,6 +831,20 @@ String TextControlElement::innerEditorValue() const {
   if (!innerEditor || !isTextControl())
     return emptyString;
 
+  // Typically, innerEditor has 0 or one Text node followed by 0 or one <br>.
+  if (!innerEditor->hasChildren())
+    return emptyString;
+  Node& firstChild = *innerEditor->firstChild();
+  if (firstChild.isTextNode()) {
+    Node* secondChild = firstChild.nextSibling();
+    if (!secondChild)
+      return toText(firstChild).data();
+    if (!secondChild->nextSibling() && isHTMLBRElement(*secondChild))
+      return toText(firstChild).data();
+  } else if (!firstChild.nextSibling() && isHTMLBRElement(firstChild)) {
+    return emptyString;
+  }
+
   StringBuilder result;
   for (Node& node : NodeTraversal::inclusiveDescendantsOf(*innerEditor)) {
     if (isHTMLBRElement(node)) {
