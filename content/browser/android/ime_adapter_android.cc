@@ -1,11 +1,11 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/ime_adapter_android.h"
+#include "content/browser/android/ime_adapter_android.h"
 
-#include <algorithm>
 #include <android/input.h>
+#include <algorithm>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -14,10 +14,12 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +33,7 @@
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace content {
 namespace {
@@ -63,6 +66,15 @@ bool RegisterImeAdapter(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+jlong Init(JNIEnv* env,
+           const JavaParamRef<jobject>& obj,
+           const JavaParamRef<jobject>& jweb_contents) {
+  WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
+  DCHECK(web_contents);
+  return reinterpret_cast<intptr_t>(
+      new ImeAdapterAndroid(env, obj, web_contents));
+}
+
 // Callback from Java to convert BackgroundColorSpan data to a
 // blink::WebCompositionUnderline instance, and append it to |underlines_ptr|.
 void AppendBackgroundColorSpan(JNIEnv*,
@@ -77,12 +89,9 @@ void AppendBackgroundColorSpan(JNIEnv*,
   std::vector<blink::WebCompositionUnderline>* underlines =
       reinterpret_cast<std::vector<blink::WebCompositionUnderline>*>(
           underlines_ptr);
-  underlines->push_back(
-      blink::WebCompositionUnderline(static_cast<unsigned>(start),
-                                     static_cast<unsigned>(end),
-                                     SK_ColorTRANSPARENT,
-                                     false,
-                                     static_cast<unsigned>(background_color)));
+  underlines->push_back(blink::WebCompositionUnderline(
+      static_cast<unsigned>(start), static_cast<unsigned>(end),
+      SK_ColorTRANSPARENT, false, static_cast<unsigned>(background_color)));
 }
 
 // Callback from Java to convert UnderlineSpan data to a
@@ -97,24 +106,85 @@ void AppendUnderlineSpan(JNIEnv*,
   std::vector<blink::WebCompositionUnderline>* underlines =
       reinterpret_cast<std::vector<blink::WebCompositionUnderline>*>(
           underlines_ptr);
-  underlines->push_back(
-      blink::WebCompositionUnderline(static_cast<unsigned>(start),
-                                     static_cast<unsigned>(end),
-                                     SK_ColorBLACK,
-                                     false,
-                                     SK_ColorTRANSPARENT));
+  underlines->push_back(blink::WebCompositionUnderline(
+      static_cast<unsigned>(start), static_cast<unsigned>(end), SK_ColorBLACK,
+      false, SK_ColorTRANSPARENT));
 }
 
-ImeAdapterAndroid::ImeAdapterAndroid(RenderWidgetHostViewAndroid* rwhva)
-    : rwhva_(rwhva) {
-  DCHECK(rwhva_);
+ImeAdapterAndroid::ImeAdapterAndroid(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj,
+                                     WebContents* web_contents)
+    : WebContentsObserver(web_contents), rwhva_(nullptr) {
+  java_ime_adapter_ = JavaObjectWeakGlobalRef(env, obj);
 }
 
 ImeAdapterAndroid::~ImeAdapterAndroid() {
   JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (!obj.is_null())
-    Java_ImeAdapter_detach(env, obj);
+    Java_ImeAdapter_destroy(env, obj);
+
+  UpdateRenderProcessConnection(nullptr);
+}
+
+RenderWidgetHostViewAndroid* ImeAdapterAndroid::GetRenderWidgetHostViewAndroid()
+    const {
+  RenderWidgetHostView* rwhv = web_contents()->GetRenderWidgetHostView();
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(web_contents());
+  if (web_contents_impl->ShowingInterstitialPage()) {
+    rwhv = web_contents_impl->GetInterstitialPage()
+               ->GetMainFrame()
+               ->GetRenderViewHost()
+               ->GetWidget()
+               ->GetView();
+  }
+  return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
+}
+
+void ImeAdapterAndroid::RenderViewReady() {
+  UpdateRenderProcessConnection(GetRenderWidgetHostViewAndroid());
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (!obj.is_null())
+    Java_ImeAdapter_onConnectedToRenderProcess(env, obj);
+}
+
+void ImeAdapterAndroid::RenderViewHostChanged(RenderViewHost* old_host,
+                                              RenderViewHost* new_host) {
+  if (new_host) {
+    UpdateRenderProcessConnection(static_cast<RenderWidgetHostViewAndroid*>(
+        new_host->GetWidget()->GetView()));
+  } else {
+    UpdateRenderProcessConnection(nullptr);
+  }
+}
+
+void ImeAdapterAndroid::DidAttachInterstitialPage() {
+  UpdateRenderProcessConnection(GetRenderWidgetHostViewAndroid());
+}
+
+void ImeAdapterAndroid::DidDetachInterstitialPage() {
+  UpdateRenderProcessConnection(GetRenderWidgetHostViewAndroid());
+}
+
+void ImeAdapterAndroid::WebContentsDestroyed() {
+  delete this;
+}
+
+void ImeAdapterAndroid::UpdateRenderProcessConnection(
+    RenderWidgetHostViewAndroid* new_rwhva) {
+  if (rwhva_.get() == new_rwhva)
+    return;
+  if (rwhva_)
+    rwhva_->set_ime_adapter(nullptr);
+  if (new_rwhva) {
+    new_rwhva->set_ime_adapter(this);
+    rwhva_ = new_rwhva->GetWeakPtrAndroid();
+  } else {
+    rwhva_.reset();
+  }
 }
 
 bool ImeAdapterAndroid::SendKeyEvent(
@@ -128,6 +198,8 @@ bool ImeAdapterAndroid::SendKeyEvent(
     int scan_code,
     bool is_system_key,
     int unicode_char) {
+  if (!rwhva_)
+    return false;
   NativeWebKeyboardEvent event = NativeWebKeyboardEventFromKeyEvent(
       env, original_key_event, type, modifiers, time_ms, key_code, scan_code,
       is_system_key, unicode_char);
@@ -200,25 +272,18 @@ void ImeAdapterAndroid::FinishComposingText(JNIEnv* env,
   rwhi->ImeFinishComposingText(true);
 }
 
-void ImeAdapterAndroid::AttachImeAdapter(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& java_object) {
-  java_ime_adapter_ = JavaObjectWeakGlobalRef(env, java_object);
-}
-
 void ImeAdapterAndroid::CancelComposition() {
-  base::android::ScopedJavaLocalRef<jobject> obj =
-      java_ime_adapter_.get(AttachCurrentThread());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (!obj.is_null())
-    Java_ImeAdapter_cancelComposition(AttachCurrentThread(), obj);
+    Java_ImeAdapter_cancelComposition(env, obj);
 }
 
 void ImeAdapterAndroid::FocusedNodeChanged(bool is_editable_node) {
-  base::android::ScopedJavaLocalRef<jobject> obj =
-      java_ime_adapter_.get(AttachCurrentThread());
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (!obj.is_null()) {
-    Java_ImeAdapter_focusedNodeChanged(AttachCurrentThread(), obj,
-                                       is_editable_node);
+    Java_ImeAdapter_focusedNodeChanged(env, obj, is_editable_node);
   }
 }
 
@@ -238,7 +303,7 @@ void ImeAdapterAndroid::SetEditableSelectionOffsets(
 void ImeAdapterAndroid::SetCharacterBounds(
     const std::vector<gfx::RectF>& character_bounds) {
   JNIEnv* env = AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
   if (obj.is_null())
     return;
 
@@ -253,8 +318,9 @@ void ImeAdapterAndroid::SetCharacterBounds(
     coordinates_array[coordinates_array_index + 3] = rect.bottom();
   }
   Java_ImeAdapter_setCharacterBounds(
-      env, obj, base::android::ToJavaFloatArray(env, coordinates_array.get(),
-                                                coordinates_array_size));
+      env, obj,
+      base::android::ToJavaFloatArray(env, coordinates_array.get(),
+                                      coordinates_array_size));
 }
 
 void ImeAdapterAndroid::SetComposingRegion(JNIEnv*,
@@ -316,14 +382,9 @@ void ImeAdapterAndroid::RequestCursorUpdate(
       rwhi->GetRoutingID(), immediate_request, monitor_request));
 }
 
-void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env,
-                                        const JavaParamRef<jobject>&) {
-  java_ime_adapter_.reset();
-}
-
 RenderWidgetHostImpl* ImeAdapterAndroid::GetFocusedWidget() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return rwhva_->GetFocusedWidget();
+  return rwhva_ ? rwhva_->GetFocusedWidget() : nullptr;
 }
 
 RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
@@ -331,6 +392,8 @@ RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
   // We get the focused frame from the WebContents of the page. Although
   // |rwhva_->GetFocusedWidget()| does a similar thing, there is no direct way
   // to get a RenderFrameHost from its RWH.
+  if (!rwhva_)
+    return nullptr;
   RenderWidgetHostImpl* rwh =
       RenderWidgetHostImpl::From(rwhva_->GetRenderWidgetHost());
   if (!rwh || !rwh->delegate())

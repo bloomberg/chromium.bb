@@ -88,9 +88,8 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
             super(activity, windowAndroid, null);
             setSelectionController(new MockCSSelectionController(activity, this));
             ContentViewCore contentView = getSelectionController().getBaseContentView();
-            contentView.setSelectionPopupControllerForTesting(
-                    new SelectionPopupController(activity, null, null, null,
-                            contentView.getRenderCoordinates(), null));
+            contentView.setSelectionPopupControllerForTesting(new SelectionPopupController(
+                    activity, null, null, null, contentView.getRenderCoordinates()));
             contentView.setSelectionClient(this);
             MockContextualSearchPolicy policy = new MockContextualSearchPolicy();
             setContextualSearchPolicy(policy);

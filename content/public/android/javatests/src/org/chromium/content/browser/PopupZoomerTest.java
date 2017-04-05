@@ -79,6 +79,8 @@ public class PopupZoomerTest extends ContentShellTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
+        mContentViewCore = new ContentViewCore(getActivity(), "");
 
         final Context context = getActivity();
 
@@ -87,12 +89,11 @@ public class PopupZoomerTest extends ContentShellTestBase {
             public void run() {
                 mPopupZoomer = createPopupZoomerForTest(getInstrumentation().getTargetContext());
                 mContentViewCore = new ContentViewCore(context, "");
-                ImeAdapter imeAdapter = new ImeAdapter(
+                ImeAdapter imeAdapter = new ImeAdapter(getContentViewCore().getWebContents(),
                         new TestInputMethodManagerWrapper(mContentViewCore),
                         new TestImeAdapterDelegate(getContentViewCore().getContainerView()));
-                mContentViewCore.setSelectionPopupControllerForTesting(
-                        new SelectionPopupController(context, null, null, null,
-                                mContentViewCore.getRenderCoordinates(), imeAdapter));
+                mContentViewCore.setSelectionPopupControllerForTesting(new SelectionPopupController(
+                        context, null, null, null, mContentViewCore.getRenderCoordinates()));
                 mContentViewCore.setPopupZoomerForTest(mPopupZoomer);
                 mContentViewCore.setImeAdapterForTest(imeAdapter);
             }

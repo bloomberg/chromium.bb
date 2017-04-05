@@ -1,17 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_IME_ADAPTER_ANDROID_H_
-#define CONTENT_BROWSER_RENDERER_HOST_IME_ADAPTER_ANDROID_H_
+#ifndef CONTENT_BROWSER_ANDROID_IME_ADAPTER_ANDROID_H_
+#define CONTENT_BROWSER_ANDROID_IME_ADAPTER_ANDROID_H_
 
 #include <jni.h>
 
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"
-#include "base/strings/string16.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
@@ -31,10 +32,12 @@ class RenderWidgetHostViewAndroid;
 // corresponding host view.
 // Ownership of these objects remains on the native side (see
 // RenderWidgetHostViewAndroid).
-class CONTENT_EXPORT ImeAdapterAndroid {
+class CONTENT_EXPORT ImeAdapterAndroid : public WebContentsObserver {
  public:
-  explicit ImeAdapterAndroid(RenderWidgetHostViewAndroid* rwhva);
-  ~ImeAdapterAndroid();
+  ImeAdapterAndroid(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    WebContents* web_contents);
+  ~ImeAdapterAndroid() override;
 
   // Called from java -> native
   bool SendKeyEvent(
@@ -60,9 +63,6 @@ class CONTENT_EXPORT ImeAdapterAndroid {
                   int relative_cursor_pos);
   void FinishComposingText(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>&);
-  void AttachImeAdapter(
-      JNIEnv*,
-      const base::android::JavaParamRef<jobject>& java_object);
   void SetEditableSelectionOffsets(JNIEnv*,
                                    const base::android::JavaParamRef<jobject>&,
                                    int start,
@@ -80,9 +80,10 @@ class CONTENT_EXPORT ImeAdapterAndroid {
       const base::android::JavaParamRef<jobject>&,
       int before,
       int after);
-  void ResetImeAdapter(JNIEnv*, const base::android::JavaParamRef<jobject>&);
-  void RequestCursorUpdate(JNIEnv*, const base::android::JavaParamRef<jobject>&,
-                           bool immediateRequest, bool monitorRequest);
+  void RequestCursorUpdate(JNIEnv*,
+                           const base::android::JavaParamRef<jobject>&,
+                           bool immediateRequest,
+                           bool monitorRequest);
   bool RequestTextInputStateUpdate(JNIEnv*,
                                    const base::android::JavaParamRef<jobject>&);
 
@@ -96,6 +97,14 @@ class CONTENT_EXPORT ImeAdapterAndroid {
     return java_ime_adapter_.get(env);
   }
 
+  // WebContentsObserver implementation.
+  void RenderViewReady() override;
+  void RenderViewHostChanged(RenderViewHost* old_host,
+                             RenderViewHost* new_host) override;
+  void DidAttachInterstitialPage() override;
+  void DidDetachInterstitialPage() override;
+  void WebContentsDestroyed() override;
+
  private:
   RenderWidgetHostImpl* GetFocusedWidget();
   RenderFrameHost* GetFocusedFrame();
@@ -104,8 +113,10 @@ class CONTENT_EXPORT ImeAdapterAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& text,
       const base::string16& text16);
+  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
+  void UpdateRenderProcessConnection(RenderWidgetHostViewAndroid* new_rwhva);
 
-  RenderWidgetHostViewAndroid* rwhva_;
+  base::WeakPtr<RenderWidgetHostViewAndroid> rwhva_;
   JavaObjectWeakGlobalRef java_ime_adapter_;
 };
 
@@ -113,4 +124,4 @@ bool RegisterImeAdapter(JNIEnv* env);
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_IME_ADAPTER_ANDROID_H_
+#endif  // CONTENT_BROWSER_ANDROID_IME_ADAPTER_ANDROID_H_
