@@ -654,6 +654,9 @@ void SpellChecker::markAndReplaceFor(
 
 void SpellChecker::updateMarkersForWordsAffectedByEditing(
     bool doNotRemoveIfSelectionAtWordBoundary) {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return;
+
   DCHECK(frame().selection().isAvailable());
   TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
   // TODO(editing-dev): We should hoist

@@ -11,6 +11,7 @@
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 #include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 
@@ -20,36 +21,37 @@ namespace {
 
 const int kHotModeChunkSize = 1024;
 
-bool isInOrAdjacentToWord(const Position& pos) {
+EphemeralRange adjacentWordIfExists(const Position& pos) {
   const VisiblePosition& visiblePos = createVisiblePosition(pos);
   const VisiblePosition& wordStart = previousWordPosition(visiblePos);
   if (wordStart.isNull())
-    return false;
+    return EphemeralRange();
   const VisiblePosition& wordEnd = endOfWord(wordStart);
   if (wordEnd.isNull())
-    return false;
-  return comparePositions(visiblePos, wordEnd) <= 0;
+    return EphemeralRange();
+  if (comparePositions(visiblePos, wordEnd) > 0)
+    return EphemeralRange();
+  return EphemeralRange(wordStart.deepEquivalent(), wordEnd.deepEquivalent());
 }
 
-bool isTypingInPartialWord(const Element& editable) {
+EphemeralRange currentWordIfTypingInPartialWord(const Element& editable) {
   const LocalFrame& frame = *editable.document().frame();
   const SelectionInDOMTree& selection = frame.selection().selectionInDOMTree();
   if (!selection.isCaret())
-    return false;
+    return EphemeralRange();
   if (rootEditableElementOf(selection.base()) != &editable)
-    return false;
+    return EphemeralRange();
 
   CompositeEditCommand* typingCommand =
       frame.editor().lastTypingCommandIfStillOpenForTyping();
   if (!typingCommand)
-    return false;
+    return EphemeralRange();
   if (typingCommand->endingSelection().asSelection() != selection)
-    return false;
-  return isInOrAdjacentToWord(selection.base());
+    return EphemeralRange();
+  return adjacentWordIfExists(selection.base());
 }
 
-bool shouldCheckRootEditableInHotMode(const Element& editable,
-                                      const Position& position) {
+bool isUnderActiveEditing(const Element& editable, const Position& position) {
   if (!editable.isSpellCheckingEnabled() &&
       !SpellChecker::isSpellCheckingEnabledAt(position))
     return false;
@@ -57,7 +59,7 @@ bool shouldCheckRootEditableInHotMode(const Element& editable,
     return false;
   // TODO(xiaochengh): Design more aggressive strategies to reduce checking when
   // we are just moving selection around without modifying anything.
-  return !isTypingInPartialWord(editable);
+  return true;
 }
 
 EphemeralRange calculateHotModeCheckingRange(const Element& editable,
@@ -99,8 +101,17 @@ void HotModeSpellCheckRequester::checkSpellingAt(const Position& position) {
     return;
   m_processedRootEditables.push_back(rootEditable);
 
-  if (!shouldCheckRootEditableInHotMode(*rootEditable, position))
+  if (!isUnderActiveEditing(*rootEditable, position))
     return;
+
+  const EphemeralRange& currentWord =
+      currentWordIfTypingInPartialWord(*rootEditable);
+  if (currentWord.isNotNull()) {
+    rootEditable->document().markers().removeMarkers(
+        currentWord, DocumentMarker::MisspellingMarkers(),
+        DocumentMarkerController::RemovePartiallyOverlappingMarker);
+    return;
+  }
 
   const EphemeralRange& checkingRange =
       calculateHotModeCheckingRange(*rootEditable, position);
