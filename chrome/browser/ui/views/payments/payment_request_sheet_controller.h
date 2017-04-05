@@ -116,6 +116,7 @@ class PaymentRequestSheetController : public views::ButtonListener {
   PaymentRequestDialogView* dialog_;
 
   // This view is owned by its encompassing ScrollView.
+  views::View* pane_;
   views::View* content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);

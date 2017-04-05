@@ -28,7 +28,7 @@ PaymentRequestSheetController::PaymentRequestSheetController(
 PaymentRequestSheetController::~PaymentRequestSheetController() {}
 
 std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
-  // This will be owned by its encompassing ScrollView.
+  // This is owned by its parent.
   content_view_ = new views::View;
 
   FillContentView(content_view_);
@@ -40,6 +40,7 @@ void PaymentRequestSheetController::UpdateContentView() {
   content_view_->RemoveAllChildViews(true);
   FillContentView(content_view_);
   content_view_->Layout();
+  pane_->SizeToPreferredSize();
 }
 
 std::unique_ptr<views::Button>
@@ -105,22 +106,22 @@ PaymentRequestSheetController::CreatePaymentView() {
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
-  views::View* pane = new views::View;
-  views::GridLayout* pane_layout = new views::GridLayout(pane);
+  pane_ = new views::View;
+  views::GridLayout* pane_layout = new views::GridLayout(pane_);
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
   pane_columns->AddColumn(
       views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
       0, views::GridLayout::SizeType::FIXED, kDialogWidth, kDialogWidth);
-  pane->SetLayoutManager(pane_layout);
+  pane_->SetLayoutManager(pane_layout);
   pane_layout->StartRow(0, 0);
   pane_layout->AddView(content_view_);
-  pane->SizeToPreferredSize();
+  pane_->SizeToPreferredSize();
 
   std::unique_ptr<views::ScrollView> scroll =
       base::MakeUnique<views::ScrollView>();
   scroll->EnableViewPortLayer();
   scroll->set_hide_horizontal_scrollbar(true);
-  scroll->SetContents(pane);
+  scroll->SetContents(pane_);
   layout->AddView(scroll.release());
 
   layout->StartRow(0, 0);
