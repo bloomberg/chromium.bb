@@ -120,14 +120,14 @@ def GetApprovalSummary(_opts, cls):
   return approvs
 
 
-def PrintCl(opts, cls, lims, show_approvals=True):
+def PrintCl(opts, cl, lims, show_approvals=True):
   """Pretty print a single result"""
   if opts.raw:
     # Special case internal Chrome GoB as that is what most devs use.
     # They can always redirect the list elsewhere via the -g option.
     if opts.gob == site_config.params.INTERNAL_GOB_INSTANCE:
       print(site_config.params.INTERNAL_CHANGE_PREFIX, end='')
-    print(cls['number'])
+    print(cl['number'])
     return
 
   if not lims:
@@ -135,7 +135,7 @@ def PrintCl(opts, cls, lims, show_approvals=True):
 
   status = ''
   if show_approvals and not opts.verbose:
-    approvs = GetApprovalSummary(opts, cls)
+    approvs = GetApprovalSummary(opts, cl)
     for cat in GERRIT_SUMMARY_CATS:
       if approvs[cat] is '':
         functor = lambda x: x
@@ -145,11 +145,11 @@ def PrintCl(opts, cls, lims, show_approvals=True):
         functor = green
       status += functor('%s:%2s ' % (cat, approvs[cat]))
 
-  print('%s %s%-*s %s' % (blue('%-*s' % (lims['url'], cls['url'])), status,
-                          lims['project'], cls['project'], cls['subject']))
+  print('%s %s%-*s %s' % (blue('%-*s' % (lims['url'], cl['url'])), status,
+                          lims['project'], cl['project'], cl['subject']))
 
   if show_approvals and opts.verbose:
-    for approver in cls['currentPatchSet'].get('approvals', []):
+    for approver in cl['currentPatchSet'].get('approvals', []):
       functor = red if int(approver['value']) < 0 else green
       n = functor('%2s' % approver['value'])
       t = GERRIT_APPROVAL_MAP.get(approver['type'], [approver['type'],
