@@ -83,8 +83,6 @@ Since the iOS build is a bit more complicated than a desktop build, we provide
 build directories under `out` for Release and Debug device and simulator
 builds, and generates an appropriate Xcode workspace as well.
 
-This script is run automatically by fetch (as part of `gclient runhooks`).
-
 You can customize the build by editing the file `$HOME/.setup-gn` (create it if
 it does not exist).  Look at `src/ios/build/tools/setup-gn.config` for
 available configuration options.
