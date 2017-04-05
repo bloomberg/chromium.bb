@@ -45,11 +45,6 @@ std::vector<uint8_t> SerializeUnindexedRulesetWithMultipleRules(
   return std::vector<uint8_t>(data, data + ruleset_contents.size());
 }
 
-std::vector<uint8_t> SerializeUnindexedRulesetWithSingleRule(
-    const proto::UrlRule& rule) {
-  return SerializeUnindexedRulesetWithMultipleRules({rule});
-}
-
 std::vector<uint8_t> SerializeIndexedRulesetWithMultipleRules(
     const std::vector<proto::UrlRule>& rules) {
   RulesetIndexer indexer;
@@ -126,9 +121,8 @@ void TestRulesetCreator::CreateUnindexedRulesetToDisallowURLsWithPathSuffix(
     TestRuleset* test_unindexed_ruleset) {
   DCHECK(test_unindexed_ruleset);
   proto::UrlRule suffix_rule = CreateSuffixRule(suffix);
-  ASSERT_NO_FATAL_FAILURE(CreateTestRulesetFromContents(
-      SerializeUnindexedRulesetWithSingleRule(suffix_rule),
-      test_unindexed_ruleset));
+  ASSERT_NO_FATAL_FAILURE(
+      CreateUnindexedRulesetWithRules({suffix_rule}, test_unindexed_ruleset));
 }
 
 void TestRulesetCreator::CreateRulesetToDisallowURLsWithManySuffixes(
@@ -155,6 +149,14 @@ void TestRulesetCreator::CreateRulesetWithRules(
   ASSERT_NO_FATAL_FAILURE(CreateTestRulesetFromContents(
       SerializeIndexedRulesetWithMultipleRules(rules),
       &test_ruleset_pair->indexed));
+}
+
+void TestRulesetCreator::CreateUnindexedRulesetWithRules(
+    const std::vector<proto::UrlRule>& rules,
+    TestRuleset* test_unindexed_ruleset) {
+  ASSERT_NO_FATAL_FAILURE(CreateTestRulesetFromContents(
+      SerializeUnindexedRulesetWithMultipleRules(rules),
+      test_unindexed_ruleset));
 }
 
 void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {

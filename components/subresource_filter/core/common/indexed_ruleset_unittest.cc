@@ -48,11 +48,11 @@ class UrlRuleBuilder {
     rule_.set_source_type(source_type);
     rule_.set_element_types(proto::ELEMENT_TYPE_ALL);
 
-    rule_.set_url_pattern_type(url_pattern.type);
-    rule_.set_anchor_left(url_pattern.anchor_left);
-    rule_.set_anchor_right(url_pattern.anchor_right);
-    rule_.set_match_case(url_pattern.match_case);
-    rule_.set_url_pattern(url_pattern.url_pattern.as_string());
+    rule_.set_url_pattern_type(url_pattern.type());
+    rule_.set_anchor_left(url_pattern.anchor_left());
+    rule_.set_anchor_right(url_pattern.anchor_right());
+    rule_.set_match_case(url_pattern.match_case());
+    rule_.set_url_pattern(url_pattern.url_pattern().as_string());
   }
 
   UrlRuleBuilder& AddDomain(std::string domain_pattern) {
@@ -291,9 +291,8 @@ TEST_F(IndexedRulesetTest, OneRuleWithoutMetaInfo) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Rule: " << test_case.url_pattern.url_pattern
-                 << "; URL: " << test_case.url);
+    SCOPED_TRACE(testing::Message() << "Rule: " << test_case.url_pattern
+                                    << "; URL: " << test_case.url);
 
     AddBlacklistRule(test_case.url_pattern);
     Finish();

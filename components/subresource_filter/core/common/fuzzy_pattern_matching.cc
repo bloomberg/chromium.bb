@@ -4,6 +4,8 @@
 
 #include "components/subresource_filter/core/common/fuzzy_pattern_matching.h"
 
+#include <algorithm>
+
 namespace subresource_filter {
 
 namespace {
@@ -33,6 +35,25 @@ bool EndsWithFuzzy(base::StringPiece text, base::StringPiece subpattern) {
   return subpattern.size() <= text.size() &&
          StartsWithFuzzyImpl(text.substr(text.size() - subpattern.size()),
                              subpattern);
+}
+
+size_t FindFuzzy(base::StringPiece text,
+                 base::StringPiece subpattern,
+                 size_t from) {
+  if (from > text.size())
+    return base::StringPiece::npos;
+  if (subpattern.empty())
+    return from;
+
+  auto fuzzy_compare = [](char text_char, char subpattern_char) {
+    return text_char == subpattern_char ||
+           (subpattern_char == kSeparatorPlaceholder && IsSeparator(text_char));
+  };
+
+  base::StringPiece::const_iterator found =
+      std::search(text.begin() + from, text.end(), subpattern.begin(),
+                  subpattern.end(), fuzzy_compare);
+  return found == text.end() ? base::StringPiece::npos : found - text.begin();
 }
 
 }  // namespace subresource_filter

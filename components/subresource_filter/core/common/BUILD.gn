@@ -23,7 +23,6 @@ static_library("common") {
     "fuzzy_pattern_matching.h",
     "indexed_ruleset.cc",
     "indexed_ruleset.h",
-    "knuth_morris_pratt.h",
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
     "ngram_extractor.h",
@@ -35,7 +34,6 @@ static_library("common") {
     "unindexed_ruleset.h",
     "url_pattern.cc",
     "url_pattern.h",
-    "url_pattern_matching.h",
   ]
 
   public_deps = [
@@ -76,12 +74,11 @@ source_set("unit_tests") {
     "first_party_origin_unittest.cc",
     "fuzzy_pattern_matching_unittest.cc",
     "indexed_ruleset_unittest.cc",
-    "knuth_morris_pratt_unittest.cc",
     "ngram_extractor_unittest.cc",
     "scoped_timers_unittest.cc",
     "string_splitter_unittest.cc",
     "unindexed_ruleset_unittest.cc",
-    "url_pattern_matching_unittest.cc",
+    "url_pattern_unittest.cc",
   ]
   deps = [
     ":common",

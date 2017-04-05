@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/subresource_filter/core/browser/ruleset_service_delegate.h"
+#include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -659,13 +660,13 @@ TEST_F(SubresourceFilteringRulesetServiceTest,
   base::HistogramTester histogram_tester;
   mock_delegate()->SimulateStartupCompleted();
 
-  // URL patterns longer than 255 characters are not supported.
-  const std::string kTooLongSuffix(1000, 'a');
+  // The default field values are considered unsupported.
+  proto::UrlRule unfilled_rule;
+
   TestRulesetPair ruleset_with_unsupported_rule;
   ASSERT_NO_FATAL_FAILURE(
-      test_ruleset_creator()
-          ->CreateUnindexedRulesetToDisallowURLsWithPathSuffix(
-              kTooLongSuffix, &ruleset_with_unsupported_rule.unindexed));
+      test_ruleset_creator()->CreateUnindexedRulesetWithRules(
+          {unfilled_rule}, &ruleset_with_unsupported_rule.unindexed));
   IndexAndStoreAndPublishUpdatedRuleset(ruleset_with_unsupported_rule,
                                         kTestContentVersion1);
   RunUntilIdle();

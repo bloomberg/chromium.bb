@@ -44,11 +44,11 @@ proto::UrlRule CreateRule(const UrlPattern& url_pattern,
   rule.set_source_type(source_type);
   rule.set_element_types(proto::ELEMENT_TYPE_ALL);
 
-  rule.set_url_pattern_type(url_pattern.type);
-  rule.set_anchor_left(url_pattern.anchor_left);
-  rule.set_anchor_right(url_pattern.anchor_right);
-  rule.set_match_case(url_pattern.match_case);
-  rule.set_url_pattern(url_pattern.url_pattern.as_string());
+  rule.set_url_pattern_type(url_pattern.type());
+  rule.set_anchor_left(url_pattern.anchor_left());
+  rule.set_anchor_right(url_pattern.anchor_right());
+  rule.set_match_case(url_pattern.match_case());
+  rule.set_url_pattern(url_pattern.url_pattern().as_string());
   return rule;
 }
 

@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/url_pattern_matching.h"
-
-#include <vector>
-
 #include "components/subresource_filter/core/common/url_pattern.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -20,52 +17,26 @@ constexpr proto::AnchorType kSubdomain = proto::ANCHOR_TYPE_SUBDOMAIN;
 
 }  // namespace
 
-TEST(UrlPatternMatchingTest, BuildFailureFunctionForUrlPattern) {
-  const struct {
-    UrlPattern url_pattern;
-    std::vector<size_t> expected_failure_function;
-  } kTestCases[] = {
-      {{"abcd", proto::URL_PATTERN_TYPE_SUBSTRING}, {0, 0, 0, 0}},
-      {{"&a?a/"}, {0, 0, 0, 0, 0}},
-      {{"^a?a/"}, {1, 0, 0, 1, 2, 3}},
-
-      {{"abc*abc", kBoundary, kAnchorNone}, {0, 0, 0}},
-      {{"abc*aaa", kBoundary, kAnchorNone}, {0, 1, 2}},
-      {{"aaa*abc", kBoundary, kAnchorNone}, {0, 0, 0}},
-
-      {{"abc*abc", kAnchorNone, kBoundary}, {0, 0, 0}},
-      {{"abc*aaa", kAnchorNone, kBoundary}, {0, 0, 0}},
-      {{"aaa*abc", kAnchorNone, kBoundary}, {0, 1, 2}},
-
-      {{"abc*cca", kSubdomain, kAnchorNone}, {0, 0, 0, 0, 1, 0}},
-      {{"abc*cca", kBoundary, kAnchorNone}, {0, 1, 0}},
-      {{"abc*cca"}, {0, 0, 0, 0, 1, 0}},
-
-      {{"abc*abacaba*cab"}, {0, 0, 0, 0, 0, 1, 0, 1, 2, 3, 0, 0, 0}},
-      {{"aaa*a^d*^^b"}, {0, 1, 2, 1, 0, 0, 0, 1, 0, 1, 0}},
-      {{"aaa*a^d*^^b", kAnchorNone, kBoundary}, {0, 1, 2, 1, 0, 0, 0}},
-      {{"^^a*a^d*^^b", kBoundary, kAnchorNone}, {1, 0, 0, 0, 1, 0, 1, 0}},
-  };
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Pattern: " << test_case.url_pattern.url_pattern
-                 << "; Anchors: "
-                 << static_cast<int>(test_case.url_pattern.anchor_left) << ", "
-                 << static_cast<int>(test_case.url_pattern.anchor_right));
-
-    std::vector<size_t> failure;
-    BuildFailureFunction(test_case.url_pattern, &failure);
-    EXPECT_EQ(test_case.expected_failure_function, failure);
-  }
-}
-
-TEST(UrlPatternMatchingTest, IsUrlPatternMatch) {
+TEST(SubresourceFilterUrlPatternTest, MatchesUrl) {
   const struct {
     UrlPattern url_pattern;
     const char* url;
     bool expect_match;
   } kTestCases[] = {
+      {{"", proto::URL_PATTERN_TYPE_SUBSTRING}, "http://ex.com/", true},
+      {{"", proto::URL_PATTERN_TYPE_WILDCARDED}, "http://ex.com/", true},
+      {{"", kBoundary, kAnchorNone}, "http://ex.com/", true},
+      {{"", kSubdomain, kAnchorNone}, "http://ex.com/", true},
+      {{"", kSubdomain, kAnchorNone}, "http://ex.com/", true},
+      {{"^", kSubdomain, kAnchorNone}, "http://ex.com/", false},
+      {{".", kSubdomain, kAnchorNone}, "http://ex.com/", false},
+      {{"", kAnchorNone, kBoundary}, "http://ex.com/", true},
+      {{"^", kAnchorNone, kBoundary}, "http://ex.com/", true},
+      {{".", kAnchorNone, kBoundary}, "http://ex.com/", false},
+      {{"", kBoundary, kBoundary}, "http://ex.com/", false},
+      {{"", kSubdomain, kBoundary}, "http://ex.com/", false},
+      {{"com/", kSubdomain, kBoundary}, "http://ex.com/", true},
+
       {{"xampl", proto::URL_PATTERN_TYPE_SUBSTRING},
        "http://example.com",
        true},
@@ -76,9 +47,18 @@ TEST(UrlPatternMatchingTest, IsUrlPatternMatch) {
       {{"^abc"}, "http://ex.com/abc?a", true},
       {{"^abc"}, "http://ex.com/a?abc", true},
       {{"^abc"}, "http://ex.com/abc?abc", true},
+      {{"^abc^abc"}, "http://ex.com/abc?abc", true},
+      {{"^com^abc^abc"}, "http://ex.com/abc?abc", false},
 
       {{"http://ex", kBoundary, kAnchorNone}, "http://example.com", true},
+      {{"http://ex", kAnchorNone, kAnchorNone}, "http://example.com", true},
       {{"mple.com/", kAnchorNone, kBoundary}, "http://example.com", true},
+      {{"mple.com/", kAnchorNone, kAnchorNone}, "http://example.com", true},
+      {{"mple.com/", kSubdomain, kAnchorNone}, "http://example.com", false},
+      {{"ex.com", kSubdomain, kAnchorNone}, "http://hex.com", false},
+      {{"ex.com", kSubdomain, kAnchorNone}, "http://ex.com", true},
+      {{"ex.com", kSubdomain, kAnchorNone}, "http://hex.ex.com", true},
+      {{"ex.com", kSubdomain, kAnchorNone}, "http://hex.hex.com", false},
 
       // Note: "example.com" will be normalized into "example.com/".
       {{"http://*mpl", kBoundary, kAnchorNone}, "http://example.com", true},
@@ -133,18 +113,10 @@ TEST(UrlPatternMatchingTest, IsUrlPatternMatch) {
   };
 
   for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(testing::Message()
-                 << "Rule: " << test_case.url_pattern.url_pattern
-                 << "; Anchors: "
-                 << static_cast<int>(test_case.url_pattern.anchor_left) << ", "
-                 << static_cast<int>(test_case.url_pattern.anchor_right)
-                 << "; URL: " << GURL(test_case.url));
+    SCOPED_TRACE(testing::Message() << "Rule: " << test_case.url_pattern
+                                    << "; URL: " << GURL(test_case.url));
 
-    std::vector<size_t> failure;
-    BuildFailureFunction(test_case.url_pattern, &failure);
-    const bool is_match =
-        IsUrlPatternMatch(GURL(test_case.url), test_case.url_pattern,
-                          failure.begin(), failure.end());
+    const bool is_match = test_case.url_pattern.MatchesUrl(GURL(test_case.url));
     EXPECT_EQ(test_case.expect_match, is_match);
   }
 }

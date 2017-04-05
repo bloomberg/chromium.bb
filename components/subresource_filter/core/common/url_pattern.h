@@ -5,9 +5,13 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_URL_PATTERN_H_
 
+#include <iosfwd>
+
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
+
+class GURL;
 
 namespace subresource_filter {
 
@@ -16,8 +20,9 @@ struct UrlRule;  // The FlatBuffers version of UrlRule.
 }
 
 // The structure used to mirror a URL pattern regardless of the representation
-// of the UrlRule that owns it.
-struct UrlPattern {
+// of the UrlRule that owns it, and to match it against URLs.
+class UrlPattern {
+ public:
   UrlPattern();
 
   // Creates a |url_pattern| of a certain |type|.
@@ -36,17 +41,38 @@ struct UrlPattern {
 
   ~UrlPattern();
 
-  proto::UrlPatternType type = proto::URL_PATTERN_TYPE_UNSPECIFIED;
-  base::StringPiece url_pattern;
+  proto::UrlPatternType type() const { return type_; }
+  base::StringPiece url_pattern() const { return url_pattern_; }
+  proto::AnchorType anchor_left() const { return anchor_left_; }
+  proto::AnchorType anchor_right() const { return anchor_right_; }
+  bool match_case() const { return match_case_; }
 
-  proto::AnchorType anchor_left = proto::ANCHOR_TYPE_NONE;
-  proto::AnchorType anchor_right = proto::ANCHOR_TYPE_NONE;
-
-  bool match_case = false;
+  // Returns whether the |url| matches the URL |pattern|. Requires the type of
+  // |this| pattern to be either SUBSTRING or WILDCARDED.
+  //
+  // Splits the pattern into subpatterns separated by '*' wildcards, and
+  // greedily finds each of them in the spec of the |url|. Respects anchors at
+  // either end of the pattern, and '^' separator placeholders when comparing a
+  // subpattern to a subtring of the spec.
+  bool MatchesUrl(const GURL& url) const;
 
  private:
+  // TODO(pkalinnikov): Store flat:: types instead of proto::, in order to avoid
+  // conversions in IndexedRuleset.
+  proto::UrlPatternType type_ = proto::URL_PATTERN_TYPE_UNSPECIFIED;
+  base::StringPiece url_pattern_;
+
+  proto::AnchorType anchor_left_ = proto::ANCHOR_TYPE_NONE;
+  proto::AnchorType anchor_right_ = proto::ANCHOR_TYPE_NONE;
+
+  // TODO(pkalinnikov): Implement case-insensitive matching.
+  bool match_case_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(UrlPattern);
 };
+
+// Allow pretty-printing URLPatterns when they are used in GTest assertions.
+std::ostream& operator<<(std::ostream& out, const UrlPattern& pattern);
 
 }  // namespace subresource_filter
 

@@ -15,8 +15,13 @@
 namespace subresource_filter {
 namespace testing {
 
+// Creates a blacklist URL rule which targets subresources of any type such that
+// the resource URL ends with |suffix|.
 proto::UrlRule CreateSuffixRule(base::StringPiece suffix);
 
+// Same as CreateUrlRule(pattern, proto::URL_PATTERN_TYPE_WILDCARDED), but the
+// rule applies to the specified |activation_types|, and to no element types.
+// Additionally, it is restricted to a set of |domains| (if provided).
 proto::UrlRule CreateWhitelistRuleForDocument(
     base::StringPiece pattern,
     int32_t activation_types = proto::ACTIVATION_TYPE_DOCUMENT,

@@ -13,7 +13,6 @@
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/ngram_extractor.h"
 #include "components/subresource_filter/core/common/url_pattern.h"
-#include "components/subresource_filter/core/common/url_pattern_matching.h"
 #include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 namespace subresource_filter {
@@ -64,15 +63,10 @@ class UrlRuleFlatBufferConverter {
 
     auto url_pattern_offset = builder->CreateString(rule_.url_pattern());
 
-    std::vector<uint8_t> failure_function;
-    BuildFailureFunction(UrlPattern(rule_), &failure_function);
-    auto failure_function_offset =
-        builder->CreateVector(failure_function.data(), failure_function.size());
-
     return flat::CreateUrlRule(*builder, options_, element_types_,
                                activation_types_, url_pattern_type_,
                                anchor_left_, anchor_right_, domains_offset,
-                               url_pattern_offset, failure_function_offset);
+                               url_pattern_offset);
   }
 
  private:
@@ -151,13 +145,6 @@ class UrlRuleFlatBufferConverter {
   }
 
   bool InitializeUrlPattern() {
-    if (rule_.url_pattern().size() >
-        static_cast<size_t>(std::numeric_limits<uint8_t>::max())) {
-      // Failure function can not always be stored as an array of uint8_t in
-      // case the pattern's length exceeds 255.
-      return false;
-    }
-
     switch (rule_.url_pattern_type()) {
       case proto::URL_PATTERN_TYPE_SUBSTRING:
         url_pattern_type_ = flat::UrlPatternType_SUBSTRING;
@@ -165,10 +152,9 @@ class UrlRuleFlatBufferConverter {
       case proto::URL_PATTERN_TYPE_WILDCARDED:
         url_pattern_type_ = flat::UrlPatternType_WILDCARDED;
         break;
-      case proto::URL_PATTERN_TYPE_REGEXP:
-        url_pattern_type_ = flat::UrlPatternType_REGEXP;
-        break;
 
+      // TODO(pkalinnikov): Implement REGEXP rules matching.
+      case proto::URL_PATTERN_TYPE_REGEXP:
       default:
         return false;  // Unsupported URL pattern type.
     }
@@ -200,7 +186,7 @@ class UrlRuleFlatBufferConverter {
 // RulesetIndexer --------------------------------------------------------------
 
 // static
-const int RulesetIndexer::kIndexedFormatVersion = 12;
+const int RulesetIndexer::kIndexedFormatVersion = 13;
 
 RulesetIndexer::MutableUrlPatternIndex::MutableUrlPatternIndex() = default;
 RulesetIndexer::MutableUrlPatternIndex::~MutableUrlPatternIndex() = default;
@@ -218,11 +204,9 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
       (rule.semantics() == proto::RULE_SEMANTICS_BLACKLIST ? &blacklist_
                                                            : &whitelist_);
 
-  NGram ngram = 0;
-  if (rule.url_pattern_type() != proto::URL_PATTERN_TYPE_REGEXP) {
-    ngram =
-        GetMostDistinctiveNGram(index_part->ngram_index, rule.url_pattern());
-  }
+  DCHECK_NE(rule.url_pattern_type(), proto::URL_PATTERN_TYPE_REGEXP);
+  NGram ngram =
+      GetMostDistinctiveNGram(index_part->ngram_index, rule.url_pattern());
 
   if (ngram) {
     index_part->ngram_index[ngram].push_back(rule_offset);
@@ -405,16 +389,9 @@ bool MatchesAny(const FlatUrlRuleList* rules,
     return false;
   for (const flat::UrlRule* rule : *rules) {
     DCHECK_NE(rule, nullptr);
-
-    if (rule->url_pattern_type() != flat::UrlPatternType_REGEXP) {
-      const uint8_t* begin = rule->failure_function()->data();
-      const uint8_t* end = begin + rule->failure_function()->size();
-      if (!IsUrlPatternMatch(url, UrlPattern(*rule), begin, end))
-        continue;
-    } else {
-      // TODO(pkalinnikov): Implement REGEXP rules matching.
+    DCHECK_NE(rule->url_pattern_type(), flat::UrlPatternType_REGEXP);
+    if (!UrlPattern(*rule).MatchesUrl(url))
       continue;
-    }
 
     // TODO(pkalinnikov): Match the medatada before the URL pattern, but maybe
     // excluding the domain list.

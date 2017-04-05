@@ -85,6 +85,8 @@ class TestRulesetCreator {
 
   void CreateRulesetWithRules(const std::vector<proto::UrlRule>& rules,
                               TestRulesetPair* test_ruleset_pair);
+  void CreateUnindexedRulesetWithRules(const std::vector<proto::UrlRule>& rules,
+                                       TestRuleset* test_unindexed_ruleset);
 
   // Returns a unique |path| that is valid for the lifetime of this instance.
   // No file at |path| will be automatically created.

@@ -53,22 +53,6 @@ table UrlRule {
 
   // A URL pattern in the format defined by |url_pattern_type|.
   url_pattern : string;
-
-  // The compound Knuth-Morris-Pratt failure function corresponding to
-  // |url_pattern|. Used for SUBSTRING and WILDCARDED URL patterns only.
-  //
-  // The |url_pattern| is split into subpatterns separated by a '*' wildcard.
-  // Then for each subpattern a failure function of the KMP algorithm is built,
-  // with the caveat that if some subpattern contains at least one '^'
-  // placeholder, all the separator characters in this subpattern are
-  // considered equivalent, and the failure function subarray is prefixed with
-  // the value 1.
-  //
-  // The failure functions of subpatterns are stored sequentially in the
-  // |failure_function| array. Some subpatterns, however, will not have a
-  // corresponding failure function, e.g. the first subpattern if the rule's
-  // |anchor_left| is BOUNDARY.
-  failure_function : [ubyte];
 }
 
 // Contains an N-gram (acting as a key in a hash table) and a list of URL rules

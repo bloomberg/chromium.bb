@@ -10,7 +10,7 @@
 
 namespace subresource_filter {
 
-TEST(FuzzyPatternMatchingTest, StartsWithFuzzy) {
+TEST(SubresourceFilterFuzzyPatternMatchingTest, StartsWithFuzzy) {
   const struct {
     const char* text;
     const char* subpattern;
@@ -34,7 +34,7 @@ TEST(FuzzyPatternMatchingTest, StartsWithFuzzy) {
   }
 }
 
-TEST(FuzzyPatternMatchingTest, EndsWithFuzzy) {
+TEST(SubresourceFilterFuzzyPatternMatchingTest, EndsWithFuzzy) {
   const struct {
     const char* text;
     const char* subpattern;
@@ -56,33 +56,34 @@ TEST(FuzzyPatternMatchingTest, EndsWithFuzzy) {
     EXPECT_EQ(test_case.expected_ends_with, ends_with);
   }
 }
-TEST(FuzzyPatternMatchingTest, AllOccurrences) {
+
+TEST(SubresourceFilterFuzzyPatternMatchingTest, FindFuzzy) {
   const struct {
-    const char* text;
-    const char* subpattern;
-    std::vector<size_t> expected_matches;
+    base::StringPiece text;
+    base::StringPiece subpattern;
+    std::vector<size_t> expected_occurrences;
   } kTestCases[] = {
       {"abcd", "", {0, 1, 2, 3, 4}},
       {"abcd", "de", std::vector<size_t>()},
-      {"abcd", "ab", {2}},
-      {"abcd", "bc", {3}},
-      {"abcd", "cd", {4}},
+      {"abcd", "ab", {0}},
+      {"abcd", "bc", {1}},
+      {"abcd", "cd", {2}},
 
       {"a/bc/a/b", "", {0, 1, 2, 3, 4, 5, 6, 7, 8}},
       {"a/bc/a/b", "de", std::vector<size_t>()},
-      {"a/bc/a/b", "a/", {2, 7}},
-      {"a/bc/a/c", "a/c", {8}},
-      {"a/bc/a/c", "a^c", {8}},
+      {"a/bc/a/b", "a/", {0, 5}},
+      {"a/bc/a/c", "a/c", {5}},
+      {"a/bc/a/c", "a^c", {5}},
       {"a/bc/a/c", "a?c", std::vector<size_t>()},
 
       {"ab^cd", "ab/cd", std::vector<size_t>()},
       {"ab^cd", "b/c", std::vector<size_t>()},
-      {"ab^cd", "ab^cd", {5}},
-      {"ab^cd", "b^c", {4}},
-      {"ab^b/b", "b/b", {6}},
+      {"ab^cd", "ab^cd", {0}},
+      {"ab^cd", "b^c", {1}},
+      {"ab^b/b", "b/b", {3}},
 
-      {"a/a/a/a", "a/a", {3, 5, 7}},
-      {"a/a/a/a", "^a^a^a", {7}},
+      {"a/a/a/a", "a/a", {0, 2, 4}},
+      {"a/a/a/a", "^a^a^a", {1}},
       {"a/a/a/a", "^a^a?a", std::vector<size_t>()},
       {"a/a/a/a", "?a?a?a", std::vector<size_t>()},
   };
@@ -92,13 +93,15 @@ TEST(FuzzyPatternMatchingTest, AllOccurrences) {
                  << "Test: " << test_case.text
                  << "; Subpattern: " << test_case.subpattern);
 
-    std::vector<size_t> failure;
-    BuildFailureFunctionFuzzy(test_case.subpattern, &failure);
+    std::vector<size_t> occurrences;
+    for (size_t position = 0; position <= test_case.text.size(); ++position) {
+      position = FindFuzzy(test_case.text, test_case.subpattern, position);
+      if (position == base::StringPiece::npos)
+        break;
+      occurrences.push_back(position);
+    }
 
-    const auto& occurrences = AllOccurrencesFuzzy<size_t>(
-        test_case.text, test_case.subpattern, failure.data());
-    std::vector<size_t> matches(occurrences.begin(), occurrences.end());
-    EXPECT_EQ(test_case.expected_matches, matches);
+    EXPECT_EQ(test_case.expected_occurrences, occurrences);
   }
 }
 
