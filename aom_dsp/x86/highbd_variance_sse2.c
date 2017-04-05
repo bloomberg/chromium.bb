@@ -140,7 +140,7 @@ HIGH_GET_VAR(8);
     highbd_8_variance_sse2(                                                \
         src, src_stride, ref, ref_stride, w, h, sse, &sum,                 \
         aom_highbd_calc##block_size##x##block_size##var_sse2, block_size); \
-    return *sse - (((int64_t)sum * sum) >> shift);                         \
+    return *sse - (uint32_t)(((int64_t)sum * sum) >> shift);               \
   }                                                                        \
                                                                            \
   uint32_t aom_highbd_10_variance##w##x##h##_sse2(                         \
@@ -298,12 +298,13 @@ DECLS(sse2);
       }                                                                        \
     }                                                                          \
     *sse_ptr = sse;                                                            \
-    return sse - ((cast se * se) >> (wlog2 + hlog2));                          \
+    return sse - (uint32_t)((cast se * se) >> (wlog2 + hlog2));                \
   }                                                                            \
                                                                                \
   uint32_t aom_highbd_10_sub_pixel_variance##w##x##h##_##opt(                  \
       const uint8_t *src8, int src_stride, int x_offset, int y_offset,         \
       const uint8_t *dst8, int dst_stride, uint32_t *sse_ptr) {                \
+    int64_t var;                                                               \
     uint32_t sse;                                                              \
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);                                 \
     uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);                                 \
@@ -333,7 +334,8 @@ DECLS(sse2);
     se = ROUND_POWER_OF_TWO(se, 2);                                            \
     sse = ROUND_POWER_OF_TWO(sse, 4);                                          \
     *sse_ptr = sse;                                                            \
-    return sse - ((cast se * se) >> (wlog2 + hlog2));                          \
+    var = (int64_t)(sse) - ((cast se * se) >> (wlog2 + hlog2));                \
+    return (var >= 0) ? (uint32_t)var : 0;                                     \
   }                                                                            \
                                                                                \
   uint32_t aom_highbd_12_sub_pixel_variance##w##x##h##_##opt(                  \
@@ -342,6 +344,7 @@ DECLS(sse2);
     int start_row;                                                             \
     uint32_t sse;                                                              \
     int se = 0;                                                                \
+    int64_t var;                                                               \
     uint64_t long_sse = 0;                                                     \
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);                                 \
     uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);                                 \
@@ -380,7 +383,8 @@ DECLS(sse2);
     se = ROUND_POWER_OF_TWO(se, 4);                                            \
     sse = (uint32_t)ROUND_POWER_OF_TWO(long_sse, 8);                           \
     *sse_ptr = sse;                                                            \
-    return sse - ((cast se * se) >> (wlog2 + hlog2));                          \
+    var = (int64_t)(sse) - ((cast se * se) >> (wlog2 + hlog2));                \
+    return (var >= 0) ? (uint32_t)var : 0;                                     \
   }
 
 #define FNS(opt)                        \
@@ -449,13 +453,14 @@ DECLS(sse2);
       }                                                                        \
     }                                                                          \
     *sse_ptr = sse;                                                            \
-    return sse - ((cast se * se) >> (wlog2 + hlog2));                          \
+    return sse - (uint32_t)((cast se * se) >> (wlog2 + hlog2));                \
   }                                                                            \
                                                                                \
   uint32_t aom_highbd_10_sub_pixel_avg_variance##w##x##h##_##opt(              \
       const uint8_t *src8, int src_stride, int x_offset, int y_offset,         \
       const uint8_t *dst8, int dst_stride, uint32_t *sse_ptr,                  \
       const uint8_t *sec8) {                                                   \
+    int64_t var;                                                               \
     uint32_t sse;                                                              \
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);                                 \
     uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);                                 \
@@ -486,7 +491,8 @@ DECLS(sse2);
     se = ROUND_POWER_OF_TWO(se, 2);                                            \
     sse = ROUND_POWER_OF_TWO(sse, 4);                                          \
     *sse_ptr = sse;                                                            \
-    return sse - ((cast se * se) >> (wlog2 + hlog2));                          \
+    var = (int64_t)(sse) - ((cast se * se) >> (wlog2 + hlog2));                \
+    return (var >= 0) ? (uint32_t)var : 0;                                     \
   }                                                                            \
                                                                                \
   uint32_t aom_highbd_12_sub_pixel_avg_variance##w##x##h##_##opt(              \
@@ -494,6 +500,7 @@ DECLS(sse2);
       const uint8_t *dst8, int dst_stride, uint32_t *sse_ptr,                  \
       const uint8_t *sec8) {                                                   \
     int start_row;                                                             \
+    int64_t var;                                                               \
     uint32_t sse;                                                              \
     int se = 0;                                                                \
     uint64_t long_sse = 0;                                                     \
@@ -535,7 +542,8 @@ DECLS(sse2);
     se = ROUND_POWER_OF_TWO(se, 4);                                            \
     sse = (uint32_t)ROUND_POWER_OF_TWO(long_sse, 8);                           \
     *sse_ptr = sse;                                                            \
-    return sse - ((cast se * se) >> (wlog2 + hlog2));                          \
+    var = (int64_t)(sse) - ((cast se * se) >> (wlog2 + hlog2));                \
+    return (var >= 0) ? (uint32_t)var : 0;                                     \
   }
 
 #define FNS(opt1)                        \
