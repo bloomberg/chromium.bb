@@ -25,6 +25,10 @@ CleanupToolUI::CleanupToolUI(content::WebUI* web_ui)
   html_source->AddString("about", "About Chrome Cleanup");
   html_source->SetJsonPath("strings.js");
 
+  html_source->AddResourcePath("cleanup_browser_proxy.html",
+                               IDR_CLEANUP_TOOL_BROWSER_PROXY_HTML);
+  html_source->AddResourcePath("cleanup_browser_proxy.js",
+                               IDR_CLEANUP_TOOL_BROWSER_PROXY_JS);
   html_source->AddResourcePath("toolbar.html", IDR_CLEANUP_TOOL_TOOLBAR_HTML);
   html_source->AddResourcePath("toolbar.js", IDR_CLEANUP_TOOL_TOOLBAR_JS);
   html_source->SetDefaultResource(IDR_CLEANUP_TOOL_HTML);

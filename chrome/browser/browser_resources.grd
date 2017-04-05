@@ -14,6 +14,8 @@
         <structure name="IDR_APP_LIST_START_PAGE_JS" file="resources\app_list\start_page.js" flattenhtml="true" type="chrome_html" />
       </if>
       <if expr="is_win">
+        <structure name="IDR_CLEANUP_TOOL_BROWSER_PROXY_HTML" file="resources\cleanup_tool\cleanup_browser_proxy.html" type="chrome_html" />
+        <structure name="IDR_CLEANUP_TOOL_BROWSER_PROXY_JS" file="resources\cleanup_tool\cleanup_browser_proxy.js" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_HTML" file="resources\cleanup_tool\cleanup.html" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_TOOLBAR_HTML" file="resources\cleanup_tool\toolbar.html" type="chrome_html" />
         <structure name="IDR_CLEANUP_TOOL_TOOLBAR_JS" file="resources\cleanup_tool\toolbar.js" type="chrome_html" />
