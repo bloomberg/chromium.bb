@@ -8,11 +8,31 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "platform/scheduler/base/time_converter.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate.h"
 #include "public/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {
+
+namespace {
+// Workers could be short-lived, set a shorter interval than
+// the renderer thread.
+constexpr base::TimeDelta kWorkerThreadLoadTrackerReportingInterval =
+    base::TimeDelta::FromSeconds(1);
+// Start reporting the load right away.
+constexpr base::TimeDelta kWorkerThreadLoadTrackerWaitingPeriodBeforeReporting =
+    base::TimeDelta::FromSeconds(0);
+
+void ReportWorkerTaskLoad(base::TimeTicks time, double load) {
+  int load_percentage = static_cast<int>(load * 100);
+  DCHECK_LE(load_percentage, 100);
+  // TODO(kinuko): Maybe we also want to separately log when the associated
+  // tab is in foreground and when not.
+  UMA_HISTOGRAM_PERCENTAGE("WorkerScheduler.WorkerThreadLoad", load_percentage);
+}
+
+}  // namespace
 
 WorkerSchedulerImpl::WorkerSchedulerImpl(
     scoped_refptr<SchedulerTqmDelegate> main_task_runner)
@@ -28,9 +48,15 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
                    base::TimeDelta::FromMilliseconds(300)),
       idle_canceled_delayed_task_sweeper_("worker.scheduler",
                                           &helper_,
-                                          idle_helper_.IdleTaskRunner()) {
+                                          idle_helper_.IdleTaskRunner()),
+      load_tracker_(helper_.scheduler_tqm_delegate()->NowTicks(),
+                    base::Bind(&ReportWorkerTaskLoad),
+                    kWorkerThreadLoadTrackerReportingInterval,
+                    kWorkerThreadLoadTrackerWaitingPeriodBeforeReporting) {
   initialized_ = false;
   thread_start_time_ = helper_.scheduler_tqm_delegate()->NowTicks();
+  load_tracker_.Resume(thread_start_time_);
+  helper_.AddTaskTimeObserver(this);
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 }
@@ -38,6 +64,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
 WorkerSchedulerImpl::~WorkerSchedulerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
+  helper_.RemoveTaskTimeObserver(this);
 }
 
 void WorkerSchedulerImpl::Init() {
@@ -80,6 +107,7 @@ void WorkerSchedulerImpl::RemoveTaskObserver(
 
 void WorkerSchedulerImpl::Shutdown() {
   DCHECK(initialized_);
+  load_tracker_.RecordIdle(helper_.scheduler_tqm_delegate()->NowTicks());
   base::TimeTicks end_time = helper_.scheduler_tqm_delegate()->NowTicks();
   base::TimeDelta delta = end_time - thread_start_time_;
 
@@ -104,6 +132,21 @@ bool WorkerSchedulerImpl::CanEnterLongIdlePeriod(base::TimeTicks,
 base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
   return idle_helper_.CurrentIdleTaskDeadline();
 }
+
+void WorkerSchedulerImpl::willProcessTask(TaskQueue* task_queue,
+                                          double start_time) {}
+
+void WorkerSchedulerImpl::didProcessTask(TaskQueue* task_queue,
+                                         double start_time,
+                                         double end_time) {
+  base::TimeTicks start_time_ticks =
+      MonotonicTimeInSecondsToTimeTicks(start_time);
+  base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
+
+  load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
+}
+
+void WorkerSchedulerImpl::onBeginNestedMessageLoop() {}
 
 }  // namespace scheduler
 }  // namespace blink

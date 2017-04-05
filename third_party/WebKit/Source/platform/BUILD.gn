@@ -1223,6 +1223,7 @@ component("platform") {
     "scheduler/base/task_queue_selector.h",
     "scheduler/base/thread_load_tracker.cc",
     "scheduler/base/thread_load_tracker.h",
+    "scheduler/base/time_converter.h",
     "scheduler/base/time_domain.cc",
     "scheduler/base/time_domain.h",
     "scheduler/base/virtual_time_domain.cc",
