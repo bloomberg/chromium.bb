@@ -6,20 +6,14 @@
 
 #import <ChromeWebView/ChromeWebView.h>
 
-#import "ios/web_view/shell/shell_delegate.h"
 #import "ios/web_view/shell/shell_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface ShellAppDelegate ()
-@property(nonatomic, strong) ShellDelegate* delegate;
-@end
-
 @implementation ShellAppDelegate
 
-@synthesize delegate = _delegate;
 @synthesize window = _window;
 
 - (BOOL)application:(UIApplication*)application
@@ -27,8 +21,7 @@
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
   self.window.backgroundColor = [UIColor whiteColor];
 
-  self.delegate = [[ShellDelegate alloc] init];
-  [CWV configureWithDelegate:_delegate];
+  [CWV configureWithUserAgentProductName:@"Dummy/1.0"];
 
   [self.window makeKeyAndVisible];
 
@@ -51,7 +44,6 @@
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application {
-  [CWV shutDown];
 }
 
 @end

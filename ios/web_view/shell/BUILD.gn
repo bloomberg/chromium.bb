@@ -19,8 +19,6 @@ source_set("shell") {
   sources = [
     "shell_app_delegate.h",
     "shell_app_delegate.m",
-    "shell_delegate.h",
-    "shell_delegate.m",
     "shell_exe_main.m",
     "shell_view_controller.h",
     "shell_view_controller.m",

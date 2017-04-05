@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
-#import "ios/web_view/public/cwv_delegate.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -21,9 +20,7 @@
 
 namespace ios_web_view {
 
-WebViewWebMainParts::WebViewWebMainParts(id<CWVDelegate> delegate) {
-  delegate_ = delegate;
-}
+WebViewWebMainParts::WebViewWebMainParts() {}
 
 WebViewWebMainParts::~WebViewWebMainParts() = default;
 

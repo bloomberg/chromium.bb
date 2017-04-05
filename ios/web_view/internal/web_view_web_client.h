@@ -10,8 +10,6 @@
 #include "base/compiler_specific.h"
 #import "ios/web/public/web_client.h"
 
-@protocol CWVDelegate;
-
 namespace ios_web_view {
 class WebViewBrowserState;
 class WebViewWebMainParts;
@@ -19,7 +17,7 @@ class WebViewWebMainParts;
 // WebView implementation of WebClient.
 class WebViewWebClient : public web::WebClient {
  public:
-  explicit WebViewWebClient(id<CWVDelegate> delegate);
+  explicit WebViewWebClient(const std::string& user_agent_product);
   ~WebViewWebClient() override;
 
   // WebClient implementation.
@@ -34,8 +32,8 @@ class WebViewWebClient : public web::WebClient {
   WebViewBrowserState* off_the_record_browser_state() const;
 
  private:
-  // This object's delegate.
-  __weak id<CWVDelegate> delegate_;
+  // The name of the product to be used in the User Agent string.
+  std::string user_agent_product_;
 
   // The WebMainParts created by |CreateWebMainParts()|.
   WebViewWebMainParts* web_main_parts_;

@@ -9,7 +9,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
-@protocol CWVDelegate;
 @class CWVWebView;
 
 // Main interface for the CWV library.
@@ -17,8 +16,10 @@ CWV_EXPORT
 @interface CWV : NSObject
 
 // Initializes the CWV library. This function should be called from
-// |application:didFinishLaunchingWithOptions:|.
-+ (void)configureWithDelegate:(id<CWVDelegate>)delegate;
+// |application:didFinishLaunchingWithOptions:|. The |userAgent| string may be
+// used to customize the full User Agent string used by web views. It should be
+// of the format "product/1.0".
++ (void)configureWithUserAgentProductName:(NSString*)productName;
 
 // Shuts down the CWV library.  This function should be called from
 // |applicationwillTerminate:|.
