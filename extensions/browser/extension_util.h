@@ -35,6 +35,10 @@ bool SiteHasIsolatedStorage(const GURL& extension_site_url,
 // Returns true if the extension can be enabled in incognito mode.
 bool CanBeIncognitoEnabled(const Extension* extension);
 
+// Returns true if |extension_id| can run in an incognito window.
+bool IsIncognitoEnabled(const std::string& extension_id,
+                        content::BrowserContext* context);
+
 content::StoragePartition* GetStoragePartitionForExtensionId(
     const std::string& extension_id,
     content::BrowserContext* browser_context);

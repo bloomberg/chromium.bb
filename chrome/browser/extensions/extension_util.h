@@ -30,10 +30,6 @@ class Extension;
 
 namespace util {
 
-// Returns true if |extension_id| can run in an incognito window.
-bool IsIncognitoEnabled(const std::string& extension_id,
-                        content::BrowserContext* context);
-
 // Sets whether |extension_id| can run in an incognito window. Reloads the
 // extension if it's enabled since this permission is applied at loading time
 // only. Note that an ExtensionService must exist.

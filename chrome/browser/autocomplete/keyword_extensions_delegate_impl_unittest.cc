@@ -21,6 +21,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
