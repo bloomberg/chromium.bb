@@ -25,6 +25,7 @@
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
 using chrome_test_util::WebViewContainingText;
+using chrome_test_util::WebViewNotContainingText;
 
 using web::test::HttpServer;
 
@@ -49,8 +50,8 @@ using web::test::HttpServer;
       assertWithMatcher:grey_notNil()];
   const std::string kError =
       l10n_util::GetStringUTF8(IDS_ERRORPAGES_HEADING_NOT_AVAILABLE);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kError)]
-      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:WebViewNotContainingText(kError)]
+      assertWithMatcher:grey_notNil()];
 }
 
 #pragma mark - tests
