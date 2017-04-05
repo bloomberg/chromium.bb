@@ -143,7 +143,8 @@ static jboolean IsContentSettingEnabled(JNIEnv* env,
   // Before we migrate functions over to this central function, we must verify
   // that the functionality provided below is correct.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
+         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
   ContentSettingsType type =
       static_cast<ContentSettingsType>(content_settings_type);
   return GetBooleanForContentSetting(type);
@@ -156,7 +157,8 @@ static void SetContentSettingEnabled(JNIEnv* env,
   // Before we migrate functions over to this central function, we must verify
   // that the new category supports ALLOW/BLOCK pairs and, if not, handle them.
   DCHECK(content_settings_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS);
+         content_settings_type == CONTENT_SETTINGS_TYPE_POPUPS ||
+         content_settings_type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
 
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());

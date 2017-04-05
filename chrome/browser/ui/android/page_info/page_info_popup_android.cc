@@ -117,6 +117,7 @@ void PageInfoPopupAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;

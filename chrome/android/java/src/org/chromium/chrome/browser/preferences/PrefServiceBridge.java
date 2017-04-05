@@ -761,6 +761,24 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return Whether subresource filtering is enabled.
+     */
+    public boolean subresourceFilterEnabled() {
+        return isContentSettingEnabled(
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+    }
+
+    /**
+     * Sets the preferences on whether to enable/disable subresource filtering.
+     *
+     * @param allow attribute to enable/disable subresource filtering.
+     */
+    public void setAllowSubresourceFilterEnabled(boolean allow) {
+        setContentSettingEnabled(
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, allow);
+    }
+
+    /**
      * @return Whether the camera permission is enabled.
      */
     public boolean isCameraEnabled() {
