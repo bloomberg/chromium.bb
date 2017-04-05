@@ -9,6 +9,5 @@
 ] interface MediaSettingsRange {
     readonly attribute double max;
     readonly attribute double min;
-    readonly attribute double current;
     readonly attribute double step;
 };

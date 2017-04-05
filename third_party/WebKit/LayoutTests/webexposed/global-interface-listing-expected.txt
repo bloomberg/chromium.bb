@@ -4085,7 +4085,6 @@ interface MediaSession
     setter playbackState
 interface MediaSettingsRange
     attribute @@toStringTag
-    getter current
     getter max
     getter min
     getter step

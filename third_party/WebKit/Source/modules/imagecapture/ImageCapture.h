@@ -15,13 +15,13 @@
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
 #include "modules/mediastream/MediaTrackConstraintSet.h"
+#include "modules/mediastream/MediaTrackSettings.h"
 #include "platform/AsyncMethodRunner.h"
 
 namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
-class MediaTrackSettings;
 class PhotoSettings;
 class ScriptPromiseResolver;
 class WebImageCaptureFrameGrabber;
@@ -87,9 +87,8 @@ class MODULES_EXPORT ImageCapture final
   media::mojom::blink::ImageCapturePtr m_service;
 
   MediaTrackCapabilities m_capabilities;
+  MediaTrackSettings m_settings;
   MediaTrackConstraintSet m_currentConstraints;
-
-  HeapVector<Point2D> m_currentPointsOfInterest;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 };

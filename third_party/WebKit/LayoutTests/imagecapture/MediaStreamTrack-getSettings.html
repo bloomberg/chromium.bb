@@ -45,6 +45,18 @@ async_test(function(t) {
         assert_equals(settings.focusMode,
             meteringModeNames[mock_settings.focus_mode], 'focusMode');
 
+        assert_equals(settings.pointsOfInterest.length,
+                      mock_settings.points_of_interest.length,
+                      'pointsOfInterest');
+        for (i = 0; i < settings.pointsOfInterest.length; ++i) {
+          assert_approx_equals(settings.pointsOfInterest[i].x,
+                               mock_settings.points_of_interest[i].x, 0.01,
+                               'pointsOfInterest x');
+          assert_approx_equals(settings.pointsOfInterest[i].y,
+                               mock_settings.points_of_interest[i].y, 0.01,
+                               'pointsOfInterest y');
+        }
+
         assert_equals(settings.exposureCompensation,
                       mock_settings.exposure_compensation.current);
         assert_equals(settings.colorTemperature,
@@ -58,7 +70,8 @@ async_test(function(t) {
 
         assert_equals(settings.zoom, mock_settings.zoom.current);
 
-        assert_equals(settings.torch, mock_settings.torch);
+        // TODO(mcasas): do |torch| when the mojom interface is updated,
+        // https://crbug.com/700607.
 
         t.done();
       }, 100);

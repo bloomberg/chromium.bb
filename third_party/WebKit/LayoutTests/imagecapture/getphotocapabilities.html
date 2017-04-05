@@ -42,8 +42,6 @@ async_test(function(t) {
                     mock_capabilities.height.max);
       assert_equals(capabilities.imageHeight.min,
                     mock_capabilities.height.min);
-      assert_equals(capabilities.imageHeight.current,
-                    mock_capabilities.height.current);
       assert_equals(capabilities.imageHeight.step,
                     mock_capabilities.height.step);
 
@@ -52,8 +50,6 @@ async_test(function(t) {
                     mock_capabilities.width.max);
       assert_equals(capabilities.imageWidth.min,
                     mock_capabilities.width.min);
-      assert_equals(capabilities.imageWidth.current,
-                    mock_capabilities.width.current);
       assert_equals(capabilities.imageWidth.step, mock_capabilities.width.step);
 
       assert_array_equals(capabilities.fillLightMode, [ 'auto', 'flash' ],

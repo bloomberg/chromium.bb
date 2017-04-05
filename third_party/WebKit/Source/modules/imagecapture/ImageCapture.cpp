@@ -16,7 +16,6 @@
 #include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
-#include "modules/mediastream/MediaTrackSettings.h"
 #include "platform/WaitableEvent.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
@@ -371,38 +370,38 @@ const MediaTrackConstraintSet& ImageCapture::getMediaTrackConstraints() const {
 }
 
 void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
-  if (m_capabilities.hasWhiteBalanceMode())
-    settings.setWhiteBalanceMode(m_capabilities.whiteBalanceMode()[0]);
-  if (m_capabilities.hasExposureMode())
-    settings.setExposureMode(m_capabilities.exposureMode()[0]);
-  if (m_capabilities.hasFocusMode())
-    settings.setFocusMode(m_capabilities.focusMode()[0]);
+  // Merge any present |m_settings| members into |settings|.
 
-  if (!m_currentPointsOfInterest.isEmpty())
-    settings.setPointsOfInterest(m_currentPointsOfInterest);
+  if (m_settings.hasWhiteBalanceMode())
+    settings.setWhiteBalanceMode(m_settings.whiteBalanceMode());
+  if (m_settings.hasExposureMode())
+    settings.setExposureMode(m_settings.exposureMode());
+  if (m_settings.hasFocusMode())
+    settings.setFocusMode(m_settings.focusMode());
 
-  if (m_capabilities.hasExposureCompensation()) {
-    settings.setExposureCompensation(
-        m_capabilities.exposureCompensation()->current());
-  }
-  if (m_capabilities.hasColorTemperature())
-    settings.setColorTemperature(m_capabilities.colorTemperature()->current());
-  if (m_capabilities.hasIso())
-    settings.setIso(m_capabilities.iso()->current());
+  if (m_settings.hasPointsOfInterest())
+    settings.setPointsOfInterest(m_settings.pointsOfInterest());
 
-  if (m_capabilities.hasBrightness())
-    settings.setBrightness(m_capabilities.brightness()->current());
-  if (m_capabilities.hasContrast())
-    settings.setContrast(m_capabilities.contrast()->current());
-  if (m_capabilities.hasSaturation())
-    settings.setSaturation(m_capabilities.saturation()->current());
-  if (m_capabilities.hasSharpness())
-    settings.setSharpness(m_capabilities.sharpness()->current());
+  if (m_settings.hasExposureCompensation())
+    settings.setExposureCompensation(m_settings.exposureCompensation());
+  if (m_settings.hasColorTemperature())
+    settings.setColorTemperature(m_settings.colorTemperature());
+  if (m_settings.hasIso())
+    settings.setIso(m_settings.iso());
 
-  if (m_capabilities.hasZoom())
-    settings.setZoom(m_capabilities.zoom()->current());
-  if (m_capabilities.hasTorch())
-    settings.setTorch(m_capabilities.torch());
+  if (m_settings.hasBrightness())
+    settings.setBrightness(m_settings.brightness());
+  if (m_settings.hasContrast())
+    settings.setContrast(m_settings.contrast());
+  if (m_settings.hasSaturation())
+    settings.setSaturation(m_settings.saturation());
+  if (m_settings.hasSharpness())
+    settings.setSharpness(m_settings.sharpness());
+
+  if (m_settings.hasZoom())
+    settings.setZoom(m_settings.zoom());
+  if (m_settings.hasTorch())
+    settings.setTorch(m_settings.torch());
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
@@ -496,20 +495,27 @@ void ImageCapture::onCapabilitiesUpdateInternal(
   // when moving these out of PhotoCapabilities, https://crbug.com/700607.
   m_capabilities.setWhiteBalanceMode(
       WTF::Vector<WTF::String>({toString(capabilities.white_balance_mode)}));
+  if (m_capabilities.hasWhiteBalanceMode())
+    m_settings.setWhiteBalanceMode(m_capabilities.whiteBalanceMode()[0]);
   m_capabilities.setExposureMode(
       WTF::Vector<WTF::String>({toString(capabilities.exposure_mode)}));
+  if (m_capabilities.hasExposureMode())
+    m_settings.setExposureMode(m_capabilities.exposureMode()[0]);
   m_capabilities.setFocusMode(
       WTF::Vector<WTF::String>({toString(capabilities.focus_mode)}));
+  if (m_capabilities.hasFocusMode())
+    m_settings.setFocusMode(m_capabilities.focusMode()[0]);
 
+  HeapVector<Point2D> currentPointsOfInterest;
   if (!capabilities.points_of_interest.isEmpty()) {
-    m_currentPointsOfInterest.clear();
     for (const auto& point : capabilities.points_of_interest) {
       Point2D webPoint;
       webPoint.setX(point->x);
       webPoint.setY(point->y);
-      m_currentPointsOfInterest.push_back(mojo::Clone(webPoint));
+      currentPointsOfInterest.push_back(mojo::Clone(webPoint));
     }
   }
+  m_settings.setPointsOfInterest(std::move(currentPointsOfInterest));
 
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,
@@ -518,34 +524,45 @@ void ImageCapture::onCapabilitiesUpdateInternal(
       capabilities.exposure_compensation->min) {
     m_capabilities.setExposureCompensation(
         MediaSettingsRange::create(*capabilities.exposure_compensation));
+    m_settings.setExposureCompensation(
+        capabilities.exposure_compensation->current);
   }
   if (capabilities.color_temperature->max !=
       capabilities.color_temperature->min) {
     m_capabilities.setColorTemperature(
         MediaSettingsRange::create(*capabilities.color_temperature));
+    m_settings.setColorTemperature(capabilities.color_temperature->current);
   }
-  if (capabilities.iso->max != capabilities.iso->min)
+  if (capabilities.iso->max != capabilities.iso->min) {
     m_capabilities.setIso(MediaSettingsRange::create(*capabilities.iso));
+    m_settings.setIso(capabilities.iso->current);
+  }
 
   if (capabilities.brightness->max != capabilities.brightness->min) {
     m_capabilities.setBrightness(
         MediaSettingsRange::create(*capabilities.brightness));
+    m_settings.setBrightness(capabilities.brightness->current);
   }
   if (capabilities.contrast->max != capabilities.contrast->min) {
     m_capabilities.setContrast(
         MediaSettingsRange::create(*capabilities.contrast));
+    m_settings.setContrast(capabilities.contrast->current);
   }
   if (capabilities.saturation->max != capabilities.saturation->min) {
     m_capabilities.setSaturation(
         MediaSettingsRange::create(*capabilities.saturation));
+    m_settings.setSaturation(capabilities.saturation->current);
   }
   if (capabilities.sharpness->max != capabilities.sharpness->min) {
     m_capabilities.setSharpness(
         MediaSettingsRange::create(*capabilities.sharpness));
+    m_settings.setSharpness(capabilities.sharpness->current);
   }
 
-  if (capabilities.zoom->max != capabilities.zoom->min)
+  if (capabilities.zoom->max != capabilities.zoom->min) {
     m_capabilities.setZoom(MediaSettingsRange::create(*capabilities.zoom));
+    m_settings.setZoom(capabilities.zoom->current);
+  }
 
   m_capabilities.setTorch(capabilities.torch);
 
@@ -563,8 +580,8 @@ void ImageCapture::onServiceConnectionError() {
 DEFINE_TRACE(ImageCapture) {
   visitor->trace(m_streamTrack);
   visitor->trace(m_capabilities);
+  visitor->trace(m_settings);
   visitor->trace(m_currentConstraints);
-  visitor->trace(m_currentPointsOfInterest);
   visitor->trace(m_serviceRequests);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);

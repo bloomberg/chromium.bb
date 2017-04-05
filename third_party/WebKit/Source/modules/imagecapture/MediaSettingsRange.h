@@ -17,32 +17,28 @@ class MediaSettingsRange final : public GarbageCollected<MediaSettingsRange>,
  public:
   static MediaSettingsRange* create(double max,
                                     double min,
-                                    double current,
                                     double step) {
-    return new MediaSettingsRange(max, min, current, step);
+    return new MediaSettingsRange(max, min, step);
   }
   static MediaSettingsRange* create(media::mojom::blink::RangePtr range) {
     return MediaSettingsRange::create(*range);
   }
   static MediaSettingsRange* create(const media::mojom::blink::Range& range) {
-    return MediaSettingsRange::create(range.max, range.min, range.current,
-                                      range.step);
+    return MediaSettingsRange::create(range.max, range.min, range.step);
   }
 
   double max() const { return m_max; }
   double min() const { return m_min; }
-  double current() const { return m_current; }
   double step() const { return m_step; }
 
   DEFINE_INLINE_TRACE() {}
 
  private:
-  MediaSettingsRange(double max, double min, double current, double step)
-      : m_max(max), m_min(min), m_current(current), m_step(step) {}
+  MediaSettingsRange(double max, double min, double step)
+      : m_max(max), m_min(min), m_step(step) {}
 
   double m_max;
   double m_min;
-  double m_current;
   double m_step;
 };
 
