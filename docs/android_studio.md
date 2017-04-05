@@ -4,8 +4,6 @@
 
 ## Usage
 
-**Note: currently only Android Studio 2.2 is supported**
-
 Make sure you have followed
 [android build instructions](android_build_instructions.md) already.
 
@@ -25,6 +23,12 @@ to generate projects for:
 ```shell
 build/android/gradle/generate_gradle.py --target //chrome/android:chrome_public_apk --target //android_webview/test:android_webview_apk
 ```
+
+For those upgrading from Android Studio 2.2 to 2.3:
+
+* Regenerate with `generate_gradle.py`.
+* Clean up in `//third_party/android_tools` with `git clean -ffd`.
+* Restart Android Studio with File -&gt; "Invalidate Caches / Restart".
 
 For first-time Android Studio users:
 
@@ -57,8 +61,8 @@ Gradle sub-project.
 Gradle supports source directories but not source files. However, some
 directories in Chromium are split amonst multiple GN targets. To accommodate
 this, the script detects such targets and creates exclude patterns to exclude
-files not in the current target. You may still see them when editing, but they
-are excluded in gradle tasks.
+files not in the current target. You still see them when editing, but they are
+excluded in gradle tasks.
 ***
 
 Most generated .java files in GN are stored as `.srcjars`. Android Studio does
@@ -100,6 +104,7 @@ includes `R.java`).
 * `Shift + F6`: Rename variable
 * `Ctrl + Alt + O`: Organize imports
 * `Alt + Enter`: Quick Fix (use on underlined errors)
+* `F2`: Find next error
 
 ### Building from the Command Line
 
@@ -118,22 +123,23 @@ resources, native libraries, etc.
     * Add the line `org.gradle.daemon=true` to `~/.gradle/gradle.properties`,
       creating it if necessary.
 
-## Status (as of Feb 7th, 2017)
+## Status (as of April 4th, 2017)
 
 ### What works
 
-* Tested with Android Studio v2.2.
+* Tested with Android Studio v2.3.
 * Java editing and gradle compile works.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
 * Editing resource xml files.
 * Java debugging (see
-[here](/docs/android_debugging_instructions.md#Android-Studio))
+[here](/docs/android_debugging_instructions.md#Android-Studio)).
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
-* Make gradle aware of assets
-* Layout editor
-* Add a mode in which gradle is responsible for generating `R.java`
-* Add support for native code editing
-* Make the "Make Project" button work correctly
+* Proper file resolution and imports for overlapping modules.
+* Make gradle aware of assets.
+* Layout editor.
+* Add a mode in which gradle is responsible for generating `R.java`.
+* Add support for native code editing.
+* Make the "Make Project" button work correctly.
