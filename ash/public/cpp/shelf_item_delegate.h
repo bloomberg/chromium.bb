@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
-#define CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
+#ifndef ASH_PUBLIC_CPP_SHELF_ITEM_DELEGATE_H_
+#define ASH_PUBLIC_CPP_SHELF_ITEM_DELEGATE_H_
 
 #include <string>
 
 #include "ash/public/cpp/app_launch_id.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/compiler_specific.h"
@@ -15,26 +16,23 @@
 #include "ui/events/event.h"
 
 class AppWindowLauncherItemController;
-class ChromeLauncherController;
 
-using MenuItemList = std::vector<ash::mojom::MenuItemPtr>;
+namespace ash {
 
-// LauncherItemController is used by ChromeLauncherController to track one
-// or more windows associated with a shelf item.
-class LauncherItemController : public ash::mojom::ShelfItemDelegate {
+using MenuItemList = std::vector<mojom::MenuItemPtr>;
+
+// ShelfItemDelegate tracks some item state and serves as a base class for
+// various subclasses that implement the mojo interface.
+class ASH_PUBLIC_EXPORT ShelfItemDelegate : public mojom::ShelfItemDelegate {
  public:
-  LauncherItemController(const ash::AppLaunchId& app_launch_id,
-                         ChromeLauncherController* launcher_controller);
-  ~LauncherItemController() override;
+  explicit ShelfItemDelegate(const AppLaunchId& app_launch_id);
+  ~ShelfItemDelegate() override;
 
-  ash::ShelfID shelf_id() const { return shelf_id_; }
-  void set_shelf_id(ash::ShelfID id) { shelf_id_ = id; }
-  const ash::AppLaunchId& app_launch_id() const { return app_launch_id_; }
+  ShelfID shelf_id() const { return shelf_id_; }
+  void set_shelf_id(ShelfID id) { shelf_id_ = id; }
+  const AppLaunchId& app_launch_id() const { return app_launch_id_; }
   const std::string& app_id() const { return app_launch_id_.app_id(); }
   const std::string& launch_id() const { return app_launch_id_.launch_id(); }
-  ChromeLauncherController* launcher_controller() const {
-    return launcher_controller_;
-  }
 
   bool image_set_by_controller() const { return image_set_by_controller_; }
   void set_image_set_by_controller(bool image_set_by_controller) {
@@ -53,17 +51,17 @@ class LauncherItemController : public ash::mojom::ShelfItemDelegate {
   // an id that can be passed to an app when launched in order to support
   // multiple shelf items per app. This id is used together with the app_id to
   // uniquely identify each shelf item that has the same app_id.
-  const ash::AppLaunchId app_launch_id_;
+  const AppLaunchId app_launch_id_;
 
   // A unique id assigned by the shelf model for the shelf item.
-  ash::ShelfID shelf_id_;
-
-  ChromeLauncherController* launcher_controller_;
+  ShelfID shelf_id_;
 
   // Set to true if the launcher item image has been set by the controller.
   bool image_set_by_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherItemController);
+  DISALLOW_COPY_AND_ASSIGN(ShelfItemDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_LAUNCHER_LAUNCHER_ITEM_CONTROLLER_H_
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_SHELF_ITEM_DELEGATE_H_

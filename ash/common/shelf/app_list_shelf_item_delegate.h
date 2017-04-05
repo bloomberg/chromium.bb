@@ -5,14 +5,14 @@
 #ifndef ASH_COMMON_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
 #define ASH_COMMON_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_
 
-#include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
 class ShelfModel;
 
 // ShelfItemDelegate for TYPE_APP_LIST.
-class AppListShelfItemDelegate : public mojom::ShelfItemDelegate {
+class AppListShelfItemDelegate : public ShelfItemDelegate {
  public:
   // Initializes the app list item in the shelf data model and creates an
   // AppListShelfItemDelegate which will be owned by |model|.
@@ -21,7 +21,7 @@ class AppListShelfItemDelegate : public mojom::ShelfItemDelegate {
   AppListShelfItemDelegate();
   ~AppListShelfItemDelegate() override;
 
-  // mojom::ShelfItemDelegate:
+  // ShelfItemDelegate:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,

@@ -9,6 +9,7 @@
 #include <limits>
 #include <utility>
 
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/gfx/image/image.h"
 
@@ -23,7 +24,7 @@ namespace ash {
 ShelfApplicationMenuModel::ShelfApplicationMenuModel(
     const base::string16& title,
     std::vector<mojom::MenuItemPtr> items,
-    mojom::ShelfItemDelegate* delegate)
+    ShelfItemDelegate* delegate)
     : ui::SimpleMenuModel(this), items_(std::move(items)), delegate_(delegate) {
   AddSeparator(ui::SPACING_SEPARATOR);
   AddItem(kInvalidCommandId, title);

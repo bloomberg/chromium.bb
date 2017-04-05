@@ -14,6 +14,8 @@ component("ash_public_cpp") {
     "session_types.h",
     "shelf_item.cc",
     "shelf_item.h",
+    "shelf_item_delegate.cc",
+    "shelf_item_delegate.h",
     "shelf_types.cc",
     "shelf_types.h",
     "shell_window_ids.cc",

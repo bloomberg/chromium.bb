@@ -641,19 +641,21 @@ ArcAppWindowLauncherController::AttachControllerToTask(
     return it->second;
   }
 
-  ArcAppWindowLauncherItemController* controller =
-      new ArcAppWindowLauncherItemController(app_shelf_id.ToString(), owner());
+  std::unique_ptr<ArcAppWindowLauncherItemController> controller =
+      base::MakeUnique<ArcAppWindowLauncherItemController>(
+          app_shelf_id.ToString());
+  ArcAppWindowLauncherItemController* item_controller = controller.get();
   const ash::ShelfID shelf_id =
       shelf_delegate_->GetShelfIDForAppID(app_shelf_id.ToString());
   if (!shelf_id) {
-    owner()->CreateAppLauncherItem(controller, ash::STATUS_RUNNING);
+    owner()->CreateAppLauncherItem(std::move(controller), ash::STATUS_RUNNING);
   } else {
-    owner()->SetItemController(shelf_id, controller);
+    owner()->SetShelfItemDelegate(shelf_id, std::move(controller));
     owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   }
-  controller->AddTaskId(task_id);
-  app_shelf_group_to_controller_map_[app_shelf_id] = controller;
-  return controller;
+  item_controller->AddTaskId(task_id);
+  app_shelf_group_to_controller_map_[app_shelf_id] = item_controller;
+  return item_controller;
 }
 
 void ArcAppWindowLauncherController::RegisterApp(

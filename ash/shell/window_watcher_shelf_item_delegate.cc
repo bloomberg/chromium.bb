@@ -14,7 +14,7 @@ namespace shell {
 WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
     ShelfID id,
     WindowWatcher* watcher)
-    : id_(id), watcher_(watcher) {
+    : ShelfItemDelegate(AppLaunchId()), id_(id), watcher_(watcher) {
   DCHECK_NE(id_, kInvalidShelfID);
   DCHECK(watcher_);
 }

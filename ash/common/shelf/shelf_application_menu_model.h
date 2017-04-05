@@ -15,7 +15,7 @@
 
 namespace ash {
 
-class ShelfApplicationMenuModelTestAPI;
+class ShelfItemDelegate;
 
 // A menu model listing open applications associated with a shelf item. Layout:
 // +---------------------------+
@@ -34,7 +34,7 @@ class ASH_EXPORT ShelfApplicationMenuModel
   // |delegate| may be null in unit tests that do not execute commands.
   ShelfApplicationMenuModel(const base::string16& title,
                             std::vector<mojom::MenuItemPtr> items,
-                            mojom::ShelfItemDelegate* delegate);
+                            ShelfItemDelegate* delegate);
   ~ShelfApplicationMenuModel() override;
 
   // ui::SimpleMenuModel::Delegate:
@@ -53,7 +53,7 @@ class ASH_EXPORT ShelfApplicationMenuModel
   std::vector<mojom::MenuItemPtr> items_;
 
   // The shelf item delegate that created the menu and executes its commands.
-  mojom::ShelfItemDelegate* delegate_;
+  ShelfItemDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfApplicationMenuModel);
 };

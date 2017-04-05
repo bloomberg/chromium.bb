@@ -5,13 +5,13 @@
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 
 #include "ash/common/wm/window_state.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -25,9 +25,8 @@
 
 ExtensionAppWindowLauncherItemController::
     ExtensionAppWindowLauncherItemController(
-        const ash::AppLaunchId& app_launch_id,
-        ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(app_launch_id, controller) {}
+        const ash::AppLaunchId& app_launch_id)
+    : AppWindowLauncherItemController(app_launch_id) {}
 
 ExtensionAppWindowLauncherItemController::
     ~ExtensionAppWindowLauncherItemController() {}
@@ -38,11 +37,12 @@ void ExtensionAppWindowLauncherItemController::AddAppWindow(
   AddWindow(app_window->GetBaseWindow());
 }
 
-MenuItemList ExtensionAppWindowLauncherItemController::GetAppMenuItems(
+ash::MenuItemList ExtensionAppWindowLauncherItemController::GetAppMenuItems(
     int event_flags) {
-  MenuItemList items;
+  ash::MenuItemList items;
   extensions::AppWindowRegistry* app_window_registry =
-      extensions::AppWindowRegistry::Get(launcher_controller()->profile());
+      extensions::AppWindowRegistry::Get(
+          ChromeLauncherController::instance()->profile());
 
   uint32_t window_index = 0;
   for (const ui::BaseWindow* window : windows()) {
@@ -73,5 +73,5 @@ MenuItemList ExtensionAppWindowLauncherItemController::GetAppMenuItems(
 void ExtensionAppWindowLauncherItemController::ExecuteCommand(
     uint32_t command_id,
     int32_t event_flags) {
-  launcher_controller()->ActivateShellApp(app_id(), command_id);
+  ChromeLauncherController::instance()->ActivateShellApp(app_id(), command_id);
 }

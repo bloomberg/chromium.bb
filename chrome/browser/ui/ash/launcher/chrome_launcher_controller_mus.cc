@@ -21,7 +21,7 @@ ChromeLauncherControllerMus::ChromeLauncherControllerMus() {
 ChromeLauncherControllerMus::~ChromeLauncherControllerMus() {}
 
 ash::ShelfID ChromeLauncherControllerMus::CreateAppLauncherItem(
-    LauncherItemController* controller,
+    std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
     ash::ShelfItemStatus status) {
   NOTIMPLEMENTED();
   return ash::TYPE_UNDEFINED;
@@ -43,9 +43,9 @@ void ChromeLauncherControllerMus::SetItemStatus(ash::ShelfID id,
   NOTIMPLEMENTED();
 }
 
-void ChromeLauncherControllerMus::SetItemController(
+void ChromeLauncherControllerMus::SetShelfItemDelegate(
     ash::ShelfID id,
-    LauncherItemController* controller) {
+    std::unique_ptr<ash::ShelfItemDelegate> item_delegate) {
   NOTIMPLEMENTED();
 }
 
@@ -126,10 +126,10 @@ void ChromeLauncherControllerMus::AdditionalUserAddedToSession(
   NOTIMPLEMENTED();
 }
 
-MenuItemList ChromeLauncherControllerMus::GetAppMenuItemsForTesting(
+ash::MenuItemList ChromeLauncherControllerMus::GetAppMenuItemsForTesting(
     const ash::ShelfItem& item) {
   NOTIMPLEMENTED();
-  return MenuItemList();
+  return ash::MenuItemList();
 }
 
 std::vector<content::WebContents*>
@@ -175,7 +175,7 @@ ChromeLauncherControllerMus::GetBrowserShortcutLauncherItemController() {
   return nullptr;
 }
 
-LauncherItemController* ChromeLauncherControllerMus::GetLauncherItemController(
+ash::ShelfItemDelegate* ChromeLauncherControllerMus::GetShelfItemDelegate(
     const ash::ShelfID id) {
   NOTIMPLEMENTED();
   return nullptr;

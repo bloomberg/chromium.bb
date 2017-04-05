@@ -16,13 +16,15 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   ~ChromeLauncherControllerMus() override;
 
   // ChromeLauncherController:
-  ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
-                                     ash::ShelfItemStatus status) override;
+  ash::ShelfID CreateAppLauncherItem(
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
+      ash::ShelfItemStatus status) override;
   const ash::ShelfItem* GetItem(ash::ShelfID id) const override;
   void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
-  void SetItemController(ash::ShelfID id,
-                         LauncherItemController* controller) override;
+  void SetShelfItemDelegate(
+      ash::ShelfID id,
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate) override;
   void CloseLauncherItem(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
   void SetV1AppStatus(const std::string& app_id,
@@ -46,7 +48,8 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       bool allow_minimize) override;
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
-  MenuItemList GetAppMenuItemsForTesting(const ash::ShelfItem& item) override;
+  ash::MenuItemList GetAppMenuItemsForTesting(
+      const ash::ShelfItem& item) override;
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) override;
   void ActivateShellApp(const std::string& app_id, int window_index) override;
@@ -59,8 +62,7 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
       content::WebContents* web_contents) const override;
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() override;
-  LauncherItemController* GetLauncherItemController(
-      const ash::ShelfID id) override;
+  ash::ShelfItemDelegate* GetShelfItemDelegate(const ash::ShelfID id) override;
   bool ShelfBoundsChangesProbablyWithUser(
       ash::WmShelf* shelf,
       const AccountId& account_id) const override;

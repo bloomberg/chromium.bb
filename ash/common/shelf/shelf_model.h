@@ -16,6 +16,7 @@
 
 namespace ash {
 
+class ShelfItemDelegate;
 class ShelfModelObserver;
 
 // Model used for shelf items. Owns ShelfItemDelegates but does not create them.
@@ -76,12 +77,11 @@ class ASH_EXPORT ShelfModel {
   int item_count() const { return static_cast<int>(items_.size()); }
 
   // Set |item_delegate| for |id| and takes ownership.
-  void SetShelfItemDelegate(
-      ShelfID id,
-      std::unique_ptr<mojom::ShelfItemDelegate> item_delegate);
+  void SetShelfItemDelegate(ShelfID id,
+                            std::unique_ptr<ShelfItemDelegate> item_delegate);
 
   // Returns ShelfItemDelegate for |id|, or null if none exists.
-  mojom::ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);
+  ShelfItemDelegate* GetShelfItemDelegate(ShelfID id);
 
   void AddObserver(ShelfModelObserver* observer);
   void RemoveObserver(ShelfModelObserver* observer);
@@ -101,7 +101,7 @@ class ASH_EXPORT ShelfModel {
   ShelfItems items_;
   base::ObserverList<ShelfModelObserver> observers_;
 
-  std::map<ShelfID, std::unique_ptr<mojom::ShelfItemDelegate>>
+  std::map<ShelfID, std::unique_ptr<ShelfItemDelegate>>
       id_to_item_delegate_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfModel);

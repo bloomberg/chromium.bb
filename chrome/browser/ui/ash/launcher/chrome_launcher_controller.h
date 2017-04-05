@@ -11,12 +11,12 @@
 
 #include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/auto_reset.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -74,9 +74,10 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Initializes this ChromeLauncherController and calls OnInit.
   void Init();
 
-  // Creates a new app item on the shelf for |controller|.
-  virtual ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
-                                             ash::ShelfItemStatus status) = 0;
+  // Creates a new app item on the shelf for |item_delegate|.
+  virtual ash::ShelfID CreateAppLauncherItem(
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
+      ash::ShelfItemStatus status) = 0;
 
   // Returns the shelf item with the given id, or null if |id| isn't found.
   virtual const ash::ShelfItem* GetItem(ash::ShelfID id) const = 0;
@@ -88,11 +89,10 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // browsers shelf item if needed.
   virtual void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) = 0;
 
-  // Updates the controller associated with id (which should be a shortcut).
-  // Takes ownership of |controller|.
-  // TODO(skuhne): Pass in scoped_ptr to make ownership clear.
-  virtual void SetItemController(ash::ShelfID id,
-                                 LauncherItemController* controller) = 0;
+  // Updates the delegate associated with id (which should be a shortcut).
+  virtual void SetShelfItemDelegate(
+      ash::ShelfID id,
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate) = 0;
 
   // Closes or unpins the shelf item.
   virtual void CloseLauncherItem(ash::ShelfID id) = 0;
@@ -165,7 +165,7 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   virtual void AdditionalUserAddedToSession(Profile* profile) = 0;
 
   // Get the list of all running incarnations of this item.
-  virtual MenuItemList GetAppMenuItemsForTesting(
+  virtual ash::MenuItemList GetAppMenuItemsForTesting(
       const ash::ShelfItem& item) = 0;
 
   // Get the list of all tabs which belong to a certain application type.
@@ -198,11 +198,11 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   virtual base::string16 GetAppListTitle(
       content::WebContents* web_contents) const = 0;
 
-  // Returns the LauncherItemController of BrowserShortcut.
+  // Returns the ash::ShelfItemDelegate of BrowserShortcut.
   virtual BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() = 0;
 
-  virtual LauncherItemController* GetLauncherItemController(
+  virtual ash::ShelfItemDelegate* GetShelfItemDelegate(
       const ash::ShelfID id) = 0;
 
   // Check if the shelf visibility (location, visibility) will change with a new

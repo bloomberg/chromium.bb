@@ -6,7 +6,7 @@
 #define ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
 
 #include "ash/public/cpp/shelf_item.h"
-#include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
@@ -16,12 +16,12 @@ namespace shell {
 class WindowWatcher;
 
 // ShelfItemDelegate implementation used by WindowWatcher.
-class WindowWatcherShelfItemDelegate : public mojom::ShelfItemDelegate {
+class WindowWatcherShelfItemDelegate : public ShelfItemDelegate {
  public:
   WindowWatcherShelfItemDelegate(ShelfID id, WindowWatcher* watcher);
   ~WindowWatcherShelfItemDelegate() override;
 
-  // mojom::ShelfItemDelegate:
+  // ShelfItemDelegate:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,

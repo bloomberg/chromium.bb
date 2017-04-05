@@ -16,10 +16,8 @@
 #include "ui/base/base_window.h"
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
-    const std::string& arc_app_id,
-    ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(ash::AppLaunchId(arc_app_id),
-                                      controller) {}
+    const std::string& arc_app_id)
+    : AppWindowLauncherItemController(ash::AppLaunchId(arc_app_id)) {}
 
 ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
 
@@ -60,11 +58,11 @@ void ArcAppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,
   ActivateIndexedApp(command_id);
 }
 
-MenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
+ash::MenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
     int event_flags) {
-  MenuItemList items;
+  ash::MenuItemList items;
   base::string16 app_title = LauncherControllerHelper::GetAppTitle(
-      launcher_controller()->profile(), app_id());
+      ChromeLauncherController::instance()->profile(), app_id());
   for (auto it = windows().begin(); it != windows().end(); ++it) {
     // TODO(khmel): resolve correct icon here.
     size_t i = std::distance(windows().begin(), it);

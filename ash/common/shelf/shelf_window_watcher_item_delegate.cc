@@ -28,7 +28,7 @@ ShelfItemType GetShelfItemType(ShelfID id) {
 
 ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(ShelfID id,
                                                                WmWindow* window)
-    : id_(id), window_(window) {
+    : ShelfItemDelegate(AppLaunchId()), id_(id), window_(window) {
   DCHECK_NE(kInvalidShelfID, id_);
   DCHECK(window_);
 }

@@ -83,8 +83,7 @@ void ExtensionLauncherContextMenu::Init() {
       AddItemWithStringId(MENU_NEW_INCOGNITO_WINDOW,
                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
     }
-    if (!BrowserShortcutLauncherItemController(controller(),
-                                               ash::Shell::Get()->shelf_model())
+    if (!BrowserShortcutLauncherItemController(ash::Shell::Get()->shelf_model())
              .IsListOfActiveBrowserEmpty()) {
       AddItem(MENU_CLOSE,
               l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));

@@ -28,7 +28,8 @@ void AppListShelfItemDelegate::CreateAppListItemAndDelegate(ShelfModel* model) {
   model->SetShelfItemDelegate(id, base::MakeUnique<AppListShelfItemDelegate>());
 }
 
-AppListShelfItemDelegate::AppListShelfItemDelegate() {}
+AppListShelfItemDelegate::AppListShelfItemDelegate()
+    : ShelfItemDelegate(AppLaunchId()) {}
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {}
 

@@ -6,15 +6,12 @@
 #define ASH_COMMON_SHELF_SHELF_MODEL_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
 
 struct ShelfItem;
-
-namespace mojom {
 class ShelfItemDelegate;
-}
 
 class ASH_EXPORT ShelfModelObserver {
  public:
@@ -37,9 +34,8 @@ class ASH_EXPORT ShelfModelObserver {
   // |item_delegate| can be null.
   // NOTE: This is added a temporary fix for M39 to fix crbug.com/429870.
   // TODO(skuhne): Find the real reason for this problem and remove this fix.
-  virtual void OnSetShelfItemDelegate(
-      ShelfID id,
-      mojom::ShelfItemDelegate* item_delegate) = 0;
+  virtual void OnSetShelfItemDelegate(ShelfID id,
+                                      ShelfItemDelegate* item_delegate) = 0;
 
  protected:
   virtual ~ShelfModelObserver() {}

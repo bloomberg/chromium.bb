@@ -61,13 +61,15 @@ class ChromeLauncherControllerImpl
   ~ChromeLauncherControllerImpl() override;
 
   // ChromeLauncherController:
-  ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
-                                     ash::ShelfItemStatus status) override;
+  ash::ShelfID CreateAppLauncherItem(
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
+      ash::ShelfItemStatus status) override;
   const ash::ShelfItem* GetItem(ash::ShelfID id) const override;
   void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
-  void SetItemController(ash::ShelfID id,
-                         LauncherItemController* controller) override;
+  void SetShelfItemDelegate(
+      ash::ShelfID id,
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate) override;
   void CloseLauncherItem(ash::ShelfID id) override;
   bool IsPinned(ash::ShelfID id) override;
   void SetV1AppStatus(const std::string& app_id,
@@ -91,7 +93,8 @@ class ChromeLauncherControllerImpl
       bool allow_minimize) override;
   void ActiveUserChanged(const std::string& user_email) override;
   void AdditionalUserAddedToSession(Profile* profile) override;
-  MenuItemList GetAppMenuItemsForTesting(const ash::ShelfItem& item) override;
+  ash::MenuItemList GetAppMenuItemsForTesting(
+      const ash::ShelfItem& item) override;
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) override;
   void ActivateShellApp(const std::string& app_id, int window_index) override;
@@ -104,8 +107,7 @@ class ChromeLauncherControllerImpl
       content::WebContents* web_contents) const override;
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController() override;
-  LauncherItemController* GetLauncherItemController(
-      const ash::ShelfID id) override;
+  ash::ShelfItemDelegate* GetShelfItemDelegate(const ash::ShelfID id) override;
   bool ShelfBoundsChangesProbablyWithUser(
       ash::WmShelf* shelf,
       const AccountId& account_id) const override;
@@ -159,7 +161,7 @@ class ChromeLauncherControllerImpl
   friend class TestChromeLauncherControllerImpl;
   FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerImplTest, AppPanels);
 
-  typedef std::map<ash::ShelfID, LauncherItemController*> IDToItemControllerMap;
+  typedef std::map<ash::ShelfID, ash::ShelfItemDelegate*> IDToItemControllerMap;
   typedef std::map<content::WebContents*, std::string> WebContentsToAppIDMap;
 
   // Remembers / restores list of running applications.
@@ -207,10 +209,11 @@ class ChromeLauncherControllerImpl
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
   // The |shelf_item_type| will be set into the ShelfModel.
-  ash::ShelfID InsertAppLauncherItem(LauncherItemController* controller,
-                                     ash::ShelfItemStatus status,
-                                     int index,
-                                     ash::ShelfItemType shelf_item_type);
+  ash::ShelfID InsertAppLauncherItem(
+      std::unique_ptr<ash::ShelfItemDelegate> item_delegate,
+      ash::ShelfItemStatus status,
+      int index,
+      ash::ShelfItemType shelf_item_type);
 
   // Create ShelfItem for Browser Shortcut.
   void CreateBrowserShortcutLauncherItem();
@@ -226,11 +229,6 @@ class ChromeLauncherControllerImpl
   void CloseWindowedAppsFromRemovedExtension(const std::string& app_id,
                                              const Profile* profile);
 
-  // Set ShelfItemDelegate |item_delegate| for |id| and take an ownership.
-  // TODO(simon.hong81): Make this take a scoped_ptr of |item_delegate|.
-  void SetShelfItemDelegate(ash::ShelfID id,
-                            ash::mojom::ShelfItemDelegate* item_delegate);
-
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
 
@@ -239,9 +237,8 @@ class ChromeLauncherControllerImpl
   void ShelfItemRemoved(int index, const ash::ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
-  void OnSetShelfItemDelegate(
-      ash::ShelfID id,
-      ash::mojom::ShelfItemDelegate* item_delegate) override;
+  void OnSetShelfItemDelegate(ash::ShelfID id,
+                              ash::ShelfItemDelegate* item_delegate) override;
 
   // ash::WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;

@@ -14,8 +14,8 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/interfaces/shelf.mojom.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_bezel_event_handler.h"
 #include "ash/shell.h"
@@ -299,8 +299,7 @@ void WmShelf::LaunchShelfItem(int item_index) {
 void WmShelf::ActivateShelfItem(int item_index) {
   ShelfModel* shelf_model = Shell::Get()->shelf_model();
   const ShelfItem& item = shelf_model->items()[item_index];
-  mojom::ShelfItemDelegate* item_delegate =
-      shelf_model->GetShelfItemDelegate(item.id);
+  ShelfItemDelegate* item_delegate = shelf_model->GetShelfItemDelegate(item.id);
   std::unique_ptr<ui::Event> event = base::MakeUnique<ui::KeyEvent>(
       ui::ET_KEY_RELEASED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   item_delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,

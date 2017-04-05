@@ -17,6 +17,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/app_launch_id.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -99,13 +99,13 @@ ChromeLauncherControllerImpl* GetChromeLauncherControllerImpl() {
 void SelectItemCallback(ash::ShelfAction* action_taken,
                         base::RunLoop* run_loop,
                         ash::ShelfAction action,
-                        base::Optional<MenuItemList>) {
+                        base::Optional<ash::MenuItemList>) {
   *action_taken = action;
   run_loop->Quit();
 }
 
 // Calls ShelfItemDelegate::SelectItem with an event type and default arguments.
-ash::ShelfAction SelectItem(ash::mojom::ShelfItemDelegate* delegate,
+ash::ShelfAction SelectItem(ash::ShelfItemDelegate* delegate,
                             ui::EventType event_type) {
   std::unique_ptr<ui::Event> event;
   if (event_type == ui::ET_MOUSE_PRESSED) {
@@ -253,8 +253,8 @@ class LauncherPlatformAppBrowserTest
     return shelf_model()->items()[shelf_model()->item_count() - 1];
   }
 
-  LauncherItemController* GetItemController(ash::ShelfID id) {
-    return controller_->GetLauncherItemController(id);
+  ash::ShelfItemDelegate* GetShelfItemDelegate(ash::ShelfID id) {
+    return controller_->GetShelfItemDelegate(id);
   }
 
   ChromeLauncherControllerImpl* controller_;
@@ -294,8 +294,8 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
   }
 
   size_t NumberOfDetectedLauncherBrowsers(bool show_all_tabs) {
-    LauncherItemController* item_controller =
-      controller_->GetBrowserShortcutLauncherItemController();
+    ash::ShelfItemDelegate* item_controller =
+        controller_->GetBrowserShortcutLauncherItemController();
     return item_controller
         ->GetAppMenuItems(show_all_tabs ? ui::EF_SHIFT_DOWN : 0)
         .size();
@@ -724,24 +724,24 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
 
   // Confirm that a controller item was created and is the correct state.
   const ash::ShelfItem& item1 = GetLastLauncherItem();
-  LauncherItemController* item1_controller = GetItemController(item1.id);
+  ash::ShelfItemDelegate* item1_delegate = GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Since it is already active, clicking it should minimize.
-  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
   EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMinimized());
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
   // Clicking the item again should activate the window again.
-  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
   // Maximizing a window should preserve state after minimize + click.
   window1->GetBaseWindow()->Maximize();
   window1->GetBaseWindow()->Minimize();
-  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
@@ -756,13 +756,13 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
   // The first click does nothing.
-  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
   // The second neither.
-  SelectItem(item1_controller, ui::ET_MOUSE_PRESSED);
+  SelectItem(item1_delegate, ui::ET_MOUSE_PRESSED);
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
@@ -788,8 +788,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanel) {
   const ash::ShelfItem& item1 = GetLastLauncherPanelItem();
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  EXPECT_EQ(nullptr, GetItemController(item1.id));
-  ash::mojom::ShelfItemDelegate* item1_delegate =
+  EXPECT_EQ(nullptr, GetShelfItemDelegate(item1.id));
+  ash::ShelfItemDelegate* item1_delegate =
       shelf_model()->GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
@@ -828,8 +828,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AppPanelClickBehavior) {
   const ash::ShelfItem& item1 = GetLastLauncherPanelItem();
   EXPECT_EQ(ash::TYPE_APP_PANEL, item1.type);
   EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
-  EXPECT_EQ(nullptr, GetItemController(item1.id));
-  ash::mojom::ShelfItemDelegate* item1_delegate =
+  EXPECT_EQ(nullptr, GetShelfItemDelegate(item1.id));
+  ash::ShelfItemDelegate* item1_delegate =
       shelf_model()->GetShelfItemDelegate(item1.id);
   EXPECT_EQ(ash::TYPE_APP_PANEL,
             panel->GetNativeWindow()->GetProperty(ash::kShelfItemTypeKey));
@@ -896,11 +896,11 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
       shelf_model()->items()[shelf_item_count - 1];
   // Icons for Apps are set by the AppWindowLauncherController, so
   // image_set_by_controller() should be set.
-  const LauncherItemController* app_item_controller =
-      GetItemController(app_item.id);
-  EXPECT_TRUE(app_item_controller->image_set_by_controller());
+  const ash::ShelfItemDelegate* app_item_delegate =
+      GetShelfItemDelegate(app_item.id);
+  EXPECT_TRUE(app_item_delegate->image_set_by_controller());
   // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
-  EXPECT_EQ(nullptr, GetItemController(panel_item.id));
+  EXPECT_EQ(nullptr, GetShelfItemDelegate(panel_item.id));
   // Ensure icon heights are correct (see test.js in app_icon/ test directory)
   EXPECT_EQ(ash::GetShelfConstant(ash::SHELF_SIZE), app_item.image.height());
   EXPECT_EQ(64, panel_item.image.height());
@@ -1534,8 +1534,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
   // Confirm that a shelf item was created and is the correct state.
   const ash::ShelfItem& item = GetLastLauncherPanelItem();
   // Panels are handled by ShelfWindowWatcher, not ChromeLauncherController.
-  EXPECT_EQ(nullptr, GetItemController(item.id));
-  ash::mojom::ShelfItemDelegate* shelf_item_delegate =
+  EXPECT_EQ(nullptr, GetShelfItemDelegate(item.id));
+  ash::ShelfItemDelegate* shelf_item_delegate =
       shelf_model()->GetShelfItemDelegate(item.id);
   EXPECT_NE(nullptr, shelf_item_delegate);
   EXPECT_EQ(ash::TYPE_APP_PANEL, item.type);
@@ -1760,9 +1760,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ActivateAfterSessionRestore) {
   EXPECT_EQ(it, browser_list->end_last_active());
 
   // Now request to either activate an existing app or create a new one.
-  LauncherItemController* item_controller =
-      controller_->GetLauncherItemController(shortcut_id);
-  SelectItem(item_controller, ui::ET_KEY_RELEASED);
+  ash::ShelfItemDelegate* item_delegate =
+      controller_->GetShelfItemDelegate(shortcut_id);
+  SelectItem(item_delegate, ui::ET_KEY_RELEASED);
 
   // Check that we have set focus on the existing application and nothing new
   // was created.
@@ -2132,10 +2132,10 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, ClickItem) {
   EXPECT_EQ(tab_count + 1, tab_strip->count());
 }
 
-// Check LauncherItemController of Browser Shortcut functionality.
+// Check ash::ShelfItemDelegate of Browser Shortcut functionality.
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
                        BrowserShortcutLauncherItemController) {
-  LauncherItemController* item_controller =
+  ash::ShelfItemDelegate* item_controller =
       controller_->GetBrowserShortcutLauncherItemController();
   const ash::ShelfID id = item_controller->shelf_id();
   EXPECT_NE(ash::kInvalidShelfID, id);

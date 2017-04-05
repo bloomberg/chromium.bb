@@ -5,7 +5,7 @@
 #ifndef ASH_COMMON_SHELF_SHELF_WINDOW_WATCHER_ITEM_DELEGATE_H_
 #define ASH_COMMON_SHELF_SHELF_WINDOW_WATCHER_ITEM_DELEGATE_H_
 
-#include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -14,13 +14,13 @@ class WmWindow;
 
 // ShelfItemDelegate for the items created by ShelfWindowWatcher, for example:
 // The Chrome OS settings window, task manager window, and panel windows.
-class ShelfWindowWatcherItemDelegate : public mojom::ShelfItemDelegate {
+class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
  public:
   ShelfWindowWatcherItemDelegate(ShelfID id, WmWindow* window);
   ~ShelfWindowWatcherItemDelegate() override;
 
  private:
-  // mojom::ShelfItemDelegate overrides:
+  // ShelfItemDelegate overrides:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ShelfLaunchSource source,

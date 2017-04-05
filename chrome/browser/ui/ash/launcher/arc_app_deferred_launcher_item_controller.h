@@ -7,22 +7,20 @@
 
 #include <string>
 
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 
 class ArcAppDeferredLauncherController;
-class ChromeLauncherController;
 
 // ArcAppDeferredLauncherItemController displays the icon of the ARC app that
 // cannot be launched immediately (due to ARC not being ready) on Chrome OS'
 // shelf, with an overlaid spinner to provide visual feedback.
-class ArcAppDeferredLauncherItemController : public LauncherItemController {
+class ArcAppDeferredLauncherItemController : public ash::ShelfItemDelegate {
  public:
   ArcAppDeferredLauncherItemController(
       const std::string& arc_app_id,
-      ChromeLauncherController* controller,
       int event_flags,
       const base::WeakPtr<ArcAppDeferredLauncherController>& host);
 
@@ -32,7 +30,7 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
 
   int event_flags() const { return event_flags_; }
 
-  // LauncherItemController:
+  // ash::ShelfItemDelegate:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,

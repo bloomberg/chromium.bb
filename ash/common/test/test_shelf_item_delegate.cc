@@ -11,7 +11,7 @@ namespace ash {
 namespace test {
 
 TestShelfItemDelegate::TestShelfItemDelegate(WmWindow* window)
-    : window_(window) {}
+    : ShelfItemDelegate(AppLaunchId()), window_(window) {}
 
 TestShelfItemDelegate::~TestShelfItemDelegate() {}
 

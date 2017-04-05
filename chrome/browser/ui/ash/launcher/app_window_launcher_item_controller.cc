@@ -16,10 +16,8 @@
 #include "ui/wm/core/window_animations.h"
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
-    const ash::AppLaunchId& app_launch_id,
-    ChromeLauncherController* controller)
-    : LauncherItemController(app_launch_id, controller),
-      observed_windows_(this) {}
+    const ash::AppLaunchId& app_launch_id)
+    : ash::ShelfItemDelegate(app_launch_id), observed_windows_(this) {}
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
 
@@ -132,14 +130,14 @@ void AppWindowLauncherItemController::OnWindowPropertyChanged(
     } else {
       status = ash::STATUS_RUNNING;
     }
-    launcher_controller()->SetItemStatus(shelf_id(), status);
+    ChromeLauncherController::instance()->SetItemStatus(shelf_id(), status);
   }
 }
 
 ash::ShelfAction AppWindowLauncherItemController::ShowAndActivateOrMinimize(
     ui::BaseWindow* app_window) {
   // Either show or minimize windows when shown from the launcher.
-  return launcher_controller()->ActivateWindowOrMinimizeIfActive(
+  return ChromeLauncherController::instance()->ActivateWindowOrMinimizeIfActive(
       app_window, GetAppMenuItems(ui::EF_NONE).size() == 1);
 }
 

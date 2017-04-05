@@ -11,16 +11,14 @@
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 
 class ArcAppLauncher;
-class ChromeLauncherController;
 
 class ArcPlaystoreShortcutLauncherItemController
     : public AppShortcutLauncherItemController {
  public:
-  explicit ArcPlaystoreShortcutLauncherItemController(
-      ChromeLauncherController* controller);
+  ArcPlaystoreShortcutLauncherItemController();
   ~ArcPlaystoreShortcutLauncherItemController() override;
 
-  // LauncherItemController overrides:
+  // AppShortcutLauncherItemController overrides:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,

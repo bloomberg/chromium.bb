@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_SHORTCUT_LAUNCHER_ITEM_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_BROWSER_SHORTCUT_LAUNCHER_ITEM_CONTROLLER_H_
 
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -19,16 +19,13 @@ namespace content {
 class WebContents;
 }
 
-class ChromeLauncherController;
-
 // Shelf item delegate for a browser shortcut; only one such item should exist.
 // This item shows an application menu that lists open browser windows or tabs.
 class BrowserShortcutLauncherItemController
-    : public LauncherItemController,
+    : public ash::ShelfItemDelegate,
       public content::NotificationObserver {
  public:
-  BrowserShortcutLauncherItemController(ChromeLauncherController* controller,
-                                        ash::ShelfModel* shelf_model);
+  explicit BrowserShortcutLauncherItemController(ash::ShelfModel* shelf_model);
 
   ~BrowserShortcutLauncherItemController() override;
 
@@ -42,12 +39,12 @@ class BrowserShortcutLauncherItemController
   // Check if there is any active browsers windows.
   bool IsListOfActiveBrowserEmpty();
 
-  // LauncherItemController overrides:
+  // ash::ShelfItemDelegate overrides:
   void ItemSelected(std::unique_ptr<ui::Event> event,
                     int64_t display_id,
                     ash::ShelfLaunchSource source,
                     const ItemSelectedCallback& callback) override;
-  MenuItemList GetAppMenuItems(int event_flags) override;
+  ash::MenuItemList GetAppMenuItems(int event_flags) override;
   void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
   void Close() override;
 

@@ -13,11 +13,9 @@
 #include "ui/events/event_constants.h"
 
 ArcPlaystoreShortcutLauncherItemController::
-    ArcPlaystoreShortcutLauncherItemController(
-        ChromeLauncherController* controller)
+    ArcPlaystoreShortcutLauncherItemController()
     : AppShortcutLauncherItemController(
-          ash::AppLaunchId(ArcSupportHost::kHostAppId),
-          controller) {}
+          ash::AppLaunchId(ArcSupportHost::kHostAppId)) {}
 
 ArcPlaystoreShortcutLauncherItemController::
     ~ArcPlaystoreShortcutLauncherItemController() {}
@@ -31,8 +29,9 @@ void ArcPlaystoreShortcutLauncherItemController::ItemSelected(
     // Play Store launch request has never been scheduled.
     std::unique_ptr<ArcAppLauncher> playstore_launcher =
         base::MakeUnique<ArcAppLauncher>(
-            controller()->profile(), arc::kPlayStoreAppId,
-            true /* landscape_layout */, true /* deferred_launch_allowed */);
+            ChromeLauncherController::instance()->profile(),
+            arc::kPlayStoreAppId, true /* landscape_layout */,
+            true /* deferred_launch_allowed */);
     // ArcAppLauncher may launch Play Store in case it exists already. In this
     // case this instance of ArcPlaystoreShortcutLauncherItemController may be
     // deleted. If Play Store does not exist at this moment, then let

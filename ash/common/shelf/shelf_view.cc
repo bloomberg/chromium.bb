@@ -25,6 +25,7 @@
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
@@ -1583,7 +1584,7 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void ShelfView::OnSetShelfItemDelegate(ShelfID, mojom::ShelfItemDelegate*) {}
+void ShelfView::OnSetShelfItemDelegate(ShelfID, ShelfItemDelegate*) {}
 
 void ShelfView::AfterItemSelected(
     const ShelfItem& item,

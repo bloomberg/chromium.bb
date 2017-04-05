@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/common/shelf/shelf_model_observer.h"
+#include "ash/public/cpp/shelf_item_delegate.h"
 
 namespace ash {
 
@@ -158,7 +159,7 @@ int ShelfModel::FirstPanelIndex() const {
 
 void ShelfModel::SetShelfItemDelegate(
     ShelfID id,
-    std::unique_ptr<mojom::ShelfItemDelegate> item_delegate) {
+    std::unique_ptr<ShelfItemDelegate> item_delegate) {
   // If another ShelfItemDelegate is already registered for |id|, we assume
   // that this request is replacing ShelfItemDelegate for |id| with
   // |item_delegate|.
@@ -170,7 +171,7 @@ void ShelfModel::SetShelfItemDelegate(
   id_to_item_delegate_map_[id] = std::move(item_delegate);
 }
 
-mojom::ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(ShelfID id) {
+ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(ShelfID id) {
   if (id_to_item_delegate_map_.find(id) != id_to_item_delegate_map_.end())
     return id_to_item_delegate_map_[id].get();
   return nullptr;
