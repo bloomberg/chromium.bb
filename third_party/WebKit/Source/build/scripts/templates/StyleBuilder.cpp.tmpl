@@ -17,7 +17,7 @@ void StyleBuilder::applyProperty(CSSPropertyID property,
                                  const CSSValue& value,
                                  bool isInitial,
                                  bool isInherit) {
-  switch(property) {
+  switch (property) {
     {% for property_id, property in properties.items()
     if property.should_declare_functions or property.use_handlers_for %}
     {% set used_property = properties[property.use_handlers_for] or property %}
