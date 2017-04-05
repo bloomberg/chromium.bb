@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,8 +35,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestErrorMessageTest, CompleteFail) {
 
   // Once "Pay" is clicked, the page will call complete('fail') and the error
   // message should be shown.
+  OpenCVCPromptWithCVC(base::ASCIIToUTF16("123"));
+
   ResetEventObserver(DialogEvent::ERROR_MESSAGE_SHOWN);
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON);
 
   // The user can only close the dialog at this point.
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);

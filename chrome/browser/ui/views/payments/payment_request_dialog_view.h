@@ -55,6 +55,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
     virtual void OnErrorMessageShown() = 0;
 
     virtual void OnSpecDoneUpdating() = 0;
+
+    virtual void OnCvcPromptShown() = 0;
   };
 
   // Build a Dialog around the PaymentRequest object. |observer| is used to
@@ -91,6 +93,12 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   void ShowCreditCardEditor();
   void ShowShippingAddressEditor();
   void EditorViewUpdated();
+
+  void ShowCvcUnmaskPrompt(
+      const autofill::CreditCard& credit_card,
+      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+          result_delegate,
+      content::WebContents* web_contents) override;
 
   ViewStack* view_stack_for_testing() { return &view_stack_; }
 

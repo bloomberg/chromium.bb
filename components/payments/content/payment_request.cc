@@ -4,6 +4,7 @@
 
 #include "components/payments/content/payment_request.h"
 
+#include <string>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -59,7 +60,7 @@ void PaymentRequest::Init(
       delegate_->GetApplicationLocale());
   state_ = base::MakeUnique<PaymentRequestState>(
       spec_.get(), this, delegate_->GetApplicationLocale(),
-      delegate_->GetPersonalDataManager());
+      delegate_->GetPersonalDataManager(), delegate_.get());
 }
 
 void PaymentRequest::Show() {

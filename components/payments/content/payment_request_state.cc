@@ -14,6 +14,7 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/autofill_payment_instrument.h"
+#include "components/payments/core/payment_request_delegate.h"
 
 namespace payments {
 
@@ -21,7 +22,8 @@ PaymentRequestState::PaymentRequestState(
     PaymentRequestSpec* spec,
     Delegate* delegate,
     const std::string& app_locale,
-    autofill::PersonalDataManager* personal_data_manager)
+    autofill::PersonalDataManager* personal_data_manager,
+    PaymentRequestDelegate* payment_request_delegate)
     : is_ready_to_pay_(false),
       app_locale_(app_locale),
       spec_(spec),
@@ -29,7 +31,8 @@ PaymentRequestState::PaymentRequestState(
       personal_data_manager_(personal_data_manager),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
-      selected_instrument_(nullptr) {
+      selected_instrument_(nullptr),
+      payment_request_delegate_(payment_request_delegate) {
   PopulateProfileCache();
   SetDefaultProfileSelections();
 }
@@ -183,7 +186,8 @@ void PaymentRequestState::PopulateProfileCache() {
     // indirectly owned by this object.
     std::unique_ptr<PaymentInstrument> instrument =
         base::MakeUnique<AutofillPaymentInstrument>(
-            basic_card_network, *card, shipping_profiles_, app_locale_);
+            basic_card_network, *card, shipping_profiles_, app_locale_,
+            payment_request_delegate_);
     available_instruments_.push_back(std::move(instrument));
   }
 }

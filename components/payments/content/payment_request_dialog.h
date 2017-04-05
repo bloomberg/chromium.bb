@@ -5,6 +5,13 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DIALOG_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_DIALOG_H_
 
+#include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
+
+namespace content {
+class WebContents;
+}
+
 namespace payments {
 
 // Used to interact with a cross-platform Payment Request dialog.
@@ -17,6 +24,14 @@ class PaymentRequestDialog {
   virtual void CloseDialog() = 0;
 
   virtual void ShowErrorMessage() = 0;
+
+  // Shows the CVC unmask sheet and starts a FullCardRequest with the info
+  // entered by the user.
+  virtual void ShowCvcUnmaskPrompt(
+      const autofill::CreditCard& credit_card,
+      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+          result_delegate,
+      content::WebContents* web_contents) = 0;
 };
 
 }  // namespace payments

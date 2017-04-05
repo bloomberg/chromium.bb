@@ -7,7 +7,11 @@
 
 #include <string>
 
+#include "base/memory/weak_ptr.h"
+#include "components/autofill/core/browser/payments/full_card_request.h"
+
 namespace autofill {
+class CreditCard;
 class PersonalDataManager;
 }
 
@@ -38,6 +42,12 @@ class PaymentRequestDelegate {
 
   // Returns whether the user is in Incognito mode.
   virtual bool IsIncognito() const = 0;
+
+  // Starts a FullCardRequest to unmask |credit_card|.
+  virtual void DoFullCardRequest(
+      const autofill::CreditCard& credit_card,
+      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+          result_delegate) = 0;
 };
 
 }  // namespace payments

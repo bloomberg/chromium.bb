@@ -151,6 +151,11 @@ void PaymentRequestBrowserTestBase::OnSpecDoneUpdating() {
     event_observer_->Observe(DialogEvent::SPEC_DONE_UPDATING);
 }
 
+void PaymentRequestBrowserTestBase::OnCvcPromptShown() {
+  if (event_observer_)
+    event_observer_->Observe(DialogEvent::CVC_PROMPT_SHOWN);
+}
+
 void PaymentRequestBrowserTestBase::OnWidgetDestroyed(views::Widget* widget) {
   if (event_observer_)
     event_observer_->Observe(DialogEvent::DIALOG_CLOSED);
@@ -376,6 +381,25 @@ PaymentRequestBrowserTestBase::GetShippingOptionLabelValues(
   DCHECK(view);
   labels.push_back(static_cast<views::Label*>(view)->text());
   return labels;
+}
+
+void PaymentRequestBrowserTestBase::OpenCVCPromptWithCVC(
+    const base::string16& cvc) {
+  ResetEventObserver(DialogEvent::CVC_PROMPT_SHOWN);
+  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+
+  views::Textfield* cvc_field =
+      static_cast<views::Textfield*>(delegate_->dialog_view()->GetViewByID(
+          static_cast<int>(DialogViewID::CVC_PROMPT_TEXT_FIELD)));
+  cvc_field->SetText(cvc);
+}
+
+void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
+    const base::string16& cvc) {
+  OpenCVCPromptWithCVC(cvc);
+
+  ResetEventObserver(DialogEvent::DIALOG_CLOSED);
+  ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON);
 }
 
 void PaymentRequestBrowserTestBase::SetEditorTextfieldValue(

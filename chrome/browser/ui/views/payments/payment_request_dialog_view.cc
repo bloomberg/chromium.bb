@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/views/payments/credit_card_editor_view_controller.h"
+#include "chrome/browser/ui/views/payments/cvc_unmask_view_controller.h"
 #include "chrome/browser/ui/views/payments/error_message_view_controller.h"
 #include "chrome/browser/ui/views/payments/order_summary_view_controller.h"
 #include "chrome/browser/ui/views/payments/payment_method_view_controller.h"
@@ -33,6 +34,7 @@ payments::PaymentRequestDialog* CreatePaymentRequestDialog(
 }  // namespace chrome
 
 namespace payments {
+
 namespace {
 
 // This function creates an instance of a PaymentRequestSheetController
@@ -184,6 +186,21 @@ void PaymentRequestDialogView::ShowShippingOptionSheet() {
                            request_->spec(), request_->state(), this),
                        &controller_map_),
                    /* animate = */ true);
+}
+
+void PaymentRequestDialogView::ShowCvcUnmaskPrompt(
+    const autofill::CreditCard& credit_card,
+    base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+        result_delegate,
+    content::WebContents* web_contents) {
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<CvcUnmaskViewController>(
+                           request_->spec(), request_->state(), this,
+                           credit_card, result_delegate, web_contents),
+                       &controller_map_),
+                   /* animate = */ true);
+  if (observer_for_testing_)
+    observer_for_testing_->OnCvcPromptShown();
 }
 
 void PaymentRequestDialogView::ShowCreditCardEditor() {

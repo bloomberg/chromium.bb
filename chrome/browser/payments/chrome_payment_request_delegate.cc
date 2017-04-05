@@ -4,7 +4,6 @@
 
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 
-#include "base/macros.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,6 +49,13 @@ bool ChromePaymentRequestDelegate::IsIncognito() const {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   return profile && profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+}
+
+void ChromePaymentRequestDelegate::DoFullCardRequest(
+    const autofill::CreditCard& credit_card,
+    base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+        result_delegate) {
+  dialog_->ShowCvcUnmaskPrompt(credit_card, result_delegate, web_contents_);
 }
 
 }  // namespace payments

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
+#include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/payment_instrument.h"
 
 namespace autofill {
@@ -20,6 +21,7 @@ class PersonalDataManager;
 
 namespace payments {
 
+class PaymentRequestDelegate;
 class PaymentRequestSpec;
 
 // Keeps track of the information currently selected by the user and whether the
@@ -60,7 +62,8 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   PaymentRequestState(PaymentRequestSpec* spec,
                       Delegate* delegate,
                       const std::string& app_locale,
-                      autofill::PersonalDataManager* personal_data_manager);
+                      autofill::PersonalDataManager* personal_data_manager,
+                      PaymentRequestDelegate* payment_request_delegate);
   ~PaymentRequestState() override;
 
   // Returns whether the user has at least one instrument that satisfies the
@@ -120,6 +123,8 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   const std::string& GetApplicationLocale();
   autofill::PersonalDataManager* GetPersonalDataManager();
 
+  Delegate* delegate() { return delegate_; }
+
  private:
   // Fetches the Autofill Profiles for this user from the PersonalDataManager,
   // and stores copies of them, owned by this PaymentRequestState, in
@@ -166,6 +171,8 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   std::vector<autofill::AutofillProfile*> contact_profiles_;
   // Credit cards are directly owned by the instruments in this list.
   std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
+
+  PaymentRequestDelegate* payment_request_delegate_;
 
   base::ObserverList<Observer> observers_;
 

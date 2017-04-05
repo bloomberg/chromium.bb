@@ -88,6 +88,7 @@ class PaymentRequestBrowserTestBase
   void OnEditorViewUpdated() override;
   void OnErrorMessageShown() override;
   void OnSpecDoneUpdating() override;
+  void OnCvcPromptShown() override;
 
   // views::WidgetObserver
   // Effective way to be warned of all dialog closures.
@@ -145,6 +146,9 @@ class PaymentRequestBrowserTestBase
   std::vector<base::string16> GetShippingOptionLabelValues(
       DialogViewID parent_view_id);
 
+  void OpenCVCPromptWithCVC(const base::string16& cvc);
+  void PayWithCreditCardAndWait(const base::string16& cvc);
+
   // Setting the |value| in the textfield of a given |type|.
   void SetEditorTextfieldValue(const base::string16& value,
                                autofill::ServerFieldType type);
@@ -187,6 +191,7 @@ class PaymentRequestBrowserTestBase
     CAN_MAKE_PAYMENT_CALLED,
     ERROR_MESSAGE_SHOWN,
     SPEC_DONE_UPDATING,
+    CVC_PROMPT_SHOWN,
   };
 
   // DialogEventObserver is used to wait on specific events that may have

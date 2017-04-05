@@ -28,6 +28,7 @@ enum class DialogViewID : int {
   PAY_BUTTON,
   CANCEL_BUTTON,
   BACK_BUTTON,
+  CVC_PROMPT_CONFIRM_BUTTON,
 
   // The following are Label objects.
   ORDER_SUMMARY_TOTAL_AMOUNT_LABEL,
@@ -54,6 +55,9 @@ enum class DialogViewID : int {
   // Used to label the error labels with an offset, which gets added to
   // the Autofill type value they represent (for tests).
   ERROR_LABEL_OFFSET,
+
+  // The CVC text field in the unmask sheet.
+  CVC_PROMPT_TEXT_FIELD,
 };
 
 }  // namespace payments

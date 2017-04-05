@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestNoShippingTest, PayWithVisa) {
 
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
 
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   WaitForObservedEvent();
 

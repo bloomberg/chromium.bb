@@ -14,9 +14,43 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/payments/content/payment_request.mojom.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/core/payment_request_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace payments {
+
+class FakePaymentRequestDelegate : public PaymentRequestDelegate {
+ public:
+  FakePaymentRequestDelegate(
+      autofill::PersonalDataManager* personal_data_manager)
+      : personal_data_manager_(personal_data_manager), locale_("en-US") {}
+  void ShowDialog(PaymentRequest* request) override {}
+
+  void CloseDialog() override {}
+
+  void ShowErrorMessage() override {}
+
+  autofill::PersonalDataManager* GetPersonalDataManager() override {
+    return personal_data_manager_;
+  }
+
+  const std::string& GetApplicationLocale() const override { return locale_; }
+
+  bool IsIncognito() const override { return false; }
+
+  void DoFullCardRequest(
+      const autofill::CreditCard& credit_card,
+      base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
+          result_delegate) override {
+    result_delegate->OnFullCardRequestSucceeded(credit_card,
+                                                base::ASCIIToUTF16("123"));
+  }
+
+ private:
+  autofill::PersonalDataManager* personal_data_manager_;
+  std::string locale_;
+  DISALLOW_COPY_AND_ASSIGN(FakePaymentRequestDelegate);
+};
 
 class PaymentRequestStateTest : public testing::Test,
                                 public PaymentRequestState::Observer,
@@ -24,6 +58,8 @@ class PaymentRequestStateTest : public testing::Test,
  protected:
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
+        payment_request_delegate_(
+            new FakePaymentRequestDelegate(&test_personal_data_manager_)),
         address_(autofill::test::GetFullProfile()),
         credit_card_visa_(autofill::test::GetCreditCard()),
         credit_card_amex_(autofill::test::GetCreditCard2()) {
@@ -64,7 +100,8 @@ class PaymentRequestStateTest : public testing::Test,
         std::move(options), std::move(details), std::move(method_data), nullptr,
         "en-US");
     state_ = base::MakeUnique<PaymentRequestState>(
-        spec_.get(), this, "en-US", &test_personal_data_manager_);
+        spec_.get(), this, "en-US", &test_personal_data_manager_,
+        payment_request_delegate_.get());
     state_->AddObserver(this);
   }
 
@@ -107,6 +144,7 @@ class PaymentRequestStateTest : public testing::Test,
   int num_on_selected_information_changed_called_;
   mojom::PaymentResponsePtr payment_response_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
+  std::unique_ptr<FakePaymentRequestDelegate> payment_request_delegate_;
 
   // Test data.
   autofill::AutofillProfile address_;

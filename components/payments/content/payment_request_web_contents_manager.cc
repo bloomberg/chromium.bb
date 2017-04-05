@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/payments/content/payment_request.h"
-#include "components/payments/content/payment_request_delegate.h"
+#include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(payments::PaymentRequestWebContentsManager);

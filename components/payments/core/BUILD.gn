@@ -23,6 +23,7 @@ static_library("core") {
     "payment_options_provider.h",
     "payment_request_data_util.cc",
     "payment_request_data_util.h",
+    "payment_request_delegate.h",
     "strings_util.cc",
     "strings_util.h",
   ]

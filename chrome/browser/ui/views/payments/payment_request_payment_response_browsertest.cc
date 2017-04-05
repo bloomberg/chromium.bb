@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(
   // Complete the Payment Request.
   InvokePaymentRequestUI();
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the card details were sent to the merchant.
   ExpectBodyContains(std::vector<base::string16>{
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseShippingAddressTest,
   // Complete the Payment Request.
   InvokePaymentRequestUI();
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the shipping address was sent to the merchant.
   ExpectBodyContains(std::vector<base::string16>{
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseAllContactDetailsTest,
   // Complete the Payment Request.
   InvokePaymentRequestUI();
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the contact details were sent to the merchant.
   ExpectBodyContains(std::vector<base::string16>{
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentResponseOneContactDetailTest,
   // Complete the Payment Request.
   InvokePaymentRequestUI();
   ResetEventObserver(DialogEvent::DIALOG_CLOSED);
-  ClickOnDialogViewAndWait(DialogViewID::PAY_BUTTON);
+  PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Test that the contact details were sent to the merchant.
   ExpectBodyContains(std::vector<base::string16>{
