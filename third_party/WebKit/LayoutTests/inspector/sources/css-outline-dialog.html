@@ -14,13 +14,17 @@ function test()
     function onSourceShown(sourceFrame)
     {
         textEditor = sourceFrame.textEditor;
-        InspectorTest.addSniffer(Sources.StyleSheetOutlineDialog.prototype, "refresh", onDialogFulfilled);
-        UI.panels.sources._sourcesView._showOutlineDialog();
+        InspectorTest.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
+        UI.panels.sources._sourcesView._showOutlineQuickOpen();
     }
 
-    function onDialogFulfilled()
+    function onQuickOpenFulfilled()
     {
-        Sources.StyleSheetOutlineDialog._instanceForTests.selectItem(1, "");
+        InspectorTest.addSniffer(Common.Revealer, "revealPromise", (revealable, omitFocus, promise) => promise.then(revealed));
+        this.selectItem(1, "");
+    }
+
+    function revealed() {
         var selection = textEditor.selection();
         if (!selection.isEmpty()) {
             InspectorTest.addResult("ERROR: selection is not empty.");

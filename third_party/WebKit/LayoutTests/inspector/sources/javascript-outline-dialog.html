@@ -10,14 +10,16 @@
 function test()
 {
     InspectorTest.showScriptSource("javascript-outline-dialog.js", onSourceShown);
+    var provider;
     function onSourceShown(sourceFrame)
     {
-        InspectorTest.addSniffer(Sources.JavaScriptOutlineDialog.prototype, "refresh", onDialogFulfilled);
-        UI.panels.sources._sourcesView._showOutlineDialog();
+        InspectorTest.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
+        UI.panels.sources._sourcesView._showOutlineQuickOpen();
     }
 
-    function onDialogFulfilled()
+    function onQuickOpenFulfilled()
     {
+        provider = this;
         dumpScores("te");
         dumpScores("test");
         dumpScores("test(");
@@ -28,12 +30,11 @@ function test()
     function dumpScores(query)
     {
         InspectorTest.addResult(`Scores for query="${query}"`);
-        var dialog = Sources.JavaScriptOutlineDialog._instanceForTests;
         var keys = [];
-        for (var i = 0; i < dialog.itemCount(); ++i) {
+        for (var i = 0; i < provider.itemCount(); ++i) {
             keys.push({
-                key: dialog.itemKeyAt(i),
-                score: dialog.itemScoreAt(i, query)
+                key: provider.itemKeyAt(i),
+                score: provider.itemScoreAt(i, query)
             });
         }
         keys.sort((a,b) => b.score - a.score);
