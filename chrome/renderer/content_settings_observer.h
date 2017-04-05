@@ -19,7 +19,7 @@
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "extensions/features/features.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "third_party/WebKit/public/web/WebContentSettingsClient.h"
+#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
 #include "url/gurl.h"
 
 namespace blink {

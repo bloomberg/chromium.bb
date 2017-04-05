@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
@@ -340,6 +341,10 @@ LocalFrame* FrameFetchContext::frame() const {
 
 LocalFrameClient* FrameFetchContext::localFrameClient() const {
   return frame()->client();
+}
+
+ContentSettingsClient* FrameFetchContext::contentSettingsClient() const {
+  return frame()->contentSettingsClient();
 }
 
 void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
@@ -652,7 +657,7 @@ void FrameFetchContext::addResourceTiming(const ResourceTimingInfo& info) {
 }
 
 bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const {
-  return localFrameClient()->allowImage(imagesEnabled, url);
+  return contentSettingsClient()->allowImage(imagesEnabled, url);
 }
 
 void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const {
@@ -787,10 +792,10 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
 
   if (type == Resource::Script || type == Resource::ImportResource) {
     DCHECK(frame());
-    if (!localFrameClient()->allowScriptFromSource(
+    if (!contentSettingsClient()->allowScriptFromSource(
             !frame()->settings() || frame()->settings()->getScriptEnabled(),
             url)) {
-      localFrameClient()->didNotAllowScript();
+      contentSettingsClient()->didNotAllowScript();
       // TODO(estark): Use a different ResourceRequestBlockedReason here, since
       // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReason::CSP;

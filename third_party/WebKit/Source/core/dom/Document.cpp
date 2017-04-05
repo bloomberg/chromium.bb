@@ -135,6 +135,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/VisualViewportResizeEvent.h"
 #include "core/events/VisualViewportScrollEvent.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -5638,14 +5639,14 @@ bool Document::canExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
   DCHECK(frame())
       << "you are querying canExecuteScripts on a non contextDocument.";
 
-  LocalFrameClient* client = frame()->loader().client();
-  if (!client)
+  ContentSettingsClient* settingsClient = frame()->contentSettingsClient();
+  if (!settingsClient)
     return false;
 
   Settings* settings = frame()->settings();
-  if (!client->allowScript(settings && settings->getScriptEnabled())) {
+  if (!settingsClient->allowScript(settings && settings->getScriptEnabled())) {
     if (reason == AboutToExecuteScript)
-      client->didNotAllowScript();
+      settingsClient->didNotAllowScript();
 
     return false;
   }

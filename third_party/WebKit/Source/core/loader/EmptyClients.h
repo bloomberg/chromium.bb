@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "core/CoreExport.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/RemoteFrameClient.h"
 #include "core/page/ChromeClient.h"
@@ -366,6 +367,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   std::unique_ptr<WebServiceWorkerProvider> createServiceWorkerProvider()
       override;
+  ContentSettingsClient& contentSettingsClient() override;
   std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 
@@ -373,6 +375,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
  protected:
   EmptyLocalFrameClient() {}
+
+  ContentSettingsClient m_contentSettingsClient;
 };
 
 class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {

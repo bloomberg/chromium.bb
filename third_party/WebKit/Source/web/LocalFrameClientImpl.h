@@ -167,18 +167,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       bool shouldPreferPlugInsForImages) override;
   void didChangeScrollOffset() override;
   void didUpdateCurrentHistoryItem() override;
-  bool allowScript(bool enabledPerSettings) override;
-  bool allowScriptFromSource(bool enabledPerSettings,
-                             const KURL& scriptURL) override;
-  bool allowPlugins(bool enabledPerSettings) override;
-  bool allowImage(bool enabledPerSettings, const KURL& imageURL) override;
-  bool allowRunningInsecureContent(bool enabledPerSettings,
-                                   SecurityOrigin*,
-                                   const KURL&) override;
-  bool allowAutoplay(bool defaultValue) override;
-  void passiveInsecureContentFound(const KURL&) override;
-  void didNotAllowScript() override;
-  void didNotAllowPlugins() override;
 
   WebCookieJar* cookieJar() const override;
   void frameFocused() const override;
@@ -201,6 +189,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   std::unique_ptr<WebServiceWorkerProvider> createServiceWorkerProvider()
       override;
+  ContentSettingsClient& contentSettingsClient() override;
+
   SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() override;
 
   std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(

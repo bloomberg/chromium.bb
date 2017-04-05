@@ -570,8 +570,8 @@ WebVector<WebIconURL> WebLocalFrameImpl::iconURLs(int iconTypesMask) const {
 }
 
 void WebLocalFrameImpl::setContentSettingsClient(
-    WebContentSettingsClient* contentSettingsClient) {
-  m_contentSettingsClient = contentSettingsClient;
+    WebContentSettingsClient* client) {
+  m_contentSettingsClient.setClient(client);
 }
 
 void WebLocalFrameImpl::setSharedWorkerRepositoryClient(
@@ -1563,7 +1563,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       m_frameWidget(0),
       m_client(client),
       m_autofillClient(0),
-      m_contentSettingsClient(0),
       m_inputEventsScaleFactorForEmulation(1),
       m_interfaceProvider(interfaceProvider),
       m_interfaceRegistry(interfaceRegistry),

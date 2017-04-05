@@ -44,10 +44,11 @@
 namespace blink {
 
 class ClientHintsPreferences;
+class ContentSettingsClient;
 class Document;
 class DocumentLoader;
-class LocalFrameClient;
 class LocalFrame;
+class LocalFrameClient;
 class ResourceError;
 class ResourceResponse;
 
@@ -180,6 +181,8 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   DocumentLoader* masterDocumentLoader() const;
   LocalFrame* frame() const;
   LocalFrameClient* localFrameClient() const;
+
+  ContentSettingsClient* contentSettingsClient() const;
 
   LocalFrame* frameOfImportsController() const;
 

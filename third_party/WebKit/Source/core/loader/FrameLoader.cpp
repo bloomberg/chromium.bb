@@ -50,6 +50,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -555,10 +556,10 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason) {
   if (!client())
     return false;
   Settings* settings = m_frame->settings();
-  bool allowed =
-      client()->allowPlugins(settings && settings->getPluginsEnabled());
+  bool allowed = m_frame->contentSettingsClient()->allowPlugins(
+      settings && settings->getPluginsEnabled());
   if (!allowed && reason == AboutToInstantiatePlugin)
-    client()->didNotAllowPlugins();
+    m_frame->contentSettingsClient()->didNotAllowPlugins();
   return allowed;
 }
 

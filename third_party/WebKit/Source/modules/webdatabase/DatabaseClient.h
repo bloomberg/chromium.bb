@@ -44,19 +44,20 @@ class ExecutionContext;
 class InspectorDatabaseAgent;
 class Page;
 
-class MODULES_EXPORT DatabaseClient : public Supplement<Page> {
+class MODULES_EXPORT DatabaseClient : public GarbageCollected<DatabaseClient>,
+                                      public Supplement<Page> {
+  USING_GARBAGE_COLLECTED_MIXIN(DatabaseClient);
   WTF_MAKE_NONCOPYABLE(DatabaseClient);
 
  public:
   DatabaseClient();
-  virtual ~DatabaseClient() {}
 
   DECLARE_VIRTUAL_TRACE();
 
-  virtual bool allowDatabase(ExecutionContext*,
-                             const String& name,
-                             const String& displayName,
-                             unsigned estimatedSize) = 0;
+  bool allowDatabase(ExecutionContext*,
+                     const String& name,
+                     const String& displayName,
+                     unsigned estimatedSize);
 
   void didOpenDatabase(Database*,
                        const String& domain,

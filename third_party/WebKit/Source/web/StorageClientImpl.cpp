@@ -25,16 +25,23 @@
 
 #include "web/StorageClientImpl.h"
 
+#include <memory>
+#include "core/frame/ContentSettingsClient.h"
 #include "modules/storage/StorageNamespace.h"
 #include "public/platform/WebStorageNamespace.h"
-#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebViewClient.h"
-#include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
+
+#define STATIC_ASSERT_MATCHING_ENUM(enum_name1, enum_name2)                   \
+  static_assert(static_cast<int>(enum_name1) == static_cast<int>(enum_name2), \
+                "mismatching enums: " #enum_name1)
+STATIC_ASSERT_MATCHING_ENUM(LocalStorage,
+                            ContentSettingsClient::StorageType::kLocal);
+STATIC_ASSERT_MATCHING_ENUM(SessionStorage,
+                            ContentSettingsClient::StorageType::kSession);
 
 StorageClientImpl::StorageClientImpl(WebViewImpl* webView)
     : m_webView(webView) {}
@@ -49,9 +56,9 @@ StorageClientImpl::createSessionStorageNamespace() {
 
 bool StorageClientImpl::canAccessStorage(LocalFrame* frame,
                                          StorageType type) const {
-  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-  return !webFrame->contentSettingsClient() ||
-         webFrame->contentSettingsClient()->allowStorage(type == LocalStorage);
+  DCHECK(frame->contentSettingsClient());
+  return frame->contentSettingsClient()->allowStorage(
+      static_cast<ContentSettingsClient::StorageType>(type));
 }
 
 }  // namespace blink

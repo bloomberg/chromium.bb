@@ -32,6 +32,7 @@
 #define WebLocalFrameImpl_h
 
 #include "core/editing/VisiblePosition.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/SelfKeepAlive.h"
@@ -93,7 +94,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebString assignedName() const override;
   void setName(const WebString&) override;
   WebVector<WebIconURL> iconURLs(int iconTypesMask) const override;
-  void setContentSettingsClient(WebContentSettingsClient*) override;
   void setSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) override;
   WebSize getScrollOffset() const override;
@@ -184,6 +184,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   bool isSpellCheckingEnabled() const override;
   void replaceMisspelledRange(const WebString&) override;
   void removeSpellingMarkers() override;
+  void setContentSettingsClient(WebContentSettingsClient*) override;
   bool hasSelection() const override;
   WebRange selectionRange() const override;
   WebString selectionAsText() const override;
@@ -391,9 +392,10 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebFrameClient* client() const { return m_client; }
   void setClient(WebFrameClient* client) { m_client = client; }
 
-  WebContentSettingsClient* contentSettingsClient() {
+  ContentSettingsClient& contentSettingsClient() {
     return m_contentSettingsClient;
   }
+
   SharedWorkerRepositoryClientImpl* sharedWorkerRepositoryClient() const {
     return m_sharedWorkerRepositoryClient.get();
   }
@@ -475,7 +477,7 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   WebFrameClient* m_client;
   WebAutofillClient* m_autofillClient;
-  WebContentSettingsClient* m_contentSettingsClient;
+  ContentSettingsClient m_contentSettingsClient;
   std::unique_ptr<SharedWorkerRepositoryClientImpl>
       m_sharedWorkerRepositoryClient;
 

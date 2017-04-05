@@ -28,13 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ContextFeaturesClientImpl.h"
+#include "core/dom/ContextFeaturesClientImpl.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/web/WebContentSettingsClient.h"
-#include "public/web/WebDocument.h"
-#include "web/WebLocalFrameImpl.h"
 
 namespace blink {
 
@@ -135,7 +133,7 @@ bool ContextFeaturesClientImpl::askIfIsEnabled(
     Document* document,
     ContextFeatures::FeatureType type,
     bool defaultValue) {
-  WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(document->frame());
+  LocalFrame* frame = document->frame();
   if (!frame || !frame->contentSettingsClient())
     return defaultValue;
 

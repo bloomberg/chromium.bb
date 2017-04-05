@@ -30,17 +30,16 @@
 
 #include "web/LocalFileSystemClient.h"
 
+#include <memory>
 #include "core/dom/Document.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/ContentSettingCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebContentSettingCallbacks.h"
-#include "public/web/WebContentSettingsClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 
@@ -74,12 +73,8 @@ void LocalFileSystemClient::requestFileSystemAccessAsync(
   }
 
   Document* document = toDocument(context);
-  WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(document->frame());
-  if (!webFrame->contentSettingsClient()) {
-    callbacks->onAllowed();
-    return;
-  }
-  webFrame->contentSettingsClient()->requestFileSystemAccessAsync(
+  DCHECK(document->frame());
+  document->frame()->contentSettingsClient()->requestFileSystemAccessAsync(
       std::move(callbacks));
 }
 

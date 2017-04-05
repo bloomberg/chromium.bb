@@ -31,10 +31,10 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebKit.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
@@ -61,15 +61,13 @@ bool IndexedDBClientImpl::allowIndexedDB(ExecutionContext* context,
   SECURITY_DCHECK(context->isDocument() || context->isWorkerGlobalScope());
 
   if (context->isDocument()) {
-    WebSecurityOrigin origin(context->getSecurityOrigin());
     Document* document = toDocument(context);
-    WebLocalFrameImpl* webFrame =
-        WebLocalFrameImpl::fromFrame(document->frame());
-    if (!webFrame)
+    LocalFrame* frame = document->frame();
+    if (!frame)
       return false;
-    if (webFrame->contentSettingsClient())
-      return webFrame->contentSettingsClient()->allowIndexedDB(name, origin);
-    return true;
+    DCHECK(frame->contentSettingsClient());
+    return frame->contentSettingsClient()->allowIndexedDB(
+        name, context->getSecurityOrigin());
   }
 
   WorkerGlobalScope& workerGlobalScope = *toWorkerGlobalScope(context);

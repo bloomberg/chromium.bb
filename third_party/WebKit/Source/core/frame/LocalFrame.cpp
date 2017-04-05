@@ -44,6 +44,7 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/Event.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameView.h"
@@ -903,6 +904,10 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled() {
 
 LocalFrameClient* LocalFrame::client() const {
   return static_cast<LocalFrameClient*>(Frame::client());
+}
+
+ContentSettingsClient* LocalFrame::contentSettingsClient() {
+  return client() ? &client()->contentSettingsClient() : nullptr;
 }
 
 PluginData* LocalFrame::pluginData() const {

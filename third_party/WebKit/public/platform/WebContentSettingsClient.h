@@ -13,6 +13,8 @@ class WebSecurityOrigin;
 class WebString;
 class WebURL;
 
+// This class provides the content settings information which tells
+// whether each feature is allowed or not.
 class WebContentSettingsClient {
  public:
   // Controls whether access to Web Databases is allowed for this frame.

@@ -31,6 +31,8 @@
 #include "modules/webdatabase/DatabaseClient.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/ContentSettingsClient.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/InspectorDatabaseAgent.h"
@@ -55,6 +57,20 @@ DatabaseClient* DatabaseClient::from(ExecutionContext* context) {
 
 const char* DatabaseClient::supplementName() {
   return "DatabaseClient";
+}
+
+bool DatabaseClient::allowDatabase(ExecutionContext* context,
+                                   const String& name,
+                                   const String& displayName,
+                                   unsigned estimatedSize) {
+  DCHECK(context->isContextThread());
+  Document* document = toDocument(context);
+  DCHECK(document->frame());
+  if (document->frame()->contentSettingsClient()) {
+    return document->frame()->contentSettingsClient()->allowDatabase(
+        name, displayName, estimatedSize);
+  }
+  return true;
 }
 
 void DatabaseClient::didOpenDatabase(blink::Database* database,

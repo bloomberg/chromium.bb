@@ -45,6 +45,7 @@
 namespace blink {
 
 class Color;
+class ContentSettingsClient;
 class Document;
 class DragImage;
 class Editor;
@@ -219,6 +220,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceRegistry* interfaceRegistry() { return m_interfaceRegistry; }
 
   LocalFrameClient* client() const;
+
+  ContentSettingsClient* contentSettingsClient();
 
   PluginData* pluginData() const;
 

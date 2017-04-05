@@ -43,6 +43,7 @@
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -3938,8 +3939,7 @@ bool HTMLMediaElement::isAutoplayAllowedPerSettings() const {
   LocalFrame* frame = document().frame();
   if (!frame)
     return false;
-  LocalFrameClient* localFrameClient = frame->loader().client();
-  return localFrameClient && localFrameClient->allowAutoplay(true);
+  return frame->contentSettingsClient()->allowAutoplay(true);
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state) {

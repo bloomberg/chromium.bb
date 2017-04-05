@@ -84,7 +84,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "public/web/WebAutofillClient.h"
-#include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFormElement.h"
@@ -223,77 +222,6 @@ void LocalFrameClientImpl::didChangeScrollOffset() {
 void LocalFrameClientImpl::didUpdateCurrentHistoryItem() {
   if (m_webFrame->client())
     m_webFrame->client()->didUpdateCurrentHistoryItem();
-}
-
-bool LocalFrameClientImpl::allowScript(bool enabledPerSettings) {
-  if (m_webFrame->contentSettingsClient())
-    return m_webFrame->contentSettingsClient()->allowScript(enabledPerSettings);
-
-  return enabledPerSettings;
-}
-
-bool LocalFrameClientImpl::allowScriptFromSource(bool enabledPerSettings,
-                                                 const KURL& scriptURL) {
-  if (m_webFrame->contentSettingsClient()) {
-    return m_webFrame->contentSettingsClient()->allowScriptFromSource(
-        enabledPerSettings, scriptURL);
-  }
-
-  return enabledPerSettings;
-}
-
-bool LocalFrameClientImpl::allowPlugins(bool enabledPerSettings) {
-  if (m_webFrame->contentSettingsClient()) {
-    return m_webFrame->contentSettingsClient()->allowPlugins(
-        enabledPerSettings);
-  }
-
-  return enabledPerSettings;
-}
-
-bool LocalFrameClientImpl::allowImage(bool enabledPerSettings,
-                                      const KURL& imageURL) {
-  if (m_webFrame->contentSettingsClient()) {
-    return m_webFrame->contentSettingsClient()->allowImage(enabledPerSettings,
-                                                           imageURL);
-  }
-
-  return enabledPerSettings;
-}
-
-bool LocalFrameClientImpl::allowRunningInsecureContent(bool enabledPerSettings,
-                                                       SecurityOrigin* context,
-                                                       const KURL& url) {
-  if (m_webFrame->contentSettingsClient()) {
-    return m_webFrame->contentSettingsClient()->allowRunningInsecureContent(
-        enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
-  }
-
-  return enabledPerSettings;
-}
-
-bool LocalFrameClientImpl::allowAutoplay(bool defaultValue) {
-  if (m_webFrame->contentSettingsClient())
-    return m_webFrame->contentSettingsClient()->allowAutoplay(defaultValue);
-
-  return defaultValue;
-}
-
-void LocalFrameClientImpl::passiveInsecureContentFound(const KURL& url) {
-  if (m_webFrame->contentSettingsClient()) {
-    return m_webFrame->contentSettingsClient()->passiveInsecureContentFound(
-        WebURL(url));
-  }
-}
-
-void LocalFrameClientImpl::didNotAllowScript() {
-  if (m_webFrame->contentSettingsClient())
-    m_webFrame->contentSettingsClient()->didNotAllowScript();
-}
-
-void LocalFrameClientImpl::didNotAllowPlugins() {
-  if (m_webFrame->contentSettingsClient())
-    m_webFrame->contentSettingsClient()->didNotAllowPlugins();
 }
 
 bool LocalFrameClientImpl::hasWebView() const {
@@ -961,6 +889,10 @@ LocalFrameClientImpl::createServiceWorkerProvider() {
   if (!m_webFrame->client())
     return nullptr;
   return WTF::wrapUnique(m_webFrame->client()->createServiceWorkerProvider());
+}
+
+ContentSettingsClient& LocalFrameClientImpl::contentSettingsClient() {
+  return m_webFrame->contentSettingsClient();
 }
 
 SharedWorkerRepositoryClient*

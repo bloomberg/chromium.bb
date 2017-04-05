@@ -34,6 +34,7 @@
 #include "core/CSSValueKeywords.h"
 #include "core/HTMLNames.h"
 #include "core/clipboard/DataObject.h"
+#include "core/dom/ContextFeaturesClientImpl.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Fullscreen.h"
@@ -90,6 +91,7 @@
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/storage/StorageNamespaceController.h"
+#include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webgl/WebGLRenderingContext.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
@@ -151,9 +153,7 @@
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/CompositorMutatorImpl.h"
 #include "web/CompositorWorkerProxyClientImpl.h"
-#include "web/ContextFeaturesClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
-#include "web/DatabaseClientImpl.h"
 #include "web/DedicatedWorkerMessagingProxyProviderImpl.h"
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
@@ -405,7 +405,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       *m_page, SpeechRecognitionClientProxy::create(
                    client ? client->speechRecognizer() : nullptr));
   provideContextFeaturesTo(*m_page, ContextFeaturesClientImpl::create());
-  provideDatabaseClientTo(*m_page, DatabaseClientImpl::create());
+  provideDatabaseClientTo(*m_page, new DatabaseClient);
 
   provideStorageQuotaClientTo(*m_page, StorageQuotaClientImpl::create());
   m_page->setValidationMessageClient(

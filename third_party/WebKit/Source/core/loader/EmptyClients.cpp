@@ -28,6 +28,7 @@
 #include "core/loader/EmptyClients.h"
 
 #include <memory>
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLFormElement.h"
@@ -193,6 +194,10 @@ void EmptyTextCheckerClient::cancelAllPendingRequests() {}
 std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::createServiceWorkerProvider() {
   return nullptr;
+}
+
+ContentSettingsClient& EmptyLocalFrameClient::contentSettingsClient() {
+  return m_contentSettingsClient;
 }
 
 std::unique_ptr<WebApplicationCacheHost>

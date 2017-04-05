@@ -30,6 +30,7 @@
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/events/EventListener.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -142,7 +143,7 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
 
   LocalFrame* frame = document()->frame();
   Settings* settings = frame->settings();
-  if (!frame->loader().client()->allowImage(
+  if (!frame->contentSettingsClient()->allowImage(
           !settings || settings->getImagesEnabled(), document()->url()))
     return;
 

@@ -29,6 +29,7 @@
 #include "core/loader/MixedContentChecker.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/ContentSettingsClient.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -323,6 +324,7 @@ bool MixedContentChecker::shouldBlockFetch(
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
   LocalFrameClient* client = frame->loader().client();
+  ContentSettingsClient* contentSettingsClient = frame->contentSettingsClient();
   SecurityOrigin* securityOrigin =
       mixedFrame->securityContext()->getSecurityOrigin();
   bool allowed = false;
@@ -354,7 +356,7 @@ bool MixedContentChecker::shouldBlockFetch(
     case WebMixedContentContextType::OptionallyBlockable:
       allowed = !strictMode;
       if (allowed) {
-        client->passiveInsecureContentFound(url);
+        contentSettingsClient->passiveInsecureContentFound(url);
         client->didDisplayInsecureContent();
       }
       break;
@@ -381,7 +383,7 @@ bool MixedContentChecker::shouldBlockFetch(
           (!settings->getStrictlyBlockBlockableMixedContent() ||
            settings->getAllowRunningOfInsecureContent());
       allowed = shouldAskEmbedder &&
-                client->allowRunningInsecureContent(
+                contentSettingsClient->allowRunningInsecureContent(
                     settings && settings->getAllowRunningOfInsecureContent(),
                     securityOrigin, url);
       if (allowed) {
@@ -449,7 +451,8 @@ bool MixedContentChecker::shouldBlockWebSocket(
   Settings* settings = mixedFrame->settings();
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
-  LocalFrameClient* client = frame->loader().client();
+  ContentSettingsClient* contentSettingsClient = frame->contentSettingsClient();
+  LocalFrameClient* client = frame->client();
   SecurityOrigin* securityOrigin =
       mixedFrame->securityContext()->getSecurityOrigin();
   bool allowed = false;
@@ -463,8 +466,8 @@ bool MixedContentChecker::shouldBlockWebSocket(
   if (!strictMode) {
     bool allowedPerSettings =
         settings && settings->getAllowRunningOfInsecureContent();
-    allowed = client->allowRunningInsecureContent(allowedPerSettings,
-                                                  securityOrigin, url);
+    allowed = contentSettingsClient->allowRunningInsecureContent(
+        allowedPerSettings, securityOrigin, url);
   }
 
   if (allowed)

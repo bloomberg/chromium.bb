@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,34 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseClientImpl_h
-#define DatabaseClientImpl_h
+#ifndef ContextFeaturesClientImpl_h
+#define ContextFeaturesClientImpl_h
 
-#include "modules/webdatabase/DatabaseClient.h"
-#include "wtf/Forward.h"
+#include <memory>
+
+#include "core/CoreExport.h"
+#include "core/dom/ContextFeatures.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
-class DatabaseClientImpl final
-    : public GarbageCollectedFinalized<DatabaseClientImpl>,
-      public DatabaseClient {
-  USING_GARBAGE_COLLECTED_MIXIN(DatabaseClientImpl);
-
+class CORE_EXPORT ContextFeaturesClientImpl final
+    : public NON_EXPORTED_BASE(ContextFeaturesClient) {
  public:
-  static DatabaseClientImpl* create();
+  static std::unique_ptr<ContextFeaturesClientImpl> create() {
+    return WTF::wrapUnique(new ContextFeaturesClientImpl());
+  }
 
-  ~DatabaseClientImpl() override;
-  DECLARE_VIRTUAL_TRACE();
-
-  bool allowDatabase(ExecutionContext*,
-                     const String& name,
-                     const String& displayName,
-                     unsigned estimatedSize) override;
+  bool isEnabled(Document*,
+                 ContextFeatures::FeatureType,
+                 bool defaultValue) override;
+  void urlDidChange(Document*) override;
 
  private:
-  DatabaseClientImpl();
+  ContextFeaturesClientImpl() {}
+
+  bool askIfIsEnabled(Document*,
+                      ContextFeatures::FeatureType,
+                      bool defaultValue);
 };
 
 }  // namespace blink
 
-#endif  // DatabaseClientImpl_h
+#endif  // ContextFeaturesClientImpl_h

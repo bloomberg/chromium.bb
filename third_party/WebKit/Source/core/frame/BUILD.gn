@@ -10,6 +10,8 @@ blink_core_sources("frame") {
     "BarProp.h",
     "BrowserControls.cpp",
     "BrowserControls.h",
+    "ContentSettingsClient.cpp",
+    "ContentSettingsClient.h",
     "DOMTimer.cpp",
     "DOMTimer.h",
     "DOMTimerCoordinator.cpp",

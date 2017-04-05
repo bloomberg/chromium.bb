@@ -234,39 +234,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void didChangeScrollOffset() {}
   virtual void didUpdateCurrentHistoryItem() {}
 
-  virtual bool allowScript(bool enabledPerSettings) {
-    return enabledPerSettings;
-  }
-  virtual bool allowScriptFromSource(bool enabledPerSettings, const KURL&) {
-    return enabledPerSettings;
-  }
-  virtual bool allowPlugins(bool enabledPerSettings) {
-    return enabledPerSettings;
-  }
-  virtual bool allowImage(bool enabledPerSettings, const KURL&) {
-    return enabledPerSettings;
-  }
-  virtual bool allowRunningInsecureContent(bool enabledPerSettings,
-                                           SecurityOrigin*,
-                                           const KURL&) {
-    return enabledPerSettings;
-  }
-  virtual bool allowAutoplay(bool defaultValue) { return defaultValue; }
-
-  // Reports that passive mixed content was found at the provided URL. It may or
-  // may not be actually displayed later, what would be flagged by
-  // didDisplayInsecureContent.
-  virtual void passiveInsecureContentFound(const KURL&) {}
-
-  // This callback notifies the client that the frame was about to run
-  // JavaScript but did not because allowScript returned false. We have a
-  // separate callback here because there are a number of places that need to
-  // know if JavaScript is enabled but are not necessarily preparing to execute
-  // script.
-  virtual void didNotAllowScript() {}
-  // This callback is similar, but for plugins.
-  virtual void didNotAllowPlugins() {}
-
   virtual WebCookieJar* cookieJar() const = 0;
 
   virtual void didChangeName(const String&) {}
@@ -302,6 +269,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual std::unique_ptr<WebServiceWorkerProvider>
   createServiceWorkerProvider() = 0;
+
+  virtual ContentSettingsClient& contentSettingsClient() = 0;
 
   virtual SharedWorkerRepositoryClient* sharedWorkerRepositoryClient() {
     return 0;
