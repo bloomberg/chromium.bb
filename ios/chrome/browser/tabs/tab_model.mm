@@ -470,16 +470,18 @@ void CleanCertificatePolicyCache(
   Tab* tab = LegacyTabHelper::GetTabForWebState(webStatePtr);
   DCHECK(tab);
 
-  [tab webController].webUsageEnabled = webUsageEnabled_;
+  webStatePtr->SetWebUsageEnabled(webUsageEnabled_ ? true : false);
 
   if (!inBackground && _tabUsageRecorder)
     _tabUsageRecorder->TabCreatedForSelection(tab);
 
-  [[tab webController] loadWithParams:loadParams];
+  webStatePtr->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // Force the page to start loading even if it's in the background.
+  // TODO(crbug.com/705819): Remove this call.
   if (webUsageEnabled_)
-    [[tab webController] triggerPendingLoad];
+    webStatePtr->GetView();
+
   NSDictionary* userInfo = @{
     kTabModelTabKey : tab,
     kTabModelOpenInBackgroundKey : @(inBackground),
@@ -560,8 +562,9 @@ void CleanCertificatePolicyCache(
   if (webUsageEnabled_ == webUsageEnabled)
     return;
   webUsageEnabled_ = webUsageEnabled;
-  for (Tab* tab in self) {
-    tab.webUsageEnabled = webUsageEnabled;
+  for (int index = 0; index < _webStateList->count(); ++index) {
+    web::WebState* webState = _webStateList->GetWebStateAt(index);
+    webState->SetWebUsageEnabled(webUsageEnabled_ ? true : false);
   }
 }
 
@@ -714,7 +717,7 @@ void CleanCertificatePolicyCache(
     web::WebState* webState = _webStateList->GetWebStateAt(index);
     Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
 
-    tab.webController.webUsageEnabled = webUsageEnabled_;
+    webState->SetWebUsageEnabled(webUsageEnabled_ ? true : false);
     tab.webController.usePlaceholderOverlay = YES;
 
     // Restore the CertificatePolicyCache (note that webState is invalid after

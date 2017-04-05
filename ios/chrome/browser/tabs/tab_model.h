@@ -240,9 +240,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // re-created to pick it up.
 - (void)resetAllWebViews;
 
-// Sets whether the tab model can communicate with the web.
-- (void)setWebUsageEnabled:(BOOL)webUsageEnabled;
-
 // Sets whether the user is primarily interacting with this tab model.
 - (void)setPrimary:(BOOL)primary;
 

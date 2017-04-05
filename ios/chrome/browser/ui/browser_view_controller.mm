@@ -1944,7 +1944,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [_toolbarController dismissToolsMenuPopup];
   [self hidePageInfoPopupForView:nil];
   [_toolbarController dismissTabHistoryPopup];
-  [[_model currentTab].webController recordStateInHistory];
+  [[_model currentTab] recordStateInHistory];
 }
 
 #pragma mark - Tap handling
@@ -2894,7 +2894,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     case OverscrollAction::REFRESH: {
       if ([[[_model currentTab] webController] loadPhase] ==
           web::PAGE_LOADING) {
-        [[_model currentTab] stopLoading];
+        [_model currentTab].webState->Stop();
       }
 
       web::WebState* webState = [_model currentTab].webState;
@@ -3722,7 +3722,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   params.transition_type = transition;
   params.is_renderer_initiated = rendererInitiated;
   DCHECK([_model currentTab]);
-  [[[_model currentTab] webController] loadWithParams:params];
+  [[_model currentTab] navigationManager]->LoadURLWithParams(params);
 }
 
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
@@ -4050,7 +4050,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       break;
     }
     case IDC_STOP:
-      [[_model currentTab] stopLoading];
+      [_model currentTab].webState->Stop();
       break;
 #if !defined(NDEBUG)
     case IDC_VIEW_SOURCE:
@@ -4340,7 +4340,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* tab = [_model currentTab];
   web::NavigationManager::WebLoadParams params(URL);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [[tab webController] loadWithParams:params];
+  [tab navigationManager]->LoadURLWithParams(params);
 }
 
 - (void)showReadingList {
@@ -4383,7 +4383,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* tab = [_model currentTab];
   web::NavigationManager::WebLoadParams params(url);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  [[tab webController] loadWithParams:params];
+  [tab navigationManager]->LoadURLWithParams(params);
 }
 
 - (void)showRateThisAppDialog {

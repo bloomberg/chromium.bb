@@ -395,9 +395,10 @@ TEST_F(BrowserViewControllerTest,
 
   // The tab should only stop loading on handsets.
   if (!IsIPadIdiom())
-    [[tabMock expect] stopLoading];
+    [[static_cast<OCMockObject*>(webController_.get()) expect] stopLoading];
   [bvc_ locationBarBeganEdit:nil];
 
+  EXPECT_OCMOCK_VERIFY(static_cast<OCMockObject*>(webController_.get()));
   EXPECT_OCMOCK_VERIFY(tabMock);
 }
 

@@ -119,7 +119,8 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
       Tab* tab = LegacyTabHelper::GetTabForWebState(_webState.get());
       // Start watching the embedded Tab's web activity.
       _webStateObserver->ObserveWebState(_webState.get());
-      [[tab webController] setShouldSuppressDialogs:NO];
+      _webState->SetShouldSuppressDialogs(false);
+
       _webViewProxy.reset([[[tab webController] webViewProxy] retain]);
       [[_webViewProxy scrollViewProxy] setBounces:NO];
     }
@@ -155,12 +156,12 @@ enum SearchResultsViewVisibility { OFFSCREEN, PRELOAD, VISIBLE };
   DCHECK(tab);
 
   [[tab webController] setNativeProvider:self];
-  [[tab webController] setWebUsageEnabled:YES];
+  _webState->SetWebUsageEnabled(true);
   [tab setIsLinkLoadingPrerenderTab:YES];
 
   web::NavigationManager::WebLoadParams loadParams(url);
   loadParams.transition_type = ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
-  [[tab webController] loadWithParams:loadParams];
+  _webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // Don't actually start the page load yet -- that happens in -loadTab
 

@@ -396,7 +396,7 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   DCHECK(tab);
 
   [[tab webController] setNativeProvider:self];
-  [[tab webController] setWebUsageEnabled:YES];
+  webState_->SetWebUsageEnabled(true);
   [tab setIsPrerenderTab:YES];
   [tab setDelegate:self];
 
@@ -407,9 +407,10 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
     loadParams.user_agent_override_option =
         web::NavigationManager::UserAgentOverrideOption::DESKTOP;
   }
-  [[tab webController] loadWithParams:loadParams];
+  webState_->GetNavigationManager()->LoadURLWithParams(loadParams);
 
   // Trigger the page to start loading.
+  // TODO(crbug.com/705819): Remove this call.
   [tab view];
 }
 

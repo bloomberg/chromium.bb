@@ -1022,12 +1022,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   }
 }
 
-// Stop the page loading.
-// Equivalent to the user pressing 'stop', or a window.stop() command.
-- (void)stopLoading {
-  [self.webController stopLoading];
-}
-
 // Halt the tab, which amounts to halting its webController.
 - (void)terminateNetworkActivity {
   [self.webController terminateNetworkActivity];
@@ -1758,10 +1752,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [[self.webController nativeController] willUpdateSnapshot];
   }
   [overscrollActionsController_ clear];
-}
-
-- (void)setWebUsageEnabled:(BOOL)webUsageEnabled {
-  [self.webController setWebUsageEnabled:webUsageEnabled];
 }
 
 - (void)webStateDidSuppressDialog:(web::WebState*)webState {

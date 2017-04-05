@@ -207,7 +207,7 @@ class TabTest : public BlockCleanupTest {
     tab_.reset(LegacyTabHelper::GetTabForWebState(web_state_impl_.get()));
     web::NavigationManager::WebLoadParams load_params(
         GURL("chrome://version/"));
-    [[tab_ webController] loadWithParams:load_params];
+    [tab_ navigationManager]->LoadURLWithParams(load_params);
 
     // There should be no entries in the history at this point.
     history::QueryResults results;
@@ -241,8 +241,8 @@ class TabTest : public BlockCleanupTest {
 
     web_state_impl_->OnProvisionalNavigationStarted(redirectUrl);
     [[tab_ navigationManagerImpl]->GetSessionController() commitPendingItem];
-    [[tab_ webController] webStateImpl]->UpdateHttpResponseHeaders(redirectUrl);
-    [[tab_ webController] webStateImpl]->OnNavigationCommitted(redirectUrl);
+    web_state_impl_->UpdateHttpResponseHeaders(redirectUrl);
+    web_state_impl_->OnNavigationCommitted(redirectUrl);
 
     base::string16 new_title = base::SysNSStringToUTF16(title);
     [tab_ navigationManager]->GetLastCommittedItem()->SetTitle(new_title);
@@ -260,7 +260,7 @@ class TabTest : public BlockCleanupTest {
     // The only test that uses it is currently disabled.
     web::NavigationManager::WebLoadParams params(url);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
-    [[tab_ webController] loadWithParams:params];
+    [tab_ navigationManager]->LoadURLWithParams(params);
     [[[(id)mock_web_controller_ expect]
         andReturnValue:OCMOCK_VALUE(kPageLoading)] loadPhase];
     [[[(id)mock_web_controller_ expect]
@@ -379,8 +379,7 @@ TEST_F(TabTest, GetSuggestedFilenameFromContentDisposition) {
   headers->AddHeader(base::StringPrintf("Content-Type: application/pdf"));
   headers->AddHeader(base::StringPrintf("Content-Disposition: %s",
                                         kContentDispositionWithFilename));
-  [[tab_ webController] webStateImpl]->OnHttpResponseHeadersReceived(
-      headers.get(), url);
+  web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
   BrowseTo(url, url, [NSString string]);
   EXPECT_NSEQ(@"suggested_filename.pdf",
               [[tab_ openInController] suggestedFilename]);
@@ -395,8 +394,7 @@ TEST_F(TabTest, GetSuggestedFilenameFromURL) {
   headers->AddHeader(base::StringPrintf("Content-Type: application/pdf"));
   headers->AddHeader(base::StringPrintf("Content-Disposition: %s",
                                         kContentDispositionWithoutFilename));
-  [[tab_ webController] webStateImpl]->OnHttpResponseHeadersReceived(
-      headers.get(), url);
+  web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
   BrowseTo(url, url, [NSString string]);
   EXPECT_NSEQ(@"filename.pdf", [[tab_ openInController] suggestedFilename]);
 }
@@ -408,8 +406,7 @@ TEST_F(TabTest, GetSuggestedFilenameFromDefaultName) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders("HTTP 1.1 200 OK");
   headers->AddHeader(base::StringPrintf("Content-Type: application/pdf"));
-  [[tab_ webController] webStateImpl]->OnHttpResponseHeadersReceived(
-      headers.get(), url);
+  web_state_impl_->OnHttpResponseHeadersReceived(headers.get(), url);
   BrowseTo(url, url, [NSString string]);
   EXPECT_NSEQ(@"Document.pdf", [[tab_ openInController] suggestedFilename]);
 }

@@ -18,7 +18,6 @@
 @class AutofillController;
 @class AutoReloadBridge;
 @class CastController;
-@protocol CRWNativeContentProvider;
 @class CRWWebController;
 @class ExternalAppLauncher;
 @class FormInputAccessoryViewController;
@@ -172,10 +171,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Replace the content of the tab with the content described by |SessionTab|.
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;
 
-// Stop the page loading.
-// Equivalent to the user pressing 'stop', or a window.stop() command.
-- (void)stopLoading;
-
 // Triggers the asynchronous loading of the tab's favicon. This will be done
 // automatically when a page loads, but this can be used to trigger favicon
 // fetch earlier (e.g., for a tab that will be shown without loading).
@@ -287,9 +282,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Called when the snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
-
-// Enables or disables usage of web views inside the Tab.
-- (void)setWebUsageEnabled:(BOOL)webUsageEnabled;
 
 // Returns the NativeAppNavigationController for this tab.
 - (NativeAppNavigationController*)nativeAppNavigationController;
