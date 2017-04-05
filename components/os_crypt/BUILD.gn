@@ -58,6 +58,7 @@ static_library("os_crypt") {
   if (is_ios) {
     set_sources_assignment_filter([])
     sources += [
+      "keychain_password_mac.h",
       "keychain_password_mac.mm",
       "os_crypt_mac.mm",
     ]

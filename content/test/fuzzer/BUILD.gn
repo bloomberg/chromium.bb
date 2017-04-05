@@ -16,6 +16,7 @@ if (!is_component_build) {
   source_set("fuzzer_support") {
     sources = [
       "fuzzer_support.cc",
+      "fuzzer_support.h",
     ]
     public_deps = [
       "//base",

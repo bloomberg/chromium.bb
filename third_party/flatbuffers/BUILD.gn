@@ -78,6 +78,7 @@ test("flatbuffers_unittest") {
 
     # This is the actual test.
     "src/tests/test.cpp",
+    "src/tests/test.h",
   ]
   deps = [
     ":compiler_files",
