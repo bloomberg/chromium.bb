@@ -1698,21 +1698,40 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
   ScreenToClient(hwnd(), &client_point);
   gfx::Point point = gfx::Point(client_point.x, client_point.y);
   ui::EventType event_type = ui::ET_MOUSE_MOVED;
-  int flag = -1;
+  int flag = 0;
   int click_count = 0;
   switch (message) {
     case WM_POINTERDOWN:
       event_type = ui::ET_MOUSE_PRESSED;
-      flag = ui::EF_LEFT_MOUSE_BUTTON;
+      if (pointer_pen_info.pointerInfo.ButtonChangeType ==
+          POINTER_CHANGE_SECONDBUTTON_DOWN) {
+        flag = ui::EF_RIGHT_MOUSE_BUTTON;
+      } else {
+        flag = ui::EF_LEFT_MOUSE_BUTTON;
+      }
       click_count = 1;
       break;
     case WM_POINTERUP:
       event_type = ui::ET_MOUSE_RELEASED;
-      flag = ui::EF_LEFT_MOUSE_BUTTON;
+      if (pointer_pen_info.pointerInfo.ButtonChangeType ==
+          POINTER_CHANGE_SECONDBUTTON_UP) {
+        flag = ui::EF_RIGHT_MOUSE_BUTTON;
+      } else {
+        flag = ui::EF_LEFT_MOUSE_BUTTON;
+      }
       click_count = 1;
       break;
     case WM_POINTERUPDATE:
-      event_type = ui::ET_MOUSE_MOVED;
+      event_type = ui::ET_MOUSE_DRAGGED;
+      if (pointer_pen_info.pointerInfo.pointerFlags &
+          POINTER_FLAG_FIRSTBUTTON) {
+        flag = ui::EF_LEFT_MOUSE_BUTTON;
+      } else if (pointer_pen_info.pointerInfo.pointerFlags &
+                 POINTER_FLAG_SECONDBUTTON) {
+        flag = ui::EF_RIGHT_MOUSE_BUTTON;
+      } else {
+        event_type = ui::ET_MOUSE_MOVED;
+      }
       break;
     case WM_POINTERENTER:
       event_type = ui::ET_MOUSE_ENTERED;
