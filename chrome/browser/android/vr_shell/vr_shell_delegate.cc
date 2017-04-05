@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/browser/android/vr_shell/non_presenting_gvr_delegate.h"
+#include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "jni/VrShellDelegate_jni.h"

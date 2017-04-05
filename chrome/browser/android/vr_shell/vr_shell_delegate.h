@@ -12,10 +12,13 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/android/gvr/gvr_delegate_provider.h"
+#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
+class GvrDelegate;
 class GvrDeviceProvider;
+class PresentingGvrDelegate;
 }
 
 namespace vr_shell {

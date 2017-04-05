@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 
 namespace vr_shell {
@@ -153,7 +152,7 @@ void NonPresentingGvrDelegate::SendVSync(base::TimeDelta time,
 
   gvr::Mat4f head_mat = gvr_api_->ApplyNeckModel(
       gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
-  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, -1,
+  callback.Run(GvrDelegate::VRPosePtrFromGvrPose(head_mat), time, -1,
                device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
@@ -165,11 +164,11 @@ void NonPresentingGvrDelegate::CreateVRDisplayInfo(
     return;
   }
 
-  gvr::Sizei webvr_size = VrShell::GetRecommendedWebVrSize(gvr_api_.get());
+  gvr::Sizei webvr_size = GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
   DVLOG(1) << __FUNCTION__ << ": resize recommended to " << webvr_size.width
            << "x" << webvr_size.height;
   callback.Run(
-      VrShell::CreateVRDisplayInfo(gvr_api_.get(), webvr_size, device_id));
+      GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(), webvr_size, device_id));
 }
 
 }  // namespace vr_shell

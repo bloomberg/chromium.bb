@@ -58,6 +58,8 @@ component("vr") {
       sources += [
         "android/gvr/gvr_delegate.cc",
         "android/gvr/gvr_delegate.h",
+        "android/gvr/gvr_delegate_provider.cc",
+        "android/gvr/gvr_delegate_provider.h",
         "android/gvr/gvr_device.cc",
         "android/gvr/gvr_device.h",
         "android/gvr/gvr_device_provider.cc",

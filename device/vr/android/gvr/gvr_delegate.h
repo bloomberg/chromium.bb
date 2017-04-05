@@ -5,15 +5,24 @@
 #ifndef DEVICE_VR_ANDROID_GVR_DELEGATE_H
 #define DEVICE_VR_ANDROID_GVR_DELEGATE_H
 
-#include "device/vr/android/gvr/gvr_device_provider.h"
+#include <stdint.h>
+
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
+#include "gpu/command_buffer/common/mailbox_holder.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
 
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
+  static mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
+  static gvr::Sizei GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
+  static mojom::VRDisplayInfoPtr CreateVRDisplayInfo(
+      gvr::GvrApi* gvr_api,
+      gvr::Sizei recommended_size,
+      uint32_t device_id);
+
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
   virtual void SubmitWebVRFrame(int16_t frame_index,
                                 const gpu::MailboxHolder& mailbox) = 0;
@@ -35,28 +44,6 @@ class DEVICE_VR_EXPORT GvrDelegate {
 
 // GvrDelegate, which allows WebVR presentation.
 class DEVICE_VR_EXPORT PresentingGvrDelegate : public GvrDelegate {};
-
-class DEVICE_VR_EXPORT GvrDelegateProvider {
- public:
-  static void SetInstance(
-      const base::Callback<GvrDelegateProvider*()>& provider_callback);
-  static GvrDelegateProvider* GetInstance();
-
-  virtual void SetDeviceProvider(GvrDeviceProvider* device_provider) = 0;
-  virtual void ClearDeviceProvider() = 0;
-  virtual void RequestWebVRPresent(
-      mojom::VRSubmitFrameClientPtr submit_client,
-      const base::Callback<void(bool)>& callback) = 0;
-  virtual void ExitWebVRPresent() = 0;
-  virtual GvrDelegate* GetDelegate() = 0;
-  virtual void SetListeningForActivate(bool listening) = 0;
-
- protected:
-  virtual ~GvrDelegateProvider() {}
-
- private:
-  static base::Callback<GvrDelegateProvider*()> delegate_provider_;
-};
 
 }  // namespace device
 

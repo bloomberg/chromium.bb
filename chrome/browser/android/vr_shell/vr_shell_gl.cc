@@ -22,6 +22,7 @@
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
+#include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -244,7 +245,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
       content_tex_physical_size_.width, content_tex_physical_size_.height);
   InitializeRenderer();
 
-  gvr::Sizei webvr_size = VrShell::GetRecommendedWebVrSize(gvr_api_.get());
+  gvr::Sizei webvr_size =
+      device::GvrDelegate::GetRecommendedWebVrSize(gvr_api_.get());
   DVLOG(1) << __FUNCTION__ << ": resize initial to " << webvr_size.width << "x"
            << webvr_size.height;
 
@@ -1285,8 +1287,8 @@ void VrShellGl::SendVSync(base::TimeDelta time,
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
 
-  callback.Run(VrShell::VRPosePtrFromGvrPose(head_mat), time, frame_index,
-               device::mojom::VRVSyncProvider::Status::SUCCESS);
+  callback.Run(device::GvrDelegate::VRPosePtrFromGvrPose(head_mat), time,
+               frame_index, device::mojom::VRVSyncProvider::Status::SUCCESS);
 }
 
 void VrShellGl::CreateVRDisplayInfo(
@@ -1295,8 +1297,9 @@ void VrShellGl::CreateVRDisplayInfo(
   // This assumes that the initial webvr_surface_size_ was set to the
   // appropriate recommended render resolution as the default size during
   // InitializeGl. Revisit if the initialization order changes.
-  device::mojom::VRDisplayInfoPtr info = VrShell::CreateVRDisplayInfo(
-      gvr_api_.get(), webvr_surface_size_, device_id);
+  device::mojom::VRDisplayInfoPtr info =
+      device::GvrDelegate::CreateVRDisplayInfo(gvr_api_.get(),
+                                               webvr_surface_size_, device_id);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RunVRDisplayInfoCallback, callback, base::Passed(&info)));

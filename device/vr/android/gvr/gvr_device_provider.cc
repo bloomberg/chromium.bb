@@ -10,7 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_utils.h"
 #include "base/android/scoped_java_ref.h"
-#include "device/vr/android/gvr/gvr_delegate.h"
+#include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_device_manager.h"
@@ -24,8 +24,7 @@ GvrDeviceProvider::GvrDeviceProvider()
     : vr_device_(base::MakeUnique<GvrDevice>(this)) {}
 
 GvrDeviceProvider::~GvrDeviceProvider() {
-  device::GvrDelegateProvider* delegate_provider =
-      device::GvrDelegateProvider::GetInstance();
+  GvrDelegateProvider* delegate_provider = GvrDelegateProvider::GetInstance();
   if (delegate_provider) {
     delegate_provider->ExitWebVRPresent();
     delegate_provider->ClearDeviceProvider();
@@ -36,18 +35,17 @@ void GvrDeviceProvider::GetDevices(std::vector<VRDevice*>* devices) {
   devices->push_back(vr_device_.get());
 }
 
-device::GvrDelegateProvider* GvrDeviceProvider::GetDelegateProvider() {
-  device::GvrDelegateProvider* provider =
-      device::GvrDelegateProvider::GetInstance();
+GvrDelegateProvider* GvrDeviceProvider::GetDelegateProvider() {
+  GvrDelegateProvider* provider = GvrDelegateProvider::GetInstance();
   Initialize(provider);
   return provider;
 }
 
 void GvrDeviceProvider::Initialize() {
-  Initialize(device::GvrDelegateProvider::GetInstance());
+  Initialize(GvrDelegateProvider::GetInstance());
 }
 
-void GvrDeviceProvider::Initialize(device::GvrDelegateProvider* provider) {
+void GvrDeviceProvider::Initialize(GvrDelegateProvider* provider) {
   if (!provider)
     return;
   provider->SetDeviceProvider(this);
@@ -56,7 +54,7 @@ void GvrDeviceProvider::Initialize(device::GvrDelegateProvider* provider) {
 void GvrDeviceProvider::RequestPresent(
     mojom::VRSubmitFrameClientPtr submit_client,
     const base::Callback<void(bool)>& callback) {
-  device::GvrDelegateProvider* delegate_provider = GetDelegateProvider();
+  GvrDelegateProvider* delegate_provider = GetDelegateProvider();
   if (!delegate_provider)
     return callback.Run(false);
 
@@ -67,13 +65,13 @@ void GvrDeviceProvider::RequestPresent(
 
 // VR presentation exit requested by the API.
 void GvrDeviceProvider::ExitPresent() {
-  device::GvrDelegateProvider* delegate_provider = GetDelegateProvider();
+  GvrDelegateProvider* delegate_provider = GetDelegateProvider();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();
 }
 
 void GvrDeviceProvider::SetListeningForActivate(bool listening) {
-  device::GvrDelegateProvider* delegate_provider = GetDelegateProvider();
+  GvrDelegateProvider* delegate_provider = GetDelegateProvider();
   if (!delegate_provider)
     return;
 

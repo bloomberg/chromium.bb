@@ -184,14 +184,6 @@ class VrShell : public device::PresentingGvrDelegate,
   void UpdateGamepadData(device::GvrGamepadData) override;
   void RegisterGamepadDataFetcher(device::GvrGamepadDataFetcher*) override;
 
-  // TODO(mthiesse): Find a better place for these functions to live.
-  static device::mojom::VRPosePtr VRPosePtrFromGvrPose(gvr::Mat4f head_mat);
-  static gvr::Sizei GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
-  static device::mojom::VRDisplayInfoPtr CreateVRDisplayInfo(
-      gvr::GvrApi* gvr_api,
-      gvr::Sizei recommended_size,
-      uint32_t device_id);
-
  private:
   ~VrShell() override;
   void PostToGlThreadWhenReady(const base::Closure& task);
