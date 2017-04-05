@@ -154,9 +154,11 @@ Then to run for example the headless platform:
 
 ### Linux Desktop - ([waterfall](https://build.chromium.org/p/chromium.fyi/builders/Ozone%20Linux/))
 
-**Warning: Experimental support for Linux Desktop is available since m57
-but this is still [in development](https://crbug.com/295089) and currently has
-many bugs.**
+**Warning: Experimental support for Linux Desktop is available since m57 but
+  upstream support has always been a bit fragile. For now, development
+  continues on the
+  [ozone-wayland-dev](https://github.com/Igalia/chromium/tree/ozone-wayland-dev)
+  branch.**
 
 To build `chrome`, do this from the `src` directory:
 
@@ -167,9 +169,7 @@ ninja -C out/OzoneLinuxDesktop chrome
 Then to run for example the X11 platform:
 
 ``` shell
-./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 \
-                               --mash \
-                               --window-manager=simple_wm
+./out/OzoneLinuxDesktop/chrome --ozone-platform=x11 --mus
 ```
 
 ### GN Configuration notes
@@ -245,7 +245,9 @@ This platform provides support for the
 initially developed by Intel as
 [a fork of chromium](https://github.com/01org/ozone-wayland)
 and then partially upstreamed.
-It is still actively being developed in the chromium tree, feel free to discuss
+It is still actively being developed on the
+[ozone-wayland-dev](https://github.com/Igalia/chromium/tree/ozone-wayland-dev)
+branch, feel free to discuss
 with us on freenode.net, `#ozone-wayland` channel or on `ozone-dev`.
 
 Below are some quick build & run instructions. It is assumed that you are
@@ -255,9 +257,7 @@ following commands:
 ``` shell
 gn args out/OzoneWayland --args="use_ozone=true enable_package_mash_services=true"
 ninja -C out/OzoneWayland chrome
-./out/OzoneWayland/chrome --ozone-platform=wayland \
-                          --mash \
-                          --window-manager=simple_wm
+./out/OzoneWayland/chrome --ozone-platform=wayland --mus
 ```
 
 ### Caca
