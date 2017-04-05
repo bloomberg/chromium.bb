@@ -172,7 +172,7 @@ void DocumentMarker::shiftOffsets(int delta) {
   m_endOffset += delta;
 }
 
-void DocumentMarker::setActiveMatch(bool active) {
+void DocumentMarker::setIsActiveMatch(bool active) {
   m_details = DocumentMarkerTextMatch::create(active);
 }
 

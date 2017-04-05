@@ -825,7 +825,7 @@ bool DocumentMarkerController::setMarkersActive(Node* node,
     if ((*marker)->startOffset() >= endOffset)
       break;
 
-    (*marker)->setActiveMatch(active);
+    (*marker)->setIsActiveMatch(active);
     docDirty = true;
   }
 

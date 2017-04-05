@@ -158,7 +158,7 @@ class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
   Color backgroundColor() const;
   DocumentMarkerDetails* details() const;
 
-  void setActiveMatch(bool);
+  void setIsActiveMatch(bool);
   void clearDetails() { m_details.clear(); }
 
   // Offset modifications are done by DocumentMarkerController.
