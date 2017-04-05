@@ -178,6 +178,12 @@ class PLATFORM_EXPORT JSONObject : public JSONValue {
     return static_cast<JSONObject*>(value);
   }
 
+  static const JSONObject* cast(const JSONValue* value) {
+    if (!value || value->getType() != TypeObject)
+      return nullptr;
+    return static_cast<const JSONObject*>(value);
+  }
+
   static std::unique_ptr<JSONObject> from(std::unique_ptr<JSONValue> value) {
     auto maybeObject = WTF::wrapUnique(JSONObject::cast(value.get()));
     if (maybeObject)
