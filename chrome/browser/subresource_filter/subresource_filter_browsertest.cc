@@ -511,9 +511,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListBrowserTest, MainFrameActivation) {
 #endif
 
 // There should be no document-level de-/reactivation happening on the renderer
-// side as a result of an in-page navigation.
+// side as a result of a same document navigation.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       DocumentActivationOutlivesSamePageNavigation) {
+                       DocumentActivationOutlivesSameDocumentNavigation) {
   GURL url(GetTestUrl("subresource_filter/frame_with_delayed_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -653,10 +653,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 // The page-level activation state on the browser-side should not be reset when
-// a same-page navigation starts in the main frame. Vrrify this by dynamically
-// inserting a subframe afterwards, and still expecting activation.
+// a same document navigation starts in the main frame. Verify this by
+// dynamically inserting a subframe afterwards, and still expecting activation.
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       PageLevelActivationOutlivesSamePageNavigation) {
+                       PageLevelActivationOutlivesSameDocumentNavigation) {
   GURL url(GetTestUrl(kTestFrameSetPath));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
