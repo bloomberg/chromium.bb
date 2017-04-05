@@ -18,14 +18,16 @@
       t.done();
     }));
 
-    window.open("data:text/html," +
-                "<meta http-equiv='content-security-policy' content='img-src http://127.0.0.1:8000'>" +
-                "<script>" + 
-                "  var i = document.createElement('img');" +
-                "  i.onload = _ => opener.postMessage('loaded', '*');" +
-                "  i.onerror = _ => opener.postMessage('blocked', '*');" +
-                "  i.src = 'http://example.test:8000/resources/square.png?data-frame'" +
-                "</scr" + "ipt>");
+    var win = window.open("about:blank");
+    win.document.write(
+        "<meta http-equiv='content-security-policy'" +
+        "    content='img-src http://127.0.0.1:8000'>" +
+        "<script>" +
+        "  var i = document.createElement('img');" +
+        "  i.onload = _ => opener.postMessage('loaded', '*');" +
+        "  i.onerror = _ => opener.postMessage('blocked', '*');" +
+        "  i.src = 'http://example.test:8000/resources/square.png?data-frame'" +
+        "</scr" + "ipt>");
   }, "Image loaded via data: frame blocked.");
 </script>
 </body>

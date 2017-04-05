@@ -18,12 +18,14 @@
       t.done();
     }));
 
-    window.open("data:text/html,<script>" + 
-                "  var i = document.createElement('img');" +
-                "  i.onload = _ => opener.postMessage('loaded', '*');" +
-                "  i.onerror = _ => opener.postMessage('blocked', '*');" +
-                "  i.src = 'http://example.test:8000/resources/square.png?data-frame'" +
-                "</scr" + "ipt>");
+    var win = window.open("about:blank");
+    win.document.write(
+        "<script>" +
+        "  var i = document.createElement('img');" +
+        "  i.onload = _ => opener.postMessage('loaded', '*');" +
+        "  i.onerror = _ => opener.postMessage('blocked', '*');" +
+        "  i.src = 'http://example.test:8000/resources/square.png?data-frame'" +
+        "</scr" + "ipt>");
   }, "Image loaded via data: window blocked.");
 </script>
 </body>

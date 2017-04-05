@@ -7,13 +7,13 @@ if (window.testRunner) {
 }
 </script>
 <p>To run this test outside of DumpRenderTree, please disable your popup blocker!</p>
-<p>This test passes if it doesnt hang.</p>
+<p>This test passes if it doesn't hang.</p>
 <iframe sandbox="allow-scripts allow-popups"
   src="data:text/html,
        <body><script>
-       var win = window.open('data:text/html,', '_blank');
+       var win = window.open('about:blank', '_blank');
        win.close();
        document.body.appendChild(
-           document.createTextNode(win.closed ? 'PASS' : 'FAIL')); 
+           document.createTextNode(win.closed ? 'PASS' : 'FAIL'));
        </script></body>"
   ></iframe>
