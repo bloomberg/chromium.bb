@@ -4,6 +4,8 @@
 
 #include "chrome/browser/win/jumplist.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -11,7 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -228,12 +230,10 @@ bool UpdateJumpList(const wchar_t* app_id,
 }
 
 // Updates the jumplist, once all the data has been fetched.
-void RunUpdateOnFileThread(
-    IncognitoModePrefs::Availability incognito_availability,
-    const std::wstring& app_id,
-    const base::FilePath& icon_dir,
-    base::RefCountedData<JumpListData>* ref_counted_data,
-    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner) {
+void RunUpdateJumpList(IncognitoModePrefs::Availability incognito_availability,
+                       const std::wstring& app_id,
+                       const base::FilePath& icon_dir,
+                       base::RefCountedData<JumpListData>* ref_counted_data) {
   JumpListData* data = &ref_counted_data->data;
   ShellLinkItemList local_most_visited_pages;
   ShellLinkItemList local_recently_closed_pages;
@@ -288,17 +288,6 @@ void RunUpdateOnFileThread(
   // mentioned above.
   UpdateJumpList(app_id.c_str(), local_most_visited_pages,
                  local_recently_closed_pages, incognito_availability);
-
-  // Post a background task to delete JumpListIconsOld folder if it exists and
-  // log the delete results to UMA.
-  base::FilePath icon_dir_old = icon_dir.DirName().Append(
-      icon_dir.BaseName().value() + FILE_PATH_LITERAL("Old"));
-
-  if (base::DirectoryExists(icon_dir_old)) {
-    sequenced_task_runner->PostTask(
-        FROM_HERE, base::Bind(&DeleteDirectoryAndLogResults, icon_dir_old,
-                              kFileDeleteLimit));
-  }
 }
 
 }  // namespace
@@ -313,7 +302,7 @@ JumpList::JumpList(Profile* profile)
       profile_(profile),
       jumplist_data_(new base::RefCountedData<JumpListData>),
       task_id_(base::CancelableTaskTracker::kBadTaskId),
-      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+      single_thread_task_runner_(base::CreateCOMSTATaskRunnerWithTraits(
           base::TaskTraits()
               .WithPriority(base::TaskPriority::BACKGROUND)
               .WithShutdownBehavior(
@@ -531,7 +520,7 @@ void JumpList::StartLoadingFavicon() {
 
   if (!waiting_for_icons) {
     // No more favicons are needed by the application JumpList. Schedule a
-    // RunUpdateOnFileThread call.
+    // RunUpdateJumpList call.
     PostRunUpdate();
     return;
   }
@@ -557,7 +546,7 @@ void JumpList::OnFaviconDataAvailable(
     JumpListData* data = &jumplist_data_->data;
     base::AutoLock auto_lock(data->list_lock_);
     // Attach the received data to the ShellLinkItem object.
-    // This data will be decoded by the RunUpdateOnFileThread method.
+    // This data will be decoded by the RunUpdateJumpList method.
     if (!image_result.image.IsEmpty() && !data->icon_urls_.empty() &&
         data->icon_urls_.front().second.get()) {
       gfx::ImageSkia image_skia = image_result.image.AsImageSkia();
@@ -615,11 +604,19 @@ void JumpList::DeferredRunUpdate() {
       profile_ ? IncognitoModePrefs::GetAvailability(profile_->GetPrefs())
                : IncognitoModePrefs::ENABLED;
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&RunUpdateOnFileThread, incognito_availability, app_id_,
-                 icon_dir_, base::RetainedRef(jumplist_data_),
-                 sequenced_task_runner_));
+  // Post a task to update the jumplist used by the shell.
+  single_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RunUpdateJumpList, incognito_availability, app_id_,
+                            icon_dir_, base::RetainedRef(jumplist_data_)));
+
+  // Post a task to delete JumpListIconsOld folder if it exists and log the
+  // delete results to UMA.
+  base::FilePath icon_dir_old = icon_dir_.DirName().Append(
+      icon_dir_.BaseName().value() + FILE_PATH_LITERAL("Old"));
+
+  single_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&DeleteDirectoryAndLogResults,
+                            std::move(icon_dir_old), kFileDeleteLimit));
 }
 
 void JumpList::TopSitesLoaded(history::TopSites* top_sites) {

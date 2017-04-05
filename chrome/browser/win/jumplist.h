@@ -31,7 +31,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 namespace base {
-class SequencedTaskRunner;
+class SingleThreadTaskRunner;
 }
 
 namespace chrome {
@@ -151,7 +151,7 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // Helper for RunUpdate() that determines its parameters.
   void PostRunUpdate();
 
-  // Called on a timer to invoke RunUpdateOnFileThread() after requests storms
+  // Called on a timer to invoke RunUpdateJumpList() after requests storms
   // have subsided.
   void DeferredRunUpdate();
 
@@ -185,8 +185,9 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   // comes in before it finishes.
   base::CancelableTaskTracker::TaskId task_id_;
 
-  // A task runner which runs the background file deletion tasks sequentially.
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
+  // A task runner running tasks to update the jumplist in JumpListIcons and to
+  // delete JumpListIconsOld sequentially.
+  scoped_refptr<base::SingleThreadTaskRunner> single_thread_task_runner_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<JumpList> weak_ptr_factory_;
