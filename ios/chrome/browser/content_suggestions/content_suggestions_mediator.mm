@@ -7,21 +7,19 @@
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "base/strings/sys_string_conversions.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
+#import "ios/chrome/browser/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,102 +30,6 @@ namespace {
 
 // Size of the favicon returned by the provider.
 const CGFloat kDefaultFaviconSize = 16;
-
-// TODO(crbug.com/701275): Once base::BindBlock supports the move semantics,
-// remove this wrapper.
-// Wraps a callback taking a const ref to a callback taking an object.
-void BindWrapper(
-    base::Callback<void(ntp_snippets::Status status_code,
-                        const std::vector<ntp_snippets::ContentSuggestion>&
-                            suggestions)> callback,
-    ntp_snippets::Status status_code,
-    std::vector<ntp_snippets::ContentSuggestion> suggestions) {
-  if (callback) {
-    callback.Run(status_code, suggestions);
-  }
-}
-
-// Returns the Type for this |category|.
-ContentSuggestionType TypeForCategory(ntp_snippets::Category category) {
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
-    return ContentSuggestionTypeArticle;
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST))
-    return ContentSuggestionTypeReadingList;
-
-  return ContentSuggestionTypeEmpty;
-}
-
-// Returns the section ID for this |category|.
-ContentSuggestionsSectionID SectionIDForCategory(
-    ntp_snippets::Category category) {
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::BOOKMARKS))
-    return ContentSuggestionsSectionBookmarks;
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
-    return ContentSuggestionsSectionArticles;
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST))
-    return ContentSuggestionsSectionReadingList;
-
-  return ContentSuggestionsSectionUnknown;
-}
-
-// Returns the section layout corresponding to the category |layout|.
-ContentSuggestionsSectionLayout SectionLayoutForLayout(
-    ntp_snippets::ContentSuggestionsCardLayout layout) {
-  // For now, only cards are relevant.
-  return ContentSuggestionsSectionLayoutCard;
-}
-
-// Converts a ntp_snippets::ContentSuggestion to an Objective-C
-// ContentSuggestion.
-ContentSuggestion* ConvertContentSuggestion(
-    const ntp_snippets::ContentSuggestion& contentSuggestion) {
-  ContentSuggestion* suggestion = [[ContentSuggestion alloc] init];
-
-  suggestion.title = base::SysUTF16ToNSString(contentSuggestion.title());
-  suggestion.text = base::SysUTF16ToNSString(contentSuggestion.snippet_text());
-  suggestion.url = contentSuggestion.url();
-
-  suggestion.publisher =
-      base::SysUTF16ToNSString(contentSuggestion.publisher_name());
-  suggestion.publishDate = contentSuggestion.publish_date();
-
-  suggestion.suggestionIdentifier = [[ContentSuggestionIdentifier alloc] init];
-  suggestion.suggestionIdentifier.IDInSection =
-      contentSuggestion.id().id_within_category();
-
-  return suggestion;
-}
-
-// Returns a SectionInformation for a |category|, filled with the
-// |categoryInfo|.
-ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
-    const base::Optional<ntp_snippets::CategoryInfo>& categoryInfo,
-    const ntp_snippets::Category& category) {
-  ContentSuggestionsSectionInformation* sectionInfo =
-      [[ContentSuggestionsSectionInformation alloc]
-          initWithSectionID:SectionIDForCategory(category)];
-  if (categoryInfo) {
-    sectionInfo.layout = SectionLayoutForLayout(categoryInfo->card_layout());
-    sectionInfo.showIfEmpty = categoryInfo->show_if_empty();
-    sectionInfo.emptyText =
-        base::SysUTF16ToNSString(categoryInfo->no_suggestions_message());
-    if (categoryInfo->additional_action() !=
-        ntp_snippets::ContentSuggestionsAdditionalAction::NONE) {
-      sectionInfo.footerTitle =
-          l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE);
-    }
-    sectionInfo.title = base::SysUTF16ToNSString(categoryInfo->title());
-  }
-  return sectionInfo;
-}
-
-// Returns a ntp_snippets::ID based on a Objective-C Category and the ID in the
-// category.
-ntp_snippets::ContentSuggestion::ID SuggestionIDForSectionID(
-    ContentSuggestionsCategoryWrapper* category,
-    const std::string& id_in_category) {
-  return ntp_snippets::ContentSuggestion::ID(category.category, id_in_category);
-}
 
 }  // namespace
 

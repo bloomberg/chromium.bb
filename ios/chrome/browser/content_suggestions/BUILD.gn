@@ -13,6 +13,8 @@ source_set("content_suggestions") {
     "content_suggestions_mediator.mm",
     "content_suggestions_service_bridge_observer.h",
     "content_suggestions_service_bridge_observer.mm",
+    "mediator_util.h",
+    "mediator_util.mm",
   ]
   deps = [
     "//base",
