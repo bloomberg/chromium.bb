@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <emmintrin.h>
+#include <tmmintrin.h>
 
 #include "./av1_rtcd.h"
 #include "av1/common/warped_motion.h"
@@ -17,13 +17,18 @@
 static const __m128i *const filter = (const __m128i *const)warped_filter;
 
 /* SSE2 version of the rotzoom/affine warp filter */
-void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
-                          int stride, uint8_t *pred, int p_col, int p_row,
-                          int p_width, int p_height, int p_stride,
-                          int subsampling_x, int subsampling_y, int ref_frm,
-                          int32_t alpha, int32_t beta, int32_t gamma,
-                          int32_t delta) {
+void av1_highbd_warp_affine_ssse3(int32_t *mat, uint16_t *ref, int width,
+                                  int height, int stride, uint16_t *pred,
+                                  int p_col, int p_row, int p_width,
+                                  int p_height, int p_stride, int subsampling_x,
+                                  int subsampling_y, int bd, int ref_frm,
+                                  int32_t alpha, int32_t beta, int32_t gamma,
+                                  int32_t delta) {
+#if HORSHEAR_REDUCE_PREC_BITS >= 5
   __m128i tmp[15];
+#else
+#error "HORSHEAR_REDUCE_PREC_BITS < 5 not currently supported by SSSE3 filter"
+#endif
   int i, j, k;
 
   /* Note: For this code to work, the left/right frame borders need to be
@@ -93,9 +98,10 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
                    (WARPEDPIXEL_PREC_SHIFTS << WARPEDDIFF_PREC_BITS);
 
           // Load source pixels
-          __m128i zero = _mm_setzero_si128();
           __m128i src =
               _mm_loadu_si128((__m128i *)(ref + iy * stride + ix4 - 7));
+          __m128i src2 =
+              _mm_loadu_si128((__m128i *)(ref + iy * stride + ix4 + 1));
 
           // Filter even-index pixels
           __m128i tmp_0 = filter[(sx + 0 * alpha) >> WARPEDDIFF_PREC_BITS];
@@ -125,14 +131,13 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
               _mm_set1_epi32((1 << HORSHEAR_REDUCE_PREC_BITS) >> 1);
 
           // Calculate filtered results
-          __m128i src_0 = _mm_unpacklo_epi8(src, zero);
-          __m128i res_0 = _mm_madd_epi16(src_0, coeff_0);
-          __m128i src_2 = _mm_unpacklo_epi8(_mm_srli_si128(src, 2), zero);
-          __m128i res_2 = _mm_madd_epi16(src_2, coeff_2);
-          __m128i src_4 = _mm_unpacklo_epi8(_mm_srli_si128(src, 4), zero);
-          __m128i res_4 = _mm_madd_epi16(src_4, coeff_4);
-          __m128i src_6 = _mm_unpacklo_epi8(_mm_srli_si128(src, 6), zero);
-          __m128i res_6 = _mm_madd_epi16(src_6, coeff_6);
+          __m128i res_0 = _mm_madd_epi16(src, coeff_0);
+          __m128i res_2 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 4), coeff_2);
+          __m128i res_4 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 8), coeff_4);
+          __m128i res_6 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 12), coeff_6);
 
           __m128i res_even = _mm_add_epi32(_mm_add_epi32(res_0, res_4),
                                            _mm_add_epi32(res_2, res_6));
@@ -155,14 +160,14 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
           __m128i coeff_5 = _mm_unpacklo_epi64(tmp_13, tmp_15);
           __m128i coeff_7 = _mm_unpackhi_epi64(tmp_13, tmp_15);
 
-          __m128i src_1 = _mm_unpacklo_epi8(_mm_srli_si128(src, 1), zero);
-          __m128i res_1 = _mm_madd_epi16(src_1, coeff_1);
-          __m128i src_3 = _mm_unpacklo_epi8(_mm_srli_si128(src, 3), zero);
-          __m128i res_3 = _mm_madd_epi16(src_3, coeff_3);
-          __m128i src_5 = _mm_unpacklo_epi8(_mm_srli_si128(src, 5), zero);
-          __m128i res_5 = _mm_madd_epi16(src_5, coeff_5);
-          __m128i src_7 = _mm_unpacklo_epi8(_mm_srli_si128(src, 7), zero);
-          __m128i res_7 = _mm_madd_epi16(src_7, coeff_7);
+          __m128i res_1 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 2), coeff_1);
+          __m128i res_3 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 6), coeff_3);
+          __m128i res_5 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 10), coeff_5);
+          __m128i res_7 =
+              _mm_madd_epi16(_mm_alignr_epi8(src2, src, 14), coeff_7);
 
           __m128i res_odd = _mm_add_epi32(_mm_add_epi32(res_1, res_5),
                                           _mm_add_epi32(res_3, res_7));
@@ -257,16 +262,19 @@ void av1_warp_affine_sse2(int32_t *mat, uint8_t *ref, int width, int height,
             _mm_add_epi32(res_hi, round_const), VERSHEAR_REDUCE_PREC_BITS);
 
         __m128i res_16bit = _mm_packs_epi32(res_lo_round, res_hi_round);
-        __m128i res_8bit = _mm_packus_epi16(res_16bit, res_16bit);
+        // Clamp res_16bit to the range [0, 2^bd - 1]
+        __m128i max_val = _mm_set1_epi16((1 << bd) - 1);
+        __m128i zero = _mm_setzero_si128();
+        res_16bit = _mm_max_epi16(_mm_min_epi16(res_16bit, max_val), zero);
 
         // Store, blending with 'pred' if needed
         __m128i *p = (__m128i *)&pred[(i + k + 4) * p_stride + j];
 
         if (ref_frm) {
-          __m128i orig = _mm_loadl_epi64(p);
-          _mm_storel_epi64(p, _mm_avg_epu8(res_8bit, orig));
+          __m128i orig = _mm_loadu_si128(p);
+          _mm_storeu_si128(p, _mm_avg_epu16(res_16bit, orig));
         } else {
-          _mm_storel_epi64(p, res_8bit);
+          _mm_storeu_si128(p, res_16bit);
         }
       }
     }

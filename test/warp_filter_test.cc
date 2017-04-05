@@ -27,4 +27,13 @@ TEST_P(AV1WarpFilterTest, CheckOutput) { RunCheckOutput(av1_warp_affine_sse2); }
 INSTANTIATE_TEST_CASE_P(SSE2, AV1WarpFilterTest,
                         libaom_test::AV1WarpFilter::GetDefaultParams());
 
+#if CONFIG_AOM_HIGHBITDEPTH
+TEST_P(AV1HighbdWarpFilterTest, CheckOutput) {
+  RunCheckOutput(av1_highbd_warp_affine_ssse3);
+}
+
+INSTANTIATE_TEST_CASE_P(SSSE3, AV1HighbdWarpFilterTest,
+                        libaom_test::AV1HighbdWarpFilter::GetDefaultParams());
+#endif
+
 }  // namespace
