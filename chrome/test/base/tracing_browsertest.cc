@@ -107,7 +107,13 @@ IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
 }
 
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestBackgroundMemoryInfra) {
+// crbug.com/708487.
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+#define MAYBE_TestBackgroundMemoryInfra DISABLED_TestBackgroundMemoryInfra
+#else
+#define MAYBE_TestBackgroundMemoryInfra TestBackgroundMemoryInfra
+#endif  // defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestBackgroundMemoryInfra) {
   PerformDumpMemoryTestActions(
       base::trace_event::TraceConfig(
           base::trace_event::TraceConfigMemoryTestUtil::
