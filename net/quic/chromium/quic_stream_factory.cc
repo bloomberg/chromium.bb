@@ -1148,15 +1148,18 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     }
   }
 
+  ServerIDRequestsMap::iterator requests_iter =
+      job_requests_map_.find(server_id);
+  DCHECK(requests_iter != job_requests_map_.end());
   if (rv == OK) {
     if (!always_require_handshake_confirmation_)
       set_require_confirmation(false);
 
-    if (!job_requests_map_[server_id].empty()) {
+    if (!requests_iter->second.empty()) {
       SessionMap::iterator session_it = active_sessions_.find(server_id);
       DCHECK(session_it != active_sessions_.end());
       QuicChromiumClientSession* session = session_it->second;
-      for (QuicStreamRequest* request : job_requests_map_[server_id]) {
+      for (QuicStreamRequest* request : requests_iter->second) {
         DCHECK(request->server_id() == server_id);
         // Do not notify |request| yet.
         request->SetSession(session);
@@ -1164,10 +1167,9 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     }
   }
 
-  while (!job_requests_map_[server_id].empty()) {
-    RequestSet::iterator it = job_requests_map_[server_id].begin();
-    QuicStreamRequest* request = *it;
-    job_requests_map_[server_id].erase(it);
+  // It's okay not to erase |request| from |requests_iter->second| because the
+  // entire RequestSet will be erased from |job_requests_map_|.
+  for (auto* request : requests_iter->second) {
     // Even though we're invoking callbacks here, we don't need to worry
     // about |this| being deleted, because the factory is owned by the
     // profile which can not be deleted via callbacks.
@@ -1181,7 +1183,7 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
 
   active_jobs_[server_id].clear();
   active_jobs_.erase(server_id);
-  job_requests_map_.erase(server_id);
+  job_requests_map_.erase(requests_iter);
 }
 
 void QuicStreamFactory::OnCertVerifyJobComplete(CertVerifierJob* job, int rv) {
