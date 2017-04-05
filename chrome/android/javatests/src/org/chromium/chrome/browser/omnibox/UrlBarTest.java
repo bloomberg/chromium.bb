@@ -783,6 +783,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @SmallTest
     @Feature({"Omnibox"})
+    @RetryOnFailure
     public void testCutHuge() throws InterruptedException {
         startMainActivityWithURL(HUGE_URL);
         OmniboxTestUtils.toggleUrlBarFocus(getUrlBar(), true);
