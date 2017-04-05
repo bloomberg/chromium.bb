@@ -80,6 +80,10 @@ class WebScrollbarThemePainter {
                                                  float deviceScaleFactor);
 #endif
 
+  BLINK_PLATFORM_EXPORT float deviceScaleFactor() const {
+    return m_deviceScaleFactor;
+  }
+
  private:
   // The theme is not owned by this class. It is assumed that the theme is a
   // static pointer and its lifetime is essentially infinite. The functions
