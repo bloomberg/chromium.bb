@@ -6,6 +6,7 @@
 #define ModuleScript_h
 
 #include "bindings/core/v8/ScriptModule.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -24,7 +25,8 @@ enum class ModuleInstantiationState {
 // ModuleScript is a model object for the "module script" spec concept.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-script
 class CORE_EXPORT ModuleScript final
-    : public GarbageCollectedFinalized<ModuleScript> {
+    : public GarbageCollectedFinalized<ModuleScript>,
+      public TraceWrapperBase {
  public:
   static ModuleScript* create(
       ScriptModule record,

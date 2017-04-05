@@ -5,6 +5,8 @@
 #ifndef ModuleMap_h
 #define ModuleMap_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -21,16 +23,17 @@ enum class ModuleGraphLevel;
 
 // A ModuleMap implements "module map" spec.
 // https://html.spec.whatwg.org/#module-map
-class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap> {
+class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
+                                    public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(ModuleMap);
   class Entry;
-  class LoaderHost;
 
  public:
   static ModuleMap* create(Modulator* modulator) {
     return new ModuleMap(modulator);
   }
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   void fetchSingleModuleScript(const ModuleScriptFetchRequest&,
@@ -47,7 +50,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap> {
  private:
   explicit ModuleMap(Modulator*);
 
-  using MapImpl = HeapHashMap<KURL, Member<Entry>>;
+  using MapImpl = HeapHashMap<KURL, TraceWrapperMember<Entry>>;
 
   // A module map is a map of absolute URLs to map entry.
   MapImpl m_map;

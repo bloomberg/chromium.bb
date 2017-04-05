@@ -16,6 +16,7 @@ namespace blink {
 // Entry struct represents a value in "module map" spec object.
 // https://html.spec.whatwg.org/multipage/webappapis.html#module-map
 class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
+                               public TraceWrapperBase,
                                public ModuleScriptLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ModuleMap::Entry);
 
@@ -24,6 +25,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   ~Entry() override {}
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
   // Notify fetched |m_moduleScript| to the client asynchronously.
   void addClient(SingleModuleClient*);
@@ -39,7 +41,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   // Implements ModuleScriptLoaderClient
   void notifyNewSingleModuleFinished(ModuleScript*) override;
 
-  Member<ModuleScript> m_moduleScript;
+  TraceWrapperMember<ModuleScript> m_moduleScript;
   Member<ModuleMap> m_map;
 
   // Correspond to the HTML spec: "fetching" state.
@@ -48,7 +50,8 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   HeapHashSet<Member<SingleModuleClient>> m_clients;
 };
 
-ModuleMap::Entry::Entry(ModuleMap* map) : m_map(map) {
+ModuleMap::Entry::Entry(ModuleMap* map)
+    : m_moduleScript(this, nullptr), m_map(map) {
   DCHECK(m_map);
 }
 
@@ -56,6 +59,10 @@ DEFINE_TRACE(ModuleMap::Entry) {
   visitor->trace(m_moduleScript);
   visitor->trace(m_map);
   visitor->trace(m_clients);
+}
+
+DEFINE_TRACE_WRAPPERS(ModuleMap::Entry) {
+  visitor->traceWrappers(m_moduleScript);
 }
 
 void ModuleMap::Entry::dispatchFinishedNotificationAsync(
@@ -108,6 +115,11 @@ DEFINE_TRACE(ModuleMap) {
   visitor->trace(m_modulator);
 }
 
+DEFINE_TRACE_WRAPPERS(ModuleMap) {
+  for (const auto& it : m_map)
+    visitor->traceWrappers(it.value);
+}
+
 void ModuleMap::fetchSingleModuleScript(const ModuleScriptFetchRequest& request,
                                         ModuleGraphLevel level,
                                         SingleModuleClient* client) {
@@ -119,10 +131,11 @@ void ModuleMap::fetchSingleModuleScript(const ModuleScriptFetchRequest& request,
   // Step 2. If moduleMap[url] is "fetching", wait in parallel until that
   // entry's value changes, then queue a task on the networking task source to
   // proceed with running the following steps.
-  MapImpl::AddResult result = m_map.insert(request.url(), nullptr);
-  Member<Entry>& entry = result.storedValue->value;
+  MapImpl::AddResult result =
+      m_map.insert(request.url(), TraceWrapperMember<Entry>(this, nullptr));
+  TraceWrapperMember<Entry>& entry = result.storedValue->value;
   if (result.isNewEntry) {
-    entry = Entry::create(this);
+    entry = TraceWrapperMember<Entry>(this, Entry::create(this));
 
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.
