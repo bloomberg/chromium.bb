@@ -196,7 +196,7 @@ void compute_curve_gamma_table_type_parametric(float gamma_table[256], float par
                         // XXX The equations are not exactly as definied in the spec but are
                         //     algebraic equivilent.
                         // TODO Should division by 255 be for the whole expression.
-                        gamma_table[X] = clamp_float(pow(a * x + b, y) + c + e);
+                        gamma_table[X] = clamp_float(powf(a * x + b, y) + (c + e));
                 } else {
                         gamma_table[X] = clamp_float(c * x + f);
                 }

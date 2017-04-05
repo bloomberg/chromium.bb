@@ -95,7 +95,7 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=506607
  - Turbo charge SSE2 qcms_transform_data_rgba_out_lut_sse2
    - https://code.google.com/p/chromium/issues/detail?id=506607
- - Check matrix transforms have the same PCS 
+ - Check matrix transforms have the same PCS
    - https://code.google.com/p/chromium/issues/detail?id=510682
  - Apply Don't reject valid profiles with no CLUT offset
    - https://bugzilla.mozilla.org/show_bug.cgi?id=1176551
@@ -163,6 +163,8 @@ The following changes have been made since qcms was imported:
    - https://bugs.chromium.org/p/chromium/issues/detail?id=635042
  - Only accept valid input ranges when reading VCGT formula
    - https://bugs.chromium.org/p/chromium/issues/detail?id=708145
+ - Fix overflow when reading parametric gamma curves
+   - https://bugs.chromium.org/p/chromium/issues/detail?id=708143
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
