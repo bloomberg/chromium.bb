@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/values.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/safe_browsing/csd.pb.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -23,38 +23,41 @@ class HistoryService;
 }
 
 class GURL;
+class HostContentSettingsMap;
 
 namespace safe_browsing {
 
 class SafeBrowsingDatabaseManager;
 class PasswordProtectionRequest;
 
+// Manage password protection pings and verdicts. There is one instance of this
+// class per profile. Therefore, every PasswordProtectionService instance is
+// associated with a unique HistoryService instance and a unique
+// HostContentSettingsMap instance.
 class PasswordProtectionService : history::HistoryServiceObserver {
  public:
   using CheckCsdWhitelistCallback = base::Callback<void(bool)>;
 
   PasswordProtectionService(
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      history::HistoryService* history_service,
+      HostContentSettingsMap* host_content_settings_map);
 
   ~PasswordProtectionService() override;
-
-  // Checks if |url| matches CSD whitelist and record UMA metric accordingly.
-  // Currently called by PasswordReuseDetectionManager on UI thread.
-  void RecordPasswordReuse(const GURL& url);
-
-  void CheckCsdWhitelistOnIOThread(const GURL& url,
-                                   const CheckCsdWhitelistCallback& callback);
 
   base::WeakPtr<PasswordProtectionService> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
+  // Checks if |url| matches CSD whitelist and record UMA metric accordingly.
+  // Currently called by PasswordReuseDetectionManager on UI thread.
+  void RecordPasswordReuse(const GURL& url);
+
   // Looks up |settings| to find the cached verdict response. If verdict is not
   // available or is expired, return VERDICT_TYPE_UNSPECIFIED. Can be called on
   // any thread.
   LoginReputationClientResponse::VerdictType GetCachedVerdict(
-      const HostContentSettingsMap* settings,
       const GURL& url,
       LoginReputationClientResponse* out_response);
 
@@ -62,16 +65,16 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   // |receive_time|.
   void CacheVerdict(const GURL& url,
                     LoginReputationClientResponse* verdict,
-                    const base::Time& receive_time,
-                    HostContentSettingsMap* settings);
+                    const base::Time& receive_time);
 
   // Creates an instance of PasswordProtectionRequest and call Start() on that
   // instance. This function also insert this request object in |requests_| for
   // record keeping.
   void StartRequest(const GURL& main_frame_url,
-                    LoginReputationClientRequest::TriggerType type,
-                    bool is_extended_reporting,
-                    bool is_incognito);
+                    LoginReputationClientRequest::TriggerType type);
+
+ protected:
+  friend class PasswordProtectionRequest;
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
   // itself from |requests_|.
@@ -85,7 +88,7 @@ class PasswordProtectionService : history::HistoryServiceObserver {
 
   // Gets the total number of verdict (no matter expired or not) we cached for
   // current active profile.
-  virtual size_t GetStoredVerdictCount();
+  virtual int GetStoredVerdictCount();
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter() {
     return request_context_getter_;
@@ -97,17 +100,25 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   // Gets the request timeout in milliseconds.
   static int GetRequestTimeoutInMS();
 
- protected:
-  friend class PasswordProtectionRequest;
+  // Obtains referrer chain of |event_url| and |event_tab_id| and adds this
+  // info into |frame|.
+  virtual void FillReferrerChain(
+      const GURL& event_url,
+      int event_tab_id,  // -1 if tab id is not available.
+      LoginReputationClientRequest::Frame* frame) = 0;
+
+  virtual bool IsExtendedReporting() = 0;
+  virtual bool IsIncognito() = 0;
+
+  // If we can send ping to Safe Browsing backend.
+  virtual bool IsPingingEnabled() = 0;
+
+  void CheckCsdWhitelistOnIOThread(const GURL& url,
+                                   const CheckCsdWhitelistCallback& callback);
 
   // Increases "PasswordManager.PasswordReuse.MainFrameMatchCsdWhitelist" UMA
   // metric based on input.
   void OnMatchCsdWhiteListResult(bool match_whitelist);
-
-  // Gets HostContentSettingMap for current active profile;
-  // TODO(jialiul): make this a pure virtual function when we have a derived
-  // class ready in chrome/browser/safe_browsing directory.
-  virtual HostContentSettingsMap* GetSettingMapForActiveProfile();
 
  private:
   friend class PasswordProtectionServiceTest;
@@ -129,11 +140,13 @@ class PasswordProtectionService : history::HistoryServiceObserver {
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
 
+  void HistoryServiceBeingDeleted(
+      history::HistoryService* history_service) override;
+
   // Posted to UI thread by OnURLsDeleted(..). This function cleans up password
   // protection content settings related to deleted URLs.
   void RemoveContentSettingsOnURLsDeleted(bool all_history,
-                                          const history::URLRows& deleted_rows,
-                                          HostContentSettingsMap* setting_map);
+                                          const history::URLRows& deleted_rows);
 
   static bool ParseVerdictEntry(base::DictionaryValue* verdict_entry,
                                 int* out_verdict_received_time,
@@ -159,8 +172,10 @@ class PasswordProtectionService : history::HistoryServiceObserver {
       const LoginReputationClientResponse* verdict,
       const base::Time& receive_time);
 
-  // Stored verdict count for each HostContentSettingsMap.
-  std::unordered_map<HostContentSettingsMap*, size_t> stored_verdict_counts_;
+  // Number of verdict stored for this profile.
+  int stored_verdict_count_;
+
+  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
   // The context we use to issue network requests. This request_context_getter
   // is obtained from SafeBrowsingService so that we can use the Safe Browsing
@@ -170,7 +185,12 @@ class PasswordProtectionService : history::HistoryServiceObserver {
   // Set of pending PasswordProtectionRequests.
   std::unordered_set<std::unique_ptr<PasswordProtectionRequest>> requests_;
 
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+  ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
+      history_service_observer_;
+
+  // Content settings map associated with this instance.
+  HostContentSettingsMap* content_settings_;
+
   base::WeakPtrFactory<PasswordProtectionService> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionService);
 };

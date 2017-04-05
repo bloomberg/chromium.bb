@@ -21,6 +21,12 @@ class AutofillManager;
 
 class GURL;
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+namespace safe_browsing {
+class PasswordProtectionService;
+}
+#endif
+
 namespace password_manager {
 
 class LogManager;
@@ -191,6 +197,12 @@ class PasswordManagerClient {
 
   // Record that we saw a password field on this page.
   virtual void AnnotateNavigationEntry(bool has_password_field);
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  // Return the PasswordProtectionService associated with this instance.
+  virtual safe_browsing::PasswordProtectionService*
+  GetPasswordProtectionService() const = 0;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);

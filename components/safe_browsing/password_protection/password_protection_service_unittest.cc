@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/null_task_runner.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -66,12 +67,12 @@ class TestPasswordProtectionService : public PasswordProtectionService {
       const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<HostContentSettingsMap> content_setting_map)
-      : PasswordProtectionService(database_manager, request_context_getter),
-        content_setting_map_(content_setting_map) {}
-
-  HostContentSettingsMap* GetSettingMapForActiveProfile() override {
-    return content_setting_map_.get();
-  }
+      : PasswordProtectionService(database_manager,
+                                  request_context_getter,
+                                  nullptr,
+                                  content_setting_map.get()),
+        is_extended_reporting_(true),
+        is_incognito_(false) {}
 
   void RequestFinished(
       PasswordProtectionRequest* request,
@@ -79,13 +80,31 @@ class TestPasswordProtectionService : public PasswordProtectionService {
     latest_response_ = std::move(response);
   }
 
+  // Intentionally do nothing.
+  void FillReferrerChain(const GURL& event_url,
+                         int event_tab_id,
+                         LoginReputationClientRequest::Frame* frame) override {}
+
+  bool IsExtendedReporting() override { return is_extended_reporting_; }
+
+  bool IsIncognito() override { return is_incognito_; }
+
+  void set_extended_reporting(bool enabled) {
+    is_extended_reporting_ = enabled;
+  }
+
+  void set_incognito(bool enabled) { is_incognito_ = enabled; }
+
+  bool IsPingingEnabled() override { return true; }
+
   LoginReputationClientResponse* latest_response() {
     return latest_response_.get();
   }
 
  private:
+  bool is_extended_reporting_;
+  bool is_incognito_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
-  scoped_refptr<HostContentSettingsMap> content_setting_map_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -121,17 +140,15 @@ class PasswordProtectionServiceTest : public testing::Test {
   void TearDown() override { content_setting_map_->ShutdownOnUIThread(); }
 
   // Sets up |database_manager_| and |requests_| as needed.
-  void InitializeAndStartRequest(bool is_extended_reporting,
-                                 bool incognito,
-                                 bool match_whitelist,
-                                 int timeout_in_ms) {
+  void InitializeAndStartRequest(bool match_whitelist, int timeout_in_ms) {
     GURL target_url(kTargetUrl);
     EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
         .WillRepeatedly(testing::Return(match_whitelist));
 
     request_ = base::MakeUnique<PasswordProtectionRequest>(
         target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-        is_extended_reporting, incognito,
+        password_protection_service_->IsExtendedReporting(),
+        password_protection_service_->IsIncognito(),
         password_protection_service_->GetWeakPtr(), timeout_in_ms);
     request_->Start();
   }
@@ -162,8 +179,8 @@ class PasswordProtectionServiceTest : public testing::Test {
                     const base::Time& verdict_received_time) {
     LoginReputationClientResponse response(CreateVerdictProto(
         verdict, cache_duration_sec, cache_expression, exact_match));
-    password_protection_service_->CacheVerdict(
-        url, &response, verdict_received_time, content_setting_map_.get());
+    password_protection_service_->CacheVerdict(url, &response,
+                                               verdict_received_time);
   }
 
   size_t GetStoredVerdictCount() {
@@ -341,7 +358,6 @@ TEST_F(PasswordProtectionServiceTest, TestCachedVerdicts) {
   LoginReputationClientResponse out_verdict;
   EXPECT_EQ(LoginReputationClientResponse::PHISHING,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(),
                 GURL("http://www.test.com/foo/index2.html"), &out_verdict));
 
   // Cache another verdict with the same origin but different cache_expression
@@ -377,21 +393,18 @@ TEST_F(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
   LoginReputationClientResponse actual_verdict;
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(), GURL("http://www.unknown.com/"),
-                &actual_verdict));
+                GURL("http://www.unknown.com/"), &actual_verdict));
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL with http://test.com
   // origin, but doesn't match any known cache_expression.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(), GURL("http://test.com/xyz/foo.jsp"),
-                &actual_verdict));
+                GURL("http://test.com/xyz/foo.jsp"), &actual_verdict));
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL whose variants match
   // test.com/def, since corresponding entry is expired.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(),
                 GURL("http://test.com/def/ghi/index.html"), &actual_verdict));
 
   // Return VERDICT_TYPE_UNSPECIFIED if look up for a URL whose variants match
@@ -399,26 +412,21 @@ TEST_F(PasswordProtectionServiceTest, TestGetCachedVerdicts) {
   // test.com.
   EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(),
                 GURL("http://test.com/ghi/index.html"), &actual_verdict));
   EXPECT_EQ(LoginReputationClientResponse::SAFE,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(),
                 GURL("http://test.com/term_of_service.html"), &actual_verdict));
 
   // Return LOW_REPUTATION if look up for a URL whose variants match
   // test.com/abc.
   EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(), GURL("http://test.com/abc/"),
-                &actual_verdict));
+                GURL("http://test.com/abc/"), &actual_verdict));
   EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(), GURL("http://test.com/abc/bar.jsp"),
-                &actual_verdict));
+                GURL("http://test.com/abc/bar.jsp"), &actual_verdict));
   EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
             password_protection_service_->GetCachedVerdict(
-                content_setting_map_.get(),
                 GURL("http://test.com/abc/foo/bar.html"), &actual_verdict));
 }
 
@@ -440,25 +448,25 @@ TEST_F(PasswordProtectionServiceTest, TestCleanUpCachedVerdicts) {
   history::URLRows deleted_urls;
   deleted_urls.push_back(history::URLRow(GURL("http://bar.com")));
   password_protection_service_->RemoveContentSettingsOnURLsDeleted(
-      false /* all_history */, deleted_urls, content_setting_map_.get());
+      false /* all_history */, deleted_urls);
   EXPECT_EQ(1U, GetStoredVerdictCount());
   LoginReputationClientResponse actual_verdict;
-  EXPECT_EQ(
-      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
-      password_protection_service_->GetCachedVerdict(
-          content_setting_map_.get(), GURL("http://bar.com"), &actual_verdict));
+  EXPECT_EQ(LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+            password_protection_service_->GetCachedVerdict(
+                GURL("http://bar.com"), &actual_verdict));
 
   // If delete all history. All password protection content settings should be
   // gone.
   password_protection_service_->RemoveContentSettingsOnURLsDeleted(
-      true /* all_history */, history::URLRows(), content_setting_map_.get());
+      true /* all_history */, history::URLRows());
   EXPECT_EQ(0U, GetStoredVerdictCount());
 }
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForIncognito) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
-  InitializeAndStartRequest(true /* extended_reporting */, true /* incognito */,
-                            false /* match whitelist */, 10 /* timeout */);
+  password_protection_service_->set_incognito(true);
+  password_protection_service_->StartRequest(
+      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(histograms_.GetAllSamples(kRequestOutcomeHistogramName),
@@ -468,10 +476,10 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForIncognito) {
 TEST_F(PasswordProtectionServiceTest,
        TestNoRequestSentForNonExtendedReporting) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
+  password_protection_service_->set_extended_reporting(false);
+  password_protection_service_->StartRequest(
+      GURL(kTargetUrl), LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 
-  InitializeAndStartRequest(false /* extended_reporting */,
-                            false /* incognito */, false /* match whitelist */,
-                            10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
@@ -481,8 +489,7 @@ TEST_F(PasswordProtectionServiceTest,
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
-  InitializeAndStartRequest(true /* extended_reporting */,
-                            false /* incognito */, true /* match whitelist */,
+  InitializeAndStartRequest(true /* match whitelist */,
                             10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -494,8 +501,7 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
   CacheVerdict(GURL(kTargetUrl), LoginReputationClientResponse::LOW_REPUTATION,
                600, GURL(kTargetUrl).host(), true, base::Time::Now());
-  InitializeAndStartRequest(true /* extended_reporting */,
-                            false /* incognito */, false /* match whitelist */,
+  InitializeAndStartRequest(false /* match whitelist */,
                             10000 /* timeout in ms*/);
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
@@ -512,8 +518,7 @@ TEST_F(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   failed_fetcher.set_status(
       net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
 
-  InitializeAndStartRequest(true /* extended_reporting */,
-                            false /* incognito */, false /* match whitelist */,
+  InitializeAndStartRequest(false /* match whitelist */,
                             10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&failed_fetcher);
   base::RunLoop().RunUntilIdle();
@@ -531,8 +536,7 @@ TEST_F(PasswordProtectionServiceTest, TestMalformedResponse) {
   fetcher.set_response_code(200);
   fetcher.SetResponseString("invalid response");
 
-  InitializeAndStartRequest(true /* extended_reporting */,
-                            false /* incognito */, false /* match whitelist */,
+  InitializeAndStartRequest(false /* match whitelist */,
                             10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
@@ -544,8 +548,7 @@ TEST_F(PasswordProtectionServiceTest, TestMalformedResponse) {
 
 TEST_F(PasswordProtectionServiceTest, TestRequestTimedout) {
   histograms_.ExpectTotalCount(kRequestOutcomeHistogramName, 0);
-  InitializeAndStartRequest(true /* extended_reporting */,
-                            false /* incognito */, false /* match whitelist */,
+  InitializeAndStartRequest(false /* match whitelist */,
                             0 /* timeout immediately */);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
@@ -565,8 +568,7 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
                          GURL(kTargetUrl).host(), true);
   fetcher.SetResponseString(expected_response.SerializeAsString());
 
-  InitializeAndStartRequest(true /* extended_reporting */,
-                            false /* incognito */, false /* match whitelist */,
+  InitializeAndStartRequest(false /* match whitelist */,
                             10000 /* timeout in ms*/);
   request_->OnURLFetchComplete(&fetcher);
   base::RunLoop().RunUntilIdle();
@@ -589,8 +591,7 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
       .WillRepeatedly(testing::Return(false));
   password_protection_service_->StartRequest(
-      target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      true /* extended_reporting */, false /* incognito */);
+      target_url, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();

@@ -54,6 +54,7 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 class DownloadProtectionService;
 class PasswordProtectionService;
+class ChromePasswordProtectionService;
 struct ResourceRequestInfo;
 struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
@@ -163,7 +164,9 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   const scoped_refptr<SafeBrowsingDatabaseManager>& v4_local_database_manager()
       const;
 
-  PasswordProtectionService* password_protection_service();
+  // Gets PasswordProtectionService by profile.
+  PasswordProtectionService* GetPasswordProtectionService(
+      Profile* profile) const;
 
   // Returns a preference validation delegate that adds incidents to the
   // incident reporting service for validation failures. Returns NULL if the
@@ -274,6 +277,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Process the observed resource requests on the UI thread.
   void ProcessResourceRequest(const ResourceRequestInfo& request);
 
+  void CreatePasswordProtectionService(Profile* profile);
+
+  void RemovePasswordProtectionService(Profile* profile);
+
   // The factory used to instantiate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -320,7 +327,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   std::map<PrefService*, std::unique_ptr<PrefChangeRegistrar>> prefs_map_;
 
   // Used to track creation and destruction of profiles on the UI thread.
-  content::NotificationRegistrar prefs_registrar_;
+  content::NotificationRegistrar profiles_registrar_;
 
   // Callbacks when SafeBrowsing state might have changed.
   // Should only be accessed on the UI thread.
@@ -343,9 +350,11 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   scoped_refptr<SafeBrowsingNavigationObserverManager>
       navigation_observer_manager_;
 
-  // The password protection service detects and handles password related
-  // incidents.
-  std::unique_ptr<PasswordProtectionService> password_protection_service_;
+  // Tracks existing Profiles, and their corresponding
+  // ChromePasswordProtectionService instances.
+  // Accessed on UI thread.
+  std::map<Profile*, std::unique_ptr<ChromePasswordProtectionService>>
+      password_protection_service_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

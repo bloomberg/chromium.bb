@@ -27,6 +27,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -38,7 +39,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
-#include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
@@ -332,32 +332,11 @@ void SafeBrowsingService::Initialize() {
   services_delegate_->Initialize(v4_enabled_);
   services_delegate_->InitializeCsdService(url_request_context_getter_.get());
 
-  // TODO(jialiul): When PasswordProtectionService does more than reporting UMA,
-  // we need to add finch trial to gate its functionality.
-  password_protection_service_ = base::MakeUnique<PasswordProtectionService>(
-      database_manager(), url_request_context());
-
-  // Track the safe browsing preference of existing profiles.
-  // The SafeBrowsingService will be started if any existing profile has the
-  // preference enabled. It will also listen for updates to the preferences.
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile_manager) {
-    std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
-    // TODO(felt): I believe this for-loop is dead code. Confirm this and
-    // remove in a future CL. See https://codereview.chromium.org/1341533002/
-    DCHECK_EQ(0u, profiles.size());
-    for (size_t i = 0; i < profiles.size(); ++i) {
-      if (profiles[i]->IsOffTheRecord())
-        continue;
-      AddPrefService(profiles[i]->GetPrefs());
-    }
-  }
-
   // Track profile creation and destruction.
-  prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                       content::NotificationService::AllSources());
-  prefs_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                       content::NotificationService::AllSources());
+  profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                          content::NotificationService::AllSources());
+  profiles_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                          content::NotificationService::AllSources());
 
   // Register all the delayed analysis to the incident reporting service.
   RegisterAllDelayedAnalysis();
@@ -367,16 +346,17 @@ void SafeBrowsingService::ShutDown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   shutdown_callback_list_.Notify();
 
+  // Remove Profile creation/destruction observers.
+  profiles_registrar_.RemoveAll();
+
   // Delete the PrefChangeRegistrars, whose dtors also unregister |this| as an
   // observer of the preferences.
   prefs_map_.clear();
 
-  // Remove Profile creation/destruction observers.
-  prefs_registrar_.RemoveAll();
+  // Delete the ChromePasswordProtectionService instances.
+  password_protection_service_map_.clear();
 
   Stop(true);
-
-  password_protection_service_.reset();
 
   services_delegate_->ShutdownServices();
 
@@ -455,8 +435,12 @@ SafeBrowsingService::v4_local_database_manager() const {
   return services_delegate_->v4_local_database_manager();
 }
 
-PasswordProtectionService* SafeBrowsingService::password_protection_service() {
-  return password_protection_service_.get();
+PasswordProtectionService* SafeBrowsingService::GetPasswordProtectionService(
+    Profile* profile) const {
+  DCHECK(profile);
+  auto it = password_protection_service_map_.find(profile);
+  DCHECK(it != password_protection_service_map_.end());
+  return it->second.get();
 }
 
 std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
@@ -658,6 +642,7 @@ void SafeBrowsingService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
+      CreatePasswordProtectionService(profile);
       if (!profile->IsOffTheRecord())
         AddPrefService(profile->GetPrefs());
       break;
@@ -665,6 +650,7 @@ void SafeBrowsingService::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
       DCHECK_CURRENTLY_ON(BrowserThread::UI);
       Profile* profile = content::Source<Profile>(source).ptr();
+      RemovePasswordProtectionService(profile);
       if (!profile->IsOffTheRecord())
         RemovePrefService(profile->GetPrefs());
       break;
@@ -773,6 +759,24 @@ void SafeBrowsingService::ProcessResourceRequest(
     const ResourceRequestInfo& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   services_delegate_->ProcessResourceRequest(&request);
+}
+
+void SafeBrowsingService::CreatePasswordProtectionService(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(profile);
+  auto it = password_protection_service_map_.find(profile);
+  DCHECK(it == password_protection_service_map_.end());
+  std::unique_ptr<ChromePasswordProtectionService> service =
+      base::MakeUnique<ChromePasswordProtectionService>(this, profile);
+  password_protection_service_map_[profile] = std::move(service);
+}
+
+void SafeBrowsingService::RemovePasswordProtectionService(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(profile);
+  auto it = password_protection_service_map_.find(profile);
+  if (it != password_protection_service_map_.end())
+    password_protection_service_map_.erase(it);
 }
 
 }  // namespace safe_browsing

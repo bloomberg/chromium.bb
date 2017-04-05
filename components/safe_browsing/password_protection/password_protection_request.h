@@ -77,6 +77,9 @@ class PasswordProtectionRequest : public net::URLFetcherDelegate {
   // otherwise call Finish().
   void CheckCachedVerdicts();
 
+  // Fill |request_proto_| with appropriate values.
+  void FillRequestProto();
+
   // Initiates network request to Safe Browsing backend.
   void SendRequest();
 
@@ -113,6 +116,8 @@ class PasswordProtectionRequest : public net::URLFetcherDelegate {
   // If we haven't receive response after this period of time, we cancel this
   // request.
   const int request_timeout_in_ms_;
+
+  std::unique_ptr<LoginReputationClientRequest> request_proto_;
 
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);

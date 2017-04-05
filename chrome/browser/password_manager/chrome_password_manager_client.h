@@ -104,6 +104,11 @@ class ChromePasswordManagerClient
   void GenerationAvailableForForm(const autofill::PasswordForm& form) override;
   void HidePasswordGenerationPopup() override;
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
+      const override;
+#endif
+
   static void CreateForWebContentsWithAutofillClient(
       content::WebContents* contents,
       autofill::AutofillClient* autofill_client);
@@ -163,12 +168,6 @@ class ChromePasswordManagerClient
   // Returns true if this profile has metrics reporting and active sync
   // without custom sync passphrase.
   static bool ShouldAnnotateNavigationEntries(Profile* profile);
-
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  // Return true if we can set PasswordProtectionService in
-  // |password_reuse_detection_manager_|.
-  static bool CanSetPasswordProtectionService();
-#endif
 
   Profile* const profile_;
 

@@ -64,4 +64,11 @@ const LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
+safe_browsing::PasswordProtectionService*
+StubPasswordManagerClient::GetPasswordProtectionService() const {
+  return nullptr;
+}
+#endif
+
 }  // namespace password_manager

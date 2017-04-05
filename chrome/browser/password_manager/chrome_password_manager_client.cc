@@ -186,16 +186,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
   ReportMetrics(*saving_and_filling_passwords_enabled_, this, profile_);
   driver_factory_->RequestSendLoggingAvailability();
-
-#if (defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)) && \
-    !defined(OS_ANDROID) && !defined(OS_IOS)
-  if (CanSetPasswordProtectionService()) {
-    password_reuse_detection_manager_.SetPasswordProtectionService(
-        g_browser_process->safe_browsing_service()
-            ->password_protection_service()
-            ->GetWeakPtr());
-  }
-#endif
 }
 
 ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
@@ -410,6 +400,17 @@ void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
   if (popup_controller_)
     popup_controller_->HideAndDestroy();
 }
+
+#if defined(SAFE_BROWSING_DB_LOCAL)
+safe_browsing::PasswordProtectionService*
+ChromePasswordManagerClient::GetPasswordProtectionService() const {
+  if (g_browser_process && g_browser_process->safe_browsing_service()) {
+    return g_browser_process->safe_browsing_service()
+        ->GetPasswordProtectionService(profile_);
+  }
+  return nullptr;
+}
+#endif
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
@@ -633,14 +634,6 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
 
   return true;
 }
-
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-bool ChromePasswordManagerClient::CanSetPasswordProtectionService() {
-  return g_browser_process && g_browser_process->safe_browsing_service() &&
-         g_browser_process->safe_browsing_service()
-             ->password_protection_service();
-}
-#endif
 
 void ChromePasswordManagerClient::AnnotateNavigationEntry(
     bool has_password_field) {

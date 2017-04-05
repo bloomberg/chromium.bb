@@ -84,7 +84,6 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
   std::unique_ptr<LoginReputationClientResponse> cached_response =
       base::MakeUnique<LoginReputationClientResponse>();
   auto verdict = password_protection_service_->GetCachedVerdict(
-      password_protection_service_->GetSettingMapForActiveProfile(),
       main_frame_url_, cached_response.get());
   if (verdict != LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED)
     Finish(RequestOutcome::RESPONSE_ALREADY_CACHED, std::move(cached_response));
@@ -92,17 +91,26 @@ void PasswordProtectionRequest::CheckCachedVerdicts() {
     SendRequest();
 }
 
+void PasswordProtectionRequest::FillRequestProto() {
+  request_proto_ = base::MakeUnique<LoginReputationClientRequest>();
+  request_proto_->set_page_url(main_frame_url_.spec());
+  request_proto_->set_trigger_type(request_type_);
+  request_proto_->set_stored_verdict_cnt(
+      password_protection_service_->GetStoredVerdictCount());
+  LoginReputationClientRequest::Frame* main_frame =
+      request_proto_->add_frames();
+  main_frame->set_url(main_frame_url_.spec());
+  password_protection_service_->FillReferrerChain(
+      main_frame_url_, -1 /* tab id not available */, main_frame);
+  // TODO(jialiul): Add sub-frame information and password form information.
+}
+
 void PasswordProtectionRequest::SendRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  LoginReputationClientRequest request;
-  request.set_page_url(main_frame_url_.spec());
-  request.set_trigger_type(request_type_);
-  request.set_stored_verdict_cnt(
-      password_protection_service_->GetStoredVerdictCount());
+  FillRequestProto();
 
   std::string serialized_request;
-  if (!request.SerializeToString(&serialized_request)) {
+  if (!request_proto_->SerializeToString(&serialized_request)) {
     Finish(RequestOutcome::REQUEST_MALFORMED, nullptr);
     return;
   }

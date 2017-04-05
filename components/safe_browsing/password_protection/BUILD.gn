@@ -37,6 +37,8 @@ source_set("password_protection_unittest") {
     ":password_protection",
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/browser:browser",
+    "//components/history/core/browser:browser",
     "//components/safe_browsing_db:test_database_manager",
     "//components/sync_preferences:test_support",
     "//content/test:test_support",
