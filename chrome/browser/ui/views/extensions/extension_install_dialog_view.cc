@@ -51,6 +51,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 
 using content::OpenURLParams;
 using content::Referrer;
@@ -89,6 +90,9 @@ int GetLeftPaddingForBulletedItems(bool parent_bulleted) {
              LayoutDelegate::Metric::RELATED_CONTROL_HORIZONTAL_SPACING) *
          (parent_bulleted ? 2 : 1);
 }
+
+// Time delay before the install button is enabled after initial display.
+int g_install_delay_in_ms = 500;
 
 void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
   views::View* parent = static_cast<views::View*>(data);
@@ -181,7 +185,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       prompt_(std::move(prompt)),
       container_(NULL),
       scroll_view_(NULL),
-      handled_result_(false) {
+      handled_result_(false),
+      install_button_enabled_(false) {
   InitView();
 }
 
@@ -593,6 +598,35 @@ views::View* ExtensionInstallDialogView::CreateExtraView() {
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
   store_link->set_listener(this);
   return store_link;
+}
+
+bool ExtensionInstallDialogView::IsDialogButtonEnabled(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return install_button_enabled_;
+  return true;
+}
+
+void ExtensionInstallDialogView::SetInstallButtonDelayForTesting(
+    int delay_in_ms) {
+  g_install_delay_in_ms = delay_in_ms;
+}
+
+void ExtensionInstallDialogView::VisibilityChanged(views::View* starting_from,
+                                                   bool is_visible) {
+  if (is_visible && !install_button_enabled_) {
+    // This base::Unretained is safe because the task is owned by the timer,
+    // which is in turn owned by this object.
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(g_install_delay_in_ms),
+                 base::Bind(&ExtensionInstallDialogView::EnableInstallButton,
+                            base::Unretained(this)));
+  }
+}
+
+void ExtensionInstallDialogView::EnableInstallButton() {
+  install_button_enabled_ = true;
+  GetDialogClientView()->UpdateDialogButtons();
 }
 
 void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)

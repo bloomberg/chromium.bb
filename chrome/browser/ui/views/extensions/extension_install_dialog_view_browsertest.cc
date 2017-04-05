@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -201,4 +202,24 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // TODO(devlin): Should this be ABORTED?
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
+}
+
+// Verifies that the "Add extension" button is disabled initally, but re-enabled
+// after a short time delay.
+IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
+  ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
+  ExtensionInstallPromptTestHelper helper;
+  views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+
+  // Check that dialog is visible.
+  EXPECT_TRUE(delegate_view->visible());
+
+  // Check initial button states.
+  EXPECT_FALSE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  EXPECT_TRUE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL));
+
+  // Check OK button state after timeout to verify that it is re-enabled.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(delegate_view->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  delegate_view->Close();
 }

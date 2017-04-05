@@ -50,9 +50,12 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // the contents of the DialogView.
   const views::ScrollView* scroll_view() const { return scroll_view_; }
 
+  static void SetInstallButtonDelayForTesting(int timeout_in_ms);
+
  private:
   // views::View:
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
@@ -64,12 +67,16 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
   views::View* CreateExtraView() override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
   // Initializes the dialog view, adding in permissions if they exist.
   void InitView();
+
+  // Enables the install button and updates the dialog buttons.
+  void EnableInstallButton();
 
   // Adds permissions of |perm_type| to the dialog view if they exist.
   bool AddPermissions(views::GridLayout* layout,
@@ -111,6 +118,12 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   // Set to true once the user's selection has been received and the callback
   // has been run.
   bool handled_result_;
+
+  // Used to delay the activation of the install button.
+  base::OneShotTimer timer_;
+
+  // Used to determine whether the install button should be enabled.
+  bool install_button_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
