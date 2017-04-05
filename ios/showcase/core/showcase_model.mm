@@ -32,6 +32,11 @@
       showcase::kUseCaseKey : @"Generic payment request editor",
     },
     @{
+      showcase::kClassForDisplayKey : @"PaymentRequestPickerViewController",
+      showcase::kClassForInstantiationKey : @"SCPaymentsPickerCoordinator",
+      showcase::kUseCaseKey : @"Payment request picker view",
+    },
+    @{
       showcase::kClassForDisplayKey : @"SettingsViewController",
       showcase::kClassForInstantiationKey : @"SCSettingsCoordinator",
       showcase::kUseCaseKey : @"Main settings screen",

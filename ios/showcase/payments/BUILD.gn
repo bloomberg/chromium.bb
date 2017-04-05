@@ -6,6 +6,8 @@ source_set("payments") {
   sources = [
     "sc_payments_editor_coordinator.h",
     "sc_payments_editor_coordinator.mm",
+    "sc_payments_picker_coordinator.h",
+    "sc_payments_picker_coordinator.mm",
   ]
   deps = [
     "//base",
@@ -26,6 +28,7 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "sc_payments_editor_egtest.mm",
+    "sc_payments_picker_egtest.mm",
   ]
   deps = [
     "//base",

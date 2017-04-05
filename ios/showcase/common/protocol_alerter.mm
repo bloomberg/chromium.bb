@@ -170,7 +170,7 @@ char kAssociatedProtocolNameKey;
 // Return a string describing an argument at |index| that's known to be an
 // objective-C object.
 - (NSString*)objectDescriptionAtIndex:(NSInteger)index {
-  id object;
+  __unsafe_unretained id object;
 
   [self getArgument:&object atIndex:index];
   if (!object)
