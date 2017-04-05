@@ -6,25 +6,12 @@ source_set("cells") {
   sources = [
     "content_suggestions_article_item.h",
     "content_suggestions_article_item.mm",
-    "content_suggestions_button_item.h",
-    "content_suggestions_button_item.mm",
-    "content_suggestions_button_item_actions.h",
-    "content_suggestions_expandable_item.h",
-    "content_suggestions_expandable_item.mm",
-    "content_suggestions_favicon_internal_cell.h",
-    "content_suggestions_favicon_internal_cell.mm",
-    "content_suggestions_favicon_item.h",
-    "content_suggestions_favicon_item.mm",
     "content_suggestions_footer_item.h",
     "content_suggestions_footer_item.mm",
     "content_suggestions_reading_list_item.h",
     "content_suggestions_reading_list_item.mm",
-    "content_suggestions_stack_item.h",
-    "content_suggestions_stack_item.mm",
-    "content_suggestions_stack_item_actions.h",
     "content_suggestions_text_item.h",
     "content_suggestions_text_item.mm",
-    "expandable_item.h",
   ]
   deps = [
     "//base",
@@ -45,11 +32,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_suggestions_article_item_unittest.mm",
-    "content_suggestions_button_item_unittest.mm",
-    "content_suggestions_expandable_item_unittest.mm",
-    "content_suggestions_favicon_item_unittest.mm",
     "content_suggestions_footer_item_unittest.mm",
-    "content_suggestions_stack_item_unittest.mm",
   ]
   deps = [
     ":cells",

@@ -9,11 +9,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_button_item_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_reading_list_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item_actions.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
@@ -23,18 +19,10 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-const NSTimeInterval kAnimationDuration = 0.35;
-}  // namespace
-
-@interface ContentSuggestionsViewController ()<SuggestionsStackItemActions>
+@interface ContentSuggestionsViewController ()
 
 @property(nonatomic, strong)
     ContentSuggestionsCollectionUpdater* collectionUpdater;
-
-// Expand or collapse the |cell|, if it is a ContentSuggestionsExpandableCell,
-// according to |expand|.
-- (void)expand:(BOOL)expand cell:(UICollectionViewCell*)cell;
 
 @end
 
@@ -152,28 +140,6 @@ const NSTimeInterval kAnimationDuration = 0.35;
   }
 }
 
-#pragma mark - ContentSuggestionsExpandableCellDelegate
-
-- (void)collapseCell:(UICollectionViewCell*)cell {
-  [self expand:NO cell:cell];
-}
-
-- (void)expandCell:(UICollectionViewCell*)cell {
-  [self expand:YES cell:cell];
-}
-
-#pragma mark - ContentSuggestionsFaviconCellDelegate
-
-- (void)openFaviconAtIndexPath:(NSIndexPath*)innerIndexPath {
-  [self.suggestionCommandHandler openFaviconAtIndex:innerIndexPath.item];
-}
-
-#pragma mark - SuggestionsStackItemActions
-
-- (void)openReadingListFirstItem:(id)sender {
-  [self.suggestionCommandHandler openFirstPageOfReadingList];
-}
-
 #pragma mark - MDCCollectionViewStylingDelegate
 
 - (UIColor*)collectionView:(nonnull UICollectionView*)collectionView
@@ -214,28 +180,6 @@ const NSTimeInterval kAnimationDuration = 0.35;
 }
 
 #pragma mark - Private
-
-- (void)expand:(BOOL)expand cell:(UICollectionViewCell*)cell {
-  NSIndexPath* indexPath = [self.collectionView indexPathForCell:cell];
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  if ([item conformsToProtocol:@protocol(ExpandableItem)]) {
-    id<ExpandableItem> expandableItem = (id<ExpandableItem>)item;
-
-    NSInteger sectionIdentifier = [self.collectionViewModel
-        sectionIdentifierForSection:indexPath.section];
-
-    expandableItem.expanded = expand;
-    [self reconfigureCellsForItems:@[ item ]
-           inSectionWithIdentifier:sectionIdentifier];
-
-    [UIView
-        animateWithDuration:kAnimationDuration
-                 animations:^{
-                   [self.collectionView.collectionViewLayout invalidateLayout];
-                 }];
-  }
-}
 
 // Opens the Reading List entry associated with |item|. |item| must be a
 // ContentSuggestionsReadingListItem.

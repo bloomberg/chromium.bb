@@ -112,12 +112,6 @@
 - (void)openReadingList {
 }
 
-- (void)openFirstPageOfReadingList {
-}
-
-- (void)openFaviconAtIndex:(NSInteger)index {
-}
-
 - (void)openURL:(const GURL&)URL {
   // TODO(crbug.com/691979): Add metrics.
 

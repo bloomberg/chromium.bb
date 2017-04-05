@@ -8,8 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_expandable_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_item.h"
 
 @class ContentSuggestion;
 @protocol ContentSuggestionsCommands;
@@ -17,9 +15,7 @@
 @protocol ContentSuggestionIdentification;
 
 // CollectionViewController to display the suggestions items.
-@interface ContentSuggestionsViewController
-    : CollectionViewController<ContentSuggestionsExpandableCellDelegate,
-                               ContentSuggestionsFaviconCellDelegate>
+@interface ContentSuggestionsViewController : CollectionViewController
 
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
                    dataSource:(id<ContentSuggestionsDataSource>)dataSource

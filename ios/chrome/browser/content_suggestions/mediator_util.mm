@@ -37,8 +37,6 @@ ContentSuggestionType TypeForCategory(ntp_snippets::Category category) {
 
 ContentSuggestionsSectionID SectionIDForCategory(
     ntp_snippets::Category category) {
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::BOOKMARKS))
-    return ContentSuggestionsSectionBookmarks;
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES))
     return ContentSuggestionsSectionArticles;
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST))

@@ -68,7 +68,7 @@ TEST(ContentSuggestionIdentifierTest, IsNotEquals) {
           initWithSectionID:ContentSuggestionsSectionArticles];
   ContentSuggestionsSectionInformation* sectionInfo2 =
       [[ContentSuggestionsSectionInformation alloc]
-          initWithSectionID:ContentSuggestionsSectionBookmarks];
+          initWithSectionID:ContentSuggestionsSectionReadingList];
 
   ContentSuggestionIdentifier* suggestionIdentifier1 =
       [[ContentSuggestionIdentifier alloc] init];

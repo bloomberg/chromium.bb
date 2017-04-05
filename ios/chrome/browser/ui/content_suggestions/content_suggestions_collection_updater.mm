@@ -13,12 +13,8 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_button_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_expandable_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_footer_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_reading_list_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_stack_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
@@ -43,11 +39,7 @@ using CSCollectionViewModel = CollectionViewModel<CSCollectionViewItem*>;
 
 // Enum defining the ItemType of this ContentSuggestionsCollectionUpdater.
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeText = kItemTypeEnumZero,
-  ItemTypeArticle,
-  ItemTypeExpand,
-  ItemTypeStack,
-  ItemTypeFavicon,
+  ItemTypeArticle = kItemTypeEnumZero,
   ItemTypeFooter,
   ItemTypeHeader,
   ItemTypeEmpty,
@@ -55,8 +47,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierBookmarks = kSectionIdentifierEnumZero,
-  SectionIdentifierArticles,
+  SectionIdentifierArticles = kSectionIdentifierEnumZero,
   SectionIdentifierReadingList,
   SectionIdentifierDefault,
 };
@@ -90,9 +81,6 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
 SectionIdentifier SectionIdentifierForInfo(
     ContentSuggestionsSectionInformation* info) {
   switch (info.sectionID) {
-    case ContentSuggestionsSectionBookmarks:
-      return SectionIdentifierBookmarks;
-
     case ContentSuggestionsSectionArticles:
       return SectionIdentifierArticles;
 
