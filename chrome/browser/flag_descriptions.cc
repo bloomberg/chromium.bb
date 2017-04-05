@@ -952,6 +952,11 @@ const char kAcceleratedVideoDecodeName[] = "Hardware-accelerated video decode";
 const char kAcceleratedVideoDecodeDescription[] =
     "Hardware-accelerated video decode where available.";
 
+const char kEnableHDRName[] = "HDR mode";
+
+const char kEnableHDRDescription[] =
+    "Enables HDR support on compatible displays.";
+
 const char kCloudImport[] = "Cloud Import";
 
 const char kCloudImportDescription[] = "Allows the cloud-import feature.";

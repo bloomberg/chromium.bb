@@ -1036,6 +1036,10 @@ extern const char kAcceleratedVideoDecodeName[];
 // Description for the flag for accelerated video decode where available.
 extern const char kAcceleratedVideoDecodeDescription[];
 
+// Name/Description for the "enable-hdr" flag.
+extern const char kEnableHDRName[];
+extern const char kEnableHDRDescription[];
+
 // Name for the flag for cloud import feature.
 extern const char kCloudImport[];
 

@@ -130,6 +130,10 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif  // USE_OZONE
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif  // OS_WIN
+
 using flags_ui::FeatureEntry;
 using flags_ui::kOsMac;
 using flags_ui::kOsWin;
@@ -1183,6 +1187,13 @@ const FeatureEntry kFeatureEntries[] = {
         kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
+#if defined(OS_WIN)
+    {
+        "enable-hdr", flag_descriptions::kEnableHDRName,
+        flag_descriptions::kEnableHDRDescription, kOsWin,
+        SINGLE_VALUE_TYPE(switches::kEnableHDR),
+    },
+#endif  // OS_WIN
 #if defined(USE_ASH)
     {
         "ash-debug-shortcuts", flag_descriptions::kDebugShortcutsName,
@@ -2633,6 +2644,14 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
       channel != version_info::Channel::UNKNOWN) {
     return true;
   }
+
+#if defined(OS_WIN)
+  // HDR mode works, but displays everything horribly wrong prior to windows 10.
+  if (!strcmp("enable-hdr", entry.internal_name) &&
+      base::win::GetVersion() < base::win::Version::VERSION_WIN10) {
+    return true;
+  }
+#endif  // OS_WIN
 
   return false;
 }
