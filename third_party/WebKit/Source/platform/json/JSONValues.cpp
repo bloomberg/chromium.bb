@@ -483,7 +483,7 @@ void JSONArray::pushArray(std::unique_ptr<JSONArray> value) {
   m_data.push_back(std::move(value));
 }
 
-JSONValue* JSONArray::at(size_t index) {
+JSONValue* JSONArray::at(size_t index) const {
   DCHECK_LT(index, m_data.size());
   return m_data[index].get();
 }

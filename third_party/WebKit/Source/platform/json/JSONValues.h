@@ -42,6 +42,7 @@
 #include "wtf/text/WTFString.h"
 
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -269,7 +270,7 @@ class PLATFORM_EXPORT JSONArray : public JSONValue {
   void pushObject(std::unique_ptr<JSONObject>);
   void pushArray(std::unique_ptr<JSONArray>);
 
-  JSONValue* at(size_t index);
+  JSONValue* at(size_t index) const;
   size_t size() const { return m_data.size(); }
 
  protected:
