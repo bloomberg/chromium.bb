@@ -455,7 +455,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // Set the status bar color to black by default. This is an optimization for
         // Chrome not to draw under status and navigation bars when we use the default
         // black status bar
-        ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
+        setStatusBarColor(null, Color.BLACK);
 
         ViewGroup rootView = (ViewGroup) getWindow().getDecorView().getRootView();
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
@@ -789,6 +789,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void setStatusBarColor(Tab tab, int color) {
         int statusBarColor = (tab != null && tab.isDefaultThemeColor())
                 ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
+        if (getBottomSheet() != null) {
+            statusBarColor =
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color);
+            getBottomSheet().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+        }
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }
 
