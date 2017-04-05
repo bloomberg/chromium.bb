@@ -309,7 +309,7 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
   if (r.isSelected()) {
     if (!isHTMLInputElement(*r.innerNode()) ||
         toHTMLInputElement(r.innerNode())->type() != InputTypeNames::password) {
-      data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
+      data.selectedText = selectedFrame->selectedText();
     }
   }
 

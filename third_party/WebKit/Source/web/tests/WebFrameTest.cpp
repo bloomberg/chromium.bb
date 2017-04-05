@@ -11575,7 +11575,7 @@ bool testSelectAll(const std::string& html) {
   return frame.getMenuData().editFlags & WebContextMenuData::CanSelectAll;
 }
 
-TEST_F(WebFrameTest, ContextMenuData) {
+TEST_F(WebFrameTest, ContextMenuDataSelectAll) {
   EXPECT_FALSE(testSelectAll("<textarea></textarea>"));
   EXPECT_TRUE(testSelectAll("<textarea>nonempty</textarea>"));
   EXPECT_FALSE(testSelectAll("<input>"));
@@ -11583,6 +11583,33 @@ TEST_F(WebFrameTest, ContextMenuData) {
   // TODO(amaralp): Empty contenteditable should not have select all enabled.
   EXPECT_TRUE(testSelectAll("<div contenteditable></div>"));
   EXPECT_TRUE(testSelectAll("<div contenteditable>nonempty</div>"));
+}
+
+TEST_F(WebFrameTest, ContextMenuDataSelectedText) {
+  ContextMenuWebFrameClient frame;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initialize(true, &frame);
+  const std::string& html = "<input value=' '>";
+  FrameTestHelpers::loadHTMLString(webView->mainFrame(), html,
+                                   toKURL("about:blank"));
+  webView->resize(WebSize(500, 300));
+  webView->updateAllLifecyclePhases();
+  runPendingTasks();
+  webView->setInitialFocus(false);
+  runPendingTasks();
+
+  webView->mainFrameImpl()->executeCommand(WebString::fromUTF8("SelectAll"));
+
+  WebMouseEvent mouseEvent(WebInputEvent::MouseDown, WebInputEvent::NoModifiers,
+                           WebInputEvent::TimeStampForTesting);
+
+  mouseEvent.button = WebMouseEvent::Button::Right;
+  mouseEvent.setPositionInWidget(8, 8);
+  mouseEvent.clickCount = 1;
+  webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
+  runPendingTasks();
+  webViewHelper.reset();
+  EXPECT_EQ(frame.getMenuData().selectedText, " ");
 }
 
 TEST_F(WebFrameTest, LocalFrameWithRemoteParentIsTransparent) {
