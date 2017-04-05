@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/browser_thread_impl.h"
-#include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -23,6 +22,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_test_util.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -229,7 +229,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
   TestBrowserThreadBundle browser_thread_bundle_;
 
   net::URLRequestContext url_request_context_;
-  MockURLRequestDelegate url_request_delegate_;
+  net::TestDelegate url_request_delegate_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
   storage::BlobStorageContext blob_storage_context_;
   std::unique_ptr<net::URLRequest> request_;

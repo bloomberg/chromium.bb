@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -53,6 +52,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_job.h"
+#include "net/url_request/url_request_test_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/blob/blob_url_request_job.h"
@@ -241,7 +241,7 @@ class ServiceWorkerURLRequestJobTest
               request_->response_headers()->response_code());
     EXPECT_EQ(expected_status_text,
               request_->response_headers()->GetStatusText());
-    EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+    EXPECT_EQ(expected_response, url_request_delegate_.data_received());
     const net::SSLInfo& ssl_info = request_->response_info().ssl_info;
     if (expect_valid_ssl) {
       EXPECT_TRUE(ssl_info.is_valid());
@@ -333,8 +333,8 @@ class ServiceWorkerURLRequestJobTest
     base::RunLoop().RunUntilIdle();
 
     // Simulate another worker kicking out the incumbent worker.  PostTask since
-    // it might respond synchronously, and the MockURLRequestDelegate would
-    // complain that the message loop isn't being run.
+    // it might respond synchronously, and the TestDelegate would complain that
+    // the message loop isn't being run.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ServiceWorkerVersion::SetStatus, version_,
                               ServiceWorkerVersion::REDUNDANT));
@@ -350,7 +350,7 @@ class ServiceWorkerURLRequestJobTest
 
   std::unique_ptr<net::URLRequestJobFactoryImpl> url_request_job_factory_;
   net::URLRequestContext url_request_context_;
-  MockURLRequestDelegate url_request_delegate_;
+  net::TestDelegate url_request_delegate_;
   std::unique_ptr<net::URLRequest> request_;
 
   std::unique_ptr<storage::BlobDataBuilder> blob_data_;
@@ -631,7 +631,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   EXPECT_EQ(200, headers->response_code());
   EXPECT_EQ("OK", headers->GetStatusText());
   CheckHeaders(headers);
-  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  EXPECT_EQ(expected_response, url_request_delegate_.data_received());
 
   EXPECT_EQ(0, times_prepare_to_restart_invoked_);
   ServiceWorkerResponseInfo* info =
@@ -681,7 +681,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
             request_->response_headers()->response_code());
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
-  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  EXPECT_EQ(expected_response, url_request_delegate_.data_received());
 
   EXPECT_EQ(0, times_prepare_to_restart_invoked_);
   ServiceWorkerResponseInfo* info =
@@ -729,7 +729,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
             request_->response_headers()->response_code());
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
-  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  EXPECT_EQ(expected_response, url_request_delegate_.data_received());
 
   EXPECT_EQ(0, times_prepare_to_restart_invoked_);
   ServiceWorkerResponseInfo* info =
@@ -769,7 +769,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
     stream->AddData(kTestData, sizeof(kTestData) - 1);
     stream->Flush();
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+    EXPECT_EQ(expected_response, url_request_delegate_.data_received());
   }
   stream->Finalize(net::OK);
   base::RunLoop().RunUntilIdle();
@@ -778,7 +778,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
             request_->response_headers()->response_code());
   EXPECT_EQ("OK",
             request_->response_headers()->GetStatusText());
-  EXPECT_EQ(expected_response, url_request_delegate_.response_data());
+  EXPECT_EQ(expected_response, url_request_delegate_.data_received());
 
   EXPECT_EQ(0, times_prepare_to_restart_invoked_);
   ServiceWorkerResponseInfo* info =
@@ -915,7 +915,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   EXPECT_TRUE(request_->status().is_success());
   // We should have fallen back to network.
   EXPECT_EQ(200, request_->GetResponseCode());
-  EXPECT_EQ("PASS", url_request_delegate_.response_data());
+  EXPECT_EQ("PASS", url_request_delegate_.data_received());
   EXPECT_FALSE(HasWork());
   ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderID);
@@ -937,7 +937,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_MainResource) {
   // this is a main resource request.
   EXPECT_TRUE(request_->status().is_success());
   EXPECT_EQ(200, request_->GetResponseCode());
-  EXPECT_EQ("PASS", url_request_delegate_.response_data());
+  EXPECT_EQ("PASS", url_request_delegate_.data_received());
 
   // The controller should be reset since the main resource request failed.
   ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(

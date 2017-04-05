@@ -1101,8 +1101,6 @@ test("content_unittests") {
     "../browser/fileapi/mock_file_change_observer.h",
     "../browser/fileapi/mock_file_update_observer.cc",
     "../browser/fileapi/mock_file_update_observer.h",
-    "../browser/fileapi/mock_url_request_delegate.cc",
-    "../browser/fileapi/mock_url_request_delegate.h",
     "../browser/fileapi/obfuscated_file_util_unittest.cc",
     "../browser/fileapi/plugin_private_file_system_backend_unittest.cc",
     "../browser/fileapi/recursive_operation_delegate_unittest.cc",

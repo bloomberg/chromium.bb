@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -162,7 +161,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
 
   void StartAndWaitForRequest(net::URLRequest* request) {
     request->Start();
-    // MockURLRequestDelegate quits the loop when the request is completed.
+    // net::TestDelegate quits the loop when the request is completed.
     base::RunLoop().RunUntilIdle();
   }
 
@@ -187,7 +186,7 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
   net::URLRequestJobFactoryImpl test_job_factory_;
 
   std::unique_ptr<net::TestURLRequestContext> url_request_context_;
-  MockURLRequestDelegate delegate_;
+  net::TestDelegate delegate_;
 };
 
 TEST_F(ServiceWorkerReadFromCacheJobTest, ReadMainScript) {

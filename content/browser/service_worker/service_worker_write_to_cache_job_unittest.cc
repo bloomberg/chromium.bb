@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/fileapi/mock_url_request_delegate.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
@@ -441,7 +440,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
   storage::BlobStorageContext blob_storage_context_;
   content::MockResourceContext resource_context_;
 
-  MockURLRequestDelegate url_request_delegate_;
+  net::TestDelegate url_request_delegate_;
   int next_provider_id_ = 1;
   int64_t next_version_id_ = 1L;
 };
