@@ -1206,11 +1206,11 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
         if (event.windowsKeyCode == VKEY_TAB) {
           // If the plugin supports keyboard focus then we should not send a tab
           // keypress event.
-          FrameViewBase* frameViewBase =
-              toLayoutPart(element->layoutObject())->frameViewBase();
-          if (frameViewBase && frameViewBase->isPluginContainer()) {
+          PluginView* pluginView =
+              toLayoutPart(element->layoutObject())->plugin();
+          if (pluginView && pluginView->isPluginContainer()) {
             WebPluginContainerImpl* plugin =
-                toWebPluginContainerImpl(frameViewBase);
+                toWebPluginContainerImpl(pluginView);
             if (plugin && plugin->supportsKeyboardFocus())
               m_suppressNextKeypressEvent = true;
           }
@@ -3402,10 +3402,9 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 
   LayoutObject* object = node->layoutObject();
   if (object && object->isLayoutPart()) {
-    FrameViewBase* frameViewWidget = toLayoutPart(object)->frameViewBase();
-    if (frameViewWidget && frameViewWidget->isPluginContainer()) {
-      WebPluginContainerImpl* plugin =
-          toWebPluginContainerImpl(frameViewWidget);
+    PluginView* pluginView = toLayoutPart(object)->plugin();
+    if (pluginView && pluginView->isPluginContainer()) {
+      WebPluginContainerImpl* plugin = toWebPluginContainerImpl(pluginView);
       switch (action.type) {
         case WebPluginAction::Rotate90Clockwise:
           plugin->plugin()->rotateView(WebPlugin::RotationType90Clockwise);

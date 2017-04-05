@@ -135,7 +135,7 @@ void LayoutEmbeddedObject::layout() {
 
   updateLayerTransformAfterLayout();
 
-  FrameViewBase* frameViewBase = this->frameViewBase();
+  FrameViewBase* frameViewBase = this->pluginOrFrame();
   if (!frameViewBase && frameView())
     frameView()->addPartToUpdate(*this);
 

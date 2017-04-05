@@ -69,7 +69,7 @@ void PartPainter::paint(const PaintInfo& paintInfo,
   if (paintInfo.phase != PaintPhaseForeground)
     return;
 
-  if (m_layoutPart.frameViewBase()) {
+  if (m_layoutPart.pluginOrFrame()) {
     // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
     // the crashes we see in FrameViewBase painting are due to a destroyed
     // LayoutPart object.
@@ -118,7 +118,7 @@ void PartPainter::paintContents(const PaintInfo& paintInfo,
                                 const LayoutPoint& paintOffset) {
   LayoutPoint adjustedPaintOffset = paintOffset + m_layoutPart.location();
 
-  FrameViewBase* frameViewBase = m_layoutPart.frameViewBase();
+  FrameViewBase* frameViewBase = m_layoutPart.pluginOrFrame();
   CHECK(frameViewBase);
 
   IntPoint paintLocation(roundedIntPoint(

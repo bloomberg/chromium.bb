@@ -39,6 +39,7 @@
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "core/paint/ScrollbarManager.h"
+#include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationHost.h"
@@ -454,12 +455,16 @@ class CORE_EXPORT FrameView final
   HostWindow* getHostWindow() const;
 
   typedef HeapHashSet<Member<FrameViewBase>> ChildrenSet;
+  typedef HeapHashSet<Member<PluginView>> PluginsSet;
 
   // Functions for child manipulation and inspection.
   void setParent(FrameViewBase*) override;
   void removeChild(FrameViewBase*);
   void addChild(FrameViewBase*);
   const ChildrenSet* children() const { return &m_children; }
+  void removePlugin(PluginView*);
+  void addPlugin(PluginView*);
+  const PluginsSet* plugins() const { return &m_plugins; }
 
   // If the scroll view does not use a native widget, then it will have
   // cross-platform Scrollbars. These functions can be used to obtain those
@@ -1128,6 +1133,7 @@ class CORE_EXPORT FrameView final
   bool m_verticalScrollbarLock;
 
   ChildrenSet m_children;
+  PluginsSet m_plugins;
 
   ScrollOffset m_pendingScrollDelta;
   ScrollOffset m_scrollOffset;

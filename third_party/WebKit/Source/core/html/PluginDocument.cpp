@@ -34,6 +34,7 @@
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -175,15 +176,9 @@ DocumentParser* PluginDocument::createParser() {
 }
 
 PluginView* PluginDocument::pluginView() {
-  if (m_pluginNode && m_pluginNode->layoutObject()) {
-    CHECK(m_pluginNode->layoutObject()->isEmbeddedObject());
-    FrameViewBase* frameViewBase =
-        toLayoutEmbeddedObject(m_pluginNode->layoutObject())->frameViewBase();
-    if (!frameViewBase || !frameViewBase->isPluginContainer())
-      return nullptr;
-    return toPluginView(frameViewBase);
-  }
-  return 0;
+  return m_pluginNode && isHTMLPlugInElement(m_pluginNode)
+             ? toHTMLPlugInElement(m_pluginNode)->plugin()
+             : nullptr;
 }
 
 Node* PluginDocument::pluginNode() {

@@ -25,6 +25,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutReplaced.h"
+#include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
 
 namespace blink {
@@ -49,6 +50,12 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
   void deref();
 
   FrameViewBase* frameViewBase() const;
+  PluginView* plugin() const;
+  // TODO(joelhockey): This method will be removed once FrameViewBase
+  // class is removed.  New abstract base classes will be defined
+  // for when polymorphism is required for plugins and frames and
+  // other methods provided.
+  FrameViewBase* pluginOrFrame() const;
 
   LayoutRect replacedContentRect() const final;
 
@@ -73,7 +80,7 @@ class CORE_EXPORT LayoutPart : public LayoutReplaced {
       const PaintInvalidationState&) override;
 
  private:
-  void updateGeometryInternal();
+  void updateGeometryInternal(FrameViewBase&);
   CompositingReasons additionalCompositingReasons() const override;
 
   void willBeDestroyed() final;

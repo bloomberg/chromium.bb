@@ -50,7 +50,14 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // TODO(dcheng): Consider removing this, since HTMLEmbedElementLegacyCall
   // and HTMLObjectElementLegacyCall usage is extremely low.
   SharedPersistent<v8::Object>* pluginWrapper();
+  // TODO(joelhockey): Clean up pluginWidget and plugin (maybe also
+  // pluginWrapper).  It would be good to remove and/or rename some of these.
+  // pluginWidget and plugin both return the plugin that is stored on this
+  // element.  However pluginWidget will synchronously create the plugin if
+  // required by calling layoutPartForJSBindings.  Possibly the pluginWidget
+  // code can be inlined into pluginWrapper.
   PluginView* pluginWidget() const;
+  PluginView* plugin() const;
   bool canProcessDrag() const;
   const String& url() const { return m_url; }
 
@@ -159,7 +166,6 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
 
   void setPlugin(PluginView*);
   PluginView* releasePlugin();
-  PluginView* ownedPlugin() const;
   void setPersistedPlugin(PluginView*);
 
   bool requestObjectInternal(const String& url,
@@ -175,6 +181,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // avoid accessing |layoutObject()| in layoutObjectIsFocusable().
   bool m_pluginIsAvailable = false;
 
+  Member<PluginView> m_plugin;
   // Normally the plugin is stored in HTMLFrameOwnerElement::m_widget.
   // However, plugins can persist even when not rendered. In order to
   // prevent confusing code which may assume that ownedWidget() != null

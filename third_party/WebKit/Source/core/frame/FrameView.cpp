@@ -236,6 +236,7 @@ DEFINE_TRACE(FrameView) {
   visitor->trace(m_animatingScrollableAreas);
   visitor->trace(m_autoSizeInfo);
   visitor->trace(m_children);
+  visitor->trace(m_plugins);
   visitor->trace(m_viewportScrollableArea);
   visitor->trace(m_visibilityObserver);
   visitor->trace(m_scrollAnchor);
@@ -1483,7 +1484,7 @@ void FrameView::updateGeometries() {
     if (layoutViewItem().isNull())
       break;
 
-    if (FrameViewBase* frameViewBase = part->frameViewBase()) {
+    if (FrameViewBase* frameViewBase = part->pluginOrFrame()) {
       if (frameViewBase->isFrameView()) {
         FrameView* frameView = toFrameView(frameViewBase);
         bool didNeedLayout = frameView->needsLayout();
@@ -3299,10 +3300,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
   // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews.
   // We should have a way to only run these other Documents to the same
   // lifecycle stage as this frame.
-  const ChildrenSet* viewChildren = children();
-  for (const Member<FrameViewBase>& child : *viewChildren) {
-    if ((*child).isPluginContainer())
-      toPluginView(child.get())->updateAllLifecyclePhases();
+  for (const Member<PluginView>& plugin : *plugins()) {
+    plugin->updateAllLifecyclePhases();
   }
   checkDoesNotNeedLayout();
 
@@ -3755,14 +3754,28 @@ void FrameView::setParent(FrameViewBase* parentView) {
 }
 
 void FrameView::removeChild(FrameViewBase* child) {
-  ASSERT(child->parent() == this);
+  DCHECK(child->parent() == this);
 
   if (child->isFrameView() &&
       !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
     removeScrollableArea(toFrameView(child));
 
-  child->setParent(0);
+  child->setParent(nullptr);
   m_children.erase(child);
+}
+
+void FrameView::removePlugin(PluginView* plugin) {
+  DCHECK(plugin->parent() == this);
+  DCHECK(m_plugins.contains(plugin));
+  plugin->setParent(nullptr);
+  m_plugins.erase(plugin);
+}
+
+void FrameView::addPlugin(PluginView* plugin) {
+  DCHECK(!plugin->parent());
+  DCHECK(!m_plugins.contains(plugin));
+  plugin->setParent(this);
+  m_plugins.insert(plugin);
 }
 
 bool FrameView::visualViewportSuppliesScrollbars() {
@@ -3801,6 +3814,9 @@ void FrameView::frameRectsChanged() {
 
   for (const auto& child : m_children)
     child->frameRectsChanged();
+
+  for (const auto& plugin : m_plugins)
+    plugin->frameRectsChanged();
 }
 
 void FrameView::setLayoutSizeInternal(const IntSize& size) {
@@ -3851,7 +3867,8 @@ IntSize FrameView::maximumScrollOffsetInt() const {
 }
 
 void FrameView::addChild(FrameViewBase* child) {
-  ASSERT(child != this && !child->parent());
+  DCHECK(child != this && !child->parent());
+  DCHECK(!child->isPluginView());
   child->setParent(this);
   m_children.insert(child);
 }
@@ -4647,6 +4664,9 @@ void FrameView::setParentVisible(bool visible) {
 
   for (const auto& child : m_children)
     child->setParentVisible(visible);
+
+  for (const auto& plugin : m_plugins)
+    plugin->setParentVisible(visible);
 }
 
 void FrameView::show() {
@@ -4666,6 +4686,9 @@ void FrameView::show() {
     if (isParentVisible()) {
       for (const auto& child : m_children)
         child->setParentVisible(true);
+
+      for (const auto& plugin : m_plugins)
+        plugin->setParentVisible(true);
     }
   }
 
@@ -4677,6 +4700,9 @@ void FrameView::hide() {
     if (isParentVisible()) {
       for (const auto& child : m_children)
         child->setParentVisible(false);
+
+      for (const auto& plugin : m_plugins)
+        plugin->setParentVisible(false);
     }
     setSelfVisible(false);
     if (ScrollingCoordinator* scrollingCoordinator =

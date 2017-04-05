@@ -92,25 +92,57 @@ HTMLPlugInElement::~HTMLPlugInElement() {
 
 DEFINE_TRACE(HTMLPlugInElement) {
   visitor->trace(m_imageLoader);
+  visitor->trace(m_plugin);
   visitor->trace(m_persistedPlugin);
   HTMLFrameOwnerElement::trace(visitor);
 }
 
-// TODO(joelhockey): Move implementation of HTMLFrameOwnerElement
-// setWidget/releaseWidget/ownedWidget that relates to plugins to here and
-// remove inheritance from PluginView to FrameViewBase.
-void HTMLPlugInElement::setPlugin(PluginView* pluginView) {
-  setWidget(pluginView);
+void HTMLPlugInElement::setPlugin(PluginView* plugin) {
+  if (plugin == m_plugin)
+    return;
+
+  // Remove and dispose the old plugin if we had one.
+  if (m_plugin) {
+    document().view()->removePlugin(m_plugin);
+    disposeWidgetSoon(m_plugin);
+  }
+  m_plugin = plugin;
+
+  // TODO(joelhockey): I copied the rest of this method from
+  // HTMLFrameOwnerElement.  There may be parts that can be removed
+  // such as the layoutPartItem.isNull check and DCHECKs.
+  // Once widget tree is removed (FrameView::m_children), try to unify
+  // this code with HTMLFrameOwnerElement::setWidget.
+  LayoutPart* layoutPart = toLayoutPart(layoutObject());
+  LayoutPartItem layoutPartItem = LayoutPartItem(layoutPart);
+  if (layoutPartItem.isNull())
+    return;
+
+  // Update layout and frame with new plugin.
+  if (m_plugin) {
+    layoutPartItem.updateOnWidgetChange();
+
+    DCHECK_EQ(document().view(), layoutPartItem.frameView());
+    DCHECK(layoutPartItem.frameView());
+    document().view()->addPlugin(plugin);
+  }
+
+  // Apparently accessibility objects might have been modified if plugin
+  // was removed.
+  if (AXObjectCache* cache = document().existingAXObjectCache())
+    cache->childrenChanged(layoutPart);
 }
 
 PluginView* HTMLPlugInElement::releasePlugin() {
-  FrameViewBase* plugin = releaseWidget();
-  return plugin && plugin->isPluginView() ? toPluginView(plugin) : nullptr;
-}
-
-PluginView* HTMLPlugInElement::ownedPlugin() const {
-  FrameViewBase* plugin = ownedWidget();
-  return plugin && plugin->isPluginView() ? toPluginView(plugin) : nullptr;
+  if (!m_plugin)
+    return nullptr;
+  document().view()->removePlugin(m_plugin);
+  LayoutPart* layoutPart = toLayoutPart(layoutObject());
+  if (layoutPart) {
+    if (AXObjectCache* cache = document().existingAXObjectCache())
+      cache->childrenChanged(layoutPart);
+  }
+  return m_plugin.release();
 }
 
 void HTMLPlugInElement::setPersistedPlugin(PluginView* plugin) {
@@ -169,9 +201,8 @@ bool HTMLPlugInElement::willRespondToMouseClickEvents() {
 
 void HTMLPlugInElement::removeAllEventListeners() {
   HTMLFrameOwnerElement::removeAllEventListeners();
-  if (LayoutPart* layoutObject = existingLayoutPart()) {
-    if (FrameViewBase* frameViewBase = layoutObject->frameViewBase())
-      frameViewBase->eventListenersRemoved();
+  if (m_plugin) {
+    m_plugin->eventListenersRemoved();
   }
 }
 
@@ -263,7 +294,7 @@ void HTMLPlugInElement::createPluginWithoutLayoutObject() {
 }
 
 bool HTMLPlugInElement::shouldAccelerate() const {
-  return ownedPlugin() && ownedPlugin()->platformLayer();
+  return m_plugin && m_plugin->platformLayer();
 }
 
 void HTMLPlugInElement::detachLayoutTree(const AttachContext& context) {
@@ -279,8 +310,7 @@ void HTMLPlugInElement::detachLayoutTree(const AttachContext& context) {
   }
 
   // Only try to persist a plugin we actually own.
-  PluginView* plugin = ownedPlugin();
-  if (plugin && context.performingReattach) {
+  if (m_plugin && context.performingReattach) {
     setPersistedPlugin(releasePlugin());
   } else {
     // Clear the plugin; will trigger disposal of it with Oilpan.
@@ -347,11 +377,13 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper() {
 }
 
 PluginView* HTMLPlugInElement::pluginWidget() const {
-  LayoutPart* layoutPart = layoutPartForJSBindings();
-  if (layoutPart && layoutPart->frameViewBase() &&
-      layoutPart->frameViewBase()->isPluginView())
-    return toPluginView(layoutPart->frameViewBase());
+  if (LayoutPart* layoutPart = layoutPartForJSBindings())
+    return layoutPart->plugin();
   return nullptr;
+}
+
+PluginView* HTMLPlugInElement::plugin() const {
+  return m_plugin.get();
 }
 
 bool HTMLPlugInElement::isPresentationAttribute(
@@ -403,10 +435,9 @@ void HTMLPlugInElement::defaultEventHandler(Event* event) {
             .showsUnavailablePluginIndicator())
       return;
   }
-  FrameViewBase* frameViewBase = toLayoutPart(r)->frameViewBase();
-  if (!frameViewBase)
+  if (!m_plugin)
     return;
-  frameViewBase->handleEvent(event);
+  m_plugin->handleEvent(event);
   if (event->defaultHandled())
     return;
   HTMLFrameOwnerElement::defaultEventHandler(event);

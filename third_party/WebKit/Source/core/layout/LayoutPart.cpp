@@ -28,6 +28,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
@@ -98,6 +99,20 @@ FrameViewBase* LayoutPart::frameViewBase() const {
   return nullptr;
 }
 
+PluginView* LayoutPart::plugin() const {
+  // Plugins are stored in their DOM node.
+  return node() && isHTMLPlugInElement(node())
+             ? toHTMLPlugInElement(node())->plugin()
+             : nullptr;
+}
+
+FrameViewBase* LayoutPart::pluginOrFrame() const {
+  FrameViewBase* result = frameViewBase();
+  if (!result)
+    result = plugin();
+  return result;
+}
+
 PaintLayerType LayoutPart::layerTypeRequired() const {
   PaintLayerType type = LayoutReplaced::layerTypeRequired();
   if (type != NoPaintLayer)
@@ -110,8 +125,8 @@ bool LayoutPart::requiresAcceleratedCompositing() const {
   // a plugin LayoutObject and the plugin has a layer, then we need a layer.
   // Second, if this is a LayoutObject with a contentDocument and that document
   // needs a layer, then we need a layer.
-  if (frameViewBase() && frameViewBase()->isPluginView() &&
-      toPluginView(frameViewBase())->platformLayer())
+  PluginView* pluginView = plugin();
+  if (pluginView && pluginView->platformLayer())
     return true;
 
   if (!node() || !node()->isFrameOwnerElement())
@@ -239,13 +254,12 @@ CompositingReasons LayoutPart::additionalCompositingReasons() const {
 void LayoutPart::styleDidChange(StyleDifference diff,
                                 const ComputedStyle* oldStyle) {
   LayoutReplaced::styleDidChange(diff, oldStyle);
-  FrameViewBase* frameViewBase = this->frameViewBase();
-
+  FrameViewBase* frameViewBase = this->pluginOrFrame();
   if (!frameViewBase)
     return;
 
   // If the iframe has custom scrollbars, recalculate their style.
-  if (frameViewBase && frameViewBase->isFrameView())
+  if (frameViewBase->isFrameView())
     toFrameView(frameViewBase)->recalculateCustomScrollbarStyle();
 
   if (style()->visibility() != EVisibility::kVisible) {
@@ -273,7 +287,7 @@ void LayoutPart::paintContents(const PaintInfo& paintInfo,
 
 CursorDirective LayoutPart::getCursor(const LayoutPoint& point,
                                       Cursor& cursor) const {
-  if (frameViewBase() && frameViewBase()->isPluginView()) {
+  if (plugin()) {
     // A plugin is responsible for setting the cursor when the pointer is over
     // it.
     return DoNotSetCursor;
@@ -292,7 +306,7 @@ LayoutRect LayoutPart::replacedContentRect() const {
 }
 
 void LayoutPart::updateOnWidgetChange() {
-  FrameViewBase* frameViewBase = this->frameViewBase();
+  FrameViewBase* frameViewBase = this->pluginOrFrame();
   if (!frameViewBase)
     return;
 
@@ -300,7 +314,7 @@ void LayoutPart::updateOnWidgetChange() {
     return;
 
   if (!needsLayout())
-    updateGeometryInternal();
+    updateGeometryInternal(*frameViewBase);
 
   if (style()->visibility() != EVisibility::kVisible) {
     frameViewBase->hide();
@@ -313,7 +327,7 @@ void LayoutPart::updateOnWidgetChange() {
 }
 
 void LayoutPart::updateGeometry() {
-  FrameViewBase* frameViewBase = this->frameViewBase();
+  FrameViewBase* frameViewBase = this->pluginOrFrame();
   if (!frameViewBase ||
       !node())  // Check the node in case destroy() has been called.
     return;
@@ -334,7 +348,7 @@ void LayoutPart::updateGeometry() {
       (boundsWillChange || frameView->needsScrollbarReconstruction()))
     frameView->setNeedsLayout();
 
-  updateGeometryInternal();
+  updateGeometryInternal(*frameViewBase);
 
   // If view needs layout, either because bounds have changed or possibly
   // indicating content size is wrong, we have to do a layout to set the right
@@ -345,10 +359,7 @@ void LayoutPart::updateGeometry() {
   frameViewBase->geometryMayHaveChanged();
 }
 
-void LayoutPart::updateGeometryInternal() {
-  FrameViewBase* frameViewBase = this->frameViewBase();
-  DCHECK(frameViewBase);
-
+void LayoutPart::updateGeometryInternal(FrameViewBase& frameViewBase) {
   // Ignore transform here, as we only care about the sub-pixel accumulation.
   // TODO(trchen): What about multicol? Need a LayoutBox function to query
   // sub-pixel accumulation.
@@ -373,7 +384,7 @@ void LayoutPart::updateGeometryInternal() {
 
   // Why is the protector needed?
   RefPtr<LayoutPart> protector(this);
-  frameViewBase->setFrameRect(frameRect);
+  frameViewBase.setFrameRect(frameRect);
 }
 
 void LayoutPart::invalidatePaintOfSubtreesIfNeeded(

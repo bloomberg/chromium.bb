@@ -994,14 +994,10 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     }
   }
 
-  if (const FrameView::ChildrenSet* children = frameView->children()) {
-    for (const Member<FrameViewBase>& child : *children) {
-      if (!(*child).isPluginView())
-        continue;
-
-      PluginView* pluginView = toPluginView(child.get());
-      if (pluginView->wantsWheelEvents()) {
-        IntRect box = frameView->convertToRootFrame(pluginView->frameRect());
+  if (const FrameView::PluginsSet* plugins = frameView->plugins()) {
+    for (const Member<PluginView>& plugin : *plugins) {
+      if (plugin->wantsWheelEvents()) {
+        IntRect box = frameView->convertToRootFrame(plugin->frameRect());
         shouldHandleScrollGestureOnMainThreadRegion.unite(box);
       }
     }

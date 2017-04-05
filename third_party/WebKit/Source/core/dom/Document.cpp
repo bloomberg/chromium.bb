@@ -165,6 +165,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/HTMLTitleElement.h"
@@ -375,6 +376,13 @@ static inline bool isValidNamePart(UChar32 c) {
 }
 
 static FrameViewBase* frameViewBaseForElement(const Element& focusedElement) {
+  // Return either plugin or frame.
+  // TODO(joelhockey): FrameViewBase class will soon be removed.  It will be
+  // replaced with Focusable ABC that FrameView and PluginView will implement
+  // and this method will return Focusable.
+  if (isHTMLPlugInElement(focusedElement))
+    return toHTMLPlugInElement(focusedElement).plugin();
+
   LayoutObject* layoutObject = focusedElement.layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
     return 0;
