@@ -152,8 +152,8 @@ Node* NodeTraversal::nextPostOrder(const Node& current,
   return next;
 }
 
-static Node* previousAncestorSiblingPostOrder(const Node& current,
-                                              const Node* stayWithin) {
+Node* NodeTraversal::previousAncestorSiblingPostOrder(const Node& current,
+                                                      const Node* stayWithin) {
   DCHECK(!current.previousSibling());
   for (Node& parent : NodeTraversal::ancestorsOf(current)) {
     if (parent == stayWithin)

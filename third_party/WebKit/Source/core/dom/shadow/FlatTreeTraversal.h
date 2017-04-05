@@ -165,6 +165,8 @@ class CORE_EXPORT FlatTreeTraversal {
 
   static Node* traverseNextAncestorSibling(const Node&);
   static Node* traversePreviousAncestorSibling(const Node&);
+  static Node* previousAncestorSiblingPostOrder(const Node& current,
+                                                const Node* stayWithin);
 };
 
 inline ContainerNode* FlatTreeTraversal::parent(

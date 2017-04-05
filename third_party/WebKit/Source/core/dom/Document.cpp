@@ -261,9 +261,6 @@
 
 #include <memory>
 
-using namespace WTF;
-using namespace Unicode;
-
 #ifndef NDEBUG
 using WeakDocumentSet =
     blink::PersistentHeapHashSet<blink::WeakMember<blink::Document>>;
@@ -317,10 +314,11 @@ static inline bool isValidNameStart(UChar32 c) {
     return true;
 
   // rules (a) and (f) above
-  const uint32_t nameStartMask = Letter_Lowercase | Letter_Uppercase |
-                                 Letter_Other | Letter_Titlecase |
-                                 Number_Letter;
-  if (!(Unicode::category(c) & nameStartMask))
+  const uint32_t nameStartMask =
+      WTF::Unicode::Letter_Lowercase | WTF::Unicode::Letter_Uppercase |
+      WTF::Unicode::Letter_Other | WTF::Unicode::Letter_Titlecase |
+      WTF::Unicode::Number_Letter;
+  if (!(WTF::Unicode::category(c) & nameStartMask))
     return false;
 
   // rule (c) above
@@ -328,8 +326,10 @@ static inline bool isValidNameStart(UChar32 c) {
     return false;
 
   // rule (d) above
-  CharDecompositionType decompType = decompositionType(c);
-  if (decompType == DecompositionFont || decompType == DecompositionCompat)
+  WTF::Unicode::CharDecompositionType decompType =
+      WTF::Unicode::decompositionType(c);
+  if (decompType == WTF::Unicode::DecompositionFont ||
+      decompType == WTF::Unicode::DecompositionCompat)
     return false;
 
   return true;
@@ -349,10 +349,11 @@ static inline bool isValidNamePart(UChar32 c) {
     return true;
 
   // rules (b) and (f) above
-  const uint32_t otherNamePartMask = Mark_NonSpacing | Mark_Enclosing |
-                                     Mark_SpacingCombining | Letter_Modifier |
-                                     Number_DecimalDigit;
-  if (!(Unicode::category(c) & otherNamePartMask))
+  const uint32_t otherNamePartMask =
+      WTF::Unicode::Mark_NonSpacing | WTF::Unicode::Mark_Enclosing |
+      WTF::Unicode::Mark_SpacingCombining | WTF::Unicode::Letter_Modifier |
+      WTF::Unicode::Number_DecimalDigit;
+  if (!(WTF::Unicode::category(c) & otherNamePartMask))
     return false;
 
   // rule (c) above
@@ -360,8 +361,10 @@ static inline bool isValidNamePart(UChar32 c) {
     return false;
 
   // rule (d) above
-  CharDecompositionType decompType = decompositionType(c);
-  if (decompType == DecompositionFont || decompType == DecompositionCompat)
+  WTF::Unicode::CharDecompositionType decompType =
+      WTF::Unicode::decompositionType(c);
+  if (decompType == WTF::Unicode::DecompositionFont ||
+      decompType == WTF::Unicode::DecompositionCompat)
     return false;
 
   return true;
@@ -1453,8 +1456,9 @@ static inline String canonicalizedTitle(Document* document,
   bool pendingWhitespace = false;
   for (unsigned i = 0; i < length; ++i) {
     UChar32 c = characters[i];
-    if ((c <= spaceCharacter && c != lineTabulationCharacter) ||
-        c == deleteCharacter) {
+    if ((c <= WTF::Unicode::spaceCharacter &&
+         c != WTF::Unicode::lineTabulationCharacter) ||
+        c == WTF::Unicode::deleteCharacter) {
       if (builderIndex != 0)
         pendingWhitespace = true;
     } else {
@@ -5022,8 +5026,8 @@ void Document::setEncodingData(const DocumentEncodingData& newData) {
       m_titleElement->textContent().containsOnlyLatin1()) {
     CString originalBytes = m_titleElement->textContent().latin1();
     std::unique_ptr<TextCodec> codec = newTextCodec(newData.encoding());
-    String correctlyDecodedTitle =
-        codec->decode(originalBytes.data(), originalBytes.length(), DataEOF);
+    String correctlyDecodedTitle = codec->decode(
+        originalBytes.data(), originalBytes.length(), WTF::DataEOF);
     m_titleElement->setTextContent(correctlyDecodedTitle);
   }
 

@@ -159,6 +159,8 @@ class NodeTraversal {
   static Node* traverseNextTemplate(NodeType&, const Node* stayWithin);
   template <class NodeType>
   static Node* childAtTemplate(NodeType&, unsigned);
+  static Node* previousAncestorSiblingPostOrder(const Node& current,
+                                                const Node* stayWithin);
 };
 
 template <class Iterator>

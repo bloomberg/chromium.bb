@@ -43,7 +43,7 @@
 namespace blink {
 
 // The address of this string is important; its value is just documentation.
-static const char kSupplementName[] = "CSSSelectorWatch";
+static const char kSupplementNameWatch[] = "CSSSelectorWatch";
 
 CSSSelectorWatch::CSSSelectorWatch(Document& document)
     : Supplement<Document>(document),
@@ -57,14 +57,14 @@ CSSSelectorWatch& CSSSelectorWatch::from(Document& document) {
   CSSSelectorWatch* watch = fromIfExists(document);
   if (!watch) {
     watch = new CSSSelectorWatch(document);
-    Supplement<Document>::provideTo(document, kSupplementName, watch);
+    Supplement<Document>::provideTo(document, kSupplementNameWatch, watch);
   }
   return *watch;
 }
 
 CSSSelectorWatch* CSSSelectorWatch::fromIfExists(Document& document) {
   return static_cast<CSSSelectorWatch*>(
-      Supplement<Document>::from(document, kSupplementName));
+      Supplement<Document>::from(document, kSupplementNameWatch));
 }
 
 void CSSSelectorWatch::callbackSelectorChangeTimerFired(TimerBase*) {

@@ -288,8 +288,9 @@ Node* FlatTreeTraversal::previousSkippingChildren(const Node& node) {
   return traversePreviousAncestorSibling(node);
 }
 
-static Node* previousAncestorSiblingPostOrder(const Node& current,
-                                              const Node* stayWithin) {
+Node* FlatTreeTraversal::previousAncestorSiblingPostOrder(
+    const Node& current,
+    const Node* stayWithin) {
   DCHECK(!FlatTreeTraversal::previousSibling(current));
   for (Node* parent = FlatTreeTraversal::parent(current); parent;
        parent = FlatTreeTraversal::parent(*parent)) {

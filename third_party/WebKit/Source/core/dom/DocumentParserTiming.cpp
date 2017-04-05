@@ -10,14 +10,14 @@
 
 namespace blink {
 
-static const char kSupplementName[] = "DocumentParserTiming";
+static const char kSupplementNameTiming[] = "DocumentParserTiming";
 
 DocumentParserTiming& DocumentParserTiming::from(Document& document) {
   DocumentParserTiming* timing = static_cast<DocumentParserTiming*>(
-      Supplement<Document>::from(document, kSupplementName));
+      Supplement<Document>::from(document, kSupplementNameTiming));
   if (!timing) {
     timing = new DocumentParserTiming(document);
-    Supplement<Document>::provideTo(document, kSupplementName, timing);
+    Supplement<Document>::provideTo(document, kSupplementNameTiming, timing);
   }
   return *timing;
 }
