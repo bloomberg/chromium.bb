@@ -12,12 +12,34 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_scheduler/post_task.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/instance_holder.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/aura/window.h"
+#include "ui/snapshot/snapshot.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace arc {
+
+namespace {
+
+void ScreenshotCallback(
+    const mojom::VoiceInteractionFrameworkHost::CaptureFocusedWindowCallback&
+        callback,
+    scoped_refptr<base::RefCountedMemory> png_data) {
+  if (png_data.get() == nullptr) {
+    callback.Run(std::vector<uint8_t>{});
+    return;
+  }
+  std::vector<uint8_t> result(png_data->front(),
+                              png_data->front() + png_data->size());
+  callback.Run(result);
+}
+
+}  // namespace
 
 // static
 bool ArcVoiceInteractionFrameworkService::IsVoiceInteractionEnabled() {
@@ -72,10 +94,18 @@ bool ArcVoiceInteractionFrameworkService::CanHandleAccelerators() const {
 void ArcVoiceInteractionFrameworkService::CaptureFocusedWindow(
     const CaptureFocusedWindowCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  NOTIMPLEMENTED();
-  // TODO(muyuanli): The logic below is only there to prevent blocking.
-  //                 details needs to be implemented in the future.
-  callback.Run(std::vector<uint8_t>{});
+  aura::Window* window =
+      ash::Shell::GetInstance()->activation_client()->GetActiveWindow();
+
+  if (window == nullptr) {
+    callback.Run(std::vector<uint8_t>{});
+    return;
+  }
+  ui::GrabWindowSnapshotAsyncPNG(window, gfx::Rect(window->bounds().size()),
+                                 base::CreateTaskRunnerWithTraits(
+                                     base::TaskTraits().MayBlock().WithPriority(
+                                         base::TaskPriority::USER_BLOCKING)),
+                                 base::Bind(&ScreenshotCallback, callback));
 }
 
 }  // namespace arc
