@@ -48,6 +48,7 @@ class WebViewFrameWidget : public WebFrameWidgetBase {
   void resizeVisualViewport(const WebSize&) override;
   void didEnterFullscreen() override;
   void didExitFullscreen() override;
+  void setSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void beginFrame(double lastFrameTimeMonotonic) override;
   void updateAllLifecyclePhases() override;
   void paint(WebCanvas*, const WebRect& viewPort) override;

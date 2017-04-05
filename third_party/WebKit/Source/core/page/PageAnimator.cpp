@@ -73,10 +73,21 @@ void PageAnimator::serviceScriptedAnimations(
   }
 }
 
+void PageAnimator::setSuppressFrameRequestsWorkaroundFor704763Only(
+    bool suppressFrameRequests) {
+  // If we are enabling the suppression and it was already enabled then we must
+  // have missed disabling it at the end of a previous frame.
+  DCHECK(!m_suppressFrameRequestsWorkaroundFor704763Only ||
+         !suppressFrameRequests);
+  m_suppressFrameRequestsWorkaroundFor704763Only = suppressFrameRequests;
+}
+
 DISABLE_CFI_PERF
 void PageAnimator::scheduleVisualUpdate(LocalFrame* frame) {
-  if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting)
+  if (m_servicingAnimations || m_updatingLayoutAndStyleForPainting ||
+      m_suppressFrameRequestsWorkaroundFor704763Only) {
     return;
+  }
   m_page->chromeClient().scheduleAnimation(frame->view());
 }
 

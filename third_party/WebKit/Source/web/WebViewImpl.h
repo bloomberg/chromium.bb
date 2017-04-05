@@ -129,6 +129,7 @@ class WEB_EXPORT WebViewImpl final
   void didEnterFullscreen() override;
   void didExitFullscreen() override;
 
+  void setSuppressFrameRequestsWorkaroundFor704763Only(bool) override;
   void beginFrame(double lastFrameTimeMonotonic) override;
 
   void updateAllLifecyclePhases() override;

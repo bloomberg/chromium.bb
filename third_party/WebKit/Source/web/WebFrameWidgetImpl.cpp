@@ -232,6 +232,11 @@ void WebFrameWidgetImpl::didExitFullscreen() {
   view()->didExitFullscreen();
 }
 
+void WebFrameWidgetImpl::setSuppressFrameRequestsWorkaroundFor704763Only(
+    bool suppressFrameRequests) {
+  page()->animator().setSuppressFrameRequestsWorkaroundFor704763Only(
+      suppressFrameRequests);
+}
 void WebFrameWidgetImpl::beginFrame(double lastFrameTimeMonotonic) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                lastFrameTimeMonotonic);

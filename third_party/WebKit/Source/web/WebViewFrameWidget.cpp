@@ -57,6 +57,11 @@ void WebViewFrameWidget::didExitFullscreen() {
   return m_webView->didExitFullscreen();
 }
 
+void WebViewFrameWidget::setSuppressFrameRequestsWorkaroundFor704763Only(
+    bool suppressFrameRequests) {
+  return m_webView->setSuppressFrameRequestsWorkaroundFor704763Only(
+      suppressFrameRequests);
+}
 void WebViewFrameWidget::beginFrame(double lastFrameTimeMonotonic) {
   return m_webView->beginFrame(lastFrameTimeMonotonic);
 }

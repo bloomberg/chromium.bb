@@ -2004,6 +2004,11 @@ void WebViewImpl::didUpdateFullscreenSize() {
   m_fullscreenController->updateSize();
 }
 
+void WebViewImpl::setSuppressFrameRequestsWorkaroundFor704763Only(
+    bool suppressFrameRequests) {
+  m_page->animator().setSuppressFrameRequestsWorkaroundFor704763Only(
+      suppressFrameRequests);
+}
 void WebViewImpl::beginFrame(double lastFrameTimeMonotonic) {
   TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime",
                lastFrameTimeMonotonic);

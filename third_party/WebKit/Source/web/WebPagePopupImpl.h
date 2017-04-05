@@ -76,6 +76,7 @@ class WebPagePopupImpl final : public WebPagePopup,
 
  private:
   // WebWidget functions
+  void setSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void beginFrame(double lastFrameTimeMonotonic) override;
   void updateAllLifecyclePhases() override;
   void willCloseLayerTreeView() override;

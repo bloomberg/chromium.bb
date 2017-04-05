@@ -941,6 +941,7 @@ void RenderWidget::RequestScheduleAnimation() {
 
 void RenderWidget::UpdateVisualState() {
   GetWebWidget()->updateAllLifecyclePhases();
+  GetWebWidget()->setSuppressFrameRequestsWorkaroundFor704763Only(false);
 
   if (time_to_first_active_paint_recorded_)
     return;
@@ -957,6 +958,8 @@ void RenderWidget::UpdateVisualState() {
 
 void RenderWidget::WillBeginCompositorFrame() {
   TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
+
+  GetWebWidget()->setSuppressFrameRequestsWorkaroundFor704763Only(true);
 
   // The UpdateTextInputState can result in further layout and possibly
   // enable GPU acceleration so they need to be called before any painting
