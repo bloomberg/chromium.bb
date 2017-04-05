@@ -48,11 +48,7 @@ class CONTENT_EXPORT HtmlVideoElementCapturerSource final
   ~HtmlVideoElementCapturerSource() override;
 
   // media::VideoCapturerSource Implementation.
-  void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override;
+  media::VideoCaptureFormats GetPreferredFormats() override;
   void StartCapture(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override;

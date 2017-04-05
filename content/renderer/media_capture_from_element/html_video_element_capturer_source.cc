@@ -55,15 +55,8 @@ HtmlVideoElementCapturerSource::~HtmlVideoElementCapturerSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void HtmlVideoElementCapturerSource::GetCurrentSupportedFormats(
-    int max_requested_width,
-    int max_requested_height,
-    double max_requested_frame_rate,
-    const VideoCaptureDeviceFormatsCB& callback) {
-  DVLOG(2) << __func__ << "{ max_requested_height = " << max_requested_height
-           << "}) { max_requested_width = " << max_requested_width
-           << "}) { max_requested_frame_rate = " << max_requested_frame_rate
-           << "})";
+media::VideoCaptureFormats
+HtmlVideoElementCapturerSource::GetPreferredFormats() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // WebMediaPlayer has a setRate() but can't be read back.
@@ -75,7 +68,7 @@ void HtmlVideoElementCapturerSource::GetCurrentSupportedFormats(
       media::PIXEL_FORMAT_I420);
   media::VideoCaptureFormats formats;
   formats.push_back(format);
-  callback.Run(formats);
+  return formats;
 }
 
 void HtmlVideoElementCapturerSource::StartCapture(

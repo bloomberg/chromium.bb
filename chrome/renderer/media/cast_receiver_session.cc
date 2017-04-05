@@ -44,11 +44,7 @@ class CastReceiverSession::VideoCapturerSource
   explicit VideoCapturerSource(
       const scoped_refptr<CastReceiverSession> cast_receiver_session);
  protected:
-  void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override;
+  media::VideoCaptureFormats GetPreferredFormats() override;
   void StartCapture(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& frame_callback,
                     const RunningCallback& running_callback) override;
@@ -127,15 +123,12 @@ CastReceiverSession::VideoCapturerSource::VideoCapturerSource(
     : cast_receiver_session_(cast_receiver_session) {
 }
 
-void CastReceiverSession::VideoCapturerSource::GetCurrentSupportedFormats(
-    int max_requested_width,
-    int max_requested_height,
-    double max_requested_frame_rate,
-    const VideoCaptureDeviceFormatsCB& callback) {
-  std::vector<media::VideoCaptureFormat> formats;
+media::VideoCaptureFormats
+CastReceiverSession::VideoCapturerSource::GetPreferredFormats() {
+  media::VideoCaptureFormats formats;
   if (cast_receiver_session_->format_.IsValid())
     formats.push_back(cast_receiver_session_->format_);
-  callback.Run(formats);
+  return formats;
 }
 
 void CastReceiverSession::VideoCapturerSource::StartCapture(

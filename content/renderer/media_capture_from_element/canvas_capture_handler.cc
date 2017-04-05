@@ -49,11 +49,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
   }
 
  protected:
-  void GetCurrentSupportedFormats(
-      int max_requested_width,
-      int max_requested_height,
-      double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override {
+  media::VideoCaptureFormats GetPreferredFormats() override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
     const blink::WebSize& size = canvas_handler_->GetSourceSize();
     media::VideoCaptureFormats formats;
@@ -63,7 +59,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
     formats.push_back(
         media::VideoCaptureFormat(gfx::Size(size.width, size.height),
                                   frame_rate_, media::PIXEL_FORMAT_YV12A));
-    callback.Run(formats);
+    return formats;
   }
   void StartCapture(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& frame_callback,

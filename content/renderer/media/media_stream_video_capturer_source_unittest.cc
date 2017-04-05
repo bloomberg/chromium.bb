@@ -42,6 +42,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
                    int max_requested_height,
                    double max_requested_frame_rate,
                    const VideoCaptureDeviceFormatsCB& callback));
+  MOCK_METHOD0(GetPreferredFormats, media::VideoCaptureFormats());
   MOCK_METHOD3(StartCapture,
                void(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& new_frame_callback,

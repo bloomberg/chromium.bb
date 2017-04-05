@@ -209,6 +209,7 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
       int max_requested_height,
       double max_requested_frame_rate,
       const VideoCaptureDeviceFormatsCB& callback) override;
+  media::VideoCaptureFormats GetPreferredFormats() override;
   void StartCapture(const media::VideoCaptureParams& params,
                     const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override;
@@ -299,6 +300,10 @@ void LocalVideoCapturerSource::GetCurrentSupportedFormats(
       session_id_, media::BindToCurrentLoop(base::Bind(
                        &LocalVideoCapturerSource::OnDeviceFormatsInUseReceived,
                        weak_factory_.GetWeakPtr())));
+}
+
+media::VideoCaptureFormats LocalVideoCapturerSource::GetPreferredFormats() {
+  return media::VideoCaptureFormats();
 }
 
 void LocalVideoCapturerSource::StartCapture(

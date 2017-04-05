@@ -13,4 +13,12 @@ namespace media {
 // to generate symbols across linking units.
 VideoCapturerSource::~VideoCapturerSource() {}
 
+void VideoCapturerSource::GetCurrentSupportedFormats(
+    int max_requested_width,
+    int max_requested_height,
+    double max_requested_frame_rate,
+    const VideoCaptureDeviceFormatsCB& callback) {
+  callback.Run(GetPreferredFormats());
+}
+
 }  // namespace media
