@@ -162,26 +162,30 @@ class TestBaselineSet(object):
         return bool(self._test_prefix_map)
 
     def _iter_combinations(self):
-        """Iterates through (test, build) combinations."""
-        for test_prefix, builds in self._test_prefix_map.iteritems():
+        """Iterates through (test, build, port) combinations."""
+        for test_prefix, build_port_pairs in self._test_prefix_map.iteritems():
             for test in self._port.tests([test_prefix]):
-                for build in builds:
-                    yield (test, build)
+                for build, port_name in build_port_pairs:
+                    yield (test, build, port_name)
 
     def __str__(self):
         if not self._test_prefix_map:
             return '<Empty TestBaselineSet>'
-        return '<TestBaselineSet with:\n  ' + '\n  '.join('%s: %s' % pair for pair in self._iter_combinations()) + '>'
+        return ('<TestBaselineSet with:\n  ' +
+                '\n  '.join('%s: %s, %s' % triple for triple in self._iter_combinations()) +
+                '>')
 
-    def add(self, test_prefix, build):
+    def add(self, test_prefix, build, port_name=None):
         """Adds an entry for baselines to download for some set of tests.
 
         Args:
             test_prefix: This can be a full test path, or directory of tests, or a path with globs.
             build: A Build object. This specifies where to fetch baselines from.
+            port_name: This specifies what platform the baseline is for.
         """
+        port_name = port_name or self._host.builders.port_name_for_builder_name(build.builder_name)
         self._builder_names.add(build.builder_name)
-        self._test_prefix_map[test_prefix].append(build)
+        self._test_prefix_map[test_prefix].append((build, port_name))
 
     def all_builders(self):
         """Returns all builder names in in this collection."""
@@ -441,11 +445,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         lines_to_remove = {}
 
         builders_to_fetch_from = self._builders_to_fetch_from(test_baseline_set.all_builders())
-        for test, build in test_baseline_set:
+        for test, build, port_name in test_baseline_set:
             if build.builder_name not in builders_to_fetch_from:
                 continue
-
-            port_name = self._tool.builders.port_name_for_builder_name(build.builder_name)
 
             suffixes = self._suffixes_for_actual_failures(test, build)
             if not suffixes:
@@ -501,7 +503,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         """Returns a list of commands to run in parallel to de-duplicate baselines."""
         tests_to_suffixes = collections.defaultdict(set)
         builders_to_fetch_from = self._builders_to_fetch_from(test_baseline_set.all_builders())
-        for test, build in test_baseline_set:
+        for test, build, _ in test_baseline_set:
             if build.builder_name not in builders_to_fetch_from:
                 continue
             tests_to_suffixes[test].update(self._suffixes_for_actual_failures(test, build))
@@ -582,7 +584,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             _log.error('There are uncommitted changes in the layout tests directory; aborting.')
             return
 
-        for test in sorted({t for t, _ in test_baseline_set}):
+        for test in sorted({t for t, _, _ in test_baseline_set}):
             _log.info('Rebaselining %s', test)
 
         copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
@@ -645,7 +647,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         """
         filesystem = self._tool.filesystem
         baseline_paths = set()
-        for test, build in test_baseline_set:
+        for test, build, _ in test_baseline_set:
             filenames = [self._file_name_for_expected_result(test, suffix) for suffix in BASELINE_SUFFIX_LIST]
             port_baseline_dir = self._baseline_directory(build.builder_name)
             baseline_paths.update({filesystem.join(port_baseline_dir, filename) for filename in filenames})

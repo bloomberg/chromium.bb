@@ -528,7 +528,8 @@ class TestRebaseline(BaseTestCase):
                     '--suffixes', 'txt,png',
                     '--port-name', 'test-win-win7',
                     '--builder', 'MOCK Win7',
-                    '--results-directory', '/tmp']]
+                    '--results-directory', '/tmp',
+                ]],
             ])
 
     def test_unstaged_baselines(self):
@@ -545,6 +546,40 @@ class TestRebaseline(BaseTestCase):
             [
                 '/mock-checkout/third_party/WebKit/LayoutTests/x/foo-expected.png',
                 '/mock-checkout/third_party/WebKit/LayoutTests/x/foo-expected.txt',
+            ])
+
+    def test_rebaseline_with_different_port_name(self):
+        self._setup_mock_build_data()
+        self._write('userscripts/first-test.html', 'Dummy test contents')
+        test_baseline_set = TestBaselineSet(self.tool)
+        test_baseline_set.add('userscripts/first-test.html', Build('MOCK Win7'), 'test-win-win10')
+        self.command.rebaseline(self.options(), test_baseline_set)
+
+        self.assertEqual(
+            self.tool.executive.calls,
+            [
+                [[
+                    'python', 'echo', 'copy-existing-baselines-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win10',
+
+                ]],
+                [[
+                    'python', 'echo', 'rebaseline-test-internal',
+                    '--verbose',
+                    '--test', 'userscripts/first-test.html',
+                    '--suffixes', 'txt,png',
+                    '--port-name', 'test-win-win10',
+                    '--builder', 'MOCK Win7',
+                ]],
+                [[
+                    'python', 'echo', 'optimize-baselines',
+                    '--verbose',
+                    '--suffixes', 'txt,png',
+                    'userscripts/first-test.html',
+                ]]
             ])
 
 
@@ -1133,10 +1168,10 @@ class TestBaselineSetTest(unittest.TestCase):
         self.assertEqual(
             list(test_baseline_set),
             [
-                ('a/x.html', Build(builder_name='MOCK Trusty')),
-                ('a/y.html', Build(builder_name='MOCK Trusty')),
-                ('a/z.html', Build(builder_name='MOCK Trusty')),
-                ('a/z.html', Build(builder_name='MOCK Win10')),
+                ('a/x.html', Build(builder_name='MOCK Trusty'), 'test-linux-trusty'),
+                ('a/y.html', Build(builder_name='MOCK Trusty'), 'test-linux-trusty'),
+                ('a/z.html', Build(builder_name='MOCK Trusty'), 'test-linux-trusty'),
+                ('a/z.html', Build(builder_name='MOCK Win10'), 'test-win-win10'),
             ])
 
     def test_str_empty(self):
@@ -1150,5 +1185,5 @@ class TestBaselineSetTest(unittest.TestCase):
         self.assertEqual(
             str(test_baseline_set),
             ('<TestBaselineSet with:\n'
-             '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None)\n'
-             '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None)>'))
+             '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None), test-mac-mac10.12\n'
+             '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None), test-win-win10>'))
