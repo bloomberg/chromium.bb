@@ -1132,26 +1132,11 @@ void ContainerNode::setHovered(bool over) {
 
   Node::setHovered(over);
 
-  // If :hover sets display: none we lose our hover but still need to recalc our
-  // style.
-  if (!layoutObject()) {
-    if (over)
-      return;
-    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
-      toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
-    else
-      setNeedsStyleRecalc(
-          LocalStyleChange,
-          StyleChangeReasonForTracing::createWithExtraData(
-              StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
-    return;
-  }
-
-  if (computedStyle()->affectedByHover()) {
-    StyleChangeType changeType =
-        computedStyle()->hasPseudoStyle(PseudoIdFirstLetter)
-            ? SubtreeStyleChange
-            : LocalStyleChange;
+  const ComputedStyle* style = computedStyle();
+  if (!style || style->affectedByHover()) {
+    StyleChangeType changeType = LocalStyleChange;
+    if (style && style->hasPseudoStyle(PseudoIdFirstLetter))
+      changeType = SubtreeStyleChange;
     setNeedsStyleRecalc(
         changeType,
         StyleChangeReasonForTracing::createWithExtraData(
@@ -1160,7 +1145,10 @@ void ContainerNode::setHovered(bool over) {
   if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
     toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
 
-  LayoutTheme::theme().controlStateChanged(*layoutObject(), HoverControlState);
+  if (layoutObject()) {
+    LayoutTheme::theme().controlStateChanged(*layoutObject(),
+                                             HoverControlState);
+  }
 }
 
 HTMLCollection* ContainerNode::children() {

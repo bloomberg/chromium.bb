@@ -3971,6 +3971,17 @@ void Document::removeFocusedElementOfSubtree(Node* node,
     clearFocusedElement();
 }
 
+static Node* skipDisplayNoneAncestors(Node* node) {
+  while (node) {
+    if (node->layoutObject())
+      return node;
+    if (node->isElementNode() && toElement(node)->hasDisplayContentsStyle())
+      return node;
+    node = FlatTreeTraversal::parent(*node);
+  }
+  return nullptr;
+}
+
 void Document::hoveredNodeDetached(Element& element) {
   if (!m_hoverNode)
     return;
@@ -3981,9 +3992,7 @@ void Document::hoveredNodeDetached(Element& element) {
        element != FlatTreeTraversal::parent(*m_hoverNode)))
     return;
 
-  m_hoverNode = FlatTreeTraversal::parent(element);
-  while (m_hoverNode && !m_hoverNode->layoutObject())
-    m_hoverNode = FlatTreeTraversal::parent(*m_hoverNode);
+  m_hoverNode = skipDisplayNoneAncestors(&element);
 
   // If the mouse cursor is not visible, do not clear existing
   // hover effects on the ancestors of |element| and do not invoke
@@ -4002,11 +4011,7 @@ void Document::activeChainNodeDetached(Element& element) {
   if (element != m_activeHoverElement)
     return;
 
-  Node* activeNode = FlatTreeTraversal::parent(element);
-  while (activeNode && activeNode->isElementNode() &&
-         !activeNode->layoutObject())
-    activeNode = FlatTreeTraversal::parent(*activeNode);
-
+  Node* activeNode = skipDisplayNoneAncestors(&element);
   m_activeHoverElement = activeNode && activeNode->isElementNode()
                              ? toElement(activeNode)
                              : nullptr;
@@ -6234,11 +6239,11 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
 
   Node* oldHoverNode = hoverNode();
 
-  // Check to see if the hovered node has changed.
-  // If it hasn't, we do not need to do anything.
-  Node* newHoverNode = innerElementInDocument;
-  while (newHoverNode && !newHoverNode->layoutObject())
-    newHoverNode = newHoverNode->parentOrShadowHostNode();
+  // The passed in innerElement may not be a result of a hit test for the
+  // current up-to-date flat/layout tree. That means the element may be
+  // display:none at this point. Skip up the ancestor chain until we reach an
+  // element with a layoutObject or a display:contents element.
+  Node* newHoverNode = skipDisplayNoneAncestors(innerElementInDocument);
 
   // Update our current hover node.
   setHoverNode(newHoverNode);
