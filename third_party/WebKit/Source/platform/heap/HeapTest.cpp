@@ -5335,6 +5335,136 @@ TEST(HeapTest, ThreadedStrongification) {
   ThreadedStrongificationTester::test();
 }
 
+class MemberSameThreadCheckTester {
+ public:
+  void test() {
+    IntWrapper::s_destructorCalls = 0;
+
+    MutexLocker locker(mainThreadMutex());
+    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
+        Platform::current()->createThread("Test Worker Thread"));
+    workerThread->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(&MemberSameThreadCheckTester::workerThreadMain,
+                        crossThreadUnretained(this)));
+
+    parkMainThread();
+  }
+
+ private:
+  Member<IntWrapper> m_wrapper;
+
+  void workerThreadMain() {
+    MutexLocker locker(workerThreadMutex());
+
+    ThreadState::attachCurrentThread();
+
+    // Setting an object created on the worker thread to a Member allocated on
+    // the main thread is not allowed.
+    m_wrapper = IntWrapper::create(42);
+
+    wakeMainThread();
+    ThreadState::detachCurrentThread();
+  }
+};
+
+#if DCHECK_IS_ON()
+TEST(HeapTest, MemberSameThreadCheck) {
+  EXPECT_DEATH(MemberSameThreadCheckTester().test(), "");
+}
+#endif
+
+class PersistentSameThreadCheckTester {
+ public:
+  void test() {
+    IntWrapper::s_destructorCalls = 0;
+
+    MutexLocker locker(mainThreadMutex());
+    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
+        Platform::current()->createThread("Test Worker Thread"));
+    workerThread->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(&PersistentSameThreadCheckTester::workerThreadMain,
+                        crossThreadUnretained(this)));
+
+    parkMainThread();
+  }
+
+ private:
+  Persistent<IntWrapper> m_wrapper;
+
+  void workerThreadMain() {
+    MutexLocker locker(workerThreadMutex());
+
+    ThreadState::attachCurrentThread();
+
+    // Setting an object created on the worker thread to a Persistent allocated
+    // on the main thread is not allowed.
+    m_wrapper = IntWrapper::create(42);
+
+    wakeMainThread();
+    ThreadState::detachCurrentThread();
+  }
+};
+
+#if DCHECK_IS_ON()
+TEST(HeapTest, PersistentSameThreadCheck) {
+  EXPECT_DEATH(PersistentSameThreadCheckTester().test(), "");
+}
+#endif
+
+class MarkingSameThreadCheckTester {
+ public:
+  void test() {
+    IntWrapper::s_destructorCalls = 0;
+
+    MutexLocker locker(mainThreadMutex());
+    std::unique_ptr<WebThread> workerThread = WTF::wrapUnique(
+        Platform::current()->createThread("Test Worker Thread"));
+    Persistent<MainThreadObject> m_mainThreadObject = new MainThreadObject();
+    workerThread->getWebTaskRunner()->postTask(
+        BLINK_FROM_HERE,
+        crossThreadBind(&MarkingSameThreadCheckTester::workerThreadMain,
+                        crossThreadUnretained(this),
+                        wrapCrossThreadPersistent(m_mainThreadObject.get())));
+    parkMainThread();
+    // This will try to mark MainThreadObject when it tries to mark IntWrapper
+    // it should crash.
+    preciselyCollectGarbage();
+  }
+
+ private:
+  class MainThreadObject : public GarbageCollectedFinalized<MainThreadObject> {
+   public:
+    DEFINE_INLINE_TRACE() { visitor->trace(m_wrapperSet); }
+    void addToSet(IntWrapper* wrapper) { m_wrapperSet.insert(42, wrapper); }
+
+   private:
+    HeapHashMap<int, Member<IntWrapper>> m_wrapperSet;
+  };
+
+  void workerThreadMain(MainThreadObject* mainThreadObject) {
+    MutexLocker locker(workerThreadMutex());
+
+    ThreadState::attachCurrentThread();
+
+    // Adding a reference to an object created on the worker thread to a
+    // HeapHashMap created on the main thread is not allowed.
+    mainThreadObject->addToSet(IntWrapper::create(42));
+
+    wakeMainThread();
+    ThreadState::detachCurrentThread();
+  }
+};
+
+#if DCHECK_IS_ON()
+TEST(HeapTest, MarkingSameThreadCheck) {
+  // This will crash during marking, at the DCHECK in Visitor::markHeader() or
+  // earlier.
+  EXPECT_DEATH(MarkingSameThreadCheckTester().test(), "");
+}
+#endif
+
 static bool allocateAndReturnBool() {
   conservativelyCollectGarbage();
   return true;
