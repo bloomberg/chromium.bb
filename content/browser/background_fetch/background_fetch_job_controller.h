@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/background_fetch/background_fetch_types.h"
@@ -49,7 +48,8 @@ class CONTENT_EXPORT BackgroundFetchJobController {
 
   // Starts fetching the |initial_fetches|. The controller will continue to
   // fetch new content until all requests have been handled.
-  void Start(std::vector<BackgroundFetchRequestInfo> initial_requests);
+  void Start(
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests);
 
   // Updates the representation of this Background Fetch in the user interface
   // to match the given |title|.
@@ -73,20 +73,19 @@ class CONTENT_EXPORT BackgroundFetchJobController {
   class Core;
 
   // Requests the download manager to start fetching |request|.
-  void StartRequest(const BackgroundFetchRequestInfo& request);
+  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // Called when the given |request| has started fetching, after having been
   // assigned the |download_guid| by the download system.
-  void DidStartRequest(const BackgroundFetchRequestInfo& request,
+  void DidStartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
                        const std::string& download_guid);
 
   // Called when the given |request| has been completed.
-  void DidCompleteRequest(const BackgroundFetchRequestInfo& request);
+  void DidCompleteRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // Called when a completed download has been marked as such in the DataManager
   // and the next request, if any, has been read from storage.
-  void DidGetNextRequest(
-      const base::Optional<BackgroundFetchRequestInfo>& request);
+  void DidGetNextRequest(scoped_refptr<BackgroundFetchRequestInfo> request);
 
   // The registration id on behalf of which this controller is fetching data.
   BackgroundFetchRegistrationId registration_id_;

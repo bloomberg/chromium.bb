@@ -36,7 +36,8 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
       const std::vector<ServiceWorkerFetchRequest>& requests,
       const BackgroundFetchOptions& options,
       blink::mojom::BackgroundFetchError* out_error,
-      std::vector<BackgroundFetchRequestInfo>* out_initial_requests) {
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>*
+          out_initial_requests) {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
@@ -66,9 +67,10 @@ class BackgroundFetchDataManagerTest : public BackgroundFetchTestBase {
   void DidCreateRegistration(
       base::Closure quit_closure,
       blink::mojom::BackgroundFetchError* out_error,
-      std::vector<BackgroundFetchRequestInfo>* out_initial_requests,
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>*
+          out_initial_requests,
       blink::mojom::BackgroundFetchError error,
-      std::vector<BackgroundFetchRequestInfo> initial_requests) {
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
     *out_error = error;
     *out_initial_requests = std::move(initial_requests);
 
@@ -98,7 +100,7 @@ TEST_F(BackgroundFetchDataManagerTest, NoDuplicateRegistrations) {
   BackgroundFetchOptions options;
 
   blink::mojom::BackgroundFetchError error;
-  std::vector<BackgroundFetchRequestInfo> initial_requests;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests;
 
   // Deleting the not-yet-created registration should fail.
   ASSERT_NO_FATAL_FAILURE(DeleteRegistration(registration_id, &error));

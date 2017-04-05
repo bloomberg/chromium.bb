@@ -126,7 +126,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   // included |request_data|. Should be wrapped in ASSERT_NO_FATAL_FAILURE().
   void CreateRegistrationForRequests(
       BackgroundFetchRegistrationId* registration_id,
-      std::vector<BackgroundFetchRequestInfo>* out_initial_requests,
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>*
+          out_initial_requests,
       std::map<std::string /* url */, std::string /* method */> request_data) {
     DCHECK(registration_id);
     DCHECK(out_initial_requests);
@@ -184,10 +185,11 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
  private:
   void DidCreateRegistration(
       blink::mojom::BackgroundFetchError* out_error,
-      std::vector<BackgroundFetchRequestInfo>* out_initial_requests,
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>*
+          out_initial_requests,
       const base::Closure& quit_closure,
       blink::mojom::BackgroundFetchError error,
-      std::vector<BackgroundFetchRequestInfo> initial_requests) {
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
     DCHECK(out_error);
     DCHECK(out_initial_requests);
 
@@ -214,7 +216,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
 TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   BackgroundFetchRegistrationId registration_id;
-  std::vector<BackgroundFetchRequestInfo> initial_requests;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
       &registration_id, &initial_requests,
@@ -259,7 +261,7 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   BackgroundFetchRegistrationId registration_id;
-  std::vector<BackgroundFetchRequestInfo> initial_requests;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests;
 
   // This test should always issue more requests than the number of allowed
   // parallel requests. That way we ensure testing the iteration behaviour.
@@ -304,7 +306,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
 
 TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
   BackgroundFetchRegistrationId registration_id;
-  std::vector<BackgroundFetchRequestInfo> initial_requests;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests;
 
   ASSERT_NO_FATAL_FAILURE(CreateRegistrationForRequests(
       &registration_id, &initial_requests,

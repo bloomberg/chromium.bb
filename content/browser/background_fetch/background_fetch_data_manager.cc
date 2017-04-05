@@ -30,8 +30,12 @@ class BackgroundFetchDataManager::RegistrationData {
     int request_index = 0;
 
     // Convert the given |requests| to BackgroundFetchRequestInfo objects.
-    for (const ServiceWorkerFetchRequest& request : requests)
-      pending_requests_.emplace(request_index++, request);
+    for (const ServiceWorkerFetchRequest& fetch_request : requests) {
+      scoped_refptr<BackgroundFetchRequestInfo> request =
+          new BackgroundFetchRequestInfo(request_index++, fetch_request);
+
+      pending_requests_.push(std::move(request));
+    }
   }
 
   ~RegistrationData() = default;
@@ -40,10 +44,10 @@ class BackgroundFetchDataManager::RegistrationData {
   bool HasPendingRequests() const { return !pending_requests_.empty(); }
 
   // Consumes a request from the queue that is to be fetched.
-  BackgroundFetchRequestInfo GetPendingRequest() {
+  scoped_refptr<BackgroundFetchRequestInfo> GetPendingRequest() {
     DCHECK(!pending_requests_.empty());
 
-    BackgroundFetchRequestInfo request = pending_requests_.front();
+    auto request = pending_requests_.front();
     pending_requests_.pop();
 
     // The |request| is considered to be active now.
@@ -55,12 +59,12 @@ class BackgroundFetchDataManager::RegistrationData {
   // Marks the |request| as having started with the given |download_guid|.
   // Persistent storage needs to store the association so we can resume fetches
   // after a browser restart, here we just verify that the |request| is active.
-  void MarkRequestAsStarted(const BackgroundFetchRequestInfo& request,
+  void MarkRequestAsStarted(BackgroundFetchRequestInfo* request,
                             const std::string& download_guid) {
     const auto iter = std::find_if(
         active_requests_.begin(), active_requests_.end(),
-        [&request](const BackgroundFetchRequestInfo& active_request) {
-          return active_request.request_index() == request.request_index();
+        [&request](scoped_refptr<BackgroundFetchRequestInfo> active_request) {
+          return active_request->request_index() == request->request_index();
         });
 
     // The |request| must have been consumed from this RegistrationData.
@@ -69,40 +73,38 @@ class BackgroundFetchDataManager::RegistrationData {
 
   // Marks the |request| as having completed. Verifies that the |request| is
   // currently active and moves it to the |completed_requests_| vector.
-  void MarkRequestAsComplete(const BackgroundFetchRequestInfo& request) {
+  void MarkRequestAsComplete(BackgroundFetchRequestInfo* request) {
     const auto iter = std::find_if(
         active_requests_.begin(), active_requests_.end(),
-        [&request](const BackgroundFetchRequestInfo& active_request) {
-          return active_request.request_index() == request.request_index();
+        [&request](scoped_refptr<BackgroundFetchRequestInfo> active_request) {
+          return active_request->request_index() == request->request_index();
         });
 
     // The |request| must have been consumed from this RegistrationData.
     DCHECK(iter != active_requests_.end());
 
+    completed_requests_.push_back(*iter);
     active_requests_.erase(iter);
-    completed_requests_.push_back(request);
   }
 
   // Returns the vector with all completed requests part of this registration.
-  const std::vector<BackgroundFetchRequestInfo>& GetCompletedRequests() const {
+  const std::vector<scoped_refptr<BackgroundFetchRequestInfo>>&
+  GetCompletedRequests() const {
     return completed_requests_;
   }
 
  private:
   BackgroundFetchOptions options_;
 
-  // TODO(peter): BackgroundFetchRequestInfo should be stored in a
-  // unique_ptr, owned by the BackgroundFetchJobController. Right now we
-  // can't do that as we need to hold on to copies here.
-  std::queue<BackgroundFetchRequestInfo> pending_requests_;
-  std::vector<BackgroundFetchRequestInfo> active_requests_;
+  std::queue<scoped_refptr<BackgroundFetchRequestInfo>> pending_requests_;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> active_requests_;
 
   // TODO(peter): Right now it's safe for this to be a vector because we only
   // allow a single parallel request. That stops when we start allowing more.
   static_assert(kMaximumBackgroundFetchParallelRequests == 1,
                 "RegistrationData::completed_requests_ assumes no parallelism");
 
-  std::vector<BackgroundFetchRequestInfo> completed_requests_;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> completed_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationData);
 };
@@ -127,8 +129,9 @@ void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchOptions& options,
     CreateRegistrationCallback callback) {
   if (registrations_.find(registration_id) != registrations_.end()) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::DUPLICATED_TAG,
-                            std::vector<BackgroundFetchRequestInfo>());
+    std::move(callback).Run(
+        blink::mojom::BackgroundFetchError::DUPLICATED_TAG,
+        std::vector<scoped_refptr<BackgroundFetchRequestInfo>>());
     return;
   }
 
@@ -136,7 +139,7 @@ void BackgroundFetchDataManager::CreateRegistration(
       base::MakeUnique<RegistrationData>(requests, options);
 
   // Create a vector with the initial requests to feed the Job Controller with.
-  std::vector<BackgroundFetchRequestInfo> initial_requests;
+  std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests;
   for (size_t i = 0; i < kMaximumBackgroundFetchParallelRequests; ++i) {
     if (!registration_data->HasPendingRequests())
       break;
@@ -155,7 +158,7 @@ void BackgroundFetchDataManager::CreateRegistration(
 
 void BackgroundFetchDataManager::MarkRequestAsStarted(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchRequestInfo& request,
+    BackgroundFetchRequestInfo* request,
     const std::string& download_guid) {
   auto iter = registrations_.find(registration_id);
   DCHECK(iter != registrations_.end());
@@ -166,7 +169,7 @@ void BackgroundFetchDataManager::MarkRequestAsStarted(
 
 void BackgroundFetchDataManager::MarkRequestAsCompleteAndGetNextRequest(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchRequestInfo& request,
+    BackgroundFetchRequestInfo* request,
     NextRequestCallback callback) {
   auto iter = registrations_.find(registration_id);
   DCHECK(iter != registrations_.end());
@@ -174,11 +177,11 @@ void BackgroundFetchDataManager::MarkRequestAsCompleteAndGetNextRequest(
   RegistrationData* registration_data = iter->second.get();
   registration_data->MarkRequestAsComplete(request);
 
-  base::Optional<BackgroundFetchRequestInfo> next_request;
+  scoped_refptr<BackgroundFetchRequestInfo> next_request;
   if (registration_data->HasPendingRequests())
     next_request = registration_data->GetPendingRequest();
 
-  std::move(callback).Run(next_request);
+  std::move(callback).Run(std::move(next_request));
 }
 
 void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
@@ -190,7 +193,7 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
   RegistrationData* registration_data = iter->second.get();
   DCHECK(!registration_data->HasPendingRequests());
 
-  const std::vector<BackgroundFetchRequestInfo>& requests =
+  const std::vector<scoped_refptr<BackgroundFetchRequestInfo>>& requests =
       registration_data->GetCompletedRequests();
 
   std::vector<BackgroundFetchSettledFetch> settled_fetches;
@@ -200,26 +203,26 @@ void BackgroundFetchDataManager::GetSettledFetchesForRegistration(
 
   for (const auto& request : requests) {
     BackgroundFetchSettledFetch settled_fetch;
-    settled_fetch.request = request.fetch_request();
+    settled_fetch.request = request->fetch_request();
 
-    settled_fetch.response.url_list.push_back(request.GetURL());
+    settled_fetch.response.url_list.push_back(request->GetURL());
     // TODO: settled_fetch.response.status_code
     // TODO: settled_fetch.response.status_text
     // TODO: settled_fetch.response.response_type
     // TODO: settled_fetch.response.headers
 
-    if (request.received_bytes() > 0) {
-      DCHECK(!request.file_path().empty());
+    if (request->received_bytes() > 0) {
+      DCHECK(!request->file_path().empty());
 
       std::unique_ptr<BlobHandle> blob_handle =
           blob_storage_context_->CreateFileBackedBlob(
-              request.file_path(), 0 /* offset */, request.received_bytes(),
+              request->file_path(), 0 /* offset */, request->received_bytes(),
               base::Time() /* expected_modification_time */);
 
       // TODO(peter): Appropriately handle !blob_handle
       if (blob_handle) {
         settled_fetch.response.blob_uuid = blob_handle->GetUUID();
-        settled_fetch.response.blob_size = request.received_bytes();
+        settled_fetch.response.blob_size = request->received_bytes();
 
         blob_handles.push_back(std::move(blob_handle));
       }

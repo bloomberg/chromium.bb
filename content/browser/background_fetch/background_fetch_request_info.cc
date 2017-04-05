@@ -10,22 +10,10 @@
 
 namespace content {
 
-BackgroundFetchRequestInfo::BackgroundFetchRequestInfo() = default;
-
 BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     int request_index,
     const ServiceWorkerFetchRequest& fetch_request)
     : request_index_(request_index), fetch_request_(fetch_request) {}
-
-BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
-    const BackgroundFetchRequestInfo& request)
-    : request_index_(request.request_index_),
-      fetch_request_(request.fetch_request_),
-      download_guid_(request.download_guid_),
-      state_(request.state_),
-      interrupt_reason_(request.interrupt_reason_),
-      file_path_(request.file_path_),
-      received_bytes_(request.received_bytes_) {}
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() {}
 

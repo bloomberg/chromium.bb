@@ -40,23 +40,25 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
   base::WeakPtr<Core> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
 
   // Starts fetching the |request| with the download manager.
-  void StartRequest(const BackgroundFetchRequestInfo& request) {
+  void StartRequest(scoped_refptr<BackgroundFetchRequestInfo> request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(request_context_);
+    DCHECK(request);
 
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(browser_context_);
     DCHECK(download_manager);
 
     std::unique_ptr<DownloadUrlParameters> download_parameters(
-        base::MakeUnique<DownloadUrlParameters>(request.GetURL(),
+        base::MakeUnique<DownloadUrlParameters>(request->GetURL(),
                                                 request_context_.get()));
 
     // TODO(peter): The |download_parameters| should be populated with all the
     // properties set in the |request|'s ServiceWorkerFetchRequest member.
 
-    download_parameters->set_callback(base::Bind(
-        &Core::DidStartRequest, weak_ptr_factory_.GetWeakPtr(), request));
+    download_parameters->set_callback(base::Bind(&Core::DidStartRequest,
+                                                 weak_ptr_factory_.GetWeakPtr(),
+                                                 std::move(request)));
 
     download_manager->DownloadUrl(std::move(download_parameters));
   }
@@ -68,7 +70,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     auto iter = downloads_.find(item);
     DCHECK(iter != downloads_.end());
 
-    const BackgroundFetchRequestInfo& request = iter->second;
+    const scoped_refptr<BackgroundFetchRequestInfo>& request = iter->second;
 
     switch (item->GetState()) {
       case DownloadItem::DownloadState::COMPLETE:
@@ -113,7 +115,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
   // Called when the download manager has started the given |request|. The
   // |download_item| continues to be owned by the download system. The
   // |interrupt_reason| will indicate when a request could not be started.
-  void DidStartRequest(const BackgroundFetchRequestInfo& request,
+  void DidStartRequest(scoped_refptr<BackgroundFetchRequestInfo> request,
                        DownloadItem* download_item,
                        DownloadInterruptReason interrupt_reason) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -135,7 +137,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
 
     // Associate the |download_item| with the |request| so that we can retrieve
     // it's information when further updates happen.
-    downloads_.insert(std::make_pair(download_item, request));
+    downloads_.insert(std::make_pair(download_item, std::move(request)));
   }
 
   // Weak reference to the BackgroundFetchJobController instance that owns us.
@@ -148,7 +150,8 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // Map from DownloadItem* to the request info for the in-progress downloads.
-  std::unordered_map<DownloadItem*, BackgroundFetchRequestInfo> downloads_;
+  std::unordered_map<DownloadItem*, scoped_refptr<BackgroundFetchRequestInfo>>
+      downloads_;
 
   base::WeakPtrFactory<Core> weak_ptr_factory_;
 
@@ -181,35 +184,36 @@ BackgroundFetchJobController::BackgroundFetchJobController(
 BackgroundFetchJobController::~BackgroundFetchJobController() = default;
 
 void BackgroundFetchJobController::Start(
-    std::vector<BackgroundFetchRequestInfo> initial_requests) {
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_LE(initial_requests.size(), kMaximumBackgroundFetchParallelRequests);
   DCHECK_EQ(state_, State::INITIALIZED);
 
   state_ = State::FETCHING;
 
-  for (const BackgroundFetchRequestInfo& request : initial_requests)
+  for (const auto& request : initial_requests)
     StartRequest(request);
 }
 
 void BackgroundFetchJobController::StartRequest(
-    const BackgroundFetchRequestInfo& request) {
+    scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(state_, State::FETCHING);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Core::StartRequest, ui_core_ptr_, request));
+      base::Bind(&Core::StartRequest, ui_core_ptr_, std::move(request)));
 }
 
 void BackgroundFetchJobController::DidStartRequest(
-    const BackgroundFetchRequestInfo& request,
+    scoped_refptr<BackgroundFetchRequestInfo> request,
     const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  data_manager_->MarkRequestAsStarted(registration_id_, request, download_guid);
+  data_manager_->MarkRequestAsStarted(registration_id_, request.get(),
+                                      download_guid);
 }
 
 void BackgroundFetchJobController::DidCompleteRequest(
-    const BackgroundFetchRequestInfo& request) {
+    scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The DataManager must acknowledge that it stored the data and that there are
@@ -217,19 +221,19 @@ void BackgroundFetchJobController::DidCompleteRequest(
   pending_completed_file_acknowledgements_++;
 
   data_manager_->MarkRequestAsCompleteAndGetNextRequest(
-      registration_id_, request,
+      registration_id_, request.get(),
       base::BindOnce(&BackgroundFetchJobController::DidGetNextRequest,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BackgroundFetchJobController::DidGetNextRequest(
-    const base::Optional<BackgroundFetchRequestInfo>& request) {
+    scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_LE(pending_completed_file_acknowledgements_, 1);
   pending_completed_file_acknowledgements_--;
 
   // If a |request| has been given, start downloading the file and bail.
   if (request) {
-    StartRequest(request.value());
+    StartRequest(std::move(request));
     return;
   }
 

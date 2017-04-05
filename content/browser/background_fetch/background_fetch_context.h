@@ -90,7 +90,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   void CreateController(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
-      std::vector<BackgroundFetchRequestInfo> initial_requests);
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
@@ -98,7 +98,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchOptions& options,
       const blink::mojom::BackgroundFetchService::FetchCallback& callback,
       blink::mojom::BackgroundFetchError error,
-      std::vector<BackgroundFetchRequestInfo> initial_requests);
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests);
 
   // Called when the given |controller| has finished processing its job.
   void DidCompleteJob(BackgroundFetchJobController* controller);

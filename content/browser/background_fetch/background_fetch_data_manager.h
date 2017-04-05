@@ -14,13 +14,13 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
-#include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 
+class BackgroundFetchRequestInfo;
 struct BackgroundFetchSettledFetch;
 class BlobHandle;
 class BrowserContext;
@@ -32,13 +32,13 @@ class ChromeBlobStorageContext;
 // which will keep the metadata up to date.
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
-  using CreateRegistrationCallback =
-      base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              std::vector<BackgroundFetchRequestInfo>)>;
+  using CreateRegistrationCallback = base::OnceCallback<void(
+      blink::mojom::BackgroundFetchError,
+      std::vector<scoped_refptr<BackgroundFetchRequestInfo>>)>;
   using DeleteRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
-  using NextRequestCallback = base::OnceCallback<void(
-      const base::Optional<BackgroundFetchRequestInfo>&)>;
+  using NextRequestCallback =
+      base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
   using SettledFetchesCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               std::vector<BackgroundFetchSettledFetch>,
@@ -60,7 +60,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // |registration_id|, has been started as |download_guid|.
   void MarkRequestAsStarted(
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchRequestInfo& request,
+      BackgroundFetchRequestInfo* request,
       const std::string& download_guid);
 
   // Marks that the |request|, part of the Background Fetch identified by
@@ -68,7 +68,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // next request, if any, when the operation has completed.
   void MarkRequestAsCompleteAndGetNextRequest(
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchRequestInfo& request,
+      BackgroundFetchRequestInfo* request,
       NextRequestCallback callback);
 
   // Reads all settled fetches for the given |registration_id|. Both the Request

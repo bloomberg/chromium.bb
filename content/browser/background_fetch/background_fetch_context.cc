@@ -81,7 +81,7 @@ void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchOptions& options,
     const blink::mojom::BackgroundFetchService::FetchCallback& callback,
     blink::mojom::BackgroundFetchError error,
-    std::vector<BackgroundFetchRequestInfo> initial_requests) {
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
   RecordRegistrationCreatedError(error);
   if (error != blink::mojom::BackgroundFetchError::NONE) {
     callback.Run(error, base::nullopt /* registration */);
@@ -142,7 +142,7 @@ BackgroundFetchJobController* BackgroundFetchContext::GetActiveFetch(
 void BackgroundFetchContext::CreateController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
-    std::vector<BackgroundFetchRequestInfo> initial_requests) {
+    std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
   std::unique_ptr<BackgroundFetchJobController> controller =
       base::MakeUnique<BackgroundFetchJobController>(
           registration_id, options, data_manager_.get(), browser_context_,

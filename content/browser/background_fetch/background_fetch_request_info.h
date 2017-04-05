@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -19,15 +21,13 @@
 namespace content {
 
 // Simple class to encapsulate the components of a fetch request.
-class CONTENT_EXPORT BackgroundFetchRequestInfo {
+// TODO(peter): This can likely change to have a single owner, and thus become
+// an std::unique_ptr<>, when persistent storage has been implemented.
+class CONTENT_EXPORT BackgroundFetchRequestInfo
+    : public base::RefCountedThreadSafe<BackgroundFetchRequestInfo> {
  public:
-  BackgroundFetchRequestInfo();
   BackgroundFetchRequestInfo(int request_index,
                              const ServiceWorkerFetchRequest& fetch_request);
-  // TODO(harkness): Remove copy constructor once the final (non-map-based)
-  // state management is in place.
-  BackgroundFetchRequestInfo(const BackgroundFetchRequestInfo& request);
-  ~BackgroundFetchRequestInfo();
 
   // Returns the index of this request in the larger Background Fetch fetch.
   // Should only be consumed by the BackgroundFetchDataManager.
@@ -66,6 +66,10 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   bool IsComplete() const;
 
  private:
+  friend class base::RefCountedThreadSafe<BackgroundFetchRequestInfo>;
+
+  ~BackgroundFetchRequestInfo();
+
   // Index of this request within a Background Fetch registration.
   int request_index_ = kInvalidBackgroundFetchRequestIndex;
 
@@ -82,6 +86,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
   base::FilePath file_path_;
   int64_t received_bytes_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchRequestInfo);
 };
 
 }  // namespace content

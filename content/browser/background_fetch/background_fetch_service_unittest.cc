@@ -240,6 +240,8 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
   void TearDown() override {
     service_.reset();
 
+    EXPECT_CALL(*download_manager_, Shutdown()).Times(1);
+
     context_->Shutdown();
     context_ = nullptr;
 
