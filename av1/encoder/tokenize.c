@@ -710,8 +710,24 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     *t = t_backup;
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+#if CONFIG_CB4X4
+    if (bsize < BLOCK_8X8 && plane && !is_chroma_reference(mi_row, mi_col)) {
+#if !CONFIG_PVQ
+      if (!dry_run) {
+        (*t)->token = EOSB_TOKEN;
+        (*t)++;
+      }
+#endif
+      continue;
+    }
+#endif
     const struct macroblockd_plane *const pd = &xd->plane[plane];
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+    const BLOCK_SIZE plane_bsize =
+        AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#else
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif
     const int mi_width = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
     const int mi_height = block_size_high[plane_bsize] >> tx_size_wide_log2[0];
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];

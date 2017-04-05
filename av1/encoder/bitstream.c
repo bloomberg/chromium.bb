@@ -2333,7 +2333,12 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_CB4X4
+#if CONFIG_CHROMA_2X2
       const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
+      const BLOCK_SIZE plane_bsize =
+          AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
+#endif
 #else
       const BLOCK_SIZE plane_bsize =
           get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
@@ -2374,6 +2379,9 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_RD_DEBUG
       } else {
         TX_SIZE tx = get_tx_size(plane, xd);
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+        tx = AOMMAX(TX_4X4, tx);
+#endif
         const int bkw = tx_size_wide_unit[tx];
         const int bkh = tx_size_high_unit[tx];
         for (row = 0; row < num_4x4_h; row += bkh) {
