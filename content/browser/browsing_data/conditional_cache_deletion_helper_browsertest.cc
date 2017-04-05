@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "content/browser/browsing_data/conditional_cache_deletion_helper.h"
 #include "content/public/browser/browser_context.h"
@@ -119,19 +120,19 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
 // for time and URL.
 //
 // Note: This test depends on the timing in cache backends and can be flaky
-// if those backends are slow. If this turns out to be a problem, consider
-// increasing the |timeout_ms| constant.
+// if those backends are slow.
 //
 // Flakily timing out on Mac 10.11 (crbug.com/646119) and flakily
-// failing on Linux/ChromeOS (crbug.com/624836).
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+// failing on Linux/ChromeOS (crbug.com/624836)
+// --> Switched to tiny_timeout and enabled the test on all platforms to check
+//     if it will be more stable now.
+#if false
 #define MAYBE_TimeAndURL DISABLED_TimeAndURL
 #else
 #define MAYBE_TimeAndURL TimeAndURL
 #endif
 IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
                        MAYBE_TimeAndURL) {
-  const int64_t timeout_ms = 1;
 
   // Create some entries.
   std::set<std::string> keys;
@@ -141,10 +142,10 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
 
   GetCacheTestUtil()->CreateCacheEntries(keys);
 
-  // Wait |timeout_ms| milliseconds for the cache to write the entries.
+  // Wait some milliseconds for the cache to write the entries.
   // This assures that future entries will have timestamps strictly greater than
   // the ones we just added.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(timeout_ms));
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
   base::Time now = base::Time::Now();
 
   // Create a few more entries with a later timestamp.
