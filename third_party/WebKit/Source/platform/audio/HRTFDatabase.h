@@ -29,13 +29,13 @@
 #ifndef HRTFDatabase_h
 #define HRTFDatabase_h
 
-#include "platform/audio/HRTFElevation.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/audio/HRTFElevation.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PassRefPtr.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

@@ -28,15 +28,15 @@
 
 #include "platform/audio/ReverbConvolver.h"
 
+#include <memory>
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

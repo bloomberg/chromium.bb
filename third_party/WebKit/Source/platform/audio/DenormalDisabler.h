@@ -26,10 +26,10 @@
 #ifndef DenormalDisabler_h
 #define DenormalDisabler_h
 
-#include "wtf/Allocator.h"
-#include "wtf/CPU.h"
-#include "wtf/MathExtras.h"
 #include <float.h>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/CPU.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

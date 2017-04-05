@@ -8,8 +8,8 @@
 #include <vector>
 #include "platform/audio/AudioUtilities.h"
 #include "platform/testing/TestingPlatformSupport.h"
+#include "platform/wtf/PtrUtil.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

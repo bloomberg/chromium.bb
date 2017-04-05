@@ -26,11 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "platform/audio/Panner.h"
+
+#include <memory>
 #include "platform/audio/EqualPowerPanner.h"
 #include "platform/audio/HRTFPanner.h"
-#include "platform/audio/Panner.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

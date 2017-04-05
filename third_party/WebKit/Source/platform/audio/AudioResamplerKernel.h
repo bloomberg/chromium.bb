@@ -28,7 +28,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
-#include "wtf/Allocator.h"
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

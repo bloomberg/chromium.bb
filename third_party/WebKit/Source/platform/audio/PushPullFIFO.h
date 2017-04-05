@@ -6,8 +6,8 @@
 #define PushPullFIFO_h
 
 #include "platform/audio/AudioBus.h"
+#include "platform/wtf/Allocator.h"
 #include "public/platform/WebCommon.h"
-#include "wtf/Allocator.h"
 
 namespace blink {
 

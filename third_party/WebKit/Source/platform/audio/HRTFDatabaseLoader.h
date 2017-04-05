@@ -29,12 +29,12 @@
 #ifndef HRTFDatabaseLoader_h
 #define HRTFDatabaseLoader_h
 
-#include "platform/audio/HRTFDatabase.h"
-#include "public/platform/WebThread.h"
-#include "wtf/HashMap.h"
-#include "wtf/RefCounted.h"
-#include "wtf/ThreadingPrimitives.h"
 #include <memory>
+#include "platform/audio/HRTFDatabase.h"
+#include "platform/wtf/HashMap.h"
+#include "platform/wtf/RefCounted.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "public/platform/WebThread.h"
 
 namespace blink {
 

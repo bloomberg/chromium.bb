@@ -27,10 +27,11 @@
  */
 
 #include "platform/audio/Distance.h"
-#include "wtf/Assertions.h"
-#include "wtf/MathExtras.h"
+
 #include <math.h>
 #include <algorithm>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

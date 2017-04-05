@@ -26,9 +26,9 @@
 #ifndef VectorMath_h
 #define VectorMath_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/build_config.h"
 #include <cstddef>
+#include "platform/PlatformExport.h"
+#include "platform/wtf/build_config.h"
 
 // Defines the interface for several vector math functions whose implementation
 // will ideally be optimized.

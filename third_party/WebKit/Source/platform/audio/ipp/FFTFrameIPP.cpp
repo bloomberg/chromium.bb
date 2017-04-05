@@ -27,13 +27,13 @@
 // FFTFrame implementation using Intel IPP's DFT algorithm,
 // suitable for use on Linux.
 
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #if USE(WEBAUDIO_IPP)
 
 #include "platform/audio/FFTFrame.h"
 
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

@@ -25,7 +25,7 @@
 
 // FFTFrame stub implementation to avoid link errors during bringup
 
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #if !OS(MACOSX) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
 

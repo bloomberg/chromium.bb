@@ -28,9 +28,9 @@
 
 #include "platform/audio/HRTFDatabase.h"
 
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

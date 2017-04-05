@@ -24,8 +24,8 @@
  */
 
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/Assertions.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

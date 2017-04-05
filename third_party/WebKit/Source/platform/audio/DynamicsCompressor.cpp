@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "platform/audio/DynamicsCompressor.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DynamicsCompressor.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

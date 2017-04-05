@@ -24,9 +24,10 @@
  */
 
 #include "platform/audio/AudioDelayDSPKernel.h"
-#include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
+
 #include <cmath>
+#include "platform/audio/AudioUtilities.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

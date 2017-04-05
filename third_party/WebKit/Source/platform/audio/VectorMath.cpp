@@ -24,10 +24,11 @@
  */
 
 #include "platform/audio/VectorMath.h"
-#include "wtf/Assertions.h"
-#include "wtf/CPU.h"
-#include "wtf/MathExtras.h"
+
 #include <stdint.h>
+#include "platform/wtf/Assertions.h"
+#include "platform/wtf/CPU.h"
+#include "platform/wtf/MathExtras.h"
 
 #if OS(MACOSX)
 #include <Accelerate/Accelerate.h>

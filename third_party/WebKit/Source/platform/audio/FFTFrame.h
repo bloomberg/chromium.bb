@@ -29,12 +29,12 @@
 #ifndef FFTFrame_h
 #define FFTFrame_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
-#include "wtf/Allocator.h"
-#include "wtf/Forward.h"
-#include "wtf/Threading.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Threading.h"
 
 #if OS(MACOSX)
 #include <Accelerate/Accelerate.h>

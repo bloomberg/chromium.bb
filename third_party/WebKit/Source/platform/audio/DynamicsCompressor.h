@@ -29,11 +29,11 @@
 #ifndef DynamicsCompressor_h
 #define DynamicsCompressor_h
 
+#include <memory>
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DynamicsCompressorKernel.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
 

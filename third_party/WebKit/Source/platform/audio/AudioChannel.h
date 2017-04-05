@@ -29,11 +29,11 @@
 #ifndef AudioChannel_h
 #define AudioChannel_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
-#include "wtf/Allocator.h"
-#include "wtf/PtrUtil.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

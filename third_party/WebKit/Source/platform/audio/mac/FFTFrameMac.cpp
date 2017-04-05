@@ -28,7 +28,7 @@
 
 // Mac OS X - specific FFTFrame implementation
 
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #if OS(MACOSX)
 

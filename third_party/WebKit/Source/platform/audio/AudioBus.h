@@ -29,11 +29,11 @@
 #ifndef AudioBus_h
 #define AudioBus_h
 
-#include "platform/audio/AudioChannel.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/Vector.h"
 #include <memory>
+#include "platform/audio/AudioChannel.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

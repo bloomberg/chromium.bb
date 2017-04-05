@@ -24,9 +24,9 @@
  */
 
 #include "platform/audio/AudioResampler.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

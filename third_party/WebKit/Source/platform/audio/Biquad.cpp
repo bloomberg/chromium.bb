@@ -30,7 +30,7 @@
 
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/DenormalDisabler.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 #include <algorithm>
 #include <complex>

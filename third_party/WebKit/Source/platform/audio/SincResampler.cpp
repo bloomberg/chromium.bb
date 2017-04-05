@@ -28,8 +28,8 @@
 
 #include "platform/audio/SincResampler.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/CPU.h"
-#include "wtf/MathExtras.h"
+#include "platform/wtf/CPU.h"
+#include "platform/wtf/MathExtras.h"
 
 #if CPU(X86) || CPU(X86_64)
 #include <emmintrin.h>

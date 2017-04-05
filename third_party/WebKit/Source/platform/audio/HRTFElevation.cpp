@@ -26,15 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFElevation.h"
-#include "platform/audio/HRTFPanner.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/text/StringHash.h"
-#include <algorithm>
+
 #include <math.h>
+#include <algorithm>
 #include <memory>
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/HRTFPanner.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/text/StringHash.h"
 
 namespace blink {
 

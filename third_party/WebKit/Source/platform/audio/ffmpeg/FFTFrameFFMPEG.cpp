@@ -26,7 +26,7 @@
 // FFTFrame implementation using FFmpeg's RDFT algorithm,
 // suitable for use on Windows and Linux.
 
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #if USE(WEBAUDIO_FFMPEG)
 
@@ -38,7 +38,7 @@ extern "C" {
 #include <libavcodec/avfft.h>
 }
 
-#include "wtf/MathExtras.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

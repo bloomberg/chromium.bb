@@ -27,17 +27,18 @@
  */
 
 #include "platform/audio/AudioBus.h"
+
+#include <assert.h>
+#include <math.h>
+#include <algorithm>
+#include <memory>
 #include "platform/audio/AudioFileReader.h"
 #include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/SincResampler.h"
 #include "platform/audio/VectorMath.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioBus.h"
-#include "wtf/PtrUtil.h"
-#include <algorithm>
-#include <assert.h>
-#include <math.h>
-#include <memory>
 
 namespace blink {
 

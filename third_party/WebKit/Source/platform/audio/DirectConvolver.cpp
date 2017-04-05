@@ -33,7 +33,7 @@
 #endif
 
 #include "platform/audio/VectorMath.h"
-#include "wtf/CPU.h"
+#include "platform/wtf/CPU.h"
 
 #if (CPU(X86) || CPU(X86_64)) && !OS(MACOSX)
 #include <emmintrin.h>

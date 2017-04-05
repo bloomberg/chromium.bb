@@ -28,11 +28,11 @@
 
 #include "platform/audio/HRTFKernel.h"
 
-#include "platform/audio/AudioChannel.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <memory>
+#include "platform/audio/AudioChannel.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

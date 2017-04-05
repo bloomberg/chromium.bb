@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "platform/audio/StereoPanner.h"
+
+#include <algorithm>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
-#include <algorithm>
+#include "platform/wtf/MathExtras.h"
 
 // Use a 50ms smoothing / de-zippering time-constant.
 const float SmoothingTimeConstant = 0.050f;

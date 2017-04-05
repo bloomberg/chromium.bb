@@ -26,13 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DenormalDisabler.h"
 #include "platform/audio/DynamicsCompressorKernel.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+
 #include <algorithm>
 #include <cmath>
+#include "platform/audio/AudioUtilities.h"
+#include "platform/audio/DenormalDisabler.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

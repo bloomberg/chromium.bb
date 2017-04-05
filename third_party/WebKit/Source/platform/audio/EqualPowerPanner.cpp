@@ -24,11 +24,12 @@
  */
 
 #include "platform/audio/EqualPowerPanner.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "wtf/MathExtras.h"
+
 #include <algorithm>
 #include <cmath>
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioUtilities.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

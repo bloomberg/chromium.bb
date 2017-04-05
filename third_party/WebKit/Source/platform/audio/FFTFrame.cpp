@@ -27,11 +27,12 @@
  */
 
 #include "platform/audio/FFTFrame.h"
-#include "platform/audio/VectorMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+
 #include <complex>
 #include <memory>
+#include "platform/audio/VectorMath.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

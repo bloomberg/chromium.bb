@@ -30,8 +30,8 @@
 #define Distance_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/Allocator.h"
-#include "wtf/build_config.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

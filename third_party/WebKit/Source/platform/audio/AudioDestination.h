@@ -29,14 +29,14 @@
 #ifndef AudioDestination_h
 #define AudioDestination_h
 
+#include <memory>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioIOCallback.h"
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebVector.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

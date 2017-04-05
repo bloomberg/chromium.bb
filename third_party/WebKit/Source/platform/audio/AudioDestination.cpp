@@ -33,10 +33,10 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/PushPullFIFO.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAudioLatencyHint.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "wtf/PtrUtil.h"
 
 namespace blink {
 

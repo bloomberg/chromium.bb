@@ -29,12 +29,12 @@
 #ifndef Panner_h
 #define Panner_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioBus.h"
-#include "wtf/Allocator.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/build_config.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

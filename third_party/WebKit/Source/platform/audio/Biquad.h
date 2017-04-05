@@ -29,11 +29,11 @@
 #ifndef Biquad_h
 #define Biquad_h
 
+#include <sys/types.h>
+#include <complex>
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
-#include "wtf/Allocator.h"
-#include <complex>
-#include <sys/types.h>
+#include "platform/wtf/Allocator.h"
 
 namespace blink {
 

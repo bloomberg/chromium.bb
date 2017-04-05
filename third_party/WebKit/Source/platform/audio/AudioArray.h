@@ -29,11 +29,11 @@
 #ifndef AudioArray_h
 #define AudioArray_h
 
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include "wtf/allocator/Partitions.h"
-#include "wtf/build_config.h"
 #include <string.h>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
+#include "platform/wtf/allocator/Partitions.h"
+#include "platform/wtf/build_config.h"
 
 namespace blink {
 

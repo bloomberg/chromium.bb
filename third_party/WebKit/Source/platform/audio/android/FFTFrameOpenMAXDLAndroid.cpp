@@ -22,16 +22,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/build_config.h"
+#include "platform/wtf/build_config.h"
 
 #if OS(ANDROID) && USE(WEBAUDIO_OPENMAX_DL_FFT)
 
 #include "platform/audio/FFTFrame.h"
 
-#include "platform/audio/AudioArray.h"
-#include "wtf/MathExtras.h"
 #include <dl/sp/api/armSP.h>
 #include <dl/sp/api/omxSP.h>
+#include "platform/audio/AudioArray.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
 

@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolver.h"
-#include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbInputBuffer.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/PtrUtil.h"
+#include "platform/wtf/PtrUtil.h"
 
 namespace blink {
 

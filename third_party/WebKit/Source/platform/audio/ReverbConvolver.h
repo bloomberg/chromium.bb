@@ -29,15 +29,15 @@
 #ifndef ReverbConvolver_h
 #define ReverbConvolver_h
 
+#include <memory>
 #include "platform/audio/AudioArray.h"
 #include "platform/audio/DirectConvolver.h"
 #include "platform/audio/FFTConvolver.h"
 #include "platform/audio/ReverbAccumulationBuffer.h"
 #include "platform/audio/ReverbConvolverStage.h"
 #include "platform/audio/ReverbInputBuffer.h"
-#include "wtf/Allocator.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/Allocator.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 

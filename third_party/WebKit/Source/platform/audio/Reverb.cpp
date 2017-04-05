@@ -26,13 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioBus.h"
 #include "platform/audio/Reverb.h"
-#include "platform/audio/VectorMath.h"
-#include "wtf/MathExtras.h"
-#include "wtf/PtrUtil.h"
+
 #include <math.h>
 #include <memory>
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/VectorMath.h"
+#include "platform/wtf/MathExtras.h"
+#include "platform/wtf/PtrUtil.h"
 
 #if OS(MACOSX)
 using namespace std;

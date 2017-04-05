@@ -31,11 +31,11 @@
 #ifndef AudioDSPKernelProcessor_h
 #define AudioDSPKernelProcessor_h
 
+#include <memory>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioProcessor.h"
-#include "wtf/ThreadingPrimitives.h"
-#include "wtf/Vector.h"
-#include <memory>
+#include "platform/wtf/ThreadingPrimitives.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
