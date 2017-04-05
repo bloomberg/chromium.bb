@@ -6,9 +6,9 @@
 #define KURLStructTraits_h
 
 #include "platform/weborigin/KURL.h"
+#include "platform/wtf/text/WTFString.h"
 #include "url/mojo/url.mojom-blink.h"
 #include "url/url_constants.h"
-#include "wtf/text/WTFString.h"
 
 namespace mojo {
 

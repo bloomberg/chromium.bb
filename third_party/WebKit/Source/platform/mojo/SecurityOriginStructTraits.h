@@ -6,8 +6,8 @@
 #define SecurityOriginStructTraits_h
 
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/wtf/text/WTFString.h"
 #include "url/mojo/origin.mojom-blink.h"
-#include "wtf/text/WTFString.h"
 
 namespace mojo {
 

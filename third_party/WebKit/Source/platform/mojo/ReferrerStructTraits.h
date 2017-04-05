@@ -7,9 +7,9 @@
 
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/ReferrerPolicyEnumTraits.h"
 #include "public/platform/WebReferrerPolicy.h"
-#include "wtf/Assertions.h"
 
 namespace mojo {
 

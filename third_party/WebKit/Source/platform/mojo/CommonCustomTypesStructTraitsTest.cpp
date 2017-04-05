@@ -6,8 +6,8 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/test_common_custom_types.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

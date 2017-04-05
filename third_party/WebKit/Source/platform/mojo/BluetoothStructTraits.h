@@ -6,8 +6,8 @@
 #define BluetoothStructTraits_h
 
 #include "device/bluetooth/public/interfaces/uuid.mojom-blink.h"
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
-#include "wtf/text/WTFString.h"
 
 namespace mojo {
 

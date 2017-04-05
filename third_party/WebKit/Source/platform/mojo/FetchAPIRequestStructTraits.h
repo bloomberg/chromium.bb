@@ -5,9 +5,9 @@
 #ifndef FetchAPIRequestStructTraits_h
 #define FetchAPIRequestStructTraits_h
 
+#include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 class KURL;
