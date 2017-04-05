@@ -44,7 +44,7 @@ Tests the coverage list view after finishing recording in the Coverage view.
 14: - 
 15: * function performActions() {
 16: +   return outer(1)(0) + outer(3)(0);
-17: - } function outer2() {
+17: * } function outer2() {
 18: -   return outer(0)(0);
 19: - }
 20: - 
