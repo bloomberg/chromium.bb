@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ios/web/interstitials/web_interstitial_facade_delegate.h"
+#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/interstitials/web_interstitial_delegate.h"
 #import "ios/web/public/navigation_manager.h"
@@ -59,9 +60,12 @@ void WebInterstitialImpl::Show() {
   GetWebStateImpl()->ShowWebInterstitial(this);
 
   if (new_navigation_) {
-    // TODO(crbug.com/706578): Plumb transient entry handling through
-    // NavigationManager, and remove the NavigationManagerImpl usage here.
-    navigation_manager_->AddTransientItem(url_);
+    // TODO(stuartmorgan): Plumb transient entry handling through
+    // NavigationManager, and remove the NavigationManagerImpl and
+    // SessionController usage here.
+    CRWSessionController* sessionController =
+        navigation_manager_->GetSessionController();
+    [sessionController addTransientItemWithURL:url_];
 
     // Give delegates a chance to set some states on the navigation item.
     GetDelegate()->OverrideItem(navigation_manager_->GetTransientItem());

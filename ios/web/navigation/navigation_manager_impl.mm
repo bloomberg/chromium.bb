@@ -170,15 +170,6 @@ void NavigationManagerImpl::LoadURL(const GURL& url,
   delegate_->GetWebState()->OpenURL(params);
 }
 
-void NavigationManagerImpl::AddTransientItem(const GURL& url) {
-  [session_controller_ addTransientItemWithURL:url];
-
-  // Transient item can only be added for pending non-app-specific loads.
-  DCHECK(GetPendingItem());
-  DCHECK_NE(UserAgentType::NONE, GetPendingItem()->GetUserAgentType());
-  GetTransientItem()->SetUserAgentType(GetPendingItem()->GetUserAgentType());
-}
-
 void NavigationManagerImpl::AddPendingItem(
     const GURL& url,
     const web::Referrer& referrer,

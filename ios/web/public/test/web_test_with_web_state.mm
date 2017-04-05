@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -41,15 +40,6 @@ void WebTestWithWebState::SetUp() {
 void WebTestWithWebState::TearDown() {
   DestroyWebState();
   WebTest::TearDown();
-}
-
-void WebTestWithWebState::AddPendingItem(const GURL& url,
-                                         ui::PageTransition transition) {
-  GetWebController(web_state())
-      .webStateImpl->GetNavigationManagerImpl()
-      .AddPendingItem(url, Referrer(), transition,
-                      web::NavigationInitiationType::USER_INITIATED,
-                      web::NavigationManager::UserAgentOverrideOption::INHERIT);
 }
 
 void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
