@@ -2568,43 +2568,6 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
 }
 #endif  // CONFIG_PALETTE
 
-// Wrappers to make function pointers usable.
-static void inv_txfm_add_4x8_wrapper(const tran_low_t *input, uint8_t *dest,
-                                     int stride, int eob, TX_TYPE tx_type,
-                                     int lossless) {
-  (void)lossless;
-  av1_inv_txfm_add_4x8(input, dest, stride, eob, tx_type);
-}
-
-static void inv_txfm_add_8x4_wrapper(const tran_low_t *input, uint8_t *dest,
-                                     int stride, int eob, TX_TYPE tx_type,
-                                     int lossless) {
-  (void)lossless;
-  av1_inv_txfm_add_8x4(input, dest, stride, eob, tx_type);
-}
-
-typedef void (*inv_txfm_func_ptr)(const tran_low_t *, uint8_t *, int, int,
-                                  TX_TYPE, int);
-#if CONFIG_AOM_HIGHBITDEPTH
-
-void highbd_inv_txfm_add_4x8_wrapper(const tran_low_t *input, uint8_t *dest,
-                                     int stride, int eob, int bd,
-                                     TX_TYPE tx_type, int is_lossless) {
-  (void)is_lossless;
-  av1_highbd_inv_txfm_add_4x8(input, dest, stride, eob, bd, tx_type);
-}
-
-void highbd_inv_txfm_add_8x4_wrapper(const tran_low_t *input, uint8_t *dest,
-                                     int stride, int eob, int bd,
-                                     TX_TYPE tx_type, int is_lossless) {
-  (void)is_lossless;
-  av1_highbd_inv_txfm_add_8x4(input, dest, stride, eob, bd, tx_type);
-}
-
-typedef void (*highbd_inv_txfm_func_ptr)(const tran_low_t *, uint8_t *, int,
-                                         int, int, TX_TYPE, int);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
-
 static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
     const AV1_COMP *const cpi, MACROBLOCK *x, int row, int col,
     PREDICTION_MODE *best_mode, const int *bmode_costs, ENTROPY_CONTEXT *a,
@@ -2643,17 +2606,8 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
   int idx, idy;
   int best_can_skip = 0;
   uint8_t best_dst[8 * 8];
-  inv_txfm_func_ptr inv_txfm_func =
-      (tx_size == TX_4X4) ? av1_inv_txfm_add_4x4
-                          : (tx_size == TX_4X8) ? inv_txfm_add_4x8_wrapper
-                                                : inv_txfm_add_8x4_wrapper;
 #if CONFIG_AOM_HIGHBITDEPTH
   uint16_t best_dst16[8 * 8];
-  highbd_inv_txfm_func_ptr highbd_inv_txfm_func =
-      (tx_size == TX_4X4)
-          ? av1_highbd_inv_txfm_add_4x4
-          : (tx_size == TX_4X8) ? highbd_inv_txfm_add_4x8_wrapper
-                                : highbd_inv_txfm_add_8x4_wrapper;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   const int is_lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
@@ -2723,8 +2677,6 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if !CONFIG_PVQ
           int16_t *const src_diff = av1_raster_block_offset_int16(
               BLOCK_8X8, block_raster_idx, p->src_diff);
-#else
-          int i, j;
 #endif
           int skip;
           assert(block < 4);
@@ -2778,22 +2730,11 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
               goto next_highbd;
 #if CONFIG_PVQ
-            if (!skip) {
-              if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-                for (j = 0; j < tx_height; j++)
-                  for (i = 0; i < tx_width; i++)
-                    *CONVERT_TO_SHORTPTR(dst + j * dst_stride + i) = 0;
-              } else {
-                for (j = 0; j < tx_height; j++)
-                  for (i = 0; i < tx_width; i++) dst[j * dst_stride + i] = 0;
-              }
+            if (!skip)
 #endif
-              highbd_inv_txfm_func(BLOCK_OFFSET(pd->dqcoeff, block), dst,
-                                   dst_stride, p->eobs[block], xd->bd, DCT_DCT,
-                                   1);
-#if CONFIG_PVQ
-            }
-#endif
+              av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+                                          DCT_DCT, tx_size, dst, dst_stride,
+                                          p->eobs[block]);
           } else {
             int64_t dist;
             unsigned int tmp;
@@ -2832,22 +2773,11 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             can_skip &= skip;
 #endif
 #if CONFIG_PVQ
-            if (!skip) {
-              if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-                for (j = 0; j < tx_height; j++)
-                  for (i = 0; i < tx_width; i++)
-                    *CONVERT_TO_SHORTPTR(dst + j * dst_stride + i) = 0;
-              } else {
-                for (j = 0; j < tx_height; j++)
-                  for (i = 0; i < tx_width; i++) dst[j * dst_stride + i] = 0;
-              }
+            if (!skip)
 #endif
-              highbd_inv_txfm_func(BLOCK_OFFSET(pd->dqcoeff, block), dst,
-                                   dst_stride, p->eobs[block], xd->bd, tx_type,
-                                   0);
-#if CONFIG_PVQ
-            }
-#endif
+              av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+                                          tx_type, tx_size, dst, dst_stride,
+                                          p->eobs[block]);
             cpi->fn_ptr[sub_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
             dist = (int64_t)tmp << 4;
             distortion += dist;
@@ -2936,8 +2866,6 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if !CONFIG_PVQ
         int16_t *const src_diff = av1_raster_block_offset_int16(
             BLOCK_8X8, block_raster_idx, p->src_diff);
-#else
-        int i, j;
 #endif  // !CONFIG_PVQ
         int skip;
         assert(block < 4);
@@ -3011,15 +2939,11 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
           if (RDCOST(x->rdmult, x->rddiv, ratey, distortion) >= best_rd)
             goto next;
 #if CONFIG_PVQ
-          if (!skip) {
-            for (j = 0; j < tx_height; j++)
-              for (i = 0; i < tx_width; i++) dst[j * dst_stride + i] = 0;
+          if (!skip)
 #endif  // CONFIG_PVQ
-            inv_txfm_func(BLOCK_OFFSET(pd->dqcoeff, block), dst, dst_stride,
-                          p->eobs[block], DCT_DCT, 1);
-#if CONFIG_PVQ
-          }
-#endif  // CONFIG_PVQ
+            av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+                                        DCT_DCT, tx_size, dst, dst_stride,
+                                        p->eobs[block]);
         } else {
           int64_t dist;
           unsigned int tmp;
@@ -3071,16 +2995,11 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
           can_skip &= skip;
 #endif  // !CONFIG_PVQ
 #if CONFIG_PVQ
-          if (!skip) {
-            for (j = 0; j < tx_height; j++)
-              for (i = 0; i < tx_width; i++) dst[j * dst_stride + i] = 0;
+          if (!skip)
 #endif  // CONFIG_PVQ
-            inv_txfm_func(BLOCK_OFFSET(pd->dqcoeff, block), dst, dst_stride,
-                          p->eobs[block], tx_type, 0);
-#if CONFIG_PVQ
-          }
-#endif  // CONFIG_PVQ
-          // No need for av1_block_error2_c because the ssz is unused
+            av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+                                        tx_type, tx_size, dst, dst_stride,
+                                        p->eobs[block]);
           cpi->fn_ptr[sub_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
           dist = (int64_t)tmp << 4;
           distortion += dist;
