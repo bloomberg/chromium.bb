@@ -1277,33 +1277,33 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
     const gfx::Rect& favicon_draw_bounds) {
   // The pinned tab title changed indicator consists of two parts:
   // . a clear (totally transparent) part over the bottom right (or left in rtl)
-  //   of the favicon. This is done by drawing the favicon to a canvas, then
+  //   of the favicon. This is done by drawing the favicon to a layer, then
   //   drawing the clear part on top of the favicon.
   // . a circle in the bottom right (or left in rtl) of the favicon.
   if (!favicon_.isNull()) {
-    const float kIndicatorCropRadius = 4.5;
-    gfx::Canvas icon_canvas(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize),
-                            canvas->image_scale(), false);
-    icon_canvas.DrawImageInt(favicon_, 0, 0);
-    cc::PaintFlags clear_flags;
-    clear_flags.setAntiAlias(true);
-    clear_flags.setBlendMode(SkBlendMode::kClear);
-    const int circle_x = base::i18n::IsRTL() ? 0 : gfx::kFaviconSize;
-    icon_canvas.DrawCircle(gfx::PointF(circle_x, gfx::kFaviconSize),
-                           kIndicatorCropRadius, clear_flags);
-    canvas->DrawImageInt(gfx::ImageSkia(icon_canvas.ExtractImageRep()), 0, 0,
-                         favicon_draw_bounds.width(),
+    canvas->SaveLayerAlpha(0xff);
+    canvas->DrawImageInt(favicon_, 0, 0, favicon_draw_bounds.width(),
                          favicon_draw_bounds.height(), favicon_draw_bounds.x(),
                          favicon_draw_bounds.y(), favicon_draw_bounds.width(),
                          favicon_draw_bounds.height(), false);
+    cc::PaintFlags clear_flags;
+    clear_flags.setAntiAlias(true);
+    clear_flags.setBlendMode(SkBlendMode::kClear);
+    const float kIndicatorCropRadius = 4.5f;
+    int circle_x =
+        favicon_draw_bounds.x() + (base::i18n::IsRTL() ? 0 : gfx::kFaviconSize);
+    int circle_y = favicon_draw_bounds.y() + gfx::kFaviconSize;
+    canvas->DrawCircle(gfx::Point(circle_x, circle_y), kIndicatorCropRadius,
+                       clear_flags);
+    canvas->Restore();
   }
 
   // Draws the actual pinned tab title changed indicator.
-  const int kIndicatorRadius = 3;
   cc::PaintFlags indicator_flags;
   indicator_flags.setColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_ProminentButtonColor));
   indicator_flags.setAntiAlias(true);
+  const int kIndicatorRadius = 3;
   const int indicator_x = GetMirroredXWithWidthInView(
       favicon_bounds_.right() - kIndicatorRadius, kIndicatorRadius * 2);
   const int indicator_y = favicon_bounds_.bottom() - kIndicatorRadius;
