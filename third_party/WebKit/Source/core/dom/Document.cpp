@@ -2044,7 +2044,7 @@ void Document::updateStyleAndLayoutTree() {
   // have been detached (for example, by setting display:none in the :hover
   // style), schedule another mouseMove event to check if any other elements
   // ended up under the mouse pointer due to re-layout.
-  if (hoverNode() && !hoverNode()->layoutObject() && frame())
+  if (hoverElement() && !hoverElement()->layoutObject() && frame())
     frame()->eventHandler().dispatchFakeMouseMoveEventSoon();
 
   if (m_focusedElement && !m_focusedElement->isFocusable())
@@ -2534,7 +2534,7 @@ void Document::shutdown() {
 
   MutationObserver::cleanSlotChangeList(*this);
 
-  m_hoverNode = nullptr;
+  m_hoverElement = nullptr;
   m_activeHoverElement = nullptr;
   m_autofocusElement = nullptr;
 
@@ -3952,8 +3952,8 @@ void Document::styleResolverMayHaveChanged() {
   }
 }
 
-void Document::setHoverNode(Node* newHoverNode) {
-  m_hoverNode = newHoverNode;
+void Document::setHoverElement(Element* newHoverElement) {
+  m_hoverElement = newHoverElement;
 }
 
 void Document::setActiveHoverElement(Element* newActiveElement) {
@@ -3979,28 +3979,22 @@ void Document::removeFocusedElementOfSubtree(Node* node,
     clearFocusedElement();
 }
 
-static Node* skipDisplayNoneAncestors(Node* node) {
-  while (node) {
-    if (node->layoutObject())
-      return node;
-    if (node->isElementNode() && toElement(node)->hasDisplayContentsStyle())
-      return node;
-    node = FlatTreeTraversal::parent(*node);
+static Element* skipDisplayNoneAncestors(Element* element) {
+  for (; element; element = FlatTreeTraversal::parentElement(*element)) {
+    if (element->layoutObject() || element->hasDisplayContentsStyle())
+      return element;
   }
   return nullptr;
 }
 
-void Document::hoveredNodeDetached(Element& element) {
-  if (!m_hoverNode)
+void Document::hoveredElementDetached(Element& element) {
+  if (!m_hoverElement)
+    return;
+  if (element != m_hoverElement)
     return;
 
-  m_hoverNode->updateDistribution();
-  if (element != m_hoverNode &&
-      (!m_hoverNode->isTextNode() ||
-       element != FlatTreeTraversal::parent(*m_hoverNode)))
-    return;
-
-  m_hoverNode = skipDisplayNoneAncestors(&element);
+  m_hoverElement->updateDistribution();
+  m_hoverElement = skipDisplayNoneAncestors(&element);
 
   // If the mouse cursor is not visible, do not clear existing
   // hover effects on the ancestors of |element| and do not invoke
@@ -4013,16 +4007,8 @@ void Document::hoveredNodeDetached(Element& element) {
 }
 
 void Document::activeChainNodeDetached(Element& element) {
-  if (!m_activeHoverElement)
-    return;
-
-  if (element != m_activeHoverElement)
-    return;
-
-  Node* activeNode = skipDisplayNoneAncestors(&element);
-  m_activeHoverElement = activeNode && activeNode->isElementNode()
-                             ? toElement(activeNode)
-                             : nullptr;
+  if (element == m_activeHoverElement)
+    m_activeHoverElement = skipDisplayNoneAncestors(&element);
 }
 
 const Vector<AnnotatedRegionValue>& Document::annotatedRegions() const {
@@ -6214,11 +6200,10 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
     // The oldActiveElement layoutObject is null, dropped on :active by setting
     // display: none, for instance. We still need to clear the ActiveChain as
     // the mouse is released.
-    for (Node* node = oldActiveElement; node;
-         node = FlatTreeTraversal::parent(*node)) {
-      DCHECK(!node->isTextNode());
-      node->setActive(false);
-      m_userActionElements.setInActiveChain(node, false);
+    for (Element* element = oldActiveElement; element;
+         element = FlatTreeTraversal::parentElement(*element)) {
+      element->setActive(false);
+      m_userActionElements.setInActiveChain(element, false);
     }
     setActiveHoverElement(nullptr);
   } else {
@@ -6228,10 +6213,9 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
         !request.touchMove()) {
       // We are setting the :active chain and freezing it. If future moves
       // happen, they will need to reference this chain.
-      for (Node* node = newActiveElement; node;
-           node = FlatTreeTraversal::parent(*node)) {
-        DCHECK(!node->isTextNode());
-        m_userActionElements.setInActiveChain(node, true);
+      for (Element* element = newActiveElement; element;
+           element = FlatTreeTraversal::parentElement(*element)) {
+        m_userActionElements.setInActiveChain(element, true);
       }
       setActiveHoverElement(newActiveElement);
     }
@@ -6245,66 +6229,68 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
   // chain that we froze at the time the mouse went down.
   bool mustBeInActiveChain = request.active() && request.move();
 
-  Node* oldHoverNode = hoverNode();
+  Element* oldHoverElement = hoverElement();
 
   // The passed in innerElement may not be a result of a hit test for the
   // current up-to-date flat/layout tree. That means the element may be
   // display:none at this point. Skip up the ancestor chain until we reach an
   // element with a layoutObject or a display:contents element.
-  Node* newHoverNode = skipDisplayNoneAncestors(innerElementInDocument);
+  Element* newHoverElement = skipDisplayNoneAncestors(innerElementInDocument);
 
-  // Update our current hover node.
-  setHoverNode(newHoverNode);
+  // Update our current hover element.
+  setHoverElement(newHoverElement);
 
-  Node* ancestor =
-      (oldHoverNode && oldHoverNode->isConnected() && newHoverNode)
-          ? FlatTreeTraversal::commonAncestor(*oldHoverNode, *newHoverNode)
-          : nullptr;
+  Node* ancestorElement = nullptr;
+  if (oldHoverElement && oldHoverElement->isConnected() && newHoverElement) {
+    Node* ancestor =
+        FlatTreeTraversal::commonAncestor(*oldHoverElement, *newHoverElement);
+    if (ancestor && ancestor->isElementNode())
+      ancestorElement = toElement(ancestor);
+  }
 
-  HeapVector<Member<Node>, 32> nodesToRemoveFromChain;
-  HeapVector<Member<Node>, 32> nodesToAddToChain;
+  HeapVector<Member<Element>, 32> elementsToRemoveFromChain;
+  HeapVector<Member<Element>, 32> elementsToAddToChain;
 
-  if (oldHoverNode != newHoverNode) {
+  if (oldHoverElement != newHoverElement) {
     // The old hover path only needs to be cleared up to (and not including) the
     // common ancestor;
     //
-    // FIXME(ecobos@igalia.com): oldHoverNode may be disconnected from the tree
-    // already. This is due to our handling of m_hoverNode in
-    // hoveredNodeDetached (which assumes all the parents are hovered) and
+    // FIXME(ecobos@igalia.com): oldHoverElement may be disconnected from the
+    // tree already. This is due to our handling of m_hoverElement in
+    // hoveredElementDetached (which assumes all the parents are hovered) and
     // mustBeInActiveChain (which makes this not hold).
     //
     // In that case, none of the nodes in the chain have the flags, so there's
     // no problem in skipping this step.
-    if (oldHoverNode && oldHoverNode->isConnected()) {
-      for (Node* curr = oldHoverNode; curr && curr != ancestor;
-           curr = FlatTreeTraversal::parent(*curr)) {
-        if (!curr->isTextNode() &&
-            (!mustBeInActiveChain || curr->inActiveChain()))
-          nodesToRemoveFromChain.push_back(curr);
+    if (oldHoverElement && oldHoverElement->isConnected()) {
+      for (Element* curr = oldHoverElement; curr && curr != ancestorElement;
+           curr = FlatTreeTraversal::parentElement(*curr)) {
+        if (!mustBeInActiveChain || curr->inActiveChain())
+          elementsToRemoveFromChain.push_back(curr);
       }
     }
   }
 
   // Now set the hover state for our new object up to the root.
-  for (Node* curr = newHoverNode; curr;
-       curr = FlatTreeTraversal::parent(*curr)) {
-    if (!curr->isTextNode() && (!mustBeInActiveChain || curr->inActiveChain()))
-      nodesToAddToChain.push_back(curr);
+  for (Element* curr = newHoverElement; curr;
+       curr = FlatTreeTraversal::parentElement(*curr)) {
+    if (!mustBeInActiveChain || curr->inActiveChain())
+      elementsToAddToChain.push_back(curr);
   }
 
-  for (Node* node : nodesToRemoveFromChain)
-    node->setHovered(false);
+  for (Element* element : elementsToRemoveFromChain)
+    element->setHovered(false);
 
   bool sawCommonAncestor = false;
-  for (Node* node : nodesToAddToChain) {
+  for (Element* element : elementsToAddToChain) {
     // Elements past the common ancestor do not change hover state, but might
     // change active state.
-    if (node == ancestor)
+    if (element == ancestorElement)
       sawCommonAncestor = true;
     if (allowActiveChanges)
-      node->setActive(true);
-    if (!sawCommonAncestor || node == m_hoverNode)
-      node->setHovered(true);
+      element->setActive(true);
+    if (!sawCommonAncestor || element == m_hoverElement)
+      element->setHovered(true);
   }
 }
 
@@ -6559,7 +6545,7 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_autofocusElement);
   visitor->trace(m_focusedElement);
   visitor->trace(m_sequentialFocusNavigationStartingPoint);
-  visitor->trace(m_hoverNode);
+  visitor->trace(m_hoverElement);
   visitor->trace(m_activeHoverElement);
   visitor->trace(m_documentElement);
   visitor->trace(m_rootScrollerController);

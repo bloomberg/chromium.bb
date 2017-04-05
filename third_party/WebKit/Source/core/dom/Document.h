@@ -709,10 +709,10 @@ class CORE_EXPORT Document : public ContainerNode,
   void setActiveHoverElement(Element*);
   Element* activeHoverElement() const { return m_activeHoverElement.get(); }
 
-  Node* hoverNode() const { return m_hoverNode.get(); }
+  Element* hoverElement() const { return m_hoverElement.get(); }
 
   void removeFocusedElementOfSubtree(Node*, bool amongChildrenOnly = false);
-  void hoveredNodeDetached(Element&);
+  void hoveredElementDetached(Element&);
   void activeChainNodeDetached(Element&);
 
   void updateHoverActiveState(const HitTestRequest&, Element*);
@@ -1402,7 +1402,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool haveRenderBlockingStylesheetsLoaded() const;
   void styleResolverMayHaveChanged();
 
-  void setHoverNode(Node*);
+  void setHoverElement(Element*);
 
   using EventFactorySet = HashSet<std::unique_ptr<EventFactoryBase>>;
   static EventFactorySet& eventFactories();
@@ -1477,7 +1477,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<Element> m_autofocusElement;
   Member<Element> m_focusedElement;
   Member<Range> m_sequentialFocusNavigationStartingPoint;
-  Member<Node> m_hoverNode;
+  Member<Element> m_hoverElement;
   Member<Element> m_activeHoverElement;
   Member<Element> m_documentElement;
   UserActionElementSet m_userActionElements;

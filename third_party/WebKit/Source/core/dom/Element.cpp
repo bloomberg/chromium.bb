@@ -1805,7 +1805,7 @@ void Element::detachLayoutTree(const AttachContext& context) {
 
   if (!context.performingReattach && isUserActionElement()) {
     if (isHovered())
-      document().hoveredNodeDetached(*this);
+      document().hoveredElementDetached(*this);
     if (inActiveChain())
       document().activeChainNodeDetached(*this);
     document().userActionElements().didDetach(*this);

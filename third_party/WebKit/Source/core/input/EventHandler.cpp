@@ -1459,10 +1459,10 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
   HeapVector<Member<LocalFrame>> newHoverFrameChain;
   LocalFrame* newHoverFrameInDocument =
       innerElement ? innerElement->document().frame() : nullptr;
-  // Insert the ancestors of the frame having the new hovered node to the frame
-  // chain The frame chain doesn't include the main frame to avoid the redundant
-  // work that cleans the hover state.  Because the hover state for the main
-  // frame is updated by calling Document::updateHoverActiveState
+  // Insert the ancestors of the frame having the new hovered element to the
+  // frame chain.  The frame chain doesn't include the main frame to avoid the
+  // redundant work that cleans the hover state because the hover state for the
+  // main frame is updated by calling Document::updateHoverActiveState.
   while (newHoverFrameInDocument && newHoverFrameInDocument != m_frame) {
     newHoverFrameChain.push_back(newHoverFrameInDocument);
     Frame* parentFrame = newHoverFrameInDocument->tree().parent();
@@ -1471,16 +1471,16 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
                                   : nullptr;
   }
 
-  Node* oldHoverNodeInCurDoc = m_frame->document()->hoverNode();
-  Node* newInnermostHoverNode = innerElement;
+  Element* oldHoverElementInCurDoc = m_frame->document()->hoverElement();
+  Element* newInnermostHoverElement = innerElement;
 
-  if (newInnermostHoverNode != oldHoverNodeInCurDoc) {
+  if (newInnermostHoverElement != oldHoverElementInCurDoc) {
     size_t indexFrameChain = newHoverFrameChain.size();
 
     // Clear the hover state on any frames which are no longer in the frame
     // chain of the hovered element.
-    while (oldHoverNodeInCurDoc &&
-           oldHoverNodeInCurDoc->isFrameOwnerElement()) {
+    while (oldHoverElementInCurDoc &&
+           oldHoverElementInCurDoc->isFrameOwnerElement()) {
       LocalFrame* newHoverFrame = nullptr;
       // If we can't get the frame from the new hover frame chain,
       // the newHoverFrame will be null and the old hover state will be cleared.
@@ -1488,7 +1488,7 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
         newHoverFrame = newHoverFrameChain[--indexFrameChain];
 
       HTMLFrameOwnerElement* owner =
-          toHTMLFrameOwnerElement(oldHoverNodeInCurDoc);
+          toHTMLFrameOwnerElement(oldHoverElementInCurDoc);
       if (!owner->contentFrame() || !owner->contentFrame()->isLocalFrame())
         break;
 
@@ -1497,9 +1497,9 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
       if (!doc)
         break;
 
-      oldHoverNodeInCurDoc = doc->hoverNode();
+      oldHoverElementInCurDoc = doc->hoverElement();
       // If the old hovered frame is different from the new hovered frame.
-      // we should clear the old hovered node from the old hovered frame.
+      // we should clear the old hovered element from the old hovered frame.
       if (newHoverFrame != oldHoverFrame)
         doc->updateHoverActiveState(request, nullptr);
     }

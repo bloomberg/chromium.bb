@@ -10807,7 +10807,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
   document->frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveOverLinkEvent, Vector<WebMouseEvent>());
 
-  EXPECT_EQ(document->hoverNode(),
+  EXPECT_EQ(document->hoverElement(),
             document->frame()->chromeClient().lastSetTooltipNodeForTesting());
   EXPECT_EQ(div1Tag,
             document->frame()->chromeClient().lastSetTooltipNodeForTesting());
@@ -10824,7 +10824,7 @@ TEST_F(WebFrameTest, MouseOverDifferntNodeClearsTooltip) {
   document->frame()->eventHandler().handleMouseMoveEvent(
       mouseMoveEvent, Vector<WebMouseEvent>());
 
-  EXPECT_EQ(document->hoverNode(),
+  EXPECT_EQ(document->hoverElement(),
             document->frame()->chromeClient().lastSetTooltipNodeForTesting());
   EXPECT_EQ(div2Tag,
             document->frame()->chromeClient().lastSetTooltipNodeForTesting());
@@ -10902,7 +10902,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
 
   EXPECT_FALSE(document->activeHoverElement());
-  EXPECT_FALSE(document->hoverNode());
+  EXPECT_FALSE(document->hoverElement());
 
   WebMouseEvent mouseReleaseEvent(
       WebInputEvent::MouseUp, WebFloatPoint(18, aTag->offsetTop()),
@@ -10933,7 +10933,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
 
   EXPECT_TRUE(document->activeHoverElement());
-  EXPECT_TRUE(document->hoverNode());
+  EXPECT_TRUE(document->hoverElement());
 
   document->frame()->eventHandler().handleMouseReleaseEvent(mouseReleaseEvent);
 }
@@ -10971,7 +10971,7 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
       mouseMoveOverDiv, Vector<WebMouseEvent>());
 
   // DIV :hover
-  EXPECT_EQ(document->hoverNode(), scrollbarDiv);
+  EXPECT_EQ(document->hoverElement(), scrollbarDiv);
 
   // Ensure hittest has DIV and scrollbar
   hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 1));
@@ -10990,7 +10990,7 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
       mouseMoveOverDivAndScrollbar, Vector<WebMouseEvent>());
 
   // Custom not change the DIV :hover
-  EXPECT_EQ(document->hoverNode(), scrollbarDiv);
+  EXPECT_EQ(document->hoverElement(), scrollbarDiv);
   EXPECT_EQ(hitTestResult.scrollbar()->hoveredPart(), ScrollbarPart::ThumbPart);
 }
 
@@ -11026,7 +11026,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndIFrame) {
       mouseMoveOverIFrame, Vector<WebMouseEvent>());
 
   // IFRAME hover.
-  EXPECT_EQ(document->hoverNode(), iframe);
+  EXPECT_EQ(document->hoverElement(), iframe);
 
   // Ensure hittest has scrollbar.
   hitTestResult = webView->coreHitTestResultAt(WebPoint(195, 5));
@@ -11044,7 +11044,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndIFrame) {
       mouseMoveOverIFrameAndScrollbar, Vector<WebMouseEvent>());
 
   // IFRAME not hover.
-  EXPECT_NE(document->hoverNode(), iframe);
+  EXPECT_NE(document->hoverElement(), iframe);
 
   // Disable the Scrollbar.
   webView->mainFrameImpl()->frameView()->setScrollbarsHidden(true);
@@ -11065,7 +11065,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndIFrame) {
       mouseMoveOverIFrameAndDisabledScrollbar, Vector<WebMouseEvent>());
 
   // IFRAME hover.
-  EXPECT_EQ(document->hoverNode(), iframe);
+  EXPECT_EQ(document->hoverElement(), iframe);
 }
 
 // Makes sure that mouse hover over a scrollbar also hover the element owns the
@@ -11111,7 +11111,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndParentElement) {
       mouseMoveOverDiv, Vector<WebMouseEvent>());
 
   // DIV :hover.
-  EXPECT_EQ(document->hoverNode(), parentDiv);
+  EXPECT_EQ(document->hoverElement(), parentDiv);
 
   // Ensure hittest has DIV and scrollbar.
   hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 5));
@@ -11131,7 +11131,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndParentElement) {
       mouseMoveOverDivAndScrollbar, Vector<WebMouseEvent>());
 
   // Not change the DIV :hover.
-  EXPECT_EQ(document->hoverNode(), parentDiv);
+  EXPECT_EQ(document->hoverElement(), parentDiv);
 
   // Disable the Scrollbar by remove the childDiv.
   childDiv->remove();
@@ -11150,7 +11150,7 @@ TEST_F(WebFrameTest, MouseOverScrollbarAndParentElement) {
       mouseMoveOverDivAndScrollbar, Vector<WebMouseEvent>());
 
   // Not change the DIV :hover.
-  EXPECT_EQ(document->hoverNode(), parentDiv);
+  EXPECT_EQ(document->hoverElement(), parentDiv);
 }
 
 TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
