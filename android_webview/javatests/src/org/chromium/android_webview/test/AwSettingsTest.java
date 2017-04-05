@@ -1879,6 +1879,7 @@ public class AwSettingsTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    @RetryOnFailure
     public void testFileUrlAccessWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
