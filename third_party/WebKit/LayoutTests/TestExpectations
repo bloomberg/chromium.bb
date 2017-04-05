@@ -793,10 +793,6 @@ crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html 
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
 # See: crbug.com/567965, crbug.com/518992, and crbug.com/518993
-crbug.com/567965 [ Debug ] external/wpt/user-timing/test_user_timing_measure.html [ Skip ]
-crbug.com/518992 [ Win Release ] external/wpt/user-timing/test_user_timing_measure.html [ Skip ]
-crbug.com/567965 [ Debug ] external/wpt/user-timing/test_user_timing_mark.html [ Skip ]
-crbug.com/518993 external/wpt/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 
 crbug.com/636053 [ Mac Win ] printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
 crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ NeedsManualRebaseline ]
@@ -1358,7 +1354,6 @@ crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-r
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointerevent_touch-action-pinch_zoom_touch.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
-crbug.com/613672 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_sequence_at_implicit_release_on_drag-manual.html [ Skip ]
@@ -1885,6 +1880,7 @@ crbug.com/626703 external/wpt/mixed-content/blockable/no-opt-in/same-host-http/i
 crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac ] external/wpt/pointerevents/extension/pointerevent_coalesced_events_attributes-manual.html [ Timeout ]
 #crbug.com/626703 external/wpt/css/css-cascade-4/revert-val-001.html [ Failure ]
 #crbug.com/626703 external/wpt/css/css-ui-3/box-sizing-026.html [ Failure ]
 crbug.com/626703 external/wpt/content-security-policy/connect-src/connect-src-eventsource-blocked.sub.html [ Timeout ]
@@ -2199,7 +2195,6 @@ crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/int
 crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffectReadOnly/copy-contructor.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/spacing-keyframes-shapes.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/animation-model/animation-types/addition-per-property.html [ Timeout ]
-crbug.com/626703 external/wpt/user-timing/test_user_timing_mark_and_measure_exception_when_invoke_with_timing_attributes.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/composite.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/animation-model/combining-effects/effect-composition.html [ Failure ]
 crbug.com/626703 external/wpt/web-animations/interfaces/KeyframeEffect/copy-contructor.html [ Failure ]

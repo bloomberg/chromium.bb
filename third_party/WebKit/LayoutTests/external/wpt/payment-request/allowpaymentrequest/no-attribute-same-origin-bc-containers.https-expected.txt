@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL iframe assert_equals: expected "Success" but got "Exception"
+FAIL frame assert_equals: expected "Success" but got "Exception"
+FAIL object assert_equals: expected "Success" but got "Exception"
+FAIL embed assert_equals: expected "Success" but got "Exception"
+Harness: the test ran to completion.
+

@@ -30,7 +30,9 @@ PASS writer close() promise should resolve before abort() promise
 PASS writer.ready should reject on controller error without waiting for underlying write 
 FAIL writer.abort() while there is an in-flight write, and then finish the write with rejection assert_throws: writePromise3 must reject with the error returned from the sink's write method function "function () { throw e }" threw object "TypeError: Cannot write to a errored writable stream" ("TypeError") expected object "error2: error2" ("error2")
 FAIL writer.abort(), controller.error() while there is an in-flight write, and then finish the write promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
+FAIL writer.abort(), controller.error() while there is an in-flight close, and then finish the close promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
 FAIL controller.error(), writer.abort() while there is an in-flight write, and then finish the write assert_throws: writePromise2 must reject with the error passed to the controller's error method function "function () { throw e }" threw object "TypeError: Cannot write to a errored writable stream" ("TypeError") expected object "error2: error2" ("error2")
+PASS controller.error(), writer.abort() while there is an in-flight close, and then finish the close 
 PASS releaseLock() while aborting should reject the original closed promise 
 PASS releaseLock() during delayed async abort() should create a new rejected closed promise 
 FAIL sink abort() should not be called until sink start() is done assert_array_equals: abort() should not be called during start() lengths differ, expected 0 got 2

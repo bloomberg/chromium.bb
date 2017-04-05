@@ -9,6 +9,7 @@ PASS ReadableStream constructor can get initial garbage as cancel argument
 PASS ReadableStream constructor can get initial garbage as pull argument 
 FAIL ReadableStream start should be called with the proper parameters assert_equals: constructor should have 4 parameter expected 4 but got 5
 PASS ReadableStream start controller parameter should be extensible 
+PASS default ReadableStream getReader() should only accept mode:undefined 
 PASS ReadableStream should be able to call start method within prototype chain of its source 
 PASS ReadableStream start should be able to return a promise 
 PASS ReadableStream start should be able to return a promise and reject it 

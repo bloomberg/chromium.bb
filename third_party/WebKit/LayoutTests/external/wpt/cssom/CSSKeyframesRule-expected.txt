@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL CSSOM -  CSSKeyframesRule interface assert_throws: CSSKeyframesRule name setter on invalid keyword. function "function () { keyframe.name = "initial"; }" did not throw
+Harness: the test ran to completion.
+
