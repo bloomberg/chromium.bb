@@ -97,7 +97,8 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
 
   SupportedProfiles profiles;
   const bool rv = CreateCompressionSession(
-      gfx::Size(kDefaultResolutionWidth, kDefaultResolutionHeight));
+      video_toolbox::DictionaryWithKeysAndValues(nullptr, nullptr, 0),
+      gfx::Size(kDefaultResolutionWidth, kDefaultResolutionHeight), true);
   DestroyCompressionSession();
   if (!rv) {
     VLOG(1)
@@ -452,7 +453,22 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
 
   DestroyCompressionSession();
 
-  bool session_rv = CreateCompressionSession(input_visible_size_);
+  CFTypeRef attributes_keys[] = {kCVPixelBufferOpenGLCompatibilityKey,
+                                 kCVPixelBufferIOSurfacePropertiesKey,
+                                 kCVPixelBufferPixelFormatTypeKey};
+  const int format[] = {kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange};
+  CFTypeRef attributes_values[] = {
+      kCFBooleanTrue,
+      video_toolbox::DictionaryWithKeysAndValues(nullptr, nullptr, 0).release(),
+      video_toolbox::ArrayWithIntegers(format, arraysize(format)).release()};
+  const base::ScopedCFTypeRef<CFDictionaryRef> attributes =
+      video_toolbox::DictionaryWithKeysAndValues(
+          attributes_keys, attributes_values, arraysize(attributes_keys));
+  for (auto* v : attributes_values)
+    CFRelease(v);
+
+  bool session_rv =
+      CreateCompressionSession(attributes, input_visible_size_, false);
   if (!session_rv) {
     DestroyCompressionSession();
     return false;
@@ -465,12 +481,22 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
 }
 
 bool VTVideoEncodeAccelerator::CreateCompressionSession(
-    const gfx::Size& input_size) {
+    base::ScopedCFTypeRef<CFDictionaryRef> attributes,
+    const gfx::Size& input_size,
+    bool require_hw_encoding) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::vector<CFTypeRef> encoder_keys(
-      1, kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder);
-  std::vector<CFTypeRef> encoder_values(1, kCFBooleanTrue);
+  std::vector<CFTypeRef> encoder_keys;
+  std::vector<CFTypeRef> encoder_values;
+  if (require_hw_encoding) {
+    encoder_keys.push_back(
+        kVTVideoEncoderSpecification_RequireHardwareAcceleratedVideoEncoder);
+    encoder_values.push_back(kCFBooleanTrue);
+  } else {
+    encoder_keys.push_back(
+        kVTVideoEncoderSpecification_EnableHardwareAcceleratedVideoEncoder);
+    encoder_values.push_back(kCFBooleanTrue);
+  }
   base::ScopedCFTypeRef<CFDictionaryRef> encoder_spec =
       video_toolbox::DictionaryWithKeysAndValues(
           encoder_keys.data(), encoder_values.data(), encoder_keys.size());
@@ -486,8 +512,7 @@ bool VTVideoEncodeAccelerator::CreateCompressionSession(
   // are guaranteed that the output callback will not execute again.
   OSStatus status = VTCompressionSessionCreate(
       kCFAllocatorDefault, input_size.width(), input_size.height(),
-      kCMVideoCodecType_H264, encoder_spec,
-      nullptr /* sourceImageBufferAttributes */,
+      kCMVideoCodecType_H264, encoder_spec, attributes,
       nullptr /* compressedDataAllocator */,
       &VTVideoEncodeAccelerator::CompressionCallback,
       reinterpret_cast<void*>(this), compression_session_.InitializeInto());
@@ -495,8 +520,8 @@ bool VTVideoEncodeAccelerator::CreateCompressionSession(
     DLOG(ERROR) << " VTCompressionSessionCreate failed: " << status;
     return false;
   }
-  DVLOG(3) << " VTCompressionSession created with input size="
-           << input_size.ToString();
+  DVLOG(3) << " VTCompressionSession created with HW encode: "
+           << require_hw_encoding << ", input size=" << input_size.ToString();
   return true;
 }
 
@@ -517,9 +542,6 @@ bool VTVideoEncodeAccelerator::ConfigureCompressionSession() {
       kVTCompressionPropertyKey_MaxKeyFrameInterval, 7200);
   rv &= session_property_setter.Set(
       kVTCompressionPropertyKey_MaxKeyFrameIntervalDuration, 240);
-  rv &=
-      session_property_setter.Set(kVTCompressionPropertyKey_MaxFrameDelayCount,
-                                  static_cast<int>(kNumInputBuffers));
   DLOG_IF(ERROR, !rv) << " Setting session property failed.";
   return rv;
 }
