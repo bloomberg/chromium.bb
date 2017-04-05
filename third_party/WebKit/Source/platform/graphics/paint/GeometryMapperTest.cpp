@@ -49,16 +49,20 @@ class GeometryMapperTest : public ::testing::Test,
       const PropertyTreeState& destinationState,
       FloatRect& mappingRect,
       bool& success) {
+    FloatClipRect floatClipRect(mappingRect);
     GeometryMapper::localToAncestorVisualRectInternal(
-        sourceState, destinationState, mappingRect, success);
+        sourceState, destinationState, floatClipRect, success);
+    mappingRect = floatClipRect.rect();
   }
 
   void localToAncestorVisualRectInternal(const PropertyTreeState& localState,
                                          const PropertyTreeState& ancestorState,
                                          FloatRect& mappingRect,
                                          bool& success) {
+    FloatClipRect floatClipRect(mappingRect);
     GeometryMapper::localToAncestorVisualRectInternal(localState, ancestorState,
-                                                      mappingRect, success);
+                                                      floatClipRect, success);
+    mappingRect = floatClipRect.rect();
   }
 
   void localToAncestorRectInternal(
@@ -106,19 +110,21 @@ const static float kTestEpsilon = 1e-6;
                        expectedClipInAncestorSpace, localPropertyTreeState,    \
                        ancestorPropertyTreeState, hasRadius)                   \
   do {                                                                         \
-    FloatRect floatRect = inputRect;                                           \
+    FloatClipRect floatRect(inputRect);                                        \
     GeometryMapper::localToAncestorVisualRect(                                 \
         localPropertyTreeState, ancestorPropertyTreeState, floatRect);         \
-    EXPECT_RECT_EQ(expectedVisualRect, floatRect);                             \
+    EXPECT_RECT_EQ(expectedVisualRect, floatRect.rect());                      \
+    EXPECT_EQ(hasRadius, floatRect.hasRadius());                               \
     FloatClipRect floatClipRect;                                               \
     floatClipRect = GeometryMapper::localToAncestorClipRect(                   \
         localPropertyTreeState, ancestorPropertyTreeState);                    \
     EXPECT_EQ(hasRadius, floatClipRect.hasRadius());                           \
     EXPECT_CLIP_RECT_EQ(expectedClipInAncestorSpace, floatClipRect);           \
-    floatRect = inputRect;                                                     \
+    floatRect.setRect(inputRect);                                              \
     GeometryMapper::sourceToDestinationVisualRect(                             \
         localPropertyTreeState, ancestorPropertyTreeState, floatRect);         \
-    EXPECT_RECT_EQ(expectedVisualRect, floatRect);                             \
+    EXPECT_RECT_EQ(expectedVisualRect, floatRect.rect());                      \
+    EXPECT_EQ(hasRadius, floatRect.hasRadius());                               \
     FloatRect testMappedRect = inputRect;                                      \
     GeometryMapper::localToAncestorRect(localPropertyTreeState.transform(),    \
                                         ancestorPropertyTreeState.transform(), \
@@ -672,8 +678,10 @@ TEST_F(GeometryMapperTest, SiblingTransforms) {
   FloatRect expected =
       rotateTransform2.inverse().mapRect(rotateTransform1.mapRect(input));
   result = input;
+  FloatClipRect floatClipRect(result);
   GeometryMapper::sourceToDestinationVisualRect(transform1State,
-                                                transform2State, result);
+                                                transform2State, floatClipRect);
+  result = floatClipRect.rect();
   EXPECT_RECT_EQ(expected, result);
 
   result = input;
@@ -738,8 +746,10 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
   // sourceToDestinationVisualRect ignores clip from the common ancestor to
   // destination.
   result = input;
+  FloatClipRect floatClipRect(result);
   GeometryMapper::sourceToDestinationVisualRect(transform2AndClipState,
-                                                transform1State, result);
+                                                transform1State, floatClipRect);
+  result = floatClipRect.rect();
   EXPECT_RECT_EQ(expectedClipped, result);
 
   // sourceToDestinationRect applies transforms only.

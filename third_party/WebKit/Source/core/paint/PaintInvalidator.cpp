@@ -127,10 +127,10 @@ LayoutRect PaintInvalidator::mapLocalRectToVisualRectInBacking(
           context.m_treeBuilderContext->current.transform,
           context.m_treeBuilderContext->current.clip, nullptr);
 
-      FloatRect floatRect(rect);
+      FloatClipRect floatRect((FloatRect(rect)));
       GeometryMapper::sourceToDestinationVisualRect(
           currentTreeState, *containerContentsProperties, floatRect);
-      result = LayoutRect(floatRect);
+      result = LayoutRect(floatRect.rect());
     }
 
     // Convert the result to the container's contents space.

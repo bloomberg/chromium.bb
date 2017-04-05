@@ -27,7 +27,7 @@ FloatClipRect& GeometryMapper::tempRect() {
 void GeometryMapper::sourceToDestinationVisualRect(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
-    FloatRect& rect) {
+    FloatClipRect& rect) {
   bool success = false;
   sourceToDestinationVisualRectInternal(sourceState, destinationState, rect,
                                         success);
@@ -37,7 +37,7 @@ void GeometryMapper::sourceToDestinationVisualRect(
 void GeometryMapper::sourceToDestinationVisualRectInternal(
     const PropertyTreeState& sourceState,
     const PropertyTreeState& destinationState,
-    FloatRect& mappingRect,
+    FloatClipRect& mappingRect,
     bool& success) {
   localToAncestorVisualRectInternal(sourceState, destinationState, mappingRect,
                                     success);
@@ -61,7 +61,8 @@ void GeometryMapper::sourceToDestinationVisualRectInternal(
   if (!success)
     return;
 
-  ancestorToLocalRect(lcaTransform, destinationState.transform(), mappingRect);
+  ancestorToLocalRect(lcaTransform, destinationState.transform(),
+                      mappingRect.rect());
 }
 
 void GeometryMapper::sourceToDestinationRect(
@@ -87,7 +88,7 @@ void GeometryMapper::sourceToDestinationRect(
 void GeometryMapper::localToAncestorVisualRect(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
-    FloatRect& mappingRect) {
+    FloatClipRect& mappingRect) {
   bool success = false;
   localToAncestorVisualRectInternal(localState, ancestorState, mappingRect,
                                     success);
@@ -97,7 +98,7 @@ void GeometryMapper::localToAncestorVisualRect(
 void GeometryMapper::localToAncestorVisualRectInternal(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
-    FloatRect& rectToMap,
+    FloatClipRect& rectToMap,
     bool& success) {
   if (localState == ancestorState) {
     success = true;
@@ -116,14 +117,16 @@ void GeometryMapper::localToAncestorVisualRectInternal(
     return;
   }
 
-  FloatRect mappedRect = transformMatrix.mapRect(rectToMap);
+  FloatRect mappedRect = transformMatrix.mapRect(rectToMap.rect());
 
-  const FloatClipRect& clipRect =
+  FloatClipRect clipRect =
       localToAncestorClipRectInternal(localState.clip(), ancestorState.clip(),
                                       ancestorState.transform(), success);
 
   if (success) {
-    rectToMap = clipRect.rect();
+    // This is where we propagate the rounded-ness of |clipRect| to
+    // |rectToMap|.
+    rectToMap = clipRect;
     rectToMap.intersect(mappedRect);
   } else if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // On SPv1 we may fail when the paint invalidation container creates an
@@ -139,7 +142,7 @@ void GeometryMapper::localToAncestorVisualRectInternal(
 void GeometryMapper::slowLocalToAncestorVisualRectWithEffects(
     const PropertyTreeState& localState,
     const PropertyTreeState& ancestorState,
-    FloatRect& mappingRect,
+    FloatClipRect& mappingRect,
     bool& success) {
   PropertyTreeState lastTransformAndClipState(localState.transform(),
                                               localState.clip(), nullptr);
@@ -156,7 +159,7 @@ void GeometryMapper::slowLocalToAncestorVisualRectWithEffects(
     if (!success)
       return;
 
-    mappingRect = effect->mapRect(mappingRect);
+    mappingRect.setRect(effect->mapRect(mappingRect.rect()));
     lastTransformAndClipState = transformAndClipState;
   }
 

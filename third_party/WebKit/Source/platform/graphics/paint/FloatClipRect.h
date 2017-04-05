@@ -25,6 +25,8 @@ class PLATFORM_EXPORT FloatClipRect {
 
   const FloatRect& rect() const { return m_rect; }
 
+  FloatRect& rect() { return m_rect; }
+
   void intersect(const FloatRect& other) {
     if (m_isInfinite) {
       m_rect = other;

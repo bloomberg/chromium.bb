@@ -41,7 +41,7 @@ class VisualRectMappingTest : public RenderingTest {
     if (slowMapRect.isEmpty() && object.visualRect().isEmpty())
       return;
 
-    FloatRect geometryMapperRect(localRect);
+    FloatClipRect geometryMapperRect((FloatRect(localRect)));
     if (object.paintProperties() || object.localBorderBoxProperties()) {
       geometryMapperRect.moveBy(FloatPoint(object.paintOffset()));
       GeometryMapper::sourceToDestinationVisualRect(
@@ -55,15 +55,15 @@ class VisualRectMappingTest : public RenderingTest {
     if (adjustForBacking && ancestor.isPaintInvalidationContainer()) {
       PaintLayer::mapRectInPaintInvalidationContainerToBacking(ancestor,
                                                                slowMapRect);
-      LayoutRect temp(geometryMapperRect);
+      LayoutRect temp(geometryMapperRect.rect());
       PaintLayer::mapRectInPaintInvalidationContainerToBacking(ancestor, temp);
-      geometryMapperRect = FloatRect(temp);
+      geometryMapperRect.setRect(FloatRect(temp));
     }
     EXPECT_TRUE(enclosingIntRect(slowMapRect)
                     .contains(enclosingIntRect(expectedVisualRect)));
 
     if (object.paintProperties()) {
-      EXPECT_TRUE(enclosingIntRect(geometryMapperRect)
+      EXPECT_TRUE(enclosingIntRect(geometryMapperRect.rect())
                       .contains(enclosingIntRect(expectedVisualRect)));
     }
   }

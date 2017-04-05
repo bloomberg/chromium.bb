@@ -357,11 +357,11 @@ void PaintArtifactCompositor::PendingLayer::merge(const PendingLayer& guest) {
   DCHECK_EQ(backfaceHidden, guest.backfaceHidden);
 
   paintChunks.appendVector(guest.paintChunks);
-  FloatRect guestBoundsInHome = guest.bounds;
+  FloatClipRect guestBoundsInHome(guest.bounds);
   GeometryMapper::localToAncestorVisualRect(
       guest.propertyTreeState, propertyTreeState, guestBoundsInHome);
   FloatRect oldBounds = bounds;
-  bounds.unite(guestBoundsInHome);
+  bounds.unite(guestBoundsInHome.rect());
   if (bounds != oldBounds)
     knownToBeOpaque = false;
   // TODO(crbug.com/701991): Upgrade GeometryMapper.
@@ -385,8 +385,10 @@ bool PaintArtifactCompositor::PendingLayer::canMerge(
 void PaintArtifactCompositor::PendingLayer::upcast(
     const PropertyTreeState& newState) {
   DCHECK(!isForeign);
+  FloatClipRect floatClipRect(bounds);
   GeometryMapper::localToAncestorVisualRect(propertyTreeState, newState,
-                                            bounds);
+                                            floatClipRect);
+  bounds = floatClipRect.rect();
 
   propertyTreeState = newState;
   // TODO(crbug.com/701991): Upgrade GeometryMapper.
@@ -453,14 +455,14 @@ bool PaintArtifactCompositor::mightOverlap(const PendingLayer& layerA,
                                           ClipPaintPropertyNode::root(),
                                           EffectPaintPropertyNode::root());
 
-  FloatRect boundsA = layerA.bounds;
+  FloatClipRect boundsA(layerA.bounds);
   GeometryMapper::localToAncestorVisualRect(layerA.propertyTreeState,
                                             rootPropertyTreeState, boundsA);
-  FloatRect boundsB = layerB.bounds;
+  FloatClipRect boundsB(layerB.bounds);
   GeometryMapper::localToAncestorVisualRect(layerB.propertyTreeState,
                                             rootPropertyTreeState, boundsB);
 
-  return boundsA.intersects(boundsB);
+  return boundsA.rect().intersects(boundsB.rect());
 }
 
 bool PaintArtifactCompositor::canDecompositeEffect(

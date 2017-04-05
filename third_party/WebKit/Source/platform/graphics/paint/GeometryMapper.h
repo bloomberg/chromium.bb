@@ -48,10 +48,17 @@ class PLATFORM_EXPORT GeometryMapper {
   // clip of |sourceState|, or the inverse transform is not invertible.
   //
   // |mappingRect| is both input and output.
+  //
+  // The output FloatClipRect may contain false positives for rounded-ness
+  // if a rounded clip is clipped out, and overly conservative results
+  // in the presences of transforms.
+  //
+  // TODO(chrishtr): we should provide a variant of these methods that
+  // guarantees a tight result, or else signals an error. crbug.com/708741
   static void sourceToDestinationVisualRect(
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
-      FloatRect& mappingRect);
+      FloatClipRect& mappingRect);
 
   // Same as sourceToDestinationVisualRect() except that only transforms are
   // applied.
@@ -76,10 +83,14 @@ class PLATFORM_EXPORT GeometryMapper {
   // |ancestorState|.
   //
   // |mappingRect| is both input and output.
+  //
+  // The output FloatClipRect may contain false positives for rounded-ness
+  // if a rounded clip is clipped out, and overly conservative results
+  // in the presences of transforms.
   static void localToAncestorVisualRect(
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState,
-      FloatRect& mappingRect);
+      FloatClipRect& mappingRect);
 
   // Maps from a rect in |localTransformNode| space to its transformed rect in
   // |ancestorTransformNode| space. This is computed by multiplying the rect by
@@ -123,12 +134,20 @@ class PLATFORM_EXPORT GeometryMapper {
 
   // Returns the "clip visual rect" between |localTransformState| and
   // |ancestorState|. See above for the definition of "clip visual rect".
+  //
+  // The output FloatClipRect may contain false positives for rounded-ness
+  // if a rounded clip is clipped out, and overly conservative results
+  // in the presences of transforms.
   static FloatClipRect localToAncestorClipRect(
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState);
 
   // Like localToAncestorClipRect, except it can handle destination transform
   // spaces which are not direct ancestors of the source transform space.
+  //
+  // The output FloatClipRect may contain false positives for rounded-ness
+  // if a rounded clip is clipped out, and overly conservative results
+  // in the presences of transforms.
   static const FloatClipRect& sourceToDestinationClipRect(
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState);
@@ -149,13 +168,13 @@ class PLATFORM_EXPORT GeometryMapper {
   static void sourceToDestinationVisualRectInternal(
       const PropertyTreeState& sourceState,
       const PropertyTreeState& destinationState,
-      FloatRect& mappingRect,
+      FloatClipRect& mappingRect,
       bool& success);
 
   static void localToAncestorVisualRectInternal(
       const PropertyTreeState& localTransformState,
       const PropertyTreeState& ancestorState,
-      FloatRect& mappingRect,
+      FloatClipRect& mappingRect,
       bool& success);
 
   static void localToAncestorRectInternal(
@@ -183,7 +202,7 @@ class PLATFORM_EXPORT GeometryMapper {
   static void slowLocalToAncestorVisualRectWithEffects(
       const PropertyTreeState& localState,
       const PropertyTreeState& ancestorState,
-      FloatRect& mappingRect,
+      FloatClipRect& mappingRect,
       bool& success);
 
   static const TransformationMatrix& identityMatrix();

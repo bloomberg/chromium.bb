@@ -433,12 +433,18 @@ void PaintLayerClipper::calculateBackgroundClipRectWithGeometryMapper(
   // paint outside of those bounds.
   // The total painting bounds includes any visual overflow (such as shadow) and
   // filter bounds.
+  //
+  // TODO(chrishtr): sourceToDestinationVisualRect and
+  // sourceToDestinationClipRect may not compute tight results in the presence
+  // of transforms. Tight results are required for most use cases of these
+  // rects, so we should add methods to GeometryMapper that guarantee there
+  // are tight results, or else signal an error.
   if (shouldClipOverflow(context)) {
-    FloatRect clipRect(localVisualRect());
+    FloatClipRect clipRect((FloatRect(localVisualRect())));
     clipRect.moveBy(FloatPoint(m_layer.layoutObject().paintOffset()));
     GeometryMapper::sourceToDestinationVisualRect(
         sourcePropertyTreeState, destinationPropertyTreeState, clipRect);
-    output.setRect(FloatClipRect(clipRect));
+    output.setRect(clipRect);
   } else {
     const FloatClipRect& clippedRectInRootLayerSpace =
         GeometryMapper::sourceToDestinationClipRect(
