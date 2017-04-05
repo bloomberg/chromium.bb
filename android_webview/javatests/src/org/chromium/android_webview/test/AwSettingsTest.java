@@ -1184,10 +1184,14 @@ public class AwSettingsTest extends AwTestBase {
             return "<html><head>"
                     + "<script>"
                     + "    function tryOpenWindow() {"
-                    + "        var newWindow = window.open("
-                    + "           'data:text/html;charset=utf-8,"
-                    + "           <html><head><title>" + POPUP_ENABLED + "</title></head></html>');"
-                    + "        if (!newWindow) document.title = '" + POPUP_BLOCKED + "';"
+                    + "        var newWindow = window.open('about:blank');"
+                    + "        if (newWindow) {"
+                    + "          newWindow.document.write("
+                    + "             '<html><head><title>" + POPUP_ENABLED
+                    + "</title></head></html>');"
+                    + "        } else {"
+                    + "          document.title = '" + POPUP_BLOCKED + "';"
+                    + "        }"
                     + "    }"
                     + "</script></head>"
                     + "<body onload='tryOpenWindow()'></body></html>";

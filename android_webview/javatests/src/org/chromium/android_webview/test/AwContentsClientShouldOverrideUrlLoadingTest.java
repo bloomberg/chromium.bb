@@ -250,7 +250,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         OnPageStartedHelper onPageStartedHelper = mContentsClient.getOnPageStartedHelper();
 
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(
+                        ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL),
+                "text/html", false);
 
         final int shouldOverrideUrlLoadingCallCount =
                 mShouldOverrideUrlLoadingHelper.getCallCount();
@@ -271,7 +273,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         final int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
 
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(
+                        ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL),
+                "text/html", false);
 
         final int shouldOverrideUrlLoadingCallCount =
                 mShouldOverrideUrlLoadingHelper.getCallCount();
@@ -282,8 +286,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
 
         // After we load this URL we're certain that any in-flight callbacks for the previous
         // navigation have been delivered.
-        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), DATA_URL);
 
         assertEquals(onReceivedErrorCallCount, onReceivedErrorHelper.getCallCount());
     }
@@ -334,16 +337,18 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
     public void testCalledWhenLinkClicked() throws Throwable {
         standardSetup();
 
-        // We can't go to about:blank from here because we'd get a cross-origin error.
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(
+                        ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL),
+                "text/html", false);
 
         int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
 
         clickOnLinkUsingJs();
 
         mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertEquals(DATA_URL, mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
+        assertEquals(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL,
+                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
         assertFalse(mShouldOverrideUrlLoadingHelper.isRedirect());
         assertFalse(mShouldOverrideUrlLoadingHelper.hasUserGesture());
         assertTrue(mShouldOverrideUrlLoadingHelper.isMainFrame());
@@ -489,30 +494,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         assertEquals(1, mWebServer.getRequestCount(pageWithLinkToIgnorePath));
         assertEquals(1, mWebServer.getRequestCount(synchronizationPath));
         assertEquals(0, mWebServer.getRequestCount(REDIRECT_TARGET_PATH));
-    }
-
-    @SmallTest
-    @Feature({"AndroidWebView", "Navigation"})
-    public void testCalledForDataUrl() throws Throwable {
-        standardSetup();
-        final String dataUrl =
-                "data:text/html;base64,"
-                        + "PGh0bWw+PGhlYWQ+PHRpdGxlPmRhdGFVcmxUZXN0QmFzZTY0PC90aXRsZT48"
-                        + "L2hlYWQ+PC9odG1sPg==";
-        loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.makeHtmlPageWithSimpleLinkTo(dataUrl), "text/html", false);
-
-        int callCount = mShouldOverrideUrlLoadingHelper.getCallCount();
-        clickOnLinkUsingJs();
-
-        mShouldOverrideUrlLoadingHelper.waitForCallback(callCount);
-        assertTrue("Expected URL that starts with 'data:' but got: <"
-                + mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl() + "> instead.",
-                mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl().startsWith(
-                        "data:"));
-        assertFalse(mShouldOverrideUrlLoadingHelper.isRedirect());
-        assertFalse(mShouldOverrideUrlLoadingHelper.hasUserGesture());
-        assertTrue(mShouldOverrideUrlLoadingHelper.isMainFrame());
     }
 
     @SmallTest
@@ -852,7 +833,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
 
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                CommonResources.makeHtmlPageWithSimpleLinkTo(DATA_URL), "text/html", false);
+                CommonResources.makeHtmlPageWithSimpleLinkTo(
+                        ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL),
+                "text/html", false);
 
         int shouldOverrideUrlLoadingCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
         setShouldOverrideUrlLoadingReturnValueOnUiThread(true);
