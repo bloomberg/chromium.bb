@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-search-engines-page',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [settings.GlobalScrollTargetBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @type {!Array<!SearchEngine>} */
@@ -28,6 +28,15 @@ Polymer({
     extensions: {
       type: Array,
       value: function() { return []; }
+    },
+
+    /**
+     * Needed by GlobalScrollTargetBehavior.
+     * @override
+     */
+    subpageRoute: {
+      type: Object,
+      value: settings.Route.SEARCH_ENGINES,
     },
 
     /** @private {boolean} */

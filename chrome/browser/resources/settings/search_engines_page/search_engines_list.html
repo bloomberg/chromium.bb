@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-<link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../settings_vars_css.html">
 <link rel="import" href="search_engine_entry.html">
 
@@ -46,7 +45,8 @@
         <div class="icon-placeholder"></div>
       </div>
       <div id="container" class="scroll-container">
-        <iron-list items="[[engines]]" scroll-target="[[subpageScrollTarget]]">
+        <iron-list items="[[engines]]" scroll-target="[[scrollTarget]]"
+            class$="[[getIronListClass_(scrollTarget)]]">
           <template>
             <settings-search-engine-entry engine="[[item]]"
                 tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"

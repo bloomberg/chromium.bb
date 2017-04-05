@@ -9,22 +9,31 @@
 Polymer({
   is: 'settings-search-engines-list',
 
-  behaviors: [settings.GlobalScrollTargetBehavior],
-
   properties: {
     /** @type {!Array<!SearchEngine>} */
     engines: Array,
 
-    /** @override */
-    subpageRoute: {
-      type: Object,
-      value: settings.Route.SEARCH_ENGINES,
-    },
-
     /** Whether column headers should be displayed */
     hideHeaders: Boolean,
 
+    /**
+     * The scroll target that this list should use.
+     * @type {?HTMLElement}
+     */
+    scrollTarget: {
+      type: Element,
+      value: null,  // Required to populate class.
+    },
+
     /** @private {Object}*/
     lastFocused_: Object,
+  },
+
+  /**
+   * @param {?HTMLElement} scrollTarget
+   * @return {string}
+   */
+  getIronListClass_: function(scrollTarget) {
+    return scrollTarget ? '' : 'fixed-height-list';
   },
 });
