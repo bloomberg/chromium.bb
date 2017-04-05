@@ -1,61 +1,58 @@
 /*
-* Copyright (C) 2013 Google Inc. All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are
-* met:
-*
-*     * Redistributions of source code must retain the above copyright
-* notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above
-* copyright notice, this list of conditions and the following disclaimer
-* in the documentation and/or other materials provided with the
-* distribution.
-*     * Neither the name of Google Inc. nor the names of its
-* contributors may be used to endorse or promote products derived from
-* this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-* "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-* OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (C) 2013 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
-* CodeGeneratorInstrumentation.py uses this file as a source to generate
-* InspectorInstrumentationInl.h and InspectorInstrumentationImpl.cpp
-*
-* The code below is not a correct IDL but a mix of IDL and C++.
-*
-* The syntax for an instrumentation method is as follows:
-*
-*    [methodAttributes] returnValue methodName([paramAttr1] param1, [paramAttr2] param2, ...)
-*
-* Where:
-*   methodAttributes - optional list of method attributes.
-*       Attributes without "=" are the names of the agents to be invoked.
-*           Examples: DOM, Page, Debugger.
-*
-*   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
-*       Keep - pass first parameter (used to access the CoreProbeSink instance) to agents.
-*
-*   returnValue: C++ return value. Only "void" and "bool" are supported.
-*
-*   methodName: C++ name for the public instrumentation method and agents methods.
-*
-*   paramList: C++ parameter list with optional names. Names will be deduced from types if omitted but you have to
-*        specify explicit names for multiple parameters of the same type.
-*
-* Parameters with type PassRefPtr<T> are converted to raw pointers,
-* so reference will not be passed or released until all agents are notified.
-*/
+ * CodeGeneratorInstrumentation.py uses this file as a source to generate
+ * InspectorInstrumentationInl.h and InspectorInstrumentationImpl.cpp
+ *
+ * The code below is not a correct IDL but a mix of IDL and C++.
+ *
+ * The syntax for an instrumentation method is as follows:
+ *
+ *    returnValue methodName([paramAttr1] param1, [paramAttr2] param2, ...)
+ *
+ * Where:
+ *   paramAttr - optional attribute controlling the parameters handling (one attribute per parameter max).
+ *       Keep - pass first parameter (used to access the CoreProbeSink instance) to agents.
+ *
+ *   returnValue: C++ return value. Only "void" and "bool" are supported.
+ *                Omitted for the scoped probes.
+ *
+ *   methodName: C++ name for the public instrumentation method and agents methods.
+ *
+ *   paramList: C++ parameter list with optional names. Names will be deduced from types if omitted but you have to
+ *        specify explicit names for multiple parameters of the same type.
+ *
+ * Parameters with type PassRefPtr<T> are converted to raw pointers,
+ * so reference will not be passed or released until all agents are notified.
+ */
 
 interface CoreProbes {
 
@@ -64,300 +61,111 @@ interface CoreProbes {
 #include "core/dom/PseudoElement.h"
 #include "core/html/HTMLSlotElement.h"
 
-class ConsoleMessage;
-class HTMLDocumentParser;
-class ThreadableLoaderClient;
-class WebSocketHandshakeRequest;
-class WebSocketHandshakeResponse;
-class WorkerInspectorProxy;
-class XMLHttpRequest;
-
-    [Page, Animation]
-    void didClearDocumentOfWindowObject([Keep] LocalFrame*);
-
-    [DOMDebugger]
-    void willInsertDOMNode([Keep] Node* parent);
-
-    [DOM, DOMDebugger]
-    void didInsertDOMNode([Keep] Node*);
-
-    [DOMDebugger, DOM]
-    void willRemoveDOMNode([Keep] Node*);
-
-    [DOMDebugger, DOM]
-    void willModifyDOMAttr([Keep] Element*, const AtomicString& oldValue, const AtomicString& newValue);
-
-    [DOM]
-    void didModifyDOMAttr([Keep] Element*, const QualifiedName& name, const AtomicString& value);
-
-    [DOM]
-    void didRemoveDOMAttr([Keep] Element*, const QualifiedName& name);
-
-    [DOM]
-    void characterDataModified([Keep] CharacterData*);
-
-    [DOM, DOMDebugger]
-    void didInvalidateStyleAttr([Keep] Node*);
-
-    [DOM]
-    void didPerformElementShadowDistribution([Keep] Element*);
-
-    [DOM]
-    void didPerformSlotDistribution([Keep] HTMLSlotElement*);
-
-    [CSS]
-    void documentDetached([Keep] Document*);
-
-    [CSS]
-    void activeStyleSheetsUpdated([Keep] Document*);
-
-    [CSS]
-    void fontsUpdated(Document*);
-
-    [CSS]
-    void mediaQueryResultChanged(Document*);
-
-    [DOM]
-    void didPushShadowRoot([Keep] Element* host, ShadowRoot*);
-
-    [DOM]
-    void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
-
-    [DOMDebugger]
-    void willSendXMLHttpOrFetchNetworkRequest(ExecutionContext*, const String& url);
-
-    [DOMDebugger]
-    void didCreateCanvasContext(Document*);
-
-    [DOMDebugger]
-    void didFireWebGLError(Element*, const String& errorName);
-
-    [DOMDebugger]
-    void didFireWebGLWarning(Element*);
-
-    [DOMDebugger]
-    void didFireWebGLErrorOrWarning(Element*, const String& message);
-
-    [Page]
-    void didResizeMainFrame(LocalFrame*);
-
-    [LayerTree]
-    void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
-
-    [Network]
-    void applyUserAgentOverride(LocalFrame*, String* userAgent);
-
-    [Network]
-    void didBlockRequest([Keep] LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
-
-    [Network]
-    void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
-
-    [Network, TraceEvents]
-    void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
-
-    [Network]
-    void markResourceAsCached(LocalFrame*, unsigned long identifier);
-
-    [Network, TraceEvents]
-    void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-
-    [Network, TraceEvents]
-    void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength);
-
-    [Network]
-    void didReceiveEncodedDataLength([Keep] LocalFrame*, unsigned long identifier, int encodedDataLength);
-
-    [Network, TraceEvents]
-    void didFinishLoading([Keep] LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
-
-    [Network]
-    void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-
-    [Network, TraceEvents]
-    void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
-
-    [Network]
-    void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
-
-    [Network]
-    void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
-
-    [Network]
-    void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
-
-    [Network]
-    void willDispatchEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data);
-
-    [Network]
-    void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
-
-    [Network]
-    void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap& headers, bool includeCredentials);
-
-    [Network]
-    void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
-
-    [Network]
-    void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
-
-    [Network]
-    void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);
-
-    [Network]
-    void didFailFetch(ExecutionContext*, ThreadableLoaderClient*);
-
-    [Network]
-    void didFinishFetch([Keep] ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
-
-    // Detach and remove all references to the given client.
-    [Network]
-    void detachClientRequest(ExecutionContext*, ThreadableLoaderClient*);
-
-    [Network]
-    void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
-
-    [DOMDebugger]
-    void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
-
-    [Network]
-    void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
-
-    [DOM, Page]
-    void domContentLoadedEventFired([Keep] LocalFrame*);
-
-    [Page]
-    void loadEventFired([Keep] LocalFrame*);
-
-    [Page]
-    void frameAttachedToParent([Keep] LocalFrame*);
-
-    [Page]
-    void frameDetachedFromParent([Keep] LocalFrame*);
-
-    [Network, DOM, Page]
-    void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
-
-    [DOM]
-    void frameDocumentUpdated([Keep] LocalFrame*);
-
-    [Page, Tracing]
-    void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);
-
-    [Page, Tracing]
-    void frameStoppedLoading([Keep] LocalFrame*);
-
-    [Page, Network]
-    void frameScheduledNavigation([Keep] LocalFrame*, double delay);
-
-    [Page, Network]
-    void frameClearedScheduledNavigation([Keep] LocalFrame*);
-
-    [Network]
-    void frameScheduledClientNavigation([Keep] LocalFrame*);
-
-    [Network]
-    void frameClearedScheduledClientNavigation([Keep] LocalFrame*);
-
-    [Worker]
-    void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
-
-    [Worker]
-    void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
-
-    [Network]
-    void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
-
-    [Network]
-    void willSendWebSocketHandshakeRequest([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest* request);
-
-    [Network]
-    void didReceiveWebSocketHandshakeResponse([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response);
-
-    [Network]
-    void didCloseWebSocket([Keep] Document*, unsigned long identifier);
-
-    [Network]
-    void didReceiveWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
-
-    [Network]
-    void didSendWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
-
-    [Network]
-    void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
-
-    [ApplicationCache]
-    void networkStateChanged([Keep] LocalFrame*, bool online);
-
-    [ApplicationCache]
-    void updateApplicationCacheStatus([Keep] LocalFrame*);
-
-    [LayerTree]
-    void layerTreeDidChange(LocalFrame*);
-
-    [DOM]
-    void pseudoElementCreated([Keep] PseudoElement*);
-
-    [DOM]
-    void pseudoElementDestroyed([Keep] PseudoElement*);
-
-    [Animation]
-    void didCreateAnimation(Document*, unsigned);
-
-    [Animation]
-    void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
-
-    [Page]
-    void windowCreated(LocalFrame* opener, LocalFrame* created);
-
-    [Log]
-    void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
-
-    [Page]
-    void willRunJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType);
-
-    [Page]
-    void didRunJavaScriptDialog(LocalFrame* frame, bool result);
-
-    [Performance]
-    void documentWriteFetchScript([Keep] Document*);
-
-    [Page]
-    void didChangeViewport(LocalFrame* document);
-
-    [DOMDebugger]
-    void breakableLocation(ExecutionContext* context, const char* name);
-
-    [Page, Performance]
-    RecalculateStyle(Document* document);
-
-    [Page, Performance]
-    UpdateLayout(Document*);
-
-    [Performance, DOMDebugger]
-    ExecuteScript([Keep] ExecutionContext* context);
-
-    [Performance, TraceEvents]
-    CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
-
-    [Performance, DOMDebugger]
-    UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring, EventTarget* eventTarget = nullptr);
-
-    [TraceEvents]
-    ParseHTML(Document* document, HTMLDocumentParser* parser);
+  class ConsoleMessage;
+  class HTMLDocumentParser;
+  class ThreadableLoaderClient;
+  class WebSocketHandshakeRequest;
+  class WebSocketHandshakeResponse;
+  class WorkerInspectorProxy;
+  class XMLHttpRequest;
+
+  void didClearDocumentOfWindowObject([Keep] LocalFrame*);
+  void willInsertDOMNode([Keep] Node* parent);
+  void didInsertDOMNode([Keep] Node*);
+  void willRemoveDOMNode([Keep] Node*);
+  void willModifyDOMAttr([Keep] Element*, const AtomicString& oldValue, const AtomicString& newValue);
+  void didModifyDOMAttr([Keep] Element*, const QualifiedName& name, const AtomicString& value);
+  void didRemoveDOMAttr([Keep] Element*, const QualifiedName& name);
+  void characterDataModified([Keep] CharacterData*);
+  void didInvalidateStyleAttr([Keep] Node*);
+  void didPerformElementShadowDistribution([Keep] Element*);
+  void didPerformSlotDistribution([Keep] HTMLSlotElement*);
+  void documentDetached([Keep] Document*);
+  void activeStyleSheetsUpdated([Keep] Document*);
+  void fontsUpdated(Document*);
+  void mediaQueryResultChanged(Document*);
+  void didPushShadowRoot([Keep] Element* host, ShadowRoot*);
+  void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
+  void willSendXMLHttpOrFetchNetworkRequest(ExecutionContext*, const String& url);
+  void didCreateCanvasContext(Document*);
+  void didFireWebGLError(Element*, const String& errorName);
+  void didFireWebGLWarning(Element*);
+  void didFireWebGLErrorOrWarning(Element*, const String& message);
+  void didResizeMainFrame(LocalFrame*);
+  void didPaint(LocalFrame*, const GraphicsLayer*, GraphicsContext&, const LayoutRect&);
+  void applyUserAgentOverride(LocalFrame*, String* userAgent);
+  void didBlockRequest([Keep] LocalFrame*, const ResourceRequest&, DocumentLoader*, const FetchInitiatorInfo&, ResourceRequestBlockedReason);
+  void didChangeResourcePriority(LocalFrame*, unsigned long identifier, ResourceLoadPriority loadPriority);
+  void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+  void markResourceAsCached(LocalFrame*, unsigned long identifier);
+  void didReceiveResourceResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
+  void didReceiveData([Keep] LocalFrame*, unsigned long identifier, const char* data, int dataLength);
+  void didReceiveEncodedDataLength([Keep] LocalFrame*, unsigned long identifier, int encodedDataLength);
+  void didFinishLoading([Keep] LocalFrame* frame, unsigned long identifier, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
+  void didReceiveCORSRedirectResponse([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
+  void didFailLoading(LocalFrame* frame, unsigned long identifier, const ResourceError&);
+  void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
+  void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
+  void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
+  void willDispatchEventSourceEvent(ExecutionContext*, ThreadableLoaderClient* eventSource, const AtomicString& eventName, const AtomicString& eventId, const String& data);
+  void didFinishEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
+  void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData>, const HTTPHeaderMap& headers, bool includeCredentials);
+  void didFailXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
+  void didFinishXHRLoading([Keep] ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const String& url);
+  void willStartFetch(ExecutionContext*, ThreadableLoaderClient*);
+  void didFailFetch(ExecutionContext*, ThreadableLoaderClient*);
+  void didFinishFetch([Keep] ExecutionContext*, ThreadableLoaderClient*, const AtomicString& method, const String& url);
+  // Detach and remove all references to the given client.
+  void detachClientRequest(ExecutionContext*, ThreadableLoaderClient*);
+  void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
+  void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
+  void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
+  void domContentLoadedEventFired([Keep] LocalFrame*);
+  void loadEventFired([Keep] LocalFrame*);
+  void frameAttachedToParent([Keep] LocalFrame*);
+  void frameDetachedFromParent([Keep] LocalFrame*);
+  void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
+  void frameDocumentUpdated([Keep] LocalFrame*);
+  void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);
+  void frameStoppedLoading([Keep] LocalFrame*);
+  void frameScheduledNavigation([Keep] LocalFrame*, double delay);
+  void frameClearedScheduledNavigation([Keep] LocalFrame*);
+  void frameScheduledClientNavigation([Keep] LocalFrame*);
+  void frameClearedScheduledClientNavigation([Keep] LocalFrame*);
+  void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
+  void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
+  void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
+  void willSendWebSocketHandshakeRequest([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest* request);
+  void didReceiveWebSocketHandshakeResponse([Keep] Document*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response);
+  void didCloseWebSocket([Keep] Document*, unsigned long identifier);
+  void didReceiveWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
+  void didSendWebSocketFrame(Document*, unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength);
+  void didReceiveWebSocketFrameError(Document*, unsigned long identifier, const String& errorMessage);
+  void networkStateChanged([Keep] LocalFrame*, bool online);
+  void updateApplicationCacheStatus([Keep] LocalFrame*);
+  void layerTreeDidChange(LocalFrame*);
+  void pseudoElementCreated([Keep] PseudoElement*);
+  void pseudoElementDestroyed([Keep] PseudoElement*);
+  void didCreateAnimation(Document*, unsigned);
+  void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
+  void windowCreated(LocalFrame* opener, LocalFrame* created);
+  void consoleMessageAdded(ExecutionContext*, ConsoleMessage*);
+  void willRunJavaScriptDialog(LocalFrame* frame, const String& message, ChromeClient::DialogType dialogType);
+  void didRunJavaScriptDialog(LocalFrame* frame, bool result);
+  void documentWriteFetchScript([Keep] Document*);
+  void didChangeViewport(LocalFrame* document);
+  void breakableLocation(ExecutionContext* context, const char* name);
+  RecalculateStyle(Document* document);
+  UpdateLayout(Document*);
+  ExecuteScript([Keep] ExecutionContext* context);
+  CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
+  UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomicName, bool recurring, EventTarget* eventTarget = nullptr);
+  ParseHTML(Document* document, HTMLDocumentParser* parser);
 }
 
 interface InspectorOverrides {
-
-    [CSS]
-    bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
-
-    [Worker]
-    bool shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context);
-
-    [Network]
-    bool shouldForceCORSPreflight(Document*);
-
-    [Network]
-    bool shouldBlockRequest(LocalFrame*, const ResourceRequest&);
+  bool forcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudoState);
+  bool shouldWaitForDebuggerOnWorkerStart(ExecutionContext* context);
+  bool shouldForceCORSPreflight(Document*);
+  bool shouldBlockRequest(LocalFrame*, const ResourceRequest&);
 }

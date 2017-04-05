@@ -1,11 +1,15 @@
 {
   settings: {
     export_symbol: "PLATFORM_EXPORT",
-    default_include: "platform/probe"
+    default_include: "platform/probe",
+    probes_header: "platform/probe/PlatformProbes.h"
   },
   observers: {
     PlatformTraceEvents: {
-      class: "PlatformTraceEventsAgent"
+      class: "PlatformTraceEventsAgent",
+      probes: [
+        "PlatformSendRequest",
+      ]
     }
   }
 }

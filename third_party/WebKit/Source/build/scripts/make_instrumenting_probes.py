@@ -103,11 +103,15 @@ def load_model_from_idl(source):
     return model
 
 
+def include_probes_header():
+    return "#include \"%s\"" % config["settings"]["probes_header"]
+
+
 class File(object):
     def __init__(self, name, source):
         self.name = name
         self.header_name = self.name + "Inl"
-        self.includes = [include_inspector_header(base_name)]
+        self.includes = [include_probes_header()]
         self.forward_declarations = []
         self.declarations = []
         for line in map(str.strip, source.split("\n")):
@@ -124,51 +128,25 @@ class File(object):
         self.forward_declarations.sort()
 
 
-def include_header(name):
-    return "#include \"%s.h\"" % name
-
-
-def include_inspector_header(name):
-    if name == "PerformanceMonitor":
-        return include_header("core/frame/" + name)
-    if name == "PlatformProbes":
-        return include_header("platform/probe/" + name)
-    if name == "CoreProbes":
-        return include_header("core/probe/" + name)
-    return include_header("core/inspector/" + name)
-
-
 class Method(object):
     def __init__(self, source):
-        match = re.match(r"(\[[\w|,|=|\s]*\])?\s?(\w*\*?) (\w*)\((.*)\)\s?;", source)
+        match = re.match(r"(?:(\w+\*?)\s+)?(\w+)\s*\((.*)\)\s*;", source)
         if not match:
             sys.stderr.write("Cannot parse %s\n" % source)
             sys.exit(1)
 
-        self.options = []
-        if match.group(1):
-            options_str = re.sub(r"\s", "", match.group(1)[1:-1])
-            if len(options_str) != 0:
-                self.options = options_str.split(",")
-
-        self.return_type = match.group(2)
-        self.name = match.group(3)
+        self.return_type = match.group(1) or ""
+        self.name = match.group(2)
         self.is_scoped = self.return_type == ""
 
         # Splitting parameters by a comma, assuming that attribute lists contain no more than one attribute.
-        self.params = map(Parameter, map(str.strip, match.group(4).split(",")))
+        self.params = map(Parameter, map(str.strip, match.group(3).split(",")))
 
         self.returns_value = self.return_type != "" and self.return_type != "void"
         if self.return_type == "bool":
             self.default_return_value = "false"
         elif self.returns_value:
             sys.stderr.write("Can only return bool: %s\n" % self.name)
-            sys.exit(1)
-
-        self.agents = [option for option in self.options if "=" not in option]
-
-        if self.returns_value and len(self.agents) > 1:
-            sys.stderr.write("Can only return value from a single agent: %s\n" % self.name)
             sys.exit(1)
 
 
@@ -221,6 +199,38 @@ def load_config(file_name):
         return _json5_loads(config_file.read()) or default_config
 
 
+def build_observers():
+    all_pidl_probes = set()
+    for f in files:
+        probes = set([probe.name for probe in f.declarations])
+        if all_pidl_probes & probes:
+            raise Exception("Multiple probe declarations: %s" % all_pidl_probes & probes)
+        all_pidl_probes |= probes
+
+    all_observers = set()
+    observers_by_probe = {}
+    unused_probes = set(all_pidl_probes)
+    for observer_name in config["observers"]:
+        all_observers.add(observer_name)
+        observer = config["observers"][observer_name]
+        for probe in observer["probes"]:
+            unused_probes.discard(probe)
+            if probe not in all_pidl_probes:
+                raise Exception('Probe %s is not declared in PIDL file' % probe)
+            if probe not in observers_by_probe:
+                observers_by_probe[probe] = set()
+            observers_by_probe[probe].add(observer_name)
+    if unused_probes:
+        raise Exception("Unused probes: %s" % unused_probes)
+
+    for f in files:
+        for probe in f.declarations:
+            probe.agents = observers_by_probe[probe.name]
+            if probe.returns_value and len(probe.agents) > 1:
+                raise Exception("Can only return value from a single observer: %s\n" % probe.name)
+    return all_observers
+
+
 cmdline_parser = optparse.OptionParser()
 cmdline_parser.add_option("--output_dir")
 cmdline_parser.add_option("--config")
@@ -246,21 +256,15 @@ except Exception:
 
 config = load_config(config_file_name)
 jinja_env = initialize_jinja_env(output_dirpath)
-all_agents = set()
 base_name = os.path.splitext(os.path.basename(input_path))[0]
 
 fin = open(input_path, "r")
 files = load_model_from_idl(fin.read())
 fin.close()
 
-for f in files:
-    for declaration in f.declarations:
-        for agent in declaration.agents:
-            all_agents.add(agent)
-
 template_context = {
     "files": files,
-    "agents": all_agents,
+    "agents": build_observers(),
     "config": config,
     "name": base_name,
     "input_file": os.path.basename(input_path)
