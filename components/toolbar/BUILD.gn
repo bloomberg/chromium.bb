@@ -32,18 +32,21 @@ static_library("toolbar") {
     "toolbar_model_impl.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
+    "//components/security_state/core",
+    "//url",
+  ]
+
+  deps = [
     "//components/google/core/browser",
     "//components/prefs",
     "//components/resources",
-    "//components/security_state/core",
     "//components/strings",
     "//components/url_formatter",
     "//net",
     "//ui/base",
     "//ui/gfx",
-    "//url",
   ]
 
   if (!is_android && !is_ios) {
