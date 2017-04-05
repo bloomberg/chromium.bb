@@ -904,7 +904,6 @@ void OfflinePageModelImpl::OnPagesFoundWithSameURL(
 
 void OfflinePageModelImpl::OnDeleteOldPagesWithSameURL(
     DeletePageResult result) {
-  // TODO(romax) Add UMAs for failure cases.
   PostClearStorageIfNeededTask(false /* delayed */);
 }
 

@@ -93,7 +93,6 @@ void OfflinePageStorageManager::GetPageIdsToClear(
     const MultipleOfflinePageItemResult& pages,
     const ArchiveManager::StorageStats& stats,
     std::vector<int64_t>* page_ids_to_clear) {
-  // TODO(romax): See how persistent should be considered here.
   // Creating a map from namespace to a vector of page items.
   // Sort each vector based on last accessed time and all pages after index
   // min{size(), page_limit} should be deleted.

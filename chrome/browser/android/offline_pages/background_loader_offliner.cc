@@ -196,8 +196,8 @@ void BackgroundLoaderOffliner::Cancel(const CancelCallback& callback) {
 }
 
 bool BackgroundLoaderOffliner::HandleTimeout(const SavePageRequest& request) {
-  // TODO(romax) Decide if we want to also take a snapshot on the last timeout
-  // for the background loader offliner.
+  // TODO(romax): Decide if we want to also take a snapshot on the last timeout
+  // for the background loader offliner. crbug.com/705090
   return false;
 }
 

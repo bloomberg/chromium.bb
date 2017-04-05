@@ -466,7 +466,7 @@ class RequestCoordinator : public KeyedService,
   //   2. When a task is not available to be picked by PickRequestTask (because
   //   it was completed or cancelled), the task will remove it.
   // Currently it's used as LIFO.
-  // TODO(romax): see if LIFO is a good idea, or change to FIFO.
+  // TODO(romax): see if LIFO is a good idea or change to FIFO. crbug.com/705106
   std::deque<int64_t> prioritized_requests_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
