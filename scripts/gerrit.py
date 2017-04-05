@@ -120,17 +120,9 @@ def GetApprovalSummary(_opts, cls):
   return approvs
 
 
-def PrintCl(opts, cl, lims, show_approvals=True):
+def PrettyPrintCl(opts, cl, lims=None, show_approvals=True):
   """Pretty print a single result"""
-  if opts.raw:
-    # Special case internal Chrome GoB as that is what most devs use.
-    # They can always redirect the list elsewhere via the -g option.
-    if opts.gob == site_config.params.INTERNAL_GOB_INSTANCE:
-      print(site_config.params.INTERNAL_CHANGE_PREFIX, end='')
-    print(cl['number'])
-    return
-
-  if not lims:
+  if lims is None:
     lims = {'url': 0, 'project': 0}
 
   status = ''
@@ -155,6 +147,25 @@ def PrintCl(opts, cl, lims, show_approvals=True):
       t = GERRIT_APPROVAL_MAP.get(approver['type'], [approver['type'],
                                                      approver['type']])[1]
       print('      %s %s %s' % (n, t, approver['by']['email']))
+
+
+def PrintCls(opts, cls, lims=None, show_approvals=True):
+  """Pretty print all results."""
+  if opts.raw:
+    pfx = ''
+    # Special case internal Chrome GoB as that is what most devs use.
+    # They can always redirect the list elsewhere via the -g option.
+    if opts.gob == site_config.params.INTERNAL_GOB_INSTANCE:
+      pfx = site_config.params.INTERNAL_CHANGE_PREFIX
+    for cl in cls:
+      print('%s%s' % (pfx, cl['number']))
+
+  else:
+    if lims is None:
+      lims = limits(cls)
+
+    for cl in cls:
+      PrettyPrintCl(opts, cl, lims=lims, show_approvals=show_approvals)
 
 
 def _MyUserInfo():
@@ -227,17 +238,13 @@ def UserActTodo(opts):
   emails = _MyUserInfo()
   cls = FilteredQuery(opts, 'reviewer:self status:open NOT owner:self')
   cls = [x for x in cls if not IsApprover(x, emails)]
-  lims = limits(cls)
-  for cl in cls:
-    PrintCl(opts, cl, lims)
+  PrintCls(opts, cls)
 
 
 def UserActSearch(opts, query):
   """List CLs matching the Gerrit <search query>"""
   cls = FilteredQuery(opts, query)
-  lims = limits(cls)
-  for cl in cls:
-    PrintCl(opts, cl, lims)
+  PrintCls(opts, cls)
 
 
 def UserActMine(opts):
@@ -297,19 +304,19 @@ def UserActDeps(opts, query):
       visited_key=lambda cl: cl.gerrit_number)
 
   transitives_raw = [cl.patch_dict for cl in transitives]
-  lims = limits(transitives_raw)
-  for cl in transitives_raw:
-    PrintCl(opts, cl, lims)
+  PrintCls(opts, transitives_raw)
 
 
 def UserActInspect(opts, *args):
   """Inspect CL number <n> [n ...]"""
+  cls = []
   for arg in args:
     cl = FilteredQuery(opts, arg)
     if cl:
-      PrintCl(opts, cl[0], None)
+      cls.extend(cl)
     else:
-      print('no results found for CL %s' % arg)
+      logging.warning('no results found for CL %s', arg)
+  PrintCls(opts, cls)
 
 
 def UserActReview(opts, *args):
