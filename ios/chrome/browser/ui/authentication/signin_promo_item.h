@@ -11,19 +11,13 @@
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 @class SigninPromoView;
-@protocol SigninPromoViewConfigurator;
+@class SigninPromoViewConfigurator;
 
 // SigninPromoItem is an item that configures a SigninPromoCell cell.
 @interface SigninPromoItem : CollectionViewItem
 
 // Configures the SigninPromoView view from SigninPromoCell.
-@property(nonatomic, readonly, weak) id<SigninPromoViewConfigurator>
-    configurator;
-
-- (instancetype)initWithType:(NSInteger)type
-                configurator:(id<SigninPromoViewConfigurator>)configurator
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
+@property(nonatomic, strong) SigninPromoViewConfigurator* configurator;
 
 @end
 

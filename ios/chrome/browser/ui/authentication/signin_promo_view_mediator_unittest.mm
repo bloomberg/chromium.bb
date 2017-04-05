@@ -4,6 +4,11 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 
+#include "base/run_loop.h"
+#import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -20,7 +25,9 @@ namespace {
 class SigninPromoViewMediatorTest : public PlatformTest {
  protected:
   void SetUp() override {
+    consumer_ = OCMStrictProtocolMock(@protocol(SigninPromoViewConsumer));
     mediator_ = [[SigninPromoViewMediator alloc] init];
+    mediator_.consumer = consumer_;
 
     signin_promo_view_ = OCMStrictClassMock([SigninPromoView class]);
     primary_button_ = OCMStrictClassMock([MDCFlatButton class]);
@@ -31,6 +38,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   void TearDown() override {
     mediator_ = nil;
+    EXPECT_OCMOCK_VERIFY((id)consumer_);
     EXPECT_OCMOCK_VERIFY((id)signin_promo_view_);
     EXPECT_OCMOCK_VERIFY((id)primary_button_);
     EXPECT_OCMOCK_VERIFY((id)secondary_button_);
@@ -38,9 +46,7 @@ class SigninPromoViewMediatorTest : public PlatformTest {
 
   void TestColdState() {
     EXPECT_EQ(nil, mediator_.defaultIdentity);
-    ExpectColdStateConfiguration();
-    [mediator_ configureSigninPromoView:signin_promo_view_];
-    CheckColdStateConfiguration();
+    CheckColdStateConfigurator([mediator_ createConfigurator]);
   }
 
   void TestWarmState() {
@@ -50,9 +56,18 @@ class SigninPromoViewMediatorTest : public PlatformTest {
                                          name:@"John Doe"];
     ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
         ->AddIdentity(expected_default_dentity_);
-    ExpectWarmStateConfiguration();
-    [mediator_ configureSigninPromoView:signin_promo_view_];
-    CheckWarmStateConfiguration();
+    CheckWarmStateConfigurator([mediator_ createConfigurator]);
+  }
+
+  void ExpectConfiguratorNotification(BOOL new_identity) {
+    configurator_ = nil;
+    OCMExpect([consumer_
+        configureSigninPromoViewWithNewIdentity:new_identity
+                                   configurator:[OCMArg checkWithBlock:^BOOL(
+                                                            id value) {
+                                     configurator_ = value;
+                                     return YES;
+                                   }]]);
   }
 
   void ExpectColdStateConfiguration() {
@@ -62,7 +77,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
     secondary_button_title_ = nil;
   }
 
-  void CheckColdStateConfiguration() {
+  void CheckColdStateConfigurator(SigninPromoViewConfigurator* configurator) {
+    EXPECT_NE(nil, configurator);
+    ExpectColdStateConfiguration();
+    [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_EQ(nil, image_view_profile_image_);
     EXPECT_EQ(nil, primary_button_title_);
     EXPECT_EQ(nil, secondary_button_title_);
@@ -91,7 +109,10 @@ class SigninPromoViewMediatorTest : public PlatformTest {
         forState:UIControlStateNormal]);
   }
 
-  void CheckWarmStateConfiguration() {
+  void CheckWarmStateConfigurator(SigninPromoViewConfigurator* configurator) {
+    EXPECT_NE(nil, configurator);
+    ExpectWarmStateConfiguration();
+    [configurator configureSigninPromoView:signin_promo_view_];
     EXPECT_NE(nil, image_view_profile_image_);
     NSString* userFullName = expected_default_dentity_.userFullName;
     NSRange profileNameRange =
@@ -109,7 +130,11 @@ class SigninPromoViewMediatorTest : public PlatformTest {
   // Identity used for the warm state.
   FakeChromeIdentity* expected_default_dentity_;
 
+  // Configurator received from the consumer.
+  SigninPromoViewConfigurator* configurator_;
+
   // Mocks.
+  id<SigninPromoViewConsumer> consumer_;
   SigninPromoView* signin_promo_view_;
   MDCFlatButton* primary_button_;
   MDCFlatButton* secondary_button_;
@@ -128,22 +153,39 @@ TEST_F(SigninPromoViewMediatorTest, ColdStateConfigureSigninPromoView) {
 
 TEST_F(SigninPromoViewMediatorTest,
        WarmStateConfigureSigninPromoViewWithoutImage) {
+  ExpectConfiguratorNotification(YES);
   TestWarmState();
+  CheckWarmStateConfigurator(configurator_);
+}
+
+TEST_F(SigninPromoViewMediatorTest,
+       WarmStateConfigureSigninPromoViewWithImage) {
+  ExpectConfiguratorNotification(YES);
+  TestWarmState();
+  ExpectConfiguratorNotification(NO);
+  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(0.1));
+  CheckWarmStateConfigurator(configurator_);
 }
 
 // Cold state configuration and then warm state configuration.
 TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithColdAndWarm) {
   TestColdState();
+  ExpectConfiguratorNotification(YES);
   TestWarmState();
+  CheckWarmStateConfigurator(configurator_);
 }
 
 // Warm state configuration and then cold state configuration.
 TEST_F(SigninPromoViewMediatorTest, ConfigureSigninPromoViewWithWarmAndCold) {
+  ExpectConfiguratorNotification(YES);
   TestWarmState();
+  CheckWarmStateConfigurator(configurator_);
+  ExpectConfiguratorNotification(YES);
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->RemoveIdentity(expected_default_dentity_);
   expected_default_dentity_ = nil;
   TestColdState();
+  CheckColdStateConfigurator(configurator_);
 }
 
 }  // namespace

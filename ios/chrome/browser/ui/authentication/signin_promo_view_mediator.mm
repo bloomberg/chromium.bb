@@ -7,6 +7,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_consumer.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -26,7 +28,7 @@
   UIImage* _identityAvatar;
 }
 
-@synthesize delegate = _delegate;
+@synthesize consumer = _consumer;
 @synthesize defaultIdentity = _defaultIdentity;
 
 - (instancetype)init {
@@ -42,6 +44,18 @@
         base::MakeUnique<ChromeIdentityServiceObserverBridge>(self);
   }
   return self;
+}
+
+- (SigninPromoViewConfigurator*)createConfigurator {
+  if (_defaultIdentity) {
+    return [[SigninPromoViewConfigurator alloc]
+        initWithUserEmail:_defaultIdentity.userEmail
+             userFullName:_defaultIdentity.userFullName
+                userImage:_identityAvatar];
+  }
+  return [[SigninPromoViewConfigurator alloc] initWithUserEmail:nil
+                                                   userFullName:nil
+                                                      userImage:nil];
 }
 
 - (void)selectIdentity:(ChromeIdentity*)identity {
@@ -63,37 +77,13 @@
 
 - (void)identityAvatarUpdated:(UIImage*)identityAvatar {
   _identityAvatar = identityAvatar;
-  [_delegate signinPromoViewMediatorCurrentIdentityUpdated:self];
+  [self sendConsumerNotificationWithNewIdentity:NO];
 }
 
-#pragma mark - SigninPromoViewConfigurator
-
-- (void)configureSigninPromoView:(SigninPromoView*)signinPromoView {
-  if (!_defaultIdentity) {
-    signinPromoView.mode = SigninPromoViewModeColdState;
-  } else {
-    signinPromoView.mode = SigninPromoViewModeWarmState;
-    NSString* userEmail = _defaultIdentity.userEmail;
-    [signinPromoView.secondaryButton
-        setTitle:l10n_util::GetNSStringF(IDS_IOS_SIGNIN_PROMO_NOT,
-                                         base::SysNSStringToUTF16(userEmail))
-        forState:UIControlStateNormal];
-    NSString* userFullName = _defaultIdentity.userFullName;
-    if (!userFullName) {
-      userFullName = userEmail;
-    }
-    [signinPromoView.primaryButton
-        setTitle:l10n_util::GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS,
-                                         base::SysNSStringToUTF16(userFullName))
-        forState:UIControlStateNormal];
-    UIImage* image = _identityAvatar;
-    if (!image) {
-      image = ios::GetChromeBrowserProvider()
-                  ->GetSigninResourcesProvider()
-                  ->GetDefaultAvatar();
-    }
-    [signinPromoView setProfileImage:image];
-  }
+- (void)sendConsumerNotificationWithNewIdentity:(BOOL)newIdentity {
+  SigninPromoViewConfigurator* configurator = [self createConfigurator];
+  [_consumer configureSigninPromoViewWithNewIdentity:newIdentity
+                                        configurator:configurator];
 }
 
 #pragma mark - ChromeIdentityServiceObserver
@@ -108,13 +98,13 @@
   }
   if (newIdentity != _defaultIdentity) {
     [self selectIdentity:newIdentity];
-    [_delegate signinPromoViewMediatorCurrentIdentityChanged:self];
+    [self sendConsumerNotificationWithNewIdentity:YES];
   }
 }
 
 - (void)onProfileUpdate:(ChromeIdentity*)identity {
   if (identity == _defaultIdentity) {
-    [_delegate signinPromoViewMediatorCurrentIdentityUpdated:self];
+    [self sendConsumerNotificationWithNewIdentity:NO];
   }
 }
 

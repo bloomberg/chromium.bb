@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/payments/cells/price_item.h"
 #import "ios/chrome/browser/ui/authentication/account_control_item.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_item.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/cvc_item.h"
@@ -36,7 +37,6 @@
 #import "ios/chrome/browser/ui/settings/cells/native_app_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
-#import "ios/chrome/browser/ui/settings/simple_signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
@@ -96,10 +96,7 @@ const CGFloat kHorizontalImageFixedSize = 40;
 
 }  // namespace
 
-@implementation MaterialCellCatalogViewController {
-  base::scoped_nsobject<SimpleSigninPromoViewMediator> _coldStateMediator;
-  base::scoped_nsobject<SimpleSigninPromoViewMediator> _warmStateMediator;
-}
+@implementation MaterialCellCatalogViewController
 
 - (instancetype)init {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
@@ -486,19 +483,23 @@ const CGFloat kHorizontalImageFixedSize = 40;
 }
 
 - (CollectionViewItem*)coldStateSigninPromoItem {
-  _coldStateMediator.reset([[SimpleSigninPromoViewMediator alloc] init]);
-  return
-      [[[SigninPromoItem alloc] initWithType:ItemTypeWarmStateSigninPromo
-                                configurator:_coldStateMediator] autorelease];
+  SigninPromoItem* signinPromoItem = [[[SigninPromoItem alloc]
+      initWithType:ItemTypeWarmStateSigninPromo] autorelease];
+  signinPromoItem.configurator =
+      [[[SigninPromoViewConfigurator alloc] initWithUserEmail:nil
+                                                 userFullName:nil
+                                                    userImage:nil] autorelease];
+  return signinPromoItem;
 }
 
 - (CollectionViewItem*)warmStateSigninPromoItem {
-  _warmStateMediator.reset([[SimpleSigninPromoViewMediator alloc] init]);
-  _warmStateMediator.get().userFullName = @"John Doe";
-  _warmStateMediator.get().userEmail = @"johndoe@example.com";
-  return
-      [[[SigninPromoItem alloc] initWithType:ItemTypeColdStateSigninPromo
-                                configurator:_warmStateMediator] autorelease];
+  SigninPromoItem* signinPromoItem = [[[SigninPromoItem alloc]
+      initWithType:ItemTypeColdStateSigninPromo] autorelease];
+  signinPromoItem.configurator = [[[SigninPromoViewConfigurator alloc]
+      initWithUserEmail:@"jonhdoe@example.com"
+           userFullName:@"John Doe"
+              userImage:nil] autorelease];
+  return signinPromoItem;
 }
 
 - (CollectionViewItem*)accountControlItem {

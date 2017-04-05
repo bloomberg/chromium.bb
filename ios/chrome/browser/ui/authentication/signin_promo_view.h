@@ -8,14 +8,6 @@
 #import <UIKit/UIKit.h>
 
 @class MDCFlatButton;
-@class SigninPromoView;
-
-// Configures a SigninPromoView view.
-@protocol SigninPromoViewConfigurator<NSObject>
-
-- (void)configureSigninPromoView:(SigninPromoView*)signinPromoView;
-
-@end
 
 typedef NS_ENUM(NSInteger, SigninPromoViewMode) {
   // No identity available on the device.

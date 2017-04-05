@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_item.h"
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,12 +18,10 @@
 
 @synthesize configurator = _configurator;
 
-- (instancetype)initWithType:(NSInteger)type
-                configurator:(id<SigninPromoViewConfigurator>)configurator {
+- (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [SigninPromoCell class];
-    _configurator = configurator;
   }
   return self;
 }

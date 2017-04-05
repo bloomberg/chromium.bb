@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_item.h"
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view_configurator.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -15,10 +16,10 @@
 
 // Tests that SigninPromoItem creates and configures correctly SigninPromoCell.
 TEST(SigninPromoItemTest, ConfigureCell) {
-  id<SigninPromoViewConfigurator> configurator =
-      OCMStrictProtocolMock(@protocol(SigninPromoViewConfigurator));
-  SigninPromoItem* item =
-      [[SigninPromoItem alloc] initWithType:0 configurator:configurator];
+  SigninPromoViewConfigurator* configurator =
+      OCMStrictClassMock([SigninPromoViewConfigurator class]);
+  SigninPromoItem* item = [[SigninPromoItem alloc] initWithType:0];
+  item.configurator = configurator;
 
   id cell = [[[item cellClass] alloc] init];
   ASSERT_TRUE([cell isMemberOfClass:[SigninPromoCell class]]);
@@ -31,5 +32,5 @@ TEST(SigninPromoItemTest, ConfigureCell) {
   OCMExpect([configurator configureSigninPromoView:signinPromoView]);
   [item configureCell:signInCell];
   EXPECT_NE(nil, signinPromoView.textLabel.text);
-  EXPECT_OCMOCK_VERIFY(configurator);
+  EXPECT_OCMOCK_VERIFY((id)configurator);
 }
