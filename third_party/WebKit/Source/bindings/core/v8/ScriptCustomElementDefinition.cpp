@@ -10,7 +10,6 @@
 #include "bindings/core/v8/V8CustomElementRegistry.h"
 #include "bindings/core/v8/V8Element.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -30,14 +29,15 @@ static v8::Local<v8::Map> ensureCustomElementRegistryMap(
     ScriptState* scriptState,
     CustomElementRegistry* registry) {
   CHECK(scriptState->world().isMainWorld());
-  v8::Local<v8::String> name =
-      V8HiddenValue::customElementsRegistryMap(scriptState->isolate());
+  v8::Isolate* isolate = scriptState->isolate();
+
+  V8PrivateProperty::Symbol symbol =
+      V8PrivateProperty::getCustomElementRegistryMap(isolate);
   v8::Local<v8::Object> wrapper = ToV8(registry, scriptState).As<v8::Object>();
-  v8::Local<v8::Value> map =
-      V8HiddenValue::getHiddenValue(scriptState, wrapper, name);
-  if (map.IsEmpty()) {
-    map = v8::Map::New(scriptState->isolate());
-    V8HiddenValue::setHiddenValue(scriptState, wrapper, name, map);
+  v8::Local<v8::Value> map = symbol.getOrUndefined(wrapper);
+  if (map->IsUndefined()) {
+    map = v8::Map::New(isolate);
+    symbol.set(wrapper, map);
   }
   return map.As<v8::Map>();
 }
@@ -61,8 +61,8 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::forConstructor(
   // things:
   //
   // 1. Only ScriptCustomElementDefinition adds entries to the map.
-  //    Audit the use of V8HiddenValue/hidden values in general and
-  //    how the map is handled--it should never be leaked to script.
+  //    Audit the use of private properties in general and how the
+  //    map is handled--it should never be leaked to script.
   //
   // 2. CustomElementRegistry does not overwrite definitions with a
   //    given name--see the CHECK in CustomElementRegistry::define

@@ -4,8 +4,9 @@
 
 #include "modules/fetch/BodyStreamBuffer.h"
 
+#include <memory>
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMTypedArray.h"
@@ -16,7 +17,6 @@
 #include "modules/fetch/ReadableStreamBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
-#include <memory>
 
 namespace blink {
 
@@ -90,10 +90,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState,
       scriptState, this,
       ReadableStreamOperations::createCountQueuingStrategy(scriptState, 0));
   DCHECK(!readableStream.isEmpty());
-  V8HiddenValue::setHiddenValue(
-      scriptState, body,
-      V8HiddenValue::internalBodyStream(scriptState->isolate()),
-      readableStream.v8Value());
+  V8PrivateProperty::getInternalBodyStream(scriptState->isolate())
+      .set(body, readableStream.v8Value());
   m_consumer->setClient(this);
   onStateChange();
 }
@@ -108,10 +106,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
   DCHECK(bodyValue->IsObject());
   v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
 
-  V8HiddenValue::setHiddenValue(
-      scriptState, body,
-      V8HiddenValue::internalBodyStream(scriptState->isolate()),
-      stream.v8Value());
+  V8PrivateProperty::getInternalBodyStream(scriptState->isolate())
+      .set(body, stream.v8Value());
 }
 
 ScriptValue BodyStreamBuffer::stream() {
@@ -122,9 +118,8 @@ ScriptValue BodyStreamBuffer::stream() {
   v8::Local<v8::Object> body = bodyValue.As<v8::Object>();
   return ScriptValue(
       m_scriptState.get(),
-      V8HiddenValue::getHiddenValue(
-          m_scriptState.get(), body,
-          V8HiddenValue::internalBodyStream(m_scriptState->isolate())));
+      V8PrivateProperty::getInternalBodyStream(m_scriptState->isolate())
+          .getOrEmpty(body));
 }
 
 PassRefPtr<BlobDataHandle> BodyStreamBuffer::drainAsBlobDataHandle(

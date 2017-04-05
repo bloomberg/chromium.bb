@@ -5,7 +5,7 @@
 #include "modules/serviceworkers/ForeignFetchEvent.h"
 
 #include "bindings/core/v8/ToV8.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "modules/fetch/Request.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "wtf/RefPtr.h"
@@ -76,9 +76,8 @@ ForeignFetchEvent::ForeignFetchEvent(
     DCHECK(event->IsObject());
     // Sets a hidden value in order to teach V8 the dependency from
     // the event to the request.
-    V8HiddenValue::setHiddenValue(
-        scriptState, event.As<v8::Object>(),
-        V8HiddenValue::requestInFetchEvent(scriptState->isolate()), request);
+    V8PrivateProperty::getFetchEventRequest(scriptState->isolate())
+        .set(event.As<v8::Object>(), request);
     // From the same reason as above, setHiddenValue can return false.
     // TODO(yhirano): Add an assertion that it returns true once the
     // graceful shutdown mechanism is introduced.

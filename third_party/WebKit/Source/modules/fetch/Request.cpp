@@ -5,6 +5,7 @@
 #include "modules/fetch/Request.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
@@ -717,7 +718,6 @@ String Request::mimeType() const {
 }
 
 void Request::refreshBody(ScriptState* scriptState) {
-  v8::Local<v8::Value> bodyBuffer = ToV8(this->bodyBuffer(), scriptState);
   v8::Local<v8::Value> request = ToV8(this, scriptState);
   if (request.IsEmpty()) {
     // |toV8| can return an empty handle when the worker is terminating.
@@ -727,9 +727,9 @@ void Request::refreshBody(ScriptState* scriptState) {
     return;
   }
   DCHECK(request->IsObject());
-  V8HiddenValue::setHiddenValue(
-      scriptState, request.As<v8::Object>(),
-      V8HiddenValue::internalBodyBuffer(scriptState->isolate()), bodyBuffer);
+  v8::Local<v8::Value> bodyBuffer = ToV8(this->bodyBuffer(), scriptState);
+  V8PrivateProperty::getInternalBodyBuffer(scriptState->isolate())
+      .set(request.As<v8::Object>(), bodyBuffer);
 }
 
 DEFINE_TRACE(Request) {

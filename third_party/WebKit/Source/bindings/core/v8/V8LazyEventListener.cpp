@@ -37,8 +37,8 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8HTMLFormElement.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
@@ -117,10 +117,9 @@ v8::Local<v8::Value> V8LazyEventListener::callListenerFunction(
 
 static void V8LazyEventListenerToString(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8SetReturnValue(info,
-                   V8HiddenValue::getHiddenValue(
-                       ScriptState::current(info.GetIsolate()), info.Holder(),
-                       V8HiddenValue::toStringString(info.GetIsolate())));
+  v8SetReturnValue(
+      info, V8PrivateProperty::getLazyEventListenerToString(info.GetIsolate())
+                .getOrUndefined(info.Holder()));
 }
 
 v8::Local<v8::Object> V8LazyEventListener::getListenerObjectInternal(
@@ -221,9 +220,8 @@ void V8LazyEventListener::compileScript(ScriptState* scriptState,
     return;
   String toStringString = "function " + m_functionName + "(" +
                           m_eventParameterName + ") {\n  " + m_code + "\n}";
-  V8HiddenValue::setHiddenValue(scriptState, wrappedFunction,
-                                V8HiddenValue::toStringString(isolate()),
-                                v8String(isolate(), toStringString));
+  V8PrivateProperty::getLazyEventListenerToString(isolate()).set(
+      wrappedFunction, v8String(isolate(), toStringString));
   if (!v8CallBoolean(wrappedFunction->CreateDataProperty(
           scriptState->context(), v8AtomicString(isolate(), "toString"),
           toStringFunction)))

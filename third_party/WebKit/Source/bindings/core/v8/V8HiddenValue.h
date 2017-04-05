@@ -20,19 +20,6 @@ class ScriptState;
 class ScriptWrappable;
 
 #define V8_HIDDEN_VALUES(V)                  \
-  V(customElementAttachedCallback)           \
-  V(customElementAttributeChangedCallback)   \
-  V(customElementCreatedCallback)            \
-  V(customElementDetachedCallback)           \
-  V(customElementsRegistryMap)               \
-  V(idbCursorRequest)                        \
-  V(internalBodyBuffer)                      \
-  V(internalBodyStream)                      \
-  V(requestInFetchEvent)                     \
-  V(testInterfaces)                          \
-  V(thenableHiddenPromise)                   \
-  V(toStringString)                          \
-  V(injectedScriptNative)                    \
   SCRIPT_PROMISE_PROPERTIES(V, Promise)      \
   SCRIPT_PROMISE_PROPERTIES(V, Resolver)
 

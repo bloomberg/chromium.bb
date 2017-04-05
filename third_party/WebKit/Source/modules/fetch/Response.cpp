@@ -13,7 +13,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8FormData.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8URLSearchParams.h"
 #include "bindings/modules/v8/ByteStringSequenceSequenceOrDictionaryOrHeaders.h"
 #include "core/dom/DOMArrayBuffer.h"
@@ -455,9 +455,8 @@ void Response::refreshBody(ScriptState* scriptState) {
     return;
   }
   DCHECK(response->IsObject());
-  V8HiddenValue::setHiddenValue(
-      scriptState, response.As<v8::Object>(),
-      V8HiddenValue::internalBodyBuffer(scriptState->isolate()), bodyBuffer);
+  V8PrivateProperty::getInternalBodyBuffer(scriptState->isolate())
+      .set(response.As<v8::Object>(), bodyBuffer);
 }
 
 DEFINE_TRACE(Response) {

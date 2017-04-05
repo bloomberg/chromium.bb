@@ -25,9 +25,11 @@
 
 #include "modules/indexeddb/IDBCursor.h"
 
+#include <limits>
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "bindings/modules/v8/V8IDBRequest.h"
@@ -40,8 +42,6 @@
 #include "modules/indexeddb/IDBTransaction.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include <limits>
-#include <memory>
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;
@@ -93,9 +93,8 @@ v8::Local<v8::Object> IDBCursor::associateWithWrapper(
   wrapper =
       ScriptWrappable::associateWithWrapper(isolate, wrapperType, wrapper);
   if (!wrapper.IsEmpty()) {
-    V8HiddenValue::setHiddenValue(ScriptState::current(isolate), wrapper,
-                                  V8HiddenValue::idbCursorRequest(isolate),
-                                  ToV8(m_request.get(), wrapper, isolate));
+    V8PrivateProperty::getIDBCursorRequest(isolate).set(
+        wrapper, ToV8(m_request.get(), wrapper, isolate));
   }
   return wrapper;
 }

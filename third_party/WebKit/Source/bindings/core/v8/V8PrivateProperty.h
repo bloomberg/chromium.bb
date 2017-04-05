@@ -19,6 +19,9 @@ namespace blink {
 
 class ScriptWrappable;
 
+// TODO(peria): Remove properties just to keep V8 objects alive.
+// e.g. InternalBody.Buffer, InternalBody.Stream, IDBCursor.Request,
+// FetchEvent.Request.
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X)               \
   X(CustomElement, AdoptedCallback)                   \
@@ -28,14 +31,24 @@ class ScriptWrappable;
   X(CustomElement, Document)                          \
   X(CustomElement, IsInterfacePrototypeObject)        \
   X(CustomElement, NamespaceURI)                      \
+  X(CustomElement, RegistryMap)                       \
   X(CustomElement, TagName)                           \
   X(CustomElement, Type)                              \
+  X(CustomElementLifecycle, AttachedCallback)         \
+  X(CustomElementLifecycle, AttributeChangedCallback) \
+  X(CustomElementLifecycle, CreatedCallback)          \
+  X(CustomElementLifecycle, DetachedCallback)         \
   X(CustomEvent, Detail)                              \
   X(DOMException, Error)                              \
   X(ErrorEvent, Error)                                \
+  X(FetchEvent, Request)                              \
   X(Global, Event)                                    \
+  X(IDBCursor, Request)                               \
   X(IDBObserver, Callback)                            \
+  X(InternalBody, Buffer)                             \
+  X(InternalBody, Stream)                             \
   X(IntersectionObserver, Callback)                   \
+  X(LazyEventListener, ToString)                      \
   X(MessageChannel, Port1)                            \
   X(MessageChannel, Port2)                            \
   X(MessageEvent, CachedData)                         \

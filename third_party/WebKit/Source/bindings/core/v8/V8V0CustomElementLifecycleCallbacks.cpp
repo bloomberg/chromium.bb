@@ -30,15 +30,15 @@
 
 #include "bindings/core/v8/V8V0CustomElementLifecycleCallbacks.h"
 
+#include <memory>
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V0CustomElementBinding.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8PerContextData.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
-#include <memory>
 
 namespace blink {
 
@@ -57,20 +57,21 @@ V8V0CustomElementLifecycleCallbacks::create(
     v8::MaybeLocal<v8::Function> detached,
     v8::MaybeLocal<v8::Function> attributeChanged) {
   v8::Isolate* isolate = scriptState->isolate();
+
 // A given object can only be used as a Custom Element prototype
 // once; see customElementIsInterfacePrototypeObject
-#define SET_HIDDEN_VALUE(Value, Name)                                          \
-  ASSERT(                                                                      \
-      V8HiddenValue::getHiddenValue(                                           \
-          scriptState, prototype, V8HiddenValue::customElement##Name(isolate)) \
-          .IsEmpty());                                                         \
-  if (!Value.IsEmpty())                                                        \
-    V8HiddenValue::setHiddenValue(scriptState, prototype,                      \
-                                  V8HiddenValue::customElement##Name(isolate), \
-                                  Value.ToLocalChecked());
+#define SET_PRIVATE_PROPERTY(Maybe, Name)                          \
+  V8PrivateProperty::Symbol symbol##Name =                         \
+      V8PrivateProperty::getCustomElementLifecycle##Name(isolate); \
+  DCHECK(!symbol##Name.hasValue(prototype));                       \
+  {                                                                \
+    v8::Local<v8::Function> function;                              \
+    if (Maybe.ToLocal(&function))                                  \
+      symbol##Name.set(prototype, function);                       \
+  }
 
-  CALLBACK_LIST(SET_HIDDEN_VALUE)
-#undef SET_HIDDEN_VALUE
+  CALLBACK_LIST(SET_PRIVATE_PROPERTY)
+#undef SET_PRIVATE_PROPERTY
 
   return new V8V0CustomElementLifecycleCallbacks(
       scriptState, prototype, created, attached, detached, attributeChanged);
