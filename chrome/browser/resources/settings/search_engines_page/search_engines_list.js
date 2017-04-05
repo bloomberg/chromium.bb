@@ -30,10 +30,10 @@ Polymer({
   },
 
   /**
-   * @param {?HTMLElement} scrollTarget
+   * Fix height of list if no scrollTarget is present.
    * @return {string}
    */
-  getIronListClass_: function(scrollTarget) {
-    return scrollTarget ? '' : 'fixed-height-list';
+  getIronListClass_: function() {
+    return this.scrollTarget ? '' : 'fixed-height-list';
   },
 });
