@@ -109,8 +109,9 @@ CGFloat kHorizontalMargin = 8.0f;
 
   // Forward button.
   self.forwardButton = [ToolbarButton forwardToolbarButton];
-  self.forwardButton.visibilityMask = ToolbarComponentVisibilityCompactWidth |
-                                      ToolbarComponentVisibilityRegularWidth;
+  self.forwardButton.visibilityMask =
+      ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled |
+      ToolbarComponentVisibilityRegularWidth;
   [self.forwardButton addTarget:self
                          action:@selector(goForward:)
                forControlEvents:UIControlEventTouchUpInside];
@@ -187,6 +188,9 @@ CGFloat kHorizontalMargin = 8.0f;
 
 - (void)setCanGoForward:(BOOL)canGoForward {
   self.forwardButton.enabled = canGoForward;
+  // Update the visibility since the Forward button will be hidden on
+  // CompactWidth when disabled.
+  [self.forwardButton updateHiddenInCurrentSizeClass];
 }
 
 - (void)setCanGoBack:(BOOL)canGoBack {

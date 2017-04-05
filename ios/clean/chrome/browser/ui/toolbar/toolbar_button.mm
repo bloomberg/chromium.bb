@@ -39,8 +39,14 @@
           !(self.visibilityMask & ToolbarComponentVisibilityRegularWidth);
       break;
     case UIUserInterfaceSizeClassCompact:
-      newHiddenValue =
-          !(self.visibilityMask & ToolbarComponentVisibilityCompactWidth);
+      // First check if the button should be visible only when it's enabled,
+      // if not, check if it should be visible in this case.
+      if (self.visibilityMask &
+          ToolbarComponentVisibilityCompactWidthOnlyWhenEnabled) {
+        newHiddenValue = !self.enabled;
+      } else if (self.visibilityMask & ToolbarComponentVisibilityCompactWidth) {
+        newHiddenValue = NO;
+      }
       break;
     case UIUserInterfaceSizeClassUnspecified:
     default:
