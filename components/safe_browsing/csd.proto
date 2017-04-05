@@ -929,7 +929,7 @@ message ClientSafeBrowsingReportRequest {
   message HTTPResponse {
     message FirstLine {
       optional int32 code = 1;
-      optional bytes reason = 2;
+      optional bytes message = 2;
       optional bytes version = 3;
     }
 
