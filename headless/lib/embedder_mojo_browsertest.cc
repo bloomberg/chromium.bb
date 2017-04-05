@@ -195,7 +195,7 @@ class MojoBindingsReinstalledAfterNavigation : public EmbedderMojoTest {
   void RunMojoTest() override {}
 
   GURL GetInitialUrl() const override {
-    return embedded_test_server()->GetURL("/page_one.html");
+    return embedded_test_server()->GetURL("/mojo_page_one.html");
   }
 
   // embedder_test::TestEmbedderService:
@@ -203,7 +203,7 @@ class MojoBindingsReinstalledAfterNavigation : public EmbedderMojoTest {
     if (result == "page one") {
       seen_page_one_ = true;
       devtools_client_->GetPage()->Navigate(
-          "http://not-an-actual-domain.tld/page_two.html");
+          "http://not-an-actual-domain.tld/mojo_page_two.html");
     } else {
       EXPECT_TRUE(seen_page_one_);
       EXPECT_EQ("page two", result);
@@ -235,7 +235,7 @@ class HttpDisabledByDefaultWhenMojoBindingsUsed : public EmbedderMojoTest,
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
     devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL("/page_one.html").spec());
+        embedded_test_server()->GetURL("/mojo_page_one.html").spec());
   }
 
   void ReturnTestResult(const std::string& result) override {
