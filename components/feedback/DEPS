@@ -9,6 +9,7 @@ include_rules = [
   "+content/public/browser",
   "+content/public/test",
   "+net/base",
+  "+net/traffic_annotation",
   "+net/url_request",
   "+third_party/re2",
   "+third_party/zlib/google",

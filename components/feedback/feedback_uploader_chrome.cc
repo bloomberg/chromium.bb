@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
@@ -47,14 +48,45 @@ FeedbackUploaderChrome::FeedbackUploaderChrome(
 void FeedbackUploaderChrome::DispatchReport(const std::string& data) {
   GURL post_url(url_);
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("chrome_feedback_report_app", R"(
+        semantics {
+          sender: "Chrome Feedback Report App"
+          description:
+            "Users can press Alt+Shift+i to report a bug or a feedback in "
+            "general. Along with the free-form text they entered, system logs "
+            "that helps in diagnosis of the issue are sent to Google. This "
+            "service uploads the report to Google Feedback server."
+          trigger:
+            "When user chooses to send a feedback to Google."
+          data:
+            "The free-form text that user has entered and useful debugging "
+            "logs (UI logs, Chrome logs, kernel logs, auto update engine logs, "
+            "ARC++ logs, etc.). The logs are anonymized to remove any "
+            "user-private data. The user can view the system information "
+            "before sending, and choose to send the feedback report without "
+            "system information and the logs (unchecking 'Send system "
+            "information' prevents sending logs as well), the screenshot, or "
+            "even his/her email address."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings and is only activated "
+            "by direct user request."
+          policy_exception_justification: "Not implemented."
+        })");
   // Note: FeedbackUploaderDelegate deletes itself and the fetcher.
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(
           post_url, net::URLFetcher::POST,
           new FeedbackUploaderDelegate(
-              data, base::Bind(&FeedbackUploaderChrome::UpdateUploadTimer,
-                               AsWeakPtr()),
-              base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())))
+              data,
+              base::Bind(&FeedbackUploaderChrome::UpdateUploadTimer,
+                         AsWeakPtr()),
+              base::Bind(&FeedbackUploaderChrome::RetryReport, AsWeakPtr())),
+          traffic_annotation)
           .release();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::FEEDBACK_UPLOADER);
