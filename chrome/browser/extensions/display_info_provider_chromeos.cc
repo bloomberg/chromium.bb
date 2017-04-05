@@ -467,7 +467,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(
   const display::Display target = GetDisplay(display_id_str);
 
   if (target.id() == display::kInvalidDisplayId) {
-    *error = "Display not found.";
+    *error = "Display not found:" + display_id_str;
     return false;
   }
 

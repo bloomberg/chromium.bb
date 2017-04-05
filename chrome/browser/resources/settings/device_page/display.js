@@ -60,7 +60,7 @@ Polymer({
     primaryDisplayId: String,
 
     /** @type {!chrome.system.display.DisplayUnitInfo|undefined} */
-    selectedDisplay: {type: Object, observer: 'selectedDisplayChanged_'},
+    selectedDisplay: Object,
 
     /** Id passed to the overscan dialog. */
     overscanDisplayId: {
@@ -161,22 +161,28 @@ Polymer({
     return 0;
   },
 
-  /** @private */
-  selectedDisplayChanged_: function() {
-    // Set |modeValues_| before |selectedModePref_.value| so that the slider
-    // updates correctly.
-    var numModes = this.selectedDisplay.modes.length;
+  /**
+   * We need to call this explicitly rather than relying on change events
+   * so that we can control the update order.
+   * @param {!chrome.system.display.DisplayUnitInfo} selectedDisplay
+   * @private
+   */
+  setSelectedDisplay_: function(selectedDisplay) {
+    // Set |currentSelectedModeIndex_| and |modeValues_| first since these
+    // are not used directly in data binding.
+    var numModes = selectedDisplay.modes.length;
     if (numModes == 0) {
       this.modeValues_ = [];
-      this.set('selectedModePref_.value', 0);
       this.currentSelectedModeIndex_ = 0;
-      return;
+    } else {
+      this.modeValues_ = Array.from(Array(numModes).keys());
+      this.currentSelectedModeIndex_ = this.getSelectedModeIndex_(
+        selectedDisplay);
     }
-    this.modeValues_ = Array.from(Array(numModes).keys());
-    this.set('selectedModePref_.value', this.getSelectedModeIndex_(
-        this.selectedDisplay));
-    this.currentSelectedModeIndex_ =
-        /** @type {number} */ (this.selectedModePref_.value);
+    // Set |selectedDisplay| first since only the resolution slider depends
+    // on |selectedModePref_|.
+    this.selectedDisplay = selectedDisplay;
+    this.set('selectedModePref_.value', this.currentSelectedModeIndex_);
   },
 
   /**
@@ -290,6 +296,7 @@ Polymer({
     }
     var mode = this.selectedDisplay.modes[
         /** @type {number} */(this.selectedModePref_.value)];
+    assert(mode);
     var best =
         this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
     var widthStr = mode.width.toString();
@@ -309,14 +316,10 @@ Polymer({
     var id = e.detail;
     for (var i = 0; i < this.displays.length; ++i) {
       var display = this.displays[i];
-      if (id != display.id)
-        continue;
-      if (this.selectedDisplay != display) {
-        // Set currentSelectedModeIndex_ to -1 so that getResolutionText_ does
-        // not flicker. selectedDisplayChanged will update
-        // |selectedModePref_.value| and currentSelectedModeIndex_ correctly.
-        this.currentSelectedModeIndex_ = -1;
-        this.selectedDisplay = display;
+      if (id == display.id) {
+        if (this.selectedDisplay != display)
+          this.setSelectedDisplay_(display);
+        return;
       }
     }
   },
@@ -447,12 +450,9 @@ Polymer({
     }
     this.displayIds = displayIds;
     this.primaryDisplayId = (primaryDisplay && primaryDisplay.id) || '';
-    this.selectedDisplay = selectedDisplay || primaryDisplay ||
+    selectedDisplay = selectedDisplay || primaryDisplay ||
         (this.displays && this.displays[0]);
-    // Save the selected mode index received from Chrome so that we do not
-    // send an unnecessary setDisplayProperties call (which would log an error).
-    this.currentSelectedModeIndex_ =
-        this.getSelectedModeIndex_(this.selectedDisplay);
+    this.setSelectedDisplay_(selectedDisplay);
 
     this.$.displayLayout.updateDisplays(this.displays, this.layouts);
   },
