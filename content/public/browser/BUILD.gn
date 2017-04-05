@@ -292,6 +292,7 @@ source_set("browser_sources") {
   ]
 
   public_deps = [
+    "//content/public/common:common_sources",
     "//ipc",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -307,7 +308,6 @@ source_set("browser_sources") {
   deps = [
     "//cc",
     "//content/browser",  # Must not be public_deps!
-    "//content/public/common:common_sources",
     "//device/geolocation",
     "//device/power_save_blocker",
     "//gpu",
