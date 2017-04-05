@@ -77,13 +77,14 @@ function test()
             dumpAndContinue(next);
         },
 
-        function testTypingShouldJumpToBottom(next)
+        function testChangingPromptTextShouldJumpToBottom(next)
         {
-            var keyEvent = InspectorTest.createKeyEvent("a");
-            viewport._contentElement.dispatchEvent(keyEvent);
-            consoleView._promptElement.dispatchEvent(new Event('input'));
+            InspectorTest.addSniffer(Console.ConsoleView.prototype, "_promptTextChangedForTest", onContentChanged);
+            var editorElement = consoleView._prompt.setText("a");
 
-            dumpAndContinue(next);
+            function onContentChanged() {
+                dumpAndContinue(next);
+            }
         },
 
         function testViewportMutationsShouldPreserveStickToBottom(next)
