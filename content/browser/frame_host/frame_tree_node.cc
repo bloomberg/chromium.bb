@@ -470,36 +470,16 @@ void FrameTreeNode::DidStartLoading(bool to_different_document,
 }
 
 void FrameTreeNode::DidStopLoading() {
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 FrameTreeNode::DidStopLoading::Start"));
-
   // Set final load progress and update overall progress. This will notify
   // the WebContents of the load progress change.
   DidChangeLoadProgress(kLoadingProgressDone);
-
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 FrameTreeNode::DidStopLoading::WCIDidStopLoading"));
 
   // Notify the WebContents.
   if (!frame_tree_->IsLoading())
     navigator()->GetDelegate()->DidStopLoading();
 
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 FrameTreeNode::DidStopLoading::RFHMDidStopLoading"));
-
   // Notify the RenderFrameHostManager of the event.
   render_manager()->OnDidStopLoading();
-
-  // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "465796 FrameTreeNode::DidStopLoading::End"));
 }
 
 void FrameTreeNode::DidChangeLoadProgress(double load_progress) {
