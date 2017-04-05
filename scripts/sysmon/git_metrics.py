@@ -81,14 +81,14 @@ class _GitMetricCollector(object):
 _CHROMIUMOS_DIR = os.path.expanduser('~chromeos-test/chromiumos/')
 
 _repo_collectors = (
-  # TODO(ayatane): We cannot access chromeos-admin because we are
-  # running as non-root.
-  _GitMetricCollector(gitdir='/root/chromeos-admin/.git',
-                      metric_path='chromeos-admin'),
-  _GitMetricCollector(gitdir=_CHROMIUMOS_DIR + 'chromite/.git',
-                      metric_path='chromite'),
-  _GitMetricCollector(gitdir='/usr/local/autotest/.git',
-                      metric_path='installed_autotest'),
+    # TODO(ayatane): We cannot access chromeos-admin because we are
+    # running as non-root.
+    _GitMetricCollector(gitdir='/root/chromeos-admin/.git',
+                        metric_path='chromeos-admin'),
+    _GitMetricCollector(gitdir=_CHROMIUMOS_DIR + 'chromite/.git',
+                        metric_path='chromite'),
+    _GitMetricCollector(gitdir='/usr/local/autotest/.git',
+                        metric_path='installed_autotest'),
 )
 
 
