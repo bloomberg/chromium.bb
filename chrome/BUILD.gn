@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/compiler/pgo/pgo.gni")
@@ -244,7 +243,6 @@ if (!is_android && !is_mac) {
         # Needed to use the master_preferences functions
         "//chrome/installer/util:with_no_strings",
         "//content/public/app:both",
-        "//pdf",
 
         # For headless mode.
         "//headless:headless_shell_lib",
@@ -394,7 +392,6 @@ if (is_win) {
       deps += [
         ":child_dependencies",
         "//content/public/app:both",
-        "//pdf",
       ]
     }
 
@@ -435,7 +432,6 @@ if (is_win) {
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//content/public/app:child",
-        "//pdf",
       ]
 
       ldflags = [
@@ -1079,7 +1075,6 @@ if (is_win) {
       "//components/policy:generated",
       "//content/public/app:both",
       "//headless:headless_shell_lib",
-      "//pdf",
       "//third_party/cld",
     ]
 
@@ -1369,6 +1364,7 @@ group("child_dependencies") {
     "//chrome/utility",
     "//components/sync",
     "//content/public/child",
+    "//pdf",
     "//third_party/WebKit/public:blink_devtools_frontend_resources",
   ]
 
