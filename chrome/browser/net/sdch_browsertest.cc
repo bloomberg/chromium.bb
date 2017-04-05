@@ -47,6 +47,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -312,7 +313,8 @@ class SdchBrowserTest : public InProcessBrowserTest,
 
   void FetchUrlDetailed(GURL url, net::URLRequestContextGetter* getter) {
     url_fetch_complete_ = false;
-    fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this);
+    fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this,
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
     fetcher_->SetRequestContext(getter);
     fetcher_->Start();
     if (!url_fetch_complete_) {
