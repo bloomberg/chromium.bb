@@ -95,6 +95,10 @@ class NavigationManagerImpl : public NavigationManager {
                const Referrer& referrer,
                ui::PageTransition type);
 
+  // Adds a transient item with the given URL. A transient item will be
+  // discarded on any navigation.
+  void AddTransientItem(const GURL& url);
+
   // Adds a new item with the given url, referrer, navigation type, initiation
   // type and user agent override option, making it the pending item. If pending
   // item is the same as the current item, this does nothing. |referrer| may be

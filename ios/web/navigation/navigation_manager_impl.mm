@@ -170,6 +170,19 @@ void NavigationManagerImpl::LoadURL(const GURL& url,
   delegate_->GetWebState()->OpenURL(params);
 }
 
+void NavigationManagerImpl::AddTransientItem(const GURL& url) {
+  [session_controller_ addTransientItemWithURL:url];
+
+  // TODO(crbug.com/676129): Transient item is only supposed to be added for
+  // pending non-app-specific loads, but pending item can be null because of the
+  // bug. The workaround should be removed once the bug is fixed.
+  NavigationItem* item = GetPendingItem();
+  if (!item)
+    item = GetLastCommittedNonAppSpecificItem();
+  DCHECK(item->GetUserAgentType() != UserAgentType::NONE);
+  GetTransientItem()->SetUserAgentType(item->GetUserAgentType());
+}
+
 void NavigationManagerImpl::AddPendingItem(
     const GURL& url,
     const web::Referrer& referrer,
