@@ -15,6 +15,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 
 using net::URLFetcher;
@@ -69,9 +70,30 @@ void DoodleFetcherImpl::FetchDoodle(FinishedCallback callback) {
   }
   DCHECK(!fetcher_.get());
   callbacks_.push_back(std::move(callback));
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("doodle_fetcher", R"(
+        semantics {
+          sender: "Doodle Fetcher"
+          description:
+            "Retrieves metadata (image URL, clickthrough URL etc) for any "
+            "currently running Doodle."
+          trigger:
+            "Displaying the new tab page on Android."
+          data: "None."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Choosing a non-Google search engine in Chromium settings under "
+            "'Search Engine' will disable this feature."
+          policy_exception_justification:
+            "Not implemented, considered not useful as it does not upload any "
+            "data."
+        })");
   fetcher_ =
       URLFetcher::Create(BuildDoodleURL(GetGoogleBaseUrl(), gray_background_),
-                         URLFetcher::GET, this);
+                         URLFetcher::GET, this, traffic_annotation);
   fetcher_->SetRequestContext(download_context_.get());
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES |
