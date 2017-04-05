@@ -57,6 +57,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/PropertyRegistry.h"
+#include "core/css/zoomAdjustedPixelValue.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutGrid.h"
@@ -76,13 +77,6 @@ using namespace cssvalue;
 
 inline static bool isFlexOrGrid(const ComputedStyle* style) {
   return style && style->isDisplayFlexibleOrGridBox();
-}
-
-inline static CSSPrimitiveValue* zoomAdjustedPixelValue(
-    double value,
-    const ComputedStyle& style) {
-  return CSSPrimitiveValue::create(adjustFloatForAbsoluteZoom(value, style),
-                                   CSSPrimitiveValue::UnitType::Pixels);
 }
 
 inline static CSSValue* zoomAdjustedPixelValueOrAuto(
