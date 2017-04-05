@@ -194,7 +194,7 @@ void WebDocument::insertStyleSheet(const WebString& sourceCode) {
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors) {
   Document* document = unwrap<Document>();
   CSSSelectorWatch* watch = CSSSelectorWatch::fromIfExists(*document);
-  if (!watch && webSelectors.isEmpty())
+  if (!watch && webSelectors.empty())
     return;
   Vector<String> selectors;
   selectors.append(webSelectors.data(), webSelectors.size());

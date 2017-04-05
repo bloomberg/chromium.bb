@@ -173,8 +173,8 @@ class BLINK_PLATFORM_EXPORT StringConstraint : public BaseConstraint {
   bool isEmpty() const override;
   bool hasMandatory() const override;
   WebString toString() const override;
-  bool hasExact() const { return !m_exact.isEmpty(); }
-  bool hasIdeal() const { return !m_ideal.isEmpty(); }
+  bool hasExact() const { return !m_exact.empty(); }
+  bool hasIdeal() const { return !m_ideal.empty(); }
   const WebVector<WebString>& exact() const;
   const WebVector<WebString>& ideal() const;
 

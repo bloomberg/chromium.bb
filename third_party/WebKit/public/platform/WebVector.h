@@ -111,7 +111,9 @@ class WebVector {
   }
 
   size_t size() const { return m_data.size(); }
-  bool isEmpty() const { return m_data.empty(); }
+  bool empty() const { return m_data.empty(); }
+  // TODO(slangley): Remove all uses of isEmpty.
+  bool isEmpty() const { return empty(); }
 
   T& operator[](size_t i) {
     DCHECK_LT(i, m_data.size());

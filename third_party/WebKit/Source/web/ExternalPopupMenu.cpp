@@ -84,7 +84,7 @@ bool ExternalPopupMenu::showInternal() {
 
   WebPopupMenuInfo info;
   getPopupMenuInfo(info, *m_ownerElement);
-  if (info.items.isEmpty())
+  if (info.items.empty())
     return false;
   WebLocalFrameImpl* webframe =
       WebLocalFrameImpl::fromFrame(m_localFrame.get());

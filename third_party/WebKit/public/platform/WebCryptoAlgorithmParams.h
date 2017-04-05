@@ -188,7 +188,7 @@ class WebCryptoAesGcmParams : public WebCryptoAlgorithmParams {
         m_optionalAdditionalData(std::move(additionalData)),
         m_hasTagLengthBits(hasTagLengthBits),
         m_optionalTagLengthBits(tagLengthBits) {
-    DCHECK(hasAdditionalData || m_optionalAdditionalData.isEmpty());
+    DCHECK(hasAdditionalData || m_optionalAdditionalData.empty());
     DCHECK(hasTagLengthBits || !tagLengthBits);
   }
 
@@ -270,7 +270,7 @@ class WebCryptoRsaOaepParams : public WebCryptoAlgorithmParams {
  public:
   WebCryptoRsaOaepParams(bool hasLabel, WebVector<unsigned char> label)
       : m_hasLabel(hasLabel), m_optionalLabel(std::move(label)) {
-    DCHECK(hasLabel || m_optionalLabel.isEmpty());
+    DCHECK(hasLabel || m_optionalLabel.empty());
   }
 
   virtual WebCryptoAlgorithmParamsType type() const {

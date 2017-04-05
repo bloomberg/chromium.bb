@@ -1026,7 +1026,7 @@ void setFeaturePolicy(Document* document, const String& featurePolicyHeader) {
         ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel,
                                "Error with Feature-Policy header: " + message));
   }
-  if (!parsedHeader.isEmpty())
+  if (!parsedHeader.empty())
     frame->client()->didSetFeaturePolicyHeader(parsedHeader);
 }
 

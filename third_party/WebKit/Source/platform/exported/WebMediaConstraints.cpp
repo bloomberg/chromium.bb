@@ -114,7 +114,7 @@ WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(
 bool WebMediaConstraintsPrivate::isEmpty() const {
   // TODO(hta): When generating advanced constraints, make sure no empty
   // elements can be added to the m_advanced vector.
-  return m_basic.isEmpty() && m_advanced.isEmpty();
+  return m_basic.isEmpty() && m_advanced.empty();
 }
 
 const WebMediaTrackConstraintSet& WebMediaConstraintsPrivate::basic() const {
@@ -131,7 +131,7 @@ const String WebMediaConstraintsPrivate::toString() const {
   if (!isEmpty()) {
     builder.append('{');
     builder.append(basic().toString());
-    if (!advanced().isEmpty()) {
+    if (!advanced().empty()) {
       if (builder.length() > 1)
         builder.append(", ");
       builder.append("advanced: [");
@@ -250,7 +250,7 @@ StringConstraint::StringConstraint(const char* name)
     : BaseConstraint(name), m_exact(), m_ideal() {}
 
 bool StringConstraint::matches(WebString value) const {
-  if (m_exact.isEmpty()) {
+  if (m_exact.empty()) {
     return true;
   }
   for (const auto& choice : m_exact) {
@@ -262,11 +262,11 @@ bool StringConstraint::matches(WebString value) const {
 }
 
 bool StringConstraint::isEmpty() const {
-  return m_exact.isEmpty() && m_ideal.isEmpty();
+  return m_exact.empty() && m_ideal.empty();
 }
 
 bool StringConstraint::hasMandatory() const {
-  return !m_exact.isEmpty();
+  return !m_exact.empty();
 }
 
 const WebVector<WebString>& StringConstraint::exact() const {
@@ -280,7 +280,7 @@ const WebVector<WebString>& StringConstraint::ideal() const {
 WebString StringConstraint::toString() const {
   StringBuilder builder;
   builder.append('{');
-  if (!m_ideal.isEmpty()) {
+  if (!m_ideal.empty()) {
     builder.append("ideal: [");
     bool first = true;
     for (const auto& iter : m_ideal) {
@@ -293,7 +293,7 @@ WebString StringConstraint::toString() const {
     }
     builder.append(']');
   }
-  if (!m_exact.isEmpty()) {
+  if (!m_exact.empty()) {
     if (builder.length() > 1)
       builder.append(", ");
     builder.append("exact: [");

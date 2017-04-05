@@ -1720,7 +1720,7 @@ static void accumulateLayerRectList(PaintLayerCompositor* compositor,
                                     LayerRectList* rects) {
   WebVector<blink::WebRect> layerRects =
       graphicsLayer->platformLayer()->touchEventHandlerRegion();
-  if (!layerRects.isEmpty()) {
+  if (!layerRects.empty()) {
     mergeRects(layerRects);
     String layerType;
     IntSize layerOffset;
