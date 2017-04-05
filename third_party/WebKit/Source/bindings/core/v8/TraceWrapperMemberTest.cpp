@@ -9,9 +9,13 @@
 
 namespace blink {
 
-TEST(TraceWrapperMemberTest, HeapVectorSwap) {
-  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
+namespace {
 
+using Wrapper = TraceWrapperMember<DeathAwareScriptWrappable>;
+
+}  // namespace
+
+TEST(TraceWrapperMemberTest, HeapVectorSwap) {
   HeapVector<Wrapper> vector1;
   DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::create();
@@ -28,8 +32,6 @@ TEST(TraceWrapperMemberTest, HeapVectorSwap) {
 }
 
 TEST(TraceWrapperMemberTest, HeapVectorSwap2) {
-  typedef TraceWrapperMember<DeathAwareScriptWrappable> Wrapper;
-
   HeapVector<Wrapper> vector1;
   DeathAwareScriptWrappable* parent1 = DeathAwareScriptWrappable::create();
   DeathAwareScriptWrappable* child1 = DeathAwareScriptWrappable::create();
@@ -45,6 +47,49 @@ TEST(TraceWrapperMemberTest, HeapVectorSwap2) {
   EXPECT_EQ(parent1, vector1.front().parent());
   EXPECT_EQ(1u, vector2.size());
   EXPECT_EQ(child1, vector2.front().get());
+}
+
+TEST(TraceWrapperMemberTest, HeapHashSet) {
+  HeapHashSet<Wrapper> set;
+  DeathAwareScriptWrappable* parent = DeathAwareScriptWrappable::create();
+
+  // Loop enough so that underlying HashTable will rehash several times.
+  for (int i = 1; i < 10000; ++i) {
+    DeathAwareScriptWrappable* child = DeathAwareScriptWrappable::create();
+    set.insert(Wrapper(parent, child));
+  }
+  EXPECT_EQ(9999u, set.size());
+
+  HeapHashSet<Wrapper> set2;
+  swap(set, set2);
+  EXPECT_EQ(0u, set.size());
+  EXPECT_EQ(9999u, set2.size());
+
+  for (int i = 1; i < 10000; ++i) {
+    auto wrapper = set2.takeAny();
+    EXPECT_EQ(wrapper.parent(), parent);
+  }
+
+  EXPECT_EQ(0u, set2.size());
+}
+
+TEST(TraceWrapperMemberTest, HeapHashMapValue) {
+  HeapHashMap<int, Wrapper> map;
+  DeathAwareScriptWrappable* parent = DeathAwareScriptWrappable::create();
+
+  // Loop enough so that underlying HashTable will rehash several times.
+  for (int i = 1; i < 10000; ++i) {
+    DeathAwareScriptWrappable* child = DeathAwareScriptWrappable::create();
+    map.insert(i, Wrapper(parent, child));
+  }
+  EXPECT_EQ(9999u, map.size());
+
+  for (int i = 1; i < 10000; ++i) {
+    auto wrapper = map.take(i);
+    EXPECT_EQ(wrapper.parent(), parent);
+  }
+
+  EXPECT_EQ(0u, map.size());
 }
 
 }  // namespace blink

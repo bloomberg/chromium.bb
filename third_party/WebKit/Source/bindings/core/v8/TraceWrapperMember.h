@@ -50,7 +50,7 @@ class TraceWrapperMember : public Member<T> {
   TraceWrapperMember(const TraceWrapperMember& other) { *this = other; }
 
   TraceWrapperMember& operator=(const TraceWrapperMember& other) {
-    DCHECK(other.m_parent);
+    DCHECK(!other.m_raw || other.m_parent);
     m_parent = other.m_parent;
     Member<T>::operator=(other);
     ScriptWrappableVisitor::writeBarrier(m_parent, other);
