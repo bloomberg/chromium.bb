@@ -660,8 +660,9 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     /**
      * Test whether a custom tab can be reparented to a new activity while showing a select popup.
      */
-    @SmallTest
-    @RetryOnFailure
+    // @SmallTest
+    // @RetryOnFailure
+    @DisabledTest // Disabled due to flakiness on browser_side_navigation apk - see crbug.com/707766
     public void testTabReparentingSelectPopup() throws InterruptedException {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
