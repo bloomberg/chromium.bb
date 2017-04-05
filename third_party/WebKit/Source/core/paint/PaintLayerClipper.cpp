@@ -261,13 +261,20 @@ void PaintLayerClipper::calculateRectsWithGeometryMapper(
     ClipRect& backgroundRect,
     ClipRect& foregroundRect,
     const LayoutPoint* offsetFromRoot) const {
-  calculateBackgroundClipRectWithGeometryMapper(context, backgroundRect);
-  backgroundRect.move(context.subPixelAccumulation);
-  backgroundRect.intersect(paintDirtyRect);
+  // TODO(chrishtr): fix the underlying bug that causes this situation.
+  if (!m_layer.layoutObject().paintProperties() &&
+      !m_layer.layoutObject().localBorderBoxProperties()) {
+    backgroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
+    foregroundRect = ClipRect(LayoutRect(LayoutRect::infiniteIntRect()));
+  } else {
+    calculateBackgroundClipRectWithGeometryMapper(context, backgroundRect);
+    backgroundRect.move(context.subPixelAccumulation);
+    backgroundRect.intersect(paintDirtyRect);
 
-  calculateForegroundClipRectWithGeometryMapper(context, foregroundRect);
-  foregroundRect.move(context.subPixelAccumulation);
-  foregroundRect.intersect(paintDirtyRect);
+    calculateForegroundClipRectWithGeometryMapper(context, foregroundRect);
+    foregroundRect.move(context.subPixelAccumulation);
+    foregroundRect.intersect(paintDirtyRect);
+  }
 
   LayoutPoint offset;
   if (offsetFromRoot)
