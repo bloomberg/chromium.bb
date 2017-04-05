@@ -157,6 +157,8 @@ class BASE_EXPORT Value {
   // to the copy. The caller gets ownership of the copy, of course.
   // Subclasses return their own type directly in their overrides;
   // this works because C++ supports covariant return types.
+  // DEPRECATED, use Value's copy constructor instead.
+  // TODO(crbug.com/646113): Delete this and migrate callsites.
   Value* DeepCopy() const;
   // Preferred version of DeepCopy. TODO(estade): remove the above.
   std::unique_ptr<Value> CreateDeepCopy() const;
@@ -364,6 +366,8 @@ class BASE_EXPORT DictionaryValue : public Value {
     DictStorage::const_iterator it_;
   };
 
+  // DEPRECATED, use DictionaryValue's copy constructor instead.
+  // TODO(crbug.com/646113): Delete this and migrate callsites.
   DictionaryValue* DeepCopy() const;
   // Preferred version of DeepCopy. TODO(estade): remove the above.
   std::unique_ptr<DictionaryValue> CreateDeepCopy() const;
@@ -480,6 +484,8 @@ class BASE_EXPORT ListValue : public Value {
   const_iterator begin() const { return list_->begin(); }
   const_iterator end() const { return list_->end(); }
 
+  // DEPRECATED, use ListValue's copy constructor instead.
+  // TODO(crbug.com/646113): Delete this and migrate callsites.
   ListValue* DeepCopy() const;
   // Preferred version of DeepCopy. TODO(estade): remove DeepCopy.
   std::unique_ptr<ListValue> CreateDeepCopy() const;

@@ -695,7 +695,7 @@ TEST(ValuesTest, DeepCopy) {
   scoped_nested_dictionary->SetString("key", "value");
   original_dict.Set("dictionary", std::move(scoped_nested_dictionary));
 
-  std::unique_ptr<DictionaryValue> copy_dict = original_dict.CreateDeepCopy();
+  auto copy_dict = MakeUnique<DictionaryValue>(original_dict);
   ASSERT_TRUE(copy_dict.get());
   ASSERT_NE(copy_dict.get(), &original_dict);
 
@@ -818,14 +818,14 @@ TEST(ValuesTest, Equals) {
   dv.SetString("d2", ASCIIToUTF16("http://google.com"));
   dv.Set("e", Value::CreateNullValue());
 
-  std::unique_ptr<DictionaryValue> copy = dv.CreateDeepCopy();
+  auto copy = MakeUnique<DictionaryValue>(dv);
   EXPECT_EQ(dv, *copy);
 
   std::unique_ptr<ListValue> list(new ListValue);
   ListValue* original_list = list.get();
   list->Append(Value::CreateNullValue());
   list->Append(WrapUnique(new DictionaryValue));
-  std::unique_ptr<Value> list_copy(list->CreateDeepCopy());
+  auto list_copy = MakeUnique<Value>(*list);
 
   dv.Set("f", std::move(list));
   EXPECT_NE(dv, *copy);
@@ -836,7 +836,7 @@ TEST(ValuesTest, Equals) {
   EXPECT_NE(dv, *copy);
 
   // Check if Equals detects differences in only the keys.
-  copy = dv.CreateDeepCopy();
+  copy = MakeUnique<DictionaryValue>(dv);
   EXPECT_EQ(dv, *copy);
   copy->Remove("a", NULL);
   copy->SetBoolean("aa", false);
@@ -1021,15 +1021,15 @@ TEST(ValuesTest, DeepCopyCovariantReturnTypes) {
   scoped_list->Append(std::move(scoped_list_element_1));
   original_dict.Set("list", std::move(scoped_list));
 
-  std::unique_ptr<Value> copy_dict = original_dict.CreateDeepCopy();
-  std::unique_ptr<Value> copy_null = original_null->CreateDeepCopy();
-  std::unique_ptr<Value> copy_bool = original_bool->CreateDeepCopy();
-  std::unique_ptr<Value> copy_int = original_int->CreateDeepCopy();
-  std::unique_ptr<Value> copy_double = original_double->CreateDeepCopy();
-  std::unique_ptr<Value> copy_string = original_string->CreateDeepCopy();
-  std::unique_ptr<Value> copy_string16 = original_string16->CreateDeepCopy();
-  std::unique_ptr<Value> copy_binary = original_binary->CreateDeepCopy();
-  std::unique_ptr<Value> copy_list = original_list->CreateDeepCopy();
+  auto copy_dict = MakeUnique<Value>(original_dict);
+  auto copy_null = MakeUnique<Value>(*original_null);
+  auto copy_bool = MakeUnique<Value>(*original_bool);
+  auto copy_int = MakeUnique<Value>(*original_int);
+  auto copy_double = MakeUnique<Value>(*original_double);
+  auto copy_string = MakeUnique<Value>(*original_string);
+  auto copy_string16 = MakeUnique<Value>(*original_string16);
+  auto copy_binary = MakeUnique<Value>(*original_binary);
+  auto copy_list = MakeUnique<Value>(*original_list);
 
   EXPECT_EQ(original_dict, *copy_dict);
   EXPECT_EQ(*original_null, *copy_null);
@@ -1204,7 +1204,7 @@ TEST(ValuesTest, DictionaryIterator) {
   }
 
   Value value1("value1");
-  dict.Set("key1", value1.CreateDeepCopy());
+  dict.Set("key1", MakeUnique<Value>(value1));
   bool seen1 = false;
   for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     EXPECT_FALSE(seen1);
@@ -1215,7 +1215,7 @@ TEST(ValuesTest, DictionaryIterator) {
   EXPECT_TRUE(seen1);
 
   Value value2("value2");
-  dict.Set("key2", value2.CreateDeepCopy());
+  dict.Set("key2", MakeUnique<Value>(value2));
   bool seen2 = seen1 = false;
   for (DictionaryValue::Iterator it(dict); !it.IsAtEnd(); it.Advance()) {
     if (it.key() == "key1") {
@@ -1248,21 +1248,21 @@ TEST(ValuesTest, GetWithNullOutValue) {
   DictionaryValue dict_value;
   ListValue list_value;
 
-  main_dict.Set("bool", bool_value.CreateDeepCopy());
-  main_dict.Set("int", int_value.CreateDeepCopy());
-  main_dict.Set("double", double_value.CreateDeepCopy());
-  main_dict.Set("string", string_value.CreateDeepCopy());
-  main_dict.Set("binary", binary_value.CreateDeepCopy());
-  main_dict.Set("dict", dict_value.CreateDeepCopy());
-  main_dict.Set("list", list_value.CreateDeepCopy());
+  main_dict.Set("bool", MakeUnique<Value>(bool_value));
+  main_dict.Set("int", MakeUnique<Value>(int_value));
+  main_dict.Set("double", MakeUnique<Value>(double_value));
+  main_dict.Set("string", MakeUnique<Value>(string_value));
+  main_dict.Set("binary", MakeUnique<Value>(binary_value));
+  main_dict.Set("dict", MakeUnique<Value>(dict_value));
+  main_dict.Set("list", MakeUnique<Value>(list_value));
 
-  main_list.Append(bool_value.CreateDeepCopy());
-  main_list.Append(int_value.CreateDeepCopy());
-  main_list.Append(double_value.CreateDeepCopy());
-  main_list.Append(string_value.CreateDeepCopy());
-  main_list.Append(binary_value.CreateDeepCopy());
-  main_list.Append(dict_value.CreateDeepCopy());
-  main_list.Append(list_value.CreateDeepCopy());
+  main_list.Append(MakeUnique<Value>(bool_value));
+  main_list.Append(MakeUnique<Value>(int_value));
+  main_list.Append(MakeUnique<Value>(double_value));
+  main_list.Append(MakeUnique<Value>(string_value));
+  main_list.Append(MakeUnique<Value>(binary_value));
+  main_list.Append(MakeUnique<Value>(dict_value));
+  main_list.Append(MakeUnique<Value>(list_value));
 
   EXPECT_TRUE(main_dict.Get("bool", NULL));
   EXPECT_TRUE(main_dict.Get("int", NULL));

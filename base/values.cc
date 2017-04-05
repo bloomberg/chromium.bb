@@ -69,7 +69,7 @@ std::unique_ptr<Value> CopyWithoutEmptyChildren(const Value& node) {
           static_cast<const DictionaryValue&>(node));
 
     default:
-      return node.CreateDeepCopy();
+      return MakeUnique<Value>(node);
   }
 }
 
@@ -341,55 +341,11 @@ bool Value::GetAsDictionary(const DictionaryValue** out_value) const {
 }
 
 Value* Value::DeepCopy() const {
-  // This method should only be getting called for null Values--all subclasses
-  // need to provide their own implementation;.
-  switch (type()) {
-    case Type::NONE:
-      return CreateNullValue().release();
-
-    case Type::BOOLEAN:
-      return new Value(bool_value_);
-    case Type::INTEGER:
-      return new Value(int_value_);
-    case Type::DOUBLE:
-      return new Value(double_value_);
-    case Type::STRING:
-      return new Value(*string_value_);
-    // For now, make BinaryValues for backward-compatibility. Convert to
-    // Value when that code is deleted.
-    case Type::BINARY:
-      return new Value(*binary_value_);
-
-    // TODO(crbug.com/646113): Clean this up when DictionaryValue and ListValue
-    // are completely inlined.
-    case Type::DICTIONARY: {
-      DictionaryValue* result = new DictionaryValue;
-
-      for (const auto& current_entry : **dict_ptr_) {
-        result->SetWithoutPathExpansion(current_entry.first,
-                                        current_entry.second->CreateDeepCopy());
-      }
-
-      return result;
-    }
-
-    case Type::LIST: {
-      ListValue* result = new ListValue;
-
-      for (const auto& entry : *list_)
-        result->Append(entry->CreateDeepCopy());
-
-      return result;
-    }
-
-    default:
-      NOTREACHED();
-      return nullptr;
-  }
+  return new Value(*this);
 }
 
 std::unique_ptr<Value> Value::CreateDeepCopy() const {
-  return WrapUnique(DeepCopy());
+  return MakeUnique<Value>(*this);
 }
 
 bool operator==(const Value& lhs, const Value& rhs) {
@@ -542,14 +498,23 @@ void Value::InternalCopyConstructFrom(const Value& that) {
       binary_value_.Init(*that.binary_value_);
       return;
     // DictStorage and ListStorage are move-only types due to the presence of
-    // unique_ptrs. This is why the call to |CreateDeepCopy| is necessary here.
+    // unique_ptrs. This is why the explicit copy of every element is necessary
+    // here.
     // TODO(crbug.com/646113): Clean this up when DictStorage and ListStorage
     // can be copied directly.
     case Type::DICTIONARY:
-      dict_ptr_.Init(std::move(*that.CreateDeepCopy()->dict_ptr_));
+      dict_ptr_.Init(MakeUnique<DictStorage>());
+      for (const auto& it : **that.dict_ptr_) {
+        (*dict_ptr_)
+            ->emplace_hint((*dict_ptr_)->end(), it.first,
+                           MakeUnique<Value>(*it.second));
+      }
       return;
     case Type::LIST:
-      list_.Init(std::move(*that.CreateDeepCopy()->list_));
+      list_.Init();
+      list_->reserve(that.list_->size());
+      for (const auto& it : *that.list_)
+        list_->push_back(MakeUnique<Value>(*it));
       return;
   }
 }
@@ -600,14 +565,15 @@ void Value::InternalCopyAssignFromSameType(const Value& that) {
       *binary_value_ = *that.binary_value_;
       return;
     // DictStorage and ListStorage are move-only types due to the presence of
-    // unique_ptrs. This is why the call to |CreateDeepCopy| is necessary here.
+    // unique_ptrs. This is why the explicit call to the copy constructor is
+    // necessary here.
     // TODO(crbug.com/646113): Clean this up when DictStorage and ListStorage
     // can be copied directly.
     case Type::DICTIONARY:
-      *dict_ptr_ = std::move(*that.CreateDeepCopy()->dict_ptr_);
+      *dict_ptr_ = std::move(*Value(that).dict_ptr_);
       return;
     case Type::LIST:
-      *list_ = std::move(*that.CreateDeepCopy()->list_);
+      *list_ = std::move(*Value(that).list_);
       return;
   }
 }
@@ -1073,8 +1039,7 @@ void DictionaryValue::MergeDictionary(const DictionaryValue* dictionary) {
       }
     }
     // All other cases: Make a copy and hook it up.
-    SetWithoutPathExpansion(it.key(),
-                            base::WrapUnique(merge_value->DeepCopy()));
+    SetWithoutPathExpansion(it.key(), MakeUnique<Value>(*merge_value));
   }
 }
 
@@ -1091,11 +1056,11 @@ DictionaryValue::Iterator::Iterator(const Iterator& other) = default;
 DictionaryValue::Iterator::~Iterator() {}
 
 DictionaryValue* DictionaryValue::DeepCopy() const {
-  return static_cast<DictionaryValue*>(Value::DeepCopy());
+  return new DictionaryValue(*this);
 }
 
 std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
-  return WrapUnique(DeepCopy());
+  return MakeUnique<DictionaryValue>(*this);
 }
 
 ///////////////////// ListValue ////////////////////
@@ -1358,11 +1323,11 @@ void ListValue::Swap(ListValue* other) {
 }
 
 ListValue* ListValue::DeepCopy() const {
-  return static_cast<ListValue*>(Value::DeepCopy());
+  return new ListValue(*this);
 }
 
 std::unique_ptr<ListValue> ListValue::CreateDeepCopy() const {
-  return WrapUnique(DeepCopy());
+  return MakeUnique<ListValue>(*this);
 }
 
 ValueSerializer::~ValueSerializer() {
