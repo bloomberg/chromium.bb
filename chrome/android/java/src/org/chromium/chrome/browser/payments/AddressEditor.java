@@ -152,7 +152,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
         // For example, "US" will not add dependent locality to the editor. A "JP" address will
         // start with a person's full name or a with a prefecture name, depending on whether the
         // language code is "ja-Latn" or "ja".
-        addAddressTextFieldsToEditor(editor, profile.getCountryCode(), profile.getLanguageCode());
+        addAddressTextFieldsToEditor(
+                editor, mCountryField.getValue().toString(), profile.getLanguageCode());
 
         // Phone number is present and required for all countries.
         if (mPhoneField == null) {
