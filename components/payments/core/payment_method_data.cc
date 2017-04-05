@@ -6,7 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 
 namespace payments {
@@ -50,8 +50,9 @@ bool PaymentMethodData::FromDictionaryValue(
     return false;
   }
   for (size_t i = 0; i < supported_methods_list->GetSize(); ++i) {
-    base::string16 supported_method;
-    if (!supported_methods_list->GetString(i, &supported_method)) {
+    std::string supported_method;
+    if (!supported_methods_list->GetString(i, &supported_method) ||
+        !base::IsStringASCII(supported_method)) {
       return false;
     }
     this->supported_methods.push_back(supported_method);
@@ -63,12 +64,13 @@ bool PaymentMethodData::FromDictionaryValue(
   if (value.GetDictionary(kMethodDataData, &data_dict)) {
     std::string json_data;
     base::JSONWriter::Write(*data_dict, &json_data);
-    this->data = base::UTF8ToUTF16(json_data);
+    this->data = json_data;
     const base::ListValue* supported_networks_list = nullptr;
     if (data_dict->GetList(kSupportedNetworks, &supported_networks_list)) {
       for (size_t i = 0; i < supported_networks_list->GetSize(); ++i) {
-        base::string16 supported_network;
-        if (!supported_networks_list->GetString(i, &supported_network)) {
+        std::string supported_network;
+        if (!supported_networks_list->GetString(i, &supported_network) ||
+            !base::IsStringASCII(supported_network)) {
           return false;
         }
         this->supported_networks.push_back(supported_network);
@@ -77,8 +79,9 @@ bool PaymentMethodData::FromDictionaryValue(
     const base::ListValue* supported_types_list = nullptr;
     if (data_dict->GetList(kSupportedTypes, &supported_types_list)) {
       for (size_t i = 0; i < supported_types_list->GetSize(); ++i) {
-        base::string16 supported_type;
-        if (!supported_types_list->GetString(i, &supported_type)) {
+        std::string supported_type;
+        if (!supported_types_list->GetString(i, &supported_type) ||
+            !base::IsStringASCII(supported_type)) {
           return false;
         }
         this->supported_types.push_back(supported_type);

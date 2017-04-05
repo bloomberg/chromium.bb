@@ -208,8 +208,8 @@ TEST(PaymentRequestTest, ParsingFullyPopulatedRequestDictionarySucceeds) {
   expected_request.details.error = base::ASCIIToUTF16("Error in details");
 
   payments::PaymentMethodData method_data;
-  std::vector<base::string16> supported_methods;
-  supported_methods.push_back(base::ASCIIToUTF16("Visa"));
+  std::vector<std::string> supported_methods;
+  supported_methods.push_back("Visa");
   method_data.supported_methods = supported_methods;
   expected_request.method_data.push_back(method_data);
 
@@ -581,7 +581,7 @@ TEST(PaymentRequestTest, PaymentRequestEquality) {
   EXPECT_EQ(request1, request2);
 
   payments::PaymentMethodData method_datum;
-  method_datum.data = base::ASCIIToUTF16("{merchantId: '123456'}");
+  method_datum.data = "{merchantId: '123456'}";
   std::vector<payments::PaymentMethodData> method_data1;
   method_data1.push_back(method_datum);
   request1.method_data = method_data1;

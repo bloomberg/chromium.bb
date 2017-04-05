@@ -4,7 +4,6 @@
 
 #include "ios/chrome/browser/payments/payment_request.h"
 
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -85,12 +84,8 @@ void PaymentRequest::PopulateProfileCache() {
 
 void PaymentRequest::PopulateCreditCardCache() {
   for (const auto& method_data : web_payment_request_.method_data) {
-    for (const auto& supported_method : method_data.supported_methods) {
-      // Reject non-ASCII supported methods.
-      if (base::IsStringASCII(supported_method)) {
-        supported_card_networks_.push_back(
-            base::UTF16ToASCII(supported_method));
-      }
+    for (const std::string& supported_method : method_data.supported_methods) {
+      supported_card_networks_.push_back(supported_method);
     }
   }
 

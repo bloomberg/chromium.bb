@@ -4,7 +4,6 @@
 
 #include "components/payments/core/payment_method_data.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,19 +12,19 @@ namespace payments {
 // Tests the success case when populating a PaymentMethodData from a dictionary.
 TEST(PaymentMethodData, FromDictionaryValueSuccess) {
   PaymentMethodData expected;
-  std::vector<base::string16> supported_methods;
-  supported_methods.push_back(base::ASCIIToUTF16("visa"));
-  supported_methods.push_back(base::ASCIIToUTF16("basic-card"));
+  std::vector<std::string> supported_methods;
+  supported_methods.push_back("visa");
+  supported_methods.push_back("basic-card");
   expected.supported_methods = supported_methods;
-  expected.data = base::ASCIIToUTF16(
+  expected.data =
       "{\"supportedNetworks\":[\"mastercard\"],"
-      "\"supportedTypes\":[\"debit\",\"credit\"]}");
-  std::vector<base::string16> supported_networks;
-  supported_networks.push_back(base::ASCIIToUTF16("mastercard"));
+      "\"supportedTypes\":[\"debit\",\"credit\"]}";
+  std::vector<std::string> supported_networks;
+  supported_networks.push_back("mastercard");
   expected.supported_networks = supported_networks;
-  std::vector<base::string16> supported_types;
-  supported_types.push_back(base::ASCIIToUTF16("debit"));
-  supported_types.push_back(base::ASCIIToUTF16("credit"));
+  std::vector<std::string> supported_types;
+  supported_types.push_back("debit");
+  supported_types.push_back("credit");
   expected.supported_types = supported_types;
 
   base::DictionaryValue method_data_dict;
@@ -70,38 +69,38 @@ TEST(PaymentMethodData, Equality) {
   PaymentMethodData method_data2;
   EXPECT_EQ(method_data1, method_data2);
 
-  std::vector<base::string16> supported_methods1;
-  supported_methods1.push_back(base::ASCIIToUTF16("basic-card"));
-  supported_methods1.push_back(base::ASCIIToUTF16("http://bobpay.com"));
+  std::vector<std::string> supported_methods1;
+  supported_methods1.push_back("basic-card");
+  supported_methods1.push_back("http://bobpay.com");
   method_data1.supported_methods = supported_methods1;
   EXPECT_NE(method_data1, method_data2);
-  std::vector<base::string16> supported_methods2;
-  supported_methods2.push_back(base::ASCIIToUTF16("http://bobpay.com"));
+  std::vector<std::string> supported_methods2;
+  supported_methods2.push_back("http://bobpay.com");
   method_data2.supported_methods = supported_methods2;
   EXPECT_NE(method_data1, method_data2);
   method_data2.supported_methods = supported_methods1;
   EXPECT_EQ(method_data1, method_data2);
 
-  method_data1.data = base::ASCIIToUTF16("{merchantId: '123456'}");
+  method_data1.data = "{merchantId: '123456'}";
   EXPECT_NE(method_data1, method_data2);
-  method_data2.data = base::ASCIIToUTF16("{merchantId: '9999-88'}");
+  method_data2.data = "{merchantId: '9999-88'}";
   EXPECT_NE(method_data1, method_data2);
-  method_data2.data = base::ASCIIToUTF16("{merchantId: '123456'}");
+  method_data2.data = "{merchantId: '123456'}";
   EXPECT_EQ(method_data1, method_data2);
 
-  std::vector<base::string16> supported_networks1{base::ASCIIToUTF16("visa")};
+  std::vector<std::string> supported_networks1{"visa"};
   method_data1.supported_networks = supported_networks1;
   EXPECT_NE(method_data1, method_data2);
-  std::vector<base::string16> supported_networks2{base::ASCIIToUTF16("jcb")};
+  std::vector<std::string> supported_networks2{"jcb"};
   method_data2.supported_networks = supported_networks2;
   EXPECT_NE(method_data1, method_data2);
   method_data2.supported_networks = supported_networks1;
   EXPECT_EQ(method_data1, method_data2);
 
-  std::vector<base::string16> supported_types1{base::ASCIIToUTF16("credit")};
+  std::vector<std::string> supported_types1{"credit"};
   method_data1.supported_types = supported_types1;
   EXPECT_NE(method_data1, method_data2);
-  std::vector<base::string16> supported_types2{base::ASCIIToUTF16("debit")};
+  std::vector<std::string> supported_types2{"debit"};
   method_data2.supported_types = supported_types2;
   EXPECT_NE(method_data1, method_data2);
   method_data2.supported_types = supported_types1;

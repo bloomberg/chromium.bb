@@ -53,10 +53,10 @@ TEST(PaymentRequestTest, AcceptedPaymentNetworks) {
   autofill::TestPersonalDataManager personal_data_manager;
 
   payments::PaymentMethodData method_datum1;
-  method_datum1.supported_methods.push_back(base::ASCIIToUTF16("visa"));
+  method_datum1.supported_methods.push_back("visa");
   web_payment_request.method_data.push_back(method_datum1);
   payments::PaymentMethodData method_datum2;
-  method_datum2.supported_methods.push_back(base::ASCIIToUTF16("mastercard"));
+  method_datum2.supported_methods.push_back("mastercard");
   web_payment_request.method_data.push_back(method_datum2);
 
   PaymentRequest payment_request(web_payment_request, &personal_data_manager);

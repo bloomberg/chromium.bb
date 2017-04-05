@@ -6,9 +6,8 @@
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_METHOD_DATA_H_
 
 #include <memory>
+#include <string>
 #include <vector>
-
-#include "base/strings/string16.h"
 
 namespace base {
 class DictionaryValue;
@@ -33,16 +32,16 @@ class PaymentMethodData {
 
   // Payment method identifiers for payment methods that the merchant web site
   // accepts.
-  std::vector<base::string16> supported_methods;
+  std::vector<std::string> supported_methods;
 
   // A JSON-serialized object that provides optional information that might be
   // needed by the supported payment methods.
-  base::string16 data;
+  std::string data;
 
   // When the methods include "basic-card", a list of networks and types that
   // are supported.
-  std::vector<base::string16> supported_networks;
-  std::vector<base::string16> supported_types;
+  std::vector<std::string> supported_networks;
+  std::vector<std::string> supported_types;
 };
 
 }  // namespace payments
