@@ -16,7 +16,7 @@
         --justify-margin: 18px;
       }
 
-      :host([controlled_]) {
+      :host([enforced_]) {
         /* Disable pointer events for this whole element, as outer on-tap gets
          * triggered when clicking/tapping anywhere in :host. */
         pointer-events: none;
@@ -38,7 +38,7 @@
       }
     </style>
 
-    <paper-button disabled="[[controlled_]]">[[label]]</paper-button>
+    <paper-button disabled="[[enforced_]]">[[label]]</paper-button>
 
     <template is="dom-if" if="[[hasPrefPolicyIndicator(pref.*)]]" restamp>
       <cr-policy-pref-indicator pref="[[pref]]" on-tap="onIndicatorTap_"

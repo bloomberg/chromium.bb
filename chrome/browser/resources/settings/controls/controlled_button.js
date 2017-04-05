@@ -20,19 +20,11 @@ Polymer({
     label: String,
 
     /** @private */
-    controlled_: {
+    enforced_: {
       type: Boolean,
-      computed: 'computeControlled_(pref.*)',
+      computed: 'isPrefEnforced(pref.*)',
       reflectToAttribute: true,
     },
-  },
-
-  /**
-   * @return {boolean} Whether the button is disabled.
-   * @private
-   */
-  computeControlled_: function() {
-    return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**
