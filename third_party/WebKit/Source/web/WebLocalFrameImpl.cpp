@@ -219,6 +219,7 @@
 #include "web/RemoteFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/SuspendableScriptExecutor.h"
+#include "web/TextCheckerClientImpl.h"
 #include "web/TextFinder.h"
 #include "web/WebAssociatedURLLoaderImpl.h"
 #include "web/WebDataSourceImpl.h"
@@ -1568,6 +1569,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       m_interfaceRegistry(interfaceRegistry),
       m_webDevToolsFrontend(0),
       m_inputMethodController(new WebInputMethodControllerImpl(this)),
+      m_textCheckerClient(new TextCheckerClientImpl(this)),
       m_selfKeepAlive(this) {
   DCHECK(m_client);
   frameCount++;
@@ -1598,6 +1600,7 @@ DEFINE_TRACE(WebLocalFrameImpl) {
   visitor->trace(m_textFinder);
   visitor->trace(m_printContext);
   visitor->trace(m_contextMenuNode);
+  visitor->trace(m_textCheckerClient);
   WebFrame::traceFrames(visitor, this);
   WebFrameImplBase::trace(visitor);
 }
@@ -2518,6 +2521,10 @@ void WebLocalFrameImpl::extractSmartClipData(WebRect rectInViewport,
         createMarkup(endPosition, startPosition, AnnotateForInterchange,
                      ConvertBlocksToInlines::NotConvert, ResolveNonLocalURLs);
   }
+}
+
+TextCheckerClient& WebLocalFrameImpl::textCheckerClient() const {
+  return *m_textCheckerClient;
 }
 
 }  // namespace blink

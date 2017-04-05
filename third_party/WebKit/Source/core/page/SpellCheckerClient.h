@@ -31,8 +31,6 @@
 
 namespace blink {
 
-class TextCheckerClient;
-
 // TODO(xiaochengh): Split SpellCheckerClient into two classes:
 // - SpllingUIClient, for spelling UI related functions.
 // - SpellCheckToggler, for checking and toggling the enabled state.
@@ -42,9 +40,6 @@ class SpellCheckerClient {
 
   virtual bool isSpellCheckingEnabled() = 0;
   virtual void toggleSpellCheckingEnabled() = 0;
-
-  virtual TextCheckerClient& textChecker() = 0;
-
   virtual void updateSpellingUIWithMisspelledWord(const WTF::String&) = 0;
   virtual void showSpellingUI(bool show) = 0;
   virtual bool spellingUIIsShowing() = 0;

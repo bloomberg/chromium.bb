@@ -55,6 +55,8 @@ class IntSize;
 class KURL;
 class ScrollableArea;
 class SharedWorkerRepositoryClientImpl;
+class TextCheckerClient;
+class TextCheckerClientImpl;
 class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
@@ -400,6 +402,8 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   static void selectWordAroundPosition(LocalFrame*, VisiblePosition);
 
+  TextCheckerClient& textCheckerClient() const;
+
   TextFinder* textFinder() const;
   // Returns the text finder object if it already exists.
   // Otherwise creates it and then returns.
@@ -496,6 +500,9 @@ class WEB_EXPORT WebLocalFrameImpl final
   Member<Node> m_contextMenuNode;
 
   std::unique_ptr<WebInputMethodControllerImpl> m_inputMethodController;
+
+  // Stores the TextCheckerClient which communicates with SpellCheckProvider.
+  Member<TextCheckerClientImpl> m_textCheckerClient;
 
   // Oilpan: WebLocalFrameImpl must remain alive until close() is called.
   // Accomplish that by keeping a self-referential Persistent<>. It is

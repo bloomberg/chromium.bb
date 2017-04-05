@@ -35,14 +35,13 @@
 
 namespace blink {
 
-class TextCheckerClient;
 class WebViewImpl;
 
 // TODO(xiaochengh): Split SpellCheckerClientImpl into two classes according to
 // the split that should be done to its interface.
 class SpellCheckerClientImpl final : public SpellCheckerClient {
  public:
-  explicit SpellCheckerClientImpl(WebViewImpl*, TextCheckerClient*);
+  explicit SpellCheckerClientImpl(WebViewImpl*);
 
   ~SpellCheckerClientImpl() override;
 
@@ -51,8 +50,6 @@ class SpellCheckerClientImpl final : public SpellCheckerClient {
   void updateSpellingUIWithMisspelledWord(const String&) override;
   void showSpellingUI(bool show) override;
   bool spellingUIIsShowing() override;
-
-  TextCheckerClient& textChecker() override { return *m_textCheckerClient; }
 
  private:
   // Returns whether or not the focused control needs spell-checking.
@@ -65,7 +62,6 @@ class SpellCheckerClientImpl final : public SpellCheckerClient {
   bool shouldSpellcheckByDefault();
 
   WebViewImpl* m_webView;
-  TextCheckerClient* m_textCheckerClient;
 
   // This flag is set to false if spell check for this editor is manually
   // turned off. The default setting is SpellCheckAutomatic.

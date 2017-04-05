@@ -369,15 +369,18 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   std::unique_ptr<WebApplicationCacheHost> createApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 
+  TextCheckerClient& textCheckerClient() const override;
+
  protected:
   EmptyLocalFrameClient() {}
 };
 
 class CORE_EXPORT EmptyTextCheckerClient : public TextCheckerClient {
-  DISALLOW_NEW();
+  WTF_MAKE_NONCOPYABLE(EmptyTextCheckerClient);
+  USING_FAST_MALLOC(EmptyTextCheckerClient);
 
  public:
-  ~EmptyTextCheckerClient() {}
+  EmptyTextCheckerClient() {}
 
   void checkSpellingOfString(const String&, int*, int*) override {}
   void requestCheckingOfString(TextCheckingRequest*) override;
@@ -394,15 +397,9 @@ class EmptySpellCheckerClient : public SpellCheckerClient {
 
   bool isSpellCheckingEnabled() override { return false; }
   void toggleSpellCheckingEnabled() override {}
-
-  TextCheckerClient& textChecker() override { return m_textCheckerClient; }
-
   void updateSpellingUIWithMisspelledWord(const String&) override {}
   void showSpellingUI(bool) override {}
   bool spellingUIIsShowing() override { return false; }
-
- private:
-  EmptyTextCheckerClient m_textCheckerClient;
 };
 
 class EmptyEditorClient final : public EditorClient {

@@ -5,18 +5,20 @@
 #ifndef TextCheckerClientImpl_h
 #define TextCheckerClientImpl_h
 
+#include "platform/heap/Handle.h"
 #include "platform/text/TextCheckerClient.h"
 
 namespace blink {
 
-class WebViewImpl;
+class WebLocalFrameImpl;
+class WebTextCheckClient;
 
 // TODO(xiaochengh): Rename TextCheckerClientImpl to SpellCheckerClientImpl.
-// TODO(xiaochengh): Move ownership of this class to WebLocalFrameImpl.
-class TextCheckerClientImpl final : public TextCheckerClient {
+class TextCheckerClientImpl final
+    : public GarbageCollected<TextCheckerClientImpl>,
+      public TextCheckerClient {
  public:
-  TextCheckerClientImpl(WebViewImpl*);
-  ~TextCheckerClientImpl() final;
+  explicit TextCheckerClientImpl(WebLocalFrameImpl*);
 
   void checkSpellingOfString(const String&,
                              int* misspellingLocation,
@@ -24,8 +26,14 @@ class TextCheckerClientImpl final : public TextCheckerClient {
   void requestCheckingOfString(TextCheckingRequest*) final;
   void cancelAllPendingRequests() final;
 
+  DECLARE_TRACE();
+
  private:
-  WebViewImpl* m_webView;
+  WebTextCheckClient* webTextCheckClient() const;
+
+  Member<WebLocalFrameImpl> m_webLocalFrame;
+
+  DISALLOW_COPY_AND_ASSIGN(TextCheckerClientImpl);
 };
 
 }  // namespace blink

@@ -5,15 +5,23 @@
 #include "web/TextCheckerClientImpl.h"
 #include "public/web/WebTextCheckClient.h"
 #include "public/web/WebTextCheckingResult.h"
+#include "web/WebLocalFrameImpl.h"
 #include "web/WebTextCheckingCompletionImpl.h"
 #include "web/WebViewImpl.h"
 
 namespace blink {
 
-TextCheckerClientImpl::TextCheckerClientImpl(WebViewImpl* webView)
-    : m_webView(webView) {}
+TextCheckerClientImpl::TextCheckerClientImpl(WebLocalFrameImpl* webLocalFrame)
+    : m_webLocalFrame(webLocalFrame) {}
 
-TextCheckerClientImpl::~TextCheckerClientImpl() = default;
+DEFINE_TRACE(TextCheckerClientImpl) {
+  visitor->trace(m_webLocalFrame);
+}
+
+WebTextCheckClient* TextCheckerClientImpl::webTextCheckClient() const {
+  // TODO(xiaochengh): Move WebTextCheckClient to WebLocalFrame.
+  return m_webLocalFrame->viewImpl()->textCheckClient();
+}
 
 void TextCheckerClientImpl::checkSpellingOfString(const String& text,
                                                   int* misspellingLocation,
@@ -24,9 +32,9 @@ void TextCheckerClientImpl::checkSpellingOfString(const String& text,
   int spellLength = 0;
 
   // Check to see if the provided text is spelled correctly.
-  if (m_webView->textCheckClient()) {
-    m_webView->textCheckClient()->checkSpelling(text, spellLocation,
-                                                spellLength, nullptr);
+  if (webTextCheckClient()) {
+    webTextCheckClient()->checkSpelling(text, spellLocation, spellLength,
+                                        nullptr);
   } else {
     spellLocation = 0;
     spellLength = 0;
@@ -42,17 +50,17 @@ void TextCheckerClientImpl::checkSpellingOfString(const String& text,
 
 void TextCheckerClientImpl::requestCheckingOfString(
     TextCheckingRequest* request) {
-  if (!m_webView->textCheckClient())
+  if (!webTextCheckClient())
     return;
   const String& text = request->data().text();
-  m_webView->textCheckClient()->requestCheckingOfText(
+  webTextCheckClient()->requestCheckingOfText(
       text, new WebTextCheckingCompletionImpl(request));
 }
 
 void TextCheckerClientImpl::cancelAllPendingRequests() {
-  if (!m_webView->textCheckClient())
+  if (!webTextCheckClient())
     return;
-  m_webView->textCheckClient()->cancelAllPendingRequests();
+  webTextCheckClient()->cancelAllPendingRequests();
 }
 
 }  // namespace blink

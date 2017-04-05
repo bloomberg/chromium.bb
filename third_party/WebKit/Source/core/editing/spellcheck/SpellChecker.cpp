@@ -109,7 +109,7 @@ SpellCheckerClient& SpellChecker::spellCheckerClient() const {
 }
 
 TextCheckerClient& SpellChecker::textChecker() const {
-  return spellCheckerClient().textChecker();
+  return frame().client()->textCheckerClient();
 }
 
 SpellChecker::SpellChecker(LocalFrame& frame)

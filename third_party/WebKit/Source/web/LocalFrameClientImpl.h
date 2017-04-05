@@ -225,6 +225,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void abortClientNavigation() override;
 
+  TextCheckerClient& textCheckerClient() const override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
 

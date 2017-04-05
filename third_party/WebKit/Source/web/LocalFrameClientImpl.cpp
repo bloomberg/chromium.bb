@@ -1036,4 +1036,8 @@ void LocalFrameClientImpl::abortClientNavigation() {
     m_webFrame->client()->abortClientNavigation();
 }
 
+TextCheckerClient& LocalFrameClientImpl::textCheckerClient() const {
+  return m_webFrame->textCheckerClient();
+}
+
 }  // namespace blink

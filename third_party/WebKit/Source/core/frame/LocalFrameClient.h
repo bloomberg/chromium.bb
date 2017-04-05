@@ -75,6 +75,7 @@ class ResourceResponse;
 class SecurityOrigin;
 class SharedWorkerRepositoryClient;
 class SubstituteData;
+class TextCheckerClient;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCookieJar;
@@ -344,6 +345,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void setHasReceivedUserGesture() {}
 
   virtual void abortClientNavigation() {}
+
+  virtual TextCheckerClient& textCheckerClient() const = 0;
 };
 
 }  // namespace blink

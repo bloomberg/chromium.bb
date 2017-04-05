@@ -63,7 +63,6 @@
 #include "web/ResizeViewportAnchor.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
-#include "web/TextCheckerClientImpl.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
@@ -622,7 +621,6 @@ class WEB_EXPORT WebViewImpl final
   Persistent<ChromeClientImpl> m_chromeClientImpl;
   ContextMenuClientImpl m_contextMenuClientImpl;
   EditorClientImpl m_editorClientImpl;
-  TextCheckerClientImpl m_textCheckerClientImpl;
   SpellCheckerClientImpl m_spellCheckerClientImpl;
   StorageClientImpl m_storageClientImpl;
 

@@ -21,13 +21,6 @@ class SpellCheckTestBase : public EditingTestBase {
     virtual ~DummySpellCheckerClient() {}
 
     bool isSpellCheckingEnabled() override { return true; }
-
-    TextCheckerClient& textChecker() override {
-      return m_emptyTextCheckerClient;
-    }
-
-   private:
-    EmptyTextCheckerClient m_emptyTextCheckerClient;
   };
 
   std::unique_ptr<DummySpellCheckerClient> m_spellCheckerClient;

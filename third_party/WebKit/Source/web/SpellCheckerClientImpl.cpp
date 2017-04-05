@@ -36,12 +36,8 @@
 
 namespace blink {
 
-SpellCheckerClientImpl::SpellCheckerClientImpl(
-    WebViewImpl* webview,
-    TextCheckerClient* textCheckerClient)
-    : m_webView(webview),
-      m_textCheckerClient(textCheckerClient),
-      m_spellCheckThisFieldStatus(SpellCheckAutomatic) {}
+SpellCheckerClientImpl::SpellCheckerClientImpl(WebViewImpl* webview)
+    : m_webView(webview), m_spellCheckThisFieldStatus(SpellCheckAutomatic) {}
 
 SpellCheckerClientImpl::~SpellCheckerClientImpl() {}
 
