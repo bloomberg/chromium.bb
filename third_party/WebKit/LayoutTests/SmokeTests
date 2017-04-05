@@ -172,7 +172,6 @@ images/script-counter-imageDimensionChanged-crash.html
 images/size-failure.html
 images/style-access-during-imageChanged-crash.html
 images/text-content-crash.html
-inspector-protocol/input/dispatchMouseEvent.html
 loader/reload-subresource-when-type-changes.html
 media/media-load-event.html
 printing/css2.1/page-break-before-001.html
