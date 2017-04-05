@@ -227,12 +227,10 @@ trap cleanup 0
 process_opts "$@"
 BUILDDIR=${BUILDDIR:=$(readlink -f "${SCRIPTDIR}/../../../../out/Release")}
 
-if [[ "$(basename ${SYSROOT})" = "debian_wheezy_"*"-sysroot" ]]; then
-  TARGET_DISTRO="wheezy"
-elif [[ "$(basename ${SYSROOT})" = "debian_jessie_"*"-sysroot" ]]; then
+if [[ "$(basename ${SYSROOT})" = "debian_jessie_"*"-sysroot" ]]; then
   TARGET_DISTRO="jessie"
 else
-  echo "Debian package can only be built using the wheezy or jessie sysroot."
+  echo "Debian package can only be built using the jessie sysroot."
   exit 1
 fi
 
@@ -296,9 +294,7 @@ if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo "ERROR: Shared library dependencies changed!"
   echo "If this is intentional, please update:"
   echo "chrome/installer/linux/debian/expected_deps_ia32_jessie"
-  echo "chrome/installer/linux/debian/expected_deps_ia32_wheezy"
   echo "chrome/installer/linux/debian/expected_deps_x64_jessie"
-  echo "chrome/installer/linux/debian/expected_deps_x64_wheezy"
   echo
   exit $BAD_DIFF
 fi

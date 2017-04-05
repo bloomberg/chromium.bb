@@ -28,8 +28,7 @@ automatically be installed by gclient runhooks installed if you have
 
 To install the sysroot manually you can run:
 
-    ./chrome/installer/linux/sysroot_scripts/install-debian.wheezy.sysroot.py \
-        --arch=arm
+    ./build/linux/sysroot_scripts/install-sysroot.py --arch=arm
 
 ### Building
 
