@@ -317,6 +317,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
           features::kSendBeaconThrowForBlobWithNonSimpleType))
     WebRuntimeFeatures::enableSendBeaconThrowForBlobWithNonSimpleType(true);
 
+  WebRuntimeFeatures::enableAccessibilityObjectModel(
+      base::FeatureList::IsEnabled(features::kAccessibilityObjectModel));
+
 #if defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kDisableMediaSessionAPI))
     WebRuntimeFeatures::enableMediaSession(false);

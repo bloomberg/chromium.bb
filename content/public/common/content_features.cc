@@ -9,6 +9,13 @@ namespace features {
 
 // All features in alphabetical order.
 
+// Enables the Accessibility Object Model.
+// Explainer: https://github.com/WICG/aom/blob/master/explainer.md
+// Spec: https://wicg.github.io/aom/spec/
+const base::Feature kAccessibilityObjectModel(
+    "AccessibilityObjectModel",
+    base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables asm.js to WebAssembly V8 backend.
 // http://asmjs.org/spec/latest/
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",

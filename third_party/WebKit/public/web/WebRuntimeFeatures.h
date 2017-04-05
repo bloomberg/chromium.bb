@@ -69,6 +69,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static bool isOriginTrialsEnabled();
 
   BLINK_EXPORT static void enableAccelerated2dCanvas(bool);
+  BLINK_EXPORT static void enableAccessibilityObjectModel(bool);
   BLINK_EXPORT static void enableAudioOutputDevices(bool);
   BLINK_EXPORT static void enableCanvas2dImageChromium(bool);
   BLINK_EXPORT static void enableColorCorrectRendering(bool);
