@@ -10,21 +10,6 @@ namespace content {
 
 namespace {
 
-class CSPContextTest : public CSPContext {
- public:
-  void AddSchemeToBypassCSP(const std::string& scheme) {
-    scheme_to_bypass_.push_back(scheme);
-  }
-
-  bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override {
-    return std::find(scheme_to_bypass_.begin(), scheme_to_bypass_.end(),
-                     scheme) != scheme_to_bypass_.end();
-  }
-
- private:
-  std::vector<std::string> scheme_to_bypass_;
-};
-
 // Allow() is an abbreviation of CSPSourceList::Allow(). Useful for writting
 // test expectations on one line.
 bool Allow(const CSPSourceList& source_list,
@@ -36,8 +21,8 @@ bool Allow(const CSPSourceList& source_list,
 
 }  // namespace
 
-TEST(CSPSourceListTest, MultipleSource) {
-  CSPContextTest context;
+TEST(CSPSourceList, MultipleSource) {
+  CSPContext context;
   context.SetSelf(url::Origin(GURL("http://example.com")));
   CSPSourceList source_list(
       false,  // allow_self
@@ -50,7 +35,7 @@ TEST(CSPSourceListTest, MultipleSource) {
 }
 
 TEST(CSPSourceList, AllowStar) {
-  CSPContextTest context;
+  CSPContext context;
   context.SetSelf(url::Origin(GURL("http://example.com")));
   CSPSourceList source_list(false,                      // allow_self
                             true,                       // allow_star:
@@ -73,7 +58,7 @@ TEST(CSPSourceList, AllowStar) {
 }
 
 TEST(CSPSourceList, AllowSelf) {
-  CSPContextTest context;
+  CSPContext context;
   context.SetSelf(url::Origin(GURL("http://example.com")));
   CSPSourceList source_list(true,                       // allow_self
                             false,                      // allow_star:
@@ -82,76 +67,6 @@ TEST(CSPSourceList, AllowSelf) {
   EXPECT_FALSE(Allow(source_list, GURL("http://not-example.com"), &context));
   EXPECT_TRUE(Allow(source_list, GURL("https://example.com"), &context));
   EXPECT_FALSE(Allow(source_list, GURL("ws://example.com"), &context));
-}
-
-TEST(CSPSourceList, AllowSelfWithFilesystem) {
-  CSPContextTest context;
-  context.SetSelf(url::Origin(GURL("https://a.test")));
-  CSPSourceList source_list(true,                       // allow_self
-                            false,                      // allow_star:
-                            std::vector<CSPSource>());  // source_list
-
-  GURL filesystem_url("filesystem:https://a.test/file.txt");
-
-  EXPECT_TRUE(Allow(source_list, GURL("https://a.test/"), &context));
-  EXPECT_FALSE(Allow(source_list, filesystem_url, &context));
-
-  // Register 'https' as bypassing CSP, which should trigger the inner URL
-  // behavior.
-  context.AddSchemeToBypassCSP("https");
-
-  EXPECT_TRUE(Allow(source_list, GURL("https://a.test/"), &context));
-  EXPECT_TRUE(Allow(source_list, filesystem_url, &context));
-}
-
-TEST(CSPSourceList, BlobDisallowedWhenBypassingSelfScheme) {
-  CSPContextTest context;
-  context.SetSelf(url::Origin(GURL("https://a.test")));
-  CSPSource blob(
-      CSPSource("blob", "", false, url::PORT_UNSPECIFIED, false, ""));
-  CSPSourceList source_list(true,     // allow_self
-                            false,    // allow_star:
-                            {blob});  // source_list
-
-  GURL blob_url_self("blob:https://a.test/1be95204-93d6-4GUID");
-  GURL blob_url_not_self("blob:https://b.test/1be95204-93d6-4GUID");
-
-  EXPECT_TRUE(Allow(source_list, blob_url_self, &context));
-  EXPECT_TRUE(Allow(source_list, blob_url_not_self, &context));
-
-  // Register 'https' as bypassing CSP, which should trigger the inner URL
-  // behavior.
-  context.AddSchemeToBypassCSP("https");
-
-  EXPECT_TRUE(Allow(source_list, blob_url_self, &context));
-  // TODO(arthursonzogni, mkwst): This should be true
-  // see http://crbug.com/692046
-  EXPECT_FALSE(Allow(source_list, blob_url_not_self, &context));
-}
-
-TEST(CSPSourceList, FilesystemDisallowedWhenBypassingSelfScheme) {
-  CSPContextTest context;
-  context.SetSelf(url::Origin(GURL("https://a.test")));
-  CSPSource filesystem(
-      CSPSource("filesystem", "", false, url::PORT_UNSPECIFIED, false, ""));
-  CSPSourceList source_list(true,           // allow_self
-                            false,          // allow_star:
-                            {filesystem});  // source_list
-
-  GURL filesystem_url_self("filesystem:https://a.test/file.txt");
-  GURL filesystem_url_not_self("filesystem:https://b.test/file.txt");
-
-  EXPECT_TRUE(Allow(source_list, filesystem_url_self, &context));
-  EXPECT_TRUE(Allow(source_list, filesystem_url_not_self, &context));
-
-  // Register 'https' as bypassing CSP, which should trigger the inner URL
-  // behavior.
-  context.AddSchemeToBypassCSP("https");
-
-  EXPECT_TRUE(Allow(source_list, filesystem_url_self, &context));
-  // TODO(arthursonzogni, mkwst): This should be true
-  // see http://crbug.com/692046
-  EXPECT_FALSE(Allow(source_list, filesystem_url_not_self, &context));
 }
 
 TEST(CSPSourceList, AllowSelfWithUnspecifiedPort) {
@@ -168,7 +83,7 @@ TEST(CSPSourceList, AllowSelfWithUnspecifiedPort) {
 }
 
 TEST(CSPSourceList, AllowNone) {
-  CSPContextTest context;
+  CSPContext context;
   context.SetSelf(url::Origin(GURL("http://example.com")));
   CSPSourceList source_list(false,                      // allow_self
                             false,                      // allow_star:

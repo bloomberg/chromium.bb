@@ -95,6 +95,22 @@ bool AllowDirective(CSPContext* context,
   return false;
 }
 
+const GURL ExtractInnerURL(const GURL& url) {
+  if (const GURL* inner_url = url.inner_url())
+    return *inner_url;
+  else
+    // TODO(arthursonzogni): revisit this once GURL::inner_url support blob-URL.
+    return GURL(url.path());
+}
+
+bool ShouldBypassContentSecurityPolicy(CSPContext* context, const GURL& url) {
+  if (url.SchemeIsFileSystem() || url.SchemeIsBlob()) {
+    return context->SchemeShouldBypassCSP(ExtractInnerURL(url).scheme());
+  } else {
+    return context->SchemeShouldBypassCSP(url.scheme());
+  }
+}
+
 }  // namespace
 
 ContentSecurityPolicy::ContentSecurityPolicy()
@@ -121,6 +137,8 @@ bool ContentSecurityPolicy::Allow(const ContentSecurityPolicy& policy,
                                   bool is_redirect,
                                   CSPContext* context,
                                   const SourceLocation& source_location) {
+  if (ShouldBypassContentSecurityPolicy(context, url)) return true;
+
   CSPDirective::Name current_directive_name = directive_name;
   do {
     for (const CSPDirective& directive : policy.directives) {

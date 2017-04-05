@@ -12,7 +12,18 @@ namespace content {
 namespace {
 class CSPContextTest : public CSPContext {
  public:
+  CSPContextTest() : CSPContext() {}
+
   const std::string& LastConsoleMessage() { return console_message_; }
+
+  void AddSchemeToBypassCSP(const std::string& scheme) {
+    scheme_to_bypass_.push_back(scheme);
+  }
+
+  bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override {
+    return std::find(scheme_to_bypass_.begin(), scheme_to_bypass_.end(),
+                     scheme) != scheme_to_bypass_.end();
+  }
 
  private:
   void ReportContentSecurityPolicyViolation(
@@ -20,6 +31,9 @@ class CSPContextTest : public CSPContext {
     console_message_ = violation_params.console_message;
   }
   std::string console_message_;
+  std::vector<std::string> scheme_to_bypass_;
+
+  DISALLOW_COPY_AND_ASSIGN(CSPContextTest);
 };
 
 ContentSecurityPolicyHeader EmptyCspHeader() {
@@ -130,6 +144,94 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
         "http://a.com\".\n";
     EXPECT_EQ(console_message, context.LastConsoleMessage());
   }
+}
+
+TEST(ContentSecurityPolicy, RequestsAllowedWhenBypassingCSP) {
+  CSPContextTest context;
+  std::vector<std::string> report_end_points;  // empty
+  CSPSource source("https", "example.com", false, url::PORT_UNSPECIFIED, false,
+                   "");
+  CSPSourceList source_list(false, false, {source});
+  ContentSecurityPolicy policy(
+      EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
+      report_end_points);
+
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
+                                           GURL("https://example.com/"), false,
+                                           &context, SourceLocation()));
+  EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
+                                            GURL("https://not-example.com/"),
+                                            false, &context, SourceLocation()));
+
+  // Register 'https' as bypassing CSP, which should now bypass is entirely.
+  context.AddSchemeToBypassCSP("https");
+
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
+                                           GURL("https://example.com/"), false,
+                                           &context, SourceLocation()));
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
+                                           GURL("https://not-example.com/"),
+                                           false, &context, SourceLocation()));
+}
+
+TEST(ContentSecurityPolicy, FilesystemAllowedWhenBypassingCSP) {
+  CSPContextTest context;
+  std::vector<std::string> report_end_points;  // empty
+  CSPSource source("https", "example.com", false, url::PORT_UNSPECIFIED, false,
+                   "");
+  CSPSourceList source_list(false, false, {source});
+  ContentSecurityPolicy policy(
+      EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
+      report_end_points);
+
+  EXPECT_FALSE(ContentSecurityPolicy::Allow(
+      policy, CSPDirective::FrameSrc,
+      GURL("filesystem:https://example.com/file.txt"), false, &context,
+      SourceLocation()));
+  EXPECT_FALSE(ContentSecurityPolicy::Allow(
+      policy, CSPDirective::FrameSrc,
+      GURL("filesystem:https://not-example.com/file.txt"), false, &context,
+      SourceLocation()));
+
+  // Register 'https' as bypassing CSP, which should now bypass is entirely.
+  context.AddSchemeToBypassCSP("https");
+
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(
+      policy, CSPDirective::FrameSrc,
+      GURL("filesystem:https://example.com/file.txt"), false, &context,
+      SourceLocation()));
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(
+      policy, CSPDirective::FrameSrc,
+      GURL("filesystem:https://not-example.com/file.txt"), false, &context,
+      SourceLocation()));
+}
+
+TEST(ContentSecurityPolicy, BlobAllowedWhenBypassingCSP) {
+  CSPContextTest context;
+  std::vector<std::string> report_end_points;  // empty
+  CSPSource source("https", "example.com", false, url::PORT_UNSPECIFIED, false,
+                   "");
+  CSPSourceList source_list(false, false, {source});
+  ContentSecurityPolicy policy(
+      EmptyCspHeader(), {CSPDirective(CSPDirective::DefaultSrc, source_list)},
+      report_end_points);
+
+  EXPECT_FALSE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
+                                            GURL("blob:https://example.com/"),
+                                            false, &context, SourceLocation()));
+  EXPECT_FALSE(ContentSecurityPolicy::Allow(
+      policy, CSPDirective::FrameSrc, GURL("blob:https://not-example.com/"),
+      false, &context, SourceLocation()));
+
+  // Register 'https' as bypassing CSP, which should now bypass is entirely.
+  context.AddSchemeToBypassCSP("https");
+
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(policy, CSPDirective::FrameSrc,
+                                           GURL("blob:https://example.com/"),
+                                           false, &context, SourceLocation()));
+  EXPECT_TRUE(ContentSecurityPolicy::Allow(
+      policy, CSPDirective::FrameSrc, GURL("blob:https://not-example.com/"),
+      false, &context, SourceLocation()));
 }
 
 }  // namespace content

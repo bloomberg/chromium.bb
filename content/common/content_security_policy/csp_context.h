@@ -52,9 +52,9 @@ class CONTENT_EXPORT CSPContext {
     policies_.push_back(policy);
   }
 
- private:
   virtual bool SchemeShouldBypassCSP(const base::StringPiece& scheme);
 
+ private:
   bool has_self_ = false;
   std::string self_scheme_;
   CSPSource self_source_;

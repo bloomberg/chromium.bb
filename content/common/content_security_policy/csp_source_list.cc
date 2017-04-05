@@ -8,25 +8,6 @@ namespace content {
 
 namespace {
 
-const GURL ExtractInnerURL(const GURL& url) {
-  if (const GURL* inner_url = url.inner_url())
-    return *inner_url;
-  else
-    // TODO(arthursonzogni): revisit this once GURL::inner_url support blob-URL.
-    return GURL(url.path());
-}
-
-const GURL GetEffectiveURL(CSPContext* context, const GURL& url) {
-  // Due to backwards-compatibility concerns, we allow 'self' to match blob and
-  // filesystem inner URLs if we are in a context that bypasses
-  // ContentSecurityPolicy in the main world.
-  if (context->SelfSchemeShouldBypassCsp()) {
-    if (url.SchemeIsFileSystem() || url.SchemeIsBlob())
-      return ExtractInnerURL(url);
-  }
-  return url;
-}
-
 bool AllowFromSources(const GURL& url,
                       const std::vector<CSPSource>& sources,
                       CSPContext* context,
@@ -70,13 +51,9 @@ bool CSPSourceList::Allow(const CSPSourceList& source_list,
     return AllowFromSources(url, source_list.sources, context, is_redirect);
   }
 
-  const GURL effective_url = GetEffectiveURL(context, url);
+  if (source_list.allow_self && context->AllowSelf(url)) return true;
 
-  if (source_list.allow_self && context->AllowSelf(effective_url))
-    return true;
-
-  return AllowFromSources(effective_url, source_list.sources, context,
-                          is_redirect);
+  return AllowFromSources(url, source_list.sources, context, is_redirect);
 }
 
 std::string CSPSourceList::ToString() const {
