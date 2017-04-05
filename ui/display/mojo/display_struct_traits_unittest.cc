@@ -329,7 +329,8 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(input->Clone(), &output);
+  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+      DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
@@ -366,7 +367,8 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(input->Clone(), &output);
+  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+      DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
@@ -407,7 +409,8 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotExternal) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(input->Clone(), &output);
+  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+      DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
@@ -443,7 +446,8 @@ TEST_F(DisplayStructTraitsTest, DisplaySnapshotInternal) {
           maximum_cursor_size);
 
   std::unique_ptr<DisplaySnapshotMojo> output;
-  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(input->Clone(), &output);
+  GetTraitsTestProxy()->EchoDisplaySnapshotMojo(
+      DisplaySnapshotMojo::CreateFrom(*input), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }

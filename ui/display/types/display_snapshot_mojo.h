@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_DISPLAY_SNAPSHOT_MOJO_H_
-#define UI_DISPLAY_DISPLAY_SNAPSHOT_MOJO_H_
+#ifndef UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_MOJO_H_
+#define UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_MOJO_H_
 
 #include <memory>
 
@@ -16,6 +16,10 @@ namespace display {
 // DisplaySnapshot implementation that can be used with Mojo IPC.
 class DISPLAY_TYPES_EXPORT DisplaySnapshotMojo : public DisplaySnapshot {
  public:
+  // Create a new DisplaySnapshotMojo by copying |other|.
+  static std::unique_ptr<DisplaySnapshotMojo> CreateFrom(
+      const DisplaySnapshot& other);
+
   DisplaySnapshotMojo(int64_t display_id,
                       const gfx::Point& origin,
                       const gfx::Size& physical_size,
@@ -32,7 +36,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshotMojo : public DisplaySnapshot {
                       const DisplayMode* native_mode,
                       const gfx::Size& maximum_cursor_size);
   ~DisplaySnapshotMojo() override;
-  std::unique_ptr<DisplaySnapshotMojo> Clone() const;
 
   // DisplaySnapshot:
   std::string ToString() const override;
@@ -43,4 +46,4 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshotMojo : public DisplaySnapshot {
 
 }  // namespace display
 
-#endif  // UI_DISPLAY_DISPLAY_SNAPSHOT_MOJO_H_
+#endif  // UI_DISPLAY_TYPES_DISPLAY_SNAPSHOT_MOJO_H_

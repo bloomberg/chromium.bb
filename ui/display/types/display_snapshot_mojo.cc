@@ -9,6 +9,31 @@
 
 namespace display {
 
+// static
+std::unique_ptr<DisplaySnapshotMojo> DisplaySnapshotMojo::CreateFrom(
+    const DisplaySnapshot& other) {
+  DisplayModeList clone_modes;
+  const DisplayMode* current_mode = nullptr;
+  const DisplayMode* native_mode = nullptr;
+
+  // Clone the display modes and find equivalent pointers to the native and
+  // current mode.
+  for (auto& mode : other.modes()) {
+    clone_modes.push_back(mode->Clone());
+    if (mode.get() == other.current_mode())
+      current_mode = mode.get();
+    if (mode.get() == other.native_mode())
+      native_mode = mode.get();
+  }
+
+  return base::MakeUnique<DisplaySnapshotMojo>(
+      other.display_id(), other.origin(), other.physical_size(), other.type(),
+      other.is_aspect_preserving_scaling(), other.has_overscan(),
+      other.has_color_correction_matrix(), other.display_name(),
+      other.sys_path(), other.product_id(), std::move(clone_modes),
+      other.edid(), current_mode, native_mode, other.maximum_cursor_size());
+}
+
 DisplaySnapshotMojo::DisplaySnapshotMojo(int64_t display_id,
                                          const gfx::Point& origin,
                                          const gfx::Size& physical_size,
@@ -42,19 +67,6 @@ DisplaySnapshotMojo::DisplaySnapshotMojo(int64_t display_id,
 }
 
 DisplaySnapshotMojo::~DisplaySnapshotMojo() = default;
-
-std::unique_ptr<DisplaySnapshotMojo> DisplaySnapshotMojo::Clone() const {
-  DisplayModeList clone_modes;
-  for (auto& mode : modes())
-    clone_modes.push_back(mode->Clone());
-
-  return base::MakeUnique<DisplaySnapshotMojo>(
-      display_id(), origin(), physical_size(), type(),
-      is_aspect_preserving_scaling(), has_overscan(),
-      has_color_correction_matrix(), display_name(), sys_path(), product_id(),
-      std::move(clone_modes), edid(), current_mode(), native_mode(),
-      maximum_cursor_size());
-}
 
 // TODO(thanhph): Implement ToString() for debugging purposes.
 std::string DisplaySnapshotMojo::ToString() const {
