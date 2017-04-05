@@ -10,6 +10,20 @@
 cr.define('bookmarks.actions', function() {
   /**
    * @param {string} id
+   * @param {BookmarkTreeNode} treeNode
+   */
+  function createBookmark(id, treeNode) {
+    return {
+      name: 'create-bookmark',
+      id: id,
+      parentId: treeNode.parentId,
+      parentIndex: treeNode.index,
+      node: bookmarks.util.normalizeNode(treeNode),
+    };
+  }
+
+  /**
+   * @param {string} id
    * @param {{title: string, url: (string|undefined)}} changeInfo
    * @return {!Action}
    */
@@ -174,6 +188,7 @@ cr.define('bookmarks.actions', function() {
   return {
     changeFolderOpen: changeFolderOpen,
     clearSearch: clearSearch,
+    createBookmark: createBookmark,
     deselectItems: deselectItems,
     editBookmark: editBookmark,
     moveBookmark: moveBookmark,

@@ -19,6 +19,26 @@ cr.define('bookmarks.util', function() {
   }
 
   /**
+   * @param {BookmarkTreeNode} treeNode
+   * @return {BookmarkNode}
+   */
+  function normalizeNode(treeNode) {
+    var node = Object.assign({}, treeNode);
+    // Node index is not necessary and not kept up-to-date. Remove it from the
+    // data structure so we don't accidentally depend on the incorrect
+    // information.
+    delete node.index;
+
+    if (!('url' in node)) {
+      // The onCreated API listener returns folders without |children| defined.
+      node.children = (node.children || []).map(function(child) {
+        return child.id;
+      });
+    }
+    return /** @type {BookmarkNode} */ (node);
+  }
+
+  /**
    * @param {BookmarkTreeNode} rootNode
    * @return {NodeList}
    */
@@ -30,20 +50,13 @@ cr.define('bookmarks.util', function() {
 
     while (stack.length > 0) {
       var node = stack.pop();
-      // Node index is not necessary and not kept up-to-date. Remove it from the
-      // data structure so we don't accidentally depend on the incorrect
-      // information.
-      delete node.index;
-      nodeList[node.id] = node;
+      nodeList[node.id] = normalizeNode(node);
       if (!node.children)
         continue;
 
-      var childIds = [];
       node.children.forEach(function(child) {
-        childIds.push(child.id);
         stack.push(child);
       });
-      node.children = childIds;
     }
 
     return nodeList;
@@ -153,6 +166,7 @@ cr.define('bookmarks.util', function() {
     getDisplayedList: getDisplayedList,
     hasChildFolders: hasChildFolders,
     isShowingSearch: isShowingSearch,
+    normalizeNode: normalizeNode,
     normalizeNodes: normalizeNodes,
     removeIdsFromMap: removeIdsFromMap,
     removeIdsFromSet: removeIdsFromSet,

@@ -274,6 +274,36 @@ suite('node state', function() {
     assertEquals(undefined, state['4'].url);
   });
 
+  test('updates when a node is created', function() {
+    // Create a folder.
+    var folder = {
+      id: '6',
+      parentId: '1',
+      index: 2,
+    };
+    action = bookmarks.actions.createBookmark(folder.id, folder);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertEquals('1', state['6'].parentId);
+    assertDeepEquals([], state['6'].children);
+    assertDeepEquals(['2', '3', '6', '4'], state['1'].children);
+
+    // Add a new item to that folder.
+    var item = {
+      id: '7',
+      parentId: '6',
+      index: 0,
+      url: 'https://www.example.com',
+    };
+
+    action = bookmarks.actions.createBookmark(item.id, item);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertEquals('6', state['7'].parentId);
+    assertEquals(undefined, state['7'].children);
+    assertDeepEquals(['7'], state['6'].children);
+  });
+
   test('updates when a node is deleted', function() {
     action = bookmarks.actions.removeBookmark('3', '1', 1, state);
     state = bookmarks.NodeState.updateNodes(state, action);

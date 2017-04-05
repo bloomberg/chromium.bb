@@ -169,6 +169,25 @@ cr.define('bookmarks', function() {
    * @param {Action} action
    * @return {NodeList}
    */
+  NodeState.createBookmark = function(nodes, action) {
+    var nodeModifications = {};
+    nodeModifications[action.id] = action.node;
+
+    var parentNode = nodes[action.parentId];
+    var newChildren = parentNode.children.slice();
+    newChildren.splice(action.parentIndex, 0, action.id);
+    nodeModifications[action.parentId] = Object.assign({}, parentNode, {
+      children: newChildren,
+    });
+
+    return Object.assign({}, nodes, nodeModifications);
+  };
+
+  /**
+   * @param {NodeList} nodes
+   * @param {Action} action
+   * @return {NodeList}
+   */
   NodeState.editBookmark = function(nodes, action) {
     // Do not allow folders to change URL (making them no longer folders).
     if (!nodes[action.id].url && action.changeInfo.url)
@@ -236,6 +255,8 @@ cr.define('bookmarks', function() {
    */
   NodeState.updateNodes = function(nodes, action) {
     switch (action.name) {
+      case 'create-bookmark':
+        return NodeState.createBookmark(nodes, action);
       case 'edit-bookmark':
         return NodeState.editBookmark(nodes, action);
       case 'remove-bookmark':

@@ -23,6 +23,14 @@ cr.define('bookmarks.ApiListener', function() {
 
   /**
    * @param {string} id
+   * @param {BookmarkTreeNode} treeNode
+   */
+  function onBookmarkCreated(id, treeNode) {
+    dispatch(bookmarks.actions.createBookmark(id, treeNode));
+  }
+
+  /**
+   * @param {string} id
    * @param {{parentId: string, index: number}} removeInfo
    */
   function onBookmarkRemoved(id, removeInfo) {
@@ -46,8 +54,12 @@ cr.define('bookmarks.ApiListener', function() {
         moveInfo.oldIndex));
   }
 
+  /**
+   * Pauses the Created handler during an import. The imported nodes will all be
+   * loaded at once when the import is finished.
+   */
   function onImportBegan() {
-    // TODO(rongjie): pause onCreated once this event is used.
+    chrome.bookmarks.onCreated.removeListener(onBookmarkCreated);
   }
 
   function onImportEnded() {
@@ -55,10 +67,12 @@ cr.define('bookmarks.ApiListener', function() {
       dispatch(bookmarks.actions.refreshNodes(
           bookmarks.util.normalizeNodes(results[0])));
     });
+    chrome.bookmarks.onCreated.addListener(onBookmarkCreated);
   }
 
   function init() {
     chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
+    chrome.bookmarks.onCreated.addListener(onBookmarkCreated);
     chrome.bookmarks.onMoved.addListener(onBookmarkMoved);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemoved);
     chrome.bookmarks.onImportBegan.addListener(onImportBegan);
