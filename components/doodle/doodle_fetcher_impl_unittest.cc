@@ -70,14 +70,16 @@ void ParseJson(
 
 class DoodleFetcherImplTestBase : public testing::Test {
  public:
-  DoodleFetcherImplTestBase(bool gray_background)
+  DoodleFetcherImplTestBase(bool gray_background,
+                            const base::Optional<std::string>& override_url)
       : google_url_tracker_(base::MakeUnique<GoogleURLTrackerClientStub>(),
                             GoogleURLTracker::UNIT_TEST_MODE),
         doodle_fetcher_(
             new net::TestURLRequestContextGetter(message_loop_.task_runner()),
             &google_url_tracker_,
             base::Bind(ParseJson),
-            gray_background) {}
+            gray_background,
+            override_url) {}
 
   void RespondWithData(const std::string& data) {
     net::TestURLFetcher* url_fetcher = GetRunningFetcher();
@@ -121,7 +123,8 @@ class DoodleFetcherImplTestBase : public testing::Test {
 class DoodleFetcherImplTest : public DoodleFetcherImplTestBase {
  public:
   DoodleFetcherImplTest()
-      : DoodleFetcherImplTestBase(/*gray_background=*/true) {}
+      : DoodleFetcherImplTestBase(/*gray_background=*/true,
+                                  /*override_url=*/base::nullopt) {}
 };
 
 TEST_F(DoodleFetcherImplTest, ReturnsFromFetchWithoutError) {
@@ -422,7 +425,8 @@ TEST_F(DoodleFetcherImplTest, OverridesBaseUrlWithCommandLineArgument) {
 class DoodleFetcherImplNoGrayBgTest : public DoodleFetcherImplTestBase {
  public:
   DoodleFetcherImplNoGrayBgTest()
-      : DoodleFetcherImplTestBase(/*gray_background=*/false) {}
+      : DoodleFetcherImplTestBase(/*gray_background=*/false,
+                                  /*override_url=*/base::nullopt) {}
 };
 
 TEST_F(DoodleFetcherImplNoGrayBgTest, PassesNoGrayBgParam) {
@@ -431,6 +435,38 @@ TEST_F(DoodleFetcherImplNoGrayBgTest, PassesNoGrayBgParam) {
 
   EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
               Eq(Resolve(kDoodleConfigPathNoGrayBg)));
+}
+
+class DoodleFetcherImplRelativeOverrideUrlTest
+    : public DoodleFetcherImplTestBase {
+ public:
+  DoodleFetcherImplRelativeOverrideUrlTest()
+      : DoodleFetcherImplTestBase(/*gray_background=*/false,
+                                  /*override_url=*/std::string("/different")) {}
+};
+
+TEST_F(DoodleFetcherImplRelativeOverrideUrlTest, OverridesWithRelativeUrl) {
+  base::MockCallback<DoodleFetcherImpl::FinishedCallback> callback;
+  doodle_fetcher()->FetchDoodle(callback.Get());
+
+  EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(), Eq(Resolve("/different")));
+}
+
+class DoodleFetcherImplAbsoluteOverrideUrlTest
+    : public DoodleFetcherImplTestBase {
+ public:
+  DoodleFetcherImplAbsoluteOverrideUrlTest()
+      : DoodleFetcherImplTestBase(
+            /*gray_background=*/false,
+            /*override_url=*/std::string("http://host.com/ddl")) {}
+};
+
+TEST_F(DoodleFetcherImplAbsoluteOverrideUrlTest, OverridesWithAbsoluteUrl) {
+  base::MockCallback<DoodleFetcherImpl::FinishedCallback> callback;
+  doodle_fetcher()->FetchDoodle(callback.Get());
+
+  EXPECT_THAT(GetRunningFetcher()->GetOriginalURL(),
+              Eq(GURL("http://host.com/ddl")));
 }
 
 }  // namespace doodle

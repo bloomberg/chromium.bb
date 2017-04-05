@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -41,9 +40,16 @@ std::string StripSafetyPreamble(const std::string& json) {
   return json_sp.as_string();
 }
 
-GURL BuildDoodleURL(const GURL& base_url, bool gray_background) {
-  return base_url.Resolve(
-      base::StringPrintf(kDoodleConfigPathFormat, gray_background ? 1 : 0));
+GURL BuildDoodleURL(const GURL& base_url,
+                    bool gray_background,
+                    const base::Optional<std::string>& override_url) {
+  std::string path =
+      base::StringPrintf(kDoodleConfigPathFormat, gray_background ? 1 : 0);
+  if (override_url.has_value()) {
+    // The override URL may or may not be relative to the base URL.
+    path = *override_url;
+  }
+  return base_url.Resolve(path);
 }
 
 }  // namespace
@@ -52,11 +58,13 @@ DoodleFetcherImpl::DoodleFetcherImpl(
     scoped_refptr<net::URLRequestContextGetter> download_context,
     GoogleURLTracker* google_url_tracker,
     const ParseJSONCallback& json_parsing_callback,
-    bool gray_background)
+    bool gray_background,
+    const base::Optional<std::string>& override_url)
     : download_context_(download_context),
       google_url_tracker_(google_url_tracker),
       json_parsing_callback_(json_parsing_callback),
       gray_background_(gray_background),
+      override_url_(override_url),
       weak_ptr_factory_(this) {
   DCHECK(google_url_tracker_);
 }
@@ -91,9 +99,9 @@ void DoodleFetcherImpl::FetchDoodle(FinishedCallback callback) {
             "Not implemented, considered not useful as it does not upload any "
             "data."
         })");
-  fetcher_ =
-      URLFetcher::Create(BuildDoodleURL(GetGoogleBaseUrl(), gray_background_),
-                         URLFetcher::GET, this, traffic_annotation);
+  fetcher_ = URLFetcher::Create(
+      BuildDoodleURL(GetGoogleBaseUrl(), gray_background_, override_url_),
+      URLFetcher::GET, this, traffic_annotation);
   fetcher_->SetRequestContext(download_context_.get());
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES |

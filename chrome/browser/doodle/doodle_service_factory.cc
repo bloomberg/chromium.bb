@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
@@ -22,6 +23,12 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
+#endif
+
+#if defined(OS_ANDROID)
+namespace {
+const char kOverrideUrlParam[] = "doodle_override_url";
+}  // namespace
 #endif
 
 // static
@@ -51,14 +58,28 @@ KeyedService* DoodleServiceFactory::BuildServiceInstanceFor(
   DCHECK(!profile->IsOffTheRecord());
 
   bool use_gray_background = false;
+  base::Optional<std::string> override_url;
+
 #if defined(OS_ANDROID)
+  DCHECK(base::FeatureList::IsEnabled(chrome::android::kUseNewDoodleApi));
+
   use_gray_background =
       !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
+
+  std::string override_url_str = base::GetFieldTrialParamValueByFeature(
+      chrome::android::kUseNewDoodleApi, kOverrideUrlParam);
+  // GetFieldTrialParamValueByFeature returns an empty string if the param is
+  // not set.
+  if (!override_url_str.empty()) {
+    override_url = override_url_str;
+  }
 #endif
+
   auto fetcher = base::MakeUnique<doodle::DoodleFetcherImpl>(
       profile->GetRequestContext(),
       GoogleURLTrackerFactory::GetForProfile(profile),
-      base::Bind(&safe_json::SafeJsonParser::Parse), use_gray_background);
+      base::Bind(&safe_json::SafeJsonParser::Parse), use_gray_background,
+      override_url);
   return new doodle::DoodleService(
       profile->GetPrefs(), std::move(fetcher),
       base::MakeUnique<base::OneShotTimer>(),
