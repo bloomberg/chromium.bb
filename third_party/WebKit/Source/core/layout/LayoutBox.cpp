@@ -4910,10 +4910,10 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() {
 }
 
 DISABLE_CFI_PERF
-void LayoutBox::addOverflowFromChild(LayoutBox* child,
+void LayoutBox::addOverflowFromChild(const LayoutBox& child,
                                      const LayoutSize& delta) {
   // Never allow flow threads to propagate overflow up to a parent.
-  if (child->isLayoutFlowThread())
+  if (child.isLayoutFlowThread())
     return;
 
   // Only propagate layout overflow from the child if the child isn't clipping
@@ -4921,7 +4921,7 @@ void LayoutBox::addOverflowFromChild(LayoutBox* child,
   // care about it. layoutOverflowRectForPropagation takes care of this and just
   // propagates the border box rect instead.
   LayoutRect childLayoutOverflowRect =
-      child->layoutOverflowRectForPropagation(styleRef());
+      child.layoutOverflowRectForPropagation(styleRef());
   childLayoutOverflowRect.move(delta);
   addLayoutOverflow(childLayoutOverflowRect);
 
@@ -4929,10 +4929,10 @@ void LayoutBox::addOverflowFromChild(LayoutBox* child,
   // overflow, it may still have visual overflow of its own set from box shadows
   // or reflections. It is unnecessary to propagate this overflow if we are
   // clipping our own overflow.
-  if (child->hasSelfPaintingLayer())
+  if (child.hasSelfPaintingLayer())
     return;
   LayoutRect childVisualOverflowRect =
-      child->visualOverflowRectForPropagation(styleRef());
+      child.visualOverflowRectForPropagation(styleRef());
   childVisualOverflowRect.move(delta);
   addContentsVisualOverflow(childVisualOverflowRect);
 }

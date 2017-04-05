@@ -823,12 +823,12 @@ void LayoutTable::addOverflowFromChildren() {
 
   // Add overflow from our caption.
   for (unsigned i = 0; i < m_captions.size(); i++)
-    addOverflowFromChild(m_captions[i]);
+    addOverflowFromChild(*m_captions[i]);
 
   // Add overflow from our sections.
   for (LayoutTableSection* section = topSection(); section;
        section = sectionBelow(section))
-    addOverflowFromChild(section);
+    addOverflowFromChild(*section);
 }
 
 void LayoutTable::paintObject(const PaintInfo& paintInfo,

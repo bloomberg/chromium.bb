@@ -305,11 +305,16 @@ void LayoutTableRow::addOverflowFromCell(const LayoutTableCell* cell) {
   // The cell and the row share the section's coordinate system. However
   // the visual overflow should be determined in the coordinate system of
   // the row, that's why we shift it below.
-  LayoutUnit cellOffsetLogicalTopDifference =
-      cell->location().y() - location().y();
-  cellVisualOverflowRect.move(LayoutUnit(), cellOffsetLogicalTopDifference);
-
+  cellVisualOverflowRect.moveBy(-location());
   addContentsVisualOverflow(cellVisualOverflowRect);
+
+  // Table row paints its background behind cells. If the cell spans multiple
+  // rows, the row's visual rect should be expanded to cover the cell.
+  if (styleRef().hasBackground()) {
+    LayoutRect cellBackgroundRect = cell->frameRect();
+    cellBackgroundRect.moveBy(-location());
+    addSelfVisualOverflow(cellBackgroundRect);
+  }
 }
 
 bool LayoutTableRow::isFirstRowInSectionAfterHeader() const {

@@ -2412,7 +2412,7 @@ void LayoutBlockFlow::addOverflowFromFloats() {
     const FloatingObject& floatingObject = *it->get();
     if (floatingObject.isDescendant())
       addOverflowFromChild(
-          floatingObject.layoutObject(),
+          *floatingObject.layoutObject(),
           LayoutSize(xPositionForFloatIncludingMargin(floatingObject),
                      yPositionForFloatIncludingMargin(floatingObject)));
   }
@@ -3909,7 +3909,7 @@ void LayoutBlockFlow::addOverhangingFloats(LayoutBlockFlow* child,
       // need to go ahead and add its overflow in to the child now.
       if (floatingObject.isDescendant())
         child->addOverflowFromChild(
-            floatingObject.layoutObject(),
+            *floatingObject.layoutObject(),
             LayoutSize(xPositionForFloatIncludingMargin(floatingObject),
                        yPositionForFloatIncludingMargin(floatingObject)));
     }

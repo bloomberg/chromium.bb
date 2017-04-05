@@ -177,16 +177,10 @@ void TableCellPainter::paintCollapsedBorders(
 void TableCellPainter::paintContainerBackgroundBehindCell(
     const PaintInfo& paintInfo,
     const LayoutPoint& paintOffset,
-    const LayoutObject& backgroundObject,
-    DisplayItem::Type type) {
+    const LayoutObject& backgroundObject) {
   DCHECK(backgroundObject != m_layoutTableCell);
 
   if (m_layoutTableCell.style()->visibility() != EVisibility::kVisible)
-    return;
-
-  LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableCell.location();
-  if (!BlockPainter(m_layoutTableCell)
-           .intersectsPaintRect(paintInfo, adjustedPaintOffset))
     return;
 
   LayoutTable* table = m_layoutTableCell.table();
@@ -195,16 +189,8 @@ void TableCellPainter::paintContainerBackgroundBehindCell(
       !m_layoutTableCell.firstChild())
     return;
 
-  const DisplayItemClient& client =
-      m_layoutTableCell.backgroundDisplayItemClient();
-  if (DrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, client,
-                                                  type))
-    return;
-
-  LayoutRect paintRect =
-      paintRectNotIncludingVisualOverflow(adjustedPaintOffset);
-  DrawingRecorder recorder(paintInfo.context, client, type,
-                           FloatRect(paintRect));
+  LayoutRect paintRect = paintRectNotIncludingVisualOverflow(
+      paintOffset + m_layoutTableCell.location());
   paintBackground(paintInfo, paintRect, backgroundObject);
 }
 

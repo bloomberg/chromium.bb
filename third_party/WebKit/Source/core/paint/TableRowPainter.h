@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class CellSpan;
 class LayoutPoint;
 class LayoutTableCell;
 class LayoutTableRow;
@@ -24,12 +25,15 @@ class TableRowPainter {
 
   void paint(const PaintInfo&, const LayoutPoint&);
   void paintOutline(const PaintInfo&, const LayoutPoint&);
-  void paintBoxShadow(const PaintInfo&, const LayoutPoint&, ShadowStyle);
+  void paintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint&,
+                                    const CellSpan& dirtiedColumns);
+
+ private:
   void paintBackgroundBehindCell(const LayoutTableCell&,
                                  const PaintInfo&,
                                  const LayoutPoint&);
 
- private:
   const LayoutTableRow& m_layoutTableRow;
 };
 

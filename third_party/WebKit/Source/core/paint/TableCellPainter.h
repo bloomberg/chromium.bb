@@ -32,8 +32,7 @@ class TableCellPainter {
                              const CollapsedBorderValue&);
   void paintContainerBackgroundBehindCell(const PaintInfo&,
                                           const LayoutPoint&,
-                                          const LayoutObject& backgroundObject,
-                                          DisplayItem::Type);
+                                          const LayoutObject& backgroundObject);
   void paintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint& paintOffset);
   void paintMask(const PaintInfo&, const LayoutPoint& paintOffset);

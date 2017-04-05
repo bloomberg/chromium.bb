@@ -1275,10 +1275,10 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows,
   for (unsigned r = 0; r < totalRows; r++) {
     unsigned nCols = numCols(r);
     for (unsigned c = 0; c < nCols; c++) {
-      auto* cell = originatingCellAt(r, c);
+      const auto* cell = originatingCellAt(r, c);
       if (!cell)
         continue;
-      addOverflowFromChild(cell);
+      addOverflowFromChild(*cell);
 #if DCHECK_IS_ON()
       hasOverflowingCell |= cell->hasVisualOverflow();
 #endif
@@ -1521,7 +1521,7 @@ LayoutRect LayoutTableSection::logicalRectForWritingModeAndDirection(
 
 CellSpan LayoutTableSection::dirtiedRows(const LayoutRect& damageRect) const {
   if (m_forceSlowPaintPathWithOverflowingCell)
-    return fullTableRowSpan();
+    return fullSectionRowSpan();
 
   if (!m_grid.size())
     return CellSpan(0, 0);
@@ -2127,6 +2127,15 @@ bool LayoutTableSection::mapToVisualRectInAncestorSpaceInternal(
   }
   return LayoutTableBoxComponent::mapToVisualRectInAncestorSpaceInternal(
       ancestor, transformState, flags);
+}
+
+bool LayoutTableSection::paintedOutputOfObjectHasNoEffectRegardlessOfSize()
+    const {
+  // LayoutTableSection paints background from columns.
+  if (table()->hasColElements())
+    return false;
+  return LayoutTableBoxComponent::
+      paintedOutputOfObjectHasNoEffectRegardlessOfSize();
 }
 
 }  // namespace blink

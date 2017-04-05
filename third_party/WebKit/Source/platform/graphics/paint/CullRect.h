@@ -51,6 +51,7 @@ class PLATFORM_EXPORT CullRect {
   friend class SVGPaintContext;
   friend class SVGRootInlineBoxPainter;
   friend class SVGShapePainter;
+  friend class TableRowPainter;
   friend class TableSectionPainter;
   friend class ThemePainterMac;
   friend class WebPluginContainerImpl;

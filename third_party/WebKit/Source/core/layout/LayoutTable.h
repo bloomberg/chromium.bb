@@ -373,6 +373,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
       return ColAndColGroup();
     return slowColElementAtAbsoluteColumn(absoluteColumnIndex);
   }
+  bool hasColElements() const { return m_hasColElements; }
 
   bool needsSectionRecalc() const { return m_needsSectionRecalc; }
   void setNeedsSectionRecalc() {

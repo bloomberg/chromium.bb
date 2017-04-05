@@ -65,6 +65,11 @@
           "object": "LayoutTable TABLE",
           "rect": [169, 8, 5, 102],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [169, 9, 4, 100],
+          "reason": "incremental"
         }
       ]
     }
@@ -101,6 +106,10 @@
     {
       "object": "LayoutTableCol COLGROUP id='colgroup'",
       "reason": "style change"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "incremental"
     },
     {
       "object": "LayoutTableCell TD",

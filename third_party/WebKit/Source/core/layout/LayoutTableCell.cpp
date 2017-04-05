@@ -48,7 +48,6 @@ struct SameSizeAsLayoutTableCell : public LayoutBlockFlow {
   unsigned bitfields;
   int paddings[2];
   void* pointer1;
-  void* pointer2;
 };
 
 static_assert(sizeof(LayoutTableCell) == sizeof(SameSizeAsLayoutTableCell),
@@ -467,16 +466,6 @@ int LayoutTableCell::cellBaselinePosition() const {
   return (borderBefore() + paddingBefore() + contentLogicalHeight()).toInt();
 }
 
-void LayoutTableCell::ensureIsReadyForPaintInvalidation() {
-  LayoutBlockFlow::ensureIsReadyForPaintInvalidation();
-  if (!usesCompositedCellDisplayItemClients())
-    return;
-  if (!m_rowBackgroundDisplayItemClient) {
-    m_rowBackgroundDisplayItemClient = WTF::wrapUnique(
-        new LayoutTableCell::RowBackgroundDisplayItemClient(*this));
-  }
-}
-
 void LayoutTableCell::styleDidChange(StyleDifference diff,
                                      const ComputedStyle* oldStyle) {
   DCHECK_EQ(style()->display(), EDisplay::kTableCell);
@@ -520,18 +509,6 @@ void LayoutTableCell::styleDidChange(StyleDifference diff,
       nextCell()->setPreferredLogicalWidthsDirty(MarkOnlyThis);
     }
   }
-}
-
-LayoutTableCell::RowBackgroundDisplayItemClient::RowBackgroundDisplayItemClient(
-    const LayoutTableCell& layoutTableCell)
-    : m_layoutTableCell(layoutTableCell) {}
-
-String LayoutTableCell::RowBackgroundDisplayItemClient::debugName() const {
-  return "RowBackground";
-}
-
-LayoutRect LayoutTableCell::RowBackgroundDisplayItemClient::visualRect() const {
-  return m_layoutTableCell.row()->visualRect();
 }
 
 // The following rules apply for resolving conflicts and figuring out which
@@ -1471,10 +1448,6 @@ void LayoutTableCell::invalidateDisplayItemClients(
   ObjectPaintInvalidator invalidator(*this);
   if (m_collapsedBorderValues)
     invalidator.invalidateDisplayItemClient(*m_collapsedBorderValues, reason);
-  if (m_rowBackgroundDisplayItemClient) {
-    invalidator.invalidateDisplayItemClient(*m_rowBackgroundDisplayItemClient,
-                                            reason);
-  }
 }
 
 // TODO(lunalu): Deliberately dump the "inner" box of table cells, since that

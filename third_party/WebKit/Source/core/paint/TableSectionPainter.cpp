@@ -108,8 +108,8 @@ void TableSectionPainter::paintSection(const PaintInfo& paintInfo,
         .paintOutline(paintInfo, adjustedPaintOffset);
 }
 
-static inline bool compareCellPositions(LayoutTableCell* elem1,
-                                        LayoutTableCell* elem2) {
+static inline bool compareCellPositions(const LayoutTableCell* elem1,
+                                        const LayoutTableCell* elem2) {
   return elem1->rowIndex() < elem2->rowIndex();
 }
 
@@ -117,8 +117,8 @@ static inline bool compareCellPositions(LayoutTableCell* elem1,
 // unsorted array to sort. We thus need to sort both on rows and columns to
 // properly issue paint invalidations.
 static inline bool compareCellPositionsWithOverflowingCells(
-    LayoutTableCell* elem1,
-    LayoutTableCell* elem2) {
+    const LayoutTableCell* elem1,
+    const LayoutTableCell* elem2) {
   if (elem1->rowIndex() != elem2->rowIndex())
     return elem1->rowIndex() < elem2->rowIndex();
 
@@ -195,23 +195,11 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
   CellSpan dirtiedColumns =
       m_layoutTableSection.dirtiedEffectiveColumns(tableAlignedRect);
 
-  if (dirtiedColumns.start() >= dirtiedColumns.end())
-    return;
-
   PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
 
   if (shouldPaintSelfBlockBackground(paintInfo.phase)) {
-    paintBoxShadow(paintInfo, paintOffset, Normal);
-    for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
-      for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
-        if (const LayoutTableCell* cell =
-                m_layoutTableSection.originatingCellAt(r, c)) {
-          paintBackgroundsBehindCell(*cell, paintInfoForDescendants,
-                                     paintOffset);
-        }
-      }
-    }
-    paintBoxShadow(paintInfo, paintOffset, Inset);
+    paintBoxDecorationBackground(paintInfo, paintOffset, dirtiedRows,
+                                 dirtiedColumns);
   }
 
   if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
@@ -220,28 +208,23 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
   if (shouldPaintDescendantBlockBackgrounds(paintInfo.phase)) {
     for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
       const LayoutTableRow* row = m_layoutTableSection.rowLayoutObjectAt(r);
-      // If a row has a layer, we'll paint row background in TableRowPainter.
+      // If a row has a layer, we'll paint row background though
+      // TableRowPainter::paint().
       if (!row || row->hasSelfPaintingLayer())
         continue;
-
-      TableRowPainter rowPainter(*row);
-      rowPainter.paintBoxShadow(paintInfoForDescendants, paintOffset, Normal);
-      if (row->styleRef().hasBackground()) {
-        for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end();
-             c++) {
-          if (const LayoutTableCell* cell =
-                  m_layoutTableSection.originatingCellAt(r, c)) {
-            rowPainter.paintBackgroundBehindCell(*cell, paintInfoForDescendants,
-                                                 paintOffset);
-          }
-        }
-      }
-      rowPainter.paintBoxShadow(paintInfoForDescendants, paintOffset, Inset);
+      TableRowPainter(*row).paintBoxDecorationBackground(
+          paintInfoForDescendants, paintOffset, dirtiedColumns);
     }
   }
 
-  const HashSet<LayoutTableCell*>& overflowingCells =
-      m_layoutTableSection.overflowingCells();
+  // This is tested after background painting because during background painting
+  // we need to check validity of the previous background display item based on
+  // dirtyRows and dirtyColumns.
+  if (dirtiedRows.start() >= dirtiedRows.end() ||
+      dirtiedColumns.start() >= dirtiedColumns.end())
+    return;
+
+  const auto& overflowingCells = m_layoutTableSection.overflowingCells();
   if (!m_layoutTableSection.hasMultipleCellLevels() &&
       overflowingCells.isEmpty()) {
     for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
@@ -249,9 +232,10 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
       // TODO(crbug.com/577282): This painting order is inconsistent with other
       // outlines.
       if (row && !row->hasSelfPaintingLayer() &&
-          shouldPaintSelfOutline(paintInfoForDescendants.phase))
+          shouldPaintSelfOutline(paintInfoForDescendants.phase)) {
         TableRowPainter(*row).paintOutline(paintInfoForDescendants,
                                            paintOffset);
+      }
       for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
         if (const LayoutTableCell* cell =
                 m_layoutTableSection.originatingCellAt(r, c))
@@ -268,24 +252,24 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
 
     // To make sure we properly paint the section, we paint all the overflowing
     // cells that we collected.
-    Vector<LayoutTableCell*> cells;
+    Vector<const LayoutTableCell*> cells;
     copyToVector(overflowingCells, cells);
 
-    HashSet<LayoutTableCell*> spanningCells;
+    HashSet<const LayoutTableCell*> spanningCells;
     for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
       const LayoutTableRow* row = m_layoutTableSection.rowLayoutObjectAt(r);
       // TODO(crbug.com/577282): This painting order is inconsistent with other
       // outlines.
       if (row && !row->hasSelfPaintingLayer() &&
-          shouldPaintSelfOutline(paintInfoForDescendants.phase))
+          shouldPaintSelfOutline(paintInfoForDescendants.phase)) {
         TableRowPainter(*row).paintOutline(paintInfoForDescendants,
                                            paintOffset);
+      }
       unsigned nCols = m_layoutTableSection.numCols(r);
       for (unsigned c = dirtiedColumns.start();
            c < nCols && c < dirtiedColumns.end(); c++) {
-        const LayoutTableSection::CellStruct& current =
-            m_layoutTableSection.cellAt(r, c);
-        for (LayoutTableCell* cell : current.cells) {
+        const auto& cellStruct = m_layoutTableSection.cellAt(r, c);
+        for (const auto* cell : cellStruct.cells) {
           if (overflowingCells.contains(cell))
             continue;
           if (cell->rowSpan() > 1 || cell->colSpan() > 1) {
@@ -298,14 +282,70 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo,
     }
 
     // Sort the dirty cells by paint order.
-    if (!overflowingCells.size())
+    if (!overflowingCells.size()) {
       std::stable_sort(cells.begin(), cells.end(), compareCellPositions);
-    else
+    } else {
       std::sort(cells.begin(), cells.end(),
                 compareCellPositionsWithOverflowingCells);
+    }
 
-    for (const LayoutTableCell* cell : cells)
+    for (const auto* cell : cells)
       paintCell(*cell, paintInfoForDescendants, paintOffset);
+  }
+}
+
+void TableSectionPainter::paintBoxDecorationBackground(
+    const PaintInfo& paintInfo,
+    const LayoutPoint& paintOffset,
+    const CellSpan& dirtiedRows,
+    const CellSpan& dirtiedColumns) {
+  bool mayHaveBackground = m_layoutTableSection.table()->hasColElements() ||
+                           m_layoutTableSection.styleRef().hasBackground();
+  bool hasBoxShadow = m_layoutTableSection.styleRef().boxShadow();
+  if (!mayHaveBackground && !hasBoxShadow)
+    return;
+
+  PaintResult paintResult =
+      dirtiedColumns == m_layoutTableSection.fullTableEffectiveColumnSpan() &&
+              dirtiedRows == m_layoutTableSection.fullSectionRowSpan()
+          ? FullyPainted
+          : MayBeClippedByPaintDirtyRect;
+  m_layoutTableSection.getMutableForPainting().updatePaintResult(
+      paintResult, paintInfo.cullRect());
+
+  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
+          paintInfo.context, m_layoutTableSection,
+          DisplayItem::kBoxDecorationBackground))
+    return;
+
+  LayoutRect bounds = BoxPainter(m_layoutTableSection)
+                          .boundsForDrawingRecorder(paintInfo, paintOffset);
+  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableSection,
+                                       DisplayItem::kBoxDecorationBackground,
+                                       bounds);
+  LayoutRect paintRect(paintOffset, m_layoutTableSection.size());
+
+  if (hasBoxShadow) {
+    BoxPainter::paintNormalBoxShadow(paintInfo, paintRect,
+                                     m_layoutTableSection.styleRef());
+  }
+
+  if (mayHaveBackground) {
+    PaintInfo paintInfoForCells = paintInfo.forDescendants();
+    for (auto r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
+      for (auto c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
+        if (const auto* cell = m_layoutTableSection.originatingCellAt(r, c)) {
+          paintBackgroundsBehindCell(*cell, paintInfoForCells, paintOffset);
+        }
+      }
+    }
+  }
+
+  if (hasBoxShadow) {
+    // TODO(wangxianzhu): Calculate the inset shadow bounds by insetting
+    // paintRect by half widths of collapsed borders.
+    BoxPainter::paintInsetBoxShadow(paintInfo, paintRect,
+                                    m_layoutTableSection.styleRef());
   }
 }
 
@@ -333,20 +373,20 @@ void TableSectionPainter::paintBackgroundsBehindCell(
   // transparency layer (potentially) for the table row group.  Note that we
   // deliberately ignore whether or not the cell has a layer, since these
   // backgrounds paint "behind" the cell.
-  if (columnGroup && columnGroup->styleRef().hasBackground())
+  if (columnGroup && columnGroup->styleRef().hasBackground()) {
     tableCellPainter.paintContainerBackgroundBehindCell(
-        paintInfoForCells, cellPoint, *columnGroup,
-        DisplayItem::kTableCellBackgroundFromColumnGroup);
-  if (column && column->styleRef().hasBackground())
-    tableCellPainter.paintContainerBackgroundBehindCell(
-        paintInfoForCells, cellPoint, *column,
-        DisplayItem::kTableCellBackgroundFromColumn);
+        paintInfoForCells, cellPoint, *columnGroup);
+  }
+  if (column && column->styleRef().hasBackground()) {
+    tableCellPainter.paintContainerBackgroundBehindCell(paintInfoForCells,
+                                                        cellPoint, *column);
+  }
 
   // Paint the row group next.
-  if (m_layoutTableSection.styleRef().hasBackground())
+  if (m_layoutTableSection.styleRef().hasBackground()) {
     tableCellPainter.paintContainerBackgroundBehindCell(
-        paintInfoForCells, cellPoint, m_layoutTableSection,
-        DisplayItem::kTableCellBackgroundFromSection);
+        paintInfoForCells, cellPoint, m_layoutTableSection);
+  }
 }
 
 void TableSectionPainter::paintCell(const LayoutTableCell& cell,
@@ -356,36 +396,6 @@ void TableSectionPainter::paintCell(const LayoutTableCell& cell,
     LayoutPoint cellPoint =
         m_layoutTableSection.flipForWritingModeForChild(&cell, paintOffset);
     cell.paint(paintInfoForCells, cellPoint);
-  }
-}
-
-void TableSectionPainter::paintBoxShadow(const PaintInfo& paintInfo,
-                                         const LayoutPoint& paintOffset,
-                                         ShadowStyle shadowStyle) {
-  DCHECK(shouldPaintSelfBlockBackground(paintInfo.phase));
-  if (!m_layoutTableSection.styleRef().boxShadow())
-    return;
-
-  DisplayItem::Type type = shadowStyle == Normal
-                               ? DisplayItem::kTableSectionBoxShadowNormal
-                               : DisplayItem::kTableSectionBoxShadowInset;
-  if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
-          paintInfo.context, m_layoutTableSection, type))
-    return;
-
-  LayoutRect bounds = BoxPainter(m_layoutTableSection)
-                          .boundsForDrawingRecorder(paintInfo, paintOffset);
-  LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableSection,
-                                       type, bounds);
-  LayoutRect paintRect(paintOffset, m_layoutTableSection.size());
-  if (shadowStyle == Normal) {
-    BoxPainter::paintNormalBoxShadow(paintInfo, paintRect,
-                                     m_layoutTableSection.styleRef());
-  } else {
-    // TODO(wangxianzhu): Calculate the inset shadow bounds by insetting
-    // paintRect by half widths of collapsed borders.
-    BoxPainter::paintInsetBoxShadow(paintInfo, paintRect,
-                                    m_layoutTableSection.styleRef());
   }
 }
 

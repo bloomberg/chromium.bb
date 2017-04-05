@@ -526,7 +526,7 @@ void LayoutBlock::addOverflowFromBlockChildren() {
         toLayoutBlockFlow(child)->containsInlineWithOutlineAndContinuation())
       toLayoutBlockFlow(child)->addOverflowFromInlineChildren();
 
-    addOverflowFromChild(child);
+    addOverflowFromChild(*child);
   }
 }
 
@@ -539,7 +539,7 @@ void LayoutBlock::addOverflowFromPositionedObjects() {
     // Fixed positioned elements don't contribute to layout overflow, since they
     // don't scroll with the content.
     if (positionedObject->style()->position() != EPosition::kFixed)
-      addOverflowFromChild(positionedObject,
+      addOverflowFromChild(*positionedObject,
                            toLayoutSize(positionedObject->location()));
   }
 }

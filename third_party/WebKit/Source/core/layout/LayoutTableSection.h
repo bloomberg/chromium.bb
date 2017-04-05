@@ -57,6 +57,13 @@ class CellSpan {
   unsigned m_end;
 };
 
+inline bool operator==(const CellSpan& s1, const CellSpan& s2) {
+  return s1.start() == s2.start() && s1.end() == s2.end();
+}
+inline bool operator!=(const CellSpan& s1, const CellSpan& s2) {
+  return !(s1 == s2);
+}
+
 class LayoutTableCell;
 class LayoutTableRow;
 
@@ -316,7 +323,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   CellSpan dirtiedRows(const LayoutRect& visualRect) const;
   CellSpan dirtiedEffectiveColumns(const LayoutRect& visualRect) const;
 
-  const HashSet<LayoutTableCell*>& overflowingCells() const {
+  const HashSet<const LayoutTableCell*>& overflowingCells() const {
     return m_overflowingCells;
   }
   bool hasMultipleCellLevels() const { return m_hasMultipleCellLevels; }
@@ -344,6 +351,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   bool isRepeatingHeaderGroup() const;
 
   void layout() override;
+
+  CellSpan fullSectionRowSpan() const { return CellSpan(0, m_grid.size()); }
+  CellSpan fullTableEffectiveColumnSpan() const {
+    return CellSpan(0, table()->numEffectiveColumns());
+  }
 
  protected:
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
@@ -420,11 +432,6 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 
   void computeOverflowFromCells(unsigned totalRows, unsigned nEffCols);
 
-  CellSpan fullTableRowSpan() const { return CellSpan(0, m_grid.size()); }
-  CellSpan fullTableEffectiveColumnSpan() const {
-    return CellSpan(0, table()->numEffectiveColumns());
-  }
-
   // These two functions take a rectangle as input that has been flipped by
   // logicalRectForWritingModeAndDirection.
   // The returned span of rows or columns is end-exclusive, and empty if
@@ -442,6 +449,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // Honor breaking restrictions inside the table row, and adjust position and
   // size accordingly.
   void adjustRowForPagination(LayoutTableRow&, SubtreeLayoutScope&);
+
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
 
   // The representation of the rows and their cells (CellStruct).
   Vector<RowStruct> m_grid;
@@ -480,7 +489,7 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   // If we have more than gMaxAllowedOverflowingCellRatio * total cells, it will
   // be empty and m_forceSlowPaintPathWithOverflowingCell will be set to save
   // memory.
-  HashSet<LayoutTableCell*> m_overflowingCells;
+  HashSet<const LayoutTableCell*> m_overflowingCells;
   bool m_forceSlowPaintPathWithOverflowingCell;
 
   // This boolean tracks if we have cells overlapping due to rowspan / colspan

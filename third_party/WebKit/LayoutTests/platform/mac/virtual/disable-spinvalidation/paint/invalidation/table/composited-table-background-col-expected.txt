@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutTableCol COLGROUP id='target'",
+          "object": "LayoutTableCol COL id='target'",
           "rect": [8, 26, 186, 134],
           "reason": "style change"
         }
       ]
     },
     {
-      "name": "LayoutTableCell TD id='target'",
+      "name": "LayoutTableCell TD",
       "position": [72, 94],
       "bounds": [59, 64],
       "drawsContent": true
@@ -22,15 +22,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
+      "object": "LayoutTableSection TBODY",
       "reason": "style change"
     },
     {
-      "object": "RowBackground",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCol COLGROUP id='target'",
+      "object": "LayoutTableCol COL id='target'",
       "reason": "style change"
     }
   ]

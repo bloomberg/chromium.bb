@@ -5,11 +5,15 @@
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayerPainter.h"
 
+// This file contains tests testing TablePainter, TableSectionPainter,
+// TableRowPainter and TableCellPainter. It's difficult to separate the tests
+// into individual files because of dependencies among the painter classes.
+
 namespace blink {
 
-using TableCellPainterTest = PaintControllerPaintTest;
+using TablePainterTest = PaintControllerPaintTest;
 
-TEST_F(TableCellPainterTest, Background) {
+TEST_F(TablePainterTest, Background) {
   setBodyInnerHTML(
       "<style>"
       "  td { width: 200px; height: 200px; border: none; }"
@@ -17,13 +21,13 @@ TEST_F(TableCellPainterTest, Background) {
       "  table { border: none; border-spacing: 0; border-collapse: collapse; }"
       "</style>"
       "<table>"
-      "  <tr><td id='cell1'></td></tr>"
-      "  <tr><td id='cell2'></td></tr>"
+      "  <tr id='row1'><td></td></tr>"
+      "  <tr id='row2'><td></td></tr>"
       "</table>");
 
   LayoutView& layoutView = *document().layoutView();
-  LayoutObject& cell1 = *getLayoutObjectByElementId("cell1");
-  LayoutObject& cell2 = *getLayoutObjectByElementId("cell2");
+  LayoutObject& row1 = *getLayoutObjectByElementId("row1");
+  LayoutObject& row2 = *getLayoutObjectByElementId("row2");
 
   rootPaintController().invalidateAll();
   document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -33,7 +37,7 @@ TEST_F(TableCellPainterTest, Background) {
   EXPECT_DISPLAY_LIST(
       rootPaintController().getDisplayItemList(), 2,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(cell1, DisplayItem::kTableCellBackgroundFromRow));
+      TestDisplayItem(row1, DisplayItem::kBoxDecorationBackground));
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   interestRect = IntRect(0, 300, 200, 1000);
@@ -42,25 +46,27 @@ TEST_F(TableCellPainterTest, Background) {
   EXPECT_DISPLAY_LIST(
       rootPaintController().getDisplayItemList(), 2,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(cell2, DisplayItem::kTableCellBackgroundFromRow));
+      TestDisplayItem(row2, DisplayItem::kBoxDecorationBackground));
 }
 
-TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
+TEST_F(TablePainterTest, BackgroundWithCellSpacing) {
   setBodyInnerHTML(
       "<style>"
       "  body { margin: 0; }"
       "  td { width: 200px; height: 150px; border: 0; background-color: green; "
-      "}"
+      "  }"
       "  tr { background-color: blue; }"
       "  table { border: none; border-spacing: 100px; border-collapse: "
       "separate; }"
       "</style>"
       "<table>"
-      "  <tr><td id='cell1'></td></tr>"
-      "  <tr><td id='cell2'></td></tr>"
+      "  <tr id='row1'><td id='cell1'></td></tr>"
+      "  <tr id='row2'><td id='cell2'></td></tr>"
       "</table>");
 
   LayoutView& layoutView = *document().layoutView();
+  LayoutObject& row1 = *getLayoutObjectByElementId("row1");
+  LayoutObject& row2 = *getLayoutObjectByElementId("row2");
   LayoutObject& cell1 = *getLayoutObjectByElementId("cell1");
   LayoutObject& cell2 = *getLayoutObjectByElementId("cell2");
 
@@ -73,7 +79,7 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
   EXPECT_DISPLAY_LIST(
       rootPaintController().getDisplayItemList(), 3,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(cell1, DisplayItem::kTableCellBackgroundFromRow),
+      TestDisplayItem(row1, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground));
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -82,8 +88,9 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 1,
-      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground));
+      rootPaintController().getDisplayItemList(), 2,
+      TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
+      TestDisplayItem(row1, DisplayItem::kBoxDecorationBackground));
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
@@ -93,11 +100,11 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
   EXPECT_DISPLAY_LIST(
       rootPaintController().getDisplayItemList(), 3,
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
-      TestDisplayItem(cell2, DisplayItem::kTableCellBackgroundFromRow),
+      TestDisplayItem(row2, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground));
 }
 
-TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow) {
+TEST_F(TablePainterTest, BackgroundInSelfPaintingRow) {
   setBodyInnerHTML(
       "<style>"
       "  body { margin: 0 }"
@@ -130,7 +137,7 @@ TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow) {
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
       TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
       TestDisplayItem(row, DisplayItem::kBeginCompositing),
-      TestDisplayItem(cell1, DisplayItem::kTableCellBackgroundFromRow),
+      TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(row, DisplayItem::kEndCompositing),
       TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
@@ -156,13 +163,13 @@ TEST_F(TableCellPainterTest, BackgroundInSelfPaintingRow) {
       TestDisplayItem(layoutView, DisplayItem::kDocumentBackground),
       TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
       TestDisplayItem(row, DisplayItem::kBeginCompositing),
-      TestDisplayItem(cell2, DisplayItem::kTableCellBackgroundFromRow),
+      TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(row, DisplayItem::kEndCompositing),
       TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence));
 }
 
-TEST_F(TableCellPainterTest, CollapsedBorderAndOverflow) {
+TEST_F(TablePainterTest, CollapsedBorderAndOverflow) {
   setBodyInnerHTML(
       "<style>"
       "  body { margin: 0 }"

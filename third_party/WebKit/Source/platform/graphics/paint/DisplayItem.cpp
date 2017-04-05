@@ -120,14 +120,6 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ScrollbarTrackBackground);
     DEBUG_STRING_CASE(ScrollbarCompositedScrollbar);
     DEBUG_STRING_CASE(SelectionTint);
-    DEBUG_STRING_CASE(TableCellBackgroundFromColumnGroup);
-    DEBUG_STRING_CASE(TableCellBackgroundFromColumn);
-    DEBUG_STRING_CASE(TableCellBackgroundFromSection);
-    DEBUG_STRING_CASE(TableCellBackgroundFromRow);
-    DEBUG_STRING_CASE(TableSectionBoxShadowInset);
-    DEBUG_STRING_CASE(TableSectionBoxShadowNormal);
-    DEBUG_STRING_CASE(TableRowBoxShadowInset);
-    DEBUG_STRING_CASE(TableRowBoxShadowNormal);
     DEBUG_STRING_CASE(VideoBitmap);
     DEBUG_STRING_CASE(WebPlugin);
     DEBUG_STRING_CASE(WebFont);

@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
+#include "core/paint/PaintResult.h"
+#include "platform/graphics/paint/CullRect.h"
 
 namespace blink {
 
@@ -20,8 +22,22 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
                                     const StyleDifference&,
                                     const ComputedStyle& oldStyle);
 
+  class MutableForPainting : public LayoutObject::MutableForPainting {
+   public:
+    void updatePaintResult(PaintResult, const CullRect& paintRect);
+
+   private:
+    friend class LayoutTableBoxComponent;
+    MutableForPainting(const LayoutTableBoxComponent& box)
+        : LayoutObject::MutableForPainting(box) {}
+  };
+  MutableForPainting getMutableForPainting() const {
+    return MutableForPainting(*this);
+  }
+
  protected:
-  explicit LayoutTableBoxComponent(Element* element) : LayoutBox(element) {}
+  explicit LayoutTableBoxComponent(Element* element)
+      : LayoutBox(element), m_lastPaintResult(FullyPainted) {}
 
   const LayoutObjectChildList* children() const { return &m_children; }
   LayoutObjectChildList* children() { return &m_children; }
@@ -46,6 +62,10 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
   }
 
   LayoutObjectChildList m_children;
+
+  friend class MutableForPainting;
+  PaintResult m_lastPaintResult;
+  CullRect m_lastPaintRect;
 };
 
 }  // namespace blink

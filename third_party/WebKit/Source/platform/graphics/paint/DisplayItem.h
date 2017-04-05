@@ -104,10 +104,6 @@ class PLATFORM_EXPORT DisplayItem {
     kScrollbarTrackBackground,
     kScrollbarCompositedScrollbar,
     kSelectionTint,
-    kTableCellBackgroundFromColumnGroup,
-    kTableCellBackgroundFromColumn,
-    kTableCellBackgroundFromSection,
-    kTableCellBackgroundFromRow,
     // Table collapsed borders can be painted together (e.g., left & top) but
     // there are at most 4 phases of collapsed border painting for a single
     // cell. To disambiguate these phases of collapsed border painting, a mask
@@ -117,10 +113,6 @@ class PLATFORM_EXPORT DisplayItem {
     kTableCollapsedBorderBase =
         (((kTableCollapsedBorderUnalignedBase - 1) >> 4) + 1) << 4,
     kTableCollapsedBorderLast = kTableCollapsedBorderBase + 0x0f,
-    kTableSectionBoxShadowInset,
-    kTableSectionBoxShadowNormal,
-    kTableRowBoxShadowInset,
-    kTableRowBoxShadowNormal,
     kVideoBitmap,
     kWebPlugin,
     kWebFont,

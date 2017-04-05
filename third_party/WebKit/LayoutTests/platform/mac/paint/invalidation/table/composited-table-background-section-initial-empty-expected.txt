@@ -21,43 +21,13 @@
       ]
     },
     {
-      "name": "LayoutTableRow TR",
-      "position": [0, 68],
-      "bounds": [186, 64],
-      "drawsContent": true
-    },
-    {
       "name": "LayoutTableCell TD",
-      "position": [64, 0],
+      "position": [64, 68],
       "bounds": [59, 64],
       "drawsContent": true
     }
   ],
   "objectPaintInvalidations": [
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "RowBackground",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
     {
       "object": "LayoutTableSection TBODY id='target'",
       "reason": "style change"

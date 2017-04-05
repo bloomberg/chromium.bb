@@ -21,14 +21,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD id='cell1'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD id='cell2'",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutTableRow TR id='row'",
       "reason": "full"
     },

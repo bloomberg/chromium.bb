@@ -22,11 +22,7 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
-      "object": "RowBackground",
+      "object": "LayoutTableSection TBODY",
       "reason": "style change"
     },
     {

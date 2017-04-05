@@ -10,6 +10,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableSection.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
@@ -232,6 +233,12 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object,
   // The following flags are for descendants of the layer object only.
   if (object == context.paintingLayer->layoutObject())
     return;
+
+  if (object.isTableSection()) {
+    const auto& section = toLayoutTableSection(object);
+    if (section.table()->hasColElements())
+      context.paintingLayer->setNeedsPaintPhaseDescendantBlockBackgrounds();
+  }
 
   if (object.styleRef().hasOutline())
     context.paintingLayer->setNeedsPaintPhaseDescendantOutlines();
