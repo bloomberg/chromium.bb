@@ -27,10 +27,15 @@ class PaymentRequestPaymentMethodSelectionViewControllerTest
     : public CollectionViewControllerTest {
  protected:
   PaymentRequestPaymentMethodSelectionViewControllerTest()
-      : credit_card1_(autofill::test::GetCreditCard()),
+      : autofill_profile_(autofill::test::GetFullProfile()),
+        credit_card1_(autofill::test::GetCreditCard()),
         credit_card2_(autofill::test::GetCreditCard2()) {
-    // Add testing credit cards to autofill::TestPersonalDataManager.
+    // Add testing profile and credit cards to
+    // autofill::TestPersonalDataManager.
+    personal_data_manager_.AddTestingProfile(&autofill_profile_);
+    credit_card1_.set_billing_address_id(autofill_profile_.guid());
     personal_data_manager_.AddTestingCreditCard(&credit_card1_);
+    credit_card2_.set_billing_address_id(autofill_profile_.guid());
     personal_data_manager_.AddTestingCreditCard(&credit_card2_);
   }
 
@@ -49,6 +54,7 @@ class PaymentRequestPaymentMethodSelectionViewControllerTest
         controller());
   }
 
+  autofill::AutofillProfile autofill_profile_;
   autofill::CreditCard credit_card1_;
   autofill::CreditCard credit_card2_;
   autofill::TestPersonalDataManager personal_data_manager_;

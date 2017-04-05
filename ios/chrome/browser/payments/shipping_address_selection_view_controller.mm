@@ -33,7 +33,7 @@
 
 namespace {
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
-using ::payment_request_util::GetAddressLabelFromAutofillProfile;
+using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 using ::payment_request_util::GetShippingAddressSelectorTitle;
 using ::payment_request_util::GetShippingAddressSelectorInfoMessage;
@@ -131,7 +131,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[AutofillProfileItem alloc] initWithType:ItemTypeShippingAddress];
     item.accessibilityTraits |= UIAccessibilityTraitButton;
     item.name = GetNameLabelFromAutofillProfile(*shippingAddress);
-    item.address = GetAddressLabelFromAutofillProfile(*shippingAddress);
+    item.address = GetShippingAddressLabelFromAutofillProfile(*shippingAddress);
     item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*shippingAddress);
     if (_paymentRequest->selected_shipping_profile() == shippingAddress) {
       item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;

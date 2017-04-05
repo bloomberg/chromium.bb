@@ -26,7 +26,7 @@
 
 namespace {
 using ::AutofillUITypeFromAutofillType;
-using ::payment_request_util::GetAddressLabelFromAutofillProfile;
+using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
 const CGFloat kCardTypeIconDimension = 25.0;
 }  // namespace
@@ -71,7 +71,7 @@ const CGFloat kCardTypeIconDimension = 25.0;
           base::SysNSStringToUTF8(profileGUID),
           _paymentRequest->billing_profiles());
   DCHECK(profile);
-  return GetAddressLabelFromAutofillProfile(*profile);
+  return GetBillingAddressLabelFromAutofillProfile(*profile);
 }
 
 - (UIImage*)cardTypeIconFromCardNumber:(NSString*)cardNumber {

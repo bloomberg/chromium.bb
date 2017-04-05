@@ -21,12 +21,16 @@ TEST(PaymentRequestPaymentMethodItemTest, TextLabels) {
 
   NSString* methodID = @"BobPay - ****-6789";
   NSString* methodDetail = @"Bobs Your Uncle III, esq.";
+  NSString* methodAddress = @"123 Bob St, Halifax, NS";
+  NSString* notification = @"More information is required.";
   UIImage* methodTypeIcon = ios_internal::CollectionViewTestImage();
   MDCCollectionViewCellAccessoryType accessoryType =
       MDCCollectionViewCellAccessoryDisclosureIndicator;
 
   item.methodID = methodID;
   item.methodDetail = methodDetail;
+  item.methodAddress = methodAddress;
+  item.notification = notification;
   item.methodTypeIcon = methodTypeIcon;
   item.accessoryType = accessoryType;
 
@@ -36,13 +40,17 @@ TEST(PaymentRequestPaymentMethodItemTest, TextLabels) {
   PaymentMethodCell* paymentMethodCell = cell;
   EXPECT_FALSE(paymentMethodCell.methodIDLabel.text);
   EXPECT_FALSE(paymentMethodCell.methodDetailLabel.text);
-  EXPECT_FALSE(paymentMethodCell.methodTypeIconView.image);
+  EXPECT_FALSE(paymentMethodCell.methodAddressLabel.text);
+  EXPECT_FALSE(paymentMethodCell.notificationLabel.text);
+  EXPECT_EQ(nil, paymentMethodCell.methodTypeIconView.image);
   EXPECT_EQ(paymentMethodCell.accessoryType,
             MDCCollectionViewCellAccessoryNone);
 
   [item configureCell:paymentMethodCell];
   EXPECT_NSEQ(methodID, paymentMethodCell.methodIDLabel.text);
   EXPECT_NSEQ(methodDetail, paymentMethodCell.methodDetailLabel.text);
+  EXPECT_NSEQ(methodAddress, paymentMethodCell.methodAddressLabel.text);
+  EXPECT_NSEQ(notification, paymentMethodCell.notificationLabel.text);
   EXPECT_NSEQ(methodTypeIcon, paymentMethodCell.methodTypeIconView.image);
   EXPECT_EQ(paymentMethodCell.accessoryType,
             MDCCollectionViewCellAccessoryDisclosureIndicator);

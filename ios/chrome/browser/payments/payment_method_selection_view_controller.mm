@@ -8,11 +8,13 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/payments/cells/payments_text_item.h"
 #import "ios/chrome/browser/payments/payment_method_selection_view_controller_actions.h"
 #include "ios/chrome/browser/payments/payment_request.h"
+#include "ios/chrome/browser/payments/payment_request_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -35,6 +37,7 @@ NSString* const kPaymentMethodSelectionCollectionViewID =
     @"kPaymentMethodSelectionCollectionViewID";
 
 namespace {
+using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 
 const CGFloat kSeparatorEdgeInset = 14;
 
@@ -100,15 +103,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (const auto* paymentMethod : _paymentRequest->credit_cards()) {
     PaymentMethodItem* paymentMethodItem =
         [[PaymentMethodItem alloc] initWithType:ItemTypePaymentMethod];
+
     paymentMethodItem.accessibilityTraits |= UIAccessibilityTraitButton;
     paymentMethodItem.methodID =
         base::SysUTF16ToNSString(paymentMethod->TypeAndLastFourDigits());
     paymentMethodItem.methodDetail = base::SysUTF16ToNSString(
         paymentMethod->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
+
+    autofill::AutofillProfile* billingAddress =
+        autofill::PersonalDataManager::GetProfileFromProfilesByGUID(
+            paymentMethod->billing_address_id(),
+            _paymentRequest->billing_profiles());
+    if (billingAddress) {
+      paymentMethodItem.methodAddress =
+          GetBillingAddressLabelFromAutofillProfile(*billingAddress);
+    }
+
     int methodTypeIconID =
         autofill::data_util::GetPaymentRequestData(paymentMethod->type())
             .icon_resource_id;
     paymentMethodItem.methodTypeIcon = NativeImage(methodTypeIconID);
+
+    paymentMethodItem.reserveRoomForAccessoryType = YES;
 
     if (_paymentRequest->selected_credit_card() == paymentMethod) {
       paymentMethodItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -185,7 +201,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemAtIndexPath:indexPath];
   switch (item.type) {
     case ItemTypePaymentMethod:
-      return MDCCellDefaultTwoLineHeight;
     case ItemTypeAddMethod:
       return [MDCCollectionViewCell
           cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)

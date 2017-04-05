@@ -46,7 +46,7 @@
 
 namespace {
 using ::payment_request_util::GetNameLabelFromAutofillProfile;
-using ::payment_request_util::GetAddressLabelFromAutofillProfile;
+using ::payment_request_util::GetShippingAddressLabelFromAutofillProfile;
 using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 using ::payment_request_util::GetEmailLabelFromAutofillProfile;
 using ::payment_request_util::GetShippingSectionTitle;
@@ -428,7 +428,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
             withAutofillProfile:(autofill::AutofillProfile*)profile {
   DCHECK(profile);
   item.name = GetNameLabelFromAutofillProfile(*profile);
-  item.address = GetAddressLabelFromAutofillProfile(*profile);
+  item.address = GetShippingAddressLabelFromAutofillProfile(*profile);
   item.phoneNumber = GetPhoneNumberLabelFromAutofillProfile(*profile);
 }
 
@@ -446,10 +446,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.methodID = base::SysUTF16ToNSString(creditCard->TypeAndLastFourDigits());
   item.methodDetail = base::SysUTF16ToNSString(
       creditCard->GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
-  int selectedMethodCardTypeIconID =
+  int cardTypeIconID =
       autofill::data_util::GetPaymentRequestData(creditCard->type())
           .icon_resource_id;
-  item.methodTypeIcon = NativeImage(selectedMethodCardTypeIconID);
+  item.methodTypeIcon = NativeImage(cardTypeIconID);
 }
 
 - (void)fillContactInfoItem:(AutofillProfileItem*)item

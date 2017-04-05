@@ -21,28 +21,44 @@
 // credit card holder).
 @property(nonatomic, copy) NSString* methodDetail;
 
+// The address associated with the the payment method (for example, credit
+// card's billing address).
+@property(nonatomic, copy) NSString* methodAddress;
+
+// The notification message.
+@property(nonatomic, copy) NSString* notification;
+
 // An image corresponding to the type of the payment method.
 @property(nonatomic, strong) UIImage* methodTypeIcon;
+
+// If YES, reserves room for the accessory type view regardless of whether the
+// item has an accessory type. This is used to ensure the content area always
+// has the same size regardless of whether the accessory type is set.
+@property(nonatomic, assign) BOOL reserveRoomForAccessoryType;
 
 // The accessory type to be shown in the cell.
 @property(nonatomic) MDCCollectionViewCellAccessoryType accessoryType;
 
 @end
 
-// PaymentMethodCell implements an MDCCollectionViewCell subclass containing two
-// text labels providing details about a payment method and an image view
-// displaying an icon representing the payment method's type. The image is laid
-// out on the trailing edge of the cell while the two labels are laid out on the
-// leading edge of the cell up to the leading edge of the image view. The labels
-// are allowed to break to multiple lines.
+// PaymentMethodCell implements an MDCCollectionViewCell subclass containing
+// four optional text labels identifying and providing details about a payment
+// method and an image view displaying an icon representing the payment method's
+// type. The image is laid out on the trailing edge of the cell while the labels
+// are laid out on the leading edge of the cell up to the leading edge of the
+// image view. The labels are truncated if necessary.
 @interface PaymentMethodCell : MDCCollectionViewCell
 
-// UILabels containing an identifier and additional details about the payment
-// method.
+// UILabels corresponding to |methodID|, |methodDetail|, |methodAddress|, and
+// |notification|.
 @property(nonatomic, readonly, strong) UILabel* methodIDLabel;
 @property(nonatomic, readonly, strong) UILabel* methodDetailLabel;
+@property(nonatomic, readonly, strong) UILabel* methodAddressLabel;
+@property(nonatomic, readonly, strong) UILabel* notificationLabel;
 
-// UIImageView containing the paymen method type icon.
+@property(nonatomic, assign) BOOL reserveRoomForAccessoryType;
+
+// UIImageView containing the payment method type icon.
 @property(nonatomic, readonly, strong) UIImageView* methodTypeIconView;
 
 @end

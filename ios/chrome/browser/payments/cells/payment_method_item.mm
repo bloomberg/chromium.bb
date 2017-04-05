@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/payments/cells/payment_method_item.h"
 
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,7 +27,10 @@ const CGFloat kHorizontalPadding = 16;
 
 @synthesize methodID = _methodID;
 @synthesize methodDetail = _methodDetail;
+@synthesize methodAddress = _methodAddress;
+@synthesize notification = _notification;
 @synthesize methodTypeIcon = _methodTypeIcon;
+@synthesize reserveRoomForAccessoryType = _reserveRoomForAccessoryType;
 @synthesize accessoryType = _accessoryType;
 
 #pragma mark CollectionViewItem
@@ -44,43 +47,67 @@ const CGFloat kHorizontalPadding = 16;
   [super configureCell:cell];
   cell.methodIDLabel.text = self.methodID;
   cell.methodDetailLabel.text = self.methodDetail;
+  cell.methodAddressLabel.text = self.methodAddress;
+  cell.notificationLabel.text = self.notification;
   cell.methodTypeIconView.image = self.methodTypeIcon;
+  cell.reserveRoomForAccessoryType = self.reserveRoomForAccessoryType;
   cell.accessoryType = self.accessoryType;
 }
 
 @end
 
 @implementation PaymentMethodCell {
+  UIStackView* _stackView;
   NSLayoutConstraint* _iconHeightConstraint;
   NSLayoutConstraint* _iconWidthConstraint;
 }
 
 @synthesize methodIDLabel = _methodIDLabel;
 @synthesize methodDetailLabel = _methodDetailLabel;
+@synthesize methodAddressLabel = _methodAddressLabel;
+@synthesize notificationLabel = _notificationLabel;
 @synthesize methodTypeIconView = _methodTypeIconView;
+@synthesize reserveRoomForAccessoryType = _reserveRoomForAccessoryType;
 
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
     self.isAccessibilityElement = YES;
 
+    _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+    _stackView.axis = UILayoutConstraintAxisVertical;
+    _stackView.layoutMarginsRelativeArrangement = YES;
+    _stackView.layoutMargins =
+        UIEdgeInsetsMake(kVerticalPadding, kHorizontalPadding, kVerticalPadding,
+                         kHorizontalPadding);
+    _stackView.alignment = UIStackViewAlignmentLeading;
+    _stackView.spacing = kVerticalSpacingBetweenLabels;
+    _stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:_stackView];
+
     // Method ID.
     _methodIDLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _methodIDLabel.font = [MDCTypography body2Font];
     _methodIDLabel.textColor = [[MDCPalette greyPalette] tint900];
-    _methodIDLabel.numberOfLines = 0;
-    _methodIDLabel.backgroundColor = [UIColor clearColor];
-    _methodIDLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:_methodIDLabel];
+    [_stackView addArrangedSubview:_methodIDLabel];
 
     // Method detail.
     _methodDetailLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _methodDetailLabel.font = [MDCTypography body1Font];
     _methodDetailLabel.textColor = [[MDCPalette greyPalette] tint900];
-    _methodDetailLabel.numberOfLines = 0;
-    _methodDetailLabel.backgroundColor = [UIColor clearColor];
-    _methodDetailLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:_methodDetailLabel];
+    [_stackView addArrangedSubview:_methodDetailLabel];
+
+    // Method address.
+    _methodAddressLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _methodAddressLabel.font = [MDCTypography body1Font];
+    _methodAddressLabel.textColor = [[MDCPalette greyPalette] tint900];
+    [_stackView addArrangedSubview:_methodAddressLabel];
+
+    // Notification label.
+    _notificationLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    _notificationLabel.font = [MDCTypography body1Font];
+    _notificationLabel.textColor = [[MDCPalette cr_bluePalette] tint500];
+    [_stackView addArrangedSubview:_notificationLabel];
 
     // Method type icon.
     _methodTypeIconView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -102,28 +129,13 @@ const CGFloat kHorizontalPadding = 16;
       _iconHeightConstraint,
       _iconWidthConstraint,
 
-      [_methodIDLabel.leadingAnchor
-          constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kHorizontalPadding],
-      [_methodDetailLabel.leadingAnchor
-          constraintEqualToAnchor:_methodIDLabel.leadingAnchor],
-
-      [_methodIDLabel.trailingAnchor
-          constraintLessThanOrEqualToAnchor:_methodTypeIconView.leadingAnchor
-                                   constant:-kHorizontalPadding],
-      [_methodDetailLabel.trailingAnchor
-          constraintEqualToAnchor:_methodIDLabel.trailingAnchor],
-
-      [_methodIDLabel.topAnchor
-          constraintEqualToAnchor:self.contentView.topAnchor
-                         constant:kVerticalPadding],
-      [_methodIDLabel.bottomAnchor
-          constraintEqualToAnchor:_methodDetailLabel.topAnchor
-                         constant:-kVerticalSpacingBetweenLabels],
-      [_methodDetailLabel.bottomAnchor
-          constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kVerticalPadding],
-
+      [_stackView.leadingAnchor
+          constraintEqualToAnchor:self.contentView.leadingAnchor],
+      [_stackView.trailingAnchor
+          constraintLessThanOrEqualToAnchor:_methodTypeIconView.leadingAnchor],
+      [_stackView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
+      [_stackView.bottomAnchor
+          constraintEqualToAnchor:self.contentView.bottomAnchor],
       [_methodTypeIconView.trailingAnchor
           constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kHorizontalPadding],
@@ -137,11 +149,17 @@ const CGFloat kHorizontalPadding = 16;
 #pragma mark - UIView
 
 - (void)layoutSubviews {
-  // Force the accessory type to Checkmark for the duration of layout in order
-  // to make the content area the same size for all items, regardless of whether
-  // they're checked or not.
+  _methodIDLabel.hidden = !_methodIDLabel.text;
+  _methodDetailLabel.hidden = !_methodDetailLabel.text;
+  _methodAddressLabel.hidden = !_methodAddressLabel.text;
+  _notificationLabel.hidden = !_notificationLabel.text;
+
+  // If reserving room for the accessory type, force the accessory type to
+  // Checkmark for the duration of layout and later restore the real value.
   MDCCollectionViewCellAccessoryType realAccessoryType = self.accessoryType;
-  self.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+  if (_reserveRoomForAccessoryType) {
+    self.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+  }
 
   // Set the size constraints of the icon view to the dimensions of the image.
   _iconHeightConstraint.constant = self.methodTypeIconView.image.size.height;
@@ -171,6 +189,8 @@ const CGFloat kHorizontalPadding = 16;
   [super prepareForReuse];
   self.methodIDLabel.text = nil;
   self.methodDetailLabel.text = nil;
+  self.methodAddressLabel.text = nil;
+  self.notificationLabel.text = nil;
   self.methodTypeIconView.image = nil;
   self.accessoryType = MDCCollectionViewCellAccessoryNone;
 }
@@ -178,8 +198,10 @@ const CGFloat kHorizontalPadding = 16;
 #pragma mark - Accessibility
 
 - (NSString*)accessibilityLabel {
-  return [NSString stringWithFormat:@"%@, %@", self.methodIDLabel.text,
-                                    self.methodDetailLabel.text];
+  return [NSString stringWithFormat:@"%@, %@, %@, %@", self.methodIDLabel.text,
+                                    self.methodDetailLabel.text,
+                                    self.methodAddressLabel.text,
+                                    self.notificationLabel.text];
 }
 
 @end

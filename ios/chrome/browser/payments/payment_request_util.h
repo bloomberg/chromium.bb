@@ -17,23 +17,28 @@ class PaymentRequest;
 
 namespace payment_request_util {
 
-// Helper function to get the name label from an autofill profile. Returns nil
-// if the name field is empty.
+// Helper function to create a name label from an autofill profile. Returns nil
+// if the resulting label is empty.
 NSString* GetNameLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile);
 
-// Helper function to get the address label from an autofill profile. Returns
-// nil if the address field is empty.
-NSString* GetAddressLabelFromAutofillProfile(
+// Helper function to create a shipping address label from an autofill profile.
+// Returns nil if the resulting label is empty.
+NSString* GetShippingAddressLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile);
 
-// Helper function to get the phone number label from an autofill profile.
-// Returns nil if the phone number field is empty.
+// Helper function to create a billing address label from an autofill profile.
+// Returns nil if the resulting label is empty.
+NSString* GetBillingAddressLabelFromAutofillProfile(
+    const autofill::AutofillProfile& profile);
+
+// Helper function to create a phone number label from an autofill profile.
+// Returns nil if the resulting label is empty.
 NSString* GetPhoneNumberLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile);
 
-// Helper function to get the email label from an autofill profile. Returns nil
-// if the email field is empty.
+// Helper function to create an email label from an autofill profile. Returns
+// nil if the resulting label is empty.
 NSString* GetEmailLabelFromAutofillProfile(
     const autofill::AutofillProfile& profile);
 
