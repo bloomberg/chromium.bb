@@ -47,12 +47,6 @@ CONTENT_EXPORT bool AddAudioTrackToMediaStream(
     bool is_remote,
     blink::WebMediaStream* web_media_stream);
 
-// On success returns pointer to the current format of the given video track;
-// returns nullptr on failure (if the argument is invalid or if the format
-// cannot be retrieved at the moment).
-CONTENT_EXPORT const media::VideoCaptureFormat* GetCurrentVideoTrackFormat(
-    const blink::WebMediaStreamTrack& video_track);
-
 // Requests that a refresh frame be sent "soon" (e.g., to resolve picture loss
 // or quality issues).
 CONTENT_EXPORT void RequestRefreshFrameFromVideoTrack(

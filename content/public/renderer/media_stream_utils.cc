@@ -93,19 +93,6 @@ bool AddAudioTrackToMediaStream(
   return true;
 }
 
-const media::VideoCaptureFormat* GetCurrentVideoTrackFormat(
-    const blink::WebMediaStreamTrack& video_track) {
-  if (video_track.isNull())
-    return nullptr;
-
-  MediaStreamVideoSource* const source =
-      MediaStreamVideoSource::GetVideoSource(video_track.source());
-  if (!source)
-    return nullptr;
-
-  return source->GetCurrentFormat();
-}
-
 void RequestRefreshFrameFromVideoTrack(
     const blink::WebMediaStreamTrack& video_track) {
   if (video_track.isNull())
