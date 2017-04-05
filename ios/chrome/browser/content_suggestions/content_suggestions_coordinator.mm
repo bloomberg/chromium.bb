@@ -16,6 +16,9 @@
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
@@ -76,6 +79,7 @@
       initWithContentService:contentSuggestionsService
             largeIconService:IOSChromeLargeIconServiceFactory::
                                  GetForBrowserState(self.browserState)];
+  self.contentSuggestionsMediator.commandHandler = self;
 
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault
@@ -110,6 +114,9 @@
 #pragma mark - ContentSuggestionsCommands
 
 - (void)openReadingList {
+  [self.baseViewController
+      chromeExecuteCommand:[GenericChromeCommand
+                               commandWithTag:IDC_SHOW_READING_LIST]];
 }
 
 - (void)openURL:(const GURL&)URL {

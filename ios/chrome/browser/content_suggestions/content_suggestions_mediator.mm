@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
 #import "ios/chrome/browser/content_suggestions/mediator_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_image_fetcher.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
@@ -72,6 +73,7 @@ const CGFloat kDefaultFaviconSize = 16;
 @synthesize dataSink = _dataSink;
 @synthesize sectionInformationByCategory = _sectionInformationByCategory;
 @synthesize attributesProvider = _attributesProvider;
+@synthesize commandHandler = _commandHandler;
 
 #pragma mark - Public
 
@@ -149,19 +151,41 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   ContentSuggestionsCategoryWrapper* wrapper =
       [self categoryWrapperForSectionInfo:sectionInfo];
 
-  __weak ContentSuggestionsMediator* weakSelf = self;
-  ntp_snippets::FetchDoneCallback serviceCallback = base::Bind(
-      &BindWrapper,
-      base::BindBlockArc(^void(
-          ntp_snippets::Status status,
-          const std::vector<ntp_snippets::ContentSuggestion>& suggestions) {
-        [weakSelf didFetchMoreSuggestions:suggestions
-                           withStatusCode:status
-                                 callback:callback];
-      }));
+  base::Optional<ntp_snippets::CategoryInfo> categoryInfo =
+      self.contentService->GetCategoryInfo([wrapper category]);
 
-  self.contentService->Fetch([wrapper category], known_suggestion_ids,
-                             serviceCallback);
+  if (!categoryInfo) {
+    return;
+  }
+  switch (categoryInfo->additional_action()) {
+    case ntp_snippets::ContentSuggestionsAdditionalAction::NONE:
+      return;
+
+    case ntp_snippets::ContentSuggestionsAdditionalAction::VIEW_ALL:
+      if ([wrapper category].IsKnownCategory(
+              ntp_snippets::KnownCategories::READING_LIST)) {
+        [self.commandHandler openReadingList];
+      }
+      break;
+
+    case ntp_snippets::ContentSuggestionsAdditionalAction::FETCH: {
+      __weak ContentSuggestionsMediator* weakSelf = self;
+      ntp_snippets::FetchDoneCallback serviceCallback = base::Bind(
+          &BindWrapper,
+          base::BindBlockArc(^void(
+              ntp_snippets::Status status,
+              const std::vector<ntp_snippets::ContentSuggestion>& suggestions) {
+            [weakSelf didFetchMoreSuggestions:suggestions
+                               withStatusCode:status
+                                     callback:callback];
+          }));
+
+      self.contentService->Fetch([wrapper category], known_suggestion_ids,
+                                 serviceCallback);
+
+      break;
+    }
+  }
 }
 
 - (void)fetchFaviconAttributesForURL:(const GURL&)URL

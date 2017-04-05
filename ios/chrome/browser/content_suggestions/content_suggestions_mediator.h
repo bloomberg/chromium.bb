@@ -18,6 +18,7 @@ namespace ntp_snippets {
 class ContentSuggestionsService;
 }
 
+@protocol ContentSuggestionsCommands;
 @class ContentSuggestionIdentifier;
 
 // Mediator for ContentSuggestions. Makes the interface between a
@@ -26,15 +27,22 @@ class ContentSuggestionsService;
 @interface ContentSuggestionsMediator : NSObject<ContentSuggestionsDataSource>
 
 // Initialize the mediator with the |contentService| to mediate.
-- (instancetype)
-initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
-      largeIconService:(favicon::LargeIconService*)largeIconService
+- (nullable instancetype)
+initWithContentService:
+    (nonnull ntp_snippets::ContentSuggestionsService*)contentService
+      largeIconService:(nonnull favicon::LargeIconService*)largeIconService
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
+
+- (nullable instancetype)init NS_UNAVAILABLE;
+
+// Command handler for the mediator.
+@property(nonatomic, weak, nullable) id<ContentSuggestionsCommands>
+    commandHandler;
 
 // Dismisses the suggestion from the content suggestions service. It doesn't
 // change the UI.
-- (void)dismissSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier;
+- (void)dismissSuggestion:
+    (nonnull ContentSuggestionIdentifier*)suggestionIdentifier;
 
 @end
 
