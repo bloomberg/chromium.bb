@@ -48,10 +48,7 @@ def to_lower_case(name):
 
 
 def agent_config(agent_name, field):
-    observers = config["observers"]
-    if agent_name not in observers:
-        return None
-    return observers[agent_name][field] if field in observers[agent_name] else None
+    return config["observers"].get(agent_name, {}).get(field)
 
 
 def agent_name_to_class(agent_name):
@@ -59,7 +56,7 @@ def agent_name_to_class(agent_name):
 
 
 def agent_name_to_include(agent_name):
-    include_path = agent_config(agent_name, "include") or config["settings"]["default_include"]
+    include_path = agent_config(agent_name, "include_path") or config["settings"]["include_path"]
     return os.path.join(include_path, agent_name_to_class(agent_name) + ".h")
 
 
@@ -103,28 +100,20 @@ def load_model_from_idl(source):
     return model
 
 
-def include_probes_header():
-    return "#include \"%s\"" % config["settings"]["probes_header"]
-
-
 class File(object):
     def __init__(self, name, source):
         self.name = name
         self.header_name = self.name + "Inl"
-        self.includes = [include_probes_header()]
         self.forward_declarations = []
         self.declarations = []
         for line in map(str.strip, source.split("\n")):
             line = re.sub(r"\s{2,}", " ", line).strip()  # Collapse whitespace
             if len(line) == 0:
                 continue
-            elif line.startswith("#include"):
-                self.includes.append(line)
             elif line.startswith("class ") or line.startswith("struct "):
                 self.forward_declarations.append(line)
             else:
                 self.declarations.append(Method(line))
-        self.includes.sort()
         self.forward_declarations.sort()
 
 
@@ -217,9 +206,7 @@ def build_observers():
             unused_probes.discard(probe)
             if probe not in all_pidl_probes:
                 raise Exception('Probe %s is not declared in PIDL file' % probe)
-            if probe not in observers_by_probe:
-                observers_by_probe[probe] = set()
-            observers_by_probe[probe].add(observer_name)
+            observers_by_probe.setdefault(probe, set()).add(observer_name)
     if unused_probes:
         raise Exception("Unused probes: %s" % unused_probes)
 

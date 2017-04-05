@@ -8,8 +8,8 @@
 #define {{file.header_name}}_h
 
 #include "platform/heap/HeapAllocator.h"
-{% for include in file.includes %}
-{{include}}
+{% for include in config["settings"]["includes"] %}
+#include "{{include}}"
 {% endfor %}
 
 {% set export_symbol = config["settings"]["export_symbol"] %}

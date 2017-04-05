@@ -1,8 +1,14 @@
 {
   settings: {
     export_symbol: "CORE_EXPORT",
-    default_include: "core/inspector",
-    probes_header: "core/probe/CoreProbes.h"
+    include_path: "core/inspector",
+    includes: [
+      "core/animation/Animation.h",
+      "core/dom/CharacterData.h",
+      "core/dom/PseudoElement.h",
+      "core/html/HTMLSlotElement.h",
+      "core/probe/CoreProbes.h",
+    ],
   },
   observers: {
     Animation: {
@@ -143,7 +149,7 @@
     },
     Performance: {
       class: "PerformanceMonitor",
-      include: "core/frame",
+      include_path: "core/frame",
       probes: [
         "CallFunction",
         "documentWriteFetchScript",

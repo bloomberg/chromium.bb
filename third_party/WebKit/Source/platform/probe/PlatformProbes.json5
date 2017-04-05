@@ -1,8 +1,10 @@
 {
   settings: {
     export_symbol: "PLATFORM_EXPORT",
-    default_include: "platform/probe",
-    probes_header: "platform/probe/PlatformProbes.h"
+    include_path: "platform/probe",
+    includes: [
+      "platform/probe/PlatformProbes.h",
+    ]
   },
   observers: {
     PlatformTraceEvents: {
