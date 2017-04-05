@@ -400,7 +400,8 @@
               "device_os": "LMY47W",
               "device_type": "sprout"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "content_browsertests"
       },
