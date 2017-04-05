@@ -206,6 +206,7 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setExpensiveBackgroundThrottlingMaxBudget(float) override;
   void setExpensiveBackgroundThrottlingMaxDelay(float) override;
   void setMediaControlsEnabled(bool) override;
+  void setDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
 
   bool showFPSCounter() const { return m_showFPSCounter; }
   bool showPaintRects() const { return m_showPaintRects; }

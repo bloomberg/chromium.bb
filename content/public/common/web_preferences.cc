@@ -228,7 +228,8 @@ WebPreferences::WebPreferences()
           base::TimeDelta::FromSeconds(10)),
       enable_instant_source_buffer_gc(false),
       presentation_receiver(false),
-      media_controls_enabled(true) {
+      media_controls_enabled(true),
+      do_not_update_selection_on_mutating_selection_range(false) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

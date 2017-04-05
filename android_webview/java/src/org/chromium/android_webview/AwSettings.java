@@ -95,6 +95,7 @@ public class AwSettings {
     private final boolean mSupportLegacyQuirks;
     private final boolean mAllowEmptyDocumentPersistence;
     private final boolean mAllowGeolocationOnInsecureOrigins;
+    private final boolean mDoNotUpdateSelectionOnMutatingSelectionRange;
 
     private final boolean mPasswordEchoEnabled;
 
@@ -205,11 +206,10 @@ public class AwSettings {
                 boolean supportsDoubleTapZoom, boolean supportsMultiTouchZoom);
     }
 
-    public AwSettings(Context context,
-            boolean isAccessFromFileURLsGrantedByDefault,
-            boolean supportsLegacyQuirks,
-            boolean allowEmptyDocumentPersistence,
-            boolean allowGeolocationOnInsecureOrigins) {
+    public AwSettings(Context context, boolean isAccessFromFileURLsGrantedByDefault,
+            boolean supportsLegacyQuirks, boolean allowEmptyDocumentPersistence,
+            boolean allowGeolocationOnInsecureOrigins,
+            boolean doNotUpdateSelectionOnMutatingSelectionRange) {
         boolean hasInternetPermission = context.checkPermission(
                 android.Manifest.permission.INTERNET,
                 Process.myPid(),
@@ -240,6 +240,8 @@ public class AwSettings {
             mSupportLegacyQuirks = supportsLegacyQuirks;
             mAllowEmptyDocumentPersistence = allowEmptyDocumentPersistence;
             mAllowGeolocationOnInsecureOrigins = allowGeolocationOnInsecureOrigins;
+            mDoNotUpdateSelectionOnMutatingSelectionRange =
+                    doNotUpdateSelectionOnMutatingSelectionRange;
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }
@@ -1259,6 +1261,12 @@ public class AwSettings {
     private boolean getAllowGeolocationOnInsecureOrigins() {
         assert Thread.holdsLock(mAwSettingsLock);
         return mAllowGeolocationOnInsecureOrigins;
+    }
+
+    @CalledByNative
+    private boolean getDoNotUpdateSelectionOnMutatingSelectionRange() {
+        assert Thread.holdsLock(mAwSettingsLock);
+        return mDoNotUpdateSelectionOnMutatingSelectionRange;
     }
 
     /**

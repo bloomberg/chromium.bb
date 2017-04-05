@@ -135,7 +135,8 @@ public class GeolocationTest extends AwTestBase {
         @Override
         public AwSettings createAwSettings(Context context, boolean supportLegacyQuirks) {
             return new AwSettings(context, false /* isAccessFromFileURLsGrantedByDefault */,
-                    supportLegacyQuirks, false /* allowEmptyDocumentPersistence */, mAllow);
+                    supportLegacyQuirks, false /* allowEmptyDocumentPersistence */, mAllow,
+                    false /* doNotUpdateSelectionOnMutatingSelectionRange */);
         }
     }
 

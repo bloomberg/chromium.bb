@@ -45,6 +45,7 @@
 #include "core/editing/iterators/TextIterator.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/ScopedEventQueue.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
@@ -79,8 +80,13 @@ class RangeUpdateScope {
     DCHECK_GE(s_scopeCount, 1);
     if (--s_scopeCount > 0)
       return;
-    m_range->removeFromSelectionIfInDifferentRoot(*m_oldDocument);
-    m_range->updateSelectionIfAddedToSelection();
+    Settings* settings =
+        m_oldDocument->frame() ? m_oldDocument->frame()->settings() : nullptr;
+    if (!settings ||
+        !settings->getDoNotUpdateSelectionOnMutatingSelectionRange()) {
+      m_range->removeFromSelectionIfInDifferentRoot(*m_oldDocument);
+      m_range->updateSelectionIfAddedToSelection();
+    }
 #if DCHECK_IS_ON()
     s_currentRange = nullptr;
 #endif

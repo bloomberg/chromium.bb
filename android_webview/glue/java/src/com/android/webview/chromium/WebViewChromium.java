@@ -174,11 +174,15 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         final boolean allowGeolocationOnInsecureOrigins =
                 mAppTargetSdkVersion <= Build.VERSION_CODES.M;
 
+        // https://crbug.com/698752
+        final boolean doNotUpdateSelectionOnMutatingSelectionRange =
+                mAppTargetSdkVersion <= Build.VERSION_CODES.M;
+
         mContentsClientAdapter = mFactory.createWebViewContentsClientAdapter(mWebView, mContext);
-        mWebSettings = new ContentSettingsAdapter(
-                new AwSettings(mContext, isAccessFromFileURLsGrantedByDefault,
-                        areLegacyQuirksEnabled, allowEmptyDocumentPersistence,
-                        allowGeolocationOnInsecureOrigins));
+        mWebSettings = new ContentSettingsAdapter(new AwSettings(mContext,
+                isAccessFromFileURLsGrantedByDefault, areLegacyQuirksEnabled,
+                allowEmptyDocumentPersistence, allowGeolocationOnInsecureOrigins,
+                doNotUpdateSelectionOnMutatingSelectionRange));
 
         if (mAppTargetSdkVersion < Build.VERSION_CODES.LOLLIPOP) {
             // Prior to Lollipop we always allowed third party cookies and mixed content.

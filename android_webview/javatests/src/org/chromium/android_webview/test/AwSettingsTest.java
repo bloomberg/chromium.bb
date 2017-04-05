@@ -57,6 +57,8 @@ public class AwSettingsTest extends AwTestBase {
     private static final boolean ENABLED = true;
     private static final boolean DISABLED = false;
 
+    private int mTitleIdx;
+
     /**
      * A helper class for testing a particular preference from AwSettings.
      * The generic type T is the type of the setting. Usually, to test an
@@ -2914,7 +2916,8 @@ public class AwSettingsTest extends AwTestBase {
         @Override
         public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
             return new AwSettings(context, false /* isAccessFromFileURLsGrantedByDefault */,
-                    supportsLegacyQuirks, mAllow, true /* allowGeolocationOnInsecureOrigins */);
+                    supportsLegacyQuirks, mAllow, true /* allowGeolocationOnInsecureOrigins */,
+                    false /* doNotUpdateSelectionOnMutatingSelectionRange */);
         }
     }
 
@@ -2945,6 +2948,103 @@ public class AwSettingsTest extends AwTestBase {
     @Feature({"AndroidWebView", "Preferences"})
     public void testDisallowEmptyDocumentPersistence() throws Throwable {
         doAllowEmptyDocumentPersistenceTest(false);
+    }
+
+    private static class SelectionRangeTestDependencyFactory extends TestDependencyFactory {
+        private boolean mDoNotUpdate;
+        public SelectionRangeTestDependencyFactory(boolean doNotUpdate) {
+            mDoNotUpdate = doNotUpdate;
+        }
+
+        @Override
+        public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
+            return new AwSettings(context, false /* isAccessFromFileURLsGrantedByDefault */,
+                    supportsLegacyQuirks, false /* allowEmptyDocumentPersistence */,
+                    true /* allowGeolocationOnInsecureOrigins */,
+                    mDoNotUpdate /* doNotUpdateSelectionOnMutatingSelectionRange */);
+        }
+    }
+
+    private void selectionUpdateOnMutatingSelectionRangeTest(boolean doNotUpdate) throws Throwable {
+        mOverridenFactory = new SelectionRangeTestDependencyFactory(doNotUpdate);
+
+        final TestAwContentsClient client = new TestAwContentsClient();
+        final AwTestContainerView mContainerView = createAwTestContainerViewOnMainSync(client);
+        final AwContents awContents = mContainerView.getAwContents();
+        enableJavaScriptOnUiThread(awContents);
+        final String testPageHtml =
+                "<html><head></head><body><div id='a' contenteditable></div><script>"
+                + "var cnt = 0;"
+                + "var a = document.getElementById('a');"
+                + "document.addEventListener('selectionchange', onSelectionChange, false);"
+                + "function onSelectionChange(event) {"
+                + "  cnt++;"
+                + "}"
+                + "</script></body></html>";
+        loadDataSync(
+                awContents, client.getOnPageFinishedHelper(), testPageHtml, "text/html", false);
+
+        // Focus on an empty DIV.
+        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+                client.getOnEvaluateJavaScriptResultHelper(), "window.a.focus();");
+        assertEquals(1, getSelectionChangeCountForSelectionUpdateTest(awContents, client));
+
+        // Create and delete a zero-width space. See crbug.com/698752 for details.
+        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+                client.getOnEvaluateJavaScriptResultHelper(),
+                "(function() {"
+                        + "var sel = window.getSelection();"
+                        + "var range = sel.getRangeAt(0);"
+                        + "var span = document.createElement('span');"
+                        + "var textNodeForZWSP = document.createTextNode('\u200B');"
+                        + "span.appendChild(textNodeForZWSP);"
+                        + "range.insertNode(span);"
+                        + "range.selectNode(span);"
+                        + "range.deleteContents();"
+                        + "}) ();");
+        int expectedResult = doNotUpdate ? 0 : 1;
+        assertEquals(
+                expectedResult, getSelectionChangeCountForSelectionUpdateTest(awContents, client));
+    }
+
+    private void pollTitleAs(final String title, final AwContents awContents) throws Exception {
+        pollInstrumentationThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return title.equals(getTitleOnUiThread(awContents));
+            }
+        });
+    }
+
+    private int getSelectionChangeCountForSelectionUpdateTest(
+            AwContents awContents, TestAwContentsClient client) throws Exception {
+        mTitleIdx++;
+        String expectedTitle = Integer.toString(mTitleIdx);
+        // Since selectionchange event is posted on a message loop, we run another message loop
+        // before we get the result. On Chromium both run on the same message loop.
+        JSUtils.executeJavaScriptAndWaitForResult(this, awContents,
+                client.getOnEvaluateJavaScriptResultHelper(),
+                "setTimeout(function() { document.title = '" + expectedTitle + "'; });");
+        pollTitleAs(expectedTitle, awContents);
+
+        String result = JSUtils.executeJavaScriptAndWaitForResult(
+                this, awContents, client.getOnEvaluateJavaScriptResultHelper(), "window.cnt");
+        // Clean up
+        JSUtils.executeJavaScriptAndWaitForResult(
+                this, awContents, client.getOnEvaluateJavaScriptResultHelper(), "window.cnt = 0;");
+        return Integer.parseInt(result);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Selection"})
+    public void testDoNotUpdateSelectionOnMutatingSelectionRange() throws Throwable {
+        selectionUpdateOnMutatingSelectionRangeTest(true);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Selection"})
+    public void testUpdateSelectionOnMutatingSelectionRange() throws Throwable {
+        selectionUpdateOnMutatingSelectionRangeTest(false);
     }
 
     static class ViewPair {

@@ -925,5 +925,12 @@
       initial: true,
       invalidate: "MediaControls",
     },
+
+    // Whether we should not update selection attributes when mutating selection range.
+    // TODO(changwan): remove this flag when we no longer support Android M.
+    {
+      name: "doNotUpdateSelectionOnMutatingSelectionRange",
+      initial: false,
+    },
   ],
 }

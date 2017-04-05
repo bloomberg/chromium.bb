@@ -1077,6 +1077,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.video_fullscreen_detection_enabled);
   settings->setEmbeddedMediaExperienceEnabled(
       prefs.embedded_media_experience_enabled);
+  settings->setDoNotUpdateSelectionOnMutatingSelectionRange(
+      prefs.do_not_update_selection_on_mutating_selection_range);
 #else   // defined(OS_ANDROID)
   settings->setCrossOriginMediaPlaybackRequiresUserGesture(
       prefs.cross_origin_media_playback_requires_user_gesture);

@@ -171,10 +171,11 @@ public class AwShellActivity extends Activity {
         if (mBrowserContext == null) {
             mBrowserContext = new AwBrowserContext(sharedPreferences, getApplicationContext());
         }
-        final AwSettings awSettings = new AwSettings(this /* context */,
-                false /* isAccessFromFileURLsGrantedByDefault */, false /* supportsLegacyQuirks */,
-                false /* allowEmptyDocumentPersistence */,
-                true /* allowGeolocationOnInsecureOrigins */);
+        final AwSettings awSettings =
+                new AwSettings(this /* context */, false /* isAccessFromFileURLsGrantedByDefault */,
+                        false /* supportsLegacyQuirks */, false /* allowEmptyDocumentPersistence */,
+                        true /* allowGeolocationOnInsecureOrigins */,
+                        false /* doNotUpdateSelectionOnMutatingSelectionRange */);
         // Required for WebGL conformance tests.
         awSettings.setMediaPlaybackRequiresUserGesture(false);
         // Allow zoom and fit contents to screen

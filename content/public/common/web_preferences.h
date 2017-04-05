@@ -287,6 +287,12 @@ struct CONTENT_EXPORT WebPreferences {
   // If disabled, media controls should never be used.
   bool media_controls_enabled;
 
+  // Whether we want to disable updating selection on mutating selection range.
+  // This is to work around Samsung's email app issue. See
+  // https://crbug.com/699943 for details.
+  // TODO(changwan): remove this once we no longer support Android N.
+  bool do_not_update_selection_on_mutating_selection_range;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.
