@@ -249,7 +249,7 @@ GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
     const gpu::GpuPreferences& gpu_preferences) const {
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   decoder.reset(new AndroidVideoDecodeAccelerator(
-      AVDACodecAllocator::Instance(), make_context_current_cb_,
+      AVDACodecAllocator::GetInstance(), make_context_current_cb_,
       get_gles2_decoder_cb_));
   return decoder;
 }

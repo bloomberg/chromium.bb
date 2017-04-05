@@ -41,7 +41,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/throw_uncaught_exception.h"
-#include "media/gpu/avda_codec_allocator.h"
+#include "media/gpu/content_video_view_overlay_allocator.h"
 #endif
 
 namespace ui {
@@ -432,8 +432,8 @@ void GpuService::DestroyingVideoSurface(
       FROM_HERE,
       base::Bind(
           [](int32_t surface_id) {
-            media::AVDACodecAllocator::Instance()->OnSurfaceDestroyed(
-                surface_id);
+            media::ContentVideoViewOverlayAllocator::GetInstance()
+                ->OnSurfaceDestroyed(surface_id);
           },
           surface_id),
       callback);

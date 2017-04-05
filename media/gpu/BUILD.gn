@@ -193,6 +193,8 @@ component("gpu") {
       "avda_surface_bundle.h",
       "content_video_view_overlay.cc",
       "content_video_view_overlay.h",
+      "content_video_view_overlay_allocator.cc",
+      "content_video_view_overlay_allocator.h",
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
     ]
@@ -443,6 +445,7 @@ source_set("android_video_decode_accelerator_unittests") {
     sources = [
       "android_video_decode_accelerator_unittest.cc",
       "avda_codec_allocator_unittest.cc",
+      "content_video_view_overlay_allocator_unittest.cc",
       "surface_texture_gl_owner_unittest.cc",
     ]
     if (enable_media_codec_video_decoder) {

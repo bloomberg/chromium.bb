@@ -12,14 +12,10 @@
 namespace media {
 
 ContentVideoViewOverlay::ContentVideoViewOverlay(
-    AVDACodecAllocator* codec_allocator,
     int surface_id,
     const AndroidOverlay::Config& config)
-    : codec_allocator_(codec_allocator),
-      surface_id_(surface_id),
-      config_(config),
-      weak_factory_(this) {
-  if (codec_allocator_->AllocateSurface(this, surface_id_)) {
+    : surface_id_(surface_id), config_(config), weak_factory_(this) {
+  if (ContentVideoViewOverlayAllocator::GetInstance()->AllocateSurface(this)) {
     // We have the surface -- post a callback to our OnSurfaceAvailable.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ContentVideoViewOverlay::OnSurfaceAvailable,
@@ -29,7 +25,8 @@ ContentVideoViewOverlay::ContentVideoViewOverlay(
 
 ContentVideoViewOverlay::~ContentVideoViewOverlay() {
   // Deallocate the surface.  It's okay if we don't own it.
-  codec_allocator_->DeallocateSurface(this, surface_id_);
+  // Note that this only happens once any codec is done with us.
+  ContentVideoViewOverlayAllocator::GetInstance()->DeallocateSurface(this);
 }
 
 void ContentVideoViewOverlay::ScheduleLayout(const gfx::Rect& rect) {
@@ -66,6 +63,10 @@ void ContentVideoViewOverlay::OnSurfaceAvailable(bool success) {
 void ContentVideoViewOverlay::OnSurfaceDestroyed() {
   config_.destroyed_cb.Run();
   // |this| may be deleted, or deletion might be posted elsewhere.
+}
+
+int32_t ContentVideoViewOverlay::GetSurfaceId() {
+  return surface_id_;
 }
 
 }  // namespace media

@@ -403,7 +403,7 @@ void AndroidVideoDecodeAccelerator::StartSurfaceCreation() {
     // TODO(liberato): make |surface_id| the overlay config token.  If we're
     // using CVV, then we'll need a CVV factory impl that understands it.
     incoming_bundle_->overlay = base::MakeUnique<ContentVideoViewOverlay>(
-        codec_allocator_, incoming_bundle_->surface_id, overlay_config);
+        incoming_bundle_->surface_id, overlay_config);
     // We have to wait for some other AVDA instance to free up the surface.
     // OnOverlayReady will be called when it's available.
     // Note that if we aren't deferring init, then we'll signal success, and
@@ -1041,7 +1041,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
 
   codec_config_->task_type = task_type.value();
   std::unique_ptr<MediaCodecBridge> media_codec =
-      AVDACodecAllocator::Instance()->CreateMediaCodecSync(codec_config_);
+      AVDACodecAllocator::GetInstance()->CreateMediaCodecSync(codec_config_);
   // Note that |media_codec| might be null, which will NotifyError.
   OnCodecConfigured(std::move(media_codec));
 }

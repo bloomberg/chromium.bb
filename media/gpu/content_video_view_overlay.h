@@ -7,33 +7,34 @@
 
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/android_overlay.h"
-#include "media/gpu/avda_codec_allocator.h"
+#include "media/gpu/content_video_view_overlay_allocator.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
 namespace media {
 
-// TODO(liberato): most of Allocate/DeallocateSurface can be moved here, out
-// of AVDACodecAllocator.
-class ContentVideoViewOverlay : public AndroidOverlay,
-                                public AVDASurfaceAllocatorClient {
+class ContentVideoViewOverlay
+    : public ContentVideoViewOverlayAllocator::Client {
  public:
   // |config| is ignored except for callbacks.  Callbacks will not be called
   // before this returns.
-  ContentVideoViewOverlay(AVDACodecAllocator* codec_allocator,
-                          int surface_id,
-                          const AndroidOverlay::Config& config);
+  ContentVideoViewOverlay(int surface_id, const AndroidOverlay::Config& config);
   ~ContentVideoViewOverlay() override;
 
+  // AndroidOverlay (via ContentVideoViewOverlayAllocator::Client)
   // ContentVideoView ignores this, unfortunately.
   void ScheduleLayout(const gfx::Rect& rect) override;
   const base::android::JavaRef<jobject>& GetJavaSurface() const override;
 
-  // AVDASurfaceAllocatorClient
+  // ContentVideoViewOverlayAllocator::Client
   void OnSurfaceAvailable(bool success) override;
   void OnSurfaceDestroyed() override;
+  int32_t GetSurfaceId() override;
+
+ protected:
+  // For tests.
+  ContentVideoViewOverlay();
 
  private:
-  AVDACodecAllocator* codec_allocator_;
   int surface_id_;
   AndroidOverlay::Config config_;
   gl::ScopedJavaSurface surface_;
