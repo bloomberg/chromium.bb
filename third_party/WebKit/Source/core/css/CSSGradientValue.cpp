@@ -309,8 +309,10 @@ void CSSGradientValue::addDeprecatedStops(GradientDesc& desc,
   }
 }
 
-static bool requiresStopsNormalization(const Vector<GradientStop>& stops,
-                                       CSSGradientValue::GradientDesc& desc) {
+namespace {
+
+bool requiresStopsNormalization(const Vector<GradientStop>& stops,
+                                CSSGradientValue::GradientDesc& desc) {
   // We need at least two stops to normalize
   if (stops.size() < 2)
     return false;
@@ -329,8 +331,8 @@ static bool requiresStopsNormalization(const Vector<GradientStop>& stops,
 
 // Redistribute the stops such that they fully cover [0 , 1] and add them to the
 // gradient.
-static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
-                                 CSSGradientValue::GradientDesc& desc) {
+bool normalizeAndAddStops(const Vector<GradientStop>& stops,
+                          CSSGradientValue::GradientDesc& desc) {
   DCHECK_GT(stops.size(), 1u);
 
   const float firstOffset = stops.front().offset;
@@ -371,7 +373,7 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
 
 // Collapse all negative-offset stops to 0 and compute an interpolated color
 // value for that point.
-static void clampNegativeOffsets(Vector<GradientStop>& stops) {
+void clampNegativeOffsets(Vector<GradientStop>& stops) {
   float lastNegativeOffset = 0;
 
   for (size_t i = 0; i < stops.size(); ++i) {
@@ -397,10 +399,9 @@ static void clampNegativeOffsets(Vector<GradientStop>& stops) {
 }
 
 // Update the linear gradient points to align with the given offset range.
-static void adjustGradientPointsForOffsetRange(
-    CSSGradientValue::GradientDesc& desc,
-    float firstOffset,
-    float lastOffset) {
+void adjustGradientPointsForOffsetRange(CSSGradientValue::GradientDesc& desc,
+                                        float firstOffset,
+                                        float lastOffset) {
   DCHECK_LE(firstOffset, lastOffset);
 
   const FloatPoint p0 = desc.p0;
@@ -413,10 +414,9 @@ static void adjustGradientPointsForOffsetRange(
 }
 
 // Update the radial gradient radii to align with the given offset range.
-static void adjustGradientRadiiForOffsetRange(
-    CSSGradientValue::GradientDesc& desc,
-    float firstOffset,
-    float lastOffset) {
+void adjustGradientRadiiForOffsetRange(CSSGradientValue::GradientDesc& desc,
+                                       float firstOffset,
+                                       float lastOffset) {
   DCHECK_LE(firstOffset, lastOffset);
 
   // Radial offsets are relative to the [0 , endRadius] segment.
@@ -446,6 +446,101 @@ static void adjustGradientRadiiForOffsetRange(
   desc.r0 = adjustedR0;
   desc.r1 = adjustedR1;
 }
+
+// Helper for performing on-the-fly out of range color stop interpolation.
+class ConicClamper {
+  STACK_ALLOCATED();
+
+ public:
+  ConicClamper(CSSGradientValue::GradientDesc& desc) : m_desc(desc) {}
+
+  void add(float offset, const Color& color) {
+    addInternal(offset, color);
+    m_prevOffset = offset;
+    m_prevColor = color;
+  }
+
+ private:
+  void addUnique(float offset, const Color& color) {
+    // Skip duplicates.
+    if (m_desc.stops.isEmpty() || offset != m_desc.stops.back().stop ||
+        color != m_desc.stops.back().color) {
+      m_desc.stops.emplace_back(offset, color);
+    }
+  }
+
+  void addInternal(float offset, const Color& color) {
+    if (offset < 0)
+      return;
+
+    if (m_prevOffset < 0 && offset > 0) {
+      addUnique(0, blend(m_prevColor, color,
+                         -m_prevOffset / (offset - m_prevOffset)));
+    }
+
+    if (offset <= 1) {
+      addUnique(offset, color);
+      return;
+    }
+
+    if (m_prevOffset < 1) {
+      addUnique(1, blend(m_prevColor, color,
+                         (1 - m_prevOffset) / (offset - m_prevOffset)));
+    }
+  }
+
+  CSSGradientValue::GradientDesc& m_desc;
+
+  float m_prevOffset = 0;
+  Color m_prevColor;
+};
+
+void normalizeAndAddConicStops(const Vector<GradientStop>& stops,
+                               CSSGradientValue::GradientDesc& desc) {
+  DCHECK(!stops.isEmpty());
+  ConicClamper clamper(desc);
+
+  if (desc.spreadMethod == SpreadMethodPad) {
+    for (const auto& stop : stops)
+      clamper.add(stop.offset, stop.color);
+    return;
+  }
+
+  DCHECK_EQ(desc.spreadMethod, SpreadMethodRepeat);
+
+  // The normalization trick we use for linear and radial doesn't work here,
+  // because the underlying Skia implementation doesn't support conic gradient
+  // tiling.  So we emit synthetic stops to cover the whole unit interval.
+  float repeatSpan = stops.back().offset - stops.front().offset;
+  DCHECK_GE(repeatSpan, 0.0f);
+  if (repeatSpan < std::numeric_limits<float>::epsilon()) {
+    // All stops are coincident -> use a single solid color.
+    desc.stops.emplace_back(0, stops.back().color);
+    return;
+  }
+
+  // Compute an offset base as a repetition of stops[0].offset such that
+  // [ offsetBase, offsetBase + repeatSpan ] contains 0
+  // (aka the largest repeat value for stops[0] less than 0).
+  float offset = fmodf(stops.front().offset, repeatSpan) -
+                 (stops.front().offset < 0 ? 0 : repeatSpan);
+  DCHECK_LE(offset, 0);
+  DCHECK_GE(offset + repeatSpan, 0);
+
+  // Start throwing repeating values at the clamper.
+  do {
+    const float offsetBase = offset;
+    for (const auto& stop : stops) {
+      offset = offsetBase + stop.offset - stops.front().offset;
+      clamper.add(offset, stop.color);
+
+      if (offset >= 1)
+        break;
+    }
+  } while (offset < 1);
+}
+
+}  // anonymous ns
 
 void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
                                 const CSSToLengthConversionData& conversionData,
@@ -575,9 +670,7 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
 
   // At this point we have a fully resolved set of stops. Time to perform
   // adjustments for repeat gradients and degenerate values if needed.
-  // Note: the normalization trick doesn't work for conic gradients, because
-  // the underlying Skia implementation doesn't support tiling.
-  if (isConicGradientValue() || !requiresStopsNormalization(stops, desc)) {
+  if (!requiresStopsNormalization(stops, desc)) {
     // No normalization required, just add the current stops.
     for (const auto& stop : stops)
       desc.stops.emplace_back(stop.offset, stop.color);
@@ -603,6 +696,9 @@ void CSSGradientValue::addStops(CSSGradientValue::GradientDesc& desc,
         adjustGradientRadiiForOffsetRange(desc, stops.front().offset,
                                           stops.back().offset);
       }
+      break;
+    case ConicGradientClass:
+      normalizeAndAddConicStops(stops, desc);
       break;
     default:
       NOTREACHED();
@@ -1398,9 +1494,8 @@ PassRefPtr<Gradient> CSSConicGradientValue::createGradient(
                     m_repeating ? SpreadMethodRepeat : SpreadMethodPad);
   addStops(desc, conversionData, object);
 
-  RefPtr<Gradient> gradient =
-      Gradient::createConic(position, angle, desc.spreadMethod,
-                            Gradient::ColorInterpolation::Premultiplied);
+  RefPtr<Gradient> gradient = Gradient::createConic(
+      position, angle, Gradient::ColorInterpolation::Premultiplied);
   gradient->addColorStops(desc.stops);
 
   return gradient.release();

@@ -76,7 +76,6 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   static PassRefPtr<Gradient> createConic(
       const FloatPoint& position,
       float angle,
-      GradientSpreadMethod = SpreadMethodPad,
       ColorInterpolation = ColorInterpolation::Unpremultiplied);
 
   virtual ~Gradient();

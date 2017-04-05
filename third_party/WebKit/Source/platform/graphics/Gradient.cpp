@@ -259,9 +259,8 @@ class ConicGradient final : public Gradient {
  public:
   ConicGradient(const FloatPoint& position,
                 float angle,
-                GradientSpreadMethod spreadMethod,
                 ColorInterpolation interpolation)
-      : Gradient(Type::Conic, spreadMethod, interpolation),
+      : Gradient(Type::Conic, SpreadMethodPad, interpolation),
         m_position(position),
         m_angle(angle) {}
 
@@ -271,10 +270,7 @@ class ConicGradient final : public Gradient {
                                SkShader::TileMode tileMode,
                                uint32_t flags,
                                const SkMatrix& localMatrix) const override {
-    if (tileMode != SkShader::kClamp_TileMode) {
-      // TODO(fmalita): kRepeat support
-      return nullptr;
-    }
+    DCHECK_NE(tileMode, SkShader::kMirror_TileMode);
 
     // Skia's sweep gradient angles are relative to the x-axis, not the y-axis.
     const float skiaAngle = m_angle - 90;
@@ -316,10 +312,8 @@ PassRefPtr<Gradient> Gradient::createRadial(const FloatPoint& p0,
 
 PassRefPtr<Gradient> Gradient::createConic(const FloatPoint& position,
                                            float angle,
-                                           GradientSpreadMethod spreadMethod,
                                            ColorInterpolation interpolation) {
-  return adoptRef(
-      new ConicGradient(position, angle, spreadMethod, interpolation));
+  return adoptRef(new ConicGradient(position, angle, interpolation));
 }
 
 }  // namespace blink
