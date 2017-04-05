@@ -3,8 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+
+"""Generic retry wrapper for Git operations. 
+
+This is largely DEPRECATED in favor of the Infra Git wrapper:
+https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+"""
+
 import logging
 import optparse
+import os
 import subprocess
 import sys
 import threading
@@ -111,6 +119,11 @@ class GitRetry(object):
 
 
 def main(args):
+  # If we're using the Infra Git wrapper, do nothing here.
+  # https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+  if 'INFRA_GIT_WRAPPER' in os.environ:
+    return subprocess.call([GIT_EXE] + args)
+
   parser = optparse.OptionParser()
   parser.disable_interspersed_args()
   parser.add_option('-v', '--verbose',

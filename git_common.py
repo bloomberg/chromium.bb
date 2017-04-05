@@ -48,6 +48,14 @@ FREEZE_SECTIONS = {
 FREEZE_MATCHER = re.compile(r'%s.(%s)' % (FREEZE, '|'.join(FREEZE_SECTIONS)))
 
 
+# NOTE: This list is DEPRECATED in favor of the Infra Git wrapper:
+# https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+#
+# New entries should be added to the Git wrapper, NOT to this list. "git_retry"
+# is, similarly, being deprecated in favor of the Git wrapper.
+#
+# ---
+#
 # Retry a git operation if git returns a error response with any of these
 # messages. It's all observed 'bad' GoB responses so far.
 #
