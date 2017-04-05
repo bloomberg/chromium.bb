@@ -1864,6 +1864,22 @@ static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
 // clang-format on
 
 #if CONFIG_EC_MULTISYMBOL
+#if CONFIG_DUAL_FILTER
+static const aom_cdf_prob
+    default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS][CDF_SIZE(
+        SWITCHABLE_FILTERS)] = {
+      { 30080, 31088, 32096, 32768, 0 }, { 4608, 9620, 31338, 32768, 0 },
+      { 4352, 5240, 6128, 32768, 0 },    { 4352, 5240, 6128, 32768, 0 },
+      { 19072, 23352, 27632, 32768, 0 }, { 30080, 31088, 32096, 32768, 0 },
+      { 4608, 9620, 31338, 32768, 0 },   { 4352, 5240, 6128, 32768, 0 },
+      { 4352, 5240, 6128, 32768, 0 },    { 19072, 23352, 27632, 32768, 0 },
+      { 30080, 31088, 32096, 32768, 0 }, { 4608, 9620, 31338, 32768, 0 },
+      { 4352, 5240, 6128, 32768, 0 },    { 4352, 5240, 6128, 32768, 0 },
+      { 19072, 23352, 27632, 32768, 0 }, { 30080, 31088, 32096, 32768, 0 },
+      { 4608, 9620, 31338, 32768, 0 },   { 4352, 5240, 6128, 32768, 0 },
+      { 4352, 5240, 6128, 32768, 0 },    { 19072, 23352, 27632, 32768, 0 }
+    };
+#else
 static const aom_cdf_prob
     default_switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
                                  [CDF_SIZE(SWITCHABLE_FILTERS)] = {
@@ -1872,6 +1888,7 @@ static const aom_cdf_prob
                                    { 4352, 4685, 32768, 0 },
                                    { 19072, 26776, 32768, 0 },
                                  };
+#endif
 
 static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
   4096, 8192, 12288, 16384, 20480, 24576, 28672, 32768, 0
