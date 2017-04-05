@@ -1002,8 +1002,7 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
   if (!style()->left().isAuto() && !style()->right().isAuto()) {
     if (horizontalOffsets >
             scrollContainerRelativeContainingBlockRect.width() ||
-        horizontalOffsets + scrollContainerRelativeContainingBlockRect.width() >
-            constrainingSize.width()) {
+        horizontalOffsets + stickyBoxRect.width() > constrainingSize.width()) {
       skipRight = style()->isLeftToRightDirection();
       skipLeft = !skipRight;
     }
@@ -1034,8 +1033,7 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const {
                             LayoutUnit(constrainingSize.height()));
   if (!style()->top().isAuto() && !style()->bottom().isAuto()) {
     if (verticalOffsets > scrollContainerRelativeContainingBlockRect.height() ||
-        verticalOffsets + scrollContainerRelativeContainingBlockRect.height() >
-            constrainingSize.height()) {
+        verticalOffsets + stickyBoxRect.height() > constrainingSize.height()) {
       skipBottom = true;
     }
   }
