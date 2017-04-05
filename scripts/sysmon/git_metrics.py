@@ -31,9 +31,11 @@ class _GitRepo(object):
         self._get_git_command() + list(args), **kwargs)
 
   def get_commit_hash(self):
+    """Return commit hash string."""
     return self._check_output(['rev-parse', 'HEAD']).strip()
 
   def get_commit_time(self):
+    """Return commit time as UNIX timestamp int."""
     return int(self._check_output(['show', '-s', '--format=%ct', 'HEAD'])
                .strip())
 
