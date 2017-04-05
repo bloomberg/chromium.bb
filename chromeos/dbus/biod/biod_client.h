@@ -77,6 +77,9 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
   // one argument which states the type of biometric.
   using BiometricTypeCallback = base::Callback<void(biod::BiometricType)>;
 
+  // LabelCallback is for the RequestRecordLabel method.
+  using LabelCallback = base::Callback<void(const std::string& label)>;
+
   // Starts the biometric enroll session. |callback| is called with the object
   // path of the current enroll session after the method succeeds. |user_id|
   // contains the unique identifier for the owner of the biometric. |label| is
@@ -102,6 +105,26 @@ class CHROMEOS_EXPORT BiodClient : public DBusClient {
   // Requests the type of biometric. |callback| is called with the biometric
   // type after the method succeeds.
   virtual void RequestType(const BiometricTypeCallback& callback) = 0;
+
+  // Cancels the enroll session at |enroll_session_path|.
+  virtual void CancelEnrollSession(
+      const dbus::ObjectPath& enroll_session_path) = 0;
+
+  // Ends the auth session at |auth_session_path|.
+  virtual void EndAuthSession(const dbus::ObjectPath& auth_session_path) = 0;
+
+  // Changes the label of the record at |record_path| to |label|.
+  virtual void SetRecordLabel(const dbus::ObjectPath& record_path,
+                              const std::string& label) = 0;
+
+  // Removes the record at |record_path|. This record will no longer be able to
+  // used for authentication.
+  virtual void RemoveRecord(const dbus::ObjectPath& record_path) = 0;
+
+  // Requests the label of the record at |record_path|. |callback| is called
+  // with the label of the record.
+  virtual void RequestRecordLabel(const dbus::ObjectPath& record_path,
+                                  const LabelCallback& callback) = 0;
 
   // Creates the instance.
   static BiodClient* Create(DBusClientImplementationType type);

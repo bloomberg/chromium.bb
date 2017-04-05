@@ -18,7 +18,7 @@ namespace chromeos {
 // The BiodClient implementation used in production.
 class BiodClientImpl : public BiodClient {
  public:
-  BiodClientImpl() : biod_proxy_(nullptr), weak_ptr_factory_(this) {}
+  BiodClientImpl() : weak_ptr_factory_(this) {}
 
   ~BiodClientImpl() override {}
 
@@ -99,8 +99,74 @@ class BiodClientImpl : public BiodClient {
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void CancelEnrollSession(
+      const dbus::ObjectPath& enroll_session_path) override {
+    dbus::MethodCall method_call(biod::kEnrollSessionInterface,
+                                 biod::kEnrollSessionCancelMethod);
+
+    dbus::ObjectProxy* enroll_session_proxy =
+        bus_->GetObjectProxy(biod::kBiodServiceName, enroll_session_path);
+    enroll_session_proxy->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  void EndAuthSession(const dbus::ObjectPath& auth_session_path) override {
+    dbus::MethodCall method_call(biod::kAuthSessionInterface,
+                                 biod::kAuthSessionEndMethod);
+
+    dbus::ObjectProxy* auth_session_proxy =
+        bus_->GetObjectProxy(biod::kBiodServiceName, auth_session_path);
+    auth_session_proxy->CallMethod(&method_call,
+                                   dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                   dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  void SetRecordLabel(const dbus::ObjectPath& record_path,
+                      const std::string& label) override {
+    dbus::MethodCall method_call(biod::kRecordInterface,
+                                 biod::kRecordSetLabelMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(label);
+
+    dbus::ObjectProxy* record_proxy =
+        bus_->GetObjectProxy(biod::kBiodServiceName, record_path);
+    record_proxy->CallMethod(&method_call,
+                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                             dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  void RemoveRecord(const dbus::ObjectPath& record_path) override {
+    dbus::MethodCall method_call(biod::kRecordInterface,
+                                 biod::kRecordRemoveMethod);
+
+    dbus::ObjectProxy* record_proxy =
+        bus_->GetObjectProxy(biod::kBiodServiceName, record_path);
+    record_proxy->CallMethod(&method_call,
+                             dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                             dbus::ObjectProxy::EmptyResponseCallback());
+  }
+
+  void RequestRecordLabel(const dbus::ObjectPath& record_path,
+                          const LabelCallback& callback) override {
+    dbus::MethodCall method_call(dbus::kDBusPropertiesInterface,
+                                 dbus::kDBusPropertiesGet);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(biod::kRecordInterface);
+    writer.AppendString(biod::kRecordLabelProperty);
+
+    dbus::ObjectProxy* record_proxy =
+        bus_->GetObjectProxy(biod::kBiodServiceName, record_path);
+    record_proxy->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BiodClientImpl::OnRequestRecordLabel,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
+    bus_ = bus;
+
     biod_proxy_ = bus->GetObjectProxy(biod::kBiodServiceName,
                                       dbus::ObjectPath(biod::kBiodServicePath));
 
@@ -191,6 +257,18 @@ class BiodClientImpl : public BiodClient {
     callback.Run(static_cast<biod::BiometricType>(result));
   }
 
+  void OnRequestRecordLabel(const LabelCallback& callback,
+                            dbus::Response* response) {
+    std::string result;
+    if (response) {
+      dbus::MessageReader reader(response);
+      if (!reader.PopString(&result))
+        LOG(ERROR) << biod::kRecordLabelProperty << " had incorrect response.";
+    }
+
+    callback.Run(result);
+  }
+
   // Called when the biometrics signal is initially connected.
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
@@ -262,7 +340,8 @@ class BiodClientImpl : public BiodClient {
       observer.BiodSessionFailedReceived();
   }
 
-  dbus::ObjectProxy* biod_proxy_;
+  dbus::Bus* bus_ = nullptr;
+  dbus::ObjectProxy* biod_proxy_ = nullptr;
   base::ObserverList<Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
