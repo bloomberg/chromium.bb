@@ -21,7 +21,6 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
                    : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::UnspecedLoading:
     case TaskType::Networking:
-    case TaskType::DatabaseAccess:
       return frame ? frame->frameScheduler()->loadingTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
     // Throttling following tasks may break existing web pages, so tentatively
@@ -29,6 +28,9 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
     // or provide a mechanism that web pages can opt-out it if throttling is not
     // desirable.
+    case TaskType::DatabaseAccess:
+      return frame ? frame->frameScheduler()->suspendableTaskRunner()
+                   : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::DOMManipulation:
     case TaskType::UserInteraction:
     case TaskType::HistoryTraversal:

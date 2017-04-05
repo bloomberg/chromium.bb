@@ -74,6 +74,11 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
     unthrottled_task_queue_->SetBlameContext(nullptr);
   }
 
+  if (suspendable_task_queue_) {
+    suspendable_task_queue_->UnregisterTaskQueue();
+    suspendable_task_queue_->SetBlameContext(nullptr);
+  }
+
   if (parent_web_view_scheduler_) {
     parent_web_view_scheduler_->Unregister(this);
 
@@ -162,6 +167,23 @@ RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::timerTaskRunner() {
   return timer_web_task_runner_;
 }
 
+RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::suspendableTaskRunner() {
+  DCHECK(parent_web_view_scheduler_);
+  if (!suspendable_web_task_runner_) {
+    // TODO(altimin): Split FRAME_UNTHROTTLED into FRAME_UNTHROTTLED and
+    // FRAME_UNSUSPENDED.
+    suspendable_task_queue_ = renderer_scheduler_->NewTimerTaskRunner(
+        TaskQueue::QueueType::FRAME_UNTHROTTLED);
+    suspendable_task_queue_->SetBlameContext(blame_context_);
+    suspendable_web_task_runner_ =
+        WebTaskRunnerImpl::create(suspendable_task_queue_);
+    suspendable_queue_enabled_voter_ =
+        suspendable_task_queue_->CreateQueueEnabledVoter();
+    suspendable_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
+  }
+  return suspendable_web_task_runner_;
+}
+
 RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::unthrottledTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!unthrottled_web_task_runner_) {
@@ -224,6 +246,10 @@ void WebFrameSchedulerImpl::AsValueInto(
     state->SetString("unthrottled_task_queue",
                      PointerToId(unthrottled_task_queue_.get()));
   }
+  if (suspendable_task_queue_) {
+    state->SetString("suspendable_task_queue",
+                     PointerToId(suspendable_task_queue_.get()));
+  }
   if (blame_context_) {
     state->BeginDictionary("blame_context");
     state->SetString(
@@ -252,6 +278,8 @@ void WebFrameSchedulerImpl::setSuspended(bool frame_suspended) {
     loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
   if (timer_queue_enabled_voter_)
     timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+  if (suspendable_queue_enabled_voter_)
+    suspendable_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
 }
 
 void WebFrameSchedulerImpl::onFirstMeaningfulPaint() {
