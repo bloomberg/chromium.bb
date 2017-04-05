@@ -107,14 +107,6 @@ bool ShouldEnableQuic(base::StringPiece quic_trial_group,
              "true");
 }
 
-bool ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "disable_quic_on_timeout_with_open_streams"),
-      "true");
-}
-
 bool ShouldQuicDisableConnectionPooling(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -333,8 +325,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
   params->enable_quic = ShouldEnableQuic(
       quic_trial_group, quic_trial_params, is_quic_force_disabled,
       is_quic_force_enabled);
-  params->disable_quic_on_timeout_with_open_streams =
-      ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params);
 
   params->enable_quic_alternative_service_with_different_host =
       ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params);

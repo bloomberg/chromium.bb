@@ -883,7 +883,6 @@ void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
     session_->http_server_properties()->MarkAlternativeServiceBroken(
         failed_alternative_service_);
   }
-  session_->quic_stream_factory()->OnTcpJobCompleted(true);
 }
 
 void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
@@ -1030,9 +1029,6 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       continue;
     }
 
-    if (session_->quic_stream_factory()->IsQuicDisabled())
-      continue;
-
     if (!original_url.SchemeIs(url::kHttpsScheme))
       continue;
 
@@ -1118,11 +1114,9 @@ bool HttpStreamFactoryImpl::JobController::
   }
 
   if (alternative_proxy_server->is_quic()) {
-    // Check that QUIC is enabled globally, and it is not disabled.
-    if (!session_->IsQuicEnabled() ||
-        session_->quic_stream_factory()->IsQuicDisabled()) {
+    // Check that QUIC is enabled globally.
+    if (!session_->IsQuicEnabled())
       return false;
-    }
   }
 
   return true;

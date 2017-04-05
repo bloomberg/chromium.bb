@@ -857,11 +857,6 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
 
 void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     CryptoHandshakeEvent event) {
-  if (stream_factory_ && event == HANDSHAKE_CONFIRMED &&
-      stream_factory_->OnHandshakeConfirmed(this)) {
-    return;
-  }
-
   if (!callback_.is_null() &&
       (!require_confirmation_ || event == HANDSHAKE_CONFIRMED ||
        event == ENCRYPTION_REESTABLISHED)) {

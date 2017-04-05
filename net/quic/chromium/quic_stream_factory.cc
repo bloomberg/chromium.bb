@@ -92,9 +92,6 @@ const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
 // Set the maximum number of undecryptable packets the connection will store.
 const int32_t kMaxUndecryptablePackets = 100;
 
-// How long QUIC will be disabled for because of timeouts with open streams.
-const int kDisableQuicTimeoutSecs = 5 * 60;
-
 std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
     std::string trigger,
     NetLogCaptureMode capture_mode) {
@@ -727,7 +724,6 @@ QuicStreamFactory::QuicStreamFactory(
     bool delay_tcp_race,
     int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
-    bool disable_quic_on_timeout_with_open_streams,
     int idle_connection_timeout_seconds,
     int reduced_ping_timeout_seconds,
     int packet_reader_yield_after_duration_milliseconds,
@@ -772,10 +768,6 @@ QuicStreamFactory::QuicStreamFactory(
       enable_non_blocking_io_(enable_non_blocking_io),
       disable_disk_cache_(disable_disk_cache),
       prefer_aes_(prefer_aes),
-      disable_quic_on_timeout_with_open_streams_(
-          disable_quic_on_timeout_with_open_streams),
-      consecutive_disabled_count_(0),
-      need_to_evaluate_consecutive_disabled_count_(false),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
       ping_timeout_(QuicTime::Delta::FromSeconds(kPingTimeoutSecs)),
@@ -798,7 +790,6 @@ QuicStreamFactory::QuicStreamFactory(
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
       num_push_streams_created_(0),
-      status_(OPEN),
       task_runner_(nullptr),
       ssl_config_service_(ssl_config_service),
       weak_factory_(this) {
@@ -1165,36 +1156,6 @@ std::unique_ptr<QuicHttpStream> QuicStreamFactory::CreateFromSession(
       new QuicHttpStream(session->GetWeakPtr(), http_server_properties_));
 }
 
-bool QuicStreamFactory::IsQuicDisabled() const {
-  return status_ != OPEN;
-}
-
-bool QuicStreamFactory::OnHandshakeConfirmed(
-    QuicChromiumClientSession* session) {
-  if (!IsQuicDisabled())
-    return false;
-
-  session->CloseSessionOnErrorAndNotifyFactoryLater(
-      ERR_ABORTED, QUIC_TIMEOUTS_WITH_OPEN_STREAMS);
-
-  return true;
-}
-
-void QuicStreamFactory::OnTcpJobCompleted(bool succeeded) {
-  if (status_ != CLOSED)
-    return;
-
-  // If QUIC connections are failing while TCP connections are working,
-  // then stop using QUIC. On the other hand if both QUIC and TCP are
-  // failing, then attempt to use QUIC again.
-  if (succeeded) {
-    status_ = DISABLED;
-    return;
-  }
-
-  status_ = OPEN;
-}
-
 void QuicStreamFactory::OnIdleSession(QuicChromiumClientSession* session) {}
 
 void QuicStreamFactory::OnSessionGoingAway(QuicChromiumClientSession* session) {
@@ -1235,18 +1196,6 @@ void QuicStreamFactory::OnTimeoutWithOpenStreams() {
   // Reduce PING timeout when connection times out with open stream.
   if (ping_timeout_ > reduced_ping_timeout_) {
     ping_timeout_ = reduced_ping_timeout_;
-  }
-  if (disable_quic_on_timeout_with_open_streams_) {
-    if (status_ == OPEN) {
-      task_runner_->PostDelayedTask(
-          FROM_HERE, base::Bind(&QuicStreamFactory::OpenFactory,
-                                weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromSeconds(kDisableQuicTimeoutSecs *
-                                       (1 << consecutive_disabled_count_)));
-      consecutive_disabled_count_++;
-      need_to_evaluate_consecutive_disabled_count_ = true;
-    }
-    status_ = CLOSED;
   }
 }
 
@@ -1301,13 +1250,11 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
-  status_ = OPEN;
   CloseAllSessions(ERR_NETWORK_CHANGED, QUIC_IP_ADDRESS_CHANGED);
   set_require_confirmation(true);
 }
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
-  status_ = OPEN;
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkConnected");
   QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
@@ -1627,15 +1574,6 @@ int QuicStreamFactory::CreateSession(
     base::TimeTicks dns_resolution_end_time,
     const NetLogWithSource& net_log,
     QuicChromiumClientSession** session) {
-  if (need_to_evaluate_consecutive_disabled_count_) {
-    task_runner_->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&QuicStreamFactory::MaybeClearConsecutiveDisabledCount,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kDisableQuicTimeoutSecs));
-
-    need_to_evaluate_consecutive_disabled_count_ = false;
-  }
   TRACE_EVENT0(kNetTracingCategory, "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
   const QuicServerId& server_id = key.server_id();
@@ -1951,15 +1889,6 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // still race.
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
       alternative_service);
-}
-
-void QuicStreamFactory::OpenFactory() {
-  status_ = OPEN;
-}
-
-void QuicStreamFactory::MaybeClearConsecutiveDisabledCount() {
-  if (status_ == OPEN)
-    consecutive_disabled_count_ = 0;
 }
 
 }  // namespace net

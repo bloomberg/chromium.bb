@@ -67,7 +67,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_quic);
-  EXPECT_FALSE(params_.disable_quic_on_timeout_with_open_streams);
   EXPECT_EQ(1350u, params_.quic_max_packet_length);
   EXPECT_EQ(net::QuicTagVector(), params_.quic_connection_options);
   EXPECT_FALSE(params_.quic_always_require_handshake_confirmation);
@@ -119,18 +118,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicForDataReductionProxy) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_quic);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       DisableQuicWhenConnectionTimesOutWithOpenStreamsFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["disable_quic_on_timeout_with_open_streams"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.disable_quic_on_timeout_with_open_streams);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

@@ -919,9 +919,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       replacements.ClearQuery();
       replacements.ClearRef();
       url = url.ReplaceComponents(replacements);
-
-      if (session_->quic_stream_factory()->IsQuicDisabled())
-        return ERR_QUIC_PROTOCOL_ERROR;
     } else {
       DCHECK(using_ssl_);
       // The certificate of a QUIC alternative server is expected to be valid
@@ -1045,16 +1042,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       ReturnToStateInitConnection(true /* close connection */);
     }
     return OK;
-  }
-
-  if (proxy_info_.is_quic()) {
-    DCHECK(using_quic_);
-    // Mark QUIC proxy as bad if QUIC got disabled.
-    // Underlying QUIC layer would have closed the connection.
-    if (session_->quic_stream_factory()->IsQuicDisabled()) {
-      using_quic_ = false;
-      return ReconsiderProxyAfterError(ERR_QUIC_PROTOCOL_ERROR);
-    }
   }
 
   // |result| may be the result of any of the stacked pools. The following

@@ -80,10 +80,6 @@ QuicTime::Delta QuicStreamFactoryPeer::GetPingTimeout(
   return factory->ping_timeout_;
 }
 
-bool QuicStreamFactoryPeer::IsQuicDisabled(QuicStreamFactory* factory) {
-  return factory->IsQuicDisabled();
-}
-
 bool QuicStreamFactoryPeer::GetDelayTcpRace(QuicStreamFactory* factory) {
   return factory->delay_tcp_race_;
 }
