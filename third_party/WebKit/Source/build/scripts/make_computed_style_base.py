@@ -14,6 +14,7 @@ from name_utilities import (
     enum_for_css_keyword, enum_type_name, enum_value_name, class_member_name, method_name,
     join_name
 )
+from collections import OrderedDict
 
 
 # Temporary hard-coded list of fields that are not CSS properties.
@@ -147,7 +148,7 @@ def _get_include_paths(properties):
 
 def _create_enums(properties):
     """
-    Returns a dictionary of enums to be generated, enum name -> [list of enum values]
+    Returns an OrderedDict of enums to be generated, enum name -> [list of enum values]
     """
     enums = {}
     for property_ in properties:
@@ -165,7 +166,8 @@ def _create_enums(properties):
 
             enums[enum_name] = enum_values
 
-    return enums
+    # Return the enums sorted by key (enum name)
+    return OrderedDict(sorted(enums.items(), key=lambda t: t[0]))
 
 
 def _create_field(field_role, property_):
@@ -262,8 +264,8 @@ def _pack_fields(fields):
     # http://www.catb.org/esr/structure-packing/#_bitfields
     field_buckets = []
     # Consider fields in descending order of size to reduce fragmentation
-    # when they are selected.
-    for field in sorted(fields, key=lambda f: f.size, reverse=True):
+    # when they are selected. Ties broken in alphabetical order by name.
+    for field in sorted(fields, key=lambda f: (-f.size, f.name)):
         added_to_bucket = False
         # Go through each bucket and add this field if it will not increase
         # the bucket's size to larger than 32 bits. Otherwise, make a new
