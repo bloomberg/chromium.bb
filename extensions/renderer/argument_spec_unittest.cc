@@ -124,12 +124,30 @@ TEST_F(ArgumentSpecUnitTest, Test) {
     ExpectSuccess(spec, "1", "1");
     ExpectSuccess(spec, "-1", "-1");
     ExpectSuccess(spec, "0", "0");
+    ExpectSuccess(spec, "0.0", "0");
     ExpectFailure(spec, "undefined");
     ExpectFailure(spec, "null");
+    ExpectFailure(spec, "1.1");
     ExpectFailure(spec, "'foo'");
     ExpectFailure(spec, "'1'");
     ExpectFailure(spec, "{}");
     ExpectFailure(spec, "[1]");
+  }
+
+  {
+    ArgumentSpec spec(*ValueFromString("{'type': 'number'}"));
+    ExpectSuccess(spec, "1", "1.0");
+    ExpectSuccess(spec, "-1", "-1.0");
+    ExpectSuccess(spec, "0", "0.0");
+    ExpectSuccess(spec, "1.1", "1.1");
+    ExpectSuccess(spec, "1.", "1.0");
+    ExpectSuccess(spec, ".1", "0.1");
+    ExpectFailure(spec, "undefined");
+    ExpectFailure(spec, "null");
+    ExpectFailure(spec, "'foo'");
+    ExpectFailure(spec, "'1.1'");
+    ExpectFailure(spec, "{}");
+    ExpectFailure(spec, "[1.1]");
   }
 
   {
