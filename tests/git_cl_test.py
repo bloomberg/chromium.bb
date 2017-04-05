@@ -7,6 +7,7 @@
 
 import contextlib
 import datetime
+import itertools
 import json
 import logging
 import os
@@ -1415,13 +1416,14 @@ class TestGitCl(TestCase):
   def _gerrit_upload_calls(cls, description, reviewers, squash,
                            squash_mode='default',
                            expected_upstream_ref='origin/refs/heads/master',
-                           ref_suffix='', title=None, notify=False,
+                           push_opts=None, title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None,
                            git_mirror=None):
     if post_amend_description is None:
       post_amend_description = description
     calls = []
     cc = cc or []
+    push_opts = push_opts or []
 
     if squash_mode == 'default':
       calls.extend([
@@ -1443,14 +1445,14 @@ class TestGitCl(TestCase):
                    'fake_ancestor_sha..HEAD'],),
                   description)]
       if squash:
-        title = 'Initial_upload'
+        title = 'Initial upload'
     else:
       if not title:
         calls += [
             ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
             (('ask_for_data', 'Title for patchset []: '), 'User input'),
         ]
-        title = 'User_input'
+        title = 'User input'
     if not git_footers.get_footer_change_id(description) and not squash:
       calls += [
           # DownloadGerritHook(False)
@@ -1497,20 +1499,10 @@ class TestGitCl(TestCase):
         ]
 
     if title:
-      if ref_suffix:
-        ref_suffix += ',m=' + title
-      else:
-        ref_suffix = '%m=' + title
+      push_opts += ['m=' + title]
 
-    notify_suffix = 'notify=%s' % ('ALL' if notify else 'NONE')
-    if ref_suffix:
-      ref_suffix += ',' + notify_suffix
-    else:
-      ref_suffix = '%' + notify_suffix
-
-    if reviewers:
-      ref_suffix += ',' + ','.join('r=%s' % email
-                                   for email in sorted(reviewers))
+    push_opts += ['notify=%s' % ('ALL' if notify else 'NONE')]
+    push_opts += ['r=%s' % email for email in sorted(reviewers or [])]
 
     if git_mirror is None:
       calls += [
@@ -1529,22 +1521,23 @@ class TestGitCl(TestCase):
       ]
 
     calls += [
-        ((['git', 'push',
-           'https://chromium.googlesource.com/yyy/zzz',
-           ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
+        ((['git', 'push'] +
+          list(itertools.chain(*(['-o', opt] for opt in sorted(push_opts)))) +
+          ['https://chromium.googlesource.com/yyy/zzz',
+           ref_to_push + ':refs/for/refs/heads/master'],),
          ('remote:\n'
-         'remote: Processing changes: (\)\n'
-         'remote: Processing changes: (|)\n'
-         'remote: Processing changes: (/)\n'
-         'remote: Processing changes: (-)\n'
-         'remote: Processing changes: new: 1 (/)\n'
-         'remote: Processing changes: new: 1, done\n'
-         'remote:\n'
-         'remote: New Changes:\n'
-         'remote:   https://chromium-review.googlesource.com/123456 XXX.\n'
-         'remote:\n'
-         'To https://chromium.googlesource.com/yyy/zzz\n'
-         ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')),
+          'remote: Processing changes: (\)\n'
+          'remote: Processing changes: (|)\n'
+          'remote: Processing changes: (/)\n'
+          'remote: Processing changes: (-)\n'
+          'remote: Processing changes: new: 1 (/)\n'
+          'remote: Processing changes: new: 1, done\n'
+          'remote:\n'
+          'remote: New Changes:\n'
+          'remote:   https://chromium-review.googlesource.com/123456 XXX.\n'
+          'remote:\n'
+          'To https://chromium.googlesource.com/yyy/zzz\n'
+          ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')),
         ]
     if squash:
       calls += [
@@ -1572,7 +1565,7 @@ class TestGitCl(TestCase):
       squash=True,
       squash_mode=None,
       expected_upstream_ref='origin/refs/heads/master',
-      ref_suffix='',
+      push_opts=None,
       title=None,
       notify=False,
       post_amend_description=None,
@@ -1619,7 +1612,7 @@ class TestGitCl(TestCase):
           description, reviewers, squash,
           squash_mode=squash_mode,
           expected_upstream_ref=expected_upstream_ref,
-          ref_suffix=ref_suffix, title=title, notify=notify,
+          push_opts=push_opts, title=title, notify=notify,
           post_amend_description=post_amend_description,
           issue=issue, cc=cc, git_mirror=git_mirror)
     # Uncomment when debugging.
@@ -1652,20 +1645,6 @@ class TestGitCl(TestCase):
         squash=False,
         squash_mode='override_nosquash')
 
-  def test_gerrit_patch_bad_chars(self):
-    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self._run_gerrit_upload_test(
-        ['-f', '-t', 'Don\'t put bad cha,.rs'],
-        'desc\n\nBUG=\n\nChange-Id: I123456789',
-        squash=False,
-        squash_mode='override_nosquash',
-        title='Dont_put_bad_chars')
-    self.assertIn(
-        'WARNING: Patchset title may only contain alphanumeric chars '
-        'and spaces. You can edit it in the UI. See https://crbug.com/663787.\n'
-        'Cleaned up title: Dont put bad chars\n',
-        git_cl.sys.stdout.getvalue())
-
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
         ['-r', 'foo@example.com', '--send-mail'],
@@ -1684,7 +1663,7 @@ class TestGitCl(TestCase):
         ['reviewer@example.com', 'another@example.com'],
         squash=False,
         squash_mode='override_nosquash',
-        ref_suffix='%l=Code-Review+1',
+        push_opts=['l=Code-Review+1'],
         cc=['more@example.com', 'people@example.com'])
 
   def test_gerrit_upload_squash_first_is_default(self):
