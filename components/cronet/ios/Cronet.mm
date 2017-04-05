@@ -37,7 +37,6 @@ BOOL gQuicEnabled = NO;
 cronet::URLRequestContextConfig::HttpCacheType gHttpCache =
     cronet::URLRequestContextConfig::HttpCacheType::DISK;
 ScopedVector<cronet::URLRequestContextConfig::QuicHint> gQuicHints;
-NSString* gExperimentalOptions = @"{}";
 NSString* gUserAgent = nil;
 BOOL gUserAgentPartial = NO;
 NSString* gSslKeyLogFileName = nil;
@@ -169,11 +168,6 @@ class CronetHttpProtocolHandlerDelegate
       base::SysNSStringToUTF8(host), port, altPort));
 }
 
-+ (void)setExperimentalOptions:(NSString*)experimentalOptions {
-  [self checkNotStarted];
-  gExperimentalOptions = experimentalOptions;
-}
-
 + (void)setUserAgent:(NSString*)userAgent partial:(BOOL)partial {
   [self checkNotStarted];
   gUserAgent = userAgent;
@@ -182,7 +176,7 @@ class CronetHttpProtocolHandlerDelegate
 
 + (void)setSslKeyLogFileName:(NSString*)sslKeyLogFileName {
   [self checkNotStarted];
-  gSslKeyLogFileName = [self getNetLogPathForFile:sslKeyLogFileName];
+  gSslKeyLogFileName = sslKeyLogFileName;
 }
 
 + (void)setHttpCacheType:(CRNHttpCacheType)httpCacheType {
@@ -219,8 +213,6 @@ class CronetHttpProtocolHandlerDelegate
 
   gChromeNet.Get()->set_http2_enabled(gHttp2Enabled);
   gChromeNet.Get()->set_quic_enabled(gQuicEnabled);
-  gChromeNet.Get()->set_experimental_options(
-      base::SysNSStringToUTF8(gExperimentalOptions));
   gChromeNet.Get()->set_http_cache(gHttpCache);
   gChromeNet.Get()->set_ssl_key_log_file_name(
       base::SysNSStringToUTF8(gSslKeyLogFileName));

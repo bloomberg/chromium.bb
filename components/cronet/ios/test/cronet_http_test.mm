@@ -163,17 +163,6 @@ class HttpTest : public ::testing::Test {
   base::scoped_nsobject<TestDelegate> delegate_;
 };
 
-TEST(SslTest, CreateFile) {
-  bool ssl_file_created = [[NSFileManager defaultManager]
-      fileExistsAtPath:[Cronet getNetLogPathForFile:@"SSLKEYLOGFILE"]];
-
-  [[NSFileManager defaultManager]
-      removeItemAtPath:[Cronet getNetLogPathForFile:@"SSLKEYLOGFILE"]
-                 error:nil];
-
-  EXPECT_TRUE(ssl_file_created);
-}
-
 TEST_F(HttpTest, NSURLSessionReceivesData) {
   NSURL* url = net::NSURLWithGURL(GURL(grpc_support::kTestServerUrl));
   __block BOOL block_used = NO;
