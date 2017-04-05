@@ -1,6 +1,10 @@
-file://gpu/OWNERS
 fsamuel@chromium.org
 rjkroege@chromium.org
 sadrul@chromium.org
+danakj@chromium.org
+enne@chromium.org
+vmpstr@chromium.org
+piman@chromium.org
+jbauman@chromium.org
 
 # COMPONENT: Internals>GPU>Internals

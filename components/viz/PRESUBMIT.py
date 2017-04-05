@@ -1,8 +1,8 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Top-level presubmit script for cc.
+"""Top-level presubmit script for components/viz.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into depot_tools.
@@ -11,16 +11,16 @@ for more details about the presubmit API built into depot_tools.
 import re
 import string
 
-CC_SOURCE_FILES=(r'^cc[\\/].*\.(cc|h)$',)
+VIZ_SOURCE_FILES=(r'^components[\\/]viz[\\/].*\.(cc|h)$',)
 
 def CheckChangeLintsClean(input_api, output_api):
   source_filter = lambda x: input_api.FilterSourceFile(
-    x, white_list=CC_SOURCE_FILES, black_list=None)
+    x, white_list=VIZ_SOURCE_FILES, black_list=None)
 
   return input_api.canned_checks.CheckChangeLintsClean(
       input_api, output_api, source_filter, lint_filters=[], verbose_level=1)
 
-def CheckAsserts(input_api, output_api, white_list=CC_SOURCE_FILES, black_list=None):
+def CheckAsserts(input_api, output_api, white_list=VIZ_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   source_file_filter = lambda x: input_api.FilterSourceFile(x, white_list, black_list)
 
@@ -39,7 +39,7 @@ def CheckAsserts(input_api, output_api, white_list=CC_SOURCE_FILES, black_list=N
   return []
 
 def CheckStdAbs(input_api, output_api,
-                white_list=CC_SOURCE_FILES, black_list=None):
+                white_list=VIZ_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
                                                             white_list,
@@ -86,7 +86,7 @@ def CheckStdAbs(input_api, output_api,
 
 def CheckPassByValue(input_api,
                      output_api,
-                     white_list=CC_SOURCE_FILES,
+                     white_list=VIZ_SOURCE_FILES,
                      black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
@@ -128,7 +128,7 @@ def CheckTodos(input_api, output_api):
       items=errors)]
   return []
 
-def CheckDoubleAngles(input_api, output_api, white_list=CC_SOURCE_FILES,
+def CheckDoubleAngles(input_api, output_api, white_list=VIZ_SOURCE_FILES,
                       black_list=None):
   errors = []
 
@@ -145,7 +145,7 @@ def CheckDoubleAngles(input_api, output_api, white_list=CC_SOURCE_FILES,
   return []
 
 def CheckUniquePtr(input_api, output_api,
-                   white_list=CC_SOURCE_FILES, black_list=None):
+                   white_list=VIZ_SOURCE_FILES, black_list=None):
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
   source_file_filter = lambda x: input_api.FilterSourceFile(x,
                                                             white_list,
@@ -230,7 +230,7 @@ def FindNamespaceInBlock(pos, namespace, contents, whitelist=[]):
     pos = next + 1
   return False
 
-# Checks for the use of cc:: within the cc namespace, which is usually
+# Checks for the use of viz:: within the viz namespace, which is usually
 # redundant.
 def CheckNamespace(input_api, output_api):
   errors = []
@@ -238,21 +238,21 @@ def CheckNamespace(input_api, output_api):
   source_file_filter = lambda x: x
   for f in input_api.AffectedSourceFiles(source_file_filter):
     contents = input_api.ReadFile(f, 'rb')
-    match = re.search(r'namespace\s*cc\s*{', contents)
+    match = re.search(r'namespace\s*viz\s*{', contents)
     if match:
       whitelist = []
-      if FindNamespaceInBlock(match.end(), 'cc', contents, whitelist=whitelist):
+      if FindNamespaceInBlock(match.end(), 'viz', contents, whitelist=whitelist):
         errors.append(f.LocalPath())
 
   if errors:
     return [output_api.PresubmitError(
-      'Do not use cc:: inside of the cc namespace.',
+      'Do not use viz:: inside of the viz namespace.',
       items=errors)]
   return []
 
 def CheckForUseOfWrongClock(input_api,
                             output_api,
-                            white_list=CC_SOURCE_FILES,
+                            white_list=VIZ_SOURCE_FILES,
                             black_list=None):
   """Make sure new lines of code don't use a clock susceptible to skew."""
   black_list = tuple(black_list or input_api.DEFAULT_BLACK_LIST)
@@ -316,14 +316,3 @@ def CheckChangeOnUpload(input_api, output_api):
   results += CheckForUseOfWrongClock(input_api, output_api)
   results += FindUselessIfdefs(input_api, output_api)
   return results
-
-def PostUploadHook(cl, change, output_api):
-  """git cl upload will call this hook after the issue is created/modified.
-
-  This hook adds an extra try bot list to the CL description in order to run
-  Blink tests in addition to the CQ try bots.
-  """
-  return output_api.EnsureCQIncludeTrybotsAreAdded(
-    cl,
-    ['master.tryserver.blink:linux_trusty_blink_rel'],
-    'Automatically added Blink trybots to run Blink tests on CQ.')
