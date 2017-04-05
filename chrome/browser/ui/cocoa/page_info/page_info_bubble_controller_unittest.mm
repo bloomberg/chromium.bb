@@ -60,20 +60,25 @@ enum PermissionMenuIndices {
 };
 
 const ContentSettingsType kTestPermissionTypes[] = {
-    CONTENT_SETTINGS_TYPE_IMAGES,         CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-    CONTENT_SETTINGS_TYPE_PLUGINS,        CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_GEOLOCATION,    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_IMAGES,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+    CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_PLUGINS,
+    CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC};
 
 const ContentSetting kTestSettings[] = {
-    CONTENT_SETTING_DEFAULT, CONTENT_SETTING_DEFAULT, CONTENT_SETTING_ALLOW,
-    CONTENT_SETTING_BLOCK,   CONTENT_SETTING_ALLOW,   CONTENT_SETTING_BLOCK,
-    CONTENT_SETTING_BLOCK};
+    CONTENT_SETTING_DEFAULT, CONTENT_SETTING_DEFAULT, CONTENT_SETTING_DEFAULT,
+    CONTENT_SETTING_ALLOW,   CONTENT_SETTING_BLOCK,   CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_BLOCK,   CONTENT_SETTING_BLOCK};
 
-const ContentSetting kTestDefaultSettings[] = {CONTENT_SETTING_BLOCK,
-                                               CONTENT_SETTING_ASK};
+const ContentSetting kTestDefaultSettings[] = {
+    CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK, CONTENT_SETTING_ASK};
 
 const content_settings::SettingSource kTestSettingSources[] = {
+    content_settings::SETTING_SOURCE_USER,
     content_settings::SETTING_SOURCE_USER,
     content_settings::SETTING_SOURCE_USER,
     content_settings::SETTING_SOURCE_USER,
@@ -159,7 +164,7 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     // Create a list of 5 different permissions, corresponding to all the
     // possible settings:
     // - [allow, block, ask] by default
-    // - [block, allow] * [by user, by policy, by extension]
+    // - [block, allow] * by user
     PermissionInfoList permission_info_list;
     PageInfoUI::PermissionInfo info;
     for (size_t i = 0; i < arraysize(kTestPermissionTypes); ++i) {
@@ -174,6 +179,16 @@ class PageInfoBubbleControllerTest : public CocoaTest {
     ChosenObjectInfoList chosen_object_info_list;
     bridge_->SetPermissionInfo(permission_info_list,
                                std::move(chosen_object_info_list));
+  }
+
+  int NumSettingsNotSetByUser() const {
+    int num_non_user_settings = 0;
+    for (size_t i = 0; i < arraysize(kTestSettingSources); ++i) {
+      num_non_user_settings +=
+          (kTestSettingSources[i] != content_settings::SETTING_SOURCE_USER) ? 1
+                                                                            : 0;
+    }
+    return num_non_user_settings;
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -233,34 +248,37 @@ TEST_F(PageInfoBubbleControllerTest, SetPermissionInfo) {
 
   // There should be three subviews per permission.
   NSArray* subviews = [[controller_ permissionsView] subviews];
-  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3, [subviews count]);
+  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3,
+            [subviews count] - NumSettingsNotSetByUser());
 
-  // Ensure that there is a distinct label for each permission.
-  NSMutableSet* labels = [NSMutableSet set];
+  // Ensure that there is a label for each permission.
+  NSMutableArray* permission_labels = [NSMutableArray array];
   for (NSView* view in subviews) {
     if ([view isKindOfClass:[NSTextField class]])
-      [labels addObject:[static_cast<NSTextField*>(view) stringValue]];
+      [permission_labels
+          addObject:[static_cast<NSTextField*>(view) stringValue]];
   }
-  EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
+  EXPECT_EQ(arraysize(kTestPermissionTypes),
+            [permission_labels count] - NumSettingsNotSetByUser());
 
   // Ensure that the button labels are distinct, and look for the correct
   // number of disabled buttons.
   int disabled_count = 0;
-  [labels removeAllObjects];
+  NSMutableSet* button_labels = [NSMutableSet set];
   for (NSView* view in subviews) {
     if ([view isKindOfClass:[NSPopUpButton class]]) {
       NSPopUpButton* button = static_cast<NSPopUpButton*>(view);
-      [labels addObject:[[button selectedCell] title]];
+      [button_labels addObject:[[button selectedCell] title]];
 
       if (![button isEnabled])
         ++disabled_count;
     }
   }
-  EXPECT_EQ(arraysize(kTestPermissionTypes), [labels count]);
+  EXPECT_EQ(5UL, [button_labels count]);
 
-  // 3 of the buttons should be disabled -- the ones that have a setting source
-  // of SETTING_SOURCE_POLICY or SETTING_SOURCE_EXTENSION.
-  EXPECT_EQ(3, disabled_count);
+  // Permissions with a setting source of SETTING_SOURCE_POLICY or
+  // SETTING_SOURCE_EXTENSION should have their buttons disabled.
+  EXPECT_EQ(NumSettingsNotSetByUser(), disabled_count);
 }
 
 TEST_F(PageInfoBubbleControllerTest, WindowWidth) {

@@ -6,6 +6,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/common/chrome_features.h"
@@ -17,37 +20,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
 
 namespace {
 
 const int kInvalidResourceID = -1;
-
-// The resource IDs for the strings that are displayed on the permissions
-// button if the permission setting is managed by policy.
-const int kPermissionButtonTextIDPolicyManaged[] = {
-    kInvalidResourceID,
-    IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_POLICY,
-    IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_POLICY,
-    IDS_PAGE_INFO_BUTTON_TEXT_ASK_BY_POLICY,
-    kInvalidResourceID,
-    kInvalidResourceID};
-static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
-                  CONTENT_SETTING_NUM_SETTINGS,
-              "kPermissionButtonTextIDPolicyManaged array size is incorrect");
-
-// The resource IDs for the strings that are displayed on the permissions
-// button if the permission setting is managed by an extension.
-const int kPermissionButtonTextIDExtensionManaged[] = {
-    kInvalidResourceID,
-    IDS_PAGE_INFO_BUTTON_TEXT_ALLOWED_BY_EXTENSION,
-    IDS_PAGE_INFO_BUTTON_TEXT_BLOCKED_BY_EXTENSION,
-    kInvalidResourceID,
-    kInvalidResourceID,
-    kInvalidResourceID};
-static_assert(arraysize(kPermissionButtonTextIDExtensionManaged) ==
-                  CONTENT_SETTING_NUM_SETTINGS,
-              "kPermissionButtonTextIDExtensionManaged array size is "
-              "incorrect");
 
 // The resource IDs for the strings that are displayed on the permissions
 // button if the permission setting is managed by the user.
@@ -253,16 +230,14 @@ base::string16 PageInfoUI::PermissionActionToUIString(
   const int* button_text_ids = NULL;
   switch (source) {
     case content_settings::SETTING_SOURCE_USER:
-      if (setting == CONTENT_SETTING_DEFAULT)
+      if (setting == CONTENT_SETTING_DEFAULT) {
         button_text_ids = kPermissionButtonTextIDDefaultSetting;
-      else
-        button_text_ids = kPermissionButtonTextIDUserManaged;
-      break;
+        break;
+      }
+    // Fallthrough.
     case content_settings::SETTING_SOURCE_POLICY:
-      button_text_ids = kPermissionButtonTextIDPolicyManaged;
-      break;
     case content_settings::SETTING_SOURCE_EXTENSION:
-      button_text_ids = kPermissionButtonTextIDExtensionManaged;
+      button_text_ids = kPermissionButtonTextIDUserManaged;
       break;
     case content_settings::SETTING_SOURCE_WHITELIST:
     case content_settings::SETTING_SOURCE_NONE:
@@ -285,6 +260,48 @@ int PageInfoUI::GetPermissionIconID(ContentSettingsType type,
   }
   NOTREACHED();
   return IDR_INFO;
+}
+
+// static
+base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
+    Profile* profile,
+    const PageInfoUI::PermissionInfo& permission,
+    const GURL& url) {
+  int message_id = kInvalidResourceID;
+  switch (permission.source) {
+    case content_settings::SettingSource::SETTING_SOURCE_POLICY:
+      message_id = IDS_PAGE_INFO_PERMISSION_SET_BY_POLICY;
+      break;
+    case content_settings::SettingSource::SETTING_SOURCE_EXTENSION:
+      message_id = IDS_PAGE_INFO_PERMISSION_SET_BY_EXTENSION;
+      break;
+    default:
+      break;
+  }
+
+  if (permission.setting == CONTENT_SETTING_BLOCK &&
+      PermissionUtil::IsPermission(permission.type)) {
+    PermissionResult permission_result =
+        PermissionManager::Get(profile)->GetPermissionStatus(permission.type,
+                                                             url, url);
+    switch (permission_result.source) {
+      case PermissionStatusSource::MULTIPLE_DISMISSALS:
+      case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
+        message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
+        break;
+      default:
+        break;
+    }
+  }
+
+  if (message_id == kInvalidResourceID)
+    return base::string16();
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+// static
+SkColor PageInfoUI::GetPermissionDecisionTextColor() {
+  return SK_ColorGRAY;
 }
 
 // static

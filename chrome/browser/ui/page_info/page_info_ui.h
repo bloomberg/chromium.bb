@@ -15,6 +15,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/gfx/native_widget_types.h"
 
+class GURL;
 class Profile;
 class PageInfo;
 
@@ -154,6 +155,16 @@ class PageInfoUI {
       ContentSetting setting,
       ContentSetting default_setting,
       content_settings::SettingSource source);
+
+  // Returns a string indicating whether the permission was blocked via an
+  // extension, enterprise policy, or embargo.
+  static base::string16 PermissionDecisionReasonToUIString(
+      Profile* profile,
+      const PermissionInfo& permission,
+      const GURL& url);
+
+  // Returns the color to use for the permission decision reason strings.
+  static SkColor GetPermissionDecisionTextColor();
 
   // Returns the icon resource ID for the given permission |type| and |setting|.
   static int GetPermissionIconID(ContentSettingsType type,

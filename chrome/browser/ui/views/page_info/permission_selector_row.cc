@@ -266,6 +266,22 @@ PermissionSelectorRow::PermissionSelectorRow(
     InitializeComboboxView(layout, permission);
   else
     InitializeMenuButtonView(layout, permission);
+
+  // Show the permission decision reason, if it was not the user.
+  base::string16 reason =
+      PageInfoUI::PermissionDecisionReasonToUIString(profile, permission, url);
+  if (!reason.empty()) {
+    layout->StartRow(1, 1);
+    layout->SkipColumns(1);
+    views::Label* permission_decision_reason = new views::Label(reason);
+    permission_decision_reason->SetEnabledColor(
+        PageInfoUI::GetPermissionDecisionTextColor());
+    // Long labels should span the remaining width of the row.
+    views::ColumnSet* column_set = layout->GetColumnSet(1);
+    DCHECK(column_set);
+    layout->AddView(permission_decision_reason, column_set->num_columns() - 2,
+                    1, views::GridLayout::LEADING, views::GridLayout::CENTER);
+  }
 }
 
 void PermissionSelectorRow::AddObserver(

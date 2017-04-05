@@ -93,6 +93,9 @@ const CGFloat kPermissionDeleteImageSize = 16;
 // The spacing between individual permissions.
 const CGFloat kPermissionsVerticalSpacing = 16;
 
+// The spacing between permissions and their decision description labels.
+const CGFloat kPermissionsDecisionVerticalSpacing = 4;
+
 // Amount to lower each permission icon to align the icon baseline with the
 // label text.
 const CGFloat kPermissionIconYAdjustment = 1;
@@ -899,8 +902,27 @@ bool IsInternalURL(const GURL& url) {
     [button setEnabled:NO];
   }
 
+  // Update |point| to match the y of the bottomost UI element added (|button|).
   NSRect buttonFrame = [button frame];
-  return NSMakePoint(NSMaxX(buttonFrame), NSMaxY(buttonFrame));
+  point.y = NSMaxY(buttonFrame);
+
+  // Show the reason for the permission decision in a new row if it did not come
+  // from the user.
+  base::string16 reason = PageInfoUI::PermissionDecisionReasonToUIString(
+      [self profile], permissionInfo, url_);
+  if (!reason.empty()) {
+    point.y += kPermissionsDecisionVerticalSpacing;
+    label = [self addText:reason
+                 withSize:[NSFont systemFontSize]
+                     bold:NO
+                   toView:view
+                  atPoint:point];
+    label.textColor = skia::SkColorToSRGBNSColor(
+        PageInfoUI::GetPermissionDecisionTextColor());
+    point.y += NSHeight(label.frame);
+  }
+
+  return NSMakePoint(NSMaxX(buttonFrame), point.y);
 }
 
 // Adds a new row to the UI listing the permissions. Returns the NSPoint of the
