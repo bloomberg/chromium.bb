@@ -147,12 +147,15 @@ class ConstrainedFormat {
   // results in a nonempty set. Returns true otherwise.
   bool ApplyConstraintSet(
       const blink::WebMediaTrackConstraintSet& constraint_set) {
-    constrained_resolution_ = constrained_resolution_.Intersection(
+    auto resolution_intersection = constrained_resolution_.Intersection(
         ResolutionSet::FromConstraintSet(constraint_set));
-    constrained_frame_rate_ = constrained_frame_rate_.Intersection(
+    auto frame_rate_intersection = constrained_frame_rate_.Intersection(
         NumericRangeSet<double>::FromConstraint(constraint_set.frameRate));
-    DCHECK(!constrained_resolution_.IsEmpty());
-    DCHECK(!constrained_frame_rate_.IsEmpty());
+    if (resolution_intersection.IsEmpty() || frame_rate_intersection.IsEmpty())
+      return false;
+
+    constrained_resolution_ = resolution_intersection;
+    constrained_frame_rate_ = frame_rate_intersection;
     return true;
   }
 
@@ -268,7 +271,9 @@ double ResolutionConstraintSourceDistance(
   // If the intersection between the source range and the constraint range is
   // empty, return HUGE_VAL.
   if ((constraint_has_max && min_source_value > constraint_max) ||
-      (constraint_has_min && max_source_value < constraint_min)) {
+      (constraint_has_min && max_source_value < constraint_min) ||
+      (constraint_has_min && constraint_has_max &&
+       constraint_min > constraint_max)) {
     if (failed_constraint_name)
       *failed_constraint_name = constraint.name();
     return HUGE_VAL;
@@ -307,7 +312,9 @@ double FrameRateConstraintSourceDistance(
            constraint_max + blink::DoubleConstraint::kConstraintEpsilon) ||
       (constraint_has_min &&
        constrained_format.MaxFrameRate() <
-           constraint_min - blink::DoubleConstraint::kConstraintEpsilon)) {
+           constraint_min - blink::DoubleConstraint::kConstraintEpsilon) ||
+      (constraint_has_min && constraint_has_max &&
+       constraint_min > constraint_max)) {
     if (failed_constraint_name)
       *failed_constraint_name = constraint.name();
     return HUGE_VAL;
@@ -364,7 +371,9 @@ double AspectRatioConstraintSourceDistance(
            ar_constraint_min - blink::DoubleConstraint::kConstraintEpsilon) ||
       (ar_constraint_has_max &&
        min_source_aspect_ratio >
-           ar_constraint_max + blink::DoubleConstraint::kConstraintEpsilon)) {
+           ar_constraint_max + blink::DoubleConstraint::kConstraintEpsilon) ||
+      (ar_constraint_has_min && ar_constraint_has_max &&
+       ar_constraint_min > ar_constraint_max)) {
     if (failed_constraint_name)
       *failed_constraint_name = aspect_ratio_constraint.name();
     return HUGE_VAL;
@@ -388,7 +397,9 @@ double PowerLineFrequencyConstraintSourceDistance(
   long source_value_long = static_cast<long>(source_value);
 
   if ((constraint_has_max && source_value_long > constraint_max) ||
-      (constraint_has_min && source_value_long < constraint_min)) {
+      (constraint_has_min && source_value_long < constraint_min) ||
+      (constraint_has_min && constraint_has_max &&
+       constraint_min > constraint_max)) {
     if (failed_constraint_name)
       *failed_constraint_name = constraint.name();
     return HUGE_VAL;
@@ -788,9 +799,8 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
                                &failed_constraint_name);
       if (!std::isfinite(basic_format_distance))
         continue;
-      constrained_format.ApplyConstraintSet(constraints.basic());
-      DCHECK(!constrained_format.constrained_resolution().IsEmpty());
-      DCHECK(!constrained_format.constrained_frame_rate().IsEmpty());
+      if (!constrained_format.ApplyConstraintSet(constraints.basic()))
+        continue;
 
       for (auto& power_line_frequency : capabilities.power_line_capabilities) {
         double basic_power_line_frequency_distance =
@@ -828,11 +838,11 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
           for (const auto& advanced_set : constraints.advanced()) {
             double custom_distance = CandidateSourceDistance(
                 candidate, constrained_format, advanced_set, nullptr);
+            if (!constrained_format.ApplyConstraintSet(advanced_set))
+              custom_distance = HUGE_VAL;
             advanced_custom_distance_vector.push_back(custom_distance);
             double spec_distance = std::isfinite(custom_distance) ? 0 : 1;
             candidate_distance_vector.push_back(spec_distance);
-            if (std::isfinite(custom_distance))
-              constrained_format.ApplyConstraintSet(advanced_set);
           }
 
           // Second criterion is fitness distance.

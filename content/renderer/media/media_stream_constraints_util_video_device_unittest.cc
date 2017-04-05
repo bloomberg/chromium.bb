@@ -2084,6 +2084,53 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryAspectRatioWidth) {
+  {
+    constraint_factory_.Reset();
+    blink::WebMediaTrackConstraintSet& advanced1 =
+        constraint_factory_.AddAdvanced();
+    advanced1.aspectRatio.setMin(17);
+    blink::WebMediaTrackConstraintSet& advanced2 =
+        constraint_factory_.AddAdvanced();
+    advanced2.width.setMax(1);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The second advanced set cannot be satisfied because it contradicts the
+    // second set. The default device supports the first set and should be
+    // selected.
+    EXPECT_EQ(default_device_->device_id, result.device_id());
+    EXPECT_EQ(*default_closest_format_, result.Format());
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_width);
+    EXPECT_EQ(std::round(result.Width() / 17.0),
+              result.track_adapter_settings().max_height);
+    EXPECT_EQ(17, result.track_adapter_settings().min_aspect_ratio);
+    EXPECT_EQ(result.Width(), result.track_adapter_settings().max_aspect_ratio);
+    CheckTrackAdapterSettingsEqualsFrameRate(result);
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, BasicContradictoryWidth) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.setMin(10);
+  constraint_factory_.basic().width.setMax(9);
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().width.name(),
+            result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       BasicContradictoryWidthAspectRatio) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().width.setMax(1);
+  constraint_factory_.basic().aspectRatio.setExact(100.0);
+  auto result = SelectSettings();
+  EXPECT_FALSE(result.HasValue());
+  EXPECT_EQ(constraint_factory_.basic().aspectRatio.name(),
+            result.failed_constraint_name());
+}
+
 // The "NoDevices" tests verify that the algorithm returns the expected result
 // when there are no candidates to choose from.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, NoDevicesNoConstraints) {
