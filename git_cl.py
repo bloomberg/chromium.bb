@@ -2815,6 +2815,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     # This may be None; default fallback value is determined in logic below.
     title = options.title
+    automatic_title = False
 
     if options.squash:
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
@@ -2829,6 +2830,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           default_title = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
           title = ask_for_data(
               'Title for patchset [%s]: ' % default_title) or default_title
+          if title == default_title:
+            automatic_title = True
         change_id = self._GetChangeDetail()['change_id']
         while True:
           footer_change_ids = git_footers.get_footer_change_id(message)
@@ -2877,6 +2880,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         # On first upload, patchset title is always this string, while
         # --title flag gets converted to first line of message.
         title = 'Initial upload'
+        automatic_title = True
         if not change_desc.description:
           DieWithError("Description is empty. Aborting...")
         message = change_desc.description
@@ -2928,22 +2932,29 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     # Extra options that can be specified at push time. Doc:
     # https://gerrit-review.googlesource.com/Documentation/user-upload.html
-    # This can be done either through use of refspec OR by using --push-option
-    # as documented here: https://git-scm.com/docs/git-push#git-push--o .
-    push_opts = []
+    refspec_opts = []
     if change_desc.get_reviewers(tbr_only=True):
       print('Adding self-LGTM (Code-Review +1) because of TBRs')
-      push_opts.append('l=Code-Review+1')
+      refspec_opts.append('l=Code-Review+1')
 
     if title:
-      push_opts.append('m=' + title)
+      if not re.match(r'^[\w ]+$', title):
+        title = re.sub(r'[^\w ]', '', title)
+        if not automatic_title:
+          print('WARNING: Patchset title may only contain alphanumeric chars '
+                'and spaces. You can edit it in the UI. '
+                'See https://crbug.com/663787.\n'
+                'Cleaned up title: %s' % title)
+      # Per doc, spaces must be converted to underscores, and Gerrit will do the
+      # reverse on its side.
+      refspec_opts.append('m=' + title.replace(' ', '_'))
 
     if options.send_mail:
       if not change_desc.get_reviewers():
         DieWithError('Must specify reviewers to send email.', change_desc)
-      push_opts.append('notify=ALL')
+      refspec_opts.append('notify=ALL')
     else:
-      push_opts.append('notify=NONE')
+      refspec_opts.append('notify=NONE')
 
     reviewers = change_desc.get_reviewers()
     if reviewers:
@@ -2951,24 +2962,28 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # side for real (b/34702620).
       def clean_invisible_chars(email):
         return email.decode('unicode_escape').encode('ascii', 'ignore')
-      push_opts.extend('r=' + clean_invisible_chars(email).strip()
-                       for email in reviewers)
+      refspec_opts.extend('r=' + clean_invisible_chars(email).strip()
+                          for email in reviewers)
 
     if options.private:
-      push_opts.append('draft')
+      refspec_opts.append('draft')
 
     if options.topic:
       # Documentation on Gerrit topics is here:
       # https://gerrit-review.googlesource.com/Documentation/user-upload.html#topic
-      push_opts.append('topic=%s' % options.topic)
+      refspec_opts.append('topic=%s' % options.topic)
 
-    push_cmd = ['git', 'push']
-    for opt in sorted(push_opts):  # Sort to make tests deterministic.
-      push_cmd += ['-o', opt]
-    push_cmd += [self.GetRemoteUrl(), '%s:refs/for/%s' % (ref_to_push, branch)]
+    refspec_suffix = ''
+    if refspec_opts:
+      refspec_suffix = '%' + ','.join(refspec_opts)
+      assert ' ' not in refspec_suffix, (
+          'spaces not allowed in refspec: "%s"' % refspec_suffix)
+    refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
+
     try:
       push_stdout = gclient_utils.CheckCallAndFilter(
-          push_cmd, print_stdout=True,
+          ['git', 'push', self.GetRemoteUrl(), refspec],
+          print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
           # recipe.
           filter_fn=lambda _: sys.stdout.flush())
