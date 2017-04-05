@@ -4,8 +4,9 @@
 
 // https://webbluetoothcg.github.io/web-bluetooth/#dictdef-bluetoothlescanfilterinit
 
-dictionary BluetoothScanFilterInit {
+dictionary BluetoothLEScanFilterInit {
     sequence<BluetoothServiceUUID> services;
     DOMString name;
     DOMString namePrefix;
+    // TODO(crbug.com/707635): Support manufacturerData and serviceData filters.
 };

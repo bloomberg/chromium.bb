@@ -86,8 +86,8 @@ bool BluetoothBlocklist::IsExcluded(const BluetoothUUID& uuid) const {
 }
 
 bool BluetoothBlocklist::IsExcluded(
-    const std::vector<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
-  for (const blink::mojom::WebBluetoothScanFilterPtr& filter : filters) {
+    const std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>& filters) {
+  for (const blink::mojom::WebBluetoothLeScanFilterPtr& filter : filters) {
     if (!filter->services) {
       continue;
     }

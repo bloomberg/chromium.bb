@@ -176,8 +176,8 @@ TEST_F(BluetoothAllowedDevicesTest, NoPermissionForAnyService) {
   // Setup device.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter->name = kDeviceName;
   options->filters.emplace();
@@ -199,10 +199,10 @@ TEST_F(BluetoothAllowedDevicesTest, AllowedServices_OneDevice) {
   // Setup device.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter1 =
-      blink::mojom::WebBluetoothScanFilter::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter2 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter1 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter2 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
@@ -281,8 +281,8 @@ TEST_F(BluetoothAllowedDevicesTest, AllowedServices_TwoDevices) {
   // Setup request for device #1.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options1 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter1 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter1 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
@@ -294,8 +294,8 @@ TEST_F(BluetoothAllowedDevicesTest, AllowedServices_TwoDevices) {
   // Setup request for device #2.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options2 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter2 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter2 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kBatteryServiceUUID);
@@ -349,8 +349,8 @@ TEST_F(BluetoothAllowedDevicesTest, AllowedServices_TwoOriginsOneDevice) {
   // Setup request #1 for device.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options1 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter1 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter1 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
@@ -362,8 +362,8 @@ TEST_F(BluetoothAllowedDevicesTest, AllowedServices_TwoOriginsOneDevice) {
   // Setup request #2 for device.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options2 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter2 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter2 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kBatteryServiceUUID);
@@ -429,8 +429,8 @@ TEST_F(BluetoothAllowedDevicesTest, MergeServices) {
   // Setup first request.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options1 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter1 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter1 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
@@ -446,8 +446,8 @@ TEST_F(BluetoothAllowedDevicesTest, MergeServices) {
   // Setup second request.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options2 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter2 =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter2 =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kHeartRateUUID);
@@ -488,8 +488,8 @@ TEST_F(BluetoothAllowedDevicesTest, NoFilterServices) {
   // Setup request.
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
-  blink::mojom::WebBluetoothScanFilterPtr scan_filter =
-      blink::mojom::WebBluetoothScanFilter::New();
+  blink::mojom::WebBluetoothLeScanFilterPtr scan_filter =
+      blink::mojom::WebBluetoothLeScanFilter::New();
 
   options->filters.emplace();
   options->filters->push_back(std::move(scan_filter));

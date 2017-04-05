@@ -97,14 +97,14 @@ enum WebBluetoothResult {
   DESCRIPTOR_NO_LONGER_EXISTS,
 };
 
-struct WebBluetoothScanFilter {
+struct WebBluetoothLeScanFilter {
   array<bluetooth.mojom.UUID>? services;
   string? name;
   string? name_prefix;
 };
 
 struct WebBluetoothRequestDeviceOptions {
-  array<WebBluetoothScanFilter>? filters;
+  array<WebBluetoothLeScanFilter>? filters;
   array<bluetooth.mojom.UUID> optional_services;
   bool accept_all_devices;
 };

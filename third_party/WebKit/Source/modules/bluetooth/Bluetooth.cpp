@@ -35,8 +35,8 @@ const char kDeviceNameTooLong[] =
 }  // namespace
 
 static void CanonicalizeFilter(
-    const BluetoothScanFilterInit& filter,
-    mojom::blink::WebBluetoothScanFilterPtr& canonicalizedFilter,
+    const BluetoothLEScanFilterInit& filter,
+    mojom::blink::WebBluetoothLeScanFilterPtr& canonicalizedFilter,
     ExceptionState& exceptionState) {
   if (!(filter.hasServices() || filter.hasName() || filter.hasNamePrefix())) {
     exceptionState.throwTypeError(
@@ -106,8 +106,8 @@ static void ConvertRequestDeviceOptions(
 
     result->filters.emplace();
 
-    for (const BluetoothScanFilterInit& filter : options.filters()) {
-      auto canonicalizedFilter = mojom::blink::WebBluetoothScanFilter::New();
+    for (const BluetoothLEScanFilterInit& filter : options.filters()) {
+      auto canonicalizedFilter = mojom::blink::WebBluetoothLeScanFilter::New();
 
       CanonicalizeFilter(filter, canonicalizedFilter, exceptionState);
 

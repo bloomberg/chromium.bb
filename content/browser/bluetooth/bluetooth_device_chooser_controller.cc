@@ -115,7 +115,7 @@ void LogRequestDeviceOptions(
 }
 
 bool IsEmptyOrInvalidFilter(
-    const blink::mojom::WebBluetoothScanFilterPtr& filter) {
+    const blink::mojom::WebBluetoothLeScanFilterPtr& filter) {
   // At least one member needs to be present.
   if (!filter->name && !filter->name_prefix && !filter->services)
     return true;
@@ -134,8 +134,8 @@ bool IsEmptyOrInvalidFilter(
 }
 
 bool HasEmptyOrInvalidFilter(
-    const base::Optional<std::vector<blink::mojom::WebBluetoothScanFilterPtr>>&
-        filters) {
+    const base::Optional<
+        std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
   if (!filters) {
     return true;
   }
@@ -157,7 +157,7 @@ bool IsOptionsInvalid(
 
 bool MatchesFilter(const std::string* device_name,
                    const UUIDSet& device_uuids,
-                   const blink::mojom::WebBluetoothScanFilterPtr& filter) {
+                   const blink::mojom::WebBluetoothLeScanFilterPtr& filter) {
   if (filter->name) {
     if (device_name == nullptr)
       return false;
@@ -187,8 +187,8 @@ bool MatchesFilter(const std::string* device_name,
 bool MatchesFilters(
     const std::string* device_name,
     const UUIDSet& device_uuids,
-    const base::Optional<std::vector<blink::mojom::WebBluetoothScanFilterPtr>>&
-        filters) {
+    const base::Optional<
+        std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
   DCHECK(!HasEmptyOrInvalidFilter(filters));
   for (const auto& filter : filters.value()) {
     if (MatchesFilter(device_name, device_uuids, filter)) {
@@ -199,8 +199,8 @@ bool MatchesFilters(
 }
 
 std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
-    const base::Optional<std::vector<blink::mojom::WebBluetoothScanFilterPtr>>&
-        filters) {
+    const base::Optional<
+        std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>>& filters) {
   std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash> services;
 
   if (filters) {

@@ -65,7 +65,7 @@ class CONTENT_EXPORT BluetoothBlocklist final {
   // Returns if any UUID in a set of filters is excluded from all operations.
   // UUID must be valid.
   bool IsExcluded(
-      const std::vector<blink::mojom::WebBluetoothScanFilterPtr>& filters);
+      const std::vector<blink::mojom::WebBluetoothLeScanFilterPtr>& filters);
 
   // Returns if a UUID is excluded from read operations. UUID must be valid.
   bool IsExcludedFromReads(const device::BluetoothUUID&) const;
