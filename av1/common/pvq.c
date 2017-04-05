@@ -187,16 +187,16 @@ void od_adapt_pvq_ctx_reset(od_pvq_adapt_ctx *state, int is_keyframe) {
   int pli;
   int bs;
   ctx = &state->pvq_codeword_ctx;
-  OD_CDFS_INIT(state->pvq_param_model[0].cdf, 0);
-  OD_CDFS_INIT(state->pvq_param_model[1].cdf, 0);
-  OD_CDFS_INIT(state->pvq_param_model[2].cdf, 0);
+  OD_CDFS_INIT_DYNAMIC(state->pvq_param_model[0].cdf);
+  OD_CDFS_INIT_DYNAMIC(state->pvq_param_model[1].cdf);
+  OD_CDFS_INIT_DYNAMIC(state->pvq_param_model[2].cdf);
   for (i = 0; i < 2*OD_TXSIZES; i++) {
     ctx->pvq_adapt[4*i + OD_ADAPT_K_Q8] = 384;
     ctx->pvq_adapt[4*i + OD_ADAPT_SUM_EX_Q8] = 256;
     ctx->pvq_adapt[4*i + OD_ADAPT_COUNT_Q8] = 104;
     ctx->pvq_adapt[4*i + OD_ADAPT_COUNT_EX_Q8] = 128;
   }
-  OD_CDFS_INIT(ctx->pvq_k1_cdf, 0);
+  OD_CDFS_INIT_DYNAMIC(ctx->pvq_k1_cdf);
   for (pli = 0; pli < OD_NPLANES_MAX; pli++) {
     for (bs = 0; bs < OD_TXSIZES; bs++)
     for (i = 0; i < PVQ_MAX_PARTITIONS; i++) {
@@ -206,9 +206,9 @@ void od_adapt_pvq_ctx_reset(od_pvq_adapt_ctx *state, int is_keyframe) {
   for (i = 0; i < OD_TXSIZES*PVQ_MAX_PARTITIONS; i++) {
     state->pvq_ext[i] = is_keyframe ? 24576 : 2 << 16;
   }
-  OD_CDFS_INIT(state->pvq_gaintheta_cdf, 0);
+  OD_CDFS_INIT_DYNAMIC(state->pvq_gaintheta_cdf);
   OD_CDFS_INIT_Q15(state->pvq_skip_dir_cdf);
-  OD_CDFS_INIT(ctx->pvq_split_cdf, 0);
+  OD_CDFS_INIT_DYNAMIC(ctx->pvq_split_cdf);
 }
 
 /* QMs are arranged from smallest to largest blocksizes, first for

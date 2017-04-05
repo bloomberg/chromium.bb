@@ -17,16 +17,6 @@
 
 #include "generic_code.h"
 
-void aom_cdf_init(uint16_t *cdf, int ncdfs, int nsyms, int val, int first) {
-  int i;
-  int j;
-  for (i = 0; i < ncdfs; i++) {
-    for (j = 0; j < nsyms; j++) {
-      cdf[i*nsyms + j] = val*j + first;
-    }
-  }
-}
-
 void aom_cdf_init_q15_1D(uint16_t *cdf, int nsyms, int cdf_size) {
   int i;
   for (i = 0; i < nsyms; i++)
